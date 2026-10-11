@@ -17,7 +17,7 @@ auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/rat
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
-| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso plugins), org permissions, slug rules; `./sso`: SSO trust rules (server-only). |
+| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso plugins), org permissions, slug rules; `./sso`: SSO trust rules (server-only); `./emails`: the account email outbox (verification, password reset, invitation; no Better Auth import). |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO recovery, audit log and cross-org reads. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
@@ -34,7 +34,7 @@ Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← reputation
 `api → tenancy, email, reputation, webhooks, ratelimit, versioning, db`;
 `web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, db, ui`; `site → ui, auth, versioning` (only the client-safe `@coss/auth/slugs` and the changelog) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening` (`slugs`, `env` only);
-`worker → email, reputation, screening, webhooks, ratelimit, db`; `sdk` and `ui` depend on no workspace.
+`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, db`; `sdk` and `ui` depend on no workspace.
 Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`worker → tenancy` (test fixtures — so tenancy must never import email, webhooks, screening or ratelimit) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`).
@@ -123,7 +123,7 @@ from the root or a package — the package script is what loads `.env` and the t
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
 | `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX` | required with `EMAIL_PROVIDER=ses` (api, web, worker); printed by `ses:bootstrap`. AWS credentials come from the default chain (`globalPassThroughEnv` in `turbo.json`) |
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
-| `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | worker: reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → printed in development, held in production |
+| `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | worker: account emails (verification, password reset, invitation) and reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
 | `VALKEY_URL`, `VALKEY_CLUSTER` | api + web: rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
 | `RATE_LIMIT_KEY_PREFIX` | api + web: namespaces Valkey keys (default `coss`) |
 | `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → per-IP limits off |
@@ -572,7 +572,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - **Reputation notifications** (table `reputation_notification`, ids `repntf_`; `packages/reputation/src/notifications.ts`):
   the worker's `reputation-notifications` loop (`runDueReputationNotifications`, system-level) emails a warning or
   suspension to the org's owners and admins with a **verified, unbanned** address, looked up at send time — one email
-  per person through a `ReputationNotifier`. The worker wires `emailReputationNotifier` (`@coss/email`): a normal
+  per person through a `ReputationNotifier`. The worker wires `emailNotifier` (`@coss/email`): a normal
   live send from COSS's own environment (`NOTIFICATIONS_ENVIRONMENT_ID`/`NOTIFICATIONS_FROM`, category `account`,
   tracking off), so suppression, events and quotas of that org apply; idempotency key `<notification id>:<user id>`
   (non-expiring for these internal sends; `idempotency_key_reused` counts as sent). Only the org's latest transition
@@ -601,8 +601,18 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `apps/web/src/lib/live-keys.ts`, enforced in the action and mirrored in the UI).
 - **Email preview iframe** (`…/emails/[emailId]/page.tsx`): `sandbox=""`, `referrerPolicy="no-referrer"`, CSP
   `PREVIEW_HEAD` prepended to `srcDoc`. Never add `allow-scripts` or `allow-same-origin`.
-- **Dev-only auth emails:** `logDevEmail` (`packages/auth/src/options.ts`) prints verification/invitation/password-reset
-  links to the server console (the dashboard's, as `[auth] …` lines) and throws whenever `NODE_ENV=production`.
+- **Account emails** (table `auth_email`, ids `authml_`; `packages/auth/src/emails.ts`): Better Auth's
+  `sendVerificationEmail`/`sendResetPassword`/`sendInvitationEmail` only queue a row (`enqueueAuthEmail`, outside
+  Better Auth's transaction — so `user_id` has no FK, and a missing user is retried for 5 minutes before it is
+  skipped); outside production they also print the link to the dashboard's console as `[auth] …` lines. The worker's
+  `auth-emails` loop (`runDueAuthEmails`, every 2 s, only when `NOTIFICATIONS_*` are set) sends them through
+  `emailNotifier({ discardBody: true })` with the row id as idempotency key — the same lease/backoff/attempts as
+  reputation notifications. Links are secrets: the row's `url` is cleared when it settles, and `discardBody` makes
+  `purgeSendContent` clear the stored email's `html`/`text` when it leaves `queued`/`scheduled` (internal sends only;
+  never expose it on the API). Skipped: expired links (verification and reset: 1 h, `VERIFICATION_LINK_TTL_S`/
+  `RESET_PASSWORD_LINK_TTL_S`, also passed to Better Auth; invitations: their `expiresAt`), already-verified
+  addresses, banned or changed accounts, invitations no longer pending. User-chosen names are escaped and kept on one
+  line in subjects.
 
 ## Local dev
 
@@ -648,6 +658,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   are org-owned) — suspend the organization. Suspension does not pause the SES tenant itself;
   already-queued immediate sends finish, while scheduled sends wait for the suspension to be lifted.
 
+- Account emails go to unverified addresses by design (sign-up verification, invitations) from COSS's own
+  organization, so bounces from made-up sign-up addresses count against that organization's reputation like any
+  customer's: a suspension of it stops every account email until an admin reinstates it. Sign-up and verification
+  resends are rate limited per IP and address; invitations only by Better Auth's pending-invitation limit per org.
 - Reputation rollups are kept per hour of email creation, so late events for an old hour make the next evaluation
   recount that whole hour. A send already past `authorizeLiveSender` when the org is suspended still goes out.
   Customers are told by banner, page, API, webhooks and a notification email to owners/admins — only for warnings

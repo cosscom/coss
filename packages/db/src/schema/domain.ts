@@ -154,6 +154,9 @@ export const email = pgTable(
     subject: text("subject").notNull(),
     html: text("html"),
     text: text("text"),
+    // Internal sends whose body holds a secret (sign-in links in auth emails): `html`/`text` are
+    // cleared when the email leaves `queued`/`scheduled`, like attachment content.
+    discardBody: boolean("discard_body").notNull().default(false),
     headers: jsonb("headers").$type<Record<string, string>>().notNull().default({}),
     tags: jsonb("tags").$type<EmailTag[]>().notNull().default([]),
     // Matched against category-scoped suppressions and tracking rules.
@@ -983,4 +986,59 @@ export const rateLimitOverride = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [unique("rate_limit_override_organization_bucket_unique").on(t.organizationId, t.bucket)],
+);
+
+export const authEmailKind = pgEnum("auth_email_kind", [
+  "verify_email",
+  "reset_password",
+  "invitation",
+]);
+
+export const authEmailStatus = pgEnum("auth_email_status", [
+  "pending",
+  "sent",
+  "skipped",
+  "failed",
+]);
+
+/**
+ * Outbox of the account emails Better Auth asks for (sign-up verification, password resets,
+ * invitations). Written by `@coss/auth`'s callbacks; the worker sends each one through COSS's own
+ * email product (`@coss/auth/emails`). Not tenant data: an email belongs to an address, not an
+ * organization.
+ */
+export const authEmail = pgTable(
+  "auth_email",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.authEmail)),
+    kind: authEmailKind("kind").notNull(),
+    to: text("to").notNull(),
+    // The account it is about (null for invitations, which may go to people without one). No FK:
+    // Better Auth creates a user in a transaction the outbox insert is not part of; an email for
+    // a user that doesn't exist (any more) is skipped.
+    userId: text("user_id"),
+    // The link to send. It carries a secret (a verification or reset token), so it is cleared
+    // as soon as the email is settled.
+    url: text("url"),
+    // Kind-specific content (invitations: organization, inviter, role).
+    data: jsonb("data").$type<Record<string, string>>().notNull().default({}),
+    // The link stops working at this time; an email not sent by then is skipped.
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    status: authEmailStatus("status").notNull().default("pending"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    // When the worker should (re)try; also the claim's lease. Null once settled.
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }),
+    // Why it was skipped, or the last failure.
+    lastError: text("last_error"),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("auth_email_next_attempt_idx")
+      .on(t.nextAttemptAt)
+      .where(sql`${t.nextAttemptAt} IS NOT NULL`),
+  ],
 );

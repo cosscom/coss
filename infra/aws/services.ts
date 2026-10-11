@@ -317,8 +317,9 @@ export const SERVICES: Service[] = [
         required: false,
         value: "env_… (a live environment of COSS's own organization)",
         description:
-          "Sends reputation notification emails (warnings, suspensions) through COSS itself. " +
-          "Unset until COSS's organization has a verified domain: notifications are held.",
+          "Sends account emails (sign-up verification, password resets, invitations) and " +
+          "reputation notifications through COSS itself. Unset until COSS's organization has a " +
+          "verified domain: both are held, and nobody can verify their email address.",
       },
       {
         name: "NOTIFICATIONS_FROM",
