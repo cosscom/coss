@@ -166,7 +166,7 @@ nothing goes unchecked. Tests are never cached. Artifacts are HMAC-signed with a
    ```sh
    bunx turbo login                 # pick the cal team if asked
    # headless box: create a token at https://vercel.com/account/tokens (scope: cal), then
-   bunx turbo login --manual
+   bunx turbo login --manual        # Remote Cache URL: https://vercel.com/api (not https://vercel.com)
    ```
 3. Put the team and the signing key (password manager: "COSS turbo remote cache signing key") in a private file
    and load it from your shell profile. Turbo only reads the shell's environment, never `.env`:
