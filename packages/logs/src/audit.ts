@@ -1,6 +1,7 @@
 import { db, type Executor, schema } from "@coss/db";
-import { isId } from "@coss/db/id";
+import { ID_PREFIXES, isId, newId } from "@coss/db/id";
 import { and, desc, eq, gte, inArray, like, lt, or } from "drizzle-orm";
+import { activeLogDrains, insertLogDrainRecords } from "./drain-outbox.ts";
 import type { OrgAuditActorType, OrgAuditEventOutput } from "./schemas.ts";
 
 const { orgAuditEvent } = schema;
@@ -36,7 +37,8 @@ export async function recordOrgAuditEvent(
   input: OrgAuditEventInput,
   executor: Executor = db,
 ): Promise<void> {
-  await executor.insert(orgAuditEvent).values({
+  const values = {
+    id: newId(ID_PREFIXES.orgAuditEvent),
     organizationId: input.organizationId,
     projectId: input.projectId ?? null,
     environmentId: input.environmentId ?? null,
@@ -50,7 +52,33 @@ export async function recordOrgAuditEvent(
     metadata: input.metadata ?? {},
     clientIp: input.clientIp?.slice(0, 64) ?? null,
     userAgent: input.userAgent?.slice(0, 512) ?? null,
+    createdAt: new Date(),
+  } satisfies OrgAuditEventRow;
+  // Only environment-scoped events reach log drains (drains belong to an environment).
+  const drains = values.environmentId
+    ? await activeLogDrains(executor, [values.environmentId])
+    : [];
+  if (drains.length === 0) {
+    await executor.insert(orgAuditEvent).values(values);
+    return;
+  }
+  await executor.transaction(async (tx) => {
+    await tx.insert(orgAuditEvent).values(values);
+    await insertLogDrainRecords(tx, drains, [
+      {
+        organizationId: values.organizationId,
+        environmentId: values.environmentId as string,
+        source: "audit",
+        sourceId: values.id,
+        line: toAuditLine(values),
+      },
+    ]);
   });
+}
+
+/** An audit event as a log drain line: the audit object, named like other wire objects. */
+export function toAuditLine(row: OrgAuditEventRow): Record<string, unknown> {
+  return { object: "audit_event", ...toOrgAuditObject(row) };
 }
 
 export function toOrgAuditObject(row: OrgAuditEventRow): OrgAuditEventOutput {

@@ -4,6 +4,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import type { AppEnv } from "../types.ts";
 import { createDomainRoutes } from "./domains.ts";
 import { createEmailRoutes } from "./emails.ts";
+import { createLogDrainRoutes } from "./log-drains.ts";
 import { createLogRoutes } from "./logs.ts";
 import { createReputationRoutes } from "./reputation.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
@@ -24,5 +25,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   v1.route("/", createSuppressionRoutes());
   v1.route("/", createReputationRoutes());
   v1.route("/", createLogRoutes());
+  // Drain secrets use the same key ring as webhook endpoints.
+  v1.route("/", createLogDrainRoutes(deps.webhookDeps));
   return v1;
 }

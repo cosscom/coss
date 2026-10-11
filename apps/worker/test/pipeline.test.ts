@@ -8,7 +8,12 @@ import { createEmailService, FakeEmailProvider } from "@coss/email";
 import { memoryDispatchQueue } from "@coss/email/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
-import { createWebhookEndpoint, runDueWebhookDeliveries } from "@coss/webhooks";
+import {
+  createLogDrain,
+  createWebhookEndpoint,
+  runDueLogDrainDeliveries,
+  runDueWebhookDeliveries,
+} from "@coss/webhooks";
 import {
   TEST_SECRETS_KEYS,
   testManagementDeps,
@@ -17,6 +22,7 @@ import {
 } from "@coss/webhooks/testing";
 import {
   type EmailWebhookEvent,
+  verifyLogDrainBatch,
   verifyWebhook,
   type WebhookEvent,
   WebhookVerificationError,
@@ -173,6 +179,87 @@ describe("scheduled send → webhook", () => {
       expect(provider.sent.map((message) => message.emailId)).toEqual([email.id]);
     } finally {
       receiver.stop();
+    }
+  });
+});
+
+describe("sandbox send → log drain", () => {
+  test("streams the email's events and the webhook attempts as one signed batch", async () => {
+    const tenant = await createTestTenant();
+    const scope = { organizationIds: [tenant.organization.id] };
+    const deps = { secretsKeys: TEST_SECRETS_KEYS, send: testSender() };
+    const endpoint = webhookReceiver();
+    const drainReceiver = webhookReceiver();
+    try {
+      const { endpoint: hook } = await createWebhookEndpoint(
+        {
+          organizationId: tenant.organization.id,
+          environmentId: tenant.development.id,
+          url: endpoint.url,
+          eventTypes: ["email.delivered"],
+          apiVersion: LATEST_API_VERSION,
+          userId: null,
+        },
+        testManagementDeps,
+      );
+      const { secret } = await createLogDrain(
+        {
+          organizationId: tenant.organization.id,
+          environmentId: tenant.development.id,
+          url: drainReceiver.url,
+          sources: ["email", "webhook"],
+          userId: null,
+        },
+        testManagementDeps,
+      );
+      const provider = new FakeEmailProvider({ log: false });
+      const queue = memoryDispatchQueue();
+      const service = createEmailService({
+        liveProvider: provider,
+        sandboxProvider: provider,
+        queue,
+      });
+      const { email } = await service.send({
+        environment: {
+          organizationId: tenant.organization.id,
+          projectId: tenant.project.id,
+          environmentId: tenant.development.id,
+          mode: "sandbox",
+        },
+        apiKeyId: null,
+        params: {
+          from: "Acme <hello@acme.com>",
+          to: ["ok@example.com"],
+          cc: [],
+          bcc: [],
+          reply_to: [],
+          subject: "Welcome",
+          html: null,
+          text: "Hi",
+          headers: {},
+          tags: [],
+        },
+      });
+      await queue.drain(service);
+      expect(await runDueWebhookDeliveries({ scope }, deps)).toBe(1);
+      expect(await runDueLogDrainDeliveries({ scope }, deps)).toBe(1);
+
+      const [request] = drainReceiver.received;
+      if (!request) throw new Error("nothing drained");
+      const lines = await verifyLogDrainBatch(request.body, request.headers, secret);
+      const summary = lines.map((line) =>
+        line.object === "log" ? [line.type, line.resource_id] : [line.action, line.target_id],
+      );
+      expect(summary).toEqual([
+        ["email.sent", email.id],
+        ["email.delivered", email.id],
+        ["webhook.attempt", email.id],
+      ]);
+      expect(lines.at(-1)).toMatchObject({ source: "webhook", status_code: 200 });
+      expect(JSON.stringify(lines.at(-1))).toContain(hook.id);
+    } finally {
+      endpoint.stop();
+      drainReceiver.stop();
     }
   });
 });

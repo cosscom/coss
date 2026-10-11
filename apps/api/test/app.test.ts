@@ -163,6 +163,10 @@ describe("GET /openapi.json", () => {
       "/v1/emails/{id}/events",
       "/v1/emails/{id}/links",
       "/v1/emails/{id}/reschedule",
+      "/v1/log_drains",
+      "/v1/log_drains/{id}",
+      "/v1/log_drains/{id}/batches",
+      "/v1/log_drains/{id}/batches/{batch_id}",
       "/v1/logs",
       "/v1/logs/{id}",
       "/v1/reputation",
@@ -269,7 +273,10 @@ describe("GET /openapi.json", () => {
           ]),
         )
         .filter(
-          ([route]) => String(route).includes("domains") || String(route).includes("webhook"),
+          ([route]) =>
+            String(route).includes("domains") ||
+            String(route).includes("webhook") ||
+            String(route).includes("log_drains"),
         ),
     ).toEqual([
       ["post /v1/domains", "createDomain"],
@@ -288,6 +295,13 @@ describe("GET /openapi.json", () => {
       ["get /v1/webhook_endpoints/{id}/deliveries", "listWebhookDeliveries"],
       ["get /v1/webhook_endpoints/{id}/deliveries/{delivery_id}", "getWebhookDelivery"],
       ["post /v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry", "retryWebhookDelivery"],
+      ["post /v1/log_drains", "createLogDrain"],
+      ["get /v1/log_drains", "listLogDrains"],
+      ["get /v1/log_drains/{id}", "getLogDrain"],
+      ["patch /v1/log_drains/{id}", "updateLogDrain"],
+      ["delete /v1/log_drains/{id}", "deleteLogDrain"],
+      ["get /v1/log_drains/{id}/batches", "listLogDrainBatches"],
+      ["get /v1/log_drains/{id}/batches/{batch_id}", "getLogDrainBatch"],
     ]);
     expect(doc.components.securitySchemes.bearerAuth).toMatchObject({
       type: "http",

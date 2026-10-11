@@ -1,0 +1,92 @@
+---
+title: Log drains
+description: Stream an environment's logs and audit events to your own logging stack.
+icon: Waypoints
+---
+
+A log drain is an HTTPS endpoint that receives an environment's [log](/docs/logs) as it is
+written: every API request, email event and webhook attempt, plus the changes made to the
+environment (from the organization's audit log). COSS posts them in batches, usually within a few
+seconds, signed like [webhooks](/docs/webhooks).
+
+| Source    | Lines                                                                                          |
+| --------- | ---------------------------------------------------------------------------------------------- |
+| `api`     | Requests made with the environment's API keys (`api.request`)                                  |
+| `email`   | Email events: `email.sent`, `email.delivered`, `email.bounced`…                                |
+| `webhook` | Delivery attempts to the environment's webhook endpoints (`webhook.attempt`)                   |
+| `audit`   | Changes to the environment: API keys, webhook endpoints, log drains, suppressions, tracking…  |
+
+A drain takes every source unless you list some. Organization-wide changes (members, domains,
+SSO) stay in the organization's audit log and are not sent to drains.
+
+## Create a drain
+
+In the dashboard, open **Log drains** in an environment. Or with the API:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data, error } = await coss.logDrains.create({
+  url: "https://logs.example.com/coss",
+  sources: ["api", "email"],
+});
+// Store data.secret: it is returned only now.
+```
+
+Drains belong to the API key's environment, like webhook endpoints. An environment can have up to
+5 drains.
+
+## What COSS sends
+
+Each request is a `POST` with `Content-Type: application/x-ndjson`: one JSON object per line, each
+line ending with a newline, at most 500 lines or 1 MB per request. Log lines are exactly the
+objects [`GET /v1/logs`](/docs/api-reference/logs/list-logs) returns (`"object": "log"`); audit
+events have `"object": "audit_event"`:
+
+```json
+{"object":"log","id":"log_01k7c8m4…","occurred_at":"2026-01-15T09:30:00.000Z","source":"api","level":"info","type":"api.request","message":"POST /v1/emails 202","request_id":"req_01k7c8m4…","status_code":202,…}
+{"object":"audit_event","id":"oaudit_01k7c8n1…","created_at":"2026-01-15T09:30:02.000Z","actor_type":"api_key","actor_id":"key_01k7…","action":"webhook_endpoint.created","target_type":"webhook_endpoint","target_id":"whep_01k7…",…}
+```
+
+The headers carry a [Standard Webhooks](https://www.standardwebhooks.com) signature over the body
+(`webhook-id`, `webhook-timestamp`, `webhook-signature`), plus `coss-log-drain-id` and
+`coss-environment-id`. Verify every request with the drain's secret before storing its lines:
+
+```ts twoslash
+import { verifyLogDrainBatch } from "coss";
+declare const request: Request;
+// ---cut---
+const lines = await verifyLogDrainBatch(
+  await request.text(),
+  request.headers,
+  process.env.COSS_LOG_DRAIN_SECRET ?? "",
+);
+for (const line of lines) {
+  if (line.object === "log") console.log(line.occurred_at, line.level, line.message);
+  else console.log(line.created_at, line.actor_label, line.action);
+}
+```
+
+`verifyLogDrainBatch` throws `WebhookVerificationError` when the signature doesn't match or the
+request is more than five minutes old: answer with a 4xx status then.
+
+## Delivery
+
+- Answer with a 2xx status once the lines are stored. Anything else (or no answer within 15
+  seconds) is retried after 5 seconds, 1 minute, 5 minutes, 30 minutes, 1, 2, 4, 8 and 8 hours.
+- A batch can arrive more than once: the `webhook-id` header is the batch's id and stays the same
+  on every retry, and each line has its own `id`. Skip what you already stored.
+- Batches go out one at a time per drain, in the order lines were written. API request lines are
+  written within about a second of the response, so they can follow the email events a request
+  caused: sort by `occurred_at` (audit events: `created_at`) if order matters. Lines logged while a
+  batch is being retried wait for it.
+- If a batch fails all 10 attempts (about a day), COSS disables the drain and drops the lines still
+  waiting for it; the audit log records `log_drain.disabled`. Fix the endpoint, then enable the drain
+  again: it receives lines logged from then on.
+- Disabling a drain yourself also drops its waiting lines, and nothing is kept for a disabled drain.
+- While an organization is suspended, its drains are held; lines that wait more than 3 days are
+  dropped.
+
+Each drain's page in the dashboard (or `coss.logDrains.batches.list()`) shows its recent batches
+with every attempt, its status code and the start of the response. Batches are kept for 7 days.

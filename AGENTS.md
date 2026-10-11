@@ -22,11 +22,11 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO recovery, audit log and cross-org reads. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
-| `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption; `./schemas`, `./env` (zod only). |
+| `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption; log drains (management, signed NDJSON batch delivery, retention); `./schemas`, `./env` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
 | `packages/screening` | `@coss/screening` | Product-agnostic AI content screening: sampling per org + product, the `ContentClassifier` interface (Vercel AI SDK `experimental_decide` adapter under `./ai`, `fakeClassifier` in `./testing`), verdict history, the `content_screening` reputation check; `./env` (zod only), `./runtime`. |
 | `packages/observability` | `@coss/observability` | Sentry setup shared by every app: env shape (`./env`, zod only), `sentryConfig`/`sentryOptions`, PII scrubbing (`scrubEvent`), the browser init (`./browser`), the dashboard's envelope tunnel (`./tunnel`) and `withSentryConfig` options (`./build`). Takes each app's SDK; depends on no framework SDK and no workspace. |
-| `packages/logs` | `@coss/logs` | Environment logs and the org audit log: the day-partitioned `log_entry` table (API requests, email events, webhook attempts), the buffered fail-open request writer, queries (keyset pages, histogram, facets, related lines, CSV/NDJSON export), partition retention, `org_audit_event`; `./schemas` + `./query` (search syntax; zod only), `./testing`. |
+| `packages/logs` | `@coss/logs` | Environment logs and the org audit log: the day-partitioned `log_entry` table (API requests, email events, webhook attempts), the buffered fail-open request writer, queries (keyset pages, histogram, facets, related lines, CSV/NDJSON export), partition retention, `org_audit_event`, the log drain outbox (`log_drain_record`, written by `appendLogEntries`/`recordOrgAuditEvent`); `./schemas` + `./query` (search syntax; zod only), `./testing`. |
 | `packages/versioning` | `@coss/versioning` | Dated public API versions (`Coss-Version`): `API_VERSIONS`, the `VERSION_CHANGES` registry and the engine that renders latest-shape responses/webhook payloads in older versions and upgrades older request bodies. Zero deps, client-safe; `./testing` (`testVersioning()`). |
 | `packages/retention` | `@coss/retention` | The data retention policy: `RETENTION_POLICY` (published by the docs and the dashboard) and `RETENTION_DAYS` (enforced by each package's purge, run by the worker). Zero deps, client-safe. |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens) and `globals.css` (the dashboard's stylesheet). |
@@ -502,7 +502,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
   `recordOpen`/`recordClick` (from the email's tracking token), `trackingBaseUrlFor` (dispatch; reads domain names
-  across orgs like `authorizeLiveSender`), `reencryptWebhookSecrets` (operator script), and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`,
+  across orgs like `authorizeLiveSender`), `reencryptWebhookSecrets` (operator script), and the worker scans `runDueWebhookDeliveries`, `runDueLogDrainDeliveries`, `recheckDueDomains`,
   `recheckDueTrackingDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `EmailService.dispatchDue`
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
@@ -638,7 +638,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `v2:<key id>` prefix is the AAD; ids are derived from the keys), encrypted with the first key, decrypted with the
   one named. Keyless `v1:` rows from before are still read by trying every key until `webhooks:reencrypt` rewrites
   them. Every write of a secret column goes through `encryptSecret`, and `reencryptWebhookSecrets` must cover every
-  encrypted column (today `secret_ciphertext` and `previous_secret_ciphertext`). Rotation runbook: README.md,
+  encrypted column (today the endpoints' `secret_ciphertext` and `previous_secret_ciphertext`, and `log_drain.secret_ciphertext`). Rotation runbook: README.md,
   "Rotating `WEBHOOK_SECRETS_KEY`". The initial upgrade from v1-only readers must use README.md's
   "Upgrading from v1 webhook secret storage" coordinated cutover, not a rolling deployment.
 - **Secret rolls** (`rollWebhookEndpointSecret`, `POST /v1/webhook_endpoints/{id}/roll_secret`, the dashboard's
@@ -694,6 +694,23 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   by `0029`), `audit:read` (owners, admins). The audit log records changes from dashboard actions (`recordAudit`, after
   the change succeeded, best effort), API keys (`recordApiAudit`), Better Auth's invitation routes and platform admins
   (`supportAudit`: actor "COSS support", never the admin or their reason); new mutations should record one.
+- **Log drains** (`log_drain` (ids `drain_`), `log_drain_record` (`drainrec_`), `log_drain_batch` (`drainbat_`),
+  `log_drain_attempt` (`drainatt_`); management and delivery in `@coss/webhooks`, the outbox in `@coss/logs`): an
+  environment's log lines (exactly the `GET /v1/logs` objects) and its environment-scoped audit events
+  (`{ object: "audit_event", … }`; org-wide events never reach drains), filtered by `sources`. `appendLogEntries` and
+  `recordOrgAuditEvent` look up the environment's enabled drains and, only when one matches, write the line and its
+  records in one transaction (a savepoint inside the caller's) — so every `log_entry` write path queues drain records;
+  record ids ascend in write order and order delivery. The worker's `log-drains` loop (`runDueLogDrainDeliveries`,
+  system-level) forms one open batch per drain at a time (partial unique index; the drain is locked `FOR NO KEY UPDATE
+  SKIP LOCKED` so it never blocks lines being queued), ≤ 500 lines / 1 MB (`takeBatch`), and posts it through
+  `createWebhookSender` as `application/x-ndjson`, Standard Webhooks-signed with `webhook-id` = the batch id (stable
+  across retries). Retries back off over ~a day (`LOG_DRAIN_RETRY_DELAYS_MS`); an exhausted batch disables the drain
+  (`disabled_reason = 'failing'`), drops its backlog and records a system `log_drain.disabled` audit event. Disabling
+  by hand also drops the backlog; nothing is queued for a disabled drain. Suspended organizations' drains are held.
+  Drain deliveries are never written to `log_entry` (that would feed itself). Retention (`purgeExpiredLogDrainBatches`):
+  finished batches after `RETENTION_DAYS.logDrainBatches`, unbatched lines after `logDrainBacklog`. Lines are not
+  versioned (like `GET /v1/logs`). Permissions: `logDrain` (members read; API keys all, backfilled by `0036`); revealing a
+  secret needs `logDrain:update`.
 - **Reputation notifications** (table `reputation_notification`, ids `repntf_`; `packages/reputation/src/notifications.ts`):
   the worker's `reputation-notifications` loop (`runDueReputationNotifications`, system-level) emails a warning or
   suspension to the org's owners and admins with a **verified, unbanned** address, looked up at send time — one email
@@ -814,7 +831,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), tracking settings over the API,
-SCIM/directory sync, log drains/streaming to external sinks, the audit log over the API,
+SCIM/directory sync, log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay), the audit log over the API,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos/deletion, email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.

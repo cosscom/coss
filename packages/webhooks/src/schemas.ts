@@ -8,6 +8,8 @@
 import { API_VERSIONS, LATEST_API_VERSION } from "@coss/versioning";
 import { z } from "zod";
 
+export * from "./log-drain-schemas.ts";
+
 export const WEBHOOK_URL_MAX_LENGTH = 2048;
 export const DESCRIPTION_MAX_LENGTH = 256;
 /** How long, in seconds, a rolled secret keeps signing next to the new one: a day by default, at most a week. */

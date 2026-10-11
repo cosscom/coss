@@ -24,4 +24,5 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   suppression: ["create", "read", "delete"],
   reputation: ["read"],
   log: ["read"],
+  logDrain: ["create", "read", "update", "delete"],
 };

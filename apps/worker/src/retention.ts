@@ -13,7 +13,7 @@ import {
 } from "@coss/reputation";
 import { purgeExpiredScreenings } from "@coss/screening";
 import { purgeExpiredAdminAuditEvents, purgeExpiredAuthRows } from "@coss/tenancy/retention";
-import { purgeExpiredWebhookMessages } from "@coss/webhooks";
+import { purgeExpiredLogDrainBatches, purgeExpiredWebhookMessages } from "@coss/webhooks";
 
 /** Limits every step to some organizations, users and verification identifiers (tests). */
 export type RetentionScope = {
@@ -29,6 +29,7 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "email batches", purge: purgeEmptyEmailBatches },
   { name: "reputation rollups", purge: purgeExpiredReputationRollups },
   { name: "webhook messages", purge: purgeExpiredWebhookMessages },
+  { name: "log drain batches and backlog", purge: purgeExpiredLogDrainBatches },
   { name: "content screenings", purge: purgeExpiredScreenings },
   { name: "reputation notifications", purge: purgeExpiredReputationNotifications },
   { name: "reputation events", purge: purgeExpiredReputationEvents },

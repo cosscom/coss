@@ -246,6 +246,20 @@
       "when": 1791747435105,
       "tag": "0034_thick_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1791747991105,
+      "tag": "0035_perpetual_gressill",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1791747994587,
+      "tag": "0036_log_drain_key_permissions",
+      "breakpoints": true
     }
   ]
 }

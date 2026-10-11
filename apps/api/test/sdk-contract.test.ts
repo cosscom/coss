@@ -13,13 +13,18 @@ import { memoryLimiter } from "@coss/ratelimit/testing";
 import { suspendOrganization } from "@coss/reputation";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { API_VERSIONS, LATEST_API_VERSION } from "@coss/versioning";
-import { enqueueWebhookMessage, runDueWebhookDeliveries } from "@coss/webhooks";
-import { TEST_SECRETS_KEYS } from "@coss/webhooks/testing";
+import {
+  enqueueWebhookMessage,
+  runDueLogDrainDeliveries,
+  runDueWebhookDeliveries,
+} from "@coss/webhooks";
+import { TEST_SECRETS_KEYS, testSender, webhookReceiver } from "@coss/webhooks/testing";
 import {
   API_VERSION,
   Coss,
   type CossOptions,
   API_VERSIONS as SDK_API_VERSIONS,
+  verifyLogDrainBatch,
   verifyWebhook,
   WebhookVerificationError,
 } from "coss";
@@ -836,5 +841,60 @@ describe("coss.logs against the API", () => {
       to: "2026-01-01T00:00:00Z",
     });
     expect(invalid.error).toMatchObject({ code: "invalid_range", status: 422 });
+  });
+});
+
+describe("coss.logDrains against the API", () => {
+  test("a drain receives the environment's log as batches verifyLogDrainBatch accepts", async () => {
+    const tenant = await createTestTenant();
+    const writer = createLogWriter({ flushMs: 60_000 });
+    const { app } = createTestApp({ logWriter: writer });
+    const coss = clientFor(app, tenant.sandboxKey);
+    const receiver = webhookReceiver();
+    try {
+      const created = await coss.logDrains.create({
+        url: receiver.url,
+        sources: ["api", "audit"],
+      });
+      expect(created.error).toBeNull();
+      if (!created.data) throw new Error("create failed");
+      expect(created.data).toMatchObject({ object: "log_drain", sources: ["api", "audit"] });
+      const secret = created.data.secret;
+
+      await coss.reputation.get();
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      await writer.flush();
+      await runDueLogDrainDeliveries(
+        { scope: { organizationIds: [tenant.organization.id] } },
+        { secretsKeys: TEST_SECRETS_KEYS, send: testSender() },
+      );
+
+      const request = receiver.received[0];
+      if (!request) throw new Error("nothing delivered");
+      const lines = await verifyLogDrainBatch(request.body, request.headers, secret);
+      expect(lines.map((line) => line.object)).toEqual(["audit_event", "log", "log"]);
+      expect(lines[0]).toMatchObject({ action: "log_drain.created", actor_type: "api_key" });
+      expect(lines.slice(1)).toEqual([
+        expect.objectContaining({ route: "/v1/log_drains", status_code: 200 }),
+        expect.objectContaining({ route: "/v1/reputation", status_code: 200 }),
+      ]);
+      await expect(
+        verifyLogDrainBatch(request.body, request.headers, "whsec_AAAA"),
+      ).rejects.toThrow(WebhookVerificationError);
+
+      const batches = await coss.logDrains.batches.list(created.data.id);
+      expect(batches.data?.data[0]).toMatchObject({
+        id: request.headers.get("webhook-id") ?? "",
+        status: "succeeded",
+        line_count: 3,
+      });
+
+      const updated = await coss.logDrains.update(created.data.id, { enabled: false });
+      expect(updated.data).toMatchObject({ enabled: false, disabled_reason: "manual" });
+      const deleted = await coss.logDrains.delete(created.data.id);
+      expect(deleted.data).toEqual({ object: "log_drain", id: created.data.id, deleted: true });
+    } finally {
+      receiver.stop();
+    }
   });
 });

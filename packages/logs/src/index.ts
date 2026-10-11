@@ -6,8 +6,16 @@ export {
   type OrgAuditEventRow,
   type OrgAuditFilters,
   recordOrgAuditEvent,
+  toAuditLine,
   toOrgAuditObject,
 } from "./audit.ts";
+export {
+  type ActiveDrain,
+  activeLogDrains,
+  insertLogDrainRecords,
+  type LogDrainLine,
+  lineByteSize,
+} from "./drain-outbox.ts";
 export {
   appendLogEntries,
   type LogEntryInput,

@@ -32,7 +32,13 @@ import type {
   SuppressionList,
   TrackingDomainObject,
 } from "@coss/email/schemas";
-import type { ListLogsQuery, LogEntry, LogList } from "@coss/logs/schemas";
+import type {
+  LogDrainSource as ApiLogDrainSource,
+  ListLogsQuery,
+  LogEntry,
+  LogList,
+  OrgAuditEventOutput,
+} from "@coss/logs/schemas";
 import type {
   AccountWebhookEvent,
   ReputationCheckObject,
@@ -40,9 +46,19 @@ import type {
 } from "@coss/reputation/schemas";
 import type { ApiVersion } from "@coss/versioning";
 import type {
+  CreateLogDrainRequest,
+  DeletedLogDrain,
   DeletedWebhookEndpoint,
+  ListLogDrainBatchesQuery,
   ListWebhookDeliveriesQuery,
+  LogDrainAttemptObject,
+  LogDrainBatchList,
+  LogDrainBatchObject,
+  LogDrainList,
+  LogDrainObject,
+  LogDrainWithSecret,
   RollWebhookEndpointSecretRequest,
+  UpdateLogDrainRequest,
   WebhookAttemptObject,
   WebhookDeliveryList,
   WebhookDeliveryObject,
@@ -51,10 +67,12 @@ import type {
   WebhookEndpointWithSecret,
 } from "@coss/webhooks/schemas";
 import type {
+  AuditEventLine,
   CheckSuppressionParams,
   CossErrorIssue,
   CossErrorType,
   CreateDomainParams,
+  CreateLogDrainParams,
   CreateSuppressionParams,
   CreateTrackingDomainParams,
   CreateWebhookEndpointParams,
@@ -63,14 +81,21 @@ import type {
   ExportSuppressionsParams,
   ImportSuppressionsParams,
   List,
+  ListLogDrainBatchesParams,
   ListLogsParams,
   ListSuppressionsParams,
   ListWebhookDeliveriesParams,
+  LogDrain,
+  LogDrainAttempt,
+  LogDrainBatch,
+  LogDrainLine,
+  LogDrainSource,
   RescheduleEmailParams,
   RollWebhookEndpointSecretParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
   ApiVersion as SdkApiVersion,
   DeletedDomain as SdkDeletedDomain,
+  DeletedLogDrain as SdkDeletedLogDrain,
   DeletedSuppression as SdkDeletedSuppression,
   DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
   Domain as SdkDomain,
@@ -82,6 +107,7 @@ import type {
   EmailWebhookEvent as SdkEmailWebhookEvent,
   WebhookEndpointWithSecret as SdkEndpointWithSecret,
   Log as SdkLog,
+  LogDrainWithSecret as SdkLogDrainWithSecret,
   Reputation as SdkReputation,
   ReputationCheck as SdkReputationCheck,
   Suppression as SdkSuppression,
@@ -92,6 +118,7 @@ import type {
   WebhookDelivery as SdkWebhookDelivery,
   SendEmailParams,
   TrackingOptions,
+  UpdateLogDrainParams,
   UpdateWebhookEndpointParams,
   WebhookEndpoint,
   WebhookEvent,
@@ -236,6 +263,30 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof LogEntry>, SdkLog>>,
   Assert<MutuallyAssignable<z.output<typeof LogList>, List<SdkLog>>>,
   Assert<Equals<keyof z.input<typeof ListLogsQuery>, keyof ListLogsParams>>,
+  // Log drains: management, batches, and the lines a batch carries.
+  Assert<MutuallyAssignable<z.input<typeof CreateLogDrainRequest>, CreateLogDrainParams>>,
+  Assert<MutuallyAssignable<z.input<typeof UpdateLogDrainRequest>, UpdateLogDrainParams>>,
+  Assert<MutuallyAssignable<z.output<typeof LogDrainObject>, LogDrain>>,
+  Assert<MutuallyAssignable<z.output<typeof LogDrainWithSecret>, SdkLogDrainWithSecret>>,
+  Assert<MutuallyAssignable<z.output<typeof LogDrainList>, List<LogDrain>>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedLogDrain>, SdkDeletedLogDrain>>,
+  Assert<
+    MutuallyAssignable<
+      Omit<z.input<typeof ListLogDrainBatchesQuery>, "limit"> & { limit?: number },
+      ListLogDrainBatchesParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof LogDrainAttemptObject>, LogDrainAttempt>>,
+  Assert<MutuallyAssignable<z.output<typeof LogDrainBatchObject>, LogDrainBatch>>,
+  Assert<MutuallyAssignable<z.output<typeof LogDrainBatchList>, List<LogDrainBatch>>>,
+  Assert<MutuallyAssignable<ApiLogDrainSource, LogDrainSource>>,
+  Assert<MutuallyAssignable<Omit<AuditEventLine, "object">, OrgAuditEventOutput>>,
+  Assert<
+    MutuallyAssignable<
+      z.output<typeof LogEntry> | (OrgAuditEventOutput & { object: "audit_event" }),
+      LogDrainLine
+    >
+  >,
   // Errors: every API error type is one the SDK knows, and issues have the same shape.
   Assert<ApiError["type"] extends CossErrorType ? true : false>,
   Assert<MutuallyAssignable<NonNullable<ApiError["issues"]>[number], CossErrorIssue>>,

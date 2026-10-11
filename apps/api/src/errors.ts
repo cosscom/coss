@@ -216,6 +216,7 @@ function fromWebhookError(error: WebhookError): ApiError {
     case "invalid_api_version":
       return invalidRequest(error.code, error.message, "api_version");
     case "too_many_endpoints":
+    case "too_many_log_drains":
       return invalidRequest(error.code, error.message);
     case "not_found":
       return new ApiError(404, {
