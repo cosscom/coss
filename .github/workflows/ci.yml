@@ -33,7 +33,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # The pushed commit, not GitHub's merge with main: that's what people typecheck and build
+      # locally, so the remote cache replays their results. Tests still run on the merge, and
+      # main's own run catches what only breaks once merged.
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
@@ -86,7 +91,10 @@ jobs:
       # The check job typechecks both Next apps; `next build` skips its own copy of that check.
       SKIP_BUILD_TYPECHECK: "1"
     steps:
+      # The pushed commit, like the check job.
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
