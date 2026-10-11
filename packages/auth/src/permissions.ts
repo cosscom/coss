@@ -26,6 +26,8 @@ export const orgStatements = {
   // `require` turns the organization's SSO requirement on/off: owners only, because owners keep
   // password (break-glass) access while it is on.
   sso: ["read", "update", "require"],
+  // Directory sync (SCIM): connect/disconnect the directory, its tokens and group → role mappings.
+  scim: ["read", "update"],
   reputation: ["read"],
   // Environment logs (API requests, email events, webhook attempts).
   log: ["read"],
@@ -64,12 +66,14 @@ export const orgRoles = {
     ...ownerAc.statements,
     ...fullCossAccess,
     sso: ["read", "update", "require"],
+    scim: ["read", "update"],
     audit: ["read"],
   }),
   admin: orgAc.newRole({
     ...adminAc.statements,
     ...fullCossAccess,
     sso: ["read", "update"],
+    scim: ["read", "update"],
     audit: ["read"],
   }),
   member: orgAc.newRole({ ...memberAc.statements, ...readOnlyCossAccess }),

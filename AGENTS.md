@@ -18,8 +18,8 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
-| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`); `./sso`: SSO trust rules (server-only); `./emails`: the account email outbox. |
-| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). |
+| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
+| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption; `./schemas`, `./env` (zod only). |
@@ -257,7 +257,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   `webhookManagementDeps()` (`src/lib/webhooks.ts`); domain/webhook errors carry user-facing messages. Revealing a
   webhook secret needs `webhook:update` (members can read endpoints but never see secrets).
 - Org settings (`[orgSlug]/settings`: rename, slug change, leave, 2FA requirement; `settings/sso`: SSO provider and
-  requirement) and account settings (top-level `/settings`: name,
+  requirement; `settings/scim`: directory sync) and account settings (top-level `/settings`: name,
   verification email, password change, sessions) call `auth.api.*` server-side — `/organization/update` stays a
   disabled HTTP path. `canRemoveOrgMember`/`assignableOrgRoles` mirror Better Auth's owner rules for the UI; Better
   Auth alone protects the last owner. Account actions refuse while impersonating.
@@ -409,7 +409,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `getColumns` until the catalog moves to 1.x.
 - **Biome** is pinned exactly; keep the `$schema` URL in `biome.json` and `apps/web/biome.json` in step with it.
 - **Better Auth:** `better-auth`, `@better-auth/core`, `@better-auth/api-key`, `@better-auth/passkey`,
-  `@better-auth/sso` and `auth` (CLI) stay on one identical exact version (catalog) — bump them together.
+  `@better-auth/sso`, `@better-auth/scim` and `auth` (CLI) stay on one identical exact version (catalog) — bump them together.
   - The api-key plugin is `@better-auth/api-key` (not `better-auth/plugins`). Keys are org-owned
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
@@ -497,6 +497,27 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     `requireSso`, lock members out; it must come off the provider first. Disabling or removing a provider
     also signs out the sessions it created (`revokeSsoProviderSessions`): Better Auth keeps them, they would still
     count as SSO for the org's requirements, and a later provider gets the same derived id.
+  - **SCIM (directory sync)** (`@better-auth/scim`, `packages/auth/src/scim.ts`, `packages/tenancy/src/scim.ts`,
+    endpoints at `/api/auth/scim/v2`): one **managed** connection per organization (`provisioningDomainId` = the
+    organization id), created/rotated/revoked/decommissioned only through the plugin's serverOnly `auth.api.*`
+    (`connectScim` & co., `scim:update`: owners and admins); tokens are HMAC digests keyed by a secret derived from
+    `BETTER_AUTH_SECRET` (`scimCredentialHashSecret` — rotating that secret invalidates every SCIM token). Connecting
+    needs an active SSO provider: `resolveScimUser` only provisions addresses under the provider's domains
+    (`ssoDomainForEmail`, also enforced on create/update in `databaseHooks.user` so directory users stay
+    `emailVerified`), links an existing account only when it is verified (sign-up doesn't verify: an unverified
+    account would hand membership to whoever registered it) and never lets the directory rewrite a linked account
+    (`profile: "preserve"`). The plugin has no organizations: `reconcileScimMembership` (its `projection`) writes
+    `member` rows through the transaction it is given — active = member, admin when a group is mapped to admin in
+    `scim_group_role` (normalized displayName); inactive/deleted = membership removed and that org's SSO sessions
+    deleted. **Owners are never changed**, nobody is added or promoted while the org is suspended (removals apply).
+    The plugin deletes *every* session of a globally inactive user; the `session.delete.before` hook vetoes that
+    (`isScimSessionSweep`) during SCIM requests and inside `preservingScimMembers` (COSS's decommission/replay
+    calls, which also keep members whose only source was the disconnected directory). While a connection is
+    active, `resolveSsoUser` admits only users with an active SCIM user there (matched by email, not the IdP
+    subject) and existing owners (`scimBlocksSsoSignIn`). The dashboard refuses manual removal/role changes of
+    directory-managed members (except making them owner), and removing the SSO provider while a directory is
+    connected. Every method of `/scim/v2/*` is limited per IP and per token (`withScimRateLimit`). Admin recovery:
+    `disableOrganizationScim` (audited `organization.disable_scim`).
   - **2FA enforcement:** `organization.requireTwoFactor` (additional field, `input: false`; written only by
     `setOrganizationTwoFactorRequired` from org settings, which needs `organization:update` and an actor with 2FA).
     `requireOrgMember` redirects members without `user.twoFactorEnabled` to `/settings` — passkeys don't satisfy it
@@ -738,14 +759,14 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   (`disableOrganizationDeletion: true`) — it would drop the row without any teardown. `requestOrganizationDeletion`
   (owners from settings, `organization:delete`, typed slug, not while suspended or impersonating; admins via
   `deleteOrganizationAsAdmin`, audited, suspended included) inserts the row and runs `revokeOrganizationAccess` in
-  one transaction: API keys (no FK to the org), the SSO provider with its linked accounts and the sessions it
+  one transaction: API keys and SCIM tokens (no FK to the org), the SSO provider with its linked accounts and the sessions it
   created, invitations and members. From then on scheduled sends never dispatch (`organizationActive` in the
   email service), webhook deliveries are held, and the Better Auth org hooks / `resolveSsoUser` refuse it. The
   worker's `organization-deletions` loop (`runDueOrganizationDeletions`, leased, 1 → 60 min backoff, never gives up)
   claims one request at a time, heartbeats during provider cleanup and renews under a claim row lock for every
   data batch (attempt-count ownership checks fence out stale workers). It repeats the revocation, calls `releaseProviderResources` (`releaseOrganizationEmailResources`: domains to
   `deleting`, tracking hostnames, identities, domain rows, then the SES tenant via `DeleteTenant`, prefix-checked), deletes bulky data
-  (including environment logs and the org audit log) in batches of `DELETION_BATCH_SIZE` along indexed columns, then deletes the organization row
+  (including SCIM directory records, environment logs and the org audit log) in batches of `DELETION_BATCH_SIZE` along indexed columns, then deletes the organization row
   (cascading the rest) and marks the row `completed` in one transaction. A new table with a lot of rows per
   organization belongs in `deleteOrganizationData`; anything held outside Postgres (a new provider resource)
   belongs in `releaseProviderResources`. Admin audit events are kept (no FKs).
@@ -821,6 +842,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   from still adds it under Domains (which creates an SES identity). OIDC IdPs must be public `https://` hosts.
   SAML errors after the IdP step land on the callback URL (`?error=`), not on `/sso`. The SAML path is covered by
   Better Auth's own tests only (ours drive OIDC against oauth2-mock-server).
+- Directory sync only manages members and admins: owners are never added, demoted or removed by it (a directory
+  deactivating an owner shows a warning on the SCIM page), and groups only map to roles. Directory users must sign
+  in through the organization's SSO provider, so SCIM needs one.
+  Disconnecting keeps every member. Profile changes of linked (pre-existing) accounts are not synced.
 - Next's cache is per task (nothing uses ISR or `revalidateTag` yet; add a shared `cacheHandler` first).
 - Abuse prevention is best-effort: the disposable list only knows public burner services (refresh it), one-account-
   per-mailbox folds only well-known providers' dots/`+tags`, the DNS check lets every lookup failure through, and a
@@ -841,7 +866,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), tracking settings over the API,
-SCIM/directory sync, log drains/streaming to external sinks,
+log drains/streaming to external sinks,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
 would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,

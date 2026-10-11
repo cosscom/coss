@@ -8,7 +8,7 @@ import {
   type LimitRule,
   listRateLimitOverrides,
 } from "@coss/ratelimit";
-import { listOrganizationMembers } from "@coss/tenancy";
+import { getOrganizationScim, listOrganizationMembers } from "@coss/tenancy";
 import {
   getOrganizationForAdmin,
   getOrganizationSsoForAdmin,
@@ -47,6 +47,7 @@ import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
 import {
   deleteOrganizationAdminAction,
+  disableOrganizationScimAction,
   disableOrganizationSsoAction,
   disableOrganizationSsoRequirementAction,
   resetRateLimitOverrideAction,
@@ -79,12 +80,13 @@ export default async function AdminOrganizationPage({
   const detail = await getOrganizationForAdmin(organizationId);
   if (!detail) notFound();
   const { organization, suspension, deletion } = detail;
-  const [members, keys, domains, tenant, sso, rateLimits, { events }] = await Promise.all([
+  const [members, keys, domains, tenant, sso, scim, rateLimits, { events }] = await Promise.all([
     listOrganizationMembers({ organizationId: organization.id }),
     listOrganizationApiKeysForAdmin(organization.id),
     listDomains({ organizationId: organization.id }),
     getEmailTenant(organization.id),
     getOrganizationSsoForAdmin(organization.id),
+    getOrganizationScim({ organizationId: organization.id }),
     listRateLimitOverrides(organization.id),
     listAdminAuditEvents({ organizationId: organization.id, limit: 25 }),
   ]);
@@ -232,6 +234,39 @@ export default async function AdminOrganizationPage({
                   triggerLabel="Disable SSO"
                 />
               ) : null}
+            </CardAction>
+          ) : null}
+        </CardHeader>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            Directory sync
+            {scim ? (
+              <Badge variant="outline">
+                {scim.status === "active" ? "connected" : "disconnecting"}
+              </Badge>
+            ) : null}
+          </CardTitle>
+          <CardDescription>
+            {scim
+              ? `SCIM connection ${scim.connectionId}: ${scim.activeUsers} active and ${scim.inactiveUsers} deactivated users, ${scim.groups} groups. If the directory deprovisions people by mistake or a token leaked, disconnect it: tokens stop working at once and members stay.`
+              : "No directory connected."}
+          </CardDescription>
+          {scim ? (
+            <CardAction>
+              <AdminActionDialog
+                action={disableOrganizationScimAction}
+                description="Every token of the organization's directory stops working and SSO no longer requires an active directory user. Members it provisioned stay. The organization's admins can connect a directory again."
+                destructive
+                fields={fields}
+                reason="required"
+                reasonPlaceholder="e.g. token leaked, reported in ticket #1234"
+                submitLabel="Disconnect directory"
+                title={`Disconnect directory sync for ${organization.name}?`}
+                triggerLabel="Disconnect directory"
+              />
             </CardAction>
           ) : null}
         </CardHeader>

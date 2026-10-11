@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { clientIpResolver, createRateLimiter, MemoryStore } from "@coss/ratelimit";
-import { AUTH_RATE_LIMITS, withAuthRateLimit } from "../src/lib/auth-rate-limit";
+import {
+  AUTH_RATE_LIMITS,
+  scimCredentialIdOf,
+  withAuthRateLimit,
+  withScimRateLimit,
+} from "../src/lib/auth-rate-limit";
 
 function setup() {
   const seen: Request[] = [];
@@ -95,5 +100,73 @@ describe("withAuthRateLimit", () => {
       expect(limits.ip.endsWith(".ip")).toBe(true);
       if (limits.email) expect(limits.email.endsWith(".email")).toBe(true);
     }
+  });
+});
+
+describe("withScimRateLimit", () => {
+  function scimSetup() {
+    const seen: Request[] = [];
+    const deps = {
+      limiter: createRateLimiter({ store: new MemoryStore() }),
+      clientIp: clientIpResolver({ header: "x-forwarded-for" }),
+    };
+    const handler = withScimRateLimit(
+      async (request) => {
+        seen.push(request);
+        return new Response(null, { status: 204 });
+      },
+      () => deps,
+    );
+    return { handler, seen };
+  }
+
+  function scim(method: string, path: string, token: string, ip: string): Request {
+    return new Request(`http://localhost:3000/api/auth/scim/v2${path}`, {
+      method,
+      headers: { authorization: `Bearer ${token}`, "x-forwarded-for": ip },
+    });
+  }
+
+  test("reads the public credential id of a token", () => {
+    const headers = new Headers({ authorization: "Bearer ba_scim_credential_abc.s3cr3t" });
+    expect(scimCredentialIdOf(headers)).toBe("ba_scim_credential_abc");
+    expect(scimCredentialIdOf(new Headers({ authorization: "Bearer opaque" }))).toBeNull();
+    expect(scimCredentialIdOf(new Headers())).toBeNull();
+  });
+
+  test("limits every method per directory token, across client IPs", async () => {
+    const { handler } = scimSetup();
+    const methods = ["GET", "PATCH", "PUT", "DELETE"];
+    for (let i = 0; i < 200; i++) {
+      const res = await handler(
+        scim(methods[i % 4] ?? "GET", "/Users/1", "cred_a.x", `10.2.${i % 200}.1`),
+      );
+      expect(res.status).toBe(204);
+    }
+    expect((await handler(scim("GET", "/Users", "cred_a.y", "10.3.0.1"))).status).toBe(429);
+    expect((await handler(scim("GET", "/Users", "cred_b.x", "10.3.0.1"))).status).toBe(204);
+  });
+
+  test("limits per client IP whatever the token", async () => {
+    const { handler } = scimSetup();
+    // The bucket holds 500 and refills 100/s, so a slow run gets a few more through.
+    const statuses: number[] = [];
+    for (let i = 0; i < 700; i++) {
+      statuses.push((await handler(scim("GET", "/Users", `cred_${i}.x`, "198.51.100.9"))).status);
+    }
+    expect(statuses.slice(0, 500).every((status) => status === 204)).toBe(true);
+    expect(statuses.at(-1)).toBe(429);
+  });
+
+  test("passes other Better Auth paths through", async () => {
+    const { handler, seen } = scimSetup();
+    for (let i = 0; i < 600; i++) {
+      await handler(
+        new Request("http://localhost:3000/api/auth/get-session", {
+          headers: { "x-forwarded-for": "198.51.100.10" },
+        }),
+      );
+    }
+    expect(seen).toHaveLength(600);
   });
 });

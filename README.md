@@ -112,6 +112,12 @@ resets) are printed to the dashboard's server console in development.
   organization's provider (owners keep password "break-glass" access). An SSO session also satisfies the
   organization's two-factor requirement — the IdP is responsible for MFA. Support recovers broken setups from
   `/admin` (unlink a user's SSO accounts, stop requiring SSO, disable a provider).
+- **Directory sync (SCIM 2.0)** — per organization, under Settings → Directory sync (needs an active SSO provider).
+  The IdP (Okta, Entra ID, JumpCloud…) provisions users at `/api/auth/scim/v2` with an expiring bearer token: active
+  users are members, members of groups mapped to admin are admins, and deactivating or deleting a user removes them
+  from the organization and ends their SSO sessions there. While a directory is connected, only its active users
+  (and owners) sign in with SSO. Owners are never changed by the directory. Support can disconnect a directory from
+  `/admin`.
 - **Reputation guard** — the worker watches each organization's live bounce and complaint rates (per recipient, over
   7 days) and acts without a human: a **warning** at 4% bounces / 0.08% complaints, an automatic **suspension** of
   live sending at 8% / 0.3% (from 200 / 500 recipients). Suspended organizations get `403 account_suspended` on live

@@ -11,6 +11,7 @@
     "./constants": "./src/constants.ts",
     "./emails": "./src/emails.ts",
     "./sso": "./src/sso.ts",
+    "./scim": "./src/scim.ts",
     "./audit": "./src/audit.ts"
   },
   "scripts": {
@@ -23,6 +24,7 @@
     "@better-auth/api-key": "catalog:",
     "@better-auth/core": "catalog:",
     "@better-auth/passkey": "catalog:",
+    "@better-auth/scim": "catalog:",
     "@better-auth/sso": "catalog:",
     "@coss/db": "workspace:*",
     "better-auth": "catalog:",

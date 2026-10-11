@@ -48,6 +48,9 @@ describe("org roles", () => {
     expect(orgRoles.admin.authorize({ sso: ["read", "update"] }).success).toBe(true);
     expect(orgRoles.admin.authorize({ sso: ["require"] }).success).toBe(false);
     expect(orgRoles.member.authorize({ sso: ["read"] }).success).toBe(false);
+    expect(orgRoles.owner.authorize({ scim: ["read", "update"] }).success).toBe(true);
+    expect(orgRoles.admin.authorize({ scim: ["read", "update"] }).success).toBe(true);
+    expect(orgRoles.member.authorize({ scim: ["read"] }).success).toBe(false);
   });
 });
 

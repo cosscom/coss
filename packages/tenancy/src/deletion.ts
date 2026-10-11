@@ -27,6 +27,13 @@ const {
   organization,
   organizationDeletion,
   organizationSuspension,
+  scimConnectionBinding,
+  scimGroup,
+  scimIdentityTombstone,
+  scimManagedConnection,
+  scimManagedCredential,
+  scimSubject,
+  scimUser,
   session,
   ssoProvider,
   webhookEndpoint,
@@ -46,6 +53,14 @@ export async function revokeOrganizationAccess(
   organizationId: string,
   executor: Executor = db,
 ): Promise<void> {
+  // SCIM tokens have no organization FK; revoke them in the same lockout transaction.
+  const connections = executor
+    .select({ id: scimManagedConnection.id })
+    .from(scimManagedConnection)
+    .where(eq(scimManagedConnection.provisioningDomainId, organizationId));
+  await executor
+    .delete(scimManagedCredential)
+    .where(inArray(scimManagedCredential.connectionRecordId, connections));
   await executor.delete(apikey).where(eq(apikey.referenceId, organizationId));
   const providers = await executor
     .delete(ssoProvider)
@@ -276,6 +291,23 @@ async function deleteInBatches(
       // Hold the claim row lock through the batch, including a slow FK cascade.
       await renewLease(deletion, tx);
       const batch = tx.select({ id }).from(table).where(where).limit(batchSize);
+      if (table === scimUser) {
+        const users = await tx
+          .select({ id: scimUser.id })
+          .from(scimUser)
+          .where(where)
+          .limit(batchSize);
+        const ids = users.map((row) => row.id);
+        // Subjects belong to shared user accounts. Keep them, but clear the removed directory source.
+        await tx
+          .update(scimSubject)
+          .set({
+            profileSourceId: null,
+            revision: sql`${scimSubject.revision} + 1`,
+          })
+          .where(inArray(scimSubject.profileSourceId, ids));
+        return tx.delete(table).where(inArray(id, ids)).returning({ id });
+      }
       return tx.delete(table).where(inArray(id, batch)).returning({ id });
     });
     if (deleted.length < batchSize) return true;
@@ -294,6 +326,27 @@ async function deleteOrganizationData(
   signal: AbortSignal | undefined,
 ): Promise<boolean> {
   const organizationId = deletion.organizationId;
+  // SCIM tables are keyed by provisioning domain, with no organization FK. User deletion
+  // cascades to grants/group membership; connection deletion cascades to token/event history.
+  for (const table of [
+    scimUser,
+    scimGroup,
+    scimIdentityTombstone,
+    scimConnectionBinding,
+    scimManagedConnection,
+  ]) {
+    if (
+      !(await deleteInBatches(
+        deletion,
+        table,
+        table.id,
+        eq(table.provisioningDomainId, organizationId),
+        batchSize,
+        signal,
+      ))
+    )
+      return false;
+  }
   const environments = await db
     .select({ id: environment.id })
     .from(environment)

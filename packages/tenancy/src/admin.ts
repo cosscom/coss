@@ -8,6 +8,7 @@ import { isId } from "@coss/db/id";
 import { and, asc, count, desc, eq, gt, ilike, inArray, lt, or, type SQL, sql } from "drizzle-orm";
 import { type OrganizationDeletion, requestOrganizationDeletion } from "./deletion.ts";
 import { TenancyError } from "./errors.ts";
+import { disconnectScim, getOrganizationScim } from "./scim.ts";
 import { revokeSsoProviderSessions } from "./sso.ts";
 
 const {
@@ -55,6 +56,7 @@ export const ADMIN_ACTIONS = [
   "organization.disable_sso_requirement",
   "organization.disable_sso",
   "organization.delete",
+  "organization.disable_scim",
   "api_key.revoke",
   "reputation.suspended",
   "reputation.reinstated",
@@ -715,6 +717,35 @@ export async function disableOrganizationSso(input: {
       tx,
     );
   });
+}
+
+/**
+ * Recovery: disconnects the organization's directory (SCIM), e.g. when it deprovisions people by
+ * mistake. Its tokens stop working at once; members stay. Large directories are released in
+ * batches, so this resumes until done (or reports `complete: false` — run it again).
+ */
+export async function disableOrganizationScim(input: {
+  organizationId: string;
+  reason: string;
+  actor: AdminActor;
+}): Promise<{ complete: boolean }> {
+  const reason = normalizeReason(input.reason, true);
+  const org = await requireOrganization(input.organizationId);
+  const scim = await getOrganizationScim({ organizationId: org.id });
+  if (!scim) throw new TenancyError("conflict", "This organization has no directory connected.");
+  let result = { complete: false };
+  for (let attempt = 0; attempt < 5 && !result.complete; attempt++) {
+    result = await disconnectScim({ organizationId: org.id, actorId: input.actor.userId });
+  }
+  await recordAdminAction({
+    actor: input.actor,
+    action: "organization.disable_scim",
+    target: { type: "organization", id: org.id },
+    organizationId: org.id,
+    reason,
+    metadata: { slug: org.slug, connectionId: scim.connectionId, complete: result.complete },
+  });
+  return result;
 }
 
 export type AdminSessionRow = {
