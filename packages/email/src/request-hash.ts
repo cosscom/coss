@@ -18,3 +18,8 @@ export function canonicalJson(value: unknown): string {
 export function hashSendRequest(params: SendEmailRequestOutput): string {
   return createHash("sha256").update(canonicalJson(params)).digest("hex");
 }
+
+/** Fingerprint of a parsed batch send request (the emails, in order). */
+export function hashSendBatchRequest(emails: readonly SendEmailRequestOutput[]): string {
+  return createHash("sha256").update(canonicalJson(emails)).digest("hex");
+}

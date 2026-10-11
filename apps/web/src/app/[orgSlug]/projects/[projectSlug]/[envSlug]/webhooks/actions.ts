@@ -1,7 +1,8 @@
 "use server";
 
 import { WEBHOOK_EVENT_TYPES } from "@coss/email/schemas";
-import { getEnvironment } from "@coss/tenancy";
+import { getEnvironment, readOrganizationApiVersion } from "@coss/tenancy";
+import { versioning } from "@coss/versioning";
 import {
   createWebhookEndpoint,
   deleteWebhookEndpoint,
@@ -80,6 +81,10 @@ export async function createWebhookEndpointAction(
     const selected = formData.getAll("eventTypes").filter((value) => typeof value === "string");
     if (selected.some((type) => !known.has(type))) throw new ActionError("Unknown event type.");
     if (selected.length === 0) throw new ActionError("Select at least one event.");
+    // Events arrive in the organization's version (the one its API requests use by default).
+    const apiVersion =
+      (await readOrganizationApiVersion({ organizationId: context.organization.id })) ??
+      versioning.latest;
     const { endpoint, secret } = await userFacing(() =>
       createWebhookEndpoint(
         {
@@ -89,6 +94,7 @@ export async function createWebhookEndpointAction(
           description: formString(formData, "description"),
           // Every type selected means "all", which includes types added later.
           eventTypes: selected.length === known.size ? [] : selected,
+          apiVersion,
           userId: context.session.user.id,
         },
         webhookManagementDeps(),
@@ -120,6 +126,31 @@ export async function setWebhookEndpointEnabledAction(
       context,
       endpoint,
       enabled ? "webhook_endpoint.enabled" : "webhook_endpoint.disabled",
+    );
+    refresh();
+    return null;
+  });
+}
+
+/** Renders the endpoint's events in the latest API version from now on, pending retries included. */
+export async function upgradeWebhookEndpointVersionAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      webhook: ["update"],
+    });
+    const endpoint = await endpointFromForm(context, formData);
+    const apiVersion = formString(formData, "apiVersion");
+    if (apiVersion !== versioning.latest) {
+      throw new ActionError("A newer API version is available. Reload the page and review it.");
+    }
+    await userFacing(() =>
+      updateWebhookEndpoint(
+        { organizationId: context.organization.id, id: endpoint.id, apiVersion },
+        webhookManagementDeps(),
+      ),
     );
     refresh();
     return null;

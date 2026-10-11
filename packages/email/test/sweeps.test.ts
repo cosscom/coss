@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
+import { LATEST_API_VERSION } from "@coss/versioning";
 import { createWebhookEndpoint } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
 import { eq, inArray, sql } from "drizzle-orm";
@@ -186,6 +187,7 @@ describe("sweepUnclaimedEmails", () => {
         environmentId: tenant.development.id,
         url: "http://127.0.0.1:9/hooks",
         eventTypes: ["email.failed"],
+        apiVersion: LATEST_API_VERSION,
         userId: null,
       },
       testManagementDeps,

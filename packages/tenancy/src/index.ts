@@ -10,7 +10,13 @@ export {
   type KeyPermissions,
   LAST_USED_RESOLUTION_MS,
   listEnvironmentApiKeys,
+  type RefusedKeyContext,
 } from "./api-keys.ts";
+export {
+  getOrganizationApiVersion,
+  readOrganizationApiVersion,
+  setOrganizationApiVersion,
+} from "./api-versions.ts";
 export {
   DEFAULT_ENVIRONMENTS,
   getEnvironment,

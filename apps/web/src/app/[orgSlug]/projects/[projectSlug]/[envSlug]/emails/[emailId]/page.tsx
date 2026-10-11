@@ -96,6 +96,9 @@ export default async function EmailPage({
     ["ID", <code key="id">{email.id}</code>],
     ["Status", <EmailStatusBadge key="status" status={email.status} />],
     ["Mode", <SandboxBadge key="mode" sandbox={email.sandbox} />],
+    ...(email.batch_id
+      ? ([["Batch", <code key="batch">{email.batch_id}</code>]] as [string, ReactNode][])
+      : []),
     ["From", email.from],
     ["To", list(email.to)],
     ["Cc", list(email.cc)],

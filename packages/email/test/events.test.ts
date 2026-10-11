@@ -2,7 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { queryLogs } from "@coss/logs";
 import { createTestTenant } from "@coss/tenancy/testing";
-import { createWebhookEndpoint } from "@coss/webhooks";
+import { LATEST_API_VERSION } from "@coss/versioning";
+import { createWebhookEndpoint, renderWebhookPayload } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
 import { and, asc, eq } from "drizzle-orm";
 import { ingestProviderEvents } from "../src/events.ts";
@@ -201,6 +202,7 @@ describe("webhook outbox", () => {
         environmentId: tenant.development.id,
         url: "https://example.com/hook",
         eventTypes: ["email.sent", "email.bounced"],
+        apiVersion: LATEST_API_VERSION,
         userId: null,
       },
       testManagementDeps,
@@ -225,7 +227,9 @@ describe("webhook outbox", () => {
       )
       .where(eq(schema.webhookDelivery.endpointId, endpoint.id))
       .orderBy(asc(schema.webhookMessage.createdAt), asc(schema.webhookMessage.id));
-    const payloads = messages.map(({ message }) => EmailWebhookEvent.parse(message.payload));
+    const payloads = messages.map(({ message }) =>
+      EmailWebhookEvent.parse(renderWebhookPayload(message.payload, LATEST_API_VERSION)),
+    );
     expect(payloads.map((p) => [p.type, p.data.recipient])).toEqual([
       ["email.sent", null],
       ["email.bounced", "bounce@simulator.amazonses.com"],

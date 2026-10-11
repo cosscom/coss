@@ -5,6 +5,7 @@
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { appendLogEntries, type LogEntryInput } from "@coss/logs";
+import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
 import { and, asc, eq, inArray, isNull, lt, lte, ne, notExists, or, sql } from "drizzle-orm";
 import { decryptSecret } from "./secrets.ts";
 import { DEFAULT_TIMEOUT_MS, type WebhookSender } from "./sender.ts";
@@ -35,7 +36,31 @@ export type WebhookDeliveryDeps = {
   secretsKey: Buffer;
   send: WebhookSender;
   timeoutMs?: number;
+  /** The API versions payloads are rendered in (tests inject their own). */
+  versioning?: Versioning;
 };
+
+/**
+ * The body sent to an endpoint: the stored (latest-version) event rendered in the endpoint's API version, with
+ * `api_version` after `type`. Rendered at every attempt, so changing an endpoint's version also applies to its
+ * pending retries.
+ */
+export function renderWebhookPayload(
+  payload: Record<string, unknown>,
+  apiVersion: string,
+  versioning: Versioning = apiVersioning,
+): Record<string, unknown> {
+  const resolvedVersion = versioning.resolve(apiVersion);
+  const rendered = versioning.downgrade(payload, resolvedVersion) as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(rendered)) {
+    if (key === "api_version") continue;
+    out[key] = value;
+    if (key === "type") out.api_version = resolvedVersion;
+  }
+  if (!("api_version" in out)) out.api_version = resolvedVersion;
+  return out;
+}
 
 type Claimed = typeof webhookDelivery.$inferSelect;
 
@@ -119,7 +144,10 @@ async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps):
     return;
   }
 
-  const body = JSON.stringify(target.payload);
+  // Signed and sent byte for byte.
+  const body = JSON.stringify(
+    renderWebhookPayload(target.payload, target.endpoint.apiVersion, deps.versioning),
+  );
   const headers = signatureHeaders({
     secret: decryptSecret(target.endpoint.secretCiphertext, deps.secretsKey),
     id: delivery.messageId,

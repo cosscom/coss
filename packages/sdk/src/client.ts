@@ -1,3 +1,4 @@
+import { API_VERSION, type ApiVersion } from "./api-version.ts";
 import { type FetchLike, HttpClient } from "./core/http.ts";
 import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
@@ -16,6 +17,11 @@ export interface CossOptions {
   timeout?: number;
   /** Retries for connection errors, timeouts, 409, 429 and 5xx. Default `2`; excludes webhook creation. */
   maxRetries?: number;
+  /**
+   * The API version (`Coss-Version`) to request. Defaults to `API_VERSION`, the version this SDK's
+   * types describe; requests never fall back to your organization's pinned version.
+   */
+  apiVersion?: ApiVersion;
   /**
    * Allow use where a `document` global exists. Off by default because shipping a secret API key
    * to a browser exposes it to anyone who opens the page.
@@ -104,6 +110,7 @@ export class Coss {
       fetch: options.fetch ?? ((input, init) => globalThis.fetch(input, init)),
       timeout: timeoutMs(options.timeout),
       maxRetries: retries(options.maxRetries),
+      apiVersion: options.apiVersion?.trim() || API_VERSION,
     });
     this.email = new EmailResource(http);
     this.domains = new DomainsResource(http);

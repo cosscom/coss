@@ -4,11 +4,13 @@ import { API_KEY_NAME_MAX_LENGTH, API_KEY_PREFIX } from "@coss/auth/constants";
 import { db, schema } from "@coss/db";
 import { isAPIError } from "better-auth/api";
 import { and, desc, eq, inArray, isNull, lte, or } from "drizzle-orm";
+import { getOrganizationApiVersion } from "./api-versions.ts";
 import { getEnvironmentById } from "./environments.ts";
 import { TenancyError } from "./errors.ts";
 import type { EnvironmentMode } from "./types.ts";
 
-const { apikey, environment, environmentApiKey, organizationSuspension } = schema;
+const { apikey, environment, environmentApiKey, organizationApiVersion, organizationSuspension } =
+  schema;
 
 export type EnvironmentApiKeySummary = {
   id: string;
@@ -29,6 +31,8 @@ export type ApiKeyContext = {
   projectId: string;
   environmentId: string;
   mode: EnvironmentMode;
+  /** The organization's pinned API version (requests may override it with `Coss-Version`). */
+  apiVersion: string;
 };
 
 export type AuthenticateResult =
@@ -38,7 +42,10 @@ export type AuthenticateResult =
    * The key is valid but refused: `forbidden` lacks a permission, `suspended` belongs to an
    * organization a platform admin has suspended. `context` lets the API log the refusal.
    */
-  | { ok: false; reason: "forbidden" | "suspended"; context: ApiKeyContext };
+  | { ok: false; reason: "forbidden" | "suspended"; context: RefusedKeyContext };
+
+/** Who a refused key belongs to (no API version: a refusal never pins the organization's). */
+export type RefusedKeyContext = Omit<ApiKeyContext, "apiVersion">;
 
 /** Better Auth generates 64 letters after our prefix (see `defaultKeyGenerator`). */
 const API_KEY_FORMAT = /^coss_(live|test)_[A-Za-z]{64}$/;
@@ -248,6 +255,7 @@ export async function authenticateApiKey(
       environmentId: environment.id,
       mode: environment.mode,
       suspendedAt: organizationSuspension.createdAt,
+      apiVersion: organizationApiVersion.apiVersion,
     })
     .from(apikey)
     .innerJoin(environmentApiKey, eq(environmentApiKey.apiKeyId, apikey.id))
@@ -255,6 +263,10 @@ export async function authenticateApiKey(
     .leftJoin(
       organizationSuspension,
       eq(organizationSuspension.organizationId, environment.organizationId),
+    )
+    .leftJoin(
+      organizationApiVersion,
+      eq(organizationApiVersion.organizationId, environment.organizationId),
     )
     .where(eq(apikey.key, hashed))
     .limit(1);
@@ -288,7 +300,12 @@ export async function authenticateApiKey(
     await touchLastUsed(row.apiKeyId, now);
   }
 
-  return { ok: true, context };
+  // Organizations are pinned on their first authenticated request.
+  const apiVersion = row.apiVersion ?? (await getOrganizationApiVersion({ organizationId }));
+  return {
+    ok: true,
+    context: { ...context, apiVersion },
+  };
 }
 
 /**

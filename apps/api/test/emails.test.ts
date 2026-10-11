@@ -302,6 +302,10 @@ describe("POST /v1/emails", () => {
     const { app } = createTestApp({
       emailService: {
         replay: async () => null,
+        replayBatch: async () => null,
+        sendBatch: async () => {
+          throw new Error("unused");
+        },
         send: async () => {
           throw new EmailError("request_in_progress", "This idempotency key is busy.");
         },
@@ -353,6 +357,10 @@ describe("POST /v1/emails", () => {
     const { app } = createTestApp({
       emailService: {
         replay: async () => null,
+        replayBatch: async () => null,
+        sendBatch: async () => {
+          throw new Error("unused");
+        },
         send: async () => {
           throw new Error("secret internal detail");
         },

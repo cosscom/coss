@@ -1,3 +1,4 @@
+export { API_VERSION, API_VERSIONS, type ApiVersion } from "./api-version.ts";
 export { Coss, type CossOptions } from "./client.ts";
 export type { CossError, CossErrorIssue, CossErrorType, CossResult } from "./core/errors.ts";
 export type { FetchLike, RequestOptions } from "./core/http.ts";
@@ -6,6 +7,7 @@ export type { EmailResource } from "./resources/email.ts";
 export type { LogsResource } from "./resources/logs.ts";
 export type { ReputationResource } from "./resources/reputation.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
+export type { WebhookDeliveriesResource } from "./resources/webhook-deliveries.ts";
 export type { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 export type {
   CreateDomainParams,
@@ -21,6 +23,7 @@ export type {
   Email,
   EmailAttachment,
   EmailAttachmentParams,
+  EmailBatch,
   EmailEvent,
   EmailEventData,
   EmailEventType,
@@ -65,7 +68,11 @@ export type {
 export type {
   CreateWebhookEndpointParams,
   DeletedWebhookEndpoint,
+  ListWebhookDeliveriesParams,
   UpdateWebhookEndpointParams,
+  WebhookAttempt,
+  WebhookDelivery,
+  WebhookDeliveryStatus,
   WebhookEndpoint,
   WebhookEndpointWithSecret,
   WebhookEventType,

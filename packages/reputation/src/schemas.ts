@@ -19,6 +19,24 @@ export const ACCOUNT_EVENT_TYPES = [
 ] as const;
 export type AccountEventType = (typeof ACCOUNT_EVENT_TYPES)[number];
 
+/**
+ * Customer-facing names of the triggers behind a standing (dashboard and notification emails).
+ * Add an entry with every new trigger; unknown triggers show as is.
+ */
+export const TRIGGER_LABELS: Readonly<Record<string, string>> = {
+  bounce_rate: "Bounce rate",
+  complaint_rate: "Complaint rate",
+  content_screening: "Content screening",
+  manual: "COSS review",
+  policy: "Policy",
+  evaluation: "Evaluation",
+};
+
+export function triggerLabel(trigger: string | null): string {
+  if (!trigger) return "—";
+  return TRIGGER_LABELS[trigger] ?? trigger;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Policy (internal, camelCase): the defaults plus per-organization overrides set by admins.
 // ---------------------------------------------------------------------------------------------
@@ -206,6 +224,10 @@ export const AccountWebhookEvent = z
     }),
     object: z.literal("event"),
     type: z.enum(ACCOUNT_EVENT_TYPES),
+    api_version: z.string().meta({
+      description:
+        "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+    }),
     created_at: z.iso.datetime(),
     data: z.object({
       organization_id: z.string(),
@@ -218,3 +240,5 @@ export const AccountWebhookEvent = z
   })
   .meta({ id: "AccountWebhookEvent" });
 export type AccountWebhookEventOutput = z.output<typeof AccountWebhookEvent>;
+/** What the outbox stores: delivery adds `api_version` when it renders the event for an endpoint. */
+export type StoredAccountWebhookEvent = Omit<AccountWebhookEventOutput, "api_version">;

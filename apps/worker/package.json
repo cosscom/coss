@@ -17,6 +17,7 @@
     "@aws-sdk/client-sesv2": "catalog:",
     "@aws-sdk/client-sns": "catalog:",
     "@aws-sdk/client-sqs": "catalog:",
+    "@coss/auth": "workspace:*",
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
     "@coss/logs": "workspace:*",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@coss/tenancy": "workspace:*",
     "@coss/tsconfig": "workspace:*",
+    "@coss/versioning": "workspace:*",
     "@types/bun": "catalog:",
     "coss": "workspace:*",
     "typescript": "catalog:"

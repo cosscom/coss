@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "COSS API",
-    "version": "v1",
+    "version": "2026-10-10",
     "description": "One API key for every COSS product. Errors share one envelope: `Error`. Every request is scoped to the environment the key belongs to; domains are organization-wide."
   },
   "servers": [
@@ -177,6 +177,13 @@
             ],
             "format": "date-time",
             "description": "When the email was scheduled to be sent; `null` if it was not."
+          },
+          "batch_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The batch that sent the email; `null` if it was sent on its own."
           }
         },
         "required": [
@@ -200,7 +207,8 @@
           "tracking",
           "created_at",
           "sent_at",
-          "scheduled_at"
+          "scheduled_at",
+          "batch_id"
         ],
         "examples": [
           {
@@ -247,7 +255,8 @@
             "attachments": [],
             "created_at": "2026-10-10T12:00:00.000Z",
             "sent_at": "2026-10-10T12:00:01.000Z",
-            "scheduled_at": null
+            "scheduled_at": null,
+            "batch_id": null
           }
         ]
       },
@@ -682,6 +691,129 @@
         },
         "additionalProperties": false,
         "description": "Overrides the environment's tracking settings (its default, or the rule for this email's category) for this email. Omitted fields keep the configured setting."
+      },
+      "EmailBatch": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "email_batch"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "examples": [
+              "batch_01k8d0n6x5f3w2e1r9t7y4u6i8"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Email"
+            },
+            "description": "The batch's emails, in the order of the request."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "data",
+          "created_at"
+        ],
+        "examples": [
+          {
+            "object": "email_batch",
+            "id": "batch_01k8d0n6x5f3w2e1r9t7y4u6i8",
+            "data": [
+              {
+                "object": "email",
+                "id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "from": "Acme <notifications@acme.com>",
+                "to": [
+                  "ada@example.com"
+                ],
+                "cc": [],
+                "bcc": [],
+                "reply_to": [],
+                "subject": "Your weekly summary",
+                "html": "<p>Hi Ada, here is your week.</p>",
+                "text": null,
+                "headers": {},
+                "tags": [],
+                "category": "digest",
+                "status": "queued",
+                "recipients": [
+                  {
+                    "address": "ada@example.com",
+                    "type": "to",
+                    "status": "queued",
+                    "last_event_at": null
+                  }
+                ],
+                "sandbox": false,
+                "tracking": {
+                  "opens": false,
+                  "clicks": false,
+                  "open_count": 0,
+                  "first_opened_at": null,
+                  "last_opened_at": null,
+                  "click_count": 0,
+                  "first_clicked_at": null,
+                  "last_clicked_at": null
+                },
+                "attachments": [],
+                "created_at": "2026-10-10T12:00:00.000Z",
+                "sent_at": null,
+                "scheduled_at": null,
+                "batch_id": "batch_01k8d0n6x5f3w2e1r9t7y4u6i8"
+              }
+            ],
+            "created_at": "2026-10-10T12:00:00.000Z"
+          }
+        ]
+      },
+      "SendEmailBatchRequest": {
+        "type": "object",
+        "properties": {
+          "emails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SendEmailRequest"
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "Up to 100 emails, each accepted by `POST /v1/emails`. The batch is accepted or rejected as a whole."
+          }
+        },
+        "required": [
+          "emails"
+        ],
+        "additionalProperties": false,
+        "examples": [
+          {
+            "emails": [
+              {
+                "from": "Acme <notifications@acme.com>",
+                "to": "ada@example.com",
+                "subject": "Your weekly summary",
+                "html": "<p>Hi Ada, here is your week.</p>",
+                "category": "digest"
+              },
+              {
+                "from": "Acme <notifications@acme.com>",
+                "to": "grace@example.com",
+                "subject": "Your weekly summary",
+                "html": "<p>Hi Grace, here is your week.</p>",
+                "category": "digest"
+              }
+            ]
+          }
+        ]
       },
       "EmailEventList": {
         "type": "object",
@@ -1524,6 +1656,13 @@
             },
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) events are rendered in for this endpoint. Each event carries it as `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
           "enabled": {
             "type": "boolean",
             "description": "A disabled endpoint receives nothing until it is enabled again."
@@ -1550,6 +1689,7 @@
           "url",
           "description",
           "event_types",
+          "api_version",
           "enabled",
           "created_at",
           "updated_at",
@@ -1565,6 +1705,7 @@
               "email.delivered",
               "email.bounced"
             ],
+            "api_version": "2026-10-10",
             "enabled": true,
             "created_at": "2026-01-15T09:30:00.000Z",
             "updated_at": "2026-01-15T09:30:00.000Z",
@@ -1616,6 +1757,13 @@
             },
             "maxItems": 15,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
+          },
+          "api_version": {
+            "type": "string",
+            "enum": [
+              "2026-10-10"
+            ],
+            "description": "The API version (`Coss-Version`) events are rendered in for this endpoint. Each event carries it as `api_version`. Defaults to the version of the request that creates the endpoint."
           }
         },
         "required": [
@@ -1670,6 +1818,7 @@
                   "email.delivered",
                   "email.bounced"
                 ],
+                "api_version": "2026-10-10",
                 "enabled": true,
                 "created_at": "2026-01-15T09:30:00.000Z",
                 "updated_at": "2026-01-15T09:30:00.000Z"
@@ -1713,6 +1862,13 @@
             },
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) events are rendered in for this endpoint. Each event carries it as `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
           "enabled": {
             "type": "boolean",
             "description": "A disabled endpoint receives nothing until it is enabled again."
@@ -1732,6 +1888,7 @@
           "url",
           "description",
           "event_types",
+          "api_version",
           "enabled",
           "created_at",
           "updated_at"
@@ -1746,6 +1903,7 @@
               "email.delivered",
               "email.bounced"
             ],
+            "api_version": "2026-10-10",
             "enabled": true,
             "created_at": "2026-01-15T09:30:00.000Z",
             "updated_at": "2026-01-15T09:30:00.000Z"
@@ -1797,6 +1955,13 @@
             "maxItems": 15,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
+          "api_version": {
+            "type": "string",
+            "enum": [
+              "2026-10-10"
+            ],
+            "description": "The API version (`Coss-Version`) events are rendered in for this endpoint. Each event carries it as `api_version`."
+          },
           "enabled": {
             "type": "boolean"
           }
@@ -1837,6 +2002,274 @@
             "object": "webhook_endpoint",
             "id": "whep_01k7c8m4q2f3e9v6t5r1n0p8yz",
             "deleted": true
+          }
+        ]
+      },
+      "WebhookDeliveryList": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebhookDelivery"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "object",
+          "data",
+          "has_more"
+        ],
+        "examples": [
+          {
+            "object": "list",
+            "data": [
+              {
+                "object": "webhook_delivery",
+                "id": "whdel_01k7c8n2b5d7f9h1k3m5p7r9tv",
+                "endpoint_id": "whep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "event_id": "evt_01k7c8n1z4c6e8g0j2l4n6q8sa",
+                "event_type": "email.delivered",
+                "status": "succeeded",
+                "attempt_count": 1,
+                "next_attempt_at": null,
+                "last_status_code": 200,
+                "last_error": null,
+                "payload": {
+                  "id": "evt_01k7c8n1z4c6e8g0j2l4n6q8sa",
+                  "object": "event",
+                  "type": "email.delivered",
+                  "created_at": "2026-01-15T09:30:00.000Z",
+                  "data": {
+                    "email_id": "email_01k7c8m9x3a5c7e9g1j3l5n7q9",
+                    "recipient": "user@example.com"
+                  }
+                },
+                "attempts": [
+                  {
+                    "object": "webhook_attempt",
+                    "id": "whatt_01k7c8n2c9e1g3j5l7n9q1s3uw",
+                    "attempted_at": "2026-01-15T09:30:01.000Z",
+                    "status_code": 200,
+                    "duration_ms": 182,
+                    "error": null,
+                    "response_excerpt": "ok"
+                  }
+                ],
+                "created_at": "2026-01-15T09:30:00.000Z",
+                "updated_at": "2026-01-15T09:30:01.000Z"
+              }
+            ],
+            "has_more": false
+          }
+        ]
+      },
+      "WebhookDelivery": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "webhook_delivery"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "examples": [
+              "whdel_01k7c8n2b5d7f9h1k3m5p7r9tv"
+            ]
+          },
+          "endpoint_id": {
+            "type": "string"
+          },
+          "event_id": {
+            "type": "string",
+            "description": "The event's id: the `id` of the payload and the `webhook-id` header."
+          },
+          "event_type": {
+            "type": "string",
+            "examples": [
+              "email.delivered"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/WebhookDeliveryStatus"
+          },
+          "attempt_count": {
+            "type": "integer"
+          },
+          "next_attempt_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the next attempt is due; `null` once the delivery is finished."
+          },
+          "last_status_code": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "last_error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "The event body, exactly as posted to the endpoint."
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebhookAttempt"
+            },
+            "description": "Every HTTP attempt of this delivery, oldest first."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "endpoint_id",
+          "event_id",
+          "event_type",
+          "status",
+          "attempt_count",
+          "next_attempt_at",
+          "last_status_code",
+          "last_error",
+          "payload",
+          "attempts",
+          "created_at",
+          "updated_at"
+        ],
+        "examples": [
+          {
+            "object": "webhook_delivery",
+            "id": "whdel_01k7c8n2b5d7f9h1k3m5p7r9tv",
+            "endpoint_id": "whep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "event_id": "evt_01k7c8n1z4c6e8g0j2l4n6q8sa",
+            "event_type": "email.delivered",
+            "status": "succeeded",
+            "attempt_count": 1,
+            "next_attempt_at": null,
+            "last_status_code": 200,
+            "last_error": null,
+            "payload": {
+              "id": "evt_01k7c8n1z4c6e8g0j2l4n6q8sa",
+              "object": "event",
+              "type": "email.delivered",
+              "created_at": "2026-01-15T09:30:00.000Z",
+              "data": {
+                "email_id": "email_01k7c8m9x3a5c7e9g1j3l5n7q9",
+                "recipient": "user@example.com"
+              }
+            },
+            "attempts": [
+              {
+                "object": "webhook_attempt",
+                "id": "whatt_01k7c8n2c9e1g3j5l7n9q1s3uw",
+                "attempted_at": "2026-01-15T09:30:01.000Z",
+                "status_code": 200,
+                "duration_ms": 182,
+                "error": null,
+                "response_excerpt": "ok"
+              }
+            ],
+            "created_at": "2026-01-15T09:30:00.000Z",
+            "updated_at": "2026-01-15T09:30:01.000Z"
+          }
+        ]
+      },
+      "WebhookDeliveryStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "succeeded",
+          "failed"
+        ],
+        "description": "`pending`: waiting for its next attempt. `succeeded`: the endpoint answered with a 2xx status. `failed`: every attempt failed, or the endpoint was disabled."
+      },
+      "WebhookAttempt": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "webhook_attempt"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "attempted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status_code": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "The endpoint's HTTP status; `null` when no response arrived."
+          },
+          "duration_ms": {
+            "type": "integer"
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Why the attempt failed (e.g. `HTTP 500`, a timeout); `null` on success."
+          },
+          "response_excerpt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "At most 1 KB of the response body, as text."
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "attempted_at",
+          "status_code",
+          "duration_ms",
+          "error",
+          "response_excerpt"
+        ],
+        "examples": [
+          {
+            "object": "webhook_attempt",
+            "id": "whatt_01k7c8n2c9e1g3j5l7n9q1s3uw",
+            "attempted_at": "2026-01-15T09:30:01.000Z",
+            "status_code": 200,
+            "duration_ms": 182,
+            "error": null,
+            "response_excerpt": "ok"
           }
         ]
       },
@@ -2588,7 +3021,23 @@
         "description": "`error`: 5xx responses, bounces, complaints, failures. `warning`: 4xx responses, delays, suppressions, failed webhook attempts that will be retried. `info`: everything else."
       }
     },
-    "parameters": {}
+    "parameters": {
+      "CossVersion": {
+        "in": "header",
+        "name": "Coss-Version",
+        "required": false,
+        "description": "The API version (a date) to use for this request. Defaults to your organization's version, pinned to the latest one when it first used the API and upgraded from the dashboard. The SDK always sends the version it was built for.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "2026-10-10"
+          ],
+          "examples": [
+            "2026-10-10"
+          ]
+        }
+      }
+    }
   },
   "paths": {
     "/v1/emails": {
@@ -2619,6 +3068,9 @@
             "description": "Makes retries safe: a repeated request with the same key and body returns the original email (with its current status) instead of sending again, for 24 hours. 1-256 characters.",
             "name": "Idempotency-Key",
             "in": "header"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "requestBody": {
@@ -2652,6 +3104,15 @@
                     "true"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -2663,7 +3124,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid (`invalid_idempotency_key`).",
+            "description": "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid (`invalid_idempotency_key`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -2887,6 +3348,314 @@
         }
       }
     },
+    "/v1/emails/batch": {
+      "post": {
+        "operationId": "sendEmailBatch",
+        "tags": [
+          "Emails"
+        ],
+        "summary": "Send a batch of emails",
+        "description": "Queues up to 100 emails in one request. Each email is handled exactly as by `POST /v1/emails` (sender checks, suppressions, scheduling, attachments, tracking), but the batch is all or nothing: if any email is invalid, or any `from` is not a verified domain (live keys), nothing is stored and the error names the email (e.g. `emails.3.to`). One `Idempotency-Key` covers the whole batch. The emails' recipients are charged against the send quota together, so a batch with more recipients than the quota allows at once is refused (`quota_exceeded` without `Retry-After`): split it. The request body shares the 40 MB limit of a single send.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "Makes retries safe: a repeated request with the same key and body returns the original email (with its current status) instead of sending again, for 24 hours. 1-256 characters.",
+              "examples": [
+                "welcome-user-123"
+              ]
+            },
+            "required": false,
+            "description": "Makes retries safe: a repeated request with the same key and body returns the original email (with its current status) instead of sending again, for 24 hours. 1-256 characters.",
+            "name": "Idempotency-Key",
+            "in": "header"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendEmailBatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The batch, accepted for delivery, with its emails in request order. A replay returns the original batch with the emails' current statuses.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays an earlier request with the same `Idempotency-Key`.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailBatch"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid (`invalid_idempotency_key`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`insufficient_permissions`), its organization is suspended (`organization_suspended`), live sending is suspended (`account_suspended`), or sending is paused for the organization because of its sending reputation (`sending_paused`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Requests with this `Idempotency-Key` are racing for an expired key (`request_in_progress`). Retry after `Retry-After` seconds.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The request body is larger than 40 MB (`payload_too_large`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body is not sent as `application/json` (`unsupported_media_type`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The body failed validation (`validation_error`, see `issues`), a `from` domain is not a verified domain of the organization (`domain_not_verified`, live keys only; `param` names the email), or the `Idempotency-Key` was already used with a different body (`idempotency_key_reused`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or the batch's recipients exceed the send quota (`quota_exceeded`). Retry after `Retry-After` seconds; without `Retry-After` the batch has more recipients than the quota allows at once.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/emails/{id}": {
       "get": {
         "operationId": "getEmail",
@@ -2913,6 +3682,9 @@
             "description": "The email's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -2927,12 +3699,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Email"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -3098,6 +3900,9 @@
             "description": "The email's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -3112,12 +3917,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Email"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -3304,6 +4139,9 @@
             "description": "The email's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -3318,12 +4156,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EmailEventList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -3489,6 +4357,9 @@
             "description": "The email's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -3503,12 +4374,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EmailLinkList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -3683,6 +4584,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -3694,7 +4604,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`).",
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -3909,7 +4819,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       },
       "get": {
         "operationId": "listDomains",
@@ -3935,12 +4850,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DomainList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -4056,7 +5001,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       }
     },
     "/v1/domains/{id}": {
@@ -4085,6 +5035,9 @@
             "description": "The domain's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -4099,12 +5052,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Domain"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -4268,6 +5251,9 @@
             "description": "The domain's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -4282,12 +5268,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DeletedDomain"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -4474,6 +5490,9 @@
             "description": "The domain's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -4488,12 +5507,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Domain"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -4710,6 +5759,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -4721,7 +5779,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`).",
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -4826,7 +5884,7 @@
             }
           },
           "422": {
-            "description": "The body failed validation (`validation_error`), the URL is not a usable https:// URL (`invalid_url`), or the environment already has 10 endpoints (`too_many_endpoints`).",
+            "description": "The body failed validation (`validation_error`, including an unknown `api_version`), the URL is not a usable https:// URL (`invalid_url`), or the environment already has 10 endpoints (`too_many_endpoints`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -4915,7 +5973,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       },
       "get": {
         "operationId": "listWebhookEndpoints",
@@ -4941,12 +6004,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookEndpointList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -5062,7 +6155,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       }
     },
     "/v1/webhook_endpoints/{id}": {
@@ -5091,6 +6189,9 @@
             "description": "The webhook endpoint's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -5105,12 +6206,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookEndpoint"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -5255,7 +6386,7 @@
           "Webhook endpoints"
         ],
         "summary": "Update a webhook endpoint",
-        "description": "Changes the URL, description, subscribed event types or `enabled` flag. Omitted fields keep their current value, and the signing secret never changes, so receivers keep verifying deliveries. Disabling an endpoint stops deliveries without losing its configuration.",
+        "description": "Changes the URL, description, subscribed event types, API version or `enabled` flag. Omitted fields keep their current value, and the signing secret never changes, so receivers keep verifying deliveries. Disabling an endpoint stops deliveries without losing its configuration.",
         "security": [
           {
             "bearerAuth": []
@@ -5274,6 +6405,9 @@
             "description": "The webhook endpoint's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "requestBody": {
@@ -5298,6 +6432,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -5309,7 +6452,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`).",
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -5551,6 +6694,9 @@
             "description": "The webhook endpoint's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -5565,12 +6711,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DeletedWebhookEndpoint"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -5710,6 +6886,754 @@
         }
       }
     },
+    "/v1/webhook_endpoints/{id}/deliveries": {
+      "get": {
+        "operationId": "listWebhookDeliveries",
+        "tags": [
+          "Webhook endpoints"
+        ],
+        "summary": "List an endpoint's deliveries",
+        "description": "The endpoint's delivery log, newest first: one delivery per event sent to it, with every HTTP attempt and the payload as sent. Pass the last `id` as `after` to get the next page while `has_more` is true. Deleting the endpoint deletes its log.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The webhook endpoint's id.",
+              "examples": [
+                "whep_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The webhook endpoint's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "succeeded",
+                "failed"
+              ],
+              "description": "Only deliveries with this status."
+            },
+            "required": false,
+            "description": "Only deliveries with this status.",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only the delivery of this event."
+            },
+            "required": false,
+            "description": "Only the delivery of this event.",
+            "name": "event_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "1-100, default 50."
+            },
+            "required": false,
+            "description": "1-100, default 50.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Cursor: the `id` of the last delivery of the previous page."
+            },
+            "required": false,
+            "description": "Cursor: the `id` of the last delivery of the previous page.",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of deliveries.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDeliveryList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No webhook endpoint with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter failed validation (`validation_error`, see `issues`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}": {
+      "get": {
+        "operationId": "getWebhookDelivery",
+        "tags": [
+          "Webhook endpoints"
+        ],
+        "summary": "Retrieve a delivery",
+        "description": "One delivery of the endpoint, with every HTTP attempt and the payload as sent.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The webhook endpoint's id.",
+              "examples": [
+                "whep_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The webhook endpoint's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "The delivery's id.",
+              "examples": [
+                "whdel_01k7c8n2b5d7f9h1k3m5p7r9tv"
+              ]
+            },
+            "required": true,
+            "description": "The delivery's id.",
+            "name": "delivery_id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The delivery.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDelivery"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No webhook endpoint with this id exists in the API key's environment, or the endpoint has no delivery with this id (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry": {
+      "post": {
+        "operationId": "retryWebhookDelivery",
+        "tags": [
+          "Webhook endpoints"
+        ],
+        "summary": "Retry a delivery",
+        "description": "Queues a finished delivery (`succeeded` or `failed`) for one more attempt, made within seconds, signed with the endpoint's current secret and sent to its current URL. A delivery that is still `pending` is returned unchanged: it is already scheduled for `next_attempt_at` (automatic retries stop after 8 attempts).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The webhook endpoint's id.",
+              "examples": [
+                "whep_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The webhook endpoint's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "The delivery's id.",
+              "examples": [
+                "whdel_01k7c8n2b5d7f9h1k3m5p7r9tv"
+              ]
+            },
+            "required": true,
+            "description": "The delivery's id.",
+            "name": "delivery_id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The delivery, now `pending`.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDelivery"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No webhook endpoint with this id exists in the API key's environment, or the endpoint has no delivery with this id (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/suppressions": {
       "post": {
         "operationId": "createSuppression",
@@ -5745,6 +7669,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -5766,6 +7699,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -5777,7 +7719,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`).",
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -5971,7 +7913,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       },
       "get": {
         "operationId": "listSuppressions",
@@ -6038,6 +7985,9 @@
             "description": "Cursor: the `id` of the last entry of the previous page.",
             "name": "after",
             "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -6052,12 +8002,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuppressionList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -6234,6 +8214,9 @@
             "description": "The category of the email you plan to send. Without it, only `*` entries count.",
             "name": "category",
             "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -6248,12 +8231,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuppressionCheck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -6428,6 +8441,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -6439,7 +8461,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`).",
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -6633,7 +8655,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       }
     },
     "/v1/suppressions/export": {
@@ -6689,6 +8716,9 @@
             "description": "Only entries with this reason.",
             "name": "reason",
             "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -6703,12 +8733,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "text/csv": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -6873,6 +8933,9 @@
             "description": "The suppression's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -6887,12 +8950,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Suppression"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -7056,6 +9149,9 @@
             "description": "The suppression's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -7070,12 +9166,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DeletedSuppression"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -7240,12 +9366,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Reputation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -7361,7 +9517,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       }
     },
     "/v1/logs": {
@@ -7524,6 +9685,9 @@
             "description": "Cursor: the `id` of the last line of the previous page.",
             "name": "after",
             "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -7538,12 +9702,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LogList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -7708,6 +9902,9 @@
             "description": "The log line's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -7722,12 +9919,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Log"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }

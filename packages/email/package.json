@@ -22,6 +22,7 @@
     "@coss/logs": "workspace:*",
     "@coss/reputation": "workspace:*",
     "@coss/screening": "workspace:*",
+    "@coss/versioning": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "drizzle-orm": "catalog:",
     "parse5": "8.0.1",

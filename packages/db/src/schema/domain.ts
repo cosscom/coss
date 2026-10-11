@@ -106,6 +106,34 @@ export const emailStatus = pgEnum("email_status", [
 
 export type EmailTag = { name: string; value: string };
 
+// One `POST /v1/emails/batch` request. Holds the batch's idempotency key; its emails' keys are NULL.
+export const emailBatch = pgTable(
+  "email_batch",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailBatch)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    // No FK: Better Auth hard-deletes expired keys, and email history must survive that.
+    apiKeyId: text("api_key_id"),
+    idempotencyKey: text("idempotency_key"),
+    requestHash: text("request_hash"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_batch_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
+    unique("email_batch_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
+    unique("email_batch_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
 export const email = pgTable(
   "email",
   {
@@ -126,6 +154,9 @@ export const email = pgTable(
     subject: text("subject").notNull(),
     html: text("html"),
     text: text("text"),
+    // Internal sends whose body holds a secret (sign-in links in auth emails): `html`/`text` are
+    // cleared when the email leaves `queued`/`scheduled`, like attachment content.
+    discardBody: boolean("discard_body").notNull().default(false),
     headers: jsonb("headers").$type<Record<string, string>>().notNull().default({}),
     tags: jsonb("tags").$type<EmailTag[]>().notNull().default([]),
     // Matched against category-scoped suppressions and tracking rules.
@@ -147,6 +178,9 @@ export const email = pgTable(
     errorMessage: text("error_message"),
     idempotencyKey: text("idempotency_key"),
     requestHash: text("request_hash"),
+    // Set for emails sent by `POST /v1/emails/batch`; the index is the email's position in it.
+    batchId: text("batch_id"),
+    batchIndex: integer("batch_index"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     sentAt: timestamp("sent_at", { withTimezone: true }),
@@ -159,6 +193,12 @@ export const email = pgTable(
       columns: [t.environmentId, t.organizationId],
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
+    foreignKey({
+      name: "email_batch_fk",
+      columns: [t.batchId, t.organizationId],
+      foreignColumns: [emailBatch.id, emailBatch.organizationId],
+    }),
+    index("email_batch_idx").on(t.batchId, t.batchIndex).where(sql`${t.batchId} is not null`),
     // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
     unique("email_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
@@ -535,6 +575,8 @@ export const webhookEndpoint = pgTable(
     environmentId: text("environment_id").notNull(),
     url: text("url").notNull(),
     description: text("description"),
+    // The API version (`Coss-Version` date) payloads are rendered in at delivery.
+    apiVersion: text("api_version").notNull(),
     // Event types to deliver; empty means every type.
     eventTypes: text("event_types").array().notNull().default(sql`'{}'::text[]`),
     // The `whsec_…` signing secret, encrypted with WEBHOOK_SECRETS_KEY (it must be reversible).
@@ -718,7 +760,83 @@ export const reputationEvent = pgTable(
   },
   (t) => [
     index("reputation_event_organization_created_at_idx").on(t.organizationId, t.createdAt.desc()),
+    unique("reputation_event_id_organization_unique").on(t.id, t.organizationId),
   ],
+);
+
+export const reputationNotificationStatus = pgEnum("reputation_notification_status", [
+  "pending",
+  "sent",
+  "skipped",
+  "failed",
+]);
+
+/**
+ * Outbox of the emails that tell an organization's owners and admins about a warning or a
+ * suspension. Written in the transition's transaction; the worker sends it (`@coss/reputation`).
+ */
+export const reputationNotification = pgTable(
+  "reputation_notification",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.reputationNotification)),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    reputationEventId: text("reputation_event_id").notNull(),
+    // The transition announced: `warning_raised` or `suspended`.
+    type: reputationEventType("type").notNull(),
+    status: reputationNotificationStatus("status").notNull().default("pending"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    // When the worker should (re)try; also the claim's lease. Null once settled.
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }),
+    // The addresses it was sent to (owners and admins with a verified email, at send time).
+    recipients: text("recipients").array().notNull().default(sql`'{}'::text[]`),
+    // Why it was skipped, or the last failure.
+    lastError: text("last_error"),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "reputation_notification_event_fk",
+      columns: [t.reputationEventId, t.organizationId],
+      foreignColumns: [reputationEvent.id, reputationEvent.organizationId],
+    }).onDelete("cascade"),
+    uniqueIndex("reputation_notification_event_idx").on(t.reputationEventId),
+    index("reputation_notification_next_attempt_idx")
+      .on(t.nextAttemptAt)
+      .where(sql`${t.nextAttemptAt} IS NOT NULL`),
+  ],
+);
+
+/**
+ * Hourly rollups of an organization's live email reputation counts (`@coss/email`), by the hour
+ * the emails were created. Computed lazily by the reputation checks for closed hours; delivery
+ * events that change an hour's counts bump `revision`, so a row is current only while
+ * `computed_revision = revision`. Mailbox-simulator recipients are counted separately.
+ */
+export const emailReputationRollup = pgTable(
+  "email_reputation_rollup",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    bucketStart: timestamp("bucket_start", { withTimezone: true }).notNull(),
+    revision: integer("revision").notNull().default(0),
+    // Null until first computed.
+    computedRevision: integer("computed_revision"),
+    recipients: integer("recipients").notNull().default(0),
+    bounces: integer("bounces").notNull().default(0),
+    complaints: integer("complaints").notNull().default(0),
+    simulatorRecipients: integer("simulator_recipients").notNull().default(0),
+    simulatorBounces: integer("simulator_bounces").notNull().default(0),
+    simulatorComplaints: integer("simulator_complaints").notNull().default(0),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ columns: [t.organizationId, t.bucketStart] })],
 );
 export const contentScreeningVerdict = pgEnum("content_screening_verdict", [
   "clean",
@@ -802,6 +920,22 @@ export const organizationSuspension = pgTable("organization_suspension", {
 });
 
 /**
+ * The API version an organization's requests use when they send no `Coss-Version` header. Created lazily on the
+ * organization's first API use (pinned to the latest version then), changed only by an upgrade in the dashboard.
+ */
+export const organizationApiVersion = pgTable("organization_api_version", {
+  organizationId: text("organization_id")
+    .primaryKey()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  apiVersion: text("api_version").notNull(),
+  updatedByUserId: text("updated_by_user_id").references(() => user.id, {
+    onDelete: "set null",
+  }),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+/**
  * Append-only log of platform admin actions (bans, role changes, impersonation, suspensions…).
  * Platform-level, so `organization_id` is optional, and history: no FKs to the targets, and the
  * actor's email is copied so entries stay readable after the rows they name are gone.
@@ -832,7 +966,7 @@ export const adminAuditEvent = pgTable(
 
 /**
  * An organization's rule for one rate limit bucket (`BUCKETS` in `@coss/ratelimit`), replacing the
- * default. Set by platform admins (`bun run ratelimit:set`).
+ * default. Set by platform admins (the admin console, or `bun run ratelimit:set`).
  */
 export const rateLimitOverride = pgTable(
   "rate_limit_override",
@@ -862,7 +996,7 @@ export type LogLevel = (typeof logLevel.enumValues)[number];
 
 /**
  * One line of an environment's log (`@coss/logs`): an API request, an email event or a webhook
- * delivery attempt. Append-only and partitioned by day on `occurred_at` (migration 0021; the worker
+ * delivery attempt. Append-only and partitioned by day on `occurred_at` (migration 0027; the worker
  * creates upcoming partitions and drops expired ones), hence the composite primary key.
  */
 export const logEntry = pgTable(
@@ -958,5 +1092,60 @@ export const orgAuditEvent = pgTable(
   (t) => [
     index("org_audit_event_organization_idx").on(t.organizationId, t.id.desc()),
     index("org_audit_event_organization_action_idx").on(t.organizationId, t.action, t.id.desc()),
+  ],
+);
+
+export const authEmailKind = pgEnum("auth_email_kind", [
+  "verify_email",
+  "reset_password",
+  "invitation",
+]);
+
+export const authEmailStatus = pgEnum("auth_email_status", [
+  "pending",
+  "sent",
+  "skipped",
+  "failed",
+]);
+
+/**
+ * Outbox of the account emails Better Auth asks for (sign-up verification, password resets,
+ * invitations). Written by `@coss/auth`'s callbacks; the worker sends each one through COSS's own
+ * email product (`@coss/auth/emails`). Not tenant data: an email belongs to an address, not an
+ * organization.
+ */
+export const authEmail = pgTable(
+  "auth_email",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.authEmail)),
+    kind: authEmailKind("kind").notNull(),
+    to: text("to").notNull(),
+    // The account it is about (null for invitations, which may go to people without one). No FK:
+    // Better Auth creates a user in a transaction the outbox insert is not part of; an email for
+    // a user that doesn't exist (any more) is skipped.
+    userId: text("user_id"),
+    // The link to send. It carries a secret (a verification or reset token), so it is cleared
+    // as soon as the email is settled.
+    url: text("url"),
+    // Kind-specific content (invitations: organization, inviter, role).
+    data: jsonb("data").$type<Record<string, string>>().notNull().default({}),
+    // The link stops working at this time; an email not sent by then is skipped.
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    status: authEmailStatus("status").notNull().default("pending"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    // When the worker should (re)try; also the claim's lease. Null once settled.
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }),
+    // Why it was skipped, or the last failure.
+    lastError: text("last_error"),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("auth_email_next_attempt_idx")
+      .on(t.nextAttemptAt)
+      .where(sql`${t.nextAttemptAt} IS NOT NULL`),
   ],
 );

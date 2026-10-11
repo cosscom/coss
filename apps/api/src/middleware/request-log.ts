@@ -4,7 +4,7 @@ import {
   loggedResponseHeaders,
   redactBody,
 } from "@coss/logs";
-import type { ApiKeyContext } from "@coss/tenancy";
+import type { RefusedKeyContext } from "@coss/tenancy";
 import { createMiddleware } from "hono/factory";
 import type { AppEnv } from "../types.ts";
 
@@ -76,8 +76,8 @@ export function requestLog(writer: LogWriter) {
     const durationMs = performance.now() - started;
 
     const auth =
-      (c.get("auth") as ApiKeyContext | undefined) ??
-      (c.get("attemptedAuth") as ApiKeyContext | undefined);
+      (c.get("auth") as RefusedKeyContext | undefined) ??
+      (c.get("attemptedAuth") as RefusedKeyContext | undefined);
     if (!auth) return;
 
     const response = c.res;

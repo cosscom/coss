@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createTestTenant } from "@coss/tenancy/testing";
+import { API_VERSIONS, LATEST_API_VERSION } from "@coss/versioning";
 import { HTTPException } from "hono/http-exception";
 import { BODY_LIMIT_BYTES, SEND_BODY_LIMIT_BYTES } from "../src/body-limit.ts";
 import { toApiError } from "../src/errors.ts";
@@ -118,16 +119,44 @@ describe("GET /openapi.json", () => {
       info: { title: string; version: string };
       servers: { url: string }[];
       paths: Record<string, Record<string, Record<string, unknown>>>;
-      components: { schemas: Record<string, unknown>; securitySchemes: Record<string, unknown> };
+      components: {
+        schemas: Record<string, unknown>;
+        securitySchemes: Record<string, unknown>;
+        parameters: Record<string, unknown>;
+      };
     };
     expect(doc.openapi).toBe("3.1.0");
-    expect(doc.info).toMatchObject({ title: "COSS API", version: "v1" });
+    // Checked first: Bun's toMatchObject below replaces matched values with its asymmetric matchers.
+    // Every operation takes Coss-Version, echoes it on success and documents invalid_api_version.
+    for (const methods of Object.values(doc.paths)) {
+      for (const operation of Object.values(methods)) {
+        const op = operation as {
+          parameters: unknown[];
+          responses: Record<string, { description: string; headers?: Record<string, unknown> }>;
+        };
+        expect(op.parameters).toContainEqual({
+          $ref: "#/components/parameters/CossVersion",
+        });
+        expect(op.responses["400"]?.description).toContain("invalid_api_version");
+        for (const [status, response] of Object.entries(op.responses)) {
+          if (status.startsWith("2")) expect(response.headers).toHaveProperty("Coss-Version");
+        }
+      }
+    }
+    expect(doc.components.parameters.CossVersion).toMatchObject({
+      in: "header",
+      name: "Coss-Version",
+      required: false,
+      schema: { type: "string", enum: [...API_VERSIONS] },
+    });
+    expect(doc.info).toMatchObject({ title: "COSS API", version: LATEST_API_VERSION });
     expect(doc.servers).toEqual([{ url: "http://api.test" }]);
     expect(Object.keys(doc.paths).sort()).toEqual([
       "/v1/domains",
       "/v1/domains/{id}",
       "/v1/domains/{id}/verify",
       "/v1/emails",
+      "/v1/emails/batch",
       "/v1/emails/{id}",
       "/v1/emails/{id}/cancel",
       "/v1/emails/{id}/events",
@@ -142,20 +171,41 @@ describe("GET /openapi.json", () => {
       "/v1/suppressions/{id}",
       "/v1/webhook_endpoints",
       "/v1/webhook_endpoints/{id}",
+      "/v1/webhook_endpoints/{id}/deliveries",
+      "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}",
+      "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry",
     ]);
     expect(doc.paths["/v1/emails"]?.post).toMatchObject({
       operationId: "sendEmail",
       tags: ["Emails"],
       security: [{ bearerAuth: [] }],
-      parameters: [{ in: "header", name: "Idempotency-Key", required: false }],
+      parameters: [
+        { in: "header", name: "Idempotency-Key", required: false },
+        { $ref: "#/components/parameters/CossVersion" },
+      ],
+    });
+    expect(doc.paths["/v1/emails/batch"]?.post).toMatchObject({
+      operationId: "sendEmailBatch",
+      tags: ["Emails"],
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { in: "header", name: "Idempotency-Key", required: false },
+        { $ref: "#/components/parameters/CossVersion" },
+      ],
     });
     expect(doc.paths["/v1/emails/{id}"]?.get).toMatchObject({
       operationId: "getEmail",
-      parameters: [{ in: "path", name: "id", required: true }],
+      parameters: [
+        { in: "path", name: "id", required: true },
+        { $ref: "#/components/parameters/CossVersion" },
+      ],
     });
     expect(doc.paths["/v1/emails/{id}/events"]?.get).toMatchObject({
       operationId: "listEmailEvents",
-      parameters: [{ in: "path", name: "id", required: true }],
+      parameters: [
+        { in: "path", name: "id", required: true },
+        { $ref: "#/components/parameters/CossVersion" },
+      ],
     });
     expect(doc.paths["/v1/logs"]?.get).toMatchObject({
       operationId: "listLogs",
@@ -169,7 +219,10 @@ describe("GET /openapi.json", () => {
     expect(doc.paths["/v1/emails/{id}/cancel"]?.post).toMatchObject({
       operationId: "cancelEmail",
       security: [{ bearerAuth: [] }],
-      parameters: [{ in: "path", name: "id", required: true }],
+      parameters: [
+        { in: "path", name: "id", required: true },
+        { $ref: "#/components/parameters/CossVersion" },
+      ],
     });
     expect(doc.paths["/v1/emails/{id}/links"]?.get).toMatchObject({
       operationId: "listEmailLinks",
@@ -218,6 +271,9 @@ describe("GET /openapi.json", () => {
       ["get /v1/webhook_endpoints/{id}", "getWebhookEndpoint"],
       ["patch /v1/webhook_endpoints/{id}", "updateWebhookEndpoint"],
       ["delete /v1/webhook_endpoints/{id}", "deleteWebhookEndpoint"],
+      ["get /v1/webhook_endpoints/{id}/deliveries", "listWebhookDeliveries"],
+      ["get /v1/webhook_endpoints/{id}/deliveries/{delivery_id}", "getWebhookDelivery"],
+      ["post /v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry", "retryWebhookDelivery"],
     ]);
     expect(doc.components.securitySchemes.bearerAuth).toMatchObject({
       type: "http",
@@ -226,7 +282,9 @@ describe("GET /openapi.json", () => {
     expect(Object.keys(doc.components.schemas)).toEqual(
       expect.arrayContaining([
         "SendEmailRequest",
+        "SendEmailBatchRequest",
         "Email",
+        "EmailBatch",
         "EmailRecipient",
         "EmailEvent",
         "EmailEventList",

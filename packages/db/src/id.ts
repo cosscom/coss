@@ -21,6 +21,7 @@ export const ID_PREFIXES = {
   project: "proj",
   environment: "env",
   email: "email",
+  emailBatch: "batch",
   emailRecipient: "rcpt",
   emailAttachment: "att",
   emailEvent: "evt",
@@ -34,8 +35,10 @@ export const ID_PREFIXES = {
   // Webhook messages that announce something other than an email event (e.g. `account.suspended`).
   webhookEvent: "evt",
   reputationEvent: "repev",
+  reputationNotification: "repntf",
   contentScreening: "scr",
   rateLimitOverride: "rlo",
+  authEmail: "authml",
   request: "req",
   logEntry: "log",
   orgAuditEvent: "oaudit",

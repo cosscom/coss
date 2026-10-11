@@ -23,7 +23,7 @@ describe("CORS", () => {
     expect(res.status).toBe(204);
     expect(res.headers.get("access-control-allow-origin")).toBe(DOCS);
     expect(res.headers.get("access-control-allow-headers")).toBe(
-      "Authorization,Content-Type,Idempotency-Key",
+      "Authorization,Content-Type,Idempotency-Key,Coss-Version",
     );
     expect(res.headers.get("access-control-allow-methods")).toContain("POST");
     // Bearer keys only: browsers must never send cookies along.
@@ -55,7 +55,7 @@ describe("CORS", () => {
     for (const res of [ok, unauthorized, invalid]) {
       expect(res.headers.get("access-control-allow-origin")).toBe(DOCS);
       expect(res.headers.get("access-control-expose-headers")).toBe(
-        "X-Request-Id,Idempotent-Replayed,Retry-After",
+        "X-Request-Id,Idempotent-Replayed,Retry-After,Coss-Version",
       );
     }
     await errorOf(unauthorized);

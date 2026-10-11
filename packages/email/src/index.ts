@@ -44,6 +44,7 @@ export {
   ingestProviderEvents,
   recordProviderEvent,
 } from "./events.ts";
+export { emailNotifier, type Notice, type Notifier, notificationEnvironment } from "./notifier.ts";
 export {
   type DomainIdentity,
   type DomainIdentityState,
@@ -111,6 +112,8 @@ export {
   EMAIL_STATUSES,
   EmailAttachmentObject,
   type EmailAttachmentObjectOutput,
+  EmailBatchObject,
+  type EmailBatchObjectOutput,
   EmailEvent,
   EmailEventData,
   type EmailEventDataOutput,
@@ -142,6 +145,7 @@ export {
   MAIL_FROM_STATUSES,
   MAX_ATTACHMENTS,
   MAX_ATTACHMENTS_BYTES,
+  MAX_BATCH_EMAILS,
   MAX_HEADERS,
   MAX_RECIPIENTS,
   MAX_SCHEDULE_AHEAD_MS,
@@ -150,6 +154,9 @@ export {
   type ParsedEmailAddress,
   parseEmailAddress,
   RESERVED_HEADERS,
+  SendEmailBatchRequest,
+  type SendEmailBatchRequestInput,
+  type SendEmailBatchRequestOutput,
   SendEmailRequest,
   type SendEmailRequestInput,
   type SendEmailRequestOutput,
@@ -179,6 +186,7 @@ export {
   type EmailService,
   type EmailServiceOptions,
   IDEMPOTENCY_KEY_TTL_MS,
+  type SendEmailBatchInput,
   type SendEmailInput,
   type SendEnvironment,
 } from "./service.ts";

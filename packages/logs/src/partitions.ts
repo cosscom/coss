@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 
 /**
  * `log_entry` is partitioned by UTC day (`log_entry_pYYYYMMDD`) with a default partition
- * (migration 0021). The worker keeps a week of partitions ahead and drops expired ones; dropping a
+ * (migration 0027). The worker keeps a week of partitions ahead and drops expired ones; dropping a
  * whole partition is how retention stays cheap at any volume.
  */
 export const LOG_TABLE = "log_entry";

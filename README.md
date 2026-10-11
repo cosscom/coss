@@ -109,7 +109,8 @@ resets) are printed to the dashboard's server console in development.
   7 days) and acts without a human: a **warning** at 4% bounces / 0.08% complaints, an automatic **suspension** of
   live sending at 8% / 0.3% (from 200 / 500 recipients). Suspended organizations get `403 account_suspended` on live
   sends and can't create live keys; sandbox keys keep working. Customers see it in the dashboard (banner +
-  **Reputation** page), via `GET /v1/reputation` and through `account.*` webhooks. Only platform admins reinstate
+  **Reputation** page), via `GET /v1/reputation`, through `account.*` webhooks and by email to the organization's
+  owners and admins (sent through COSS itself, see "Deploying to AWS"). Only platform admins reinstate
   (`/admin/organizations`), where they can also suspend manually and override thresholds per organization.
 - **Content screening** — right before a sampled live email reaches the provider, the worker asks an AI decision
   model (TypeSafe AI's Jev through the Vercel AI SDK and AI Gateway, swappable with `SCREENING_MODEL`) how likely
@@ -147,6 +148,7 @@ resets) are printed to the dashboard's server console in development.
 ## API
 
 - `POST /v1/emails` — send an email (`Idempotency-Key` header supported)
+- `POST /v1/emails/batch` — send up to 100 emails at once, all or nothing (one `Idempotency-Key` for the batch)
 - `GET /v1/emails/{id}` — retrieve an email, with its recipients' delivery status
 - `GET /v1/emails/{id}/events` — list an email's delivery, open and click events
 - `GET /v1/emails/{id}/links` — list an email's tracked links with their click counts
@@ -173,7 +175,8 @@ Requests are rate limited per API key by route class (reads, writes, sends; resp
 `RateLimit-Remaining` and `RateLimit-Reset`), and sends count their distinct recipients against the
 organization's quota per second and per day (sandbox environments have a small daily quota of their own).
 Over a limit the API answers `429 rate_limit_error` (`rate_limited` or `quota_exceeded`) with `Retry-After`.
-Defaults live in `packages/ratelimit/src/buckets.ts`; platform admins override them per organization with
+Defaults live in `packages/ratelimit/src/buckets.ts`; platform admins override them per organization on the
+organization's page in the admin console (`/admin/organizations`, recorded in the audit log) or with
 `bun run ratelimit:set`. The dashboard limits sign-in, sign-up, password reset and verification emails per
 client IP and per email address.
 
@@ -332,7 +335,7 @@ rules, then CloudFront, then removing the old one). Plain values per service:
 |---|---|
 | web | `BETTER_AUTH_URL=https://coss.com`, `API_PUBLIC_URL=https://api.coss.com`, `TRUSTED_PROXY_HOPS=2`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, optional `DATABASE_POOL_MAX`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX=coss`, `CLIENT_IP_HEADER=x-forwarded-for`, `TRUSTED_PROXY_COUNT=2` |
 | api | the same minus `TRUSTED_PROXY_HOPS`, plus `API_CORS_ORIGINS=https://coss.com` |
-| worker | `API_PUBLIC_URL=https://api.coss.com`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL`, `SCREENING_CLASSIFIER=ai`, optional `SCREENING_MODEL` |
+| worker | `API_PUBLIC_URL=https://api.coss.com`, `BETTER_AUTH_URL=https://coss.com`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL`, `SCREENING_CLASSIFIER=ai`, optional `SCREENING_MODEL`, `NOTIFICATIONS_ENVIRONMENT_ID` + `NOTIFICATIONS_FROM` (see below) |
 | site | none (static; everything it needs is in the image) |
 
 Images are built once and promoted through stages: builds set `SKIP_ENV_VALIDATION` and bake in nothing
@@ -363,7 +366,14 @@ First deployment of a stage: network, RDS, ElastiCache (`valkey:bootstrap`) and 
 (`bun apps/worker/scripts/ses-bootstrap.ts --name coss --tenant-prefix coss`, prints the SES variables) → services,
 ALB, CloudFront, WAF, DNS → sign up on the dashboard → `create-admin` one-off task from the api image
 (`bun packages/tenancy/scripts/create-admin.ts --email you@example.com`, with the api's environment) → request SES
-production access.
+production access → create COSS's own organization in the dashboard, add and verify its sending domain (e.g.
+`coss.com`), and set the worker's `NOTIFICATIONS_ENVIRONMENT_ID` (its project's live environment, `env_…`) and
+`NOTIFICATIONS_FROM` (e.g. `COSS <notifications@coss.com>`). Until then the worker logs a warning at startup and
+holds account emails (sign-up verification, password resets, invitations — dropped once their link expires: an hour,
+or the invitation's 48 hours) and reputation notification emails (dropped after 3 days), so nobody can verify their
+address or create a live key; afterwards, ask for a new verification email from account settings. They are ordinary
+live emails of that organization: its dashboard shows their delivery, and its suppressions and reputation
+guard apply. Account emails keep no body once sent (their links are secrets).
 
 ### Known gaps
 

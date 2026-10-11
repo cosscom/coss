@@ -20,6 +20,9 @@ mock.module("@coss/tenancy/admin", () => ({
   unlinkUserSso: mock(async () => {}),
   unsuspendOrganization: mock(),
 }));
+const changeRateLimitOverride = mock(async () => true);
+const ratelimit = await import("@coss/ratelimit");
+mock.module("@coss/ratelimit", () => ({ ...ratelimit, changeRateLimitOverride }));
 mock.module("next/cache", () => ({ refresh: mock() }));
 mock.module("next/headers", () => ({ headers: async () => new Headers() }));
 const redirected = new Error("redirect");
@@ -203,4 +206,70 @@ describe("SSO recovery", () => {
       expect(JSON.stringify(supportAudit.mock.calls)).not.toContain("Outage");
     });
   }
+});
+
+describe("rate limit overrides", () => {
+  function form(fields: Record<string, string>) {
+    const data = new FormData();
+    data.set("organizationId", newId("org"));
+    data.set("bucket", "email.recipients.day");
+    data.set("limit", "50000");
+    data.set("period", "1d");
+    data.set("reason", "Upgrade");
+    for (const [name, value] of Object.entries(fields)) data.set(name, value);
+    return data;
+  }
+
+  beforeEach(() => changeRateLimitOverride.mockClear());
+
+  test("sets a validated rule with the actor and reason", async () => {
+    expect(await actions.setRateLimitOverrideAction(null, form({ burst: "60000" }))).toEqual({
+      ok: true,
+      data: null,
+    });
+    expect(changeRateLimitOverride).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bucket: "email.recipients.day",
+        rule: { limit: 50_000, periodMs: 86_400_000, burst: 60_000 },
+        reason: "Upgrade",
+        actor: expect.any(Object),
+      }),
+    );
+    await actions.setRateLimitOverrideAction(null, form({ burst: "" }));
+    expect(changeRateLimitOverride).toHaveBeenLastCalledWith(
+      expect.objectContaining({ rule: { limit: 50_000, periodMs: 86_400_000 } }),
+    );
+  });
+
+  for (const [name, fields, error] of [
+    ["a non-overridable bucket", { bucket: "auth.sign_in.ip" }, /can't be overridden/],
+    ["an unknown bucket", { bucket: "nope" }, /can't be overridden/],
+    ["a missing limit", { limit: "" }, /Enter a limit/],
+    ["a fractional limit", { limit: "1.5" }, /whole number/],
+    ["a zero burst", { burst: "0" }, /whole number/],
+    ["a bad period", { period: "1 week" }, /period such as/],
+    ["a period too long for the column", { period: "30d" }, /24 days/],
+    ["a missing reason", { reason: " " }, /reason/],
+    ["an organization id of another kind", { organizationId: newId("user") }, /not found/],
+  ] as const) {
+    test(`refuses ${name}`, async () => {
+      const result = await actions.setRateLimitOverrideAction(null, form(fields));
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error).toMatch(error);
+      expect(changeRateLimitOverride).not.toHaveBeenCalled();
+    });
+  }
+
+  test("resets with an optional reason", async () => {
+    expect(await actions.resetRateLimitOverrideAction(null, form({ reason: "" }))).toEqual({
+      ok: true,
+      data: null,
+    });
+    expect(changeRateLimitOverride).toHaveBeenCalledWith(
+      expect.objectContaining({ bucket: "email.recipients.day", rule: null, reason: null }),
+    );
+    expect((await actions.resetRateLimitOverrideAction(null, form({ bucket: "x" }))).ok).toBe(
+      false,
+    );
+  });
 });

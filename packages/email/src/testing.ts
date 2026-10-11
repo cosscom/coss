@@ -39,7 +39,7 @@ export function memoryDispatchQueue(): MemoryDispatchQueue {
 }
 
 /**
- * An email service whose `send` also dispatches the new email before returning (as the worker
+ * An email service whose `send` (and `sendBatch`) also dispatches the new email before returning (as the worker
  * would right after): for tests about what happens once an email is handed to its provider.
  * Replays are returned as stored.
  */
@@ -56,6 +56,22 @@ export function dispatchingEmailService(opts: {
     dispatchDue: service.dispatchDue,
     cancel: service.cancel,
     replay: service.replay,
+    replayBatch: service.replayBatch,
+    async sendBatch(input) {
+      const result = await service.sendBatch(input);
+      if (result.replayed) return result;
+      queue.jobs.splice(0);
+      const data = [];
+      for (const email of result.batch.data) {
+        data.push(
+          await service.dispatch({
+            organizationId: input.environment.organizationId,
+            emailId: email.id,
+          }),
+        );
+      }
+      return { batch: { ...result.batch, data }, replayed: false };
+    },
     async send(input) {
       const result = await service.send(input);
       if (result.replayed) return result;

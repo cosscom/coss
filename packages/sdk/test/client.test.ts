@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import pkg from "../package.json" with { type: "json" };
 import {
+  API_VERSION,
+  API_VERSIONS,
   Coss,
   type CossError,
+  type EmailBatch,
   type EmailEvent,
   type EmailLink,
   type List,
@@ -134,6 +137,35 @@ describe("coss.email.send", () => {
     expect(calls[0]?.headers.get("idempotency-key")).not.toBe(
       calls[1]?.headers.get("idempotency-key"),
     );
+  });
+});
+
+describe("coss.email.sendBatch", () => {
+  test("POSTs the emails as one batch with one idempotency key", async () => {
+    const batch: EmailBatch = {
+      object: "email_batch",
+      id: "batch_1",
+      data: [sampleEmail],
+      created_at: sampleEmail.created_at,
+    };
+    const { fetch, calls } = mockFetch(json(202, batch));
+    const second = { ...params, to: "other@example.com" };
+    const result = await new Coss({ apiKey: API_KEY, fetch }).email.sendBatch([params, second], {
+      idempotencyKey: "digest-2026-10-10",
+    });
+
+    expect(result).toEqual({ data: batch, error: null });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.method).toBe("POST");
+    expect(calls[0]?.url).toBe("https://api.coss.com/v1/emails/batch");
+    expect(JSON.parse(calls[0]?.body ?? "")).toEqual({ emails: [params, second] });
+    expect(calls[0]?.headers.get("idempotency-key")).toBe("digest-2026-10-10");
+  });
+
+  test("generates an idempotency key when none is given", async () => {
+    const { fetch, calls } = mockFetch(json(202, { object: "email_batch", data: [] }));
+    await new Coss({ apiKey: API_KEY, fetch }).email.sendBatch([params]);
+    expect(calls[0]?.headers.get("idempotency-key")).toMatch(/^[0-9a-f-]{36}$/);
   });
 });
 
@@ -348,5 +380,23 @@ describe("error mapping", () => {
     const { error } = await coss.email.send(params, { signal: controller.signal });
     expect(error).toMatchObject({ type: "connection_error", code: "aborted", status: null });
     expect(calls).toHaveLength(1);
+  });
+});
+
+describe("API version", () => {
+  test("every request sends Coss-Version: the SDK's API_VERSION, including retries", async () => {
+    const { fetch, calls } = mockFetch(json(503, {}), json(200, sampleEmail));
+    await new Coss({ apiKey: API_KEY, fetch, maxRetries: 1 }).email.send(params);
+
+    expect(calls).toHaveLength(2);
+    for (const call of calls) expect(call.headers.get("coss-version")).toBe(API_VERSION);
+    expect(API_VERSIONS).toContain(API_VERSION);
+  });
+
+  test("apiVersion overrides it", async () => {
+    const { fetch, calls } = mockFetch(json(200, sampleEmail));
+    const [oldest] = API_VERSIONS;
+    await new Coss({ apiKey: API_KEY, fetch, apiVersion: oldest }).email.get("email_x");
+    expect(calls[0]?.headers.get("coss-version")).toBe(oldest);
   });
 });

@@ -4,13 +4,18 @@
  * contract-types.ts (compile time).
  */
 import { describe, expect, test } from "bun:test";
+import { db } from "@coss/db";
+import { newId } from "@coss/db/id";
 import { trackingUrls } from "@coss/email/testing";
 import { createLogWriter } from "@coss/logs";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
 import { memoryLimiter } from "@coss/ratelimit/testing";
 import { suspendOrganization } from "@coss/reputation";
 import { createTestTenant } from "@coss/tenancy/testing";
-import { Coss, type CossOptions } from "coss";
+import { API_VERSIONS, LATEST_API_VERSION } from "@coss/versioning";
+import { enqueueWebhookMessage, runDueWebhookDeliveries } from "@coss/webhooks";
+import { TEST_SECRETS_KEY } from "@coss/webhooks/testing";
+import { API_VERSION, Coss, type CossOptions, API_VERSIONS as SDK_API_VERSIONS } from "coss";
 import {
   createTestApp,
   domainFrom,
@@ -34,6 +39,32 @@ function clientFor(app: TestApp, apiKey: string, options: Partial<CossOptions> =
     ...options,
   });
 }
+
+describe("API versions", () => {
+  test("the SDK requests the latest API version, and knows every version", async () => {
+    expect(API_VERSION).toBe(LATEST_API_VERSION);
+    expect([...SDK_API_VERSIONS]).toEqual([...API_VERSIONS]);
+
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const versions: (string | null)[] = [];
+    const coss = clientFor(app, tenant.sandboxKey, {
+      fetch: async (input, init) => {
+        const res = await app.fetch(toRequest(input, init));
+        versions.push(res.headers.get("coss-version"));
+        return res;
+      },
+    });
+    await coss.domains.list();
+    expect(versions).toEqual([API_VERSION]);
+
+    const created = await coss.webhookEndpoints.create({
+      url: "https://example.com/hook",
+      api_version: API_VERSION,
+    });
+    expect(created.data?.api_version).toBe(API_VERSION);
+  });
+});
 
 describe("coss SDK against the API", () => {
   test("send then get round-trips the same email", async () => {
@@ -154,6 +185,40 @@ describe("coss SDK against the API", () => {
     expect(second.data?.id).toBe(first.data?.id ?? "missing");
     await dispatch();
     expect(sandboxProvider.sent).toHaveLength(1);
+  });
+
+  test("sendBatch sends every email once, even when retried with the same key", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider, dispatch } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const emails = [
+      { from: "hello@acme.com", to: "a@example.com", subject: "Hi", text: "Hi" },
+      { from: "hello@acme.com", to: "b@example.com", subject: "Hi", text: "Hi" },
+    ];
+    const idempotencyKey = crypto.randomUUID();
+
+    const first = await coss.email.sendBatch(emails, { idempotencyKey });
+    const second = await coss.email.sendBatch(emails, { idempotencyKey });
+
+    expect(first.error).toBeNull();
+    expect(first.data).toMatchObject({ object: "email_batch" });
+    expect(first.data?.data.map((email) => [email.to, email.batch_id])).toEqual([
+      [["a@example.com"], first.data?.id ?? "missing"],
+      [["b@example.com"], first.data?.id ?? "missing"],
+    ]);
+    expect(second.data?.id).toBe(first.data?.id ?? "missing");
+    await dispatch();
+    expect(sandboxProvider.sent).toHaveLength(2);
+
+    const invalid = await coss.email.sendBatch([
+      { from: "hello@acme.com", to: "a@example.com", subject: "Hi", text: "Hi" },
+      { from: "hello@acme.com", to: "nope", subject: "Hi", text: "Hi" },
+    ]);
+    expect(invalid.error).toMatchObject({
+      type: "invalid_request_error",
+      code: "validation_error",
+    });
+    expect(invalid.error?.issues?.map((issue) => issue.path)).toEqual(["emails.1.to"]);
   });
 
   test("an invalid key maps to authentication_error with the request id", async () => {
@@ -499,6 +564,8 @@ describe("coss.webhookEndpoints against the API", () => {
     });
     if (!created.data) throw new Error("create failed");
     expect(created.data.secret).toStartWith("whsec_");
+    // Events are rendered in the SDK's version, matching its WebhookEvent types.
+    expect(created.data.api_version).toBe(API_VERSION);
 
     const updated = await coss.webhookEndpoints.update(created.data.id, { enabled: false });
     expect(updated.data).toMatchObject({ id: created.data.id, enabled: false });
@@ -527,6 +594,48 @@ describe("coss.webhookEndpoints against the API", () => {
     const result = await live.webhookEndpoints.get(created.data?.id ?? "missing");
 
     expect(result.error).toMatchObject({ type: "not_found_error", status: 404 });
+  });
+});
+
+describe("coss.webhookEndpoints.deliveries against the API", () => {
+  test("list, get and retry round-trip a delivery", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const endpoint = await coss.webhookEndpoints.create({ url: "https://example.com/hook" });
+    if (!endpoint.data) throw new Error("create failed");
+    const eventId = newId("evt");
+    await enqueueWebhookMessage(db, {
+      id: eventId,
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+      type: "email.delivered",
+      payload: { id: eventId, object: "event", type: "email.delivered", data: {} },
+    });
+    await runDueWebhookDeliveries(
+      { scope: { organizationIds: [tenant.organization.id] } },
+      { secretsKey: TEST_SECRETS_KEY, send: async () => ({ status: 200, body: "ok" }) },
+    );
+
+    const listed = await coss.webhookEndpoints.deliveries.list(endpoint.data.id, {
+      status: "succeeded",
+      limit: 10,
+    });
+    expect(listed.error).toBeNull();
+    const [delivery] = listed.data?.data ?? [];
+    expect(delivery).toMatchObject({
+      object: "webhook_delivery",
+      event_id: eventId,
+      status: "succeeded",
+      attempts: [{ object: "webhook_attempt", status_code: 200, response_excerpt: "ok" }],
+    });
+    if (!delivery) throw new Error("no delivery");
+
+    const fetched = await coss.webhookEndpoints.deliveries.get(endpoint.data.id, delivery.id);
+    expect(fetched).toEqual({ data: delivery, error: null });
+
+    const retried = await coss.webhookEndpoints.deliveries.retry(endpoint.data.id, delivery.id);
+    expect(retried.data).toMatchObject({ id: delivery.id, status: "pending" });
   });
 });
 
