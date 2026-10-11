@@ -7,10 +7,12 @@ import { describe, expect, test } from "bun:test";
 import { trackingUrls } from "@coss/email/testing";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
 import { memoryLimiter } from "@coss/ratelimit/testing";
+import { suspendOrganization } from "@coss/reputation";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { Coss, type CossOptions } from "coss";
 import {
   createTestApp,
+  domainFrom,
   REQUEST_ID,
   type TestApp,
   TRACKING_BASE_URL,
@@ -524,5 +526,44 @@ describe("coss.webhookEndpoints against the API", () => {
     const result = await live.webhookEndpoints.get(created.data?.id ?? "missing");
 
     expect(result.error).toMatchObject({ type: "not_found_error", status: 404 });
+  });
+});
+
+describe("coss.reputation against the API", () => {
+  test("get mirrors the standing, and a suspended live send is a permission_error", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.liveKey);
+    const from = await domainFrom(tenant.organization.id);
+
+    expect(await coss.reputation.get()).toEqual({
+      data: {
+        object: "reputation",
+        status: "good",
+        reason: null,
+        status_changed_at: null,
+        evaluated_at: null,
+        window: null,
+        checks: [],
+      },
+      error: null,
+    });
+
+    await suspendOrganization({
+      organizationId: tenant.organization.id,
+      trigger: "bounce_rate",
+      actor: { kind: "system" },
+    });
+    const { data } = await coss.reputation.get();
+    expect(data).toMatchObject({ status: "suspended", reason: "bounce_rate" });
+    expect(data?.status_changed_at).toBeString();
+
+    const sent = await coss.email.send({ from, to: "user@example.com", subject: "Hi", text: "Hi" });
+    expect(sent.data).toBeNull();
+    expect(sent.error).toMatchObject({
+      type: "permission_error",
+      code: "account_suspended",
+      status: 403,
+    });
   });
 });

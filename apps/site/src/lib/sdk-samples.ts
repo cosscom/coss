@@ -21,6 +21,7 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.send",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
   },
+  "GET /v1/reputation": { method: "reputation.get", args: () => [] },
   "GET /v1/emails/{id}": {
     method: "email.get",
     args: (request) => [pathId(request)],

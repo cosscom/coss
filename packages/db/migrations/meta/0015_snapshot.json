@@ -1,5 +1,5 @@
 {
-  "id": "ee6a8551-96d5-440f-8b87-b491cd5ef0a6",
+  "id": "054354fd-7c1c-4eed-b137-f53dded13c70",
   "prevId": "b40869af-bad2-4414-baaa-e48f49ab8d90",
   "version": "7",
   "dialect": "postgresql",
@@ -592,13 +592,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": false
-        },
-        "require_sso": {
-          "name": "require_sso",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
         }
       },
       "indexes": {},
@@ -805,12 +798,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "sso_provider_id": {
-          "name": "sso_provider_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -852,95 +839,6 @@
           "nullsNotDistinct": false,
           "columns": [
             "token"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.sso_provider": {
-      "name": "sso_provider",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "issuer": {
-          "name": "issuer",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "oidc_config": {
-          "name": "oidc_config",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "saml_config": {
-          "name": "saml_config",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "provider_id": {
-          "name": "provider_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "domain": {
-          "name": "domain",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "domain_verified": {
-          "name": "domain_verified",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "sso_provider_user_id_user_id_fk": {
-          "name": "sso_provider_user_id_user_id_fk",
-          "tableFrom": "sso_provider",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "sso_provider_provider_id_unique": {
-          "name": "sso_provider_provider_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "provider_id"
           ]
         }
       },
@@ -1815,6 +1713,27 @@
               "expression": "created_at",
               "isExpression": false,
               "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "email_organization_created_at_idx": {
+          "name": "email_organization_created_at_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
               "nulls": "last"
             }
           ],
@@ -3104,6 +3023,252 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.reputation_event": {
+      "name": "reputation_event",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "reputation_event_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "trigger": {
+          "name": "trigger",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor": {
+          "name": "actor",
+          "type": "reputation_actor",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_user_id": {
+          "name": "actor_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metrics": {
+          "name": "metrics",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "reputation_event_organization_created_at_idx": {
+          "name": "reputation_event_organization_created_at_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "reputation_event_organization_id_organization_id_fk": {
+          "name": "reputation_event_organization_id_organization_id_fk",
+          "tableFrom": "reputation_event",
+          "tableTo": "organization",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "reputation_event_actor_user_id_user_id_fk": {
+          "name": "reputation_event_actor_user_id_user_id_fk",
+          "tableFrom": "reputation_event",
+          "tableTo": "user",
+          "columnsFrom": [
+            "actor_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.reputation_standing": {
+      "name": "reputation_standing",
+      "schema": "",
+      "columns": {
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "reputation_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'good'"
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status_changed_at": {
+          "name": "status_changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reinstated_at": {
+          "name": "reinstated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "policy_overrides": {
+          "name": "policy_overrides",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metrics": {
+          "name": "metrics",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_evaluated_at": {
+          "name": "last_evaluated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "evaluation_lease_until": {
+          "name": "evaluation_lease_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "next_evaluation_at": {
+          "name": "next_evaluation_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "reputation_standing_next_evaluation_idx": {
+          "name": "reputation_standing_next_evaluation_idx",
+          "columns": [
+            {
+              "expression": "next_evaluation_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"reputation_standing\".\"next_evaluation_at\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "reputation_standing_organization_id_organization_id_fk": {
+          "name": "reputation_standing_organization_id_organization_id_fk",
+          "tableFrom": "reputation_standing",
+          "tableTo": "organization",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.webhook_attempt": {
       "name": "webhook_attempt",
       "schema": "",
@@ -3688,6 +3853,34 @@
         "success",
         "temporary_failure",
         "failed"
+      ]
+    },
+    "public.reputation_actor": {
+      "name": "reputation_actor",
+      "schema": "public",
+      "values": [
+        "system",
+        "admin"
+      ]
+    },
+    "public.reputation_event_type": {
+      "name": "reputation_event_type",
+      "schema": "public",
+      "values": [
+        "warning_raised",
+        "warning_cleared",
+        "suspended",
+        "reinstated",
+        "policy_updated"
+      ]
+    },
+    "public.reputation_status": {
+      "name": "reputation_status",
+      "schema": "public",
+      "values": [
+        "good",
+        "warning",
+        "suspended"
       ]
     },
     "public.tenant_sending_status": {

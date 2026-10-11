@@ -4,6 +4,7 @@
  */
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
+import { isSuspended } from "@coss/reputation";
 import {
   and,
   asc,
@@ -475,7 +476,8 @@ function domainSuffixes(name: string): string[] {
 
 /**
  * System-level: refuses a live send unless the From domain is covered by a domain of the
- * organization verified by the live provider, and its tenant is not paused. The most specific matching domain across all
+ * organization verified by the live provider, the reputation guard has not suspended the
+ * organization, and its tenant is not paused. The most specific matching domain across all
  * organizations decides, because the provider signs with the most specific identity.
  */
 export async function authorizeLiveSender(input: {
@@ -484,6 +486,14 @@ export async function authorizeLiveSender(input: {
   /** The live provider: only domains it verified count. */
   provider: string;
 }): Promise<void> {
+  // Checked first: a suspended organization is told so whatever it sends from.
+  if (await isSuspended(input.organizationId)) {
+    throw new EmailError(
+      "account_suspended",
+      "Live sending is suspended for this organization because of its sending reputation " +
+        "(high bounce or complaint rates). Sandbox keys still work. Contact support to resume.",
+    );
+  }
   const address = parseEmailAddress(input.from).address.toLowerCase();
   const fromDomain = address.slice(address.lastIndexOf("@") + 1);
   const candidates = await db

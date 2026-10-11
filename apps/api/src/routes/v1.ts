@@ -4,6 +4,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import type { AppEnv } from "../types.ts";
 import { createDomainRoutes } from "./domains.ts";
 import { createEmailRoutes } from "./emails.ts";
+import { createReputationRoutes } from "./reputation.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
 import { createWebhookEndpointRoutes } from "./webhook-endpoints.ts";
 
@@ -20,5 +21,6 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   v1.route("/", createDomainRoutes(deps.domainDeps));
   v1.route("/", createWebhookEndpointRoutes(deps.webhookDeps));
   v1.route("/", createSuppressionRoutes());
+  v1.route("/", createReputationRoutes());
   return v1;
 }

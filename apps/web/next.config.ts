@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
     "@coss/ui",
     "@coss/auth",
     "@coss/tenancy",
+    "@coss/reputation",
     "@coss/db",
     "@coss/email",
     "@coss/webhooks",

@@ -17,6 +17,7 @@
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
         "@coss/ratelimit": "workspace:*",
+        "@coss/reputation": "workspace:*",
         "@coss/tenancy": "workspace:*",
         "@coss/webhooks": "workspace:*",
         "@hono/zod-openapi": "catalog:",
@@ -75,6 +76,7 @@
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
         "@coss/ratelimit": "workspace:*",
+        "@coss/reputation": "workspace:*",
         "@coss/tenancy": "workspace:*",
         "@coss/ui": "workspace:*",
         "@coss/webhooks": "workspace:*",
@@ -113,6 +115,7 @@
         "@aws-sdk/client-sqs": "catalog:",
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
+        "@coss/reputation": "workspace:*",
         "@coss/webhooks": "workspace:*",
         "@t3-oss/env-core": "catalog:",
         "drizzle-orm": "catalog:",
@@ -181,6 +184,7 @@
       "dependencies": {
         "@aws-sdk/client-sesv2": "catalog:",
         "@coss/db": "workspace:*",
+        "@coss/reputation": "workspace:*",
         "@coss/webhooks": "workspace:*",
         "drizzle-orm": "catalog:",
         "parse5": "8.0.1",
@@ -205,6 +209,22 @@
       },
       "devDependencies": {
         "@aws-sdk/client-elasticache": "catalog:",
+        "@coss/tenancy": "workspace:*",
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/reputation": {
+      "name": "@coss/reputation",
+      "version": "0.0.0",
+      "dependencies": {
+        "@coss/db": "workspace:*",
+        "@coss/webhooks": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
         "@coss/tenancy": "workspace:*",
         "@coss/tsconfig": "workspace:*",
         "@types/bun": "catalog:",
@@ -529,6 +549,8 @@
     "@coss/infra": ["@coss/infra@workspace:infra"],
 
     "@coss/ratelimit": ["@coss/ratelimit@workspace:packages/ratelimit"],
+
+    "@coss/reputation": ["@coss/reputation@workspace:packages/reputation"],
 
     "@coss/site": ["@coss/site@workspace:apps/site"],
 

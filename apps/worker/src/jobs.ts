@@ -3,10 +3,12 @@ import {
   type DomainDeps,
   type EmailDispatchQueue,
   type EmailService,
+  emailReputationChecks,
   recheckDueDomains,
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
+import { runDueReputationEvaluations } from "@coss/reputation";
 import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
 import type { Loop } from "./loop.ts";
 import { startLoop } from "./loop.ts";
@@ -15,6 +17,7 @@ import { pollSesEvents, type SqsApi } from "./sqs.ts";
 const WEBHOOK_BATCH = 20;
 const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
+const REPUTATION_BATCH = 50;
 const SCHEDULED_BATCH = 50;
 
 export type WorkerDeps = {
@@ -59,6 +62,17 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       name: "stale-claims",
       intervalMs: 60_000,
       run: async () => (await sweepStaleClaims({ limit: SWEEP_BATCH })) === SWEEP_BATCH,
+    }),
+    startLoop({
+      // The reputation guard: re-checks organizations with new bounces or complaints, and
+      // suspends live sending on its own when a rate crosses the policy.
+      name: "reputation",
+      intervalMs: 60_000,
+      run: async () =>
+        (await runDueReputationEvaluations(
+          { limit: REPUTATION_BATCH },
+          { checks: emailReputationChecks },
+        )) === REPUTATION_BATCH,
     }),
     startLoop({
       name: "unclaimed",

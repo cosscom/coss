@@ -1,4 +1,4 @@
-import { EMAIL_EVENT_TYPES } from "@coss/email/schemas";
+import { WEBHOOK_EVENT_TYPES } from "@coss/email/schemas";
 import { getEnvironment } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 import { Card, CardPanel } from "@coss/ui/components/card";
@@ -49,13 +49,13 @@ export default async function WebhooksPage({
             canCreate ? (
               <CreateEndpointDialog
                 envSlug={environment.slug}
-                eventTypes={EMAIL_EVENT_TYPES}
+                eventTypes={WEBHOOK_EVENT_TYPES}
                 orgSlug={organization.slug}
                 projectSlug={project.slug}
               />
             ) : null
           }
-          description="Signed notifications of email delivery events in this environment."
+          description="Signed notifications of email delivery events and reputation changes in this environment."
           title={
             <span className="flex items-center gap-2">
               Webhooks <ModeBadge mode={environment.mode} />

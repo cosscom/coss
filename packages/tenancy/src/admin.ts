@@ -52,6 +52,9 @@ export const ADMIN_ACTIONS = [
   "organization.disable_sso_requirement",
   "organization.disable_sso",
   "api_key.revoke",
+  "reputation.suspended",
+  "reputation.reinstated",
+  "reputation.policy_updated",
 ] as const;
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 

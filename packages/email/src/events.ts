@@ -7,6 +7,7 @@
 import { createHash } from "node:crypto";
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
+import { markReputationDue } from "@coss/reputation";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { purgeAttachmentContent } from "./attachments.ts";
@@ -234,6 +235,10 @@ export async function recordProviderEvent(
           !event.suppressed
         ? "bounce"
         : null;
+  if (suppressReason && target.mode === "live") {
+    // The reputation guard re-checks the organization's rates (worker).
+    await markReputationDue(tx, target.organizationId);
+  }
   if (suppressReason) {
     for (const row of inserted) {
       if (!row.recipient) continue;

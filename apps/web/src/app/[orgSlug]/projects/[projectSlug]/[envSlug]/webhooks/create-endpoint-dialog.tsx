@@ -1,6 +1,5 @@
 "use client";
 
-import type { EmailEventType } from "@coss/email/schemas";
 import { Button } from "@coss/ui/components/button";
 import { Checkbox } from "@coss/ui/components/checkbox";
 import {
@@ -25,7 +24,7 @@ import { createWebhookEndpointAction } from "./actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
 
-export function CreateEndpointDialog(props: Target & { eventTypes: readonly EmailEventType[] }) {
+export function CreateEndpointDialog(props: Target & { eventTypes: readonly string[] }) {
   return (
     <Dialog>
       <DialogTrigger render={<Button size="sm" />}>Add endpoint</DialogTrigger>
@@ -37,7 +36,7 @@ export function CreateEndpointDialog(props: Target & { eventTypes: readonly Emai
   );
 }
 
-function CreateEndpointForm(props: Target & { eventTypes: readonly EmailEventType[] }) {
+function CreateEndpointForm(props: Target & { eventTypes: readonly string[] }) {
   const [state, formAction, pending] = useActionState(createWebhookEndpointAction, null);
 
   if (state?.ok) {
