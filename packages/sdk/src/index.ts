@@ -1,3 +1,4 @@
+export { API_VERSION, API_VERSIONS, type ApiVersion } from "./api-version.ts";
 export { Coss, type CossOptions } from "./client.ts";
 export type { CossError, CossErrorIssue, CossErrorType, CossResult } from "./core/errors.ts";
 export type { FetchLike, RequestOptions } from "./core/http.ts";

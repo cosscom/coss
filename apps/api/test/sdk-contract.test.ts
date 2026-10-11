@@ -11,9 +11,10 @@ import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
 import { memoryLimiter } from "@coss/ratelimit/testing";
 import { suspendOrganization } from "@coss/reputation";
 import { createTestTenant } from "@coss/tenancy/testing";
+import { API_VERSIONS, LATEST_API_VERSION } from "@coss/versioning";
 import { enqueueWebhookMessage, runDueWebhookDeliveries } from "@coss/webhooks";
 import { TEST_SECRETS_KEY } from "@coss/webhooks/testing";
-import { Coss, type CossOptions } from "coss";
+import { API_VERSION, Coss, type CossOptions, API_VERSIONS as SDK_API_VERSIONS } from "coss";
 import {
   createTestApp,
   domainFrom,
@@ -37,6 +38,32 @@ function clientFor(app: TestApp, apiKey: string, options: Partial<CossOptions> =
     ...options,
   });
 }
+
+describe("API versions", () => {
+  test("the SDK requests the latest API version, and knows every version", async () => {
+    expect(API_VERSION).toBe(LATEST_API_VERSION);
+    expect([...SDK_API_VERSIONS]).toEqual([...API_VERSIONS]);
+
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const versions: (string | null)[] = [];
+    const coss = clientFor(app, tenant.sandboxKey, {
+      fetch: async (input, init) => {
+        const res = await app.fetch(toRequest(input, init));
+        versions.push(res.headers.get("coss-version"));
+        return res;
+      },
+    });
+    await coss.domains.list();
+    expect(versions).toEqual([API_VERSION]);
+
+    const created = await coss.webhookEndpoints.create({
+      url: "https://example.com/hook",
+      api_version: API_VERSION,
+    });
+    expect(created.data?.api_version).toBe(API_VERSION);
+  });
+});
 
 describe("coss SDK against the API", () => {
   test("send then get round-trips the same email", async () => {
@@ -502,6 +529,8 @@ describe("coss.webhookEndpoints against the API", () => {
     });
     if (!created.data) throw new Error("create failed");
     expect(created.data.secret).toStartWith("whsec_");
+    // Events are rendered in the SDK's version, matching its WebhookEvent types.
+    expect(created.data.api_version).toBe(API_VERSION);
 
     const updated = await coss.webhookEndpoints.update(created.data.id, { enabled: false });
     expect(updated.data).toMatchObject({ id: created.data.id, enabled: false });

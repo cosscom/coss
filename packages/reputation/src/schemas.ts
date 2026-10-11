@@ -206,6 +206,10 @@ export const AccountWebhookEvent = z
     }),
     object: z.literal("event"),
     type: z.enum(ACCOUNT_EVENT_TYPES),
+    api_version: z.string().meta({
+      description:
+        "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+    }),
     created_at: z.iso.datetime(),
     data: z.object({
       organization_id: z.string(),
@@ -218,3 +222,5 @@ export const AccountWebhookEvent = z
   })
   .meta({ id: "AccountWebhookEvent" });
 export type AccountWebhookEventOutput = z.output<typeof AccountWebhookEvent>;
+/** What the outbox stores: delivery adds `api_version` when it renders the event for an endpoint. */
+export type StoredAccountWebhookEvent = Omit<AccountWebhookEventOutput, "api_version">;

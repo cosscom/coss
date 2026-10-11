@@ -29,6 +29,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
+import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, errorDoc, jsonDoc } from "./docs.ts";
@@ -77,7 +78,11 @@ export const createWebhookEndpointRoute = createRoute({
     "only place the signing secret is ever returned: store it, and verify every delivery with " +
     "it (`verifyWebhook` in the SDK).",
   security: [{ bearerAuth: [] }],
-  middleware: [requireApiKey({ webhook: ["create"] }), rateLimit("api.write")],
+  middleware: [
+    requireApiKey({ webhook: ["create"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/webhook_endpoints"),
+  ],
   request: {
     body: {
       required: true,
@@ -89,7 +94,7 @@ export const createWebhookEndpointRoute = createRoute({
     ...bodyErrors,
     ...commonErrors,
     422: errorDoc(
-      "The body failed validation (`validation_error`), the URL is not a usable https:// URL " +
+      "The body failed validation (`validation_error`, including an unknown `api_version`), the URL is not a usable https:// URL " +
         "(`invalid_url`), or the environment already has " +
         `${MAX_ENDPOINTS_PER_ENVIRONMENT} endpoints (\`too_many_endpoints\`).`,
     ),
@@ -135,11 +140,15 @@ export const updateWebhookEndpointRoute = createRoute({
   tags: ["Webhook endpoints"],
   summary: "Update a webhook endpoint",
   description:
-    "Changes the URL, description, subscribed event types or `enabled` flag. Omitted fields keep " +
+    "Changes the URL, description, subscribed event types, API version or `enabled` flag. Omitted fields keep " +
     "their current value, and the signing secret never changes, so receivers keep verifying " +
     "deliveries. Disabling an endpoint stops deliveries without losing its configuration.",
   security: [{ bearerAuth: [] }],
-  middleware: [requireApiKey({ webhook: ["update"] }), rateLimit("api.write")],
+  middleware: [
+    requireApiKey({ webhook: ["update"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("PATCH /v1/webhook_endpoints/{id}"),
+  ],
   request: {
     params: EndpointIdParams,
     body: {
@@ -272,6 +281,8 @@ export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAP
         description: body.description,
         // Omitted means every event type, including ones added later.
         eventTypes: body.event_types ?? [],
+        // By default, events arrive in the version this request was made in (the SDK's, or the organization's).
+        apiVersion: body.api_version ?? c.var.apiVersion,
         userId: null,
       },
       deps,
@@ -303,6 +314,7 @@ export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAP
         url: body.url,
         description: body.description,
         eventTypes: body.event_types,
+        apiVersion: body.api_version,
         enabled: body.enabled,
       },
       deps,

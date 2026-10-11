@@ -1,0 +1,42 @@
+name: Release
+
+# Keeps a "Version packages" PR open while changesets are pending on main. Merging it bumps the SDK's
+# version and CHANGELOG. Nothing is published: the `coss` npm name belongs to a third party
+# (packages/sdk/README.md), so there is no publish-script and the SDK refuses `npm publish`.
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      # Changesets 3 runs on Node (^22.11 || ^24 || >=26).
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: bun install --frozen-lockfile
+      - uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        with:
+          # Also syncs packages/sdk/src/version.ts and bun.lock with the bumped version.
+          version-script: bun run version-packages
+          pr-title: Version packages
+          commit-message: Version packages
+          # Pull requests opened with the default GITHUB_TOKEN don't trigger CI. A GitHub App or
+          # fine-grained token with contents + pull-requests write fixes that; it falls back to the
+          # default token (the PR then needs CI started by hand, e.g. by pushing to it).
+          github-token: ${{ secrets.RELEASE_TOKEN || github.token }}

@@ -3,10 +3,13 @@ import { db, schema } from "@coss/db";
 import { newId } from "@coss/db/id";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
 import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy/testing";
+import { LATEST_API_VERSION } from "@coss/versioning";
+import { TEST_NEXT_VERSION, testVersioning } from "@coss/versioning/testing";
 import { eq } from "drizzle-orm";
 import {
   MAX_ATTEMPTS,
   RETRY_DELAYS_MS,
+  renderWebhookPayload,
   retryWebhookDelivery,
   runDueWebhookDeliveries,
 } from "../src/deliver.ts";
@@ -37,6 +40,7 @@ async function endpointFor(tenant: TestTenant, url: string, eventTypes: string[]
       environmentId: tenant.development.id,
       url,
       eventTypes,
+      apiVersion: LATEST_API_VERSION,
       userId: tenant.owner.id,
     },
     testManagementDeps,
@@ -82,6 +86,7 @@ describe("endpoints", () => {
           environmentId: tenant.development.id,
           url: "http://127.0.0.1/hook",
           eventTypes: [],
+          apiVersion: LATEST_API_VERSION,
           userId: null,
         },
         strict,
@@ -99,6 +104,7 @@ describe("endpoints", () => {
           environmentId: other.development.id,
           url: "https://example.com/hook",
           eventTypes: [],
+          apiVersion: LATEST_API_VERSION,
           userId: null,
         },
         testManagementDeps,
@@ -208,6 +214,78 @@ describe("updateWebhookEndpoint", () => {
   });
 });
 
+describe("API versions", () => {
+  test("an endpoint's version must be a known one", async () => {
+    const tenant = await createTestTenant();
+    await expect(
+      createWebhookEndpoint(
+        {
+          organizationId: tenant.organization.id,
+          environmentId: tenant.development.id,
+          url: "https://example.com/hook",
+          eventTypes: [],
+          apiVersion: "2000-01-01",
+          userId: null,
+        },
+        testManagementDeps,
+      ),
+    ).rejects.toMatchObject({ code: "invalid_api_version" });
+    const { endpoint } = await endpointFor(tenant, "https://example.com/hook");
+    expect(endpoint.apiVersion).toBe(LATEST_API_VERSION);
+    await expect(
+      updateWebhookEndpoint(
+        { organizationId: tenant.organization.id, id: endpoint.id, apiVersion: "latest" },
+        testManagementDeps,
+      ),
+    ).rejects.toMatchObject({ code: "invalid_api_version" });
+  });
+
+  test.each(["2100-01-01", "2098-01-01"])(
+    "renderWebhookPayload labels an unknown pin %s with the resolved schema version",
+    (pin) => {
+      const versioning = testVersioning();
+      const stored = {
+        object: "event",
+        type: "email.sent",
+        api_version: pin,
+        data: { recipient: "a" },
+      };
+      const rendered = renderWebhookPayload(stored, pin, versioning);
+      expect(rendered.api_version).toBe(
+        pin > TEST_NEXT_VERSION ? TEST_NEXT_VERSION : LATEST_API_VERSION,
+      );
+      expect(rendered.data).toEqual(
+        pin > TEST_NEXT_VERSION ? { recipient: "a" } : { address: "a" },
+      );
+      expect(stored.data).toEqual({ recipient: "a" });
+      expect(renderWebhookPayload({ object: "event" }, pin, versioning).api_version).toBe(
+        rendered.api_version,
+      );
+    },
+  );
+
+  test("renderWebhookPayload places api_version after type and keeps the stored payload intact", () => {
+    const stored = {
+      id: "evt_1",
+      object: "event",
+      type: "email.sent",
+      created_at: "x",
+      data: { recipient: "a" },
+    };
+    const rendered = renderWebhookPayload(stored, LATEST_API_VERSION, testVersioning());
+    expect(Object.keys(rendered)).toEqual([
+      "id",
+      "object",
+      "type",
+      "api_version",
+      "created_at",
+      "data",
+    ]);
+    expect(rendered.data).toEqual({ address: "a" });
+    expect(stored.data).toEqual({ recipient: "a" });
+  });
+});
+
 describe("toWebhookEndpointObject", () => {
   test("is the wire shape, without the secret", async () => {
     const tenant = await createTestTenant();
@@ -221,6 +299,7 @@ describe("toWebhookEndpointObject", () => {
       url: "https://example.com/hook",
       description: null,
       event_types: ["email.sent"],
+      api_version: LATEST_API_VERSION,
       enabled: true,
       created_at: endpoint.createdAt.toISOString(),
       updated_at: endpoint.updatedAt.toISOString(),
@@ -275,12 +354,16 @@ describe("runDueWebhookDeliveries", () => {
       expect(request.headers.get("webhook-signature")).toBe(
         signPayload({ secret, id, timestamp, body: request.body }),
       );
-      expect(JSON.parse(request.body)).toEqual({
-        id,
-        object: "event",
-        type: "email.delivered",
-        data: { email_id: "email_x" },
-      });
+      // The stored event, with the endpoint's API version after its type.
+      expect(request.body).toBe(
+        JSON.stringify({
+          id,
+          object: "event",
+          type: "email.delivered",
+          api_version: LATEST_API_VERSION,
+          data: { email_id: "email_x" },
+        }),
+      );
 
       const [logged] = await listWebhookDeliveries({
         organizationId: tenant.organization.id,
@@ -295,6 +378,66 @@ describe("runDueWebhookDeliveries", () => {
       });
       expect(logged?.attempts).toMatchObject([{ statusCode: 200, responseExcerpt: "ok" }]);
       expect(await runDueWebhookDeliveries({ now, scope: scopeOf(tenant) }, deliveryDeps)).toBe(0);
+    } finally {
+      receiver.stop();
+    }
+  });
+
+  test("renders each endpoint's API version, signing the bytes it sends", async () => {
+    const tenant = await createTestTenant();
+    const receiver = webhookReceiver();
+    try {
+      // With the test registry, stored payloads are TEST_NEXT_VERSION; LATEST_API_VERSION is one behind.
+      const versioning = testVersioning();
+      const current = await endpointFor(tenant, `${receiver.url}/current`);
+      const older = await endpointFor(tenant, `${receiver.url}/older`);
+      await db
+        .update(schema.webhookEndpoint)
+        .set({ apiVersion: TEST_NEXT_VERSION })
+        .where(eq(schema.webhookEndpoint.id, current.endpoint.id));
+      const id = newId("evt");
+      await enqueueWebhookMessage(db, {
+        id,
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        type: "email.bounced",
+        payload: {
+          id,
+          object: "event",
+          type: "email.bounced",
+          data: { email_id: "e", recipient: "a@x.test" },
+        },
+      });
+
+      const now = new Date();
+      await runDueWebhookDeliveries(
+        { now, scope: scopeOf(tenant) },
+        { ...deliveryDeps, versioning },
+      );
+
+      const byPath = (path: string) =>
+        receiver.received.find((r) => new URL(r.url).pathname === path);
+      const newer = byPath("/webhooks/current");
+      const old = byPath("/webhooks/older");
+      if (!newer || !old) throw new Error("not delivered");
+      expect(JSON.parse(newer.body)).toEqual({
+        id,
+        object: "event",
+        type: "email.bounced",
+        api_version: TEST_NEXT_VERSION,
+        data: { email_id: "e", recipient: "a@x.test" },
+      });
+      expect(JSON.parse(old.body)).toEqual({
+        id,
+        object: "event",
+        type: "email.bounced",
+        api_version: LATEST_API_VERSION,
+        data: { email_id: "e", address: "a@x.test" },
+      });
+      const timestamp = Number(old.headers.get("webhook-timestamp"));
+      expect(old.headers.get("webhook-signature")).toBe(
+        signPayload({ secret: older.secret, id, timestamp, body: old.body }),
+      );
     } finally {
       receiver.stop();
     }

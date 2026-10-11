@@ -32,6 +32,7 @@ import type {
   ReputationCheckObject,
   ReputationObject,
 } from "@coss/reputation/schemas";
+import type { ApiVersion } from "@coss/versioning";
 import type {
   DeletedWebhookEndpoint,
   ListWebhookDeliveriesQuery,
@@ -56,6 +57,7 @@ import type {
   ListSuppressionsParams,
   ListWebhookDeliveriesParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
+  ApiVersion as SdkApiVersion,
   DeletedDomain as SdkDeletedDomain,
   DeletedSuppression as SdkDeletedSuppression,
   DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
@@ -105,6 +107,8 @@ type EmailOutput = z.output<typeof EmailObject>;
 type ApiError = ErrorEnvelopeBody["error"];
 
 export type Contract = [
+  // API versions: the SDK knows exactly the API's versions.
+  Assert<MutuallyAssignable<ApiVersion, SdkApiVersion>>,
   // Request: anything the SDK accepts is what the API validates, and vice versa.
   Assert<MutuallyAssignable<SendInput, SendEmailParams>>,
   Assert<Equals<keyof SendInput, keyof SendEmailParams>>,

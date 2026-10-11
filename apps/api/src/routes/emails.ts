@@ -12,6 +12,7 @@ import { z } from "zod";
 import { limitBody, SEND_BODY_LIMIT_BYTES } from "../body-limit.ts";
 import { ApiError, notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
+import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { validationHook } from "../validation.ts";
@@ -69,6 +70,7 @@ export const sendEmailRoute = createRoute({
     requireApiKey({ email: ["send"] }),
     limitBody(SEND_BODY_LIMIT_BYTES),
     rateLimit("api.send"),
+    upgradeRequestBody("POST /v1/emails"),
   ] as const,
   request: {
     headers: SendEmailHeaders,

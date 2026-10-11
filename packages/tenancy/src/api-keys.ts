@@ -4,11 +4,13 @@ import { API_KEY_NAME_MAX_LENGTH, API_KEY_PREFIX } from "@coss/auth/constants";
 import { db, schema } from "@coss/db";
 import { isAPIError } from "better-auth/api";
 import { and, desc, eq, isNull, lte, or } from "drizzle-orm";
+import { getOrganizationApiVersion } from "./api-versions.ts";
 import { getEnvironmentById } from "./environments.ts";
 import { TenancyError } from "./errors.ts";
 import type { EnvironmentMode } from "./types.ts";
 
-const { apikey, environment, environmentApiKey, organizationSuspension } = schema;
+const { apikey, environment, environmentApiKey, organizationApiVersion, organizationSuspension } =
+  schema;
 
 export type EnvironmentApiKeySummary = {
   id: string;
@@ -29,6 +31,8 @@ export type ApiKeyContext = {
   projectId: string;
   environmentId: string;
   mode: EnvironmentMode;
+  /** The organization's pinned API version (requests may override it with `Coss-Version`). */
+  apiVersion: string;
 };
 
 export type AuthenticateResult =
@@ -229,6 +233,7 @@ export async function authenticateApiKey(
       environmentId: environment.id,
       mode: environment.mode,
       suspendedAt: organizationSuspension.createdAt,
+      apiVersion: organizationApiVersion.apiVersion,
     })
     .from(apikey)
     .innerJoin(environmentApiKey, eq(environmentApiKey.apiKeyId, apikey.id))
@@ -236,6 +241,10 @@ export async function authenticateApiKey(
     .leftJoin(
       organizationSuspension,
       eq(organizationSuspension.organizationId, environment.organizationId),
+    )
+    .leftJoin(
+      organizationApiVersion,
+      eq(organizationApiVersion.organizationId, environment.organizationId),
     )
     .where(eq(apikey.key, hashed))
     .limit(1);
@@ -266,7 +275,12 @@ export async function authenticateApiKey(
   }
 
   const { apiKeyId, organizationId, projectId, environmentId, mode } = row;
-  return { ok: true, context: { apiKeyId, organizationId, projectId, environmentId, mode } };
+  // Organizations are pinned on their first authenticated request.
+  const apiVersion = row.apiVersion ?? (await getOrganizationApiVersion({ organizationId }));
+  return {
+    ok: true,
+    context: { apiKeyId, organizationId, projectId, environmentId, mode, apiVersion },
+  };
 }
 
 /**

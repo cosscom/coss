@@ -10,7 +10,7 @@ export const testManagementDeps: WebhookManagementDeps = {
   allowInsecureUrls: true,
 };
 
-export type ReceivedWebhook = { headers: Headers; body: string };
+export type ReceivedWebhook = { url: string; headers: Headers; body: string };
 
 /**
  * An HTTP server on 127.0.0.1 that records what it receives. `respond` decides each response
@@ -22,7 +22,11 @@ export function webhookReceiver(respond?: (request: Request) => Response | Promi
     hostname: "127.0.0.1",
     port: 0,
     async fetch(request) {
-      received.push({ headers: request.headers, body: await request.clone().text() });
+      received.push({
+        url: request.url,
+        headers: request.headers,
+        body: await request.clone().text(),
+      });
       return respond ? respond(request) : new Response("ok");
     },
   });

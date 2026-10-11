@@ -76,10 +76,13 @@
     "valkey:bootstrap": "bun run --cwd packages/ratelimit valkey:bootstrap",
     "ratelimit:set": "bun run --cwd packages/ratelimit ratelimit:set",
     "auth:generate": "bun run --cwd packages/auth auth:generate && biome check --write packages/db/src/schema/auth.ts",
-    "openapi:generate": "bun run --cwd apps/api openapi:generate"
+    "openapi:generate": "bun run --cwd apps/api openapi:generate",
+    "changeset": "changeset",
+    "version-packages": "changeset version && bun packages/sdk/scripts/sync-version.ts && bun install --lockfile-only && biome check --write packages/sdk/package.json packages/sdk/src/version.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@changesets/cli": "3.0.3",
     "turbo": "2.11.7",
     "typescript": "catalog:"
   }
