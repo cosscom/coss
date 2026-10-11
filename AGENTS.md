@@ -83,6 +83,14 @@ from the root or a package — the package script is what loads `.env` and the t
 **Before committing**, run what CI (`.github/workflows/ci.yml`, Postgres 18, no `.env`) runs:
 `bun run lint && bun run typecheck && bun run test && bun run build`.
 
+**Remote cache** (README, "Remote cache"): `typecheck` and `build` results are uploaded to Turbo's Vercel Remote Cache
+(team `cal`, signed) and CI replays any task whose hash it finds, so running the commands above also makes CI fast.
+Each machine is set up once by a human (`turbo login`, `~/.config/coss/turbo.env` loaded from the shell profile). If
+a `turbo` run's header says `Remote caching disabled` or `unavailable`, tell the user the machine isn't set up and
+point them at that README section — never run `turbo login`, create Vercel tokens, or write `TURBO_*` values into
+`.env`, a commit or a log yourself. Keep task outputs machine-independent and keep `globalEnv` to build-affecting
+variables (`infra/test` enforces the list): a hash that differs between laptops and CI silently turns the cache off.
+
 ## Conventions
 
 - **Wire format is snake_case** (`reply_to`, `created_at`); internal code is camelCase. The SDK's wire types are
@@ -139,7 +147,7 @@ from the root or a package — the package script is what loads `.env` and the t
 | `SENTRY_AUTH_TOKEN` (`SENTRY_ORG`, `SENTRY_PROJECT`) | Next builds only (`globalPassThroughEnv`; a BuildKit secret in the Dockerfiles): uploads source maps to `coss`/`web` and deletes them from the build. Unset → no source maps |
 | `NODE_ENV`, `SKIP_ENV_VALIDATION` | `production` makes dev auth emails and the seed refuse to run; the latter skips t3-env (image builds set it) |
 | `SKIP_BUILD_TYPECHECK` | `1` makes `next build` (web, site) skip its TypeScript check; set only by CI's build job (its check job typechecks) |
-| `TURBO_TOKEN`, `TURBO_TEAM`, `TURBO_REMOTE_CACHE_SIGNATURE_KEY` | turbo itself (Vercel Remote Cache): shell environment locally (`turbo login` stores the token), secrets/vars in CI; not in `.env` |
+| `TURBO_TOKEN`, `TURBO_TEAM`, `TURBO_REMOTE_CACHE_SIGNATURE_KEY` | turbo itself (Vercel Remote Cache, team `cal`): locally `turbo login` stores the token and `~/.config/coss/turbo.env` (sourced by the shell profile) sets the other two; in CI `secrets.TURBO_TOKEN`, `vars.TURBO_TEAM`, `secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY`. Never in `.env` (turbo doesn't read it) |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | `apps/web`: Server Actions key shared by every dashboard task of a stage (base64, 16/24/32 bytes); read at runtime, required in production |
 | `TRUSTED_PROXY_HOPS` | `apps/web`: proxies that append to `X-Forwarded-For` (CloudFront → ALB: `2`; default `0`). `src/proxy.ts` replaces the header with the one client address they vouch for, which Better Auth then uses (it ignores multi-value headers) |
 | `NEXT_DEPLOYMENT_ID` | Next builds (`apps/web`, `apps/site`): the commit, passed by the Dockerfiles; build id + version-skew protection |
