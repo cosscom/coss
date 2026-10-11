@@ -2,6 +2,7 @@ export { isBlockedAddress } from "./addresses.ts";
 export {
   MAX_ATTEMPTS,
   RETRY_DELAYS_MS,
+  renderWebhookPayload,
   retryWebhookDelivery,
   runDueWebhookDeliveries,
   type WebhookDeliveryDeps,

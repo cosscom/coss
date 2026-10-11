@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "COSS API",
-    "version": "v1",
+    "version": "2026-10-10",
     "description": "One API key for every COSS product. Errors share one envelope: `Error`. Every request is scoped to the environment the key belongs to; domains are organization-wide."
   },
   "servers": [
@@ -1652,6 +1652,13 @@
             },
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) events are rendered in for this endpoint. Each event carries it as `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
           "enabled": {
             "type": "boolean",
             "description": "A disabled endpoint receives nothing until it is enabled again."
@@ -1678,6 +1685,7 @@
           "url",
           "description",
           "event_types",
+          "api_version",
           "enabled",
           "created_at",
           "updated_at",
@@ -1693,6 +1701,7 @@
               "email.delivered",
               "email.bounced"
             ],
+            "api_version": "2026-10-10",
             "enabled": true,
             "created_at": "2026-01-15T09:30:00.000Z",
             "updated_at": "2026-01-15T09:30:00.000Z",
@@ -1744,6 +1753,13 @@
             },
             "maxItems": 15,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
+          },
+          "api_version": {
+            "type": "string",
+            "enum": [
+              "2026-10-10"
+            ],
+            "description": "The API version (`Coss-Version`) events are rendered in for this endpoint. Each event carries it as `api_version`. Defaults to the version of the request that creates the endpoint."
           }
         },
         "required": [
@@ -1798,6 +1814,7 @@
                   "email.delivered",
                   "email.bounced"
                 ],
+                "api_version": "2026-10-10",
                 "enabled": true,
                 "created_at": "2026-01-15T09:30:00.000Z",
                 "updated_at": "2026-01-15T09:30:00.000Z"
@@ -1841,6 +1858,13 @@
             },
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) events are rendered in for this endpoint. Each event carries it as `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
           "enabled": {
             "type": "boolean",
             "description": "A disabled endpoint receives nothing until it is enabled again."
@@ -1860,6 +1884,7 @@
           "url",
           "description",
           "event_types",
+          "api_version",
           "enabled",
           "created_at",
           "updated_at"
@@ -1874,6 +1899,7 @@
               "email.delivered",
               "email.bounced"
             ],
+            "api_version": "2026-10-10",
             "enabled": true,
             "created_at": "2026-01-15T09:30:00.000Z",
             "updated_at": "2026-01-15T09:30:00.000Z"
@@ -1924,6 +1950,13 @@
             },
             "maxItems": 15,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
+          },
+          "api_version": {
+            "type": "string",
+            "enum": [
+              "2026-10-10"
+            ],
+            "description": "The API version (`Coss-Version`) events are rendered in for this endpoint. Each event carries it as `api_version`."
           },
           "enabled": {
             "type": "boolean"
@@ -2708,7 +2741,23 @@
         ]
       }
     },
-    "parameters": {}
+    "parameters": {
+      "CossVersion": {
+        "in": "header",
+        "name": "Coss-Version",
+        "required": false,
+        "description": "The API version (a date) to use for this request. Defaults to your organization's version, pinned to the latest one when it first used the API and upgraded from the dashboard. The SDK always sends the version it was built for.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "2026-10-10"
+          ],
+          "examples": [
+            "2026-10-10"
+          ]
+        }
+      }
+    }
   },
   "paths": {
     "/v1/emails": {
@@ -2739,6 +2788,9 @@
             "description": "Makes retries safe: a repeated request with the same key and body returns the original email (with its current status) instead of sending again, for 24 hours. 1-256 characters.",
             "name": "Idempotency-Key",
             "in": "header"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "requestBody": {
@@ -2772,6 +2824,15 @@
                     "true"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -2783,7 +2844,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid (`invalid_idempotency_key`).",
+            "description": "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid (`invalid_idempotency_key`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -3035,6 +3096,9 @@
             "description": "Makes retries safe: a repeated request with the same key and body returns the original email (with its current status) instead of sending again, for 24 hours. 1-256 characters.",
             "name": "Idempotency-Key",
             "in": "header"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "requestBody": {
@@ -3068,6 +3132,15 @@
                     "true"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -3079,7 +3152,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid (`invalid_idempotency_key`).",
+            "description": "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid (`invalid_idempotency_key`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -3329,6 +3402,9 @@
             "description": "The email's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -3343,12 +3419,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Email"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -3514,6 +3620,9 @@
             "description": "The email's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -3528,12 +3637,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Email"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -3720,6 +3859,9 @@
             "description": "The email's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -3734,12 +3876,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EmailEventList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -3905,6 +4077,9 @@
             "description": "The email's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -3919,12 +4094,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EmailLinkList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -4099,6 +4304,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -4110,7 +4324,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`).",
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -4325,7 +4539,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       },
       "get": {
         "operationId": "listDomains",
@@ -4351,12 +4570,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DomainList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -4472,7 +4721,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       }
     },
     "/v1/domains/{id}": {
@@ -4501,6 +4755,9 @@
             "description": "The domain's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -4515,12 +4772,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Domain"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -4684,6 +4971,9 @@
             "description": "The domain's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -4698,12 +4988,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DeletedDomain"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -4890,6 +5210,9 @@
             "description": "The domain's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -4904,12 +5227,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Domain"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -5126,6 +5479,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -5137,7 +5499,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`).",
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -5242,7 +5604,7 @@
             }
           },
           "422": {
-            "description": "The body failed validation (`validation_error`), the URL is not a usable https:// URL (`invalid_url`), or the environment already has 10 endpoints (`too_many_endpoints`).",
+            "description": "The body failed validation (`validation_error`, including an unknown `api_version`), the URL is not a usable https:// URL (`invalid_url`), or the environment already has 10 endpoints (`too_many_endpoints`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -5331,7 +5693,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       },
       "get": {
         "operationId": "listWebhookEndpoints",
@@ -5357,12 +5724,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookEndpointList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -5478,7 +5875,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       }
     },
     "/v1/webhook_endpoints/{id}": {
@@ -5507,6 +5909,9 @@
             "description": "The webhook endpoint's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -5521,12 +5926,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookEndpoint"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -5671,7 +6106,7 @@
           "Webhook endpoints"
         ],
         "summary": "Update a webhook endpoint",
-        "description": "Changes the URL, description, subscribed event types or `enabled` flag. Omitted fields keep their current value, and the signing secret never changes, so receivers keep verifying deliveries. Disabling an endpoint stops deliveries without losing its configuration.",
+        "description": "Changes the URL, description, subscribed event types, API version or `enabled` flag. Omitted fields keep their current value, and the signing secret never changes, so receivers keep verifying deliveries. Disabling an endpoint stops deliveries without losing its configuration.",
         "security": [
           {
             "bearerAuth": []
@@ -5690,6 +6125,9 @@
             "description": "The webhook endpoint's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "requestBody": {
@@ -5714,6 +6152,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -5725,7 +6172,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`).",
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -5967,6 +6414,9 @@
             "description": "The webhook endpoint's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -5981,12 +6431,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DeletedWebhookEndpoint"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -6199,6 +6679,9 @@
             "description": "Cursor: the `id` of the last delivery of the previous page.",
             "name": "after",
             "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -6213,12 +6696,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookDeliveryList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -6418,6 +6931,9 @@
             "description": "The delivery's id.",
             "name": "delivery_id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -6432,12 +6948,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookDelivery"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -6616,6 +7162,9 @@
             "description": "The delivery's id.",
             "name": "delivery_id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -6630,12 +7179,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookDelivery"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -6810,6 +7389,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -6831,6 +7419,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -6842,7 +7439,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`).",
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -7036,7 +7633,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       },
       "get": {
         "operationId": "listSuppressions",
@@ -7103,6 +7705,9 @@
             "description": "Cursor: the `id` of the last entry of the previous page.",
             "name": "after",
             "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -7117,12 +7722,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuppressionList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -7299,6 +7934,9 @@
             "description": "The category of the email you plan to send. Without it, only `*` entries count.",
             "name": "category",
             "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -7313,12 +7951,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuppressionCheck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -7493,6 +8161,15 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
@@ -7504,7 +8181,7 @@
             }
           },
           "400": {
-            "description": "The body is not valid JSON (`invalid_json`).",
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -7698,7 +8375,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       }
     },
     "/v1/suppressions/export": {
@@ -7754,6 +8436,9 @@
             "description": "Only entries with this reason.",
             "name": "reason",
             "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -7768,12 +8453,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "text/csv": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -7938,6 +8653,9 @@
             "description": "The suppression's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -7952,12 +8670,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Suppression"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -8121,6 +8869,9 @@
             "description": "The suppression's id.",
             "name": "id",
             "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
           }
         ],
         "responses": {
@@ -8135,12 +8886,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DeletedSuppression"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -8305,12 +9086,42 @@
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
                 }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
               }
             },
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Reputation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -8426,7 +9237,12 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       }
     }
   },

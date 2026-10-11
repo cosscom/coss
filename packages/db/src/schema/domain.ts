@@ -572,6 +572,8 @@ export const webhookEndpoint = pgTable(
     environmentId: text("environment_id").notNull(),
     url: text("url").notNull(),
     description: text("description"),
+    // The API version (`Coss-Version` date) payloads are rendered in at delivery.
+    apiVersion: text("api_version").notNull(),
     // Event types to deliver; empty means every type.
     eventTypes: text("event_types").array().notNull().default(sql`'{}'::text[]`),
     // The `whsec_…` signing secret, encrypted with WEBHOOK_SECRETS_KEY (it must be reversible).
@@ -836,6 +838,22 @@ export const organizationSuspension = pgTable("organization_suspension", {
     onDelete: "set null",
   }),
   createdAt: createdAt(),
+});
+
+/**
+ * The API version an organization's requests use when they send no `Coss-Version` header. Created lazily on the
+ * organization's first API use (pinned to the latest version then), changed only by an upgrade in the dashboard.
+ */
+export const organizationApiVersion = pgTable("organization_api_version", {
+  organizationId: text("organization_id")
+    .primaryKey()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  apiVersion: text("api_version").notNull(),
+  updatedByUserId: text("updated_by_user_id").references(() => user.id, {
+    onDelete: "set null",
+  }),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
 });
 
 /**

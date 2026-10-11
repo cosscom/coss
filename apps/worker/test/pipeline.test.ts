@@ -7,6 +7,7 @@ import { describe, expect, test } from "bun:test";
 import { createEmailService, FakeEmailProvider } from "@coss/email";
 import { memoryDispatchQueue } from "@coss/email/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
+import { LATEST_API_VERSION } from "@coss/versioning";
 import { createWebhookEndpoint, runDueWebhookDeliveries } from "@coss/webhooks";
 import {
   TEST_SECRETS_KEY,
@@ -36,6 +37,7 @@ describe("sandbox send → webhook", () => {
           environmentId: tenant.development.id,
           url: receiver.url,
           eventTypes: ["email.delivered", "email.bounced"],
+          apiVersion: LATEST_API_VERSION,
           userId: null,
         },
         testManagementDeps,
@@ -116,6 +118,7 @@ describe("scheduled send → webhook", () => {
           environmentId: tenant.development.id,
           url: receiver.url,
           eventTypes: ["email.scheduled", "email.sent"],
+          apiVersion: LATEST_API_VERSION,
           userId: null,
         },
         testManagementDeps,

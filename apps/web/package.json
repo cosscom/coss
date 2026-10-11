@@ -22,6 +22,7 @@
     "@coss/screening": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/ui": "workspace:*",
+    "@coss/versioning": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@t3-oss/env-nextjs": "catalog:",
     "better-auth": "catalog:",

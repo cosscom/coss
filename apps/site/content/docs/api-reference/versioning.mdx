@@ -1,0 +1,71 @@
+---
+title: Versioning
+description: Dated API versions, the Coss-Version header and your organization's pinned version.
+---
+
+The API changes in two ways:
+
+- **Additive changes** ship to every version as soon as they are ready: new endpoints, new optional
+  request fields, new response fields, new event types and new error codes. Write integrations that
+  ignore fields they don't know.
+- **Breaking changes** (renaming or removing a field, changing a type or a default) ship as a new
+  **API version**, named after the date it was released, such as `2026-10-10`. Your integration keeps
+  the old behavior until you upgrade. The [changelog](/docs/api-reference/changelog) lists every
+  version and what it changed.
+
+The path prefix `/v1` stays the same across versions.
+
+## Choosing a version
+
+Send the `Coss-Version` header to pick the version of one request:
+
+```bash
+curl https://api.coss.com/v1/domains \
+  -H "Authorization: Bearer $COSS_API_KEY" \
+  -H "Coss-Version: 2026-10-10"
+```
+
+Without the header, a request uses your **organization's version**. It is pinned to the latest
+version on your organization's first API request and only changes when you upgrade it in the
+dashboard (**Settings → API version**). An upgrade can't be undone, so test the new version first by
+sending its `Coss-Version` header.
+
+Every response says which version it was rendered in, in its `Coss-Version` header. An unknown
+version is rejected with `400 invalid_request_error` and the code `invalid_api_version`. Errors use the
+same [envelope](/docs/api-reference/errors) in every version.
+
+## The TypeScript SDK
+
+The SDK sends `Coss-Version` with every request: the version its types describe, exported as
+`API_VERSION`. Upgrading the SDK is how you move to a new API version, and your organization's pinned
+version never affects it.
+
+```ts twoslash
+import { API_VERSION, Coss } from "coss";
+
+const coss = new Coss({ apiKey: "coss_test_…" });
+console.log(API_VERSION);
+//          ^?
+```
+
+## Webhooks
+
+Each webhook endpoint has its own `api_version`, and every event sent to it is rendered in that
+version and carries it as `api_version`:
+
+```json
+{
+  "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  "object": "event",
+  "type": "email.delivered",
+  "api_version": "2026-10-10",
+  "created_at": "2026-10-10T12:00:03.000Z",
+  "data": { "email_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+}
+```
+
+An endpoint created over the API gets the version of the request that created it (the
+`Coss-Version` header, the SDK's version or your organization's). One created in the dashboard gets
+your organization's version. Change it with `api_version` when you update the endpoint, after your
+receiver handles the new shape. The new version also applies to deliveries that are still being
+retried.

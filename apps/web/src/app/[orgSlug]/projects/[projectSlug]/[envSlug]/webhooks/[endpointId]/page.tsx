@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { versioning } from "@coss/versioning";
 import {
   getWebhookEndpoint,
   listWebhookDeliveries,
@@ -25,6 +26,7 @@ import {
   RetryDeliveryButton,
   RevealSecret,
   ToggleEndpointButton,
+  UpgradeEndpointVersionButton,
 } from "./endpoint-actions";
 
 export const metadata: Metadata = { title: "Webhook endpoint" };
@@ -106,6 +108,17 @@ export default async function WebhookEndpointPage({
                 <TableHead>Events</TableHead>
                 <TableCell className="whitespace-normal font-mono text-xs">
                   {endpoint.eventTypes.length === 0 ? "All events" : endpoint.eventTypes.join(", ")}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableHead>API version</TableHead>
+                <TableCell>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <code className="font-mono text-xs">{endpoint.apiVersion}</code>
+                    {canUpdate && endpoint.apiVersion < versioning.latest ? (
+                      <UpgradeEndpointVersionButton {...target} latest={versioning.latest} />
+                    ) : null}
+                  </div>
                 </TableCell>
               </TableRow>
               <TableRow>

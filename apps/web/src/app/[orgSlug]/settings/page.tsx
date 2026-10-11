@@ -1,12 +1,14 @@
-import { listOrganizationMembers } from "@coss/tenancy";
+import { listOrganizationMembers, readOrganizationApiVersion } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
+import { versioning } from "@coss/versioning";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CopyButton } from "@/components/copy-button";
 import { PageHeader } from "@/components/page-header";
 import { requireOrgMember } from "@/lib/session";
+import { UpgradeApiVersionButton } from "./api-version-form";
 import { LeaveOrganizationButton } from "./leave-organization-button";
 import { OrganizationForm } from "./organization-form";
 import { TwoFactorRequirementForm } from "./two-factor-requirement";
@@ -27,6 +29,12 @@ export default async function OrganizationSettingsPage({
   const lastOwner = isOwner && owners <= 1;
   const withoutTwoFactor = members.filter((row) => !row.user.twoFactorEnabled).length;
   const hasTwoFactor = Boolean(session.user.twoFactorEnabled);
+  const pinnedApiVersion = await readOrganizationApiVersion({ organizationId: organization.id });
+  const apiVersionChanges = pinnedApiVersion
+    ? versioning
+        .changesBetween(pinnedApiVersion, versioning.latest)
+        .map(({ version, title, description }) => ({ version, title, description }))
+    : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -107,6 +115,36 @@ export default async function OrganizationSettingsPage({
           </CardPanel>
         </Card>
       ) : null}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            API version
+            {pinnedApiVersion === null || pinnedApiVersion === versioning.latest ? (
+              <Badge variant="success">Latest</Badge>
+            ) : null}
+          </CardTitle>
+          <CardDescription>
+            API requests without a <code>Coss-Version</code> header use this version. The SDK always
+            sends the version it was built for.{" "}
+            {pinnedApiVersion === null
+              ? `It is set to the latest version (${versioning.latest}) on your first API request.`
+              : null}
+          </CardDescription>
+        </CardHeader>
+        <CardPanel className="flex flex-wrap items-center gap-3">
+          <code className="rounded-md bg-muted px-2 py-1 font-mono text-sm">
+            {pinnedApiVersion ?? versioning.latest}
+          </code>
+          {canUpdate && pinnedApiVersion !== null && pinnedApiVersion < versioning.latest ? (
+            <UpgradeApiVersionButton
+              changes={apiVersionChanges}
+              latest={versioning.latest}
+              orgSlug={organization.slug}
+            />
+          ) : null}
+        </CardPanel>
+      </Card>
 
       <Card>
         <CardHeader>

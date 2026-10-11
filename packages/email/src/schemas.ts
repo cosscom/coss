@@ -4,6 +4,7 @@
  * database: `@coss/email/schemas` is safe to load anywhere.
  */
 import { ACCOUNT_EVENT_TYPES } from "@coss/reputation/schemas";
+import { LATEST_API_VERSION } from "@coss/versioning";
 import { z } from "zod";
 
 export const MAX_RECIPIENTS = 50;
@@ -780,6 +781,11 @@ export const EmailWebhookEvent = z
     }),
     object: z.literal("event"),
     type: z.enum(EMAIL_EVENT_TYPES),
+    api_version: z.string().meta({
+      description:
+        "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+      examples: [LATEST_API_VERSION],
+    }),
     created_at: z.iso.datetime(),
     data: EmailEventData.extend({
       email_id: z.string(),
@@ -800,6 +806,7 @@ export const EmailWebhookEvent = z
         id: DELIVERED_EVENT_EXAMPLE.id,
         object: "event",
         type: "email.delivered",
+        api_version: LATEST_API_VERSION,
         created_at: "2026-10-10T12:00:03.000Z",
         data: {
           email_id: EMAIL_ID_EXAMPLE,
@@ -818,6 +825,8 @@ export const EmailWebhookEvent = z
   });
 
 export type EmailWebhookEventOutput = z.output<typeof EmailWebhookEvent>;
+/** What the outbox stores: delivery adds `api_version` when it renders the event for an endpoint. */
+export type StoredEmailWebhookEvent = Omit<EmailWebhookEventOutput, "api_version">;
 
 export const EmailAttachmentObject = z
   .object({

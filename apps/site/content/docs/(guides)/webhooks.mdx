@@ -33,13 +33,15 @@ const secret = endpoint?.secret;
 | `email.suppressed`       | A recipient was skipped because it is suppressed        |
 
 The request body is a JSON event. Payloads describe the email (`email_id`, `from`, `to`, `subject`,
-`tags`, `category`) but never include its content, headers, cc or bcc.
+`tags`, `category`) but never include its content, headers, cc or bcc. Events are rendered in the
+endpoint's [API version](/docs/api-reference/versioning#webhooks), named in `api_version`.
 
 ```json
 {
   "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
   "object": "event",
   "type": "email.delivered",
+  "api_version": "2026-10-10",
   "created_at": "2026-10-10T12:00:01.000Z",
   "data": {
     "email_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",

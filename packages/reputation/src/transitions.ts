@@ -10,10 +10,10 @@ import { z } from "zod";
 import { ReputationError } from "./errors.ts";
 import {
   type AccountEventType,
-  type AccountWebhookEventOutput,
   effectivePolicy,
   ReputationPolicyOverrides,
   type ReputationStatus,
+  type StoredAccountWebhookEvent,
 } from "./schemas.ts";
 import {
   getReputationStanding,
@@ -136,7 +136,7 @@ export async function applyTransition(
   for (const { id: environmentId } of environments) {
     // Message ids are global: one per environment.
     const id = newId(ID_PREFIXES.webhookEvent);
-    const payload: AccountWebhookEventOutput = {
+    const payload: StoredAccountWebhookEvent = {
       id,
       object: "event",
       type: WEBHOOK_TYPE[input.type],

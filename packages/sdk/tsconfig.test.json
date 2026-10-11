@@ -5,5 +5,5 @@
     "isolatedDeclarations": false,
     "types": ["bun"]
   },
-  "include": ["src", "test", "examples", "tsdown.config.ts"]
+  "include": ["src", "test", "examples", "scripts", "tsdown.config.ts"]
 }

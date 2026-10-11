@@ -2,6 +2,7 @@
  * Webhook endpoint wire types (endpoint management). The body COSS posts to an endpoint is
  * `WebhookEvent` in `./webhook.ts`.
  */
+import type { ApiVersion } from "../api-version.ts";
 import type { EmailEventType } from "./email.ts";
 import type { AccountEventType } from "./webhook.ts";
 
@@ -19,6 +20,8 @@ export interface WebhookEndpoint {
    * ones added later.
    */
   event_types: string[];
+  /** The API version events are rendered in for this endpoint (each event's `api_version`). */
+  api_version: string;
   /** A disabled endpoint receives nothing until it is enabled again. */
   enabled: boolean;
   /** ISO 8601 timestamp. */
@@ -43,6 +46,11 @@ export interface CreateWebhookEndpointParams {
   description?: string | null;
   /** Defaults to every event type, including ones added later. */
   event_types?: WebhookEventType[];
+  /**
+   * The API version events are rendered in. Defaults to the client's `apiVersion`, so events match
+   * this SDK's `WebhookEvent` types.
+   */
+  api_version?: ApiVersion;
 }
 
 /** Body of `PATCH /v1/webhook_endpoints/{id}`. Omitted fields keep their current value. */
@@ -51,6 +59,7 @@ export interface UpdateWebhookEndpointParams {
   /** `null` clears the description. */
   description?: string | null;
   event_types?: WebhookEventType[];
+  api_version?: ApiVersion;
   enabled?: boolean;
 }
 

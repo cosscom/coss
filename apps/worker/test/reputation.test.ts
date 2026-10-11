@@ -8,6 +8,7 @@ import { EmailError, emailReputationChecks, FakeEmailProvider } from "@coss/emai
 import { createVerifiedDomain, dispatchingEmailService } from "@coss/email/testing";
 import { runDueReputationEvaluations, updateReputationPolicy } from "@coss/reputation";
 import { createTestTenant } from "@coss/tenancy/testing";
+import { LATEST_API_VERSION } from "@coss/versioning";
 import { createWebhookEndpoint, runDueWebhookDeliveries } from "@coss/webhooks";
 import {
   TEST_SECRETS_KEY,
@@ -30,6 +31,7 @@ describe("live bounces → automatic suspension → webhook", () => {
           environmentId: tenant.production.id,
           url: receiver.url,
           eventTypes: ["account.suspended"],
+          apiVersion: LATEST_API_VERSION,
           userId: null,
         },
         testManagementDeps,
