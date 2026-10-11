@@ -132,6 +132,7 @@ from the root or a package — the package script is what loads `.env` and the t
 | `SCREENING_CLASSIFIER`, `SCREENING_MODEL`, `AI_GATEWAY_API_KEY` | worker: content screening (`off`/`fake`/`ai`; a Vercel AI Gateway decision model id, default `typesafe-ai/jev`; the Gateway key, required with `ai`) |
 | `NODE_ENV`, `SKIP_ENV_VALIDATION` | `production` makes dev auth emails and the seed refuse to run; the latter skips t3-env (image builds set it) |
 | `SKIP_BUILD_TYPECHECK` | `1` makes `next build` (web, site) skip its TypeScript check; set only by CI's build job (its check job typechecks) |
+| `TURBO_TOKEN`, `TURBO_TEAM`, `TURBO_REMOTE_CACHE_SIGNATURE_KEY` | turbo itself (Vercel Remote Cache): shell environment locally (`turbo login` stores the token), secrets/vars in CI; not in `.env` |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | `apps/web`: Server Actions key shared by every dashboard task of a stage (base64, 16/24/32 bytes); read at runtime, required in production |
 | `TRUSTED_PROXY_HOPS` | `apps/web`: proxies that append to `X-Forwarded-For` (CloudFront → ALB: `2`; default `0`). `src/proxy.ts` replaces the header with the one client address they vouch for, which Better Auth then uses (it ignores multi-value headers) |
 | `NEXT_DEPLOYMENT_ID` | Next builds (`apps/web`, `apps/site`): the commit, passed by the Dockerfiles; build id + version-skew protection |
@@ -139,9 +140,12 @@ from the root or a package — the package script is what loads `.env` and the t
 | `SEED_PASSWORD` | `db:seed` demo password (only when the user is first created) |
 | `COSS_API_KEY`, `COSS_BASE_URL` | SDK defaults / `packages/sdk/examples` only (the example also reads `COSS_FROM`, `COSS_TO`) |
 
-Adding one: `.env.example`, the app's t3-env schema, **`turbo.json` `globalEnv`** (strict env mode drops undeclared vars
-from tasks — CI and image builds have no `.env`), the service in `infra/aws/services.ts` (a test fails otherwise), and
-`ci.yml` if CI needs it.
+Adding one: `.env.example`, the app's t3-env schema, **`turbo.json` `globalPassThroughEnv`** (strict env mode drops
+undeclared vars from tasks — CI and image builds have no `.env`), the service in `infra/aws/services.ts` (a test fails
+otherwise), and `ci.yml` if CI needs it. Only a variable that changes what a task *produces* goes in `globalEnv`
+instead (today `NODE_ENV`, `NEXT_DEPLOYMENT_ID`; `infra/test` pins the list): those values are part of every task hash,
+and laptops and CI must compute the same hashes to share the remote cache (README, "Remote cache"). Runtime values
+are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-through safe.
 
 ## Public API (`apps/api`)
 

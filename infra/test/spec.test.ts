@@ -13,6 +13,8 @@ import { SERVICES, type ServiceName } from "../aws/services.ts";
 
 const ROOT = path.resolve(import.meta.dir, "../..");
 const read = (file: string) => readFileSync(path.join(ROOT, file), "utf8");
+const readTurbo = () =>
+  JSON.parse(read("turbo.json")) as { globalEnv: string[]; globalPassThroughEnv: string[] };
 
 /** Keys of an app's t3-env `server` schema, including the spread email shape. */
 function schemaKeys(envFile: string, spread: Record<string, unknown>): string[] {
@@ -44,16 +46,24 @@ describe("services", () => {
   }
 
   test("declared variables reach tasks (turbo strict env mode) unless the image sets them", () => {
-    const turbo = JSON.parse(read("turbo.json")) as { globalEnv: string[] };
+    const turbo = readTurbo();
+    const reaching = new Set([...turbo.globalEnv, ...turbo.globalPassThroughEnv]);
     for (const service of SERVICES) {
       for (const variable of service.env) {
         if (variable.kind === "image") continue;
-        expect({ name: variable.name, inTurbo: turbo.globalEnv.includes(variable.name) }).toEqual({
+        expect({ name: variable.name, inTurbo: reaching.has(variable.name) }).toEqual({
           name: variable.name,
           inTurbo: true,
         });
       }
     }
+  });
+
+  test("only variables that change build output are part of turbo's task hashes", () => {
+    // The remote cache shares results between laptops and CI, whose runtime settings differ.
+    // A variable belongs in globalEnv only if it changes what a task produces (verified for
+    // these by building with different runtime values); everything else is pass-through.
+    expect(readTurbo().globalEnv).toEqual(["NODE_ENV", "NEXT_DEPLOYMENT_ID"]);
   });
 
   test("image variables are set by the service's Dockerfile", () => {

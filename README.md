@@ -145,6 +145,30 @@ resets) are printed to the dashboard's server console in development.
 | `bun run valkey:bootstrap` | Create/update the ElastiCache Serverless for Valkey cache for rate limits (see below) |
 | `bun run ratelimit:set --org <slug> [--bucket … --limit … \| --reset]` | Show or change an organization's rate limits |
 
+## Remote cache (Turborepo on Vercel)
+
+`typecheck` and `build` results are shared through Turborepo's [Vercel Remote Cache](https://vercel.com/docs/monorepos/remote-caching)
+by everyone's machines and CI. Turbo fingerprints each task's inputs (source, lockfile, `turbo.json`,
+`NODE_ENV`, `NEXT_DEPLOYMENT_ID`); when CI computes a fingerprint someone already built, it downloads that result
+instead of building again, so running `bun run build` before pushing makes CI's build job near-instant. Any change
+to the inputs is a miss and CI builds itself, so nothing goes unchecked. Tests are never cached.
+
+One-time setup per machine (each worktree picks it up), with the team slug and signing key from the team's password
+manager:
+
+```sh
+bunx turbo login                     # Vercel account with access to the team
+# in ~/.zshrc / ~/.bashrc (not .env: turbo only reads the shell's environment)
+export TURBO_TEAM=<vercel team slug>
+export TURBO_REMOTE_CACHE_SIGNATURE_KEY=<shared key>   # artifacts are HMAC-signed; ≥ 32 bytes
+```
+
+Without it everything still works, just without sharing (turbo warns and builds locally). CI reads
+`secrets.TURBO_TOKEN` (a Vercel access token scoped to the team), `vars.TURBO_TEAM` and
+`secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY`. Everyone with the token and key can upload results CI will accept:
+treat them like push access. Runtime settings (`DATABASE_URL`, secrets, URLs, …) are pass-through and never part
+of a fingerprint — see "Adding one" in AGENTS.md before adding a variable that changes build output.
+
 ## API
 
 - `POST /v1/emails` — send an email (`Idempotency-Key` header supported)
