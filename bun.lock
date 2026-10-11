@@ -118,6 +118,7 @@
         "@aws-sdk/client-sesv2": "catalog:",
         "@aws-sdk/client-sns": "catalog:",
         "@aws-sdk/client-sqs": "catalog:",
+        "@coss/auth": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
         "@coss/reputation": "workspace:*",

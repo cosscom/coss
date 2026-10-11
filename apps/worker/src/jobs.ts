@@ -1,4 +1,5 @@
 /** The worker's jobs, wired to their dependencies. Each run returns true when it found a full batch. */
+import { type AuthEmailDeps, runDueAuthEmails } from "@coss/auth/emails";
 import {
   type DomainDeps,
   type EmailDispatchQueue,
@@ -24,6 +25,7 @@ const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
 const REPUTATION_BATCH = 50;
 const NOTIFICATION_BATCH = 20;
+const AUTH_EMAIL_BATCH = 20;
 const SCHEDULED_BATCH = 50;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck];
@@ -35,6 +37,8 @@ export type WorkerDeps = {
   /** Dispatches scheduled emails. */
   email: Pick<EmailService, "dispatchDue">;
   webhooks: WebhookDeliveryDeps;
+  /** Sends account emails (verification, password resets, invitations); `null`: held. */
+  authEmails: AuthEmailDeps | null;
   /** Emails owners and admins about warnings and suspensions; `null`: held until configured. */
   notifications: ReputationNotificationDeps | null;
   /** Only with `EMAIL_PROVIDER=ses`. */
@@ -94,6 +98,18 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         SWEEP_BATCH,
     }),
   ];
+  const authEmails = deps.authEmails;
+  if (authEmails) {
+    loops.push(
+      startLoop({
+        name: "auth-emails",
+        // Someone is waiting for these (a sign-up, a password reset).
+        intervalMs: 2000,
+        run: async () =>
+          (await runDueAuthEmails({ limit: AUTH_EMAIL_BATCH }, authEmails)) === AUTH_EMAIL_BATCH,
+      }),
+    );
+  }
   const notifications = deps.notifications;
   if (notifications) {
     loops.push(

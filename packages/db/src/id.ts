@@ -38,6 +38,7 @@ export const ID_PREFIXES = {
   reputationNotification: "repntf",
   contentScreening: "scr",
   rateLimitOverride: "rlo",
+  authEmail: "authml",
   request: "req",
   adminAuditEvent: "audit",
 } as const;

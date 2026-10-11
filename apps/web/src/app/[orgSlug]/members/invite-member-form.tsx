@@ -51,7 +51,8 @@ export function InviteMemberForm({ orgSlug }: { orgSlug: string }) {
       </div>
       {state?.ok ? (
         <p className="text-muted-foreground text-sm">
-          Invited {state.data.email}. The invitation link is logged to the web server console.
+          Invited {state.data.email}. They'll get an email with the invitation link (in development,
+          it is logged to the web server console).
         </p>
       ) : (
         <FormError message={state?.error} />
