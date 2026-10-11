@@ -6,7 +6,7 @@ import {
   insertAttachments,
   loadOutboundAttachments,
   prepareAttachments,
-  purgeAttachmentContent,
+  purgeSendContent,
 } from "./attachments.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
@@ -47,6 +47,11 @@ export type SendEmailInput = {
   idempotencyKey?: string | null;
   /** Internal callers only: use the same retention on every retry; Infinity never expires. */
   idempotencyRetentionMs?: number;
+  /**
+   * Internal callers only: the body holds a secret (a sign-in link), so it is cleared once the
+   * email is sent, failed or canceled. Its history keeps everything else.
+   */
+  discardBody?: boolean;
 };
 
 export type SendEmailBatchInput = {
@@ -382,8 +387,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           ),
         )
         .returning({ id: email.id });
-      // Either way the email has left `queued`, so its attachments are no longer needed.
-      await purgeAttachmentContent(tx, row);
+      // Either way the email has left `queued`, so its attachments (and a discarded body) are no
+      // longer needed.
+      await purgeSendContent(tx, row);
       // A failure only counts if it is the recorded outcome; provider events are facts either way.
       if (!updated && outcome.status === "failed") return;
       for (const event of events) await recordProviderEvent(tx, event);
@@ -423,7 +429,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
             .where(stillDue)
             .returning({ id: email.id });
           if (!failed) return;
-          await purgeAttachmentContent(tx, row);
+          await purgeSendContent(tx, row);
           await recordProviderEvent(
             tx,
             cossEvent(row, {
@@ -594,6 +600,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     apiKeyId: string | null,
     params: SendEmailRequestOutput,
     trackingCache: Map<string, Promise<{ opens: boolean; clicks: boolean }>>,
+    discardBody = false,
   ): Promise<PreparedSend> {
     const scheduledAt = params.scheduled_at === undefined ? null : new Date(params.scheduled_at);
     // A time that is not in the future sends now (still recorded as `scheduled_at`).
@@ -628,6 +635,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         subject: params.subject,
         html: params.html,
         text: params.text,
+        discardBody,
         headers: params.headers,
         tags: params.tags,
         category: params.category ?? null,
@@ -703,7 +711,13 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const sandbox = environment.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
     const requestHash = idempotencyKey ? hashSendRequest(params) : null;
-    const prepared = await prepareSend(environment, input.apiKeyId, params, new Map());
+    const prepared = await prepareSend(
+      environment,
+      input.apiKeyId,
+      params,
+      new Map(),
+      input.discardBody,
+    );
 
     if (!sandbox) {
       try {
@@ -1020,7 +1034,7 @@ export async function cancelScheduledEmail(input: {
       )
       .returning({ id: email.id });
     if (!canceled) return;
-    await purgeAttachmentContent(tx, row);
+    await purgeSendContent(tx, row);
     await recordProviderEvent(
       tx,
       cossEvent(row, {

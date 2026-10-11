@@ -21,7 +21,7 @@ export function SignUpForm({ next }: { next: string }) {
     const form = new FormData(event.currentTarget);
     setPending(true);
     setError(null);
-    // `callbackURL` is where the (console-logged) verification link lands after verifying.
+    // `callbackURL` is where the emailed verification link lands after verifying.
     const { error } = await authClient.signUp.email({
       name: String(form.get("name") ?? "").trim(),
       email: String(form.get("email") ?? ""),

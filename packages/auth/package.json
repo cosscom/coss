@@ -9,6 +9,7 @@
     "./permissions": "./src/permissions.ts",
     "./slugs": "./src/slugs.ts",
     "./constants": "./src/constants.ts",
+    "./emails": "./src/emails.ts",
     "./sso": "./src/sso.ts"
   },
   "scripts": {

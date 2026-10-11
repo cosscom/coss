@@ -396,8 +396,11 @@ ALB, CloudFront, WAF, DNS → sign up on the dashboard → `create-admin` one-of
 production access → create COSS's own organization in the dashboard, add and verify its sending domain (e.g.
 `coss.com`), and set the worker's `NOTIFICATIONS_ENVIRONMENT_ID` (its project's live environment, `env_…`) and
 `NOTIFICATIONS_FROM` (e.g. `COSS <notifications@coss.com>`). Until then the worker logs a warning at startup and
-holds reputation notification emails (ones older than 3 days are dropped instead of sent late). They are ordinary
-live emails of that organization: its dashboard shows their delivery, and its suppressions apply.
+holds account emails (sign-up verification, password resets, invitations — dropped once their link expires: an hour,
+or the invitation's 48 hours) and reputation notification emails (dropped after 3 days), so nobody can verify their
+address or create a live key; afterwards, ask for a new verification email from account settings. They are ordinary
+live emails of that organization: its dashboard shows their delivery, and its suppressions and reputation
+guard apply. Account emails keep no body once sent (their links are secrets).
 
 ### Known gaps
 

@@ -10,7 +10,7 @@ import { isId } from "@coss/db/id";
 import { markReputationDue } from "@coss/reputation";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { purgeAttachmentContent } from "./attachments.ts";
+import { purgeSendContent } from "./attachments.ts";
 import type { ProviderEvent } from "./provider.ts";
 import { invalidateReputationRollup } from "./reputation-checks.ts";
 import {
@@ -204,7 +204,7 @@ export async function recordProviderEvent(
       .set(accepted)
       .where(and(thisEmail, eq(email.status, "queued")))
       .returning({ id: email.id });
-    if (sent || repaired) await purgeAttachmentContent(tx, target);
+    if (sent || repaired) await purgeSendContent(tx, target);
   }
 
   const status = recipientStatus(event);
