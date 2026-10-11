@@ -72,6 +72,18 @@ export function SignUpForm({ next }: { next: string }) {
           <Button loading={pending} type="submit">
             Create account
           </Button>
+          {/* Plain links: /legal is the site's (another zone; next.config.ts redirects in dev). */}
+          <p className="text-center text-muted-foreground text-xs">
+            By creating an account, you agree to the{" "}
+            <a className="text-foreground underline" href="/legal/terms">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a className="text-foreground underline" href="/legal/privacy">
+              Privacy Policy
+            </a>
+            .
+          </p>
           <p className="text-center text-muted-foreground text-sm">
             Already have an account?{" "}
             <Link className="text-foreground underline" href={`/sign-in${query}`}>

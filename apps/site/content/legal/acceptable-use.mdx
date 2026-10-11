@@ -1,0 +1,120 @@
+---
+title: Acceptable Use Policy
+description: What you may and may not send or do with COSS, and how we enforce it.
+lastUpdated: 2026-10-11
+---
+
+This Acceptable Use Policy ("**AUP**") describes what is not allowed on COSS. It is part of our
+[Terms of Service](/legal/terms) and applies to every customer, every member of a customer's organization, and anyone
+who uses the Services through a customer's account or API keys. Violating it is a breach of the Terms.
+
+Email deliverability is shared: one sender's abuse can get the platform's infrastructure blocked for everyone. We
+enforce this policy so that the messages of every customer keep reaching the inbox.
+
+## 1. Prohibited content
+
+You may not use the Services to send, store or link to content that:
+
+- is illegal, or promotes or facilitates illegal activity;
+- sexually exploits or endangers children in any way, including child sexual abuse material. We report it to the
+  National Center for Missing & Exploited Children and to law enforcement;
+- is phishing, or tries to collect passwords, payment details or other credentials under false pretenses;
+- contains or links to malware, ransomware, spyware or any other malicious code;
+- is fraudulent or deceptive, including scams, advance-fee fraud, fake invoices, impersonation of another person or
+  brand, or misleading claims about health, financial returns or products;
+- threatens, harasses, intimidates or incites violence against any person or group, or promotes hatred based on
+  protected characteristics;
+- shares intimate images of a person without their consent, or sexually explicit material sent without the
+  recipient's request;
+- infringes intellectual property, privacy or publicity rights of others; or
+- offers regulated goods or services (such as weapons, drugs, gambling or financial services) without the licenses
+  and age restrictions the law requires.
+
+## 2. Prohibited sending practices
+
+You may not:
+
+- **send unsolicited bulk messages (spam).** Send only to people who asked to hear from you, or with whom you have a
+  relationship that makes your message expected and lawful;
+- **use purchased, rented, harvested, scraped or shared address lists**, or addresses obtained without the
+  recipient's knowledge, including through co-registration or "list sharing";
+- **send marketing messages without a working unsubscribe mechanism**, or keep sending after someone opts out. Honor
+  opt-outs promptly, and within the time the law requires;
+- **disguise who you are.** Use accurate sender names, From addresses and subject lines, and send only from domains you
+  control and have verified with us;
+- **evade our protections**, for example by spreading sending across several accounts, organizations or domains to
+  avoid reputation limits ("snowshoeing"), re-adding addresses removed by suppression, or using random or rotating
+  content to avoid content screening;
+- **send to addresses you know are invalid**, or keep sending to addresses that bounce;
+- **use the Services for list-bombing**, email harassment, or to flood a mailbox or server; or
+- **use mailbox simulator or sandbox addresses** to artificially improve your organization's metrics.
+
+You must comply with every law that applies to your messages, including the U.S. CAN-SPAM Act, the Telephone Consumer
+Protection Act where relevant, Canada's Anti-Spam Legislation (CASL), the EU and UK GDPR, and national ePrivacy rules.
+
+## 3. Bounce and complaint rates
+
+High bounce and complaint rates are the clearest sign of a problem list or unwanted mail. We measure them for each
+organization, per recipient, over a rolling window, and exclude suppressed recipients and mailbox-simulator addresses.
+As a guide, today's default thresholds over 7 days are:
+
+| Signal | Warning at | Live sending may be suspended at |
+| --- | --- | --- |
+| Bounce rate (permanent bounces) | 4% | 8% |
+| Spam complaint rate | 0.08% | 0.3% |
+
+Rates are only judged once enough messages have been sent to make them meaningful. These thresholds are stricter than
+those of most mailbox providers, and we may change them, set them per organization, or act on other signals. A
+warning is shown in the dashboard and the API, sent to your `account.*` webhooks, and emailed to your organization's
+owners and administrators.
+
+## 4. Content screening
+
+We automatically screen a sample of messages sent from live environments, using automated systems including AI
+models, for spam, phishing, malware and fraud. A message judged highly likely to be abusive is not delivered (it fails
+with the reason `content_rejected`), and the sending organization's live sending is suspended pending review. See our
+[Privacy Policy](/legal/privacy#4-automated-content-screening) for how screening handles personal data.
+
+## 5. Security and platform abuse
+
+You may not:
+
+- probe, scan or test the vulnerability of the Services, or breach their security or authentication measures, except
+  as permitted by our responsible disclosure program at [cal.com/security](https://cal.com/security);
+- access or try to access data, accounts or organizations that are not yours;
+- interfere with or disrupt the Services, other customers or any network, including by overloading the API or
+  attempting denial of service;
+- circumvent rate limits, sending quotas, suspensions or other restrictions;
+- share API keys outside your organization, publish them, or use them in client-side code;
+- resell, white-label or provide the Services to third parties as your own sending platform without our written
+  agreement; or
+- use webhook endpoints to target systems you do not own or are not authorized to test.
+
+## 6. Enforcement
+
+If we believe this policy has been violated, we may act immediately and without prior notice, depending on the severity
+and our assessment of the risk. We may:
+
+- refuse to deliver, or fail, specific messages;
+- warn your organization;
+- suspend live sending for your organization, revoke API keys, or suspend your account;
+- terminate your account under the Terms; and
+- report illegal activity to law enforcement and cooperate with investigations.
+
+A suspension is never lifted automatically. To request a review, write to [legal@cal.com](mailto:legal@cal.com) with
+your organization and what you have changed. We are not liable for any loss caused by our enforcement of this policy in
+good faith.
+
+## 7. Reporting abuse
+
+If you received unwanted, fraudulent or harmful email sent through COSS, please report it to
+[legal@cal.com](mailto:legal@cal.com) with the subject line "Abuse report" and, if you can, the full message including
+its headers. To unsubscribe from a sender's messages, use the unsubscribe link in the message or contact the sender
+directly: they control their mailing list.
+
+Report security vulnerabilities as described at [cal.com/security](https://cal.com/security).
+
+## 8. Changes
+
+We may update this policy as threats and laws change. We will post the updated version here and change the "Last
+updated" date. Material changes are announced as described in the [Terms of Service](/legal/terms).
