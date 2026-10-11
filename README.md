@@ -98,6 +98,13 @@ resets) are printed to the dashboard's server console in development.
   (`tracking`) and per-link click counts. Independent of SES's own tracking, which stays off.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
+- **Single sign-on** — per organization, OpenID Connect or SAML 2.0 (Better Auth's SSO plugin), set up under
+  the organization's Settings → Single sign-on. Its domains must be the organization's **verified email domains**:
+  no second DNS check. People at those domains join as members on their first SSO sign-in, and existing accounts
+  with a verified email are linked. Owners can **require SSO**: members and admins then need an SSO session from the
+  organization's provider (owners keep password "break-glass" access). An SSO session also satisfies the
+  organization's two-factor requirement — the IdP is responsible for MFA. Support recovers broken setups from
+  `/admin` (unlink a user's SSO accounts, stop requiring SSO, disable a provider).
 - **Platform admins** — the console at `/admin` (promote with `bun run admin:create --email …`): search users and
   organizations; ban users (with a reason and duration — signs them out everywhere), grant/remove the admin role,
   revoke sessions, impersonate (with a reason, never other admins); **suspend organizations** (API keys get 403

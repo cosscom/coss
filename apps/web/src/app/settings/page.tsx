@@ -1,6 +1,6 @@
 import { getAuthenticatorName } from "@better-auth/passkey";
 import { DASHBOARD_PATH } from "@coss/auth/slugs";
-import { listOrganizationsRequiringTwoFactor } from "@coss/tenancy";
+import { listOrganizationsRequiringSso, listOrganizationsRequiringTwoFactor } from "@coss/tenancy";
 import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
@@ -45,8 +45,9 @@ export default async function AccountSettingsPage() {
   const impersonating = Boolean(session.session.impersonatedBy);
   const sessions = (await auth.api.listSessions({ headers: await authHeaders() }))
     // Only what the page shows: session tokens never leave the server.
-    .map(({ id, userAgent, ipAddress, createdAt, expiresAt }) => ({
+    .map(({ id, userAgent, ipAddress, createdAt, expiresAt, ssoProviderId }) => ({
       id,
+      sso: Boolean(ssoProviderId),
       device: describeUserAgent(userAgent),
       ipAddress,
       createdAt,
@@ -55,8 +56,9 @@ export default async function AccountSettingsPage() {
     }))
     .toSorted((a, b) => Number(b.current) - Number(a.current) || +b.createdAt - +a.createdAt);
   const otherSessions = sessions.filter((row) => !row.current).length;
-  const [requiredBy, passkeys] = await Promise.all([
+  const [requiredBy, ssoRequiredBy, passkeys] = await Promise.all([
     listOrganizationsRequiringTwoFactor({ userId: session.user.id }),
+    listOrganizationsRequiringSso({ userId: session.user.id }),
     auth.api.listPasskeys({ headers: await authHeaders() }),
   ]);
   const twoFactorEnabled = Boolean(session.user.twoFactorEnabled);
@@ -93,6 +95,21 @@ export default async function AccountSettingsPage() {
               {requiredBy.map((org) => org.name).join(", ")}{" "}
               {requiredBy.length === 1 ? "requires" : "require"} members to use an authenticator
               app. Set one up below to continue.
+            </AlertDescription>
+          </Alert>
+        ) : null}
+
+        {ssoRequiredBy.length > 0 && !session.session.ssoProviderId ? (
+          <Alert variant="info">
+            <AlertTitle>Single sign-on required</AlertTitle>
+            <AlertDescription>
+              <span>
+                {ssoRequiredBy.map((org) => org.name).join(", ")}{" "}
+                {ssoRequiredBy.length === 1 ? "requires" : "require"} members to sign in with SSO.{" "}
+                <Link className="underline" href="/sso">
+                  Sign in with SSO
+                </Link>
+              </span>
             </AlertDescription>
           </Alert>
         ) : null}
@@ -188,6 +205,11 @@ export default async function AccountSettingsPage() {
                       {row.current ? (
                         <Badge className="ms-2" variant="outline">
                           This browser
+                        </Badge>
+                      ) : null}
+                      {row.sso ? (
+                        <Badge className="ms-2" variant="outline">
+                          SSO
                         </Badge>
                       ) : null}
                     </TableCell>

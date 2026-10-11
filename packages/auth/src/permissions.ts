@@ -23,6 +23,9 @@ export const orgStatements = {
   domain: ["create", "read", "verify", "delete"],
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],
+  // `require` turns the organization's SSO requirement on/off: owners only, because owners keep
+  // password (break-glass) access while it is on.
+  sso: ["read", "update", "require"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -48,8 +51,12 @@ const readOnlyCossAccess = {
 } as const;
 
 export const orgRoles = {
-  owner: orgAc.newRole({ ...ownerAc.statements, ...fullCossAccess }),
-  admin: orgAc.newRole({ ...adminAc.statements, ...fullCossAccess }),
+  owner: orgAc.newRole({
+    ...ownerAc.statements,
+    ...fullCossAccess,
+    sso: ["read", "update", "require"],
+  }),
+  admin: orgAc.newRole({ ...adminAc.statements, ...fullCossAccess, sso: ["read", "update"] }),
   member: orgAc.newRole({ ...memberAc.statements, ...readOnlyCossAccess }),
 };
 

@@ -5,10 +5,13 @@ import { isId } from "@coss/db/id";
 import {
   ADMIN_REASON_MAX_LENGTH,
   type AdminActor,
+  disableOrganizationSso,
+  disableOrganizationSsoRequirement,
   recordAdminAction,
   resetUserTwoFactor,
   revokeApiKeyAsAdmin,
   suspendOrganization,
+  unlinkUserSso,
   unsuspendOrganization,
 } from "@coss/tenancy/admin";
 import { refresh } from "next/cache";
@@ -168,6 +171,24 @@ export async function resetTwoFactorAction(
   });
 }
 
+/**
+ * Recovery for a user whose SSO sign-in broke: unlinks their SSO accounts and signs out their SSO
+ * sessions. They can link again on their next SSO sign-in, or set a password.
+ */
+export async function unlinkUserSsoAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { actor } = await requirePlatformAdminAction();
+    const userId = formUserId(formData);
+    assertNotSelf(actor, userId);
+    await unlinkUserSso({ userId, reason: requiredReason(formData), actor });
+    refresh();
+    return null;
+  });
+}
+
 /** Signs out every session of the user. */
 export async function revokeUserSessionsAction(
   _previous: ActionResult | null,
@@ -298,6 +319,40 @@ export async function revokeApiKeyAction(
     await revokeApiKeyAsAdmin({
       organizationId: formOrganizationId(formData),
       keyId: formString(formData, "keyId"),
+      reason: requiredReason(formData),
+      actor,
+    });
+    refresh();
+    return null;
+  });
+}
+
+/** Lets the organization's members open it without SSO again (their IdP is down). */
+export async function disableOrganizationSsoRequirementAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { actor } = await requirePlatformAdminAction();
+    await disableOrganizationSsoRequirement({
+      organizationId: formOrganizationId(formData),
+      reason: requiredReason(formData),
+      actor,
+    });
+    refresh();
+    return null;
+  });
+}
+
+/** Stops SSO sign-in for the organization (and its requirement) until its admins save it again. */
+export async function disableOrganizationSsoAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { actor } = await requirePlatformAdminAction();
+    await disableOrganizationSso({
+      organizationId: formOrganizationId(formData),
       reason: requiredReason(formData),
       actor,
     });

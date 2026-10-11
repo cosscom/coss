@@ -13,6 +13,7 @@
   "dependencies": {
     "@better-auth/core": "catalog:",
     "@better-auth/passkey": "catalog:",
+    "@better-auth/sso": "catalog:",
     "@coss/auth": "workspace:*",
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",

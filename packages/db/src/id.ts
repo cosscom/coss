@@ -15,6 +15,9 @@ export const ID_PREFIXES = {
   apiKey: "key",
   twoFactor: "tfa",
   passkey: "passkey",
+  ssoProvider: "ssop",
+  /** Public SSO provider ids (`ssoProvider.providerId`, in callback URLs). */
+  ssoConnection: "sso",
   project: "proj",
   environment: "env",
   email: "email",

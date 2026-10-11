@@ -2,6 +2,7 @@ import { getEmailTenant, listDomains } from "@coss/email";
 import { listOrganizationMembers } from "@coss/tenancy";
 import {
   getOrganizationForAdmin,
+  getOrganizationSsoForAdmin,
   listAdminAuditEvents,
   listOrganizationApiKeysForAdmin,
 } from "@coss/tenancy/admin";
@@ -34,6 +35,8 @@ import { PageHeader } from "@/components/page-header";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
 import {
+  disableOrganizationSsoAction,
+  disableOrganizationSsoRequirementAction,
   revokeApiKeyAction,
   suspendOrganizationAction,
   unsuspendOrganizationAction,
@@ -49,11 +52,12 @@ export default async function AdminOrganizationPage({
   const detail = await getOrganizationForAdmin(organizationId);
   if (!detail) notFound();
   const { organization, suspension } = detail;
-  const [members, keys, domains, tenant, { events }] = await Promise.all([
+  const [members, keys, domains, tenant, sso, { events }] = await Promise.all([
     listOrganizationMembers({ organizationId: organization.id }),
     listOrganizationApiKeysForAdmin(organization.id),
     listDomains({ organizationId: organization.id }),
     getEmailTenant(organization.id),
+    getOrganizationSsoForAdmin(organization.id),
     listAdminAuditEvents({ organizationId: organization.id, limit: 25 }),
   ]);
   const fields = { organizationId: organization.id };
@@ -132,6 +136,49 @@ export default async function AdminOrganizationPage({
             </Alert>
           </CardPanel>
         ) : null}
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            Single sign-on
+            {sso?.requireSso ? <Badge variant="outline">required</Badge> : null}
+          </CardTitle>
+          <CardDescription>
+            {sso
+              ? `${sso.type === "saml" ? "SAML" : "OIDC"} provider ${sso.providerId} for ${sso.domains}: ${sso.domainVerified ? "enabled" : "disabled"}. When members are locked out because the identity provider broke, turn the requirement off; disable the provider if it is compromised. Owners can always sign in with their password.`
+              : "No SSO provider."}
+          </CardDescription>
+          {sso ? (
+            <CardAction className="flex flex-wrap gap-2">
+              {sso.requireSso ? (
+                <AdminActionDialog
+                  action={disableOrganizationSsoRequirementAction}
+                  description="Members can open the organization with any sign-in method again. SSO keeps working for those who can use it; the organization's owners can require it again."
+                  fields={fields}
+                  reason="required"
+                  reasonPlaceholder="e.g. IdP outage, ticket #1234"
+                  submitLabel="Stop requiring SSO"
+                  title={`Stop requiring SSO for ${organization.name}?`}
+                  triggerLabel="Stop requiring SSO"
+                />
+              ) : null}
+              {sso.domainVerified ? (
+                <AdminActionDialog
+                  action={disableOrganizationSsoAction}
+                  description="Nobody can sign in through this provider, and the SSO requirement is turned off. Its configuration is kept: saving it again in the organization's settings turns it back on."
+                  destructive
+                  fields={fields}
+                  reason="required"
+                  reasonPlaceholder="e.g. IdP compromised, reported in ticket #1234"
+                  submitLabel="Disable SSO"
+                  title={`Disable SSO for ${organization.name}?`}
+                  triggerLabel="Disable SSO"
+                />
+              ) : null}
+            </CardAction>
+          ) : null}
+        </CardHeader>
       </Card>
 
       <Card>

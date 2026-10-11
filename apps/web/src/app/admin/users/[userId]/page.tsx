@@ -3,6 +3,7 @@ import {
   listAdminAuditEvents,
   listUserMembershipsForAdmin,
   listUserSessionsForAdmin,
+  listUserSsoAccountsForAdmin,
 } from "@coss/tenancy/admin";
 import { Badge } from "@coss/ui/components/badge";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
@@ -43,6 +44,7 @@ import {
   revokeUserSessionsAction,
   setUserRoleAction,
   unbanUserAction,
+  unlinkUserSsoAction,
 } from "../../actions";
 
 export const metadata: Metadata = { title: "User · Admin" };
@@ -70,9 +72,10 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
   const { userId } = await params;
   const user = await getUserForAdmin(userId);
   if (!user) notFound();
-  const [memberships, sessions, { events }] = await Promise.all([
+  const [memberships, sessions, ssoAccounts, { events }] = await Promise.all([
     listUserMembershipsForAdmin(user.id),
     listUserSessionsForAdmin(user.id),
+    listUserSsoAccountsForAdmin({ userId: user.id }),
     listAdminAuditEvents({ target: { type: "user", id: user.id }, limit: 25 }),
   ]);
   const isSelf = user.id === actor.userId;
@@ -107,6 +110,13 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
               {user.emailVerified ? "Verified" : <Badge variant="warning">unverified</Badge>}
             </Detail>
             <Detail label="Two-factor">{user.twoFactorEnabled ? "On" : "Off"}</Detail>
+            <Detail label="SSO">
+              {ssoAccounts.length === 0
+                ? "Not linked"
+                : ssoAccounts
+                    .map((account) => account.organization?.name ?? account.providerId)
+                    .join(", ")}
+            </Detail>
             <Detail label="Active sessions">{sessions.length}</Detail>
             {user.banned ? (
               <>
@@ -207,6 +217,19 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
                   submitLabel="Reset two-factor"
                   title="Reset two-factor authentication?"
                   triggerLabel="Reset 2FA"
+                />
+              ) : null}
+              {ssoAccounts.length > 0 ? (
+                <AdminActionDialog
+                  action={unlinkUserSsoAction}
+                  description={`${user.email}'s accounts are unlinked from their SSO providers and their SSO sessions end. Their next SSO sign-in links again, or they can set a password with “Forgot password”. Organizations that require SSO still ask for it: turn the requirement off on the organization if its identity provider is down.`}
+                  destructive
+                  fields={fields}
+                  reason="required"
+                  reasonPlaceholder="e.g. IdP account recreated, identity confirmed in ticket #1234"
+                  submitLabel="Unlink SSO"
+                  title="Unlink SSO accounts?"
+                  triggerLabel="Unlink SSO"
                 />
               ) : null}
               <AdminActionDialog

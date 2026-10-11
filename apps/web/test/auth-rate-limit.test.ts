@@ -56,6 +56,18 @@ describe("withAuthRateLimit", () => {
     expect((await handler(post("/sign-up/email", {}, "198.51.100.2"))).status).toBe(200);
   });
 
+  test("limits SSO sign-in starts and SAML responses per client IP, sharing one bucket", async () => {
+    const { handler } = setup();
+    const statuses: number[] = [];
+    for (let i = 0; i < 10; i++) {
+      statuses.push((await handler(post("/sign-in/sso", { email: "a@acme.com" }))).status);
+      statuses.push((await handler(post("/sso/saml2/sp/acs/sso_x", {}))).status);
+    }
+    expect(statuses.every((status) => status === 200)).toBe(true);
+    expect((await handler(post("/sso/saml2/sp/acs/sso_y", {}))).status).toBe(429);
+    expect((await handler(post("/sso/saml2/sp/metadata", {}))).status).toBe(200);
+  });
+
   test("passes other paths and trailing slashes through to the right rule", async () => {
     const { handler, seen } = setup();
     for (let i = 0; i < 50; i++) await handler(post("/sign-out", {}));

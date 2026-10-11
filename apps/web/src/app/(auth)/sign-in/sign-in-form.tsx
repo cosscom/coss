@@ -5,7 +5,7 @@ import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/u
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { Separator } from "@coss/ui/components/separator";
-import { KeyRoundIcon } from "lucide-react";
+import { BuildingIcon, KeyRoundIcon } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
@@ -111,7 +111,7 @@ function CredentialsStep(props: {
     <Card>
       <CardHeader>
         <CardTitle>Sign in to COSS</CardTitle>
-        <CardDescription>Use your email and password, or a passkey.</CardDescription>
+        <CardDescription>Use your email and password, a passkey or single sign-on.</CardDescription>
       </CardHeader>
       <CardPanel className="flex flex-col gap-4">
         {/* method="post": a submit before hydration must never put credentials in the URL. */}
@@ -150,6 +150,14 @@ function CredentialsStep(props: {
         >
           <KeyRoundIcon />
           Sign in with a passkey
+        </Button>
+        <Button
+          disabled={pending !== null}
+          render={<Link href={`/sso${query}`} />}
+          variant="outline"
+        >
+          <BuildingIcon />
+          Sign in with SSO
         </Button>
         <p className="text-center text-muted-foreground text-sm">
           No account?{" "}
