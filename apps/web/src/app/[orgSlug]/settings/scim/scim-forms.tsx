@@ -231,7 +231,13 @@ export function ScimGroupRolesForm(props: {
             <Field className="min-w-56 flex-1">
               <FieldLabel>Group name</FieldLabel>
               <Input
-                defaultValue={row.groupName}
+                value={row.groupName}
+                onChange={(event) => {
+                  const groupName = event.target.value;
+                  setRows((current) =>
+                    current.map((r) => (r.key === row.key ? { ...r, groupName } : r)),
+                  );
+                }}
                 disabled={props.disabled}
                 name="groupName"
                 placeholder="e.g. COSS Admins"
@@ -241,7 +247,13 @@ export function ScimGroupRolesForm(props: {
             <Field>
               <FieldLabel>Role</FieldLabel>
               <Select
-                defaultValue={row.role}
+                value={row.role}
+                onValueChange={(role) => {
+                  if (role !== "admin" && role !== "member") return;
+                  setRows((current) =>
+                    current.map((r) => (r.key === row.key ? { ...r, role } : r)),
+                  );
+                }}
                 disabled={props.disabled}
                 items={ROLE_ITEMS}
                 name="role"

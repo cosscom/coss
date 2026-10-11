@@ -142,6 +142,51 @@ describe("connecting a directory", () => {
     await expect(refused).rejects.toBeInstanceOf(TenancyError);
   });
 
+  test("concurrent connects issue only one connection and token, and disconnect permits reconnect", async () => {
+    const tenant = await createSsoTenant();
+    const input = {
+      organizationId: tenant.organization.id,
+      actorId: tenant.owner.id,
+      lifetimeDays: 90 as const,
+    };
+    const results = await Promise.allSettled([connectScim(input), connectScim(input)]);
+    const successes = results.filter((result) => result.status === "fulfilled");
+    const failures = results.filter((result) => result.status === "rejected");
+    expect(successes).toHaveLength(1);
+    expect(failures).toHaveLength(1);
+    expect(failures[0]?.reason).toBeInstanceOf(TenancyError);
+    expect(failures[0]?.reason.code).toBe("conflict");
+
+    const connections = await db
+      .select()
+      .from(schema.scimManagedConnection)
+      .where(eq(schema.scimManagedConnection.provisioningDomainId, input.organizationId));
+    expect(connections).toHaveLength(1);
+    const state = await getOrganizationScim(input);
+    expect(state?.credentials).toHaveLength(1);
+    const first = successes[0];
+    if (!first) throw new Error("missing successful connection");
+    expect(state?.connectionId).toBe(first.value.connectionId);
+    expect((await scim(first.value.token, "GET", "/Users")).status).toBe(200);
+
+    // A partially disconnected directory must still occupy the organization's slot.
+    await db
+      .update(schema.scimManagedConnection)
+      .set({ status: "decommissioning" })
+      .where(eq(schema.scimManagedConnection.connectionId, first.value.connectionId));
+    await expect(connectScim(input)).rejects.toThrow("already connected");
+    await db
+      .update(schema.scimManagedConnection)
+      .set({ status: "active" })
+      .where(eq(schema.scimManagedConnection.connectionId, first.value.connectionId));
+
+    expect(await disconnectScim(input)).toEqual({ complete: true });
+    const reconnected = await connectScim(input);
+    expect(reconnected.connectionId).not.toBe(first.value.connectionId);
+    expect((await scim(first.value.token, "GET", "/Users")).status).toBe(401);
+    expect((await scim(reconnected.token, "GET", "/Users")).status).toBe(200);
+  });
+
   test("one connection per organization; tokens are shown once and can be revoked", async () => {
     const tenant = await createScimTenant();
     await expect(

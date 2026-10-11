@@ -9,7 +9,7 @@ import { normalizeScimGroupName, preservingScimMembers, SCIM_SCOPES } from "@cos
 import { isOwnerRole } from "@coss/auth/sso";
 import { db, schema } from "@coss/db";
 import { and, count, desc, eq, inArray } from "drizzle-orm";
-import { TenancyError } from "./errors.ts";
+import { pgErrorCode, TenancyError } from "./errors.ts";
 import { getOrganizationSsoProvider } from "./sso.ts";
 
 const {
@@ -162,16 +162,24 @@ export async function connectScim(input: {
   if (await liveConnection(input.organizationId)) {
     throw new TenancyError("conflict", "A directory is already connected.");
   }
-  const result = await auth.api.createSCIMManagedConnection({
-    body: {
-      creationRequestId: crypto.randomUUID(),
-      provisioningDomainId: input.organizationId,
-      actorId: input.actorId,
-      scopes: [...SCIM_SCOPES],
-      expiresAt: expiryFrom(input.lifetimeDays),
-    },
-  });
-  return { connectionId: result.connection.connectionId, token: result.token };
+  try {
+    const result = await auth.api.createSCIMManagedConnection({
+      body: {
+        creationRequestId: crypto.randomUUID(),
+        provisioningDomainId: input.organizationId,
+        actorId: input.actorId,
+        scopes: [...SCIM_SCOPES],
+        expiresAt: expiryFrom(input.lifetimeDays),
+      },
+    });
+    return { connectionId: result.connection.connectionId, token: result.token };
+  } catch (error) {
+    // The partial unique index also protects against concurrent requests that passed the check.
+    if (pgErrorCode(error) === "23505" && (await liveConnection(input.organizationId))) {
+      throw new TenancyError("conflict", "A directory is already connected.");
+    }
+    throw error;
+  }
 }
 
 /** Issues another token (the previous one keeps working until it is revoked or expires). */
