@@ -1,16 +1,26 @@
 import {
   checkDomain,
   createDomain,
+  createTrackingDomain,
   type DomainDeps,
   type DomainRow,
   deleteDomain,
+  deleteTrackingDomain,
+  domainObject,
+  domainObjects,
   getDomain,
   listDomains,
   MAX_PENDING_DOMAINS,
   restartDomainVerification,
-  toDomainObject,
+  verifyTrackingDomain,
 } from "@coss/email";
-import { CreateDomainRequest, DeletedDomain, DomainList, DomainObject } from "@coss/email/schemas";
+import {
+  CreateDomainRequest,
+  CreateTrackingDomainRequest,
+  DeletedDomain,
+  DomainList,
+  DomainObject,
+} from "@coss/email/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { ApiError, notFound } from "../errors.ts";
@@ -116,7 +126,8 @@ export const verifyDomainRoute = createRoute({
   description:
     "Asks the delivery provider and DNS about the domain immediately instead of waiting for the " +
     "next background check, and returns the updated domain. A `failed` domain starts verification " +
-    "over with fresh DKIM records, which have to be published again.",
+    "over with fresh DKIM records, which have to be published again. Its tracking domain, if " +
+    "any, is checked too (and set up again if it `failed`).",
   security: [{ bearerAuth: [] }],
   middleware: [requireApiKey({ domain: ["verify"] }), rateLimit("api.write")],
   request: { params: DomainIdParams },
@@ -157,6 +168,79 @@ export const deleteDomainRoute = createRoute({
   },
 });
 
+const TRACKING_NOTE =
+  "Open pixels and click redirects of emails sent from the domain (or its subdomains without a " +
+  "domain of their own) use the tracking domain while it is `active`, and the default tracking " +
+  "host otherwise.";
+
+export const createTrackingDomainRoute = createRoute({
+  method: "post",
+  path: "/domains/{id}/tracking",
+  operationId: "createTrackingDomain",
+  tags: ["Domains"],
+  summary: "Add a custom tracking domain",
+  description:
+    "Sets up a subdomain of the domain (e.g. `links.acme.com`) to serve open and click tracking. " +
+    "Publish the CNAME record in `tracking.record`; COSS then issues its certificate and checks " +
+    `it in the background, giving up after 72 hours. ${TRACKING_NOTE} A domain has at most one ` +
+    "tracking domain: remove it to use another hostname.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ domain: ["create"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/domains/{id}/tracking"),
+  ],
+  request: {
+    params: DomainIdParams,
+    body: {
+      required: true,
+      content: { "application/json": { schema: CreateTrackingDomainRequest } },
+    },
+  },
+  responses: {
+    200: jsonDoc("The domain, with its tracking domain and the CNAME to publish.", DomainObject),
+    400: errorDoc("The body is not valid JSON (`invalid_json`)."),
+    ...commonErrors,
+    404: domainNotFound,
+    413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
+    415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
+    422: errorDoc(
+      "The body failed validation (`validation_error`), the hostname is not a subdomain of the " +
+        "domain it can use (`invalid_tracking_hostname`), the domain already has a tracking " +
+        "domain (`tracking_domain_exists`), or the hostname is already in use " +
+        "(`tracking_domain_taken`).",
+    ),
+    502: errorDoc(
+      "The certificate provider could not set the hostname up; retry (`provider_error`).",
+    ),
+  },
+});
+
+export const deleteTrackingDomainRoute = createRoute({
+  method: "delete",
+  path: "/domains/{id}/tracking",
+  operationId: "deleteTrackingDomain",
+  tags: ["Domains"],
+  summary: "Remove a custom tracking domain",
+  description:
+    "Removes the domain's tracking domain. Later emails use the default tracking host, but links " +
+    "and open pixels in emails already sent through the tracking domain stop working.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ domain: ["delete"] }), rateLimit("api.write")],
+  request: { params: DomainIdParams },
+  responses: {
+    200: jsonDoc("The domain, without a tracking domain.", DomainObject),
+    ...commonErrors,
+    404: errorDoc(
+      "No domain with this id exists in this organization, or it has no tracking domain " +
+        "(`not_found`).",
+    ),
+    502: errorDoc(
+      "The certificate provider could not remove the hostname; retry (`provider_error`).",
+    ),
+  },
+});
+
 export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
 
@@ -176,13 +260,14 @@ export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
       { organizationId: c.var.auth.organizationId, name, userId: null },
       deps,
     );
-    return c.json(toDomainObject(row), 200);
+    return c.json(await domainObject(row), 200);
   });
 
   router.openapi(listDomainsRoute, async (c) => {
-    const rows = await listDomains({ organizationId: c.var.auth.organizationId });
+    const { organizationId } = c.var.auth;
+    const rows = await listDomains({ organizationId });
     return c.json(
-      { object: "list" as const, data: rows.map(toDomainObject), has_more: false },
+      { object: "list" as const, data: await domainObjects(organizationId, rows), has_more: false },
       200,
     );
   });
@@ -190,8 +275,17 @@ export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
   router.openapi(getDomainRoute, async (c) => {
     const { id } = c.req.valid("param");
     const row = await requireDomain(c.var.auth.organizationId, id);
-    return c.json(toDomainObject(row), 200);
+    return c.json(await domainObject(row), 200);
   });
+
+  /** Checks the domain's tracking domain along with it; its own problems show on its object. */
+  async function verifyTracking(organizationId: string, domainId: string): Promise<void> {
+    try {
+      await verifyTrackingDomain({ organizationId, domainId }, deps);
+    } catch (error) {
+      console.error(`[api:domains] checking the tracking domain of ${domainId} failed:`, error);
+    }
+  }
 
   router.openapi(verifyDomainRoute, async (c) => {
     const { id } = c.req.valid("param");
@@ -199,7 +293,8 @@ export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
     const row = await requireDomain(organizationId, id);
     if (row.status === "failed") {
       const restarted = await restartDomainVerification({ organizationId, id: row.id }, deps);
-      return c.json(toDomainObject(restarted), 200);
+      await verifyTracking(organizationId, row.id);
+      return c.json(await domainObject(restarted), 200);
     }
     // One provider and DNS round trip per domain every few seconds is enough; the background
     // re-check keeps running either way.
@@ -216,7 +311,8 @@ export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
       );
     }
     const checked = await checkDomain({ organizationId, id: row.id }, deps);
-    return c.json(toDomainObject(checked), 200);
+    await verifyTracking(organizationId, row.id);
+    return c.json(await domainObject(checked), 200);
   });
 
   router.openapi(deleteDomainRoute, async (c) => {
@@ -225,6 +321,23 @@ export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
     const row = await requireDomain(organizationId, id);
     await deleteDomain({ organizationId, id: row.id }, deps);
     return c.json({ object: "domain" as const, id: row.id, deleted: true as const }, 200);
+  });
+
+  router.openapi(createTrackingDomainRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { hostname } = c.req.valid("json");
+    const { organizationId } = c.var.auth;
+    const row = await requireDomain(organizationId, id);
+    await createTrackingDomain({ organizationId, domainId: row.id, hostname }, deps);
+    return c.json(await domainObject(row), 200);
+  });
+
+  router.openapi(deleteTrackingDomainRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { organizationId } = c.var.auth;
+    const row = await requireDomain(organizationId, id);
+    await deleteTrackingDomain({ organizationId, domainId: row.id }, deps);
+    return c.json(await domainObject(row), 200);
   });
 
   return router;

@@ -191,7 +191,11 @@ function fromDomainError(error: DomainError): ApiError {
       // Not a 409: the SDK retries those, and a claimed name does not free up on its own.
       return invalidRequest(error.code, error.message, "name");
     case "too_many_pending_domains":
+    case "tracking_domain_exists":
       return invalidRequest(error.code, error.message);
+    case "invalid_tracking_hostname":
+    case "tracking_domain_taken":
+      return invalidRequest(error.code, error.message, "hostname");
     case "not_found":
       return new ApiError(404, {
         type: "not_found_error",

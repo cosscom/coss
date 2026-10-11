@@ -6,7 +6,7 @@
 import { describe, expect, test } from "bun:test";
 import { db } from "@coss/db";
 import { newId } from "@coss/db/id";
-import { trackingUrls } from "@coss/email/testing";
+import { createVerifiedDomain, trackingUrls } from "@coss/email/testing";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
 import { memoryLimiter } from "@coss/ratelimit/testing";
 import { suspendOrganization } from "@coss/reputation";
@@ -506,6 +506,30 @@ describe("coss.domains against the API", () => {
       param: "name",
     });
     expect(result.error?.request_id).toMatch(REQUEST_ID);
+  });
+});
+
+describe("coss.domains.tracking against the API", () => {
+  test("create and delete a tracking domain", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.liveKey);
+    const domain = await createVerifiedDomain(tenant.organization.id);
+    const hostname = `links.${domain.name}`;
+
+    const created = await coss.domains.tracking.create(domain.id, { hostname });
+    expect(created.error).toBeNull();
+    expect(created.data?.tracking).toMatchObject({
+      hostname,
+      status: "active",
+      record: { type: "CNAME", name: hostname, value: "track.coss.test" },
+    });
+
+    const again = await coss.domains.tracking.create(domain.id, { hostname: `t.${domain.name}` });
+    expect(again.error).toMatchObject({ code: "tracking_domain_exists", status: 422 });
+
+    const removed = await coss.domains.tracking.delete(domain.id);
+    expect(removed.data).toMatchObject({ id: domain.id, tracking: null });
   });
 });
 

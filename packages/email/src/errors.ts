@@ -40,6 +40,9 @@ export type DomainErrorCode =
   | "invalid_domain"
   | "domain_taken"
   | "too_many_pending_domains"
+  | "invalid_tracking_hostname"
+  | "tracking_domain_exists"
+  | "tracking_domain_taken"
   | "not_found"
   | "provider_error";
 

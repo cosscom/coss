@@ -57,6 +57,37 @@ const db: EnvVar[] = [
   },
 ];
 
+const trackingDomains: EnvVar[] = [
+  {
+    name: "TRACKING_DOMAIN_PROVIDER",
+    kind: "plain",
+    required: true,
+    value: "cloudflare",
+    description: "Custom tracking domains are Cloudflare for SaaS custom hostnames.",
+  },
+  {
+    name: "CLOUDFLARE_API_TOKEN",
+    kind: "secret",
+    required: true,
+    description:
+      "Cloudflare API token limited to the coss.com zone with SSL and Certificates: Edit " +
+      "(custom hostnames). Same value for web, api and worker.",
+  },
+  {
+    name: "CLOUDFLARE_ZONE_ID",
+    kind: "plain",
+    required: true,
+    description: "The coss.com zone id (Cloudflare dashboard, zone overview).",
+  },
+  {
+    name: "TRACKING_CNAME_TARGET",
+    kind: "plain",
+    required: false,
+    value: "track.coss.com",
+    description: "The zone's fallback origin, which customers CNAME their tracking domain to.",
+  },
+];
+
 const email: EnvVar[] = [
   {
     name: "EMAIL_PROVIDER",
@@ -78,6 +109,7 @@ const email: EnvVar[] = [
     required: true,
     description: "Printed by ses:bootstrap.",
   },
+  ...trackingDomains,
 ];
 
 const rateLimits: EnvVar[] = [

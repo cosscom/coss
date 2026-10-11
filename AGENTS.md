@@ -19,7 +19,7 @@ auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/rat
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso plugins), org permissions, slug rules; `./sso`: SSO trust rules (server-only). |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO recovery, audit log and cross-org reads. |
-| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
+| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
@@ -122,6 +122,7 @@ from the root or a package — the package script is what loads `.env` and the t
 | `API_CORS_ORIGINS` | `apps/api`: comma-separated browser origins allowed on `/v1/*` (the docs' playground); default `https://coss.com`, locally `http://localhost:3002` |
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
 | `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX` | required with `EMAIL_PROVIDER=ses` (api, web, worker); printed by `ses:bootstrap`. AWS credentials come from the default chain (`globalPassThroughEnv` in `turbo.json`) |
+| `TRACKING_DOMAIN_PROVIDER`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`, `TRACKING_CNAME_TARGET` | api, web, worker: custom tracking domains (`fake` default, or `cloudflare`: Cloudflare for SaaS custom hostnames on the coss.com zone, which needs the token and zone id); customers CNAME to `TRACKING_CNAME_TARGET` (default `track.coss.com`); shape in `@coss/email/env` |
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
 | `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | worker: reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → printed in development, held in production |
 | `VALKEY_URL`, `VALKEY_CLUSTER` | api + web: rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
@@ -286,7 +287,8 @@ from tasks — CI and image builds have no `.env`), the service in `infra/aws/se
   jobs) + `errorOf(res)` (`apps/api/test/helpers.ts`). Email: `memoryDispatchQueue()` (records jobs; `drain(service)`
   dispatches them), `dispatchingEmailService()` (send + dispatch in one call, for tests about what happens after dispatch),
   `FakeEmailProvider({ log: false, fail })`, `gatedProvider()` for races, `createVerifiedDomain(orgId)` (live sends need
-  one), `FakeSesApi`, `fakeDnsResolver()` from `@coss/email/testing`. Real pg-boss tests use their own queue name
+  one), `FakeSesApi`, `fakeDnsResolver()`, `FakeCloudflareApi` (a `fetch` for `CloudflareTrackingHostnameProvider`)
+  from `@coss/email/testing`, `FakeTrackingHostnameProvider({ state })` from `@coss/email`. Real pg-boss tests use their own queue name
   (`packages/email/test/dispatch.test.ts`). Rate limits: `memoryLimiter({ overrides })`,
   `testValkeyLimiter()` from `@coss/ratelimit/testing`; `createTestApp({ rateLimiter, clientIp })` (defaults to an
   in-memory limiter per app); tighten limits for a test org with `setRateLimitOverride`. Webhooks: `webhookReceiver()` (local server),
@@ -445,7 +447,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `requirePlatformAdmin*`), and these system-level functions resolve the org
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
-  `recordOpen`/`recordClick` (from the email's tracking token), and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `EmailService.dispatchDue`
+  `recordOpen`/`recordClick` (from the email's tracking token), `trackingBaseUrlFor` (dispatch; reads domain names
+  across orgs like `authorizeLiveSender`), and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`,
+  `recheckDueTrackingDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `EmailService.dispatchDue`
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
@@ -504,6 +508,22 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `recordProviderEvent` (source `coss`, deduplicated per minute and link) and never change a recipient's status;
   they name a recipient only when the email had exactly one non-suppressed recipient. Events store the user agent,
   never the IP. Settings need `environment:update`. The parsed send request omits `tracking` when absent (request hashes).
+- **Custom tracking domains** (`packages/email/src/tracking-domains.ts`, table `tracking_domain`, ids `tdom_`):
+  at most one per sending domain, a strict subdomain of it outside its MAIL FROM subdomain, and the hostname's most
+  specific domain across orgs must be that domain. Served by a `TrackingHostnameProvider` (`DomainDeps.tracking`):
+  Cloudflare for SaaS custom hostnames (`cloudflare/custom-hostnames.ts`, plain `fetch`) or the fake. The provider
+  alone decides `active` (hostname and certificate live); the CNAME check (`checkTrackingRecord`) is only shown to
+  the customer. Never adopt a hostname already registered in the zone (`TrackingHostnameTakenError` →
+  `tracking_domain_taken`). Lifecycle mirrors domains (`pending` → `active`; an active one that stops →
+  `temporary_failure`; never active within 72 h, or given up/unknown at the provider → `failed`, hostname released;
+  restart via the domain's verify). The worker's `domains` loop re-checks them. `deleteDomain` releases the hostname
+  first (the row cascades). The URL is resolved **at dispatch** in `instrument` (`trackingBaseUrlFor`, only when
+  the email service has `trackingDomainProvider`, wired by the worker): the From domain's most specific domain must
+  be the org's and its tracking domain `active` with that provider, else `trackingBaseUrl`. Nothing is stored on the
+  email, and the `/t/*` routes ignore `Host`. Removing one breaks links in emails already sent through it. API:
+  `POST`/`DELETE /v1/domains/{id}/tracking` (`domain:create`/`domain:delete`, no new permission), `Domain.tracking`
+  (a `z.union([…, z.null()])`: `.nullable()` loses `null` in the OpenAPI document). Edge: Cloudflare's fallback
+  origin `track.coss.com` → ALB rule `/t/*` + `X-Tracking-Origin-Verify` → api (`infra/aws/routing.ts`).
 - **Scheduled sends** (`scheduled_at`, ISO 8601 with an offset, ≤ 30 days ahead; a past time sends now): stored as
   `scheduled` with a COSS-source `email.scheduled` event and sent by the worker's `dispatchDue` (every 5 s).
   It claims straight from `scheduled` (compare-and-set to `queued` + `provider`), after
@@ -655,7 +675,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   at a verified sender of COSS's own organization.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
-infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,
+infrastructure itself (only its spec, images and runbook exist), tracking settings over the API,
 rescheduling (cancel and send again), SCIM/directory sync,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos/deletion, email change, npm publishing of the SDK,

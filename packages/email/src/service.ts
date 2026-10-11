@@ -29,6 +29,7 @@ import {
 import { emailScreeningContent } from "./screening.ts";
 import { type SuppressionRow, suppressedRecipients } from "./suppressions.ts";
 import { newTrackingToken } from "./tracking.ts";
+import { trackingBaseUrlFor } from "./tracking-domains.ts";
 import { instrumentHtml } from "./tracking-html.ts";
 import { resolveTracking } from "./tracking-settings.ts";
 
@@ -244,6 +245,12 @@ export type EmailServiceOptions = {
    * resolve to open or click tracking fail.
    */
   trackingBaseUrl?: string;
+  /**
+   * The provider serving custom tracking domains (`DomainDeps.tracking.name`). With it, an email
+   * whose From domain has an `active` tracking domain of that provider is tracked through it
+   * (`https://<hostname>/t/…`) instead of `trackingBaseUrl`; without it, never.
+   */
+  trackingDomainProvider?: string;
   /**
    * Content screening of live emails, right before they reach the provider (the worker passes
    * `screenMessage` from `@coss/screening`). A `block` fails the email with `content_rejected`.
@@ -518,8 +525,17 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
   async function instrument(row: EmailRow, message: OutboundEmail): Promise<OutboundEmail> {
     if (!row.html || !row.trackingToken || (!row.trackOpens && !row.trackClicks)) return message;
     if (!trackingBaseUrl) throw new Error("Tracking requires the email service's trackingBaseUrl.");
+    // Resolved now, as the links are written: a tracking domain that stopped working (or was
+    // removed) since the send falls back to the default host.
+    const customBaseUrl = opts.trackingDomainProvider
+      ? await trackingBaseUrlFor({
+          organizationId: row.organizationId,
+          from: row.from,
+          provider: opts.trackingDomainProvider,
+        })
+      : null;
     const { html, links } = instrumentHtml(row.html, {
-      baseUrl: trackingBaseUrl,
+      baseUrl: customBaseUrl ?? trackingBaseUrl,
       token: row.trackingToken,
       opens: row.trackOpens,
       clicks: row.trackClicks,

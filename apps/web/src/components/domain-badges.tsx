@@ -1,4 +1,4 @@
-import type { DomainRecord, DomainRow } from "@coss/email";
+import type { DomainRecord, DomainRow, TrackingDomainRow } from "@coss/email";
 import { Badge } from "@coss/ui/components/badge";
 
 const DOMAIN_STATUS = {
@@ -23,5 +23,18 @@ const RECORD_STATUS = {
 
 export function RecordStatusBadge({ status }: { status: DomainRecord["status"] }) {
   const [variant, label] = RECORD_STATUS[status];
+  return <Badge variant={variant}>{label}</Badge>;
+}
+
+const TRACKING_DOMAIN_STATUS = {
+  pending: ["warning", "Pending"],
+  active: ["success", "Active"],
+  temporary_failure: ["warning", "Temporary failure"],
+  failed: ["error", "Failed"],
+  deleting: ["secondary", "Removing"],
+} as const satisfies Record<TrackingDomainRow["status"], readonly [string, string]>;
+
+export function TrackingDomainStatusBadge({ status }: { status: TrackingDomainRow["status"] }) {
+  const [variant, label] = TRACKING_DOMAIN_STATUS[status];
   return <Badge variant={variant}>{label}</Badge>;
 }

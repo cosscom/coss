@@ -22,15 +22,26 @@ import {
 import { checkRecords, type DnsResolver, expectedRecords } from "./dns.ts";
 import { DomainError, EmailError } from "./errors.ts";
 import { type IdentityProvider, IdentityTakenError, type ProviderTenant } from "./provider.ts";
-import { DOMAIN_NAME_MAX_LENGTH, type DomainObjectOutput, parseEmailAddress } from "./schemas.ts";
+import {
+  DOMAIN_NAME_MAX_LENGTH,
+  type DomainObjectOutput,
+  parseEmailAddress,
+  type TrackingDomainObjectOutput,
+} from "./schemas.ts";
+import type { TrackingHostnameProvider } from "./tracking-hostnames.ts";
 
-const { domain, emailTenant } = schema;
+const { domain, emailTenant, trackingDomain } = schema;
 
 export type DomainRow = typeof domain.$inferSelect;
 export type EmailTenantRow = typeof emailTenant.$inferSelect;
 export type DomainRecord = DomainRow["records"][number];
 
-export type DomainDeps = { identity: IdentityProvider; dns: DnsResolver | null };
+export type DomainDeps = {
+  identity: IdentityProvider;
+  dns: DnsResolver | null;
+  /** Serves custom tracking hostnames (`tracking-domains.ts`). */
+  tracking: TrackingHostnameProvider;
+};
 
 /** Subdomain used as the envelope sender (bounces and complaints come back to it). */
 export const MAIL_FROM_SUBDOMAIN = "send";
@@ -76,8 +87,14 @@ export function domainRecords(row: DomainRow): DomainRecord[] {
   return row.records.length > 0 ? row.records : expectedRecords(row);
 }
 
-/** The domain's public wire representation, including the records to publish. */
-export function toDomainObject(row: DomainRow): DomainObjectOutput {
+/**
+ * The domain's public wire representation, including the records to publish. `tracking` is its
+ * tracking domain's (`domainObjects` in `tracking-domains.ts` loads both).
+ */
+export function toDomainObject(
+  row: DomainRow,
+  tracking: TrackingDomainObjectOutput | null = null,
+): DomainObjectOutput {
   return {
     object: "domain",
     id: row.id,
@@ -92,6 +109,7 @@ export function toDomainObject(row: DomainRow): DomainObjectOutput {
     last_checked_at: row.lastCheckedAt?.toISOString() ?? null,
     verified_at: row.verifiedAt?.toISOString() ?? null,
     failed_at: row.failedAt?.toISOString() ?? null,
+    tracking,
   };
 }
 
@@ -165,13 +183,16 @@ export async function getDomain(input: {
   return row ?? null;
 }
 
-async function requireDomain(input: { organizationId: string; id: string }): Promise<DomainRow> {
+export async function requireDomain(input: {
+  organizationId: string;
+  id: string;
+}): Promise<DomainRow> {
   const row = await getDomain(input);
   if (!row) throw new DomainError("not_found", "Domain not found.");
   return row;
 }
 
-function isUniqueViolation(error: unknown): boolean {
+export function isUniqueViolation(error: unknown): boolean {
   const cause = (error as { cause?: { code?: string } }).cause;
   return (error as { code?: string }).code === "23505" || cause?.code === "23505";
 }
@@ -386,6 +407,34 @@ export async function checkDomain(
   return updated ?? requireDomain(input);
 }
 
+/**
+ * Removes the domain's tracking hostname at its provider (the row goes with the domain). Links in
+ * emails already sent from it stop working.
+ */
+async function releaseTrackingHostname(row: DomainRow, deps: DomainDeps): Promise<void> {
+  const [tracked] = await db
+    .select()
+    .from(trackingDomain)
+    .where(
+      and(
+        eq(trackingDomain.domainId, row.id),
+        eq(trackingDomain.organizationId, row.organizationId),
+      ),
+    )
+    .limit(1);
+  if (!tracked?.providerHostnameId || tracked.provider !== deps.tracking.name) return;
+  try {
+    await deps.tracking.delete(tracked.providerHostnameId);
+  } catch (error) {
+    console.error(`[email:domains] releasing ${tracked.hostname} failed:`, error);
+    throw new DomainError("provider_error", "The domain could not be removed. Try again shortly.");
+  }
+  await db
+    .update(trackingDomain)
+    .set({ providerHostnameId: null, nextCheckAt: null })
+    .where(eq(trackingDomain.id, tracked.id));
+}
+
 /** Removes the provider identity, then the domain. Sent emails are unaffected. */
 export async function deleteDomain(
   input: { organizationId: string; id: string },
@@ -393,6 +442,7 @@ export async function deleteDomain(
 ): Promise<void> {
   const row = await requireDomain(input);
   const scope = and(eq(domain.id, row.id), eq(domain.organizationId, row.organizationId));
+  await releaseTrackingHostname(row, deps);
   if (row.status !== "failed") {
     // Stops sends from this domain before the identity disappears.
     await db.update(domain).set({ status: "deleting", canSend: false }).where(scope);
@@ -469,7 +519,7 @@ export async function recheckDueDomains(
 }
 
 /** Every suffix of `name` that is a valid domain (`a.b.c` → `a.b.c`, `b.c`). */
-function domainSuffixes(name: string): string[] {
+export function domainSuffixes(name: string): string[] {
   const labels = name.split(".");
   return labels.slice(0, -1).map((_, index) => labels.slice(index).join("."));
 }

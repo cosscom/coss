@@ -3,9 +3,13 @@
 import {
   checkDomain,
   createDomain,
+  createTrackingDomain,
   deleteDomain,
+  deleteTrackingDomain,
   getDomain,
+  getTrackingDomain,
   restartDomainVerification,
+  verifyTrackingDomain,
 } from "@coss/email";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
@@ -71,6 +75,78 @@ export async function verifyDomainAction(
       }
       await checkDomain({ organizationId: domain.organizationId, id: domain.id }, deps);
     }
+    // Its tracking domain shows its own problems on its card.
+    await verifyTrackingDomain(
+      { organizationId: domain.organizationId, domainId: domain.id },
+      deps,
+    ).catch((error: unknown) => {
+      console.error(`[web:domains] checking the tracking domain of ${domain.id} failed:`, error);
+    });
+    refresh();
+    return null;
+  });
+}
+
+/** Sets up a subdomain as the domain's tracking domain (the CNAME to publish shows on its page). */
+export async function addTrackingDomainAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      domain: ["create"],
+    });
+    const domain = await domainFromForm(context, formData);
+    await createTrackingDomain(
+      {
+        organizationId: domain.organizationId,
+        domainId: domain.id,
+        hostname: formString(formData, "hostname"),
+      },
+      emailRuntime().domainDeps,
+    );
+    refresh();
+    return null;
+  });
+}
+
+/** Checks the tracking domain now (or starts a `failed` one over). */
+export async function checkTrackingDomainAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      domain: ["verify"],
+    });
+    const domain = await domainFromForm(context, formData);
+    const target = { organizationId: domain.organizationId, domainId: domain.id };
+    const tracking = await getTrackingDomain(target);
+    if (!tracking) throw new ActionError("This domain has no tracking domain.");
+    const since = tracking.lastCheckedAt ? Date.now() - tracking.lastCheckedAt.getTime() : Infinity;
+    if (tracking.status !== "failed" && since < MANUAL_CHECK_INTERVAL_MS) {
+      throw new ActionError("This tracking domain was just checked. Try again in a few seconds.");
+    }
+    await verifyTrackingDomain(target, emailRuntime().domainDeps);
+    refresh();
+    return null;
+  });
+}
+
+/** Removes the tracking domain; links in emails already sent through it stop working. */
+export async function removeTrackingDomainAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      domain: ["delete"],
+    });
+    const domain = await domainFromForm(context, formData);
+    await deleteTrackingDomain(
+      { organizationId: domain.organizationId, domainId: domain.id },
+      emailRuntime().domainDeps,
+    );
     refresh();
     return null;
   });

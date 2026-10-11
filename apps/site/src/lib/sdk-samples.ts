@@ -76,6 +76,14 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     args: (request) => [pathId(request), requestOptions(request)],
   },
   "DELETE /v1/domains/{id}": { method: "domains.delete", args: (r) => [pathId(r)] },
+  "POST /v1/domains/{id}/tracking": {
+    method: "domains.tracking.create",
+    args: (request) => [pathId(request), tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "DELETE /v1/domains/{id}/tracking": {
+    method: "domains.tracking.delete",
+    args: (r) => [pathId(r)],
+  },
   "POST /v1/webhook_endpoints": {
     method: "webhookEndpoints.create",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],

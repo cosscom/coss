@@ -133,6 +133,7 @@ export const sampleDomain: Domain = {
   last_checked_at: null,
   verified_at: null,
   failed_at: null,
+  tracking: null,
 };
 
 export const sampleEndpoint: WebhookEndpoint = {

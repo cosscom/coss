@@ -25,6 +25,7 @@ const app = createApp({
     sandboxProvider: email.sandboxProvider,
     queue: pgBossDispatchQueue(jobs),
     trackingBaseUrl: publicUrl,
+    trackingDomainProvider: email.trackingHostnames.name,
   }),
   domainDeps: email.domainDeps,
   webhookDeps: {
