@@ -46,7 +46,7 @@ describe("emailScreeningContent", () => {
     expect(hrefs).toEqual(["https://evil.example/login?u=1"]);
   });
 
-  test("prefers the text part and merges links from both parts", () => {
+  test("includes both body alternatives and merges their links", () => {
     expect(
       emailScreeningContent({
         from: "a@example.com",
@@ -58,9 +58,34 @@ describe("emailScreeningContent", () => {
       kind: "email",
       from: "a@example.com",
       subject: "Hi",
-      text: "text body https://two.example/b",
+      text: "text body https://two.example/b\n\nhtml body\nx",
       links: ["one.example/a", "two.example/b"],
     });
+  });
+
+  test.each(["text", "html"] as const)(
+    "a long %s part cannot crowd out the other alternative",
+    (longPart) => {
+      const content = emailScreeningContent({
+        from: "a@example.com",
+        subject: "Hello",
+        text: longPart === "text" ? "x".repeat(20_000) : "Plain message",
+        html: longPart === "html" ? `<p>${"x".repeat(20_000)}</p>` : "<p>HTML message</p>",
+      });
+      expect(content.text).toContain(longPart === "text" ? "HTML message" : "Plain message");
+      expect(content.text.length).toBeLessThanOrEqual(8000);
+    },
+  );
+
+  test("bounds a million-character HTML link before classification", () => {
+    const content = emailScreeningContent({
+      from: "a@example.com",
+      subject: "Hello",
+      text: null,
+      html: `<a href="https://evil.example/${"x".repeat(1_000_000)}">Open</a>`,
+    });
+    expect(content.links[0]).toStartWith("evil.example/");
+    expect(JSON.stringify(content).length).toBeLessThan(1000);
   });
 });
 
@@ -87,6 +112,25 @@ describe("dispatch with content screening", () => {
     expect((await getReputationStanding(tenant.organization.id))?.status).toBe("suspended");
     const [screening] = await listScreenings(tenant.organization.id);
     expect(screening).toMatchObject({ subjectId: email.id, verdict: "blocked" });
+  });
+
+  test("blocks HTML fraud even with a long benign plain-text alternative", async () => {
+    const tenant = await createTestTenant();
+    const { service, liveProvider, classifier } = screeningService();
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({
+        from: await verifiedFrom(tenant.organization.id),
+        text: "Your receipt. ".repeat(1000),
+        html: "<p>Pay using gift cards [coss-test:fraud]</p>",
+      }),
+    });
+    expect(email.status).toBe("failed");
+    expect(liveProvider.sent).toHaveLength(0);
+    expect(classifier.calls).toHaveLength(1);
+    expect((await listScreenings(tenant.organization.id))[0]?.verdict).toBe("blocked");
+    expect((await getReputationStanding(tenant.organization.id))?.status).toBe("suspended");
   });
 
   test("sends clean and flagged live emails", async () => {

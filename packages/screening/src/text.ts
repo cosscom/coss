@@ -3,6 +3,8 @@
 /** About 2k tokens: plenty to judge a message, and caps the cost of one screening. */
 export const MAX_TEXT_CHARS = 8000;
 export const MAX_LINKS = 50;
+export const MAX_LINK_CHARS = 500;
+export const MAX_LINK_TOTAL_CHARS = 4000;
 
 /** Collapses whitespace and truncates to `max` characters. */
 export function prepareText(text: string, max: number = MAX_TEXT_CHARS): string {
@@ -14,11 +16,12 @@ export function prepareText(text: string, max: number = MAX_TEXT_CHARS): string 
   return collapsed.length > max ? `${collapsed.slice(0, max)}…` : collapsed;
 }
 
-/** Distinct `http(s)` link targets, at most `MAX_LINKS`, as `host/path` without query strings. */
+/** Distinct `http(s)` host/path targets, bounded by count, individual and total characters. */
 export function prepareLinks(urls: Iterable<string>): string[] {
   const links = new Set<string>();
+  let remaining = MAX_LINK_TOTAL_CHARS;
   for (const raw of urls) {
-    if (links.size >= MAX_LINKS) break;
+    if (links.size >= MAX_LINKS || remaining === 0) break;
     let url: URL;
     try {
       url = new URL(raw.trim());
@@ -27,7 +30,12 @@ export function prepareLinks(urls: Iterable<string>): string[] {
     }
     if (url.protocol !== "http:" && url.protocol !== "https:") continue;
     // Query strings carry per-recipient tokens: noise for a classifier, and not ours to share.
-    links.add(`${url.host}${url.pathname === "/" ? "" : url.pathname}`);
+    const target = `${url.host}${url.pathname === "/" ? "" : url.pathname}`;
+    const link =
+      target.length > MAX_LINK_CHARS ? `${target.slice(0, MAX_LINK_CHARS - 1)}…` : target;
+    if (links.has(link) || link.length > remaining) continue;
+    links.add(link);
+    remaining -= link.length;
   }
   return [...links];
 }

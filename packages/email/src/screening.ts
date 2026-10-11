@@ -2,7 +2,13 @@
  * What content screening sees of an email: sender, subject, readable text and link targets. The
  * HTML is parsed for its text and `href`s; nothing here changes what is sent.
  */
-import { prepareLinks, prepareText, type ScreeningContent, urlsInText } from "@coss/screening";
+import {
+  MAX_TEXT_CHARS,
+  prepareLinks,
+  prepareText,
+  type ScreeningContent,
+  urlsInText,
+} from "@coss/screening";
 import { type DefaultTreeAdapterTypes, parse } from "parse5";
 import type { EmailRow } from "./read.ts";
 
@@ -71,12 +77,17 @@ export function htmlTextAndLinks(html: string): { text: string; hrefs: string[] 
   return { text: parts.join(""), hrefs };
 }
 
-/** The screening view of an email row: plain text preferred over HTML when both exist. */
+/** Screen both alternatives: mail clients may display either representation. */
 export function emailScreeningContent(
   row: Pick<EmailRow, "from" | "subject" | "html" | "text">,
-): ScreeningContent {
+): Extract<ScreeningContent, { kind: "email" }> {
   const html = row.html ? htmlTextAndLinks(row.html) : { text: "", hrefs: [] };
-  const body = row.text?.trim() ? row.text : html.text;
+  const parts = [row.text ?? "", html.text].map((part) => prepareText(part)).filter(Boolean);
+  // Reserve equal space for each alternative, including separators and truncation markers.
+  const partBudget = Math.floor(
+    (MAX_TEXT_CHARS - 2 * (parts.length - 1)) / Math.max(1, parts.length),
+  );
+  const body = parts.map((part) => prepareText(part, partBudget - 1)).join("\n\n");
   return {
     kind: "email",
     from: row.from,

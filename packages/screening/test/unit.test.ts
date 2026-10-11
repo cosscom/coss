@@ -4,7 +4,15 @@ import { aiSdkClassifier } from "../src/ai-sdk.ts";
 import { topCategory } from "../src/classifier.ts";
 import { fakeClassifier } from "../src/fake.ts";
 import { shouldScreen } from "../src/sampling.ts";
-import { MAX_TEXT_CHARS, prepareLinks, prepareText, urlsInText } from "../src/text.ts";
+import {
+  MAX_LINK_CHARS,
+  MAX_LINK_TOTAL_CHARS,
+  MAX_LINKS,
+  MAX_TEXT_CHARS,
+  prepareLinks,
+  prepareText,
+  urlsInText,
+} from "../src/text.ts";
 
 const signal = () => new AbortController().signal;
 
@@ -46,6 +54,26 @@ describe("text", () => {
         "not a url",
       ]),
     ).toEqual(["example.com/login", "bank.example"]);
+  });
+
+  test("bounds huge link paths and deduplicates truncated targets", () => {
+    const url = `https://example.com/${"x".repeat(1_000_000)}`;
+    const links = prepareLinks([url, `${url}other`, "https://bank.example/login"]);
+    expect(links).toHaveLength(2);
+    expect(links[0]).toHaveLength(MAX_LINK_CHARS);
+    expect(links[0]).toStartWith("example.com/");
+    expect(links[0]).toEndWith("…");
+    expect(links[1]).toBe("bank.example/login");
+  });
+
+  test("bounds aggregate link characters and link count", () => {
+    const links = prepareLinks(
+      Array.from({ length: 100 }, (_, i) => `https://a${i}.example/${"x".repeat(600)}`),
+    );
+    expect(links.length).toBeGreaterThan(1);
+    expect(links.reduce((total, link) => total + link.length, 0)).toBe(MAX_LINK_TOTAL_CHARS);
+    const shortLinks = prepareLinks(Array.from({ length: 100 }, (_, i) => `https://a${i}.example`));
+    expect(shortLinks).toHaveLength(MAX_LINKS);
   });
 
   test("finds URLs in plain text", () => {
