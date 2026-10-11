@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { newId } from "@coss/db/id";
+import { queryLogs } from "@coss/logs";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
 import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy/testing";
 import { eq } from "drizzle-orm";
@@ -409,6 +410,61 @@ describe("runDueWebhookDeliveries", () => {
       await unsuspendOrganization({ organizationId: tenant.organization.id, actor });
       expect(await runDueWebhookDeliveries({ scope: scopeOf(tenant) }, deliveryDeps)).toBe(1);
       expect(receiver.received).toHaveLength(1);
+    } finally {
+      receiver.stop();
+    }
+  });
+});
+
+describe("environment log", () => {
+  test("every attempt is a webhook.attempt line: warning while retrying, error when given up", async () => {
+    const tenant = await createTestTenant();
+    let status = 500;
+    const receiver = webhookReceiver(() => new Response("broken", { status }));
+    try {
+      const { endpoint } = await endpointFor(tenant, receiver.url);
+      await enqueue(tenant, "email.bounced");
+      const scope = scopeOf(tenant);
+      const now = new Date();
+      await runDueWebhookDeliveries({ now, scope }, deliveryDeps);
+      status = 200;
+      await runDueWebhookDeliveries(
+        { now: new Date(now.getTime() + (RETRY_DELAYS_MS[0] ?? 0)), scope },
+        deliveryDeps,
+      );
+      const page = await queryLogs({
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        from: new Date(now.getTime() - 60_000),
+        to: new Date(now.getTime() + 3_600_000),
+        filters: { sources: ["webhook"] },
+      });
+      const [succeeded, retrying] = page.data;
+      expect(retrying).toMatchObject({
+        type: "webhook.attempt",
+        level: "warning",
+        message: `email.bounced → ${receiver.url} 500`,
+        status_code: 500,
+        error_code: "webhook_delivery_failed",
+        resource_type: "email",
+        resource_id: "email_x",
+        attributes: expect.objectContaining({
+          endpoint_id: endpoint.id,
+          attempt: 1,
+          outcome: "retrying",
+          response_excerpt: "broken",
+        }),
+      });
+      expect(succeeded).toMatchObject({ level: "info", status_code: 200, error_code: null });
+      // The endpoint's id finds its attempts.
+      const byEndpoint = await queryLogs({
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        from: new Date(now.getTime() - 60_000),
+        to: new Date(now.getTime() + 3_600_000),
+        filters: { text: endpoint.id },
+      });
+      expect(byEndpoint.data).toHaveLength(2);
     } finally {
       receiver.stop();
     }

@@ -19,6 +19,7 @@
     "@aws-sdk/client-sqs": "catalog:",
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
+    "@coss/logs": "workspace:*",
     "@coss/reputation": "workspace:*",
     "@coss/screening": "workspace:*",
     "@coss/webhooks": "workspace:*",

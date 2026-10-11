@@ -60,6 +60,7 @@ const loops = startJobs({
     // The dashboard accepts local endpoints outside production; let them be reached there too.
     send: createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" }),
   },
+  logRetentionDays: env.LOG_RETENTION_DAYS,
 });
 console.info(
   `[worker] started (email-dispatch, ${loops.map((loop) => loop.name).join(", ")}; ` +

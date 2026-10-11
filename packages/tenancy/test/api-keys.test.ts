@@ -65,6 +65,7 @@ describe("createEnvironmentApiKey", () => {
       await getKeyBinding({ organizationId: tenant.organization.id, keyId: created.id }),
     ).toEqual({
       apiKeyId: created.id,
+      name: "CI",
       environmentId: tenant.development.id,
       projectId: tenant.project.id,
     });
@@ -251,7 +252,7 @@ describe("authenticateApiKey", () => {
 
   test("rejected keys never record usage", async () => {
     const tenant = await createTestTenant();
-    expect(await authenticateApiKey(tenant.sandboxKey, { sms: ["send"] })).toEqual({
+    expect(await authenticateApiKey(tenant.sandboxKey, { sms: ["send"] })).toMatchObject({
       ok: false,
       reason: "forbidden",
     });
@@ -306,11 +307,11 @@ describe("authenticateApiKey", () => {
       (await authenticateApiKey(tenant.sandboxKey, { suppression: ["create", "read", "delete"] }))
         .ok,
     ).toBe(true);
-    expect(await authenticateApiKey(tenant.sandboxKey, { sms: ["send"] })).toEqual({
+    expect(await authenticateApiKey(tenant.sandboxKey, { sms: ["send"] })).toMatchObject({
       ok: false,
       reason: "forbidden",
     });
-    expect(await authenticateApiKey(tenant.sandboxKey, { email: ["delete"] })).toEqual({
+    expect(await authenticateApiKey(tenant.sandboxKey, { email: ["delete"] })).toMatchObject({
       ok: false,
       reason: "forbidden",
     });
@@ -321,7 +322,7 @@ describe("authenticateApiKey", () => {
     const keyId = await keyIdOf(tenant.sandboxKey);
     for (const permissions of [null, "not json", "[]", '{"email":"send"}', '{"email":[1]}']) {
       await db.update(schema.apikey).set({ permissions }).where(eq(schema.apikey.id, keyId));
-      expect(await authenticateApiKey(tenant.sandboxKey, { email: ["send"] })).toEqual({
+      expect(await authenticateApiKey(tenant.sandboxKey, { email: ["send"] })).toMatchObject({
         ok: false,
         reason: "forbidden",
       });
@@ -380,6 +381,7 @@ describe("listing and bindings are organization-scoped", () => {
 
     expect(await getKeyBinding({ organizationId: tenant.organization.id, keyId })).toEqual({
       apiKeyId: keyId,
+      name: "Test live key",
       environmentId: tenant.production.id,
       projectId: tenant.project.id,
     });

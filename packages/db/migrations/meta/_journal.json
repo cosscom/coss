@@ -134,6 +134,34 @@
       "when": 1791684273824,
       "tag": "0018_melted_goblin_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791727385167,
+      "tag": "0019_log_trgm_extension",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791727391732,
+      "tag": "0020_log_entry",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791727416692,
+      "tag": "0021_log_entry_partitioning",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1791727861680,
+      "tag": "0022_log_key_permissions",
+      "breakpoints": true
     }
   ]
 }

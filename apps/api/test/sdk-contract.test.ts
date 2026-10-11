@@ -5,6 +5,7 @@
  */
 import { describe, expect, test } from "bun:test";
 import { trackingUrls } from "@coss/email/testing";
+import { createLogWriter } from "@coss/logs";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
 import { memoryLimiter } from "@coss/ratelimit/testing";
 import { suspendOrganization } from "@coss/reputation";
@@ -565,5 +566,45 @@ describe("coss.reputation against the API", () => {
       code: "account_suspended",
       status: 403,
     });
+  });
+});
+
+describe("coss.logs against the API", () => {
+  test("list and get read the environment's request log", async () => {
+    const tenant = await createTestTenant();
+    const writer = createLogWriter({ flushMs: 60_000 });
+    const { app } = createTestApp({ logWriter: writer });
+    const coss = clientFor(app, tenant.sandboxKey);
+    await coss.email.send({
+      from: "Acme <hello@acme.com>",
+      to: "nobody",
+      subject: "Hi",
+      text: "Hi",
+    });
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    await writer.flush();
+
+    const listed = await coss.logs.list({ level: ["warning", "error"], status: ["4xx"] });
+    expect(listed.error).toBeNull();
+    expect(listed.data?.data).toHaveLength(1);
+    const line = listed.data?.data[0];
+    if (!line) throw new Error("missing log line");
+    expect(line).toMatchObject({
+      object: "log",
+      source: "api",
+      level: "warning",
+      method: "POST",
+      route: "/v1/emails",
+      status_code: 422,
+      error_code: "validation_error",
+    });
+    expect(line.request_id).toMatch(REQUEST_ID);
+    expect(await coss.logs.get(line.id)).toEqual({ data: line, error: null });
+
+    const invalid = await coss.logs.list({
+      from: "2026-01-02T00:00:00Z",
+      to: "2026-01-01T00:00:00Z",
+    });
+    expect(invalid.error).toMatchObject({ code: "invalid_range", status: 422 });
   });
 });

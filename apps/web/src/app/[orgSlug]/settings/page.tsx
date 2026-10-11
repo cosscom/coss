@@ -108,6 +108,27 @@ export default async function OrganizationSettingsPage({
         </Card>
       ) : null}
 
+      {can({ audit: ["read"] }) ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Audit log</CardTitle>
+            <CardDescription>
+              Who changed what: API keys, members, domains, webhooks, suppressions and settings,
+              from the dashboard or the API.
+            </CardDescription>
+          </CardHeader>
+          <CardPanel>
+            <Button
+              render={<Link href={`/${organization.slug}/settings/audit`} />}
+              size="sm"
+              variant="outline"
+            >
+              View audit log
+            </Button>
+          </CardPanel>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>Organization ID</CardTitle>

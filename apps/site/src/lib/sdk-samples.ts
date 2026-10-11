@@ -22,6 +22,8 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
   },
   "GET /v1/reputation": { method: "reputation.get", args: () => [] },
+  "GET /v1/logs": { method: "logs.list", args: (request) => [queryParams(request)] },
+  "GET /v1/logs/{id}": { method: "logs.get", args: (request) => [pathId(request)] },
   "GET /v1/emails/{id}": {
     method: "email.get",
     args: (request) => [pathId(request)],

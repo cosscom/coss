@@ -27,6 +27,7 @@ import type {
   SuppressionImport,
   SuppressionList,
 } from "@coss/email/schemas";
+import type { ListLogsQuery, LogEntry, LogList } from "@coss/logs/schemas";
 import type {
   AccountWebhookEvent,
   ReputationCheckObject,
@@ -49,6 +50,7 @@ import type {
   ExportSuppressionsParams,
   ImportSuppressionsParams,
   List,
+  ListLogsParams,
   ListSuppressionsParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
   DeletedDomain as SdkDeletedDomain,
@@ -62,6 +64,7 @@ import type {
   EmailTracking as SdkEmailTracking,
   EmailWebhookEvent as SdkEmailWebhookEvent,
   WebhookEndpointWithSecret as SdkEndpointWithSecret,
+  Log as SdkLog,
   Reputation as SdkReputation,
   ReputationCheck as SdkReputationCheck,
   Suppression as SdkSuppression,
@@ -178,6 +181,10 @@ export type Contract = [
   Assert<MutuallyAssignable<z.input<typeof ImportSuppressionsRequest>, ImportSuppressionsParams>>,
   Assert<MutuallyAssignable<z.output<typeof SuppressionImport>, SdkSuppressionImport>>,
   Assert<MutuallyAssignable<z.input<typeof ExportSuppressionsQuery>, ExportSuppressionsParams>>,
+  // Logs: responses, and the query's parameter names (the SDK also accepts arrays and Dates).
+  Assert<MutuallyAssignable<z.output<typeof LogEntry>, SdkLog>>,
+  Assert<MutuallyAssignable<z.output<typeof LogList>, List<SdkLog>>>,
+  Assert<Equals<keyof z.input<typeof ListLogsQuery>, keyof ListLogsParams>>,
   // Errors: every API error type is one the SDK knows, and issues have the same shape.
   Assert<ApiError["type"] extends CossErrorType ? true : false>,
   Assert<MutuallyAssignable<NonNullable<ApiError["issues"]>[number], CossErrorIssue>>,

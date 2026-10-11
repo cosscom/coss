@@ -13,6 +13,8 @@ export const env = createEnv({
     ...emailWorkerEnvShape,
     // AI content screening of sampled live emails before they are sent (@coss/screening).
     ...screeningEnvShape,
+    // Days of environment logs kept (@coss/logs); expired days are dropped hourly.
+    LOG_RETENTION_DAYS: z.coerce.number().int().min(1).max(31).default(30),
     // Decrypts webhook signing secrets: 32 bytes, base64 (same value as the dashboard's).
     WEBHOOK_SECRETS_KEY: z
       .string()

@@ -17,6 +17,7 @@
     "@coss/auth": "workspace:*",
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
+    "@coss/logs": "workspace:*",
     "@coss/ratelimit": "workspace:*",
     "@coss/reputation": "workspace:*",
     "@coss/screening": "workspace:*",

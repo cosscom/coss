@@ -1,6 +1,7 @@
 import { type EmailEventOutput, getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
+import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
@@ -131,14 +132,29 @@ export default async function EmailPage({
         </Link>
         <PageHeader
           actions={
-            email.status === "scheduled" && can({ email: ["send"] }) ? (
-              <CancelEmailButton
-                emailId={email.id}
-                envSlug={environment.slug}
-                orgSlug={organization.slug}
-                projectSlug={project.slug}
-              />
-            ) : null
+            <>
+              {can({ log: ["read"] }) ? (
+                <Button
+                  render={
+                    <Link
+                      href={`/${organization.slug}/projects/${project.slug}/${environment.slug}/logs?${new URLSearchParams({ q: `resource:${email.id}`, range: "30d" })}`}
+                    />
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  View logs
+                </Button>
+              ) : null}
+              {email.status === "scheduled" && can({ email: ["send"] }) ? (
+                <CancelEmailButton
+                  emailId={email.id}
+                  envSlug={environment.slug}
+                  orgSlug={organization.slug}
+                  projectSlug={project.slug}
+                />
+              ) : null}
+            </>
           }
           title={email.subject}
         />

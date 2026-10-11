@@ -16,6 +16,7 @@
   "dependencies": {
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
+    "@coss/logs": "workspace:*",
     "@coss/reputation": "workspace:*",
     "@coss/ratelimit": "workspace:*",
     "@coss/tenancy": "workspace:*",

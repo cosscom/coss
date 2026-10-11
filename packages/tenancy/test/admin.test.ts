@@ -126,11 +126,14 @@ describe("organization suspension", () => {
     const organizationId = tenant.organization.id;
     await suspendOrganization({ organizationId, reason: "Abuse", actor });
 
-    expect(await authenticateApiKey(tenant.sandboxKey, { email: ["send"] })).toEqual({
+    expect(await authenticateApiKey(tenant.sandboxKey, { email: ["send"] })).toMatchObject({
       ok: false,
       reason: "suspended",
     });
-    expect(await authenticateApiKey(tenant.liveKey)).toEqual({ ok: false, reason: "suspended" });
+    expect(await authenticateApiKey(tenant.liveKey)).toMatchObject({
+      ok: false,
+      reason: "suspended",
+    });
     const tampered = `${tenant.sandboxKey.slice(0, -1)}${tenant.sandboxKey.endsWith("a") ? "b" : "a"}`;
     expect(await authenticateApiKey(tampered)).toEqual({ ok: false, reason: "invalid" });
 

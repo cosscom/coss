@@ -1,4 +1,5 @@
 import type { DomainDeps, EmailService } from "@coss/email";
+import { type LogWriter, noopLogWriter } from "@coss/logs";
 import {
   type ClientIpResolver,
   createRateLimiter,
@@ -13,6 +14,7 @@ import { secureHeaders } from "hono/secure-headers";
 import { BODY_LIMIT_BYTES, hasOwnBodyLimit, limitBody } from "./body-limit.ts";
 import { errorResponse, internalError, notFound, toApiError } from "./errors.ts";
 import { requestId } from "./middleware/request-id.ts";
+import { requestLog } from "./middleware/request-log.ts";
 import { createTrackingRoutes, TRACKING_PATH_PREFIX } from "./routes/tracking.ts";
 import { createV1Router } from "./routes/v1.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
@@ -43,6 +45,11 @@ export type CreateAppOptions = {
    * default. Never with credentials: the API authenticates with bearer keys only, never cookies.
    */
   corsOrigins?: readonly string[];
+  /**
+   * Receives an `api.request` log line per attributable `/v1` request (`createLogWriter`, which
+   * buffers and fails open). Defaults to writing nothing.
+   */
+  logWriter?: LogWriter;
 };
 
 /** Request headers a browser may send, and response headers it may read, cross-origin. */
@@ -63,6 +70,8 @@ export function createApp(opts: CreateAppOptions) {
   const app = new OpenAPIHono<AppEnv>({ defaultHook: validationHook });
 
   app.use(requestId);
+  // Wraps everything after it, so it sees the final response (errors and 404s included).
+  app.use(requestLog(opts.logWriter ?? noopLogWriter));
   app.use(async (c, next) => {
     c.set("rateLimiter", rateLimiter);
     c.set("clientIp", clientIp(c.req.raw.headers));
@@ -152,6 +161,10 @@ export function openApiDocumentConfig(serverUrl: string) {
       {
         name: "Webhook endpoints",
         description: "URLs that receive the environment's delivery events, signed.",
+      },
+      {
+        name: "Logs",
+        description: "The environment's API requests, email events and webhook attempts.",
       },
     ],
   };

@@ -9,6 +9,7 @@ import {
 } from "@coss/email";
 import type { SendEmailRequestInput } from "@coss/email/schemas";
 import { createVerifiedDomain, memoryDispatchQueue } from "@coss/email/testing";
+import type { LogEntryInput, LogWriter } from "@coss/logs";
 import type { ClientIpResolver, RateLimiter } from "@coss/ratelimit";
 import type { ApiKeyContext } from "@coss/tenancy";
 import { decryptSecret } from "@coss/webhooks";
@@ -34,6 +35,7 @@ export function createTestApp(
     clientIp?: ClientIpResolver;
 
     corsOrigins?: readonly string[];
+    logWriter?: LogWriter;
   } = {},
 ) {
   const liveProvider = new FakeEmailProvider({ log: false });
@@ -56,6 +58,7 @@ export function createTestApp(
     clientIp: opts.clientIp,
 
     corsOrigins: opts.corsOrigins,
+    logWriter: opts.logWriter,
   });
   const dispatch = () => queue.drain(emailService);
   return { app, liveProvider, sandboxProvider, identity, queue, dispatch };
@@ -228,4 +231,15 @@ export function authContext(overrides: Partial<ApiKeyContext> = {}): ApiKeyConte
     mode: "sandbox",
     ...overrides,
   };
+}
+
+/** Waits until the (asynchronous) request log has written `count` lines. */
+export async function waitForLogLines(
+  writer: { entries: LogEntryInput[] },
+  count: number,
+): Promise<LogEntryInput[]> {
+  for (let i = 0; i < 100 && writer.entries.length < count; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+  return writer.entries;
 }

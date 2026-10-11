@@ -22,6 +22,7 @@ import {
 } from "@coss/email/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
+import { recordApiAudit } from "../audit.ts";
 import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { rateLimit } from "../middleware/rate-limit.ts";
@@ -215,7 +216,13 @@ export function createSuppressionRoutes(): OpenAPIHono<AppEnv> {
     const result = await addSuppression({ organizationId, environmentId }, params);
     // The key's environment always exists while the key authenticates.
     if (!result) throw new Error(`Environment ${environmentId} not found.`);
-    return result.created ? c.json(result.suppression, 201) : c.json(result.suppression, 200);
+    if (!result.created) return c.json(result.suppression, 200);
+    await recordApiAudit(c, {
+      action: "suppression.created",
+      target: { type: "suppression", id: result.suppression.id, label: result.suppression.address },
+      metadata: { scope: result.suppression.scope },
+    });
+    return c.json(result.suppression, 201);
   });
 
   router.openapi(listSuppressionsRoute, async (c) => {
@@ -236,6 +243,14 @@ export function createSuppressionRoutes(): OpenAPIHono<AppEnv> {
     const { organizationId, environmentId } = c.var.auth;
     const result = await importSuppressions({ organizationId, environmentId }, suppressions);
     if (!result) throw new Error(`Environment ${environmentId} not found.`);
+    await recordApiAudit(c, {
+      action: "suppression.imported",
+      metadata: {
+        created: result.created,
+        existing: result.existing,
+        invalid: result.invalid.length,
+      },
+    });
     return c.json(result, 200);
   });
 
@@ -264,6 +279,10 @@ export function createSuppressionRoutes(): OpenAPIHono<AppEnv> {
     if (!(await removeSuppression({ organizationId, environmentId }, id))) {
       throw notFound(NOT_FOUND_MESSAGE);
     }
+    await recordApiAudit(c, {
+      action: "suppression.deleted",
+      target: { type: "suppression", id },
+    });
     return c.json({ object: "suppression" as const, id, deleted: true as const }, 200);
   });
 

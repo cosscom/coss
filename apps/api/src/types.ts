@@ -8,6 +8,8 @@ export type AppEnv = {
     requestId: string;
     /** The authenticated key's environment. Only set behind `requireApiKey`. */
     auth: ApiKeyContext;
+    /** A valid key `requireApiKey` refused (permissions, suspension): lets the refusal be logged. */
+    attemptedAuth: ApiKeyContext;
     rateLimiter: RateLimiter;
     /** The caller's address per `CLIENT_IP_HEADER`; `null` disables per-IP limits. */
     clientIp: string | null;
