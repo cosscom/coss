@@ -11,7 +11,8 @@ import { rateLimitEnvAfterProxy } from "../src/lib/rate-limit-runtime";
 function setup() {
   const seen: Request[] = [];
   const deps = {
-    limiter: createRateLimiter({ store: new MemoryStore() }),
+    // Freeze the store clock so CI runtime does not refill buckets during request loops.
+    limiter: createRateLimiter({ store: new MemoryStore({ now: () => 1_000_000 }) }),
     clientIp: clientIpResolver({ header: "x-forwarded-for" }),
   };
   const handler = withAuthRateLimit(
@@ -76,7 +77,7 @@ describe("withAuthRateLimit", () => {
   test("uses an aggregate fallback when no client IP is trusted", async () => {
     const seen: Request[] = [];
     const deps = {
-      limiter: createRateLimiter({ store: new MemoryStore() }),
+      limiter: createRateLimiter({ store: new MemoryStore({ now: () => 1_000_000 }) }),
       clientIp: () => null,
     };
     const handler = withAuthRateLimit(
@@ -144,7 +145,7 @@ describe("withScimRateLimit", () => {
   function scimSetup() {
     const seen: Request[] = [];
     const deps = {
-      limiter: createRateLimiter({ store: new MemoryStore() }),
+      limiter: createRateLimiter({ store: new MemoryStore({ now: () => 1_000_000 }) }),
       clientIp: clientIpResolver({ header: "x-forwarded-for" }),
     };
     const handler = withScimRateLimit(
@@ -186,7 +187,7 @@ describe("withScimRateLimit", () => {
 
   test("limits per client IP whatever the token", async () => {
     const { handler } = scimSetup();
-    // The bucket holds 500 and refills 100/s, so a slow run gets a few more through.
+    // The bucket holds 500; the frozen test clock prevents runtime-dependent refills.
     const statuses: number[] = [];
     for (let i = 0; i < 700; i++) {
       statuses.push((await handler(scim("GET", "/Users", `cred_${i}.x`, "198.51.100.9"))).status);
