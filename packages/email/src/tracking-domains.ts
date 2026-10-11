@@ -6,7 +6,7 @@
  * dispatch, and fall back to the default tracking host while it is not `active`.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, inArray, isNotNull, lte, ne, notInArray } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, lte, ne, notInArray } from "drizzle-orm";
 import { checkTrackingRecord } from "./dns.ts";
 import {
   type DomainDeps,
@@ -301,8 +301,12 @@ export async function restartTrackingDomain(
   input: { organizationId: string; domainId: string },
   deps: DomainDeps,
 ): Promise<TrackingDomainRow> {
-  const row = await requireTrackingDomain(input);
+  let row = await requireTrackingDomain(input);
   if (row.status !== "failed") return row;
+  if (row.providerHostnameId) {
+    row = await checkTrackingDomain(input, deps);
+    if (row.providerHostnameId || row.status !== "failed") return row;
+  }
   const now = new Date();
   let claimed: TrackingDomainRow | undefined;
   try {
@@ -324,6 +328,7 @@ export async function restartTrackingDomain(
           eq(trackingDomain.id, row.id),
           eq(trackingDomain.organizationId, row.organizationId),
           eq(trackingDomain.status, "failed"),
+          isNull(trackingDomain.providerHostnameId),
         ),
       )
       .returning();
@@ -347,11 +352,40 @@ export async function checkTrackingDomain(
 ): Promise<TrackingDomainRow> {
   const row = await requireTrackingDomain(input);
   // Another provider's hostname (e.g. a fake one after switching to Cloudflare) can't be checked.
-  if (row.status === "failed" || row.status === "deleting" || row.provider !== deps.tracking.name) {
+  if (row.status === "deleting" || row.provider !== deps.tracking.name) {
     return row;
   }
   const now = input.now ?? new Date();
-  const state = row.providerHostnameId ? await deps.tracking.get(row.providerHostnameId) : null;
+  if (row.status === "failed") {
+    if (!row.providerHostnameId) return row;
+    let released = false;
+    try {
+      await deps.tracking.delete(row.providerHostnameId);
+      released = true;
+    } catch (error) {
+      console.error(`[email:tracking-domains] releasing ${row.hostname} failed:`, error);
+    }
+    const [updated] = await db
+      .update(trackingDomain)
+      .set({
+        providerHostnameId: released ? null : row.providerHostnameId,
+        nextCheckAt: released ? null : new Date(now.getTime() + 10 * MINUTE),
+        lastCheckedAt: now,
+      })
+      .where(
+        and(
+          eq(trackingDomain.id, row.id),
+          eq(trackingDomain.status, "failed"),
+          eq(trackingDomain.providerHostnameId, row.providerHostnameId),
+        ),
+      )
+      .returning();
+    return updated ?? requireTrackingDomain(input);
+  }
+  // Provisioning publishes the ID after the provider creates the hostname. A concurrent
+  // verification must leave that pending claim alone until the ID has been stored.
+  if (!row.providerHostnameId) return row;
+  const state = await deps.tracking.get(row.providerHostnameId);
   const record = await checkTrackingRecord(
     expectedRecord(row.hostname, deps.tracking.cnameTarget),
     deps.dns,
@@ -364,10 +398,12 @@ export async function checkTrackingDomain(
   else if (row.activatedAt) status = "temporary_failure";
   else status = expired ? "failed" : "pending";
 
+  let cleanupPending = false;
   if (status === "failed" && state && row.providerHostnameId) {
     try {
       await deps.tracking.delete(row.providerHostnameId);
     } catch (error) {
+      cleanupPending = true;
       console.error(`[email:tracking-domains] releasing ${row.hostname} failed:`, error);
     }
   }
@@ -380,12 +416,11 @@ export async function checkTrackingDomain(
       providerMessage:
         state?.message ??
         (state ? null : "The tracking hostname is no longer registered. Restart its setup."),
-      providerHostnameId: status === "failed" ? null : row.providerHostnameId,
+      providerHostnameId: status === "failed" && !cleanupPending ? null : row.providerHostnameId,
       lastCheckedAt: now,
-      nextCheckAt: trackingNextCheckAt(
-        { status, verificationStartedAt: row.verificationStartedAt },
-        now,
-      ),
+      nextCheckAt: cleanupPending
+        ? new Date(now.getTime() + 10 * MINUTE)
+        : trackingNextCheckAt({ status, verificationStartedAt: row.verificationStartedAt }, now),
       activatedAt: status === "active" ? (row.activatedAt ?? now) : row.activatedAt,
       failedAt: status === "failed" ? now : null,
     })
@@ -394,6 +429,7 @@ export async function checkTrackingDomain(
         eq(trackingDomain.id, row.id),
         eq(trackingDomain.organizationId, row.organizationId),
         notInArray(trackingDomain.status, ["failed", "deleting"]),
+        eq(trackingDomain.providerHostnameId, row.providerHostnameId),
       ),
     )
     .returning();
@@ -472,7 +508,7 @@ export async function recheckDueTrackingDomains(
       and(
         isNotNull(trackingDomain.nextCheckAt),
         lte(trackingDomain.nextCheckAt, now),
-        notInArray(trackingDomain.status, ["failed", "deleting"]),
+        ne(trackingDomain.status, "deleting"),
         eq(trackingDomain.provider, deps.tracking.name),
         opts.scope ? inArray(trackingDomain.organizationId, opts.scope.organizationIds) : undefined,
       ),

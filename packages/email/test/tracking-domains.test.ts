@@ -26,6 +26,7 @@ import {
   createTrackingDomain,
   deleteTrackingDomain,
   domainObject,
+  getTrackingDomain,
   recheckDueTrackingDomains,
   restartTrackingDomain,
   trackingBaseUrlFor,
@@ -444,5 +445,112 @@ describe("sending through a tracking domain", () => {
     expect(await base(`a@mail.${domain.name}`)).toBeNull();
     expect(await base(`a@${domain.name}`, (await createTestTenant()).organization.id)).toBeNull();
     expect(await base("not an address")).toBeNull();
+  });
+});
+
+describe("tracking lifecycle recovery", () => {
+  test.each(["expired", "failed"])(
+    "retries cleanup after %s without losing the provider ID",
+    async (reason) => {
+      const { organizationId, domain } = await setup();
+      const { api, deps } = cloudflareDeps();
+      const input = { organizationId, domainId: domain.id };
+      const hostname = `links.${domain.name}`;
+      const created = await createTrackingDomain({ ...input, hostname }, deps);
+      if (reason === "failed") api.set(hostname, { status: "blocked" });
+      const remove = deps.tracking.delete.bind(deps.tracking);
+      let fail = true;
+      deps.tracking.delete = async (id) => {
+        if (fail) throw new Error("cleanup unavailable");
+        await remove(id);
+      };
+      const now = new Date(Date.now() + 73 * HOUR);
+      const failed = await checkTrackingDomain({ ...input, now }, deps);
+      expect(failed.status).toBe("failed");
+      expect(failed.providerHostnameId).toBe(created.providerHostnameId);
+      expect(failed.nextCheckAt).not.toBeNull();
+      const restarted = await restartTrackingDomain(input, deps);
+      expect(restarted.status).toBe("failed");
+      expect(restarted.providerHostnameId).toBe(created.providerHostnameId);
+      expect(api.calls.filter((call) => call.method === "POST")).toHaveLength(1);
+      const scope = { organizationIds: [organizationId] };
+      expect(await recheckDueTrackingDomains({ scope, now }, deps)).toBe(1);
+      expect((await getTrackingDomain(input))?.providerHostnameId).toBe(created.providerHostnameId);
+      fail = false;
+      expect(
+        await recheckDueTrackingDomains({ scope, now: new Date(now.getTime() + HOUR) }, deps),
+      ).toBe(1);
+      expect(await getTrackingDomain(input)).toMatchObject({
+        status: "failed",
+        providerHostnameId: null,
+        nextCheckAt: null,
+      });
+      expect(api.find(hostname)).toBeUndefined();
+      expect((await restartTrackingDomain(input, deps)).status).toBe("pending");
+    },
+  );
+
+  test("verification during creation and restart waits for provisioning", async () => {
+    const { organizationId, domain } = await setup();
+    const deps = fakeDeps();
+    const input = { organizationId, domainId: domain.id };
+    const create = deps.tracking.create.bind(deps.tracking);
+    for (const restarting of [false, true]) {
+      const entered = Promise.withResolvers<void>();
+      const release = Promise.withResolvers<void>();
+      deps.tracking.create = async (hostname) => {
+        entered.resolve();
+        await release.promise;
+        return create(hostname);
+      };
+      const provisioning = restarting
+        ? restartTrackingDomain(input, deps)
+        : createTrackingDomain({ ...input, hostname: `links.${domain.name}` }, deps);
+      await entered.promise;
+      try {
+        expect(await verifyTrackingDomain(input, deps)).toMatchObject({
+          status: "pending",
+          providerHostnameId: null,
+        });
+      } finally {
+        release.resolve();
+      }
+      const active = await provisioning;
+      expect(active.status).toBe("active");
+      expect(active.providerHostnameId).not.toBeNull();
+      if (!active.providerHostnameId) throw new Error("Missing provisioned hostname ID");
+      await deps.tracking.delete(active.providerHostnameId);
+      await db
+        .update(schema.trackingDomain)
+        .set({
+          status: "failed",
+          providerHostnameId: null,
+          nextCheckAt: null,
+        })
+        .where(eq(schema.trackingDomain.id, active.id));
+    }
+  });
+
+  test("SES deletion failure leaves released tracking inactive and restartable", async () => {
+    const { organizationId, domain } = await setup();
+    const deps = fakeDeps();
+    const input = { organizationId, domainId: domain.id };
+    await createTrackingDomain({ ...input, hostname: `links.${domain.name}` }, deps);
+    deps.identity.deleteDomainIdentity = async () => {
+      throw new Error("SES unavailable");
+    };
+    await expectDomainError(
+      deleteDomain({ organizationId, id: domain.id }, deps),
+      "provider_error",
+    );
+    expect(await getTrackingDomain(input)).toMatchObject({
+      status: "failed",
+      providerHostnameId: null,
+      nextCheckAt: null,
+    });
+    expect(
+      await trackingBaseUrlFor({ organizationId, from: `hi@${domain.name}`, provider: "fake" }),
+    ).toBeNull();
+    expect((await restartTrackingDomain(input, deps)).status).toBe("active");
   });
 });

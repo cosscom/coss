@@ -431,7 +431,7 @@ async function releaseTrackingHostname(row: DomainRow, deps: DomainDeps): Promis
   }
   await db
     .update(trackingDomain)
-    .set({ providerHostnameId: null, nextCheckAt: null })
+    .set({ status: "failed", failedAt: new Date(), providerHostnameId: null, nextCheckAt: null })
     .where(eq(trackingDomain.id, tracked.id));
 }
 
