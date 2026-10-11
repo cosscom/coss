@@ -22,7 +22,7 @@ auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/rat
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
-| `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks; `./schemas` (zod only: policy, wire schemas). |
+| `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
 | `packages/screening` | `@coss/screening` | Product-agnostic AI content screening: sampling per org + product, the `ContentClassifier` interface (Vercel AI SDK `experimental_decide` adapter under `./ai`, `fakeClassifier` in `./testing`), verdict history, the `content_screening` reputation check; `./env` (zod only), `./runtime`. |
 | `packages/versioning` | `@coss/versioning` | Dated public API versions (`Coss-Version`): `API_VERSIONS`, the `VERSION_CHANGES` registry and the engine that renders latest-shape responses/webhook payloads in older versions and upgrades older request bodies. Zero deps, client-safe; `./testing` (`testVersioning()`). |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens) and `globals.css` (the dashboard's stylesheet). |
@@ -117,12 +117,13 @@ from the root or a package — the package script is what loads `.env` and the t
 | `DATABASE_URL` | `@coss/db` pool, drizzle-kit, migrations; validated by api + web |
 | `TEST_DATABASE_URL` | must name a `*_test` database; swapped in by `@coss/db/testing`; `db:migrate:test` |
 | `DATABASE_POOL_MAX` | optional pg pool size (default 10) |
-| `BETTER_AUTH_SECRET` (≥ 32 chars), `BETTER_AUTH_URL` | `packages/auth/src/options.ts` (base URL, trusted origin, invitation links) |
+| `BETTER_AUTH_SECRET` (≥ 32 chars), `BETTER_AUTH_URL` | `packages/auth/src/options.ts` (base URL, trusted origin, invitation links); `BETTER_AUTH_URL` also `apps/worker` (dashboard links in notification emails) |
 | `API_PORT`, `API_PUBLIC_URL` | `apps/api` (port; OpenAPI `servers` and email tracking URLs, falls back to the request origin outside production); `API_PUBLIC_URL` also `apps/worker` (email tracking) and `apps/web` (quick-start snippets, read at runtime) |
 | `API_CORS_ORIGINS` | `apps/api`: comma-separated browser origins allowed on `/v1/*` (the docs' playground); default `https://coss.com`, locally `http://localhost:3002` |
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
 | `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX` | required with `EMAIL_PROVIDER=ses` (api, web, worker); printed by `ses:bootstrap`. AWS credentials come from the default chain (`globalPassThroughEnv` in `turbo.json`) |
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
+| `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | worker: reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → printed in development, held in production |
 | `VALKEY_URL`, `VALKEY_CLUSTER` | api + web: rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
 | `RATE_LIMIT_KEY_PREFIX` | api + web: namespaces Valkey keys (default `coss`) |
 | `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → per-IP limits off |
@@ -338,7 +339,8 @@ change that can't be expressed as a transform — that is a `/v2`.
 and mark the org due (`markReputationDue`) when new evidence arrives. A *one-off verdict* calls
 `suspendOrganization({ organizationId, trigger: "<name>", actor: { kind: "system" }, note }, tx?)` directly (content
 screening does both: it suspends on a block and its check keeps the verdicts in the window). Either way add
-the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx`); new thresholds go in
+the trigger's label to `TRIGGER_LABELS` (`packages/reputation/src/schemas.ts`, shared by the dashboard and the
+notification emails) and, if there is useful advice, to `ADVICE` (`packages/reputation/src/notifications.ts`); new thresholds go in
 `ReputationPolicy` (+ overrides schema and the admin `PolicyForm`).
 
 ## Generated / managed files — don't hand-edit
@@ -546,7 +548,8 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
   revisions invalidate stale evaluations. Checks (`ReputationCheck`) measure; `decide` is the only automatic policy: worst severity wins, a warning
   clears when every check is `ok`, and **a suspension is never lifted automatically — only `reinstateOrganization`
   (platform admin, note required)**. Every change goes through `applyTransition` (guarded update + history row +
-  `account.*` webhooks to live environments, one transaction). Email's checks (`emailReputationChecks`) are per-recipient
+  `account.*` webhooks to live environments + a `reputation_notification` outbox row for warnings and suspensions,
+  one transaction). Email's checks (`emailReputationChecks`) are per-recipient
   rates over live emails in the window (default 7 days, never before the last reinstatement), excluding
   suppressed/failed/queued/canceled recipients and `SIMULATOR_DOMAIN` (unless the `countSimulatorRecipients` override is on).
   Closed hours (ended ≥ `ROLLUP_SETTLE_MS` ago) are counted once into `email_reputation_rollup` (by email `created_at`,
@@ -557,6 +560,18 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
   `authorizeLiveSender` checks `isSuspended` **first** (`EmailError("account_suspended")`, 403 `permission_error`; an
   idempotent replay still returns) and `liveKeyRestriction` refuses new live keys. It is independent of the SES tenant
   pause (`email_tenant.sending_status`, `sending_paused`), which SES itself lifts — never fold one into the other.
+- **Reputation notifications** (table `reputation_notification`, ids `repntf_`; `packages/reputation/src/notifications.ts`):
+  the worker's `reputation-notifications` loop (`runDueReputationNotifications`, system-level) emails a warning or
+  suspension to the org's owners and admins with a **verified, unbanned** address, looked up at send time — one email
+  per person through a `ReputationNotifier`. The worker wires `emailReputationNotifier` (`@coss/email`): a normal
+  live send from COSS's own environment (`NOTIFICATIONS_ENVIRONMENT_ID`/`NOTIFICATIONS_FROM`, category `account`,
+  tracking off), so suppression, events and quotas of that org apply; idempotency key `<notification id>:<user id>`
+  (non-expiring for these internal sends; `idempotency_key_reused` counts as sent). Only the org's latest transition
+  is announced (a warning overtaken by a suspension or a recovery is `skipped`), as are ones older than 3 days or
+  with nobody to receive them. Claims push
+  `next_attempt_at` out by a 5-minute lease; failures back off 1, 2, 4… min and become `failed` after 8 attempts.
+  Content is customer-facing: trigger label, the checks' messages, advice and a dashboard link — never screening
+  scores or admin notes. Recoveries and reinstatements send no email (`NOTIFIED_TRANSITIONS`).
 - **Content screening** (`packages/screening`, tables `content_screening` (ids `scr_`) + `content_screening_counter`):
   `screenMessage` runs in the worker for **live** messages only, inside `complete()` right before `provider.send` (after
   the claim, so the stale-claim sweep covers a crash) — the `screen` option of `createEmailService`, wired only by the
@@ -625,9 +640,10 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
   already-queued immediate sends finish, while scheduled sends wait for the suspension to be lifted.
 
 - Reputation rollups are kept per hour of email creation, so late events for an old hour make the next evaluation
-  recount that whole hour. A send already past
-  `authorizeLiveSender` when the org is suspended still goes out. Customers are told by banner, page, API and webhooks —
-  there is no notification email yet.
+  recount that whole hour. A send already past `authorizeLiveSender` when the org is suspended still goes out.
+  Customers are told by banner, page, API, webhooks and a notification email to owners/admins — only for warnings
+  and suspensions (not recoveries or reinstatements), and only once the worker's `NOTIFICATIONS_*` variables point
+  at a verified sender of COSS's own organization.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,

@@ -1,0 +1,1 @@
+ALTER TABLE "reputation_event" ADD CONSTRAINT "reputation_event_id_organization_unique" UNIQUE("id","organization_id");

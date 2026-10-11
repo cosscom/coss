@@ -13,6 +13,13 @@ export const env = createEnv({
     ...emailWorkerEnvShape,
     // AI content screening of sampled live emails before they are sent (@coss/screening).
     ...screeningEnvShape,
+    // Reputation notification emails (warnings, suspensions) to organization owners and admins,
+    // sent from a live environment of COSS's own organization with an address on one of its
+    // verified domains. Unset: printed in development, held (not sent) in production.
+    NOTIFICATIONS_ENVIRONMENT_ID: z.string().startsWith("env_").optional(),
+    NOTIFICATIONS_FROM: z.string().optional(),
+    // The dashboard's origin, for links in notification emails.
+    BETTER_AUTH_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
     // Decrypts webhook signing secrets: 32 bytes, base64 (same value as the dashboard's).
     WEBHOOK_SECRETS_KEY: z
       .string()

@@ -5,13 +5,14 @@
  */
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
-import { createEmailService } from "@coss/email";
+import { createEmailService, emailReputationNotifier, notificationEnvironment } from "@coss/email";
 import {
   ensureEmailDispatchQueue,
   pgBossDispatchQueue,
   workEmailDispatchQueue,
 } from "@coss/email/dispatch";
 import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
+import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
 import { screenMessage } from "@coss/screening";
 import { createClassifier } from "@coss/screening/runtime";
 import { createWebhookSender, parseSecretsKey } from "@coss/webhooks";
@@ -49,12 +50,36 @@ const emailService = createEmailService({
 });
 await workEmailDispatchQueue(jobs, emailService);
 
+// Reputation notifications go out through COSS's own email product. Without a configured
+// environment they are printed in development and held in production (sent once configured).
+if (!env.NOTIFICATIONS_ENVIRONMENT_ID !== !env.NOTIFICATIONS_FROM) {
+  throw new Error("Set both NOTIFICATIONS_ENVIRONMENT_ID and NOTIFICATIONS_FROM, or neither.");
+}
+let notifier: ReputationNotifier | null = logReputationNotifier;
+if (env.NOTIFICATIONS_ENVIRONMENT_ID && env.NOTIFICATIONS_FROM) {
+  notifier = emailReputationNotifier({
+    service: emailService,
+    environment: await notificationEnvironment(env.NOTIFICATIONS_ENVIRONMENT_ID),
+    from: env.NOTIFICATIONS_FROM,
+  });
+} else if (process.env.NODE_ENV === "production") {
+  console.warn(
+    "[worker] NOTIFICATIONS_ENVIRONMENT_ID and NOTIFICATIONS_FROM are unset: reputation " +
+      "notification emails are held until they are configured.",
+  );
+  notifier = null;
+}
+
 const loops = startJobs({
   dispatchQueue,
   sesEvents,
   signal: controller.signal,
   domains: email.domainDeps,
   email: emailService,
+  notifications: notifier && {
+    notifier,
+    dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
+  },
   webhooks: {
     secretsKey: parseSecretsKey(env.WEBHOOK_SECRETS_KEY),
     // The dashboard accepts local endpoints outside production; let them be reached there too.

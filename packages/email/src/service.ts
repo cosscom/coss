@@ -44,6 +44,8 @@ export type SendEmailInput = {
   apiKeyId: string | null;
   params: SendEmailRequestOutput;
   idempotencyKey?: string | null;
+  /** Internal callers only: use the same retention on every retry; Infinity never expires. */
+  idempotencyRetentionMs?: number;
 };
 
 export type EmailService = {
@@ -536,6 +538,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     environment: SendEnvironment,
     idempotencyKey: string,
     requestHash: string | null,
+    retentionMs = IDEMPOTENCY_KEY_TTL_MS,
   ): Promise<EmailObjectOutput | null> {
     const [existing] = await db
       .select()
@@ -551,7 +554,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     if (
       !existing ||
       existing.requestHash !== requestHash ||
-      Date.now() - existing.createdAt.getTime() > IDEMPOTENCY_KEY_TTL_MS
+      Date.now() - existing.createdAt.getTime() > retentionMs
     ) {
       return null;
     }
@@ -565,6 +568,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     input: SendEmailInput,
   ): Promise<{ email: EmailObjectOutput; replayed: boolean }> {
     const { environment, params } = input;
+    const retentionMs = input.idempotencyRetentionMs ?? IDEMPOTENCY_KEY_TTL_MS;
     const sandbox = environment.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
     const requestHash = idempotencyKey ? hashSendRequest(params) : null;
@@ -620,7 +624,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       } catch (error) {
         // A retry of a request that already succeeded still replays, even if the domain changed since.
         const replay =
-          idempotencyKey && (await findReplay(environment, idempotencyKey, requestHash));
+          idempotencyKey &&
+          (await findReplay(environment, idempotencyKey, requestHash, retentionMs));
         if (replay) return { email: replay, replayed: true };
         throw error;
       }
@@ -700,7 +705,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         inserted = await insertOnce();
         continue;
       }
-      if (Date.now() - existing.createdAt.getTime() > IDEMPOTENCY_KEY_TTL_MS) {
+      if (Date.now() - existing.createdAt.getTime() > retentionMs) {
         // Expired: move the key to a new email atomically. The compare-and-set on the old row
         // makes concurrent requests with the same expired key queue up behind each other.
         inserted = await db.transaction(async (tx) => {
@@ -725,7 +730,12 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
 
   async function replay(input: SendEmailInput): Promise<EmailObjectOutput | null> {
     if (!input.idempotencyKey) return null;
-    return findReplay(input.environment, input.idempotencyKey, hashSendRequest(input.params));
+    return findReplay(
+      input.environment,
+      input.idempotencyKey,
+      hashSendRequest(input.params),
+      input.idempotencyRetentionMs,
+    );
   }
 
   return { send, dispatch, replay, cancel: cancelScheduledEmail, dispatchDue };
