@@ -78,6 +78,7 @@ export function requireApiKey(
     }
 
     if (!result.ok) {
+      if (result.reason !== "invalid") c.set("attemptedAuth", result.context);
       if (result.reason === "suspended") {
         throw new ApiError(403, {
           type: "permission_error",

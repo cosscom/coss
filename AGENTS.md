@@ -26,18 +26,19 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
 | `packages/screening` | `@coss/screening` | Product-agnostic AI content screening: sampling per org + product, the `ContentClassifier` interface (Vercel AI SDK `experimental_decide` adapter under `./ai`, `fakeClassifier` in `./testing`), verdict history, the `content_screening` reputation check; `./env` (zod only), `./runtime`. |
 | `packages/observability` | `@coss/observability` | Sentry setup shared by every app: env shape (`./env`, zod only), `sentryConfig`/`sentryOptions`, PII scrubbing (`scrubEvent`), the browser init (`./browser`), the dashboard's envelope tunnel (`./tunnel`) and `withSentryConfig` options (`./build`). Takes each app's SDK; depends on no framework SDK and no workspace. |
+| `packages/logs` | `@coss/logs` | Environment logs and the org audit log: the day-partitioned `log_entry` table (API requests, email events, webhook attempts), the buffered fail-open request writer, queries (keyset pages, histogram, facets, related lines, CSV/NDJSON export), partition retention, `org_audit_event`; `./schemas` + `./query` (search syntax; zod only), `./testing`. |
 | `packages/versioning` | `@coss/versioning` | Dated public API versions (`Coss-Version`): `API_VERSIONS`, the `VERSION_CHANGES` registry and the engine that renders latest-shape responses/webhook payloads in older versions and upgrades older request bodies. Zero deps, client-safe; `./testing` (`testVersioning()`). |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens) and `globals.css` (the dashboard's stylesheet). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests; nothing here calls AWS. See `infra/AGENTS.md`. |
 
-Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `db ← auth ← tenancy`, `db ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`; `versioning` (no deps) ← `tenancy`, `webhooks`, `email` (`schemas` examples);
-`api → tenancy, email, reputation, webhooks, ratelimit, versioning, db`;
-`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, db, ui`; `site → ui, auth, versioning` (only the client-safe `@coss/auth/slugs` and the changelog) +
+Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `db ← auth ← tenancy`, `db ← logs ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`; `versioning` (no deps) ← `tenancy`, `webhooks`, `email` (`schemas` examples);
+`api → tenancy, email, reputation, webhooks, ratelimit, versioning, logs, db`;
+`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, logs, db, ui`; `site → ui, auth, versioning` (only the client-safe `@coss/auth/slugs` and the changelog) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening` (`slugs`, `env` only);
-`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, db`; `sdk` and `ui` depend on no workspace.
-Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`worker → tenancy` (test fixtures — so tenancy must never import email, webhooks, screening or ratelimit) and
+`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, db`; `sdk` and `ui` depend on no workspace.
+Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`logs`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit or logs; Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`).
 
@@ -131,6 +132,7 @@ from the root or a package — the package script is what loads `.env` and the t
 | `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → per-IP limits off |
 | `TEST_VALKEY_URL` | ratelimit + api tests (keys under a random prefix, never flushed) |
 | `WEBHOOK_SECRETS_KEY` | api + web + worker: 32 bytes base64, encrypts endpoint signing secrets (losing it makes them unreadable) |
+| `LOG_RETENTION_DAYS` | worker: days of environment logs kept (1-31, default 30); whole expired day partitions are dropped hourly |
 | `SCREENING_CLASSIFIER`, `SCREENING_MODEL`, `AI_GATEWAY_API_KEY` | worker: content screening (`off`/`fake`/`ai`; a Vercel AI Gateway decision model id, default `typesafe-ai/jev`; the Gateway key, required with `ai`) |
 | `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | api, worker, web: Sentry (each its own project's DSN; web's also serves browsers of both zones); unset → nothing reported. Read before t3-env (`src/instrument.ts`, `src/lib/monitoring-server.ts`, `/api/monitoring`) and validated by it (`sentryEnvShape`) |
 | `SENTRY_RELEASE` | api, worker: the image's commit (Dockerfile build argument); the Next apps' release is `NEXT_DEPLOYMENT_ID`, injected at build |
@@ -328,6 +330,15 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 7. Dashboard: dependency + `transpilePackages`; pages under `[orgSlug]/projects/[projectSlug]/[envSlug]/`.
 8. Events/webhooks: record events in the product's own table and call `enqueueWebhookMessage(tx, …)` from
    `@coss/webhooks` in the same transaction; add the payload zod schema + SDK type + contract assertion.
+9. Logs: append a log line per new event with `appendLogEntries(tx, …)` from `@coss/logs` in the same transaction
+   (only for rows actually inserted, so deduplicated events aren't logged twice), and add a `LogSource` value
+   (enum migration + `LOG_SOURCES` + SDK `LogSource`). Mutations of the product's settings record
+   `recordAudit` (dashboard) / `recordApiAudit` (API) audit events.
+
+**Partitioned tables** (only `log_entry` so far): drizzle-kit can't declare partitioning, so declare the table in the
+schema as usual (composite primary key including the partition column), `db:generate` it, then add a `--custom`
+migration that drops the still-empty table and recreates it identically with `PARTITION BY` (see `0027`/`0028`).
+Later column changes generated by drizzle-kit apply to partitioned tables as they are.
 
 **Make a breaking API change** (renaming/removing a field, changing a type or default — additive changes need none of
 this): append today's date to `API_VERSIONS` (`packages/versioning/src/versions.ts`) and add a `VersionChange` to
@@ -456,7 +467,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/versioning`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
+  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/versioning`, `@coss/logs/{schemas,query}`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -580,6 +591,23 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `authorizeLiveSender` checks `isSuspended` **first** (`EmailError("account_suspended")`, 403 `permission_error`; an
   idempotent replay still returns) and `liveKeyRestriction` refuses new live keys. It is independent of the SES tenant
   pause (`email_tenant.sending_status`, `sending_paused`), which SES itself lifts — never fold one into the other.
+- **Logs** (`packages/logs`, `log_entry` (ids `log_`), `org_audit_event` (ids `oaudit_`)): one log per environment of
+  every API request made with its keys (`api.request`, written by `requestLog` in `apps/api` after the response through
+  the buffered `createLogWriter` — it **fails open** and never delays a request; `createApp` defaults to
+  `noopLogWriter`), every email event (`recordProviderEvent` appends them in its transaction) and every webhook attempt
+  (`webhook.attempt`, in the attempt's transaction). A log id's UUIDv7 time *is* its `occurred_at` (`toLogRow`,
+  `idTimestamp`): ids alone are cursors and locate the partition — never insert `log_entry` rows any other way.
+  Requests are logged only when attributable (a valid key; refusals for permissions/suspension included via
+  `attemptedAuth`); `/health`, `/openapi.json`, `/t/*`, preflights and `GET /v1/logs*` are not. Bodies are kept only
+  through `redactBody` (secret-named keys, base64 `content` replaced, strings cut at 2 KB, 16 KB overall) and headers
+  through the allow-lists in `redact.ts` — never `Authorization`, cookies or attachment bytes. Reads are scoped by
+  organization + environment and always bounded in time (partition pruning; the API allows ≤ 31 days). Facet counts
+  ignore their own filter. Retention: the worker's `logs` loop keeps 7 days of partitions ahead and drops expired ones
+  (`LOG_RETENTION_DAYS`); the default partition catches the rest. Search syntax lives in `@coss/logs/query`
+  (`parseLogQuery`/`formatLogQuery`), shared by the dashboard. Permissions: `log:read` (every role and API key, backfilled
+  by `0029`), `audit:read` (owners, admins). The audit log records changes from dashboard actions (`recordAudit`, after
+  the change succeeded, best effort), API keys (`recordApiAudit`), Better Auth's invitation routes and platform admins
+  (`supportAudit`: actor "COSS support", never the admin or their reason); new mutations should record one.
 - **Reputation notifications** (table `reputation_notification`, ids `repntf_`; `packages/reputation/src/notifications.ts`):
   the worker's `reputation-notifications` loop (`runDueReputationNotifications`, system-level) emails a warning or
   suspension to the org's owners and admins with a **verified, unbanned** address, looked up at send time — one email
@@ -659,6 +687,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   repairs it). An email still unclaimed after 10 min (its job exhausted its retries) is re-enqueued, and after 1 hour
   (`UNCLAIMED_FAIL_MS`) it is `failed`/`dispatch_failed` with an `email.failed` webhook — so a worker outage longer than
   an hour fails the emails queued during it instead of sending them late. Sends need the worker running.
+- Logs are best effort: request lines are buffered (up to 1 s, dropped if the database is down), requests with an
+  invalid or missing key can't be attributed and aren't logged, and free-text search is a substring match. Facets and
+  the histogram scan the selected range, so very long ranges on busy environments are slow (no rollups yet).
 - Webhook deliveries are not ordered (use `data.occurred_at`; SES itself may publish a complaint before the
   delivery). SES complaints may list every recipient on the complaining domain (and each of them gets suppressed).
   SES never suppresses mailbox-simulator addresses, and with tenant-level suppression `suppressionlist@simulator.amazonses.com` is a plain hard bounce — only
@@ -694,7 +725,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,
-SCIM/directory sync,
+SCIM/directory sync, log drains/streaming to external sinks, the audit log over the API,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos/deletion, email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.

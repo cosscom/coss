@@ -13,6 +13,7 @@ import {
 import { CreateDomainRequest, DeletedDomain, DomainList, DomainObject } from "@coss/email/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
+import { recordApiAudit } from "../audit.ts";
 import { ApiError, notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
@@ -176,6 +177,11 @@ export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
       { organizationId: c.var.auth.organizationId, name, userId: null },
       deps,
     );
+    await recordApiAudit(c, {
+      action: "domain.created",
+      target: { type: "domain", id: row.id, label: row.name },
+      environmentScoped: false,
+    });
     return c.json(toDomainObject(row), 200);
   });
 
@@ -224,6 +230,11 @@ export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
     const { organizationId } = c.var.auth;
     const row = await requireDomain(organizationId, id);
     await deleteDomain({ organizationId, id: row.id }, deps);
+    await recordApiAudit(c, {
+      action: "domain.deleted",
+      target: { type: "domain", id: row.id, label: row.name },
+      environmentScoped: false,
+    });
     return c.json({ object: "domain" as const, id: row.id, deleted: true as const }, 200);
   });
 

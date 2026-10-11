@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
+import { queryLogs } from "@coss/logs";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { eq, sql } from "drizzle-orm";
 import { EmailError } from "../src/errors.ts";
@@ -571,6 +572,21 @@ describe("reschedule", () => {
         },
       ],
     ]);
+    const logs = await queryLogs({
+      ...env,
+      from: new Date(Date.now() - HOUR),
+      to: new Date(Date.now() + HOUR),
+      filters: { types: ["email.rescheduled"] },
+    });
+    expect(logs.data).toHaveLength(1);
+    expect(logs.data[0]).toMatchObject({
+      resource_id: email.id,
+      level: "info",
+      message: "Rescheduled",
+      attributes: {
+        reschedule: { scheduled_at: tomorrow, previous_scheduled_at: original },
+      },
+    });
     // No longer due at the original time.
     expect(await service.dispatchDue({ now: later(), scope: scopeOf(tenant) })).toBe(0);
     expect(sandboxProvider.sent).toHaveLength(0);

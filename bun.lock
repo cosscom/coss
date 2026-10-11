@@ -17,6 +17,7 @@
       "dependencies": {
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
+        "@coss/logs": "workspace:*",
         "@coss/observability": "workspace:*",
         "@coss/ratelimit": "workspace:*",
         "@coss/reputation": "workspace:*",
@@ -83,6 +84,7 @@
         "@coss/auth": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
+        "@coss/logs": "workspace:*",
         "@coss/observability": "workspace:*",
         "@coss/ratelimit": "workspace:*",
         "@coss/reputation": "workspace:*",
@@ -128,6 +130,7 @@
         "@coss/auth": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
+        "@coss/logs": "workspace:*",
         "@coss/observability": "workspace:*",
         "@coss/reputation": "workspace:*",
         "@coss/screening": "workspace:*",
@@ -203,6 +206,7 @@
       "dependencies": {
         "@aws-sdk/client-sesv2": "catalog:",
         "@coss/db": "workspace:*",
+        "@coss/logs": "workspace:*",
         "@coss/reputation": "workspace:*",
         "@coss/screening": "workspace:*",
         "@coss/versioning": "workspace:*",
@@ -210,6 +214,21 @@
         "drizzle-orm": "catalog:",
         "parse5": "8.0.1",
         "pg-boss": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@coss/tenancy": "workspace:*",
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/logs": {
+      "name": "@coss/logs",
+      "version": "0.0.0",
+      "dependencies": {
+        "@coss/db": "workspace:*",
+        "drizzle-orm": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -355,6 +374,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@coss/db": "workspace:*",
+        "@coss/logs": "workspace:*",
         "@coss/versioning": "workspace:*",
         "drizzle-orm": "catalog:",
         "zod": "catalog:",
@@ -650,6 +670,8 @@
     "@coss/email": ["@coss/email@workspace:packages/email"],
 
     "@coss/infra": ["@coss/infra@workspace:infra"],
+
+    "@coss/logs": ["@coss/logs@workspace:packages/logs"],
 
     "@coss/observability": ["@coss/observability@workspace:packages/observability"],
 

@@ -26,6 +26,10 @@
     {
       "name": "Webhook endpoints",
       "description": "URLs that receive the environment's delivery events, signed."
+    },
+    {
+      "name": "Logs",
+      "description": "The environment's API requests, email events and webhook attempts."
     }
   ],
   "components": {
@@ -2782,6 +2786,282 @@
           "suspend_threshold",
           "minimum_volume"
         ]
+      },
+      "LogList": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Log"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "object",
+          "data",
+          "has_more"
+        ],
+        "examples": [
+          {
+            "object": "list",
+            "data": [
+              {
+                "object": "log",
+                "id": "log_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "occurred_at": "2026-01-15T09:30:00.000Z",
+                "source": "api",
+                "level": "info",
+                "type": "api.request",
+                "message": "POST /v1/emails 202",
+                "request_id": "req_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "api_key_id": "key_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "method": "POST",
+                "path": "/v1/emails",
+                "route": "/v1/emails",
+                "status_code": 202,
+                "duration_ms": 48,
+                "client_ip": "203.0.113.7",
+                "user_agent": "coss-node/0.1.0",
+                "error_code": null,
+                "resource_type": "email",
+                "resource_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "recipient": null,
+                "attributes": {
+                  "request": {
+                    "body": {
+                      "from": "hello@example.com",
+                      "to": [
+                        "user@example.com"
+                      ],
+                      "subject": "Hi"
+                    }
+                  },
+                  "response": {
+                    "body": {
+                      "object": "email",
+                      "id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                    }
+                  }
+                }
+              }
+            ],
+            "has_more": false
+          }
+        ]
+      },
+      "Log": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "log"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "examples": [
+              "log_01k7c8m4q2f3e9v6t5r1n0p8yz"
+            ]
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source": {
+            "$ref": "#/components/schemas/LogSource"
+          },
+          "level": {
+            "$ref": "#/components/schemas/LogLevel"
+          },
+          "type": {
+            "type": "string",
+            "description": "`api.request`, `webhook.attempt`, or an email event type such as `email.delivered`."
+          },
+          "message": {
+            "type": "string",
+            "description": "A one-line summary."
+          },
+          "request_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The `X-Request-Id` of the API request this line belongs to."
+          },
+          "api_key_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "method": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "route": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The matched route, e.g. `/v1/emails/:id`."
+          },
+          "status_code": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "The API response status, or the webhook endpoint's response status."
+          },
+          "duration_ms": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "client_ip": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "user_agent": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resource_type": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "What the line is about: `email`, `domain`, `webhook_endpoint`…"
+          },
+          "resource_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recipient": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Details: redacted request and response bodies for API requests (secrets, attachment contents and long strings are never stored), event data for emails and webhooks."
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "occurred_at",
+          "source",
+          "level",
+          "type",
+          "message",
+          "request_id",
+          "api_key_id",
+          "method",
+          "path",
+          "route",
+          "status_code",
+          "duration_ms",
+          "client_ip",
+          "user_agent",
+          "error_code",
+          "resource_type",
+          "resource_id",
+          "recipient",
+          "attributes"
+        ],
+        "examples": [
+          {
+            "object": "log",
+            "id": "log_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "occurred_at": "2026-01-15T09:30:00.000Z",
+            "source": "api",
+            "level": "info",
+            "type": "api.request",
+            "message": "POST /v1/emails 202",
+            "request_id": "req_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "api_key_id": "key_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "method": "POST",
+            "path": "/v1/emails",
+            "route": "/v1/emails",
+            "status_code": 202,
+            "duration_ms": 48,
+            "client_ip": "203.0.113.7",
+            "user_agent": "coss-node/0.1.0",
+            "error_code": null,
+            "resource_type": "email",
+            "resource_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "recipient": null,
+            "attributes": {
+              "request": {
+                "body": {
+                  "from": "hello@example.com",
+                  "to": [
+                    "user@example.com"
+                  ],
+                  "subject": "Hi"
+                }
+              },
+              "response": {
+                "body": {
+                  "object": "email",
+                  "id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "LogSource": {
+        "type": "string",
+        "enum": [
+          "api",
+          "email",
+          "webhook"
+        ],
+        "description": "`api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt."
+      },
+      "LogLevel": {
+        "type": "string",
+        "enum": [
+          "info",
+          "warning",
+          "error"
+        ],
+        "description": "`error`: 5xx responses, bounces, complaints, failures. `warning`: 4xx responses, delays, suppressions, failed webhook attempts that will be retried. `info`: everything else."
       }
     },
     "parameters": {
@@ -9556,6 +9836,575 @@
             "$ref": "#/components/parameters/CossVersion"
           }
         ]
+      }
+    },
+    "/v1/logs": {
+      "get": {
+        "operationId": "listLogs",
+        "tags": [
+          "Logs"
+        ],
+        "summary": "List log lines",
+        "description": "The API key's environment log, newest first: every API request made with one of its keys (`source: api`), every email event (`email`) and every webhook delivery attempt (`webhook`). Filter by time range (an hour by default, at most 31 days), source, level, type, status, method, route, key, request, resource or free text. Pass the last `id` as `after` to get the next page while `has_more` is true. Reading logs is not itself logged.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Start of the range (inclusive). Defaults to an hour before `to`."
+            },
+            "required": false,
+            "description": "Start of the range (inclusive). Defaults to an hour before `to`.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "End of the range (exclusive). Defaults to now. At most 31 days."
+            },
+            "required": false,
+            "description": "End of the range (exclusive). Defaults to now. At most 31 days.",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only these sources, comma-separated: `api,email,webhook`."
+            },
+            "required": false,
+            "description": "Only these sources, comma-separated: `api,email,webhook`.",
+            "name": "source",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only these levels, comma-separated: `warning,error`."
+            },
+            "required": false,
+            "description": "Only these levels, comma-separated: `warning,error`.",
+            "name": "level",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only these types, e.g. `email.bounced,email.complained`."
+            },
+            "required": false,
+            "description": "Only these types, e.g. `email.bounced,email.complained`.",
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only these status codes or classes, e.g. `4xx,503`."
+            },
+            "required": false,
+            "description": "Only these status codes or classes, e.g. `4xx,503`.",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only these HTTP methods, e.g. `POST`."
+            },
+            "required": false,
+            "description": "Only these HTTP methods, e.g. `POST`.",
+            "name": "method",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only these routes, e.g. `/v1/emails/:id`."
+            },
+            "required": false,
+            "description": "Only these routes, e.g. `/v1/emails/:id`.",
+            "name": "route",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only requests made with these API keys."
+            },
+            "required": false,
+            "description": "Only requests made with these API keys.",
+            "name": "api_key_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "Only this request's lines."
+            },
+            "required": false,
+            "description": "Only this request's lines.",
+            "name": "request_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "Only lines about this resource, e.g. an `email_…` id."
+            },
+            "required": false,
+            "description": "Only lines about this resource, e.g. an `email_…` id.",
+            "name": "resource_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 256,
+              "description": "Free text, matched against the message, path, ids and recipient."
+            },
+            "required": false,
+            "description": "Free text, matched against the message, path, ids and recipient.",
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "1-100, default 50."
+            },
+            "required": false,
+            "description": "1-100, default 50.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Cursor: the `id` of the last line of the previous page."
+            },
+            "required": false,
+            "description": "Cursor: the `id` of the last line of the previous page.",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of log lines.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter failed validation (`validation_error`), or the range is empty or longer than 31 days (`invalid_range`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/logs/{id}": {
+      "get": {
+        "operationId": "getLog",
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Retrieve a log line",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The log line's id.",
+              "examples": [
+                "log_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The log line's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The log line.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Log"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No log line with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },

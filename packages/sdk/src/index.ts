@@ -4,6 +4,7 @@ export type { CossError, CossErrorIssue, CossErrorType, CossResult } from "./cor
 export type { FetchLike, RequestOptions } from "./core/http.ts";
 export type { DomainsResource } from "./resources/domains.ts";
 export type { EmailResource } from "./resources/email.ts";
+export type { LogsResource } from "./resources/logs.ts";
 export type { ReputationResource } from "./resources/reputation.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
 export type { WebhookDeliveriesResource } from "./resources/webhook-deliveries.ts";
@@ -37,6 +38,7 @@ export type {
   SendEmailParams,
   TrackingOptions,
 } from "./types/email.ts";
+export type { ListLogsParams, Log, LogLevel, LogSource } from "./types/log.ts";
 export type {
   Reputation,
   ReputationCheck,

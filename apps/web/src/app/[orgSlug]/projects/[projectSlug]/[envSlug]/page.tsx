@@ -251,6 +251,27 @@ export default async function EnvironmentPage({
         </CardPanel>
       </Card>
 
+      {can({ log: ["read"] }) ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Logs</CardTitle>
+            <CardDescription>
+              Search every API request, email event and webhook attempt of this environment, follow
+              them live, and export them.
+            </CardDescription>
+            <CardAction>
+              <Button
+                render={<Link href={`${projectPath}/${environment.slug}/logs`} />}
+                size="sm"
+                variant="outline"
+              >
+                Open logs
+              </Button>
+            </CardAction>
+          </CardHeader>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>Webhooks</CardTitle>

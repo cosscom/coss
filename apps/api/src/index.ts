@@ -6,6 +6,7 @@ import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
 import { createEmailService } from "@coss/email";
 import { ensureEmailDispatchQueue, pgBossDispatchQueue } from "@coss/email/dispatch";
+import { createLogWriter } from "@coss/logs";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { parseSecretsKey } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
@@ -21,6 +22,7 @@ const jobs = await startJobBoss();
 await ensureEmailDispatchQueue(jobs);
 const rateLimits = createRateLimitRuntime(env);
 await rateLimits.ready();
+const logWriter = createLogWriter();
 
 const app = createApp({
   emailService: createEmailService({
@@ -39,13 +41,14 @@ const app = createApp({
   clientIp: rateLimits.clientIp,
 
   corsOrigins: env.API_CORS_ORIGINS,
+  logWriter,
 });
 
 const server = startServer({
   fetch: app.fetch,
   port: env.API_PORT,
   onDrained: async () => {
-    await jobs.stop({ graceful: true });
+    await Promise.all([jobs.stop({ graceful: true }), logWriter.close()]);
     await Promise.all([closeDb(), rateLimits.limiter.close(), Sentry.close(2_000)]);
   },
 });
