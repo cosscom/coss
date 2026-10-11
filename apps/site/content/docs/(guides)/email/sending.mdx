@@ -82,6 +82,48 @@ improves deliverability.
 `_` and `-`). Recipients [suppressed](/docs/email/suppressions) for that category, or for every
 email, are skipped. It is stored on the email and included in webhook payloads.
 
+## Sending in batches
+
+`coss.email.sendBatch()` sends up to 100 emails in one request. Each email takes the same fields
+as `coss.email.send()`, including `scheduled_at`, `attachments` and `tracking`, and they can have
+different senders and recipients.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data, error } = await coss.email.sendBatch(
+  [
+    {
+      from: "Acme <notifications@acme.com>",
+      to: "ada@example.com",
+      subject: "Your weekly summary",
+      html: "<p>Hi Ada, here is your week.</p>",
+      category: "digest",
+    },
+    {
+      from: "Acme <notifications@acme.com>",
+      to: "grace@example.com",
+      subject: "Your weekly summary",
+      html: "<p>Hi Grace, here is your week.</p>",
+      category: "digest",
+    },
+  ],
+  { idempotencyKey: "weekly-digest-2026-10-10" },
+);
+```
+
+The response is HTTP `202` with an `email_batch` whose `data` lists the emails in the order you
+passed them. Each email has the batch's id as `batch_id`, and is delivered and reported on (with
+webhooks) on its own.
+
+A batch is all or nothing. If any email is invalid, nothing is sent and the error's `issues` name
+it by position, such as `emails.3.to`. The same goes for an unverified sender domain, which is
+reported as `param: "emails.3.from"`. One idempotency key covers the whole batch. The batch's
+recipients count against the send quota together: a batch with
+more recipients than the quota allows at once is refused with no `Retry-After`, so split it into
+smaller batches. The 40 MB request size limit applies to the whole batch.
+
 ## Retrying safely
 
 Every send carries an `Idempotency-Key`. The SDK generates one per call and reuses it across its

@@ -160,7 +160,7 @@ function fromEmailError(error: EmailError): ApiError {
         type: "invalid_request_error",
         code: error.code,
         message: error.message,
-        param: "from",
+        param: error.param ?? "from",
       });
     case "sending_paused":
     case "account_suspended":

@@ -1,8 +1,11 @@
 import { type EmailService, getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
 import {
+  EmailBatchObject,
   EmailEventList,
   EmailLinkList,
   EmailObject,
+  MAX_BATCH_EMAILS,
+  SendEmailBatchRequest,
   SendEmailRequest,
   uniqueRecipientCount,
 } from "@coss/email/schemas";
@@ -116,6 +119,79 @@ export const sendEmailRoute = createRoute({
       "The body failed validation (`validation_error`, see `issues`), the `from` domain is not a " +
         "verified domain of the organization (`domain_not_verified`, live keys only), or the " +
         "`Idempotency-Key` was already used with a different body (`idempotency_key_reused`).",
+    ),
+  },
+});
+
+export const sendEmailBatchRoute = createRoute({
+  method: "post",
+  path: "/emails/batch",
+  operationId: "sendEmailBatch",
+  tags: ["Emails"],
+  summary: "Send a batch of emails",
+  description:
+    `Queues up to ${MAX_BATCH_EMAILS} emails in one request. Each email is handled exactly as by ` +
+    "`POST /v1/emails` (sender checks, suppressions, scheduling, attachments, tracking), but the " +
+    "batch is all or nothing: if any email is invalid, or any `from` is not a verified domain " +
+    "(live keys), nothing is stored and the error names the email (e.g. `emails.3.to`). One " +
+    "`Idempotency-Key` covers the whole batch. The emails' recipients are charged against the " +
+    "send quota together, so a batch with more recipients than the quota allows at once is " +
+    "refused (`quota_exceeded` without `Retry-After`): split it. The request body shares the " +
+    "40 MB limit of a single send.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ email: ["send"] }),
+    limitBody(SEND_BODY_LIMIT_BYTES),
+    rateLimit("api.send"),
+  ] as const,
+  request: {
+    headers: SendEmailHeaders,
+    body: { required: true, content: { "application/json": { schema: SendEmailBatchRequest } } },
+  },
+  responses: {
+    202: {
+      description:
+        "The batch, accepted for delivery, with its emails in request order. A replay returns the " +
+        "original batch with the emails' current statuses.",
+      headers: {
+        "X-Request-Id": requestIdHeader,
+        "Idempotent-Replayed": {
+          description:
+            "`true` when this response replays an earlier request with the same `Idempotency-Key`.",
+          schema: { type: "string", enum: ["true"] },
+        },
+      },
+      content: { "application/json": { schema: EmailBatchObject } },
+    },
+    400: errorDoc(
+      "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid " +
+        "(`invalid_idempotency_key`).",
+    ),
+    ...commonErrors,
+    409: errorDoc(
+      "Requests with this `Idempotency-Key` are racing for an expired key " +
+        "(`request_in_progress`). Retry after `Retry-After` seconds.",
+      { "Retry-After": { description: "Seconds to wait.", schema: { type: "integer" } } },
+    ),
+    413: errorDoc("The request body is larger than 40 MB (`payload_too_large`)."),
+    429: errorDoc(
+      "Too many requests with this API key (`rate_limited`), or the batch's recipients exceed " +
+        "the send quota (`quota_exceeded`). Retry after `Retry-After` seconds; without " +
+        "`Retry-After` the batch has more recipients than the quota allows at once.",
+      { "Retry-After": { description: "Seconds to wait.", schema: { type: "integer" } } },
+    ),
+    415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
+    403: errorDoc(
+      "The API key lacks the permission this endpoint needs (`insufficient_permissions`), its " +
+        "organization is suspended (`organization_suspended`), live sending is suspended " +
+        "(`account_suspended`), or sending is paused for the organization because of its " +
+        "sending reputation (`sending_paused`).",
+    ),
+    422: errorDoc(
+      "The body failed validation (`validation_error`, see `issues`), a `from` domain is not a " +
+        "verified domain of the organization (`domain_not_verified`, live keys only; `param` " +
+        "names the email), or the `Idempotency-Key` was already used with a different body " +
+        "(`idempotency_key_reused`).",
     ),
   },
 });
@@ -296,6 +372,56 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       return c.json(email, 202);
     },
     // Replaces the default hook for this route: a bad Idempotency-Key is a 400, not a 422.
+    (result) => {
+      if (!result.success && result.target === "header") throw invalidIdempotencyKey();
+      validationHook(result);
+    },
+  );
+
+  router.openapi(
+    sendEmailBatchRoute,
+    async (c) => {
+      const { emails } = c.req.valid("json");
+      const idempotencyKey = c.req.valid("header")["Idempotency-Key"];
+      const { apiKeyId, organizationId, projectId, environmentId, mode } = c.var.auth;
+      const input = {
+        environment: { organizationId, projectId, environmentId, mode },
+        apiKeyId,
+        emails,
+        idempotencyKey,
+      };
+      // Charged as one: the batch is accepted or refused as a whole.
+      const recipients = emails.reduce((sum, params) => sum + uniqueRecipientCount(params), 0);
+      const quota = sendQuota(c.var.auth, recipients);
+      const decision = await c.var.rateLimiter.consume(quota);
+      if (!decision.allowed) {
+        const replay = await emailService.replayBatch(input);
+        if (replay) {
+          c.header("Idempotent-Replayed", "true");
+          return c.json(replay, 202);
+        }
+        throw rateLimitError(decision, {
+          code: "quota_exceeded",
+          message:
+            decision.retryAfterMs === null
+              ? "This batch has more recipients than the send quota allows at once. Split it into smaller batches."
+              : `The send quota (${decision.bucket}) is used up. Retry after \`Retry-After\` seconds.`,
+        });
+      }
+      let result: Awaited<ReturnType<EmailService["sendBatch"]>>;
+      try {
+        result = await emailService.sendBatch(input);
+      } catch (error) {
+        await c.var.rateLimiter.refund(quota);
+        throw error;
+      }
+      const { batch, replayed } = result;
+      if (replayed) {
+        await c.var.rateLimiter.refund(quota);
+        c.header("Idempotent-Replayed", "true");
+      }
+      return c.json(batch, 202);
+    },
     (result) => {
       if (!result.success && result.target === "header") throw invalidIdempotencyKey();
       validationHook(result);

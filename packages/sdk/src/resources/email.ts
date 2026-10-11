@@ -1,6 +1,13 @@
 import type { CossResult } from "../core/errors.ts";
 import type { HttpClient, RequestOptions } from "../core/http.ts";
-import type { Email, EmailEvent, EmailLink, List, SendEmailParams } from "../types/email.ts";
+import type {
+  Email,
+  EmailBatch,
+  EmailEvent,
+  EmailLink,
+  List,
+  SendEmailParams,
+} from "../types/email.ts";
 import { SuppressionResource } from "./suppressions.ts";
 
 /** `coss.email`: transactional email. */
@@ -26,6 +33,22 @@ export class EmailResource {
       method: "POST",
       path: "/v1/emails",
       body: params,
+      idempotencyKey: options?.idempotencyKey,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Sends up to 100 emails in one request, each as `send` would. The batch is all or nothing: if
+   * any email is invalid (the error's `issues` name it, e.g. `emails.3.to`), none is sent. Its
+   * recipients count against the send quota together. Safe to retry: one `Idempotency-Key` covers
+   * the whole batch. Larger lists need several calls, each with its own key.
+   */
+  sendBatch(emails: SendEmailParams[], options?: RequestOptions): Promise<CossResult<EmailBatch>> {
+    return this.#http.request<EmailBatch>({
+      method: "POST",
+      path: "/v1/emails/batch",
+      body: { emails },
       idempotencyKey: options?.idempotencyKey,
       signal: options?.signal,
     });

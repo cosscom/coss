@@ -235,4 +235,16 @@ export interface Email {
   sent_at: string | null;
   /** ISO 8601 timestamp the email was scheduled for, or `null` if no schedule was provided. */
   scheduled_at: string | null;
+  /** The batch that sent the email (`coss.email.sendBatch`), or `null` if it was sent alone. */
+  batch_id: string | null;
+}
+
+/** Emails sent together by `coss.email.sendBatch`. */
+export interface EmailBatch {
+  object: "email_batch";
+  id: string;
+  /** The batch's emails, in the order they were passed. */
+  data: Email[];
+  /** ISO 8601 timestamp. */
+  created_at: string;
 }

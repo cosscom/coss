@@ -147,6 +147,7 @@ resets) are printed to the dashboard's server console in development.
 ## API
 
 - `POST /v1/emails` — send an email (`Idempotency-Key` header supported)
+- `POST /v1/emails/batch` — send up to 100 emails at once, all or nothing (one `Idempotency-Key` for the batch)
 - `GET /v1/emails/{id}` — retrieve an email, with its recipients' delivery status
 - `GET /v1/emails/{id}/events` — list an email's delivery, open and click events
 - `GET /v1/emails/{id}/links` — list an email's tracked links with their click counts

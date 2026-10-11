@@ -19,6 +19,10 @@ curl -X POST https://api.coss.com/v1/emails \
   -d '{"from":"Acme <hello@acme.com>","to":"user@example.com","subject":"Welcome","text":"Hi!"}'
 ```
 
+`POST /v1/emails/batch` works the same way, with one key for the whole batch: a replay returns
+the same batch, with each email's current status. Batch keys and single-send keys are separate,
+so the same key can be used once for each.
+
 Derive keys from your own data (`welcome-${userId}`) so that a retry after a crash reuses the same
 key. The [TypeScript SDK](/docs/sdk/errors#automatic-retries) sends a key on every `POST` and reuses
 it across its automatic retries.

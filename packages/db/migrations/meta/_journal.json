@@ -134,6 +134,13 @@
       "when": 1791684273824,
       "tag": "0018_melted_goblin_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791685976746,
+      "tag": "0019_natural_dreaming_celestial",
+      "breakpoints": true
     }
   ]
 }

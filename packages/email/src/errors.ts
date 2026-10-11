@@ -21,11 +21,14 @@ const STATUS_BY_CODE = {
 /** Expected failures of the email service; `status` is the HTTP status the API should use. */
 export class EmailError extends Error {
   readonly code: EmailErrorCode;
+  /** The request field at fault, when it differs from the code's usual one (e.g. `emails.3.from`). */
+  readonly param: string | undefined;
 
-  constructor(code: EmailErrorCode, message: string) {
+  constructor(code: EmailErrorCode, message: string, opts?: { param?: string }) {
     super(message);
     this.name = "EmailError";
     this.code = code;
+    this.param = opts?.param;
   }
 
   get status(): (typeof STATUS_BY_CODE)[EmailErrorCode] {

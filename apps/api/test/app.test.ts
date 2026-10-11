@@ -128,6 +128,7 @@ describe("GET /openapi.json", () => {
       "/v1/domains/{id}",
       "/v1/domains/{id}/verify",
       "/v1/emails",
+      "/v1/emails/batch",
       "/v1/emails/{id}",
       "/v1/emails/{id}/cancel",
       "/v1/emails/{id}/events",
@@ -143,6 +144,12 @@ describe("GET /openapi.json", () => {
     ]);
     expect(doc.paths["/v1/emails"]?.post).toMatchObject({
       operationId: "sendEmail",
+      tags: ["Emails"],
+      security: [{ bearerAuth: [] }],
+      parameters: [{ in: "header", name: "Idempotency-Key", required: false }],
+    });
+    expect(doc.paths["/v1/emails/batch"]?.post).toMatchObject({
+      operationId: "sendEmailBatch",
       tags: ["Emails"],
       security: [{ bearerAuth: [] }],
       parameters: [{ in: "header", name: "Idempotency-Key", required: false }],
@@ -219,7 +226,9 @@ describe("GET /openapi.json", () => {
     expect(Object.keys(doc.components.schemas)).toEqual(
       expect.arrayContaining([
         "SendEmailRequest",
+        "SendEmailBatchRequest",
         "Email",
+        "EmailBatch",
         "EmailRecipient",
         "EmailEvent",
         "EmailEventList",
