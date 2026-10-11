@@ -5,7 +5,7 @@
  */
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
-import { and, asc, desc, eq, gt, inArray, lt } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, lt, or, sql } from "drizzle-orm";
 import { SIMULATOR_DOMAIN } from "./providers/fake.ts";
 import {
   ALL_CATEGORIES,
@@ -246,6 +246,18 @@ export async function listSuppressions(
   if (query.after !== undefined && !isId("sup", query.after)) {
     return { object: "list", data: [], has_more: false };
   }
+  const [cursor] = query.after
+    ? await db
+        .select({
+          // Keep PostgreSQL's microseconds so the next page cannot skip same-millisecond rows.
+          createdAt: sql<string>`${emailSuppression.createdAt}::text`,
+          sequence: emailSuppression.sequence,
+        })
+        .from(emailSuppression)
+        .where(and(inEnvironment(env), eq(emailSuppression.id, query.after)))
+        .limit(1)
+    : [];
+  if (query.after && !cursor) return { object: "list", data: [], has_more: false };
   const rows = await db
     .select()
     .from(emailSuppression)
@@ -254,11 +266,18 @@ export async function listSuppressions(
         inEnvironment(env),
         query.address === undefined ? undefined : eq(emailSuppression.address, query.address),
         query.scope === undefined ? undefined : eq(emailSuppression.scope, query.scope),
-        // TypeIDs are UUIDv7: id order is creation order.
-        query.after === undefined ? undefined : lt(emailSuppression.id, query.after),
+        cursor
+          ? or(
+              lt(emailSuppression.createdAt, sql`${cursor.createdAt}::timestamptz`),
+              and(
+                eq(emailSuppression.createdAt, sql`${cursor.createdAt}::timestamptz`),
+                lt(emailSuppression.sequence, cursor.sequence),
+              ),
+            )
+          : undefined,
       ),
     )
-    .orderBy(desc(emailSuppression.id))
+    .orderBy(desc(emailSuppression.createdAt), desc(emailSuppression.sequence))
     .limit(limit + 1);
   return {
     object: "list",
@@ -306,7 +325,7 @@ export async function checkSuppression(
         inArray(emailSuppression.scope, matchingScopes(query.category)),
       ),
     )
-    .orderBy(desc(emailSuppression.id));
+    .orderBy(desc(emailSuppression.createdAt), desc(emailSuppression.sequence));
   return {
     object: "suppression_check",
     address: query.address,

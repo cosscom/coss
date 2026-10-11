@@ -1,7 +1,8 @@
 /**
  * Records opens and clicks from COSS's public tracking endpoints. System-level: the email is
  * resolved from its unguessable tracking token (never from the caller), and every write is scoped
- * by that email's organization. Hits within the same minute (per link) collapse into one event.
+ * by that email's organization. Hits within the same UTC day (per link) collapse into one event,
+ * bounding database and webhook amplification while preserving daily engagement.
  */
 import { randomBytes } from "node:crypto";
 import { db, schema } from "@coss/db";
@@ -13,7 +14,7 @@ const { email, emailLink, emailRecipient } = schema;
 
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{32}$/;
 const USER_AGENT_MAX_LENGTH = 512;
-const DEDUPE_WINDOW_MS = 60_000;
+const DEDUPE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 /** A new tracking token: 24 random bytes, base64url (32 characters). */
 export function newTrackingToken(): string {

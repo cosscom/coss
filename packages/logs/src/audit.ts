@@ -1,12 +1,13 @@
 import { db, type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, isId, newId } from "@coss/db/id";
-import { and, desc, eq, gte, inArray, like, lt, or } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, like, lt, or, sql } from "drizzle-orm";
 import { activeLogDrains, insertLogDrainRecords } from "./drain-outbox.ts";
 import type { OrgAuditActorType, OrgAuditEventOutput } from "./schemas.ts";
 
 const { orgAuditEvent } = schema;
 
 export type OrgAuditEventRow = typeof orgAuditEvent.$inferSelect;
+type OrgAuditEventObjectRow = Omit<OrgAuditEventRow, "sequence">;
 
 export type OrgAuditActor = {
   type: OrgAuditActorType;
@@ -53,7 +54,7 @@ export async function recordOrgAuditEvent(
     clientIp: input.clientIp?.slice(0, 64) ?? null,
     userAgent: input.userAgent?.slice(0, 512) ?? null,
     createdAt: new Date(),
-  } satisfies OrgAuditEventRow;
+  } satisfies OrgAuditEventObjectRow;
   // Only environment-scoped events reach log drains (drains belong to an environment).
   if (!values.environmentId) {
     await executor.insert(orgAuditEvent).values(values);
@@ -76,7 +77,7 @@ export async function recordOrgAuditEvent(
   });
 }
 
-export function toOrgAuditObject(row: OrgAuditEventRow): OrgAuditEventOutput {
+export function toOrgAuditObject(row: OrgAuditEventObjectRow): OrgAuditEventOutput {
   return {
     object: "audit_event",
     id: row.id,
@@ -125,6 +126,24 @@ export async function listOrgAuditEvents(input: {
   if (input.before !== undefined && !isId("oaudit", input.before)) {
     return { events: [], nextBefore: null };
   }
+  const [cursor] = input.before
+    ? await db
+        .select({
+          // Keep PostgreSQL's microseconds. A JavaScript Date would truncate the cursor to
+          // milliseconds and could skip adjacent rows created within that millisecond.
+          createdAt: sql<string>`${orgAuditEvent.createdAt}::text`,
+          sequence: orgAuditEvent.sequence,
+        })
+        .from(orgAuditEvent)
+        .where(
+          and(
+            eq(orgAuditEvent.organizationId, input.organizationId),
+            eq(orgAuditEvent.id, input.before),
+          ),
+        )
+        .limit(1)
+    : [];
+  if (input.before && !cursor) return { events: [], nextBefore: null };
   const filters = input.filters ?? {};
   const exact = filters.actions?.filter((action) => !action.endsWith(".")) ?? [];
   const prefixes = filters.actions?.filter((action) => action.endsWith(".")) ?? [];
@@ -148,10 +167,18 @@ export async function listOrgAuditEvents(input: {
         filters.environmentId ? eq(orgAuditEvent.environmentId, filters.environmentId) : undefined,
         filters.from ? gte(orgAuditEvent.createdAt, filters.from) : undefined,
         filters.to ? lt(orgAuditEvent.createdAt, filters.to) : undefined,
-        input.before ? lt(orgAuditEvent.id, input.before) : undefined,
+        cursor
+          ? or(
+              lt(orgAuditEvent.createdAt, sql`${cursor.createdAt}::timestamptz`),
+              and(
+                eq(orgAuditEvent.createdAt, sql`${cursor.createdAt}::timestamptz`),
+                lt(orgAuditEvent.sequence, cursor.sequence),
+              ),
+            )
+          : undefined,
       ),
     )
-    .orderBy(desc(orgAuditEvent.id))
+    .orderBy(desc(orgAuditEvent.createdAt), desc(orgAuditEvent.sequence))
     .limit(limit + 1);
   const events = rows.slice(0, limit).map(toOrgAuditObject);
   return { events, nextBefore: rows.length > limit ? (events.at(-1)?.id ?? null) : null };

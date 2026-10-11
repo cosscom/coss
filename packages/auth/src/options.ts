@@ -193,8 +193,9 @@ export const authOptions = {
   rateLimit: { enabled: false },
   emailAndPassword: {
     enabled: true,
-    // v0: sign-up does not require verification (accepts sign-up email enumeration).
-    requireEmailVerification: false,
+    // Prove mailbox ownership before creating a session or tenant resources. The response still
+    // accepts sign-up email enumeration; the guard below already exposes duplicate accounts.
+    requireEmailVerification: true,
     // `url` is Better Auth's /api/auth/reset-password/:token, which checks the token and redirects
     // to the client's `redirectTo` (the dashboard's /reset-password) with `?token=` or `?error=`.
     // Account emails are queued (`./emails.ts`) and sent by the worker through COSS itself.
@@ -354,8 +355,7 @@ export const authOptions = {
       const session = await getSessionFromCtx(ctx);
       if (!session) return;
       if (ctx.path === "/organization/invite-member") {
-        // Sign-up doesn't need a verified address, and invitation emails carry the org's name:
-        // without this, throwaway accounts could use them to spam any address.
+        // Invitation emails carry the org's name, so only a verified account may send them.
         if (!session.user.emailVerified) {
           throw new APIError("FORBIDDEN", {
             code: "EMAIL_NOT_VERIFIED",
@@ -504,7 +504,7 @@ function serializedOrganization() {
       },
     },
     // Our custom generateId makes invitation ids predictable, so Better Auth requires a verified
-    // email to read/accept invitations. Keep it explicit; NEVER disable while sign-up is unverified.
+    // email to read or accept invitations. Keep this defense independent of sign-up policy.
     requireEmailVerificationOnInvitation: true,
     invitationLimit: MAX_PENDING_INVITATIONS,
     // `true` = limit reached. Counts organizations the user owns (the number option would count

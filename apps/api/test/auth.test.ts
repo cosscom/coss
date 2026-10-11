@@ -1,4 +1,5 @@
 import { describe, expect, spyOn, test } from "bun:test";
+import { createRateLimiter, MemoryStore } from "@coss/ratelimit";
 import { createEnvironmentApiKey } from "@coss/tenancy";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
 import { createTestTenant, createTestUser } from "@coss/tenancy/testing";
@@ -184,8 +185,11 @@ describe("authentication", () => {
 describe("requireApiKey", () => {
   function appWith(authenticate: Authenticate) {
     const app = new Hono<AppEnv>();
+    const limiter = createRateLimiter({ store: new MemoryStore() });
     app.use(requestId);
     app.use(async (c, next) => {
+      c.set("rateLimiter", limiter);
+      c.set("clientIp", null);
       c.set("versioning", versioning);
       c.set("requestedApiVersion", null);
       await next();
@@ -211,6 +215,30 @@ describe("requireApiKey", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual(context);
     expect(calls).toEqual([["coss_live_x", { email: ["send"] }]]);
+  });
+
+  test("limits one raw credential before database authentication", async () => {
+    const context = authContext({ mode: "live" });
+    let calls = 0;
+    const app = appWith(async () => {
+      calls++;
+      return { ok: true, context };
+    });
+    for (let i = 0; i < 100; i++) {
+      expect(
+        (
+          await app.request("/", {
+            headers: { Authorization: "Bearer coss_live_replayed-secret" },
+          })
+        ).status,
+      ).toBe(200);
+    }
+    const denied = await app.request("/", {
+      headers: { Authorization: "Bearer coss_live_replayed-secret" },
+    });
+    expect(denied.status).toBe(429);
+    expect((await errorOf(denied)).code).toBe("too_many_authentications");
+    expect(calls).toBe(100);
   });
 
   test("a verification failure (e.g. database outage) is 503 service_unavailable", async () => {

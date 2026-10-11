@@ -5,7 +5,6 @@ import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/u
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { useTurnstile } from "@/components/turnstile";
@@ -20,10 +19,10 @@ export function SignUpForm({
   next: string;
   turnstileSiteKey: string | null;
 }) {
-  const router = useRouter();
   const turnstile = useTurnstile(turnstileSiteKey, "sign-up");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [createdEmail, setCreatedEmail] = useState<string | null>(null);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -31,9 +30,10 @@ export function SignUpForm({
     setPending(true);
     setError(null);
     // `callbackURL` is where the emailed verification link lands after verifying.
+    const email = String(form.get("email") ?? "");
     const { error } = await authClient.signUp.email({
       name: String(form.get("name") ?? "").trim(),
-      email: String(form.get("email") ?? ""),
+      email,
       password: String(form.get("password") ?? ""),
       callbackURL: next,
       fetchOptions: { headers: turnstile.headers },
@@ -44,17 +44,34 @@ export function SignUpForm({
       setPending(false);
       return;
     }
-    router.replace(next);
-    router.refresh();
+    setCreatedEmail(email);
+    setPending(false);
   }
 
   const query = nextQuery(next);
+
+  if (createdEmail) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Check your email</CardTitle>
+          <CardDescription>
+            We sent a verification link to {createdEmail}. Verify your address before signing in and
+            creating an organization.
+          </CardDescription>
+        </CardHeader>
+        <CardPanel>
+          <Button render={<Link href={`/sign-in${query}`} />}>Continue to sign in</Button>
+        </CardPanel>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Create your COSS account</CardTitle>
-        <CardDescription>A verification link is logged to the web server console.</CardDescription>
+        <CardDescription>Verify your email before creating your organization.</CardDescription>
       </CardHeader>
       <CardPanel>
         {/* method="post": a submit before hydration must never put credentials in the URL. */}

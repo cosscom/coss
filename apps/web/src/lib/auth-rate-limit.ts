@@ -99,11 +99,11 @@ export function withScimRateLimit(
   return async (request) => {
     if (!`${authPath(request.url)}/`.startsWith(SCIM_PATH_PREFIX)) return handler(request);
     const { limiter, clientIp } = deps();
-    const ip = clientIp(request.headers);
-    if (ip) {
-      const decision = await limiter.consume({ buckets: ["auth.scim.ip"], subject: ip });
-      if (!decision.allowed) return tooManyRequests(decision.retryAfterMs);
-    }
+    const decision = await limiter.consume({
+      buckets: ["auth.scim.ip"],
+      subject: clientIp(request.headers) ?? "unattributed",
+    });
+    if (!decision.allowed) return tooManyRequests(decision.retryAfterMs);
     const credentialId = scimCredentialIdOf(request.headers);
     if (credentialId) {
       const decision = await limiter.consume({
@@ -126,11 +126,11 @@ export function withAuthRateLimit(
     if (!limits) return handler(request);
     const { limiter, clientIp } = deps();
 
-    const ip = clientIp(request.headers);
-    if (ip) {
-      const decision = await limiter.consume({ buckets: [limits.ip], subject: ip });
-      if (!decision.allowed) return tooManyRequests(decision.retryAfterMs);
-    }
+    const decision = await limiter.consume({
+      buckets: [limits.ip],
+      subject: clientIp(request.headers) ?? "unattributed",
+    });
+    if (!decision.allowed) return tooManyRequests(decision.retryAfterMs);
     const email = limits.email ? await emailOf(request) : null;
     if (limits.email && email) {
       const decision = await limiter.consume({ buckets: [limits.email], subject: email });

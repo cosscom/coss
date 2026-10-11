@@ -6,6 +6,7 @@ import {
   withAuthRateLimit,
   withScimRateLimit,
 } from "../src/lib/auth-rate-limit";
+import { rateLimitEnvAfterProxy } from "../src/lib/rate-limit-runtime";
 
 function setup() {
   const seen: Request[] = [];
@@ -32,6 +33,17 @@ function post(path: string, body: unknown, ip = "198.51.100.1"): Request {
 }
 
 describe("withAuthRateLimit", () => {
+  test("trusts the single address normalized by dashboard proxy middleware", () => {
+    const normalized = rateLimitEnvAfterProxy({
+      VALKEY_CLUSTER: false,
+      RATE_LIMIT_KEY_PREFIX: "test",
+      CLIENT_IP_HEADER: "x-forwarded-for",
+      TRUSTED_PROXY_COUNT: 2,
+      TRUSTED_PROXY_HOPS: 2,
+    });
+    expect(normalized.TRUSTED_PROXY_COUNT).toBe(1);
+  });
+
   test("limits sign-in per email address, case-insensitively", async () => {
     const { handler, seen } = setup();
     for (let i = 0; i < 5; i++) {
@@ -59,6 +71,31 @@ describe("withAuthRateLimit", () => {
     }
     expect(statuses).toEqual([200, 200, 200, 200, 200, 429]);
     expect((await handler(post("/sign-up/email", {}, "198.51.100.2"))).status).toBe(200);
+  });
+
+  test("uses an aggregate fallback when no client IP is trusted", async () => {
+    const seen: Request[] = [];
+    const deps = {
+      limiter: createRateLimiter({ store: new MemoryStore() }),
+      clientIp: () => null,
+    };
+    const handler = withAuthRateLimit(
+      async (request) => {
+        seen.push(request);
+        return Response.json({ ok: true });
+      },
+      () => deps,
+    );
+    for (let i = 0; i < 5; i++) {
+      const response = await handler(
+        post("/sign-up/email", { email: `fallback-${i}@example.com` }),
+      );
+      expect(response.status).toBe(200);
+    }
+    expect((await handler(post("/sign-up/email", { email: "blocked@example.com" }))).status).toBe(
+      429,
+    );
+    expect(seen).toHaveLength(5);
   });
 
   test("limits organization creation per client IP", async () => {

@@ -164,7 +164,7 @@ describe("dispatch with content screening", () => {
     expect(classifier.calls).toHaveLength(0);
   });
 
-  test("fails open when screening itself throws", async () => {
+  test("fails closed when screening itself throws", async () => {
     const tenant = await createTestTenant();
     const liveProvider = new FakeEmailProvider({ log: false });
     const service = dispatchingEmailService({
@@ -173,6 +173,28 @@ describe("dispatch with content screening", () => {
       screen: async () => {
         throw new Error("database unavailable");
       },
+    });
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({ from: await verifiedFrom(tenant.organization.id) }),
+    });
+    expect(email.status).toBe("failed");
+    const [row] = await db.select().from(schema.email).where(eq(schema.email.id, email.id));
+    expect(row?.errorCode).toBe("content_screening_unavailable");
+    expect(liveProvider.sent).toHaveLength(0);
+  });
+
+  test("keeps account mail available when screening itself throws", async () => {
+    const tenant = await createTestTenant();
+    const liveProvider = new FakeEmailProvider({ log: false });
+    const service = dispatchingEmailService({
+      liveProvider,
+      sandboxProvider: new FakeEmailProvider({ log: false }),
+      screen: async () => {
+        throw new Error("database unavailable");
+      },
+      screeningFailureAllowlist: new Set([tenant.organization.id]),
     });
     const { email } = await service.send({
       environment: sendEnvironment(tenant.production),

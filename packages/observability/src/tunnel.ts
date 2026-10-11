@@ -9,7 +9,7 @@
 export const SENTRY_TUNNEL_PATH = "/api/monitoring";
 
 /** Largest envelope forwarded. Browser events are a few KB; there is no session replay. */
-export const MAX_ENVELOPE_BYTES = 1024 * 1024;
+export const MAX_ENVELOPE_BYTES = 256 * 1024;
 
 type ParsedDsn = { origin: string; pathPrefix: string; publicKey: string; projectId: string };
 

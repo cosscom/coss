@@ -13,6 +13,9 @@ const TRACKABLE_URL = /^https?:\/\//i;
 // would freeze the placeholder.
 const TEMPLATE_SYNTAX = /\{\{|\{%|\*\||%%/;
 
+/** Bounds stored links and the maximum click-event/webhook fanout for one message. */
+export const MAX_TRACKED_LINKS = 100;
+
 export type TrackedLink = { position: number; url: string };
 
 export type InstrumentOptions = {
@@ -82,6 +85,7 @@ export function instrumentHtml(
     if (!href || !hrefLocation) continue;
     const url = href.value.trim();
     if (!TRACKABLE_URL.test(url) || TEMPLATE_SYNTAX.test(url)) continue;
+    if (links.length >= MAX_TRACKED_LINKS) continue;
     const position = links.length;
     links.push({ position, url });
     edits.push({

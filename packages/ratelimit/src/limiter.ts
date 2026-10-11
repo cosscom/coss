@@ -1,5 +1,11 @@
 import { createHash } from "node:crypto";
-import { BUCKETS, type BucketName, type BucketScope, type LimitRule } from "./buckets.ts";
+import {
+  BUCKETS,
+  type BucketDefinition,
+  type BucketName,
+  type BucketScope,
+  type LimitRule,
+} from "./buckets.ts";
 import type { LimitSpec } from "./gcra.ts";
 import { noOverrides, type OverrideSource } from "./overrides.ts";
 import type { RateLimitStore } from "./store.ts";
@@ -28,7 +34,7 @@ export type RateLimitDecision = {
   resetMs: number;
   /** When denied: ms until a retry can succeed; `null` if the cost exceeds the bucket size. */
   retryAfterMs: number | null;
-  /** True when the store failed and the request was allowed without counting. */
+  /** True when the store failed and this bucket's explicit policy allowed the request. */
   failedOpen: boolean;
 };
 
@@ -70,10 +76,10 @@ export function createRateLimiter(opts: RateLimiterOptions): RateLimiter {
       const now = Date.now();
       if (now - lastLogged < 10_000) return;
       lastLogged = now;
-      console.warn("[ratelimit] Store unavailable; allowing requests without limits:", error);
+      console.warn("[ratelimit] Store unavailable; applying bucket failure policy:", error);
     });
 
-  async function resolve(request: RateLimitRequest) {
+  function scopeOf(request: RateLimitRequest): BucketScope {
     const [first] = request.buckets;
     if (first === undefined) throw new Error("A rate limit request needs at least one bucket.");
     const scope = BUCKETS[first].scope;
@@ -81,6 +87,10 @@ export function createRateLimiter(opts: RateLimiterOptions): RateLimiter {
       // Different scopes hash to different cluster slots; they can't be charged atomically.
       throw new Error(`Buckets of one rate limit request must share a scope (${scope}).`);
     }
+    return scope;
+  }
+
+  async function resolve(request: RateLimitRequest, scope: BucketScope) {
     const custom = request.organizationId ? await overrides(request.organizationId) : {};
     // The hash tag keeps every bucket of one subject in one cluster slot.
     const tag = `{${scope}:${normalizeSubject(scope, request.subject)}}`;
@@ -99,9 +109,10 @@ export function createRateLimiter(opts: RateLimiterOptions): RateLimiter {
 
   return {
     async consume(request) {
-      const resolved = await resolve(request);
-      const cost = request.cost ?? 1;
+      const scope = scopeOf(request);
       try {
+        const resolved = await resolve(request, scope);
+        const cost = request.cost ?? 1;
         const result = await opts.store.consume(
           resolved.map((entry) => entry.spec),
           { cost, peek: request.peek },
@@ -134,23 +145,28 @@ export function createRateLimiter(opts: RateLimiterOptions): RateLimiter {
         };
       } catch (error) {
         onStoreError(error);
-        const first = resolved[0];
-        if (!first) throw error;
+        const firstName = request.buckets[0];
+        if (!firstName) throw error;
+        const first: BucketDefinition = BUCKETS[firstName];
+        const failedOpen = request.buckets.every(
+          (bucket) => BUCKETS[bucket].failureMode === "allow",
+        );
         return {
-          allowed: true,
-          bucket: first.bucket,
-          limit: first.spec.burst,
-          remaining: first.spec.burst,
+          allowed: failedOpen,
+          bucket: firstName,
+          limit: first.burst ?? first.limit,
+          remaining: failedOpen ? (first.burst ?? first.limit) : 0,
           resetMs: 0,
-          retryAfterMs: 0,
-          failedOpen: true,
+          retryAfterMs: failedOpen ? 0 : 1000,
+          failedOpen,
         };
       }
     },
 
     async refund(request) {
-      const resolved = await resolve(request);
+      const scope = scopeOf(request);
       try {
+        const resolved = await resolve(request, scope);
         await opts.store.consume(
           resolved.map((entry) => entry.spec),
           { cost: -(request.cost ?? 1) },

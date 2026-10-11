@@ -1,5 +1,6 @@
 import { sentryConfig } from "@coss/observability";
 import { MAX_ENVELOPE_BYTES, tunnelDestination } from "@coss/observability/tunnel";
+import { rateLimitRuntime } from "@/lib/rate-limit-runtime";
 
 /**
  * Browser monitoring for both zones of coss.com (dashboard and site, same origin): GET hands the
@@ -20,6 +21,20 @@ export function GET() {
 export async function POST(request: Request) {
   const dsn = sentryConfig(process.env)?.dsn;
   if (!dsn) return new Response(null, { status: 204 });
+  const rateLimits = rateLimitRuntime();
+  const decision = await rateLimits.limiter.consume({
+    buckets: ["monitoring.envelopes"],
+    // `proxy.ts` replaces this with one trusted address in production. An aggregate fallback
+    // still bounds each process when client IP resolution is deliberately disabled.
+    subject: rateLimits.clientIp(request.headers) ?? "unattributed",
+  });
+  if (!decision.allowed) {
+    const retryAfter = Math.max(1, Math.ceil((decision.retryAfterMs ?? 60_000) / 1000));
+    return new Response(null, {
+      status: 429,
+      headers: { "Retry-After": String(retryAfter) },
+    });
+  }
   const declared = Number(request.headers.get("content-length") ?? 0);
   if (declared > MAX_ENVELOPE_BYTES) return new Response(null, { status: 413 });
   const reader = request.body?.getReader();

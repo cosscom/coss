@@ -73,6 +73,7 @@ describe("sign-up email guard", () => {
     const local = `ada.${uniqueSuffix()}`;
     const first = await post("/sign-up/email", signUpBody(`${local}@coss.test`));
     expect(first.status).toBe(200);
+    expect(first.headers.get("set-cookie")).toBeNull();
     const [user] = await db
       .select({ canonicalEmail: schema.user.canonicalEmail })
       .from(schema.user)
@@ -126,10 +127,11 @@ describe("sign-up email guard", () => {
       ...authOptions,
       databaseHooks: {
         ...authOptions.databaseHooks,
-        session: {
+        user: {
+          ...authOptions.databaseHooks.user,
           create: {
             before: async () => {
-              throw new APIError("BAD_REQUEST", { message: "Injected session failure" });
+              throw new APIError("BAD_REQUEST", { message: "Injected user failure" });
             },
           },
         },
@@ -161,7 +163,7 @@ describe("invitations", () => {
 
   test("need an inviter with a verified email", async () => {
     const tenant = await createTestTenant({ emailVerified: false });
-    await expect(invite(tenant, `x-${uniqueSuffix()}@coss.test`)).rejects.toThrow(/Verify/);
+    await expect(invite(tenant, `x-${uniqueSuffix()}@coss.test`)).rejects.toThrow(/verif/i);
   });
 
   test("resends enforce verification and disposable-domain checks", async () => {

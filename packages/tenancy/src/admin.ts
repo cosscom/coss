@@ -138,6 +138,18 @@ export async function listAdminAuditEvents(
 ): Promise<{ events: AdminAuditEvent[]; nextBefore: string | null }> {
   const limit = Math.min(Math.max(input.limit ?? 50, 1), 200);
   const before = input.before && isId("audit", input.before) ? input.before : undefined;
+  const [cursor] = before
+    ? await db
+        .select({
+          // Keep PostgreSQL's microseconds so the next page cannot skip same-millisecond rows.
+          createdAt: sql<string>`${adminAuditEvent.createdAt}::text`,
+          sequence: adminAuditEvent.sequence,
+        })
+        .from(adminAuditEvent)
+        .where(eq(adminAuditEvent.id, before))
+        .limit(1)
+    : [];
+  if (input.before && !cursor) return { events: [], nextBefore: null };
   const rows = await db
     .select()
     .from(adminAuditEvent)
@@ -150,10 +162,18 @@ export async function listAdminAuditEvents(
               eq(adminAuditEvent.targetId, input.target.id),
             )
           : undefined,
-        before ? lt(adminAuditEvent.id, before) : undefined,
+        cursor
+          ? or(
+              lt(adminAuditEvent.createdAt, sql`${cursor.createdAt}::timestamptz`),
+              and(
+                eq(adminAuditEvent.createdAt, sql`${cursor.createdAt}::timestamptz`),
+                lt(adminAuditEvent.sequence, cursor.sequence),
+              ),
+            )
+          : undefined,
       ),
     )
-    .orderBy(desc(adminAuditEvent.id))
+    .orderBy(desc(adminAuditEvent.createdAt), desc(adminAuditEvent.sequence))
     .limit(limit + 1);
   const events = rows.slice(0, limit);
   return {

@@ -288,6 +288,13 @@
       "when": 1791749778359,
       "tag": "0040_log_drain_key_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1791757715257,
+      "tag": "0041_unknown_kitty_pryde",
+      "breakpoints": true
     }
   ]
 }

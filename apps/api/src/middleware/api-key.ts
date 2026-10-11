@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { type AuthenticateResult, authenticateApiKey, type KeyPermissions } from "@coss/tenancy";
 import { setTags } from "@sentry/bun";
 import { createMiddleware } from "hono/factory";
@@ -18,6 +19,11 @@ const WWW_AUTHENTICATE = { "WWW-Authenticate": "Bearer" };
 const tooManyFailures = {
   code: "too_many_failed_authentications",
   message: "Too many requests with invalid API keys from this address. Retry later.",
+};
+
+const tooManyAuthentications = {
+  code: "too_many_authentications",
+  message: "Too many API authentication attempts. Retry later.",
 };
 
 function describePermissions(required: KeyPermissions): string {
@@ -56,6 +62,21 @@ export function requireApiKey(
     }
 
     const { rateLimiter, clientIp } = c.var;
+    // Authenticate only after cheap shared limits. Hash the raw secret before it can reach Valkey.
+    for (const request of [
+      {
+        buckets: ["api.authentication.key"] as const,
+        subject: createHash("sha256").update(key).digest("hex").slice(0, 32),
+      },
+      {
+        buckets: ["api.authentication.ip"] as const,
+        // A process-wide fallback still bounds rotating credentials when IP trust is unconfigured.
+        subject: clientIp ?? "unattributed",
+      },
+    ]) {
+      const decision = await rateLimiter.consume(request);
+      if (!decision.allowed) throw rateLimitError(decision, tooManyAuthentications);
+    }
     const failures = clientIp
       ? { buckets: ["api.auth_failure"] as const, subject: clientIp }
       : null;

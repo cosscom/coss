@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createVerifiedDomain, trackingUrls } from "@coss/email/testing";
+import { createRateLimiter, MemoryStore } from "@coss/ratelimit";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { PIXEL_GIF } from "../src/routes/tracking.ts";
 import {
@@ -25,9 +26,13 @@ function hit(app: TestApp, url: string, method: "GET" | "HEAD" = "GET") {
   );
 }
 
-async function sendTracked(tracking: { opens?: boolean; clicks?: boolean }, html = HTML) {
+async function sendTracked(
+  tracking: { opens?: boolean; clicks?: boolean },
+  html = HTML,
+  appOptions: Parameters<typeof createTestApp>[0] = {},
+) {
   const tenant = await createTestTenant();
-  const { app, sandboxProvider, dispatch } = createTestApp();
+  const { app, sandboxProvider, dispatch } = createTestApp(appOptions);
   const res = await sendEmail(app, tenant.sandboxKey, emailBody({ html, tracking }));
   expect(res.status).toBe(202);
   const email = (await res.json()) as { id: string; tracking: Record<string, unknown> };
@@ -37,6 +42,23 @@ async function sendTracked(tracking: { opens?: boolean; clicks?: boolean }, html
 }
 
 describe("tracking endpoints", () => {
+  test("limits public tracking database lookups by token without a trusted client IP", async () => {
+    const { app, urls } = await sendTracked({ clicks: true }, HTML, {
+      rateLimiter: createRateLimiter({ store: new MemoryStore() }),
+    });
+    let denied: Response | null = null;
+    for (let i = 0; i < 150; i++) {
+      const response = await hit(app, urls.clicks[0] ?? "");
+      if (response.status === 429) {
+        denied = response;
+        break;
+      }
+      expect(response.status).toBe(302);
+    }
+    expect(denied?.status).toBe(429);
+    expect(denied?.headers.get("retry-after")).toBe("1");
+  });
+
   test("Unicode redirects preserve existing percent escapes for GET and HEAD", async () => {
     const { app, urls } = await sendTracked(
       { clicks: true },
