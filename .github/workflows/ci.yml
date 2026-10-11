@@ -59,7 +59,8 @@ jobs:
       - run: bun run test
       - run: bun run build
 
-  # SDK changes (packages/sdk/src) need a changeset: `bun run changeset`, or `bun run changeset --empty`
+  # SDK changes (packages/sdk/src, except generated version.ts) need a changeset:
+  # `bun run changeset`, or `bun run changeset --empty`
   # when nothing user-facing changed. Everything else in the repo is private and never versioned.
   changeset:
     if: github.event_name == 'pull_request'

@@ -49,17 +49,15 @@ export function renderWebhookPayload(
   apiVersion: string,
   versioning: Versioning = apiVersioning,
 ): Record<string, unknown> {
-  const rendered = versioning.downgrade(payload, versioning.resolve(apiVersion)) as Record<
-    string,
-    unknown
-  >;
+  const resolvedVersion = versioning.resolve(apiVersion);
+  const rendered = versioning.downgrade(payload, resolvedVersion) as Record<string, unknown>;
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(rendered)) {
     if (key === "api_version") continue;
     out[key] = value;
-    if (key === "type") out.api_version = apiVersion;
+    if (key === "type") out.api_version = resolvedVersion;
   }
-  if (!("api_version" in out)) out.api_version = apiVersion;
+  if (!("api_version" in out)) out.api_version = resolvedVersion;
   return out;
 }
 

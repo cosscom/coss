@@ -6,7 +6,7 @@
   "linked": [],
   "access": "public",
   "baseBranch": "main",
-  "changedFilePatterns": ["src/**"],
+  "changedFilePatterns": ["src/**", "!src/version.ts"],
   "format": false,
   "privatePackages": { "version": false, "tag": false },
   "updateInternalDependencies": "patch",

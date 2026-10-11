@@ -240,6 +240,30 @@ describe("API versions", () => {
     ).rejects.toMatchObject({ code: "invalid_api_version" });
   });
 
+  test.each(["2100-01-01", "2098-01-01"])(
+    "renderWebhookPayload labels an unknown pin %s with the resolved schema version",
+    (pin) => {
+      const versioning = testVersioning();
+      const stored = {
+        object: "event",
+        type: "email.sent",
+        api_version: pin,
+        data: { recipient: "a" },
+      };
+      const rendered = renderWebhookPayload(stored, pin, versioning);
+      expect(rendered.api_version).toBe(
+        pin > TEST_NEXT_VERSION ? TEST_NEXT_VERSION : LATEST_API_VERSION,
+      );
+      expect(rendered.data).toEqual(
+        pin > TEST_NEXT_VERSION ? { recipient: "a" } : { address: "a" },
+      );
+      expect(stored.data).toEqual({ recipient: "a" });
+      expect(renderWebhookPayload({ object: "event" }, pin, versioning).api_version).toBe(
+        rendered.api_version,
+      );
+    },
+  );
+
   test("renderWebhookPayload places api_version after type and keeps the stored payload intact", () => {
     const stored = {
       id: "evt_1",
