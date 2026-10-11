@@ -47,6 +47,7 @@ const EVENT_VARIANT = {
   "email.canceled": "outline",
   "email.opened": "secondary",
   "email.clicked": "secondary",
+  "email.rescheduled": "info",
 } as const satisfies Record<EmailEventType, string>;
 
 export function EmailEventBadge({ type }: { type: EmailEventType }) {

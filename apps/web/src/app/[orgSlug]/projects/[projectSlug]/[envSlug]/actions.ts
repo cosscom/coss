@@ -5,6 +5,7 @@ import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
+import { recordAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import { liveKeyRestriction } from "@/lib/live-keys";
 import { type OrgContext, requireOrgPermission } from "@/lib/session";
@@ -43,6 +44,14 @@ export async function createApiKeyAction(
       name: formString(formData, "name"),
       userId: context.session.user.id,
     });
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "api_key.created",
+      target: { type: "api_key", id: created.id, label: created.name },
+      projectId: environment.projectId,
+      environmentId: environment.id,
+      metadata: { mode: environment.mode },
+    });
     refresh();
     return { name: created.name, key: created.key };
   });
@@ -69,6 +78,13 @@ export async function revokeApiKeyAction(
     await auth.api.deleteApiKey({
       headers: await headers(),
       body: { keyId: binding.apiKeyId },
+    });
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "api_key.revoked",
+      target: { type: "api_key", id: binding.apiKeyId, label: binding.name },
+      projectId: environment.projectId,
+      environmentId: environment.id,
     });
     refresh();
     return null;

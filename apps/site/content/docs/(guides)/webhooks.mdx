@@ -94,4 +94,5 @@ for (const delivery of failed?.data ?? []) {
 ```
 
 A retry makes one more attempt within seconds, signed with the endpoint's current secret and sent
-to its current URL. Deleting an endpoint deletes its delivery log.
+to its current URL. Deleting an endpoint deletes its delivery log, and deliveries are deleted
+<RetentionPeriod of="webhook_deliveries" /> after the event (see [data retention](/docs/data-retention)).

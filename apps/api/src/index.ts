@@ -1,11 +1,15 @@
 /** Server entry: `bun src/index.ts`. Validates the environment, serves the API, drains on SIGTERM. */
 
+// First: monitoring must be set up before the server starts.
+import "./instrument.ts";
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
 import { createEmailService } from "@coss/email";
 import { ensureEmailDispatchQueue, pgBossDispatchQueue } from "@coss/email/dispatch";
+import { createLogWriter } from "@coss/logs";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { parseSecretsKey } from "@coss/webhooks";
+import * as Sentry from "@sentry/bun";
 import { createApp } from "./app.ts";
 import { env } from "./env.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
@@ -18,6 +22,7 @@ const jobs = await startJobBoss();
 await ensureEmailDispatchQueue(jobs);
 const rateLimits = createRateLimitRuntime(env);
 await rateLimits.ready();
+const logWriter = createLogWriter();
 
 const app = createApp({
   emailService: createEmailService({
@@ -25,6 +30,7 @@ const app = createApp({
     sandboxProvider: email.sandboxProvider,
     queue: pgBossDispatchQueue(jobs),
     trackingBaseUrl: publicUrl,
+    trackingDomainProvider: email.trackingHostnames.name,
   }),
   domainDeps: email.domainDeps,
   webhookDeps: {
@@ -36,14 +42,15 @@ const app = createApp({
   clientIp: rateLimits.clientIp,
 
   corsOrigins: env.API_CORS_ORIGINS,
+  logWriter,
 });
 
 const server = startServer({
   fetch: app.fetch,
   port: env.API_PORT,
   onDrained: async () => {
-    await jobs.stop({ graceful: true });
-    await Promise.all([closeDb(), rateLimits.limiter.close()]);
+    await Promise.all([jobs.stop({ graceful: true }), logWriter.close()]);
+    await Promise.all([closeDb(), rateLimits.limiter.close(), Sentry.close(2_000)]);
   },
 });
 console.info(`[api] listening on ${server.url}`);

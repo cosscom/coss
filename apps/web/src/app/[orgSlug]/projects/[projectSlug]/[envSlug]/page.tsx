@@ -1,5 +1,6 @@
 import { API_KEY_PREFIX } from "@coss/auth/constants";
 import { type EmailObjectOutput, listDomains, listEmails } from "@coss/email";
+import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment, listEnvironmentApiKeys, listEnvironments } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
 import {
@@ -193,7 +194,10 @@ export default async function EnvironmentPage({
       <Card>
         <CardHeader>
           <CardTitle>Recent emails</CardTitle>
-          <CardDescription>The latest 50 emails sent with this environment's keys.</CardDescription>
+          <CardDescription>
+            The latest 50 emails sent with this environment's keys. Emails are kept for{" "}
+            {formatRetentionDays(RETENTION_DAYS.emails)}.
+          </CardDescription>
         </CardHeader>
         <CardPanel className="p-2">
           {emails.length === 0 ? (
@@ -250,6 +254,27 @@ export default async function EnvironmentPage({
           )}
         </CardPanel>
       </Card>
+
+      {can({ log: ["read"] }) ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Logs</CardTitle>
+            <CardDescription>
+              Search every API request, email event and webhook attempt of this environment, follow
+              them live, and export them.
+            </CardDescription>
+            <CardAction>
+              <Button
+                render={<Link href={`${projectPath}/${environment.slug}/logs`} />}
+                size="sm"
+                variant="outline"
+              >
+                Open logs
+              </Button>
+            </CardAction>
+          </CardHeader>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>

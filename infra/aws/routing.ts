@@ -18,6 +18,19 @@ export const DASHBOARD_HOST = "coss.com";
 export const API_HOST = "api.coss.com";
 
 /**
+ * Custom tracking domains (Cloudflare for SaaS): customers CNAME e.g. `links.acme.com` to this
+ * fallback origin (a proxied record in the coss.com zone, pointing at the ALB), and Cloudflare
+ * forwards their requests to the ALB with the customer's hostname as `Host`. The default for
+ * `TRACKING_CNAME_TARGET`.
+ */
+export const TRACKING_HOST = "track.coss.com";
+/** Added to every request by a Cloudflare request header transform rule (its own secret). */
+export const TRACKING_ORIGIN_VERIFY_HEADER = "X-Tracking-Origin-Verify";
+export const TRACKING_ORIGIN_VERIFY_PLACEHOLDER = "<tracking-origin-verify-secret>";
+/** The API's open pixel and click redirect routes, the only paths custom hostnames serve. */
+export const TRACKING_PATH_PATTERN = "/t/*";
+
+/**
  * ALB limits each rule to 5 condition values (and 5 wildcards). Site rules spend up to two on the
  * origin header (old + new value while the secret rotates), which leaves 3 path patterns per rule.
  */
@@ -42,8 +55,10 @@ export type ListenerRule = {
 
 /**
  * The HTTPS listener's rules, in priority order. The listener's default action is a fixed 403:
- * a request without CloudFront's origin header matches no rule. api.coss.com goes first, so
- * the coss.com rules don't need a host condition; the dashboard (default zone) is last.
+ * a request without CloudFront's (or, for tracking, Cloudflare's) origin header matches no rule.
+ * api.coss.com goes first, so the coss.com rules don't need a host condition; then the tracking
+ * routes on any host (customer tracking domains, from Cloudflare); the dashboard (default zone)
+ * is last.
  */
 export function albListenerRules(): ListenerRule[] {
   const verified = {
@@ -54,6 +69,19 @@ export function albListenerRules(): ListenerRule[] {
     {
       targetGroup: "api",
       conditions: [{ Field: "host-header", HostHeaderConfig: { Values: [API_HOST] } }, verified],
+    },
+    {
+      targetGroup: "api",
+      conditions: [
+        { Field: "path-pattern", PathPatternConfig: { Values: [TRACKING_PATH_PATTERN] } },
+        {
+          Field: "http-header",
+          HttpHeaderConfig: {
+            HttpHeaderName: TRACKING_ORIGIN_VERIFY_HEADER,
+            Values: [TRACKING_ORIGIN_VERIFY_PLACEHOLDER],
+          },
+        },
+      ],
     },
   ];
   for (const zone of ["site", "ui"] as const) {

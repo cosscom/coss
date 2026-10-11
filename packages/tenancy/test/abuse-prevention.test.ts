@@ -13,6 +13,7 @@ import { authOptions, MAX_OWNED_ORGANIZATIONS } from "@coss/auth/options";
 import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
 import { betterAuth } from "better-auth";
+import { APIError } from "better-auth/api";
 import { captcha } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 import { addMember, createTestTenant, createTestUser } from "../src/testing.ts";
@@ -119,11 +120,26 @@ describe("sign-up email guard", () => {
     await auth.api.createUser({ body: { ...signUpBody(`race${suffix}+trusted@gmail.com`) } });
   });
 
-  test("a failed sign-up releases the mailbox for a later attempt", async () => {
+  test("a failed sign-up rolls back the account and releases its mailbox", async () => {
     const email = `retry-${uniqueSuffix()}@coss.test`;
-    expect((await post("/sign-up/email", { ...signUpBody(email), password: "short" })).status).toBe(
-      400,
-    );
+    const failing = betterAuth({
+      ...authOptions,
+      databaseHooks: {
+        ...authOptions.databaseHooks,
+        session: {
+          create: {
+            before: async () => {
+              throw new APIError("BAD_REQUEST", { message: "Injected session failure" });
+            },
+          },
+        },
+      },
+    });
+    expect((await post("/sign-up/email", signUpBody(email), {}, failing.handler)).status).toBe(400);
+    expect(await db.select().from(schema.user).where(eq(schema.user.email, email))).toHaveLength(0);
+    expect(
+      await db.select().from(schema.authEmail).where(eq(schema.authEmail.to, email)),
+    ).toHaveLength(0);
     expect((await post("/sign-up/email", signUpBody(email))).status).toBe(200);
   });
 });
@@ -217,11 +233,16 @@ describe("organization limit", () => {
   test("concurrent creations across auth instances cannot exceed the ownership cap", async () => {
     const user = await createTestUser();
     const other = betterAuth(authOptions);
+    const cookie = (await sessionHeaders(user.email, user.password)).get("cookie") ?? "";
     const results = await Promise.allSettled(
       Array.from({ length: 14 }, (_, i) => {
         const suffix = uniqueSuffix();
-        return (i % 2 ? other : auth).api.createOrganization({
-          body: { name: `Race ${suffix}`, slug: `race-${suffix}`, userId: user.id },
+        const body = { name: `Race ${suffix}`, slug: `race-${suffix}`, userId: user.id };
+        if (i % 2) return other.api.createOrganization({ body });
+        return post("/organization/create", body, { cookie }).then(async (response) => {
+          if (!response.ok)
+            throw new Error(((await response.json()) as { message: string }).message);
+          return response.json();
         });
       }),
     );

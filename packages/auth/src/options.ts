@@ -5,7 +5,7 @@
  */
 
 import { apiKey } from "@better-auth/api-key";
-import { getCurrentAdapter } from "@better-auth/core/context";
+import { getCurrentAdapter, queueAfterTransactionHook } from "@better-auth/core/context";
 import { passkey } from "@better-auth/passkey";
 import { sso } from "@better-auth/sso";
 import { db, type Executor } from "@coss/db";
@@ -16,6 +16,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware, getSessionFromCtx, signUpEmail } from "better-auth/api";
 import { admin, captcha, organization, twoFactor } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
+import { recordOrgAudit } from "./audit.ts";
 import {
   API_KEY_NAME_MAX_LENGTH,
   API_KEY_PERMISSIONS,
@@ -28,6 +29,7 @@ import {
   isDisposableDomain,
   signUpEmailRejection,
 } from "./email-guard.ts";
+import { enqueueAuthEmail, RESET_PASSWORD_LINK_TTL_S, VERIFICATION_LINK_TTL_S } from "./emails.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
 import { serializedEndpoint } from "./serialized-endpoint.ts";
 import { validateOrgName, validateOrgSlug } from "./slugs.ts";
@@ -55,14 +57,6 @@ export function generateAuthId({ model }: { model: string }): string {
     return newId("id");
   }
   return newId(prefix);
-}
-
-/** Dev-only "email" delivery: logs links to the server console. Refuses to run in production. */
-function logDevEmail(kind: string, to: string, url: string): void {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(`[auth] No email delivery configured for "${kind}" in production.`);
-  }
-  console.info(`\n[auth] ${kind} for ${to}:\n  ${url}\n`);
 }
 
 /** Validates the name/slug of an organization being created or updated (absent = unchanged). */
@@ -109,8 +103,7 @@ export const MAX_PENDING_INVITATIONS = 50;
 const checkMailDomain = cachedMailDomainCheck();
 
 /**
- * Refuses a sign-up address that is disposable, can't receive mail, or reaches a mailbox that
- * already has an account (`canonicalEmail`: `a.b+x@gmail.com` is `ab@gmail.com`).
+ * Refuses disposable or undeliverable sign-up addresses before entering the account transaction.
  */
 async function assertSignUpEmailAllowed(email: string): Promise<void> {
   const rejection = await signUpEmailRejection(email, {
@@ -169,19 +162,38 @@ export const authOptions = {
     requireEmailVerification: false,
     // `url` is Better Auth's /api/auth/reset-password/:token, which checks the token and redirects
     // to the client's `redirectTo` (the dashboard's /reset-password) with `?token=` or `?error=`.
+    // Account emails are queued (`./emails.ts`) and sent by the worker through COSS itself.
     sendResetPassword: async ({ user, url }) => {
-      logDevEmail("Reset password", user.email, url);
+      await enqueueAuthEmail({
+        kind: "reset_password",
+        to: user.email,
+        userId: user.id,
+        url,
+        expiresAt: new Date(Date.now() + RESET_PASSWORD_LINK_TTL_S * 1000),
+      });
     },
-    // Reset links expire after Better Auth's default of one hour. A reset signs out every session,
-    // including any opened with the old (possibly compromised) password.
+    resetPasswordTokenExpiresIn: RESET_PASSWORD_LINK_TTL_S,
+    // A reset signs out every session, including any opened with the old (possibly compromised)
+    // password.
     revokeSessionsOnPasswordReset: true,
   },
   emailVerification: {
     sendOnSignUp: true,
     // Off: a verification link must never create a session, which would skip the TOTP challenge.
     autoSignInAfterVerification: false,
+    expiresIn: VERIFICATION_LINK_TTL_S,
     sendVerificationEmail: async ({ user, url }) => {
-      logDevEmail("Verify email", user.email, url);
+      // The outbox uses its own connection; enqueue after commit so concurrent sign-ups cannot
+      // exhaust the pool while holding mailbox locks, or queue mail for rolled-back accounts.
+      await queueAfterTransactionHook(() =>
+        enqueueAuthEmail({
+          kind: "verify_email",
+          to: user.email,
+          userId: user.id,
+          url,
+          expiresAt: new Date(Date.now() + VERIFICATION_LINK_TTL_S * 1000),
+        }),
+      );
     },
   },
   // Block these HTTP routes (server-side `auth.api.*` calls still work). API keys are only
@@ -436,9 +448,21 @@ function serializedOrganization() {
       });
       return owned >= MAX_OWNED_ORGANIZATIONS;
     },
-    sendInvitationEmail: async ({ id, email, organization: org, role }) => {
-      const url = `${process.env.BETTER_AUTH_URL ?? ""}/accept-invitation/${id}`;
-      logDevEmail(`Invitation to ${org.name} as ${role}`, email, url);
+    sendInvitationEmail: async ({ id, email, organization: org, role, invitation, inviter }) => {
+      await enqueueAuthEmail({
+        kind: "invitation",
+        to: email,
+        url: `${process.env.BETTER_AUTH_URL ?? ""}/accept-invitation/${id}`,
+        expiresAt: invitation.expiresAt,
+        data: {
+          invitationId: id,
+          organizationName: org.name,
+          inviterName: inviter.user.name,
+          inviterEmail: inviter.user.email,
+          role,
+          expiresAt: invitation.expiresAt.toISOString(),
+        },
+      });
     },
     organizationHooks: {
       beforeCreateOrganization: async ({ organization: org }) => {
@@ -458,6 +482,23 @@ function serializedOrganization() {
       },
       beforeAcceptInvitation: async ({ organization: org }) => {
         await assertOrgNotSuspended(org.id);
+      },
+      afterAcceptInvitation: async ({ invitation, user, organization: org }) => {
+        await recordOrgAudit({
+          organizationId: org.id,
+          actor: { type: "user", id: user.id, label: user.email },
+          action: "invitation.accepted",
+          target: { type: "invitation", id: invitation.id, label: invitation.email },
+          metadata: { role: invitation.role },
+        });
+      },
+      afterRejectInvitation: async ({ invitation, user, organization: org }) => {
+        await recordOrgAudit({
+          organizationId: org.id,
+          actor: { type: "user", id: user.id, label: user.email },
+          action: "invitation.rejected",
+          target: { type: "invitation", id: invitation.id, label: invitation.email },
+        });
       },
       // Better Auth cancels invitations in any status, which would rewrite an accepted (or
       // already canceled) one; only pending invitations can be canceled.

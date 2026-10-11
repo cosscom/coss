@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 /**
  * Runs once when a server starts. The standalone server doesn't load next.config.ts, so this is
  * where a deployed dashboard validates its environment. A misconfigured production task exits at
@@ -27,4 +29,9 @@ export async function register() {
     console.error("[web] Refusing to start:", error);
     process.exit(1);
   }
+  const { initServerMonitoring } = await import("./lib/monitoring-server");
+  initServerMonitoring();
 }
+
+/** Errors thrown while rendering, in route handlers, server actions and the proxy. */
+export const onRequestError = Sentry.captureRequestError;

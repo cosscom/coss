@@ -12,6 +12,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
+import { recordAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import { requireOrgMember, requireOrgPermission } from "@/lib/session";
 
@@ -25,7 +26,7 @@ export async function updateOrganizationAction(
   formData: FormData,
 ): Promise<ActionResult<{ slug: string }>> {
   const result = await runAction(async () => {
-    const { organization } = await requireOrgPermission(formString(formData, "orgSlug"), {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
       organization: ["update"],
     });
     const name = formString(formData, "name");
@@ -38,6 +39,15 @@ export async function updateOrganizationAction(
     await auth.api.updateOrganization({
       headers: await headers(),
       body: { organizationId: organization.id, data: { name, slug } },
+    });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "organization.updated",
+      target: { type: "organization", id: organization.id, label: name },
+      metadata: {
+        ...(name !== organization.name ? { name: { from: organization.name, to: name } } : {}),
+        ...(slug !== organization.slug ? { slug: { from: organization.slug, to: slug } } : {}),
+      },
     });
     if (slug === organization.slug) refresh();
     return { slug };
@@ -57,11 +67,18 @@ export async function leaveOrganizationAction(
   formData: FormData,
 ): Promise<ActionResult> {
   const result = await runAction(async () => {
-    const { organization, suspended } = await requireOrgMember(formString(formData, "orgSlug"));
+    const { organization, suspended, session } = await requireOrgMember(
+      formString(formData, "orgSlug"),
+    );
     if (suspended) throw new ActionError("This organization is suspended.");
     await auth.api.leaveOrganization({
       headers: await headers(),
       body: { organizationId: organization.id },
+    });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "member.left",
+      target: { type: "user", id: session.user.id, label: session.user.email },
     });
     return null;
   });
@@ -86,6 +103,11 @@ export async function setTwoFactorRequirementAction(
       throw new ActionError("Set up two-factor authentication for your own account first.");
     }
     await setOrganizationTwoFactorRequired({ organizationId: organization.id, required });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: required ? "two_factor_requirement.enabled" : "two_factor_requirement.disabled",
+      target: { type: "organization", id: organization.id, label: organization.name },
+    });
     refresh();
     return null;
   });

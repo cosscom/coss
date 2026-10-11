@@ -295,6 +295,17 @@ export const TrackingOptions = z
 
 export type TrackingOptionsOutput = z.output<typeof TrackingOptions>;
 
+const ScheduledAt = z.iso.datetime({
+  offset: true,
+  error: "Expected an ISO 8601 date-time with a time zone offset.",
+});
+
+const TOO_FAR_AHEAD_MESSAGE = "An email can be scheduled at most 30 days ahead.";
+
+function tooFarAhead(scheduledAt: string): boolean {
+  return Date.parse(scheduledAt) > Date.now() + MAX_SCHEDULE_AHEAD_MS;
+}
+
 const SendEmailRequestFields = z.strictObject({
   from: EmailAddress,
   to: addressList(1),
@@ -396,16 +407,13 @@ const SendEmailRequestFields = z.strictObject({
       'What kind of email this is, e.g. "marketing". Recipients suppressed for this category ' +
       "(or for every email) are skipped.",
   }),
-  scheduled_at: z.iso
-    .datetime({ offset: true, error: "Expected an ISO 8601 date-time with a time zone offset." })
-    .optional()
-    .meta({
-      description:
-        "Send the email at this time instead of now (ISO 8601 with an offset, at most 30 days " +
-        "ahead). A time that is not in the future sends immediately. Scheduled emails can be " +
-        "canceled until they are sent.",
-      example: "2026-10-11T09:00:00Z",
-    }),
+  scheduled_at: ScheduledAt.optional().meta({
+    description:
+      "Send the email at this time instead of now (ISO 8601 with an offset, at most 30 days " +
+      "ahead). A time that is not in the future sends immediately. Scheduled emails can be " +
+      "rescheduled or canceled until they are sent.",
+    example: "2026-10-11T09:00:00Z",
+  }),
   attachments: z
     .array(Attachment)
     .max(MAX_ATTACHMENTS, `At most ${MAX_ATTACHMENTS} attachments are allowed.`)
@@ -458,15 +466,8 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
   if (!value.html && !value.text) {
     ctx.addIssue({ code: "custom", path: ["html"], message: "Provide `html`, `text`, or both." });
   }
-  if (
-    value.scheduled_at !== undefined &&
-    Date.parse(value.scheduled_at) > Date.now() + MAX_SCHEDULE_AHEAD_MS
-  ) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["scheduled_at"],
-      message: "An email can be scheduled at most 30 days ahead.",
-    });
+  if (value.scheduled_at !== undefined && tooFarAhead(value.scheduled_at)) {
+    ctx.addIssue({ code: "custom", path: ["scheduled_at"], message: TOO_FAR_AHEAD_MESSAGE });
   }
 })
   // Only runs on fully valid input: recipients become arrays, header names lower-case, and every
@@ -576,6 +577,30 @@ export const SendEmailBatchRequest = z
 export type SendEmailBatchRequestInput = z.input<typeof SendEmailBatchRequest>;
 export type SendEmailBatchRequestOutput = z.output<typeof SendEmailBatchRequest>;
 
+export const RescheduleEmailRequest = z
+  .strictObject({
+    scheduled_at: ScheduledAt.meta({
+      description:
+        "The new time to send the email at (ISO 8601 with an offset, at most 30 days ahead). A " +
+        "time that is not in the future sends it right away.",
+      example: "2026-10-12T09:00:00Z",
+    }),
+  })
+  .superRefine((value, ctx) => {
+    if (tooFarAhead(value.scheduled_at)) {
+      ctx.addIssue({ code: "custom", path: ["scheduled_at"], message: TOO_FAR_AHEAD_MESSAGE });
+    }
+  })
+  // Normalized to UTC, like the stored `scheduled_at`.
+  .transform((value) => ({ scheduled_at: new Date(value.scheduled_at).toISOString() }))
+  .meta({
+    id: "RescheduleEmailRequest",
+    examples: [{ scheduled_at: "2026-10-12T09:00:00Z" }],
+  });
+
+export type RescheduleEmailRequestInput = z.input<typeof RescheduleEmailRequest>;
+export type RescheduleEmailRequestOutput = z.output<typeof RescheduleEmailRequest>;
+
 /** Distinct addresses across to, cc and bcc: what send quotas count. */
 export function uniqueRecipientCount(params: SendEmailRequestOutput): number {
   return new Set([...params.to, ...params.cc, ...params.bcc].map(addressKey)).size;
@@ -612,6 +637,7 @@ export const EMAIL_EVENT_TYPES = [
   "email.canceled",
   "email.opened",
   "email.clicked",
+  "email.rescheduled",
 ] as const;
 
 /** Engagement events: recorded by COSS's tracking endpoints, never change a recipient's status. */
@@ -728,6 +754,13 @@ export const EmailEventData = z
       })
       .optional()
       .meta({ description: "Only for `email.clicked`." }),
+    reschedule: z
+      .object({
+        scheduled_at: z.iso.datetime().meta({ description: "The new time." }),
+        previous_scheduled_at: z.iso.datetime().meta({ description: "The time it replaced." }),
+      })
+      .optional()
+      .meta({ description: "Only for `email.rescheduled`." }),
   })
   .meta({ id: "EmailEventData", examples: [DELIVERED_EVENT_EXAMPLE.data] });
 
@@ -1048,7 +1081,31 @@ export const DOMAIN_RECORD_PURPOSES = ["dkim", "mail_from_mx", "mail_from_spf", 
 
 export const DOMAIN_RECORD_STATUSES = ["verified", "missing", "mismatch", "not_checked"] as const;
 
+export const TRACKING_DOMAIN_STATUSES = [
+  "pending",
+  "active",
+  "temporary_failure",
+  "failed",
+  "deleting",
+] as const;
+
 const DOMAIN_ID_EXAMPLE = "dom_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const TRACKING_DOMAIN_EXAMPLE = {
+  hostname: "links.acme.com",
+  status: "active",
+  record: {
+    type: "CNAME",
+    name: "links.acme.com",
+    value: "track.coss.com",
+    status: "verified",
+    found: [],
+  },
+  message: null,
+  created_at: "2026-01-15T09:45:00.000Z",
+  last_checked_at: "2026-01-15T09:52:00.000Z",
+  activated_at: "2026-01-15T09:52:00.000Z",
+  failed_at: null,
+} as const;
 const VERIFIED_RECORD = { priority: null, required: true, status: "verified", found: [] } as const;
 const DKIM_RECORD_EXAMPLE = {
   ...VERIFIED_RECORD,
@@ -1096,6 +1153,7 @@ const DOMAIN_EXAMPLE = {
   last_checked_at: "2026-01-15T09:42:10.000Z",
   verified_at: "2026-01-15T09:42:10.000Z",
   failed_at: null,
+  tracking: TRACKING_DOMAIN_EXAMPLE,
 } as const;
 
 export const DomainRecordObject = z
@@ -1119,6 +1177,52 @@ export const DomainRecordObject = z
   .meta({ id: "DomainRecord", examples: [DKIM_RECORD_EXAMPLE] });
 
 export type DomainRecordObjectOutput = z.output<typeof DomainRecordObject>;
+
+export const TrackingDomainObject = z
+  .object({
+    hostname: z.string().meta({
+      description: "The tracking hostname, a subdomain of the domain.",
+      examples: ["links.acme.com"],
+    }),
+    status: z.enum(TRACKING_DOMAIN_STATUSES).meta({
+      description:
+        "`pending` until the CNAME points at COSS and its certificate is issued, `active` once " +
+        "links and open pixels of emails sent from the domain use it, `temporary_failure` when " +
+        "an active hostname stopped working (emails fall back to the default tracking host " +
+        "meanwhile), `failed` when setup gave up (72 hours) — restart it with the domain's " +
+        "verify endpoint. `deleting` is a removal in progress.",
+    }),
+    record: z
+      .object({
+        type: z.literal("CNAME"),
+        name: z.string().meta({ description: "The fully qualified record name to create." }),
+        value: z.string().meta({ description: "The host the record must point at." }),
+        status: z.enum(DOMAIN_RECORD_STATUSES).meta({
+          description:
+            "What the last DNS check saw. `not_checked` means DNS has not been consulted yet.",
+        }),
+        found: z
+          .array(z.string())
+          .meta({ description: "What DNS returned when it did not match." }),
+      })
+      .meta({ description: "The DNS record to publish, with the result of the last check." }),
+    message: z.string().nullable().meta({
+      description: "What is holding the hostname up, when the certificate provider said.",
+    }),
+    created_at: z.iso.datetime(),
+    last_checked_at: z.iso.datetime().nullable(),
+    activated_at: z.iso.datetime().nullable(),
+    failed_at: z.iso.datetime().nullable(),
+  })
+  .meta({
+    id: "TrackingDomain",
+    description:
+      "A domain's custom tracking domain: open pixels and click redirects of emails sent from " +
+      "the domain use it while it is `active`.",
+    examples: [TRACKING_DOMAIN_EXAMPLE],
+  });
+
+export type TrackingDomainObjectOutput = z.output<typeof TrackingDomainObject>;
 
 export const DomainObject = z
   .object({
@@ -1146,6 +1250,9 @@ export const DomainObject = z
     last_checked_at: z.iso.datetime().nullable(),
     verified_at: z.iso.datetime().nullable(),
     failed_at: z.iso.datetime().nullable(),
+    // The custom tracking domain (`null` when none is set up). A union, not `.nullable()`, and no
+    // `.meta()`: the OpenAPI generator would drop the `null` or inline the `TrackingDomain` schema.
+    tracking: z.union([TrackingDomainObject, z.null()]),
   })
   .meta({ id: "Domain", examples: [DOMAIN_EXAMPLE] });
 
@@ -1198,6 +1305,23 @@ export const DeletedDomain = z
   });
 
 export type DeletedDomainOutput = z.output<typeof DeletedDomain>;
+
+export const CreateTrackingDomainRequest = z
+  .strictObject({
+    hostname: z
+      .string()
+      .min(1, "Enter a hostname, like links.acme.com.")
+      .max(DOMAIN_NAME_MAX_LENGTH, `Hostnames can be at most ${DOMAIN_NAME_MAX_LENGTH} characters.`)
+      .meta({
+        description:
+          "A subdomain of the domain to serve tracking links from, without a scheme or path. " +
+          "Point it at COSS with the CNAME record the response lists.",
+        examples: ["links.acme.com"],
+      }),
+  })
+  .meta({ id: "CreateTrackingDomainRequest", examples: [{ hostname: "links.acme.com" }] });
+
+export type CreateTrackingDomainRequestInput = z.input<typeof CreateTrackingDomainRequest>;
 const SuppressionAddress = z
   .string()
   .superRefine((value, ctx) => {

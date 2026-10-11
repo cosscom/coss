@@ -30,7 +30,7 @@ export function SignUpForm({
     const form = new FormData(event.currentTarget);
     setPending(true);
     setError(null);
-    // `callbackURL` is where the (console-logged) verification link lands after verifying.
+    // `callbackURL` is where the emailed verification link lands after verifying.
     const { error } = await authClient.signUp.email({
       name: String(form.get("name") ?? "").trim(),
       email: String(form.get("email") ?? ""),
@@ -84,6 +84,18 @@ export function SignUpForm({
           <Button disabled={!turnstile.ready} loading={pending} type="submit">
             Create account
           </Button>
+          {/* Plain links: /legal is the site's (another zone; next.config.ts redirects in dev). */}
+          <p className="text-center text-muted-foreground text-xs">
+            By creating an account, you agree to the{" "}
+            <a className="text-foreground underline" href="/legal/terms">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a className="text-foreground underline" href="/legal/privacy">
+              Privacy Policy
+            </a>
+            .
+          </p>
           <p className="text-center text-muted-foreground text-sm">
             Already have an account?{" "}
             <Link className="text-foreground underline" href={`/sign-in${query}`}>

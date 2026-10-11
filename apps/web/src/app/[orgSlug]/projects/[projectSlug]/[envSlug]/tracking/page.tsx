@@ -183,6 +183,11 @@ export default async function TrackingPage({
               Opens and clicks are attributed to a recipient only when the email had a single one.
             </li>
             <li>
+              Links point at the default tracking host unless the sender&apos;s domain has an active
+              custom tracking domain (such as <code>links.acme.com</code>), set up on its page under
+              Domains.
+            </li>
+            <li>
               Some mail clients preload images (inflating opens) and security scanners follow links
               (inflating clicks). Use the counts as signals, not exact numbers.
             </li>

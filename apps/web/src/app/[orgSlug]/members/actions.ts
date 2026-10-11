@@ -13,6 +13,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, ForbiddenError, formString, runAction } from "@/lib/actions";
+import { recordAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import { rateLimitRuntime } from "@/lib/rate-limit";
 import { requireOrgPermission } from "@/lib/session";
@@ -52,7 +53,7 @@ export async function inviteMemberAction(
   formData: FormData,
 ): Promise<ActionResult<{ email: string }>> {
   return runAction(async () => {
-    const { organization } = await requireOrgPermission(formString(formData, "orgSlug"), {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
       invitation: ["create"],
     });
     const email = formString(formData, "email").toLowerCase();
@@ -67,6 +68,12 @@ export async function inviteMemberAction(
         body: { email, role, organizationId: organization.id },
       }),
     );
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "invitation.created",
+      target: { type: "invitation", id: null, label: email },
+      metadata: { role },
+    });
     refresh();
     return { email };
   });
@@ -81,7 +88,7 @@ export async function resendInvitationAction(
   formData: FormData,
 ): Promise<ActionResult> {
   return runAction(async () => {
-    const { organization } = await requireOrgPermission(formString(formData, "orgSlug"), {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
       invitation: ["create"],
     });
     const invitation = await getPendingInvitation({
@@ -99,6 +106,11 @@ export async function resendInvitationAction(
         body: { email: invitation.email, role, organizationId: organization.id, resend: true },
       }),
     );
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "invitation.resent",
+      target: { type: "invitation", id: invitation.id, label: invitation.email },
+    });
     refresh();
     return null;
   });
@@ -110,7 +122,7 @@ export async function cancelInvitationAction(
   formData: FormData,
 ): Promise<ActionResult> {
   return runAction(async () => {
-    const { organization } = await requireOrgPermission(formString(formData, "orgSlug"), {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
       invitation: ["cancel"],
     });
     const invitation = await getPendingInvitation({
@@ -123,6 +135,11 @@ export async function cancelInvitationAction(
     await auth.api.cancelInvitation({
       headers: await headers(),
       body: { invitationId: invitation.id },
+    });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "invitation.canceled",
+      target: { type: "invitation", id: invitation.id, label: invitation.email },
     });
     refresh();
     return null;
@@ -138,9 +155,12 @@ export async function updateMemberRoleAction(
   formData: FormData,
 ): Promise<ActionResult> {
   return runAction(async () => {
-    const { organization, member } = await requireOrgPermission(formString(formData, "orgSlug"), {
-      member: ["update"],
-    });
+    const { organization, member, session } = await requireOrgPermission(
+      formString(formData, "orgSlug"),
+      {
+        member: ["update"],
+      },
+    );
     const target = await getOrganizationMember({
       organizationId: organization.id,
       memberId: formString(formData, "memberId"),
@@ -158,6 +178,12 @@ export async function updateMemberRoleAction(
       headers: await headers(),
       body: { memberId: target.id, role, organizationId: organization.id },
     });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "member.role_changed",
+      target: { type: "user", id: target.user.id, label: target.user.email },
+      metadata: { role: { from: target.role, to: role } },
+    });
     refresh();
     return null;
   });
@@ -172,9 +198,12 @@ export async function removeMemberAction(
   formData: FormData,
 ): Promise<ActionResult> {
   return runAction(async () => {
-    const { organization, member } = await requireOrgPermission(formString(formData, "orgSlug"), {
-      member: ["delete"],
-    });
+    const { organization, member, session } = await requireOrgPermission(
+      formString(formData, "orgSlug"),
+      {
+        member: ["delete"],
+      },
+    );
     const target = await getOrganizationMember({
       organizationId: organization.id,
       memberId: formString(formData, "memberId"),
@@ -191,6 +220,12 @@ export async function removeMemberAction(
     await auth.api.removeMember({
       headers: await headers(),
       body: { memberIdOrEmail: target.id, organizationId: organization.id },
+    });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "member.removed",
+      target: { type: "user", id: target.user.id, label: target.user.email },
+      metadata: { role: target.role },
     });
     refresh();
     return null;

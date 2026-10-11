@@ -1,4 +1,5 @@
 import { emailEnvShape } from "@coss/email/env";
+import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
@@ -41,6 +42,9 @@ export const env = createEnv({
     // widget. The secret key is read by @coss/auth (`captcha` plugin).
     TURNSTILE_SITE_KEY: z.string().optional(),
     TURNSTILE_SECRET_KEY: z.string().optional(),
+    // Error and performance monitoring of the dashboard's server and, through /api/monitoring,
+    // of browsers on both zones (dashboard and site).
+    ...sentryEnvShape,
   },
   client: {},
   experimental__runtimeEnv: {},

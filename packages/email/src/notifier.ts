@@ -1,10 +1,10 @@
 /**
- * Sends the reputation guard's notification emails through the email product itself: from one
- * live environment of COSS's own organization (`NOTIFICATIONS_ENVIRONMENT_ID`), so they get
- * suppression, delivery events and history like any customer email.
+ * Sends COSS's own emails to its users (reputation notifications, account emails) through the
+ * email product itself: from one live environment of COSS's own organization
+ * (`NOTIFICATIONS_ENVIRONMENT_ID`), so they get suppression, delivery events and history like any
+ * customer email.
  */
 import { db, schema } from "@coss/db";
-import type { ReputationNotifier } from "@coss/reputation";
 import { eq } from "drizzle-orm";
 import { EmailError } from "./errors.ts";
 import { emailAddressProblem, SendEmailRequest } from "./schemas.ts";
@@ -30,12 +30,27 @@ export async function notificationEnvironment(environmentId: string): Promise<Se
   return row;
 }
 
-export function emailReputationNotifier(opts: {
+/** One email to one person. Structurally `ReputationNotice` and `AuthEmailMessage`. */
+export type Notice = {
+  /** Stable per message and recipient: the send's idempotency key, so retries never resend. */
+  idempotencyKey: string;
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+};
+
+/** Structurally `ReputationNotifier` and `AuthEmailSender`. */
+export type Notifier = { send(notice: Notice): Promise<void> };
+
+export function emailNotifier(opts: {
   service: Pick<EmailService, "send">;
   environment: SendEnvironment;
   /** An address on a verified domain of the environment's organization. */
   from: string;
-}): ReputationNotifier {
+  /** The bodies hold secrets (sign-in links): cleared once each email is settled. */
+  discardBody?: boolean;
+}): Notifier {
   const problem = emailAddressProblem(opts.from);
   if (problem) throw new Error(`Invalid notification sender "${opts.from}": ${problem}`);
   return {
@@ -58,6 +73,7 @@ export function emailReputationNotifier(opts: {
           params,
           idempotencyKey: notice.idempotencyKey,
           idempotencyRetentionMs: Number.POSITIVE_INFINITY,
+          discardBody: opts.discardBody ?? false,
         });
       } catch (error) {
         // Already sent with different content (e.g. the organization was renamed in between).

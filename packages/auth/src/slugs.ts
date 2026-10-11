@@ -33,9 +33,11 @@ export const SITE_ASSET_PREFIX = "/site-assets";
  * entry here (unless an existing prefix covers it) + the route in apps/site.
  */
 export const ZONE_ROUTES = [
-  // apps/site: landing page, docs (incl. their search at /docs/search.json), LLM text files.
+  // apps/site: landing page, docs (incl. their search at /docs/search.json), legal pages, LLM
+  // text files.
   { zone: "site", path: "/", prefix: false },
   { zone: "site", path: "/docs", prefix: true },
+  { zone: "site", path: "/legal", prefix: true },
   { zone: "site", path: "/llms.txt", prefix: false },
   { zone: "site", path: "/llms-full.txt", prefix: false },
   { zone: "site", path: SITE_ASSET_PREFIX, prefix: true },
