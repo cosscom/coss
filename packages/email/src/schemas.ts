@@ -295,6 +295,17 @@ export const TrackingOptions = z
 
 export type TrackingOptionsOutput = z.output<typeof TrackingOptions>;
 
+const ScheduledAt = z.iso.datetime({
+  offset: true,
+  error: "Expected an ISO 8601 date-time with a time zone offset.",
+});
+
+const TOO_FAR_AHEAD_MESSAGE = "An email can be scheduled at most 30 days ahead.";
+
+function tooFarAhead(scheduledAt: string): boolean {
+  return Date.parse(scheduledAt) > Date.now() + MAX_SCHEDULE_AHEAD_MS;
+}
+
 const SendEmailRequestFields = z.strictObject({
   from: EmailAddress,
   to: addressList(1),
@@ -396,16 +407,13 @@ const SendEmailRequestFields = z.strictObject({
       'What kind of email this is, e.g. "marketing". Recipients suppressed for this category ' +
       "(or for every email) are skipped.",
   }),
-  scheduled_at: z.iso
-    .datetime({ offset: true, error: "Expected an ISO 8601 date-time with a time zone offset." })
-    .optional()
-    .meta({
-      description:
-        "Send the email at this time instead of now (ISO 8601 with an offset, at most 30 days " +
-        "ahead). A time that is not in the future sends immediately. Scheduled emails can be " +
-        "canceled until they are sent.",
-      example: "2026-10-11T09:00:00Z",
-    }),
+  scheduled_at: ScheduledAt.optional().meta({
+    description:
+      "Send the email at this time instead of now (ISO 8601 with an offset, at most 30 days " +
+      "ahead). A time that is not in the future sends immediately. Scheduled emails can be " +
+      "rescheduled or canceled until they are sent.",
+    example: "2026-10-11T09:00:00Z",
+  }),
   attachments: z
     .array(Attachment)
     .max(MAX_ATTACHMENTS, `At most ${MAX_ATTACHMENTS} attachments are allowed.`)
@@ -458,15 +466,8 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
   if (!value.html && !value.text) {
     ctx.addIssue({ code: "custom", path: ["html"], message: "Provide `html`, `text`, or both." });
   }
-  if (
-    value.scheduled_at !== undefined &&
-    Date.parse(value.scheduled_at) > Date.now() + MAX_SCHEDULE_AHEAD_MS
-  ) {
-    ctx.addIssue({
-      code: "custom",
-      path: ["scheduled_at"],
-      message: "An email can be scheduled at most 30 days ahead.",
-    });
+  if (value.scheduled_at !== undefined && tooFarAhead(value.scheduled_at)) {
+    ctx.addIssue({ code: "custom", path: ["scheduled_at"], message: TOO_FAR_AHEAD_MESSAGE });
   }
 })
   // Only runs on fully valid input: recipients become arrays, header names lower-case, and every
@@ -576,6 +577,30 @@ export const SendEmailBatchRequest = z
 export type SendEmailBatchRequestInput = z.input<typeof SendEmailBatchRequest>;
 export type SendEmailBatchRequestOutput = z.output<typeof SendEmailBatchRequest>;
 
+export const RescheduleEmailRequest = z
+  .strictObject({
+    scheduled_at: ScheduledAt.meta({
+      description:
+        "The new time to send the email at (ISO 8601 with an offset, at most 30 days ahead). A " +
+        "time that is not in the future sends it right away.",
+      example: "2026-10-12T09:00:00Z",
+    }),
+  })
+  .superRefine((value, ctx) => {
+    if (tooFarAhead(value.scheduled_at)) {
+      ctx.addIssue({ code: "custom", path: ["scheduled_at"], message: TOO_FAR_AHEAD_MESSAGE });
+    }
+  })
+  // Normalized to UTC, like the stored `scheduled_at`.
+  .transform((value) => ({ scheduled_at: new Date(value.scheduled_at).toISOString() }))
+  .meta({
+    id: "RescheduleEmailRequest",
+    examples: [{ scheduled_at: "2026-10-12T09:00:00Z" }],
+  });
+
+export type RescheduleEmailRequestInput = z.input<typeof RescheduleEmailRequest>;
+export type RescheduleEmailRequestOutput = z.output<typeof RescheduleEmailRequest>;
+
 /** Distinct addresses across to, cc and bcc: what send quotas count. */
 export function uniqueRecipientCount(params: SendEmailRequestOutput): number {
   return new Set([...params.to, ...params.cc, ...params.bcc].map(addressKey)).size;
@@ -612,6 +637,7 @@ export const EMAIL_EVENT_TYPES = [
   "email.canceled",
   "email.opened",
   "email.clicked",
+  "email.rescheduled",
 ] as const;
 
 /** Engagement events: recorded by COSS's tracking endpoints, never change a recipient's status. */
@@ -728,6 +754,13 @@ export const EmailEventData = z
       })
       .optional()
       .meta({ description: "Only for `email.clicked`." }),
+    reschedule: z
+      .object({
+        scheduled_at: z.iso.datetime().meta({ description: "The new time." }),
+        previous_scheduled_at: z.iso.datetime().meta({ description: "The time it replaced." }),
+      })
+      .optional()
+      .meta({ description: "Only for `email.rescheduled`." }),
   })
   .meta({ id: "EmailEventData", examples: [DELIVERED_EVENT_EXAMPLE.data] });
 

@@ -25,6 +25,7 @@ import { PageHeader } from "@/components/page-header";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { CancelEmailButton } from "./cancel-email-button";
+import { RescheduleEmailDialog } from "./reschedule-email-dialog";
 
 export const metadata: Metadata = { title: "Email" };
 
@@ -58,6 +59,10 @@ function eventDetail({ data }: EmailEventOutput): string {
   }
   if (data.click) return [data.click.url, data.click.user_agent].filter(Boolean).join(" · ");
   if (data.open) return data.open.user_agent ?? "";
+  if (data.reschedule) {
+    const { previous_scheduled_at, scheduled_at } = data.reschedule;
+    return `${formatDateTime(previous_scheduled_at)} → ${formatDateTime(scheduled_at)}`;
+  }
   return "";
 }
 
@@ -135,12 +140,23 @@ export default async function EmailPage({
         <PageHeader
           actions={
             email.status === "scheduled" && can({ email: ["send"] }) ? (
-              <CancelEmailButton
-                emailId={email.id}
-                envSlug={environment.slug}
-                orgSlug={organization.slug}
-                projectSlug={project.slug}
-              />
+              <div className="flex gap-2">
+                {email.scheduled_at ? (
+                  <RescheduleEmailDialog
+                    emailId={email.id}
+                    envSlug={environment.slug}
+                    orgSlug={organization.slug}
+                    projectSlug={project.slug}
+                    scheduledAt={email.scheduled_at}
+                  />
+                ) : null}
+                <CancelEmailButton
+                  emailId={email.id}
+                  envSlug={environment.slug}
+                  orgSlug={organization.slug}
+                  projectSlug={project.slug}
+                />
+              </div>
             ) : null
           }
           title={email.subject}
