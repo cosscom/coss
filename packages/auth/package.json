@@ -9,7 +9,8 @@
     "./permissions": "./src/permissions.ts",
     "./slugs": "./src/slugs.ts",
     "./constants": "./src/constants.ts",
-    "./sso": "./src/sso.ts"
+    "./sso": "./src/sso.ts",
+    "./scim": "./src/scim.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -20,6 +21,7 @@
     "@better-auth/api-key": "catalog:",
     "@better-auth/core": "catalog:",
     "@better-auth/passkey": "catalog:",
+    "@better-auth/scim": "catalog:",
     "@better-auth/sso": "catalog:",
     "@coss/db": "workspace:*",
     "better-auth": "catalog:",

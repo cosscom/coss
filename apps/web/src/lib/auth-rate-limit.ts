@@ -79,6 +79,42 @@ function tooManyRequests(retryAfterMs: number | null): Response {
   );
 }
 
+const SCIM_PATH_PREFIX = "/scim/v2/";
+
+/** The public credential id of a SCIM bearer token (`<credentialId>.<secret>`), else null. */
+export function scimCredentialIdOf(headers: Headers): string | null {
+  const match = /^Bearer\s+([^.\s]+)\./i.exec(headers.get("authorization") ?? "");
+  return match?.[1] ?? null;
+}
+
+/**
+ * Wraps a Better Auth handler (any method) so SCIM requests are limited per client IP and per
+ * directory token. Other paths pass through.
+ */
+export function withScimRateLimit(
+  handler: (request: Request) => Promise<Response>,
+  deps: () => AuthRateLimitDeps,
+): (request: Request) => Promise<Response> {
+  return async (request) => {
+    if (!`${authPath(request.url)}/`.startsWith(SCIM_PATH_PREFIX)) return handler(request);
+    const { limiter, clientIp } = deps();
+    const ip = clientIp(request.headers);
+    if (ip) {
+      const decision = await limiter.consume({ buckets: ["auth.scim.ip"], subject: ip });
+      if (!decision.allowed) return tooManyRequests(decision.retryAfterMs);
+    }
+    const credentialId = scimCredentialIdOf(request.headers);
+    if (credentialId) {
+      const decision = await limiter.consume({
+        buckets: ["auth.scim.token"],
+        subject: credentialId,
+      });
+      if (!decision.allowed) return tooManyRequests(decision.retryAfterMs);
+    }
+    return handler(request);
+  };
+}
+
 /** Wraps Better Auth's POST handler. `deps` is called per request (lazily built runtime). */
 export function withAuthRateLimit(
   handler: (request: Request) => Promise<Response>,

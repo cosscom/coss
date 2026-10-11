@@ -3,6 +3,7 @@
 import { ssoProviderIdFor, unverifiedSsoDomains } from "@coss/auth/sso";
 import {
   getOrganizationSsoProvider,
+  hasScimConnection,
   type SsoProviderType,
   setOrganizationSsoRequired,
   syncSsoDomainVerification,
@@ -145,6 +146,10 @@ export async function deleteSsoProviderAction(
     });
     const existing = await getOrganizationSsoProvider({ organizationId: organization.id });
     if (!existing) throw new ActionError("This organization has no SSO provider.");
+    // Directory users sign in only through SSO: disconnect the directory first.
+    if (await hasScimConnection({ organizationId: organization.id })) {
+      throw new ActionError("Disconnect directory sync before removing the SSO provider.");
+    }
     // Turned off first: without a provider, members could never satisfy it.
     await setOrganizationSsoRequired({ organizationId: organization.id, required: false });
     await auth.api.deleteSSOProvider({

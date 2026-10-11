@@ -18,6 +18,19 @@ export const ID_PREFIXES = {
   ssoProvider: "ssop",
   /** Public SSO provider ids (`ssoProvider.providerId`, in callback URLs). */
   ssoConnection: "sso",
+  // @better-auth/scim models (its managed connection/credential ids are its own `ba_scim_…`).
+  scimConnectionBinding: "scimbind",
+  scimSubject: "scimsub",
+  scimUser: "scimu",
+  scimIdentityTombstone: "scimtomb",
+  scimGroup: "scimg",
+  scimGroupMember: "scimgm",
+  scimProjectionGrant: "scimgrant",
+  scimManagedConnection: "scimconn",
+  scimManagedCredential: "scimcred",
+  scimManagedConnectionEvent: "scimevt",
+  /** Directory group → organization role mappings (`scim_group_role`). */
+  scimGroupRole: "scimgr",
   project: "proj",
   environment: "env",
   email: "email",

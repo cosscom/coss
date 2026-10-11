@@ -69,6 +69,11 @@ export const BUCKETS = {
   // SSO: starting a sign-in (each one stores state and redirects to the IdP) and SAML responses
   // posted back by the IdP. OIDC callbacks are GETs, which the dashboard doesn't limit.
   "auth.sso.ip": { scope: "ip", limit: 20, periodMs: MINUTE, overridable: false },
+  // SCIM (directory sync) requests, every method. Identity providers send every customer's
+  // traffic from a few shared addresses, so the per-IP bucket is wide; each directory token gets
+  // its own (keyed by the token's public credential id).
+  "auth.scim.ip": { scope: "ip", limit: 100, periodMs: SECOND, burst: 500, overridable: false },
+  "auth.scim.token": { scope: "key", limit: 25, periodMs: SECOND, burst: 200, overridable: false },
 } as const satisfies Record<string, BucketDefinition>;
 
 export type BucketName = keyof typeof BUCKETS;
