@@ -27,7 +27,8 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "server-only": "catalog:",
-    "shiki": "4.5.0"
+    "shiki": "4.5.0",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@coss/tsconfig": "workspace:*",

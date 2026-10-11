@@ -455,6 +455,37 @@ describe("coss.email.suppressions bulk import and export against the API", () =>
     const refused = await coss.email.cancel(sent.data.id);
     expect(refused.error).toMatchObject({ code: "email_not_cancelable", status: 422 });
   });
+
+  test("a scheduled send can be rescheduled", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const scheduled = await coss.email.send({
+      from: "hello@acme.com",
+      to: "user@example.com",
+      subject: "Later",
+      text: "Hi",
+      scheduled_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    });
+    if (!scheduled.data) throw new Error("send failed");
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+    const rescheduled = await coss.email.reschedule(scheduled.data.id, { scheduled_at: tomorrow });
+    expect(rescheduled.error).toBeNull();
+    expect(rescheduled.data).toMatchObject({ status: "scheduled", scheduled_at: tomorrow });
+    const events = await coss.email.listEvents(scheduled.data.id);
+    expect(events.data?.data.at(-1)).toMatchObject({
+      type: "email.rescheduled",
+      data: {
+        reschedule: { scheduled_at: tomorrow, previous_scheduled_at: scheduled.data.scheduled_at },
+      },
+    });
+    expect(sandboxProvider.sent).toHaveLength(0);
+
+    await coss.email.cancel(scheduled.data.id);
+    const refused = await coss.email.reschedule(scheduled.data.id, { scheduled_at: tomorrow });
+    expect(refused.error).toMatchObject({ code: "email_not_reschedulable", status: 422 });
+  });
 });
 
 describe("coss.domains against the API", () => {

@@ -1,0 +1,292 @@
+---
+title: Terms of Service
+description: The agreement between you and Cal.com, Inc. for using COSS, its API, SDK and dashboard.
+lastUpdated: 2026-10-11
+---
+
+These Terms of Service (the "**Terms**") are a binding agreement between **Cal.com, Inc.**, a Delaware corporation
+with its principal office at 2261 Market Street #4382, San Francisco, CA 94114, United States ("**Cal.com**", "**we**",
+"**us**"), and the person or entity that creates an account or otherwise uses COSS ("**Customer**", "**you**").
+
+By creating an account, generating an API key, or otherwise using the Services, you agree to these Terms, including
+our [Acceptable Use Policy](/legal/acceptable-use) and our [Data Processing Addendum](/legal/dpa), which are incorporated
+into them by reference. Our [Privacy Policy](/legal/privacy) explains how we handle personal data. If you accept these Terms on
+behalf of a company or other organization, you confirm that you have authority to bind it, and "you" refers to that
+organization. If you do not agree, do not use the Services.
+
+If you have signed an order form or other written agreement with Cal.com for COSS, that agreement prevails over these
+Terms where they conflict.
+
+## 1. Definitions
+
+- "**Services**" means COSS: the hosted application programming interface (the "**API**"), the dashboard at coss.com,
+  the documentation, and any related features, tools and support we provide.
+- "**SDK**" means the `coss` client libraries and other code we publish for use with the API.
+- "**Organization**" means a workspace in the Services, together with its projects and environments, that you create
+  or are invited to.
+- "**Authorized Users**" means your employees and contractors who you allow to access the Services under your
+  Organization.
+- "**Customer Data**" means the data you or your Authorized Users submit to the Services, including message content,
+  attachments, recipient addresses, metadata, suppression lists and webhook configuration.
+- "**End Recipients**" means the people to whom you send messages through the Services.
+
+## 2. Eligibility and business use
+
+The Services are intended for businesses and developers. You must be at least 18 years old and able to form a binding
+contract to use them. You may not use the Services if you are barred from doing so under applicable law, including
+U.S. sanctions and export control laws (see [section 15](#15-export-control-and-sanctions)).
+
+## 3. Accounts, Organizations and API keys
+
+**Your account.** You must provide accurate information when you register and keep it up to date. You are responsible
+for keeping your credentials confidential, and for everything that happens under your account. We recommend enabling
+two-factor authentication or passkeys, and Organizations may require it of their members.
+
+**Organizations.** Organization owners and administrators control who may access their Organization, what each member
+may do, and its settings, including single sign-on and two-factor requirements. You are responsible for the acts and
+omissions of your Authorized Users as if they were your own.
+
+**API keys.** API keys authenticate requests on behalf of your Organization and an environment within it. Treat them
+as secrets: do not embed them in client-side code or share them publicly. You are responsible for all usage made with
+your API keys until you revoke them. Tell us promptly at [legal@cal.com](mailto:legal@cal.com) if you believe your
+account or a key has been compromised.
+
+**Sandbox and live environments.** Sandbox environments (`coss_test_` keys) simulate delivery and never send real
+messages. Live environments (`coss_live_` keys) send real messages and require a verified email address and a sending
+domain you have verified with us.
+
+## 4. Your responsibilities
+
+You will, and will ensure that your Authorized Users will:
+
+1. use the Services only in compliance with these Terms, the [Acceptable Use Policy](/legal/acceptable-use) and all
+   applicable laws, including anti-spam, marketing, privacy and data protection laws (such as the U.S. CAN-SPAM Act,
+   Canada's Anti-Spam Legislation, the EU and UK GDPR and the ePrivacy Directive and its national implementations);
+2. have a lawful basis, and where required consent, for every message you send and for any data about End Recipients
+   that you submit to the Services;
+3. send only from domains and addresses you own or are authorized to use, and identify yourself accurately as the
+   sender;
+4. honor unsubscribe and opt-out requests, and include the notices and unsubscribe mechanisms that applicable law
+   requires;
+5. provide End Recipients with any notices required by law, including about open and click tracking if you enable it;
+   and
+6. not submit special categories of personal data, protected health information or payment card data to the Services
+   unless we have agreed to it in writing.
+
+You are solely responsible for Customer Data, for the content of your messages and for your relationship with End
+Recipients.
+
+## 5. How we protect the platform
+
+Email deliverability is shared among everyone who uses the Services. To protect it, you agree that we may:
+
+- **Maintain suppression lists.** We do not deliver to addresses on your environment's suppression list. Addresses
+  are added automatically after permanent bounces and spam complaints, and you can manage the list yourself.
+- **Screen content.** We automatically review a sample of messages sent from live environments, using automated
+  systems that include AI models, to detect spam, phishing, malware and fraud. A message that our systems determine to
+  be abusive may not be delivered, and may lead to the suspension of your Organization.
+- **Monitor sending reputation.** We measure bounce and complaint rates and other signals. We may warn you, and may
+  suspend live sending for your Organization when they exceed our thresholds.
+- **Apply rate limits and quotas.** We limit request and sending rates per API key, per Organization and per client,
+  and may change these limits to protect the Services.
+
+These measures help us operate the Services. They do not shift your responsibility for your messages to us, and we
+have no obligation to monitor Customer Data. You can request a human review of any automated decision affecting your
+Organization by writing to [legal@cal.com](mailto:legal@cal.com).
+
+## 6. Suspension
+
+We may suspend your access to all or part of the Services, including live sending, immediately and without prior
+notice, if we reasonably believe that:
+
+- you or your Authorized Users have breached these Terms or the Acceptable Use Policy;
+- your use poses a security risk, may harm the Services, other customers, End Recipients or third parties, or may
+  damage the sending reputation of the Services;
+- your account has been compromised;
+- suspension is required by law or by a request from a court or government authority; or
+- you have not paid fees that are due.
+
+Where practicable we will tell you why your Organization was suspended, through the dashboard, the API, webhooks or by
+email. While an Organization is suspended, you can still sign in and read your data, but you cannot send from live
+environments or make other changes. A suspension is lifted only after our review; it is not lifted automatically.
+
+## 7. Customer Data and privacy
+
+**Ownership.** As between you and us, you own Customer Data. You grant us a worldwide, non-exclusive, royalty-free
+license to host, copy, transmit, process and display Customer Data only as needed to provide, secure and support the
+Services, to prevent abuse, and as required by law.
+
+**Data protection.** When we process personal data in Customer Data on your behalf, we act as your processor (or
+service provider) and you act as controller. Our [Data Processing Addendum](/legal/dpa) (the "**DPA**") is incorporated
+into these Terms by reference and governs that processing; if these Terms and the DPA conflict on the processing of
+personal data, the DPA prevails. Our
+[Privacy Policy](/legal/privacy) describes how we handle personal data for which we are the controller, such as account
+information.
+
+**Usage data.** We may collect and use data about how the Services are used, such as request volumes, delivery
+statistics and error rates, to operate, secure and improve the Services. We will only disclose such data outside
+Cal.com in aggregated or de-identified form that does not identify you or any individual.
+
+**Deletion.** You can remove some Customer Data through the Services (such as suppression entries, domains and webhook
+endpoints) and can ask us to delete the rest at [privacy@cal.com](mailto:privacy@cal.com). When your account or
+Organization is closed, we will delete Customer Data in line with our [Privacy Policy](/legal/privacy) and the DPA, except where we must keep it by law.
+
+## 8. Third-party services
+
+The Services rely on third-party infrastructure, including Amazon Web Services for hosting and email delivery. Message
+delivery also depends on recipient mail servers, which we do not control. The Services can send webhook requests to
+endpoints you configure; you are responsible for those endpoints and for what you do with the data they receive. We
+are not responsible for third-party services that you choose to connect to the Services.
+
+## 9. Fees
+
+Use of the Services may be subject to fees described on our website or in an order form. If you subscribe to a paid
+plan:
+
+- you authorize us, or our payment processor, to charge the payment method you provide for fees when due;
+- fees are exclusive of taxes, and you are responsible for all taxes except those based on our net income;
+- fees are non-refundable except where these Terms or applicable law say otherwise; and
+- we may change fees with at least 30 days' notice, effective at the start of your next billing period.
+
+If fees are past due, we may suspend paid features after giving you notice and at least 10 days to pay.
+
+## 10. Intellectual property
+
+**Our property.** The Services, the SDK and all related software, documentation, trademarks and content are owned by
+Cal.com or its licensors. Except for the rights expressly granted in these Terms, we reserve all rights.
+
+**Your license.** Subject to these Terms, we grant you a non-exclusive, non-transferable, non-sublicensable right to
+access and use the Services during your subscription for your internal business purposes. The SDK is licensed to you
+under the open source license distributed with it (currently the MIT License); that license governs your use of the
+SDK's code.
+
+**Restrictions.** You will not, and will not allow anyone to: (a) copy, modify or create derivative works of the
+Services, except the SDK as its license permits; (b) reverse engineer or attempt to extract the source code of the
+Services, except to the extent the law allows despite this restriction; (c) resell, sublicense or provide the Services
+to third parties as a service bureau, unless we agree in writing; (d) access the Services to build a competing
+product; or (e) circumvent any usage limits, security measures or access controls.
+
+**Feedback.** If you give us feedback or suggestions, we may use them without restriction or obligation to you.
+
+## 11. Confidentiality
+
+Each party may receive non-public information from the other that is marked confidential or that a reasonable person
+would understand to be confidential ("**Confidential Information**"). Customer Data is your Confidential Information.
+The receiving party will use the other party's Confidential Information only to perform under these Terms, protect it
+with at least reasonable care, and disclose it only to its employees, contractors and advisers who need to know it and
+are bound by confidentiality obligations at least as protective. These obligations do not apply to information that is
+or becomes public through no fault of the receiving party, was already known to it, is independently developed, or is
+rightfully received from a third party. A party may disclose Confidential Information where legally required, after
+giving the other party reasonable notice where the law allows.
+
+## 12. Beta features, warranties and disclaimers
+
+**Beta and preview features.** We may offer features labeled as beta, preview or similar. They are provided for
+evaluation, may change or be discontinued at any time, and are excluded from any service commitments.
+
+**Mutual warranties.** Each party represents that it has the authority to enter into these Terms.
+
+**Disclaimer.** EXCEPT AS EXPRESSLY STATED IN THESE TERMS, THE SERVICES AND THE SDK ARE PROVIDED "AS IS" AND "AS
+AVAILABLE", AND CAL.COM DISCLAIMS ALL WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICES
+WILL BE UNINTERRUPTED OR ERROR-FREE, OR THAT ANY MESSAGE WILL BE DELIVERED, PLACED IN AN INBOX OR OPENED. Unless a
+written agreement with us includes a service level agreement, the Services carry no uptime or support commitment.
+
+## 13. Indemnification
+
+**By you.** You will defend Cal.com and its affiliates, officers, directors and employees against any claim, demand,
+suit or proceeding brought by a third party (including an End Recipient or a regulator) arising out of Customer Data,
+the messages you send, your breach of these Terms or the Acceptable Use Policy, or your violation of applicable law,
+and you will pay any damages, fines, penalties and reasonable costs (including attorneys' fees) finally awarded or
+agreed in settlement.
+
+**By us.** We will defend you against any claim brought by a third party alleging that the Services, as provided by us,
+infringe that third party's U.S. patent, copyright or trademark or misappropriate its trade secret, and will pay the
+damages and costs finally awarded or agreed in settlement. This obligation does not apply to claims arising from
+Customer Data, the SDK, third-party services, your modification of the Services, or your combination of the Services
+with anything we did not provide. If the Services are, or we believe they may be, subject to such a claim, we may
+modify them to be non-infringing, obtain a license for your continued use, or terminate your subscription and refund
+any prepaid fees for the remaining term.
+
+**Process.** The indemnified party must promptly notify the indemnifying party of the claim, give it sole control of the
+defense and settlement (except that it may not settle a claim in a way that imposes liability on the indemnified party
+without its consent), and provide reasonable cooperation. This section states each party's sole remedy for the claims
+it covers.
+
+## 14. Limitation of liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW:
+
+1. NEITHER PARTY WILL BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR PUNITIVE DAMAGES, OR FOR ANY
+   LOSS OF PROFITS, REVENUE, GOODWILL OR DATA, EVEN IF IT HAS BEEN ADVISED OF THEIR POSSIBILITY; AND
+2. EACH PARTY'S TOTAL LIABILITY ARISING OUT OF OR RELATING TO THESE TERMS WILL NOT EXCEED THE GREATER OF THE FEES YOU
+   PAID OR OWED TO US FOR THE SERVICES IN THE 12 MONTHS BEFORE THE EVENT GIVING RISE TO THE LIABILITY, AND ONE HUNDRED
+   U.S. DOLLARS (US$100).
+
+These limitations do not apply to your payment obligations, your obligations under [section 13](#13-indemnification),
+your breach of [section 10](#10-intellectual-property) or of the Acceptable Use Policy, or either party's liability for
+gross negligence, fraud or willful misconduct, or any liability that cannot be limited by law.
+
+## 15. Export control and sanctions
+
+You will comply with all applicable export control and economic sanctions laws. You represent that you are not
+located in, organized under the laws of, or ordinarily resident in a country or region subject to comprehensive U.S.
+sanctions, and that you are not on, or owned or controlled by anyone on, a U.S. government list of restricted parties.
+You will not use the Services to send messages to, or on behalf of, any such person or place.
+
+## 16. Term and termination
+
+These Terms apply from when you first accept them until your account is closed. You may stop using the Services at any time,
+and close your account by writing to [support@cal.com](mailto:support@cal.com). We may terminate these Terms or your account for convenience with 30 days' notice, or
+immediately if you materially breach these Terms (including the Acceptable Use Policy), or if we are required to by
+law.
+
+On termination, your right to use the Services ends, and you must stop using your API keys. Sections 4, 7 (as to
+deletion), 9 (as to amounts owed), 10 (except your license), 11, 12, 13, 14, 16 and 17 survive termination.
+
+## 17. General
+
+**Changes to these Terms.** We may update these Terms from time to time. We will post the updated Terms on this page
+and change the "Last updated" date. If a change is material, we will notify you by email or in the dashboard at least
+30 days before it takes effect, unless the change is required by law or addresses a security risk, in which case it may
+take effect sooner. Continuing to use the Services after a change takes effect means you accept it. If you do not
+accept a change, you must stop using the Services before it takes effect.
+
+**Changes to the Services.** We may add, change or remove features. We will give reasonable notice before removing a
+material feature you rely on. Breaking changes to the API are released as new dated API versions; your Organization
+stays on its version until you upgrade it, except where a change is needed for security or legal reasons.
+
+**Governing law and venue.** These Terms, and any dispute arising out of or relating to them or the Services, are
+governed by the laws of the State of Delaware, without regard to its conflict of laws rules. The United Nations
+Convention on Contracts for the International Sale of Goods does not apply. The state and federal courts located in
+San Francisco County, California, have exclusive jurisdiction over any such dispute, and each party consents to their
+personal jurisdiction and venue. Either party may seek injunctive relief in any court of competent jurisdiction to
+protect its intellectual property or Confidential Information.
+
+**Assignment.** You may not assign or transfer these Terms without our prior written consent. We may assign these
+Terms to an affiliate or to a successor in a merger, acquisition or sale of all or substantially all of the relevant
+assets. Any other attempted assignment is void.
+
+**Force majeure.** Neither party is liable for any delay or failure to perform (other than payment obligations) caused
+by events beyond its reasonable control, such as natural disasters, war, terrorism, labor disputes, government action,
+or failures of the internet, utilities or third-party infrastructure.
+
+**Notices.** We may send notices to the email address on your account or through the dashboard. You must send legal
+notices to [legal@cal.com](mailto:legal@cal.com), with a copy to Cal.com, Inc., Attn: Legal, 2261 Market Street #4382,
+San Francisco, CA 94114, United States.
+
+**Publicity.** We will not use your name or logo to identify you as a customer without your permission.
+
+**Miscellaneous.** These Terms, together with the Acceptable Use Policy, the DPA and any order form, are the entire agreement between the parties about the Services and supersede any prior
+agreements on that subject. If any provision is held unenforceable, it will be enforced to the maximum extent possible
+and the rest of these Terms will remain in effect. A failure to enforce a provision is not a waiver. The parties are
+independent contractors. There are no third-party beneficiaries of these Terms.
+
+## 18. Contact
+
+Cal.com, Inc.<br />
+2261 Market Street #4382<br />
+San Francisco, CA 94114<br />
+United States
+
+Legal: [legal@cal.com](mailto:legal@cal.com) · Support: [support@cal.com](mailto:support@cal.com)

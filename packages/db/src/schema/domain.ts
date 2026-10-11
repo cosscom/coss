@@ -243,6 +243,7 @@ export type EmailEventDetails = {
   suppression?: { id: string; scope: string; reason: EmailSuppressionReason };
   open?: { user_agent: string | null };
   click?: { url: string; link_position: number; user_agent: string | null };
+  reschedule?: { scheduled_at: string; previous_scheduled_at: string };
 };
 
 /** One row per distinct recipient address of an email; its status is driven by delivery events. */
@@ -322,6 +323,7 @@ export const emailEventType = pgEnum("email_event_type", [
   "email.canceled",
   "email.opened",
   "email.clicked",
+  "email.rescheduled",
 ]);
 
 /**

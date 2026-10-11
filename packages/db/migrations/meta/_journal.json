@@ -176,6 +176,13 @@
       "when": 1791727681905,
       "tag": "0024_thin_lila_cheney",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791736073782,
+      "tag": "0025_lame_shadow_king",
+      "breakpoints": true
     }
   ]
 }
