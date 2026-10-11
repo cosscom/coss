@@ -15,10 +15,7 @@ import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
 import { auth } from "@/lib/auth";
 import { requireOrgPermission } from "@/lib/session";
-import { discoverOidcEndpoints, samlEntryPointFromMetadata, ssoUrls } from "@/lib/sso";
-
-/** Longest certificate or metadata document accepted (Better Auth refuses metadata over 100 KB). */
-const SAML_DOCUMENT_MAX_LENGTH = 100_000;
+import { discoverOidcEndpoints, httpsUrl, samlConfigFrom } from "@/lib/sso";
 
 function formDomains(formData: FormData): string[] {
   const domains = formData
@@ -27,60 +24,6 @@ function formDomains(formData: FormData): string[] {
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
   return [...new Set(domains)].sort();
-}
-
-function samlDocument(formData: FormData, name: string): string {
-  const value = formString(formData, name);
-  if (value.length > SAML_DOCUMENT_MAX_LENGTH) {
-    throw new ActionError("That document is too large (100 KB at most).");
-  }
-  return value;
-}
-
-function httpsUrl(value: string, label: string): string {
-  try {
-    const url = new URL(value);
-    if (url.protocol === "https:") return url.toString();
-  } catch {
-    // Falls through to the error below.
-  }
-  throw new ActionError(`${label} must be an https:// URL.`);
-}
-
-/** The SAML part of a register/update body. `update` keeps fields the form left empty. */
-function samlConfigFrom(formData: FormData, providerId: string, update: boolean) {
-  const metadata = samlDocument(formData, "samlMetadata");
-  const urls = ssoUrls(env.BETTER_AUTH_URL, providerId);
-  const sp = {
-    issuer: urls.samlEntityId,
-    callbackUrl: urls.samlAcsUrl,
-    // Assertions must be signed (Better Auth also verifies the response signature).
-    wantAssertionsSigned: true,
-  };
-  if (metadata) {
-    const entryPoint = samlEntryPointFromMetadata(metadata);
-    if (!entryPoint) {
-      throw new ActionError(
-        "The metadata has no SingleSignOnService URL. Check you pasted all of it.",
-      );
-    }
-    return { ...sp, entryPoint, idpMetadata: { metadata } };
-  }
-  const entryPointValue = formString(formData, "samlEntryPoint");
-  const entityId = formString(formData, "samlIdpEntityId");
-  const cert = samlDocument(formData, "samlCertificate");
-  if (update && !entryPointValue && !entityId && !cert) return { ...sp };
-  if (!entryPointValue || !entityId || !cert) {
-    throw new ActionError(
-      "Paste the IdP metadata XML, or enter its SSO URL, entity ID and signing certificate.",
-    );
-  }
-  return {
-    ...sp,
-    entryPoint: httpsUrl(entryPointValue, "The SSO URL"),
-    cert,
-    idpMetadata: { entityID: entityId, cert },
-  };
 }
 
 /**
@@ -154,7 +97,12 @@ export async function saveSsoProviderAction(
         });
       }
     } else {
-      const samlConfig = samlConfigFrom(formData, providerId, Boolean(existing));
+      const samlConfig = samlConfigFrom(
+        formData,
+        env.BETTER_AUTH_URL,
+        providerId,
+        Boolean(existing),
+      );
       if (existing) {
         await auth.api.updateSSOProvider({
           headers: requestHeaders,

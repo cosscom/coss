@@ -42,7 +42,12 @@ export function orgAccess(membership: OrgAccessMembership, session: OrgAccessSes
     }
     breakGlass = true;
   }
-  if (requireTwoFactor && !viaSso && !session.user.twoFactorEnabled) {
+  // SSO skips the local challenge, so enrollment is not MFA proof for a foreign IdP session.
+  if (
+    requireTwoFactor &&
+    !viaSso &&
+    (!session.user.twoFactorEnabled || session.session.ssoProviderId)
+  ) {
     return { kind: "redirect", to: "/settings" };
   }
   return { kind: "allowed", viaSso, breakGlass };

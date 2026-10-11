@@ -81,6 +81,22 @@ describe("orgAccess", () => {
     expect(orgAccess(both, session({ twoFactor: true })).kind).toBe("allowed");
   });
 
+  test("foreign SSO cannot use local enrollment as MFA proof, including break-glass owners", () => {
+    for (const role of ["member", "admin", "owner", "admin,owner"]) {
+      for (const requireSso of [false, true]) {
+        for (const ssoProviderId of ["sso_acme", null]) {
+          const required = {
+            ...membership({ requireTwoFactor: true, requireSso, role }),
+            ssoProviderId,
+          };
+          expect(
+            orgAccess(required, session({ ssoProviderId: "sso_other", twoFactor: true })).kind,
+          ).toBe("redirect");
+        }
+      }
+    }
+  });
+
   test("an organization without a provider never matches a session", () => {
     const noProvider = { ...membership({ requireTwoFactor: true }), ssoProviderId: null };
     expect(orgAccess(noProvider, session({ ssoProviderId: null })).kind).toBe("redirect");

@@ -2,7 +2,7 @@ import "server-only";
 import { lookup } from "node:dns/promises";
 import { isPublicRoutableHost } from "@better-auth/core/utils/host";
 import { DiscoveryError, discoverOIDCConfig } from "@better-auth/sso";
-import { ActionError } from "./actions";
+import { ActionError, formString } from "./actions";
 
 /**
  * URLs an organization gives its identity provider. Better Auth serves them under /api/auth on
@@ -96,4 +96,68 @@ export function samlEntryPointFromMetadata(metadata: string): string | null {
   } catch {
     return null;
   }
+}
+
+/** Longest certificate or metadata document accepted (Better Auth refuses metadata over 100 KB). */
+const SAML_DOCUMENT_MAX_LENGTH = 100_000;
+
+function samlDocument(formData: FormData, name: string): string {
+  const value = formString(formData, name);
+  if (value.length > SAML_DOCUMENT_MAX_LENGTH) {
+    throw new ActionError("That document is too large (100 KB at most).");
+  }
+  return value;
+}
+
+export function httpsUrl(value: string, label: string): string {
+  try {
+    const url = new URL(value);
+    if (url.protocol === "https:") return url.toString();
+  } catch {
+    // Falls through to the error below.
+  }
+  throw new ActionError(`${label} must be an https:// URL.`);
+}
+
+/** The SAML part of a register/update body. `update` keeps fields the form left empty. */
+export function samlConfigFrom(
+  formData: FormData,
+  baseUrl: string,
+  providerId: string,
+  update: boolean,
+) {
+  const metadata = samlDocument(formData, "samlMetadata");
+  const urls = ssoUrls(baseUrl, providerId);
+  const sp = {
+    issuer: urls.samlEntityId,
+    callbackUrl: urls.samlAcsUrl,
+    // Assertions must be signed (Better Auth also verifies the response signature).
+    wantAssertionsSigned: true,
+  };
+  if (metadata) {
+    const entryPoint = samlEntryPointFromMetadata(metadata);
+    if (!entryPoint) {
+      throw new ActionError(
+        "The metadata has no SingleSignOnService URL. Check you pasted all of it.",
+      );
+    }
+    return { ...sp, entryPoint, idpMetadata: { metadata } };
+  }
+  const entryPointValue = formString(formData, "samlEntryPoint");
+  const entityId = formString(formData, "samlIdpEntityId");
+  const cert = samlDocument(formData, "samlCertificate");
+  if (!update && (!entryPointValue || !entityId || !cert)) {
+    throw new ActionError(
+      "Paste the IdP metadata XML, or enter its SSO URL, entity ID and signing certificate.",
+    );
+  }
+  return {
+    ...sp,
+    // Better Auth merges omitted fields, including the nested IdP certificate, on updates.
+    ...(entryPointValue ? { entryPoint: httpsUrl(entryPointValue, "The SSO URL") } : {}),
+    ...(cert ? { cert } : {}),
+    ...(entityId || cert
+      ? { idpMetadata: { ...(entityId ? { entityID: entityId } : {}), ...(cert ? { cert } : {}) } }
+      : {}),
+  };
 }
