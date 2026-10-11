@@ -104,6 +104,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "webhookEndpoints.delete",
     args: (r) => [pathId(r)],
   },
+  "POST /v1/webhook_endpoints/{id}/roll_secret": {
+    method: "webhookEndpoints.rollSecret",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
   "GET /v1/webhook_endpoints/{id}/deliveries": {
     method: "webhookEndpoints.deliveries.list",
     args: (request) => [pathId(request), queryParams(request)],

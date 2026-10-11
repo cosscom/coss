@@ -417,7 +417,8 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
 
 One Secrets Manager secret per stage (JSON), injected through each task definition's `secrets`:
 `VALKEY_URL` (from `valkey:bootstrap`), `DATABASE_URL`, `BETTER_AUTH_SECRET`, `AI_GATEWAY_API_KEY` (worker), `WEBHOOK_SECRETS_KEY` and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (generate the
-last three with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable),
+last three with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable, see
+[Rotating `WEBHOOK_SECRETS_KEY`](#rotating-webhook_secrets_key) to change it),
 `TURNSTILE_SECRET_KEY` (web; from a Cloudflare Turnstile widget, managed mode, whose hostnames include the
 dashboard's). The origin
 header value is a separate secret, used only by CloudFront and the ALB rules (rotate it by adding the new value to the
@@ -451,6 +452,10 @@ if it is wrong. AWS credentials come from the task role.
 
 ### Deploy order
 
+**Upgrading a stage that still runs v1-only webhook secret readers:** use the
+[one-time coordinated upgrade](#upgrading-from-v1-webhook-secret-storage) below instead of step 3's rolling
+deployment. This applies even when `WEBHOOK_SECRETS_KEY` is unchanged.
+
 1. Build and push the four images, tagged with the commit (`docker build --platform linux/arm64 -f
    apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
    for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker).
@@ -473,6 +478,62 @@ or the invitation's 48 hours) and reputation notification emails (dropped after 
 address or create a live key; afterwards, ask for a new verification email from account settings. They are ordinary
 live emails of that organization: its dashboard shows their delivery, and its suppressions and reputation
 guard apply. Account emails keep no body once sent (their links are secrets).
+
+### Upgrading from v1 webhook secret storage
+
+The key-ring release reads both `v1` and `v2` ciphertext, but immediately writes `v2` when an endpoint is created
+or its secret is rolled. Earlier releases read only `v1`: mixing these releases breaks deliveries and dashboard
+secret reveals. This first format upgrade requires a maintenance window; subsequent deployments between
+dual-format releases can follow the normal rolling deploy order. A new stage needs no transition.
+
+1. Build the new images and run the backward-compatible migrations (deploy steps 1–2). Keep the existing single
+   `WEBHOOK_SECRETS_KEY` unchanged on all services; do not combine this upgrade with a key rotation or run
+   `webhooks:reencrypt` yet.
+2. Block incoming API and dashboard traffic at the load balancer, including direct origin access. Suspend service
+   autoscaling and automated deployments, and disable automatic rollback to v1-only task revisions (including ECS
+   deployment circuit-breaker/alarm rollback). Record desired counts, and scale **web, api and worker to zero**.
+   Allow SIGTERM draining to finish, and verify that every old task has stopped, including standalone tasks or
+   operator scripts that access webhook secrets. Do not start any new app task while an old reader remains.
+3. Set all three services to the new image revisions before restoring their desired counts. Keep traffic blocked
+   until every running task uses a dual-format reader and the API/dashboard health checks pass. Verify a legacy
+   endpoint's secret reveal and delivery, then create or roll a test endpoint and verify its reveal and delivery.
+   Run these checks through controlled operator access during maintenance.
+4. Restore traffic, autoscaling and automated deployments, pinned to the upgraded revisions. Re-enable automatic
+   rollback only when its target revision also reads both formats. Queued work resumes
+   when the workers start; allow for delayed email and webhook deliveries during the maintenance window.
+   Existing `v1` rows remain readable and do not need immediate re-encryption. Only now may the re-encryption
+   script or the key-rotation procedure below run.
+
+**Rollback:** before any new task or re-encryption script has written `v2`, the old images can be restored using
+the same stop-all/start-all procedure with the original key. Once a `v2` secret exists, rollback images must also
+read both formats; keeping the same encryption key does not make a v1-only image compatible. Keep traffic blocked
+and repair forward if the cutover fails after v2 writes. This release has no v2-to-v1 downgrade command.
+
+### Rotating `WEBHOOK_SECRETS_KEY`
+
+Prerequisite: every API, dashboard and worker task already runs a dual-format reader. For a stage still using
+v1-only readers, complete [the format upgrade](#upgrading-from-v1-webhook-secret-storage) first.
+
+The variable is a comma-separated list of keys, newest first: the first encrypts new endpoint secrets, every one
+decrypts. Each stored secret names its key by an id derived from the key itself (the `webhooks:reencrypt` script
+prints them), so the list needs no labels and its order only decides which key encrypts. Endpoints' own signing
+secrets don't change, so customers notice nothing.
+
+1. Generate a key (`openssl rand -base64 32`) and **append** it: `WEBHOOK_SECRETS_KEY=<old>,<new>`. Deploy web, api
+   and worker. Every task can now decrypt with both keys; nothing is encrypted with the new one yet.
+2. Swap the order, `<new>,<old>`, and deploy again. New and rolled endpoint secrets are encrypted with the new key.
+   Doing step 1 first means no task that only knows the old key ever reads a secret made with the new one (rolling
+   deploys run both versions at once).
+3. Run the `webhooks-reencrypt` one-off task from the worker image (`bun apps/worker/scripts/webhooks-reencrypt.ts`,
+   needs `DATABASE_URL` and the new `WEBHOOK_SECRETS_KEY`; `--dry-run` only counts). It rewrites every secret still
+   encrypted with an older key, while traffic continues, and exits 1 if anything was left over (a secret no listed key
+   decrypts, or one rolled while it ran: run it again).
+4. Remove the old key, `<new>`, and deploy. Destroy the old key.
+
+After a leak of the key, do all four steps right away: with the database alone the key is useless, but with both,
+every endpoint's signing secret can be read. Customers should then [roll their endpoint
+secrets](https://coss.com/docs/webhooks#rolling-the-secret) with no grace period. Locally, `bun run
+webhooks:reencrypt` does step 3 against `DATABASE_URL`.
 
 ### Known gaps
 

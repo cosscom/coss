@@ -75,6 +75,7 @@ export type {
   CreateWebhookEndpointParams,
   DeletedWebhookEndpoint,
   ListWebhookDeliveriesParams,
+  RollWebhookEndpointSecretParams,
   UpdateWebhookEndpointParams,
   WebhookAttempt,
   WebhookDelivery,

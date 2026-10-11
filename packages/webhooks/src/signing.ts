@@ -25,9 +25,13 @@ export function signPayload(input: {
   return `v1,${mac}`;
 }
 
-/** The headers of one signed request. */
+/**
+ * The headers of one signed request. Every secret signs: while an endpoint's secret is being
+ * rolled, `webhook-signature` lists the current and the previous signature, space-separated, and
+ * receivers accept the request when any of them matches.
+ */
 export function signatureHeaders(input: {
-  secret: string;
+  secrets: readonly [string, ...string[]];
   id: string;
   timestamp: number;
   body: string;
@@ -35,6 +39,6 @@ export function signatureHeaders(input: {
   return {
     "webhook-id": input.id,
     "webhook-timestamp": String(input.timestamp),
-    "webhook-signature": signPayload(input),
+    "webhook-signature": input.secrets.map((secret) => signPayload({ ...input, secret })).join(" "),
   };
 }

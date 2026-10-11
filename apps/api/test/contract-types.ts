@@ -42,6 +42,7 @@ import type { ApiVersion } from "@coss/versioning";
 import type {
   DeletedWebhookEndpoint,
   ListWebhookDeliveriesQuery,
+  RollWebhookEndpointSecretRequest,
   WebhookAttemptObject,
   WebhookDeliveryList,
   WebhookDeliveryObject,
@@ -66,6 +67,7 @@ import type {
   ListSuppressionsParams,
   ListWebhookDeliveriesParams,
   RescheduleEmailParams,
+  RollWebhookEndpointSecretParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
   ApiVersion as SdkApiVersion,
   DeletedDomain as SdkDeletedDomain,
@@ -175,6 +177,12 @@ export type Contract = [
   >,
   Assert<
     MutuallyAssignable<z.input<typeof UpdateWebhookEndpointRequest>, UpdateWebhookEndpointParams>
+  >,
+  Assert<
+    MutuallyAssignable<
+      z.input<typeof RollWebhookEndpointSecretRequest>,
+      RollWebhookEndpointSecretParams
+    >
   >,
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointObject>, WebhookEndpoint>>,
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointWithSecret>, SdkEndpointWithSecret>>,

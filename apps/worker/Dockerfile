@@ -5,6 +5,7 @@
 # (README.md, "Deploying to AWS"). One-off tasks reuse it:
 #   bun packages/db/src/migrate.ts             database migrations (before every deploy)
 #   bun apps/worker/scripts/ses-bootstrap.ts   shared SES/SNS/SQS resources (needs AWS admin rights)
+#   bun apps/worker/scripts/webhooks-reencrypt.ts   webhook secrets onto the newest WEBHOOK_SECRETS_KEY
 
 # Keep in step with package.json (`packageManager`, `devDependencies.turbo`); infra/test checks.
 ARG BUN_VERSION=1.4.2

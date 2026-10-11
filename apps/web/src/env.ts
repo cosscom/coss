@@ -1,6 +1,7 @@
 import { emailEnvShape } from "@coss/email/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
+import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
@@ -28,8 +29,7 @@ export const env = createEnv({
     API_PUBLIC_URL: z.url(),
     ...emailEnvShape,
     ...rateLimitEnvShape,
-    // Encrypts webhook signing secrets at rest: 32 bytes, base64 (`openssl rand -base64 32`).
-    WEBHOOK_SECRETS_KEY: base64Key(32),
+    ...webhookEnvShape,
     // Server Actions encrypt closed-over variables with this key; every instance of a stage must
     // share it. Without it, each build embeds its own random key. Builds don't need it; production
     // servers refuse to start without it (src/instrumentation.ts).

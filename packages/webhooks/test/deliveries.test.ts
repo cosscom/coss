@@ -26,13 +26,13 @@ import { WebhookError } from "../src/errors.ts";
 import { enqueueWebhookMessage } from "../src/outbox.ts";
 import { signPayload } from "../src/signing.ts";
 import {
-  TEST_SECRETS_KEY,
+  TEST_SECRETS_KEYS,
   testManagementDeps,
   testSender,
   webhookReceiver,
 } from "../src/testing.ts";
 
-const deliveryDeps = { secretsKey: TEST_SECRETS_KEY, send: testSender() };
+const deliveryDeps = { secretsKeys: TEST_SECRETS_KEYS, send: testSender() };
 
 async function endpointFor(tenant: TestTenant, url: string, eventTypes: string[] = []) {
   return createWebhookEndpoint(
@@ -77,7 +77,7 @@ describe("endpoints", () => {
       projectId: tenant.project.id,
     });
     expect(endpoint.secretCiphertext).not.toContain(secret);
-    expect(revealWebhookSecret(endpoint, TEST_SECRETS_KEY)).toBe(secret);
+    expect(revealWebhookSecret(endpoint, TEST_SECRETS_KEYS)).toBe(secret);
 
     const strict = { ...testManagementDeps, allowInsecureUrls: false };
     await expect(
@@ -146,7 +146,7 @@ describe("updateWebhookEndpoint", () => {
       enabled: false,
       description: null,
     });
-    expect(revealWebhookSecret(updated, TEST_SECRETS_KEY)).toBe(secret);
+    expect(revealWebhookSecret(updated, TEST_SECRETS_KEYS)).toBe(secret);
   });
 
   test("trims a description and clears it with null", async () => {
@@ -302,6 +302,7 @@ describe("toWebhookEndpointObject", () => {
       event_types: ["email.sent"],
       api_version: LATEST_API_VERSION,
       enabled: true,
+      previous_secret_expires_at: null,
       created_at: endpoint.createdAt.toISOString(),
       updated_at: endpoint.updatedAt.toISOString(),
     });

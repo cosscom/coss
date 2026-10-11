@@ -178,7 +178,9 @@ const webhookKey: EnvVar = {
   name: "WEBHOOK_SECRETS_KEY",
   kind: "secret",
   required: true,
-  value: "openssl rand -base64 32 (one per stage; losing it makes endpoint secrets unreadable)",
+  value:
+    "openssl rand -base64 32 (one per stage; losing it makes endpoint secrets unreadable). A comma-separated " +
+    "list while rotating: the first encrypts, every one decrypts",
   description: "Encrypts webhook signing secrets. Same value for web, api and worker.",
 };
 
@@ -461,5 +463,13 @@ export const ONE_OFF_TASKS = [
     image: "api",
     command: ["bun", "packages/tenancy/scripts/create-admin.ts", "--email", "<email>"],
     when: "Once, after that user signed up: makes them a platform admin. Run with the api service's environment.",
+  },
+  {
+    name: "webhooks-reencrypt",
+    image: "worker",
+    command: ["bun", "apps/worker/scripts/webhooks-reencrypt.ts"],
+    when:
+      "When rotating WEBHOOK_SECRETS_KEY, after every service runs with the new key first: moves endpoint " +
+      "secrets onto it so older keys can be removed. Needs DATABASE_URL and WEBHOOK_SECRETS_KEY.",
   },
 ] as const;

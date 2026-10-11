@@ -9,6 +9,7 @@ import {
   getWebhookEndpoint,
   retryWebhookDelivery,
   revealWebhookSecret,
+  rollWebhookEndpointSecret,
   updateWebhookEndpoint,
   WebhookError,
 } from "@coss/webhooks";
@@ -19,6 +20,7 @@ import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
 import { type OrgContext, requireOrgPermission } from "@/lib/session";
 import { webhookManagementDeps } from "@/lib/webhooks";
+import { PREVIOUS_SECRET_OPTIONS } from "./secret-roll";
 
 /** The environment addressed by the form's slugs, inside the already-authorized organization. */
 async function environmentFromForm(context: OrgContext, formData: FormData) {
@@ -185,9 +187,41 @@ export async function revealWebhookSecretAction(
       webhook: ["update"],
     });
     const endpoint = await endpointFromForm(context, formData);
-    const secret = revealWebhookSecret(endpoint, webhookManagementDeps().secretsKey);
+    const secret = revealWebhookSecret(endpoint, webhookManagementDeps().secretsKeys);
     // Who has seen a signing secret matters when it leaks.
     await endpointAudit(context, endpoint, "webhook_endpoint.secret_revealed");
+    return { secret };
+  });
+}
+
+/**
+ * Replaces the signing secret; the current one keeps signing deliveries for the chosen time. The
+ * result carries the new secret to show right away.
+ */
+export async function rollWebhookSecretAction(
+  _previous: ActionResult<{ secret: string }> | null,
+  formData: FormData,
+): Promise<ActionResult<{ secret: string }>> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      webhook: ["update"],
+    });
+    const endpoint = await endpointFromForm(context, formData);
+    // Compared as strings: an empty field must not read as 0 ("immediately").
+    const chosen = formString(formData, "previousSecretExpiresIn");
+    const option = PREVIOUS_SECRET_OPTIONS.find(({ seconds }) => String(seconds) === chosen);
+    if (!option) throw new ActionError("Choose when the current secret stops signing.");
+    const { secret } = await userFacing(() =>
+      rollWebhookEndpointSecret(
+        {
+          organizationId: context.organization.id,
+          id: endpoint.id,
+          previousSecretExpiresIn: option.seconds,
+        },
+        webhookManagementDeps(),
+      ),
+    );
+    refresh();
     return { secret };
   });
 }
