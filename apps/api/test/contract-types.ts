@@ -28,6 +28,11 @@ import type {
   SuppressionList,
 } from "@coss/email/schemas";
 import type {
+  AccountWebhookEvent,
+  ReputationCheckObject,
+  ReputationObject,
+} from "@coss/reputation/schemas";
+import type {
   DeletedWebhookEndpoint,
   WebhookEndpointList,
   WebhookEndpointObject,
@@ -45,6 +50,7 @@ import type {
   ImportSuppressionsParams,
   List,
   ListSuppressionsParams,
+  AccountWebhookEvent as SdkAccountWebhookEvent,
   DeletedDomain as SdkDeletedDomain,
   DeletedSuppression as SdkDeletedSuppression,
   DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
@@ -54,7 +60,10 @@ import type {
   EmailLink as SdkEmailLink,
   EmailRecipient as SdkEmailRecipient,
   EmailTracking as SdkEmailTracking,
+  EmailWebhookEvent as SdkEmailWebhookEvent,
   WebhookEndpointWithSecret as SdkEndpointWithSecret,
+  Reputation as SdkReputation,
+  ReputationCheck as SdkReputationCheck,
   Suppression as SdkSuppression,
   SuppressionCheck as SdkSuppressionCheck,
   SuppressionImport as SdkSuppressionImport,
@@ -135,9 +144,24 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointWithSecret>, SdkEndpointWithSecret>>,
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointList>, List<WebhookEndpoint>>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedWebhookEndpoint>, SdkDeletedWebhookEndpoint>>,
-  // Webhooks: the body COSS sends is exactly the SDK's `WebhookEvent`.
-  Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>, WebhookEvent>>,
-  Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>["data"], WebhookEvent["data"]>>,
+  // Webhooks: every body COSS sends is exactly one member of the SDK's `WebhookEvent`.
+  Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>, SdkEmailWebhookEvent>>,
+  Assert<
+    MutuallyAssignable<z.output<typeof EmailWebhookEvent>["data"], SdkEmailWebhookEvent["data"]>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof AccountWebhookEvent>, SdkAccountWebhookEvent>>,
+  Assert<
+    MutuallyAssignable<z.output<typeof AccountWebhookEvent>["data"], SdkAccountWebhookEvent["data"]>
+  >,
+  Assert<
+    MutuallyAssignable<
+      z.output<typeof EmailWebhookEvent> | z.output<typeof AccountWebhookEvent>,
+      WebhookEvent
+    >
+  >,
+  // Reputation.
+  Assert<MutuallyAssignable<z.output<typeof ReputationObject>, SdkReputation>>,
+  Assert<MutuallyAssignable<z.output<typeof ReputationCheckObject>, SdkReputationCheck>>,
   // Suppressions: request bodies and queries (the SDK sends `limit` as a number), and responses.
   Assert<MutuallyAssignable<z.input<typeof CreateSuppressionRequest>, CreateSuppressionParams>>,
   Assert<

@@ -88,7 +88,8 @@ export default async function EnvironmentPage({
   };
   const canCreateKey = can({ apiKey: ["create"] });
   const canRevokeKey = can({ apiKey: ["delete"] });
-  const createRestriction = environment.mode === "live" ? liveKeyRestriction(session) : null;
+  const createRestriction =
+    environment.mode === "live" ? await liveKeyRestriction(session, organization.id) : null;
   const apiUrl = env.API_PUBLIC_URL;
   const from = `onboarding@${sendingDomain ?? "your-verified-domain.com"}`;
   const curl = quickStartCurl(apiUrl, from);

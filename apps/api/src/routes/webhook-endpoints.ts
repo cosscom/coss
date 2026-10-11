@@ -1,4 +1,4 @@
-import { EMAIL_EVENT_TYPES } from "@coss/email/schemas";
+import { WEBHOOK_EVENT_TYPES } from "@coss/email/schemas";
 import {
   createWebhookEndpoint,
   deleteWebhookEndpoint,
@@ -25,10 +25,10 @@ import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, errorDoc, jsonDoc } from "./docs.ts";
 
-// Email is the only product with events so far; every product's types are subscribable here.
+// Every product's event types are subscribable here (email events and `account.*`).
 // Exported so the SDK contract test can check them against the SDK's hand-written params.
 export const { CreateWebhookEndpointRequest, UpdateWebhookEndpointRequest } =
-  webhookEndpointRequests(EMAIL_EVENT_TYPES);
+  webhookEndpointRequests(WEBHOOK_EVENT_TYPES);
 
 const EndpointIdParams = z.object({
   id: z.string().meta({

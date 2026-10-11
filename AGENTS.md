@@ -21,16 +21,17 @@ auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/rat
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
+| `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks; `./schemas` (zod only: policy, wire schemas). |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens) and `globals.css` (the dashboard's stylesheet). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests; nothing here calls AWS. See `infra/AGENTS.md`. |
 
-Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← email`, `db ← ratelimit`; `api → tenancy, email, webhooks, ratelimit, db`;
-`web → auth, tenancy, email, webhooks, ratelimit, db, ui`; `site → ui, auth` (only the client-safe `@coss/auth/slugs`) +
+Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← reputation ← email`, `db ← ratelimit`; `api → tenancy, email, reputation, webhooks, ratelimit, db`;
+`web → auth, tenancy, email, reputation, webhooks, ratelimit, db, ui`; `site → ui, auth` (only the client-safe `@coss/auth/slugs`) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit` (`slugs`, `env` only);
-`worker → email, webhooks, ratelimit, db`; `sdk` and `ui` depend on no workspace.
-Dev-only: `email`/`webhooks`/`ratelimit`/`worker → tenancy` (test fixtures — so tenancy must never import email, webhooks or ratelimit) and
+`worker → email, reputation, webhooks, ratelimit, db`; `sdk` and `ui` depend on no workspace.
+Dev-only: `email`/`webhooks`/`reputation`/`ratelimit`/`worker → tenancy` (test fixtures — so tenancy must never import email, webhooks or ratelimit) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`).
 
@@ -295,6 +296,14 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 8. Events/webhooks: record events in the product's own table and call `enqueueWebhookMessage(tx, …)` from
    `@coss/webhooks` in the same transaction; add the payload zod schema + SDK type + contract assertion.
 
+**Add a reputation trigger** (e.g. an AI review of an org's first email): a *measured* signal is a `ReputationCheck`
+(`{ trigger, evaluate(context) }`, see `packages/email/src/reputation-checks.ts`; `rateResult` grades rates) passed to
+`runDueReputationEvaluations` in `apps/worker/src/jobs.ts` — all checks of one evaluation share one `context` object,
+and mark the org due (`markReputationDue`) when new evidence arrives. A *one-off verdict* calls
+`suspendOrganization({ organizationId, trigger: "<name>", actor: { kind: "system" }, note })` directly. Either way add
+the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx`); new thresholds go in
+`ReputationPolicy` (+ overrides schema and the admin `PolicyForm`).
+
 ## Generated / managed files — don't hand-edit
 
 - `packages/db/src/schema/auth.ts` (`bun run auth:generate`) and `packages/db/migrations/**` (`bun run db:generate`).
@@ -326,7 +335,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
     `environment_api_key`; metadata is client-writable),
-    `defaultPermissions: { email: ["send", "read"], suppression: ["create", "read", "delete"] }`, prefixes
+    `defaultPermissions: API_KEY_PERMISSIONS` (every product: email, domain, webhook, suppression, reputation), prefixes
     `coss_live_` / `coss_test_` by environment mode (`API_KEY_PREFIX`), key format `/^coss_(live|test)_[A-Za-z]{64}$/`.
   - Keys are created only by `createEnvironmentApiKey` (server-side, no headers) and authenticated only by
     `authenticateApiKey`; keys without an `environment_api_key` binding fail closed. `authenticateApiKey` never calls
@@ -371,12 +380,12 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   `requirePlatformAdmin*`), and these system-level functions resolve the org
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
-  `recordOpen`/`recordClick` (from the email's tracking token), and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `EmailService.dispatchDue`
+  `recordOpen`/`recordClick` (from the email's tracking token), and the worker scans `runDueWebhookDeliveries`, `recheckDueDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `EmailService.dispatchDue`
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
+  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -458,7 +467,21 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
   `createEnvironmentApiKey`, webhook `claimDue` (held, not failed), the org hooks above, and the dashboard
   (`OrgContext.can()` / `requireOrgPermission` allow only reads). New write paths must respect it. Domain re-checks and
   SES event ingestion keep running. Gate dashboard controls with `can(…)` from `requireOrgMember`, not `orgRoleCan`.
-- **Live keys** (`coss_live_`) require a verified email and can't be created while impersonating (`liveKeyRestriction`,
+- **Reputation guard** (`packages/reputation`, tables `reputation_standing` + `reputation_event`, ids `repev_`): the
+  worker's `reputation` loop evaluates orgs whose `next_evaluation_at` is due — `recordProviderEvent` marks an org due
+  (`markReputationDue`, same transaction) on every live permanent bounce or complaint, and warned orgs are re-checked
+  hourly, as are unhealthy rates below minimum volume. Claims use a separate expiring lease; standing/policy
+  revisions invalidate stale evaluations. Checks (`ReputationCheck`) measure; `decide` is the only automatic policy: worst severity wins, a warning
+  clears when every check is `ok`, and **a suspension is never lifted automatically — only `reinstateOrganization`
+  (platform admin, note required)**. Every change goes through `applyTransition` (guarded update + history row +
+  `account.*` webhooks to live environments, one transaction). Email's checks (`emailReputationChecks`) are per-recipient
+  rates over live emails in the window (default 7 days, never before the last reinstatement), excluding
+  suppressed/failed/queued recipients and `SIMULATOR_DOMAIN` (unless the `countSimulatorRecipients` override is on);
+  default thresholds (`DEFAULT_REPUTATION_POLICY`) are stricter than SES's. Suspension blocks live sending only:
+  `authorizeLiveSender` checks `isSuspended` **first** (`EmailError("account_suspended")`, 403 `permission_error`; an
+  idempotent replay still returns) and `liveKeyRestriction` refuses new live keys. It is independent of the SES tenant
+  pause (`email_tenant.sending_status`, `sending_paused`), which SES itself lifts — never fold one into the other.
+- **Live keys** (`coss_live_`) require a verified email and can't be created while impersonating or reputation-suspended (`liveKeyRestriction`,
   `apps/web/src/lib/live-keys.ts`, enforced in the action and mirrored in the UI).
 - **Email preview iframe** (`…/emails/[emailId]/page.tsx`): `sandbox=""`, `referrerPolicy="no-referrer"`, CSP
   `PREVIEW_HEAD` prepended to `srcDoc`. Never add `allow-scripts` or `allow-same-origin`.
@@ -500,6 +523,11 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 - Accepted: sign-up email enumeration; org deletion is disabled. A user ban does not cut off their orgs' API keys (keys
   are org-owned) — suspend the organization. Suspension does not pause the SES tenant itself;
   already-queued immediate sends finish, while scheduled sends wait for the suspension to be lifted.
+
+- The reputation checks scan the org's live recipients in the window on each evaluation (`email (organization_id,
+  created_at)` index + per-recipient event lookups); heavy senders will need daily rollups. A send already past
+  `authorizeLiveSender` when the org is suspended still goes out. Customers are told by banner, page, API and webhooks —
+  there is no notification email yet.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,

@@ -1,6 +1,6 @@
 "use server";
 
-import { EMAIL_EVENT_TYPES } from "@coss/email/schemas";
+import { WEBHOOK_EVENT_TYPES } from "@coss/email/schemas";
 import { getEnvironment } from "@coss/tenancy";
 import {
   createWebhookEndpoint,
@@ -59,7 +59,7 @@ export async function createWebhookEndpointAction(
       webhook: ["create"],
     });
     const { environment } = await environmentFromForm(context, formData);
-    const known = new Set<string>(EMAIL_EVENT_TYPES);
+    const known = new Set<string>(WEBHOOK_EVENT_TYPES);
     const selected = formData.getAll("eventTypes").filter((value) => typeof value === "string");
     if (selected.some((type) => !known.has(type))) throw new ActionError("Unknown event type.");
     if (selected.length === 0) throw new ActionError("Select at least one event.");

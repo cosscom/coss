@@ -61,6 +61,14 @@ export default async function AdminOrganizationPage({
   return (
     <>
       <PageHeader
+        actions={
+          <Link
+            className="text-sm underline"
+            href={`/admin/organizations/${organizationId}/reputation`}
+          >
+            Sending reputation
+          </Link>
+        }
         description={
           <>
             /{organization.slug} · <code className="text-xs">{organization.id}</code> · created{" "}

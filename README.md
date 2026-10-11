@@ -98,6 +98,12 @@ resets) are printed to the dashboard's server console in development.
   (`tracking`) and per-link click counts. Independent of SES's own tracking, which stays off.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
+- **Reputation guard** — the worker watches each organization's live bounce and complaint rates (per recipient, over
+  7 days) and acts without a human: a **warning** at 4% bounces / 0.08% complaints, an automatic **suspension** of
+  live sending at 8% / 0.3% (from 200 / 500 recipients). Suspended organizations get `403 account_suspended` on live
+  sends and can't create live keys; sandbox keys keep working. Customers see it in the dashboard (banner +
+  **Reputation** page), via `GET /v1/reputation` and through `account.*` webhooks. Only platform admins reinstate
+  (`/admin/organizations`), where they can also suspend manually and override thresholds per organization.
 - **Platform admins** — the console at `/admin` (promote with `bun run admin:create --email …`): search users and
   organizations; ban users (with a reason and duration — signs them out everywhere), grant/remove the admin role,
   revoke sessions, impersonate (with a reason, never other admins); **suspend organizations** (API keys get 403
@@ -139,11 +145,12 @@ resets) are printed to the dashboard's server console in development.
 - `POST /v1/suppressions/import` — add up to 1,000 entries at once (invalid ones are skipped and reported)
 - `GET /v1/suppressions/export` — the whole list as CSV (`scope`, `reason` filters); it imports again as is
 - `GET /openapi.json` — OpenAPI 3.1 document
+- `GET /v1/reputation` — the organization's standing and latest rates
 - `GET /t/o/{token}`, `GET /t/c/{token}/{position}` — public open-pixel and click-redirect endpoints that tracked
   emails link to (not part of the documented API)
 
-Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains` and
-`coss.webhookEndpoints`.
+Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains`,
+`coss.webhookEndpoints` and `coss.reputation`.
 
 Requests are rate limited per API key by route class (reads, writes, sends; responses carry `RateLimit-Limit`,
 `RateLimit-Remaining` and `RateLimit-Reset`), and sends count their distinct recipients against the

@@ -1,5 +1,9 @@
-/** Webhook wire types (hand-written mirrors of the API's `EmailWebhookEvent`). */
+/**
+ * Webhook wire types (hand-written mirrors of the API's `EmailWebhookEvent` and
+ * `AccountWebhookEvent`).
+ */
 import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
+import type { ReputationCheck, ReputationStatus } from "./reputation.ts";
 
 /** What a webhook says about the email; never its content, cc or bcc. */
 export interface EmailWebhookEventData extends EmailEventData {
@@ -17,8 +21,8 @@ export interface EmailWebhookEventData extends EmailEventData {
   occurred_at: string;
 }
 
-/** The JSON body of a webhook request. `id` equals the `webhook-id` header and `EmailEvent.id`. */
-export interface WebhookEvent {
+/** An email event. `id` equals the `webhook-id` header and `EmailEvent.id`. */
+export interface EmailWebhookEvent {
   id: string;
   object: "event";
   type: EmailEventType;
@@ -26,3 +30,35 @@ export interface WebhookEvent {
   created_at: string;
   data: EmailWebhookEventData;
 }
+
+/** Changes of the organization's reputation standing (sent to live environments only). */
+export type AccountEventType =
+  | "account.reputation_warning"
+  | "account.reputation_recovered"
+  | "account.suspended"
+  | "account.reinstated";
+
+export interface AccountWebhookEventData {
+  organization_id: string;
+  status: ReputationStatus;
+  previous_status: ReputationStatus;
+  /** The trigger behind a `warning` or `suspended` status, e.g. `complaint_rate`. */
+  reason: string | null;
+  /** ISO 8601 timestamp. */
+  occurred_at: string;
+  /** The measurements behind the change (see `coss.reputation.get()`). */
+  checks: ReputationCheck[];
+}
+
+/** A reputation change. `id` equals the `webhook-id` header. */
+export interface AccountWebhookEvent {
+  id: string;
+  object: "event";
+  type: AccountEventType;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  data: AccountWebhookEventData;
+}
+
+/** The JSON body of a webhook request; narrow on `type`. */
+export type WebhookEvent = EmailWebhookEvent | AccountWebhookEvent;

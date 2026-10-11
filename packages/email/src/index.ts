@@ -78,6 +78,11 @@ export {
   toEmailObject,
 } from "./read.ts";
 export {
+  emailReputationChecks,
+  type SendingCounts,
+  sendingCounts,
+} from "./reputation-checks.ts";
+export {
   ALL_CATEGORIES,
   CheckSuppressionQuery,
   type CheckSuppressionQueryOutput,
@@ -164,6 +169,7 @@ export {
   type TrackingOptionsOutput,
   TrackingRuleInput,
   type TrackingRuleInputOutput,
+  WEBHOOK_EVENT_TYPES,
 } from "./schemas.ts";
 export {
   cancelScheduledEmail,

@@ -3,7 +3,7 @@
  * imports: `@coss/webhooks/schemas` is safe to load anywhere.
  *
  * The set of subscribable event types belongs to the products, not here, so the request bodies
- * are built by `webhookEndpointRequests(eventTypes)` — the public API passes `EMAIL_EVENT_TYPES`.
+ * are built by `webhookEndpointRequests(eventTypes)` — the public API passes `WEBHOOK_EVENT_TYPES`.
  */
 import { z } from "zod";
 

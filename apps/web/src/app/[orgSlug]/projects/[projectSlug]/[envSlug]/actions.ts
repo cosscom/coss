@@ -34,7 +34,7 @@ export async function createApiKeyAction(
     });
     const environment = await environmentFromForm(context, formData);
     if (environment.mode === "live") {
-      const restriction = liveKeyRestriction(context.session);
+      const restriction = await liveKeyRestriction(context.session, context.organization.id);
       if (restriction) throw new ActionError(restriction);
     }
     const created = await createEnvironmentApiKey({

@@ -1,7 +1,9 @@
+import { getReputationStanding } from "@coss/reputation";
 import { Button } from "@coss/ui/components/button";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { OrgSwitcher } from "@/components/org-switcher";
+import { ReputationBanner } from "@/components/reputation";
 import { SiteHeader } from "@/components/site-header";
 import { SuspendedAlert } from "@/components/suspended-alert";
 import { auth } from "@/lib/auth";
@@ -13,6 +15,7 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
   const organizations = (await auth.api.listOrganizations({ headers: await headers() }))
     .map(({ name, slug }) => ({ name, slug }))
     .toSorted((a, b) => a.name.localeCompare(b.name));
+  const standing = await getReputationStanding(organization.id);
   const base = `/${organization.slug}`;
 
   return (
@@ -35,9 +38,13 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
           <Button render={<Link href={`${base}/settings`} />} size="sm" variant="ghost">
             Settings
           </Button>
+          <Button render={<Link href={`${base}/reputation`} />} size="sm" variant="ghost">
+            Reputation
+          </Button>
         </nav>
       </SiteHeader>
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-8">
+        {standing ? <ReputationBanner href={`${base}/reputation`} standing={standing} /> : null}
         {suspended ? <SuspendedAlert /> : null}
         <div>{children}</div>
       </main>

@@ -1603,10 +1603,14 @@
                 "email.scheduled",
                 "email.canceled",
                 "email.opened",
-                "email.clicked"
+                "email.clicked",
+                "account.reputation_warning",
+                "account.reputation_recovered",
+                "account.suspended",
+                "account.reinstated"
               ]
             },
-            "maxItems": 11,
+            "maxItems": 15,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           }
         },
@@ -1779,10 +1783,14 @@
                 "email.scheduled",
                 "email.canceled",
                 "email.opened",
-                "email.clicked"
+                "email.clicked",
+                "account.reputation_warning",
+                "account.reputation_recovered",
+                "account.suspended",
+                "account.reinstated"
               ]
             },
-            "maxItems": 11,
+            "maxItems": 15,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "enabled": {
@@ -2152,6 +2160,152 @@
             "deleted": true
           }
         ]
+      },
+      "Reputation": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "reputation"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "good",
+              "warning",
+              "suspended"
+            ],
+            "description": "`good`, `warning` (a rate is approaching the suspension threshold) or `suspended` (live sending is refused until COSS support reinstates the organization)."
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The trigger behind a `warning` or `suspended` status.",
+            "example": "complaint_rate"
+          },
+          "status_changed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "evaluated_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the checks below were computed; `null` before the first evaluation."
+          },
+          "window": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "end": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "description": "The period the checks cover (live environments only)."
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReputationCheck"
+            }
+          }
+        },
+        "required": [
+          "object",
+          "status",
+          "reason",
+          "status_changed_at",
+          "evaluated_at",
+          "window",
+          "checks"
+        ]
+      },
+      "ReputationCheck": {
+        "type": "object",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "description": "What was measured, e.g. `bounce_rate` or `complaint_rate`.",
+            "example": "bounce_rate"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "warning",
+              "suspend"
+            ],
+            "description": "`ok`, `warning` (at or above the warning threshold) or `suspend` (at or above the suspension threshold)."
+          },
+          "message": {
+            "type": "string"
+          },
+          "rate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "`count / volume`; `null` with no volume."
+          },
+          "count": {
+            "type": "integer",
+            "description": "Matching recipients, e.g. permanent bounces."
+          },
+          "volume": {
+            "type": "integer",
+            "description": "Recipients sent to (live environments) in the window."
+          },
+          "warning_threshold": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "suspend_threshold": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "minimum_volume": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Below this volume the rate is reported but never acted on."
+          }
+        },
+        "required": [
+          "trigger",
+          "severity",
+          "message",
+          "rate",
+          "count",
+          "volume",
+          "warning_threshold",
+          "suspend_threshold",
+          "minimum_volume"
+        ]
       }
     },
     "parameters": {}
@@ -2271,7 +2425,7 @@
             }
           },
           "403": {
-            "description": "The API key lacks the permission this endpoint needs (`insufficient_permissions`), its organization is suspended (`organization_suspended`), or sending is paused for the organization because of its sending reputation (`sending_paused`).",
+            "description": "The API key lacks the permission this endpoint needs (`insufficient_permissions`), its organization is suspended (`organization_suspended`), live sending is suspended (`account_suspended`), or sending is paused for the organization because of its sending reputation (`sending_paused`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -6690,6 +6844,155 @@
           },
           "404": {
             "description": "No suppression with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reputation": {
+      "get": {
+        "operationId": "getReputation",
+        "tags": [
+          "Reputation"
+        ],
+        "summary": "Retrieve the organization's sending reputation",
+        "description": "The organization's standing with the COSS reputation guard and the latest rates it measured over live environments. When a rate reaches its suspension threshold, live sending is suspended automatically (`account_suspended`) until COSS support reinstates the organization; sandbox keys keep working. Subscribe to the `account.*` webhook events to be notified of changes.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The organization's reputation.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reputation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

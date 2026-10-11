@@ -21,6 +21,9 @@ const ACTION_LABELS: Record<string, { label: string; variant: "error" | "success
   "user.reset_two_factor": { label: "Reset two-factor", variant: "error" },
   "organization.suspend": { label: "Suspended organization", variant: "error" },
   "organization.unsuspend": { label: "Lifted suspension", variant: "success" },
+  "reputation.suspended": { label: "Suspended live sending", variant: "error" },
+  "reputation.reinstated": { label: "Reinstated live sending", variant: "success" },
+  "reputation.policy_updated": { label: "Changed reputation policy", variant: "info" },
   "api_key.revoke": { label: "Revoked API key", variant: "error" },
 };
 
