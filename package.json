@@ -76,6 +76,7 @@
     "db:seed": "bun run --cwd packages/tenancy db:seed",
     "admin:create": "bun run --cwd packages/tenancy admin:create",
     "ses:bootstrap": "bun run --cwd apps/worker ses:bootstrap",
+    "webhooks:reencrypt": "bun run --cwd apps/worker webhooks:reencrypt",
     "valkey:bootstrap": "bun run --cwd packages/ratelimit valkey:bootstrap",
     "ratelimit:set": "bun run --cwd packages/ratelimit ratelimit:set",
     "auth:generate": "bun run --cwd packages/auth auth:generate && biome check --write packages/db/src/schema/auth.ts",

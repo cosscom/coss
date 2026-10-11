@@ -176,6 +176,30 @@ describe("coss.webhookEndpoints", () => {
     expect(calls[0]?.headers.get("idempotency-key")).toBeNull();
   });
 
+  test("rollSecret posts once, never retried, and returns the new secret", async () => {
+    const rolled = {
+      ...sampleEndpoint,
+      previous_secret_expires_at: "2026-10-10T12:00:00.000Z",
+      secret: "whsec_new",
+    };
+    const { coss, calls } = client(json(503, {}), json(200, rolled));
+
+    const failed = await coss.webhookEndpoints.rollSecret(sampleEndpoint.id, {
+      previous_secret_expires_in: 3600,
+    });
+    expect(failed.error).toMatchObject({ status: 503 });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({
+      method: "POST",
+      url: `https://api.test/v1/webhook_endpoints/${sampleEndpoint.id}/roll_secret`,
+    });
+    expect(JSON.parse(calls[0]?.body ?? "null")).toEqual({ previous_secret_expires_in: 3600 });
+
+    const result = await coss.webhookEndpoints.rollSecret(sampleEndpoint.id);
+    expect(result).toEqual({ data: rolled, error: null });
+    expect(calls[1]?.body).toBe("{}");
+  });
+
   test("list, get and delete hit the documented routes", async () => {
     const { coss, calls } = client(
       json(200, { object: "list", data: [sampleEndpoint], has_more: false }),

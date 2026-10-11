@@ -1906,6 +1906,14 @@
             "type": "boolean",
             "description": "A disabled endpoint receives nothing until it is enabled again."
           },
+          "previous_secret_expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "After a secret roll, deliveries are also signed with the previous secret until this time. `null` when only the current secret signs."
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -1916,7 +1924,7 @@
           },
           "secret": {
             "type": "string",
-            "description": "The endpoint's `whsec_…` signing secret, used to verify the requests COSS sends. Returned only when the endpoint is created — store it now; it cannot be read back through the API.",
+            "description": "The endpoint's `whsec_…` signing secret, used to verify the requests COSS sends. Returned only when the endpoint is created and when its secret is rolled — store it now; it cannot be read back through the API.",
             "examples": [
               "whsec_6Jk…"
             ]
@@ -1930,6 +1938,7 @@
           "event_types",
           "api_version",
           "enabled",
+          "previous_secret_expires_at",
           "created_at",
           "updated_at",
           "secret"
@@ -1946,6 +1955,7 @@
             ],
             "api_version": "2026-10-10",
             "enabled": true,
+            "previous_secret_expires_at": null,
             "created_at": "2026-01-15T09:30:00.000Z",
             "updated_at": "2026-01-15T09:30:00.000Z",
             "secret": "whsec_6Jk…"
@@ -2060,6 +2070,7 @@
                 ],
                 "api_version": "2026-10-10",
                 "enabled": true,
+                "previous_secret_expires_at": null,
                 "created_at": "2026-01-15T09:30:00.000Z",
                 "updated_at": "2026-01-15T09:30:00.000Z"
               }
@@ -2113,6 +2124,14 @@
             "type": "boolean",
             "description": "A disabled endpoint receives nothing until it is enabled again."
           },
+          "previous_secret_expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "After a secret roll, deliveries are also signed with the previous secret until this time. `null` when only the current secret signs."
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -2130,6 +2149,7 @@
           "event_types",
           "api_version",
           "enabled",
+          "previous_secret_expires_at",
           "created_at",
           "updated_at"
         ],
@@ -2145,6 +2165,7 @@
             ],
             "api_version": "2026-10-10",
             "enabled": true,
+            "previous_secret_expires_at": null,
             "created_at": "2026-01-15T09:30:00.000Z",
             "updated_at": "2026-01-15T09:30:00.000Z"
           }
@@ -2211,6 +2232,23 @@
         "examples": [
           {
             "enabled": false
+          }
+        ]
+      },
+      "RollWebhookEndpointSecretRequest": {
+        "type": "object",
+        "properties": {
+          "previous_secret_expires_in": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 604800,
+            "description": "Seconds the current secret keeps signing deliveries next to the new one, so receivers can switch without rejecting anything. Default 86400 (a day), at most 604800 (a week). `0` stops it immediately, e.g. after a leak."
+          }
+        },
+        "additionalProperties": false,
+        "examples": [
+          {
+            "previous_secret_expires_in": 3600
           }
         ]
       },
@@ -6982,7 +7020,7 @@
           "Webhook endpoints"
         ],
         "summary": "Create a webhook endpoint",
-        "description": "Registers a URL that receives signed event notifications. Webhook endpoints belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox endpoints, and a `coss_live_…` key only production ones. The response is the only place the signing secret is ever returned: store it, and verify every delivery with it (`verifyWebhook` in the SDK).",
+        "description": "Registers a URL that receives signed event notifications. Webhook endpoints belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox endpoints, and a `coss_live_…` key only production ones. The response carries the signing secret, which is returned only here and when it is rolled: store it, and verify every delivery with it (`verifyWebhook` in the SDK).",
         "security": [
           {
             "bearerAuth": []
@@ -7421,7 +7459,7 @@
           "Webhook endpoints"
         ],
         "summary": "Retrieve a webhook endpoint",
-        "description": "The endpoint without its signing secret, which is only returned when created.",
+        "description": "The endpoint without its signing secret, which is only returned when created or rolled.",
         "security": [
           {
             "bearerAuth": []
@@ -7637,7 +7675,7 @@
           "Webhook endpoints"
         ],
         "summary": "Update a webhook endpoint",
-        "description": "Changes the URL, description, subscribed event types, API version or `enabled` flag. Omitted fields keep their current value, and the signing secret never changes, so receivers keep verifying deliveries. Disabling an endpoint stops deliveries without losing its configuration.",
+        "description": "Changes the URL, description, subscribed event types, API version or `enabled` flag. Omitted fields keep their current value, and the signing secret stays the same (see Roll a signing secret), so receivers keep verifying deliveries. Disabling an endpoint stops deliveries without losing its configuration.",
         "security": [
           {
             "bearerAuth": []
@@ -8046,6 +8084,297 @@
           },
           "404": {
             "description": "No webhook endpoint with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/webhook_endpoints/{id}/roll_secret": {
+      "post": {
+        "operationId": "rollWebhookEndpointSecret",
+        "tags": [
+          "Webhook endpoints"
+        ],
+        "summary": "Roll a signing secret",
+        "description": "Replaces the endpoint's signing secret with a new one, returned in the response (the only time it is). Until `previous_secret_expires_at`, every delivery is signed with both secrets (`webhook-signature` lists two signatures), so receivers verifying with either one accept it: deploy the new secret, then let the old one expire. Rolling again in that time stops the older secret at once. Not idempotent: after a lost response, roll again.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The webhook endpoint's id.",
+              "examples": [
+                "whep_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The webhook endpoint's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RollWebhookEndpointSecretRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The endpoint and its new signing secret.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointWithSecret"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No webhook endpoint with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The request body is larger than 5 MB (`payload_too_large`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body is not sent as `application/json` (`unsupported_media_type`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The body failed validation (`validation_error`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

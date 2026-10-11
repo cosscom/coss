@@ -24,16 +24,21 @@ export interface WebhookEndpoint {
   api_version: string;
   /** A disabled endpoint receives nothing until it is enabled again. */
   enabled: boolean;
+  /**
+   * After a secret roll, deliveries are also signed with the previous secret until this time
+   * (ISO 8601). `null` when only the current secret signs.
+   */
+  previous_secret_expires_at: string | null;
   /** ISO 8601 timestamp. */
   created_at: string;
   updated_at: string;
 }
 
-/** A freshly created endpoint: the only response that carries the signing secret. */
+/** A freshly created endpoint, or one whose secret was just rolled: the only responses with the signing secret. */
 export interface WebhookEndpointWithSecret extends WebhookEndpoint {
   /**
-   * The endpoint's `whsec_…` signing secret, for `verifyWebhook`. Returned only here — store it
-   * now; it cannot be read back through the API.
+   * The endpoint's `whsec_…` signing secret, for `verifyWebhook`. Returned only on creation and
+   * on a roll — store it now; it cannot be read back through the API.
    */
   secret: string;
 }
@@ -61,6 +66,16 @@ export interface UpdateWebhookEndpointParams {
   event_types?: WebhookEventType[];
   api_version?: ApiVersion;
   enabled?: boolean;
+}
+
+/** Body of `POST /v1/webhook_endpoints/{id}/roll_secret`. */
+export interface RollWebhookEndpointSecretParams {
+  /**
+   * Seconds the current secret keeps signing deliveries next to the new one, so receivers can
+   * switch without rejecting anything. Default 86400 (a day), at most 604800 (a week). `0` stops
+   * it immediately, e.g. after a leak.
+   */
+  previous_secret_expires_in?: number;
 }
 
 /** Returned by `webhookEndpoints.delete`. */

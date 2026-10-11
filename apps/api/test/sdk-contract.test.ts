@@ -14,8 +14,15 @@ import { suspendOrganization } from "@coss/reputation";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { API_VERSIONS, LATEST_API_VERSION } from "@coss/versioning";
 import { enqueueWebhookMessage, runDueWebhookDeliveries } from "@coss/webhooks";
-import { TEST_SECRETS_KEY } from "@coss/webhooks/testing";
-import { API_VERSION, Coss, type CossOptions, API_VERSIONS as SDK_API_VERSIONS } from "coss";
+import { TEST_SECRETS_KEYS } from "@coss/webhooks/testing";
+import {
+  API_VERSION,
+  Coss,
+  type CossOptions,
+  API_VERSIONS as SDK_API_VERSIONS,
+  verifyWebhook,
+  WebhookVerificationError,
+} from "coss";
 import {
   createTestApp,
   domainFrom,
@@ -669,7 +676,7 @@ describe("coss.webhookEndpoints.deliveries against the API", () => {
     });
     await runDueWebhookDeliveries(
       { scope: { organizationIds: [tenant.organization.id] } },
-      { secretsKey: TEST_SECRETS_KEY, send: async () => ({ status: 200, body: "ok" }) },
+      { secretsKeys: TEST_SECRETS_KEYS, send: async () => ({ status: 200, body: "ok" }) },
     );
 
     const listed = await coss.webhookEndpoints.deliveries.list(endpoint.data.id, {
@@ -691,6 +698,65 @@ describe("coss.webhookEndpoints.deliveries against the API", () => {
 
     const retried = await coss.webhookEndpoints.deliveries.retry(endpoint.data.id, delivery.id);
     expect(retried.data).toMatchObject({ id: delivery.id, status: "pending" });
+  });
+});
+
+describe("coss.webhookEndpoints.rollSecret against the API", () => {
+  test("deliveries verify with the old and the new secret until the old one expires", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const created = await coss.webhookEndpoints.create({ url: "https://example.com/hook" });
+    if (!created.data) throw new Error("create failed");
+
+    const rolled = await coss.webhookEndpoints.rollSecret(created.data.id, {
+      previous_secret_expires_in: 60,
+    });
+    expect(rolled.error).toBeNull();
+    if (!rolled.data) throw new Error("roll failed");
+    expect(rolled.data.secret).not.toBe(created.data.secret);
+    const expiresAt = Date.parse(rolled.data.previous_secret_expires_at ?? "");
+
+    async function deliver(now: Date) {
+      const id = newId("evt");
+      await enqueueWebhookMessage(db, {
+        id,
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        type: "email.delivered",
+        payload: { id, object: "event", type: "email.delivered", data: {} },
+        now,
+      });
+      let sent: { headers: Record<string, string>; body: string } | undefined;
+      await runDueWebhookDeliveries(
+        { now, scope: { organizationIds: [tenant.organization.id] } },
+        {
+          secretsKeys: TEST_SECRETS_KEYS,
+          send: async (request) => {
+            sent = request;
+            return { status: 200, body: "ok" };
+          },
+        },
+      );
+      if (!sent) throw new Error("nothing sent");
+      return sent;
+    }
+
+    const during = await deliver(new Date());
+    for (const secret of [created.data.secret, rolled.data.secret]) {
+      expect(await verifyWebhook(during.body, during.headers, secret)).toMatchObject({
+        type: "email.delivered",
+      });
+    }
+
+    const at = new Date(expiresAt + 1000);
+    const after = await deliver(at);
+    expect(
+      await verifyWebhook(after.body, after.headers, rolled.data.secret, { now: at }),
+    ).toMatchObject({ type: "email.delivered" });
+    await expect(
+      verifyWebhook(after.body, after.headers, created.data.secret, { now: at }),
+    ).rejects.toBeInstanceOf(WebhookVerificationError);
   });
 });
 
