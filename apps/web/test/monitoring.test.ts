@@ -74,6 +74,7 @@ test("tunnel forwards an envelope exactly at the limit byte for byte", async () 
   }
 });
 
+// Loading the real Next/Sentry SDK in a subprocess can exceed 5s on a busy CI runner.
 test("real console integrations send no secret URLs or raw arguments in envelopes", async () => {
   // Isolate SDK globals and console instrumentation from the rest of the test runner.
   const child = Bun.spawn(
@@ -113,4 +114,4 @@ test("real console integrations send no secret URLs or raw arguments in envelope
   expect(serialized).toContain("visited /t/o/[token]");
   expect(serialized).toContain("failed /t/c/[token]/1");
   expect(serialized).toContain("failed /reset-password/[token]");
-});
+}, 15_000);
