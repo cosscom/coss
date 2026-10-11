@@ -24,13 +24,15 @@ auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/rat
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
 | `packages/screening` | `@coss/screening` | Product-agnostic AI content screening: sampling per org + product, the `ContentClassifier` interface (Vercel AI SDK `experimental_decide` adapter under `./ai`, `fakeClassifier` in `./testing`), verdict history, the `content_screening` reputation check; `./env` (zod only), `./runtime`. |
+| `packages/versioning` | `@coss/versioning` | Dated public API versions (`Coss-Version`): `API_VERSIONS`, the `VERSION_CHANGES` registry and the engine that renders latest-shape responses/webhook payloads in older versions and upgrades older request bodies. Zero deps, client-safe; `./testing` (`testVersioning()`). |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens) and `globals.css` (the dashboard's stylesheet). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests; nothing here calls AWS. See `infra/AGENTS.md`. |
 
-Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`; `api → tenancy, email, reputation, webhooks, ratelimit, db`;
-`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, db, ui`; `site → ui, auth` (only the client-safe `@coss/auth/slugs`) +
+Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`; `versioning` (no deps) ← `tenancy`, `webhooks`, `email` (`schemas` examples);
+`api → tenancy, email, reputation, webhooks, ratelimit, versioning, db`;
+`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, db, ui`; `site → ui, auth, versioning` (only the client-safe `@coss/auth/slugs` and the changelog) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening` (`slugs`, `env` only);
 `worker → email, reputation, screening, webhooks, ratelimit, db`; `sdk` and `ui` depend on no workspace.
 Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`worker → tenancy` (test fixtures — so tenancy must never import email, webhooks, screening or ratelimit) and
@@ -55,6 +57,9 @@ bun run db:migrate          # apply migrations + install/upgrade the pg-boss sch
 bun run auth:generate       # regenerate packages/db/src/schema/auth.ts after changing Better Auth plugins/options,
                             #   then bun run db:generate && bun run db:migrate
 bun run openapi:generate    # rewrite apps/api/openapi.json after changing API routes (a test fails when stale)
+bun run changeset           # describe an SDK change (CI requires one when packages/sdk/src changes; --empty if none)
+bun run version-packages    # apply changesets: bump the SDK's package.json, src/version.ts, CHANGELOG.md, bun.lock
+                            #   (CI's Release workflow opens a "Version packages" PR doing this; nothing is published)
 bun run db:seed             # idempotent demo data; mints a new development (coss_test_) key on every run
 bun run admin:create --email you@example.com   # promote an existing user to platform admin (also how the
                                                #   first admin is bootstrapped in production)
@@ -163,6 +168,13 @@ from tasks — CI and image builds have no `.env`), the service in `infra/aws/se
   `packages/{email,webhooks}/test/schema-examples.test.ts`; they feed the reference's samples and playground. After route changes
   run `bun run openapi:generate` and add the operation's SDK sample in `apps/site/src/lib/sdk-samples.ts` (tests
   enforce both).
+- **Versions** (`Coss-Version: YYYY-MM-DD`, `@coss/versioning`): handlers always build the latest shape. The
+  `apiVersion` middleware (`src/middleware/api-version.ts`, on `/v1/*`) rejects unknown versions (400
+  `invalid_api_version`, before authentication), echoes `Coss-Version` and renders 2xx JSON bodies in the caller's
+  version; `requireApiKey` resolves `c.var.apiVersion` (header, else the org pin from `authenticateApiKey`). Routes
+  with a JSON body end their `middleware` with `upgradeRequestBody("<METHOD> /v1/<path template>")` (after the body
+  limit, before validation). Error envelopes, CSV and `/t/*` are never versioned. The OpenAPI `Coss-Version`
+  parameter/header and `info.version` are added by `withApiVersionDocs` (`src/openapi-versions.ts`).
 - CORS: only `/v1/*`, only `API_CORS_ORIGINS`, never `credentials` — the API authenticates with bearer keys and must
   never accept the dashboard's session cookie (that would need CSRF protection on every endpoint).
 
@@ -171,7 +183,7 @@ from tasks — CI and image builds have no `.env`), the service in `infra/aws/se
 - `Coss` (`src/client.ts`) → one `HttpClient` (`src/core/http.ts`: bearer auth, JSON, per-attempt timeout, retries on
   network/timeout/409/429/5xx honoring `Retry-After`, an `Idempotency-Key` on every POST reused across retries) → one
   resource per product or managed resource (`src/resources/*.ts`: `email`, `domains`, `webhookEndpoints`;
-  sub-resources hang off their product, e.g. `coss.email.suppressions`). Methods return `{ data, error }` and never
+  sub-resources hang off their parent, e.g. `coss.email.suppressions`, `coss.webhookEndpoints.deliveries`). Methods return `{ data, error }` and never
   throw for API/network failures. Webhook endpoint creation disables
   automatic retries because the API does not deduplicate it, even with an `Idempotency-Key`.
 - Must run unchanged on Node, Bun, Deno and Workers: no `node:*`, no `Bun.*`, only guarded `globalThis.process`
@@ -183,7 +195,14 @@ from tasks — CI and image builds have no `.env`), the service in `infra/aws/se
 - `verifyWebhook` (`src/webhooks.ts`, Web Crypto only) is the one SDK function that throws (`WebhookVerificationError`):
   a failed signature check must not be ignorable. The event body's wire types live in `src/types/webhook.ts`; endpoint
   management's in `src/types/webhook-endpoint.ts`.
-- **Never publish**: the `coss` npm name is currently owned by a third party (see `packages/sdk/README.md`).
+- Every request sends `Coss-Version`: `API_VERSION` (`src/api-version.ts`, a hand mirror of `API_VERSIONS`; the
+  contract tests keep them equal), overridable with the `apiVersion` client option. The SDK's wire types describe
+  `API_VERSION` only.
+- Releases: Changesets 3 (`.changeset/`, SDK only — every other workspace is private and never versioned).
+  `bun run version-packages` also rewrites `src/version.ts` (`scripts/sync-version.ts`) and refreshes `bun.lock`
+  (it records workspace versions; CI installs with `--frozen-lockfile`).
+- **Never publish**: the `coss` npm name is currently owned by a third party (see `packages/sdk/README.md`). The
+  Release workflow has no publish step and `prepublishOnly` fails on purpose.
 
 ## Dashboard (`apps/web`)
 
@@ -303,6 +322,16 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 8. Events/webhooks: record events in the product's own table and call `enqueueWebhookMessage(tx, …)` from
    `@coss/webhooks` in the same transaction; add the payload zod schema + SDK type + contract assertion.
 
+**Make a breaking API change** (renaming/removing a field, changing a type or default — additive changes need none of
+this): append today's date to `API_VERSIONS` (`packages/versioning/src/versions.ts`) and add a `VersionChange` to
+`VERSION_CHANGES` (`changes.ts`) whose `responses` transforms (keyed by the wire `object`) rebuild the previous shape
+from the new one — an event-data change needs both `email_event` (API) and `event` (webhooks, `eventDataTransform`) —
+and whose `requests` transforms upgrade old request bodies. Change the handlers/schemas to the new shape, test the
+old shape through the real registry, mirror the date in the SDK (`API_VERSIONS`, `API_VERSION`, wire types) with a
+changeset, `bun run openapi:generate`. Organizations stay on their pin until they upgrade in the dashboard; endpoints
+keep theirs. `title`/`description` appear in the docs changelog and the upgrade dialog. Don't add a version for a
+change that can't be expressed as a transform — that is a `/v2`.
+
 **Add a reputation trigger**: a *measured* signal is a `ReputationCheck`
 (`{ trigger, evaluate(context) }`, see `packages/email/src/reputation-checks.ts`; `rateResult` grades rates) passed to
 `runDueReputationEvaluations` in `apps/worker/src/jobs.ts` — all checks of one evaluation share one `context` object,
@@ -420,7 +449,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
+  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/versioning`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -488,6 +517,12 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   expose content. A queued email whose content is gone fails with `attachments_unavailable` rather than sending without
   it. The parsed request omits `attachments` when empty (request hashes). SES gets them as `Simple.Attachments`
   (`content_id` → `INLINE`); the fake provider keeps sha256 digests, not bytes.
+- **API versions** (`organization_api_version`, `webhook_endpoint.api_version`): an organization is pinned lazily to
+  the latest version by its first authenticated request (`getOrganizationApiVersion`, insert-or-read; the dashboard
+  only reads with `readOrganizationApiVersion`), and only moves forward (`setOrganizationApiVersion`, from org
+  settings, `organization:update`). The outbox stores the latest-shape event; `renderWebhookPayload` renders it in
+  the endpoint's version at every attempt and adds `api_version` (signed, in the body). Outbox payloads are typed
+  `Stored*WebhookEvent` (no `api_version`). Never version error envelopes, and never transform in handlers.
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -512,7 +547,11 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `account.*` webhooks to live environments + a `reputation_notification` outbox row for warnings and suspensions,
   one transaction). Email's checks (`emailReputationChecks`) are per-recipient
   rates over live emails in the window (default 7 days, never before the last reinstatement), excluding
-  suppressed/failed/queued recipients and `SIMULATOR_DOMAIN` (unless the `countSimulatorRecipients` override is on);
+  suppressed/failed/queued/canceled recipients and `SIMULATOR_DOMAIN` (unless the `countSimulatorRecipients` override is on).
+  Closed hours (ended ≥ `ROLLUP_SETTLE_MS` ago) are counted once into `email_reputation_rollup` (by email `created_at`,
+  simulator counts kept apart); `recordProviderEvent` bumps an hour's `revision` when a live event changes its counts,
+  and the next evaluation recounts only stale hours (CAS on the revision read before counting) plus the window's open
+  edges live. Any new write path that changes recipient statuses must invalidate the same way;
   default thresholds (`DEFAULT_REPUTATION_POLICY`) are stricter than SES's. Suspension blocks live sending only:
   `authorizeLiveSender` checks `isSuspended` **first** (`EmailError("account_suspended")`, 403 `permission_error`; an
   idempotent replay still returns) and `liveKeyRestriction` refuses new live keys. It is independent of the SES tenant
@@ -596,17 +635,17 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   are org-owned) — suspend the organization. Suspension does not pause the SES tenant itself;
   already-queued immediate sends finish, while scheduled sends wait for the suspension to be lifted.
 
-- The reputation checks scan the org's live recipients in the window on each evaluation (`email (organization_id,
-  created_at)` index + per-recipient event lookups); heavy senders will need daily rollups. A send already past
-  `authorizeLiveSender` when the org is suspended still goes out. Customers are told by banner, page, API, webhooks and
-  a notification email to owners/admins — only for warnings and suspensions (not recoveries or reinstatements), and
-  only once the worker's `NOTIFICATIONS_*` variables point at a verified sender of COSS's own organization.
+- Reputation rollups are kept per hour of email creation, so late events for an old hour make the next evaluation
+  recount that whole hour. A send already past `authorizeLiveSender` when the org is suspended still goes out.
+  Customers are told by banner, page, API, webhooks and a notification email to owners/admins — only for warnings
+  and suspensions (not recoveries or reinstatements), and only once the worker's `NOTIFICATIONS_*` variables point
+  at a verified sender of COSS's own organization.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,
-batch sends, rescheduling (cancel and send again), webhook delivery logs over the API, SCIM/directory sync,
+batch sends, rescheduling (cancel and send again), SCIM/directory sync,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
-rate limit overrides in the dashboard, org logos/deletion, email change, API version header, release tooling,
+rate limit overrides in the dashboard, org logos/deletion, email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.
 
 <!-- BEGIN:turborepo-agent-rules -->

@@ -24,6 +24,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
+import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, errorDoc, requestIdHeader } from "./docs.ts";
@@ -59,7 +60,11 @@ export const createSuppressionRoute = createRoute({
     "back an unsubscribe link). Adding an address that is already suppressed with the same " +
     "scope returns the existing entry with status 200.",
   security: [{ bearerAuth: [] }],
-  middleware: [requireApiKey({ suppression: ["create"] }), rateLimit("api.write")],
+  middleware: [
+    requireApiKey({ suppression: ["create"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/suppressions"),
+  ],
   request: {
     body: {
       required: true,
@@ -126,7 +131,11 @@ export const importSuppressionsRoute = createRoute({
     "entry is validated on its own: invalid ones are skipped and listed in `invalid`, entries " +
     "already on the list are left unchanged and counted in `existing`. Importing again is safe.",
   security: [{ bearerAuth: [] }],
-  middleware: [requireApiKey({ suppression: ["create"] }), rateLimit("api.write")],
+  middleware: [
+    requireApiKey({ suppression: ["create"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/suppressions/import"),
+  ],
   request: {
     body: {
       required: true,

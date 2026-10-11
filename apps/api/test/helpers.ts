@@ -11,6 +11,7 @@ import type { SendEmailRequestInput } from "@coss/email/schemas";
 import { createVerifiedDomain, memoryDispatchQueue } from "@coss/email/testing";
 import type { ClientIpResolver, RateLimiter } from "@coss/ratelimit";
 import type { ApiKeyContext } from "@coss/tenancy";
+import { LATEST_API_VERSION, type Versioning } from "@coss/versioning";
 import { decryptSecret } from "@coss/webhooks";
 import { TEST_SECRETS_KEY, testManagementDeps } from "@coss/webhooks/testing";
 import { createApp } from "../src/app.ts";
@@ -34,6 +35,7 @@ export function createTestApp(
     clientIp?: ClientIpResolver;
 
     corsOrigins?: readonly string[];
+    versioning?: Versioning;
   } = {},
 ) {
   const liveProvider = new FakeEmailProvider({ log: false });
@@ -56,6 +58,7 @@ export function createTestApp(
     clientIp: opts.clientIp,
 
     corsOrigins: opts.corsOrigins,
+    versioning: opts.versioning,
   });
   const dispatch = () => queue.drain(emailService);
   return { app, liveProvider, sandboxProvider, identity, queue, dispatch };
@@ -226,6 +229,7 @@ export function authContext(overrides: Partial<ApiKeyContext> = {}): ApiKeyConte
     projectId: "proj_00000000000000000000000000",
     environmentId: "env_00000000000000000000000000",
     mode: "sandbox",
+    apiVersion: LATEST_API_VERSION,
     ...overrides,
   };
 }

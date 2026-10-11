@@ -14,7 +14,6 @@ CREATE TABLE "reputation_notification" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "reputation_event" ADD CONSTRAINT "reputation_event_id_organization_unique" UNIQUE("id","organization_id");--> statement-breakpoint
 ALTER TABLE "reputation_notification" ADD CONSTRAINT "reputation_notification_organization_id_organization_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reputation_notification" ADD CONSTRAINT "reputation_notification_event_fk" FOREIGN KEY ("reputation_event_id","organization_id") REFERENCES "public"."reputation_event"("id","organization_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "reputation_notification_event_idx" ON "reputation_notification" USING btree ("reputation_event_id");--> statement-breakpoint

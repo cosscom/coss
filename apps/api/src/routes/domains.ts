@@ -15,6 +15,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { ApiError, notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
+import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, errorDoc, jsonDoc } from "./docs.ts";
@@ -49,7 +50,11 @@ export const createDomainRoute = createRoute({
     "The records are checked repeatedly in the background and verification gives up after 72 " +
     "hours; until the domain is `verified`, live keys cannot send from it.",
   security: [{ bearerAuth: [] }],
-  middleware: [requireApiKey({ domain: ["create"] }), rateLimit("api.write")],
+  middleware: [
+    requireApiKey({ domain: ["create"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/domains"),
+  ],
   request: {
     body: { required: true, content: { "application/json": { schema: CreateDomainRequest } } },
   },

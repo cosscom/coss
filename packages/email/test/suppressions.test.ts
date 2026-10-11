@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { createTestTenant } from "@coss/tenancy/testing";
-import { createWebhookEndpoint } from "@coss/webhooks";
+import { LATEST_API_VERSION } from "@coss/versioning";
+import { createWebhookEndpoint, renderWebhookPayload } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
 import { and, eq } from "drizzle-orm";
 import { ingestProviderEvents } from "../src/events.ts";
@@ -274,7 +275,13 @@ describe("sending", () => {
     const entry = await suppress(env, "blocked@example.com");
     await suppress(env, "hidden@example.com");
     const { endpoint } = await createWebhookEndpoint(
-      { ...env, url: "https://example.com/hook", eventTypes: ["email.suppressed"], userId: null },
+      {
+        ...env,
+        url: "https://example.com/hook",
+        eventTypes: ["email.suppressed"],
+        apiVersion: LATEST_API_VERSION,
+        userId: null,
+      },
       testManagementDeps,
     );
 
@@ -326,7 +333,9 @@ describe("sending", () => {
         eq(schema.webhookMessage.id, schema.webhookDelivery.messageId),
       )
       .where(eq(schema.webhookDelivery.endpointId, endpoint.id));
-    const payloads = messages.map((m) => EmailWebhookEvent.parse(m.payload));
+    const payloads = messages.map((m) =>
+      EmailWebhookEvent.parse(renderWebhookPayload(m.payload, LATEST_API_VERSION)),
+    );
     expect(payloads.map((p) => [p.type, p.data.recipient]).sort()).toEqual([
       ["email.suppressed", "blocked@example.com"],
       ["email.suppressed", "hidden@example.com"],

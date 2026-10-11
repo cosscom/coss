@@ -2,6 +2,7 @@ import { describe, expect, spyOn, test } from "bun:test";
 import { createEnvironmentApiKey } from "@coss/tenancy";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
 import { createTestTenant, createTestUser } from "@coss/tenancy/testing";
+import { versioning } from "@coss/versioning";
 import { Hono } from "hono";
 import { errorResponse, toApiError } from "../src/errors.ts";
 import { type Authenticate, requireApiKey } from "../src/middleware/api-key.ts";
@@ -184,6 +185,11 @@ describe("requireApiKey", () => {
   function appWith(authenticate: Authenticate) {
     const app = new Hono<AppEnv>();
     app.use(requestId);
+    app.use(async (c, next) => {
+      c.set("versioning", versioning);
+      c.set("requestedApiVersion", null);
+      await next();
+    });
     app.onError((error, c) => {
       const apiError = toApiError(error);
       return apiError ? errorResponse(c, apiError) : c.text("unexpected", 500);

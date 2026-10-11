@@ -6,6 +6,9 @@ import { expect, test } from "bun:test";
 import type { z } from "zod";
 import {
   DeletedWebhookEndpoint,
+  WebhookAttemptObject,
+  WebhookDeliveryList,
+  WebhookDeliveryObject,
   WebhookEndpointList,
   WebhookEndpointObject,
   WebhookEndpointWithSecret,
@@ -26,6 +29,9 @@ const SCHEMAS: Record<string, z.ZodType> = {
   DeletedWebhookEndpoint,
   CreateWebhookEndpointRequest,
   UpdateWebhookEndpointRequest,
+  WebhookAttempt: WebhookAttemptObject,
+  WebhookDelivery: WebhookDeliveryObject,
+  WebhookDeliveryList,
 };
 
 for (const [name, schema] of Object.entries(SCHEMAS)) {

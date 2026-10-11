@@ -5,6 +5,7 @@ import {
   MemoryStore,
   type RateLimiter,
 } from "@coss/ratelimit";
+import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
@@ -12,7 +13,9 @@ import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { BODY_LIMIT_BYTES, hasOwnBodyLimit, limitBody } from "./body-limit.ts";
 import { errorResponse, internalError, notFound, toApiError } from "./errors.ts";
+import { apiVersion } from "./middleware/api-version.ts";
 import { requestId } from "./middleware/request-id.ts";
+import { withApiVersionDocs } from "./openapi-versions.ts";
 import { createTrackingRoutes, TRACKING_PATH_PREFIX } from "./routes/tracking.ts";
 import { createV1Router } from "./routes/v1.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
@@ -43,11 +46,13 @@ export type CreateAppOptions = {
    * default. Never with credentials: the API authenticates with bearer keys only, never cookies.
    */
   corsOrigins?: readonly string[];
+  /** The API's versions (`@coss/versioning`). Tests inject `testVersioning()`. */
+  versioning?: Versioning;
 };
 
 /** Request headers a browser may send, and response headers it may read, cross-origin. */
-const CORS_ALLOW_HEADERS = ["Authorization", "Content-Type", "Idempotency-Key"];
-const CORS_EXPOSE_HEADERS = ["X-Request-Id", "Idempotent-Replayed", "Retry-After"];
+const CORS_ALLOW_HEADERS = ["Authorization", "Content-Type", "Idempotency-Key", "Coss-Version"];
+const CORS_EXPOSE_HEADERS = ["X-Request-Id", "Idempotent-Replayed", "Retry-After", "Coss-Version"];
 
 /**
  * Builds the public API. Free of side effects (no env validation, no server), so tests can
@@ -59,6 +64,7 @@ export function createApp(opts: CreateAppOptions) {
   const domainDeps = opts.domainDeps ?? createDefaultEmailRuntime().domainDeps;
   const rateLimiter = opts.rateLimiter ?? createRateLimiter({ store: new MemoryStore() });
   const clientIp = opts.clientIp ?? (() => null);
+  const versioning = opts.versioning ?? apiVersioning;
   // Sub-routers inherit this hook: every validation failure becomes the 422 envelope.
   const app = new OpenAPIHono<AppEnv>({ defaultHook: validationHook });
 
@@ -66,6 +72,7 @@ export function createApp(opts: CreateAppOptions) {
   app.use(async (c, next) => {
     c.set("rateLimiter", rateLimiter);
     c.set("clientIp", clientIp(c.req.raw.headers));
+    c.set("versioning", versioning);
     await next();
   });
 
@@ -81,6 +88,7 @@ export function createApp(opts: CreateAppOptions) {
       credentials: false,
     }),
   );
+  app.use("/v1/*", apiVersion);
   const strictHeaders = secureHeaders();
   // Mail clients and webmail load the open pixel from other origins.
   const trackingHeaders = secureHeaders({ crossOriginResourcePolicy: "cross-origin" });
@@ -123,11 +131,20 @@ export function createApp(opts: CreateAppOptions) {
   // The origin this document was served from, so local and deployed copies both work.
   // Request origin is a dev/test fallback only: it is Host-header controlled and loses https
   // behind TLS-terminating proxies.
-  app.doc31("/openapi.json", (c) =>
-    openApiDocumentConfig(opts.publicUrl ?? new URL(c.req.url).origin),
+  app.get("/openapi.json", (c) =>
+    c.json(renderOpenApiDocument(app, opts.publicUrl ?? new URL(c.req.url).origin, versioning)),
   );
 
   return app;
+}
+
+/** The OpenAPI document: the routes', plus what isn't derived from them (the `Coss-Version` header). */
+export function renderOpenApiDocument(
+  app: OpenAPIHono<AppEnv>,
+  serverUrl: string,
+  versioning: Versioning = apiVersioning,
+) {
+  return withApiVersionDocs(app.getOpenAPI31Document(openApiDocumentConfig(serverUrl)), versioning);
 }
 
 /** Everything in the OpenAPI document that isn't derived from the routes. */
@@ -136,6 +153,7 @@ export function openApiDocumentConfig(serverUrl: string) {
     openapi: "3.1.0",
     info: {
       title: "COSS API",
+      // Replaced by the latest `Coss-Version` (`withApiVersionDocs`).
       version: "v1",
       description:
         "One API key for every COSS product. Errors share one envelope: `Error`. Every request " +

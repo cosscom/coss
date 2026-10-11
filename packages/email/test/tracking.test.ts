@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { createTestTenant } from "@coss/tenancy/testing";
-import { createWebhookEndpoint } from "@coss/webhooks";
+import { LATEST_API_VERSION } from "@coss/versioning";
+import { createWebhookEndpoint, renderWebhookPayload } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
 import { and, eq } from "drizzle-orm";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
@@ -135,7 +136,13 @@ describe("recording hits", () => {
     const tenant = await createTestTenant();
     const env = envOf(tenant);
     await createWebhookEndpoint(
-      { ...env, url: "https://example.com/hook", eventTypes: [], userId: null },
+      {
+        ...env,
+        url: "https://example.com/hook",
+        eventTypes: [],
+        apiVersion: LATEST_API_VERSION,
+        userId: null,
+      },
       testManagementDeps,
     );
     const { email, html, urls } = await send(tenant, { tracking: { opens: true, clicks: true } });
@@ -202,7 +209,9 @@ describe("recording hits", () => {
         ),
       );
     expect(messages).toHaveLength(1);
-    const payload = EmailWebhookEvent.parse(messages[0]?.payload);
+    const payload = EmailWebhookEvent.parse(
+      renderWebhookPayload(messages[0]?.payload ?? {}, LATEST_API_VERSION),
+    );
     expect(payload.data).toMatchObject({
       email_id: email.id,
       recipient: "user@example.com",

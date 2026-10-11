@@ -26,6 +26,8 @@ export interface EmailWebhookEvent {
   id: string;
   object: "event";
   type: EmailEventType;
+  /** The API version this event is rendered in: the receiving endpoint's `api_version`. */
+  api_version: string;
   /** ISO 8601 timestamp. */
   created_at: string;
   data: EmailWebhookEventData;
@@ -55,6 +57,8 @@ export interface AccountWebhookEvent {
   id: string;
   object: "event";
   type: AccountEventType;
+  /** The API version this event is rendered in: the receiving endpoint's `api_version`. */
+  api_version: string;
   /** ISO 8601 timestamp. */
   created_at: string;
   data: AccountWebhookEventData;

@@ -208,6 +208,8 @@ function fromWebhookError(error: WebhookError): ApiError {
   switch (error.code) {
     case "invalid_url":
       return invalidRequest(error.code, error.message, "url");
+    case "invalid_api_version":
+      return invalidRequest(error.code, error.message, "api_version");
     case "too_many_endpoints":
       return invalidRequest(error.code, error.message);
     case "not_found":

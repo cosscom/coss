@@ -535,6 +535,8 @@ export const webhookEndpoint = pgTable(
     environmentId: text("environment_id").notNull(),
     url: text("url").notNull(),
     description: text("description"),
+    // The API version (`Coss-Version` date) payloads are rendered in at delivery.
+    apiVersion: text("api_version").notNull(),
     // Event types to deliver; empty means every type.
     eventTypes: text("event_types").array().notNull().default(sql`'{}'::text[]`),
     // The `whsec_…` signing secret, encrypted with WEBHOOK_SECRETS_KEY (it must be reversible).
@@ -769,6 +771,33 @@ export const reputationNotification = pgTable(
       .where(sql`${t.nextAttemptAt} IS NOT NULL`),
   ],
 );
+
+/**
+ * Hourly rollups of an organization's live email reputation counts (`@coss/email`), by the hour
+ * the emails were created. Computed lazily by the reputation checks for closed hours; delivery
+ * events that change an hour's counts bump `revision`, so a row is current only while
+ * `computed_revision = revision`. Mailbox-simulator recipients are counted separately.
+ */
+export const emailReputationRollup = pgTable(
+  "email_reputation_rollup",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    bucketStart: timestamp("bucket_start", { withTimezone: true }).notNull(),
+    revision: integer("revision").notNull().default(0),
+    // Null until first computed.
+    computedRevision: integer("computed_revision"),
+    recipients: integer("recipients").notNull().default(0),
+    bounces: integer("bounces").notNull().default(0),
+    complaints: integer("complaints").notNull().default(0),
+    simulatorRecipients: integer("simulator_recipients").notNull().default(0),
+    simulatorBounces: integer("simulator_bounces").notNull().default(0),
+    simulatorComplaints: integer("simulator_complaints").notNull().default(0),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ columns: [t.organizationId, t.bucketStart] })],
+);
 export const contentScreeningVerdict = pgEnum("content_screening_verdict", [
   "clean",
   "flagged",
@@ -848,6 +877,22 @@ export const organizationSuspension = pgTable("organization_suspension", {
     onDelete: "set null",
   }),
   createdAt: createdAt(),
+});
+
+/**
+ * The API version an organization's requests use when they send no `Coss-Version` header. Created lazily on the
+ * organization's first API use (pinned to the latest version then), changed only by an upgrade in the dashboard.
+ */
+export const organizationApiVersion = pgTable("organization_api_version", {
+  organizationId: text("organization_id")
+    .primaryKey()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  apiVersion: text("api_version").notNull(),
+  updatedByUserId: text("updated_by_user_id").references(() => user.id, {
+    onDelete: "set null",
+  }),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
 });
 
 /**
