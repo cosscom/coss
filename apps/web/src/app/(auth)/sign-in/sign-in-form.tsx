@@ -9,6 +9,7 @@ import { BuildingIcon, KeyRoundIcon } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { type Turnstile, useTurnstile } from "@/components/turnstile";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { nextQuery } from "@/lib/safe-redirect";
@@ -16,7 +17,13 @@ import { nextQuery } from "@/lib/safe-redirect";
 /** Codes that end the two-factor challenge: the user has to enter their password again. */
 const CHALLENGE_OVER = new Set(["INVALID_TWO_FACTOR_COOKIE", "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE"]);
 
-export function SignInForm({ next }: { next: string }) {
+export function SignInForm({
+  next,
+  turnstileSiteKey,
+}: {
+  next: string;
+  turnstileSiteKey: string | null;
+}) {
   const [step, setStep] = useState<"credentials" | "two-factor">("credentials");
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +35,7 @@ export function SignInForm({ next }: { next: string }) {
     <CredentialsStep
       error={error}
       next={next}
+      turnstileSiteKey={turnstileSiteKey}
       onError={setError}
       onSignedIn={finish}
       onTwoFactor={() => {
@@ -48,6 +56,7 @@ export function SignInForm({ next }: { next: string }) {
 
 function CredentialsStep(props: {
   next: string;
+  turnstileSiteKey: string | null;
   error: string | null;
   onError: (message: string | null) => void;
   onSignedIn: () => void;
@@ -55,6 +64,8 @@ function CredentialsStep(props: {
 }) {
   const { onError, onSignedIn } = props;
   const [pending, setPending] = useState<"password" | "passkey" | null>(null);
+  // Only the password form: passkey sign-ins need no token.
+  const turnstile: Turnstile = useTurnstile(props.turnstileSiteKey, "sign-in");
 
   // Passkey autofill: browsers that support conditional mediation offer saved passkeys in the
   // email field's suggestions. The request stays open until one is picked (or it's aborted by
@@ -79,7 +90,9 @@ function CredentialsStep(props: {
     const { data, error } = await authClient.signIn.email({
       email: String(form.get("email") ?? ""),
       password: String(form.get("password") ?? ""),
+      fetchOptions: { headers: turnstile.headers },
     });
+    turnstile.reset();
     if (error || !data) {
       onError(authErrorMessage(error, "Could not sign in."));
       setPending(null);
@@ -132,8 +145,13 @@ function CredentialsStep(props: {
             </div>
             <Input autoComplete="current-password" name="password" required type="password" />
           </Field>
-          <FormError message={props.error} />
-          <Button disabled={pending !== null} loading={pending === "password"} type="submit">
+          {turnstile.widget}
+          <FormError message={props.error ?? turnstile.error} />
+          <Button
+            disabled={pending !== null || !turnstile.ready}
+            loading={pending === "password"}
+            type="submit"
+          >
             Sign in
           </Button>
         </form>

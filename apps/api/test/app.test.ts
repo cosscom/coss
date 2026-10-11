@@ -152,8 +152,11 @@ describe("GET /openapi.json", () => {
     expect(doc.info).toMatchObject({ title: "COSS API", version: LATEST_API_VERSION });
     expect(doc.servers).toEqual([{ url: "http://api.test" }]);
     expect(Object.keys(doc.paths).sort()).toEqual([
+      "/v1/audit_events",
+      "/v1/audit_events/{id}",
       "/v1/domains",
       "/v1/domains/{id}",
+      "/v1/domains/{id}/tracking",
       "/v1/domains/{id}/verify",
       "/v1/emails",
       "/v1/emails/batch",
@@ -161,6 +164,9 @@ describe("GET /openapi.json", () => {
       "/v1/emails/{id}/cancel",
       "/v1/emails/{id}/events",
       "/v1/emails/{id}/links",
+      "/v1/emails/{id}/reschedule",
+      "/v1/logs",
+      "/v1/logs/{id}",
       "/v1/reputation",
       "/v1/suppressions",
       "/v1/suppressions/check",
@@ -172,6 +178,7 @@ describe("GET /openapi.json", () => {
       "/v1/webhook_endpoints/{id}/deliveries",
       "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}",
       "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry",
+      "/v1/webhook_endpoints/{id}/roll_secret",
     ]);
     expect(doc.paths["/v1/emails"]?.post).toMatchObject({
       operationId: "sendEmail",
@@ -205,12 +212,33 @@ describe("GET /openapi.json", () => {
         { $ref: "#/components/parameters/CossVersion" },
       ],
     });
+    expect(doc.paths["/v1/logs"]?.get).toMatchObject({
+      operationId: "listLogs",
+      security: [{ bearerAuth: [] }],
+    });
+    expect(doc.paths["/v1/logs/{id}"]?.get).toMatchObject({ operationId: "getLog" });
+    expect(doc.paths["/v1/audit_events"]?.get).toMatchObject({
+      operationId: "listAuditEvents",
+      tags: ["Audit log"],
+      security: [{ bearerAuth: [] }],
+    });
+    expect(doc.paths["/v1/audit_events/{id}"]?.get).toMatchObject({
+      operationId: "getAuditEvent",
+    });
     expect(doc.paths["/v1/reputation"]?.get).toMatchObject({
       operationId: "getReputation",
       security: [{ bearerAuth: [] }],
     });
     expect(doc.paths["/v1/emails/{id}/cancel"]?.post).toMatchObject({
       operationId: "cancelEmail",
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { in: "path", name: "id", required: true },
+        { $ref: "#/components/parameters/CossVersion" },
+      ],
+    });
+    expect(doc.paths["/v1/emails/{id}/reschedule"]?.post).toMatchObject({
+      operationId: "rescheduleEmail",
       security: [{ bearerAuth: [] }],
       parameters: [
         { in: "path", name: "id", required: true },
@@ -259,11 +287,14 @@ describe("GET /openapi.json", () => {
       ["get /v1/domains/{id}", "getDomain"],
       ["delete /v1/domains/{id}", "deleteDomain"],
       ["post /v1/domains/{id}/verify", "verifyDomain"],
+      ["post /v1/domains/{id}/tracking", "createTrackingDomain"],
+      ["delete /v1/domains/{id}/tracking", "deleteTrackingDomain"],
       ["post /v1/webhook_endpoints", "createWebhookEndpoint"],
       ["get /v1/webhook_endpoints", "listWebhookEndpoints"],
       ["get /v1/webhook_endpoints/{id}", "getWebhookEndpoint"],
       ["patch /v1/webhook_endpoints/{id}", "updateWebhookEndpoint"],
       ["delete /v1/webhook_endpoints/{id}", "deleteWebhookEndpoint"],
+      ["post /v1/webhook_endpoints/{id}/roll_secret", "rollWebhookEndpointSecret"],
       ["get /v1/webhook_endpoints/{id}/deliveries", "listWebhookDeliveries"],
       ["get /v1/webhook_endpoints/{id}/deliveries/{delivery_id}", "getWebhookDelivery"],
       ["post /v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry", "retryWebhookDelivery"],
@@ -288,6 +319,10 @@ describe("GET /openapi.json", () => {
         "DeletedSuppression",
         "Reputation",
         "ReputationCheck",
+        "Log",
+        "LogList",
+        "AuditEvent",
+        "AuditEventList",
         "ImportSuppressionsRequest",
         "SuppressionImport",
         "CreateDomainRequest",
@@ -295,8 +330,11 @@ describe("GET /openapi.json", () => {
         "DomainRecord",
         "DomainList",
         "DeletedDomain",
+        "TrackingDomain",
+        "CreateTrackingDomainRequest",
         "CreateWebhookEndpointRequest",
         "UpdateWebhookEndpointRequest",
+        "RollWebhookEndpointSecretRequest",
         "WebhookEndpoint",
         "WebhookEndpointWithSecret",
         "WebhookEndpointList",

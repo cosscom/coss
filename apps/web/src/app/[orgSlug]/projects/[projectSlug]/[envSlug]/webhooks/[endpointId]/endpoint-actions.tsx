@@ -11,6 +11,19 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogPanel,
+  DialogPopup,
+  DialogTitle,
+  DialogTrigger,
+} from "@coss/ui/components/dialog";
+import { Label } from "@coss/ui/components/label";
+import { Radio, RadioGroup } from "@coss/ui/components/radio-group";
 import { useActionState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
@@ -18,9 +31,11 @@ import {
   deleteWebhookEndpointAction,
   retryWebhookDeliveryAction,
   revealWebhookSecretAction,
+  rollWebhookSecretAction,
   setWebhookEndpointEnabledAction,
   upgradeWebhookEndpointVersionAction,
 } from "../actions";
+import { DEFAULT_PREVIOUS_SECRET_OPTION, PREVIOUS_SECRET_OPTIONS } from "../secret-roll";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string; endpointId: string };
 
@@ -134,6 +149,87 @@ export function RevealSecret(props: Target) {
         Reveal signing secret
       </Button>
       {state && !state.ok ? <FormError message={state.error} /> : null}
+    </form>
+  );
+}
+
+export function RollSecretButton(props: Target) {
+  return (
+    <Dialog>
+      <DialogTrigger render={<Button size="sm" variant="outline" />}>Roll secret</DialogTrigger>
+      <DialogPopup>
+        {/* The popup unmounts when closed, which also discards the shown secret. */}
+        <RollSecretForm {...props} />
+      </DialogPopup>
+    </Dialog>
+  );
+}
+
+function RollSecretForm(props: Target) {
+  const [state, formAction, pending] = useActionState(rollWebhookSecretAction, null);
+  if (state?.ok) {
+    return (
+      <>
+        <DialogHeader>
+          <DialogTitle>New signing secret</DialogTitle>
+          <DialogDescription>
+            Deploy it to your receiver. Until the previous secret stops signing, every request
+            carries a signature for each, so either one verifies it.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogPanel className="flex flex-col gap-2">
+          <code className="block select-all break-all rounded-lg border bg-muted px-3 py-2 font-mono text-sm">
+            {state.data.secret}
+          </code>
+          <div>
+            <CopyButton label="Copy secret" value={state.data.secret} />
+          </div>
+        </DialogPanel>
+        <DialogFooter>
+          <DialogClose render={<Button />}>Done</DialogClose>
+        </DialogFooter>
+      </>
+    );
+  }
+  return (
+    // `contents` keeps header/panel/footer as direct flex children of the popup (coss ui pattern).
+    <form action={formAction} className="contents">
+      <TargetInputs {...props} />
+      <DialogHeader>
+        <DialogTitle>Roll the signing secret?</DialogTitle>
+        <DialogDescription>
+          A new secret signs every request from now on. Choose how long the current one keeps
+          signing as well, so your receiver accepts requests while you switch it over.
+        </DialogDescription>
+      </DialogHeader>
+      <DialogPanel className="flex flex-col gap-4">
+        <RadioGroup
+          aria-label="The current secret stops signing"
+          defaultValue={String(DEFAULT_PREVIOUS_SECRET_OPTION)}
+          name="previousSecretExpiresIn"
+        >
+          {PREVIOUS_SECRET_OPTIONS.map((option) => (
+            <Label className="items-start gap-3" key={option.seconds}>
+              <Radio className="mt-0.5" value={String(option.seconds)} />
+              <span className="flex flex-col gap-0.5">
+                {option.label}
+                {option.description ? (
+                  <span className="font-normal text-muted-foreground text-xs">
+                    {option.description}
+                  </span>
+                ) : null}
+              </span>
+            </Label>
+          ))}
+        </RadioGroup>
+        {state && !state.ok ? <FormError message={state.error} /> : null}
+      </DialogPanel>
+      <DialogFooter>
+        <DialogClose render={<Button variant="ghost" />}>Cancel</DialogClose>
+        <Button loading={pending} type="submit">
+          Roll secret
+        </Button>
+      </DialogFooter>
     </form>
   );
 }

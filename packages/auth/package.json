@@ -9,13 +9,16 @@
     "./permissions": "./src/permissions.ts",
     "./slugs": "./src/slugs.ts",
     "./constants": "./src/constants.ts",
+    "./emails": "./src/emails.ts",
     "./sso": "./src/sso.ts",
-    "./scim": "./src/scim.ts"
+    "./scim": "./src/scim.ts",
+    "./audit": "./src/audit.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun --env-file=../../.env test",
-    "auth:generate": "auth generate --config ./src/auth.ts --output ../db/src/schema/auth.ts --yes"
+    "auth:generate": "auth generate --config ./src/auth.ts --output ../db/src/schema/auth.ts --yes",
+    "auth:update-disposable": "bun scripts/update-disposable-domains.ts"
   },
   "dependencies": {
     "@better-auth/api-key": "catalog:",

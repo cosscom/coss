@@ -7,8 +7,8 @@
 import { describe, expect, test } from "bun:test";
 import {
   EmailError,
+  emailNotifier,
   emailReputationChecks,
-  emailReputationNotifier,
   FakeEmailProvider,
   notificationEnvironment,
 } from "@coss/email";
@@ -22,7 +22,7 @@ import { createTestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { createWebhookEndpoint, runDueWebhookDeliveries } from "@coss/webhooks";
 import {
-  TEST_SECRETS_KEY,
+  TEST_SECRETS_KEYS,
   testManagementDeps,
   testSender,
   webhookReceiver,
@@ -92,7 +92,7 @@ describe("live bounces → automatic suspension → webhook", () => {
       expect(
         await runDueWebhookDeliveries(
           { now, scope },
-          { secretsKey: TEST_SECRETS_KEY, send: testSender() },
+          { secretsKeys: TEST_SECRETS_KEYS, send: testSender() },
         ),
       ).toBe(1);
       const [request] = receiver.received;
@@ -115,7 +115,7 @@ describe("live bounces → automatic suspension → webhook", () => {
       // The notification goes out as a live email of COSS's own organization.
       const platform = await createTestTenant();
       const platformDomain = await createVerifiedDomain(platform.organization.id);
-      const notifier = emailReputationNotifier({
+      const notifier = emailNotifier({
         service,
         environment: await notificationEnvironment(platform.production.id),
         from: `COSS <notifications@${platformDomain.name}>`,

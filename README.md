@@ -50,6 +50,9 @@ bun run dev                      # dashboard http://localhost:3000/dashboard · 
                                  # site + docs http://localhost:3002 · worker
 ```
 
+Then set up the shared build cache once per machine ([Remote cache](#remote-cache-turborepo-on-vercel)): without it
+everything works, but CI rebuilds what you already built.
+
 `db:migrate` also installs the `pgboss` schema: sends return `202` with `status: "queued"` and the worker
 dispatches them moments later, so keep the worker running.
 
@@ -90,12 +93,16 @@ resets) are printed to the dashboard's server console in development.
   suppression is turned off.
 - **Scheduled sends** — pass `scheduled_at` (ISO 8601 with an offset, up to 30 days ahead) and the email is stored
   as `scheduled` (event `email.scheduled`); the worker sends it when it is due, re-checking the domain and the
-  suppression list. Until then `POST /v1/emails/{id}/cancel` cancels it (`canceled`, event `email.canceled`).
+  suppression list. Until then `POST /v1/emails/{id}/reschedule` moves it to a new time (event `email.rescheduled`)
+  and `POST /v1/emails/{id}/cancel` cancels it (`canceled`, event `email.canceled`).
 - **Open & click tracking** — off by default. Turn it on per environment (a default plus per-category rules, in the
   dashboard) or per send (`tracking: { opens, clicks }`). COSS adds an invisible image and rewrites HTML links to its
   own redirect (`API_PUBLIC_URL/t/…`) when it hands the email to the provider; the stored email keeps the original
   HTML. Opens and clicks show up as `email.opened` / `email.clicked` events, webhooks, counts on the email
   (`tracking`) and per-link click counts. Independent of SES's own tracking, which stays off.
+  A verified domain can have a **custom tracking domain** (e.g. `links.acme.com`, a CNAME to `track.coss.com`):
+  emails from it are tracked through that hostname while it is active. COSS registers it as a Cloudflare for SaaS
+  custom hostname (`TRACKING_DOMAIN_PROVIDER=cloudflare`), which issues its certificate and proxies `/t/*` to the API.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
 - **Single sign-on** — per organization, OpenID Connect or SAML 2.0 (Better Auth's SSO plugin), set up under
@@ -128,6 +135,10 @@ resets) are printed to the dashboard's server console in development.
   tune thresholds and sampling, switch to shadow mode, or turn screening off per organization (e.g. for
   phishing-simulation senders). Locally `SCREENING_CLASSIFIER=fake` flags content containing `[coss-test:phishing]`
   (or `spam`, `malware`, `fraud`; `[coss-test:spam:0.8]` sets the score).
+- **Data retention** — the worker deletes data once it passes its published period (`packages/retention`, shown at
+  `/docs/data-retention` and in each organization's settings): emails with their events and links after 45 days,
+  webhook deliveries after 30, screening verdicts after 90, standing history and the admin audit log after 2 years,
+  expired sessions and invitations 7 days after expiry. Suppressions and configuration are kept until deleted.
 - **Platform admins** — the console at `/admin` (promote with `bun run admin:create --email …`): search users and
   organizations; ban users (with a reason and duration — signs them out everywhere), grant/remove the admin role,
   revoke sessions, impersonate (with a reason, never other admins); **suspend organizations** (API keys get 403
@@ -147,9 +158,55 @@ resets) are printed to the dashboard's server console in development.
 | `bun run build` | Build dashboard + site (standalone servers) + SDK |
 | `bun run db:generate` / `db:migrate` / `db:studio` | Drizzle migrations |
 | `bun run auth:generate` | Regenerate Better Auth tables after changing auth plugins (then `db:generate` + `db:migrate`) |
+| `bun run auth:update-disposable` | Refresh the list of disposable email domains refused at sign-up |
 | `bun run ses:bootstrap` | Create/update the shared AWS resources for `EMAIL_PROVIDER=ses` (see below) |
 | `bun run valkey:bootstrap` | Create/update the ElastiCache Serverless for Valkey cache for rate limits (see below) |
 | `bun run ratelimit:set --org <slug> [--bucket … --limit … \| --reset]` | Show or change an organization's rate limits |
+
+## Remote cache (Turborepo on Vercel)
+
+`typecheck` and `build` results are shared through Turborepo's [Vercel Remote Cache](https://vercel.com/docs/monorepos/remote-caching)
+(Vercel team **`cal`**) by everyone's machines, agents and CI. Turbo fingerprints each task's inputs (source,
+lockfile, `turbo.json`, `NODE_ENV`, `NEXT_DEPLOYMENT_ID`); when CI computes a fingerprint someone already built, it
+downloads that result instead of building again, so running `bun run typecheck && bun run build` before pushing
+makes CI's check and build jobs near-instant. On pull requests those two jobs check out the pushed commit (what you
+built), while the test job runs on GitHub's merge with `main`; `main`'s own run covers the merged result. Any change
+to the inputs is a miss and CI runs the task itself, so nothing goes unchecked. Tests are never cached. Artifacts are HMAC-signed with a shared key; Turbo ignores
+(rebuilds) anything that doesn't verify.
+
+**One-time setup per machine** (a laptop, or a box agents run on; every worktree on it picks it up):
+
+1. Be a member of the `cal` team on Vercel.
+2. Put the team and the signing key (password manager: "COSS turbo remote cache signing key") in a private file
+   and load it from your shell profile (open a new shell afterwards). Turbo only reads the shell's environment, never `.env`:
+   ```sh
+   mkdir -p ~/.config/coss && install -m 600 /dev/null ~/.config/coss/turbo.env
+   cat > ~/.config/coss/turbo.env <<'SH'
+   export TURBO_TEAM=cal
+   export TURBO_REMOTE_CACHE_SIGNATURE_KEY='<signing key>'
+   SH
+   # first line of ~/.zshrc (macOS) or ~/.bashrc — above any "not interactive → return" guard, so agents'
+   # non-interactive shells load it too:
+   [ -f "$HOME/.config/coss/turbo.env" ] && . "$HOME/.config/coss/turbo.env"
+   ```
+3. Log Turbo in (stores a token in Turbo's user config; the Vercel CLI's own login is not used):
+   ```sh
+   bunx turbo login                 # pick the cal team if asked
+   # headless box: create a token at https://vercel.com/account/tokens (scope: cal), then
+   bunx turbo login --manual        # Remote Cache URL: https://vercel.com/api (not https://vercel.com);
+                                    # needs TURBO_TEAM=cal from step 2 in this shell
+   ```
+4. Check it: `bun run typecheck` prints `Remote caching enabled` in its header. `Remote caching disabled` or
+   `Remote caching unavailable (Authentication failed …)` means step 2 or 3 is missing; builds still work, unshared.
+
+**CI** reads `secrets.TURBO_TOKEN` (a Vercel token scoped to `cal`), `vars.TURBO_TEAM` (`cal`) and
+`secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY` (`gh secret list`, `gh variable list`); without them it runs every task.
+Rotating the signing key means updating the GitHub secret and every machine's `turbo.env` (old artifacts then miss
+and are rebuilt). Anyone with a `cal` token and the key can upload results CI will accept: treat them like push
+access, and revoke a leaver's token (vercel.com/account/tokens, or remove them from the team).
+
+Runtime settings (`DATABASE_URL`, secrets, URLs, …) are pass-through and never part of a fingerprint, which is what
+lets laptops and CI share results — see "Adding one" in AGENTS.md before adding a variable that changes build output.
 
 ## API
 
@@ -257,6 +314,29 @@ refused in production. If Valkey is unreachable, requests are **allowed** (fail 
    to it) to match your load balancers; without them per-IP limits (repeated invalid API keys, dashboard
    sign-in) are off, because the socket address would be the load balancer's.
 
+## Error monitoring on Sentry
+
+Errors and traces go to the Sentry organization `coss` (`@coss/observability`). Create three projects —
+`web` (Next.js), `api` (Bun) and `worker` (Bun) — and set each service's `SENTRY_DSN` to its project's DSN
+(Project settings → Client Keys), plus `SENTRY_ENVIRONMENT` (the stage) and optionally
+`SENTRY_TRACES_SAMPLE_RATE` (default 0.1). Without a DSN nothing is reported, so local development and CI
+send nothing unless you set one.
+
+- **What is reported:** unhandled errors everywhere; every `console.error` on a server (the packages log the
+  failures they handle that way: provider errors, webhook deliveries, failed worker runs…), also as Sentry
+  logs with `console.warn`; failed email-dispatch jobs; browser errors on the dashboard and the site.
+  Events are tagged `service`, and with `request_id` + `organization_id`/`environment_id` (API),
+  `organization_id` + the user's id (dashboard) or `loop`/`email_id` (worker).
+- **Privacy:** the SDKs collect no request/response bodies (email content), IPs, cookies, query strings, AI
+  prompts or local variables (`DATA_COLLECTION`), and the `scrub*` hooks mask secret URL segments (tracking and
+  password-reset tokens) in events, spans and logs. There is no session replay.
+- **Browsers** (both zones) fetch their configuration from the dashboard's `GET /api/monitoring` and post their
+  events to it; it forwards only envelopes for the dashboard's own DSN. The CSP needs no Sentry origin.
+- **Releases** are the commit: `NEXT_DEPLOYMENT_ID` for the Next.js images, `SENTRY_RELEASE` (a build argument)
+  for the API and worker images. Builds with a `SENTRY_AUTH_TOKEN` (organization token, passed to `docker build`
+  as the `sentry_auth_token` secret) upload the Next.js apps' source maps to `web` and delete them from the image;
+  the API and worker run their TypeScript source, so their stack traces need none.
+
 ## Deploying to AWS
 
 Everything runs on AWS; nothing is provisioned yet. The repository holds what provisioning needs: one
@@ -328,24 +408,43 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
 - **SES, SNS, SQS, EventBridge:** created by `ses:bootstrap` (see [Running on Amazon SES](#running-on-amazon-ses)),
   run as a one-off task (below).
 - **Route 53:** `coss.com` and `api.coss.com` alias records to their distributions.
+- **Custom tracking domains (Cloudflare for SaaS, on the coss.com zone):** enable Cloudflare for SaaS on the zone
+  and create the fallback origin `track.coss.com` as a **proxied** record pointing at the ALB's DNS name. Customer
+  tracking domains CNAME to it; COSS registers each as a custom hostname (HTTP certificate validation) through the
+  API with `CLOUDFLARE_API_TOKEN` (zone-scoped, SSL and Certificates: Edit) and `CLOUDFLARE_ZONE_ID`. Add a request
+  header transform rule that sets `X-Tracking-Origin-Verify: <secret>` on requests to custom hostnames: the ALB
+  forwards `/t/*` with that header to the api target group for any host (rule from the spec, `infra/aws/routing.ts`),
+  and nothing else. Allow Cloudflare's IP ranges (https://www.cloudflare.com/ips/) on the ALB's 443 next to the
+  CloudFront prefix list. SSL mode **Full**: Cloudflare connects with the customer's hostname as SNI, which the
+  ALB's certificate doesn't cover; the header secret is what proves a request came through Cloudflare. Cloudflare
+  bills custom hostnames beyond the plan's allowance.
 
 ### Secrets and environment
 
 One Secrets Manager secret per stage (JSON), injected through each task definition's `secrets`:
 `VALKEY_URL` (from `valkey:bootstrap`), `DATABASE_URL`, `BETTER_AUTH_SECRET`, `AI_GATEWAY_API_KEY` (worker), `WEBHOOK_SECRETS_KEY` and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (generate the
-last three with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable). The origin
+last three with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable, see
+[Rotating `WEBHOOK_SECRETS_KEY`](#rotating-webhook_secrets_key) to change it),
+`TURNSTILE_SECRET_KEY` (web; from a Cloudflare Turnstile widget, managed mode, whose hostnames include the
+dashboard's). The origin
 header value is a separate secret, used only by CloudFront and the ALB rules (rotate it by adding the new value to the
-rules, then CloudFront, then removing the old one). Plain values per service:
+rules, then CloudFront, then removing the old one); so is the tracking origin header (Cloudflare's transform rule and
+the ALB's tracking rule). `CLOUDFLARE_API_TOKEN` (web, api, worker) is in the stage secret. Plain values per service
+(web, api and worker also take `TRACKING_DOMAIN_PROVIDER=cloudflare`, `CLOUDFLARE_ZONE_ID` and optional
+`TRACKING_CNAME_TARGET`):
 
 | Service | Variables |
 |---|---|
-| web | `BETTER_AUTH_URL=https://coss.com`, `API_PUBLIC_URL=https://api.coss.com`, `TRUSTED_PROXY_HOPS=2`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, optional `DATABASE_POOL_MAX`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX=coss`, `CLIENT_IP_HEADER=x-forwarded-for`, `TRUSTED_PROXY_COUNT=2` |
+| web | `BETTER_AUTH_URL=https://coss.com`, `API_PUBLIC_URL=https://api.coss.com`, `TRUSTED_PROXY_HOPS=2`, `TURNSTILE_SITE_KEY` (the same widget's), `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, optional `DATABASE_POOL_MAX`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX=coss`, `CLIENT_IP_HEADER=x-forwarded-for`, `TRUSTED_PROXY_COUNT=2` |
 | api | the same minus `TRUSTED_PROXY_HOPS`, plus `API_CORS_ORIGINS=https://coss.com` |
 | worker | `API_PUBLIC_URL=https://api.coss.com`, `BETTER_AUTH_URL=https://coss.com`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL`, `SCREENING_CLASSIFIER=ai`, optional `SCREENING_MODEL`, `NOTIFICATIONS_ENVIRONMENT_ID` + `NOTIFICATIONS_FROM` (see below) |
 | site | none (static; everything it needs is in the image) |
 
+Every service but the site also takes `SENTRY_DSN` (its own project's), `SENTRY_ENVIRONMENT` and optionally
+`SENTRY_TRACES_SAMPLE_RATE` (see [Error monitoring on Sentry](#error-monitoring-on-sentry)).
+
 Images are built once and promoted through stages: builds set `SKIP_ENV_VALIDATION` and bake in nothing
-stage-specific (only `NEXT_DEPLOYMENT_ID`, the commit). Each server validates its environment at startup and exits
+stage-specific (only the commit: `NEXT_DEPLOYMENT_ID`, `SENTRY_RELEASE`). Each server validates its environment at startup and exits
 if it is wrong. AWS credentials come from the task role.
 
 ### IAM
@@ -359,8 +458,13 @@ if it is wrong. AWS credentials come from the task role.
 
 ### Deploy order
 
+**Upgrading a stage that still runs v1-only webhook secret readers:** use the
+[one-time coordinated upgrade](#upgrading-from-v1-webhook-secret-storage) below instead of step 3's rolling
+deployment. This applies even when `WEBHOOK_SECRETS_KEY` is unchanged.
+
 1. Build and push the four images, tagged with the commit (`docker build --platform linux/arm64 -f
-   apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> .`; only the Next apps use the build arg).
+   apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
+   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker).
 2. Run migrations as a one-off task from the worker image: `bun packages/db/src/migrate.ts` (needs only
    `DATABASE_URL`; never two at once). Wait for exit code 0. Migrations must be backward compatible with the
    running code.
@@ -375,8 +479,67 @@ ALB, CloudFront, WAF, DNS → sign up on the dashboard → `create-admin` one-of
 production access → create COSS's own organization in the dashboard, add and verify its sending domain (e.g.
 `coss.com`), and set the worker's `NOTIFICATIONS_ENVIRONMENT_ID` (its project's live environment, `env_…`) and
 `NOTIFICATIONS_FROM` (e.g. `COSS <notifications@coss.com>`). Until then the worker logs a warning at startup and
-holds reputation notification emails (ones older than 3 days are dropped instead of sent late). They are ordinary
-live emails of that organization: its dashboard shows their delivery, and its suppressions apply.
+holds account emails (sign-up verification, password resets, invitations — dropped once their link expires: an hour,
+or the invitation's 48 hours) and reputation notification emails (dropped after 3 days), so nobody can verify their
+address or create a live key; afterwards, ask for a new verification email from account settings. They are ordinary
+live emails of that organization: its dashboard shows their delivery, and its suppressions and reputation
+guard apply. Account emails keep no body once sent (their links are secrets).
+
+### Upgrading from v1 webhook secret storage
+
+The key-ring release reads both `v1` and `v2` ciphertext, but immediately writes `v2` when an endpoint is created
+or its secret is rolled. Earlier releases read only `v1`: mixing these releases breaks deliveries and dashboard
+secret reveals. This first format upgrade requires a maintenance window; subsequent deployments between
+dual-format releases can follow the normal rolling deploy order. A new stage needs no transition.
+
+1. Build the new images and run the backward-compatible migrations (deploy steps 1–2). Keep the existing single
+   `WEBHOOK_SECRETS_KEY` unchanged on all services; do not combine this upgrade with a key rotation or run
+   `webhooks:reencrypt` yet.
+2. Block incoming API and dashboard traffic at the load balancer, including direct origin access. Suspend service
+   autoscaling and automated deployments, and disable automatic rollback to v1-only task revisions (including ECS
+   deployment circuit-breaker/alarm rollback). Record desired counts, and scale **web, api and worker to zero**.
+   Allow SIGTERM draining to finish, and verify that every old task has stopped, including standalone tasks or
+   operator scripts that access webhook secrets. Do not start any new app task while an old reader remains.
+3. Set all three services to the new image revisions before restoring their desired counts. Keep traffic blocked
+   until every running task uses a dual-format reader and the API/dashboard health checks pass. Verify a legacy
+   endpoint's secret reveal and delivery, then create or roll a test endpoint and verify its reveal and delivery.
+   Run these checks through controlled operator access during maintenance.
+4. Restore traffic, autoscaling and automated deployments, pinned to the upgraded revisions. Re-enable automatic
+   rollback only when its target revision also reads both formats. Queued work resumes
+   when the workers start; allow for delayed email and webhook deliveries during the maintenance window.
+   Existing `v1` rows remain readable and do not need immediate re-encryption. Only now may the re-encryption
+   script or the key-rotation procedure below run.
+
+**Rollback:** before any new task or re-encryption script has written `v2`, the old images can be restored using
+the same stop-all/start-all procedure with the original key. Once a `v2` secret exists, rollback images must also
+read both formats; keeping the same encryption key does not make a v1-only image compatible. Keep traffic blocked
+and repair forward if the cutover fails after v2 writes. This release has no v2-to-v1 downgrade command.
+
+### Rotating `WEBHOOK_SECRETS_KEY`
+
+Prerequisite: every API, dashboard and worker task already runs a dual-format reader. For a stage still using
+v1-only readers, complete [the format upgrade](#upgrading-from-v1-webhook-secret-storage) first.
+
+The variable is a comma-separated list of keys, newest first: the first encrypts new endpoint secrets, every one
+decrypts. Each stored secret names its key by an id derived from the key itself (the `webhooks:reencrypt` script
+prints them), so the list needs no labels and its order only decides which key encrypts. Endpoints' own signing
+secrets don't change, so customers notice nothing.
+
+1. Generate a key (`openssl rand -base64 32`) and **append** it: `WEBHOOK_SECRETS_KEY=<old>,<new>`. Deploy web, api
+   and worker. Every task can now decrypt with both keys; nothing is encrypted with the new one yet.
+2. Swap the order, `<new>,<old>`, and deploy again. New and rolled endpoint secrets are encrypted with the new key.
+   Doing step 1 first means no task that only knows the old key ever reads a secret made with the new one (rolling
+   deploys run both versions at once).
+3. Run the `webhooks-reencrypt` one-off task from the worker image (`bun apps/worker/scripts/webhooks-reencrypt.ts`,
+   needs `DATABASE_URL` and the new `WEBHOOK_SECRETS_KEY`; `--dry-run` only counts). It rewrites every secret still
+   encrypted with an older key, while traffic continues, and exits 1 if anything was left over (a secret no listed key
+   decrypts, or one rolled while it ran: run it again).
+4. Remove the old key, `<new>`, and deploy. Destroy the old key.
+
+After a leak of the key, do all four steps right away: with the database alone the key is useless, but with both,
+every endpoint's signing secret can be read. Customers should then [roll their endpoint
+secrets](https://coss.com/docs/webhooks#rolling-the-secret) with no grace period. Locally, `bun run
+webhooks:reencrypt` does step 3 against `DATABASE_URL`.
 
 ### Known gaps
 

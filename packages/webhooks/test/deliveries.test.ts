@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { newId } from "@coss/db/id";
+import { queryLogs } from "@coss/logs";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
 import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
@@ -25,13 +26,13 @@ import { WebhookError } from "../src/errors.ts";
 import { enqueueWebhookMessage } from "../src/outbox.ts";
 import { signPayload } from "../src/signing.ts";
 import {
-  TEST_SECRETS_KEY,
+  TEST_SECRETS_KEYS,
   testManagementDeps,
   testSender,
   webhookReceiver,
 } from "../src/testing.ts";
 
-const deliveryDeps = { secretsKey: TEST_SECRETS_KEY, send: testSender() };
+const deliveryDeps = { secretsKeys: TEST_SECRETS_KEYS, send: testSender() };
 
 async function endpointFor(tenant: TestTenant, url: string, eventTypes: string[] = []) {
   return createWebhookEndpoint(
@@ -76,7 +77,7 @@ describe("endpoints", () => {
       projectId: tenant.project.id,
     });
     expect(endpoint.secretCiphertext).not.toContain(secret);
-    expect(revealWebhookSecret(endpoint, TEST_SECRETS_KEY)).toBe(secret);
+    expect(revealWebhookSecret(endpoint, TEST_SECRETS_KEYS)).toBe(secret);
 
     const strict = { ...testManagementDeps, allowInsecureUrls: false };
     await expect(
@@ -145,7 +146,7 @@ describe("updateWebhookEndpoint", () => {
       enabled: false,
       description: null,
     });
-    expect(revealWebhookSecret(updated, TEST_SECRETS_KEY)).toBe(secret);
+    expect(revealWebhookSecret(updated, TEST_SECRETS_KEYS)).toBe(secret);
   });
 
   test("trims a description and clears it with null", async () => {
@@ -301,6 +302,7 @@ describe("toWebhookEndpointObject", () => {
       event_types: ["email.sent"],
       api_version: LATEST_API_VERSION,
       enabled: true,
+      previous_secret_expires_at: null,
       created_at: endpoint.createdAt.toISOString(),
       updated_at: endpoint.updatedAt.toISOString(),
     });
@@ -552,6 +554,61 @@ describe("runDueWebhookDeliveries", () => {
       await unsuspendOrganization({ organizationId: tenant.organization.id, actor });
       expect(await runDueWebhookDeliveries({ scope: scopeOf(tenant) }, deliveryDeps)).toBe(1);
       expect(receiver.received).toHaveLength(1);
+    } finally {
+      receiver.stop();
+    }
+  });
+});
+
+describe("environment log", () => {
+  test("every attempt is a webhook.attempt line: warning while retrying, error when given up", async () => {
+    const tenant = await createTestTenant();
+    let status = 500;
+    const receiver = webhookReceiver(() => new Response("broken", { status }));
+    try {
+      const { endpoint } = await endpointFor(tenant, receiver.url);
+      await enqueue(tenant, "email.bounced");
+      const scope = scopeOf(tenant);
+      const now = new Date();
+      await runDueWebhookDeliveries({ now, scope }, deliveryDeps);
+      status = 200;
+      await runDueWebhookDeliveries(
+        { now: new Date(now.getTime() + (RETRY_DELAYS_MS[0] ?? 0)), scope },
+        deliveryDeps,
+      );
+      const page = await queryLogs({
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        from: new Date(now.getTime() - 60_000),
+        to: new Date(now.getTime() + 3_600_000),
+        filters: { sources: ["webhook"] },
+      });
+      const [succeeded, retrying] = page.data;
+      expect(retrying).toMatchObject({
+        type: "webhook.attempt",
+        level: "warning",
+        message: `email.bounced → ${receiver.url} 500`,
+        status_code: 500,
+        error_code: "webhook_delivery_failed",
+        resource_type: "email",
+        resource_id: "email_x",
+        attributes: expect.objectContaining({
+          endpoint_id: endpoint.id,
+          attempt: 1,
+          outcome: "retrying",
+          response_excerpt: "broken",
+        }),
+      });
+      expect(succeeded).toMatchObject({ level: "info", status_code: 200, error_code: null });
+      // The endpoint's id finds its attempts.
+      const byEndpoint = await queryLogs({
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        from: new Date(now.getTime() - 60_000),
+        to: new Date(now.getTime() + 3_600_000),
+        filters: { text: endpoint.id },
+      });
+      expect(byEndpoint.data).toHaveLength(2);
     } finally {
       receiver.stop();
     }

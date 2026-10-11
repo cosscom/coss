@@ -1,4 +1,5 @@
 import { createEmailService, FakeEmailProvider } from "@coss/email";
+import { secretsKeyRing } from "@coss/webhooks";
 import { createApp, renderOpenApiDocument } from "./app.ts";
 
 /** The production origin, also the SDK's default `baseUrl`. */
@@ -23,7 +24,7 @@ export function renderOpenApiSnapshot(): string {
         },
       },
     }),
-    webhookDeps: { secretsKey: Buffer.alloc(32), allowInsecureUrls: false },
+    webhookDeps: { secretsKeys: secretsKeyRing([Buffer.alloc(32)]), allowInsecureUrls: false },
   });
   const document = renderOpenApiDocument(app, PUBLIC_API_URL);
   return `${JSON.stringify(document, null, 2)}\n`;

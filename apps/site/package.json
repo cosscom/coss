@@ -13,8 +13,11 @@
   "dependencies": {
     "@coss/api": "workspace:*",
     "@coss/auth": "workspace:*",
+    "@coss/retention": "workspace:*",
+    "@coss/observability": "workspace:*",
     "@coss/ui": "workspace:*",
     "@coss/versioning": "workspace:*",
+    "@sentry/nextjs": "catalog:",
     "fumadocs-core": "16.17.1",
     "fumadocs-mdx": "15.4.7",
     "fumadocs-openapi": "12.4.1",
@@ -25,7 +28,8 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "server-only": "catalog:",
-    "shiki": "4.5.0"
+    "shiki": "4.5.0",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@coss/tsconfig": "workspace:*",

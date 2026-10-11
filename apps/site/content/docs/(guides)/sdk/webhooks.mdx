@@ -5,8 +5,9 @@ description: Verify webhook requests with verifyWebhook.
 
 `verifyWebhook(body, headers, secret)` checks a request's [Standard Webhooks](https://www.standardwebhooks.com)
 signature and age, and returns the parsed event. Pass the **raw** request body, exactly as received,
-and the endpoint's `whsec_…` signing secret (shown in the dashboard, or returned once by
-`coss.webhookEndpoints.create`).
+and the endpoint's `whsec_…` signing secret (shown in the dashboard, or returned by
+`coss.webhookEndpoints.create` and `rollSecret`). While a [rolled secret](/docs/webhooks#rolling-the-secret)
+is in its grace period, requests verify with either the old or the new secret.
 
 ```ts twoslash title="app/webhooks/coss/route.ts"
 import { verifyWebhook, WebhookVerificationError } from "coss";

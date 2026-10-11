@@ -1,0 +1,66 @@
+---
+title: Logs
+description: Every API request, email event and webhook attempt of an environment, in one place.
+icon: ScrollText
+---
+
+Each environment has a log. It records:
+
+| Source    | Lines                                                                                        |
+| --------- | -------------------------------------------------------------------------------------------- |
+| `api`     | Every request made with one of the environment's API keys (`api.request`)                    |
+| `email`   | Every email event: `email.sent`, `email.delivered`, `email.bounced`, `email.opened`…        |
+| `webhook` | Every delivery attempt to one of the environment's webhook endpoints (`webhook.attempt`)     |
+
+Lines have a level: `error` for 5xx responses, bounces, complaints and failures, `warning` for 4xx
+responses, delays, suppressions and webhook attempts that will be retried, `info` for everything
+else. Lines about the same email share its `resource_id`, so a send request, the email's events
+and the webhook attempts they caused read as one timeline.
+
+Open **Logs** in an environment of the dashboard to search, filter, follow new lines live and
+export them as CSV or NDJSON. Or read them through the API:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data, error } = await coss.logs.list({
+  from: new Date(Date.now() - 24 * 60 * 60 * 1000),
+  level: ["warning", "error"],
+  source: "api",
+});
+for (const line of data?.data ?? []) {
+  console.log(line.occurred_at, line.status_code, line.message, line.request_id);
+}
+```
+
+Pages are newest first: pass the last line's `id` as `after` while `has_more` is true. A query
+covers an hour unless you pass `from`/`to`, and at most 31 days. Reading logs is not itself logged.
+
+## Searching
+
+The dashboard's search box takes `key:value` filters and free text. Repeating a key matches any of
+its values; `-key:value` excludes.
+
+| Filter                    | Matches                                          |
+| ------------------------- | ------------------------------------------------ |
+| `level:error`             | `info`, `warning`, `error`                       |
+| `source:email`            | `api`, `email`, `webhook`                        |
+| `status:5xx`, `status:404`| A status class or code                           |
+| `method:POST`             | The request method                               |
+| `route:/v1/emails/:id`    | The matched route                                |
+| `path:/v1/domains`        | A path prefix                                    |
+| `type:email.bounced`      | A line type                                      |
+| `key:key_…`               | Requests made with one API key                   |
+| `request:req_…`           | One request (the `X-Request-Id` header)          |
+| `resource:email_…`        | Lines about one email, domain or endpoint        |
+| `recipient:user@…`        | Email events of one recipient                    |
+
+## What is kept
+
+Request and response bodies are stored redacted: secrets (such as a webhook endpoint's signing
+secret), attachment contents and the `Authorization` header are never kept, long strings are cut
+to 2,048 characters and bodies to 16 KB. Requests that fail authentication can't be attributed to
+an environment and are not logged.
+
+Logs are kept for 30 days.

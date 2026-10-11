@@ -57,6 +57,37 @@ const db: EnvVar[] = [
   },
 ];
 
+const trackingDomains: EnvVar[] = [
+  {
+    name: "TRACKING_DOMAIN_PROVIDER",
+    kind: "plain",
+    required: true,
+    value: "cloudflare",
+    description: "Custom tracking domains are Cloudflare for SaaS custom hostnames.",
+  },
+  {
+    name: "CLOUDFLARE_API_TOKEN",
+    kind: "secret",
+    required: true,
+    description:
+      "Cloudflare API token limited to the coss.com zone with SSL and Certificates: Edit " +
+      "(custom hostnames). Same value for web, api and worker.",
+  },
+  {
+    name: "CLOUDFLARE_ZONE_ID",
+    kind: "plain",
+    required: true,
+    description: "The coss.com zone id (Cloudflare dashboard, zone overview).",
+  },
+  {
+    name: "TRACKING_CNAME_TARGET",
+    kind: "plain",
+    required: false,
+    value: "track.coss.com",
+    description: "The zone's fallback origin, which customers CNAME their tracking domain to.",
+  },
+];
+
 const email: EnvVar[] = [
   {
     name: "EMAIL_PROVIDER",
@@ -78,6 +109,7 @@ const email: EnvVar[] = [
     required: true,
     description: "Printed by ses:bootstrap.",
   },
+  ...trackingDomains,
 ];
 
 const rateLimits: EnvVar[] = [
@@ -146,7 +178,9 @@ const webhookKey: EnvVar = {
   name: "WEBHOOK_SECRETS_KEY",
   kind: "secret",
   required: true,
-  value: "openssl rand -base64 32 (one per stage; losing it makes endpoint secrets unreadable)",
+  value:
+    "openssl rand -base64 32 (one per stage; losing it makes endpoint secrets unreadable). A comma-separated " +
+    "list while rotating: the first encrypts, every one decrypts",
   description: "Encrypts webhook signing secrets. Same value for web, api and worker.",
 };
 
@@ -174,6 +208,48 @@ const apiPublicUrl: EnvVar = {
   required: true,
   value: "https://api.coss.com",
   description: "The API's public origin (OpenAPI, dashboard snippets and email tracking URLs).",
+};
+
+/**
+ * Error and performance monitoring (Sentry organization `coss`, see @coss/observability). Each
+ * runtime has its own project; DSNs aren't secrets (browsers receive the dashboard's).
+ */
+function sentry(project: "web" | "api" | "worker"): EnvVar[] {
+  return [
+    {
+      name: "SENTRY_DSN",
+      kind: "plain",
+      required: false,
+      value: `DSN of the \`${project}\` Sentry project (Project settings → Client Keys)`,
+      description:
+        project === "web"
+          ? "The dashboard's server and every browser on coss.com (dashboard and site, through /api/monitoring). Unset: nothing is reported."
+          : "Unset: nothing is reported.",
+    },
+    {
+      name: "SENTRY_ENVIRONMENT",
+      kind: "plain",
+      required: false,
+      value: "production (the stage's name)",
+      description: "Sentry environment; defaults to NODE_ENV.",
+    },
+    {
+      name: "SENTRY_TRACES_SAMPLE_RATE",
+      kind: "plain",
+      required: false,
+      value: "0.1",
+      description: "Share of requests/jobs traced (0–1).",
+    },
+  ];
+}
+
+/** Bun services' Sentry release; the Next.js images have theirs built in (NEXT_DEPLOYMENT_ID). */
+const sentryRelease: EnvVar = {
+  name: "SENTRY_RELEASE",
+  kind: "plain",
+  required: false,
+  value: "Set by the image (build argument SENTRY_RELEASE, the commit); don't override.",
+  description: "Sentry release of every event.",
 };
 
 export const SERVICES: Service[] = [
@@ -210,6 +286,21 @@ export const SERVICES: Service[] = [
         description:
           "CloudFront + ALB append to X-Forwarded-For; the client is the entry they vouch for.",
       },
+      {
+        name: "TURNSTILE_SITE_KEY",
+        kind: "plain",
+        required: true,
+        value: "Cloudflare Turnstile widget site key (hostname: the dashboard's)",
+        description: "Public; rendered on sign-up, sign-in and password reset.",
+      },
+      {
+        name: "TURNSTILE_SECRET_KEY",
+        kind: "secret",
+        required: true,
+        value: "the same widget's secret key",
+        description: "Better Auth's captcha plugin verifies tokens with it (siteverify).",
+      },
+      ...sentry("web"),
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "PORT", kind: "image", required: true, value: "3000", description: "" },
       { name: "HOSTNAME", kind: "image", required: true, value: "0.0.0.0", description: "" },
@@ -271,6 +362,8 @@ export const SERVICES: Service[] = [
       },
       ...email,
       webhookKey,
+      ...sentry("api"),
+      sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "API_PORT", kind: "image", required: true, value: "3001", description: "" },
     ],
@@ -302,6 +395,13 @@ export const SERVICES: Service[] = [
         required: true,
         description: "Printed by ses:bootstrap.",
       },
+      {
+        name: "LOG_RETENTION_DAYS",
+        kind: "plain",
+        required: false,
+        value: "30",
+        description: "Days of environment logs kept (1-31); expired days are dropped hourly.",
+      },
       ...screening,
       webhookKey,
       {
@@ -317,8 +417,9 @@ export const SERVICES: Service[] = [
         required: false,
         value: "env_… (a live environment of COSS's own organization)",
         description:
-          "Sends reputation notification emails (warnings, suspensions) through COSS itself. " +
-          "Unset until COSS's organization has a verified domain: notifications are held.",
+          "Sends account emails (sign-up verification, password resets, invitations) and " +
+          "reputation notifications through COSS itself. Unset until COSS's organization has a " +
+          "verified domain: both are held, and nobody can verify their email address.",
       },
       {
         name: "NOTIFICATIONS_FROM",
@@ -327,6 +428,8 @@ export const SERVICES: Service[] = [
         value: "COSS <notifications@coss.com>",
         description: "Sender of notification emails, on a verified domain of that organization.",
       },
+      ...sentry("worker"),
+      sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
     ],
   },
@@ -360,5 +463,13 @@ export const ONE_OFF_TASKS = [
     image: "api",
     command: ["bun", "packages/tenancy/scripts/create-admin.ts", "--email", "<email>"],
     when: "Once, after that user signed up: makes them a platform admin. Run with the api service's environment.",
+  },
+  {
+    name: "webhooks-reencrypt",
+    image: "worker",
+    command: ["bun", "apps/worker/scripts/webhooks-reencrypt.ts"],
+    when:
+      "When rotating WEBHOOK_SECRETS_KEY, after every service runs with the new key first: moves endpoint " +
+      "secrets onto it so older keys can be removed. Needs DATABASE_URL and WEBHOOK_SECRETS_KEY.",
   },
 ] as const;

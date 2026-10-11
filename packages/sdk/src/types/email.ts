@@ -88,7 +88,9 @@ export type EmailEventType =
   /** The tracking pixel was loaded (open tracking). Never changes a recipient's status. */
   | "email.opened"
   /** A tracked link was followed (click tracking). Never changes a recipient's status. */
-  | "email.clicked";
+  | "email.clicked"
+  /** The scheduled email was moved to a new time. */
+  | "email.rescheduled";
 
 /** Details of an event; which member is present depends on the event type. */
 export interface EmailEventData {
@@ -107,6 +109,8 @@ export interface EmailEventData {
   open?: { user_agent: string | null };
   /** Only for `email.clicked`: the original link and its index among the tracked links. */
   click?: { url: string; link_position: number; user_agent: string | null };
+  /** Only for `email.rescheduled`: the new time and the one it replaced. */
+  reschedule?: { scheduled_at: string; previous_scheduled_at: string };
 }
 
 /** A delivery event of an email. */
@@ -169,11 +173,21 @@ export interface SendEmailParams {
   /**
    * Send at this time instead of now: an ISO 8601 date-time with an offset, e.g.
    * `"2026-10-11T09:00:00Z"`, at most 30 days ahead. A time that is not in the future sends
-   * immediately. Cancel with `coss.email.cancel(id)` until it is sent.
+   * immediately. Until it is sent, move it with `coss.email.reschedule(id, …)` or cancel it with
+   * `coss.email.cancel(id)`.
    */
   scheduled_at?: string;
   attachments?: EmailAttachmentParams[];
   tracking?: TrackingOptions;
+}
+
+/** Parameters of `coss.email.reschedule`. */
+export interface RescheduleEmailParams {
+  /**
+   * The new time: an ISO 8601 date-time with an offset, at most 30 days ahead. A time that is not
+   * in the future sends the email right away.
+   */
+  scheduled_at: string;
 }
 
 /**

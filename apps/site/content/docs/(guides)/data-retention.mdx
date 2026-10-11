@@ -1,0 +1,63 @@
+---
+title: Data retention
+description: How long COSS keeps your emails, delivery history and account data, and what happens after.
+icon: Archive
+---
+
+COSS keeps message data only as long as it is useful for delivery, debugging and abuse
+prevention. A background job deletes data once it passes the period below, for every
+organization and environment (sandbox and live alike). Deletion is permanent: COSS cannot restore
+deleted data.
+
+<RetentionTable />
+
+Periods start when the data is created (for example, when you call `coss.email.send()`), unless
+the table says otherwise. Deletion runs continuously, so data may disappear shortly after its
+period ends, never before.
+
+## Emails
+
+An email is deleted <RetentionPeriod of="emails" /> after it was created, together with
+everything recorded about it: recipients and their statuses, delivery events, opens and clicks,
+tracked links and attachment names. Emails that are still queued or scheduled are kept until they
+are sent or canceled.
+
+After deletion:
+
+- `coss.email.get()`, `coss.email.listEvents()` and the dashboard return `not_found` for it.
+- If it had open or click tracking, its tracked links stop redirecting and its open pixel stops
+  counting.
+- Suppressions created by its bounces and complaints stay in place: they still name the email's
+  id, which no longer resolves.
+
+Attachment content is discarded much earlier: as soon as the email is sent, fails or is
+canceled. Only each attachment's name, type, size and checksum stay with the email.
+
+## Webhook deliveries
+
+Every event sent to your [webhook endpoints](/docs/webhooks), with its delivery status and the
+log of attempts (status codes, timing and up to 1 KB of each response), is deleted
+<RetentionPeriod of="webhook_deliveries" /> after the event. A delivery that is still being
+retried is kept until it succeeds or gives up.
+
+## Keeping your own records
+
+To keep message history longer, store it on your side as it happens: subscribe a webhook endpoint
+to the events you need (`email.sent`, `email.delivered`, `email.bounced`, …) and record them in
+your own database. Event payloads include the email's id, sender, recipients, subject, tags and
+category.
+
+## What is never deleted automatically
+
+- **Suppressions** stay until you remove them, so an address that bounced or complained stays
+  protected however long ago that was. See [suppressions](/docs/email/suppressions).
+- **Account and configuration data**: your organization, its members, projects, environments,
+  API keys, domains, webhook endpoints and settings. Anything you delete yourself (a key, a
+  domain, an endpoint) is removed right away.
+
+## Abuse prevention
+
+COSS screens a sample of live messages for abuse and keeps the verdict (never the content) for
+<RetentionPeriod of="content_screenings" />. Your account standing's history (warnings,
+suspensions and reinstatements) is kept for <RetentionPeriod of="reputation_history" />, and the
+latest change is kept for as long as the organization exists.

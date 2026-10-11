@@ -17,7 +17,10 @@ export {
   listWebhookEndpoints,
   MAX_ENDPOINTS_PER_ENVIRONMENT,
   pageWebhookDeliveries,
+  previousSecretExpiresAt,
   revealWebhookSecret,
+  rollWebhookEndpointSecret,
+  signingSecrets,
   toWebhookDeliveryObject,
   toWebhookEndpointObject,
   updateWebhookEndpoint,
@@ -31,11 +34,20 @@ export {
 export { WebhookError, type WebhookErrorCode } from "./errors.ts";
 export { enqueueWebhookMessage } from "./outbox.ts";
 export {
+  type ReencryptResult,
+  reencryptWebhookSecrets,
+} from "./reencrypt.ts";
+export { purgeExpiredWebhookMessages } from "./retention.ts";
+export {
+  DEFAULT_PREVIOUS_SECRET_EXPIRES_IN,
   DESCRIPTION_MAX_LENGTH,
   DeletedWebhookEndpoint,
   type DeletedWebhookEndpointOutput,
   ListWebhookDeliveriesQuery,
   type ListWebhookDeliveriesQueryOutput,
+  MAX_PREVIOUS_SECRET_EXPIRES_IN,
+  RollWebhookEndpointSecretRequest,
+  type RollWebhookEndpointSecretRequestOutput,
   WEBHOOK_DELIVERY_STATUSES,
   WEBHOOK_URL_MAX_LENGTH,
   WebhookAttemptObject,
@@ -52,7 +64,16 @@ export {
   type WebhookEndpointWithSecretOutput,
   webhookEndpointRequests,
 } from "./schemas.ts";
-export { decryptSecret, encryptSecret, parseSecretsKey } from "./secrets.ts";
+export {
+  decryptSecret,
+  encryptSecret,
+  isEncryptedWithPrimary,
+  parseSecretsKeys,
+  type SecretsKey,
+  type SecretsKeyRing,
+  secretsKeyId,
+  secretsKeyRing,
+} from "./secrets.ts";
 export {
   createWebhookSender,
   RESPONSE_EXCERPT_BYTES,

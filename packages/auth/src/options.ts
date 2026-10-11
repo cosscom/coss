@@ -3,23 +3,34 @@
  * Must stay free of Next.js imports — apps/web appends `nextCookies()` in its own instance.
  * Must not import "server-only" (it breaks the `auth` CLI loader).
  */
+
 import { apiKey } from "@better-auth/api-key";
+import { getCurrentAdapter, queueAfterTransactionHook } from "@better-auth/core/context";
 import { passkey } from "@better-auth/passkey";
 import { scim } from "@better-auth/scim";
 import { sso } from "@better-auth/sso";
-import { db } from "@coss/db";
+import { db, type Executor } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import * as schema from "@coss/db/schema";
 import type { BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
-import { admin, organization, twoFactor } from "better-auth/plugins";
+import { APIError, createAuthMiddleware, getSessionFromCtx, signUpEmail } from "better-auth/api";
+import { admin, captcha, organization, twoFactor } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
+import { recordOrgAudit } from "./audit.ts";
 import {
   API_KEY_NAME_MAX_LENGTH,
   API_KEY_PERMISSIONS,
   API_KEY_VISIBLE_CHARACTERS,
 } from "./constants.ts";
+import {
+  cachedMailDomainCheck,
+  canonicalEmail,
+  DISPOSABLE_EMAIL,
+  isDisposableDomain,
+  signUpEmailRejection,
+} from "./email-guard.ts";
+import { enqueueAuthEmail, RESET_PASSWORD_LINK_TTL_S, VERIFICATION_LINK_TTL_S } from "./emails.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
 import {
   assertScimEmail,
@@ -28,8 +39,9 @@ import {
   scimOrganizationIdOf,
   scimPluginOptions,
 } from "./scim.ts";
+import { serializedEndpoint } from "./serialized-endpoint.ts";
 import { validateOrgName, validateOrgSlug } from "./slugs.ts";
-import { resolveSsoUser, ssoProviderIdOfPath } from "./sso.ts";
+import { emailDomainOf, resolveSsoUser, ssoProviderIdOfPath } from "./sso.ts";
 
 /** Better Auth model name -> TypeID prefix. */
 const MODEL_ID_PREFIX: Record<string, string> = {
@@ -63,14 +75,6 @@ export function generateAuthId({ model }: { model: string }): string {
     return newId("id");
   }
   return newId(prefix);
-}
-
-/** Dev-only "email" delivery: logs links to the server console. Refuses to run in production. */
-function logDevEmail(kind: string, to: string, url: string): void {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(`[auth] No email delivery configured for "${kind}" in production.`);
-  }
-  console.info(`\n[auth] ${kind} for ${to}:\n  ${url}\n`);
 }
 
 /** Validates the name/slug of an organization being created or updated (absent = unchanged). */
@@ -108,6 +112,40 @@ const FACTOR_MANAGEMENT_PATHS: ReadonlySet<string> = new Set([
   "/passkey/delete-passkey",
 ]);
 
+/** Organizations one user may own (platform admins are exempt). */
+export const MAX_OWNED_ORGANIZATIONS = 5;
+/** Pending invitations one organization may have at once. */
+export const MAX_PENDING_INVITATIONS = 50;
+
+/** Shared by every sign-up in this process, so common domains cost no DNS lookup. */
+const checkMailDomain = cachedMailDomainCheck();
+
+/**
+ * Refuses disposable or undeliverable sign-up addresses before entering the account transaction.
+ */
+async function assertSignUpEmailAllowed(email: string): Promise<void> {
+  const rejection = await signUpEmailRejection(email, {
+    checkDomain: checkMailDomain,
+    production: process.env.NODE_ENV === "production",
+  });
+  if (rejection) throw new APIError("BAD_REQUEST", rejection);
+}
+
+async function assertMailboxAvailable(email: string, executor: Executor): Promise<void> {
+  const [existing] = await executor
+    .select({ id: schema.user.id })
+    .from(schema.user)
+    .where(eq(schema.user.canonicalEmail, canonicalEmail(email)))
+    .limit(1);
+  // Same answer as Better Auth's own duplicate check (sign-up email enumeration is accepted).
+  if (existing) {
+    throw new APIError("UNPROCESSABLE_ENTITY", {
+      code: "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL",
+      message: "User already exists. Use another email.",
+    });
+  }
+}
+
 /** Origin of the dashboard, which hosts /api/auth (also the WebAuthn origin and RP ID). */
 const dashboardUrl = process.env.BETTER_AUTH_URL ? new URL(process.env.BETTER_AUTH_URL) : undefined;
 
@@ -142,19 +180,38 @@ export const authOptions = {
     requireEmailVerification: false,
     // `url` is Better Auth's /api/auth/reset-password/:token, which checks the token and redirects
     // to the client's `redirectTo` (the dashboard's /reset-password) with `?token=` or `?error=`.
+    // Account emails are queued (`./emails.ts`) and sent by the worker through COSS itself.
     sendResetPassword: async ({ user, url }) => {
-      logDevEmail("Reset password", user.email, url);
+      await enqueueAuthEmail({
+        kind: "reset_password",
+        to: user.email,
+        userId: user.id,
+        url,
+        expiresAt: new Date(Date.now() + RESET_PASSWORD_LINK_TTL_S * 1000),
+      });
     },
-    // Reset links expire after Better Auth's default of one hour. A reset signs out every session,
-    // including any opened with the old (possibly compromised) password.
+    resetPasswordTokenExpiresIn: RESET_PASSWORD_LINK_TTL_S,
+    // A reset signs out every session, including any opened with the old (possibly compromised)
+    // password.
     revokeSessionsOnPasswordReset: true,
   },
   emailVerification: {
     sendOnSignUp: true,
     // Off: a verification link must never create a session, which would skip the TOTP challenge.
     autoSignInAfterVerification: false,
+    expiresIn: VERIFICATION_LINK_TTL_S,
     sendVerificationEmail: async ({ user, url }) => {
-      logDevEmail("Verify email", user.email, url);
+      // The outbox uses its own connection; enqueue after commit so concurrent sign-ups cannot
+      // exhaust the pool while holding mailbox locks, or queue mail for rolled-back accounts.
+      await queueAfterTransactionHook(() =>
+        enqueueAuthEmail({
+          kind: "verify_email",
+          to: user.email,
+          userId: user.id,
+          url,
+          expiresAt: new Date(Date.now() + VERIFICATION_LINK_TTL_S * 1000),
+        }),
+      );
     },
   },
   // Block these HTTP routes (server-side `auth.api.*` calls still work). API keys are only
@@ -167,6 +224,8 @@ export const authOptions = {
     "/api-key/list",
     "/api-key/delete",
     "/organization/update",
+    // Invitations go through the dashboard's server action, which rate-limits them per organization.
+    "/organization/invite-member",
     "/admin/remove-user",
     "/admin/create-user",
     "/admin/update-user",
@@ -188,6 +247,14 @@ export const authOptions = {
     "/sso/request-domain-verification",
     "/sso/verify-domain",
   ],
+  user: {
+    additionalFields: {
+      // `canonicalEmail(email)`, set for every new user by the databaseHooks below; sign-up refuses
+      // an address whose mailbox already has an account. Nullable: users from before the column
+      // were backfilled by migration, and Better Auth tables never get NOT NULL columns.
+      canonicalEmail: { type: "string", required: false, input: false, index: true },
+    },
+  },
   session: {
     additionalFields: {
       // The SSO provider (`ssoProvider.providerId`) whose sign-in created this session, else null.
@@ -203,15 +270,16 @@ export const authOptions = {
         // on a domain the organization verified, so they don't get a verification email. Users
         // created by a directory (SCIM) must be on the organization's SSO domains too.
         before: async (user, ctx) => {
+          const data = { ...user, canonicalEmail: canonicalEmail(user.email) };
           if (ssoProviderIdOfPath(ctx?.path, ctx?.params)) {
-            return { data: { ...user, emailVerified: true } };
+            return { data: { ...data, emailVerified: true } };
           }
           const scimOrganizationId = scimOrganizationIdOf(ctx);
           if (scimOrganizationId) {
             await assertScimEmail(scimOrganizationId, user.email);
-            return { data: { ...user, emailVerified: true } };
+            return { data: { ...data, emailVerified: true } };
           }
-          return undefined;
+          return { data };
         },
       },
       update: {
@@ -222,7 +290,9 @@ export const authOptions = {
           const scimOrganizationId = scimOrganizationIdOf(ctx);
           if (!scimOrganizationId || typeof user.email !== "string") return undefined;
           await assertScimEmail(scimOrganizationId, user.email);
-          return { data: { ...user, emailVerified: true } };
+          return {
+            data: { ...user, canonicalEmail: canonicalEmail(user.email), emailVerified: true },
+          };
         },
       },
     },
@@ -241,6 +311,11 @@ export const authOptions = {
   },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      // Only the public sign-up: users created server-side (fixtures, seed, admins, SSO) skip it.
+      if (ctx.path === "/sign-up/email") {
+        if (typeof ctx.body?.email === "string") await assertSignUpEmailAllowed(ctx.body.email);
+        return;
+      }
       if (FACTOR_MANAGEMENT_PATHS.has(ctx.path)) {
         const session = await getSessionFromCtx(ctx);
         if (session?.session.impersonatedBy) {
@@ -255,6 +330,20 @@ export const authOptions = {
       if (ctx.path !== "/organization/invite-member" && ctx.path !== "/organization/leave") return;
       const session = await getSessionFromCtx(ctx);
       if (!session) return;
+      if (ctx.path === "/organization/invite-member") {
+        // Sign-up doesn't need a verified address, and invitation emails carry the org's name:
+        // without this, throwaway accounts could use them to spam any address.
+        if (!session.user.emailVerified) {
+          throw new APIError("FORBIDDEN", {
+            code: "EMAIL_NOT_VERIFIED",
+            message: "Verify your email address before inviting people.",
+          });
+        }
+        const domain = emailDomainOf(typeof ctx.body?.email === "string" ? ctx.body.email : "");
+        if (domain && isDisposableDomain(domain)) {
+          throw new APIError("BAD_REQUEST", DISPOSABLE_EMAIL);
+        }
+      }
       const organizationId =
         ctx.body?.organizationId ||
         (session.session as { activeOrganizationId?: string | null }).activeOrganizationId;
@@ -273,78 +362,20 @@ export const authOptions = {
     }),
   },
   plugins: [
-    organization({
-      ac: orgAc,
-      roles: orgRoles,
-      creatorRole: "owner",
-      disableOrganizationDeletion: true,
-      schema: {
-        organization: {
-          additionalFields: {
-            // Members without TOTP are sent to /settings until they set it up (apps/web
-            // `requireOrgMember`). Written only by `setOrganizationTwoFactorRequired` (@coss/tenancy).
-            requireTwoFactor: {
-              type: "boolean",
-              required: false,
-              defaultValue: false,
-              input: false,
-            },
-            // Members (not owners: break glass) need a session from the organization's SSO
-            // provider (apps/web `requireOrgMember`). Written only by `setOrganizationSsoRequired`.
-            requireSso: {
-              type: "boolean",
-              required: false,
-              defaultValue: false,
-              input: false,
-            },
-          },
-        },
+    {
+      id: "serialized-sign-up",
+      endpoints: {
+        signUpEmail: serializedEndpoint(
+          signUpEmail(),
+          async (ctx) =>
+            typeof ctx.body?.email === "string"
+              ? `auth:mailbox:${canonicalEmail(ctx.body.email)}`
+              : null,
+          async (ctx, tx) => assertMailboxAvailable(ctx.body.email, tx),
+        ),
       },
-      // Our custom generateId makes invitation ids predictable, so Better Auth requires a verified
-      // email to read/accept invitations. Keep it explicit; NEVER disable while sign-up is unverified.
-      requireEmailVerificationOnInvitation: true,
-      sendInvitationEmail: async ({ id, email, organization: org, role }) => {
-        const url = `${process.env.BETTER_AUTH_URL ?? ""}/accept-invitation/${id}`;
-        logDevEmail(`Invitation to ${org.name} as ${role}`, email, url);
-      },
-      organizationHooks: {
-        beforeCreateOrganization: async ({ organization: org }) => {
-          assertValidOrg(org);
-        },
-        beforeUpdateOrganization: async ({ organization: org, member }) => {
-          await assertOrgNotSuspended(member.organizationId);
-          assertValidOrg(org);
-        },
-        // The invite/update-role HTTP endpoints accept arbitrary role strings; only allow
-        // canonical role names so Better Auth and `orgRoleCan` always agree on privileges.
-        beforeCreateInvitation: async ({ invitation }) => {
-          if (!(INVITABLE_ORG_ROLES as readonly string[]).includes(invitation.role)) {
-            throw new APIError("BAD_REQUEST", { message: "Role must be admin or member." });
-          }
-          await assertOrgNotSuspended(invitation.organizationId);
-        },
-        beforeAcceptInvitation: async ({ organization: org }) => {
-          await assertOrgNotSuspended(org.id);
-        },
-        // Better Auth cancels invitations in any status, which would rewrite an accepted (or
-        // already canceled) one; only pending invitations can be canceled.
-        beforeCancelInvitation: async ({ invitation }) => {
-          await assertOrgNotSuspended(invitation.organizationId);
-          if (invitation.status !== "pending") {
-            throw new APIError("BAD_REQUEST", { message: "This invitation is no longer pending." });
-          }
-        },
-        beforeRemoveMember: async ({ organization: org }) => {
-          await assertOrgNotSuspended(org.id);
-        },
-        beforeUpdateMemberRole: async ({ newRole, organization: org }) => {
-          if (!newRole.split(",").every(isOrgRole)) {
-            throw new APIError("BAD_REQUEST", { message: "Unknown role." });
-          }
-          await assertOrgNotSuspended(org.id);
-        },
-      },
-    }),
+    },
+    serializedOrganization(),
     admin(),
     twoFactor({
       // Only TOTP (authenticator apps) and backup codes: there is no email/SMS OTP delivery.
@@ -406,5 +437,145 @@ export const authOptions = {
         maxActiveCredentials: 2,
       },
     }),
+    // Cloudflare Turnstile on /sign-up/email, /sign-in/email and /request-password-reset (HTTP
+    // only: `auth.api.*` calls skip it). The dashboard sends the token as `x-captcha-response`.
+    // Fails closed while Cloudflare's siteverify is unreachable (passkeys and SSO still work).
+    ...(process.env.TURNSTILE_SECRET_KEY
+      ? [
+          captcha({
+            provider: "cloudflare-turnstile",
+            secretKey: process.env.TURNSTILE_SECRET_KEY,
+            allowedHostnames: dashboardUrl ? [dashboardUrl.hostname] : undefined,
+          }),
+        ]
+      : []),
   ],
 } satisfies BetterAuthOptions;
+
+function serializedOrganization() {
+  const plugin = organization({
+    ac: orgAc,
+    roles: orgRoles,
+    creatorRole: "owner",
+    disableOrganizationDeletion: true,
+    schema: {
+      organization: {
+        additionalFields: {
+          // Members without TOTP are sent to /settings until they set it up (apps/web
+          // `requireOrgMember`). Written only by `setOrganizationTwoFactorRequired` (@coss/tenancy).
+          requireTwoFactor: {
+            type: "boolean",
+            required: false,
+            defaultValue: false,
+            input: false,
+          },
+          // Members (not owners: break glass) need a session from the organization's SSO
+          // provider (apps/web `requireOrgMember`). Written only by `setOrganizationSsoRequired`.
+          requireSso: {
+            type: "boolean",
+            required: false,
+            defaultValue: false,
+            input: false,
+          },
+        },
+      },
+    },
+    // Our custom generateId makes invitation ids predictable, so Better Auth requires a verified
+    // email to read/accept invitations. Keep it explicit; NEVER disable while sign-up is unverified.
+    requireEmailVerificationOnInvitation: true,
+    invitationLimit: MAX_PENDING_INVITATIONS,
+    // `true` = limit reached. Counts organizations the user owns (the number option would count
+    // memberships, so being invited to five organizations would block creating one's own).
+    organizationLimit: async (user) => {
+      if ((user as { role?: string | null }).role === "admin") return false;
+      const adapter = await getCurrentAdapter(drizzleAdapter(db, { provider: "pg", schema })({}));
+      const owned = await adapter.count({
+        model: "member",
+        where: [
+          { field: "userId", value: user.id },
+          { field: "role", value: "owner" },
+        ],
+      });
+      return owned >= MAX_OWNED_ORGANIZATIONS;
+    },
+    sendInvitationEmail: async ({ id, email, organization: org, role, invitation, inviter }) => {
+      await enqueueAuthEmail({
+        kind: "invitation",
+        to: email,
+        url: `${process.env.BETTER_AUTH_URL ?? ""}/accept-invitation/${id}`,
+        expiresAt: invitation.expiresAt,
+        data: {
+          invitationId: id,
+          organizationName: org.name,
+          inviterName: inviter.user.name,
+          inviterEmail: inviter.user.email,
+          role,
+          expiresAt: invitation.expiresAt.toISOString(),
+        },
+      });
+    },
+    organizationHooks: {
+      beforeCreateOrganization: async ({ organization: org }) => {
+        assertValidOrg(org);
+      },
+      beforeUpdateOrganization: async ({ organization: org, member }) => {
+        await assertOrgNotSuspended(member.organizationId);
+        assertValidOrg(org);
+      },
+      // The invite/update-role HTTP endpoints accept arbitrary role strings; only allow
+      // canonical role names so Better Auth and `orgRoleCan` always agree on privileges.
+      beforeCreateInvitation: async ({ invitation }) => {
+        if (!(INVITABLE_ORG_ROLES as readonly string[]).includes(invitation.role)) {
+          throw new APIError("BAD_REQUEST", { message: "Role must be admin or member." });
+        }
+        await assertOrgNotSuspended(invitation.organizationId);
+      },
+      beforeAcceptInvitation: async ({ organization: org }) => {
+        await assertOrgNotSuspended(org.id);
+      },
+      afterAcceptInvitation: async ({ invitation, user, organization: org }) => {
+        await recordOrgAudit({
+          organizationId: org.id,
+          actor: { type: "user", id: user.id, label: user.email },
+          action: "invitation.accepted",
+          target: { type: "invitation", id: invitation.id, label: invitation.email },
+          metadata: { role: invitation.role },
+        });
+      },
+      afterRejectInvitation: async ({ invitation, user, organization: org }) => {
+        await recordOrgAudit({
+          organizationId: org.id,
+          actor: { type: "user", id: user.id, label: user.email },
+          action: "invitation.rejected",
+          target: { type: "invitation", id: invitation.id, label: invitation.email },
+        });
+      },
+      // Better Auth cancels invitations in any status, which would rewrite an accepted (or
+      // already canceled) one; only pending invitations can be canceled.
+      beforeCancelInvitation: async ({ invitation }) => {
+        await assertOrgNotSuspended(invitation.organizationId);
+        if (invitation.status !== "pending") {
+          throw new APIError("BAD_REQUEST", { message: "This invitation is no longer pending." });
+        }
+      },
+      beforeRemoveMember: async ({ organization: org }) => {
+        await assertOrgNotSuspended(org.id);
+      },
+      beforeUpdateMemberRole: async ({ newRole, organization: org }) => {
+        if (!newRole.split(",").every(isOrgRole)) {
+          throw new APIError("BAD_REQUEST", { message: "Unknown role." });
+        }
+        await assertOrgNotSuspended(org.id);
+      },
+    },
+  });
+  plugin.endpoints.createOrganization = serializedEndpoint(
+    plugin.endpoints.createOrganization,
+    async (ctx) => {
+      const session = await getSessionFromCtx(ctx);
+      const userId = session?.user.id ?? (!ctx.request && !ctx.headers ? ctx.body?.userId : null);
+      return typeof userId === "string" ? `auth:org-owner:${userId}` : null;
+    },
+  );
+  return plugin;
+}

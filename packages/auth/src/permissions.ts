@@ -29,6 +29,10 @@ export const orgStatements = {
   // Directory sync (SCIM): connect/disconnect the directory, its tokens and group → role mappings.
   scim: ["read", "update"],
   reputation: ["read"],
+  // Environment logs (API requests, email events, webhook attempts).
+  log: ["read"],
+  // The organization's audit log: owners and admins.
+  audit: ["read"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -42,6 +46,7 @@ const fullCossAccess = {
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],
   reputation: ["read"],
+  log: ["read"],
 } as const;
 
 const readOnlyCossAccess = {
@@ -53,6 +58,7 @@ const readOnlyCossAccess = {
   webhook: ["read"],
   suppression: ["read"],
   reputation: ["read"],
+  log: ["read"],
 } as const;
 
 export const orgRoles = {
@@ -61,12 +67,14 @@ export const orgRoles = {
     ...fullCossAccess,
     sso: ["read", "update", "require"],
     scim: ["read", "update"],
+    audit: ["read"],
   }),
   admin: orgAc.newRole({
     ...adminAc.statements,
     ...fullCossAccess,
     sso: ["read", "update"],
     scim: ["read", "update"],
+    audit: ["read"],
   }),
   member: orgAc.newRole({ ...memberAc.statements, ...readOnlyCossAccess }),
 };

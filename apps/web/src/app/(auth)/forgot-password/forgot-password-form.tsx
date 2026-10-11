@@ -7,10 +7,19 @@ import { Input } from "@coss/ui/components/input";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useTurnstile } from "@/components/turnstile";
 import { authClient } from "@/lib/auth-client";
+import { authErrorMessage } from "@/lib/auth-errors";
 import { nextQuery } from "@/lib/safe-redirect";
 
-export function ForgotPasswordForm({ next }: { next: string }) {
+export function ForgotPasswordForm({
+  next,
+  turnstileSiteKey,
+}: {
+  next: string;
+  turnstileSiteKey: string | null;
+}) {
+  const turnstile = useTurnstile(turnstileSiteKey, "password-reset");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -27,9 +36,11 @@ export function ForgotPasswordForm({ next }: { next: string }) {
     const { error } = await authClient.requestPasswordReset({
       email,
       redirectTo: `/reset-password${query}`,
+      fetchOptions: { headers: turnstile.headers },
     });
+    turnstile.reset();
     setPending(false);
-    if (error) setError(error.message ?? "Could not send the reset link.");
+    if (error) setError(authErrorMessage(error, "Could not send the reset link."));
     else setSentTo(email);
   }
 
@@ -65,8 +76,9 @@ export function ForgotPasswordForm({ next }: { next: string }) {
             <FieldLabel>Email</FieldLabel>
             <Input autoComplete="email" autoFocus name="email" required type="email" />
           </Field>
-          <FormError message={error} />
-          <Button loading={pending} type="submit">
+          {turnstile.widget}
+          <FormError message={error ?? turnstile.error} />
+          <Button disabled={!turnstile.ready} loading={pending} type="submit">
             Send reset link
           </Button>
           <p className="text-center text-muted-foreground text-sm">

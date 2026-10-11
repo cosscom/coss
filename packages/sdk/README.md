@@ -180,13 +180,16 @@ const { data: email } = await coss.email.send({
   scheduled_at: "2026-10-11T09:00:00Z", // or new Date(…).toISOString()
 }); // { status: "scheduled", scheduled_at: "2026-10-11T09:00:00.000Z", … }
 
-// Changed your mind? Cancel it until it is sent; to reschedule, cancel and send again.
+// Until it is sent, move it to another time (at most 30 days ahead; a past time sends it now)…
+await coss.email.reschedule(email.id, { scheduled_at: "2026-10-12T09:00:00Z" });
+// …or cancel it.
 const { error } = await coss.email.cancel(email.id); // status "canceled"
-// error?.code === "email_not_cancelable" once it is being sent or was sent.
+// error?.code === "email_not_cancelable" (or "email_not_reschedulable") once it is being sent,
+// was sent or, for reschedule, was canceled.
 ```
 
-Scheduling and canceling are recorded as `email.scheduled` and `email.canceled` events (and
-webhooks).
+Scheduling, rescheduling and canceling are recorded as `email.scheduled`, `email.rescheduled`
+(with the new and previous times in `data.reschedule`) and `email.canceled` events (and webhooks).
 
 ## Suppressions
 

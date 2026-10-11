@@ -1,11 +1,14 @@
 /**
  * Background worker: dispatches queued emails, delivers webhooks, re-checks domains, recovers
- * lost or interrupted sends and (with `EMAIL_PROVIDER=ses`) ingests SES delivery events. Safe to
- * run several instances.
+ * lost or interrupted sends, sends account and reputation emails and (with `EMAIL_PROVIDER=ses`)
+ * ingests SES delivery events. Safe to run several instances.
  */
+// First: monitoring reports failures while starting, too.
+import "./instrument.ts";
+import type { AuthEmailSender } from "@coss/auth/emails";
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
-import { createEmailService, emailReputationNotifier, notificationEnvironment } from "@coss/email";
+import { createEmailService, emailNotifier, notificationEnvironment } from "@coss/email";
 import {
   ensureEmailDispatchQueue,
   pgBossDispatchQueue,
@@ -15,9 +18,11 @@ import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
 import { screenMessage } from "@coss/screening";
 import { createClassifier } from "@coss/screening/runtime";
-import { createWebhookSender, parseSecretsKey } from "@coss/webhooks";
+import { createWebhookSender, parseSecretsKeys } from "@coss/webhooks";
+import * as Sentry from "@sentry/bun";
 import { env } from "./env.ts";
 import { startJobs } from "./jobs.ts";
+import { monitoredDispatch } from "./monitoring.ts";
 import { createShutdown } from "./shutdown.ts";
 import { createSqsApi } from "./sqs.ts";
 
@@ -46,26 +51,35 @@ const emailService = createEmailService({
   sandboxProvider: email.sandboxProvider,
   queue: dispatchQueue,
   trackingBaseUrl: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
+  // Emails from a domain with an active custom tracking domain are tracked through it.
+  trackingDomainProvider: email.trackingHostnames.name,
   screen: classifier ? (input) => screenMessage(input, { classifier }) : undefined,
 });
-await workEmailDispatchQueue(jobs, emailService);
+await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
 
-// Reputation notifications go out through COSS's own email product. Without a configured
-// environment they are printed in development and held in production (sent once configured).
+// Account emails (verification, password resets, invitations) and reputation notifications go
+// out through COSS's own email product. Without a configured environment, reputation
+// notifications are printed in development and both are held in production (sent once
+// configured); the dashboard prints account email links itself outside production.
 if (!env.NOTIFICATIONS_ENVIRONMENT_ID !== !env.NOTIFICATIONS_FROM) {
   throw new Error("Set both NOTIFICATIONS_ENVIRONMENT_ID and NOTIFICATIONS_FROM, or neither.");
 }
 let notifier: ReputationNotifier | null = logReputationNotifier;
+let authEmailSender: AuthEmailSender | null = null;
 if (env.NOTIFICATIONS_ENVIRONMENT_ID && env.NOTIFICATIONS_FROM) {
-  notifier = emailReputationNotifier({
+  const sender = {
     service: emailService,
     environment: await notificationEnvironment(env.NOTIFICATIONS_ENVIRONMENT_ID),
     from: env.NOTIFICATIONS_FROM,
-  });
+  };
+  notifier = emailNotifier(sender);
+  // Their links are secrets: the stored email keeps no body once it is sent.
+  authEmailSender = emailNotifier({ ...sender, discardBody: true });
 } else if (process.env.NODE_ENV === "production") {
   console.warn(
-    "[worker] NOTIFICATIONS_ENVIRONMENT_ID and NOTIFICATIONS_FROM are unset: reputation " +
-      "notification emails are held until they are configured.",
+    "[worker] NOTIFICATIONS_ENVIRONMENT_ID and NOTIFICATIONS_FROM are unset: account emails " +
+      "(sign-up verification, password resets, invitations) and reputation notifications are " +
+      "held until they are configured.",
   );
   notifier = null;
 }
@@ -76,15 +90,17 @@ const loops = startJobs({
   signal: controller.signal,
   domains: email.domainDeps,
   email: emailService,
+  authEmails: authEmailSender && { sender: authEmailSender },
   notifications: notifier && {
     notifier,
     dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
   },
   webhooks: {
-    secretsKey: parseSecretsKey(env.WEBHOOK_SECRETS_KEY),
+    secretsKeys: parseSecretsKeys(env.WEBHOOK_SECRETS_KEY),
     // The dashboard accepts local endpoints outside production; let them be reached there too.
     send: createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" }),
   },
+  logRetentionDays: env.LOG_RETENTION_DAYS,
 });
 console.info(
   `[worker] started (email-dispatch, ${loops.map((loop) => loop.name).join(", ")}; ` +
@@ -97,7 +113,10 @@ const shutdown = createShutdown({
     ...loops,
     { name: "email-dispatch", stop: () => jobs.stop({ graceful: true, timeout: 30_000 }) },
   ],
-  close: closeDb,
+  close: async () => {
+    await closeDb();
+    await Sentry.close(2_000);
+  },
 });
 for (const signal of ["SIGTERM", "SIGINT"] as const) {
   process.on(signal, () => {

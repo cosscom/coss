@@ -1,14 +1,22 @@
 import { describe, expect, test } from "bun:test";
+import { createCipheriv } from "node:crypto";
 import { isBlockedAddress } from "../src/addresses.ts";
-import { decryptSecret, encryptSecret, parseSecretsKey } from "../src/secrets.ts";
+import {
+  decryptSecret,
+  encryptSecret,
+  isEncryptedWithPrimary,
+  parseSecretsKeys,
+  secretsKeyId,
+  secretsKeyRing,
+} from "../src/secrets.ts";
 import {
   createWebhookSender,
   RESPONSE_EXCERPT_BYTES,
   validateWebhookUrl,
   WebhookUrlError,
 } from "../src/sender.ts";
-import { generateSigningSecret, signPayload } from "../src/signing.ts";
-import { TEST_SECRETS_KEY, webhookReceiver } from "../src/testing.ts";
+import { generateSigningSecret, signatureHeaders, signPayload } from "../src/signing.ts";
+import { TEST_SECRETS_KEYS, webhookReceiver } from "../src/testing.ts";
 
 describe("isBlockedAddress", () => {
   test.each([
@@ -71,19 +79,92 @@ describe("signing", () => {
 });
 
 describe("secret encryption", () => {
-  test("round-trips and detects tampering", () => {
-    const stored = encryptSecret("whsec_abc", TEST_SECRETS_KEY);
-    expect(stored).toStartWith("v1:");
-    expect(decryptSecret(stored, TEST_SECRETS_KEY)).toBe("whsec_abc");
-    expect(() => decryptSecret(stored, Buffer.alloc(32, 1))).toThrow();
-    const [version, iv, , tag] = stored.split(":");
-    const forged = [version, iv, Buffer.from("whsec_xyz").toString("base64"), tag].join(":");
-    expect(() => decryptSecret(forged, TEST_SECRETS_KEY)).toThrow();
+  const oldKey = Buffer.alloc(32, 1);
+  const newKey = Buffer.alloc(32, 2);
+
+  test("round-trips, names its key and detects tampering", () => {
+    const stored = encryptSecret("whsec_abc", TEST_SECRETS_KEYS);
+    expect(stored).toStartWith(`v2:${TEST_SECRETS_KEYS.primary.id}:`);
+    expect(stored.split(":")).toHaveLength(5);
+    expect(decryptSecret(stored, TEST_SECRETS_KEYS)).toBe("whsec_abc");
+    const [version, keyId, iv, , tag] = stored.split(":");
+    const forged = [version, keyId, iv, Buffer.from("whsec_xyz").toString("base64"), tag];
+    expect(() => decryptSecret(forged.join(":"), TEST_SECRETS_KEYS)).toThrow();
   });
 
-  test("the key must be 32 bytes", () => {
-    expect(parseSecretsKey(Buffer.alloc(32).toString("base64"))).toHaveLength(32);
-    expect(() => parseSecretsKey("short")).toThrow("32 bytes");
+  test("the key id is authenticated", () => {
+    // Same key under two ids: relabeling the ciphertext must not decrypt.
+    const ring = secretsKeyRing([oldKey]);
+    const stored = encryptSecret("whsec_abc", ring);
+    const relabeled = stored.replace(ring.primary.id, secretsKeyId(newKey));
+    const lying = { primary: ring.primary, keys: [{ id: secretsKeyId(newKey), key: oldKey }] };
+    expect(() => decryptSecret(relabeled, lying)).toThrow();
+  });
+
+  test("encrypts with the first key and decrypts with any listed key", () => {
+    const before = secretsKeyRing([oldKey]);
+    const during = secretsKeyRing([newKey, oldKey]);
+    const after = secretsKeyRing([newKey]);
+    const old = encryptSecret("whsec_old", before);
+    const fresh = encryptSecret("whsec_new", during);
+
+    expect(fresh).toStartWith(`v2:${secretsKeyId(newKey)}:`);
+    expect(decryptSecret(old, during)).toBe("whsec_old");
+    expect(decryptSecret(fresh, during)).toBe("whsec_new");
+    expect(decryptSecret(fresh, after)).toBe("whsec_new");
+    expect(isEncryptedWithPrimary(old, during)).toBe(false);
+    expect(isEncryptedWithPrimary(fresh, during)).toBe(true);
+    expect(() => decryptSecret(old, after)).toThrow(
+      `encrypted with key ${secretsKeyId(oldKey)}, which is not in WEBHOOK_SECRETS_KEY`,
+    );
+  });
+
+  test("still decrypts the keyless v1 format with any listed key", () => {
+    const iv = Buffer.alloc(12, 3);
+    const cipher = createCipheriv("aes-256-gcm", oldKey, iv);
+    const ciphertext = Buffer.concat([cipher.update("whsec_legacy", "utf8"), cipher.final()]);
+    const legacy = ["v1", iv, ciphertext, cipher.getAuthTag()]
+      .map((part) => (typeof part === "string" ? part : part.toString("base64")))
+      .join(":");
+
+    expect(decryptSecret(legacy, secretsKeyRing([newKey, oldKey]))).toBe("whsec_legacy");
+    expect(isEncryptedWithPrimary(legacy, secretsKeyRing([oldKey]))).toBe(false);
+    expect(() => decryptSecret(legacy, secretsKeyRing([newKey]))).toThrow("No key");
+  });
+
+  test("parses a comma-separated key list, newest first", () => {
+    const value = [newKey, oldKey].map((key) => key.toString("base64")).join(", ");
+    const ring = parseSecretsKeys(value);
+    expect(ring.primary.key).toEqual(newKey);
+    expect(ring.keys.map((key) => key.id)).toEqual([secretsKeyId(newKey), secretsKeyId(oldKey)]);
+    expect(secretsKeyId(newKey)).toMatch(/^[A-Za-z0-9_-]{11}$/);
+    expect(parseSecretsKeys(oldKey.toString("base64")).keys).toHaveLength(1);
+  });
+
+  test.each([
+    ["", "empty"],
+    ["short", "entry 1 must be 32 bytes"],
+    [`${Buffer.alloc(32, 1).toString("base64")},${Buffer.alloc(31).toString("base64")}`, "entry 2"],
+    [
+      `${Buffer.alloc(32, 1).toString("base64")},${Buffer.alloc(32, 1).toString("base64")}`,
+      "twice",
+    ],
+  ])("rejects the key list %p", (value, message) => {
+    expect(() => parseSecretsKeys(value)).toThrow(message);
+  });
+});
+
+describe("signatureHeaders", () => {
+  test("signs with every secret, space-separated", () => {
+    const input = { id: "msg_1", timestamp: 1700000000, body: "{}" };
+    const [current, previous] = [generateSigningSecret(), generateSigningSecret()];
+    const headers = signatureHeaders({ ...input, secrets: [current, previous] });
+    expect(headers["webhook-signature"]).toBe(
+      `${signPayload({ ...input, secret: current })} ${signPayload({ ...input, secret: previous })}`,
+    );
+    expect(signatureHeaders({ ...input, secrets: [current] })["webhook-signature"]).toBe(
+      signPayload({ ...input, secret: current }),
+    );
   });
 });
 
