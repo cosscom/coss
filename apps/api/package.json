@@ -16,12 +16,14 @@
   "dependencies": {
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
-    "@coss/reputation": "workspace:*",
+    "@coss/observability": "workspace:*",
     "@coss/ratelimit": "workspace:*",
+    "@coss/reputation": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/versioning": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@hono/zod-openapi": "catalog:",
+    "@sentry/bun": "catalog:",
     "@t3-oss/env-core": "catalog:",
     "hono": "catalog:",
     "zod": "catalog:"

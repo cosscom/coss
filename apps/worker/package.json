@@ -19,9 +19,11 @@
     "@aws-sdk/client-sqs": "catalog:",
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
+    "@coss/observability": "workspace:*",
     "@coss/reputation": "workspace:*",
     "@coss/screening": "workspace:*",
     "@coss/webhooks": "workspace:*",
+    "@sentry/bun": "catalog:",
     "@t3-oss/env-core": "catalog:",
     "drizzle-orm": "catalog:",
     "zod": "catalog:"

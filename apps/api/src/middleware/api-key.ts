@@ -1,4 +1,5 @@
 import { type AuthenticateResult, authenticateApiKey, type KeyPermissions } from "@coss/tenancy";
+import { setTags } from "@sentry/bun";
 import { createMiddleware } from "hono/factory";
 import { ApiError } from "../errors.ts";
 import type { AppEnv } from "../types.ts";
@@ -105,6 +106,11 @@ export function requireApiKey(
     }
 
     c.set("auth", result.context);
+    setTags({
+      organization_id: result.context.organizationId,
+      environment_id: result.context.environmentId,
+      api_key_id: result.context.apiKeyId,
+    });
     // The single place where the header overrides the organization's pinned version.
     const { versioning, requestedApiVersion } = c.var;
     c.set("apiVersion", versioning.resolve(requestedApiVersion ?? result.context.apiVersion));

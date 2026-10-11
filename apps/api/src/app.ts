@@ -8,6 +8,7 @@ import {
 import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { honoMiddleware } from "@sentry/bun";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
@@ -68,6 +69,10 @@ export function createApp(opts: CreateAppOptions) {
   // Sub-routers inherit this hook: every validation failure becomes the 422 envelope.
   const app = new OpenAPIHono<AppEnv>({ defaultHook: validationHook });
 
+  // Sentry (when src/instrument.ts initialized it): names each request's transaction after its
+  // route (`GET /v1/emails/:id`) and traces middleware. Unhandled errors are reported by the
+  // console.error in onError (captureConsoleIntegration), so the middleware reports none itself.
+  app.use(honoMiddleware(app, { shouldHandleError: () => false }));
   app.use(requestId);
   app.use(async (c, next) => {
     c.set("rateLimiter", rateLimiter);

@@ -176,6 +176,48 @@ const apiPublicUrl: EnvVar = {
   description: "The API's public origin (OpenAPI, dashboard snippets and email tracking URLs).",
 };
 
+/**
+ * Error and performance monitoring (Sentry organization `coss`, see @coss/observability). Each
+ * runtime has its own project; DSNs aren't secrets (browsers receive the dashboard's).
+ */
+function sentry(project: "web" | "api" | "worker"): EnvVar[] {
+  return [
+    {
+      name: "SENTRY_DSN",
+      kind: "plain",
+      required: false,
+      value: `DSN of the \`${project}\` Sentry project (Project settings → Client Keys)`,
+      description:
+        project === "web"
+          ? "The dashboard's server and every browser on coss.com (dashboard and site, through /api/monitoring). Unset: nothing is reported."
+          : "Unset: nothing is reported.",
+    },
+    {
+      name: "SENTRY_ENVIRONMENT",
+      kind: "plain",
+      required: false,
+      value: "production (the stage's name)",
+      description: "Sentry environment; defaults to NODE_ENV.",
+    },
+    {
+      name: "SENTRY_TRACES_SAMPLE_RATE",
+      kind: "plain",
+      required: false,
+      value: "0.1",
+      description: "Share of requests/jobs traced (0–1).",
+    },
+  ];
+}
+
+/** Bun services' Sentry release; the Next.js images have theirs built in (NEXT_DEPLOYMENT_ID). */
+const sentryRelease: EnvVar = {
+  name: "SENTRY_RELEASE",
+  kind: "plain",
+  required: false,
+  value: "Set by the image (build argument SENTRY_RELEASE, the commit); don't override.",
+  description: "Sentry release of every event.",
+};
+
 export const SERVICES: Service[] = [
   {
     name: "web",
@@ -210,6 +252,7 @@ export const SERVICES: Service[] = [
         description:
           "CloudFront + ALB append to X-Forwarded-For; the client is the entry they vouch for.",
       },
+      ...sentry("web"),
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "PORT", kind: "image", required: true, value: "3000", description: "" },
       { name: "HOSTNAME", kind: "image", required: true, value: "0.0.0.0", description: "" },
@@ -271,6 +314,8 @@ export const SERVICES: Service[] = [
       },
       ...email,
       webhookKey,
+      ...sentry("api"),
+      sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "API_PORT", kind: "image", required: true, value: "3001", description: "" },
     ],
@@ -327,6 +372,8 @@ export const SERVICES: Service[] = [
         value: "COSS <notifications@coss.com>",
         description: "Sender of notification emails, on a verified domain of that organization.",
       },
+      ...sentry("worker"),
+      sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
     ],
   },

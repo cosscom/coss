@@ -3,6 +3,8 @@
  * lost or interrupted sends and (with `EMAIL_PROVIDER=ses`) ingests SES delivery events. Safe to
  * run several instances.
  */
+// First: monitoring reports failures while starting, too.
+import "./instrument.ts";
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
 import { createEmailService, emailReputationNotifier, notificationEnvironment } from "@coss/email";
@@ -16,8 +18,10 @@ import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation
 import { screenMessage } from "@coss/screening";
 import { createClassifier } from "@coss/screening/runtime";
 import { createWebhookSender, parseSecretsKey } from "@coss/webhooks";
+import * as Sentry from "@sentry/bun";
 import { env } from "./env.ts";
 import { startJobs } from "./jobs.ts";
+import { monitoredDispatch } from "./monitoring.ts";
 import { createShutdown } from "./shutdown.ts";
 import { createSqsApi } from "./sqs.ts";
 
@@ -48,7 +52,7 @@ const emailService = createEmailService({
   trackingBaseUrl: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
   screen: classifier ? (input) => screenMessage(input, { classifier }) : undefined,
 });
-await workEmailDispatchQueue(jobs, emailService);
+await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
 
 // Reputation notifications go out through COSS's own email product. Without a configured
 // environment they are printed in development and held in production (sent once configured).
@@ -97,7 +101,10 @@ const shutdown = createShutdown({
     ...loops,
     { name: "email-dispatch", stop: () => jobs.stop({ graceful: true, timeout: 30_000 }) },
   ],
-  close: closeDb,
+  close: async () => {
+    await closeDb();
+    await Sentry.close(2_000);
+  },
 });
 for (const signal of ["SIGTERM", "SIGINT"] as const) {
   process.on(signal, () => {

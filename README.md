@@ -251,6 +251,29 @@ refused in production. If Valkey is unreachable, requests are **allowed** (fail 
    to it) to match your load balancers; without them per-IP limits (repeated invalid API keys, dashboard
    sign-in) are off, because the socket address would be the load balancer's.
 
+## Error monitoring on Sentry
+
+Errors and traces go to the Sentry organization `coss` (`@coss/observability`). Create three projects —
+`web` (Next.js), `api` (Bun) and `worker` (Bun) — and set each service's `SENTRY_DSN` to its project's DSN
+(Project settings → Client Keys), plus `SENTRY_ENVIRONMENT` (the stage) and optionally
+`SENTRY_TRACES_SAMPLE_RATE` (default 0.1). Without a DSN nothing is reported, so local development and CI
+send nothing unless you set one.
+
+- **What is reported:** unhandled errors everywhere; every `console.error` on a server (the packages log the
+  failures they handle that way: provider errors, webhook deliveries, failed worker runs…), also as Sentry
+  logs with `console.warn`; failed email-dispatch jobs; browser errors on the dashboard and the site.
+  Events are tagged `service`, and with `request_id` + `organization_id`/`environment_id` (API),
+  `organization_id` + the user's id (dashboard) or `loop`/`email_id` (worker).
+- **Privacy:** the SDKs collect no request/response bodies (email content), IPs, cookies, query strings, AI
+  prompts or local variables (`DATA_COLLECTION`), and the `scrub*` hooks mask secret URL segments (tracking and
+  password-reset tokens) in events, spans and logs. There is no session replay.
+- **Browsers** (both zones) fetch their configuration from the dashboard's `GET /api/monitoring` and post their
+  events to it; it forwards only envelopes for the dashboard's own DSN. The CSP needs no Sentry origin.
+- **Releases** are the commit: `NEXT_DEPLOYMENT_ID` for the Next.js images, `SENTRY_RELEASE` (a build argument)
+  for the API and worker images. Builds with a `SENTRY_AUTH_TOKEN` (organization token, passed to `docker build`
+  as the `sentry_auth_token` secret) upload the Next.js apps' source maps to `web` and delete them from the image;
+  the API and worker run their TypeScript source, so their stack traces need none.
+
 ## Deploying to AWS
 
 Everything runs on AWS; nothing is provisioned yet. The repository holds what provisioning needs: one
@@ -338,8 +361,11 @@ rules, then CloudFront, then removing the old one). Plain values per service:
 | worker | `API_PUBLIC_URL=https://api.coss.com`, `BETTER_AUTH_URL=https://coss.com`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL`, `SCREENING_CLASSIFIER=ai`, optional `SCREENING_MODEL`, `NOTIFICATIONS_ENVIRONMENT_ID` + `NOTIFICATIONS_FROM` (see below) |
 | site | none (static; everything it needs is in the image) |
 
+Every service but the site also takes `SENTRY_DSN` (its own project's), `SENTRY_ENVIRONMENT` and optionally
+`SENTRY_TRACES_SAMPLE_RATE` (see [Error monitoring on Sentry](#error-monitoring-on-sentry)).
+
 Images are built once and promoted through stages: builds set `SKIP_ENV_VALIDATION` and bake in nothing
-stage-specific (only `NEXT_DEPLOYMENT_ID`, the commit). Each server validates its environment at startup and exits
+stage-specific (only the commit: `NEXT_DEPLOYMENT_ID`, `SENTRY_RELEASE`). Each server validates its environment at startup and exits
 if it is wrong. AWS credentials come from the task role.
 
 ### IAM
@@ -354,7 +380,8 @@ if it is wrong. AWS credentials come from the task role.
 ### Deploy order
 
 1. Build and push the four images, tagged with the commit (`docker build --platform linux/arm64 -f
-   apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> .`; only the Next apps use the build arg).
+   apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
+   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker).
 2. Run migrations as a one-off task from the worker image: `bun packages/db/src/migrate.ts` (needs only
    `DATABASE_URL`; never two at once). Wait for exit code 0. Migrations must be backward compatible with the
    running code.
