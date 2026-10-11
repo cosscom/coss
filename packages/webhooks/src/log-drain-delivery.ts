@@ -254,11 +254,20 @@ async function disableFailingDrain(
   );
 }
 
-async function attempt(batch: LogDrainBatchRow, now: Date, deps: LogDrainDeliveryDeps) {
-  const ours = and(
+/** A late worker must not overwrite cancellation or a newer worker's lease. */
+function ownedBatch(batch: LogDrainBatchRow) {
+  return and(
     eq(logDrainBatch.id, batch.id),
     eq(logDrainBatch.organizationId, batch.organizationId),
+    eq(logDrainBatch.status, "pending"),
+    batch.leaseExpiresAt
+      ? eq(logDrainBatch.leaseExpiresAt, batch.leaseExpiresAt)
+      : isNull(logDrainBatch.leaseExpiresAt),
   );
+}
+
+async function attempt(batch: LogDrainBatchRow, now: Date, deps: LogDrainDeliveryDeps) {
+  const ours = ownedBatch(batch);
   const [drain] = await db
     .select()
     .from(logDrain)
@@ -326,16 +335,25 @@ async function attempt(batch: LogDrainBatchRow, now: Date, deps: LogDrainDeliver
   const exhausted = !succeeded && attempts >= LOG_DRAIN_MAX_ATTEMPTS;
   const retryDelay = LOG_DRAIN_RETRY_DELAYS_MS[attempts - 1] ?? 0;
   await db.transaction(async (tx) => {
-    await tx.insert(logDrainAttempt).values({
-      organizationId: batch.organizationId,
-      batchId: batch.id,
-      attemptedAt: now,
-      statusCode,
-      durationMs,
-      error,
-      responseExcerpt,
-    });
-    await tx
+    // Match management's lock order (drain, then batch), and block new outbox selections
+    // before exhaustion can disable this drain and discard its backlog.
+    // Exhaustion also queues an audit event to sibling drains. Lock that whole set in the
+    // outbox's order, so two exhausted drains cannot each wait on the other's audit lock.
+    const locked = await tx
+      .select({ id: logDrain.id })
+      .from(logDrain)
+      .where(
+        and(
+          eq(logDrain.organizationId, batch.organizationId),
+          exhausted
+            ? eq(logDrain.environmentId, drain.environmentId)
+            : eq(logDrain.id, batch.drainId),
+        ),
+      )
+      .orderBy(logDrain.id)
+      .for("update");
+    if (!locked.some((row) => row.id === batch.drainId)) return;
+    const [finished] = await tx
       .update(logDrainBatch)
       .set({
         status: succeeded ? "succeeded" : exhausted ? "failed" : "pending",
@@ -346,7 +364,18 @@ async function attempt(batch: LogDrainBatchRow, now: Date, deps: LogDrainDeliver
         lastStatusCode: statusCode,
         lastError: error,
       })
-      .where(ours);
+      .where(ours)
+      .returning({ id: logDrainBatch.id });
+    if (!finished) return;
+    await tx.insert(logDrainAttempt).values({
+      organizationId: batch.organizationId,
+      batchId: batch.id,
+      attemptedAt: now,
+      statusCode,
+      durationMs,
+      error,
+      responseExcerpt,
+    });
     if (exhausted) await disableFailingDrain(tx, batch, now);
   });
 }
@@ -370,10 +399,7 @@ export async function runDueLogDrainDeliveries(
       attempt(batch, now, deps).catch(async (error: unknown) => {
         console.error(`[log-drains] batch ${batch.id} failed unexpectedly:`, error);
         // Release the lease; the batch is retried when it falls due again.
-        await db
-          .update(logDrainBatch)
-          .set({ leaseExpiresAt: null })
-          .where(eq(logDrainBatch.id, batch.id));
+        await db.update(logDrainBatch).set({ leaseExpiresAt: null }).where(ownedBatch(batch));
       }),
     ),
   );

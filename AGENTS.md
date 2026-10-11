@@ -722,8 +722,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `log_drain_attempt` (`drainatt_`); management and delivery in `@coss/webhooks`, the outbox in `@coss/logs`): an
   environment's log lines (exactly the `GET /v1/logs` objects) and its environment-scoped audit events
   (`{ object: "audit_event", … }`; org-wide events never reach drains), filtered by `sources`. `appendLogEntries` and
-  `recordOrgAuditEvent` look up the environment's enabled drains and, only when one matches, write the line and its
-  records in one transaction (a savepoint inside the caller's) — so every `log_entry` write path queues drain records;
+  `recordOrgAuditEvent` select the environment's enabled drains under `FOR KEY SHARE` in the transaction that
+  writes the line and its records (a savepoint inside the caller's); management and exhaustion take `FOR UPDATE`
+  before changing eligibility — so every `log_entry` write path queues drain records without racing disable/delete;
   record ids ascend in write order and order delivery. The worker's `log-drains` loop (`runDueLogDrainDeliveries`,
   system-level) forms one open batch per drain at a time (partial unique index; the drain is locked `FOR NO KEY UPDATE
   SKIP LOCKED` so it never blocks lines being queued), ≤ 500 lines / 1 MB (`takeBatch`), and posts it through

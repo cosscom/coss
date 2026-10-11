@@ -28,7 +28,7 @@ export type ActiveDrain = {
   sources: LogDrainSource[];
 };
 
-/** The enabled drains of these environments. */
+/** Select inside the insertion transaction; management takes FOR UPDATE before changing eligibility. */
 export async function activeLogDrains(
   executor: Executor,
   environmentIds: readonly string[],
@@ -47,7 +47,9 @@ export async function activeLogDrains(
         inArray(logDrain.environmentId, [...new Set(environmentIds)]),
         eq(logDrain.enabled, true),
       ),
-    );
+    )
+    .orderBy(logDrain.id)
+    .for("key share");
 }
 
 /** Bytes of a line in an NDJSON body, newline included. */

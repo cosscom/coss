@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { db, schema } from "@coss/db";
+import { db, type Executor, schema } from "@coss/db";
 import { appendLogEntries, type LogEntryInput, recordOrgAuditEvent } from "@coss/logs";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
 import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy/testing";
@@ -92,6 +92,239 @@ function parseNdjson(body: string): Record<string, unknown>[] {
     .split("\n")
     .map((text) => JSON.parse(text) as Record<string, unknown>);
 }
+
+// Pause just before the source row insert, after drain selection, while preserving real SQL/locks.
+function gateSourceInsert(
+  executor: Executor,
+  reached: () => void,
+  resume: Promise<void>,
+): Executor {
+  return new Proxy(executor, {
+    get(target, property, receiver) {
+      if (property === "transaction") {
+        return (callback: (tx: Executor) => Promise<void>) =>
+          target.transaction((tx) => callback(gateSourceInsert(tx, reached, resume)));
+      }
+      if (property === "insert") {
+        return (table: Parameters<Executor["insert"]>[0]) => {
+          const builder = target.insert(table);
+          if (table !== schema.logEntry && table !== orgAuditEvent) return builder;
+          return new Proxy(builder, {
+            get(insert, key, insertReceiver) {
+              if (key === "values") {
+                return async (...args: Parameters<typeof insert.values>) => {
+                  reached();
+                  await resume;
+                  return insert.values(...args);
+                };
+              }
+              return Reflect.get(insert, key, insertReceiver);
+            },
+          });
+        };
+      }
+      return Reflect.get(target, property, receiver);
+    },
+  });
+}
+
+for (const source of ["log", "audit"] as const) {
+  for (const operation of ["disable", "delete"] as const) {
+    test(`${operation} waits for an in-flight ${source} outbox insertion`, async () => {
+      const tenant = await createTestTenant();
+      const { drain } = await drainFor(tenant, "https://logs.example.com/in");
+      const reached = Promise.withResolvers<void>();
+      const resume = Promise.withResolvers<void>();
+      const executor = gateSourceInsert(db, reached.resolve, resume.promise);
+      const write =
+        source === "log"
+          ? appendLogEntries(executor, [line(tenant)])
+          : recordOrgAuditEvent(
+              {
+                organizationId: tenant.organization.id,
+                environmentId: tenant.production.id,
+                actor: { type: "system", id: null, label: "COSS" },
+                action: "test.changed",
+              },
+              executor,
+            );
+      await reached.promise;
+      let settled = false;
+      const management = (
+        operation === "disable"
+          ? updateLogDrain(
+              { organizationId: tenant.organization.id, id: drain.id, enabled: false },
+              testManagementDeps,
+            )
+          : deleteLogDrain({ organizationId: tenant.organization.id, id: drain.id })
+      ).finally(() => {
+        settled = true;
+      });
+      try {
+        await Bun.sleep(100);
+        expect(settled).toBe(false);
+      } finally {
+        resume.resolve();
+        await Promise.all([write, management]);
+      }
+      expect(await queued(drain.id)).toEqual([]);
+    });
+  }
+}
+
+test("outbox selection rechecks eligibility after a concurrent disable commits", async () => {
+  const tenant = await createTestTenant();
+  const { drain } = await drainFor(tenant, "https://logs.example.com/in");
+  const locked = Promise.withResolvers<void>();
+  const resume = Promise.withResolvers<void>();
+  const disabling = db.transaction(async (tx) => {
+    await tx.select().from(schema.logDrain).where(eq(schema.logDrain.id, drain.id)).for("update");
+    await tx
+      .update(schema.logDrain)
+      .set({ enabled: false })
+      .where(eq(schema.logDrain.id, drain.id));
+    locked.resolve();
+    await resume.promise;
+  });
+  await locked.promise;
+  let settled = false;
+  const writing = appendLogEntries(db, [line(tenant)]).finally(() => {
+    settled = true;
+  });
+  try {
+    await Bun.sleep(100);
+    expect(settled).toBe(false);
+  } finally {
+    resume.resolve();
+    await Promise.all([disabling, writing]);
+  }
+  expect(await queued(drain.id)).toEqual([]);
+});
+
+for (const outcome of ["failure", "success", "exhaustion"] as const) {
+  test(`cancellation survives an in-flight ${outcome}`, async () => {
+    const tenant = await createTestTenant();
+    const { drain } = await drainFor(tenant, "https://logs.example.com/in");
+    await appendLogEntries(db, [line(tenant)]);
+    let now = new Date();
+    if (outcome === "exhaustion") {
+      await runDueLogDrainDeliveries(
+        { now, scope: scopeOf(tenant) },
+        {
+          ...deps,
+          send: async () => ({ status: 500, body: "failed" }),
+        },
+      );
+      await db
+        .update(logDrainBatch)
+        .set({ attemptCount: LOG_DRAIN_MAX_ATTEMPTS - 1 })
+        .where(eq(logDrainBatch.drainId, drain.id));
+      now = new Date(now.getTime() + 5 * SECOND);
+    }
+    await runDueLogDrainDeliveries(
+      { now, scope: scopeOf(tenant) },
+      {
+        ...deps,
+        send: async () => {
+          await updateLogDrain(
+            { organizationId: tenant.organization.id, id: drain.id, enabled: false },
+            testManagementDeps,
+          );
+          await updateLogDrain(
+            { organizationId: tenant.organization.id, id: drain.id, enabled: true },
+            testManagementDeps,
+          );
+          await appendLogEntries(db, [line(tenant, { requestId: "fresh" })]);
+          return { status: outcome === "success" ? 200 : 500, body: "done" };
+        },
+      },
+    );
+    const [batch] = await db
+      .select()
+      .from(logDrainBatch)
+      .where(eq(logDrainBatch.drainId, drain.id));
+    expect(batch).toMatchObject({ status: "failed", leaseExpiresAt: null, nextAttemptAt: null });
+    expect(
+      await getLogDrain({ organizationId: tenant.organization.id, id: drain.id }),
+    ).toMatchObject({ enabled: true });
+    const bodies: string[] = [];
+    expect(
+      await runDueLogDrainDeliveries(
+        { now: new Date(now.getTime() + 60 * SECOND), scope: scopeOf(tenant) },
+        {
+          ...deps,
+          send: async ({ body }) => {
+            bodies.push(body);
+            return { status: 200, body: "ok" };
+          },
+        },
+      ),
+    ).toBe(1);
+    expect(bodies.flatMap((body) => parseNdjson(body).map((entry) => entry.request_id))).toEqual([
+      "fresh",
+    ]);
+  });
+}
+
+test("an expired attempt cannot overwrite a newer worker's result", async () => {
+  const tenant = await createTestTenant();
+  const { drain } = await drainFor(tenant, "https://logs.example.com/in");
+  await appendLogEntries(db, [line(tenant)]);
+  const now = new Date();
+  await runDueLogDrainDeliveries(
+    { now, scope: scopeOf(tenant) },
+    {
+      ...deps,
+      send: async () => {
+        expect(
+          await runDueLogDrainDeliveries(
+            { now: new Date(now.getTime() + 121 * SECOND), scope: scopeOf(tenant) },
+            {
+              ...deps,
+              send: async () => ({ status: 200, body: "ok" }),
+            },
+          ),
+        ).toBe(1);
+        return { status: 500, body: "late failure" };
+      },
+    },
+  );
+  const [batch] = await db.select().from(logDrainBatch).where(eq(logDrainBatch.drainId, drain.id));
+  expect(batch).toMatchObject({ status: "succeeded", attemptCount: 1, lastStatusCode: 200 });
+});
+
+test("sibling drains can exhaust concurrently while recording their audit events", async () => {
+  const tenant = await createTestTenant();
+  const first = await drainFor(tenant, "https://logs.example.com/first");
+  const second = await drainFor(tenant, "https://logs.example.com/second");
+  await appendLogEntries(db, [line(tenant)]);
+  const now = new Date();
+  const failingDeps = { ...deps, send: async () => ({ status: 500, body: "failed" }) };
+  await runDueLogDrainDeliveries({ now, scope: scopeOf(tenant) }, failingDeps);
+  await db
+    .update(logDrainBatch)
+    .set({ attemptCount: LOG_DRAIN_MAX_ATTEMPTS - 1 })
+    .where(eq(logDrainBatch.organizationId, tenant.organization.id));
+  await runDueLogDrainDeliveries(
+    { now: new Date(now.getTime() + 5 * SECOND), scope: scopeOf(tenant) },
+    failingDeps,
+  );
+  for (const { drain } of [first, second]) {
+    expect(
+      await getLogDrain({ organizationId: tenant.organization.id, id: drain.id }),
+    ).toMatchObject({ enabled: false, disabledReason: "failing" });
+  }
+  const audits = await db
+    .select()
+    .from(orgAuditEvent)
+    .where(
+      and(
+        eq(orgAuditEvent.organizationId, tenant.organization.id),
+        eq(orgAuditEvent.action, "log_drain.disabled"),
+      ),
+    );
+  expect(audits).toHaveLength(2);
+});
 
 describe("log drain management", () => {
   test("stores an encrypted secret, normalizes sources and validates the URL", async () => {

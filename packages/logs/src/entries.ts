@@ -110,16 +110,13 @@ export async function appendLogEntries(
 ): Promise<void> {
   if (inputs.length === 0) return;
   const rows = inputs.map(toLogRow);
-  const drains = await activeLogDrains(
-    executor,
-    rows.map((row) => row.environmentId),
-  );
-  if (drains.length === 0) {
-    await executor.insert(logEntry).values(rows);
-    return;
-  }
+  // Keep the drain selection protected until both the lines and outbox records commit.
   // A savepoint inside the caller's transaction, or a transaction of its own.
   await executor.transaction(async (tx) => {
+    const drains = await activeLogDrains(
+      tx,
+      rows.map((row) => row.environmentId),
+    );
     await tx.insert(logEntry).values(rows);
     await insertLogDrainRecords(
       tx,

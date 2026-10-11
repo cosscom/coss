@@ -55,19 +55,18 @@ export async function recordOrgAuditEvent(
     createdAt: new Date(),
   } satisfies OrgAuditEventRow;
   // Only environment-scoped events reach log drains (drains belong to an environment).
-  const drains = values.environmentId
-    ? await activeLogDrains(executor, [values.environmentId])
-    : [];
-  if (drains.length === 0) {
+  if (!values.environmentId) {
     await executor.insert(orgAuditEvent).values(values);
     return;
   }
+  const environmentId = values.environmentId;
   await executor.transaction(async (tx) => {
+    const drains = await activeLogDrains(tx, [environmentId]);
     await tx.insert(orgAuditEvent).values(values);
     await insertLogDrainRecords(tx, drains, [
       {
         organizationId: values.organizationId,
-        environmentId: values.environmentId as string,
+        environmentId,
         source: "audit",
         sourceId: values.id,
         // The audit event exactly as `GET /v1/audit_events` returns it.
