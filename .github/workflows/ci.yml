@@ -41,8 +41,6 @@ jobs:
         with:
           node-version: 24
       - run: bun install --frozen-lockfile
-      - name: TEMP hash debug
-        run: bunx turbo run build --filter=coss --dry=json > /tmp/dry.json && python3 -c "import json;d=json.load(open('/tmp/dry.json'));t=d['tasks'][-1];print(json.dumps({'global':d['globalCacheInputs'],'hash':t['hash'],'ext':t['hashOfExternalDependencies'],'inputs':t['inputs'],'env':t['environmentVariables'],'def':t['resolvedTaskDefinition'],'deps':t.get('dependencies')},sort_keys=True))"
       - run: bun run lint
       - run: bun run typecheck
 
