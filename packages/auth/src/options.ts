@@ -3,17 +3,19 @@
  * Must stay free of Next.js imports — apps/web appends `nextCookies()` in its own instance.
  * Must not import "server-only" (it breaks the `auth` CLI loader).
  */
+
 import { apiKey } from "@better-auth/api-key";
+import { getCurrentAdapter } from "@better-auth/core/context";
 import { passkey } from "@better-auth/passkey";
 import { sso } from "@better-auth/sso";
-import { db } from "@coss/db";
+import { db, type Executor } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import * as schema from "@coss/db/schema";
 import type { BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
+import { APIError, createAuthMiddleware, getSessionFromCtx, signUpEmail } from "better-auth/api";
 import { admin, captcha, organization, twoFactor } from "better-auth/plugins";
-import { and, count, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   API_KEY_NAME_MAX_LENGTH,
   API_KEY_PERMISSIONS,
@@ -27,6 +29,7 @@ import {
   signUpEmailRejection,
 } from "./email-guard.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
+import { serializedEndpoint } from "./serialized-endpoint.ts";
 import { validateOrgName, validateOrgSlug } from "./slugs.ts";
 import { emailDomainOf, resolveSsoUser, ssoProviderIdOfPath } from "./sso.ts";
 
@@ -115,7 +118,10 @@ async function assertSignUpEmailAllowed(email: string): Promise<void> {
     production: process.env.NODE_ENV === "production",
   });
   if (rejection) throw new APIError("BAD_REQUEST", rejection);
-  const [existing] = await db
+}
+
+async function assertMailboxAvailable(email: string, executor: Executor): Promise<void> {
+  const [existing] = await executor
     .select({ id: schema.user.id })
     .from(schema.user)
     .where(eq(schema.user.canonicalEmail, canonicalEmail(email)))
@@ -271,6 +277,20 @@ export const authOptions = {
       if (ctx.path !== "/organization/invite-member" && ctx.path !== "/organization/leave") return;
       const session = await getSessionFromCtx(ctx);
       if (!session) return;
+      if (ctx.path === "/organization/invite-member") {
+        // Sign-up doesn't need a verified address, and invitation emails carry the org's name:
+        // without this, throwaway accounts could use them to spam any address.
+        if (!session.user.emailVerified) {
+          throw new APIError("FORBIDDEN", {
+            code: "EMAIL_NOT_VERIFIED",
+            message: "Verify your email address before inviting people.",
+          });
+        }
+        const domain = emailDomainOf(typeof ctx.body?.email === "string" ? ctx.body.email : "");
+        if (domain && isDisposableDomain(domain)) {
+          throw new APIError("BAD_REQUEST", DISPOSABLE_EMAIL);
+        }
+      }
       const organizationId =
         ctx.body?.organizationId ||
         (session.session as { activeOrganizationId?: string | null }).activeOrganizationId;
@@ -289,101 +309,20 @@ export const authOptions = {
     }),
   },
   plugins: [
-    organization({
-      ac: orgAc,
-      roles: orgRoles,
-      creatorRole: "owner",
-      disableOrganizationDeletion: true,
-      schema: {
-        organization: {
-          additionalFields: {
-            // Members without TOTP are sent to /settings until they set it up (apps/web
-            // `requireOrgMember`). Written only by `setOrganizationTwoFactorRequired` (@coss/tenancy).
-            requireTwoFactor: {
-              type: "boolean",
-              required: false,
-              defaultValue: false,
-              input: false,
-            },
-            // Members (not owners: break glass) need a session from the organization's SSO
-            // provider (apps/web `requireOrgMember`). Written only by `setOrganizationSsoRequired`.
-            requireSso: {
-              type: "boolean",
-              required: false,
-              defaultValue: false,
-              input: false,
-            },
-          },
-        },
+    {
+      id: "serialized-sign-up",
+      endpoints: {
+        signUpEmail: serializedEndpoint(
+          signUpEmail(),
+          async (ctx) =>
+            typeof ctx.body?.email === "string"
+              ? `auth:mailbox:${canonicalEmail(ctx.body.email)}`
+              : null,
+          async (ctx, tx) => assertMailboxAvailable(ctx.body.email, tx),
+        ),
       },
-      // Our custom generateId makes invitation ids predictable, so Better Auth requires a verified
-      // email to read/accept invitations. Keep it explicit; NEVER disable while sign-up is unverified.
-      requireEmailVerificationOnInvitation: true,
-      invitationLimit: MAX_PENDING_INVITATIONS,
-      // `true` = limit reached. Counts organizations the user owns (the number option would count
-      // memberships, so being invited to five organizations would block creating one's own).
-      organizationLimit: async (user) => {
-        if ((user as { role?: string | null }).role === "admin") return false;
-        const [row] = await db
-          .select({ owned: count() })
-          .from(schema.member)
-          .where(and(eq(schema.member.userId, user.id), eq(schema.member.role, "owner")));
-        return (row?.owned ?? 0) >= MAX_OWNED_ORGANIZATIONS;
-      },
-      sendInvitationEmail: async ({ id, email, organization: org, role }) => {
-        const url = `${process.env.BETTER_AUTH_URL ?? ""}/accept-invitation/${id}`;
-        logDevEmail(`Invitation to ${org.name} as ${role}`, email, url);
-      },
-      organizationHooks: {
-        beforeCreateOrganization: async ({ organization: org }) => {
-          assertValidOrg(org);
-        },
-        beforeUpdateOrganization: async ({ organization: org, member }) => {
-          await assertOrgNotSuspended(member.organizationId);
-          assertValidOrg(org);
-        },
-        // The invite/update-role HTTP endpoints accept arbitrary role strings; only allow
-        // canonical role names so Better Auth and `orgRoleCan` always agree on privileges.
-        beforeCreateInvitation: async ({ invitation, inviter }) => {
-          if (!(INVITABLE_ORG_ROLES as readonly string[]).includes(invitation.role)) {
-            throw new APIError("BAD_REQUEST", { message: "Role must be admin or member." });
-          }
-          await assertOrgNotSuspended(invitation.organizationId);
-          // Sign-up doesn't need a verified address, and invitation emails carry the org's name:
-          // without this, throwaway accounts could use them to spam any address.
-          if (!inviter.emailVerified) {
-            throw new APIError("FORBIDDEN", {
-              code: "EMAIL_NOT_VERIFIED",
-              message: "Verify your email address before inviting people.",
-            });
-          }
-          const domain = emailDomainOf(invitation.email);
-          if (domain && isDisposableDomain(domain)) {
-            throw new APIError("BAD_REQUEST", DISPOSABLE_EMAIL);
-          }
-        },
-        beforeAcceptInvitation: async ({ organization: org }) => {
-          await assertOrgNotSuspended(org.id);
-        },
-        // Better Auth cancels invitations in any status, which would rewrite an accepted (or
-        // already canceled) one; only pending invitations can be canceled.
-        beforeCancelInvitation: async ({ invitation }) => {
-          await assertOrgNotSuspended(invitation.organizationId);
-          if (invitation.status !== "pending") {
-            throw new APIError("BAD_REQUEST", { message: "This invitation is no longer pending." });
-          }
-        },
-        beforeRemoveMember: async ({ organization: org }) => {
-          await assertOrgNotSuspended(org.id);
-        },
-        beforeUpdateMemberRole: async ({ newRole, organization: org }) => {
-          if (!newRole.split(",").every(isOrgRole)) {
-            throw new APIError("BAD_REQUEST", { message: "Unknown role." });
-          }
-          await assertOrgNotSuspended(org.id);
-        },
-      },
-    }),
+    },
+    serializedOrganization(),
     admin(),
     twoFactor({
       // Only TOTP (authenticator apps) and backup codes: there is no email/SMS OTP delivery.
@@ -450,3 +389,102 @@ export const authOptions = {
       : []),
   ],
 } satisfies BetterAuthOptions;
+
+function serializedOrganization() {
+  const plugin = organization({
+    ac: orgAc,
+    roles: orgRoles,
+    creatorRole: "owner",
+    disableOrganizationDeletion: true,
+    schema: {
+      organization: {
+        additionalFields: {
+          // Members without TOTP are sent to /settings until they set it up (apps/web
+          // `requireOrgMember`). Written only by `setOrganizationTwoFactorRequired` (@coss/tenancy).
+          requireTwoFactor: {
+            type: "boolean",
+            required: false,
+            defaultValue: false,
+            input: false,
+          },
+          // Members (not owners: break glass) need a session from the organization's SSO
+          // provider (apps/web `requireOrgMember`). Written only by `setOrganizationSsoRequired`.
+          requireSso: {
+            type: "boolean",
+            required: false,
+            defaultValue: false,
+            input: false,
+          },
+        },
+      },
+    },
+    // Our custom generateId makes invitation ids predictable, so Better Auth requires a verified
+    // email to read/accept invitations. Keep it explicit; NEVER disable while sign-up is unverified.
+    requireEmailVerificationOnInvitation: true,
+    invitationLimit: MAX_PENDING_INVITATIONS,
+    // `true` = limit reached. Counts organizations the user owns (the number option would count
+    // memberships, so being invited to five organizations would block creating one's own).
+    organizationLimit: async (user) => {
+      if ((user as { role?: string | null }).role === "admin") return false;
+      const adapter = await getCurrentAdapter(drizzleAdapter(db, { provider: "pg", schema })({}));
+      const owned = await adapter.count({
+        model: "member",
+        where: [
+          { field: "userId", value: user.id },
+          { field: "role", value: "owner" },
+        ],
+      });
+      return owned >= MAX_OWNED_ORGANIZATIONS;
+    },
+    sendInvitationEmail: async ({ id, email, organization: org, role }) => {
+      const url = `${process.env.BETTER_AUTH_URL ?? ""}/accept-invitation/${id}`;
+      logDevEmail(`Invitation to ${org.name} as ${role}`, email, url);
+    },
+    organizationHooks: {
+      beforeCreateOrganization: async ({ organization: org }) => {
+        assertValidOrg(org);
+      },
+      beforeUpdateOrganization: async ({ organization: org, member }) => {
+        await assertOrgNotSuspended(member.organizationId);
+        assertValidOrg(org);
+      },
+      // The invite/update-role HTTP endpoints accept arbitrary role strings; only allow
+      // canonical role names so Better Auth and `orgRoleCan` always agree on privileges.
+      beforeCreateInvitation: async ({ invitation }) => {
+        if (!(INVITABLE_ORG_ROLES as readonly string[]).includes(invitation.role)) {
+          throw new APIError("BAD_REQUEST", { message: "Role must be admin or member." });
+        }
+        await assertOrgNotSuspended(invitation.organizationId);
+      },
+      beforeAcceptInvitation: async ({ organization: org }) => {
+        await assertOrgNotSuspended(org.id);
+      },
+      // Better Auth cancels invitations in any status, which would rewrite an accepted (or
+      // already canceled) one; only pending invitations can be canceled.
+      beforeCancelInvitation: async ({ invitation }) => {
+        await assertOrgNotSuspended(invitation.organizationId);
+        if (invitation.status !== "pending") {
+          throw new APIError("BAD_REQUEST", { message: "This invitation is no longer pending." });
+        }
+      },
+      beforeRemoveMember: async ({ organization: org }) => {
+        await assertOrgNotSuspended(org.id);
+      },
+      beforeUpdateMemberRole: async ({ newRole, organization: org }) => {
+        if (!newRole.split(",").every(isOrgRole)) {
+          throw new APIError("BAD_REQUEST", { message: "Unknown role." });
+        }
+        await assertOrgNotSuspended(org.id);
+      },
+    },
+  });
+  plugin.endpoints.createOrganization = serializedEndpoint(
+    plugin.endpoints.createOrganization,
+    async (ctx) => {
+      const session = await getSessionFromCtx(ctx);
+      const userId = session?.user.id ?? (!ctx.request && !ctx.headers ? ctx.body?.userId : null);
+      return typeof userId === "string" ? `auth:org-owner:${userId}` : null;
+    },
+  );
+  return plugin;
+}

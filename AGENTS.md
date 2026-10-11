@@ -403,14 +403,16 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   - **Abuse prevention.** Turnstile: Better Auth's `captcha` plugin (only when `TURNSTILE_SECRET_KEY` is set) checks
     `/sign-up/email`, `/sign-in/email` and `/request-password-reset` (HTTP only; `auth.api.*` skips it); the forms
     get the token from `useTurnstile` (`apps/web/src/components/turnstile.tsx`) and send it as `x-captcha-response`.
-    It fails closed while siteverify is unreachable (passkeys and SSO still sign in). The sign-up guard runs in
-    `hooks.before` on `/sign-up/email` only — never in `databaseHooks`, so fixtures (`@coss.test`), the seed,
+    It fails closed while siteverify is unreachable (passkeys and SSO still sign in). The sign-up guard runs on
+    `/sign-up/email` only — never in `databaseHooks`, so fixtures (`@coss.test`), the seed,
     admins and SSO users skip it: disposable domains (vendored list, parent domains included), domains that
     definitively can't receive mail (NXDOMAIN, null MX, no MX/A/AAAA; system resolver, 1 s, in-process cache;
     lookup failures allow; special-use TLDs like `.test` allowed outside production only), and a second account
     for the same mailbox (`user.canonicalEmail`, set for every new user; its rules are mirrored in SQL by
-    migration `0025` — change both together). Invitations: inviter must have a verified email, no disposable
-    invitees, at most `MAX_PENDING_INVITATIONS` pending per org, and the dashboard action charges the org's
+    migration `0025` — change both together). The sign-up endpoint holds a Postgres advisory lock per
+    canonical mailbox through the account transaction; organization creation holds one per owner through
+    the organization and membership transaction (`serialized-endpoint.ts`). Invitations: inviter must have a verified email, no disposable
+    invitees (both checked in middleware, including resends), at most `MAX_PENDING_INVITATIONS` pending per org, and the dashboard action charges the org's
     `dashboard.invitations` bucket (refunded when Better Auth refuses). Organizations: a user owns at most
     `MAX_OWNED_ORGANIZATIONS` (platform admins exempt; memberships don't count), and `/organization/create` is
     limited per IP (`auth.org_create.ip`).

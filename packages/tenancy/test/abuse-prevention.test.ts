@@ -95,6 +95,37 @@ describe("sign-up email guard", () => {
       "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL",
     );
   });
+  test("concurrent aliases across auth instances create only one account", async () => {
+    const suffix = uniqueSuffix().replaceAll(/[^a-z0-9]/gi, "");
+    const other = betterAuth(authOptions);
+    const responses = await Promise.all(
+      Array.from({ length: 12 }, (_, i) =>
+        post(
+          "/sign-up/email",
+          signUpBody(`race${suffix}+${i}@gmail.com`),
+          {},
+          i % 2 ? other.handler : auth.handler,
+        ),
+      ),
+    );
+    expect(responses.filter((response) => response.status === 200)).toHaveLength(1);
+    expect(responses.filter((response) => response.status === 422)).toHaveLength(11);
+    const users = await db
+      .select()
+      .from(schema.user)
+      .where(eq(schema.user.canonicalEmail, `race${suffix}@gmail.com`));
+    expect(users).toHaveLength(1);
+    // Trusted creation retains its exemption even for an existing canonical mailbox.
+    await auth.api.createUser({ body: { ...signUpBody(`race${suffix}+trusted@gmail.com`) } });
+  });
+
+  test("a failed sign-up releases the mailbox for a later attempt", async () => {
+    const email = `retry-${uniqueSuffix()}@coss.test`;
+    expect((await post("/sign-up/email", { ...signUpBody(email), password: "short" })).status).toBe(
+      400,
+    );
+    expect((await post("/sign-up/email", signUpBody(email))).status).toBe(200);
+  });
 });
 
 describe("invitations", () => {
@@ -115,6 +146,38 @@ describe("invitations", () => {
   test("need an inviter with a verified email", async () => {
     const tenant = await createTestTenant({ emailVerified: false });
     await expect(invite(tenant, `x-${uniqueSuffix()}@coss.test`)).rejects.toThrow(/Verify/);
+  });
+
+  test("resends enforce verification and disposable-domain checks", async () => {
+    const tenant = await createTestTenant();
+    const email = `resend-${uniqueSuffix()}@coss.test`;
+    const invitation = await invite(tenant, email);
+    const headers = await sessionHeaders(tenant.owner.email, tenant.owner.password);
+    const resend = (email: string) =>
+      auth.api.createInvitation({
+        headers,
+        body: { email, role: "member", organizationId: tenant.organization.id, resend: true },
+      });
+    await db
+      .update(schema.user)
+      .set({ emailVerified: false })
+      .where(eq(schema.user.id, tenant.owner.id));
+    await expect(resend(email)).rejects.toThrow(/Verify/);
+    await db
+      .update(schema.user)
+      .set({ emailVerified: true })
+      .where(eq(schema.user.id, tenant.owner.id));
+    const disposable = `resend-${uniqueSuffix()}@mailinator.com`;
+    await db
+      .update(schema.invitation)
+      .set({ email: disposable })
+      .where(eq(schema.invitation.id, invitation.id));
+    await expect(resend(disposable)).rejects.toThrow(/Disposable/);
+    await db
+      .update(schema.invitation)
+      .set({ email })
+      .where(eq(schema.invitation.id, invitation.id));
+    expect((await resend(email)).id).toBe(invitation.id);
   });
 
   test("the HTTP endpoint is disabled (the dashboard's action rate-limits invitations)", async () => {
@@ -149,6 +212,28 @@ describe("organization limit", () => {
     };
     for (let i = 0; i < MAX_OWNED_ORGANIZATIONS; i++) await create();
     await expect(create()).rejects.toThrow(/maximum number of organizations/);
+  });
+
+  test("concurrent creations across auth instances cannot exceed the ownership cap", async () => {
+    const user = await createTestUser();
+    const other = betterAuth(authOptions);
+    const results = await Promise.allSettled(
+      Array.from({ length: 14 }, (_, i) => {
+        const suffix = uniqueSuffix();
+        return (i % 2 ? other : auth).api.createOrganization({
+          body: { name: `Race ${suffix}`, slug: `race-${suffix}`, userId: user.id },
+        });
+      }),
+    );
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(
+      MAX_OWNED_ORGANIZATIONS,
+    );
+    const failures = results.filter((result) => result.status === "rejected");
+    expect(failures).toHaveLength(14 - MAX_OWNED_ORGANIZATIONS);
+    for (const failure of failures)
+      expect(failure.reason.message).toMatch(/maximum number of organizations/);
+    const owned = await db.select().from(schema.member).where(eq(schema.member.userId, user.id));
+    expect(owned).toHaveLength(MAX_OWNED_ORGANIZATIONS);
   });
 
   test("platform admins are exempt", async () => {
