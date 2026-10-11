@@ -1,7 +1,8 @@
 /**
  * Screens one outgoing message, the entry point for every product: decides whether it is
- * sampled, asks the classifier, records the verdict and acts on it. Fails open: a classifier
- * error or timeout never stops a message (the sample is owed to the next one instead).
+ * sampled, asks the classifier, records the verdict and acts on it. A classifier error records an
+ * error verdict and owes the sample to the next message. Enforced screening blocks that message;
+ * shadow screening and COSS's own notification organization send it.
  */
 import { db, type Executor, schema } from "@coss/db";
 import {
@@ -56,7 +57,7 @@ export type ScreenInput = {
 };
 
 export type ScreenOutcome = {
-  /** `block`: refuse the message. Only for an enforced `blocked` verdict. */
+  /** `block`: refuse the message after an enforced block or classifier error. */
   action: "send" | "block";
   screening: ContentScreeningRow | null;
 };
@@ -102,13 +103,14 @@ export async function screenMessage(
         sequence,
         classifier: deps.classifier.name,
         verdict: "error",
-        enforced: false,
+        enforced: policy.enforce,
         latencyMs: elapsed(started),
         errorMessage: error instanceof Error ? error.message.slice(0, 1000) : String(error),
         createdAt: now(),
       });
     });
-    return { action: "send", screening };
+    const isSystemOrganization = input.organizationId === deps.systemOrganizationId;
+    return { action: policy.enforce && !isSystemOrganization ? "block" : "send", screening };
   }
 
   const top = topCategory(verdict.scores);

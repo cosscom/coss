@@ -287,14 +287,21 @@ export type EmailServiceOptions = {
   trackingDomainProvider?: string;
   /**
    * Content screening of live emails, right before they reach the provider (the worker passes
-   * `screenMessage` from `@coss/screening`). A `block` fails the email with `content_rejected`.
+   * `screenMessage` from `@coss/screening`). A `block` fails the email with the verdict's safe code.
    */
-  screen?: (input: ScreenInput) => Promise<Pick<ScreenOutcome, "action">>;
+  screen?: (input: ScreenInput) => Promise<ScreenOutcome>;
+  /** Organizations whose mail must survive an unexpected screening-system failure. */
+  screeningFailureAllowlist?: ReadonlySet<string>;
 };
 
 const CONTENT_REJECTED = {
   code: "content_rejected",
   message: "The email was blocked by content screening.",
+};
+
+const SCREENING_UNAVAILABLE = {
+  code: "content_screening_unavailable",
+  message: "The email was held because content screening was unavailable.",
 };
 
 export function createEmailService(opts: EmailServiceOptions): EmailService {
@@ -330,9 +337,12 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     return currentEmail(row);
   }
 
-  /** Whether content screening refuses a live email (fails open: errors never block). */
-  async function screeningBlocks(row: EmailRow, sandbox: boolean): Promise<boolean> {
-    if (sandbox || !opts.screen) return false;
+  /** Why content screening refuses a live email. Unexpected enforcement failures fail closed. */
+  async function screeningFailure(
+    row: EmailRow,
+    sandbox: boolean,
+  ): Promise<typeof CONTENT_REJECTED | typeof SCREENING_UNAVAILABLE | null> {
+    if (sandbox || !opts.screen) return null;
     try {
       const outcome = await opts.screen({
         organizationId: row.organizationId,
@@ -341,10 +351,11 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         subjectId: row.id,
         content: () => emailScreeningContent(row),
       });
-      return outcome.action === "block";
+      if (outcome.action !== "block") return null;
+      return outcome.screening?.verdict === "error" ? SCREENING_UNAVAILABLE : CONTENT_REJECTED;
     } catch (error) {
       console.error(`[email] content screening failed for ${row.id}:`, error);
-      return false;
+      return opts.screeningFailureAllowlist?.has(row.organizationId) ? null : SCREENING_UNAVAILABLE;
     }
   }
 
@@ -354,6 +365,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     let events: ProviderEvent[];
     const attachments = await loadOutboundAttachments(row);
     const message = toOutbound(row, await suppressedAddresses(row), attachments ?? []);
+    const hasRecipients = message.to.length + message.cc.length + message.bcc.length > 0;
+    const screeningError =
+      attachments !== null && hasRecipients ? await screeningFailure(row, sandbox) : null;
     if (attachments === null) {
       // Content is only purged once an email leaves `queued`, so this means a bug elsewhere:
       // never send the email without the attachments it was requested with.
@@ -369,7 +383,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           message: "The email's attachments are no longer stored.",
         }),
       ];
-    } else if (message.to.length + message.cc.length + message.bcc.length === 0) {
+    } else if (!hasRecipients) {
       // Every recipient is suppressed: nothing to hand over. Each one already has its
       // `email.suppressed` event, so no `email.failed` event is added.
       outcome = {
@@ -379,14 +393,14 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         errorMessage: "Every recipient is on the suppression list.",
       };
       events = [];
-    } else if (await screeningBlocks(row, sandbox)) {
+    } else if (screeningError) {
       outcome = {
         status: "failed",
         provider: provider.name,
-        errorCode: CONTENT_REJECTED.code,
-        errorMessage: CONTENT_REJECTED.message,
+        errorCode: screeningError.code,
+        errorMessage: screeningError.message,
       };
-      events = [failedEvent(row, provider.name, CONTENT_REJECTED)];
+      events = [failedEvent(row, provider.name, screeningError)];
     } else {
       try {
         const result = await provider.send(await instrument(row, message));

@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   check,
   customType,
@@ -381,6 +382,7 @@ export const emailSuppression = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => newId(ID_PREFIXES.emailSuppression)),
+    sequence: bigint("sequence", { mode: "number" }).generatedAlwaysAsIdentity(),
     organizationId: text("organization_id").notNull(),
     projectId: text("project_id").notNull(),
     environmentId: text("environment_id").notNull(),
@@ -404,7 +406,11 @@ export const emailSuppression = pgTable(
       t.address,
       t.scope,
     ),
-    index("email_suppression_environment_id_idx").on(t.environmentId, t.id.desc()),
+    index("email_suppression_environment_sequence_idx").on(
+      t.environmentId,
+      t.createdAt.desc(),
+      t.sequence.desc(),
+    ),
   ],
 );
 
@@ -1035,6 +1041,7 @@ export const adminAuditEvent = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => newId(ID_PREFIXES.adminAuditEvent)),
+    sequence: bigint("sequence", { mode: "number" }).generatedAlwaysAsIdentity(),
     actorUserId: text("actor_user_id"),
     actorEmail: text("actor_email").notNull(),
     action: text("action").notNull(),
@@ -1046,9 +1053,14 @@ export const adminAuditEvent = pgTable(
     createdAt: createdAt(),
   },
   (t) => [
-    index("admin_audit_event_target_idx").on(t.targetType, t.targetId, t.id.desc()),
+    index("admin_audit_event_target_idx").on(
+      t.targetType,
+      t.targetId,
+      t.createdAt.desc(),
+      t.sequence.desc(),
+    ),
     index("admin_audit_event_organization_idx")
-      .on(t.organizationId, t.id.desc())
+      .on(t.organizationId, t.createdAt.desc(), t.sequence.desc())
       .where(sql`${t.organizationId} is not null`),
     // The worker's retention purge.
     index("admin_audit_event_created_at_idx").on(t.createdAt),
@@ -1185,6 +1197,7 @@ export const orgAuditEvent = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => newId(ID_PREFIXES.orgAuditEvent)),
+    sequence: bigint("sequence", { mode: "number" }).generatedAlwaysAsIdentity(),
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
@@ -1204,8 +1217,17 @@ export const orgAuditEvent = pgTable(
     createdAt: createdAt(),
   },
   (t) => [
-    index("org_audit_event_organization_idx").on(t.organizationId, t.id.desc()),
-    index("org_audit_event_organization_action_idx").on(t.organizationId, t.action, t.id.desc()),
+    index("org_audit_event_organization_idx").on(
+      t.organizationId,
+      t.createdAt.desc(),
+      t.sequence.desc(),
+    ),
+    index("org_audit_event_organization_action_idx").on(
+      t.organizationId,
+      t.action,
+      t.createdAt.desc(),
+      t.sequence.desc(),
+    ),
   ],
 );
 

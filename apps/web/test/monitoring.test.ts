@@ -74,6 +74,29 @@ test("tunnel forwards an envelope exactly at the limit byte for byte", async () 
   }
 });
 
+test("tunnel rate-limits invalid public envelopes before forwarding", async () => {
+  process.env.SENTRY_DSN = DSN;
+  const fetchSpy = spyOn(globalThis, "fetch");
+  try {
+    let denied: Response | null = null;
+    for (let i = 0; i < 70; i++) {
+      const response = await POST(
+        new Request("https://coss.com/api/monitoring", { method: "POST", body: "invalid" }),
+      );
+      if (response.status === 429) {
+        denied = response;
+        break;
+      }
+      expect(response.status).toBe(400);
+    }
+    expect(denied?.status).toBe(429);
+    expect(denied?.headers.get("retry-after")).not.toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  } finally {
+    fetchSpy.mockRestore();
+  }
+});
+
 // Loading the real Next/Sentry SDK in a subprocess can exceed 5s on a busy CI runner.
 test("real console integrations send no secret URLs or raw arguments in envelopes", async () => {
   // Isolate SDK globals and console instrumentation from the rest of the test runner.

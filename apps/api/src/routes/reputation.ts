@@ -2,6 +2,7 @@ import { getReputation } from "@coss/reputation";
 import { ReputationObject } from "@coss/reputation/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { requireApiKey } from "../middleware/api-key.ts";
+import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, jsonDoc } from "./docs.ts";
 
@@ -18,7 +19,7 @@ export const getReputationRoute = createRoute({
     "organization; sandbox keys keep working. Subscribe to the `account.*` webhook events to be " +
     "notified of changes.",
   security: [{ bearerAuth: [] }],
-  middleware: requireApiKey({ reputation: ["read"] }),
+  middleware: [requireApiKey({ reputation: ["read"] }), rateLimit("api.read")],
   responses: {
     200: jsonDoc("The organization's reputation.", ReputationObject),
     ...commonErrors,

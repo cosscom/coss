@@ -153,9 +153,9 @@ describe("recording hits", () => {
     const now = new Date("2026-01-01T00:00:00Z");
     const open = parts(urls.open ?? "");
     expect(await recordOpen({ ...open, userAgent: "Mail/1.0", now })).toBe(true);
-    // The same minute collapses; the next one counts again.
+    // Replays in the same day collapse; the next day counts again.
     expect(await recordOpen({ ...open, userAgent: "Mail/1.0", now })).toBe(false);
-    const later = new Date(now.getTime() + 120_000);
+    const later = new Date(now.getTime() + 25 * 60 * 60 * 1000);
     expect(await recordOpen({ ...open, userAgent: null, now: later })).toBe(true);
 
     const second = parts(urls.clicks[1] ?? "");

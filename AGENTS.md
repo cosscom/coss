@@ -143,7 +143,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | web reads the id only to refuse admin suspensions of COSS's own organization (`isSystemOrganization`, `apps/web/src/lib/system-organization.ts`); worker: account emails (verification, password reset, invitation) and reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
 | `VALKEY_URL`, `VALKEY_CLUSTER` | api + web: rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
 | `RATE_LIMIT_KEY_PREFIX` | api + web: namespaces Valkey keys (default `coss`) |
-| `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → per-IP limits off |
+| `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → public unauthenticated limits use an aggregate fallback subject instead of a per-IP subject |
 | `TEST_VALKEY_URL` | ratelimit + api tests (keys under a random prefix, never flushed) |
 | `WEBHOOK_SECRETS_KEY` | api + web + worker: comma-separated 32-byte base64 keys, newest first (the first encrypts, all decrypt); encrypts endpoint signing secrets (losing it makes them unreadable). Shape in `@coss/webhooks/env` |
 | `LOG_RETENTION_DAYS` | worker: days of environment logs kept (1-31, default 30); whole expired day partitions are dropped hourly |
@@ -504,8 +504,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     `BETTER_AUTH_SECRET` (`scimCredentialHashSecret` — rotating that secret invalidates every SCIM token). Connecting
     needs an active SSO provider: `resolveScimUser` only provisions addresses under the provider's domains
     (`ssoDomainForEmail`, also enforced on create/update in `databaseHooks.user` so directory users stay
-    `emailVerified`), links an existing account only when it is verified (sign-up doesn't verify: an unverified
-    account would hand membership to whoever registered it) and never lets the directory rewrite a linked account
+    `emailVerified`), links an existing account only when it is verified (keep this independent of sign-up policy:
+    an unverified account would hand membership to whoever registered it) and never lets the directory rewrite a linked account
     (`profile: "preserve"`). The plugin has no organizations: `reconcileScimMembership` (its `projection`) writes
     `member` rows through the transaction it is given — active = member, admin when a group is mapped to admin in
     `scim_group_role` (normalized displayName); inactive/deleted = membership removed and that org's SSO sessions
@@ -569,10 +569,11 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - **Rate limits** (`@coss/ratelimit`): buckets are defined only in `BUCKETS` (`src/buckets.ts`); GCRA state is one
   key per bucket, `GCRA_SCRIPT` (Valkey) and `gcraStep` (memory) must stay in step (`test/store.test.ts` runs both).
   One consume call = one hash tag (`{scope:subject}`), so all its buckets share a scope and a cluster slot. The
-  limiter **fails open** (store errors allow the request and log); never make it throw or block on Valkey. Never
+  limiter applies each bucket's explicit `failureMode` on store errors and logs them: read-only API traffic allows,
+  while authentication, writes, sends, quotas and public-ingress abuse controls deny. Never make it throw or block on Valkey. Never
   `FLUSH*`/`KEYS` (tests use random prefixes). Valkey time (`TIME`) is the clock, not the app's. API key buckets run
-  after `requireApiKey` (a bad key spends no bucket); `api.auth_failure` is per client IP and is checked
-  before the key lookup. Send quotas are charged before `emailService.send` and refunded on replays and thrown errors.
+  after `requireApiKey` (a bad key spends no route bucket); key and aggregate-IP authentication buckets run before
+  every database lookup, and `api.auth_failure` adds a client-IP penalty for bad keys. Send quotas are charged before `emailService.send` and refunded on replays and thrown errors.
   Client IPs come only from `clientIpResolver` (`CLIENT_IP_HEADER`, rightmost-trusted `x-forwarded-for` entry) —
   never trust a raw header. Emails are hashed into keys. Better Auth's built-in limiter stays off
   (`rateLimit: { enabled: false }`): `apps/web/src/lib/auth-rate-limit.ts` wraps the `/api/auth` POST handler. The
@@ -766,9 +767,11 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   truncated to 8,000 chars, link hosts+paths without query strings); the screening package never imports a product, so
   SMS reuses it as is. Sampling (`ReputationPolicy.contentScreening`, per-org overrides in the admin `PolicyForm`): the
   first `alwaysFirst`, the `milestones`, then `sampleRate` at random — never make it fully predictable. The position
-  comes from one `INSERT … ON CONFLICT … RETURNING new.seen, old.owed` (Postgres 18). **Fails open**: classifier
-  errors/timeouts (3 s) record an `error` verdict, owe the sample to the next message and send; `screen` throwing
-  also sends. Highest category score ≥ `blockThreshold` → `blocked`: the email fails `content_rejected` and
+  comes from one `INSERT … ON CONFLICT … RETURNING new.seen, old.owed` (Postgres 18). Classifier errors/timeouts
+  (3 s) record an `error` verdict and owe the sample to the next message. Enforced screening holds that email as
+  `content_screening_unavailable`; shadow mode and COSS's own notification organization send it. An unexpected
+  `screen` throw follows the same default-deny rule, with that notification organization as the only allowlist entry.
+  Highest category score ≥ `blockThreshold` → `blocked`: the email fails `content_rejected` and
   `suspendOrganization(trigger "content_screening")` in the verdict's transaction; ≥ `flagThreshold` → `flagged`
   (sent, `markReputationDue`); `contentScreeningCheck` turns enforced verdicts in the window into `suspend`/`warning`.
   `enforce: false` is shadow mode (record only); `enabled: false` screens nothing. Verdict rows never store content;
@@ -856,8 +859,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - Tracking does not filter bots: mail clients that prefetch images (e.g. Apple Mail Privacy Protection) inflate opens
   and link scanners inflate clicks. Providers send one message to every recipient, so hits on emails with several
   recipients have `recipient: null`.
-- Rate limits fail open while Valkey is unreachable (logged), and override changes take up to a minute (per-process
-  cache). Without `CLIENT_IP_HEADER` there are no per-IP limits. Sign-in is also limited per email address, so
+- Rate-limit outage behavior is explicit per bucket: read-only API traffic fails open, while security and cost
+  controls fail closed. Override changes take up to a minute (per-process cache). Without `CLIENT_IP_HEADER`, public
+  unauthenticated entry points use a per-process aggregate subject instead of a client IP. Sign-in is also limited per email address, so
   someone hammering an address delays its owner's sign-in for as long as they keep at it (accepted).
 - SSO domains must be verified **email** domains, so an organization that signs in with a domain it doesn't send
   from still adds it under Domains (which creates an SES identity). OIDC IdPs must be public `https://` hosts.

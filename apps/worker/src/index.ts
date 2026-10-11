@@ -65,6 +65,7 @@ const emailService = createEmailService({
   screen: classifier
     ? (input) => screenMessage(input, { classifier, systemOrganizationId })
     : undefined,
+  screeningFailureAllowlist: systemOrganizationId ? new Set([systemOrganizationId]) : undefined,
 });
 await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
 

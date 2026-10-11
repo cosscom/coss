@@ -48,6 +48,7 @@ export function dispatchingEmailService(opts: {
   liveProvider: EmailProvider;
   sandboxProvider: EmailProvider;
   screen?: EmailServiceOptions["screen"];
+  screeningFailureAllowlist?: EmailServiceOptions["screeningFailureAllowlist"];
   trackingBaseUrl?: string;
   trackingDomainProvider?: string;
 }): EmailService & { queue: MemoryDispatchQueue } {

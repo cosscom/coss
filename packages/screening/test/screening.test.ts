@@ -123,7 +123,19 @@ describe("screenMessage", () => {
     expect(standing?.nextEvaluationAt).not.toBeNull();
   });
 
-  test("fails open on classifier errors and owes the sample to the next message", async () => {
+  test("does not block COSS's own organization when its classifier fails", async () => {
+    const tenant = await createTestTenant();
+    const outcome = await screenMessage(input(tenant), {
+      classifier: fakeClassifier({ fail: true }),
+      systemOrganizationId: tenant.organization.id,
+    });
+    expect(outcome).toMatchObject({
+      action: "send",
+      screening: { verdict: "error", enforced: true },
+    });
+  });
+
+  test("fails closed in enforcement mode on classifier errors and owes the next sample", async () => {
     const tenant = await createTestTenant();
     await updateReputationPolicy({
       organizationId: tenant.organization.id,
@@ -132,8 +144,8 @@ describe("screenMessage", () => {
     });
     const failing = fakeClassifier({ fail: true });
     const failed = await screenMessage(input(tenant), { classifier: failing, random: never });
-    expect(failed.action).toBe("send");
-    expect(failed.screening).toMatchObject({ verdict: "error", enforced: false });
+    expect(failed.action).toBe("block");
+    expect(failed.screening).toMatchObject({ verdict: "error", enforced: true });
     expect(failed.screening?.errorMessage).toContain("fake classifier failure");
     expect((await counter(tenant.organization.id))?.owed).toBe(true);
 
@@ -152,7 +164,7 @@ describe("screenMessage", () => {
       classifier: fakeClassifier({ delayMs: 1000 }),
       timeoutMs: 20,
     });
-    expect(outcome).toMatchObject({ action: "send", screening: { verdict: "error" } });
+    expect(outcome).toMatchObject({ action: "block", screening: { verdict: "error" } });
   });
 
   test("shadow mode records verdicts without acting on them", async () => {

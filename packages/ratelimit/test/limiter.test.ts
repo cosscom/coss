@@ -58,7 +58,7 @@ describe("limiter", () => {
     ).rejects.toThrow(/share a scope/);
   });
 
-  test("fails open when the store throws", async () => {
+  test("uses each bucket's explicit store-failure policy", async () => {
     const errors: unknown[] = [];
     const broken: RateLimitStore = {
       consume: async () => {
@@ -67,10 +67,12 @@ describe("limiter", () => {
       close: async () => {},
     };
     const limiter = createRateLimiter({ store: broken, onStoreError: (e) => errors.push(e) });
-    const decision = await limiter.consume({ buckets: ["api.read"], subject: "k" });
-    expect(decision).toMatchObject({ allowed: true, failedOpen: true, limit: 100 });
+    const read = await limiter.consume({ buckets: ["api.read"], subject: "k" });
+    expect(read).toMatchObject({ allowed: true, failedOpen: true, limit: 100 });
+    const write = await limiter.consume({ buckets: ["api.write"], subject: "k" });
+    expect(write).toMatchObject({ allowed: false, failedOpen: false, remaining: 0 });
     await limiter.refund({ buckets: ["api.read"], subject: "k" });
-    expect(errors).toHaveLength(2);
+    expect(errors).toHaveLength(3);
   });
 
   test("keys never contain raw emails or braces", async () => {

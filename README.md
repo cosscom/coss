@@ -130,8 +130,9 @@ resets) are printed to the dashboard's server console in development.
   it is spam, phishing, malware or fraud. Sampled: each organization's first 10 live emails, its 25th, 50th, 100th,
   250th, 500th and 1000th, then 2% at random. At ≥ 0.95 the email fails with `content_rejected` and the
   organization is suspended (the reputation guard's `content_screening` trigger); at ≥ 0.70 it is sent but the
-  organization is warned until the flag ages out of the window. Classifier errors and timeouts (3 s) never stop an
-  email; the sample moves to the next one. Admins see every verdict on the organization's reputation page and can
+  organization is warned until the flag ages out of the window. In enforcement mode, classifier errors and
+  timeouts (3 s) hold the email as `content_screening_unavailable`; the sample also moves to the next one. COSS's
+  own notification organization always sends so an AI outage cannot stop account recovery. Admins see every verdict on the organization's reputation page and can
   tune thresholds and sampling, switch to shadow mode, or turn screening off per organization (e.g. for
   phishing-simulation senders). Locally `SCREENING_CLASSIFIER=fake` flags content containing `[coss-test:phishing]`
   (or `spam`, `malware`, `fraud`; `[coss-test:spam:0.8]` sets the score).
@@ -295,8 +296,9 @@ or none, is denied); COSS always sends with the organization's tenant, which SES
 ## Content screening on Vercel AI Gateway
 
 1. Create an AI Gateway API key in the Vercel team that will pay for screening. Requests ask for zero data
-   retention (the content is customer email), which Vercel offers on Pro and Enterprise teams; without it,
-   requests fail and emails are sent unscreened (logged as `error` verdicts).
+   retention (the content is customer email), which Vercel offers on Pro and Enterprise teams. In enforced
+   mode, a failed request records an `error` verdict and holds the email with
+   `content_screening_unavailable`; shadow mode records the failure and sends the email.
 2. Set `SCREENING_CLASSIFIER=ai` and `AI_GATEWAY_API_KEY` for the worker (only the worker screens).
    `SCREENING_MODEL` defaults to `typesafe-ai/jev`; any Gateway decision model id works.
 3. Cost: one screening is about 2k input tokens (bodies are truncated to 8,000 characters) — about $0.0001 with
@@ -306,7 +308,9 @@ or none, is denied); COSS always sends with the organization's tenant, which SES
 
 Rate limit counters live in Valkey (one GCRA bucket per key, updated atomically by a Lua script with the
 server's clock). Without `VALKEY_URL` each process counts in memory, which is fine for development but
-refused in production. If Valkey is unreachable, requests are **allowed** (fail open) and a warning is logged.
+refused in production. Every bucket declares its outage policy: read-only API traffic is allowed when Valkey
+is unreachable, while authentication, writes, sends, quotas and public-ingress abuse controls are denied.
+A warning is logged in either case.
 
 1. The cache lives in a VPC: the API and dashboard must run in it, and its security group must allow inbound
    TCP 6379 from them.
@@ -316,10 +320,11 @@ refused in production. If Valkey is unreachable, requests are **allowed** (fail 
    `default` user, a user group and the serverless cache (Valkey 8, TLS).
 3. Set what it prints (`VALKEY_URL=rediss://…`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX`) for the API
    and dashboard. The password is only printed when the user is created; `--rotate-password` makes a new one
-   (running processes fail open until they get it).
+   (running processes apply each bucket's outage policy until they get it).
 4. Set `CLIENT_IP_HEADER` (e.g. `x-forwarded-for`) and `TRUSTED_PROXY_COUNT` (how many of your proxies append
-   to it) to match your load balancers; without them per-IP limits (repeated invalid API keys, dashboard
-   sign-in) are off, because the socket address would be the load balancer's.
+   to it) to match your load balancers. Without them, public unauthenticated entry points use an aggregate
+   fallback subject instead of trusting the load balancer's socket address; email-address and token/key
+   buckets still apply where available.
 
 ## Error monitoring on Sentry
 

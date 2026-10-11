@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { instrumentHtml } from "../src/tracking-html.ts";
+import { instrumentHtml, MAX_TRACKED_LINKS } from "../src/tracking-html.ts";
 
 const BASE = "https://api.coss.test";
 const TOKEN = "t".repeat(32);
@@ -50,6 +50,17 @@ describe("instrumentHtml", () => {
     const out = instrumentHtml(html, { ...both, opens: false });
     expect(out.links).toEqual([]);
     expect(out.html).toBe(html.replace(" data-coss-no-track", " "));
+  });
+
+  test("caps the links stored and rewritten for one message", () => {
+    const html = Array.from(
+      { length: MAX_TRACKED_LINKS + 2 },
+      (_, i) => `<a href="https://example.com/${i}">${i}</a>`,
+    ).join("");
+    const out = instrumentHtml(html, { ...both, opens: false });
+    expect(out.links).toHaveLength(MAX_TRACKED_LINKS);
+    expect(out.html).toContain(`${BASE}/t/c/${TOKEN}/${MAX_TRACKED_LINKS - 1}`);
+    expect(out.html).toContain(`href="https://example.com/${MAX_TRACKED_LINKS}"`);
   });
 
   test("adds the pixel before </body>, or at the end without one", () => {

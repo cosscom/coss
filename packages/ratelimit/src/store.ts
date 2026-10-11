@@ -10,7 +10,7 @@ import {
   parseScriptReply,
 } from "./gcra.ts";
 
-/** Where bucket state lives. Implementations throw on failure; the limiter decides to fail open. */
+/** Where bucket state lives. Implementations throw on failure; each bucket defines the fallback. */
 export interface RateLimitStore {
   consume(specs: readonly LimitSpec[], options: ConsumeOptions): Promise<ConsumeResult>;
   close(): Promise<void>;
@@ -85,7 +85,7 @@ export class ValkeyStore implements RateLimitStore {
 
   /**
    * Resolves once connected. Commands fail instead of queueing while disconnected (and the limiter
-   * then fails open), so call this at startup to not fail open on the first requests.
+   * applies the bucket's policy), so call this at startup before accepting requests.
    */
   ready(timeoutMs = 5000): Promise<void> {
     if (this.client.status === "ready") return Promise.resolve();
@@ -160,7 +160,7 @@ export function createValkeyClient(opts: ValkeyConnectionOptions): ValkeyClient 
     tls,
     commandTimeout: opts.commandTimeoutMs ?? 100,
     connectTimeout: 2000,
-    // Fail fast instead of queueing while disconnected; callers fail open.
+    // Fail fast instead of queueing while disconnected; the limiter applies each bucket's policy.
     maxRetriesPerRequest: 0,
   };
   const onError = throttled(

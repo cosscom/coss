@@ -120,7 +120,7 @@ export async function resolveScimUser(
     .where(eq(schema.user.email, email))
     .limit(1);
   if (existing) {
-    // Sign-up doesn't verify addresses: linking an unverified account would make whoever
+    // Keep this independent of sign-up policy: linking an unverified account would make whoever
     // registered it (and knows its password) a member. Same rule as SSO account linking.
     if (!existing.emailVerified) {
       throw scimError(

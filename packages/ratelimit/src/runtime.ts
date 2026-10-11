@@ -29,7 +29,7 @@ export function createRateLimitRuntime(
     ready = () =>
       valkey.ready().catch((error: unknown) => {
         console.warn(
-          "[ratelimit] Valkey is not reachable yet; limits fail open until it is:",
+          "[ratelimit] Valkey is not reachable yet; bucket failure policies apply until it is:",
           error,
         );
       });
