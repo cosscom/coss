@@ -13,7 +13,16 @@ import {
   testSender,
   webhookReceiver,
 } from "@coss/webhooks/testing";
-import { verifyWebhook, WebhookVerificationError } from "coss";
+import {
+  type EmailWebhookEvent,
+  verifyWebhook,
+  type WebhookEvent,
+  WebhookVerificationError,
+} from "coss";
+
+function isEmailEvent(event: WebhookEvent): event is EmailWebhookEvent {
+  return event.type.startsWith("email.");
+}
 
 describe("sandbox send → webhook", () => {
   test("delivers signed events the SDK verifies", async () => {
@@ -60,9 +69,11 @@ describe("sandbox send → webhook", () => {
       );
       expect(attempted).toBe(2);
 
-      const events = await Promise.all(
-        receiver.received.map((request) => verifyWebhook(request.body, request.headers, secret)),
-      );
+      const events = (
+        await Promise.all(
+          receiver.received.map((request) => verifyWebhook(request.body, request.headers, secret)),
+        )
+      ).filter(isEmailEvent);
       expect(events.map((event) => [event.type, event.data.recipient]).sort()).toEqual([
         ["email.bounced", "bounce@simulator.amazonses.com"],
         ["email.delivered", "ok@example.com"],

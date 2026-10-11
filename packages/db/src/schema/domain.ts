@@ -140,6 +140,8 @@ export const email = pgTable(
     // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
     unique("email_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
+    // Reputation checks scan an organization's recent emails.
+    index("email_organization_created_at_idx").on(t.organizationId, t.createdAt),
     // Target for composite FKs that pin children to the same organization.
     unique("email_id_organization_unique").on(t.id, t.organizationId),
   ],
@@ -514,5 +516,73 @@ export const webhookAttempt = pgTable(
       foreignColumns: [webhookDelivery.id, webhookDelivery.organizationId],
     }).onDelete("cascade"),
     index("webhook_attempt_delivery_idx").on(t.deliveryId, t.attemptedAt),
+  ],
+);
+
+export const reputationStatus = pgEnum("reputation_status", ["good", "warning", "suspended"]);
+
+/**
+ * An organization's sending standing, kept by the reputation guard (`@coss/reputation`). Created
+ * lazily: no row means `good`. Only platform admins move an organization out of `suspended`.
+ */
+export const reputationStanding = pgTable(
+  "reputation_standing",
+  {
+    organizationId: text("organization_id")
+      .primaryKey()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    status: reputationStatus("status").notNull().default("good"),
+    // The trigger behind the current status (e.g. `complaint_rate`, `manual`); null when good.
+    reason: text("reason"),
+    statusChangedAt: timestamp("status_changed_at", { withTimezone: true }),
+    // Rate windows never reach back past the last reinstatement.
+    reinstatedAt: timestamp("reinstated_at", { withTimezone: true }),
+    // Per-organization policy overrides set by platform admins (validated by `@coss/reputation`).
+    policyOverrides: jsonb("policy_overrides").$type<Record<string, unknown>>(),
+    // The latest evaluation's check results.
+    metrics: jsonb("metrics").$type<Record<string, unknown>>(),
+    lastEvaluatedAt: timestamp("last_evaluated_at", { withTimezone: true }),
+    // When the worker should evaluate next; null when nothing is pending.
+    nextEvaluationAt: timestamp("next_evaluation_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("reputation_standing_next_evaluation_idx")
+      .on(t.nextEvaluationAt)
+      .where(sql`${t.nextEvaluationAt} IS NOT NULL`),
+  ],
+);
+
+export const reputationEventType = pgEnum("reputation_event_type", [
+  "warning_raised",
+  "warning_cleared",
+  "suspended",
+  "reinstated",
+  "policy_updated",
+]);
+
+export const reputationActor = pgEnum("reputation_actor", ["system", "admin"]);
+
+/** Append-only history of an organization's standing changes (audit trail). */
+export const reputationEvent = pgTable(
+  "reputation_event",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.reputationEvent)),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    type: reputationEventType("type").notNull(),
+    trigger: text("trigger").notNull(),
+    actor: reputationActor("actor").notNull(),
+    actorUserId: text("actor_user_id").references(() => user.id, { onDelete: "set null" }),
+    note: text("note"),
+    metrics: jsonb("metrics").$type<Record<string, unknown>>(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("reputation_event_organization_created_at_idx").on(t.organizationId, t.createdAt.desc()),
   ],
 );

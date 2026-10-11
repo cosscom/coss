@@ -12,6 +12,7 @@
   "dependencies": {
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
+    "@coss/reputation": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@hono/zod-openapi": "catalog:",

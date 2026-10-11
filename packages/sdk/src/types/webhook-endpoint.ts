@@ -3,9 +3,10 @@
  * `WebhookEvent` in `./webhook.ts`.
  */
 import type { EmailEventType } from "./email.ts";
+import type { AccountEventType } from "./webhook.ts";
 
 /** Every event type an endpoint can subscribe to. */
-export type WebhookEventType = EmailEventType;
+export type WebhookEventType = EmailEventType | AccountEventType;
 
 /** A URL of the API key's environment that receives signed event notifications. */
 export interface WebhookEndpoint {

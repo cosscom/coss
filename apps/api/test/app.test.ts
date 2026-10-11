@@ -95,6 +95,7 @@ describe("GET /openapi.json", () => {
       "/v1/emails",
       "/v1/emails/{id}",
       "/v1/emails/{id}/events",
+      "/v1/reputation",
       "/v1/suppressions",
       "/v1/suppressions/check",
       "/v1/suppressions/{id}",
@@ -114,6 +115,10 @@ describe("GET /openapi.json", () => {
     expect(doc.paths["/v1/emails/{id}/events"]?.get).toMatchObject({
       operationId: "listEmailEvents",
       parameters: [{ in: "path", name: "id", required: true }],
+    });
+    expect(doc.paths["/v1/reputation"]?.get).toMatchObject({
+      operationId: "getReputation",
+      security: [{ bearerAuth: [] }],
     });
     expect(doc.paths["/v1/suppressions"]?.post).toMatchObject({ operationId: "createSuppression" });
     expect(doc.paths["/v1/suppressions"]?.get).toMatchObject({
@@ -175,6 +180,8 @@ describe("GET /openapi.json", () => {
         "SuppressionCheck",
         "CreateSuppressionRequest",
         "DeletedSuppression",
+        "Reputation",
+        "ReputationCheck",
         "CreateDomainRequest",
         "Domain",
         "DomainRecord",

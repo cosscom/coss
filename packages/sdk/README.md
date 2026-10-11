@@ -7,7 +7,7 @@ The official TypeScript SDK for COSS: one API key for email, and soon SMS, video
 > `"coss": "workspace:*"`, or build a tarball with `bun run build && bun pm pack`.
 
 - Zero dependencies, ESM-only, fully typed.
-- `coss.email`, `coss.domains` and `coss.webhookEndpoints` behind one API key.
+- `coss.email`, `coss.domains`, `coss.webhookEndpoints` and `coss.reputation` behind one API key.
 - Every method returns `{ data, error }`. API and network failures are returned, never thrown.
 - Retries transient failures automatically, and sends are idempotent.
 
@@ -154,10 +154,23 @@ const { data: page } = await coss.email.suppressions.list({ limit: 50 }); // new
 await coss.email.suppressions.remove("sup_01k…"); // e.g. when they resubscribe
 ```
 
+## Reputation
+
+COSS watches your live bounce and complaint rates. When one gets too high your organization is
+warned, and past the suspension threshold live sending is suspended automatically (sends fail with
+`permission_error` / `account_suspended`; sandbox keys keep working) until COSS support reinstates it.
+
+```ts
+const { data } = await coss.reputation.get();
+// { status: "warning", reason: "bounce_rate", checks: [{ trigger: "bounce_rate", rate: 0.051, … }], … }
+```
+
 ## Webhooks
 
 Webhook endpoints receive `email.sent`, `email.delivered`, `email.delivery_delayed`,
-`email.bounced`, `email.complained` and `email.failed` events, signed with
+`email.bounced`, `email.complained`, `email.failed` and `email.suppressed` events, plus (production
+environments only) `account.reputation_warning`, `account.reputation_recovered`, `account.suspended`
+and `account.reinstated`, signed with
 [Standard Webhooks](https://www.standardwebhooks.com) headers. Verify them with the raw body:
 
 ```ts
@@ -167,6 +180,7 @@ export async function POST(request: Request) {
   try {
     const event = await verifyWebhook(await request.text(), request.headers, process.env.COSS_WEBHOOK_SECRET!);
     if (event.type === "email.bounced") console.log(event.data.recipient, event.data.bounce);
+    if (event.type === "account.suspended") console.log(event.data.reason, event.data.checks);
     return new Response("ok");
   } catch (error) {
     if (error instanceof WebhookVerificationError) return new Response("invalid", { status: 400 });

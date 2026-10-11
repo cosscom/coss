@@ -82,6 +82,12 @@ resets) are printed to the dashboard's server console in development.
   suppression is turned off.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
+- **Reputation guard** — the worker watches each organization's live bounce and complaint rates (per recipient, over
+  7 days) and acts without a human: a **warning** at 4% bounces / 0.08% complaints, an automatic **suspension** of
+  live sending at 8% / 0.3% (from 200 / 500 recipients). Suspended organizations get `403 account_suspended` on live
+  sends and can't create live keys; sandbox keys keep working. Customers see it in the dashboard (banner +
+  **Reputation** page), via `GET /v1/reputation` and through `account.*` webhooks. Only platform admins reinstate
+  (`/admin/organizations`), where they can also suspend manually and override thresholds per organization.
 - **Platform admins** — Better Auth admin plugin (`/admin` in the dashboard). Promote with `bun run admin:create --email …`.
 
 ## Commands
@@ -110,10 +116,11 @@ resets) are printed to the dashboard's server console in development.
 - `GET /v1/suppressions` — list the environment's suppressions (`address`, `scope`, `limit`, `after`)
 - `GET /v1/suppressions/check?address=…&category=…` — would a send skip this address?
 - `GET /v1/suppressions/{id}` / `DELETE /v1/suppressions/{id}` — retrieve / remove an entry
+- `GET /v1/reputation` — the organization's standing (`good`/`warning`/`suspended`) and its latest rates
 - `GET /openapi.json` — OpenAPI 3.1 document
 
-Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains` and
-`coss.webhookEndpoints`.
+Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains`,
+`coss.webhookEndpoints` and `coss.reputation`.
 
 ## Running on Amazon SES
 

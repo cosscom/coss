@@ -1,8 +1,10 @@
+import { getReputationStanding } from "@coss/reputation";
 import { Button } from "@coss/ui/components/button";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { ImpersonationBanner } from "@/components/impersonation-banner";
 import { OrgSwitcher } from "@/components/org-switcher";
+import { ReputationBanner } from "@/components/reputation";
 import { SignOutButton } from "@/components/sign-out-button";
 import { auth } from "@/lib/auth";
 import { isPlatformAdmin, requireOrgMember } from "@/lib/session";
@@ -13,6 +15,7 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
   const organizations = (await auth.api.listOrganizations({ headers: await headers() }))
     .map(({ name, slug }) => ({ name, slug }))
     .toSorted((a, b) => a.name.localeCompare(b.name));
+  const standing = await getReputationStanding(organization.id);
   const base = `/${organization.slug}`;
 
   return (
@@ -37,6 +40,9 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
             <Button render={<Link href={`${base}/members`} />} size="sm" variant="ghost">
               Members
             </Button>
+            <Button render={<Link href={`${base}/reputation`} />} size="sm" variant="ghost">
+              Reputation
+            </Button>
             {isPlatformAdmin(session) ? (
               <Button render={<Link href="/admin" />} size="sm" variant="ghost">
                 Admin
@@ -49,6 +55,7 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
           </div>
         </div>
       </header>
+      {standing ? <ReputationBanner href={`${base}/reputation`} standing={standing} /> : null}
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">{children}</main>
     </div>
   );

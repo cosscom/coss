@@ -163,6 +163,7 @@ function fromEmailError(error: EmailError): ApiError {
         param: "from",
       });
     case "sending_paused":
+    case "account_suspended":
       return new ApiError(error.status, {
         type: "permission_error",
         code: error.code,

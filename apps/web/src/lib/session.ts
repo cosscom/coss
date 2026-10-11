@@ -46,3 +46,14 @@ export async function requireOrgPermission(
 export function isPlatformAdmin(session: Session): boolean {
   return (session.user.role ?? "").split(",").some((role) => role.trim() === "admin");
 }
+
+/**
+ * The current session if it belongs to a platform admin; everyone else gets a 404 (pages and
+ * actions alike), so admin surfaces aren't revealed. Impersonation sessions are the impersonated
+ * user's, so they never pass.
+ */
+export async function requirePlatformAdmin(): Promise<Session> {
+  const session = await requireSession();
+  if (!isPlatformAdmin(session)) notFound();
+  return session;
+}

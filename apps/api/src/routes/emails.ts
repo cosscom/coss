@@ -76,9 +76,9 @@ export const sendEmailRoute = createRoute({
     413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
     415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
     403: errorDoc(
-      "The API key lacks the permission this endpoint needs (`insufficient_permissions`), or " +
-        "sending is paused for the organization because of its sending reputation " +
-        "(`sending_paused`).",
+      "The API key lacks the permission this endpoint needs (`insufficient_permissions`), " +
+        "COSS suspended live sending for the organization because of its sending reputation " +
+        "(`account_suspended`), or the email provider paused it (`sending_paused`).",
     ),
     422: errorDoc(
       "The body failed validation (`validation_error`, see `issues`), the `from` domain is not a " +

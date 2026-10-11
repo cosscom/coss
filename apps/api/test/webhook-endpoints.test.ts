@@ -88,6 +88,20 @@ describe("POST /v1/webhook_endpoints", () => {
     expect(endpoint.event_types).toEqual(["email.bounced", "email.sent"]);
   });
 
+  test("account.* reputation events are subscribable", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+
+    const res = await apiRequest(app, "POST", "/v1/webhook_endpoints", {
+      key: tenant.liveKey,
+      body: { url: URL_ONE, event_types: ["account.suspended", "account.reinstated"] },
+    });
+
+    expect(res.status).toBe(200);
+    const endpoint = (await res.json()) as WebhookEndpointWithSecretOutput;
+    expect(endpoint.event_types.toSorted()).toEqual(["account.reinstated", "account.suspended"]);
+  });
+
   test("an unknown event type is 422 validation_error listing the allowed values", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp();

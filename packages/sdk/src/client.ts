@@ -1,6 +1,7 @@
 import { type FetchLike, HttpClient } from "./core/http.ts";
 import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
+import { ReputationResource } from "./resources/reputation.ts";
 import { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 
 export interface CossOptions {
@@ -66,6 +67,8 @@ export class Coss {
   readonly domains: DomainsResource;
   /** Webhook endpoints of the API key's environment. */
   readonly webhookEndpoints: WebhookEndpointsResource;
+  /** The organization's sending reputation (`coss.reputation.get()`). */
+  readonly reputation: ReputationResource;
 
   /**
    * Throws only for programmer errors: no API key, or running in a browser without
@@ -102,5 +105,6 @@ export class Coss {
     this.email = new EmailResource(http);
     this.domains = new DomainsResource(http);
     this.webhookEndpoints = new WebhookEndpointsResource(http);
+    this.reputation = new ReputationResource(http);
   }
 }

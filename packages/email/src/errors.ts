@@ -3,7 +3,8 @@ export type EmailErrorCode =
   | "request_in_progress"
   | "not_found"
   | "domain_not_verified"
-  | "sending_paused";
+  | "sending_paused"
+  | "account_suspended";
 
 const STATUS_BY_CODE = {
   idempotency_key_reused: 422,
@@ -11,6 +12,7 @@ const STATUS_BY_CODE = {
   not_found: 404,
   domain_not_verified: 422,
   sending_paused: 403,
+  account_suspended: 403,
 } as const satisfies Record<EmailErrorCode, number>;
 
 /** Expected failures of the email service; `status` is the HTTP status the API should use. */

@@ -18,6 +18,7 @@
   "dependencies": {
     "@aws-sdk/client-sesv2": "catalog:",
     "@coss/db": "workspace:*",
+    "@coss/reputation": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "drizzle-orm": "catalog:",
     "zod": "catalog:"

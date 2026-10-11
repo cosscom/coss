@@ -3,6 +3,7 @@
  * public API, its OpenAPI document and contract tests share one definition. Must not import the
  * database: `@coss/email/schemas` is safe to load anywhere.
  */
+import { ACCOUNT_EVENT_TYPES } from "@coss/reputation/schemas";
 import { z } from "zod";
 
 export const MAX_RECIPIENTS = 50;
@@ -328,6 +329,12 @@ export const EMAIL_EVENT_TYPES = [
 ] as const;
 
 export type EmailEventType = (typeof EMAIL_EVENT_TYPES)[number];
+
+/**
+ * Every type a webhook endpoint can subscribe to: email events plus the organization's
+ * reputation changes (`account.*`, delivered to live environments only).
+ */
+export const WEBHOOK_EVENT_TYPES = [...EMAIL_EVENT_TYPES, ...ACCOUNT_EVENT_TYPES] as const;
 
 export const EmailRecipient = z
   .object({

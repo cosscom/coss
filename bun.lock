@@ -16,7 +16,9 @@
       "dependencies": {
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
+        "@coss/reputation": "workspace:*",
         "@coss/tenancy": "workspace:*",
+        "@coss/webhooks": "workspace:*",
         "@hono/zod-openapi": "catalog:",
         "@t3-oss/env-core": "catalog:",
         "hono": "catalog:",
@@ -37,6 +39,7 @@
         "@coss/auth": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
+        "@coss/reputation": "workspace:*",
         "@coss/tenancy": "workspace:*",
         "@coss/ui": "workspace:*",
         "@coss/webhooks": "workspace:*",
@@ -74,6 +77,7 @@
         "@aws-sdk/client-sqs": "catalog:",
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
+        "@coss/reputation": "workspace:*",
         "@coss/webhooks": "workspace:*",
         "@t3-oss/env-core": "catalog:",
         "drizzle-orm": "catalog:",
@@ -124,6 +128,23 @@
       "version": "0.0.0",
       "dependencies": {
         "@aws-sdk/client-sesv2": "catalog:",
+        "@coss/db": "workspace:*",
+        "@coss/reputation": "workspace:*",
+        "@coss/webhooks": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@coss/tenancy": "workspace:*",
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/reputation": {
+      "name": "@coss/reputation",
+      "version": "0.0.0",
+      "dependencies": {
         "@coss/db": "workspace:*",
         "@coss/webhooks": "workspace:*",
         "drizzle-orm": "catalog:",
@@ -198,6 +219,7 @@
       "dependencies": {
         "@coss/db": "workspace:*",
         "drizzle-orm": "catalog:",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@coss/tenancy": "workspace:*",
@@ -435,6 +457,8 @@
     "@coss/db": ["@coss/db@workspace:packages/db"],
 
     "@coss/email": ["@coss/email@workspace:packages/email"],
+
+    "@coss/reputation": ["@coss/reputation@workspace:packages/reputation"],
 
     "@coss/tenancy": ["@coss/tenancy@workspace:packages/tenancy"],
 

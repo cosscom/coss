@@ -71,6 +71,11 @@ export {
   toEmailObject,
 } from "./read.ts";
 export {
+  emailReputationChecks,
+  type SendingCounts,
+  sendingCounts,
+} from "./reputation-checks.ts";
+export {
   ALL_CATEGORIES,
   CheckSuppressionQuery,
   type CheckSuppressionQueryOutput,
@@ -134,6 +139,7 @@ export {
   type SuppressionOutput,
   type SuppressionReason,
   SuppressionScope,
+  WEBHOOK_EVENT_TYPES,
 } from "./schemas.ts";
 export {
   createEmailService,

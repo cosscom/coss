@@ -23,6 +23,7 @@ export const orgStatements = {
   domain: ["create", "read", "verify", "delete"],
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],
+  reputation: ["read"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -35,6 +36,7 @@ const fullCossAccess = {
   domain: ["create", "read", "verify", "delete"],
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],
+  reputation: ["read"],
 } as const;
 
 const readOnlyCossAccess = {
@@ -45,6 +47,7 @@ const readOnlyCossAccess = {
   domain: ["read"],
   webhook: ["read"],
   suppression: ["read"],
+  reputation: ["read"],
 } as const;
 
 export const orgRoles = {
