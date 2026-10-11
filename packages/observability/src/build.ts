@@ -23,7 +23,7 @@ export function sentryBuildOptions() {
     project: process.env.SENTRY_PROJECT || SENTRY_PROJECTS.web,
     authToken,
     release: { name: process.env.NEXT_DEPLOYMENT_ID || undefined },
-    sourcemaps: { disable: !authToken },
+    sourcemaps: { disable: !authToken, deleteSourcemapsAfterUpload: true },
     // Readable stack frames for dependencies (Next, React, Base UI) too.
     widenClientFileUpload: true,
     silent: !authToken,

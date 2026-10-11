@@ -105,6 +105,8 @@ export function scrubEvent<T extends Event>(event: T): T {
   if (event.transaction) event.transaction = scrubUrl(event.transaction);
   // console.error lines (captureConsoleIntegration) and error messages may quote request paths.
   if (typeof event.message === "string") event.message = scrubUrl(event.message);
+  // Raw console arguments can contain nested customer data; keep only the scrubbed message.
+  if (event.extra) delete event.extra.arguments;
   for (const exception of event.exception?.values ?? []) {
     if (exception.value) exception.value = scrubUrl(exception.value);
   }
@@ -138,10 +140,12 @@ export function scrubLog(log: Log): Log {
   return log;
 }
 
-/** `beforeBreadcrumb`: fetch/XHR/navigation breadcrumbs carry full URLs. */
+/** `beforeBreadcrumb`: console messages and fetch/XHR/navigation breadcrumbs carry full URLs. */
 export function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb {
+  if (breadcrumb.message) breadcrumb.message = scrubUrl(breadcrumb.message);
   const data = breadcrumb.data;
   if (data) {
+    delete data.arguments;
     for (const key of ["url", "from", "to"]) {
       if (typeof data[key] === "string") data[key] = scrubUrl(data[key]);
     }
