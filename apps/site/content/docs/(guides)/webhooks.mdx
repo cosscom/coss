@@ -68,3 +68,28 @@ body. With the SDK, use [`verifyWebhook`](/docs/sdk/webhooks).
 - Failed deliveries are retried 7 times over about 28 hours (5 s, 5 min, 30 min, 2 h, 5 h, 10 h, 10 h).
 - Events can arrive out of order: sort by `data.occurred_at`.
 - An event can arrive more than once: deduplicate by `id` (equal to the `webhook-id` header).
+
+## Delivery logs
+
+Every event sent to an endpoint is logged as a delivery, with each HTTP attempt (status code,
+duration, error and the first 1 KB of your response) and the payload as sent. Find them on the
+endpoint's page in the dashboard, or list them through the API — newest first, filtered by
+`status` or `event_id`:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+const endpointId = "whep_…";
+// ---cut---
+const { data: failed } = await coss.webhookEndpoints.deliveries.list(endpointId, {
+  status: "failed",
+});
+
+// After fixing your receiver, send a failed event again.
+for (const delivery of failed?.data ?? []) {
+  await coss.webhookEndpoints.deliveries.retry(endpointId, delivery.id);
+}
+```
+
+A retry makes one more attempt within seconds, signed with the endpoint's current secret and sent
+to its current URL. Deleting an endpoint deletes its delivery log.

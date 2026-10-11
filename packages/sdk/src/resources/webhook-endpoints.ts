@@ -8,6 +8,7 @@ import type {
   WebhookEndpoint,
   WebhookEndpointWithSecret,
 } from "../types/webhook-endpoint.ts";
+import { WebhookDeliveriesResource } from "./webhook-deliveries.ts";
 
 type ReadOptions = Pick<RequestOptions, "signal">;
 
@@ -17,10 +18,13 @@ type ReadOptions = Pick<RequestOptions, "signal">;
  */
 export class WebhookEndpointsResource {
   readonly #http: HttpClient;
+  /** Each endpoint's delivery log: list, retrieve and retry deliveries. */
+  readonly deliveries: WebhookDeliveriesResource;
 
   /** @internal Use `new Coss().webhookEndpoints`. */
   constructor(http: HttpClient) {
     this.#http = http;
+    this.deliveries = new WebhookDeliveriesResource(http);
   }
 
   /**

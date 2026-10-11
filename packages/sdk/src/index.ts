@@ -5,6 +5,7 @@ export type { DomainsResource } from "./resources/domains.ts";
 export type { EmailResource } from "./resources/email.ts";
 export type { ReputationResource } from "./resources/reputation.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
+export type { WebhookDeliveriesResource } from "./resources/webhook-deliveries.ts";
 export type { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 export type {
   CreateDomainParams,
@@ -63,7 +64,11 @@ export type {
 export type {
   CreateWebhookEndpointParams,
   DeletedWebhookEndpoint,
+  ListWebhookDeliveriesParams,
   UpdateWebhookEndpointParams,
+  WebhookAttempt,
+  WebhookDelivery,
+  WebhookDeliveryStatus,
   WebhookEndpoint,
   WebhookEndpointWithSecret,
   WebhookEventType,

@@ -1,9 +1,16 @@
 /** Webhook endpoints of an environment, and their delivery log. */
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
-import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { WebhookError } from "./errors.ts";
-import { DESCRIPTION_MAX_LENGTH, type WebhookEndpointObjectOutput } from "./schemas.ts";
+import {
+  DEFAULT_DELIVERY_LIST_LIMIT,
+  DESCRIPTION_MAX_LENGTH,
+  MAX_DELIVERY_LIST_LIMIT,
+  type WebhookDeliveryObjectOutput,
+  type WebhookEndpointObjectOutput,
+} from "./schemas.ts";
 import { decryptSecret, encryptSecret } from "./secrets.ts";
 import { validateWebhookUrl, WebhookUrlError } from "./sender.ts";
 import { generateSigningSecret } from "./signing.ts";
@@ -205,14 +212,148 @@ export type WebhookDeliveryLogEntry = WebhookDeliveryRow & {
   attempts: WebhookAttemptRow[];
 };
 
+export type WebhookDeliveryWithPayload = WebhookDeliveryLogEntry & {
+  payload: Record<string, unknown>;
+};
+
+/** The delivery's public wire representation. */
+export function toWebhookDeliveryObject(
+  entry: WebhookDeliveryWithPayload,
+): WebhookDeliveryObjectOutput {
+  return {
+    object: "webhook_delivery",
+    id: entry.id,
+    endpoint_id: entry.endpointId,
+    event_id: entry.messageId,
+    event_type: entry.eventType,
+    status: entry.status,
+    attempt_count: entry.attemptCount,
+    next_attempt_at: entry.nextAttemptAt?.toISOString() ?? null,
+    last_status_code: entry.lastStatusCode,
+    last_error: entry.lastError,
+    payload: entry.payload,
+    attempts: entry.attempts.map((attempt) => ({
+      object: "webhook_attempt",
+      id: attempt.id,
+      attempted_at: attempt.attemptedAt.toISOString(),
+      status_code: attempt.statusCode,
+      duration_ms: attempt.durationMs,
+      error: attempt.error,
+      response_excerpt: attempt.responseExcerpt,
+    })),
+    created_at: entry.createdAt.toISOString(),
+    updated_at: entry.updatedAt.toISOString(),
+  };
+}
+
+const cursor = alias(webhookDelivery, "cursor");
+
+/**
+ * A page of the endpoint's deliveries, newest first, each with its attempts and payload. `after`
+ * is the id of the last delivery of the previous page; an unknown or foreign one yields nothing.
+ */
+export async function pageWebhookDeliveries(input: {
+  organizationId: string;
+  endpointId: string;
+  status?: WebhookDeliveryRow["status"];
+  eventId?: string;
+  limit?: number;
+  after?: string;
+}): Promise<{ deliveries: WebhookDeliveryWithPayload[]; hasMore: boolean }> {
+  const limit = Math.min(input.limit ?? DEFAULT_DELIVERY_LIST_LIMIT, MAX_DELIVERY_LIST_LIMIT);
+  if (input.after !== undefined && !isId("whdel", input.after)) {
+    return { deliveries: [], hasMore: false };
+  }
+  const scope = and(
+    eq(webhookDelivery.organizationId, input.organizationId),
+    eq(webhookDelivery.endpointId, input.endpointId),
+  );
+  // Keyset on (created_at, id), compared in SQL: a JS Date would drop the microseconds.
+  const afterCursor =
+    input.after === undefined
+      ? undefined
+      : sql`(${webhookDelivery.createdAt}, ${webhookDelivery.id}) < (${db
+          .select({ createdAt: cursor.createdAt, id: cursor.id })
+          .from(cursor)
+          .where(
+            and(
+              eq(cursor.organizationId, input.organizationId),
+              eq(cursor.endpointId, input.endpointId),
+              eq(cursor.id, input.after),
+            ),
+          )})`;
+  const rows = await db
+    .select({
+      delivery: webhookDelivery,
+      eventType: webhookMessage.type,
+      payload: webhookMessage.payload,
+    })
+    .from(webhookDelivery)
+    .innerJoin(
+      webhookMessage,
+      and(
+        eq(webhookMessage.id, webhookDelivery.messageId),
+        eq(webhookMessage.organizationId, webhookDelivery.organizationId),
+      ),
+    )
+    .where(
+      and(
+        scope,
+        input.status === undefined ? undefined : eq(webhookDelivery.status, input.status),
+        input.eventId === undefined ? undefined : eq(webhookDelivery.messageId, input.eventId),
+        afterCursor,
+      ),
+    )
+    .orderBy(desc(webhookDelivery.createdAt), desc(webhookDelivery.id))
+    .limit(limit + 1);
+  const page = rows.slice(0, limit);
+  if (page.length === 0) return { deliveries: [], hasMore: false };
+  const attempts = await db
+    .select()
+    .from(webhookAttempt)
+    .where(
+      and(
+        eq(webhookAttempt.organizationId, input.organizationId),
+        inArray(
+          webhookAttempt.deliveryId,
+          page.map((row) => row.delivery.id),
+        ),
+      ),
+    )
+    .orderBy(asc(webhookAttempt.attemptedAt), asc(webhookAttempt.id));
+  return {
+    deliveries: page.map((row) => ({
+      ...row.delivery,
+      eventType: row.eventType,
+      payload: row.payload,
+      attempts: attempts.filter((attempt) => attempt.deliveryId === row.delivery.id),
+    })),
+    hasMore: rows.length > limit,
+  };
+}
+
 /** The endpoint's most recent deliveries, newest first, each with its attempts. */
 export async function listWebhookDeliveries(input: {
   organizationId: string;
   endpointId: string;
   limit?: number;
-}): Promise<WebhookDeliveryLogEntry[]> {
-  const rows = await db
-    .select({ delivery: webhookDelivery, eventType: webhookMessage.type })
+}): Promise<WebhookDeliveryWithPayload[]> {
+  return (await pageWebhookDeliveries(input)).deliveries;
+}
+
+/** One delivery of an endpoint. Malformed, unknown and foreign ids are all `null`. */
+export async function getWebhookDelivery(input: {
+  organizationId: string;
+  endpointId: string;
+  id: string;
+}): Promise<WebhookDeliveryWithPayload | null> {
+  if (!isId("whdel", input.id)) return null;
+  const [row] = await db
+    .select({
+      delivery: webhookDelivery,
+      eventType: webhookMessage.type,
+      payload: webhookMessage.payload,
+    })
     .from(webhookDelivery)
     .innerJoin(
       webhookMessage,
@@ -225,29 +366,22 @@ export async function listWebhookDeliveries(input: {
       and(
         eq(webhookDelivery.organizationId, input.organizationId),
         eq(webhookDelivery.endpointId, input.endpointId),
+        eq(webhookDelivery.id, input.id),
       ),
     )
-    .orderBy(desc(webhookDelivery.createdAt), desc(webhookDelivery.id))
-    .limit(Math.min(input.limit ?? 50, 100));
-  if (rows.length === 0) return [];
+    .limit(1);
+  if (!row) return null;
   const attempts = await db
     .select()
     .from(webhookAttempt)
     .where(
       and(
         eq(webhookAttempt.organizationId, input.organizationId),
-        inArray(
-          webhookAttempt.deliveryId,
-          rows.map((row) => row.delivery.id),
-        ),
+        eq(webhookAttempt.deliveryId, row.delivery.id),
       ),
     )
-    .orderBy(asc(webhookAttempt.attemptedAt));
-  return rows.map((row) => ({
-    ...row.delivery,
-    eventType: row.eventType,
-    attempts: attempts.filter((attempt) => attempt.deliveryId === row.delivery.id),
-  }));
+    .orderBy(asc(webhookAttempt.attemptedAt), asc(webhookAttempt.id));
+  return { ...row.delivery, eventType: row.eventType, payload: row.payload, attempts };
 }
 
 /** The delivery's message payload, as sent. */

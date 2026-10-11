@@ -140,6 +140,9 @@ describe("GET /openapi.json", () => {
       "/v1/suppressions/{id}",
       "/v1/webhook_endpoints",
       "/v1/webhook_endpoints/{id}",
+      "/v1/webhook_endpoints/{id}/deliveries",
+      "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}",
+      "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry",
     ]);
     expect(doc.paths["/v1/emails"]?.post).toMatchObject({
       operationId: "sendEmail",
@@ -211,6 +214,9 @@ describe("GET /openapi.json", () => {
       ["get /v1/webhook_endpoints/{id}", "getWebhookEndpoint"],
       ["patch /v1/webhook_endpoints/{id}", "updateWebhookEndpoint"],
       ["delete /v1/webhook_endpoints/{id}", "deleteWebhookEndpoint"],
+      ["get /v1/webhook_endpoints/{id}/deliveries", "listWebhookDeliveries"],
+      ["get /v1/webhook_endpoints/{id}/deliveries/{delivery_id}", "getWebhookDelivery"],
+      ["post /v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry", "retryWebhookDelivery"],
     ]);
     expect(doc.components.securitySchemes.bearerAuth).toMatchObject({
       type: "http",
