@@ -4,7 +4,7 @@
  */
 import { db, schema } from "@coss/db";
 import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
-import { and, asc, inArray, lt, ne, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, lt, ne, or, sql } from "drizzle-orm";
 
 const { reputationEvent, reputationNotification } = schema;
 
@@ -36,20 +36,22 @@ export async function purgeExpiredReputationNotifications(
 }
 
 /**
- * Deletes standing changes created before the cutoff that a later standing transition of the same
- * organization superseded: an organization's latest transition stays (notifications compare
- * against it) however old it is. Cascades to the events' notifications.
+ * Deletes expired policy updates and superseded standing transitions. An organization's latest
+ * transition stays (notifications compare against it) however old it is. Cascades to notifications.
  */
 export async function purgeExpiredReputationEvents(opts: PurgeOptions = {}): Promise<number> {
   const cutoff = retentionCutoff(RETENTION_DAYS.reputationHistory, opts.now);
   const expired = and(
     lt(reputationEvent.createdAt, cutoff),
-    sql`exists (
+    or(
+      eq(reputationEvent.type, "policy_updated"),
+      sql`exists (
       select 1 from ${reputationEvent} as later
       where later.organization_id = ${reputationEvent.organizationId}
         and later.type in ('warning_raised', 'warning_cleared', 'suspended', 'reinstated')
         and (later.created_at, later.id) > (${reputationEvent.createdAt}, ${reputationEvent.id})
     )`,
+    ),
     opts.scope ? inArray(reputationEvent.organizationId, opts.scope.organizationIds) : undefined,
   );
   const due = db

@@ -32,15 +32,31 @@ export async function purgeExpiredWebhookMessages(
     ),
     opts.scope ? inArray(webhookMessage.organizationId, opts.scope.organizationIds) : undefined,
   );
-  const due = db
-    .select({ id: webhookMessage.id })
-    .from(webhookMessage)
-    .where(expired)
-    .orderBy(asc(webhookMessage.createdAt))
-    .limit(opts.limit ?? 1000);
-  const deleted = await db
-    .delete(webhookMessage)
-    .where(and(inArray(webhookMessage.id, due), expired))
-    .returning({ id: webhookMessage.id });
-  return deleted.length;
+  return db.transaction(async (tx) => {
+    // Manual retries lock the same parent before updating a delivery. Skip messages being retried
+    // or purged elsewhere, and hold these locks through the cascading delete.
+    const due = await tx
+      .select({ id: webhookMessage.id })
+      .from(webhookMessage)
+      .where(expired)
+      .orderBy(asc(webhookMessage.createdAt))
+      .limit(opts.limit ?? 1000)
+      .for("update", { skipLocked: true });
+    if (due.length === 0) return 0;
+    // A separate statement gets a fresh snapshot after acquiring the locks: a retry may have
+    // committed after the selection's snapshot was taken but before its parent was locked.
+    const deleted = await tx
+      .delete(webhookMessage)
+      .where(
+        and(
+          inArray(
+            webhookMessage.id,
+            due.map((row) => row.id),
+          ),
+          expired,
+        ),
+      )
+      .returning({ id: webhookMessage.id });
+    return deleted.length;
+  });
 }

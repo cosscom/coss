@@ -35,6 +35,41 @@ const eventIds = async (organizationId: string) =>
   ).map((row) => row.id);
 
 describe("purgeExpiredReputationEvents", () => {
+  test("expires policy updates without a later standing transition", async () => {
+    const { organization } = await createTestTenant();
+    const scope = { organizationIds: [organization.id] };
+    const insertPolicy = async (age: number) => {
+      const [event] = await db
+        .insert(reputationEvent)
+        .values({
+          organizationId: organization.id,
+          type: "policy_updated",
+          trigger: "policy",
+          actor: "admin",
+          createdAt: daysAgo(age),
+        })
+        .returning();
+      if (!event) throw new Error("no policy event");
+      return event;
+    };
+    await insertPolicy(RETENTION_DAYS.reputationHistory + 2);
+    await insertPolicy(RETENTION_DAYS.reputationHistory + 1);
+    expect(await purgeExpiredReputationEvents({ scope })).toBe(2);
+    expect(await eventIds(organization.id)).toEqual([]);
+
+    const suspended = await suspendOrganization({
+      organizationId: organization.id,
+      trigger: "bounce_rate",
+      actor: { kind: "system" },
+      now: daysAgo(RETENTION_DAYS.reputationHistory + 10),
+    });
+    if (!suspended) throw new Error("not suspended");
+    await insertPolicy(RETENTION_DAYS.reputationHistory + 1);
+    const recent = await insertPolicy(0);
+    expect(await purgeExpiredReputationEvents({ scope })).toBe(1);
+    expect((await eventIds(organization.id)).sort()).toEqual([suspended.id, recent.id].sort());
+  });
+
   test("keeps an organization's latest transition however old, and deletes superseded ones", async () => {
     const { tenant, organizationId, suspended, scope } = await suspendedLongAgo();
     expect(await purgeExpiredReputationEvents({ scope })).toBe(0);
