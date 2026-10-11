@@ -90,7 +90,8 @@ resets) are printed to the dashboard's server console in development.
   suppression is turned off.
 - **Scheduled sends** — pass `scheduled_at` (ISO 8601 with an offset, up to 30 days ahead) and the email is stored
   as `scheduled` (event `email.scheduled`); the worker sends it when it is due, re-checking the domain and the
-  suppression list. Until then `POST /v1/emails/{id}/cancel` cancels it (`canceled`, event `email.canceled`).
+  suppression list. Until then `POST /v1/emails/{id}/reschedule` moves it to a new time (event `email.rescheduled`)
+  and `POST /v1/emails/{id}/cancel` cancels it (`canceled`, event `email.canceled`).
 - **Open & click tracking** — off by default. Turn it on per environment (a default plus per-category rules, in the
   dashboard) or per send (`tracking: { opens, clicks }`). COSS adds an invisible image and rewrites HTML links to its
   own redirect (`API_PUBLIC_URL/t/…`) when it hands the email to the provider; the stored email keeps the original

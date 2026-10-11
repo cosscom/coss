@@ -510,7 +510,12 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   re-running `authorizeLiveSender` (failure → `failed` + `email.failed`) and, in the claim transaction, the
   suppression list. `cancel` is a compare-and-set `scheduled` → `canceled` (recipients `canceled`, whole-message
   `email.canceled`); repeating it returns the email, any other status is 422 `email_not_cancelable` (not 409: the SDK
-  retries those). Scheduled sends are held while their organization is suspended. Cancel needs `email:send`.
+  retries those). `reschedule` (`POST /v1/emails/{id}/reschedule`, `rescheduleEmail`) locks the still-`scheduled`
+  row (`FOR UPDATE`), so a dispatcher's claim waits and its compare-and-set re-checks the new `scheduled_at`; it
+  records `email.rescheduled` (`data.reschedule`, a random `sourceId` so every move is its own event), the same time
+  again is a no-op, anything not `scheduled` is 422 `email_not_reschedulable`. Only the time changes (content changes
+  are cancel + send). Scheduled sends are held while their organization is suspended. Cancel and reschedule need
+  `email:send`.
   `scheduled_at` is omitted from the parsed request when absent (request hashes).
 - **Batch sends** (`POST /v1/emails/batch`, `EmailService.sendBatch`, table `email_batch`, ids `batch_`): ≤ 100
   emails (`MAX_BATCH_EMAILS`), each a full `SendEmailRequest`, all or nothing. Every distinct `from` is authorized
@@ -670,7 +675,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,
-rescheduling (cancel and send again), SCIM/directory sync,
+SCIM/directory sync,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos/deletion, email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.

@@ -6,6 +6,7 @@ import type {
   EmailEvent,
   EmailLink,
   List,
+  RescheduleEmailParams,
   SendEmailParams,
 } from "../types/email.ts";
 import { SuppressionResource } from "./suppressions.ts";
@@ -71,6 +72,24 @@ export class EmailResource {
     return this.#http.request<Email>({
       method: "POST",
       path: `/v1/emails/${encodeURIComponent(id)}/cancel`,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Moves a scheduled email to a new time and records an `email.rescheduled` event. The time it
+   * already has returns it unchanged; an email that is no longer scheduled fails with
+   * `email_not_reschedulable`.
+   */
+  reschedule(
+    id: string,
+    params: RescheduleEmailParams,
+    options?: Pick<RequestOptions, "signal">,
+  ): Promise<CossResult<Email>> {
+    return this.#http.request<Email>({
+      method: "POST",
+      path: `/v1/emails/${encodeURIComponent(id)}/reschedule`,
+      body: params,
       signal: options?.signal,
     });
   }

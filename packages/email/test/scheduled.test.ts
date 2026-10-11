@@ -540,3 +540,207 @@ describe("cancel", () => {
     );
   });
 });
+
+describe("reschedule", () => {
+  test("moves a scheduled email to a new time with an email.rescheduled event", async () => {
+    const tenant = await createTestTenant();
+    const { service, sandboxProvider } = fakeProviders();
+    const env = { organizationId: tenant.organization.id, environmentId: tenant.development.id };
+    const original = inAnHour();
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ scheduled_at: original }),
+    });
+    const tomorrow = new Date(Date.now() + 24 * HOUR).toISOString();
+
+    const rescheduled = await service.reschedule({
+      ...env,
+      emailId: email.id,
+      scheduledAt: tomorrow,
+    });
+
+    expect(rescheduled).toMatchObject({ status: "scheduled", scheduled_at: tomorrow });
+    const listed = await listEmailEvents({ ...env, emailId: email.id });
+    expect(listed?.events.map((event) => [event.type, event.data])).toEqual([
+      ["email.scheduled", {}],
+      [
+        "email.rescheduled",
+        {
+          reschedule: { scheduled_at: tomorrow, previous_scheduled_at: original },
+        },
+      ],
+    ]);
+    // No longer due at the original time.
+    expect(await service.dispatchDue({ now: later(), scope: scopeOf(tenant) })).toBe(0);
+    expect(sandboxProvider.sent).toHaveLength(0);
+    // Each move is its own event, even back and forth.
+    await service.reschedule({ ...env, emailId: email.id, scheduledAt: original });
+    await service.reschedule({ ...env, emailId: email.id, scheduledAt: tomorrow });
+    expect(await eventsOf(tenant, email.id)).toEqual([
+      ["email.scheduled", null],
+      ["email.rescheduled", null],
+      ["email.rescheduled", null],
+      ["email.rescheduled", null],
+    ]);
+  });
+
+  test("the same time again is a no-op", async () => {
+    const tenant = await createTestTenant();
+    const { service } = fakeProviders();
+    const env = { organizationId: tenant.organization.id, environmentId: tenant.development.id };
+    const original = inAnHour();
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ scheduled_at: original }),
+    });
+
+    const same = await service.reschedule({ ...env, emailId: email.id, scheduledAt: original });
+
+    expect(same).toEqual(email);
+    expect(await eventsOf(tenant, email.id)).toEqual([["email.scheduled", null]]);
+  });
+
+  test("a past time makes the email due now", async () => {
+    const tenant = await createTestTenant();
+    const { service, sandboxProvider } = fakeProviders();
+    const env = { organizationId: tenant.organization.id, environmentId: tenant.development.id };
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ scheduled_at: inAnHour() }),
+    });
+    expect(await service.dispatchDue({ scope: scopeOf(tenant) })).toBe(0);
+
+    const past = new Date(Date.now() - 1000).toISOString();
+    const rescheduled = await service.reschedule({ ...env, emailId: email.id, scheduledAt: past });
+
+    expect(rescheduled).toMatchObject({ status: "scheduled", scheduled_at: past });
+    expect(await service.dispatchDue({ scope: scopeOf(tenant) })).toBe(1);
+    expect(sandboxProvider.sent).toHaveLength(1);
+    expect((await getEmail({ ...env, id: email.id }))?.status).toBe("sent");
+  });
+
+  test("refuses emails that are not scheduled", async () => {
+    const tenant = await createTestTenant();
+    const { service } = fakeProviders();
+    const env = { organizationId: tenant.organization.id, environmentId: tenant.development.id };
+    const { email: sent } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params(),
+    });
+    const { email: scheduled } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ scheduled_at: inAnHour() }),
+    });
+    await service.cancel({ ...env, emailId: scheduled.id });
+
+    for (const emailId of [sent.id, scheduled.id]) {
+      await expectEmailError(
+        service.reschedule({ ...env, emailId, scheduledAt: later().toISOString() }),
+        "email_not_reschedulable",
+      );
+    }
+    expect(await eventsOf(tenant, scheduled.id)).toEqual([
+      ["email.scheduled", null],
+      ["email.canceled", null],
+    ]);
+  });
+
+  test("loses to a dispatcher that already claimed the email", async () => {
+    const tenant = await createTestTenant();
+    const gated = gatedProvider("fake");
+    const service = createEmailService({
+      queue: memoryDispatchQueue(),
+      liveProvider: gated.provider,
+      sandboxProvider: gated.provider,
+    });
+    const env = { organizationId: tenant.organization.id, environmentId: tenant.development.id };
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ scheduled_at: inAnHour() }),
+    });
+    const dispatching = service.dispatchDue({ now: later(), scope: scopeOf(tenant) });
+    await gated.called;
+
+    await expectEmailError(
+      service.reschedule({
+        ...env,
+        emailId: email.id,
+        scheduledAt: new Date(Date.now() + 24 * HOUR).toISOString(),
+      }),
+      "email_not_reschedulable",
+    );
+    gated.release();
+    await dispatching;
+    expect((await getEmail({ ...env, id: email.id }))?.status).toBe("sent");
+  });
+
+  test("a dispatcher waiting on the row re-checks the new time", async () => {
+    const tenant = await createTestTenant();
+    const { service, sandboxProvider } = fakeProviders();
+    const env = { organizationId: tenant.organization.id, environmentId: tenant.development.id };
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ scheduled_at: inAnHour() }),
+    });
+    // Holds the row lock a reschedule takes, so the dispatcher's claim waits behind it.
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let markLocked!: () => void;
+    const locked = new Promise<void>((resolve) => {
+      markLocked = resolve;
+    });
+    const holding = db.transaction(async (tx) => {
+      await tx
+        .select({ id: schema.email.id })
+        .from(schema.email)
+        .where(eq(schema.email.id, email.id))
+        .for("update");
+      markLocked();
+      await gate;
+      await tx
+        .update(schema.email)
+        .set({ scheduledAt: new Date(Date.now() + 24 * HOUR) })
+        .where(eq(schema.email.id, email.id));
+    });
+    await locked;
+
+    const dispatching = service.dispatchDue({ now: later(), scope: scopeOf(tenant) });
+    // Let the dispatcher read the email as due and block on its claim.
+    await Bun.sleep(100);
+    release();
+    await holding;
+    expect(await dispatching).toBe(1);
+    expect(sandboxProvider.sent).toHaveLength(0);
+    expect((await getEmail({ ...env, id: email.id }))?.status).toBe("scheduled");
+  });
+
+  test("is scoped to the environment", async () => {
+    const tenant = await createTestTenant();
+    const { service } = fakeProviders();
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ scheduled_at: inAnHour() }),
+    });
+    const other = await createTestTenant();
+
+    for (const env of [
+      { organizationId: tenant.organization.id, environmentId: tenant.production.id },
+      { organizationId: other.organization.id, environmentId: other.development.id },
+    ]) {
+      await expectEmailError(
+        service.reschedule({ ...env, emailId: email.id, scheduledAt: later().toISOString() }),
+        "not_found",
+      );
+    }
+  });
+});

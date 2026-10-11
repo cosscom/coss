@@ -22,6 +22,7 @@ import type {
   ExportSuppressionsQuery,
   ImportSuppressionsRequest,
   ListSuppressionsQuery,
+  RescheduleEmailRequest,
   SendEmailBatchRequest,
   SendEmailRequest,
   Suppression,
@@ -59,6 +60,7 @@ import type {
   List,
   ListSuppressionsParams,
   ListWebhookDeliveriesParams,
+  RescheduleEmailParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
   ApiVersion as SdkApiVersion,
   DeletedDomain as SdkDeletedDomain,
@@ -146,6 +148,9 @@ export type Contract = [
   >,
   Assert<Equals<keyof z.input<typeof SendEmailBatchRequest>, "emails">>,
   Assert<MutuallyAssignable<z.output<typeof EmailBatchObject>, EmailBatch>>,
+  // Rescheduling: `reschedule(id, params)` posts the params as they are.
+  Assert<MutuallyAssignable<z.input<typeof RescheduleEmailRequest>, RescheduleEmailParams>>,
+  Assert<Equals<keyof z.input<typeof RescheduleEmailRequest>, keyof RescheduleEmailParams>>,
   // Domains: request and response shapes match the SDK's hand-written types.
   Assert<MutuallyAssignable<z.input<typeof CreateDomainRequest>, CreateDomainParams>>,
   Assert<MutuallyAssignable<z.output<typeof DomainObject>, SdkDomain>>,
