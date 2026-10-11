@@ -246,7 +246,10 @@ async function notificationContent(
     .where(
       and(
         eq(member.organizationId, organizationId),
-        inArray(member.role, NOTIFIED_ROLES),
+        sql`string_to_array(${member.role}, ',') && ARRAY[${sql.join(
+          NOTIFIED_ROLES.map((role) => sql`${role}`),
+          sql`, `,
+        )}]::text[]`,
         eq(user.emailVerified, true),
         or(isNull(user.banned), ne(user.banned, true)),
       ),
@@ -291,12 +294,16 @@ export function renderNotification(input: {
   url: string;
 }): Message {
   const { organizationName: name } = input;
+  const subjectName = name
+    .replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, " ")
+    .replace(/\s+/gu, " ")
+    .trim();
   const label = triggerLabel(input.trigger);
   const advice = ADVICE[input.trigger];
   const blocks: Block[] = [];
   let subject: string;
   if (input.type === "suspended") {
-    subject = `Live sending is suspended for ${name}`;
+    subject = `Live sending is suspended for ${subjectName}`;
     blocks.push({
       paragraph: `COSS suspended live sending for ${name}. Reason: ${label}.`,
     });
@@ -311,7 +318,7 @@ export function renderNotification(input: {
       paragraph: "A suspension is never lifted automatically. Contact support to resume sending.",
     });
   } else {
-    subject = `Your sending reputation needs attention (${name})`;
+    subject = `Your sending reputation needs attention (${subjectName})`;
     blocks.push({
       paragraph:
         input.trigger === "content_screening"

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import {
   listReputationNotifications,
+  renderNotification,
   runDueReputationNotifications,
   suspendOrganization,
 } from "@coss/reputation";
@@ -70,6 +71,73 @@ describe("emailReputationNotifier", () => {
       .from(schema.email)
       .where(eq(schema.email.environmentId, platform.production.id));
     expect(after).toHaveLength(1);
+  });
+
+  test.each(["warning", "suspended"] as const)(
+    "normalizes %s subjects and preserves the body name",
+    async (type) => {
+      const platform = await createTestTenant();
+      const from = await verifiedFrom(platform.organization.id);
+      const notifier = emailReputationNotifier({
+        service,
+        environment: await notificationEnvironment(platform.production.id),
+        from,
+      });
+      const name = "Acme\r\nInc\t\u0085\u200b\u2028\u2029Co";
+      const message = renderNotification({
+        type,
+        organizationName: name,
+        trigger: "manual",
+        checks: [],
+        url: "https://coss.test/acme/reputation",
+      });
+      await notifier.send({
+        ...message,
+        to: platform.owner.email,
+        idempotencyKey: `subject:${type}`,
+      });
+      const [email] = await db
+        .select()
+        .from(schema.email)
+        .where(eq(schema.email.environmentId, platform.production.id));
+      expect(email?.status).toBe("sent");
+      expect(email?.subject).toContain("Acme Inc Co");
+      expect(email?.text).toContain(name);
+      expect(email?.html).toContain(name);
+    },
+  );
+
+  test("replays unchanged and changed notices after a prolonged outage", async () => {
+    const platform = await createTestTenant();
+    const from = await verifiedFrom(platform.organization.id);
+    const environment = await notificationEnvironment(platform.production.id);
+    const notifier = emailReputationNotifier({ service, environment, from });
+    const notice = {
+      idempotencyKey: "outage:recipient",
+      to: platform.owner.email,
+      subject: "Warning",
+      text: "Hi",
+      html: "<p>Hi</p>",
+    };
+    await notifier.send(notice);
+    const [original] = await db
+      .select()
+      .from(schema.email)
+      .where(eq(schema.email.environmentId, platform.production.id));
+    if (!original) throw new Error("Expected a sent email");
+    // Simulate a crash after the email was accepted, followed by almost three days offline.
+    await db
+      .update(schema.email)
+      .set({ createdAt: new Date(Date.now() - 71 * 60 * 60 * 1000) })
+      .where(eq(schema.email.id, original.id));
+    const restarted = emailReputationNotifier({ service, environment, from });
+    await Promise.all([restarted.send(notice), restarted.send(notice)]);
+    await restarted.send({ ...notice, subject: "Renamed" });
+    const emails = await db
+      .select()
+      .from(schema.email)
+      .where(eq(schema.email.environmentId, platform.production.id));
+    expect(emails.map((email) => email.id)).toEqual([original.id]);
   });
 
   test("refuses a sandbox environment or an invalid sender", async () => {

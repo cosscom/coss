@@ -107,6 +107,30 @@ describe("reputation notifications", () => {
     expect(sent).toHaveLength(2);
   });
 
+  test("matches exact role tokens in combined roles", async () => {
+    const tenant = await createTestTenant();
+    await db
+      .update(schema.member)
+      .set({ role: "admin,owner" })
+      .where(eq(schema.member.organizationId, tenant.organization.id));
+    const admin = await createTestUser();
+    await addMember({ organizationId: tenant.organization.id, userId: admin.id, role: "member" });
+    await db
+      .update(schema.member)
+      .set({ role: "member,admin" })
+      .where(eq(schema.member.userId, admin.id));
+    for (const role of ["superadmin", "ownerish", "member, admin"]) {
+      const user = await createTestUser();
+      await addMember({ organizationId: tenant.organization.id, userId: user.id, role: "member" });
+      await db.update(schema.member).set({ role }).where(eq(schema.member.userId, user.id));
+    }
+    const now = new Date();
+    await evaluate(tenant, "warning", now);
+    const { sent, deps } = recordingNotifier();
+    await runDueReputationNotifications({ now, scope: scopeOf(tenant) }, deps);
+    expect(sent.map((notice) => notice.to)).toEqual([tenant.owner.email, admin.email]);
+  });
+
   test("only the current standing is announced: a warning overtaken by a suspension is skipped", async () => {
     const tenant = await createTestTenant();
     const orgId = tenant.organization.id;

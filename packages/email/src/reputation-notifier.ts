@@ -50,12 +50,14 @@ export function emailReputationNotifier(opts: {
         tracking: { opens: false, clicks: false },
       });
       try {
-        // The idempotency key makes a retried notification replay instead of sending twice.
+        // Keep the key across the entire notification lifetime, including crashes after enqueue.
+        // Public sends retain their default 24-hour expiry.
         await opts.service.send({
           environment: opts.environment,
           apiKeyId: null,
           params,
           idempotencyKey: notice.idempotencyKey,
+          idempotencyRetentionMs: Number.POSITIVE_INFINITY,
         });
       } catch (error) {
         // Already sent with different content (e.g. the organization was renamed in between).

@@ -523,8 +523,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   per person through a `ReputationNotifier`. The worker wires `emailReputationNotifier` (`@coss/email`): a normal
   live send from COSS's own environment (`NOTIFICATIONS_ENVIRONMENT_ID`/`NOTIFICATIONS_FROM`, category `account`,
   tracking off), so suppression, events and quotas of that org apply; idempotency key `<notification id>:<user id>`
-  (`idempotency_key_reused` counts as sent). Only the org's latest transition is announced (a warning overtaken by a
-  suspension or a recovery is `skipped`), as are ones older than 3 days or with nobody to receive them. Claims push
+  (non-expiring for these internal sends; `idempotency_key_reused` counts as sent). Only the org's latest transition
+  is announced (a warning overtaken by a suspension or a recovery is `skipped`), as are ones older than 3 days or
+  with nobody to receive them. Claims push
   `next_attempt_at` out by a 5-minute lease; failures back off 1, 2, 4… min and become `failed` after 8 attempts.
   Content is customer-facing: trigger label, the checks' messages, advice and a dashboard link — never screening
   scores or admin notes. Recoveries and reinstatements send no email (`NOTIFIED_TRANSITIONS`).
