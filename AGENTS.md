@@ -553,7 +553,11 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
   (platform admin, note required)**. Every change goes through `applyTransition` (guarded update + history row +
   `account.*` webhooks to live environments, one transaction). Email's checks (`emailReputationChecks`) are per-recipient
   rates over live emails in the window (default 7 days, never before the last reinstatement), excluding
-  suppressed/failed/queued recipients and `SIMULATOR_DOMAIN` (unless the `countSimulatorRecipients` override is on);
+  suppressed/failed/queued/canceled recipients and `SIMULATOR_DOMAIN` (unless the `countSimulatorRecipients` override is on).
+  Closed hours (ended ≥ `ROLLUP_SETTLE_MS` ago) are counted once into `email_reputation_rollup` (by email `created_at`,
+  simulator counts kept apart); `recordProviderEvent` bumps an hour's `revision` when a live event changes its counts,
+  and the next evaluation recounts only stale hours (CAS on the revision read before counting) plus the window's open
+  edges live. Any new write path that changes recipient statuses must invalidate the same way;
   default thresholds (`DEFAULT_REPUTATION_POLICY`) are stricter than SES's. Suspension blocks live sending only:
   `authorizeLiveSender` checks `isSuspended` **first** (`EmailError("account_suspended")`, 403 `permission_error`; an
   idempotent replay still returns) and `liveKeyRestriction` refuses new live keys. It is independent of the SES tenant
@@ -625,8 +629,8 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
   are org-owned) — suspend the organization. Suspension does not pause the SES tenant itself;
   already-queued immediate sends finish, while scheduled sends wait for the suspension to be lifted.
 
-- The reputation checks scan the org's live recipients in the window on each evaluation (`email (organization_id,
-  created_at)` index + per-recipient event lookups); heavy senders will need daily rollups. A send already past
+- Reputation rollups are kept per hour of email creation, so late events for an old hour make the next evaluation
+  recount that whole hour. A send already past
   `authorizeLiveSender` when the org is suspended still goes out. Customers are told by banner, page, API and webhooks —
   there is no notification email yet.
 

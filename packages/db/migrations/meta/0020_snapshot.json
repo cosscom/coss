@@ -1,5 +1,5 @@
 {
-  "id": "a78a439d-bafc-40c1-96f3-e71262a8a294",
+  "id": "2919e75d-a51f-4298-80a3-9171ccd5ccb9",
   "prevId": "cd0986a6-496a-4211-bf96-5f98da073794",
   "version": "7",
   "dialect": "postgresql",
@@ -1999,18 +1999,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "batch_id": {
-          "name": "batch_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "batch_index": {
-          "name": "batch_index",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -2039,28 +2027,6 @@
         }
       },
       "indexes": {
-        "email_batch_idx": {
-          "name": "email_batch_idx",
-          "columns": [
-            {
-              "expression": "batch_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "batch_index",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"email\".\"batch_id\" is not null",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "email_environment_created_at_idx": {
           "name": "email_environment_created_at_idx",
           "columns": [
@@ -2150,21 +2116,6 @@
             "organization_id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "email_batch_fk": {
-          "name": "email_batch_fk",
-          "tableFrom": "email",
-          "tableTo": "email_batch",
-          "columnsFrom": [
-            "batch_id",
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id",
-            "organization_id"
-          ],
-          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -2296,101 +2247,6 @@
           "columns": [
             "email_id",
             "position"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.email_batch": {
-      "name": "email_batch",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "environment_id": {
-          "name": "environment_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "api_key_id": {
-          "name": "api_key_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "idempotency_key": {
-          "name": "idempotency_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "request_hash": {
-          "name": "request_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "email_batch_environment_fk": {
-          "name": "email_batch_environment_fk",
-          "tableFrom": "email_batch",
-          "tableTo": "environment",
-          "columnsFrom": [
-            "environment_id",
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id",
-            "organization_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "email_batch_environment_idempotency_key_unique": {
-          "name": "email_batch_environment_idempotency_key_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "environment_id",
-            "idempotency_key"
-          ]
-        },
-        "email_batch_id_organization_unique": {
-          "name": "email_batch_id_organization_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "organization_id"
           ]
         }
       },
@@ -2740,6 +2596,115 @@
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.email_reputation_rollup": {
+      "name": "email_reputation_rollup",
+      "schema": "",
+      "columns": {
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bucket_start": {
+          "name": "bucket_start",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "computed_revision": {
+          "name": "computed_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recipients": {
+          "name": "recipients",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "bounces": {
+          "name": "bounces",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "complaints": {
+          "name": "complaints",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "simulator_recipients": {
+          "name": "simulator_recipients",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "simulator_bounces": {
+          "name": "simulator_bounces",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "simulator_complaints": {
+          "name": "simulator_complaints",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "email_reputation_rollup_organization_id_organization_id_fk": {
+          "name": "email_reputation_rollup_organization_id_organization_id_fk",
+          "tableFrom": "email_reputation_rollup",
+          "tableTo": "organization",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "email_reputation_rollup_organization_id_bucket_start_pk": {
+          "name": "email_reputation_rollup_organization_id_bucket_start_pk",
+          "columns": [
+            "organization_id",
+            "bucket_start"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

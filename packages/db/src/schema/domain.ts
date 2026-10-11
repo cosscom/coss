@@ -759,6 +759,33 @@ export const reputationEvent = pgTable(
     index("reputation_event_organization_created_at_idx").on(t.organizationId, t.createdAt.desc()),
   ],
 );
+
+/**
+ * Hourly rollups of an organization's live email reputation counts (`@coss/email`), by the hour
+ * the emails were created. Computed lazily by the reputation checks for closed hours; delivery
+ * events that change an hour's counts bump `revision`, so a row is current only while
+ * `computed_revision = revision`. Mailbox-simulator recipients are counted separately.
+ */
+export const emailReputationRollup = pgTable(
+  "email_reputation_rollup",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    bucketStart: timestamp("bucket_start", { withTimezone: true }).notNull(),
+    revision: integer("revision").notNull().default(0),
+    // Null until first computed.
+    computedRevision: integer("computed_revision"),
+    recipients: integer("recipients").notNull().default(0),
+    bounces: integer("bounces").notNull().default(0),
+    complaints: integer("complaints").notNull().default(0),
+    simulatorRecipients: integer("simulator_recipients").notNull().default(0),
+    simulatorBounces: integer("simulator_bounces").notNull().default(0),
+    simulatorComplaints: integer("simulator_complaints").notNull().default(0),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ columns: [t.organizationId, t.bucketStart] })],
+);
 export const contentScreeningVerdict = pgEnum("content_screening_verdict", [
   "clean",
   "flagged",
