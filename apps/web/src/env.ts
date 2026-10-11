@@ -1,5 +1,7 @@
 import { emailEnvShape } from "@coss/email/env";
+import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
+import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
@@ -27,8 +29,7 @@ export const env = createEnv({
     API_PUBLIC_URL: z.url(),
     ...emailEnvShape,
     ...rateLimitEnvShape,
-    // Encrypts webhook signing secrets at rest: 32 bytes, base64 (`openssl rand -base64 32`).
-    WEBHOOK_SECRETS_KEY: base64Key(32),
+    ...webhookEnvShape,
     // Server Actions encrypt closed-over variables with this key; every instance of a stage must
     // share it. Without it, each build embeds its own random key. Builds don't need it; production
     // servers refuse to start without it (src/instrumentation.ts).
@@ -36,6 +37,14 @@ export const env = createEnv({
     // Proxies in front of the app that append to X-Forwarded-For (CloudFront → ALB: 2). 0 trusts
     // no forwarded address (local development).
     TRUSTED_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
+    // Cloudflare Turnstile on sign-up, sign-in and password reset (both or neither; required in
+    // production, see src/instrumentation.ts). The site key is public: pages pass it to the
+    // widget. The secret key is read by @coss/auth (`captcha` plugin).
+    TURNSTILE_SITE_KEY: z.string().optional(),
+    TURNSTILE_SECRET_KEY: z.string().optional(),
+    // Error and performance monitoring of the dashboard's server and, through /api/monitoring,
+    // of browsers on both zones (dashboard and site).
+    ...sentryEnvShape,
   },
   client: {},
   experimental__runtimeEnv: {},

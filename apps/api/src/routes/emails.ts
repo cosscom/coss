@@ -5,6 +5,7 @@ import {
   EmailLinkList,
   EmailObject,
   MAX_BATCH_EMAILS,
+  RescheduleEmailRequest,
   SendEmailBatchRequest,
   SendEmailRequest,
   uniqueRecipientCount,
@@ -227,7 +228,8 @@ export const listEmailEventsRoute = createRoute({
   tags: ["Emails"],
   summary: "List an email's delivery events",
   description:
-    "Every delivery event of the email, oldest first: `email.scheduled`, `email.canceled`, " +
+    "Every delivery event of the email, oldest first: `email.scheduled`, `email.rescheduled`, " +
+    "`email.canceled`, " +
     "`email.sent` and `email.failed` for the whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, " +
     "`email.complained` and `email.suppressed` (skipped because of the suppression list) per " +
     "recipient, plus `email.opened` and `email.clicked` when tracking is on (attributed to a " +
@@ -254,7 +256,7 @@ export const cancelEmailRoute = createRoute({
   summary: "Cancel a scheduled email",
   description:
     "Cancels an email sent with a future `scheduled_at` before it is sent. Canceling an already " +
-    "canceled email returns it unchanged.",
+    "canceled email returns it unchanged. To send it at another time, reschedule it instead.",
   security: [{ bearerAuth: [] }],
   middleware: [requireApiKey({ email: ["send"] }), rateLimit("api.write")],
   request: { params: EmailIdParams },
@@ -271,6 +273,49 @@ export const cancelEmailRoute = createRoute({
     ),
   },
 });
+
+export const rescheduleEmailRoute = createRoute({
+  method: "post",
+  path: "/emails/{id}/reschedule",
+  operationId: "rescheduleEmail",
+  tags: ["Emails"],
+  summary: "Reschedule a scheduled email",
+  description:
+    "Moves an email sent with a future `scheduled_at` to a new time, at most 30 days from now, " +
+    "and records an `email.rescheduled` event. A time that is not in the future sends it within " +
+    "seconds. Rescheduling to the time it already has returns it unchanged. The domain and the " +
+    "suppression list are still checked when it is sent.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ email: ["send"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/emails/{id}/reschedule"),
+  ] as const,
+  request: {
+    params: EmailIdParams,
+    body: {
+      required: true,
+      content: { "application/json": { schema: RescheduleEmailRequest } },
+    },
+  },
+  responses: {
+    200: {
+      description: "The rescheduled email.",
+      headers: { "X-Request-Id": requestIdHeader },
+      content: { "application/json": { schema: EmailObject } },
+    },
+    400: errorDoc("The body is not valid JSON (`invalid_json`)."),
+    ...commonErrors,
+    404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
+    415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
+    422: errorDoc(
+      "The body failed validation (`validation_error`, see `issues`), or the email is not " +
+        "scheduled (it is being sent, was sent, failed or was canceled): " +
+        "`email_not_reschedulable`.",
+    ),
+  },
+});
+
 export const listEmailLinksRoute = createRoute({
   method: "get",
   path: "/emails/{id}/links",
@@ -444,6 +489,19 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     const { id } = c.req.valid("param");
     const { organizationId, environmentId } = c.var.auth;
     const email = await emailService.cancel({ organizationId, environmentId, emailId: id });
+    return c.json(email, 200);
+  });
+
+  router.openapi(rescheduleEmailRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { scheduled_at } = c.req.valid("json");
+    const { organizationId, environmentId } = c.var.auth;
+    const email = await emailService.reschedule({
+      organizationId,
+      environmentId,
+      emailId: id,
+      scheduledAt: scheduled_at,
+    });
     return c.json(email, 200);
   });
 

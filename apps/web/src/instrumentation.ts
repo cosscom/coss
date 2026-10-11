@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 /**
  * Runs once when a server starts. The standalone server doesn't load next.config.ts, so this is
  * where a deployed dashboard validates its environment. A misconfigured production task exits at
@@ -15,9 +17,21 @@ export async function register() {
     if (production && !process.env.SKIP_ENV_VALIDATION && !env.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY) {
       throw new Error("NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is required in production.");
     }
+    // Without the secret key, @coss/auth leaves sign-up and sign-in open to bots.
+    if (Boolean(env.TURNSTILE_SITE_KEY) !== Boolean(env.TURNSTILE_SECRET_KEY)) {
+      throw new Error("Set both TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY, or neither.");
+    }
+    if (production && !process.env.SKIP_ENV_VALIDATION && !env.TURNSTILE_SECRET_KEY) {
+      throw new Error("TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY are required in production.");
+    }
   } catch (error) {
     if (!production) throw error;
     console.error("[web] Refusing to start:", error);
     process.exit(1);
   }
+  const { initServerMonitoring } = await import("./lib/monitoring-server");
+  initServerMonitoring();
 }
+
+/** Errors thrown while rendering, in route handlers, server actions and the proxy. */
+export const onRequestError = Sentry.captureRequestError;

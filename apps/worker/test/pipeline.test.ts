@@ -10,7 +10,7 @@ import { createTestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { createWebhookEndpoint, runDueWebhookDeliveries } from "@coss/webhooks";
 import {
-  TEST_SECRETS_KEY,
+  TEST_SECRETS_KEYS,
   testManagementDeps,
   testSender,
   webhookReceiver,
@@ -74,14 +74,14 @@ describe("sandbox send → webhook", () => {
       expect(
         await runDueWebhookDeliveries(
           { scope: { organizationIds: [tenant.organization.id] } },
-          { secretsKey: TEST_SECRETS_KEY, send: testSender() },
+          { secretsKeys: TEST_SECRETS_KEYS, send: testSender() },
         ),
       ).toBe(0);
       await queue.drain(service);
 
       const attempted = await runDueWebhookDeliveries(
         { scope: { organizationIds: [tenant.organization.id] } },
-        { secretsKey: TEST_SECRETS_KEY, send: testSender() },
+        { secretsKeys: TEST_SECRETS_KEYS, send: testSender() },
       );
       expect(attempted).toBe(2);
 
@@ -153,7 +153,7 @@ describe("scheduled send → webhook", () => {
         },
       });
       const deliverWebhooks = () =>
-        runDueWebhookDeliveries({ scope }, { secretsKey: TEST_SECRETS_KEY, send: testSender() });
+        runDueWebhookDeliveries({ scope }, { secretsKeys: TEST_SECRETS_KEYS, send: testSender() });
 
       expect(await deliverWebhooks()).toBe(1);
       expect(

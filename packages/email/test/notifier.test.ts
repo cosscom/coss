@@ -8,19 +8,19 @@ import {
 } from "@coss/reputation";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { eq } from "drizzle-orm";
+import { emailNotifier, notificationEnvironment } from "../src/notifier.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
-import { emailReputationNotifier, notificationEnvironment } from "../src/reputation-notifier.ts";
 import { dispatchingEmailService } from "../src/testing.ts";
 import { verifiedFrom } from "./helpers.ts";
 
 const provider = new FakeEmailProvider({ log: false });
 const service = dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider });
 
-describe("emailReputationNotifier", () => {
+describe("emailNotifier", () => {
   test("sends notices from the platform's live environment, once per key", async () => {
     const platform = await createTestTenant();
     const from = await verifiedFrom(platform.organization.id);
-    const notifier = emailReputationNotifier({
+    const notifier = emailNotifier({
       service,
       environment: await notificationEnvironment(platform.production.id),
       from,
@@ -78,7 +78,7 @@ describe("emailReputationNotifier", () => {
     async (type) => {
       const platform = await createTestTenant();
       const from = await verifiedFrom(platform.organization.id);
-      const notifier = emailReputationNotifier({
+      const notifier = emailNotifier({
         service,
         environment: await notificationEnvironment(platform.production.id),
         from,
@@ -111,7 +111,7 @@ describe("emailReputationNotifier", () => {
     const platform = await createTestTenant();
     const from = await verifiedFrom(platform.organization.id);
     const environment = await notificationEnvironment(platform.production.id);
-    const notifier = emailReputationNotifier({ service, environment, from });
+    const notifier = emailNotifier({ service, environment, from });
     const notice = {
       idempotencyKey: "outage:recipient",
       to: platform.owner.email,
@@ -130,7 +130,7 @@ describe("emailReputationNotifier", () => {
       .update(schema.email)
       .set({ createdAt: new Date(Date.now() - 71 * 60 * 60 * 1000) })
       .where(eq(schema.email.id, original.id));
-    const restarted = emailReputationNotifier({ service, environment, from });
+    const restarted = emailNotifier({ service, environment, from });
     await Promise.all([restarted.send(notice), restarted.send(notice)]);
     await restarted.send({ ...notice, subject: "Renamed" });
     const emails = await db
@@ -140,6 +140,38 @@ describe("emailReputationNotifier", () => {
     expect(emails.map((email) => email.id)).toEqual([original.id]);
   });
 
+  test("discardBody sends the body but clears it from the email's history", async () => {
+    const platform = await createTestTenant();
+    const from = await verifiedFrom(platform.organization.id);
+    const notifier = emailNotifier({
+      service,
+      environment: await notificationEnvironment(platform.production.id),
+      from,
+      discardBody: true,
+    });
+    const secret = `https://coss.test/reset-password/${crypto.randomUUID()}`;
+    await notifier.send({
+      idempotencyKey: `discard:${secret}`,
+      to: platform.owner.email,
+      subject: "Reset your password",
+      text: `Reset: ${secret}`,
+      html: `<a href="${secret}">Reset</a>`,
+    });
+    const [stored] = await db
+      .select()
+      .from(schema.email)
+      .where(eq(schema.email.environmentId, platform.production.id));
+    expect(stored).toMatchObject({
+      status: "sent",
+      subject: "Reset your password",
+      discardBody: true,
+      html: null,
+      text: null,
+    });
+    const delivered = provider.sent.find((message) => message.text?.includes(secret));
+    expect(delivered?.html).toContain(secret);
+  });
+
   test("refuses a sandbox environment or an invalid sender", async () => {
     const platform = await createTestTenant();
     await expect(notificationEnvironment(platform.development.id)).rejects.toThrow(
@@ -147,7 +179,7 @@ describe("emailReputationNotifier", () => {
     );
     await expect(notificationEnvironment("env_missing")).rejects.toThrow("does not exist");
     expect(() =>
-      emailReputationNotifier({
+      emailNotifier({
         service,
         environment: {
           organizationId: platform.organization.id,
@@ -162,7 +194,7 @@ describe("emailReputationNotifier", () => {
 
   test("a sender the platform may not use fails the attempt (retried later)", async () => {
     const platform = await createTestTenant();
-    const notifier = emailReputationNotifier({
+    const notifier = emailNotifier({
       service,
       environment: await notificationEnvironment(platform.production.id),
       from: "COSS <notifications@unverified.coss.test>",

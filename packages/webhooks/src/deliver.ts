@@ -4,9 +4,11 @@
  */
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
+import { appendLogEntries, type LogEntryInput } from "@coss/logs";
 import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
 import { and, asc, eq, inArray, isNull, lt, lte, ne, notExists, or, sql } from "drizzle-orm";
-import { decryptSecret } from "./secrets.ts";
+import { signingSecrets } from "./endpoints.ts";
+import type { SecretsKeyRing } from "./secrets.ts";
 import { DEFAULT_TIMEOUT_MS, type WebhookSender } from "./sender.ts";
 import { signatureHeaders } from "./signing.ts";
 
@@ -38,7 +40,8 @@ const LEASE_MS = 2 * MINUTE;
 const ERROR_MAX_LENGTH = 500;
 
 export type WebhookDeliveryDeps = {
-  secretsKey: Buffer;
+  /** From `WEBHOOK_SECRETS_KEY` (`parseSecretsKeys`). */
+  secretsKeys: SecretsKeyRing;
   send: WebhookSender;
   timeoutMs?: number;
   /** The API versions payloads are rendered in (tests inject their own). */
@@ -125,7 +128,11 @@ function describeError(error: unknown): string {
 
 async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps): Promise<void> {
   const [target] = await db
-    .select({ endpoint: webhookEndpoint, payload: webhookMessage.payload })
+    .select({
+      endpoint: webhookEndpoint,
+      payload: webhookMessage.payload,
+      type: webhookMessage.type,
+    })
     .from(webhookMessage)
     .innerJoin(
       webhookEndpoint,
@@ -158,12 +165,12 @@ async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps):
     return;
   }
 
-  // Signed and sent byte for byte.
+  // Signed and sent byte for byte; during a secret roll, by the current and the previous secret.
   const body = JSON.stringify(
     renderWebhookPayload(target.payload, target.endpoint.apiVersion, deps.versioning),
   );
   const headers = signatureHeaders({
-    secret: decryptSecret(target.endpoint.secretCiphertext, deps.secretsKey),
+    secrets: signingSecrets(target.endpoint, deps.secretsKeys, now),
     id: delivery.messageId,
     timestamp: Math.floor(now.getTime() / 1000),
     body,
@@ -201,6 +208,22 @@ async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps):
       error,
       responseExcerpt,
     });
+    await appendLogEntries(tx, [
+      attemptLogEntry({
+        delivery,
+        endpoint: target.endpoint,
+        type: target.type,
+        payload: target.payload,
+        now,
+        attempt: attempts,
+        statusCode,
+        durationMs,
+        error,
+        responseExcerpt,
+        outcome: succeeded ? "succeeded" : exhausted ? "failed" : "retrying",
+        nextAttemptAt: succeeded || exhausted ? null : new Date(now.getTime() + retryDelay),
+      }),
+    ]);
     await tx
       .update(webhookDelivery)
       .set({
@@ -213,6 +236,57 @@ async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps):
       })
       .where(ours);
   });
+}
+
+/** The environment log line (`webhook.attempt`) for one attempt. */
+function attemptLogEntry(input: {
+  delivery: Claimed;
+  endpoint: typeof webhookEndpoint.$inferSelect;
+  type: string;
+  payload: unknown;
+  now: Date;
+  attempt: number;
+  statusCode: number | null;
+  durationMs: number;
+  error: string | null;
+  responseExcerpt: string | null;
+  outcome: "succeeded" | "retrying" | "failed";
+  nextAttemptAt: Date | null;
+}): LogEntryInput {
+  const { delivery, endpoint } = input;
+  // Email events name their email, so the line joins that email's timeline.
+  const data = (input.payload as { data?: { email_id?: unknown } } | null)?.data;
+  const emailId = typeof data?.email_id === "string" ? data.email_id : null;
+  const result = input.statusCode === null ? (input.error ?? "no response") : input.statusCode;
+  return {
+    organizationId: delivery.organizationId,
+    projectId: endpoint.projectId,
+    environmentId: endpoint.environmentId,
+    occurredAt: input.now,
+    source: "webhook",
+    level:
+      input.outcome === "succeeded" ? "info" : input.outcome === "retrying" ? "warning" : "error",
+    type: "webhook.attempt",
+    message: `${input.type} → ${endpoint.url} ${result}`,
+    statusCode: input.statusCode,
+    durationMs: input.durationMs,
+    errorCode: input.outcome === "succeeded" ? null : "webhook_delivery_failed",
+    resourceType: emailId ? "email" : "webhook_endpoint",
+    resourceId: emailId ?? endpoint.id,
+    searchTerms: [endpoint.id, delivery.id, delivery.messageId],
+    attributes: {
+      endpoint_id: endpoint.id,
+      endpoint_url: endpoint.url,
+      delivery_id: delivery.id,
+      message_id: delivery.messageId,
+      event_type: input.type,
+      attempt: input.attempt,
+      outcome: input.outcome,
+      next_attempt_at: input.nextAttemptAt?.toISOString() ?? null,
+      error: input.error,
+      response_excerpt: input.responseExcerpt,
+    },
+  };
 }
 
 /**
@@ -247,23 +321,39 @@ export async function retryWebhookDelivery(input: {
   id: string;
 }): Promise<boolean> {
   if (!isId("whdel", input.id)) return false;
-  const [updated] = await db
-    .update(webhookDelivery)
-    .set({
-      status: "pending",
-      nextAttemptAt: new Date(),
-      leaseExpiresAt: null,
-      // A failed delivery gets exactly one more attempt.
-      attemptCount: sql`least(${webhookDelivery.attemptCount}, ${MAX_ATTEMPTS - 1})`,
-    })
-    .where(
-      and(
-        eq(webhookDelivery.organizationId, input.organizationId),
-        eq(webhookDelivery.endpointId, input.endpointId),
-        eq(webhookDelivery.id, input.id),
-        ne(webhookDelivery.status, "pending"),
-      ),
-    )
-    .returning({ id: webhookDelivery.id });
-  return Boolean(updated);
+  return db.transaction(async (tx) => {
+    // Serialize with retention on the parent, before locking/updating the child delivery.
+    const [message] = await tx
+      .select({ id: webhookMessage.id })
+      .from(webhookMessage)
+      .innerJoin(webhookDelivery, eq(webhookDelivery.messageId, webhookMessage.id))
+      .where(
+        and(
+          eq(webhookDelivery.organizationId, input.organizationId),
+          eq(webhookDelivery.endpointId, input.endpointId),
+          eq(webhookDelivery.id, input.id),
+        ),
+      )
+      .for("update", { of: webhookMessage });
+    if (!message) return false;
+    const [updated] = await tx
+      .update(webhookDelivery)
+      .set({
+        status: "pending",
+        nextAttemptAt: new Date(),
+        leaseExpiresAt: null,
+        // A failed delivery gets exactly one more attempt.
+        attemptCount: sql`least(${webhookDelivery.attemptCount}, ${MAX_ATTEMPTS - 1})`,
+      })
+      .where(
+        and(
+          eq(webhookDelivery.organizationId, input.organizationId),
+          eq(webhookDelivery.endpointId, input.endpointId),
+          eq(webhookDelivery.id, input.id),
+          ne(webhookDelivery.status, "pending"),
+        ),
+      )
+      .returning({ id: webhookDelivery.id });
+    return Boolean(updated);
+  });
 }

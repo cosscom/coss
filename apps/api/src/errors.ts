@@ -170,6 +170,7 @@ function fromEmailError(error: EmailError): ApiError {
         message: error.message,
       });
     case "email_not_cancelable":
+    case "email_not_reschedulable":
       return invalidRequest(error.code, error.message);
   }
 }
@@ -192,7 +193,11 @@ function fromDomainError(error: DomainError): ApiError {
       return invalidRequest(error.code, error.message, "name");
     case "too_many_pending_domains":
     case "domain_in_use_by_sso":
+    case "tracking_domain_exists":
       return invalidRequest(error.code, error.message);
+    case "invalid_tracking_hostname":
+    case "tracking_domain_taken":
+      return invalidRequest(error.code, error.message, "hostname");
     case "not_found":
       return new ApiError(404, {
         type: "not_found_error",

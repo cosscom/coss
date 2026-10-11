@@ -1,6 +1,6 @@
 /** The DNS records a sending domain needs, and checks of what DNS actually serves. */
 import { Resolver } from "node:dns/promises";
-import type { DomainRecord } from "@coss/db/schema";
+import type { DomainRecord, TrackingDomainRecord } from "@coss/db/schema";
 
 /** The subset of `node:dns/promises` `Resolver` the checks use (fakeable in tests). */
 export type DnsResolver = {
@@ -126,4 +126,19 @@ export async function checkRecords(
 ): Promise<DomainRecord[]> {
   if (!dns) return records.map((record) => ({ ...record, status: "not_checked", found: [] }));
   return Promise.all(records.map((record) => checkRecord(record, dns)));
+}
+
+/** Checks a tracking domain's CNAME; without a resolver it stays `not_checked`. */
+export async function checkTrackingRecord(
+  record: TrackingDomainRecord,
+  dns: DnsResolver | null,
+): Promise<TrackingDomainRecord> {
+  if (!dns) return { ...record, status: "not_checked", found: [] };
+  const answers = await lookup(() => dns.resolveCname(record.name));
+  if (answers === null) return { ...record, status: "not_checked", found: [] };
+  const found = answers.map(normalizeHost);
+  if (found.length === 0) return { ...record, status: "missing", found: [] };
+  return found.includes(normalizeHost(record.value))
+    ? { ...record, status: "verified", found: [] }
+    : { ...record, status: "mismatch", found: found.slice(0, 5) };
 }

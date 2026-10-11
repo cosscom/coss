@@ -7,12 +7,14 @@ import { alias } from "drizzle-orm/pg-core";
 import { WebhookError } from "./errors.ts";
 import {
   DEFAULT_DELIVERY_LIST_LIMIT,
+  DEFAULT_PREVIOUS_SECRET_EXPIRES_IN,
   DESCRIPTION_MAX_LENGTH,
   MAX_DELIVERY_LIST_LIMIT,
+  MAX_PREVIOUS_SECRET_EXPIRES_IN,
   type WebhookDeliveryObjectOutput,
   type WebhookEndpointObjectOutput,
 } from "./schemas.ts";
-import { decryptSecret, encryptSecret } from "./secrets.ts";
+import { decryptSecret, encryptSecret, type SecretsKeyRing } from "./secrets.ts";
 import { validateWebhookUrl, WebhookUrlError } from "./sender.ts";
 import { generateSigningSecret } from "./signing.ts";
 
@@ -25,13 +27,21 @@ export type WebhookAttemptRow = typeof webhookAttempt.$inferSelect;
 export const MAX_ENDPOINTS_PER_ENVIRONMENT = 10;
 
 export type WebhookManagementDeps = {
-  /** From `WEBHOOK_SECRETS_KEY` (`parseSecretsKey`). */
-  secretsKey: Buffer;
+  /** From `WEBHOOK_SECRETS_KEY` (`parseSecretsKeys`). */
+  secretsKeys: SecretsKeyRing;
   /** Accept `http:` and private hosts (local development only). */
   allowInsecureUrls: boolean;
 };
 
-/** The endpoint's public wire representation. Never includes the signing secret. */
+/** When the endpoint's previous secret stops signing; `null` when none signs any more. */
+export function previousSecretExpiresAt(row: WebhookEndpointRow, now = new Date()): Date | null {
+  const expiresAt = row.previousSecretExpiresAt;
+  return row.previousSecretCiphertext !== null && expiresAt !== null && expiresAt > now
+    ? expiresAt
+    : null;
+}
+
+/** The endpoint's public wire representation. Never includes a signing secret. */
 export function toWebhookEndpointObject(row: WebhookEndpointRow): WebhookEndpointObjectOutput {
   return {
     object: "webhook_endpoint",
@@ -41,6 +51,7 @@ export function toWebhookEndpointObject(row: WebhookEndpointRow): WebhookEndpoin
     event_types: row.eventTypes,
     api_version: row.apiVersion,
     enabled: row.enabled,
+    previous_secret_expires_at: previousSecretExpiresAt(row)?.toISOString() ?? null,
     created_at: row.createdAt.toISOString(),
     updated_at: row.updatedAt.toISOString(),
   };
@@ -122,7 +133,7 @@ export async function createWebhookEndpoint(
       description: normalizeDescription(input.description),
       eventTypes: [...new Set(input.eventTypes)].sort(),
       apiVersion,
-      secretCiphertext: encryptSecret(secret, deps.secretsKey),
+      secretCiphertext: encryptSecret(secret, deps.secretsKeys),
       createdByUserId: input.userId,
     })
     .returning();
@@ -167,7 +178,7 @@ export async function getWebhookEndpoint(input: {
 /**
  * Changes an endpoint's URL, description, subscribed event types, API version or enabled flag. Fields left
  * `undefined` keep their current value; `description: null` clears it. The signing secret never
- * changes, so existing receivers keep verifying deliveries.
+ * changes here (see `rollWebhookEndpointSecret`), so existing receivers keep verifying deliveries.
  */
 export async function updateWebhookEndpoint(
   input: {
@@ -220,9 +231,61 @@ export async function deleteWebhookEndpoint(input: {
     );
 }
 
+/**
+ * Replaces the endpoint's signing secret with a new one, returned in plain text. The current
+ * secret becomes the previous one and keeps signing deliveries, next to the new one, for
+ * `previousSecretExpiresIn` seconds (default a day; 0 drops it now), so receivers can switch
+ * without rejecting anything. Rolling again during that time drops the older previous secret.
+ */
+export async function rollWebhookEndpointSecret(
+  input: { organizationId: string; id: string; previousSecretExpiresIn?: number },
+  deps: Pick<WebhookManagementDeps, "secretsKeys">,
+): Promise<{ endpoint: WebhookEndpointRow; secret: string }> {
+  const expiresIn = input.previousSecretExpiresIn ?? DEFAULT_PREVIOUS_SECRET_EXPIRES_IN;
+  if (!Number.isInteger(expiresIn) || expiresIn < 0 || expiresIn > MAX_PREVIOUS_SECRET_EXPIRES_IN) {
+    throw new RangeError(
+      `previousSecretExpiresIn must be an integer from 0 to ${MAX_PREVIOUS_SECRET_EXPIRES_IN}.`,
+    );
+  }
+  const secret = generateSigningSecret();
+  const keep = expiresIn > 0;
+  // One statement: SET reads the row as it was, so the current secret moves to `previous` even
+  // when two rolls race.
+  const [endpoint] = await db
+    .update(webhookEndpoint)
+    .set({
+      secretCiphertext: encryptSecret(secret, deps.secretsKeys),
+      previousSecretCiphertext: keep ? sql`${webhookEndpoint.secretCiphertext}` : null,
+      previousSecretExpiresAt: keep ? new Date(Date.now() + expiresIn * 1000) : null,
+    })
+    .where(
+      and(
+        eq(webhookEndpoint.organizationId, input.organizationId),
+        eq(webhookEndpoint.id, input.id),
+      ),
+    )
+    .returning();
+  if (!endpoint) throw new WebhookError("not_found", "Webhook endpoint not found.");
+  return { endpoint, secret };
+}
+
 /** The endpoint's plain-text signing secret. */
-export function revealWebhookSecret(endpoint: WebhookEndpointRow, secretsKey: Buffer): string {
-  return decryptSecret(endpoint.secretCiphertext, secretsKey);
+export function revealWebhookSecret(endpoint: WebhookEndpointRow, keys: SecretsKeyRing): string {
+  return decryptSecret(endpoint.secretCiphertext, keys);
+}
+
+/** The secrets that sign a delivery made at `now`: the current one, then an unexpired previous one. */
+export function signingSecrets(
+  endpoint: WebhookEndpointRow,
+  keys: SecretsKeyRing,
+  now: Date,
+): [string, ...string[]] {
+  const current = decryptSecret(endpoint.secretCiphertext, keys);
+  const previous =
+    previousSecretExpiresAt(endpoint, now) && endpoint.previousSecretCiphertext
+      ? decryptSecret(endpoint.previousSecretCiphertext, keys)
+      : null;
+  return previous === null ? [current] : [current, previous];
 }
 
 export type WebhookDeliveryLogEntry = WebhookDeliveryRow & {

@@ -4,7 +4,13 @@
  */
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
-import { createDomain, FakeEmailProvider, releaseOrganizationEmailResources } from "@coss/email";
+import {
+  createDomain,
+  createTrackingDomain,
+  FakeEmailProvider,
+  FakeTrackingHostnameProvider,
+  releaseOrganizationEmailResources,
+} from "@coss/email";
 import { SesIdentityProvider } from "@coss/email/ses";
 import { dispatchingEmailService, FakeSesApi } from "@coss/email/testing";
 import { getOrganizationDeletion, requestOrganizationDeletion } from "@coss/tenancy";
@@ -22,10 +28,21 @@ describe("organization deletion", () => {
       configurationSet: "coss-test",
       tenantPrefix: "test",
     });
+    const tracking = new FakeTrackingHostnameProvider();
     const domain = await createDomain(
       { organizationId, name: `gone-${Date.now()}.com`, userId: null },
-      { identity, dns: null },
+      { identity, dns: null, tracking },
     );
+    await db
+      .update(schema.domain)
+      .set({ status: "verified" })
+      .where(eq(schema.domain.id, domain.id));
+    const hostname = `links.${domain.name}`;
+    await createTrackingDomain(
+      { organizationId, domainId: domain.id, hostname },
+      { identity, dns: null, tracking },
+    );
+    expect(tracking.hostnames).toContain(hostname);
     const provider = new FakeEmailProvider({ log: false });
     const service = dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider });
     await service.send({
@@ -57,12 +74,14 @@ describe("organization deletion", () => {
     await runDueOrganizationDeletions(
       { scope: { organizationIds: [organizationId] } },
       {
-        releaseProviderResources: (id) => releaseOrganizationEmailResources(id, { identity }),
+        releaseProviderResources: (id, assertLease) =>
+          releaseOrganizationEmailResources(id, { identity, tracking }, assertLease),
       },
     );
 
     expect((await getOrganizationDeletion(organizationId))?.status).toBe("completed");
     expect(api.identities.has(domain.name)).toBe(false);
+    expect(tracking.hostnames).toEqual([]);
     expect(api.tenants.has(`test-${organizationId}`)).toBe(false);
     const organizations = await db
       .select({ id: schema.organization.id })

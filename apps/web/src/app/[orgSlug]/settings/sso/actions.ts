@@ -14,6 +14,7 @@ import { headers } from "next/headers";
 import { env } from "@/env";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
+import { recordAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import { requireOrgPermission } from "@/lib/session";
 import { discoverOidcEndpoints, httpsUrl, samlConfigFrom } from "@/lib/sso";
@@ -37,7 +38,7 @@ export async function saveSsoProviderAction(
   formData: FormData,
 ): Promise<ActionResult> {
   return runAction(async () => {
-    const { organization } = await requireOrgPermission(formString(formData, "orgSlug"), {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
       sso: ["update"],
     });
     const type: SsoProviderType = formString(formData, "type") === "saml" ? "saml" : "oidc";
@@ -127,6 +128,12 @@ export async function saveSsoProviderAction(
     }
 
     await syncSsoDomainVerification({ organizationId: organization.id, providerId });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: existing ? "sso_provider.updated" : "sso_provider.created",
+      target: { type: "sso_provider", id: providerId, label: type.toUpperCase() },
+      metadata: { type, domains },
+    });
     refresh();
     return null;
   });
@@ -142,7 +149,7 @@ export async function deleteSsoProviderAction(
   formData: FormData,
 ): Promise<ActionResult> {
   return runAction(async () => {
-    const { organization } = await requireOrgPermission(formString(formData, "orgSlug"), {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
       sso: ["update"],
     });
     const existing = await getOrganizationSsoProvider({ organizationId: organization.id });
@@ -155,6 +162,11 @@ export async function deleteSsoProviderAction(
     });
     // Better Auth keeps them; a provider registered later would get the same id and trust them.
     await revokeSsoProviderSessions({ providerIds: [existing.providerId] });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "sso_provider.deleted",
+      target: { type: "sso_provider", id: existing.providerId, label: existing.type.toUpperCase() },
+    });
     refresh();
     return null;
   });
@@ -188,6 +200,11 @@ export async function setSsoRequirementAction(
       }
     }
     await setOrganizationSsoRequired({ organizationId: organization.id, required });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: required ? "sso_requirement.enabled" : "sso_requirement.disabled",
+      target: { type: "organization", id: organization.id, label: organization.name },
+    });
     refresh();
     return null;
   });

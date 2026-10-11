@@ -15,6 +15,7 @@ import { EmailError } from "../src/errors.ts";
 import { ingestProviderEvents } from "../src/events.ts";
 import type { OutboundEmail } from "../src/provider.ts";
 import { IdentityTakenError } from "../src/provider.ts";
+import { FakeTrackingHostnameProvider } from "../src/providers/fake-tracking-hostnames.ts";
 import { getEmail } from "../src/read.ts";
 import { createEmailRuntime } from "../src/runtime.ts";
 import { SesIdentityProvider } from "../src/ses/identity.ts";
@@ -291,10 +292,34 @@ describe("SesIdentityProvider", () => {
 });
 
 describe("releaseOrganizationEmailResources", () => {
+  test("stops between provider operations when claim ownership is lost", async () => {
+    const api = new FakeSesApi();
+    const identity = new SesIdentityProvider(api, config);
+    const deps = { identity, dns: null, tracking: new FakeTrackingHostnameProvider() };
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const name = `lease-${uniqueSuffix()}.com`;
+    const domain = await createDomain({ organizationId, name, userId: null }, deps);
+    await expect(
+      releaseOrganizationEmailResources(organizationId, deps, async () => {
+        if (!api.identities.has(name)) throw new Error("Claim lost");
+      }),
+    ).rejects.toThrow("Claim lost");
+    expect(api.tenants.has(`test-${organizationId}`)).toBe(true);
+    expect(
+      await db
+        .select({ id: schema.domain.id })
+        .from(schema.domain)
+        .where(eq(schema.domain.id, domain.id)),
+    ).toHaveLength(1);
+    await releaseOrganizationEmailResources(organizationId, deps);
+    expect(api.tenants.has(`test-${organizationId}`)).toBe(false);
+  });
+
   test("removes the organization's identities, domains and SES tenant", async () => {
     const api = new FakeSesApi();
     const identity = new SesIdentityProvider(api, config);
-    const deps = { identity, dns: null };
+    const deps = { identity, dns: null, tracking: new FakeTrackingHostnameProvider() };
     const tenant = await createTestTenant();
     const organizationId = tenant.organization.id;
     const name = `release-${uniqueSuffix()}.com`;
@@ -337,7 +362,7 @@ describe("releaseOrganizationEmailResources", () => {
   test("a provider failure leaves the rest for the retry, with sending stopped", async () => {
     const api = new FakeSesApi();
     const identity = new SesIdentityProvider(api, config);
-    const deps = { identity, dns: null };
+    const deps = { identity, dns: null, tracking: new FakeTrackingHostnameProvider() };
     const tenant = await createTestTenant();
     const organizationId = tenant.organization.id;
     const name = `retry-${uniqueSuffix()}.com`;

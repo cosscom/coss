@@ -1,4 +1,5 @@
 import type { DomainDeps, EmailService } from "@coss/email";
+import { type LogWriter, noopLogWriter } from "@coss/logs";
 import {
   type ClientIpResolver,
   createRateLimiter,
@@ -8,6 +9,7 @@ import {
 import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { honoMiddleware } from "@sentry/bun";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
@@ -15,6 +17,7 @@ import { BODY_LIMIT_BYTES, hasOwnBodyLimit, limitBody } from "./body-limit.ts";
 import { errorResponse, internalError, notFound, toApiError } from "./errors.ts";
 import { apiVersion } from "./middleware/api-version.ts";
 import { requestId } from "./middleware/request-id.ts";
+import { requestLog } from "./middleware/request-log.ts";
 import { withApiVersionDocs } from "./openapi-versions.ts";
 import { createTrackingRoutes, TRACKING_PATH_PREFIX } from "./routes/tracking.ts";
 import { createV1Router } from "./routes/v1.ts";
@@ -46,6 +49,11 @@ export type CreateAppOptions = {
    * default. Never with credentials: the API authenticates with bearer keys only, never cookies.
    */
   corsOrigins?: readonly string[];
+  /**
+   * Receives an `api.request` log line per attributable `/v1` request (`createLogWriter`, which
+   * buffers and fails open). Defaults to writing nothing.
+   */
+  logWriter?: LogWriter;
   /** The API's versions (`@coss/versioning`). Tests inject `testVersioning()`. */
   versioning?: Versioning;
 };
@@ -68,7 +76,13 @@ export function createApp(opts: CreateAppOptions) {
   // Sub-routers inherit this hook: every validation failure becomes the 422 envelope.
   const app = new OpenAPIHono<AppEnv>({ defaultHook: validationHook });
 
+  // Sentry (when src/instrument.ts initialized it): names each request's transaction after its
+  // route (`GET /v1/emails/:id`) and traces middleware. Unhandled errors are reported by the
+  // console.error in onError (captureConsoleIntegration), so the middleware reports none itself.
+  app.use(honoMiddleware(app, { shouldHandleError: () => false }));
   app.use(requestId);
+  // Wraps everything after it, so it sees the final response (errors and 404s included).
+  app.use(requestLog(opts.logWriter ?? noopLogWriter));
   app.use(async (c, next) => {
     c.set("rateLimiter", rateLimiter);
     c.set("clientIp", clientIp(c.req.raw.headers));
@@ -157,7 +171,8 @@ export function openApiDocumentConfig(serverUrl: string) {
       version: "v1",
       description:
         "One API key for every COSS product. Errors share one envelope: `Error`. Every request " +
-        "is scoped to the environment the key belongs to; domains are organization-wide.",
+        "is scoped to the environment the key belongs to; domains and the audit log are " +
+        "organization-wide.",
     },
     servers: [{ url: serverUrl }],
     tags: [
@@ -170,6 +185,14 @@ export function openApiDocumentConfig(serverUrl: string) {
       {
         name: "Webhook endpoints",
         description: "URLs that receive the environment's delivery events, signed.",
+      },
+      {
+        name: "Logs",
+        description: "The environment's API requests, email events and webhook attempts.",
+      },
+      {
+        name: "Audit log",
+        description: "Changes to the organization, by members, API keys and COSS support.",
       },
     ],
   };

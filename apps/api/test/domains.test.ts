@@ -1,7 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { db, pool, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
-import { FakeIdentityProvider, MAX_PENDING_DOMAINS } from "@coss/email";
+import {
+  FakeIdentityProvider,
+  FakeTrackingHostnameProvider,
+  MAX_PENDING_DOMAINS,
+} from "@coss/email";
 import type { DomainListOutput, DomainObjectOutput } from "@coss/email/schemas";
 import { createVerifiedDomain } from "@coss/email/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
@@ -19,7 +23,11 @@ import {
 /** An app whose fake identity provider leaves every domain `pending` (nothing verifies). */
 function appWithUnverifiedDomains() {
   return createTestApp({
-    domainDeps: { identity: new FakeIdentityProvider({ verify: () => false }), dns: null },
+    domainDeps: {
+      identity: new FakeIdentityProvider({ verify: () => false }),
+      dns: null,
+      tracking: new FakeTrackingHostnameProvider(),
+    },
   });
 }
 
@@ -388,5 +396,113 @@ describe("DELETE /v1/domains/{id}", () => {
 
     expect(res.status).toBe(404);
     expect(theirView.status).toBe(200);
+  });
+});
+
+describe("/v1/domains/{id}/tracking", () => {
+  test("adds a tracking domain, shows it on the domain, and removes it", async () => {
+    const tenant = await createTestTenant();
+    const { app, tracking } = createTestApp();
+    const domain = await createVerifiedDomain(tenant.organization.id);
+    const hostname = `links.${domain.name}`;
+
+    const res = await apiRequest(app, "POST", `/v1/domains/${domain.id}/tracking`, {
+      key: tenant.liveKey,
+      body: { hostname: hostname.toUpperCase() },
+    });
+    expect(res.status).toBe(200);
+    const created = (await res.json()) as DomainObjectOutput;
+    expect(created.tracking).toMatchObject({
+      hostname,
+      status: "active",
+      record: { type: "CNAME", name: hostname, value: "track.coss.test", status: "not_checked" },
+    });
+    expect(tracking.hostnames).toEqual([hostname]);
+
+    const listed = (await (
+      await apiRequest(app, "GET", "/v1/domains", { key: tenant.liveKey })
+    ).json()) as DomainListOutput;
+    expect(listed.data[0]?.tracking?.hostname).toBe(hostname);
+
+    const removed = await apiRequest(app, "DELETE", `/v1/domains/${domain.id}/tracking`, {
+      key: tenant.liveKey,
+    });
+    expect(removed.status).toBe(200);
+    expect(((await removed.json()) as DomainObjectOutput).tracking).toBeNull();
+    expect(tracking.hostnames).toEqual([]);
+
+    const again = await apiRequest(app, "DELETE", `/v1/domains/${domain.id}/tracking`, {
+      key: tenant.liveKey,
+    });
+    expect(again.status).toBe(404);
+  });
+
+  test("refuses hostnames outside the domain, and a second tracking domain", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const domain = await createVerifiedDomain(tenant.organization.id);
+    const post = (hostname: unknown) =>
+      apiRequest(app, "POST", `/v1/domains/${domain.id}/tracking`, {
+        key: tenant.liveKey,
+        body: { hostname },
+      });
+
+    const outside = await errorOf(await post("links.example.com"));
+    expect(outside).toMatchObject({ code: "invalid_tracking_hostname", param: "hostname" });
+    const invalid = await errorOf(await post(""));
+    expect(invalid.code).toBe("validation_error");
+
+    expect((await post(`links.${domain.name}`)).status).toBe(200);
+    const second = await post(`t.${domain.name}`);
+    expect(second.status).toBe(422);
+    expect((await errorOf(second)).code).toBe("tracking_domain_exists");
+  });
+
+  test("another organization's domain is 404; deleting needs domain:delete", async () => {
+    const [mine, theirs] = await Promise.all([createTestTenant(), createTestTenant()]);
+    const { app } = createTestApp();
+    const domain = await createVerifiedDomain(theirs.organization.id);
+    const res = await apiRequest(app, "POST", `/v1/domains/${domain.id}/tracking`, {
+      key: mine.liveKey,
+      body: { hostname: `links.${domain.name}` },
+    });
+    expect(res.status).toBe(404);
+
+    await apiRequest(app, "POST", `/v1/domains/${domain.id}/tracking`, {
+      key: theirs.liveKey,
+      body: { hostname: `links.${domain.name}` },
+    });
+    await setKeyPermissions(await apiKeyIdForEnvironment(theirs.production.id), {
+      domain: ["read", "create"],
+    });
+    const forbidden = await apiRequest(app, "DELETE", `/v1/domains/${domain.id}/tracking`, {
+      key: theirs.liveKey,
+    });
+    expect(forbidden.status).toBe(403);
+  });
+
+  test("verify checks the tracking domain too", async () => {
+    const tenant = await createTestTenant();
+    let state: "pending" | "active" = "pending";
+    const tracking = new FakeTrackingHostnameProvider({
+      state: () => ({ status: state, message: null }),
+    });
+    const { app } = createTestApp({
+      domainDeps: { identity: new FakeIdentityProvider(), dns: null, tracking },
+    });
+    const domain = await createVerifiedDomain(tenant.organization.id);
+    await apiRequest(app, "POST", `/v1/domains/${domain.id}/tracking`, {
+      key: tenant.liveKey,
+      body: { hostname: `links.${domain.name}` },
+    });
+    await pool.query(
+      "update domain set last_checked_at = now() - interval '1 minute' where id = $1",
+      [domain.id],
+    );
+    state = "active";
+    const verified = await apiRequest(app, "POST", `/v1/domains/${domain.id}/verify`, {
+      key: tenant.liveKey,
+    });
+    expect(((await verified.json()) as DomainObjectOutput).tracking?.status).toBe("active");
   });
 });

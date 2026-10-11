@@ -26,6 +26,13 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     args: (request) => [tsValue(batchEmails(request.body)), requestOptions(request)],
   },
   "GET /v1/reputation": { method: "reputation.get", args: () => [] },
+  "GET /v1/logs": { method: "logs.list", args: (request) => [queryParams(request)] },
+  "GET /v1/logs/{id}": { method: "logs.get", args: (request) => [pathId(request)] },
+  "GET /v1/audit_events": { method: "auditEvents.list", args: (request) => [queryParams(request)] },
+  "GET /v1/audit_events/{id}": {
+    method: "auditEvents.get",
+    args: (request) => [pathId(request)],
+  },
   "GET /v1/emails/{id}": {
     method: "email.get",
     args: (request) => [pathId(request)],
@@ -33,6 +40,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   "POST /v1/emails/{id}/cancel": {
     method: "email.cancel",
     args: (request) => [pathId(request)],
+  },
+  "POST /v1/emails/{id}/reschedule": {
+    method: "email.reschedule",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
   },
   "GET /v1/emails/{id}/events": {
     method: "email.listEvents",
@@ -76,6 +87,14 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     args: (request) => [pathId(request), requestOptions(request)],
   },
   "DELETE /v1/domains/{id}": { method: "domains.delete", args: (r) => [pathId(r)] },
+  "POST /v1/domains/{id}/tracking": {
+    method: "domains.tracking.create",
+    args: (request) => [pathId(request), tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "DELETE /v1/domains/{id}/tracking": {
+    method: "domains.tracking.delete",
+    args: (r) => [pathId(r)],
+  },
   "POST /v1/webhook_endpoints": {
     method: "webhookEndpoints.create",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
@@ -89,6 +108,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   "DELETE /v1/webhook_endpoints/{id}": {
     method: "webhookEndpoints.delete",
     args: (r) => [pathId(r)],
+  },
+  "POST /v1/webhook_endpoints/{id}/roll_secret": {
+    method: "webhookEndpoints.rollSecret",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
   },
   "GET /v1/webhook_endpoints/{id}/deliveries": {
     method: "webhookEndpoints.deliveries.list",

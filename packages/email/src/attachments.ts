@@ -1,15 +1,16 @@
 /**
  * Attachment storage. Content lives in `email_attachment.content` only while the email is
  * `scheduled` or `queued` (dispatch rebuilds the provider message from it) and is purged once the
- * email is sent, failed or canceled. Reads only ever see the metadata.
+ * email is sent, failed or canceled. Reads only ever see the metadata. The body of an email sent
+ * with `discardBody` (auth emails: their links are secrets) is purged at the same moments.
  */
 import { createHash } from "node:crypto";
 import { db, type Executor, schema } from "@coss/db";
-import { and, asc, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, or } from "drizzle-orm";
 import type { OutboundAttachment } from "./provider.ts";
 import type { EmailAttachmentObjectOutput, SendEmailRequestOutput } from "./schemas.ts";
 
-const { emailAttachment } = schema;
+const { email, emailAttachment } = schema;
 
 export type EmailAttachmentMetadata = Omit<typeof emailAttachment.$inferSelect, "content">;
 
@@ -80,11 +81,25 @@ export async function loadOutboundAttachments(row: {
   return attachments;
 }
 
-/** Drops the content of an email's attachments (call when the email reaches a terminal status). */
-export async function purgeAttachmentContent(
+/**
+ * Drops the content an email needed only to be sent: its attachments' bytes, and its body if it
+ * was sent with `discardBody`. Call when the email reaches a terminal status.
+ */
+export async function purgeSendContent(
   executor: Executor,
   row: { id: string; organizationId: string },
 ): Promise<void> {
+  await executor
+    .update(email)
+    .set({ html: null, text: null })
+    .where(
+      and(
+        eq(email.id, row.id),
+        eq(email.organizationId, row.organizationId),
+        eq(email.discardBody, true),
+        or(isNotNull(email.html), isNotNull(email.text)),
+      ),
+    );
   await executor
     .update(emailAttachment)
     .set({ content: null })

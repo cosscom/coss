@@ -12,7 +12,7 @@ import type {
   WebhookDeliveryObjectOutput,
   WebhookEndpointWithSecretOutput,
 } from "@coss/webhooks/schemas";
-import { TEST_SECRETS_KEY } from "@coss/webhooks/testing";
+import { TEST_SECRETS_KEYS } from "@coss/webhooks/testing";
 import {
   apiKeyIdForEnvironment,
   apiRequest,
@@ -48,7 +48,7 @@ async function enqueue(tenant: TestTenant, type = "email.delivered"): Promise<st
 function deliver(tenant: TestTenant, response: WebhookResponse, now = new Date()) {
   return runDueWebhookDeliveries(
     { now, scope: { organizationIds: [tenant.organization.id] } },
-    { secretsKey: TEST_SECRETS_KEY, send: async () => response },
+    { secretsKeys: TEST_SECRETS_KEYS, send: async () => response },
   );
 }
 

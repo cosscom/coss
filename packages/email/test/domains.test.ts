@@ -22,13 +22,14 @@ import { DomainError, EmailError } from "../src/errors.ts";
 import { type IdentityProvider, IdentityTakenError } from "../src/provider.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { FakeIdentityProvider } from "../src/providers/fake-identity.ts";
+import { FakeTrackingHostnameProvider } from "../src/providers/fake-tracking-hostnames.ts";
 import { createVerifiedDomain, dispatchingEmailService, fakeDnsResolver } from "../src/testing.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
 const uniqueName = () => `t-${uniqueSuffix()}.coss.test`;
 
 function deps(identity: IdentityProvider = new FakeIdentityProvider()): DomainDeps {
-  return { identity, dns: null };
+  return { identity, dns: null, tracking: new FakeTrackingHostnameProvider() };
 }
 
 async function expectError<T extends Error>(
@@ -494,7 +495,7 @@ describe("provider switches", () => {
     const organizationId = tenant.organization.id;
     const row = await createDomain({ organizationId, name: uniqueName(), userId: null }, deps());
     const ses = { ...new FakeIdentityProvider(), name: "ses" } as unknown as IdentityProvider;
-    const sesDeps: DomainDeps = { identity: ses, dns: null };
+    const sesDeps: DomainDeps = { ...deps(), identity: ses };
 
     expect(await checkDomain({ organizationId, id: row.id }, sesDeps)).toEqual(row);
     const later = new Date(Date.now() + 2 * 60 * 1000);

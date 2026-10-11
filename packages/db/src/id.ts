@@ -29,6 +29,7 @@ export const ID_PREFIXES = {
   emailTrackingRule: "etr",
   emailLink: "lnk",
   domain: "dom",
+  trackingDomain: "tdom",
   webhookEndpoint: "whep",
   webhookDelivery: "whdel",
   webhookAttempt: "whatt",
@@ -38,7 +39,10 @@ export const ID_PREFIXES = {
   reputationNotification: "repntf",
   contentScreening: "scr",
   rateLimitOverride: "rlo",
+  authEmail: "authml",
   request: "req",
+  logEntry: "log",
+  orgAuditEvent: "oaudit",
   adminAuditEvent: "audit",
   organizationDeletion: "orgdel",
 } as const;
@@ -84,4 +88,17 @@ export function newId(prefix: string, now?: number): string {
 export function isId(prefix: string, value: unknown): value is string {
   if (typeof value !== "string" || !value.startsWith(`${prefix}_`)) return false;
   return SUFFIX_RE.test(value.slice(prefix.length + 1));
+}
+
+/**
+ * The creation time (unix ms) a well-formed id encodes in its UUIDv7, or `null`. `newId(prefix,
+ * now)` sets it explicitly (log entries use their `occurred_at`).
+ */
+export function idTimestamp(value: string): number | null {
+  const suffix = value.slice(value.lastIndexOf("_") + 1);
+  if (!SUFFIX_RE.test(suffix)) return null;
+  let bits = 0n;
+  for (const char of suffix) bits = (bits << 5n) | BigInt(ALPHABET.indexOf(char));
+  // 128 UUID bits; the top 48 are the timestamp.
+  return Number(bits >> 80n);
 }

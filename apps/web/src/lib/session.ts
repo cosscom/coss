@@ -2,6 +2,7 @@ import "server-only";
 import { type OrgPermissions, orgRoleCan } from "@coss/auth/permissions";
 import { getMembership, type Membership } from "@coss/tenancy";
 import type { AdminActor } from "@coss/tenancy/admin";
+import { setTag, setUser } from "@sentry/nextjs";
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
@@ -42,7 +43,10 @@ export async function authHeaders(): Promise<Headers> {
 
 /** The current session (deduplicated per request), or `null` when signed out. */
 export const getSession = cache(async (): Promise<Session | null> => {
-  return auth.api.getSession({ headers: await authHeaders() });
+  const session = await auth.api.getSession({ headers: await authHeaders() });
+  // Errors reported while serving this request name the user by id only (never the email).
+  if (session) setUser({ id: session.user.id });
+  return session;
 });
 
 /** The current session; redirects to /sign-in when signed out. */
@@ -64,6 +68,7 @@ export const requireOrgMember = cache(async (orgSlug: string): Promise<OrgContex
   const session = await requireSession();
   const membership = await getMembership({ userId: session.user.id, organizationSlug: orgSlug });
   if (!membership) notFound();
+  setTag("organization_id", membership.organization.id);
   const access = orgAccess(membership, session);
   if (access.kind === "redirect") redirect(access.to);
   const can = (permissions: OrgPermissions) =>

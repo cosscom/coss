@@ -122,6 +122,24 @@ async function seedOrganizationData(tenant: TestTenant) {
     mailFromDomain: "send.example.test",
   });
   await db.insert(schema.reputationStanding).values({ organizationId });
+  await db.insert(schema.logEntry).values(
+    Array.from({ length: 3 }, () => ({
+      ...scope,
+      occurredAt: new Date(),
+      source: "api" as const,
+      level: "info" as const,
+      type: "api.request",
+      message: "GET /v1/emails",
+    })),
+  );
+  await db.insert(schema.orgAuditEvent).values(
+    Array.from({ length: 3 }, () => ({
+      organizationId,
+      actorType: "system" as const,
+      actorLabel: "Test",
+      action: "test.created",
+    })),
+  );
 }
 
 describe("requestOrganizationDeletion", () => {
@@ -251,6 +269,8 @@ describe("runDueOrganizationDeletions", () => {
       schema.webhookDelivery,
       schema.contentScreening,
       schema.domain,
+      schema.logEntry,
+      schema.orgAuditEvent,
     ]) {
       const rows = await db
         .select({ id: table.id })
@@ -375,6 +395,51 @@ describe("deletion claim ownership", () => {
     } finally {
       resume.resolve();
       expect(await first).toBe(1);
+    }
+  });
+
+  test("renews inside every data batch transaction", async () => {
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    await seedOrganizationData(tenant);
+    await requestOrganizationDeletion({ organizationId, actor: ownerOf(tenant) });
+    const original = db.transaction.bind(db);
+    let batches = 0;
+    const transaction = spyOn(db, "transaction").mockImplementation((async (
+      callback: Parameters<typeof db.transaction>[0],
+      config: Parameters<typeof db.transaction>[1],
+    ) => {
+      // Make each previous lease close to expiry before the next batch starts.
+      await db
+        .update(schema.organizationDeletion)
+        .set({
+          nextAttemptAt: sql`clock_timestamp() + interval '5 seconds'`,
+        })
+        .where(eq(schema.organizationDeletion.organizationId, organizationId));
+      return original(async (tx) => {
+        const result = await callback(tx);
+        if (Array.isArray(result)) {
+          batches++;
+          const [row] = await tx
+            .select()
+            .from(schema.organizationDeletion)
+            .where(eq(schema.organizationDeletion.organizationId, organizationId));
+          expect(row?.nextAttemptAt?.getTime()).toBeGreaterThan(Date.now() + DELETION_LEASE_MS / 2);
+        }
+        return result;
+      }, config);
+    }) as typeof db.transaction);
+    try {
+      await runDueOrganizationDeletions(
+        { batchSize: 1, scope: { organizationIds: [organizationId] } },
+        {
+          releaseProviderResources: async () => {},
+        },
+      );
+      expect(batches).toBeGreaterThan(10);
+      expect((await getOrganizationDeletion(organizationId))?.status).toBe("completed");
+    } finally {
+      transaction.mockRestore();
     }
   });
 

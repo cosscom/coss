@@ -21,6 +21,8 @@ const {
   emailSuppression,
   environment,
   invitation,
+  logEntry,
+  orgAuditEvent,
   member,
   organization,
   organizationDeletion,
@@ -162,7 +164,11 @@ export type OrganizationTeardownDeps = {
    * tenant, `releaseOrganizationEmailResources`) and stops its sends first. Runs before any data
    * is deleted and on every retry, so it must be idempotent.
    */
-  releaseProviderResources: (organizationId: string) => Promise<void>;
+  releaseProviderResources: (
+    organizationId: string,
+    /** Call between provider operations to stop immediately if the claim was lost. */
+    assertLease: () => Promise<void>,
+  ) => Promise<void>;
 };
 
 type Claimed = typeof organizationDeletion.$inferSelect;
@@ -240,7 +246,10 @@ async function releaseWithHeartbeat(deletion: Claimed, deps: OrganizationTeardow
       });
   }, DELETION_LEASE_MS / 3);
   try {
-    await deps.releaseProviderResources(deletion.organizationId);
+    await deps.releaseProviderResources(deletion.organizationId, async () => {
+      if (failure) throw failure;
+      await renewLease(deletion);
+    });
   } finally {
     clearInterval(timer);
     await pending;
@@ -292,6 +301,11 @@ async function deleteOrganizationData(
   for (const { id: environmentId } of environments) {
     const steps: [PgTable, PgColumn, SQL | undefined][] = [
       [
+        logEntry,
+        logEntry.id,
+        and(eq(logEntry.environmentId, environmentId), eq(logEntry.organizationId, organizationId)),
+      ],
+      [
         email,
         email.id,
         and(eq(email.environmentId, environmentId), eq(email.organizationId, organizationId)),
@@ -333,6 +347,17 @@ async function deleteOrganizationData(
       if (!(await deleteInBatches(deletion, table, id, where, batchSize, signal))) return false;
     }
   }
+  if (
+    !(await deleteInBatches(
+      deletion,
+      orgAuditEvent,
+      orgAuditEvent.id,
+      eq(orgAuditEvent.organizationId, organizationId),
+      batchSize,
+      signal,
+    ))
+  )
+    return false;
   return deleteInBatches(
     deletion,
     contentScreening,

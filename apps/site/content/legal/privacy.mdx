@@ -1,0 +1,273 @@
+---
+title: Privacy Policy
+description: What personal data Cal.com collects for COSS, why, who we share it with, and your rights.
+lastUpdated: 2026-10-11
+---
+
+This Privacy Policy explains how **Cal.com, Inc.** ("**Cal.com**", "**we**", "**us**") handles personal data in
+connection with COSS: the website and documentation at coss.com, the dashboard, the API and the SDK (together, the
+"**Services**"). Capitalized terms not defined here have the meaning given in our [Terms of Service](/legal/terms).
+
+## The short version
+
+- We collect what we need to run COSS: your account details, the data your organization sends through the API, and
+  the technical data needed to keep the Services secure.
+- For the messages you send through COSS, **you** decide what is sent and to whom. We process that data on your
+  behalf, as your processor.
+- We automatically screen a sample of live messages for spam, phishing, malware and fraud, including with AI models.
+  The AI provider retains nothing.
+- We don't sell or share personal data for advertising, and coss.com runs no third-party analytics or advertising
+  scripts.
+- Cal.com participates in the **EU-U.S. Data Privacy Framework** and its **UK Extension**.
+- Questions? Write to [privacy@cal.com](mailto:privacy@cal.com).
+
+## 1. Who's who: controller and processor
+
+**Cal.com as controller.** We decide how and why personal data is processed, and are responsible for it as controller
+(or "business" under California law), for:
+
+- your account and the members of your organization;
+- billing and the business relationship with you;
+- security, abuse prevention and the reputation of the Services;
+- visits to coss.com and our communications with you.
+
+**Cal.com as processor.** When you use the API or dashboard to send messages, the personal data in them is **Customer
+Data**: message content, attachments, recipient addresses, delivery events, suppression lists and the like. Your
+organization is the controller of Customer Data, and we process it only on its instructions, under the Terms and our
+[Data Processing Addendum](/legal/dpa) (DPA). If you received a message sent through COSS and want to exercise your privacy rights,
+please contact the sender: they control that data. If you contact us instead, we will forward your request to them
+where we can, and help them respond.
+
+## 2. What we collect
+
+**Account and organization data.** Name, email address, password (stored only as a salted hash), two-factor
+authentication settings and backup codes, passkey public keys, and, if your organization uses single sign-on, the
+identity your identity provider returns. We also store organizations, projects, environments, memberships, roles and
+invitations. If you subscribe to a paid plan, we store billing contact details; payment card details are handled by our
+payment processor and never stored by us.
+
+**Sessions and security data.** For each sign-in session, we store the IP address and browser user agent, so that you
+can review and revoke your sessions. We use IP addresses and hashed email addresses to rate-limit sign-in attempts and
+API requests. Platform administrators' actions are recorded in an audit log.
+
+**API keys.** API keys are stored only as hashes, together with their environment, permissions and when they were last
+used.
+
+**Customer Data (processed on your behalf).**
+
+- **Messages:** sender, recipients (to, cc, bcc), reply-to, subject, HTML and text content, headers, tags, category
+  and scheduling details. Attachment contents are stored only until the message is sent, canceled or fails; after that
+  we keep only the attachment's name, type and size.
+- **Delivery events:** whether each recipient's message was delivered, bounced, complained about, suppressed or
+  failed, with details from the receiving mail server.
+- **Open and click tracking:** only when you turn it on. When a recipient opens a tracked message or clicks a tracked
+  link, we record the time, the link and the user agent of the request. We do not store their IP address.
+- **Suppression lists:** addresses not to send to, added after permanent bounces or complaints, or by you.
+- **Domains and webhooks:** the sending domains you verify and their DNS records; your webhook endpoint URLs and
+  signing secrets (encrypted at rest), and a record of each delivery attempt, including up to 1 KB of your endpoint's
+  response.
+
+**Website and documentation.** coss.com loads no third-party analytics, advertising or tracking scripts. Our servers
+and content delivery network process technical data such as IP addresses, request URLs and user agents to serve and
+protect the site, and keep it in short-lived logs.
+
+**Communications.** If you contact us, we keep your message and our reply. We send service emails, such as
+verification, security, and reputation warnings and suspension notices to organization owners and administrators. These
+are part of the Services and you can't opt out of them while you have an account.
+
+## 3. Why we process it (legal bases)
+
+If you are in the European Economic Area (EEA), the UK or Switzerland, we rely on these legal bases under Article 6 of
+the GDPR (and its UK and Swiss equivalents):
+
+| Purpose | Legal basis |
+| --- | --- |
+| Creating your account and providing the Services | Performance of a contract |
+| Billing and collecting amounts owed | Performance of a contract; legitimate interests |
+| Security, fraud and abuse prevention, rate limiting and content screening | Legitimate interests in protecting the Services, our customers and the people who receive messages |
+| Reputation monitoring and suspensions | Legitimate interests; performance of a contract |
+| Improving the Services with aggregated usage data | Legitimate interests |
+| Service and security emails | Performance of a contract; legitimate interests |
+| Product news and marketing emails | Consent, where required (you can withdraw it at any time) |
+| Complying with the law and responding to lawful requests | Legal obligation |
+
+Where we process Customer Data as a processor, the controller (our customer) is responsible for having a legal basis.
+
+## 4. Automated content screening
+
+To protect the people who receive messages, and the deliverability of every customer, we automatically screen a sample
+of messages sent from **live** environments before delivery. Sandbox messages are never screened.
+
+- **What is screened:** a sample of messages per organization, more frequently for new senders. We never tell
+  customers which messages will be sampled.
+- **What the model sees:** the sender address, the subject, up to 8,000 characters of the message's readable text, and
+  the host and path of its links (query strings removed). It does not see recipient addresses or attachments.
+- **Who processes it:** the classification runs through Vercel's AI Gateway on AI models from its providers, with
+  zero data retention: they may not keep the content or use it to train models.
+- **What we keep:** the verdict and its scores, never the message content.
+- **What can happen:** a message judged highly likely to be spam, phishing, malware or fraud is not delivered and its
+  organization's live sending is suspended. Lower-confidence results can trigger a review of the organization's
+  sending reputation.
+
+A suspension never lifts by itself: a member of our staff reviews it. If you believe a decision is wrong, write to
+[legal@cal.com](mailto:legal@cal.com) to have a person review it and to explain your point of view.
+
+## 5. Who we share it with
+
+We share personal data only as described here:
+
+- **Subprocessors** that help us run the Services, under contracts that limit their use of the data to providing their
+  services to us:
+  - **Amazon Web Services, Inc.** (United States): hosting, databases, caching, queues and email delivery (Amazon
+    SES).
+  - **Vercel, Inc.** (United States) and the model providers available through its AI Gateway: AI content screening,
+    with zero data retention.
+  - **Cloudflare, Inc.** (United States): DNS for coss.com.
+
+  The complete, current list of Cal.com subprocessors is in our Trust Center at
+  [trust.cal.com](https://trust.cal.com). We give customers 30 days' notice of new subprocessors of Customer Data, and
+  they may object on reasonable data protection grounds, as described in the [DPA](/legal/dpa#5-subprocessors).
+- **Message delivery.** Sending a message necessarily discloses its content to the recipients' mail servers.
+- **Your webhook endpoints** receive event data about your messages (never message bodies, headers, cc or bcc).
+- **Your organization.** Organization owners and administrators can see the members of the organization and the data
+  in it.
+- **Legal and safety.** We may disclose data if we believe in good faith that the law requires it, or to protect the
+  rights, property or safety of Cal.com, our customers or others, including responding to abuse reports. Where
+  permitted, we will tell the affected customer before disclosing Customer Data.
+- **Business transfers.** If Cal.com is involved in a merger, acquisition or sale of assets, personal data may be
+  transferred as part of it, subject to this policy.
+
+**We do not sell personal data, and we do not share it for cross-context behavioral advertising.**
+
+## 6. How long we keep it
+
+- **Account and organization data:** while your account is active. You can ask us to close your account at
+  [support@cal.com](mailto:support@cal.com). After it is closed, you have at least 30 days to
+  export your data, and we then delete it on our standard schedule, except what we must keep by law.
+- **Messages and delivery events:** while your organization's account is active, so that you can look them up in the
+  dashboard and the API. Your organization can ask us to delete them sooner by writing to
+  [privacy@cal.com](mailto:privacy@cal.com). Attachment contents are deleted automatically once a message is sent,
+  canceled or fails.
+- **Suppression lists, domains and webhook endpoints:** until your organization removes them, or its account is
+  closed.
+- **Sessions:** until they expire or are revoked.
+- **Content screening verdicts and reputation history:** for as long as the organization exists, so that past
+  decisions can be reviewed.
+- **Invoices and tax records:** as long as tax law requires, typically 7 to 10 years.
+- **Logs:** short-lived, then deleted. Backups roll over on a fixed schedule.
+
+## 7. Where your data goes (international transfers)
+
+We are based in the United States, and process personal data mainly in the United States. When we transfer personal
+data from the EEA, the UK or Switzerland, we rely on the EU-U.S. Data Privacy Framework and its UK Extension (see
+[section 8](#8-eu-us-data-privacy-framework-and-uk-extension)). Where appropriate, including for transfers from
+Switzerland, we use the European Commission's Standard Contractual Clauses and their UK and Swiss equivalents.
+
+## 8. EU-U.S. Data Privacy Framework and UK Extension
+
+Cal.com, Inc. complies with the EU-U.S. Data Privacy Framework (EU-U.S. DPF) and the UK Extension to the EU-U.S. DPF,
+as set forth by the U.S. Department of Commerce. Cal.com, Inc. has certified to the U.S. Department of Commerce that it
+adheres to the EU-U.S. Data Privacy Framework Principles (the "**DPF Principles**") with regard to the processing of
+personal data received from the European Union and the United Kingdom in reliance on the EU-U.S. DPF and the UK
+Extension. If there is any conflict between the terms in this Privacy Policy and the DPF Principles, the DPF Principles
+govern. To learn more about the Data Privacy Framework program, and to view our certification, visit
+[dataprivacyframework.gov](https://www.dataprivacyframework.gov/).
+
+Our commitment does not cover human resources data transferred for use in an employment relationship.
+
+**Inquiries and complaints.** In compliance with the DPF Principles, Cal.com commits to resolve DPF Principles-related
+complaints about our collection and use of your personal data. EU and UK individuals with inquiries or complaints about
+our handling of personal data received in reliance on the EU-U.S. DPF and the UK Extension should first contact
+Cal.com, Inc., Privacy & Compliance, at [privacy@cal.com](mailto:privacy@cal.com), or our compliance lead, Felix
+Kolodziej, at [felix@cal.com](mailto:felix@cal.com) or +1 415 212 6667. We will respond to DPF complaints within 45
+days.
+
+**Independent recourse.** Cal.com commits to cooperate and comply with the advice of the panel established by the EU
+data protection authorities (DPAs) and the UK Information Commissioner's Office (ICO) and the Gibraltar Regulatory
+Authority (GRA) with regard to unresolved complaints concerning our handling of personal data received in reliance on
+the EU-U.S. DPF and the UK Extension. These independent recourse mechanisms are available to individuals free of
+charge. Under certain conditions, described on the
+[DPF website](https://www.dataprivacyframework.gov/framework-article/ANNEX-I-introduction), you may invoke binding
+arbitration for complaints not resolved by other means.
+
+**Enforcement.** Cal.com, Inc. is subject to the investigatory and enforcement powers of the U.S. Federal Trade
+Commission.
+
+**Onward transfers.** Cal.com remains responsible for personal data we receive under the DPF and subsequently transfer
+to third parties acting as agents on our behalf. We remain liable under the DPF Principles if our agents process such
+personal data in a manner inconsistent with the DPF Principles, unless we prove that we are not responsible for the
+event giving rise to the damage.
+
+**Disclosures to authorities.** We may be required to disclose personal data in response to lawful requests by public
+authorities, including to meet national security or law enforcement requirements.
+
+## 9. Cookies
+
+The coss.com dashboard uses only cookies that are strictly necessary: to keep you signed in, to complete two-factor
+authentication and single sign-on, and to protect against attacks. The marketing site and documentation set no cookies
+of their own, other than these when you are signed in, and we use no third-party advertising or analytics cookies. The
+site may store display preferences, such as light or dark mode, in your browser's local storage. Because we use no
+cookies that need consent, there is no cookie banner. We honor Global Privacy Control signals; since we neither sell
+nor share personal data, there is nothing further for them to switch off.
+
+## 10. Your rights
+
+Depending on where you live, you may have the right to:
+
+- access the personal data we hold about you and receive a copy of it;
+- correct inaccurate data;
+- delete your data;
+- object to, or restrict, our processing of it, including processing based on legitimate interests;
+- receive your data in a portable format;
+- withdraw consent at any time, where we rely on consent; and
+- not be subject to a decision based solely on automated processing that significantly affects you, and to obtain
+  human review of such a decision.
+
+Some of these you can exercise yourself in the dashboard: you can update your name and review and revoke your sessions,
+and your organization can manage its suppression list, domains and webhook endpoints. For anything else, write to
+[privacy@cal.com](mailto:privacy@cal.com). We may need to verify your identity before acting on a request, and will
+respond within the time the law requires (generally one month in the EEA and UK, 45 days in California). We will not
+discriminate against you for exercising your rights.
+
+**EEA, UK and Switzerland.** You have the right to lodge a complaint with your local data protection authority. We'd
+appreciate the chance to address your concern first.
+
+**California.** California residents have the right to know what personal information we collect, use and disclose; to
+delete and correct it; and to opt out of its sale or sharing (we do neither), and to limit the use of sensitive personal
+information (we use it only as permitted for providing the Services and security). In the last 12 months we have
+collected the categories described in [section 2](#2-what-we-collect): identifiers, customer records, commercial
+information, internet or network activity, and account credentials, for the purposes in
+[section 3](#3-why-we-process-it-legal-bases), and disclosed them only to the recipients in
+[section 5](#5-who-we-share-it-with). You may use an authorized agent to make a request on your behalf.
+
+## 11. Security
+
+We protect personal data with technical and organizational measures appropriate to the risk, including encryption in
+transit and at rest, encryption of webhook signing secrets with AES-256-GCM, hashed passwords and API keys,
+least-privilege access for our staff, audit logging of administrative actions, and support for two-factor
+authentication, passkeys and single sign-on. No system is perfectly secure. If you discover a vulnerability, please
+report it as described at [cal.com/security](https://cal.com/security).
+
+## 12. Children
+
+The Services are for businesses and are not directed at children. We do not knowingly collect personal data from
+anyone under 18. If you believe a child has given us personal data, contact us and we will delete it.
+
+## 13. Changes to this policy
+
+We may update this Privacy Policy from time to time. We will post the new version here and update the "Last updated"
+date. If the changes are material, we will tell you by email or in the dashboard before they take effect.
+
+## 14. Contact
+
+Cal.com, Inc.<br />
+Privacy & Compliance<br />
+2261 Market Street #4382<br />
+San Francisco, CA 94114<br />
+United States
+
+- Privacy questions, requests and our Data Protection Officer: [privacy@cal.com](mailto:privacy@cal.com)
+- DPF inquiries: Felix Kolodziej, compliance lead, [felix@cal.com](mailto:felix@cal.com), +1 415 212 6667
+- EU representative (GDPR Article 27): Felix Kolodziej, [felix@cal.com](mailto:felix@cal.com); postal address on
+  request
+- Support: [support@cal.com](mailto:support@cal.com)

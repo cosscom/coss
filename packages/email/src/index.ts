@@ -45,6 +45,7 @@ export {
   ingestProviderEvents,
   recordProviderEvent,
 } from "./events.ts";
+export { emailNotifier, type Notice, type Notifier, notificationEnvironment } from "./notifier.ts";
 export {
   type DomainIdentity,
   type DomainIdentityState,
@@ -67,6 +68,7 @@ export {
   uniqueRecipients,
 } from "./providers/fake.ts";
 export { FakeIdentityProvider } from "./providers/fake-identity.ts";
+export { FakeTrackingHostnameProvider } from "./providers/fake-tracking-hostnames.ts";
 export {
   type EmailRecipientRow,
   type EmailRow,
@@ -83,7 +85,11 @@ export {
   type SendingCounts,
   sendingCounts,
 } from "./reputation-checks.ts";
-export { emailReputationNotifier, notificationEnvironment } from "./reputation-notifier.ts";
+export {
+  purgeEmptyEmailBatches,
+  purgeExpiredEmails,
+  purgeExpiredReputationRollups,
+} from "./retention.ts";
 export {
   ALL_CATEGORIES,
   CheckSuppressionQuery,
@@ -93,6 +99,8 @@ export {
   CreateSuppressionRequest,
   type CreateSuppressionRequestInput,
   type CreateSuppressionRequestOutput,
+  CreateTrackingDomainRequest,
+  type CreateTrackingDomainRequestInput,
   DeletedDomain,
   type DeletedDomainOutput,
   DeletedSuppression,
@@ -155,6 +163,9 @@ export {
   type ParsedEmailAddress,
   parseEmailAddress,
   RESERVED_HEADERS,
+  RescheduleEmailRequest,
+  type RescheduleEmailRequestInput,
+  type RescheduleEmailRequestOutput,
   SendEmailBatchRequest,
   type SendEmailBatchRequestInput,
   type SendEmailBatchRequestOutput,
@@ -173,6 +184,9 @@ export {
   type SuppressionOutput,
   type SuppressionReason,
   SuppressionScope,
+  TRACKING_DOMAIN_STATUSES,
+  TrackingDomainObject,
+  type TrackingDomainObjectOutput,
   TrackingOptions,
   type TrackingOptionsOutput,
   TrackingRuleInput,
@@ -187,6 +201,7 @@ export {
   type EmailService,
   type EmailServiceOptions,
   IDEMPOTENCY_KEY_TTL_MS,
+  rescheduleEmail,
   type SendEmailBatchInput,
   type SendEmailInput,
   type SendEnvironment,
@@ -220,6 +235,30 @@ export {
   UNCLAIMED_REQUEUE_MS,
 } from "./sweeps.ts";
 export { isTrackingToken, newTrackingToken, recordClick, recordOpen } from "./tracking.ts";
+export {
+  checkTrackingDomain,
+  createTrackingDomain,
+  deleteTrackingDomain,
+  domainObject,
+  domainObjects,
+  getTrackingDomain,
+  listTrackingDomains,
+  normalizeTrackingHostname,
+  recheckDueTrackingDomains,
+  restartTrackingDomain,
+  type TrackingDomainRecord,
+  type TrackingDomainRow,
+  toTrackingDomainObject,
+  trackingBaseUrlFor,
+  trackingNextCheckAt,
+  verifyTrackingDomain,
+} from "./tracking-domains.ts";
+export {
+  type TrackingHostnameProvider,
+  type TrackingHostnameProviderName,
+  type TrackingHostnameState,
+  TrackingHostnameTakenError,
+} from "./tracking-hostnames.ts";
 export {
   clickUrl,
   type InstrumentOptions,

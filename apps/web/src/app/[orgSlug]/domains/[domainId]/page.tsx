@@ -1,4 +1,11 @@
-import { type DomainRecord, domainRecords, getDomain, getEmailTenant } from "@coss/email";
+import {
+  type DomainRecord,
+  domainRecords,
+  getDomain,
+  getEmailTenant,
+  getTrackingDomain,
+  type TrackingDomainRow,
+} from "@coss/email";
 import { Alert, AlertDescription } from "@coss/ui/components/alert";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
@@ -13,12 +20,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CopyButton } from "@/components/copy-button";
-import { DomainStatusBadge, RecordStatusBadge } from "@/components/domain-badges";
+import {
+  DomainStatusBadge,
+  RecordStatusBadge,
+  TrackingDomainStatusBadge,
+} from "@/components/domain-badges";
 import { PageHeader } from "@/components/page-header";
 import { SendingPausedAlert } from "@/components/sending-paused-alert";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { DeleteDomainButton, VerifyDomainButton } from "./domain-actions";
+import {
+  AddTrackingDomainDialog,
+  CheckTrackingDomainButton,
+  RemoveTrackingDomainButton,
+} from "./tracking-domain-actions";
 
 export const metadata: Metadata = { title: "Domain" };
 
@@ -41,6 +57,20 @@ const STATUS_HELP = {
     "records to publish.",
   deleting: "This domain is being removed. If it stays here, delete it again to finish.",
 } as const;
+
+const TRACKING_STATUS_HELP = {
+  pending:
+    "Publish the CNAME record below. Once it resolves, a certificate is issued for the hostname " +
+    "(usually within minutes, at most 72 hours); we check automatically.",
+  active: "Open pixels and click links of emails sent from this domain use this hostname.",
+  temporary_failure:
+    "The hostname stopped working, so emails use COSS's tracking host until it is back. Check " +
+    "that the CNAME record is still in place.",
+  failed:
+    "The hostname couldn't be set up within 72 hours, so setup stopped. Fix the CNAME record, " +
+    "then restart it.",
+  deleting: "This tracking domain is being removed.",
+} as const satisfies Record<TrackingDomainRow["status"], string>;
 
 /** DNS providers usually want the host relative to the zone; showing the full name is clearest. */
 function RecordRow({ record }: { record: DomainRecord }) {
@@ -86,7 +116,12 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
     getEmailTenant(organization.id),
   ]);
   if (!domain) notFound();
+  const tracking = await getTrackingDomain({
+    organizationId: organization.id,
+    domainId: domain.id,
+  });
   const records = domainRecords(domain);
+  const canCreate = can({ domain: ["create"] });
   const canVerify = can({ domain: ["verify"] });
   const canDelete = can({ domain: ["delete"] });
   const target = { orgSlug: organization.slug, domainId: domain.id };
@@ -157,6 +192,15 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
         </CardPanel>
       </Card>
 
+      <TrackingDomainCard
+        canCreate={canCreate && domain.status !== "failed" && domain.status !== "deleting"}
+        canDelete={canDelete}
+        canVerify={canVerify}
+        domainName={domain.name}
+        target={target}
+        tracking={tracking}
+      />
+
       <Card>
         <CardPanel className="p-2">
           <Table>
@@ -181,5 +225,117 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
         </CardPanel>
       </Card>
     </div>
+  );
+}
+
+function TrackingDomainCard(props: {
+  tracking: TrackingDomainRow | null;
+  domainName: string;
+  target: { orgSlug: string; domainId: string };
+  canCreate: boolean;
+  canVerify: boolean;
+  canDelete: boolean;
+}) {
+  const { tracking, target } = props;
+  if (!tracking) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Tracking domain</CardTitle>
+          <CardDescription>
+            Serve open and click tracking links of emails from {props.domainName} on your own
+            subdomain, such as links.{props.domainName}, instead of COSS&apos;s tracking host.
+          </CardDescription>
+        </CardHeader>
+        {props.canCreate ? (
+          <CardPanel>
+            <AddTrackingDomainDialog {...target} domainName={props.domainName} />
+          </CardPanel>
+        ) : null}
+      </Card>
+    );
+  }
+  const record = tracking.record;
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="flex items-center gap-3">
+              Tracking domain <code className="text-sm">{tracking.hostname}</code>
+              <TrackingDomainStatusBadge status={tracking.status} />
+            </CardTitle>
+            <CardDescription>
+              {TRACKING_STATUS_HELP[tracking.status]} Last checked{" "}
+              {formatDateTime(tracking.lastCheckedAt)}.
+            </CardDescription>
+          </div>
+          {tracking.status !== "deleting" ? (
+            <div className="flex gap-2">
+              {props.canVerify ? (
+                <CheckTrackingDomainButton {...target} restart={tracking.status === "failed"} />
+              ) : null}
+              {props.canDelete ? (
+                <RemoveTrackingDomainButton {...target} hostname={tracking.hostname} />
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </CardHeader>
+      <CardPanel className="flex flex-col gap-3 p-2">
+        {tracking.providerMessage && tracking.status !== "active" ? (
+          <Alert variant="warning">
+            <AlertDescription>{tracking.providerMessage}</AlertDescription>
+          </Alert>
+        ) : null}
+        {tracking.provider === "fake" ? (
+          <Alert variant="info">
+            <AlertDescription>
+              This tracking domain uses the fake certificate provider (local development): it is
+              active without DNS, but nothing serves it.
+            </AlertDescription>
+          </Alert>
+        ) : null}
+        <Table className="table-fixed">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-16">Type</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Value</TableHead>
+              <TableHead className="w-28">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell className="align-top font-mono text-xs">{record.type}</TableCell>
+              <TableCell className="min-w-0 whitespace-normal align-top leading-normal">
+                <div className="flex flex-col gap-1">
+                  <code className="break-all text-xs">{record.name}</code>
+                  <div>
+                    <CopyButton label="Copy name" value={record.name} />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="min-w-0 whitespace-normal align-top leading-normal">
+                <div className="flex flex-col gap-1">
+                  <code className="break-all text-xs">{record.value}</code>
+                  {record.found.length > 0 ? (
+                    <span className="break-all text-destructive-foreground text-xs">
+                      Found: {record.found.join(", ")}
+                    </span>
+                  ) : null}
+                  <div>
+                    <CopyButton label="Copy value" value={record.value} />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="align-top">
+                <RecordStatusBadge status={record.status} />
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardPanel>
+    </Card>
   );
 }

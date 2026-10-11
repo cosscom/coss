@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { authClient } from "@/lib/auth-client";
+import { authErrorMessage } from "@/lib/auth-errors";
 
 export function CreateOrganizationForm() {
   const router = useRouter();
@@ -30,7 +31,7 @@ export function CreateOrganizationForm() {
     setError(null);
     const { error } = await authClient.organization.create({ name: name.trim(), slug });
     if (error) {
-      setError(error.message ?? "Could not create the organization.");
+      setError(authErrorMessage(error, "Could not create the organization."));
       setPending(false);
       return;
     }

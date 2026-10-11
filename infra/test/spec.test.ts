@@ -6,13 +6,21 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { emailEnvShape, emailWorkerEnvShape } from "@coss/email/env";
+import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { screeningEnvShape } from "@coss/screening/env";
-import { albListenerRules, cossComCacheBehaviours } from "../aws/routing.ts";
+import {
+  albListenerRules,
+  cossComCacheBehaviours,
+  TRACKING_HOST,
+  TRACKING_ORIGIN_VERIFY_HEADER,
+} from "../aws/routing.ts";
 import { SERVICES, type ServiceName } from "../aws/services.ts";
 
 const ROOT = path.resolve(import.meta.dir, "../..");
 const read = (file: string) => readFileSync(path.join(ROOT, file), "utf8");
+const readTurbo = () =>
+  JSON.parse(read("turbo.json")) as { globalEnv: string[]; globalPassThroughEnv: string[] };
 
 /** Keys of an app's t3-env `server` schema, including the spread email shape. */
 function schemaKeys(envFile: string, spread: Record<string, unknown>): string[] {
@@ -23,6 +31,7 @@ function schemaKeys(envFile: string, spread: Record<string, unknown>): string[] 
     ...(source.includes("...email") ? Object.keys(spread) : []),
     ...(source.includes("...rateLimitEnvShape") ? Object.keys(rateLimitEnvShape) : []),
     ...(source.includes("...screeningEnvShape") ? Object.keys(screeningEnvShape) : []),
+    ...(source.includes("...sentryEnvShape") ? Object.keys(sentryEnvShape) : []),
   ];
 }
 
@@ -44,16 +53,24 @@ describe("services", () => {
   }
 
   test("declared variables reach tasks (turbo strict env mode) unless the image sets them", () => {
-    const turbo = JSON.parse(read("turbo.json")) as { globalEnv: string[] };
+    const turbo = readTurbo();
+    const reaching = new Set([...turbo.globalEnv, ...turbo.globalPassThroughEnv]);
     for (const service of SERVICES) {
       for (const variable of service.env) {
         if (variable.kind === "image") continue;
-        expect({ name: variable.name, inTurbo: turbo.globalEnv.includes(variable.name) }).toEqual({
+        expect({ name: variable.name, inTurbo: reaching.has(variable.name) }).toEqual({
           name: variable.name,
           inTurbo: true,
         });
       }
     }
+  });
+
+  test("only variables that change build output are part of turbo's task hashes", () => {
+    // The remote cache shares results between laptops and CI, whose runtime settings differ.
+    // A variable belongs in globalEnv only if it changes what a task produces (verified for
+    // these by building with different runtime values); everything else is pass-through.
+    expect(readTurbo().globalEnv).toEqual(["NODE_ENV", "NEXT_DEPLOYMENT_ID"]);
   });
 
   test("image variables are set by the service's Dockerfile", () => {
@@ -132,6 +149,29 @@ describe("routing", () => {
       );
     expect(sitePaths).toEqual(expect.arrayContaining(["/", "/docs", "/docs/*", "/site-assets/*"]));
     expect(sitePaths).not.toContain("/api/*");
+  });
+
+  test("tracking routes on customer hostnames reach the API only with Cloudflare's header", () => {
+    const tracking = rules.find((rule) =>
+      rule.conditions.some(
+        (condition) =>
+          condition.Field === "http-header" &&
+          condition.HttpHeaderConfig.HttpHeaderName === TRACKING_ORIGIN_VERIFY_HEADER,
+      ),
+    );
+    expect(tracking?.targetGroup).toBe("api");
+    expect(tracking?.conditions.map((condition) => condition.Field)).toEqual([
+      "path-pattern",
+      "http-header",
+    ]);
+    expect(tracking?.conditions[0]).toEqual({
+      Field: "path-pattern",
+      PathPatternConfig: { Values: ["/t/*"] },
+    });
+    // Before the coss.com path rules and the dashboard.
+    expect(rules.indexOf(tracking as (typeof rules)[number])).toBe(1);
+    const worker = SERVICES.find((service) => service.name === "worker");
+    expect(worker?.env.find((v) => v.name === "TRACKING_CNAME_TARGET")?.value).toBe(TRACKING_HOST);
   });
 
   test("CloudFront caches site paths and hashed assets, never the dashboard or auth", () => {

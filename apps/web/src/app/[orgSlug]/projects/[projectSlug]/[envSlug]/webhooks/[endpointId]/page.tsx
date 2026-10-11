@@ -1,5 +1,7 @@
+import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
+import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
@@ -13,6 +15,7 @@ import { versioning } from "@coss/versioning";
 import {
   getWebhookEndpoint,
   listWebhookDeliveries,
+  previousSecretExpiresAt,
   type WebhookDeliveryLogEntry,
 } from "@coss/webhooks";
 import type { Metadata } from "next";
@@ -25,6 +28,7 @@ import {
   DeleteEndpointButton,
   RetryDeliveryButton,
   RevealSecret,
+  RollSecretButton,
   ToggleEndpointButton,
   UpgradeEndpointVersionButton,
 } from "./endpoint-actions";
@@ -60,6 +64,7 @@ export default async function WebhookEndpointPage({
     endpointId: endpoint.id,
   });
   const canUpdate = can({ webhook: ["update"] });
+  const previousExpiresAt = previousSecretExpiresAt(endpoint);
   const canDelete = can({ webhook: ["delete"] });
   const target = {
     orgSlug: organization.slug,
@@ -81,6 +86,19 @@ export default async function WebhookEndpointPage({
         <PageHeader
           actions={
             <>
+              {can({ log: ["read"] }) ? (
+                <Button
+                  render={
+                    <Link
+                      href={`${base}/logs?${new URLSearchParams({ q: `source:webhook ${endpoint.id}`, range: "7d" })}`}
+                    />
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  View logs
+                </Button>
+              ) : null}
               {canUpdate ? <ToggleEndpointButton {...target} enabled={endpoint.enabled} /> : null}
               {canDelete ? <DeleteEndpointButton {...target} url={endpoint.url} /> : null}
             </>
@@ -137,11 +155,22 @@ export default async function WebhookEndpointPage({
             <CardDescription>
               Requests carry <code>webhook-id</code>, <code>webhook-timestamp</code> and{" "}
               <code>webhook-signature</code> headers (Standard Webhooks). Verify them with this
-              secret before trusting a request.
+              secret before trusting a request. Rolling it replaces it with a new one; the old one
+              can keep signing for a while, so you can switch without rejecting requests.
             </CardDescription>
           </CardHeader>
-          <CardPanel>
-            <RevealSecret {...target} />
+          <CardPanel className="flex flex-col gap-4">
+            {previousExpiresAt ? (
+              <p className="text-sm">
+                The previous secret also signs requests until{" "}
+                <span className="font-medium">{formatDateTime(previousExpiresAt)}</span>.
+              </p>
+            ) : null}
+            <div className="flex flex-wrap items-start gap-2">
+              {/* Remounts after a roll, so a secret revealed before it isn't left on screen. */}
+              <RevealSecret {...target} key={endpoint.updatedAt.toISOString()} />
+              <RollSecretButton {...target} />
+            </div>
           </CardPanel>
         </Card>
       ) : null}
@@ -151,7 +180,8 @@ export default async function WebhookEndpointPage({
           <CardTitle>Recent deliveries</CardTitle>
           <CardDescription>
             Failed deliveries are retried for about a day (8 attempts). Any 2xx response counts as
-            delivered.
+            delivered. Deliveries are kept for{" "}
+            {formatRetentionDays(RETENTION_DAYS.webhookDeliveries)}.
           </CardDescription>
         </CardHeader>
         <CardPanel className="p-2">

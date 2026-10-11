@@ -9,6 +9,7 @@ import {
   getWebhookEndpoint,
   retryWebhookDelivery,
   revealWebhookSecret,
+  rollWebhookEndpointSecret,
   updateWebhookEndpoint,
   WebhookError,
 } from "@coss/webhooks";
@@ -16,8 +17,10 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
+import { recordAudit } from "@/lib/audit";
 import { type OrgContext, requireOrgPermission } from "@/lib/session";
 import { webhookManagementDeps } from "@/lib/webhooks";
+import { PREVIOUS_SECRET_OPTIONS } from "./secret-roll";
 
 /** The environment addressed by the form's slugs, inside the already-authorized organization. */
 async function environmentFromForm(context: OrgContext, formData: FormData) {
@@ -28,6 +31,22 @@ async function environmentFromForm(context: OrgContext, formData: FormData) {
   });
   if (!found) throw new ActionError("Environment not found.");
   return found;
+}
+
+function endpointAudit(
+  context: OrgContext,
+  endpoint: { id: string; url: string; projectId: string; environmentId: string },
+  action: string,
+  metadata?: Record<string, unknown>,
+) {
+  return recordAudit(context.session, {
+    organizationId: context.organization.id,
+    action,
+    target: { type: "webhook_endpoint", id: endpoint.id, label: endpoint.url },
+    projectId: endpoint.projectId,
+    environmentId: endpoint.environmentId,
+    metadata,
+  });
 }
 
 /** The endpoint addressed by the form, checked to belong to that environment. */
@@ -83,6 +102,9 @@ export async function createWebhookEndpointAction(
         webhookManagementDeps(),
       ),
     );
+    await endpointAudit(context, endpoint, "webhook_endpoint.created", {
+      event_types: endpoint.eventTypes,
+    });
     refresh();
     return { id: endpoint.id, secret };
   });
@@ -97,13 +119,15 @@ export async function setWebhookEndpointEnabledAction(
       webhook: ["update"],
     });
     const endpoint = await endpointFromForm(context, formData);
+    const enabled = formString(formData, "enabled") === "true";
     await updateWebhookEndpoint(
-      {
-        organizationId: context.organization.id,
-        id: endpoint.id,
-        enabled: formString(formData, "enabled") === "true",
-      },
+      { organizationId: context.organization.id, id: endpoint.id, enabled },
       webhookManagementDeps(),
+    );
+    await endpointAudit(
+      context,
+      endpoint,
+      enabled ? "webhook_endpoint.enabled" : "webhook_endpoint.disabled",
     );
     refresh();
     return null;
@@ -145,6 +169,7 @@ export async function deleteWebhookEndpointAction(
     });
     const endpoint = await endpointFromForm(context, formData);
     await deleteWebhookEndpoint({ organizationId: context.organization.id, id: endpoint.id });
+    await endpointAudit(context, endpoint, "webhook_endpoint.deleted");
     redirect(
       `/${context.organization.slug}/projects/${formString(formData, "projectSlug")}/` +
         `${formString(formData, "envSlug")}/webhooks`,
@@ -162,7 +187,42 @@ export async function revealWebhookSecretAction(
       webhook: ["update"],
     });
     const endpoint = await endpointFromForm(context, formData);
-    return { secret: revealWebhookSecret(endpoint, webhookManagementDeps().secretsKey) };
+    const secret = revealWebhookSecret(endpoint, webhookManagementDeps().secretsKeys);
+    // Who has seen a signing secret matters when it leaks.
+    await endpointAudit(context, endpoint, "webhook_endpoint.secret_revealed");
+    return { secret };
+  });
+}
+
+/**
+ * Replaces the signing secret; the current one keeps signing deliveries for the chosen time. The
+ * result carries the new secret to show right away.
+ */
+export async function rollWebhookSecretAction(
+  _previous: ActionResult<{ secret: string }> | null,
+  formData: FormData,
+): Promise<ActionResult<{ secret: string }>> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      webhook: ["update"],
+    });
+    const endpoint = await endpointFromForm(context, formData);
+    // Compared as strings: an empty field must not read as 0 ("immediately").
+    const chosen = formString(formData, "previousSecretExpiresIn");
+    const option = PREVIOUS_SECRET_OPTIONS.find(({ seconds }) => String(seconds) === chosen);
+    if (!option) throw new ActionError("Choose when the current secret stops signing.");
+    const { secret } = await userFacing(() =>
+      rollWebhookEndpointSecret(
+        {
+          organizationId: context.organization.id,
+          id: endpoint.id,
+          previousSecretExpiresIn: option.seconds,
+        },
+        webhookManagementDeps(),
+      ),
+    );
+    refresh();
+    return { secret };
   });
 }
 
@@ -181,6 +241,9 @@ export async function retryWebhookDeliveryAction(
       id: formString(formData, "deliveryId"),
     });
     if (!retried) throw new ActionError("This delivery is already scheduled.");
+    await endpointAudit(context, endpoint, "webhook_delivery.retried", {
+      delivery_id: formString(formData, "deliveryId"),
+    });
     refresh();
     return null;
   });

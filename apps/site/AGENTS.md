@@ -24,7 +24,9 @@ the macro API, `staticSource` and code-usage APIs are recent.
 | `src/app/docs/search.json`, `src/app/api/health` | Docs search (Fumadocs, `SEARCH_API`); the load balancer's health check (never routed on coss.com). |
 | `src/app/{icon.svg,robots.ts,sitemap.ts}` | coss.com's root files: the site owns them (the dashboard links to `/icon.svg`). |
 | `src/lib/sdk-samples.ts` | `METHOD /path` → `coss` method + argument builders for the SDK tab. |
-| `src/app/(home)` | Placeholder landing page (coss ui components). |
+| `src/instrumentation-client.ts`, `src/app/global-error.tsx` | Browser error monitoring (Sentry): configuration from the dashboard's `/api/monitoring` (same origin on coss.com; `next.config.ts` proxies it in `next dev`), events tunnelled through it to the dashboard's `web` project. The server reports nothing. |
+| `src/app/(home)` | Placeholder landing page (coss ui components), the legal pages and `SiteFooter`. |
+| `content/legal/`, `src/lib/legal.ts`, `src/app/(home)/legal` | Terms, Privacy Policy, Acceptable Use Policy, Data Processing Addendum (incorporated into the Terms) at `/legal/…` (Cal.com, Inc. is the legal entity). Their own `defineDocs` collection + `loader`, so they stay out of the docs' sidebar, search and `/llms.txt`; frontmatter needs `lastUpdated` (YYYY-MM-DD). The sign-up form links to `/legal/terms` and `/legal/privacy`. |
 
 ## Rules
 
@@ -55,6 +57,12 @@ the macro API, `staticSource` and code-usage APIs are recent.
   slug. `test/reserved-slugs.test.ts` fails for any route that isn't routed here. Paths under `/docs` need nothing.
   Never add routes under `/api` (the dashboard's on coss.com) or bare `/_next` (assets use `assetPrefix`
   `/site-assets`). `/ui` is routed to the coss ui app. Localized pages use 2-letter prefixes (`/de/…`).
+- **Legal pages state facts about the product** (what is stored and for how long, content screening, reputation
+  thresholds, subprocessors, cookies). Update them, and their `lastUpdated`, when that behaviour changes: adding a
+  subprocessor, an analytics script or a cookie, or a new kind of personal data, is a Privacy Policy change, and
+  material changes need notice (Terms section 17). A new subprocessor of Customer Data also goes in the DPA's Annex 3
+  and needs 30 days' notice (DPA section 5.3); a new security measure or data category belongs in its Annexes 1–2.
+  Have legal review substantive edits.
 - **Third-party scripts need the same review as dashboard code.** The site is same-origin with the dashboard: any
   script here can call `/api/auth/*` and the dashboard's server actions as the signed-in user. The CSP
   (`src/lib/security-headers.ts`) allows no script origin but this one; adding one (analytics, chat widgets, tag

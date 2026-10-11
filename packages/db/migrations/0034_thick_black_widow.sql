@@ -1,0 +1,3 @@
+ALTER TABLE "webhook_endpoint" ADD COLUMN "previous_secret_ciphertext" text;--> statement-breakpoint
+ALTER TABLE "webhook_endpoint" ADD COLUMN "previous_secret_expires_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "webhook_endpoint" ADD CONSTRAINT "webhook_endpoint_previous_secret_check" CHECK (("webhook_endpoint"."previous_secret_ciphertext" is null) = ("webhook_endpoint"."previous_secret_expires_at" is null));
