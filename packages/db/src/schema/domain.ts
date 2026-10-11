@@ -832,7 +832,7 @@ export const adminAuditEvent = pgTable(
 
 /**
  * An organization's rule for one rate limit bucket (`BUCKETS` in `@coss/ratelimit`), replacing the
- * default. Set by platform admins (`bun run ratelimit:set`).
+ * default. Set by platform admins (the admin console, or `bun run ratelimit:set`).
  */
 export const rateLimitOverride = pgTable(
   "rate_limit_override",

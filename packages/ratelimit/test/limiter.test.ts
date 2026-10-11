@@ -1,11 +1,15 @@
 import { afterAll, describe, expect, test } from "bun:test";
+import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
-import { BUCKETS } from "../src/buckets.ts";
+import { asc, eq } from "drizzle-orm";
+import { BUCKETS, MAX_RULE_VALUE } from "../src/buckets.ts";
 import { clientIpResolver } from "../src/client-ip.ts";
+import { describeRule, formatPeriod, parsePeriod } from "../src/format.ts";
 import { createRateLimiter, hashEmail } from "../src/limiter.ts";
 import {
   cachedOverrides,
+  changeRateLimitOverride,
   deleteRateLimitOverride,
   listRateLimitOverrides,
   setRateLimitOverride,
@@ -136,6 +140,86 @@ describe("overrides", () => {
     await expect(
       setRateLimitOverride({ organizationId, bucket: "api.read", rule: { limit: 0, periodMs: 1 } }),
     ).rejects.toThrow(/positive integer/);
+    await expect(
+      setRateLimitOverride({
+        organizationId,
+        bucket: "api.read",
+        rule: { limit: 1, periodMs: MAX_RULE_VALUE + 1 },
+      }),
+    ).rejects.toThrow(/at most/);
+  });
+
+  test("admin changes are audited with the previous and new rules", async () => {
+    const { organization, owner } = await createTestTenant();
+    const organizationId = organization.id;
+    const actor = { userId: owner.id, email: owner.email };
+    const bucket = "email.recipients.day";
+
+    // Resetting a bucket without an override changes and records nothing.
+    expect(await changeRateLimitOverride({ organizationId, bucket, rule: null, actor })).toBe(
+      false,
+    );
+    expect(
+      await changeRateLimitOverride({
+        organizationId,
+        bucket,
+        rule: { limit: 50_000, periodMs: 86_400_000 },
+        actor,
+        reason: " Upgrade ",
+      }),
+    ).toBe(true);
+    await changeRateLimitOverride({
+      organizationId,
+      bucket,
+      rule: { limit: 60_000, periodMs: 86_400_000, burst: 70_000 },
+      actor,
+      reason: "More",
+    });
+    expect(await listRateLimitOverrides(organizationId)).toEqual({
+      [bucket]: { limit: 60_000, periodMs: 86_400_000, burst: 70_000 },
+    });
+    expect(await changeRateLimitOverride({ organizationId, bucket, rule: null, actor })).toBe(true);
+    expect(await listRateLimitOverrides(organizationId)).toEqual({});
+
+    const events = await db
+      .select()
+      .from(schema.adminAuditEvent)
+      .where(eq(schema.adminAuditEvent.organizationId, organizationId))
+      .orderBy(asc(schema.adminAuditEvent.id));
+    expect(
+      events.map((event) => [event.action, event.actorEmail, event.reason, event.metadata]),
+    ).toEqual([
+      [
+        "rate_limit.override_set",
+        owner.email,
+        "Upgrade",
+        { bucket, previous: null, rule: { limit: 50_000, periodMs: 86_400_000, burst: 50_000 } },
+      ],
+      [
+        "rate_limit.override_set",
+        owner.email,
+        "More",
+        {
+          bucket,
+          previous: { limit: 50_000, periodMs: 86_400_000, burst: 50_000 },
+          rule: { limit: 60_000, periodMs: 86_400_000, burst: 70_000 },
+        },
+      ],
+      [
+        "rate_limit.override_reset",
+        owner.email,
+        null,
+        {
+          bucket,
+          previous: { limit: 60_000, periodMs: 86_400_000, burst: 70_000 },
+          rule: null,
+        },
+      ],
+    ]);
+
+    await expect(
+      changeRateLimitOverride({ organizationId, bucket: "auth.sso.ip", rule: null, actor }),
+    ).rejects.toThrow(/not a bucket/);
   });
 
   test("are cached and fall back to defaults when loading fails", async () => {
@@ -160,6 +244,20 @@ describe("overrides", () => {
     fail = false;
     expect(await source("org")).toEqual({ "api.read": { limit: 1, periodMs: 1000 } });
     expect(calls).toBe(3);
+  });
+});
+
+describe("format", () => {
+  test("parses and formats periods", () => {
+    expect(parsePeriod("250ms")).toBe(250);
+    expect(parsePeriod(" 5m ")).toBe(300_000);
+    expect(parsePeriod("1d")).toBe(86_400_000);
+    for (const bad of ["", "5", "1w", "-1s", "1.5s"]) expect(() => parsePeriod(bad)).toThrow();
+    expect(formatPeriod(86_400_000)).toBe("1d");
+    expect(formatPeriod(90_000)).toBe("90s");
+    expect(formatPeriod(1500)).toBe("1500ms");
+    expect(describeRule(BUCKETS["api.read"])).toBe("50 per 1s, burst 100");
+    expect(describeRule({ limit: 3, periodMs: 3_600_000 })).toBe("3 per 1h, burst 3");
   });
 });
 

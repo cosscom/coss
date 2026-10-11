@@ -55,6 +55,9 @@ export const ADMIN_ACTIONS = [
   "reputation.suspended",
   "reputation.reinstated",
   "reputation.policy_updated",
+  // Recorded by `changeRateLimitOverride` (@coss/ratelimit).
+  "rate_limit.override_set",
+  "rate_limit.override_reset",
 ] as const;
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 

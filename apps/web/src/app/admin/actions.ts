@@ -3,6 +3,13 @@
 import { DASHBOARD_PATH } from "@coss/auth/slugs";
 import { isId } from "@coss/db/id";
 import {
+  changeRateLimitOverride,
+  isOverridableBucket,
+  type LimitRule,
+  MAX_RULE_VALUE,
+  parsePeriod,
+} from "@coss/ratelimit";
+import {
   ADMIN_REASON_MAX_LENGTH,
   type AdminActor,
   disableOrganizationSso,
@@ -356,6 +363,71 @@ export async function disableOrganizationSsoAction(
       reason: requiredReason(formData),
       actor,
     });
+    refresh();
+    return null;
+  });
+}
+
+function formBucket(formData: FormData): string {
+  const bucket = formString(formData, "bucket");
+  if (!isOverridableBucket(bucket)) throw new ActionError("This rate limit can't be overridden.");
+  return bucket;
+}
+
+function ruleNumber(formData: FormData, name: string, label: string): number | undefined {
+  const value = formString(formData, name);
+  if (!value) return undefined;
+  const number = Number(value);
+  if (!Number.isSafeInteger(number) || number < 1 || number > MAX_RULE_VALUE) {
+    throw new ActionError(`${label} must be a whole number from 1 to ${MAX_RULE_VALUE}.`);
+  }
+  return number;
+}
+
+function formRule(formData: FormData): LimitRule {
+  const limit = ruleNumber(formData, "limit", "The limit");
+  if (limit === undefined) throw new ActionError("Enter a limit.");
+  const burst = ruleNumber(formData, "burst", "The burst");
+  let periodMs: number;
+  try {
+    periodMs = parsePeriod(formString(formData, "period"));
+  } catch {
+    throw new ActionError("Enter a period such as 1s, 5m, 1h or 1d.");
+  }
+  if (periodMs < 1 || periodMs > MAX_RULE_VALUE) {
+    throw new ActionError("The period must be between 1ms and 24 days.");
+  }
+  return { limit, periodMs, ...(burst === undefined ? {} : { burst }) };
+}
+
+/** Gives an organization its own rule for one rate limit bucket (applies within a minute). */
+export async function setRateLimitOverrideAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { actor } = await requirePlatformAdminAction();
+    const organizationId = formOrganizationId(formData);
+    const bucket = formBucket(formData);
+    const rule = formRule(formData);
+    const reason = requiredReason(formData);
+    await changeRateLimitOverride({ organizationId, bucket, rule, actor, reason });
+    refresh();
+    return null;
+  });
+}
+
+/** Puts one of an organization's rate limits back to the default (applies within a minute). */
+export async function resetRateLimitOverrideAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { actor } = await requirePlatformAdminAction();
+    const organizationId = formOrganizationId(formData);
+    const bucket = formBucket(formData);
+    const reason = optionalReason(formData);
+    await changeRateLimitOverride({ organizationId, bucket, rule: null, actor, reason });
     refresh();
     return null;
   });

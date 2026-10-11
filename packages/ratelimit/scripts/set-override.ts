@@ -1,5 +1,6 @@
 /**
- * Shows or changes an organization's rate limit overrides (takes up to a minute to apply):
+ * Shows or changes an organization's rate limit overrides (takes up to a minute to apply). Unlike
+ * the admin console (/admin/organizations/…), changes made here are not in the admin audit log.
  *   bun run ratelimit:set --org acme                                   # list buckets and rules
  *   bun run ratelimit:set --org acme --bucket email.recipients.day --limit 50000 [--period 1d] [--burst N]
  *   bun run ratelimit:set --org acme --bucket email.recipients.day --reset
@@ -9,6 +10,7 @@ import { closeDb, db } from "@coss/db";
 import { organization } from "@coss/db/schema";
 import { eq } from "drizzle-orm";
 import { BUCKET_NAMES, BUCKETS, isOverridableBucket, type LimitRule } from "../src/buckets.ts";
+import { describeRule, parsePeriod } from "../src/format.ts";
 import {
   deleteRateLimitOverride,
   listRateLimitOverrides,
@@ -18,26 +20,6 @@ import {
 const USAGE =
   "Usage: bun run ratelimit:set --org <slug> [--bucket <name> (--limit <n> [--period <1s|5m|1h|1d>] " +
   "[--burst <n>] | --reset)]";
-
-const UNITS: Record<string, number> = { ms: 1, s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 };
-
-function parsePeriod(value: string): number {
-  const match = /^(\d+)(ms|s|m|h|d)$/.exec(value.trim());
-  if (!match) throw new Error(`Invalid --period "${value}" (e.g. 1s, 5m, 1h, 1d).`);
-  return Number(match[1]) * (UNITS[match[2] ?? "ms"] ?? 1);
-}
-
-function formatPeriod(ms: number): string {
-  for (const unit of ["d", "h", "m", "s"] as const) {
-    const size = UNITS[unit] ?? 1;
-    if (ms % size === 0) return `${ms / size}${unit}`;
-  }
-  return `${ms}ms`;
-}
-
-function describe(rule: LimitRule): string {
-  return `${rule.limit} per ${formatPeriod(rule.periodMs)}, burst ${rule.burst ?? rule.limit}`;
-}
 
 function positiveInt(name: string, value: string | undefined): number | undefined {
   if (value === undefined) return undefined;
@@ -91,7 +73,7 @@ async function main(): Promise<void> {
         );
       }
       await setRateLimitOverride({ organizationId: org.id, bucket, rule });
-      console.info(`Set ${bucket}: ${describe(rule)}.`);
+      console.info(`Set ${bucket}: ${describeRule(rule)}.`);
     }
   }
 
@@ -102,7 +84,7 @@ async function main(): Promise<void> {
     if (!definition.overridable) continue;
     const override = overrides[name];
     const rule = override ?? definition;
-    console.info(`  ${name.padEnd(30)} ${describe(rule)}${override ? "  (override)" : ""}`);
+    console.info(`  ${name.padEnd(30)} ${describeRule(rule)}${override ? "  (override)" : ""}`);
   }
 }
 

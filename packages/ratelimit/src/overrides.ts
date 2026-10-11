@@ -1,5 +1,5 @@
-import { db } from "@coss/db";
-import { rateLimitOverride } from "@coss/db/schema";
+import { db, type Executor } from "@coss/db";
+import { adminAuditEvent, rateLimitOverride } from "@coss/db/schema";
 import { and, eq } from "drizzle-orm";
 import {
   assertValidRule,
@@ -33,11 +33,14 @@ export async function listRateLimitOverrides(organizationId: string): Promise<Ov
   return rules;
 }
 
-export async function setRateLimitOverride(input: {
-  organizationId: string;
-  bucket: string;
-  rule: LimitRule;
-}): Promise<void> {
+export async function setRateLimitOverride(
+  input: {
+    organizationId: string;
+    bucket: string;
+    rule: LimitRule;
+  },
+  executor: Executor = db,
+): Promise<void> {
   const { organizationId, bucket, rule } = input;
   if (!isOverridableBucket(bucket)) {
     throw new RangeError(`"${bucket}" is not a bucket organizations can override.`);
@@ -48,7 +51,7 @@ export async function setRateLimitOverride(input: {
     periodMs: rule.periodMs,
     burst: rule.burst ?? null,
   };
-  await db
+  await executor
     .insert(rateLimitOverride)
     .values({ organizationId, bucket, ...values })
     .onConflictDoUpdate({
@@ -58,11 +61,14 @@ export async function setRateLimitOverride(input: {
 }
 
 /** Returns whether an override existed. */
-export async function deleteRateLimitOverride(input: {
-  organizationId: string;
-  bucket: string;
-}): Promise<boolean> {
-  const deleted = await db
+export async function deleteRateLimitOverride(
+  input: {
+    organizationId: string;
+    bucket: string;
+  },
+  executor: Executor = db,
+): Promise<boolean> {
+  const deleted = await executor
     .delete(rateLimitOverride)
     .where(
       and(
@@ -72,6 +78,61 @@ export async function deleteRateLimitOverride(input: {
     )
     .returning({ id: rateLimitOverride.id });
   return deleted.length > 0;
+}
+
+/** The platform admin changing an override; the email is copied into the audit log. */
+export type OverrideActor = { userId: string; email: string };
+
+/**
+ * Sets (`rule`) or removes (`rule: null`) an override for a platform admin, recording an
+ * `admin_audit_event` (`rate_limit.override_set` / `rate_limit.override_reset`, with the bucket and
+ * the previous and new rules) in the same transaction. Removing a missing override records nothing
+ * and returns false. Call it only after checking that the caller is a platform admin.
+ */
+export async function changeRateLimitOverride(input: {
+  organizationId: string;
+  bucket: string;
+  rule: LimitRule | null;
+  actor: OverrideActor;
+  reason?: string | null;
+}): Promise<boolean> {
+  const { organizationId, bucket, rule } = input;
+  if (!isOverridableBucket(bucket)) {
+    throw new RangeError(`"${bucket}" is not a bucket organizations can override.`);
+  }
+  if (rule) assertValidRule(rule);
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(rateLimitOverride)
+      .where(
+        and(
+          eq(rateLimitOverride.organizationId, organizationId),
+          eq(rateLimitOverride.bucket, bucket),
+        ),
+      )
+      .for("update");
+    if (!row && !rule) return false;
+    if (rule) await setRateLimitOverride({ organizationId, bucket, rule }, tx);
+    else await deleteRateLimitOverride({ organizationId, bucket }, tx);
+    await tx.insert(adminAuditEvent).values({
+      actorUserId: input.actor.userId,
+      actorEmail: input.actor.email,
+      action: rule ? "rate_limit.override_set" : "rate_limit.override_reset",
+      targetType: "organization",
+      targetId: organizationId,
+      organizationId,
+      reason: input.reason?.trim() || null,
+      metadata: {
+        bucket,
+        previous: row
+          ? { limit: row.limit, periodMs: row.periodMs, burst: row.burst ?? row.limit }
+          : null,
+        rule: rule ? { ...rule, burst: rule.burst ?? rule.limit } : null,
+      },
+    });
+    return true;
+  });
 }
 
 /**
