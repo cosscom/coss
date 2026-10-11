@@ -225,6 +225,20 @@
       "when": 1791739620293,
       "tag": "0031_supreme_big_bertha",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1791747087343,
+      "tag": "0032_chemical_harpoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1791747093514,
+      "tag": "0033_canonical_email_backfill",
+      "breakpoints": true
     }
   ]
 }

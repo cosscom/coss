@@ -37,6 +37,11 @@ export const env = createEnv({
     // Proxies in front of the app that append to X-Forwarded-For (CloudFront → ALB: 2). 0 trusts
     // no forwarded address (local development).
     TRUSTED_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
+    // Cloudflare Turnstile on sign-up, sign-in and password reset (both or neither; required in
+    // production, see src/instrumentation.ts). The site key is public: pages pass it to the
+    // widget. The secret key is read by @coss/auth (`captcha` plugin).
+    TURNSTILE_SITE_KEY: z.string().optional(),
+    TURNSTILE_SECRET_KEY: z.string().optional(),
     // Error and performance monitoring of the dashboard's server and, through /api/monitoring,
     // of browsers on both zones (dashboard and site).
     ...sentryEnvShape,

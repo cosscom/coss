@@ -56,6 +56,16 @@ describe("withAuthRateLimit", () => {
     expect((await handler(post("/sign-up/email", {}, "198.51.100.2"))).status).toBe(200);
   });
 
+  test("limits organization creation per client IP", async () => {
+    const { handler } = setup();
+    const statuses: number[] = [];
+    for (let i = 0; i < 11; i++) {
+      statuses.push((await handler(post("/organization/create", { slug: `org-${i}` }))).status);
+    }
+    expect(statuses.slice(0, 10).every((status) => status === 200)).toBe(true);
+    expect(statuses[10]).toBe(429);
+  });
+
   test("limits SSO sign-in starts and SAML responses per client IP, sharing one bucket", async () => {
     const { handler } = setup();
     const statuses: number[] = [];

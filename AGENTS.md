@@ -18,7 +18,7 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
-| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso plugins), org permissions, slug rules; `./sso`: SSO trust rules (server-only); `./emails`: the account email outbox (verification, password reset, invitation; no Better Auth import). |
+| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`); `./sso`: SSO trust rules (server-only); `./emails`: the account email outbox. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO recovery, audit log and cross-org reads. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
@@ -61,6 +61,7 @@ bun run db:migrate          # apply migrations + install/upgrade the pg-boss sch
                             #   (db:migrate:test → TEST_DATABASE_URL); db:studio
 bun run auth:generate       # regenerate packages/db/src/schema/auth.ts after changing Better Auth plugins/options,
                             #   then bun run db:generate && bun run db:migrate
+bun run auth:update-disposable  # refresh the vendored disposable-domain list (review the diff before committing)
 bun run openapi:generate    # rewrite apps/api/openapi.json after changing API routes (a test fails when stale)
 bun run changeset           # describe an SDK change (CI requires one when packages/sdk/src changes; --empty if none)
 bun run version-packages    # apply changesets: bump the SDK's package.json, src/version.ts, CHANGELOG.md, bun.lock
@@ -152,6 +153,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `SKIP_BUILD_TYPECHECK` | `1` makes `next build` (web, site) skip its TypeScript check; set only by CI's build job (its check job typechecks) |
 | `TURBO_TOKEN`, `TURBO_TEAM`, `TURBO_REMOTE_CACHE_SIGNATURE_KEY` | turbo itself (Vercel Remote Cache, team `cal`): locally `turbo login` stores the token and `~/.config/coss/turbo.env` (sourced by the shell profile) sets the other two; in CI `secrets.TURBO_TOKEN`, `vars.TURBO_TEAM`, `secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY`. Never in `.env` (turbo doesn't read it) |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | `apps/web`: Server Actions key shared by every dashboard task of a stage (base64, 16/24/32 bytes); read at runtime, required in production |
+| `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | `apps/web`: Cloudflare Turnstile (both or neither; required in production, checked in `src/instrumentation.ts`). Pages pass the site key to the auth forms; `packages/auth/src/options.ts` adds the `captcha` plugin when the secret is set |
 | `TRUSTED_PROXY_HOPS` | `apps/web`: proxies that append to `X-Forwarded-For` (CloudFront → ALB: `2`; default `0`). `src/proxy.ts` replaces the header with the one client address they vouch for, which Better Auth then uses (it ignores multi-value headers) |
 | `NEXT_DEPLOYMENT_ID` | Next builds (`apps/web`, `apps/site`): the commit, passed by the Dockerfiles; build id + version-skew protection |
 | `PORT`, `HOSTNAME`, `KEEP_ALIVE_TIMEOUT` | set by the Next images (standalone `server.js`) |
@@ -274,7 +276,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   reserved up front in `slugs.ts`. Slugs are ≥ 3 characters, so a localized site must use 2-letter prefixes
   (`/de/…`), never `xx-yy` codes (valid slugs). Reserve a new marketing path before any org can take it.
 - Same origin: any script on the site can act as the signed-in dashboard user. Both apps send a CSP without
-  third-party script origins and deny framing (`src/lib/security-headers.ts` in each); see `apps/site/AGENTS.md`.
+  third-party script origins (except the dashboard's `TURNSTILE_ORIGIN`, script + frame only) and deny framing (`src/lib/security-headers.ts` in each); see `apps/site/AGENTS.md`.
 - Local dev keeps separate ports: `localhost:3000` redirects `/` to `/dashboard` and `/legal/*` to the site, and
   proxies `/icon.svg` to the site;
   the site proxies `/api/auth/*` to :3000 and links with `dashboardUrl()`.
@@ -385,6 +387,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - `packages/ui/src/{components,hooks,lib}`: vendored from the `@coss` registry and excluded from Biome; re-adding a
   component overwrites local edits.
 - `bun.lock` (only via `bun install`; CI uses `--frozen-lockfile`).
+- `packages/auth/src/disposable-domains.generated.ts` (`bun run auth:update-disposable`; local exceptions go in
+  `ALLOWED_DOMAINS` / `EXTRA_DISPOSABLE_DOMAINS` in `email-guard.ts`).
 - The `<!-- BEGIN:*-agent-rules -->` blocks at the end of this file and in `apps/{web,site}/AGENTS.md` are rewritten by `turbo`
   and `next dev`: never edit inside them, keep project text above them, and commit tool changes to them.
 - Agent docs: `AGENTS.md` files are the source of truth; each `CLAUDE.md` contains only `@AGENTS.md`. A new nested
@@ -417,7 +421,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     once a minute (`LAST_USED_RESOLUTION_MS`). Re-check it against `validateApiKey` when bumping Better Auth or
     using a new key option (quotas, refills, per-key rate limits). Revocation: `getKeyBinding`
     ownership check, then `auth.api.deleteApiKey` with session headers.
-  - `disabledPaths` blocks the HTTP routes `/api-key/{create,update,get,list,delete}`, `/organization/update` and
+  - `disabledPaths` blocks the HTTP routes `/api-key/{create,update,get,list,delete}`, `/organization/{update,invite-member}` and
     every admin-plugin mutation (`/admin/{create-user,update-user,remove-user,set-role,set-user-password,ban-user,
     unban-user,impersonate-user,revoke-user-session,revoke-user-sessions}`) and SSO provider management
     (`/sso/{register,update-provider,delete-provider,providers,get-provider,request-domain-verification,verify-domain}`)
@@ -430,6 +434,22 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     a before middleware also guards invitation resends and leaving (Better Auth skips the hooks for these); `orgRoleCan` matches
     role names exactly, like Better Auth (no trimming). `assignableOrgRoles` mirrors Better Auth's update-member-role
     rules (only owners change owners or grant owner; Better Auth alone enforces "the last owner can't step down").
+  - **Abuse prevention.** Turnstile: Better Auth's `captcha` plugin (only when `TURNSTILE_SECRET_KEY` is set) checks
+    `/sign-up/email`, `/sign-in/email` and `/request-password-reset` (HTTP only; `auth.api.*` skips it); the forms
+    get the token from `useTurnstile` (`apps/web/src/components/turnstile.tsx`) and send it as `x-captcha-response`.
+    It fails closed while siteverify is unreachable (passkeys and SSO still sign in). The sign-up guard runs on
+    `/sign-up/email` only — never in `databaseHooks`, so fixtures (`@coss.test`), the seed,
+    admins and SSO users skip it: disposable domains (vendored list, parent domains included), domains that
+    definitively can't receive mail (NXDOMAIN, null MX, no MX/A/AAAA; system resolver, 1 s, in-process cache;
+    lookup failures allow; special-use TLDs like `.test` allowed outside production only), and a second account
+    for the same mailbox (`user.canonicalEmail`, set for every new user; its rules are mirrored in SQL by
+    migration `0033` — change both together). The sign-up endpoint holds a Postgres advisory lock per
+    canonical mailbox through the account transaction; organization creation holds one per owner through
+    the organization and membership transaction (`serialized-endpoint.ts`). Invitations: inviter must have a verified email, no disposable
+    invitees (both checked in middleware, including resends), at most `MAX_PENDING_INVITATIONS` pending per org, and the dashboard action charges the org's
+    `dashboard.invitations` bucket (refunded when Better Auth refuses). Organizations: a user owns at most
+    `MAX_OWNED_ORGANIZATIONS` (platform admins exempt; memberships don't count), and `/organization/create` is
+    limited per IP (`auth.org_create.ip`).
   - Password reset: `sendResetPassword` emails Better Auth's `/api/auth/reset-password/:token` link, which redirects to
     the dashboard's `/reset-password?token=…` (the client passes `redirectTo`); `revokeSessionsOnPasswordReset: true`.
   - Org roles spread `ownerAc.statements` / `adminAc.statements` / `memberAc.statements` (custom roles replace defaults).
@@ -760,6 +780,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   SAML errors after the IdP step land on the callback URL (`?error=`), not on `/sso`. The SAML path is covered by
   Better Auth's own tests only (ours drive OIDC against oauth2-mock-server).
 - Next's cache is per task (nothing uses ISR or `revalidateTag` yet; add a shared `cacheHandler` first).
+- Abuse prevention is best-effort: the disposable list only knows public burner services (refresh it), one-account-
+  per-mailbox folds only well-known providers' dots/`+tags`, the DNS check lets every lookup failure through, and a
+  Cloudflare siteverify outage blocks password sign-in, sign-up and reset (passkeys and SSO keep working).
 - Accepted: sign-up email enumeration; org deletion is disabled. A user ban does not cut off their orgs' API keys (keys
   are org-owned) — suspend the organization. Suspension does not pause the SES tenant itself;
   already-queued immediate sends finish, while scheduled sends wait for the suspension to be lifted.

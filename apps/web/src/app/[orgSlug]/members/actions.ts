@@ -15,10 +15,36 @@ import type { ActionResult } from "@/lib/action-result";
 import { ActionError, ForbiddenError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
+import { rateLimitRuntime } from "@/lib/rate-limit";
 import { requireOrgPermission } from "@/lib/session";
 
 function isInvitableRole(value: string): value is InvitableOrgRole {
   return (INVITABLE_ORG_ROLES as readonly string[]).includes(value);
+}
+
+/**
+ * Runs `send` (an invitation email) against the organization's `dashboard.invitations` quota;
+ * the token is given back when Better Auth refuses the invitation.
+ */
+async function withInvitationQuota<T>(organizationId: string, send: () => Promise<T>): Promise<T> {
+  const { limiter } = rateLimitRuntime();
+  const request = {
+    buckets: ["dashboard.invitations" as const],
+    subject: organizationId,
+    organizationId,
+  };
+  const decision = await limiter.consume(request);
+  if (!decision.allowed) {
+    throw new ActionError(
+      "This organization has sent too many invitations today. Try again later.",
+    );
+  }
+  try {
+    return await send();
+  } catch (error) {
+    await limiter.refund(request);
+    throw error;
+  }
 }
 
 /** Invites by email. The accept link is logged to the web server console (no delivery yet). */
@@ -36,10 +62,12 @@ export async function inviteMemberAction(
     if (!isInvitableRole(role)) throw new ActionError("Choose a role: admin or member.");
 
     // organizationId is explicit: Better Auth would otherwise fall back to the active org.
-    await auth.api.createInvitation({
-      headers: await headers(),
-      body: { email, role, organizationId: organization.id },
-    });
+    await withInvitationQuota(organization.id, async () =>
+      auth.api.createInvitation({
+        headers: await headers(),
+        body: { email, role, organizationId: organization.id },
+      }),
+    );
     await recordAudit(session, {
       organizationId: organization.id,
       action: "invitation.created",
@@ -72,10 +100,12 @@ export async function resendInvitationAction(
     if (!isInvitableRole(role)) throw new ActionError("This invitation has an unknown role.");
 
     // `resend: true` makes Better Auth extend and re-send the pending invitation for this email.
-    await auth.api.createInvitation({
-      headers: await headers(),
-      body: { email: invitation.email, role, organizationId: organization.id, resend: true },
-    });
+    await withInvitationQuota(organization.id, async () =>
+      auth.api.createInvitation({
+        headers: await headers(),
+        body: { email: invitation.email, role, organizationId: organization.id, resend: true },
+      }),
+    );
     await recordAudit(session, {
       organizationId: organization.id,
       action: "invitation.resent",
