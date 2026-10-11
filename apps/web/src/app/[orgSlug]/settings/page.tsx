@@ -1,4 +1,8 @@
-import { listOrganizationMembers, readOrganizationApiVersion } from "@coss/tenancy";
+import {
+  hasScimConnection,
+  listOrganizationMembers,
+  readOrganizationApiVersion,
+} from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
@@ -23,6 +27,7 @@ export default async function OrganizationSettingsPage({
   const { organization, member, can, suspended, session } = await requireOrgMember(orgSlug);
   const canUpdate = can({ organization: ["update"] });
   const canReadSso = can({ sso: ["read"] });
+  const canReadScim = can({ scim: ["read"] });
   const members = await listOrganizationMembers({ organizationId: organization.id });
   const isOwner = member.role.split(",").includes("owner");
   const owners = members.filter((row) => row.role.split(",").includes("owner")).length;
@@ -30,7 +35,10 @@ export default async function OrganizationSettingsPage({
   const lastOwner = isOwner && owners <= 1;
   const withoutTwoFactor = members.filter((row) => !row.user.twoFactorEnabled).length;
   const hasTwoFactor = Boolean(session.user.twoFactorEnabled);
-  const pinnedApiVersion = await readOrganizationApiVersion({ organizationId: organization.id });
+  const [pinnedApiVersion, scimConnected] = await Promise.all([
+    readOrganizationApiVersion({ organizationId: organization.id }),
+    canReadScim ? hasScimConnection({ organizationId: organization.id }) : false,
+  ]);
   const apiVersionChanges = pinnedApiVersion
     ? versioning
         .changesBetween(pinnedApiVersion, versioning.latest)
@@ -112,6 +120,30 @@ export default async function OrganizationSettingsPage({
               variant="outline"
             >
               Configure SSO
+            </Button>
+          </CardPanel>
+        </Card>
+      ) : null}
+
+      {canReadScim ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Directory sync
+              {scimConnected ? <Badge variant="success">Connected</Badge> : null}
+            </CardTitle>
+            <CardDescription>
+              Let your identity provider add and remove members, and set admins from its groups,
+              over SCIM.
+            </CardDescription>
+          </CardHeader>
+          <CardPanel>
+            <Button
+              render={<Link href={`/${organization.slug}/settings/scim`} />}
+              size="sm"
+              variant="outline"
+            >
+              Configure directory sync
             </Button>
           </CardPanel>
         </Card>

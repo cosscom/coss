@@ -28,6 +28,11 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   "GET /v1/reputation": { method: "reputation.get", args: () => [] },
   "GET /v1/logs": { method: "logs.list", args: (request) => [queryParams(request)] },
   "GET /v1/logs/{id}": { method: "logs.get", args: (request) => [pathId(request)] },
+  "GET /v1/audit_events": { method: "auditEvents.list", args: (request) => [queryParams(request)] },
+  "GET /v1/audit_events/{id}": {
+    method: "auditEvents.get",
+    args: (request) => [pathId(request)],
+  },
   "POST /v1/log_drains": {
     method: "logDrains.create",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],

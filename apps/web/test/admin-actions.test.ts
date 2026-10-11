@@ -11,6 +11,7 @@ mock.module("@coss/tenancy", () => ({ TenancyError: class extends Error {} }));
 const audit = mock(async () => {});
 mock.module("@coss/tenancy/admin", () => ({
   ADMIN_REASON_MAX_LENGTH: 500,
+  disableOrganizationScim: mock(async () => ({ complete: true })),
   disableOrganizationSso: mock(async () => {}),
   disableOrganizationSsoRequirement: mock(async () => {}),
   recordAdminAction: audit,
@@ -59,11 +60,13 @@ mock.module("@/lib/auth", () => ({
 const {
   resetUserTwoFactor,
   unlinkUserSso,
+  disableOrganizationScim,
   disableOrganizationSso,
   disableOrganizationSsoRequirement,
 } = (await import("@coss/tenancy/admin")) as unknown as Record<
   | "resetUserTwoFactor"
   | "unlinkUserSso"
+  | "disableOrganizationScim"
   | "disableOrganizationSso"
   | "disableOrganizationSsoRequirement",
   ReturnType<typeof mock>
@@ -157,6 +160,7 @@ describe("SSO recovery", () => {
 
   beforeEach(() => {
     unlinkUserSso.mockClear();
+    disableOrganizationScim.mockClear();
     disableOrganizationSso.mockClear();
     disableOrganizationSsoRequirement.mockClear();
     supportAudit.mockClear();
@@ -188,6 +192,7 @@ describe("SSO recovery", () => {
       () => disableOrganizationSsoRequirement,
     ],
     ["disable SSO", actions.disableOrganizationSsoAction, () => disableOrganizationSso],
+    ["disconnect SCIM", actions.disableOrganizationScimAction, () => disableOrganizationScim],
   ] as const) {
     test(`${name} needs an organization id and a reason`, async () => {
       const organizationId = newId("org");
@@ -206,6 +211,15 @@ describe("SSO recovery", () => {
       expect(JSON.stringify(supportAudit.mock.calls)).not.toContain("Outage");
     });
   }
+
+  test("disconnecting SCIM reports a directory that is still being released", async () => {
+    disableOrganizationScim.mockImplementationOnce(async () => ({ complete: false }));
+    const result = await actions.disableOrganizationScimAction(
+      null,
+      form("organizationId", newId("org"), "Token leaked"),
+    );
+    expect(result.ok).toBe(false);
+  });
 });
 
 describe("rate limit overrides", () => {

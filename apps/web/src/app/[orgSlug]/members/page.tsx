@@ -1,5 +1,9 @@
 import { assignableOrgRoles, canRemoveOrgMember } from "@coss/auth/permissions";
-import { listOrganizationMembers, listPendingInvitations } from "@coss/tenancy";
+import {
+  listOrganizationMembers,
+  listPendingInvitations,
+  listScimManagedUserIds,
+} from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
@@ -25,9 +29,10 @@ export const metadata: Metadata = { title: "Members" };
 export default async function MembersPage({ params }: PageProps<"/[orgSlug]/members">) {
   const { orgSlug } = await params;
   const { organization, member, can } = await requireOrgMember(orgSlug);
-  const [members, invitations] = await Promise.all([
+  const [members, invitations, directoryUserIds] = await Promise.all([
     listOrganizationMembers({ organizationId: organization.id }),
     listPendingInvitations({ organizationId: organization.id }),
+    listScimManagedUserIds({ organizationId: organization.id }),
   ]);
   const canInvite = can({ invitation: ["create"] });
   const canCancelInvitations = can({ invitation: ["cancel"] });
@@ -72,10 +77,16 @@ export default async function MembersPage({ params }: PageProps<"/[orgSlug]/memb
             </TableHeader>
             <TableBody>
               {members.map((row) => {
-                const roles = assignableOrgRoles(member.role, row.role);
+                const isOwnerRow = row.role.split(",").includes("owner");
+                // The directory (SCIM) manages its users' membership and role, except owners'.
+                const fromDirectory = directoryUserIds.has(row.user.id) && !isOwnerRow;
+                const roles = assignableOrgRoles(member.role, row.role).filter(
+                  (role) => !fromDirectory || role === "owner" || role === row.role,
+                );
                 const isSelf = row.id === member.id;
                 // Leaving (removing yourself) lives on the settings page.
-                const removable = !isSelf && canRemoveOrgMember(member.role, row.role);
+                const removable =
+                  !isSelf && !fromDirectory && canRemoveOrgMember(member.role, row.role);
                 return (
                   <TableRow key={row.id}>
                     <TableCell className="font-medium">
@@ -84,7 +95,10 @@ export default async function MembersPage({ params }: PageProps<"/[orgSlug]/memb
                     </TableCell>
                     <TableCell>{row.user.email}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{row.role}</Badge>
+                      <div className="flex gap-1">
+                        <Badge variant="outline">{row.role}</Badge>
+                        {fromDirectory ? <Badge variant="info">directory</Badge> : null}
+                      </div>
                     </TableCell>
                     <TableCell>
                       {row.user.twoFactorEnabled ? (
@@ -101,7 +115,7 @@ export default async function MembersPage({ params }: PageProps<"/[orgSlug]/memb
                     {canManageMembers ? (
                       <TableCell>
                         <div className="flex justify-end gap-2">
-                          {roles.length > 0 ? (
+                          {roles.some((role) => role !== row.role) ? (
                             <ChangeRoleDialog
                               currentRole={row.role}
                               isSelf={isSelf}

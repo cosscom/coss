@@ -7,6 +7,7 @@
 import { apiKey } from "@better-auth/api-key";
 import { getCurrentAdapter, queueAfterTransactionHook } from "@better-auth/core/context";
 import { passkey } from "@better-auth/passkey";
+import { scim } from "@better-auth/scim";
 import { sso } from "@better-auth/sso";
 import { db, type Executor } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
@@ -31,6 +32,13 @@ import {
 } from "./email-guard.ts";
 import { enqueueAuthEmail, RESET_PASSWORD_LINK_TTL_S, VERIFICATION_LINK_TTL_S } from "./emails.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
+import {
+  assertScimEmail,
+  isScimSessionSweep,
+  scimCredentialHashSecret,
+  scimOrganizationIdOf,
+  scimPluginOptions,
+} from "./scim.ts";
 import { serializedEndpoint } from "./serialized-endpoint.ts";
 import { validateOrgName, validateOrgSlug } from "./slugs.ts";
 import { emailDomainOf, resolveSsoUser, ssoProviderIdOfPath } from "./sso.ts";
@@ -48,6 +56,16 @@ const MODEL_ID_PREFIX: Record<string, string> = {
   twoFactor: ID_PREFIXES.twoFactor,
   passkey: ID_PREFIXES.passkey,
   ssoProvider: ID_PREFIXES.ssoProvider,
+  scimConnectionBinding: ID_PREFIXES.scimConnectionBinding,
+  scimSubject: ID_PREFIXES.scimSubject,
+  scimUser: ID_PREFIXES.scimUser,
+  scimIdentityTombstone: ID_PREFIXES.scimIdentityTombstone,
+  scimGroup: ID_PREFIXES.scimGroup,
+  scimGroupMember: ID_PREFIXES.scimGroupMember,
+  scimProjectionGrant: ID_PREFIXES.scimProjectionGrant,
+  scimManagedConnection: ID_PREFIXES.scimManagedConnection,
+  scimManagedCredential: ID_PREFIXES.scimManagedCredential,
+  scimManagedConnectionEvent: ID_PREFIXES.scimManagedConnectionEvent,
 };
 
 export function generateAuthId({ model }: { model: string }): string {
@@ -249,14 +267,33 @@ export const authOptions = {
     user: {
       create: {
         // Users created by an SSO sign-in: `resolveSsoUser` already checked that their address is
-        // on a domain the organization verified, so they don't get a verification email.
-        before: async (user, ctx) => ({
-          data: {
-            ...user,
-            canonicalEmail: canonicalEmail(user.email),
-            ...(ssoProviderIdOfPath(ctx?.path, ctx?.params) ? { emailVerified: true } : {}),
-          },
-        }),
+        // on a domain the organization verified, so they don't get a verification email. Users
+        // created by a directory (SCIM) must be on the organization's SSO domains too.
+        before: async (user, ctx) => {
+          const data = { ...user, canonicalEmail: canonicalEmail(user.email) };
+          if (ssoProviderIdOfPath(ctx?.path, ctx?.params)) {
+            return { data: { ...data, emailVerified: true } };
+          }
+          const scimOrganizationId = scimOrganizationIdOf(ctx);
+          if (scimOrganizationId) {
+            await assertScimEmail(scimOrganizationId, user.email);
+            return { data: { ...data, emailVerified: true } };
+          }
+          return { data };
+        },
+      },
+      update: {
+        // A directory changing the address of a user it manages: only to another address on the
+        // organization's SSO domains, which stays verified (the plugin would clear it, and SSO
+        // sign-in can only link verified accounts).
+        before: async (user, ctx) => {
+          const scimOrganizationId = scimOrganizationIdOf(ctx);
+          if (!scimOrganizationId || typeof user.email !== "string") return undefined;
+          await assertScimEmail(scimOrganizationId, user.email);
+          return {
+            data: { ...user, canonicalEmail: canonicalEmail(user.email), emailVerified: true },
+          };
+        },
       },
     },
     session: {
@@ -265,6 +302,10 @@ export const authOptions = {
           const ssoProviderId = ssoProviderIdOfPath(ctx?.path, ctx?.params);
           return { data: { ...session, ssoProviderId } };
         },
+      },
+      delete: {
+        // `false` cancels the whole delete: SCIM only revokes the organization's SSO sessions.
+        before: async (_session, ctx) => (isScimSessionSweep(ctx) ? false : undefined),
       },
     },
   },
@@ -385,6 +426,15 @@ export const authOptions = {
         // SAML2Int: Okta, Entra ID, Google Workspace… always send NotBefore/NotOnOrAfter.
         requireTimestamps: true,
         algorithms: { onDeprecated: "reject" },
+      },
+    }),
+    // Directory sync at /api/auth/scim/v2 (`./scim.ts`). Connections and their bearer tokens are
+    // managed only server-side (`auth.api.*SCIMManaged*`, serverOnly) from the dashboard.
+    scim({
+      ...scimPluginOptions,
+      managedConnections: {
+        credentialHashSecret: scimCredentialHashSecret(),
+        maxActiveCredentials: 2,
       },
     }),
     // Cloudflare Turnstile on /sign-up/email, /sign-in/email and /request-password-reset (HTTP

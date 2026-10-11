@@ -1,0 +1,42 @@
+---
+title: Audit log
+description: Who changed what in your organization, from the dashboard, the API or COSS support.
+icon: History
+---
+
+Your organization has one audit log. It records changes, not reads:
+
+| Actor (`actor_type`) | Changes                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------- |
+| `user`               | Made by a member in the dashboard: API keys, domains, members, invitations, settings…    |
+| `api_key`            | Made with an API key: domains, webhook endpoints, suppressions, canceled emails…         |
+| `system`             | Made by COSS support, shown as `COSS support` (for example suspending the organization) |
+
+Each event has an `action` (`<resource>.<verb>`, e.g. `api_key.created`, `domain.deleted`,
+`member.role_changed`), the target it changed, and the project and environment it happened in
+(`null` for organization-wide changes such as domains and members). Changes made through the API
+carry the request's `request_id` in their `metadata`, so you can find the request in the
+environment's [logs](/docs/logs).
+
+Owners and admins can open **Settings → Audit log** in the dashboard to filter events and export
+them as CSV. Or read them through the API:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data, error } = await coss.auditEvents.list({
+  action: ["domain.", "api_key.created"],
+  from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+});
+for (const event of data?.data ?? []) {
+  console.log(event.created_at, event.actor_label, event.action, event.target_label);
+}
+```
+
+An `action` ending in `.` matches every action of that resource (`domain.`). Pages are newest
+first: pass the last event's `id` as `after` while `has_more` is true.
+
+The audit log is organization-wide: an API key of any environment, live or sandbox, reads every
+event of the organization. Only owners and admins can create API keys, and both can read the audit
+log. Reading it is not itself logged, and its events never appear in an environment's logs.

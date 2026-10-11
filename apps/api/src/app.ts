@@ -171,7 +171,8 @@ export function openApiDocumentConfig(serverUrl: string) {
       version: "v1",
       description:
         "One API key for every COSS product. Errors share one envelope: `Error`. Every request " +
-        "is scoped to the environment the key belongs to; domains are organization-wide.",
+        "is scoped to the environment the key belongs to; domains and the audit log are " +
+        "organization-wide.",
     },
     servers: [{ url: serverUrl }],
     tags: [
@@ -188,6 +189,10 @@ export function openApiDocumentConfig(serverUrl: string) {
       {
         name: "Logs",
         description: "The environment's API requests, email events and webhook attempts.",
+      },
+      {
+        name: "Audit log",
+        description: "Changes to the organization, by members, API keys and COSS support.",
       },
     ],
   };

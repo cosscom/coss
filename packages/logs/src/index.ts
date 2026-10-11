@@ -1,4 +1,5 @@
 export {
+  getOrgAuditEvent,
   listOrgAuditActions,
   listOrgAuditEvents,
   type OrgAuditActor,
@@ -6,7 +7,6 @@ export {
   type OrgAuditEventRow,
   type OrgAuditFilters,
   recordOrgAuditEvent,
-  toAuditLine,
   toOrgAuditObject,
 } from "./audit.ts";
 export {

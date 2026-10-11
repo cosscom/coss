@@ -17,7 +17,7 @@ seconds, signed like [webhooks](/docs/webhooks).
 | `audit`   | Changes to the environment: API keys, webhook endpoints, log drains, suppressions, tracking…  |
 
 A drain takes every source unless you list some. Organization-wide changes (members, domains,
-SSO) stay in the organization's audit log and are not sent to drains.
+SSO) stay in the organization's [audit log](/docs/audit-log) and are not sent to drains.
 
 ## Create a drain
 
@@ -41,8 +41,8 @@ Drains belong to the API key's environment, like webhook endpoints. An environme
 
 Each request is a `POST` with `Content-Type: application/x-ndjson`: one JSON object per line, each
 line ending with a newline, at most 500 lines or 1 MB per request. Log lines are exactly the
-objects [`GET /v1/logs`](/docs/api-reference/logs/list-logs) returns (`"object": "log"`); audit
-events have `"object": "audit_event"`:
+objects [`GET /v1/logs`](/docs/api-reference/logs/list-logs) returns (`"object": "log"`), and
+audit events the objects of the [audit log](/docs/audit-log) (`"object": "audit_event"`):
 
 ```json
 {"object":"log","id":"log_01k7c8m4…","occurred_at":"2026-01-15T09:30:00.000Z","source":"api","level":"info","type":"api.request","message":"POST /v1/emails 202","request_id":"req_01k7c8m4…","status_code":202,…}

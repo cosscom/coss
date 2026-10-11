@@ -1,4 +1,5 @@
 /** Log drain wire types (hand-written mirrors of the API's schemas). */
+import type { AuditEvent } from "./audit-event.ts";
 import type { Log, LogSource } from "./log.ts";
 
 /**
@@ -95,26 +96,8 @@ export interface ListLogDrainBatchesParams {
   after?: string;
 }
 
-/** A change to the environment, from the organization's audit log. */
-export interface AuditEventLine {
-  object: "audit_event";
-  id: string;
-  /** ISO 8601 timestamp. */
-  created_at: string;
-  actor_type: "user" | "api_key" | "system";
-  actor_id: string | null;
-  actor_label: string;
-  /** `<resource>.<verb>`, e.g. `webhook_endpoint.created`. */
-  action: string;
-  target_type: string | null;
-  target_id: string | null;
-  target_label: string | null;
-  project_id: string | null;
-  environment_id: string | null;
-  metadata: Record<string, unknown>;
-  client_ip: string | null;
-  user_agent: string | null;
-}
-
-/** One line of a log drain batch: a log line (as `coss.logs.list()` returns it) or an audit event. */
-export type LogDrainLine = Log | AuditEventLine;
+/**
+ * One line of a log drain batch: a log line (as `coss.logs.list()` returns it) or an audit event
+ * of the environment (as `coss.auditEvents.list()` returns it).
+ */
+export type LogDrainLine = Log | AuditEvent;

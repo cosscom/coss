@@ -12,6 +12,7 @@ import {
 import {
   ADMIN_REASON_MAX_LENGTH,
   type AdminActor,
+  disableOrganizationScim,
   disableOrganizationSso,
   disableOrganizationSsoRequirement,
   recordAdminAction,
@@ -359,6 +360,28 @@ export async function disableOrganizationSsoAction(
     await disableOrganizationSso({ organizationId, reason: requiredReason(formData), actor });
     await supportAudit(organizationId, "sso.disabled");
     refresh();
+    return null;
+  });
+}
+
+/** Disconnects the organization's directory (SCIM); its members stay. */
+export async function disableOrganizationScimAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { actor } = await requirePlatformAdminAction();
+    const organizationId = formOrganizationId(formData);
+    const { complete } = await disableOrganizationScim({
+      organizationId,
+      reason: requiredReason(formData),
+      actor,
+    });
+    refresh();
+    if (!complete) {
+      throw new ActionError("The directory is still being released: run this again to finish.");
+    }
+    await supportAudit(organizationId, "scim.disabled");
     return null;
   });
 }

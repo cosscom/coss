@@ -34,10 +34,12 @@ import type {
 } from "@coss/email/schemas";
 import type {
   LogDrainSource as ApiLogDrainSource,
+  AuditEvent,
+  AuditEventList,
+  ListAuditEventsQuery,
   ListLogsQuery,
   LogEntry,
   LogList,
-  OrgAuditEventOutput,
 } from "@coss/logs/schemas";
 import type {
   AccountWebhookEvent,
@@ -67,7 +69,6 @@ import type {
   WebhookEndpointWithSecret,
 } from "@coss/webhooks/schemas";
 import type {
-  AuditEventLine,
   CheckSuppressionParams,
   CossErrorIssue,
   CossErrorType,
@@ -81,6 +82,7 @@ import type {
   ExportSuppressionsParams,
   ImportSuppressionsParams,
   List,
+  ListAuditEventsParams,
   ListLogDrainBatchesParams,
   ListLogsParams,
   ListSuppressionsParams,
@@ -94,6 +96,7 @@ import type {
   RollWebhookEndpointSecretParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
   ApiVersion as SdkApiVersion,
+  AuditEvent as SdkAuditEvent,
   DeletedDomain as SdkDeletedDomain,
   DeletedLogDrain as SdkDeletedLogDrain,
   DeletedSuppression as SdkDeletedSuppression,
@@ -263,6 +266,10 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof LogEntry>, SdkLog>>,
   Assert<MutuallyAssignable<z.output<typeof LogList>, List<SdkLog>>>,
   Assert<Equals<keyof z.input<typeof ListLogsQuery>, keyof ListLogsParams>>,
+  // Audit log: the same.
+  Assert<MutuallyAssignable<z.output<typeof AuditEvent>, SdkAuditEvent>>,
+  Assert<MutuallyAssignable<z.output<typeof AuditEventList>, List<SdkAuditEvent>>>,
+  Assert<Equals<keyof z.input<typeof ListAuditEventsQuery>, keyof ListAuditEventsParams>>,
   // Log drains: management, batches, and the lines a batch carries.
   Assert<MutuallyAssignable<z.input<typeof CreateLogDrainRequest>, CreateLogDrainParams>>,
   Assert<MutuallyAssignable<z.input<typeof UpdateLogDrainRequest>, UpdateLogDrainParams>>,
@@ -280,13 +287,7 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof LogDrainBatchObject>, LogDrainBatch>>,
   Assert<MutuallyAssignable<z.output<typeof LogDrainBatchList>, List<LogDrainBatch>>>,
   Assert<MutuallyAssignable<ApiLogDrainSource, LogDrainSource>>,
-  Assert<MutuallyAssignable<Omit<AuditEventLine, "object">, OrgAuditEventOutput>>,
-  Assert<
-    MutuallyAssignable<
-      z.output<typeof LogEntry> | (OrgAuditEventOutput & { object: "audit_event" }),
-      LogDrainLine
-    >
-  >,
+  Assert<MutuallyAssignable<z.output<typeof LogEntry> | z.output<typeof AuditEvent>, LogDrainLine>>,
   // Errors: every API error type is one the SDK knows, and issues have the same shape.
   Assert<ApiError["type"] extends CossErrorType ? true : false>,
   Assert<MutuallyAssignable<NonNullable<ApiError["issues"]>[number], CossErrorIssue>>,

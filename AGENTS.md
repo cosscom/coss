@@ -18,8 +18,8 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
-| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`); `./sso`: SSO trust rules (server-only); `./emails`: the account email outbox. |
-| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO recovery, audit log and cross-org reads. |
+| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
+| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, audit log and cross-org reads. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption; log drains (management, signed NDJSON batch delivery, retention); `./schemas`, `./env` (zod only). |
@@ -188,7 +188,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - New endpoint: `createRoute({ …, security: [{ bearerAuth: [] }], middleware: [requireApiKey({ <product>: ["<action>"] }), rateLimit("api.read" | "api.write" | "api.send")] })`
   + `router.openapi(route, handler)`, mounted in `createV1Router` (`src/routes/v1.ts`). Auth goes in `middleware` so it
   runs before validation (401 beats 422). Tenancy comes only from `c.var.auth` — environment-scoped resources filter by
-  `environmentId`, organization-scoped ones (domains) only by `organizationId`. Document responses with
+  `environmentId`, organization-scoped ones (domains, audit events) only by `organizationId`. Document responses with
   `jsonDoc`/`errorDoc`/`commonErrors` (`src/routes/docs.ts`, includes 429). The root `validationHook` turns zod failures into 422 + `issues`;
   a per-route hook must end with `validationHook(result)`. `test/app.test.ts` asserts the exact OpenAPI path list.
 - Every operation needs an `operationId` (it names its docs page). Wire schemas carry a whole-object
@@ -257,7 +257,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   `webhookManagementDeps()` (`src/lib/webhooks.ts`); domain/webhook errors carry user-facing messages. Revealing a
   webhook secret needs `webhook:update` (members can read endpoints but never see secrets).
 - Org settings (`[orgSlug]/settings`: rename, slug change, leave, 2FA requirement; `settings/sso`: SSO provider and
-  requirement) and account settings (top-level `/settings`: name,
+  requirement; `settings/scim`: directory sync) and account settings (top-level `/settings`: name,
   verification email, password change, sessions) call `auth.api.*` server-side — `/organization/update` stays a
   disabled HTTP path. `canRemoveOrgMember`/`assignableOrgRoles` mirror Better Auth's owner rules for the UI; Better
   Auth alone protects the last owner. Account actions refuse while impersonating.
@@ -409,7 +409,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `getColumns` until the catalog moves to 1.x.
 - **Biome** is pinned exactly; keep the `$schema` URL in `biome.json` and `apps/web/biome.json` in step with it.
 - **Better Auth:** `better-auth`, `@better-auth/core`, `@better-auth/api-key`, `@better-auth/passkey`,
-  `@better-auth/sso` and `auth` (CLI) stay on one identical exact version (catalog) — bump them together.
+  `@better-auth/sso`, `@better-auth/scim` and `auth` (CLI) stay on one identical exact version (catalog) — bump them together.
   - The api-key plugin is `@better-auth/api-key` (not `better-auth/plugins`). Keys are org-owned
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
@@ -489,6 +489,27 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     `requireTwoFactor` (the IdP owns MFA); another org's provider satisfies neither. API keys are unaffected.
     Admin recovery (audited, `@coss/tenancy/admin`): `unlinkUserSso`, `disableOrganizationSsoRequirement`,
     `disableOrganizationSso` (clears `domainVerified`; saving again re-enables).
+  - **SCIM (directory sync)** (`@better-auth/scim`, `packages/auth/src/scim.ts`, `packages/tenancy/src/scim.ts`,
+    endpoints at `/api/auth/scim/v2`): one **managed** connection per organization (`provisioningDomainId` = the
+    organization id), created/rotated/revoked/decommissioned only through the plugin's serverOnly `auth.api.*`
+    (`connectScim` & co., `scim:update`: owners and admins); tokens are HMAC digests keyed by a secret derived from
+    `BETTER_AUTH_SECRET` (`scimCredentialHashSecret` — rotating that secret invalidates every SCIM token). Connecting
+    needs an active SSO provider: `resolveScimUser` only provisions addresses under the provider's domains
+    (`ssoDomainForEmail`, also enforced on create/update in `databaseHooks.user` so directory users stay
+    `emailVerified`), links an existing account only when it is verified (sign-up doesn't verify: an unverified
+    account would hand membership to whoever registered it) and never lets the directory rewrite a linked account
+    (`profile: "preserve"`). The plugin has no organizations: `reconcileScimMembership` (its `projection`) writes
+    `member` rows through the transaction it is given — active = member, admin when a group is mapped to admin in
+    `scim_group_role` (normalized displayName); inactive/deleted = membership removed and that org's SSO sessions
+    deleted. **Owners are never changed**, nobody is added or promoted while the org is suspended (removals apply).
+    The plugin deletes *every* session of a globally inactive user; the `session.delete.before` hook vetoes that
+    (`isScimSessionSweep`) during SCIM requests and inside `preservingScimMembers` (COSS's decommission/replay
+    calls, which also keep members whose only source was the disconnected directory). While a connection is
+    active, `resolveSsoUser` admits only users with an active SCIM user there (matched by email, not the IdP
+    subject) and existing owners (`scimBlocksSsoSignIn`). The dashboard refuses manual removal/role changes of
+    directory-managed members (except making them owner), and removing the SSO provider while a directory is
+    connected. Every method of `/scim/v2/*` is limited per IP and per token (`withScimRateLimit`). Admin recovery:
+    `disableOrganizationScim` (audited `organization.disable_scim`).
   - **2FA enforcement:** `organization.requireTwoFactor` (additional field, `input: false`; written only by
     `setOrganizationTwoFactorRequired` from org settings, which needs `organization:update` and an actor with 2FA).
     `requireOrgMember` redirects members without `user.twoFactorEnabled` to `/settings` — passkeys don't satisfy it
@@ -691,7 +712,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   ignore their own filter. Retention: the worker's `logs` loop keeps 7 days of partitions ahead and drops expired ones
   (`LOG_RETENTION_DAYS`); the default partition catches the rest. Search syntax lives in `@coss/logs/query`
   (`parseLogQuery`/`formatLogQuery`), shared by the dashboard. Permissions: `log:read` (every role and API key, backfilled
-  by `0029`), `audit:read` (owners, admins). The audit log records changes from dashboard actions (`recordAudit`, after
+  by `0029`), `audit:read` (owners, admins, and every API key — only owners and admins create keys; backfilled by
+  `0035`). `GET /v1/audit_events[/{id}]` (`coss.auditEvents`) reads the organization-wide audit log with a key of any
+  environment; its reads, like `GET /v1/logs*`, are never request-logged (members can read environment logs, not the
+  audit log). The audit log records changes from dashboard actions (`recordAudit`, after
   the change succeeded, best effort), API keys (`recordApiAudit`), Better Auth's invitation routes and platform admins
   (`supportAudit`: actor "COSS support", never the admin or their reason); new mutations should record one.
 - **Log drains** (`log_drain` (ids `drain_`), `log_drain_record` (`drainrec_`), `log_drain_batch` (`drainbat_`),
@@ -709,7 +733,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   by hand also drops the backlog; nothing is queued for a disabled drain. Suspended organizations' drains are held.
   Drain deliveries are never written to `log_entry` (that would feed itself). Retention (`purgeExpiredLogDrainBatches`):
   finished batches after `RETENTION_DAYS.logDrainBatches`, unbatched lines after `logDrainBacklog`. Lines are not
-  versioned (like `GET /v1/logs`). Permissions: `logDrain` (members read; API keys all, backfilled by `0036`); revealing a
+  versioned (like `GET /v1/logs`). Permissions: `logDrain` (members read; API keys all, backfilled by `0039`); revealing a
   secret needs `logDrain:update`.
 - **Reputation notifications** (table `reputation_notification`, ids `repntf_`; `packages/reputation/src/notifications.ts`):
   the worker's `reputation-notifications` loop (`runDueReputationNotifications`, system-level) emails a warning or
@@ -811,6 +835,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   from still adds it under Domains (which creates an SES identity). OIDC IdPs must be public `https://` hosts.
   SAML errors after the IdP step land on the callback URL (`?error=`), not on `/sso`. The SAML path is covered by
   Better Auth's own tests only (ours drive OIDC against oauth2-mock-server).
+- Directory sync only manages members and admins: owners are never added, demoted or removed by it (a directory
+  deactivating an owner shows a warning on the SCIM page), and groups only map to roles. Directory users must sign
+  in through the organization's SSO provider, so SCIM needs one.
+  Disconnecting keeps every member. Profile changes of linked (pre-existing) accounts are not synced.
 - Next's cache is per task (nothing uses ISR or `revalidateTag` yet; add a shared `cacheHandler` first).
 - Abuse prevention is best-effort: the disposable list only knows public burner services (refresh it), one-account-
   per-mailbox folds only well-known providers' dots/`+tags`, the DNS check lets every lookup failure through, and a
@@ -831,7 +859,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), tracking settings over the API,
-SCIM/directory sync, log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay), the audit log over the API,
+log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos/deletion, email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.

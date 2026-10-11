@@ -11,6 +11,7 @@
     "webhooks",
     "data-retention",
     "logs",
+    "audit-log",
     "log-drains",
     "---Email---",
     "...email",

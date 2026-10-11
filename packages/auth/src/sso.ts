@@ -20,6 +20,7 @@ export const SSO_REJECTIONS = {
   domain: "email_domain_not_allowed",
   suspended: "organization_suspended",
   provider: "provider_not_found",
+  scim: "scim_user_not_active",
 } as const;
 
 /**
@@ -123,8 +124,9 @@ export async function unverifiedSsoDomains(
 /**
  * The plugin's `resolveUser`: runs on every SSO sign-in, before any user, account, membership or
  * session is written. Refuses addresses outside the organization's verified domains (an IdP
- * must not create or take over accounts on other domains) and new members of suspended
- * organizations (the plugin's provisioning bypasses the organization hooks).
+ * must not create or take over accounts on other domains), users a connected directory doesn't
+ * list as active (`scimBlocksSsoSignIn`) and new members of suspended organizations (the
+ * plugin's provisioning bypasses the organization hooks).
  */
 export async function resolveSsoUser(input: SSOUserResolutionInput): Promise<SSOUserResolution> {
   const [provider] = await db
@@ -150,6 +152,13 @@ export async function resolveSsoUser(input: SSOUserResolutionInput): Promise<SSO
       message: "This address is not on a verified domain of the organization.",
     };
   }
+  if (await scimBlocksSsoSignIn(organizationId, email)) {
+    return {
+      action: "reject",
+      code: SSO_REJECTIONS.scim,
+      message: "Your organization's directory doesn't give you access to this organization.",
+    };
+  }
   const [suspension] = await db
     .select({ organizationId: schema.organizationSuspension.organizationId })
     .from(schema.organizationSuspension)
@@ -171,6 +180,63 @@ export async function resolveSsoUser(input: SSOUserResolutionInput): Promise<SSO
     }
   }
   return { action: "continue" };
+}
+
+/** Better Auth stores several roles comma-separated. */
+export function isOwnerRole(role: string): boolean {
+  return role.split(",").includes("owner");
+}
+
+/** The organization's live (not decommissioned) managed SCIM connection ids. */
+export async function liveScimConnectionIds(organizationId: string): Promise<string[]> {
+  const rows = await db
+    .select({ connectionId: schema.scimManagedConnection.connectionId })
+    .from(schema.scimManagedConnection)
+    .where(
+      and(
+        eq(schema.scimManagedConnection.provisioningDomainId, organizationId),
+        eq(schema.scimManagedConnection.status, "active"),
+      ),
+    );
+  return rows.map((row) => row.connectionId);
+}
+
+/**
+ * Whether SSO sign-in to `organizationId` is refused for `email` because the directory doesn't
+ * list the user as active: while a directory is connected, only its active users (and existing
+ * owners, who aren't managed by it) sign in through SSO. Matched by the account's address, not the
+ * IdP subject — Entra's OIDC `sub` is pairwise and never equals the SCIM externalId.
+ */
+export async function scimBlocksSsoSignIn(organizationId: string, email: string): Promise<boolean> {
+  const connectionIds = await liveScimConnectionIds(organizationId);
+  if (connectionIds.length === 0) return false;
+  const [account] = await db
+    .select({ id: schema.user.id })
+    .from(schema.user)
+    .where(eq(schema.user.email, email))
+    .limit(1);
+  if (!account) return true;
+  const [owner] = await db
+    .select({ role: schema.member.role })
+    .from(schema.member)
+    .where(
+      and(eq(schema.member.organizationId, organizationId), eq(schema.member.userId, account.id)),
+    )
+    .limit(1);
+  if (owner && isOwnerRole(owner.role)) return false;
+  const [active] = await db
+    .select({ id: schema.scimUser.id })
+    .from(schema.scimUser)
+    .where(
+      and(
+        eq(schema.scimUser.userId, account.id),
+        eq(schema.scimUser.provisioningDomainId, organizationId),
+        inArray(schema.scimUser.connectionId, connectionIds),
+        eq(schema.scimUser.active, true),
+      ),
+    )
+    .limit(1);
+  return active === undefined;
 }
 
 const SSO_SIGN_IN_PATHS = ["/sso/callback/:providerId", "/sso/saml2/sp/acs/:providerId"];
