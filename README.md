@@ -97,6 +97,9 @@ resets) are printed to the dashboard's server console in development.
   own redirect (`API_PUBLIC_URL/t/…`) when it hands the email to the provider; the stored email keeps the original
   HTML. Opens and clicks show up as `email.opened` / `email.clicked` events, webhooks, counts on the email
   (`tracking`) and per-link click counts. Independent of SES's own tracking, which stays off.
+  A verified domain can have a **custom tracking domain** (e.g. `links.acme.com`, a CNAME to `track.coss.com`):
+  emails from it are tracked through that hostname while it is active. COSS registers it as a Cloudflare for SaaS
+  custom hostname (`TRACKING_DOMAIN_PROVIDER=cloudflare`), which issues its certificate and proxies `/t/*` to the API.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
 - **Single sign-on** — per organization, OpenID Connect or SAML 2.0 (Better Auth's SSO plugin), set up under
@@ -346,6 +349,16 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
 - **SES, SNS, SQS, EventBridge:** created by `ses:bootstrap` (see [Running on Amazon SES](#running-on-amazon-ses)),
   run as a one-off task (below).
 - **Route 53:** `coss.com` and `api.coss.com` alias records to their distributions.
+- **Custom tracking domains (Cloudflare for SaaS, on the coss.com zone):** enable Cloudflare for SaaS on the zone
+  and create the fallback origin `track.coss.com` as a **proxied** record pointing at the ALB's DNS name. Customer
+  tracking domains CNAME to it; COSS registers each as a custom hostname (HTTP certificate validation) through the
+  API with `CLOUDFLARE_API_TOKEN` (zone-scoped, SSL and Certificates: Edit) and `CLOUDFLARE_ZONE_ID`. Add a request
+  header transform rule that sets `X-Tracking-Origin-Verify: <secret>` on requests to custom hostnames: the ALB
+  forwards `/t/*` with that header to the api target group for any host (rule from the spec, `infra/aws/routing.ts`),
+  and nothing else. Allow Cloudflare's IP ranges (https://www.cloudflare.com/ips/) on the ALB's 443 next to the
+  CloudFront prefix list. SSL mode **Full**: Cloudflare connects with the customer's hostname as SNI, which the
+  ALB's certificate doesn't cover; the header secret is what proves a request came through Cloudflare. Cloudflare
+  bills custom hostnames beyond the plan's allowance.
 
 ### Secrets and environment
 
@@ -353,7 +366,10 @@ One Secrets Manager secret per stage (JSON), injected through each task definiti
 `VALKEY_URL` (from `valkey:bootstrap`), `DATABASE_URL`, `BETTER_AUTH_SECRET`, `AI_GATEWAY_API_KEY` (worker), `WEBHOOK_SECRETS_KEY` and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (generate the
 last three with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable). The origin
 header value is a separate secret, used only by CloudFront and the ALB rules (rotate it by adding the new value to the
-rules, then CloudFront, then removing the old one). Plain values per service:
+rules, then CloudFront, then removing the old one); so is the tracking origin header (Cloudflare's transform rule and
+the ALB's tracking rule). `CLOUDFLARE_API_TOKEN` (web, api, worker) is in the stage secret. Plain values per service
+(web, api and worker also take `TRACKING_DOMAIN_PROVIDER=cloudflare`, `CLOUDFLARE_ZONE_ID` and optional
+`TRACKING_CNAME_TARGET`):
 
 | Service | Variables |
 |---|---|

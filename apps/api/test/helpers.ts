@@ -6,6 +6,7 @@ import {
   type EmailService,
   FakeEmailProvider,
   FakeIdentityProvider,
+  FakeTrackingHostnameProvider,
 } from "@coss/email";
 import type { SendEmailRequestInput } from "@coss/email/schemas";
 import { createVerifiedDomain, memoryDispatchQueue } from "@coss/email/testing";
@@ -43,6 +44,7 @@ export function createTestApp(
   const liveProvider = new FakeEmailProvider({ log: false });
   const sandboxProvider = new FakeEmailProvider({ log: false });
   const identity = new FakeIdentityProvider();
+  const tracking = new FakeTrackingHostnameProvider({ cnameTarget: "track.coss.test" });
   const queue = memoryDispatchQueue();
   const emailService =
     opts.emailService ??
@@ -51,10 +53,11 @@ export function createTestApp(
       sandboxProvider,
       queue,
       trackingBaseUrl: TRACKING_BASE_URL,
+      trackingDomainProvider: tracking.name,
     });
   const app = createApp({
     emailService,
-    domainDeps: opts.domainDeps ?? { identity, dns: null },
+    domainDeps: opts.domainDeps ?? { identity, dns: null, tracking },
     webhookDeps: testManagementDeps,
     rateLimiter: opts.rateLimiter,
     clientIp: opts.clientIp,
@@ -64,7 +67,7 @@ export function createTestApp(
     versioning: opts.versioning,
   });
   const dispatch = () => queue.drain(emailService);
-  return { app, liveProvider, sandboxProvider, identity, queue, dispatch };
+  return { app, liveProvider, sandboxProvider, identity, tracking, queue, dispatch };
 }
 
 export type TestApp = ReturnType<typeof createTestApp>["app"];

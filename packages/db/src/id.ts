@@ -29,6 +29,7 @@ export const ID_PREFIXES = {
   emailTrackingRule: "etr",
   emailLink: "lnk",
   domain: "dom",
+  trackingDomain: "tdom",
   webhookEndpoint: "whep",
   webhookDelivery: "whdel",
   webhookAttempt: "whatt",

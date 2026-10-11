@@ -565,6 +565,73 @@ export const domain = pgTable(
   ],
 );
 
+export const trackingDomainStatus = pgEnum("tracking_domain_status", [
+  "pending",
+  "active",
+  "temporary_failure",
+  "failed",
+  "deleting",
+]);
+
+/** Result of checking the CNAME a tracking domain needs (same statuses as `DomainRecord`). */
+export type TrackingDomainRecord = {
+  type: "CNAME";
+  name: string;
+  value: string;
+  status: DomainRecord["status"];
+  found: string[];
+};
+
+/**
+ * The custom tracking hostname of a sending domain (e.g. `links.acme.com`, a CNAME to COSS's
+ * tracking host): open pixels and click redirects of emails sent from that domain use it once the
+ * provider (Cloudflare for SaaS) serves it with a certificate. At most one per domain; hostnames
+ * are unique across organizations while not `failed`.
+ */
+export const trackingDomain = pgTable(
+  "tracking_domain",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.trackingDomain)),
+    organizationId: text("organization_id").notNull(),
+    domainId: text("domain_id").notNull(),
+    // Lower-case ASCII (punycode), no trailing dot; a subdomain of the domain's name.
+    hostname: text("hostname").notNull(),
+    status: trackingDomainStatus("status").notNull().default("pending"),
+    provider: text("provider").notNull(),
+    // The provider's id for the hostname (a Cloudflare custom hostname id); null until created.
+    providerHostnameId: text("provider_hostname_id"),
+    record: jsonb("record").$type<TrackingDomainRecord>().notNull(),
+    // The latest problem the provider reported (certificate validation, blocked hostname…).
+    providerMessage: text("provider_message"),
+    // Verification gives up 72 hours after this (creation, or the latest restart).
+    verificationStartedAt: timestamp("verification_started_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
+    nextCheckAt: timestamp("next_check_at", { withTimezone: true }),
+    activatedAt: timestamp("activated_at", { withTimezone: true }),
+    failedAt: timestamp("failed_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "tracking_domain_domain_fk",
+      columns: [t.domainId, t.organizationId],
+      foreignColumns: [domain.id, domain.organizationId],
+    }).onDelete("cascade"),
+    unique("tracking_domain_domain_unique").on(t.domainId),
+    uniqueIndex("tracking_domain_hostname_active_unique")
+      .on(t.hostname)
+      .where(sql`${t.status} <> 'failed'`),
+    index("tracking_domain_next_check_at_idx")
+      .on(t.nextCheckAt)
+      .where(sql`${t.nextCheckAt} is not null`),
+  ],
+);
+
 /** A customer URL that receives signed event notifications for one environment. */
 export const webhookEndpoint = pgTable(
   "webhook_endpoint",

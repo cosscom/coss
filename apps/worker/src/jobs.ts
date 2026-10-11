@@ -6,6 +6,7 @@ import {
   type EmailService,
   emailReputationChecks,
   recheckDueDomains,
+  recheckDueTrackingDomains,
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
@@ -64,9 +65,13 @@ export function startJobs(deps: WorkerDeps): Loop[] {
     startLoop({
       name: "domains",
       intervalMs: 30_000,
-      run: async () =>
-        (await recheckDueDomains({ limit: DOMAIN_BATCH, signal: deps.signal }, deps.domains)) ===
-        DOMAIN_BATCH,
+      // Sending domains, then their custom tracking domains.
+      run: async () => {
+        const opts = { limit: DOMAIN_BATCH, signal: deps.signal };
+        const domains = await recheckDueDomains(opts, deps.domains);
+        const tracking = await recheckDueTrackingDomains(opts, deps.domains);
+        return domains === DOMAIN_BATCH || tracking === DOMAIN_BATCH;
+      },
     }),
     startLoop({
       name: "scheduled-emails",

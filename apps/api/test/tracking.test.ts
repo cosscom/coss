@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { trackingUrls } from "@coss/email/testing";
+import { createVerifiedDomain, trackingUrls } from "@coss/email/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { PIXEL_GIF } from "../src/routes/tracking.ts";
 import {
@@ -145,6 +145,51 @@ describe("tracking endpoints", () => {
       paths: Record<string, unknown>;
     };
     expect(Object.keys(doc.paths).some((path) => path.startsWith("/t/"))).toBe(false);
+  });
+});
+
+describe("custom tracking domains", () => {
+  test("emails from the domain link through it, and the API serves it on any host", async () => {
+    const tenant = await createTestTenant();
+    const { app, liveProvider, dispatch } = createTestApp();
+    const domain = await createVerifiedDomain(tenant.organization.id);
+    const hostname = `links.${domain.name}`;
+    const created = await apiRequest(app, "POST", `/v1/domains/${domain.id}/tracking`, {
+      key: tenant.liveKey,
+      body: { hostname },
+    });
+    expect(created.status).toBe(200);
+
+    const res = await sendEmail(
+      app,
+      tenant.liveKey,
+      emailBody({
+        from: `hello@${domain.name}`,
+        html: HTML,
+        tracking: { opens: true, clicks: true },
+      }),
+    );
+    expect(res.status).toBe(202);
+    const email = (await res.json()) as { id: string };
+    await dispatch();
+    const urls = trackingUrls(liveProvider.sent.at(-1)?.html ?? "");
+    expect(urls.open).toStartWith(`https://${hostname}/t/o/`);
+    expect(urls.clicks[0]).toStartWith(`https://${hostname}/t/c/`);
+
+    // Cloudflare forwards the customer's hostname as `Host`.
+    const open = await app.request(urls.open ?? "");
+    expect(open.headers.get("content-type")).toBe("image/gif");
+    const click = await app.request(urls.clicks[0] ?? "");
+    expect(click.status).toBe(302);
+    expect(click.headers.get("location")).toBe("https://acme.com/a");
+
+    const current = await apiRequest(app, "GET", `/v1/emails/${email.id}`, {
+      key: tenant.liveKey,
+    });
+    expect(((await current.json()) as { tracking: unknown }).tracking).toMatchObject({
+      open_count: 1,
+      click_count: 1,
+    });
   });
 });
 
