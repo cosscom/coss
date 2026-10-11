@@ -1,8 +1,8 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { uniqueSuffix } from "@coss/db/testing";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import {
   type AdminActor,
   deleteOrganizationAsAdmin,
@@ -10,7 +10,7 @@ import {
   listAdminAuditEvents,
   suspendOrganization,
 } from "../src/admin.ts";
-import { runDueOrganizationDeletions } from "../src/deletion.ts";
+import { DELETION_LEASE_MS, runDueOrganizationDeletions } from "../src/deletion.ts";
 import {
   authenticateApiKey,
   getMembership,
@@ -336,4 +336,135 @@ describe("runDueOrganizationDeletions", () => {
     expect((await getOrganizationDeletion(organizationId))?.status).toBe("completed");
     expect(await count(schema.email, organizationId)).toBe(0);
   });
+});
+
+describe("deletion claim ownership", () => {
+  test("claims the next request only when ready to process it", async () => {
+    const tenants = [await createTestTenant(), await createTestTenant()];
+    for (const tenant of tenants) {
+      await requestOrganizationDeletion({
+        organizationId: tenant.organization.id,
+        actor: ownerOf(tenant),
+      });
+    }
+    const scope = { organizationIds: tenants.map((tenant) => tenant.organization.id) };
+    const started = Promise.withResolvers<void>();
+    const resume = Promise.withResolvers<void>();
+    const first = runDueOrganizationDeletions(
+      { scope },
+      {
+        releaseProviderResources: async () => {
+          started.resolve();
+          await resume.promise;
+        },
+      },
+    );
+    try {
+      await started.promise;
+      const second = tenants[1];
+      if (!second) throw new Error("Missing fixture");
+      expect((await getOrganizationDeletion(second.organization.id))?.attemptCount).toBe(0);
+      expect(
+        await runDueOrganizationDeletions(
+          { scope },
+          {
+            releaseProviderResources: async () => {},
+          },
+        ),
+      ).toBe(1);
+    } finally {
+      resume.resolve();
+      expect(await first).toBe(1);
+    }
+  });
+
+  test("renews while provider cleanup is still running", async () => {
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    await requestOrganizationDeletion({ organizationId, actor: ownerOf(tenant) });
+    const scope = { organizationIds: [organizationId] };
+    const realInterval = globalThis.setInterval;
+    // Exercise the real heartbeat without waiting ten minutes.
+    const interval = spyOn(globalThis, "setInterval").mockImplementation(((
+      ...args: Parameters<typeof realInterval>
+    ) => {
+      if (args[1] === DELETION_LEASE_MS / 3) args[1] = 10;
+      return realInterval(...args);
+    }) as typeof realInterval);
+    try {
+      await runDueOrganizationDeletions(
+        { scope },
+        {
+          releaseProviderResources: async () => {
+            await db
+              .update(schema.organizationDeletion)
+              .set({
+                nextAttemptAt: sql`clock_timestamp() + interval '200 milliseconds'`,
+              })
+              .where(eq(schema.organizationDeletion.organizationId, organizationId));
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            expect(
+              (await getOrganizationDeletion(organizationId))?.nextAttemptAt?.getTime(),
+            ).toBeGreaterThan(Date.now() + DELETION_LEASE_MS / 2);
+            expect(
+              await runDueOrganizationDeletions(
+                { scope },
+                {
+                  releaseProviderResources: async () => {
+                    throw new Error("Duplicate cleanup");
+                  },
+                },
+              ),
+            ).toBe(0);
+          },
+        },
+      );
+      expect((await getOrganizationDeletion(organizationId))?.status).toBe("completed");
+    } finally {
+      interval.mockRestore();
+    }
+  });
+
+  for (const outcome of ["success", "failure", "shutdown", "expired"] as const) {
+    test(`a stale worker cannot delete data or overwrite a claim after ${outcome}`, async () => {
+      const tenant = await createTestTenant();
+      const organizationId = tenant.organization.id;
+      await seedOrganizationData(tenant);
+      await requestOrganizationDeletion({ organizationId, actor: ownerOf(tenant) });
+      const controller = new AbortController();
+      let replacement: Awaited<ReturnType<typeof getOrganizationDeletion>> = null;
+      const errors = spyOn(console, "error").mockImplementation(() => {});
+      try {
+        await runDueOrganizationDeletions(
+          {
+            limit: 1,
+            scope: { organizationIds: [organizationId] },
+            signal: controller.signal,
+          },
+          {
+            releaseProviderResources: async () => {
+              await db
+                .update(schema.organizationDeletion)
+                .set({
+                  attemptCount: outcome === "expired" ? 1 : 2,
+                  nextAttemptAt: new Date(
+                    Date.now() + (outcome === "expired" ? -1000 : DELETION_LEASE_MS),
+                  ),
+                  lastError: "Replacement claim",
+                })
+                .where(eq(schema.organizationDeletion.organizationId, organizationId));
+              replacement = await getOrganizationDeletion(organizationId);
+              if (outcome === "shutdown") controller.abort();
+              if (outcome === "failure") throw new Error("Old worker failure");
+            },
+          },
+        );
+        expect(await getOrganizationDeletion(organizationId)).toEqual(replacement);
+        expect(await count(schema.email, organizationId)).toBe(5);
+        expect(await getOrganizationForAdmin(organizationId)).not.toBeNull();
+      } finally {
+        errors.mockRestore();
+      }
+    });
+  }
 });

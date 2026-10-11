@@ -8,7 +8,7 @@
  * Imports only `@coss/db`, so the worker can use it without loading Better Auth.
  */
 import { db, type Executor, schema } from "@coss/db";
-import { and, asc, eq, inArray, isNotNull, lte, type SQL, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, lte, notInArray, type SQL, sql } from "drizzle-orm";
 import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
 import { TenancyError } from "./errors.ts";
 
@@ -169,7 +169,7 @@ type Claimed = typeof organizationDeletion.$inferSelect;
 
 async function claimDue(
   now: Date,
-  limit: number,
+  attemptedIds: string[],
   scope?: { organizationIds: string[] },
 ): Promise<Claimed[]> {
   const due = db
@@ -178,29 +178,75 @@ async function claimDue(
     .where(
       and(
         eq(organizationDeletion.status, "pending"),
+        attemptedIds.length ? notInArray(organizationDeletion.id, attemptedIds) : undefined,
         isNotNull(organizationDeletion.nextAttemptAt),
         lte(organizationDeletion.nextAttemptAt, now),
         scope ? inArray(organizationDeletion.organizationId, scope.organizationIds) : undefined,
       ),
     )
     .orderBy(asc(organizationDeletion.nextAttemptAt))
-    .limit(limit)
+    .limit(1)
     .for("update", { skipLocked: true });
   return db
     .update(organizationDeletion)
     .set({
-      nextAttemptAt: new Date(now.getTime() + DELETION_LEASE_MS),
+      nextAttemptAt: sql`clock_timestamp() + ${DELETION_LEASE_MS} * interval '1 millisecond'`,
       attemptCount: sql`${organizationDeletion.attemptCount} + 1`,
     })
     .where(inArray(organizationDeletion.id, due))
     .returning();
 }
 
-async function renewLease(id: string): Promise<void> {
-  await db
+class DeletionLeaseLost extends Error {
+  constructor() {
+    super("Organization deletion lease lost.");
+  }
+}
+
+// The attempt count increases atomically on each claim and fences out previous workers.
+function ownedClaim(deletion: Claimed) {
+  return and(
+    eq(organizationDeletion.id, deletion.id),
+    eq(organizationDeletion.status, "pending"),
+    eq(organizationDeletion.attemptCount, deletion.attemptCount),
+    sql`${organizationDeletion.nextAttemptAt} > clock_timestamp()`,
+  );
+}
+
+async function renewLease(deletion: Claimed, executor: Executor = db): Promise<void> {
+  const renewed = await executor
     .update(organizationDeletion)
-    .set({ nextAttemptAt: new Date(Date.now() + DELETION_LEASE_MS) })
-    .where(and(eq(organizationDeletion.id, id), eq(organizationDeletion.status, "pending")));
+    .set({
+      nextAttemptAt: sql`clock_timestamp() + ${DELETION_LEASE_MS} * interval '1 millisecond'`,
+    })
+    .where(ownedClaim(deletion))
+    .returning({ id: organizationDeletion.id });
+  if (renewed.length === 0) throw new DeletionLeaseLost();
+}
+
+/** Keep the lease alive even when a provider call takes longer than the lease. */
+async function releaseWithHeartbeat(deletion: Claimed, deps: OrganizationTeardownDeps) {
+  await renewLease(deletion);
+  let failure: unknown;
+  let pending: Promise<void> | undefined;
+  const timer = setInterval(() => {
+    if (pending || failure) return;
+    pending = renewLease(deletion)
+      .catch((error: unknown) => {
+        failure = error;
+      })
+      .finally(() => {
+        pending = undefined;
+      });
+  }, DELETION_LEASE_MS / 3);
+  try {
+    await deps.releaseProviderResources(deletion.organizationId);
+  } finally {
+    clearInterval(timer);
+    await pending;
+  }
+  if (failure) throw failure;
+  await renewLease(deletion);
 }
 
 /**
@@ -208,6 +254,7 @@ async function renewLease(id: string): Promise<void> {
  * cascade). Returns false when `signal` aborted before it finished.
  */
 async function deleteInBatches(
+  deletion: Claimed,
   table: PgTable,
   id: PgColumn,
   where: SQL | undefined,
@@ -216,8 +263,12 @@ async function deleteInBatches(
 ): Promise<boolean> {
   for (;;) {
     if (signal?.aborted) return false;
-    const batch = db.select({ id }).from(table).where(where).limit(batchSize);
-    const deleted = await db.delete(table).where(inArray(id, batch)).returning({ id });
+    const deleted = await db.transaction(async (tx) => {
+      // Hold the claim row lock through the batch, including a slow FK cascade.
+      await renewLease(deletion, tx);
+      const batch = tx.select({ id }).from(table).where(where).limit(batchSize);
+      return tx.delete(table).where(inArray(id, batch)).returning({ id });
+    });
     if (deleted.length < batchSize) return true;
   }
 }
@@ -279,11 +330,11 @@ async function deleteOrganizationData(
       ],
     ];
     for (const [table, id, where] of steps) {
-      if (!(await deleteInBatches(table, id, where, batchSize, signal))) return false;
+      if (!(await deleteInBatches(deletion, table, id, where, batchSize, signal))) return false;
     }
-    await renewLease(deletion.id);
   }
   return deleteInBatches(
+    deletion,
     contentScreening,
     contentScreening.id,
     eq(contentScreening.organizationId, organizationId),
@@ -300,17 +351,26 @@ async function tearDown(
 ): Promise<boolean> {
   const organizationId = deletion.organizationId;
   // Again, in case a request that started before the deletion let someone back in.
-  await revokeOrganizationAccess(organizationId);
-  await deps.releaseProviderResources(organizationId);
+  await db.transaction(async (tx) => {
+    await renewLease(deletion, tx);
+    await revokeOrganizationAccess(organizationId, tx);
+  });
+  await releaseWithHeartbeat(deletion, deps);
   if (!(await deleteOrganizationData(deletion, batchSize, signal))) return false;
   await db.transaction(async (tx) => {
+    await renewLease(deletion, tx);
     await revokeOrganizationAccess(organizationId, tx);
     // Cascades to everything left: projects, environments, domains, tenant, standing, history…
     await tx.delete(organization).where(eq(organization.id, organizationId));
     await tx
       .update(organizationDeletion)
       .set({ status: "completed", completedAt: new Date(), nextAttemptAt: null, lastError: null })
-      .where(eq(organizationDeletion.id, deletion.id));
+      .where(
+        and(
+          eq(organizationDeletion.id, deletion.id),
+          eq(organizationDeletion.attemptCount, deletion.attemptCount),
+        ),
+      );
   });
   return true;
 }
@@ -332,9 +392,11 @@ export async function runDueOrganizationDeletions(
   },
   deps: OrganizationTeardownDeps,
 ): Promise<number> {
-  const now = opts.now ?? new Date();
-  const claimed = await claimDue(now, opts.limit ?? 5, opts.scope);
-  for (const deletion of claimed) {
+  const attemptedIds: string[] = [];
+  while (attemptedIds.length < (opts.limit ?? 5) && !opts.signal?.aborted) {
+    const [deletion] = await claimDue(opts.now ?? new Date(), attemptedIds, opts.scope);
+    if (!deletion) break;
+    attemptedIds.push(deletion.id);
     try {
       if (
         opts.signal?.aborted ||
@@ -343,9 +405,10 @@ export async function runDueOrganizationDeletions(
         await db
           .update(organizationDeletion)
           .set({ nextAttemptAt: new Date() })
-          .where(eq(organizationDeletion.id, deletion.id));
+          .where(ownedClaim(deletion));
       }
     } catch (error) {
+      if (error instanceof DeletionLeaseLost) continue;
       console.error(
         `[tenancy:deletion] deleting organization ${deletion.organizationId} failed:`,
         error,
@@ -358,8 +421,8 @@ export async function runDueOrganizationDeletions(
           nextAttemptAt: new Date(Date.now() + backoff),
           lastError: message.slice(0, ERROR_MAX_LENGTH) || "Teardown failed.",
         })
-        .where(eq(organizationDeletion.id, deletion.id));
+        .where(ownedClaim(deletion));
     }
   }
-  return claimed.length;
+  return attemptedIds.length;
 }
