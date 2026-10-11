@@ -19,6 +19,7 @@ import {
   retryWebhookDeliveryAction,
   revealWebhookSecretAction,
   setWebhookEndpointEnabledAction,
+  upgradeWebhookEndpointVersionAction,
 } from "../actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string; endpointId: string };
@@ -45,6 +46,38 @@ export function ToggleEndpointButton(props: Target & { enabled: boolean }) {
       </Button>
       {state && !state.ok ? <FormError message={state.error} /> : null}
     </form>
+  );
+}
+
+export function UpgradeEndpointVersionButton(props: Target & { latest: string }) {
+  const [state, formAction, pending] = useActionState(upgradeWebhookEndpointVersionAction, null);
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger render={<Button size="sm" variant="outline" />}>
+        Upgrade to {props.latest}
+      </AlertDialogTrigger>
+      <AlertDialogPopup>
+        {/* `contents` keeps header/footer as direct flex children of the popup (coss ui pattern). */}
+        <form action={formAction} className="contents">
+          <TargetInputs {...props} />
+          <input name="apiVersion" type="hidden" value={props.latest} />
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send events in API version {props.latest}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Every event from now on, including pending retries, is rendered in the new version.
+              Make sure your receiver handles it first: the API changelog lists what changed.
+            </AlertDialogDescription>
+            {state && !state.ok ? <FormError message={state.error} /> : null}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogClose render={<Button variant="ghost" />}>Cancel</AlertDialogClose>
+            <Button loading={pending} type="submit">
+              Upgrade
+            </Button>
+          </AlertDialogFooter>
+        </form>
+      </AlertDialogPopup>
+    </AlertDialog>
   );
 }
 

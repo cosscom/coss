@@ -1,6 +1,6 @@
 /** The domain and webhook endpoint resources: request shape, and how results come back. */
 import { describe, expect, test } from "bun:test";
-import { Coss } from "../src/index.ts";
+import { Coss, type WebhookDelivery } from "../src/index.ts";
 import { apiError, json, mockFetch, sampleDomain, sampleEndpoint } from "./helpers.ts";
 
 const API_KEY = "coss_test_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl";
@@ -150,5 +150,87 @@ describe("coss.webhookEndpoints", () => {
 
     expect(calls).toHaveLength(0);
     expect(result.error).toMatchObject({ type: "connection_error", code: "aborted" });
+  });
+});
+
+describe("coss.webhookEndpoints.deliveries", () => {
+  const delivery: WebhookDelivery = {
+    object: "webhook_delivery",
+    id: "whdel_123",
+    endpoint_id: sampleEndpoint.id,
+    event_id: "evt_123",
+    event_type: "email.delivered",
+    status: "failed",
+    attempt_count: 8,
+    next_attempt_at: null,
+    last_status_code: 500,
+    last_error: "HTTP 500",
+    payload: { id: "evt_123", object: "event", type: "email.delivered" },
+    attempts: [],
+    created_at: "2026-01-15T09:30:00.000Z",
+    updated_at: "2026-01-15T09:30:00.000Z",
+  };
+
+  test("list sends the filters as query parameters", async () => {
+    const { coss, calls } = client(json(200, { object: "list", data: [delivery], has_more: true }));
+
+    const result = await coss.webhookEndpoints.deliveries.list(sampleEndpoint.id, {
+      status: "failed",
+      limit: 10,
+      after: "whdel_100",
+    });
+
+    expect(result.data?.data).toEqual([delivery]);
+    const url = new URL(calls[0]?.url ?? "");
+    expect(url.pathname).toBe(`/v1/webhook_endpoints/${sampleEndpoint.id}/deliveries`);
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      status: "failed",
+      limit: "10",
+      after: "whdel_100",
+    });
+  });
+
+  test("get and retry hit the documented routes", async () => {
+    const { coss, calls } = client(json(200, delivery));
+
+    await coss.webhookEndpoints.deliveries.get(sampleEndpoint.id, delivery.id);
+    const retried = await coss.webhookEndpoints.deliveries.retry(sampleEndpoint.id, delivery.id);
+
+    expect(retried.data?.id).toBe(delivery.id);
+    expect(calls.map((call) => `${call.method} ${new URL(call.url).pathname}`)).toEqual([
+      `GET /v1/webhook_endpoints/${sampleEndpoint.id}/deliveries/${delivery.id}`,
+      `POST /v1/webhook_endpoints/${sampleEndpoint.id}/deliveries/${delivery.id}/retry`,
+    ]);
+  });
+
+  test("a lost replay response is not automatically retried, even with an idempotency key", async () => {
+    const { coss, calls } = client(
+      () => {
+        throw new TypeError("Response lost after replay was queued");
+      },
+      json(200, delivery),
+    );
+
+    const result = await coss.webhookEndpoints.deliveries.retry(sampleEndpoint.id, delivery.id, {
+      idempotencyKey: "replay-once",
+    });
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.headers.get("idempotency-key")).toBe("replay-once");
+    expect(result.data).toBeNull();
+    expect(result.error?.type).toBe("connection_error");
+  });
+
+  test("a replay server error is returned without automatically retrying", async () => {
+    const { coss, calls } = client(
+      apiError(503, { type: "internal_error", code: "unavailable" }, { "Retry-After": "0" }),
+      json(200, delivery),
+    );
+
+    const result = await coss.webhookEndpoints.deliveries.retry(sampleEndpoint.id, delivery.id);
+
+    expect(calls).toHaveLength(1);
+    expect(result.data).toBeNull();
+    expect(result.error?.status).toBe(503);
   });
 });

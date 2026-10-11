@@ -59,6 +59,7 @@ new Coss({
   timeout: 30_000,                 // per attempt, in ms
   maxRetries: 2,                   // 0 disables retries
   fetch: customFetch,              // default: the global fetch
+  apiVersion: "2026-10-10",        // default: API_VERSION, the version these types describe
   dangerouslyAllowBrowser: false,
 });
 ```
@@ -75,6 +76,23 @@ Each method also takes per-request options:
 ```ts
 await coss.email.send(params, { idempotencyKey: "welcome-user_123", signal: controller.signal });
 await coss.email.get(id, { signal });
+```
+
+## API versions
+
+The API is versioned by date. Every request sends a `Coss-Version` header: by default `API_VERSION`,
+the version this SDK's types describe, so upgrading the SDK is how you upgrade the API version.
+Your organization's pinned version (which applies to plain HTTP requests without the header) never
+affects the SDK. Every response says which version it was rendered in, in its `Coss-Version` header.
+
+Webhook endpoints have their own `api_version`. Created through the SDK, it defaults to the client's
+version, so events match the `WebhookEvent` types. Each event carries it as `api_version`. After an
+SDK upgrade that moves `API_VERSION`, update your endpoints too:
+
+```ts
+import { API_VERSION } from "coss";
+
+await coss.webhookEndpoints.update("whep_01k…", { api_version: API_VERSION });
 ```
 
 ## Attachments
@@ -356,7 +374,15 @@ bun run --cwd packages/sdk test       # bun:test with a mocked fetch; no network
 bun run --cwd packages/sdk build      # tsdown → dist/, then publint and attw
 ```
 
-`src/version.ts` must match `version` in `package.json`, and a test enforces it.
+`src/version.ts` must match `version` in `package.json`, and a test enforces it. Releases are
+prepared with [Changesets](https://github.com/changesets/changesets): add one with `bun run changeset`
+for every user-facing change. `bun run version-packages` bumps `package.json`, `src/version.ts` and
+`CHANGELOG.md` together, and on `main` CI opens a "Version packages" PR that does the same. Nothing
+is published to npm.
+
+`src/api-version.ts` mirrors the API's versions. When the API adds one, add it there, move
+`API_VERSION` and update the wire types in the same change. The contract tests in `apps/api` check
+both.
 
 `tsdown` rewrites the `exports`, `main`, `module` and `types` fields in `package.json` on every
 build. The committed values are exactly what it generates.

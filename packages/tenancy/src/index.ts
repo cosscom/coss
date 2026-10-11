@@ -11,6 +11,11 @@ export {
   listEnvironmentApiKeys,
 } from "./api-keys.ts";
 export {
+  getOrganizationApiVersion,
+  readOrganizationApiVersion,
+  setOrganizationApiVersion,
+} from "./api-versions.ts";
+export {
   DEFAULT_ENVIRONMENTS,
   getEnvironment,
   getEnvironmentById,

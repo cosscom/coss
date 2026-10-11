@@ -1,5 +1,5 @@
 import { createEmailService, FakeEmailProvider } from "@coss/email";
-import { createApp, openApiDocumentConfig } from "./app.ts";
+import { createApp, renderOpenApiDocument } from "./app.ts";
 
 /** The production origin, also the SDK's default `baseUrl`. */
 export const PUBLIC_API_URL = "https://api.coss.com";
@@ -25,6 +25,6 @@ export function renderOpenApiSnapshot(): string {
     }),
     webhookDeps: { secretsKey: Buffer.alloc(32), allowInsecureUrls: false },
   });
-  const document = app.getOpenAPI31Document(openApiDocumentConfig(PUBLIC_API_URL));
+  const document = renderOpenApiDocument(app, PUBLIC_API_URL);
   return `${JSON.stringify(document, null, 2)}\n`;
 }

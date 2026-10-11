@@ -140,6 +140,7 @@ export const sampleEndpoint: WebhookEndpoint = {
   url: "https://example.com/webhooks/coss",
   description: null,
   event_types: ["email.bounced"],
+  api_version: "2026-10-10",
   enabled: true,
   created_at: "2026-10-09T12:00:00.000Z",
   updated_at: "2026-10-09T12:00:00.000Z",

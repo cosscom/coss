@@ -30,6 +30,7 @@ function setup(handlers: Handler[], options: Partial<HttpClientOptions> = {}) {
     fetch,
     timeout: 1_000,
     maxRetries: 2,
+    apiVersion: "2026-10-10",
     sleep: async (ms) => {
       delays.push(ms);
     },
@@ -171,6 +172,7 @@ describe("abort", () => {
       fetch,
       timeout: 1_000,
       maxRetries: 2,
+      apiVersion: "2026-10-10",
     });
     const controller = new AbortController();
     setTimeout(() => controller.abort(), 20);
@@ -198,6 +200,7 @@ describe("abort", () => {
       fetch,
       timeout: 1_000,
       maxRetries: 2,
+      apiVersion: "2026-10-10",
     });
     const started = Date.now();
     const { error } = await http.request({

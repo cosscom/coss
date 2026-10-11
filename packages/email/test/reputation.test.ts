@@ -10,12 +10,17 @@ import {
   suspendOrganization,
 } from "@coss/reputation";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { EmailError } from "../src/errors.ts";
 import { ingestProviderEvents } from "../src/events.ts";
 import type { ProviderEvent } from "../src/provider.ts";
 import { FakeEmailProvider, SIMULATOR_DOMAIN } from "../src/providers/fake.ts";
-import { emailReputationChecks, sendingCounts } from "../src/reputation-checks.ts";
+import {
+  countSlices,
+  emailReputationChecks,
+  ROLLUP_SETTLE_MS,
+  sendingCounts,
+} from "../src/reputation-checks.ts";
 import { addSuppression } from "../src/suppressions.ts";
 import { dispatchingEmailService } from "../src/testing.ts";
 import { params, sendEnvironment, verifiedFrom } from "./helpers.ts";
@@ -248,4 +253,172 @@ test("successful sending across minimum volume is caught by the scheduled rechec
     ),
   ).toBe(1);
   expect(await isSuspended(organizationId)).toBe(true);
+});
+
+describe("hourly rollups", () => {
+  const HOUR = 3_600_000;
+  const hourStart = (ms: number) => Math.floor(ms / HOUR) * HOUR;
+
+  /** Moves emails back in time, into closed (rolled-up) hours. */
+  async function backdate(emailIds: string[], createdAt: Date) {
+    await db.update(schema.email).set({ createdAt }).where(inArray(schema.email.id, emailIds));
+  }
+
+  const rollups = (organizationId: string) =>
+    db
+      .select()
+      .from(schema.emailReputationRollup)
+      .where(eq(schema.emailReputationRollup.organizationId, organizationId));
+
+  async function direct(tenant: TestTenant, ctx: CheckContext) {
+    const total = { recipients: 0, bounces: 0, complaints: 0 };
+    const slices = await countSlices(tenant.organization.id, ctx.windowStart, ctx.now, {
+      inclusive: true,
+    });
+    for (const slice of slices.values()) {
+      total.recipients += slice.recipients;
+      total.bounces += slice.bounces;
+      total.complaints += slice.complaints;
+    }
+    return total;
+  }
+
+  function weekContext(tenant: TestTenant, policy: Partial<ReputationPolicy> = {}): CheckContext {
+    const now = new Date(Date.now() + 1000);
+    return {
+      organizationId: tenant.organization.id,
+      now,
+      // Mid-hour, so the window has a partial head hour.
+      windowStart: new Date(hourStart(now.getTime() - 7 * 86_400_000) + HOUR / 2),
+      policy: { ...DEFAULT_REPUTATION_POLICY, ...policy },
+    };
+  }
+
+  test("closed hours are counted once, stored, and match a live count", async () => {
+    const tenant = await createTestTenant();
+    const orgId = tenant.organization.id;
+    const from = await verifiedFrom(orgId);
+    const old = await liveSend(tenant, from, recipients(6, "old"));
+    const older = await liveSend(tenant, from, recipients(4, "older"));
+    const fresh = await liveSend(tenant, from, recipients(3, "fresh"));
+    await ingestProviderEvents([
+      bounce(old, "old0@example.com", "permanent"),
+      complaint(older, "older0@example.com"),
+      bounce(fresh, "fresh0@example.com", "permanent"),
+    ]);
+    const now = Date.now();
+    await backdate([old.id], new Date(now - 5 * HOUR));
+    await backdate([older.id], new Date(now - 3 * 86_400_000));
+
+    const ctx = weekContext(tenant);
+    const expected = { recipients: 13, bounces: 2, complaints: 1 };
+    expect(await direct(tenant, ctx)).toEqual(expected);
+    expect(await sendingCounts(ctx)).toEqual(expected);
+
+    const rows = await rollups(orgId);
+    // Every closed hour of the window has a current row; the fresh email's hour is still open.
+    expect(rows.length).toBeGreaterThan(24 * 6);
+    expect(rows.every((row) => row.computedRevision === row.revision)).toBe(true);
+    const oldRow = rows.find((row) => row.bucketStart.getTime() === hourStart(now - 5 * HOUR));
+    expect(oldRow).toMatchObject({ recipients: 6, bounces: 1, complaints: 0 });
+    expect(rows.some((row) => row.bucketStart.getTime() >= now - ROLLUP_SETTLE_MS - HOUR)).toBe(
+      false,
+    );
+
+    // Second run reads the stored rows.
+    expect(await sendingCounts(ctx)).toEqual(expected);
+  });
+
+  test("late evidence invalidates the email's hour, which is recounted", async () => {
+    const tenant = await createTestTenant();
+    const orgId = tenant.organization.id;
+    const from = await verifiedFrom(orgId);
+    const sent = await liveSend(tenant, from, recipients(5));
+    const createdAt = new Date(Date.now() - 2 * 86_400_000);
+    await backdate([sent.id], createdAt);
+    const ctx = weekContext(tenant);
+    expect(await sendingCounts(ctx)).toEqual({ recipients: 5, bounces: 0, complaints: 0 });
+
+    const bucket = and(
+      eq(schema.emailReputationRollup.organizationId, orgId),
+      eq(schema.emailReputationRollup.bucketStart, new Date(hourStart(createdAt.getTime()))),
+    );
+    const [before] = await db.select().from(schema.emailReputationRollup).where(bucket);
+    await ingestProviderEvents([complaint(sent, "user1@example.com")]);
+    const [after] = await db.select().from(schema.emailReputationRollup).where(bucket);
+    expect(after?.revision).toBe((before?.revision ?? 0) + 1);
+    expect(after?.computedRevision).toBe(before?.revision ?? null);
+
+    expect(await sendingCounts(ctx)).toEqual({ recipients: 5, bounces: 0, complaints: 1 });
+    const [recounted] = await db.select().from(schema.emailReputationRollup).where(bucket);
+    expect(recounted).toMatchObject({ complaints: 1, computedRevision: after?.revision });
+  });
+
+  test("events for emails of open hours never touch the rollups", async () => {
+    const tenant = await createTestTenant();
+    const from = await verifiedFrom(tenant.organization.id);
+    const sent = await liveSend(tenant, from, recipients(2));
+    await ingestProviderEvents([complaint(sent, "user0@example.com")]);
+    expect(await rollups(tenant.organization.id)).toEqual([]);
+  });
+
+  test("simulator recipients are kept apart, so the policy can choose", async () => {
+    const tenant = await createTestTenant();
+    const from = await verifiedFrom(tenant.organization.id);
+    const sent = await liveSend(tenant, from, [`bounce@${SIMULATOR_DOMAIN}`, "a@example.com"]);
+    await backdate([sent.id], new Date(Date.now() - 4 * HOUR));
+    expect(await sendingCounts(weekContext(tenant))).toEqual({
+      recipients: 1,
+      bounces: 0,
+      complaints: 0,
+    });
+    expect(await sendingCounts(weekContext(tenant, { countSimulatorRecipients: true }))).toEqual({
+      recipients: 2,
+      bounces: 1,
+      complaints: 0,
+    });
+  });
+
+  test("a window starting mid-hour leaves out that hour's earlier sends", async () => {
+    const tenant = await createTestTenant();
+    const from = await verifiedFrom(tenant.organization.id);
+    const before = await liveSend(tenant, from, ["before@example.com"]);
+    const after = await liveSend(tenant, from, ["after@example.com"]);
+    const hour = hourStart(Date.now() - 10 * HOUR);
+    await backdate([before.id], new Date(hour + 10 * 60_000));
+    await backdate([after.id], new Date(hour + 40 * 60_000));
+    const now = new Date(Date.now() + 1000);
+    const ctx: CheckContext = {
+      organizationId: tenant.organization.id,
+      now,
+      // e.g. a reinstatement at :30
+      windowStart: new Date(hour + 30 * 60_000),
+      policy: DEFAULT_REPUTATION_POLICY,
+    };
+    expect(await sendingCounts(ctx)).toEqual({ recipients: 1, bounces: 0, complaints: 0 });
+  });
+
+  test("canceled scheduled sends don't count as volume", async () => {
+    const tenant = await createTestTenant();
+    const from = await verifiedFrom(tenant.organization.id);
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({
+        from,
+        to: ["later@example.com"],
+        scheduled_at: new Date(Date.now() + 86_400_000).toISOString(),
+      }),
+    });
+    await service.cancel({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.production.id,
+      emailId: email.id,
+    });
+    expect(await sendingCounts(context(tenant))).toEqual({
+      recipients: 0,
+      bounces: 0,
+      complaints: 0,
+    });
+  });
 });

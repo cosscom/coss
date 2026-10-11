@@ -8,6 +8,7 @@ import {
 } from "@coss/auth/constants";
 import { db, schema } from "@coss/db";
 import { newId } from "@coss/db/id";
+import { versioning } from "@coss/versioning";
 import { eq } from "drizzle-orm";
 import {
   authenticateApiKey,
@@ -134,6 +135,7 @@ describe("authenticateApiKey", () => {
         projectId: tenant.project.id,
         environmentId: tenant.production.id,
         mode: "live",
+        apiVersion: versioning.latest,
       },
     });
     expect(await authenticateApiKey(tenant.sandboxKey)).toEqual({
@@ -144,6 +146,7 @@ describe("authenticateApiKey", () => {
         projectId: tenant.project.id,
         environmentId: tenant.development.id,
         mode: "sandbox",
+        apiVersion: versioning.latest,
       },
     });
   });
