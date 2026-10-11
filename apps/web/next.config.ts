@@ -43,7 +43,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     // In production `/` is the site's landing page. Locally, the dashboard's port opens the dashboard.
     if (!dev) return [];
-    return [{ source: "/", destination: DASHBOARD_PATH, permanent: false }];
+    return [
+      { source: "/", destination: DASHBOARD_PATH, permanent: false },
+      // The site's legal pages (linked from sign-up), on its own port locally.
+      { source: "/legal/:path*", destination: `${DEV_SITE_ORIGIN}/legal/:path*`, permanent: false },
+    ];
   },
   async rewrites() {
     // The site owns the icon (see ZONE_ROUTES); locally it runs on its own port.

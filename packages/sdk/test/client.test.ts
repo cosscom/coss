@@ -211,6 +211,43 @@ describe("coss.email.cancel", () => {
   });
 });
 
+describe("coss.email.reschedule", () => {
+  test("POSTs the new time to the email's reschedule route", async () => {
+    const scheduled_at = "2026-10-12T09:00:00.000Z";
+    const rescheduled = {
+      ...sampleEmail,
+      status: "scheduled" as const,
+      sent_at: null,
+      scheduled_at,
+    };
+    const { fetch, calls } = mockFetch(json(200, rescheduled));
+    const result = await new Coss({ apiKey: API_KEY, fetch }).email.reschedule("email_a/b", {
+      scheduled_at,
+    });
+
+    expect(result).toEqual({ data: rescheduled, error: null });
+    expect(calls[0]?.method).toBe("POST");
+    expect(calls[0]?.url).toBe("https://api.coss.com/v1/emails/email_a%2Fb/reschedule");
+    expect(JSON.parse(calls[0]?.body ?? "")).toEqual({ scheduled_at });
+  });
+
+  test("an email that is no longer scheduled comes back as an error", async () => {
+    const { fetch, calls } = mockFetch(
+      apiError(422, { type: "invalid_request_error", code: "email_not_reschedulable" }),
+    );
+    const result = await new Coss({ apiKey: API_KEY, fetch }).email.reschedule(sampleEmail.id, {
+      scheduled_at: "2026-10-12T09:00:00Z",
+    });
+
+    expect(result.data).toBeNull();
+    expect(result.error).toMatchObject({
+      type: "invalid_request_error",
+      code: "email_not_reschedulable",
+    });
+    expect(calls).toHaveLength(1);
+  });
+});
+
 describe("coss.email.listEvents", () => {
   test("GETs the email's events", async () => {
     const list: List<EmailEvent> = {

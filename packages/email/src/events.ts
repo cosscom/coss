@@ -61,6 +61,7 @@ const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus | null> = {
   "email.canceled": "canceled",
   "email.opened": null,
   "email.clicked": null,
+  "email.rescheduled": "queued",
 };
 
 function recipientStatus(event: ProviderEvent): EmailRecipientStatus | null {

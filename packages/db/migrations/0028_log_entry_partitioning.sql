@@ -1,5 +1,5 @@
 -- Custom SQL migration file, put your code below! --
--- drizzle-kit can't declare partitioning: 0026 created `log_entry` from the schema (which keeps the
+-- drizzle-kit can't declare partitioning: 0027 created `log_entry` from the schema (which keeps the
 -- snapshot in sync); recreate it, still empty, identically but partitioned by day on `occurred_at`.
 -- The worker (`ensureLogPartitions` / `dropExpiredLogPartitions` in @coss/logs) keeps the daily
 -- partitions ahead of time and drops expired ones; the default partition catches anything outside

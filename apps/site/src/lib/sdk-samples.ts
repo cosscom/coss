@@ -36,6 +36,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.cancel",
     args: (request) => [pathId(request)],
   },
+  "POST /v1/emails/{id}/reschedule": {
+    method: "email.reschedule",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
   "GET /v1/emails/{id}/events": {
     method: "email.listEvents",
     args: (request) => [pathId(request)],

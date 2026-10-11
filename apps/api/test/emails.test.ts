@@ -312,6 +312,9 @@ describe("POST /v1/emails", () => {
         cancel: async () => {
           throw new Error("unused");
         },
+        reschedule: async () => {
+          throw new Error("unused");
+        },
         dispatchDue: async () => {
           throw new Error("unused");
         },
@@ -368,6 +371,9 @@ describe("POST /v1/emails", () => {
           throw new Error("unused");
         },
         cancel: async () => {
+          throw new Error("unused");
+        },
+        reschedule: async () => {
           throw new Error("unused");
         },
         dispatchDue: async () => {
@@ -549,6 +555,141 @@ describe("POST /v1/emails/{id}/cancel", () => {
     });
 
     const res = await cancel(app, tenant.sandboxKey, scheduled.id);
+
+    expect(res.status).toBe(403);
+    expect((await errorOf(res)).code).toBe("insufficient_permissions");
+  });
+});
+
+describe("POST /v1/emails/{id}/reschedule", () => {
+  const reschedule = (
+    app: Parameters<typeof apiRequest>[0],
+    key: string,
+    id: string,
+    body: unknown,
+  ) => apiRequest(app, "POST", `/v1/emails/${encodeURIComponent(id)}/reschedule`, { key, body });
+  const inADay = () => new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  test("moves a scheduled email and records email.rescheduled", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const scheduled = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody({ scheduled_at: inAnHour() }))
+    ).json()) as EmailObjectOutput;
+    const later = inADay();
+    // Any offset; stored and returned in UTC.
+    const withOffset = `${new Date(later.getTime() + 2 * 60 * 60 * 1000).toISOString().slice(0, 19)}+02:00`;
+
+    const res = await reschedule(app, tenant.sandboxKey, scheduled.id, {
+      scheduled_at: withOffset,
+    });
+
+    expect(res.status).toBe(200);
+    const rescheduled = (await res.json()) as EmailObjectOutput;
+    expect(rescheduled).toMatchObject({
+      id: scheduled.id,
+      status: "scheduled",
+      scheduled_at: new Date(Date.parse(withOffset)).toISOString(),
+      recipients: [{ status: "queued" }],
+    });
+    const events = await apiRequest(app, "GET", `/v1/emails/${scheduled.id}/events`, {
+      key: tenant.sandboxKey,
+    });
+    const { data } = (await events.json()) as { data: { type: string; data: unknown }[] };
+    expect(data.map((event) => event.type)).toEqual(["email.scheduled", "email.rescheduled"]);
+    expect(data[1]?.data).toEqual({
+      reschedule: {
+        scheduled_at: rescheduled.scheduled_at,
+        previous_scheduled_at: scheduled.scheduled_at,
+      },
+    });
+
+    // The same time again changes nothing and records nothing.
+    const again = await reschedule(app, tenant.sandboxKey, scheduled.id, {
+      scheduled_at: rescheduled.scheduled_at,
+    });
+    expect(again.status).toBe(200);
+    expect(await again.json()).toEqual(rescheduled);
+    const after = await apiRequest(app, "GET", `/v1/emails/${scheduled.id}/events`, {
+      key: tenant.sandboxKey,
+    });
+    expect(((await after.json()) as { data: unknown[] }).data).toHaveLength(2);
+  });
+
+  test("validates scheduled_at like a send", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const scheduled = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody({ scheduled_at: inAnHour() }))
+    ).json()) as EmailObjectOutput;
+    const tooFar = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000).toISOString();
+
+    for (const body of [
+      { scheduled_at: "2026-10-11T09:00:00" },
+      { scheduled_at: tooFar },
+      {},
+      { scheduled_at: inAnHour(), subject: "Changed" },
+    ]) {
+      const res = await reschedule(app, tenant.sandboxKey, scheduled.id, body);
+      expect(res.status).toBe(422);
+      expect((await errorOf(res)).code).toBe("validation_error");
+    }
+  });
+
+  test("an email that is not scheduled is a 422 email_not_reschedulable", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const sent = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody())
+    ).json()) as EmailObjectOutput;
+    const scheduled = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody({ scheduled_at: inAnHour() }))
+    ).json()) as EmailObjectOutput;
+    await apiRequest(app, "POST", `/v1/emails/${scheduled.id}/cancel`, { key: tenant.sandboxKey });
+
+    for (const id of [sent.id, scheduled.id]) {
+      const res = await reschedule(app, tenant.sandboxKey, id, {
+        scheduled_at: inADay().toISOString(),
+      });
+      expect(res.status).toBe(422);
+      expect(await errorOf(res)).toMatchObject({
+        type: "invalid_request_error",
+        code: "email_not_reschedulable",
+      });
+    }
+  });
+
+  test("emails of other environments and unknown ids are 404", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const scheduled = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody({ scheduled_at: inAnHour() }))
+    ).json()) as EmailObjectOutput;
+
+    for (const [key, id] of [
+      [tenant.liveKey, scheduled.id],
+      [tenant.sandboxKey, "email_01k7c8m4q2f3e9v6t5r1n0p8yz"],
+      [tenant.sandboxKey, "not-an-id"],
+    ] as const) {
+      const res = await reschedule(app, key, id, { scheduled_at: inADay().toISOString() });
+      expect(res.status).toBe(404);
+      expect((await errorOf(res)).code).toBe("not_found");
+    }
+  });
+
+  test("needs the email:send permission", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const scheduled = (await (
+      await sendEmail(app, tenant.sandboxKey, emailBody({ scheduled_at: inAnHour() }))
+    ).json()) as EmailObjectOutput;
+    await setKeyPermissions(await apiKeyIdForEnvironment(tenant.development.id), {
+      email: ["read"],
+    });
+
+    const res = await reschedule(app, tenant.sandboxKey, scheduled.id, {
+      scheduled_at: inADay().toISOString(),
+    });
 
     expect(res.status).toBe(403);
     expect((await errorOf(res)).code).toBe("insufficient_permissions");

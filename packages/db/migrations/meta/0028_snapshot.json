@@ -1,6 +1,6 @@
 {
-  "id": "9b1d7ced-693f-4984-b2f9-10ff4271c8d2",
-  "prevId": "34815074-5454-4dab-a37c-acff87344c59",
+  "id": "2545ef3d-f5ec-4edd-83c7-fb2eeb16758b",
+  "prevId": "3cc05f23-cd39-4b88-a47d-b4fe58b3f1f2",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -5208,7 +5208,8 @@
         "email.scheduled",
         "email.canceled",
         "email.opened",
-        "email.clicked"
+        "email.clicked",
+        "email.rescheduled"
       ]
     },
     "public.email_recipient_kind": {

@@ -34,6 +34,7 @@ export type {
   EmailTag,
   EmailTracking,
   List,
+  RescheduleEmailParams,
   SendEmailParams,
   TrackingOptions,
 } from "./types/email.ts";

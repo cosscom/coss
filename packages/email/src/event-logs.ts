@@ -12,6 +12,7 @@ const LEVEL: Record<EmailEventType, LogLevel> = {
   "email.failed": "error",
   "email.suppressed": "warning",
   "email.scheduled": "info",
+  "email.rescheduled": "info",
   "email.canceled": "info",
   "email.opened": "info",
   "email.clicked": "info",
@@ -38,6 +39,8 @@ function describe(type: EmailEventType, recipient: string | null, details: Email
       return `Suppressed${to}${details.suppression ? ` (${details.suppression.reason})` : ""}`;
     case "email.scheduled":
       return "Scheduled";
+    case "email.rescheduled":
+      return "Rescheduled";
     case "email.canceled":
       return "Canceled";
     case "email.opened":

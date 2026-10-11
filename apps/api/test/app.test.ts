@@ -161,6 +161,7 @@ describe("GET /openapi.json", () => {
       "/v1/emails/{id}/cancel",
       "/v1/emails/{id}/events",
       "/v1/emails/{id}/links",
+      "/v1/emails/{id}/reschedule",
       "/v1/logs",
       "/v1/logs/{id}",
       "/v1/reputation",
@@ -218,6 +219,14 @@ describe("GET /openapi.json", () => {
     });
     expect(doc.paths["/v1/emails/{id}/cancel"]?.post).toMatchObject({
       operationId: "cancelEmail",
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { in: "path", name: "id", required: true },
+        { $ref: "#/components/parameters/CossVersion" },
+      ],
+    });
+    expect(doc.paths["/v1/emails/{id}/reschedule"]?.post).toMatchObject({
+      operationId: "rescheduleEmail",
       security: [{ bearerAuth: [] }],
       parameters: [
         { in: "path", name: "id", required: true },
