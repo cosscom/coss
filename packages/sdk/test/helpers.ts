@@ -143,6 +143,7 @@ export const sampleEndpoint: WebhookEndpoint = {
   event_types: ["email.bounced"],
   api_version: "2026-10-10",
   enabled: true,
+  previous_secret_expires_at: null,
   created_at: "2026-10-09T12:00:00.000Z",
   updated_at: "2026-10-09T12:00:00.000Z",
 };

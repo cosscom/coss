@@ -13,7 +13,7 @@ import type { ClientIpResolver, RateLimiter } from "@coss/ratelimit";
 import type { ApiKeyContext } from "@coss/tenancy";
 import { LATEST_API_VERSION, type Versioning } from "@coss/versioning";
 import { decryptSecret } from "@coss/webhooks";
-import { TEST_SECRETS_KEY, testManagementDeps } from "@coss/webhooks/testing";
+import { TEST_SECRETS_KEYS, testManagementDeps } from "@coss/webhooks/testing";
 import { createApp } from "../src/app.ts";
 import type { ErrorEnvelopeBody } from "../src/errors.ts";
 
@@ -210,7 +210,7 @@ export async function endpointRow(id: string): Promise<{
     description: row.description,
     eventTypes: row.event_types,
     enabled: row.enabled,
-    secret: decryptSecret(row.secret_ciphertext, TEST_SECRETS_KEY),
+    secret: decryptSecret(row.secret_ciphertext, TEST_SECRETS_KEYS),
   };
 }
 

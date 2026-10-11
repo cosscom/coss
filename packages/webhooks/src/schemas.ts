@@ -10,6 +10,9 @@ import { z } from "zod";
 
 export const WEBHOOK_URL_MAX_LENGTH = 2048;
 export const DESCRIPTION_MAX_LENGTH = 256;
+/** How long, in seconds, a rolled secret keeps signing next to the new one: a day by default, at most a week. */
+export const DEFAULT_PREVIOUS_SECRET_EXPIRES_IN = 24 * 60 * 60;
+export const MAX_PREVIOUS_SECRET_EXPIRES_IN = 7 * 24 * 60 * 60;
 
 const EVENT_TYPES_DESCRIPTION =
   "Event types delivered to this endpoint. An empty array means every event type, including " +
@@ -28,6 +31,7 @@ const ENDPOINT_EXAMPLE = {
   event_types: ["email.delivered", "email.bounced"],
   api_version: LATEST_API_VERSION,
   enabled: true,
+  previous_secret_expires_at: null,
   created_at: "2026-01-15T09:30:00.000Z",
   updated_at: "2026-01-15T09:30:00.000Z",
 };
@@ -45,6 +49,14 @@ export const WebhookEndpointObject = z
     enabled: z
       .boolean()
       .meta({ description: "A disabled endpoint receives nothing until it is enabled again." }),
+    previous_secret_expires_at: z.iso
+      .datetime()
+      .nullable()
+      .meta({
+        description:
+          "After a secret roll, deliveries are also signed with the previous secret until this time. " +
+          "`null` when only the current secret signs.",
+      }),
     created_at: z.iso.datetime(),
     updated_at: z.iso.datetime(),
   })
@@ -56,8 +68,8 @@ export const WebhookEndpointWithSecret = WebhookEndpointObject.extend({
   secret: z.string().meta({
     description:
       "The endpoint's `whsec_…` signing secret, used to verify the requests COSS sends. " +
-      "Returned only when the endpoint is created — store it now; it cannot be read back " +
-      "through the API.",
+      "Returned only when the endpoint is created and when its secret is rolled — store it now; " +
+      "it cannot be read back through the API.",
     examples: ["whsec_6Jk…"],
   }),
 }).meta({
@@ -66,6 +78,31 @@ export const WebhookEndpointWithSecret = WebhookEndpointObject.extend({
 });
 
 export type WebhookEndpointWithSecretOutput = z.output<typeof WebhookEndpointWithSecret>;
+
+export const RollWebhookEndpointSecretRequest = z
+  .strictObject({
+    previous_secret_expires_in: z
+      .number()
+      .int()
+      .min(0)
+      .max(MAX_PREVIOUS_SECRET_EXPIRES_IN)
+      .optional()
+      .meta({
+        description:
+          "Seconds the current secret keeps signing deliveries next to the new one, so receivers " +
+          `can switch without rejecting anything. Default ${DEFAULT_PREVIOUS_SECRET_EXPIRES_IN} ` +
+          `(a day), at most ${MAX_PREVIOUS_SECRET_EXPIRES_IN} (a week). \`0\` stops it ` +
+          "immediately, e.g. after a leak.",
+      }),
+  })
+  .meta({
+    id: "RollWebhookEndpointSecretRequest",
+    examples: [{ previous_secret_expires_in: 3600 }],
+  });
+
+export type RollWebhookEndpointSecretRequestOutput = z.output<
+  typeof RollWebhookEndpointSecretRequest
+>;
 
 export const WebhookEndpointList = z
   .object({

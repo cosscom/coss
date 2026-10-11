@@ -327,7 +327,8 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
 
 One Secrets Manager secret per stage (JSON), injected through each task definition's `secrets`:
 `VALKEY_URL` (from `valkey:bootstrap`), `DATABASE_URL`, `BETTER_AUTH_SECRET`, `AI_GATEWAY_API_KEY` (worker), `WEBHOOK_SECRETS_KEY` and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (generate the
-last three with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable). The origin
+last three with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable, see
+[Rotating `WEBHOOK_SECRETS_KEY`](#rotating-webhook_secrets_key) to change it). The origin
 header value is a separate secret, used only by CloudFront and the ALB rules (rotate it by adding the new value to the
 rules, then CloudFront, then removing the old one). Plain values per service:
 
@@ -371,6 +372,29 @@ production access → create COSS's own organization in the dashboard, add and v
 `NOTIFICATIONS_FROM` (e.g. `COSS <notifications@coss.com>`). Until then the worker logs a warning at startup and
 holds reputation notification emails (ones older than 3 days are dropped instead of sent late). They are ordinary
 live emails of that organization: its dashboard shows their delivery, and its suppressions apply.
+
+### Rotating `WEBHOOK_SECRETS_KEY`
+
+The variable is a comma-separated list of keys, newest first: the first encrypts new endpoint secrets, every one
+decrypts. Each stored secret names its key by an id derived from the key itself (the `webhooks:reencrypt` script
+prints them), so the list needs no labels and its order only decides which key encrypts. Endpoints' own signing
+secrets don't change, so customers notice nothing.
+
+1. Generate a key (`openssl rand -base64 32`) and **append** it: `WEBHOOK_SECRETS_KEY=<old>,<new>`. Deploy web, api
+   and worker. Every task can now decrypt with both keys; nothing is encrypted with the new one yet.
+2. Swap the order, `<new>,<old>`, and deploy again. New and rolled endpoint secrets are encrypted with the new key.
+   Doing step 1 first means no task that only knows the old key ever reads a secret made with the new one (rolling
+   deploys run both versions at once).
+3. Run the `webhooks-reencrypt` one-off task from the worker image (`bun apps/worker/scripts/webhooks-reencrypt.ts`,
+   needs `DATABASE_URL` and the new `WEBHOOK_SECRETS_KEY`; `--dry-run` only counts). It rewrites every secret still
+   encrypted with an older key, while traffic continues, and exits 1 if anything was left over (a secret no listed key
+   decrypts, or one rolled while it ran: run it again).
+4. Remove the old key, `<new>`, and deploy. Destroy the old key.
+
+After a leak of the key, do all four steps right away: with the database alone the key is useless, but with both,
+every endpoint's signing secret can be read. Customers should then [roll their endpoint
+secrets](https://coss.com/docs/webhooks#rolling-the-secret) with no grace period. Locally, `bun run
+webhooks:reencrypt` does step 3 against `DATABASE_URL`.
 
 ### Known gaps
 

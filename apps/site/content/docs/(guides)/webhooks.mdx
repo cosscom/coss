@@ -16,7 +16,7 @@ const { data: endpoint, error } = await coss.webhookEndpoints.create({
   url: "https://example.com/webhooks/coss",
   event_types: ["email.delivered", "email.bounced"],
 });
-// Store the secret now: it is only returned when the endpoint is created.
+// Store the secret now: it is only returned when the endpoint is created (or its secret rolled).
 const secret = endpoint?.secret;
 ```
 
@@ -63,6 +63,28 @@ endpoint's [API version](/docs/api-reference/versioning#webhooks), named in `api
 Requests are signed with [Standard Webhooks](https://www.standardwebhooks.com) headers:
 `webhook-id`, `webhook-timestamp` and `webhook-signature`. Always verify them before trusting the
 body. With the SDK, use [`verifyWebhook`](/docs/sdk/webhooks).
+
+## Rolling the secret
+
+Roll an endpoint's secret in the dashboard (**Roll secret** on the endpoint) or through the API to
+replace it, for example on a schedule or after it may have leaked. For a grace period (a day by
+default, up to a week) every request carries two signatures, one per secret, in
+`webhook-signature`, so a receiver verifying with either one keeps accepting requests while you
+deploy the new secret. Choose `0` to stop the old secret at once.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const endpointId: string;
+// ---cut---
+const { data: rolled } = await coss.webhookEndpoints.rollSecret(endpointId, {
+  previous_secret_expires_in: 60 * 60, // the old secret keeps signing for an hour
+});
+const newSecret = rolled?.secret; // deploy it before rolled?.previous_secret_expires_at
+```
+
+Rolling again during the grace period stops the older secret immediately. The SDK never retries
+a roll: if the response is lost, roll again and deploy that secret.
 
 ## Delivery and retries
 

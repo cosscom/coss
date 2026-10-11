@@ -15,7 +15,7 @@ import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
 import { screenMessage } from "@coss/screening";
 import { createClassifier } from "@coss/screening/runtime";
-import { createWebhookSender, parseSecretsKey } from "@coss/webhooks";
+import { createWebhookSender, parseSecretsKeys } from "@coss/webhooks";
 import { env } from "./env.ts";
 import { startJobs } from "./jobs.ts";
 import { createShutdown } from "./shutdown.ts";
@@ -81,7 +81,7 @@ const loops = startJobs({
     dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
   },
   webhooks: {
-    secretsKey: parseSecretsKey(env.WEBHOOK_SECRETS_KEY),
+    secretsKeys: parseSecretsKeys(env.WEBHOOK_SECRETS_KEY),
     // The dashboard accepts local endpoints outside production; let them be reached there too.
     send: createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" }),
   },

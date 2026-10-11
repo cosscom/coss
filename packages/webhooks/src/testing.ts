@@ -1,12 +1,13 @@
 /** Webhook test helpers. Requires the `@coss/db/testing` preload for DB-backed use. */
 import type { WebhookManagementDeps } from "./endpoints.ts";
+import { type SecretsKeyRing, secretsKeyRing } from "./secrets.ts";
 import { createWebhookSender } from "./sender.ts";
 
-/** A fixed WEBHOOK_SECRETS_KEY for tests. */
-export const TEST_SECRETS_KEY: Buffer = Buffer.alloc(32, 7);
+/** A fixed WEBHOOK_SECRETS_KEY (one key) for tests. */
+export const TEST_SECRETS_KEYS: SecretsKeyRing = secretsKeyRing([Buffer.alloc(32, 7)]);
 
 export const testManagementDeps: WebhookManagementDeps = {
-  secretsKey: TEST_SECRETS_KEY,
+  secretsKeys: TEST_SECRETS_KEYS,
   allowInsecureUrls: true,
 };
 

@@ -9,6 +9,7 @@ import {
   MAX_ENDPOINTS_PER_ENVIRONMENT,
   pageWebhookDeliveries,
   retryWebhookDelivery,
+  rollWebhookEndpointSecret,
   toWebhookDeliveryObject,
   toWebhookEndpointObject,
   updateWebhookEndpoint,
@@ -18,6 +19,7 @@ import {
 import {
   DeletedWebhookEndpoint,
   ListWebhookDeliveriesQuery,
+  RollWebhookEndpointSecretRequest,
   WebhookDeliveryList,
   WebhookDeliveryObject,
   WebhookEndpointList,
@@ -74,9 +76,9 @@ export const createWebhookEndpointRoute = createRoute({
   tags: ["Webhook endpoints"],
   summary: "Create a webhook endpoint",
   description:
-    `Registers a URL that receives signed event notifications. ${SCOPE_NOTE} The response is the ` +
-    "only place the signing secret is ever returned: store it, and verify every delivery with " +
-    "it (`verifyWebhook` in the SDK).",
+    `Registers a URL that receives signed event notifications. ${SCOPE_NOTE} The response carries ` +
+    "the signing secret, which is returned only here and when it is rolled: store it, and verify " +
+    "every delivery with it (`verifyWebhook` in the SDK).",
   security: [{ bearerAuth: [] }],
   middleware: [
     requireApiKey({ webhook: ["create"] }),
@@ -122,7 +124,8 @@ export const getWebhookEndpointRoute = createRoute({
   operationId: "getWebhookEndpoint",
   tags: ["Webhook endpoints"],
   summary: "Retrieve a webhook endpoint",
-  description: "The endpoint without its signing secret, which is only returned when created.",
+  description:
+    "The endpoint without its signing secret, which is only returned when created or rolled.",
   security: [{ bearerAuth: [] }],
   middleware: [requireApiKey({ webhook: ["read"] }), rateLimit("api.read")],
   request: { params: EndpointIdParams },
@@ -141,8 +144,8 @@ export const updateWebhookEndpointRoute = createRoute({
   summary: "Update a webhook endpoint",
   description:
     "Changes the URL, description, subscribed event types, API version or `enabled` flag. Omitted fields keep " +
-    "their current value, and the signing secret never changes, so receivers keep verifying " +
-    "deliveries. Disabling an endpoint stops deliveries without losing its configuration.",
+    "their current value, and the signing secret stays the same (see Roll a signing secret), so receivers " +
+    "keep verifying deliveries. Disabling an endpoint stops deliveries without losing its configuration.",
   security: [{ bearerAuth: [] }],
   middleware: [
     requireApiKey({ webhook: ["update"] }),
@@ -165,6 +168,40 @@ export const updateWebhookEndpointRoute = createRoute({
       "The body failed validation (`validation_error`) or the URL is not a usable https:// URL " +
         "(`invalid_url`).",
     ),
+  },
+});
+
+export const rollWebhookEndpointSecretRoute = createRoute({
+  method: "post",
+  path: "/webhook_endpoints/{id}/roll_secret",
+  operationId: "rollWebhookEndpointSecret",
+  tags: ["Webhook endpoints"],
+  summary: "Roll a signing secret",
+  description:
+    "Replaces the endpoint's signing secret with a new one, returned in the response (the only time it " +
+    "is). Until `previous_secret_expires_at`, every delivery is signed with both secrets " +
+    "(`webhook-signature` lists two signatures), so receivers verifying with either one accept it: " +
+    "deploy the new secret, then let the old one expire. Rolling again in that time stops the older " +
+    "secret at once. Not idempotent: after a lost response, roll again.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ webhook: ["update"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/webhook_endpoints/{id}/roll_secret"),
+  ],
+  request: {
+    params: EndpointIdParams,
+    body: {
+      required: true,
+      content: { "application/json": { schema: RollWebhookEndpointSecretRequest } },
+    },
+  },
+  responses: {
+    200: jsonDoc("The endpoint and its new signing secret.", WebhookEndpointWithSecret),
+    ...bodyErrors,
+    ...commonErrors,
+    404: endpointNotFound,
+    422: errorDoc("The body failed validation (`validation_error`)."),
   },
 });
 
@@ -320,6 +357,20 @@ export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAP
       deps,
     );
     return c.json(toWebhookEndpointObject(updated), 200);
+  });
+
+  router.openapi(rollWebhookEndpointSecretRoute, async (c) => {
+    const body = c.req.valid("json");
+    const row = await requireEndpoint(c.var.auth, c.req.valid("param").id);
+    const { endpoint, secret } = await rollWebhookEndpointSecret(
+      {
+        organizationId: row.organizationId,
+        id: row.id,
+        previousSecretExpiresIn: body.previous_secret_expires_in,
+      },
+      deps,
+    );
+    return c.json({ ...toWebhookEndpointObject(endpoint), secret }, 200);
   });
 
   router.openapi(deleteWebhookEndpointRoute, async (c) => {

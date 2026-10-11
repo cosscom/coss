@@ -22,7 +22,7 @@ import { createTestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { createWebhookEndpoint, runDueWebhookDeliveries } from "@coss/webhooks";
 import {
-  TEST_SECRETS_KEY,
+  TEST_SECRETS_KEYS,
   testManagementDeps,
   testSender,
   webhookReceiver,
@@ -92,7 +92,7 @@ describe("live bounces → automatic suspension → webhook", () => {
       expect(
         await runDueWebhookDeliveries(
           { now, scope },
-          { secretsKey: TEST_SECRETS_KEY, send: testSender() },
+          { secretsKeys: TEST_SECRETS_KEYS, send: testSender() },
         ),
       ).toBe(1);
       const [request] = receiver.received;

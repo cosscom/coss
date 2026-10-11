@@ -4,6 +4,7 @@ import type { List } from "../types/email.ts";
 import type {
   CreateWebhookEndpointParams,
   DeletedWebhookEndpoint,
+  RollWebhookEndpointSecretParams,
   UpdateWebhookEndpointParams,
   WebhookEndpoint,
   WebhookEndpointWithSecret,
@@ -28,8 +29,8 @@ export class WebhookEndpointsResource {
   }
 
   /**
-   * Creates an endpoint. The result is the only place its `secret` is returned — store it and
-   * pass it to `verifyWebhook` for every delivery. Creation is never automatically retried:
+   * Creates an endpoint. The result carries its `secret` (returned again only by `rollSecret`) —
+   * store it and pass it to `verifyWebhook` for every delivery. Creation is never automatically retried:
    * the API does not deduplicate it, even with an idempotency key. After a lost response,
    * list endpoints and remove the endpoint with the unknown secret before creating a replacement.
    */
@@ -67,7 +68,7 @@ export class WebhookEndpointsResource {
 
   /**
    * Changes the URL, description, subscribed event types or `enabled` flag. The signing secret
-   * never changes, so receivers keep verifying deliveries.
+   * stays the same (see `rollSecret`), so receivers keep verifying deliveries.
    */
   update(
     id: string,
@@ -78,6 +79,28 @@ export class WebhookEndpointsResource {
       method: "PATCH",
       path: `/v1/webhook_endpoints/${encodeURIComponent(id)}`,
       body: params,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Replaces the endpoint's signing secret; the result carries the new `secret`. Until
+   * `previous_secret_expires_at` (a day by default), deliveries are signed with both secrets, so
+   * `verifyWebhook` accepts them with either: deploy the new one, then let the old one expire.
+   * Never automatically retried (a second roll would stop the original secret at once): after a
+   * lost response, roll again and deploy that secret.
+   */
+  rollSecret(
+    id: string,
+    params: RollWebhookEndpointSecretParams = {},
+    options?: RequestOptions,
+  ): Promise<CossResult<WebhookEndpointWithSecret>> {
+    return this.#http.request<WebhookEndpointWithSecret>({
+      method: "POST",
+      path: `/v1/webhook_endpoints/${encodeURIComponent(id)}/roll_secret`,
+      retry: false,
+      body: params,
+      idempotencyKey: options?.idempotencyKey,
       signal: options?.signal,
     });
   }

@@ -169,6 +169,13 @@
       "when": 1791688159628,
       "tag": "0023_wooden_warhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1791746374994,
+      "tag": "0024_misty_dark_phoenix",
+      "breakpoints": true
     }
   ]
 }

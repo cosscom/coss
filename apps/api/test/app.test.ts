@@ -172,6 +172,7 @@ describe("GET /openapi.json", () => {
       "/v1/webhook_endpoints/{id}/deliveries",
       "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}",
       "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry",
+      "/v1/webhook_endpoints/{id}/roll_secret",
     ]);
     expect(doc.paths["/v1/emails"]?.post).toMatchObject({
       operationId: "sendEmail",
@@ -264,6 +265,7 @@ describe("GET /openapi.json", () => {
       ["get /v1/webhook_endpoints/{id}", "getWebhookEndpoint"],
       ["patch /v1/webhook_endpoints/{id}", "updateWebhookEndpoint"],
       ["delete /v1/webhook_endpoints/{id}", "deleteWebhookEndpoint"],
+      ["post /v1/webhook_endpoints/{id}/roll_secret", "rollWebhookEndpointSecret"],
       ["get /v1/webhook_endpoints/{id}/deliveries", "listWebhookDeliveries"],
       ["get /v1/webhook_endpoints/{id}/deliveries/{delivery_id}", "getWebhookDelivery"],
       ["post /v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry", "retryWebhookDelivery"],
@@ -297,6 +299,7 @@ describe("GET /openapi.json", () => {
         "DeletedDomain",
         "CreateWebhookEndpointRequest",
         "UpdateWebhookEndpointRequest",
+        "RollWebhookEndpointSecretRequest",
         "WebhookEndpoint",
         "WebhookEndpointWithSecret",
         "WebhookEndpointList",

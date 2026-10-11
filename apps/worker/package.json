@@ -8,7 +8,8 @@
     "start": "bun --env-file=../../.env src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun --env-file=../../.env test",
-    "ses:bootstrap": "bun --env-file=../../.env scripts/ses-bootstrap.ts"
+    "ses:bootstrap": "bun --env-file=../../.env scripts/ses-bootstrap.ts",
+    "webhooks:reencrypt": "bun --env-file=../../.env scripts/webhooks-reencrypt.ts"
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch": "catalog:",

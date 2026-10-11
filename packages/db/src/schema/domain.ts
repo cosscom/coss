@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   customType,
   foreignKey,
   index,
@@ -578,6 +579,9 @@ export const webhookEndpoint = pgTable(
     eventTypes: text("event_types").array().notNull().default(sql`'{}'::text[]`),
     // The `whsec_…` signing secret, encrypted with WEBHOOK_SECRETS_KEY (it must be reversible).
     secretCiphertext: text("secret_ciphertext").notNull(),
+    // The secret before the last roll, which also signs deliveries until it expires. Both or neither.
+    previousSecretCiphertext: text("previous_secret_ciphertext"),
+    previousSecretExpiresAt: timestamp("previous_secret_expires_at", { withTimezone: true }),
     enabled: boolean("enabled").notNull().default(true),
     createdByUserId: text("created_by_user_id").references(() => user.id, {
       onDelete: "set null",
@@ -593,6 +597,10 @@ export const webhookEndpoint = pgTable(
     }).onDelete("cascade"),
     index("webhook_endpoint_environment_idx").on(t.environmentId),
     unique("webhook_endpoint_id_organization_unique").on(t.id, t.organizationId),
+    check(
+      "webhook_endpoint_previous_secret_check",
+      sql`(${t.previousSecretCiphertext} is null) = (${t.previousSecretExpiresAt} is null)`,
+    ),
   ],
 );
 

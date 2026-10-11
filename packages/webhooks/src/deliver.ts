@@ -6,7 +6,8 @@ import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
 import { and, asc, eq, inArray, isNull, lt, lte, ne, notExists, or, sql } from "drizzle-orm";
-import { decryptSecret } from "./secrets.ts";
+import { signingSecrets } from "./endpoints.ts";
+import type { SecretsKeyRing } from "./secrets.ts";
 import { DEFAULT_TIMEOUT_MS, type WebhookSender } from "./sender.ts";
 import { signatureHeaders } from "./signing.ts";
 
@@ -32,7 +33,8 @@ const LEASE_MS = 2 * MINUTE;
 const ERROR_MAX_LENGTH = 500;
 
 export type WebhookDeliveryDeps = {
-  secretsKey: Buffer;
+  /** From `WEBHOOK_SECRETS_KEY` (`parseSecretsKeys`). */
+  secretsKeys: SecretsKeyRing;
   send: WebhookSender;
   timeoutMs?: number;
   /** The API versions payloads are rendered in (tests inject their own). */
@@ -139,12 +141,12 @@ async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps):
     return;
   }
 
-  // Signed and sent byte for byte.
+  // Signed and sent byte for byte; during a secret roll, by the current and the previous secret.
   const body = JSON.stringify(
     renderWebhookPayload(target.payload, target.endpoint.apiVersion, deps.versioning),
   );
   const headers = signatureHeaders({
-    secret: decryptSecret(target.endpoint.secretCiphertext, deps.secretsKey),
+    secrets: signingSecrets(target.endpoint, deps.secretsKeys, now),
     id: delivery.messageId,
     timestamp: Math.floor(now.getTime() / 1000),
     body,

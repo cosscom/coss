@@ -301,6 +301,102 @@ describe("PATCH /v1/webhook_endpoints/{id}", () => {
   });
 });
 
+describe("POST /v1/webhook_endpoints/{id}/roll_secret", () => {
+  test("returns a new secret; the previous one keeps signing for a day by default", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const created = await createEndpoint(app, tenant.sandboxKey);
+    expect(created.previous_secret_expires_at).toBeNull();
+    const before = Date.now();
+
+    const res = await apiRequest(app, "POST", `/v1/webhook_endpoints/${created.id}/roll_secret`, {
+      key: tenant.sandboxKey,
+      body: {},
+    });
+
+    expect(res.status).toBe(200);
+    const rolled = (await res.json()) as WebhookEndpointWithSecretOutput;
+    expect(rolled).toMatchObject({ object: "webhook_endpoint", id: created.id, url: URL_ONE });
+    expect(rolled.secret).toStartWith("whsec_");
+    expect(rolled.secret).not.toBe(created.secret);
+    expect((await endpointRow(created.id)).secret).toBe(rolled.secret);
+    const expiresAt = Date.parse(rolled.previous_secret_expires_at ?? "");
+    expect(expiresAt - before).toBeGreaterThanOrEqual(24 * 60 * 60 * 1000);
+    expect(expiresAt - Date.now()).toBeLessThanOrEqual(24 * 60 * 60 * 1000);
+
+    // Reads show the rotation, never a secret.
+    const read = await apiRequest(app, "GET", `/v1/webhook_endpoints/${created.id}`, {
+      key: tenant.sandboxKey,
+    });
+    const shown = (await read.json()) as WebhookEndpointObjectOutput;
+    expect(shown.previous_secret_expires_at).toBe(rolled.previous_secret_expires_at);
+    expect(shown).not.toHaveProperty("secret");
+  });
+
+  test("previous_secret_expires_in 0 stops the previous secret at once", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const created = await createEndpoint(app, tenant.sandboxKey);
+
+    const res = await apiRequest(app, "POST", `/v1/webhook_endpoints/${created.id}/roll_secret`, {
+      key: tenant.sandboxKey,
+      body: { previous_secret_expires_in: 0 },
+    });
+
+    expect(res.status).toBe(200);
+    expect(
+      ((await res.json()) as WebhookEndpointWithSecretOutput).previous_secret_expires_at,
+    ).toBeNull();
+  });
+
+  test("more than a week is 422 validation_error naming the field", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const created = await createEndpoint(app, tenant.sandboxKey);
+
+    const res = await apiRequest(app, "POST", `/v1/webhook_endpoints/${created.id}/roll_secret`, {
+      key: tenant.sandboxKey,
+      body: { previous_secret_expires_in: 7 * 24 * 60 * 60 + 1 },
+    });
+
+    expect(res.status).toBe(422);
+    const error = await errorOf(res);
+    expect(error.code).toBe("validation_error");
+    expect(error.issues?.[0]?.path).toBe("previous_secret_expires_in");
+    expect((await endpointRow(created.id)).secret).toBe(created.secret);
+  });
+
+  test("an endpoint of another environment is 404 and keeps its secret", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const live = await createEndpoint(app, tenant.liveKey);
+
+    const res = await apiRequest(app, "POST", `/v1/webhook_endpoints/${live.id}/roll_secret`, {
+      key: tenant.sandboxKey,
+      body: {},
+    });
+
+    expect(res.status).toBe(404);
+    expect((await endpointRow(live.id)).secret).toBe(live.secret);
+  });
+
+  test("a key with webhook:read but not webhook:update is 403", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const created = await createEndpoint(app, tenant.sandboxKey);
+    await setKeyPermissions(await apiKeyIdForEnvironment(tenant.development.id), {
+      webhook: ["read"],
+    });
+
+    const res = await apiRequest(app, "POST", `/v1/webhook_endpoints/${created.id}/roll_secret`, {
+      key: tenant.sandboxKey,
+      body: {},
+    });
+
+    expect(res.status).toBe(403);
+  });
+});
+
 describe("DELETE /v1/webhook_endpoints/{id}", () => {
   test("deletes the endpoint", async () => {
     const tenant = await createTestTenant();
