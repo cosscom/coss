@@ -304,6 +304,29 @@ export const SERVICES: Service[] = [
       },
       ...screening,
       webhookKey,
+      {
+        name: "BETTER_AUTH_URL",
+        kind: "plain",
+        required: true,
+        value: "https://coss.com",
+        description: "The dashboard's origin, for links in reputation notification emails.",
+      },
+      {
+        name: "NOTIFICATIONS_ENVIRONMENT_ID",
+        kind: "plain",
+        required: false,
+        value: "env_… (a live environment of COSS's own organization)",
+        description:
+          "Sends reputation notification emails (warnings, suspensions) through COSS itself. " +
+          "Unset until COSS's organization has a verified domain: notifications are held.",
+      },
+      {
+        name: "NOTIFICATIONS_FROM",
+        kind: "plain",
+        required: false,
+        value: "COSS <notifications@coss.com>",
+        description: "Sender of notification emails, on a verified domain of that organization.",
+      },
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
     ],
   },

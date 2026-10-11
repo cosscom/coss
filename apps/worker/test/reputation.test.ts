@@ -1,12 +1,23 @@
 /**
  * End to end in live mode: simulator bounces mark the organization due, the reputation job
- * suspends it on its own, live sends are refused, and the organization's live endpoint receives
- * a signed `account.suspended` the published SDK verifies.
+ * suspends it on its own, live sends are refused, the organization's live endpoint receives
+ * a signed `account.suspended` the published SDK verifies, and its owner gets an email sent through
+ * COSS's own organization.
  */
 import { describe, expect, test } from "bun:test";
-import { EmailError, emailReputationChecks, FakeEmailProvider } from "@coss/email";
+import {
+  EmailError,
+  emailReputationChecks,
+  emailReputationNotifier,
+  FakeEmailProvider,
+  notificationEnvironment,
+} from "@coss/email";
 import { createVerifiedDomain, dispatchingEmailService } from "@coss/email/testing";
-import { runDueReputationEvaluations, updateReputationPolicy } from "@coss/reputation";
+import {
+  runDueReputationEvaluations,
+  runDueReputationNotifications,
+  updateReputationPolicy,
+} from "@coss/reputation";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { createWebhookEndpoint, runDueWebhookDeliveries } from "@coss/webhooks";
 import {
@@ -98,6 +109,29 @@ describe("live bounces → automatic suspension → webhook", () => {
           ],
         },
       });
+
+      // The notification goes out as a live email of COSS's own organization.
+      const platform = await createTestTenant();
+      const platformDomain = await createVerifiedDomain(platform.organization.id);
+      const notifier = emailReputationNotifier({
+        service,
+        environment: await notificationEnvironment(platform.production.id),
+        from: `COSS <notifications@${platformDomain.name}>`,
+      });
+      expect(
+        await runDueReputationNotifications(
+          { now, scope },
+          { notifier, dashboardUrl: "https://coss.test" },
+        ),
+      ).toBe(1);
+      const notice = provider.sent.find(
+        (message) => message.organizationId === platform.organization.id,
+      );
+      expect(notice).toMatchObject({
+        to: [tenant.owner.email],
+        subject: `Live sending is suspended for ${tenant.organization.name}`,
+      });
+      expect(notice?.text).toContain(`https://coss.test/${tenant.organization.slug}/reputation`);
     } finally {
       receiver.stop();
     }

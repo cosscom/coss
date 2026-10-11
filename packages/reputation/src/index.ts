@@ -15,6 +15,21 @@ export {
   runDueReputationEvaluations,
   WARNING_RECHECK_MS,
 } from "./evaluate.ts";
+export {
+  enqueueReputationNotification,
+  listReputationNotifications,
+  logReputationNotifier,
+  MAX_NOTIFICATION_AGE_MS,
+  MAX_NOTIFICATION_ATTEMPTS,
+  NOTIFICATION_LEASE_MS,
+  NOTIFIED_TRANSITIONS,
+  type ReputationNotice,
+  type ReputationNotificationDeps,
+  type ReputationNotificationRow,
+  type ReputationNotifier,
+  renderNotification,
+  runDueReputationNotifications,
+} from "./notifications.ts";
 export * from "./schemas.ts";
 export {
   getOrganizationStanding,

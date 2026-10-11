@@ -19,6 +19,24 @@ export const ACCOUNT_EVENT_TYPES = [
 ] as const;
 export type AccountEventType = (typeof ACCOUNT_EVENT_TYPES)[number];
 
+/**
+ * Customer-facing names of the triggers behind a standing (dashboard and notification emails).
+ * Add an entry with every new trigger; unknown triggers show as is.
+ */
+export const TRIGGER_LABELS: Readonly<Record<string, string>> = {
+  bounce_rate: "Bounce rate",
+  complaint_rate: "Complaint rate",
+  content_screening: "Content screening",
+  manual: "COSS review",
+  policy: "Policy",
+  evaluation: "Evaluation",
+};
+
+export function triggerLabel(trigger: string | null): string {
+  if (!trigger) return "—";
+  return TRIGGER_LABELS[trigger] ?? trigger;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Policy (internal, camelCase): the defaults plus per-organization overrides set by admins.
 // ---------------------------------------------------------------------------------------------
