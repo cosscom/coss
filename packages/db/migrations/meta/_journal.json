@@ -169,6 +169,20 @@
       "when": 1791688159628,
       "tag": "0023_wooden_warhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1791746245082,
+      "tag": "0024_sad_revanche",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791746251391,
+      "tag": "0025_canonical_email_backfill",
+      "breakpoints": true
     }
   ]
 }

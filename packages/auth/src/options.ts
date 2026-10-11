@@ -12,16 +12,23 @@ import * as schema from "@coss/db/schema";
 import type { BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
-import { admin, organization, twoFactor } from "better-auth/plugins";
-import { and, eq } from "drizzle-orm";
+import { admin, captcha, organization, twoFactor } from "better-auth/plugins";
+import { and, count, eq } from "drizzle-orm";
 import {
   API_KEY_NAME_MAX_LENGTH,
   API_KEY_PERMISSIONS,
   API_KEY_VISIBLE_CHARACTERS,
 } from "./constants.ts";
+import {
+  cachedMailDomainCheck,
+  canonicalEmail,
+  DISPOSABLE_EMAIL,
+  isDisposableDomain,
+  signUpEmailRejection,
+} from "./email-guard.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
 import { validateOrgName, validateOrgSlug } from "./slugs.ts";
-import { resolveSsoUser, ssoProviderIdOfPath } from "./sso.ts";
+import { emailDomainOf, resolveSsoUser, ssoProviderIdOfPath } from "./sso.ts";
 
 /** Better Auth model name -> TypeID prefix. */
 const MODEL_ID_PREFIX: Record<string, string> = {
@@ -90,6 +97,38 @@ const FACTOR_MANAGEMENT_PATHS: ReadonlySet<string> = new Set([
   "/passkey/delete-passkey",
 ]);
 
+/** Organizations one user may own (platform admins are exempt). */
+export const MAX_OWNED_ORGANIZATIONS = 5;
+/** Pending invitations one organization may have at once. */
+export const MAX_PENDING_INVITATIONS = 50;
+
+/** Shared by every sign-up in this process, so common domains cost no DNS lookup. */
+const checkMailDomain = cachedMailDomainCheck();
+
+/**
+ * Refuses a sign-up address that is disposable, can't receive mail, or reaches a mailbox that
+ * already has an account (`canonicalEmail`: `a.b+x@gmail.com` is `ab@gmail.com`).
+ */
+async function assertSignUpEmailAllowed(email: string): Promise<void> {
+  const rejection = await signUpEmailRejection(email, {
+    checkDomain: checkMailDomain,
+    production: process.env.NODE_ENV === "production",
+  });
+  if (rejection) throw new APIError("BAD_REQUEST", rejection);
+  const [existing] = await db
+    .select({ id: schema.user.id })
+    .from(schema.user)
+    .where(eq(schema.user.canonicalEmail, canonicalEmail(email)))
+    .limit(1);
+  // Same answer as Better Auth's own duplicate check (sign-up email enumeration is accepted).
+  if (existing) {
+    throw new APIError("UNPROCESSABLE_ENTITY", {
+      code: "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL",
+      message: "User already exists. Use another email.",
+    });
+  }
+}
+
 /** Origin of the dashboard, which hosts /api/auth (also the WebAuthn origin and RP ID). */
 const dashboardUrl = process.env.BETTER_AUTH_URL ? new URL(process.env.BETTER_AUTH_URL) : undefined;
 
@@ -149,6 +188,8 @@ export const authOptions = {
     "/api-key/list",
     "/api-key/delete",
     "/organization/update",
+    // Invitations go through the dashboard's server action, which rate-limits them per organization.
+    "/organization/invite-member",
     "/admin/remove-user",
     "/admin/create-user",
     "/admin/update-user",
@@ -170,6 +211,14 @@ export const authOptions = {
     "/sso/request-domain-verification",
     "/sso/verify-domain",
   ],
+  user: {
+    additionalFields: {
+      // `canonicalEmail(email)`, set for every new user by the databaseHooks below; sign-up refuses
+      // an address whose mailbox already has an account. Nullable: users from before the column
+      // were backfilled by migration, and Better Auth tables never get NOT NULL columns.
+      canonicalEmail: { type: "string", required: false, input: false, index: true },
+    },
+  },
   session: {
     additionalFields: {
       // The SSO provider (`ssoProvider.providerId`) whose sign-in created this session, else null.
@@ -183,10 +232,13 @@ export const authOptions = {
       create: {
         // Users created by an SSO sign-in: `resolveSsoUser` already checked that their address is
         // on a domain the organization verified, so they don't get a verification email.
-        before: async (user, ctx) =>
-          ssoProviderIdOfPath(ctx?.path, ctx?.params)
-            ? { data: { ...user, emailVerified: true } }
-            : undefined,
+        before: async (user, ctx) => ({
+          data: {
+            ...user,
+            canonicalEmail: canonicalEmail(user.email),
+            ...(ssoProviderIdOfPath(ctx?.path, ctx?.params) ? { emailVerified: true } : {}),
+          },
+        }),
       },
     },
     session: {
@@ -200,6 +252,11 @@ export const authOptions = {
   },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      // Only the public sign-up: users created server-side (fixtures, seed, admins, SSO) skip it.
+      if (ctx.path === "/sign-up/email") {
+        if (typeof ctx.body?.email === "string") await assertSignUpEmailAllowed(ctx.body.email);
+        return;
+      }
       if (FACTOR_MANAGEMENT_PATHS.has(ctx.path)) {
         const session = await getSessionFromCtx(ctx);
         if (session?.session.impersonatedBy) {
@@ -262,6 +319,17 @@ export const authOptions = {
       // Our custom generateId makes invitation ids predictable, so Better Auth requires a verified
       // email to read/accept invitations. Keep it explicit; NEVER disable while sign-up is unverified.
       requireEmailVerificationOnInvitation: true,
+      invitationLimit: MAX_PENDING_INVITATIONS,
+      // `true` = limit reached. Counts organizations the user owns (the number option would count
+      // memberships, so being invited to five organizations would block creating one's own).
+      organizationLimit: async (user) => {
+        if ((user as { role?: string | null }).role === "admin") return false;
+        const [row] = await db
+          .select({ owned: count() })
+          .from(schema.member)
+          .where(and(eq(schema.member.userId, user.id), eq(schema.member.role, "owner")));
+        return (row?.owned ?? 0) >= MAX_OWNED_ORGANIZATIONS;
+      },
       sendInvitationEmail: async ({ id, email, organization: org, role }) => {
         const url = `${process.env.BETTER_AUTH_URL ?? ""}/accept-invitation/${id}`;
         logDevEmail(`Invitation to ${org.name} as ${role}`, email, url);
@@ -276,11 +344,23 @@ export const authOptions = {
         },
         // The invite/update-role HTTP endpoints accept arbitrary role strings; only allow
         // canonical role names so Better Auth and `orgRoleCan` always agree on privileges.
-        beforeCreateInvitation: async ({ invitation }) => {
+        beforeCreateInvitation: async ({ invitation, inviter }) => {
           if (!(INVITABLE_ORG_ROLES as readonly string[]).includes(invitation.role)) {
             throw new APIError("BAD_REQUEST", { message: "Role must be admin or member." });
           }
           await assertOrgNotSuspended(invitation.organizationId);
+          // Sign-up doesn't need a verified address, and invitation emails carry the org's name:
+          // without this, throwaway accounts could use them to spam any address.
+          if (!inviter.emailVerified) {
+            throw new APIError("FORBIDDEN", {
+              code: "EMAIL_NOT_VERIFIED",
+              message: "Verify your email address before inviting people.",
+            });
+          }
+          const domain = emailDomainOf(invitation.email);
+          if (domain && isDisposableDomain(domain)) {
+            throw new APIError("BAD_REQUEST", DISPOSABLE_EMAIL);
+          }
         },
         beforeAcceptInvitation: async ({ organization: org }) => {
           await assertOrgNotSuspended(org.id);
@@ -356,5 +436,17 @@ export const authOptions = {
         algorithms: { onDeprecated: "reject" },
       },
     }),
+    // Cloudflare Turnstile on /sign-up/email, /sign-in/email and /request-password-reset (HTTP
+    // only: `auth.api.*` calls skip it). The dashboard sends the token as `x-captcha-response`.
+    // Fails closed while Cloudflare's siteverify is unreachable (passkeys and SSO still work).
+    ...(process.env.TURNSTILE_SECRET_KEY
+      ? [
+          captcha({
+            provider: "cloudflare-turnstile",
+            secretKey: process.env.TURNSTILE_SECRET_KEY,
+            allowedHostnames: dashboardUrl ? [dashboardUrl.hostname] : undefined,
+          }),
+        ]
+      : []),
   ],
 } satisfies BetterAuthOptions;

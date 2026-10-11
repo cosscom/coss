@@ -15,6 +15,13 @@ export async function register() {
     if (production && !process.env.SKIP_ENV_VALIDATION && !env.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY) {
       throw new Error("NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is required in production.");
     }
+    // Without the secret key, @coss/auth leaves sign-up and sign-in open to bots.
+    if (Boolean(env.TURNSTILE_SITE_KEY) !== Boolean(env.TURNSTILE_SECRET_KEY)) {
+      throw new Error("Set both TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY, or neither.");
+    }
+    if (production && !process.env.SKIP_ENV_VALIDATION && !env.TURNSTILE_SECRET_KEY) {
+      throw new Error("TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY are required in production.");
+    }
   } catch (error) {
     if (!production) throw error;
     console.error("[web] Refusing to start:", error);
