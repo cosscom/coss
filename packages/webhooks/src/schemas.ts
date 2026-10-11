@@ -5,6 +5,7 @@
  * The set of subscribable event types belongs to the products, not here, so the request bodies
  * are built by `webhookEndpointRequests(eventTypes)` — the public API passes `WEBHOOK_EVENT_TYPES`.
  */
+import { API_VERSIONS, LATEST_API_VERSION } from "@coss/versioning";
 import { z } from "zod";
 
 export const WEBHOOK_URL_MAX_LENGTH = 2048;
@@ -14,6 +15,10 @@ const EVENT_TYPES_DESCRIPTION =
   "Event types delivered to this endpoint. An empty array means every event type, including " +
   "ones added later.";
 
+const API_VERSION_DESCRIPTION =
+  "The API version (`Coss-Version`) events are rendered in for this endpoint. Each event carries it as " +
+  "`api_version`.";
+
 const ENDPOINT_ID_EXAMPLE = "whep_01k7c8m4q2f3e9v6t5r1n0p8yz";
 const ENDPOINT_EXAMPLE = {
   object: "webhook_endpoint",
@@ -21,6 +26,7 @@ const ENDPOINT_EXAMPLE = {
   url: "https://example.com/webhooks/coss",
   description: "Production receiver",
   event_types: ["email.delivered", "email.bounced"],
+  api_version: LATEST_API_VERSION,
   enabled: true,
   created_at: "2026-01-15T09:30:00.000Z",
   updated_at: "2026-01-15T09:30:00.000Z",
@@ -33,6 +39,9 @@ export const WebhookEndpointObject = z
     url: z.string().meta({ examples: ["https://example.com/webhooks/coss"] }),
     description: z.string().nullable(),
     event_types: z.array(z.string()).meta({ description: EVENT_TYPES_DESCRIPTION }),
+    api_version: z
+      .string()
+      .meta({ description: API_VERSION_DESCRIPTION, examples: [LATEST_API_VERSION] }),
     enabled: z
       .boolean()
       .meta({ description: "A disabled endpoint receives nothing until it is enabled again." }),
@@ -93,6 +102,8 @@ const Url = z
     examples: ["https://example.com/webhooks/coss"],
   });
 
+const ApiVersion = z.enum(API_VERSIONS).meta({ description: API_VERSION_DESCRIPTION });
+
 const Description = z
   .string()
   .max(DESCRIPTION_MAX_LENGTH, `Can be at most ${DESCRIPTION_MAX_LENGTH} characters.`)
@@ -117,6 +128,9 @@ export function webhookEndpointRequests<const T extends readonly [string, ...str
       event_types: EventTypes.optional().meta({
         description: `${EVENT_TYPES_DESCRIPTION} Defaults to every event type.`,
       }),
+      api_version: ApiVersion.optional().meta({
+        description: `${API_VERSION_DESCRIPTION} Defaults to the version of the request that creates the endpoint.`,
+      }),
     })
     .meta({
       id: "CreateWebhookEndpointRequest",
@@ -134,6 +148,7 @@ export function webhookEndpointRequests<const T extends readonly [string, ...str
       url: Url.optional(),
       description: Description.nullish(),
       event_types: EventTypes.optional(),
+      api_version: ApiVersion.optional(),
       enabled: z.boolean().optional(),
     })
     .refine((value) => Object.values(value).some((field) => field !== undefined), {

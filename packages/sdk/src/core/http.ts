@@ -22,6 +22,8 @@ export interface HttpClientOptions {
   /** Per-attempt timeout in milliseconds. */
   timeout: number;
   maxRetries: number;
+  /** Sent as `Coss-Version` with every request. */
+  apiVersion: string;
   /** Waits between retries; must resolve early when `signal` aborts. Overridable for tests. */
   sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
 }
@@ -112,6 +114,7 @@ export class HttpClient {
   readonly #fetch: FetchLike;
   readonly #timeout: number;
   readonly #maxRetries: number;
+  readonly #apiVersion: string;
   readonly #sleep: (ms: number, signal?: AbortSignal) => Promise<void>;
 
   constructor(options: HttpClientOptions) {
@@ -120,6 +123,7 @@ export class HttpClient {
     this.#fetch = options.fetch;
     this.#timeout = options.timeout;
     this.#maxRetries = options.maxRetries;
+    this.#apiVersion = options.apiVersion;
     this.#sleep = options.sleep ?? sleep;
   }
 
@@ -135,6 +139,7 @@ export class HttpClient {
       Accept: request.responseType === "text" ? "*/*" : "application/json",
       Authorization: `Bearer ${this.#apiKey}`,
       "User-Agent": `coss-typescript/${VERSION}`,
+      "Coss-Version": this.#apiVersion,
     };
     let body: string | undefined;
     if (request.body !== undefined) {

@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
-import { createWebhookEndpoint } from "@coss/webhooks";
+import { LATEST_API_VERSION } from "@coss/versioning";
+import { createWebhookEndpoint, renderWebhookPayload } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
 import { asc, eq } from "drizzle-orm";
 import type { CheckContext, CheckResult, ReputationCheck } from "../src/checks.ts";
@@ -86,6 +87,7 @@ describe("runDueReputationEvaluations", () => {
           environmentId,
           url: "http://127.0.0.1:9/hook",
           eventTypes: [],
+          apiVersion: LATEST_API_VERSION,
           userId: null,
         },
         testManagementDeps,
@@ -126,7 +128,9 @@ describe("runDueReputationEvaluations", () => {
       ["account.reputation_warning", tenant.production.id],
       ["account.suspended", tenant.production.id],
     ]);
-    const payload = AccountWebhookEvent.parse(messages[1]?.payload);
+    const payload = AccountWebhookEvent.parse(
+      renderWebhookPayload(messages[1]?.payload ?? {}, LATEST_API_VERSION),
+    );
     expect(payload).toMatchObject({
       id: messages[1]?.id,
       type: "account.suspended",

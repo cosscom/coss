@@ -105,6 +105,9 @@ export function requireApiKey(
     }
 
     c.set("auth", result.context);
+    // The single place where the header overrides the organization's pinned version.
+    const { versioning, requestedApiVersion } = c.var;
+    c.set("apiVersion", versioning.resolve(requestedApiVersion ?? result.context.apiVersion));
     await next();
   });
 }

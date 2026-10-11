@@ -1,7 +1,12 @@
 "use server";
 
 import { DASHBOARD_PATH, validateOrgName, validateOrgSlug } from "@coss/auth/slugs";
-import { setOrganizationTwoFactorRequired } from "@coss/tenancy";
+import {
+  setOrganizationApiVersion,
+  setOrganizationTwoFactorRequired,
+  TenancyError,
+} from "@coss/tenancy";
+import { versioning } from "@coss/versioning";
 import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -81,6 +86,38 @@ export async function setTwoFactorRequirementAction(
       throw new ActionError("Set up two-factor authentication for your own account first.");
     }
     await setOrganizationTwoFactorRequired({ organizationId: organization.id, required });
+    refresh();
+    return null;
+  });
+}
+
+/**
+ * Upgrades the organization's pinned API version (what requests without a `Coss-Version` header
+ * use) to the latest one. Versions only move forward.
+ */
+export async function upgradeApiVersionAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
+      organization: ["update"],
+    });
+    // The version the dialog described; refuse if a newer one shipped since it was rendered.
+    const apiVersion = formString(formData, "apiVersion");
+    if (apiVersion !== versioning.latest) {
+      throw new ActionError("A newer API version is available. Reload the page and review it.");
+    }
+    try {
+      await setOrganizationApiVersion({
+        organizationId: organization.id,
+        apiVersion,
+        userId: session.user.id,
+      });
+    } catch (error) {
+      if (error instanceof TenancyError) throw new ActionError(error.message);
+      throw error;
+    }
     refresh();
     return null;
   });

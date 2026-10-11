@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import pkg from "../package.json" with { type: "json" };
 import {
+  API_VERSION,
+  API_VERSIONS,
   Coss,
   type CossError,
   type EmailEvent,
@@ -348,5 +350,23 @@ describe("error mapping", () => {
     const { error } = await coss.email.send(params, { signal: controller.signal });
     expect(error).toMatchObject({ type: "connection_error", code: "aborted", status: null });
     expect(calls).toHaveLength(1);
+  });
+});
+
+describe("API version", () => {
+  test("every request sends Coss-Version: the SDK's API_VERSION, including retries", async () => {
+    const { fetch, calls } = mockFetch(json(503, {}), json(200, sampleEmail));
+    await new Coss({ apiKey: API_KEY, fetch, maxRetries: 1 }).email.send(params);
+
+    expect(calls).toHaveLength(2);
+    for (const call of calls) expect(call.headers.get("coss-version")).toBe(API_VERSION);
+    expect(API_VERSIONS).toContain(API_VERSION);
+  });
+
+  test("apiVersion overrides it", async () => {
+    const { fetch, calls } = mockFetch(json(200, sampleEmail));
+    const [oldest] = API_VERSIONS;
+    await new Coss({ apiKey: API_KEY, fetch, apiVersion: oldest }).email.get("email_x");
+    expect(calls[0]?.headers.get("coss-version")).toBe(oldest);
   });
 });

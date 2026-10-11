@@ -1,6 +1,7 @@
 /** Webhook endpoints of an environment, and their delivery log. */
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
+import { versioning } from "@coss/versioning";
 import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 import { WebhookError } from "./errors.ts";
 import { DESCRIPTION_MAX_LENGTH, type WebhookEndpointObjectOutput } from "./schemas.ts";
@@ -31,6 +32,7 @@ export function toWebhookEndpointObject(row: WebhookEndpointRow): WebhookEndpoin
     url: row.url,
     description: row.description,
     event_types: row.eventTypes,
+    api_version: row.apiVersion,
     enabled: row.enabled,
     created_at: row.createdAt.toISOString(),
     updated_at: row.updatedAt.toISOString(),
@@ -39,6 +41,16 @@ export function toWebhookEndpointObject(row: WebhookEndpointRow): WebhookEndpoin
 
 function normalizeDescription(value: string | null | undefined): string | null {
   return value?.trim().slice(0, DESCRIPTION_MAX_LENGTH) || null;
+}
+
+function checkedApiVersion(value: string): string {
+  if (!versioning.isVersion(value)) {
+    throw new WebhookError(
+      "invalid_api_version",
+      `Unknown API version ${value}. Known versions: ${versioning.versions.join(", ")}.`,
+    );
+  }
+  return value;
 }
 
 function checkedUrl(value: string, deps: WebhookManagementDeps): string {
@@ -58,11 +70,14 @@ export async function createWebhookEndpoint(
     url: string;
     description?: string | null;
     eventTypes: string[];
+    /** Usually the version of the request creating the endpoint (or the organization's pin). */
+    apiVersion: string;
     userId: string | null;
   },
   deps: WebhookManagementDeps,
 ): Promise<{ endpoint: WebhookEndpointRow; secret: string }> {
   const url = checkedUrl(input.url, deps);
+  const apiVersion = checkedApiVersion(input.apiVersion);
   const [env] = await db
     .select({ projectId: environment.projectId })
     .from(environment)
@@ -99,6 +114,7 @@ export async function createWebhookEndpoint(
       url,
       description: normalizeDescription(input.description),
       eventTypes: [...new Set(input.eventTypes)].sort(),
+      apiVersion,
       secretCiphertext: encryptSecret(secret, deps.secretsKey),
       createdByUserId: input.userId,
     })
@@ -142,7 +158,7 @@ export async function getWebhookEndpoint(input: {
 }
 
 /**
- * Changes an endpoint's URL, description, subscribed event types or enabled flag. Fields left
+ * Changes an endpoint's URL, description, subscribed event types, API version or enabled flag. Fields left
  * `undefined` keep their current value; `description: null` clears it. The signing secret never
  * changes, so existing receivers keep verifying deliveries.
  */
@@ -153,6 +169,7 @@ export async function updateWebhookEndpoint(
     url?: string;
     description?: string | null;
     eventTypes?: string[];
+    apiVersion?: string;
     enabled?: boolean;
   },
   deps: WebhookManagementDeps,
@@ -163,6 +180,7 @@ export async function updateWebhookEndpoint(
       description: normalizeDescription(input.description),
     }),
     ...(input.eventTypes !== undefined && { eventTypes: [...new Set(input.eventTypes)].sort() }),
+    ...(input.apiVersion !== undefined && { apiVersion: checkedApiVersion(input.apiVersion) }),
     ...(input.enabled !== undefined && { enabled: input.enabled }),
   };
   const scope = and(
@@ -250,7 +268,7 @@ export async function listWebhookDeliveries(input: {
   }));
 }
 
-/** The delivery's message payload, as sent. */
+/** The delivery's message payload as stored (the latest API version; see `renderWebhookPayload`). */
 export async function getWebhookMessagePayload(input: {
   organizationId: string;
   messageId: string;
