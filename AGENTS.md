@@ -252,7 +252,8 @@ from tasks — CI and image builds have no `.env`), the service in `infra/aws/se
   (`/de/…`), never `xx-yy` codes (valid slugs). Reserve a new marketing path before any org can take it.
 - Same origin: any script on the site can act as the signed-in dashboard user. Both apps send a CSP without
   third-party script origins and deny framing (`src/lib/security-headers.ts` in each); see `apps/site/AGENTS.md`.
-- Local dev keeps separate ports: `localhost:3000` redirects `/` to `/dashboard` and proxies `/icon.svg` to the site;
+- Local dev keeps separate ports: `localhost:3000` redirects `/` to `/dashboard` and `/legal/*` to the site, and
+  proxies `/icon.svg` to the site;
   the site proxies `/api/auth/*` to :3000 and links with `dashboardUrl()`.
 
 ## Containers and deployment (AWS)
