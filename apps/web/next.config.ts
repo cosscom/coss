@@ -41,6 +41,9 @@ const nextConfig: NextConfig = {
   // NEXT_DEPLOYMENT_ID, which also turns on Next's version-skew protection.
   generateBuildId: async () => process.env.NEXT_DEPLOYMENT_ID || null,
   poweredByHeader: false,
+  // CI's typecheck job already runs `tsc` over this app; its build job sets SKIP_BUILD_TYPECHECK so
+  // `next build` doesn't check the same project again. Image builds keep the check.
+  typescript: { ignoreBuildErrors: process.env.SKIP_BUILD_TYPECHECK === "1" },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders({ dev }) }];
   },

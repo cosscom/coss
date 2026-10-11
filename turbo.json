@@ -1,8 +1,14 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
-  "globalEnv": [
-    "NODE_ENV",
+  "futureFlags": {
+    "longerSignatureKey": true
+  },
+  "remoteCache": {
+    "signature": true
+  },
+  "globalEnv": ["NODE_ENV", "NEXT_DEPLOYMENT_ID"],
+  "globalPassThroughEnv": [
     "DATABASE_URL",
     "TEST_DATABASE_URL",
     "DATABASE_POOL_MAX",
@@ -26,7 +32,6 @@
     "SCREENING_CLASSIFIER",
     "SCREENING_MODEL",
     "AI_GATEWAY_API_KEY",
-    "LOG_RETENTION_DAYS",
     "VALKEY_URL",
     "VALKEY_CLUSTER",
     "TEST_VALKEY_URL",
@@ -34,15 +39,14 @@
     "CLIENT_IP_HEADER",
     "TRUSTED_PROXY_COUNT",
     "SKIP_ENV_VALIDATION",
+    "SKIP_BUILD_TYPECHECK",
     "TRUSTED_PROXY_HOPS",
     "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY",
-    "NEXT_DEPLOYMENT_ID",
+    "LOG_RETENTION_DAYS",
     "SENTRY_DSN",
     "SENTRY_ENVIRONMENT",
     "SENTRY_TRACES_SAMPLE_RATE",
-    "SENTRY_RELEASE"
-  ],
-  "globalPassThroughEnv": [
+    "SENTRY_RELEASE",
     "AWS_PROFILE",
     "AWS_ACCESS_KEY_ID",
     "AWS_SECRET_ACCESS_KEY",
@@ -60,14 +64,12 @@
     "SENTRY_ORG",
     "SENTRY_PROJECT"
   ],
-  "globalDependencies": [".env"],
   "tasks": {
     "transit": {
       "dependsOn": ["^transit"]
     },
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"]
     },
     "typecheck": {

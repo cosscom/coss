@@ -50,6 +50,9 @@ bun run dev                      # dashboard http://localhost:3000/dashboard · 
                                  # site + docs http://localhost:3002 · worker
 ```
 
+Then set up the shared build cache once per machine ([Remote cache](#remote-cache-turborepo-on-vercel)): without it
+everything works, but CI rebuilds what you already built.
+
 `db:migrate` also installs the `pgboss` schema: sends return `202` with `status: "queued"` and the worker
 dispatches them moments later, so keep the worker running.
 
@@ -152,6 +155,51 @@ resets) are printed to the dashboard's server console in development.
 | `bun run ses:bootstrap` | Create/update the shared AWS resources for `EMAIL_PROVIDER=ses` (see below) |
 | `bun run valkey:bootstrap` | Create/update the ElastiCache Serverless for Valkey cache for rate limits (see below) |
 | `bun run ratelimit:set --org <slug> [--bucket … --limit … \| --reset]` | Show or change an organization's rate limits |
+
+## Remote cache (Turborepo on Vercel)
+
+`typecheck` and `build` results are shared through Turborepo's [Vercel Remote Cache](https://vercel.com/docs/monorepos/remote-caching)
+(Vercel team **`cal`**) by everyone's machines, agents and CI. Turbo fingerprints each task's inputs (source,
+lockfile, `turbo.json`, `NODE_ENV`, `NEXT_DEPLOYMENT_ID`); when CI computes a fingerprint someone already built, it
+downloads that result instead of building again, so running `bun run typecheck && bun run build` before pushing
+makes CI's check and build jobs near-instant. On pull requests those two jobs check out the pushed commit (what you
+built), while the test job runs on GitHub's merge with `main`; `main`'s own run covers the merged result. Any change
+to the inputs is a miss and CI runs the task itself, so nothing goes unchecked. Tests are never cached. Artifacts are HMAC-signed with a shared key; Turbo ignores
+(rebuilds) anything that doesn't verify.
+
+**One-time setup per machine** (a laptop, or a box agents run on; every worktree on it picks it up):
+
+1. Be a member of the `cal` team on Vercel.
+2. Put the team and the signing key (password manager: "COSS turbo remote cache signing key") in a private file
+   and load it from your shell profile (open a new shell afterwards). Turbo only reads the shell's environment, never `.env`:
+   ```sh
+   mkdir -p ~/.config/coss && install -m 600 /dev/null ~/.config/coss/turbo.env
+   cat > ~/.config/coss/turbo.env <<'SH'
+   export TURBO_TEAM=cal
+   export TURBO_REMOTE_CACHE_SIGNATURE_KEY='<signing key>'
+   SH
+   # first line of ~/.zshrc (macOS) or ~/.bashrc — above any "not interactive → return" guard, so agents'
+   # non-interactive shells load it too:
+   [ -f "$HOME/.config/coss/turbo.env" ] && . "$HOME/.config/coss/turbo.env"
+   ```
+3. Log Turbo in (stores a token in Turbo's user config; the Vercel CLI's own login is not used):
+   ```sh
+   bunx turbo login                 # pick the cal team if asked
+   # headless box: create a token at https://vercel.com/account/tokens (scope: cal), then
+   bunx turbo login --manual        # Remote Cache URL: https://vercel.com/api (not https://vercel.com);
+                                    # needs TURBO_TEAM=cal from step 2 in this shell
+   ```
+4. Check it: `bun run typecheck` prints `Remote caching enabled` in its header. `Remote caching disabled` or
+   `Remote caching unavailable (Authentication failed …)` means step 2 or 3 is missing; builds still work, unshared.
+
+**CI** reads `secrets.TURBO_TOKEN` (a Vercel token scoped to `cal`), `vars.TURBO_TEAM` (`cal`) and
+`secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY` (`gh secret list`, `gh variable list`); without them it runs every task.
+Rotating the signing key means updating the GitHub secret and every machine's `turbo.env` (old artifacts then miss
+and are rebuilt). Anyone with a `cal` token and the key can upload results CI will accept: treat them like push
+access, and revoke a leaver's token (vercel.com/account/tokens, or remove them from the team).
+
+Runtime settings (`DATABASE_URL`, secrets, URLs, …) are pass-through and never part of a fingerprint, which is what
+lets laptops and CI share results — see "Adding one" in AGENTS.md before adding a variable that changes build output.
 
 ## API
 
