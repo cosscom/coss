@@ -5,6 +5,7 @@
  */
 import { apiKey } from "@better-auth/api-key";
 import { passkey } from "@better-auth/passkey";
+import { sso } from "@better-auth/sso";
 import { db } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import * as schema from "@coss/db/schema";
@@ -20,6 +21,7 @@ import {
 } from "./constants.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
 import { validateOrgName, validateOrgSlug } from "./slugs.ts";
+import { resolveSsoUser, ssoProviderIdOfPath } from "./sso.ts";
 
 /** Better Auth model name -> TypeID prefix. */
 const MODEL_ID_PREFIX: Record<string, string> = {
@@ -33,6 +35,7 @@ const MODEL_ID_PREFIX: Record<string, string> = {
   apikey: ID_PREFIXES.apiKey,
   twoFactor: ID_PREFIXES.twoFactor,
   passkey: ID_PREFIXES.passkey,
+  ssoProvider: ID_PREFIXES.ssoProvider,
 };
 
 export function generateAuthId({ model }: { model: string }): string {
@@ -156,7 +159,45 @@ export const authOptions = {
     "/admin/impersonate-user",
     "/admin/revoke-user-session",
     "/admin/revoke-user-sessions",
+    // SSO providers are managed only by the dashboard's server actions (one per organization,
+    // domains from the org's verified email domains) and platform admins. The plugin's own DNS
+    // TXT verification is replaced by email domain verification (`./sso.ts`).
+    "/sso/register",
+    "/sso/update-provider",
+    "/sso/delete-provider",
+    "/sso/providers",
+    "/sso/get-provider",
+    "/sso/request-domain-verification",
+    "/sso/verify-domain",
   ],
+  session: {
+    additionalFields: {
+      // The SSO provider (`ssoProvider.providerId`) whose sign-in created this session, else null.
+      // Set only by the databaseHooks below. An organization's SSO requirement and its 2FA
+      // requirement accept sessions from its own provider (apps/web `requireOrgMember`).
+      ssoProviderId: { type: "string", required: false, input: false },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        // Users created by an SSO sign-in: `resolveSsoUser` already checked that their address is
+        // on a domain the organization verified, so they don't get a verification email.
+        before: async (user, ctx) =>
+          ssoProviderIdOfPath(ctx?.path, ctx?.params)
+            ? { data: { ...user, emailVerified: true } }
+            : undefined,
+      },
+    },
+    session: {
+      create: {
+        before: async (session, ctx) => {
+          const ssoProviderId = ssoProviderIdOfPath(ctx?.path, ctx?.params);
+          return { data: { ...session, ssoProviderId } };
+        },
+      },
+    },
+  },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       if (FACTOR_MANAGEMENT_PATHS.has(ctx.path)) {
@@ -202,6 +243,14 @@ export const authOptions = {
             // Members without TOTP are sent to /settings until they set it up (apps/web
             // `requireOrgMember`). Written only by `setOrganizationTwoFactorRequired` (@coss/tenancy).
             requireTwoFactor: {
+              type: "boolean",
+              required: false,
+              defaultValue: false,
+              input: false,
+            },
+            // Members (not owners: break glass) need a session from the organization's SSO
+            // provider (apps/web `requireOrgMember`). Written only by `setOrganizationSsoRequired`.
+            requireSso: {
               type: "boolean",
               required: false,
               defaultValue: false,
@@ -290,6 +339,22 @@ export const authOptions = {
       // Stored on the key at creation, so adding a resource here needs a backfill for existing
       // keys (see migrations 0004 and 0006) or they get a 403 from the new endpoints.
       permissions: { defaultPermissions: API_KEY_PERMISSIONS },
+    }),
+    sso({
+      // `domainVerified` gates sign-in and trusted account linking. COSS sets it (from the org's
+      // verified email domains) instead of the plugin's TXT records; `resolveUser` re-checks
+      // the domains on every sign-in, so a domain that is deleted or fails stops SSO at once.
+      domainVerification: { enabled: true },
+      resolveUser: resolveSsoUser,
+      // Native just-in-time membership: first SSO sign-in joins the provider's organization.
+      organizationProvisioning: { defaultRole: "member" },
+      // One provider per organization is enforced by the dashboard; the limit counts per user.
+      providersLimit: 100,
+      saml: {
+        // SAML2Int: Okta, Entra ID, Google Workspace… always send NotBefore/NotOnOrAfter.
+        requireTimestamps: true,
+        algorithms: { onDeprecated: "reject" },
+      },
     }),
   ],
 } satisfies BetterAuthOptions;

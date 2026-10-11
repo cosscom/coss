@@ -5,7 +5,7 @@
  */
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
-import { and, asc, count, desc, eq, gt, ilike, lt, or, type SQL, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, ilike, inArray, lt, or, type SQL, sql } from "drizzle-orm";
 import { TenancyError } from "./errors.ts";
 
 const {
@@ -18,6 +18,7 @@ const {
   organizationSuspension,
   project,
   session,
+  ssoProvider,
   user,
 } = schema;
 
@@ -45,8 +46,11 @@ export const ADMIN_ACTIONS = [
   "user.revoke_session",
   "user.revoke_sessions",
   "user.reset_two_factor",
+  "user.unlink_sso",
   "organization.suspend",
   "organization.unsuspend",
+  "organization.disable_sso_requirement",
+  "organization.disable_sso",
   "api_key.revoke",
   "reputation.suspended",
   "reputation.reinstated",
@@ -450,6 +454,195 @@ export async function resetUserTwoFactor(input: {
         action: "user.reset_two_factor",
         target: { type: "user", id: updated.id },
         reason,
+      },
+      tx,
+    );
+  });
+}
+
+// --- SSO recovery ----------------------------------------------------------------------------
+
+/**
+ * Account recovery when a user's SSO sign-in broke (their IdP account was recreated, the IdP is
+ * misconfigured…): removes the links between the user and SSO providers and signs out the
+ * sessions those providers created. Their next SSO sign-in links again (by verified domain), or
+ * they set a password with "Forgot password" (owners keep break-glass access that way).
+ */
+export async function unlinkUserSso(input: {
+  userId: string;
+  reason: string;
+  actor: AdminActor;
+}): Promise<void> {
+  const reason = normalizeReason(input.reason, true);
+  await db.transaction(async (tx) => {
+    const providerIds = tx.select({ providerId: ssoProvider.providerId }).from(ssoProvider);
+    const unlinked = await tx
+      .delete(schema.account)
+      .where(
+        and(
+          eq(schema.account.userId, input.userId),
+          inArray(schema.account.providerId, providerIds),
+        ),
+      )
+      .returning({ providerId: schema.account.providerId });
+    if (unlinked.length === 0) {
+      throw new TenancyError("not_found", "This user has no SSO accounts.");
+    }
+    const revoked = await tx
+      .delete(session)
+      .where(and(eq(session.userId, input.userId), inArray(session.ssoProviderId, providerIds)))
+      .returning({ id: session.id });
+    await recordAdminAction(
+      {
+        actor: input.actor,
+        action: "user.unlink_sso",
+        target: { type: "user", id: input.userId },
+        reason,
+        metadata: {
+          providerIds: unlinked.map((row) => row.providerId),
+          revokedSessions: revoked.length,
+        },
+      },
+      tx,
+    );
+  });
+}
+
+export type UserSsoAccount = {
+  /** `schema.account.id` */
+  id: string;
+  providerId: string;
+  organization: { id: string; name: string; slug: string } | null;
+  createdAt: Date;
+};
+
+/** The user's SSO accounts (accounts whose provider is an SSO provider), oldest first. */
+export async function listUserSsoAccountsForAdmin(input: {
+  userId: string;
+}): Promise<UserSsoAccount[]> {
+  const rows = await db
+    .select({
+      id: schema.account.id,
+      providerId: schema.account.providerId,
+      createdAt: schema.account.createdAt,
+      organizationId: organization.id,
+      organizationName: organization.name,
+      organizationSlug: organization.slug,
+    })
+    .from(schema.account)
+    .innerJoin(ssoProvider, eq(ssoProvider.providerId, schema.account.providerId))
+    .leftJoin(organization, eq(organization.id, ssoProvider.organizationId))
+    .where(eq(schema.account.userId, input.userId))
+    .orderBy(asc(schema.account.createdAt));
+  return rows.map((row) => ({
+    id: row.id,
+    providerId: row.providerId,
+    createdAt: row.createdAt,
+    organization:
+      row.organizationId && row.organizationName && row.organizationSlug
+        ? { id: row.organizationId, name: row.organizationName, slug: row.organizationSlug }
+        : null,
+  }));
+}
+
+export type AdminOrganizationSso = {
+  providerId: string;
+  type: "oidc" | "saml";
+  domains: string;
+  domainVerified: boolean;
+  requireSso: boolean;
+};
+
+/** The organization's SSO provider and requirement (no secrets), or `null` without a provider. */
+export async function getOrganizationSsoForAdmin(
+  organizationId: string,
+): Promise<AdminOrganizationSso | null> {
+  const [row] = await db
+    .select({
+      providerId: ssoProvider.providerId,
+      samlConfig: ssoProvider.samlConfig,
+      domains: ssoProvider.domain,
+      domainVerified: ssoProvider.domainVerified,
+      requireSso: organization.requireSso,
+    })
+    .from(ssoProvider)
+    .innerJoin(organization, eq(organization.id, ssoProvider.organizationId))
+    .where(eq(ssoProvider.organizationId, organizationId))
+    .orderBy(asc(ssoProvider.id))
+    .limit(1);
+  if (!row) return null;
+  return {
+    providerId: row.providerId,
+    type: row.samlConfig ? "saml" : "oidc",
+    domains: row.domains,
+    domainVerified: row.domainVerified === true,
+    requireSso: row.requireSso === true,
+  };
+}
+
+/**
+ * Lets the organization's members sign in without SSO again (their IdP is down or broken); the
+ * provider keeps working for those who can use it. The organization's owners can turn the
+ * requirement back on.
+ */
+export async function disableOrganizationSsoRequirement(input: {
+  organizationId: string;
+  reason: string;
+  actor: AdminActor;
+}): Promise<void> {
+  const reason = normalizeReason(input.reason, true);
+  await db.transaction(async (tx) => {
+    const org = await requireOrganization(input.organizationId, tx);
+    const [updated] = await tx
+      .update(organization)
+      .set({ requireSso: false })
+      .where(and(eq(organization.id, org.id), eq(organization.requireSso, true)))
+      .returning({ id: organization.id });
+    if (!updated) throw new TenancyError("conflict", "This organization doesn't require SSO.");
+    await recordAdminAction(
+      {
+        actor: input.actor,
+        action: "organization.disable_sso_requirement",
+        target: { type: "organization", id: org.id },
+        organizationId: org.id,
+        reason,
+        metadata: { slug: org.slug },
+      },
+      tx,
+    );
+  });
+}
+
+/**
+ * Stops SSO sign-in for the organization (a compromised or misbehaving IdP): clears the
+ * provider's `domainVerified` (Better Auth then refuses it) and the SSO requirement. The provider
+ * configuration is kept; saving it again in the dashboard re-enables it.
+ */
+export async function disableOrganizationSso(input: {
+  organizationId: string;
+  reason: string;
+  actor: AdminActor;
+}): Promise<void> {
+  const reason = normalizeReason(input.reason, true);
+  await db.transaction(async (tx) => {
+    const org = await requireOrganization(input.organizationId, tx);
+    const disabled = await tx
+      .update(ssoProvider)
+      .set({ domainVerified: false })
+      .where(and(eq(ssoProvider.organizationId, org.id), eq(ssoProvider.domainVerified, true)))
+      .returning({ providerId: ssoProvider.providerId });
+    if (disabled.length === 0) {
+      throw new TenancyError("conflict", "This organization has no active SSO provider.");
+    }
+    await tx.update(organization).set({ requireSso: false }).where(eq(organization.id, org.id));
+    await recordAdminAction(
+      {
+        actor: input.actor,
+        action: "organization.disable_sso",
+        target: { type: "organization", id: org.id },
+        organizationId: org.id,
+        reason,
+        metadata: { slug: org.slug, providerIds: disabled.map((row) => row.providerId) },
       },
       tx,
     );

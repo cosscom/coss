@@ -11,10 +11,13 @@ mock.module("@coss/tenancy", () => ({ TenancyError: class extends Error {} }));
 const audit = mock(async () => {});
 mock.module("@coss/tenancy/admin", () => ({
   ADMIN_REASON_MAX_LENGTH: 500,
+  disableOrganizationSso: mock(async () => {}),
+  disableOrganizationSsoRequirement: mock(async () => {}),
   recordAdminAction: audit,
   resetUserTwoFactor: mock(async () => {}),
   revokeApiKeyAsAdmin: mock(),
   suspendOrganization: mock(),
+  unlinkUserSso: mock(async () => {}),
   unsuspendOrganization: mock(),
 }));
 mock.module("next/cache", () => ({ refresh: mock() }));
@@ -48,9 +51,18 @@ mock.module("@/lib/auth", () => ({
     },
   },
 }));
-const { resetUserTwoFactor } = (await import("@coss/tenancy/admin")) as unknown as {
-  resetUserTwoFactor: ReturnType<typeof mock>;
-};
+const {
+  resetUserTwoFactor,
+  unlinkUserSso,
+  disableOrganizationSso,
+  disableOrganizationSsoRequirement,
+} = (await import("@coss/tenancy/admin")) as unknown as Record<
+  | "resetUserTwoFactor"
+  | "unlinkUserSso"
+  | "disableOrganizationSso"
+  | "disableOrganizationSsoRequirement",
+  ReturnType<typeof mock>
+>;
 const actions = await import("../src/app/admin/actions");
 const cases = [
   ["ban", actions.banUserAction, true],
@@ -128,4 +140,61 @@ describe("reset two-factor", () => {
     expect((await actions.resetTwoFactorAction(null, form("org_x", "Lost phone"))).ok).toBe(false);
     expect(resetUserTwoFactor).not.toHaveBeenCalled();
   });
+});
+
+describe("SSO recovery", () => {
+  function form(field: "userId" | "organizationId", id: string, reason: string) {
+    const data = new FormData();
+    data.set(field, id);
+    data.set("reason", reason);
+    return data;
+  }
+
+  beforeEach(() => {
+    unlinkUserSso.mockClear();
+    disableOrganizationSso.mockClear();
+    disableOrganizationSsoRequirement.mockClear();
+  });
+
+  test("unlinking a user's SSO accounts needs a user id and a reason", async () => {
+    expect((await actions.unlinkUserSsoAction(null, form("userId", newId("user"), " "))).ok).toBe(
+      false,
+    );
+    expect((await actions.unlinkUserSsoAction(null, form("userId", "org_x", "IdP"))).ok).toBe(
+      false,
+    );
+    expect(unlinkUserSso).not.toHaveBeenCalled();
+
+    const userId = newId("user");
+    expect(await actions.unlinkUserSsoAction(null, form("userId", userId, " IdP reset "))).toEqual({
+      ok: true,
+      data: null,
+    });
+    expect(unlinkUserSso).toHaveBeenCalledWith(
+      expect.objectContaining({ userId, reason: "IdP reset", actor: expect.any(Object) }),
+    );
+  });
+
+  for (const [name, action, target] of [
+    [
+      "stop requiring SSO",
+      actions.disableOrganizationSsoRequirementAction,
+      () => disableOrganizationSsoRequirement,
+    ],
+    ["disable SSO", actions.disableOrganizationSsoAction, () => disableOrganizationSso],
+  ] as const) {
+    test(`${name} needs an organization id and a reason`, async () => {
+      const organizationId = newId("org");
+      expect((await action(null, form("organizationId", organizationId, ""))).ok).toBe(false);
+      expect((await action(null, form("organizationId", newId("user"), "Outage"))).ok).toBe(false);
+      expect(target()).not.toHaveBeenCalled();
+      expect(await action(null, form("organizationId", organizationId, "Outage"))).toEqual({
+        ok: true,
+        data: null,
+      });
+      expect(target()).toHaveBeenCalledWith(
+        expect.objectContaining({ organizationId, reason: "Outage", actor: expect.any(Object) }),
+      );
+    });
+  }
 });

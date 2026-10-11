@@ -23,7 +23,20 @@ export const AUTH_RATE_LIMITS: Readonly<Record<string, AuthLimits>> = {
   "/two-factor/verify-totp": { ip: "auth.two_factor.ip" },
   "/two-factor/verify-backup-code": { ip: "auth.two_factor.ip" },
   "/passkey/verify-authentication": { ip: "auth.passkey.ip" },
+  "/sign-in/sso": { ip: "auth.sso.ip" },
 };
+
+/** Paths limited by prefix (they end with a parameter), all POST. */
+const AUTH_RATE_LIMIT_PREFIXES: readonly (readonly [string, AuthLimits])[] = [
+  ["/sso/saml2/sp/acs/", { ip: "auth.sso.ip" }],
+];
+
+function limitsFor(path: string): AuthLimits | undefined {
+  return (
+    AUTH_RATE_LIMITS[path] ??
+    AUTH_RATE_LIMIT_PREFIXES.find(([prefix]) => path.startsWith(prefix))?.[1]
+  );
+}
 
 const AUTH_BASE_PATH = "/api/auth";
 
@@ -72,7 +85,7 @@ export function withAuthRateLimit(
   deps: () => AuthRateLimitDeps,
 ): (request: Request) => Promise<Response> {
   return async (request) => {
-    const limits = AUTH_RATE_LIMITS[authPath(request.url)];
+    const limits = limitsFor(authPath(request.url));
     if (!limits) return handler(request);
     const { limiter, clientIp } = deps();
 

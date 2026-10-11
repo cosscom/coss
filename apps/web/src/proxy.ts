@@ -5,7 +5,7 @@ import { env } from "@/env";
 import { clientIpFromForwardedFor } from "@/lib/client-ip";
 
 /**
- * Reachable without a session cookie. /accept-invitation renders its own signed-out state;
+ * Reachable without a session cookie. /accept-invitation and /sso render their own signed-out state;
  * /api/health is the load balancer's health check.
  */
 const PUBLIC_PATH_PREFIXES = [
@@ -13,6 +13,7 @@ const PUBLIC_PATH_PREFIXES = [
   "/sign-up",
   "/forgot-password",
   "/reset-password",
+  "/sso",
   "/api/auth",
   "/api/health",
   "/accept-invitation",

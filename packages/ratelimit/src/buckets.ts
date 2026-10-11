@@ -66,6 +66,9 @@ export const BUCKETS = {
   // for 15 minutes after 10 failed codes, and each challenge allows 5 attempts.
   "auth.two_factor.ip": { scope: "ip", limit: 20, periodMs: MINUTE, overridable: false },
   "auth.passkey.ip": { scope: "ip", limit: 20, periodMs: MINUTE, overridable: false },
+  // SSO: starting a sign-in (each one stores state and redirects to the IdP) and SAML responses
+  // posted back by the IdP. OIDC callbacks are GETs, which the dashboard doesn't limit.
+  "auth.sso.ip": { scope: "ip", limit: 20, periodMs: MINUTE, overridable: false },
 } as const satisfies Record<string, BucketDefinition>;
 
 export type BucketName = keyof typeof BUCKETS;
