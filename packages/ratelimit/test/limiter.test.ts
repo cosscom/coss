@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { db, schema } from "@coss/db";
+import { db, pool, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { asc, eq } from "drizzle-orm";
@@ -220,6 +220,66 @@ describe("overrides", () => {
     await expect(
       changeRateLimitOverride({ organizationId, bucket: "auth.sso.ip", rule: null, actor }),
     ).rejects.toThrow(/not a bucket/);
+  });
+
+  test("concurrent first overrides audit the rule they actually replace", async () => {
+    const { organization, owner } = await createTestTenant();
+    const organizationId = organization.id;
+    const bucket = "api.read";
+    const actor = { userId: owner.id, email: owner.email };
+    const rules = [
+      { limit: 10, periodMs: 1000, burst: 20 },
+      { limit: 30, periodMs: 2000, burst: 40 },
+    ];
+    const blocker = await pool.connect();
+    let changes: Promise<boolean>[] = [];
+    try {
+      await blocker.query("BEGIN");
+      await blocker.query("SELECT id FROM organization WHERE id = $1 FOR UPDATE", [organizationId]);
+      const backend = await blocker.query<{ pid: number }>("SELECT pg_backend_pid() AS pid");
+      const pid = backend.rows[0]?.pid;
+      if (!pid) throw new Error("Missing blocker backend PID");
+      changes = rules.map((rule) =>
+        changeRateLimitOverride({ organizationId, bucket, rule, actor }),
+      );
+      // Hold both changes in the database before releasing them. Without the fix, both
+      // read the missing override before blocking on the insert's foreign key check.
+      let waiting = 0;
+      const deadline = Date.now() + 3000;
+      while (waiting < 2 && Date.now() < deadline) {
+        await blocker.query("SELECT pg_stat_clear_snapshot()");
+        const { rows } = await blocker.query<{ count: number }>(
+          `WITH RECURSIVE blocked(pid) AS (
+            SELECT $1::integer
+            UNION
+            SELECT activity.pid FROM pg_stat_activity activity
+            JOIN blocked ON blocked.pid = ANY(pg_blocking_pids(activity.pid))
+          ) SELECT (count(*) - 1)::integer AS count FROM blocked`,
+          [pid],
+        );
+        waiting = rows[0]?.count ?? 0;
+        if (waiting < 2) await Bun.sleep(10);
+      }
+      expect(waiting).toBe(2);
+    } finally {
+      await blocker.query("ROLLBACK");
+      blocker.release();
+      await Promise.all(changes);
+    }
+
+    const events = await db
+      .select()
+      .from(schema.adminAuditEvent)
+      .where(eq(schema.adminAuditEvent.organizationId, organizationId))
+      .orderBy(asc(schema.adminAuditEvent.id));
+    expect(events).toHaveLength(2);
+    const first = events[0]?.metadata;
+    const second = events[1]?.metadata;
+    expect(first).toMatchObject({ bucket, previous: null });
+    expect(second).toMatchObject({ bucket, previous: first?.rule });
+    expect(events.map((event) => event.metadata.rule)).toEqual(expect.arrayContaining(rules));
+    const overrides = await listRateLimitOverrides(organizationId);
+    expect(second?.rule).toEqual(overrides[bucket]);
   });
 
   test("are cached and fall back to defaults when loading fails", async () => {

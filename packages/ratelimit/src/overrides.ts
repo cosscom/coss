@@ -1,5 +1,5 @@
 import { db, type Executor } from "@coss/db";
-import { adminAuditEvent, rateLimitOverride } from "@coss/db/schema";
+import { adminAuditEvent, organization, rateLimitOverride } from "@coss/db/schema";
 import { and, eq } from "drizzle-orm";
 import {
   assertValidRule,
@@ -102,6 +102,13 @@ export async function changeRateLimitOverride(input: {
   }
   if (rule) assertValidRule(rule);
   return db.transaction(async (tx) => {
+    // An override may not exist yet. Lock its organization before reading so concurrent
+    // admin changes record the rule they actually replace, including the first creation.
+    await tx
+      .select({ id: organization.id })
+      .from(organization)
+      .where(eq(organization.id, organizationId))
+      .for("update");
     const [row] = await tx
       .select()
       .from(rateLimitOverride)
