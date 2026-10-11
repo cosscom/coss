@@ -1,6 +1,7 @@
 /**
  * Every standing change goes through `applyTransition`: a guarded update (a lost race is a
- * no-op), a history row and the webhook announcements, all in one transaction.
+ * no-op), a history row, the webhook announcements and (warnings, suspensions) the notification
+ * email to owners and admins, all in one transaction.
  */
 import { db, type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
@@ -8,6 +9,7 @@ import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ReputationError } from "./errors.ts";
+import { enqueueReputationNotification } from "./notifications.ts";
 import {
   type AccountEventType,
   effectivePolicy,
@@ -126,6 +128,13 @@ export async function applyTransition(
       now,
     });
   }
+
+  await enqueueReputationNotification(tx, {
+    organizationId,
+    reputationEventId: event.id,
+    type: input.type,
+    now,
+  });
 
   // Standing is organization-wide; announce it to every live environment's endpoints. Sandbox
   // environments never send real mail, so they are left out.

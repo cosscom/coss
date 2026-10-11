@@ -8,7 +8,11 @@ import {
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
-import { runDueReputationEvaluations } from "@coss/reputation";
+import {
+  type ReputationNotificationDeps,
+  runDueReputationEvaluations,
+  runDueReputationNotifications,
+} from "@coss/reputation";
 import { contentScreeningCheck } from "@coss/screening";
 import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
 import type { Loop } from "./loop.ts";
@@ -19,6 +23,7 @@ const WEBHOOK_BATCH = 20;
 const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
 const REPUTATION_BATCH = 50;
+const NOTIFICATION_BATCH = 20;
 const SCHEDULED_BATCH = 50;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck];
@@ -30,6 +35,8 @@ export type WorkerDeps = {
   /** Dispatches scheduled emails. */
   email: Pick<EmailService, "dispatchDue">;
   webhooks: WebhookDeliveryDeps;
+  /** Emails owners and admins about warnings and suspensions; `null`: held until configured. */
+  notifications: ReputationNotificationDeps | null;
   /** Only with `EMAIL_PROVIDER=ses`. */
   sesEvents?: { sqs: SqsApi; tenantPrefix: string };
   /**
@@ -87,6 +94,18 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         SWEEP_BATCH,
     }),
   ];
+  const notifications = deps.notifications;
+  if (notifications) {
+    loops.push(
+      startLoop({
+        name: "reputation-notifications",
+        intervalMs: 5000,
+        run: async () =>
+          (await runDueReputationNotifications({ limit: NOTIFICATION_BATCH }, notifications)) ===
+          NOTIFICATION_BATCH,
+      }),
+    );
+  }
   const ses = deps.sesEvents;
   if (ses) {
     loops.push(

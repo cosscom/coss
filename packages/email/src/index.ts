@@ -82,6 +82,7 @@ export {
   type SendingCounts,
   sendingCounts,
 } from "./reputation-checks.ts";
+export { emailReputationNotifier, notificationEnvironment } from "./reputation-notifier.ts";
 export {
   ALL_CATEGORIES,
   CheckSuppressionQuery,

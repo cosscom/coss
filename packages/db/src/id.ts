@@ -35,6 +35,7 @@ export const ID_PREFIXES = {
   // Webhook messages that announce something other than an email event (e.g. `account.suspended`).
   webhookEvent: "evt",
   reputationEvent: "repev",
+  reputationNotification: "repntf",
   contentScreening: "scr",
   rateLimitOverride: "rlo",
   request: "req",

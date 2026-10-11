@@ -1,5 +1,6 @@
 import type { ReputationEventWithActor, ReputationStandingRow } from "@coss/reputation";
 import { metricsSnapshot } from "@coss/reputation";
+import { triggerLabel } from "@coss/reputation/schemas";
 import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
@@ -15,19 +16,7 @@ import {
 import Link from "next/link";
 import { formatDateTime } from "@/lib/format";
 
-const TRIGGER_LABELS: Record<string, string> = {
-  bounce_rate: "Bounce rate",
-  complaint_rate: "Complaint rate",
-  content_screening: "Content screening",
-  manual: "COSS review",
-  policy: "Policy",
-  evaluation: "Evaluation",
-};
-
-export function triggerLabel(trigger: string | null): string {
-  if (!trigger) return "—";
-  return TRIGGER_LABELS[trigger] ?? trigger;
-}
+export { triggerLabel };
 
 export function formatRate(rate: number | null): string {
   return rate === null ? "—" : `${(rate * 100).toFixed(2)}%`;

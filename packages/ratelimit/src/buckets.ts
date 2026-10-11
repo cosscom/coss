@@ -87,7 +87,10 @@ export function bucketDefinition(name: BucketName): BucketDefinition {
   return BUCKETS[name];
 }
 
-/** Validates a rule (from code or an override row): positive integers, burst ≥ 1. */
+/** Largest value a rule field can hold (`rate_limit_override` stores them as `integer`). */
+export const MAX_RULE_VALUE = 2_147_483_647;
+
+/** Validates a rule (from code or an override row): positive integers up to `MAX_RULE_VALUE`. */
 export function assertValidRule(rule: LimitRule): void {
   const { limit, periodMs, burst = limit } = rule;
   for (const [name, value] of [
@@ -97,6 +100,9 @@ export function assertValidRule(rule: LimitRule): void {
   ] as const) {
     if (!Number.isSafeInteger(value) || value < 1) {
       throw new RangeError(`Rate limit ${name} must be a positive integer (got ${value}).`);
+    }
+    if (value > MAX_RULE_VALUE) {
+      throw new RangeError(`Rate limit ${name} must be at most ${MAX_RULE_VALUE} (got ${value}).`);
     }
   }
 }

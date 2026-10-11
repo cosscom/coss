@@ -45,6 +45,8 @@ export type SendEmailInput = {
   apiKeyId: string | null;
   params: SendEmailRequestOutput;
   idempotencyKey?: string | null;
+  /** Internal callers only: use the same retention on every retry; Infinity never expires. */
+  idempotencyRetentionMs?: number;
 };
 
 export type SendEmailBatchInput = {
@@ -554,13 +556,14 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     environment: SendEnvironment,
     idempotencyKey: string,
     requestHash: string | null,
+    retentionMs = IDEMPOTENCY_KEY_TTL_MS,
   ): Promise<EmailObjectOutput | null> {
     const [existing] = await db
       .select()
       .from(email)
       .where(sameEmailKey(environment, idempotencyKey))
       .limit(1);
-    if (!existing || !isReplayOf(existing, requestHash)) return null;
+    if (!existing || !isReplayOf(existing, requestHash, retentionMs)) return null;
     const [object] = await toEmailObjects(environment.organizationId, [
       { email: existing, sandbox: environment.mode === "sandbox" },
     ]);
@@ -696,6 +699,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     input: SendEmailInput,
   ): Promise<{ email: EmailObjectOutput; replayed: boolean }> {
     const { environment, params } = input;
+    const retentionMs = input.idempotencyRetentionMs ?? IDEMPOTENCY_KEY_TTL_MS;
     const sandbox = environment.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
     const requestHash = idempotencyKey ? hashSendRequest(params) : null;
@@ -711,7 +715,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       } catch (error) {
         // A retry of a request that already succeeded still replays, even if the domain changed since.
         const replay =
-          idempotencyKey && (await findReplay(environment, idempotencyKey, requestHash));
+          idempotencyKey &&
+          (await findReplay(environment, idempotencyKey, requestHash, retentionMs));
         if (replay) return { email: replay, replayed: true };
         throw error;
       }
@@ -733,6 +738,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
 
     const { row, replayed } = await withIdempotencyKey({
       requestHash,
+      retentionMs,
       insert: insertEmail,
       existing: async () => {
         const [existing] = await db
@@ -847,7 +853,12 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
 
   async function replay(input: SendEmailInput): Promise<EmailObjectOutput | null> {
     if (!input.idempotencyKey) return null;
-    return findReplay(input.environment, input.idempotencyKey, hashSendRequest(input.params));
+    return findReplay(
+      input.environment,
+      input.idempotencyKey,
+      hashSendRequest(input.params),
+      input.idempotencyRetentionMs,
+    );
   }
 
   async function replayBatch(input: SendEmailBatchInput): Promise<EmailBatchObjectOutput | null> {
@@ -900,10 +911,10 @@ function sameBatchKey(environment: SendEnvironment, idempotencyKey: string) {
 function isReplayOf(
   existing: { createdAt: Date; requestHash: string | null },
   requestHash: string | null,
+  retentionMs = IDEMPOTENCY_KEY_TTL_MS,
 ): boolean {
   return (
-    existing.requestHash === requestHash &&
-    Date.now() - existing.createdAt.getTime() <= IDEMPOTENCY_KEY_TTL_MS
+    existing.requestHash === requestHash && Date.now() - existing.createdAt.getTime() <= retentionMs
   );
 }
 
@@ -915,6 +926,7 @@ function isReplayOf(
  */
 async function withIdempotencyKey<Row extends { createdAt: Date; requestHash: string | null }>(op: {
   requestHash: string;
+  retentionMs?: number;
   insert: (tx: Transaction) => Promise<Row | undefined>;
   existing: () => Promise<Row | undefined>;
   /** Compare-and-set the key off an expired row. */
@@ -931,7 +943,7 @@ async function withIdempotencyKey<Row extends { createdAt: Date; requestHash: st
       inserted = await db.transaction((tx) => op.insert(tx));
       continue;
     }
-    if (Date.now() - existing.createdAt.getTime() > IDEMPOTENCY_KEY_TTL_MS) {
+    if (Date.now() - existing.createdAt.getTime() > (op.retentionMs ?? IDEMPOTENCY_KEY_TTL_MS)) {
       // Expired: move the key to a new row atomically. The compare-and-set on the old row makes
       // concurrent requests with the same expired key queue up behind each other.
       inserted = await db.transaction(async (tx) => {

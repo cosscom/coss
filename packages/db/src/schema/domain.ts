@@ -757,6 +757,55 @@ export const reputationEvent = pgTable(
   },
   (t) => [
     index("reputation_event_organization_created_at_idx").on(t.organizationId, t.createdAt.desc()),
+    unique("reputation_event_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
+export const reputationNotificationStatus = pgEnum("reputation_notification_status", [
+  "pending",
+  "sent",
+  "skipped",
+  "failed",
+]);
+
+/**
+ * Outbox of the emails that tell an organization's owners and admins about a warning or a
+ * suspension. Written in the transition's transaction; the worker sends it (`@coss/reputation`).
+ */
+export const reputationNotification = pgTable(
+  "reputation_notification",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.reputationNotification)),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    reputationEventId: text("reputation_event_id").notNull(),
+    // The transition announced: `warning_raised` or `suspended`.
+    type: reputationEventType("type").notNull(),
+    status: reputationNotificationStatus("status").notNull().default("pending"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    // When the worker should (re)try; also the claim's lease. Null once settled.
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }),
+    // The addresses it was sent to (owners and admins with a verified email, at send time).
+    recipients: text("recipients").array().notNull().default(sql`'{}'::text[]`),
+    // Why it was skipped, or the last failure.
+    lastError: text("last_error"),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "reputation_notification_event_fk",
+      columns: [t.reputationEventId, t.organizationId],
+      foreignColumns: [reputationEvent.id, reputationEvent.organizationId],
+    }).onDelete("cascade"),
+    uniqueIndex("reputation_notification_event_idx").on(t.reputationEventId),
+    index("reputation_notification_next_attempt_idx")
+      .on(t.nextAttemptAt)
+      .where(sql`${t.nextAttemptAt} IS NOT NULL`),
   ],
 );
 
@@ -914,7 +963,7 @@ export const adminAuditEvent = pgTable(
 
 /**
  * An organization's rule for one rate limit bucket (`BUCKETS` in `@coss/ratelimit`), replacing the
- * default. Set by platform admins (`bun run ratelimit:set`).
+ * default. Set by platform admins (the admin console, or `bun run ratelimit:set`).
  */
 export const rateLimitOverride = pgTable(
   "rate_limit_override",
