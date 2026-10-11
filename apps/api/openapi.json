@@ -1836,6 +1836,274 @@
           }
         ]
       },
+      "WebhookDeliveryList": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebhookDelivery"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "object",
+          "data",
+          "has_more"
+        ],
+        "examples": [
+          {
+            "object": "list",
+            "data": [
+              {
+                "object": "webhook_delivery",
+                "id": "whdel_01k7c8n2b5d7f9h1k3m5p7r9tv",
+                "endpoint_id": "whep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "event_id": "evt_01k7c8n1z4c6e8g0j2l4n6q8sa",
+                "event_type": "email.delivered",
+                "status": "succeeded",
+                "attempt_count": 1,
+                "next_attempt_at": null,
+                "last_status_code": 200,
+                "last_error": null,
+                "payload": {
+                  "id": "evt_01k7c8n1z4c6e8g0j2l4n6q8sa",
+                  "object": "event",
+                  "type": "email.delivered",
+                  "created_at": "2026-01-15T09:30:00.000Z",
+                  "data": {
+                    "email_id": "email_01k7c8m9x3a5c7e9g1j3l5n7q9",
+                    "recipient": "user@example.com"
+                  }
+                },
+                "attempts": [
+                  {
+                    "object": "webhook_attempt",
+                    "id": "whatt_01k7c8n2c9e1g3j5l7n9q1s3uw",
+                    "attempted_at": "2026-01-15T09:30:01.000Z",
+                    "status_code": 200,
+                    "duration_ms": 182,
+                    "error": null,
+                    "response_excerpt": "ok"
+                  }
+                ],
+                "created_at": "2026-01-15T09:30:00.000Z",
+                "updated_at": "2026-01-15T09:30:01.000Z"
+              }
+            ],
+            "has_more": false
+          }
+        ]
+      },
+      "WebhookDelivery": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "webhook_delivery"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "examples": [
+              "whdel_01k7c8n2b5d7f9h1k3m5p7r9tv"
+            ]
+          },
+          "endpoint_id": {
+            "type": "string"
+          },
+          "event_id": {
+            "type": "string",
+            "description": "The event's id: the `id` of the payload and the `webhook-id` header."
+          },
+          "event_type": {
+            "type": "string",
+            "examples": [
+              "email.delivered"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/WebhookDeliveryStatus"
+          },
+          "attempt_count": {
+            "type": "integer"
+          },
+          "next_attempt_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the next attempt is due; `null` once the delivery is finished."
+          },
+          "last_status_code": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "last_error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "The event body, exactly as posted to the endpoint."
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebhookAttempt"
+            },
+            "description": "Every HTTP attempt of this delivery, oldest first."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "endpoint_id",
+          "event_id",
+          "event_type",
+          "status",
+          "attempt_count",
+          "next_attempt_at",
+          "last_status_code",
+          "last_error",
+          "payload",
+          "attempts",
+          "created_at",
+          "updated_at"
+        ],
+        "examples": [
+          {
+            "object": "webhook_delivery",
+            "id": "whdel_01k7c8n2b5d7f9h1k3m5p7r9tv",
+            "endpoint_id": "whep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "event_id": "evt_01k7c8n1z4c6e8g0j2l4n6q8sa",
+            "event_type": "email.delivered",
+            "status": "succeeded",
+            "attempt_count": 1,
+            "next_attempt_at": null,
+            "last_status_code": 200,
+            "last_error": null,
+            "payload": {
+              "id": "evt_01k7c8n1z4c6e8g0j2l4n6q8sa",
+              "object": "event",
+              "type": "email.delivered",
+              "created_at": "2026-01-15T09:30:00.000Z",
+              "data": {
+                "email_id": "email_01k7c8m9x3a5c7e9g1j3l5n7q9",
+                "recipient": "user@example.com"
+              }
+            },
+            "attempts": [
+              {
+                "object": "webhook_attempt",
+                "id": "whatt_01k7c8n2c9e1g3j5l7n9q1s3uw",
+                "attempted_at": "2026-01-15T09:30:01.000Z",
+                "status_code": 200,
+                "duration_ms": 182,
+                "error": null,
+                "response_excerpt": "ok"
+              }
+            ],
+            "created_at": "2026-01-15T09:30:00.000Z",
+            "updated_at": "2026-01-15T09:30:01.000Z"
+          }
+        ]
+      },
+      "WebhookDeliveryStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "succeeded",
+          "failed"
+        ],
+        "description": "`pending`: waiting for its next attempt. `succeeded`: the endpoint answered with a 2xx status. `failed`: every attempt failed, or the endpoint was disabled."
+      },
+      "WebhookAttempt": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "webhook_attempt"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "attempted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status_code": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "The endpoint's HTTP status; `null` when no response arrived."
+          },
+          "duration_ms": {
+            "type": "integer"
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Why the attempt failed (e.g. `HTTP 500`, a timeout); `null` on success."
+          },
+          "response_excerpt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "At most 1 KB of the response body, as text."
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "attempted_at",
+          "status_code",
+          "duration_ms",
+          "error",
+          "response_excerpt"
+        ],
+        "examples": [
+          {
+            "object": "webhook_attempt",
+            "id": "whatt_01k7c8n2c9e1g3j5l7n9q1s3uw",
+            "attempted_at": "2026-01-15T09:30:01.000Z",
+            "status_code": 200,
+            "duration_ms": 182,
+            "error": null,
+            "response_excerpt": "ok"
+          }
+        ]
+      },
       "Suppression": {
         "type": "object",
         "properties": {
@@ -5339,6 +5607,655 @@
           },
           "404": {
             "description": "No webhook endpoint with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/webhook_endpoints/{id}/deliveries": {
+      "get": {
+        "operationId": "listWebhookDeliveries",
+        "tags": [
+          "Webhook endpoints"
+        ],
+        "summary": "List an endpoint's deliveries",
+        "description": "The endpoint's delivery log, newest first: one delivery per event sent to it, with every HTTP attempt and the payload as sent. Pass the last `id` as `after` to get the next page while `has_more` is true. Deleting the endpoint deletes its log.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The webhook endpoint's id.",
+              "examples": [
+                "whep_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The webhook endpoint's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "succeeded",
+                "failed"
+              ],
+              "description": "Only deliveries with this status."
+            },
+            "required": false,
+            "description": "Only deliveries with this status.",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only the delivery of this event."
+            },
+            "required": false,
+            "description": "Only the delivery of this event.",
+            "name": "event_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "1-100, default 50."
+            },
+            "required": false,
+            "description": "1-100, default 50.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Cursor: the `id` of the last delivery of the previous page."
+            },
+            "required": false,
+            "description": "Cursor: the `id` of the last delivery of the previous page.",
+            "name": "after",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of deliveries.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDeliveryList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No webhook endpoint with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter failed validation (`validation_error`, see `issues`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}": {
+      "get": {
+        "operationId": "getWebhookDelivery",
+        "tags": [
+          "Webhook endpoints"
+        ],
+        "summary": "Retrieve a delivery",
+        "description": "One delivery of the endpoint, with every HTTP attempt and the payload as sent.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The webhook endpoint's id.",
+              "examples": [
+                "whep_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The webhook endpoint's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "The delivery's id.",
+              "examples": [
+                "whdel_01k7c8n2b5d7f9h1k3m5p7r9tv"
+              ]
+            },
+            "required": true,
+            "description": "The delivery's id.",
+            "name": "delivery_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The delivery.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDelivery"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No webhook endpoint with this id exists in the API key's environment, or the endpoint has no delivery with this id (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry": {
+      "post": {
+        "operationId": "retryWebhookDelivery",
+        "tags": [
+          "Webhook endpoints"
+        ],
+        "summary": "Retry a delivery",
+        "description": "Queues a finished delivery (`succeeded` or `failed`) for one more attempt, made within seconds, signed with the endpoint's current secret and sent to its current URL. A delivery that is still `pending` is returned unchanged: it is already scheduled for `next_attempt_at` (automatic retries stop after 8 attempts).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The webhook endpoint's id.",
+              "examples": [
+                "whep_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The webhook endpoint's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "The delivery's id.",
+              "examples": [
+                "whdel_01k7c8n2b5d7f9h1k3m5p7r9tv"
+              ]
+            },
+            "required": true,
+            "description": "The delivery's id.",
+            "name": "delivery_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The delivery, now `pending`.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDelivery"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No webhook endpoint with this id exists in the API key's environment, or the endpoint has no delivery with this id (`not_found`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

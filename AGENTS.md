@@ -170,7 +170,7 @@ from tasks — CI and image builds have no `.env`), the service in `infra/aws/se
 - `Coss` (`src/client.ts`) → one `HttpClient` (`src/core/http.ts`: bearer auth, JSON, per-attempt timeout, retries on
   network/timeout/409/429/5xx honoring `Retry-After`, an `Idempotency-Key` on every POST reused across retries) → one
   resource per product or managed resource (`src/resources/*.ts`: `email`, `domains`, `webhookEndpoints`;
-  sub-resources hang off their product, e.g. `coss.email.suppressions`). Methods return `{ data, error }` and never
+  sub-resources hang off their parent, e.g. `coss.email.suppressions`, `coss.webhookEndpoints.deliveries`). Methods return `{ data, error }` and never
   throw for API/network failures. Webhook endpoint creation disables
   automatic retries because the API does not deduplicate it, even with an `Idempotency-Key`.
 - Must run unchanged on Node, Bun, Deno and Workers: no `node:*`, no `Bun.*`, only guarded `globalThis.process`
@@ -588,7 +588,7 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,
-batch sends, rescheduling (cancel and send again), webhook delivery logs over the API, SCIM/directory sync,
+batch sends, rescheduling (cancel and send again), SCIM/directory sync,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 rate limit overrides in the dashboard, org logos/deletion, email change, API version header, release tooling,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.
