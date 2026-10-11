@@ -98,6 +98,13 @@ resets) are printed to the dashboard's server console in development.
   (`tracking`) and per-link click counts. Independent of SES's own tracking, which stays off.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
+- **Single sign-on** — per organization, OpenID Connect or SAML 2.0 (Better Auth's SSO plugin), set up under
+  the organization's Settings → Single sign-on. Its domains must be the organization's **verified email domains**:
+  no second DNS check. People at those domains join as members on their first SSO sign-in, and existing accounts
+  with a verified email are linked. Owners can **require SSO**: members and admins then need an SSO session from the
+  organization's provider (owners keep password "break-glass" access). An SSO session also satisfies the
+  organization's two-factor requirement — the IdP is responsible for MFA. Support recovers broken setups from
+  `/admin` (unlink a user's SSO accounts, stop requiring SSO, disable a provider).
 - **Reputation guard** — the worker watches each organization's live bounce and complaint rates (per recipient, over
   7 days) and acts without a human: a **warning** at 4% bounces / 0.08% complaints, an automatic **suspension** of
   live sending at 8% / 0.3% (from 200 / 500 recipients). Suspended organizations get `403 account_suspended` on live

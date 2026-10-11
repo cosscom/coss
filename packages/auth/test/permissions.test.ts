@@ -42,6 +42,13 @@ describe("org roles", () => {
       true,
     );
   });
+
+  test("owners and admins configure SSO; only owners require it; members see nothing", () => {
+    expect(orgRoles.owner.authorize({ sso: ["read", "update", "require"] }).success).toBe(true);
+    expect(orgRoles.admin.authorize({ sso: ["read", "update"] }).success).toBe(true);
+    expect(orgRoles.admin.authorize({ sso: ["require"] }).success).toBe(false);
+    expect(orgRoles.member.authorize({ sso: ["read"] }).success).toBe(false);
+  });
 });
 
 describe("orgRoleCan", () => {

@@ -24,6 +24,7 @@
   "devDependencies": {
     "@coss/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
+    "oauth2-mock-server": "9.2.0",
     "typescript": "catalog:"
   }
 }

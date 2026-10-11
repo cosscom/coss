@@ -6,7 +6,7 @@
 import { db, schema } from "@coss/db";
 import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
 
-const { invitation, member, organization, organizationSuspension, user } = schema;
+const { invitation, member, organization, organizationSuspension, ssoProvider, user } = schema;
 
 export type OrganizationSummary = {
   id: string;
@@ -16,6 +16,8 @@ export type OrganizationSummary = {
   createdAt: Date;
   /** Members must have two-factor authentication (TOTP) enabled to use the dashboard. */
   requireTwoFactor: boolean;
+  /** Members other than owners must sign in through the organization's SSO provider. */
+  requireSso: boolean;
 };
 
 export type Membership = {
@@ -23,6 +25,11 @@ export type Membership = {
   member: { id: string; organizationId: string; userId: string; role: string; createdAt: Date };
   /** A platform admin suspended the organization: its dashboard is read-only. */
   suspended: boolean;
+  /**
+   * `providerId` of the organization's SSO provider, or null. A session whose `ssoProviderId`
+   * equals it was signed in through the organization's IdP.
+   */
+  ssoProviderId: string | null;
 };
 
 export type OrganizationMember = {
@@ -48,6 +55,7 @@ const organizationColumns = {
   logo: organization.logo,
   createdAt: organization.createdAt,
   requireTwoFactor: sql<boolean>`coalesce(${organization.requireTwoFactor}, false)`,
+  requireSso: sql<boolean>`coalesce(${organization.requireSso}, false)`,
 };
 
 const memberColumns = {
@@ -78,6 +86,11 @@ export async function getMembership(input: {
         createdAt: member.createdAt,
       },
       suspendedAt: organizationSuspension.createdAt,
+      ssoProviderId: sql<string | null>`(
+        select ${ssoProvider.providerId} from ${ssoProvider}
+        where ${ssoProvider.organizationId} = ${organization.id}
+        order by ${ssoProvider.id} limit 1
+      )`,
     })
     .from(member)
     .innerJoin(organization, eq(organization.id, member.organizationId))

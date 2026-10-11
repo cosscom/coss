@@ -7,6 +7,7 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { ActionError, ForbiddenError } from "./actions";
 import { auth, type Session } from "./auth";
+import { orgAccess } from "./org-access";
 
 export type OrgContext = Membership & {
   session: Session;
@@ -15,6 +16,10 @@ export type OrgContext = Membership & {
    * suspended, it only reads. Use it to gate controls; actions re-check via `requireOrgPermission`.
    */
   can: (permissions: OrgPermissions) => boolean;
+  /** The session came from the organization's SSO provider. */
+  viaSso: boolean;
+  /** An owner signed in without SSO while the organization requires it (break-glass access). */
+  ssoBreakGlass: boolean;
 };
 
 /** A suspended organization keeps read access only. */
@@ -50,20 +55,21 @@ export async function requireSession(): Promise<Session> {
 /**
  * Resolves the organization from the URL slug and the signed-in user's membership in it.
  * Non-members get a 404 so org slugs can't be probed. Never uses the session's active org.
- * Members without two-factor authentication are sent to /settings when the organization
- * requires it (this guards every org page, layout and server action).
+ * Members are sent to /sso when the organization requires SSO and the session didn't come from
+ * its provider (owners keep break-glass access), and to /settings when it requires two-factor
+ * authentication they haven't set up (an SSO session from its provider counts instead). This
+ * guards every org page, layout and server action.
  */
 export const requireOrgMember = cache(async (orgSlug: string): Promise<OrgContext> => {
   const session = await requireSession();
   const membership = await getMembership({ userId: session.user.id, organizationSlug: orgSlug });
   if (!membership) notFound();
-  if (membership.organization.requireTwoFactor && !session.user.twoFactorEnabled) {
-    redirect("/settings");
-  }
+  const access = orgAccess(membership, session);
+  if (access.kind === "redirect") redirect(access.to);
   const can = (permissions: OrgPermissions) =>
     orgRoleCan(membership.member.role, permissions) &&
     (!membership.suspended || onlyReads(permissions));
-  return { session, ...membership, can };
+  return { session, ...membership, can, viaSso: access.viaSso, ssoBreakGlass: access.breakGlass };
 });
 
 /**

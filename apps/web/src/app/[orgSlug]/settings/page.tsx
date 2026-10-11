@@ -1,5 +1,6 @@
 import { listOrganizationMembers } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
+import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -18,6 +19,7 @@ export default async function OrganizationSettingsPage({
   const { orgSlug } = await params;
   const { organization, member, can, suspended, session } = await requireOrgMember(orgSlug);
   const canUpdate = can({ organization: ["update"] });
+  const canReadSso = can({ sso: ["read"] });
   const members = await listOrganizationMembers({ organizationId: organization.id });
   const isOwner = member.role.split(",").includes("owner");
   const owners = members.filter((row) => row.role.split(",").includes("owner")).length;
@@ -56,8 +58,8 @@ export default async function OrganizationSettingsPage({
           </CardTitle>
           <CardDescription>
             {organization.requireTwoFactor
-              ? "Members must use an authenticator app to sign in with a password. Anyone without one is asked to set it up before they can open this organization."
-              : "Require every member to use an authenticator app when signing in with a password. Members without one are asked to set it up on their next visit."}{" "}
+              ? "Members must use an authenticator app to sign in with a password. Anyone without one is asked to set it up before they can open this organization (signing in with this organization's SSO counts instead)."
+              : "Require every member to use an authenticator app when signing in with a password. Members without one are asked to set it up on their next visit (signing in with this organization's SSO counts instead)."}{" "}
             {withoutTwoFactor > 0
               ? `${withoutTwoFactor} of ${members.length} member${members.length === 1 ? " doesn't" : "s don't"} have it yet.`
               : "Every member has it set up."}
@@ -81,6 +83,30 @@ export default async function OrganizationSettingsPage({
           </CardPanel>
         ) : null}
       </Card>
+
+      {canReadSso ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Single sign-on
+              {organization.requireSso ? <Badge variant="success">Required</Badge> : null}
+            </CardTitle>
+            <CardDescription>
+              Let members sign in through your identity provider with OpenID Connect or SAML, and
+              optionally require it.
+            </CardDescription>
+          </CardHeader>
+          <CardPanel>
+            <Button
+              render={<Link href={`/${organization.slug}/settings/sso`} />}
+              size="sm"
+              variant="outline"
+            >
+              Configure SSO
+            </Button>
+          </CardPanel>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>

@@ -16,8 +16,8 @@ auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/rat
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
-| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey plugins), org permissions, slug rules. |
-| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, seed/admin scripts, test fixtures; `./admin`: suspensions, audit log and cross-org reads. |
+| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso plugins), org permissions, slug rules; `./sso`: SSO trust rules (server-only). |
+| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO recovery, audit log and cross-org reads. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
@@ -205,7 +205,8 @@ from tasks — CI and image builds have no `.env`), the service in `infra/aws/se
 - Domain management uses `emailRuntime().domainDeps` (`src/lib/email-runtime.ts`) and webhook management
   `webhookManagementDeps()` (`src/lib/webhooks.ts`); domain/webhook errors carry user-facing messages. Revealing a
   webhook secret needs `webhook:update` (members can read endpoints but never see secrets).
-- Org settings (`[orgSlug]/settings`: rename, slug change, leave) and account settings (top-level `/settings`: name,
+- Org settings (`[orgSlug]/settings`: rename, slug change, leave, 2FA requirement; `settings/sso`: SSO provider and
+  requirement) and account settings (top-level `/settings`: name,
   verification email, password change, sessions) call `auth.api.*` server-side — `/organization/update` stays a
   disabled HTTP path. `canRemoveOrgMember`/`assignableOrgRoles` mirror Better Auth's owner rules for the UI; Better
   Auth alone protects the last owner. Account actions refuse while impersonating.
@@ -329,8 +330,8 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
 - **Drizzle 0.x** (see catalog): the drizzle.team docs default to v1 — don't use `defineRelations`, `drizzle-orm/zod`,
   `getColumns` until the catalog moves to 1.x.
 - **Biome** is pinned exactly; keep the `$schema` URL in `biome.json` and `apps/web/biome.json` in step with it.
-- **Better Auth:** `better-auth`, `@better-auth/core`, `@better-auth/api-key`, `@better-auth/passkey` and `auth` (CLI)
-  stay on one identical exact version (catalog) — bump them together.
+- **Better Auth:** `better-auth`, `@better-auth/core`, `@better-auth/api-key`, `@better-auth/passkey`,
+  `@better-auth/sso` and `auth` (CLI) stay on one identical exact version (catalog) — bump them together.
   - The api-key plugin is `@better-auth/api-key` (not `better-auth/plugins`). Keys are org-owned
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
@@ -346,7 +347,9 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
     ownership check, then `auth.api.deleteApiKey` with session headers.
   - `disabledPaths` blocks the HTTP routes `/api-key/{create,update,get,list,delete}`, `/organization/update` and
     every admin-plugin mutation (`/admin/{create-user,update-user,remove-user,set-role,set-user-password,ban-user,
-    unban-user,impersonate-user,revoke-user-session,revoke-user-sessions}`) (server-side `auth.api.*` still works).
+    unban-user,impersonate-user,revoke-user-session,revoke-user-sessions}`) and SSO provider management
+    (`/sso/{register,update-provider,delete-provider,providers,get-provider,request-domain-verification,verify-domain}`)
+    (server-side `auth.api.*` still works).
     Admin mutations go only through `apps/web/src/app/admin/actions.ts`, which records the audit log. Never re-enable
     them to "simplify" things.
   - `organizationHooks` validate org slugs on create/update, only allow canonical roles (`INVITABLE_ORG_ROLES`,
@@ -368,6 +371,30 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
     `FACTOR_MANAGEMENT_PATHS` to impersonation sessions; add new factor-changing endpoints there. Code and passkey
     verification are limited per IP in `auth-rate-limit.ts` (Better Auth also locks an account for 15 min after 10
     failed codes).
+  - **SSO** (`@better-auth/sso`, `packages/auth/src/sso.ts`, `packages/tenancy/src/sso.ts`): one provider per
+    organization (enforced by the dashboard action), registered/updated/deleted only through `auth.api.*` from
+    `[orgSlug]/settings/sso/actions.ts` (`sso:update`: owners and admins; the plugin itself re-checks owner/admin).
+    Its `providerId` is `ssoProviderIdFor(organizationId)` (`sso_<org suffix>`), so callback URLs exist before saving.
+    Domain trust replaces the plugin's TXT verification: `domainVerified` is set by `syncSsoDomainVerification` (every
+    provider domain is a `verified` email domain of the org) after every save — the plugin resets it when domains
+    change — and `resolveSsoUser` (the plugin's `resolveUser`, runs before any write) re-checks on every sign-in that
+    the IdP's address falls under the most specific non-failed email domain, owned by that org and listed on the
+    provider (the `authorizeLiveSender` rule), and refuses new members of suspended orgs (the plugin's org
+    provisioning writes `member` directly, bypassing the organization hooks). Users created by an SSO callback are
+    created `emailVerified` (`databaseHooks.user`); linking an existing account keeps Better Auth's rules (trusted
+    provider + verified local email). Never put SSO provider ids in `trustedProviders` or IdP origins in
+    `trustedOrigins` (that also allows redirects to them): the dashboard runs OIDC discovery itself
+    (`apps/web/src/lib/sso.ts`, public https hosts only) and registers with `skipDiscovery`.
+  - **SSO sessions and enforcement:** `session.ssoProviderId` (additional field, `input: false`) is set by
+    `databaseHooks.session` only for sessions created on `/sso/callback/:providerId` or `/sso/saml2/sp/acs/:providerId`.
+    `organization.requireSso` (written only by `setOrganizationSsoRequired`; turning it on needs `sso:require` —
+    owners only — an active provider, the actor's own SSO session and a password) makes `requireOrgMember` send
+    members whose session didn't come from the org's provider to `/sso?org=…` (`orgAccess`,
+    `apps/web/src/lib/org-access.ts`). Owners keep break-glass access (password, plus TOTP if 2FA is required) and
+    see a banner; impersonation sessions are exempt. An SSO session from the org's own provider also satisfies its
+    `requireTwoFactor` (the IdP owns MFA); another org's provider satisfies neither. API keys are unaffected.
+    Admin recovery (audited, `@coss/tenancy/admin`): `unlinkUserSso`, `disableOrganizationSsoRequirement`,
+    `disableOrganizationSso` (clears `domainVerified`; saving again re-enables).
   - **2FA enforcement:** `organization.requireTwoFactor` (additional field, `input: false`; written only by
     `setOrganizationTwoFactorRequired` from org settings, which needs `organization:update` and an actor with 2FA).
     `requireOrgMember` redirects members without `user.twoFactorEnabled` to `/settings` — passkeys don't satisfy it
@@ -519,6 +546,10 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
 - Rate limits fail open while Valkey is unreachable (logged), and override changes take up to a minute (per-process
   cache). Without `CLIENT_IP_HEADER` there are no per-IP limits. Sign-in is also limited per email address, so
   someone hammering an address delays its owner's sign-in for as long as they keep at it (accepted).
+- SSO domains must be verified **email** domains, so an organization that signs in with a domain it doesn't send
+  from still adds it under Domains (which creates an SES identity). OIDC IdPs must be public `https://` hosts.
+  SAML errors after the IdP step land on the callback URL (`?error=`), not on `/sso`. The SAML path is covered by
+  Better Auth's own tests only (ours drive OIDC against oauth2-mock-server).
 - Next's cache is per task (nothing uses ISR or `revalidateTag` yet; add a shared `cacheHandler` first).
 - Accepted: sign-up email enumeration; org deletion is disabled. A user ban does not cut off their orgs' API keys (keys
   are org-owned) — suspend the organization. Suspension does not pause the SES tenant itself;
@@ -531,7 +562,8 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), custom tracking domains, tracking settings over the API,
-batch sends, rescheduling (cancel and send again), webhook delivery logs over the API,
+batch sends, rescheduling (cancel and send again), webhook delivery logs over the API, SCIM/directory sync,
+IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 rate limit overrides in the dashboard, org logos/deletion, email change, API version header, release tooling,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.
 

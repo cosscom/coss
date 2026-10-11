@@ -31,4 +31,15 @@ export {
   setOrganizationTwoFactorRequired,
 } from "./organizations.ts";
 export { createProject, getProject, listProjects, PROJECT_NAME_MAX_LENGTH } from "./projects.ts";
+export {
+  getOrganizationSsoProvider,
+  listOrganizationsRequiringSso,
+  listOwnersWithoutPassword,
+  listSsoLinkedMemberIds,
+  type OrganizationSsoProvider,
+  type SsoProviderType,
+  setOrganizationSsoRequired,
+  syncSsoDomainVerification,
+  userHasPassword,
+} from "./sso.ts";
 export type { Environment, EnvironmentMode, Project } from "./types.ts";
