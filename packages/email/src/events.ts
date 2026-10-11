@@ -12,6 +12,7 @@ import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { purgeAttachmentContent } from "./attachments.ts";
 import type { ProviderEvent } from "./provider.ts";
+import { invalidateReputationRollup } from "./reputation-checks.ts";
 import {
   EMAIL_RECIPIENT_STATUSES,
   type EmailEventType,
@@ -102,6 +103,7 @@ export async function recordProviderEvent(
       subject: email.subject,
       tags: email.tags,
       category: email.category,
+      createdAt: email.createdAt,
       mode: environment.mode,
     })
     .from(email)
@@ -169,6 +171,8 @@ export async function recordProviderEvent(
     .onConflictDoNothing({ target: [emailEvent.emailId, emailEvent.dedupeKey] })
     .returning();
   if (inserted.length === 0) return [];
+  // Whether the event changed the reputation counts of the email's hour (recipient statuses).
+  let recipientsChanged = false;
 
   if (event.type === "email.sent") {
     // The provider accepted the message: covers a `Send` event racing the send call, and repairs
@@ -193,6 +197,7 @@ export async function recordProviderEvent(
         .update(emailRecipient)
         .set({ status: "queued" })
         .where(and(scope, eq(emailRecipient.status, "failed")));
+      recipientsChanged = true;
     }
     const [sent] = await tx
       .update(email)
@@ -209,7 +214,7 @@ export async function recordProviderEvent(
       : inserted.flatMap((row) => (row.recipient ? [row.recipient] : []));
   const below = status ? statusesBelow(status) : [];
   if (status && affected.length > 0 && below.length > 0) {
-    await tx
+    const moved = await tx
       .update(emailRecipient)
       .set({
         status,
@@ -222,7 +227,9 @@ export async function recordProviderEvent(
           inArray(emailRecipient.address, affected),
           inArray(emailRecipient.status, below),
         ),
-      );
+      )
+      .returning({ id: emailRecipient.id });
+    if (moved.length > 0) recipientsChanged = true;
   }
 
   // Permanent bounces and complaints suppress the address for every email of the environment.
@@ -238,6 +245,9 @@ export async function recordProviderEvent(
   if (suppressReason && target.mode === "live") {
     // The reputation guard re-checks the organization's rates (worker).
     await markReputationDue(tx, target.organizationId);
+  }
+  if ((suppressReason || recipientsChanged) && target.mode === "live") {
+    await invalidateReputationRollup(tx, target.organizationId, target.createdAt);
   }
   if (suppressReason) {
     for (const row of inserted) {
