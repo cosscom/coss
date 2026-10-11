@@ -138,15 +138,26 @@ export function LogExplorer(props: LogExplorerProps) {
   const [cursor, setCursor] = useState<number>(-1);
   const tableRef = useRef<HTMLTableSectionElement>(null);
 
-  // A new server render (filters, range, refresh) replaces the list, unless live merges into it.
+  // Relative ranges move on refresh; their preset, not their resolved dates, identifies the view.
+  const viewKey = `${logsPath}?${viewSearch(view)}`;
+  const previousView = useRef(viewKey);
+  const newestRef = useRef<string | undefined>(entries[0]?.occurred_at);
+  newestRef.current = entries[0]?.occurred_at;
+  // Preserve live rows only for refreshes of the same view.
   const liveRef = useRef(live);
   liveRef.current = live;
   useEffect(() => {
-    if (liveRef.current) return;
+    const changed = previousView.current !== viewKey;
+    previousView.current = viewKey;
+    if (liveRef.current && !changed) return;
+    newestRef.current = props.page.data[0]?.occurred_at;
+    setFresh(new Set());
+    setLoadingMore(false);
     setEntries(props.page.data);
     setHasMore(props.page.has_more);
     setCursor(-1);
-  }, [props.page]);
+    if (!view.preset) setLive(false);
+  }, [props.page, viewKey, view.preset]);
 
   const navigate = useCallback(
     (next: Partial<ExplorerView>) => {
@@ -177,21 +188,20 @@ export function LogExplorer(props: LogExplorerProps) {
       const response = await fetch(`${logsPath}/feed?${search}`);
       if (!response.ok) throw new Error(String(response.status));
       const page = (await response.json()) as LogListOutput;
+      if (previousView.current !== viewKey) return;
       setEntries((current) => [...current, ...page.data]);
       setHasMore(page.has_more);
     } catch (error) {
       console.error("[logs] loading older lines failed:", error);
     } finally {
-      setLoadingMore(false);
+      if (previousView.current === viewKey) setLoadingMore(false);
     }
   }
 
   // Live tail: poll a window behind the newest line shown (late writes land there too) and merge
   // by id.
-  const newestRef = useRef<string | undefined>(entries[0]?.occurred_at);
-  newestRef.current = entries[0]?.occurred_at;
   useEffect(() => {
-    if (!live) return;
+    if (!live || !view.preset) return;
     let stopped = false;
     let timer: ReturnType<typeof setTimeout>;
     let lastRefresh = Date.now();
@@ -232,7 +242,7 @@ export function LogExplorer(props: LogExplorerProps) {
       stopped = true;
       clearTimeout(timer);
     };
-  }, [live, logsPath, router, view.q]);
+  }, [live, logsPath, router, view.q, view.preset]);
 
   function toggleLive() {
     if (live) {

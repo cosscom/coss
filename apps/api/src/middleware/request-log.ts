@@ -8,7 +8,7 @@ import type { RefusedKeyContext } from "@coss/tenancy";
 import { createMiddleware } from "hono/factory";
 import type { AppEnv } from "../types.ts";
 
-/** Response bodies larger than this are not read for the log (only their size is known). */
+/** Stop reading response bodies for the log once they exceed this byte limit. */
 const MAX_LOGGED_RESPONSE_BYTES = 64 * 1024;
 const TYPE_ID = /^([a-z][a-z_]*)_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
 
@@ -47,10 +47,27 @@ function parseJson(text: string): unknown {
 }
 
 async function readJson(source: Response): Promise<unknown> {
+  const reader = source.body?.getReader();
+  if (!reader) return undefined;
   try {
-    return parseJson(await source.text());
+    const decoder = new TextDecoder();
+    let bytes = 0;
+    let text = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) return parseJson(text + decoder.decode());
+      bytes += value.byteLength;
+      if (bytes > MAX_LOGGED_RESPONSE_BYTES) {
+        // A clone's cancellation can wait for the original response to finish. Do not await it.
+        void reader.cancel().catch(() => {});
+        return undefined;
+      }
+      text += decoder.decode(value, { stream: true });
+    }
   } catch {
     return undefined;
+  } finally {
+    reader.releaseLock();
   }
 }
 
