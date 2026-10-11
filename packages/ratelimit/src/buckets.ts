@@ -46,6 +46,14 @@ export const BUCKETS = {
     periodMs: DAY,
     overridable: true,
   },
+  // Invitations sent (and resent) per organization: each one emails an address the org chose.
+  "dashboard.invitations": {
+    scope: "org",
+    limit: 50,
+    periodMs: DAY,
+    burst: 20,
+    overridable: true,
+  },
   // Failed API key authentications per client IP (bad keys are rejected before the key lookup).
   "api.auth_failure": { scope: "ip", limit: 30, periodMs: MINUTE, overridable: false },
   // Dashboard authentication (Better Auth endpoints), per client IP and per email address.
@@ -69,6 +77,8 @@ export const BUCKETS = {
   // SSO: starting a sign-in (each one stores state and redirects to the IdP) and SAML responses
   // posted back by the IdP. OIDC callbacks are GETs, which the dashboard doesn't limit.
   "auth.sso.ip": { scope: "ip", limit: 20, periodMs: MINUTE, overridable: false },
+  // Organizations created per client IP (each user may also own at most 5, see @coss/auth).
+  "auth.org_create.ip": { scope: "ip", limit: 10, periodMs: DAY, overridable: false },
 } as const satisfies Record<string, BucketDefinition>;
 
 export type BucketName = keyof typeof BUCKETS;

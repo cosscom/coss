@@ -284,6 +284,20 @@ export const SERVICES: Service[] = [
         description:
           "CloudFront + ALB append to X-Forwarded-For; the client is the entry they vouch for.",
       },
+      {
+        name: "TURNSTILE_SITE_KEY",
+        kind: "plain",
+        required: true,
+        value: "Cloudflare Turnstile widget site key (hostname: the dashboard's)",
+        description: "Public; rendered on sign-up, sign-in and password reset.",
+      },
+      {
+        name: "TURNSTILE_SECRET_KEY",
+        kind: "secret",
+        required: true,
+        value: "the same widget's secret key",
+        description: "Better Auth's captcha plugin verifies tokens with it (siteverify).",
+      },
       ...sentry("web"),
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "PORT", kind: "image", required: true, value: "3000", description: "" },

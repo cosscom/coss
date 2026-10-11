@@ -1,6 +1,10 @@
 import { expect, test } from "bun:test";
 import { clientIpFromForwardedFor } from "../src/lib/client-ip";
-import { contentSecurityPolicy, securityHeaders } from "../src/lib/security-headers";
+import {
+  contentSecurityPolicy,
+  securityHeaders,
+  TURNSTILE_ORIGIN,
+} from "../src/lib/security-headers";
 
 function directives(policy: string): Map<string, string[]> {
   return new Map(
@@ -11,17 +15,22 @@ function directives(policy: string): Map<string, string[]> {
   );
 }
 
-test("production CSP: own scripts only, never framed", () => {
+test("production CSP: own scripts (and Turnstile's) only, never framed", () => {
   const policy = directives(contentSecurityPolicy({ dev: false }));
-  expect(policy.get("script-src")).toEqual(["'self'", "'unsafe-inline'"]);
+  expect(TURNSTILE_ORIGIN).toBe("https://challenges.cloudflare.com");
+  expect(policy.get("script-src")).toEqual(["'self'", "'unsafe-inline'", TURNSTILE_ORIGIN]);
+  expect(policy.get("frame-src")).toEqual(["'self'", TURNSTILE_ORIGIN]);
   expect(policy.get("connect-src")).toEqual(["'self'"]);
   expect(policy.get("frame-ancestors")).toEqual(["'none'"]);
   expect(policy.get("object-src")).toEqual(["'none'"]);
   expect(policy.has("upgrade-insecure-requests")).toBe(true);
-  // No directive allows a third-party origin for scripts or connections.
-  for (const name of ["script-src", "connect-src", "default-src"]) {
-    for (const value of policy.get(name) ?? []) expect(value).not.toMatch(/^https?:|^\*$/);
+  // No directive allows another third-party origin for scripts, frames or connections.
+  for (const name of ["script-src", "frame-src", "connect-src", "default-src"]) {
+    for (const value of policy.get(name) ?? []) {
+      if (value !== TURNSTILE_ORIGIN) expect(value).not.toMatch(/^https?:|^\*$/);
+    }
   }
+  expect(policy.get("connect-src")).not.toContain(TURNSTILE_ORIGIN);
 });
 
 test("dev CSP allows what next dev needs, and only then", () => {

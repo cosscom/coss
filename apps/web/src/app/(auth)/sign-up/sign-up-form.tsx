@@ -8,11 +8,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useTurnstile } from "@/components/turnstile";
 import { authClient } from "@/lib/auth-client";
+import { authErrorMessage } from "@/lib/auth-errors";
 import { nextQuery } from "@/lib/safe-redirect";
 
-export function SignUpForm({ next }: { next: string }) {
+export function SignUpForm({
+  next,
+  turnstileSiteKey,
+}: {
+  next: string;
+  turnstileSiteKey: string | null;
+}) {
   const router = useRouter();
+  const turnstile = useTurnstile(turnstileSiteKey, "sign-up");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -27,9 +36,11 @@ export function SignUpForm({ next }: { next: string }) {
       email: String(form.get("email") ?? ""),
       password: String(form.get("password") ?? ""),
       callbackURL: next,
+      fetchOptions: { headers: turnstile.headers },
     });
+    turnstile.reset();
     if (error) {
-      setError(error.message ?? "Could not create the account.");
+      setError(authErrorMessage(error, "Could not create the account."));
       setPending(false);
       return;
     }
@@ -68,8 +79,9 @@ export function SignUpForm({ next }: { next: string }) {
             />
             <FieldDescription>At least 8 characters.</FieldDescription>
           </Field>
-          <FormError message={error} />
-          <Button loading={pending} type="submit">
+          {turnstile.widget}
+          <FormError message={error ?? turnstile.error} />
+          <Button disabled={!turnstile.ready} loading={pending} type="submit">
             Create account
           </Button>
           {/* Plain links: /legal is the site's (another zone; next.config.ts redirects in dev). */}
