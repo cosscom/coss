@@ -9,6 +9,7 @@ import {
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
+import { dropExpiredLogPartitions, ensureLogPartitions } from "@coss/logs";
 import {
   type ReputationNotificationDeps,
   runDueReputationEvaluations,
@@ -37,6 +38,8 @@ export type WorkerDeps = {
   /** Dispatches scheduled emails. */
   email: Pick<EmailService, "dispatchDue">;
   webhooks: WebhookDeliveryDeps;
+  /** How long environment logs are kept (`LOG_RETENTION_DAYS`). */
+  logRetentionDays: number;
   /** Sends account emails (verification, password resets, invitations); `null`: held. */
   authEmails: AuthEmailDeps | null;
   /** Emails owners and admins about warnings and suspensions; `null`: held until configured. */
@@ -96,6 +99,20 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       run: async () =>
         (await sweepUnclaimedEmails(deps.dispatchQueue, { limit: SWEEP_BATCH })).failed ===
         SWEEP_BATCH,
+    }),
+    startLoop({
+      // Log retention: a week of daily partitions ahead, expired days dropped whole.
+      name: "logs",
+      intervalMs: 60 * 60_000,
+      run: async () => {
+        const created = await ensureLogPartitions();
+        const dropped = await dropExpiredLogPartitions({ retentionDays: deps.logRetentionDays });
+        if (created.length > 0 || dropped.length > 0) {
+          console.info(
+            `[worker:logs] created ${created.length}, dropped ${dropped.length} log partitions`,
+          );
+        }
+      },
     }),
   ];
   const authEmails = deps.authEmails;

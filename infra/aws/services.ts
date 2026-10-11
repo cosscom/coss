@@ -302,6 +302,13 @@ export const SERVICES: Service[] = [
         required: true,
         description: "Printed by ses:bootstrap.",
       },
+      {
+        name: "LOG_RETENTION_DAYS",
+        kind: "plain",
+        required: false,
+        value: "30",
+        description: "Days of environment logs kept (1-31); expired days are dropped hourly.",
+      },
       ...screening,
       webhookKey,
       {

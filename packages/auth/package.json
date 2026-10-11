@@ -10,7 +10,8 @@
     "./slugs": "./src/slugs.ts",
     "./constants": "./src/constants.ts",
     "./emails": "./src/emails.ts",
-    "./sso": "./src/sso.ts"
+    "./sso": "./src/sso.ts",
+    "./audit": "./src/audit.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

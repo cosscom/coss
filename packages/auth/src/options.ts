@@ -14,6 +14,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { admin, organization, twoFactor } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
+import { recordOrgAudit } from "./audit.ts";
 import {
   API_KEY_NAME_MAX_LENGTH,
   API_KEY_PERMISSIONS,
@@ -304,6 +305,23 @@ export const authOptions = {
         },
         beforeAcceptInvitation: async ({ organization: org }) => {
           await assertOrgNotSuspended(org.id);
+        },
+        afterAcceptInvitation: async ({ invitation, user, organization: org }) => {
+          await recordOrgAudit({
+            organizationId: org.id,
+            actor: { type: "user", id: user.id, label: user.email },
+            action: "invitation.accepted",
+            target: { type: "invitation", id: invitation.id, label: invitation.email },
+            metadata: { role: invitation.role },
+          });
+        },
+        afterRejectInvitation: async ({ invitation, user, organization: org }) => {
+          await recordOrgAudit({
+            organizationId: org.id,
+            actor: { type: "user", id: user.id, label: user.email },
+            action: "invitation.rejected",
+            target: { type: "invitation", id: invitation.id, label: invitation.email },
+          });
         },
         // Better Auth cancels invitations in any status, which would rewrite an accepted (or
         // already canceled) one; only pending invitations can be canceled.
