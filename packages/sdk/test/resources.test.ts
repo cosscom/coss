@@ -202,4 +202,35 @@ describe("coss.webhookEndpoints.deliveries", () => {
       `POST /v1/webhook_endpoints/${sampleEndpoint.id}/deliveries/${delivery.id}/retry`,
     ]);
   });
+
+  test("a lost replay response is not automatically retried, even with an idempotency key", async () => {
+    const { coss, calls } = client(
+      () => {
+        throw new TypeError("Response lost after replay was queued");
+      },
+      json(200, delivery),
+    );
+
+    const result = await coss.webhookEndpoints.deliveries.retry(sampleEndpoint.id, delivery.id, {
+      idempotencyKey: "replay-once",
+    });
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.headers.get("idempotency-key")).toBe("replay-once");
+    expect(result.data).toBeNull();
+    expect(result.error?.type).toBe("connection_error");
+  });
+
+  test("a replay server error is returned without automatically retrying", async () => {
+    const { coss, calls } = client(
+      apiError(503, { type: "internal_error", code: "unavailable" }, { "Retry-After": "0" }),
+      json(200, delivery),
+    );
+
+    const result = await coss.webhookEndpoints.deliveries.retry(sampleEndpoint.id, delivery.id);
+
+    expect(calls).toHaveLength(1);
+    expect(result.data).toBeNull();
+    expect(result.error?.status).toBe(503);
+  });
 });

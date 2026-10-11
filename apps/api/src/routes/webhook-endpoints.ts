@@ -353,7 +353,7 @@ export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAP
     const { id, delivery_id } = c.req.valid("param");
     const endpoint = await requireEndpoint(c.var.auth, id);
     const target = { organizationId: endpoint.organizationId, endpointId: endpoint.id };
-    // A no-op for pending deliveries, so a retried request after a lost response is harmless.
+    // Pending deliveries are unchanged; requests after completion can queue another replay.
     await retryWebhookDelivery({ ...target, id: delivery_id });
     const delivery = await getWebhookDelivery({ ...target, id: delivery_id });
     if (!delivery) throw notFound(DELIVERY_NOT_FOUND_MESSAGE);

@@ -46,6 +46,8 @@ export class WebhookDeliveriesResource {
   /**
    * Queues a finished delivery for one more attempt, made within seconds. A delivery that is
    * still `pending` is returned unchanged (it is already scheduled for `next_attempt_at`).
+   * Never automatically retried: the API does not deduplicate replay requests, even with an
+   * idempotency key.
    */
   retry(
     endpointId: string,
@@ -55,6 +57,7 @@ export class WebhookDeliveriesResource {
     return this.#http.request<WebhookDelivery>({
       method: "POST",
       path: `${deliveriesPath(endpointId)}/${encodeURIComponent(id)}/retry`,
+      retry: false,
       idempotencyKey: options?.idempotencyKey,
       signal: options?.signal,
     });
