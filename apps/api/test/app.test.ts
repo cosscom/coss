@@ -152,6 +152,8 @@ describe("GET /openapi.json", () => {
     expect(doc.info).toMatchObject({ title: "COSS API", version: LATEST_API_VERSION });
     expect(doc.servers).toEqual([{ url: "http://api.test" }]);
     expect(Object.keys(doc.paths).sort()).toEqual([
+      "/v1/audit_events",
+      "/v1/audit_events/{id}",
       "/v1/domains",
       "/v1/domains/{id}",
       "/v1/domains/{id}/tracking",
@@ -214,6 +216,14 @@ describe("GET /openapi.json", () => {
       security: [{ bearerAuth: [] }],
     });
     expect(doc.paths["/v1/logs/{id}"]?.get).toMatchObject({ operationId: "getLog" });
+    expect(doc.paths["/v1/audit_events"]?.get).toMatchObject({
+      operationId: "listAuditEvents",
+      tags: ["Audit log"],
+      security: [{ bearerAuth: [] }],
+    });
+    expect(doc.paths["/v1/audit_events/{id}"]?.get).toMatchObject({
+      operationId: "getAuditEvent",
+    });
     expect(doc.paths["/v1/reputation"]?.get).toMatchObject({
       operationId: "getReputation",
       security: [{ bearerAuth: [] }],
@@ -309,6 +319,8 @@ describe("GET /openapi.json", () => {
         "ReputationCheck",
         "Log",
         "LogList",
+        "AuditEvent",
+        "AuditEventList",
         "ImportSuppressionsRequest",
         "SuppressionImport",
         "CreateDomainRequest",

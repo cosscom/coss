@@ -200,22 +200,146 @@ export const ListLogsQuery = z
 
 export type ListLogsQueryOutput = z.output<typeof ListLogsQuery>;
 
-/** Org audit log entries (dashboard only, no public API). */
-export type OrgAuditActorType = "user" | "api_key" | "system";
+export const ORG_AUDIT_ACTOR_TYPES = ["user", "api_key", "system"] as const;
+export type OrgAuditActorType = (typeof ORG_AUDIT_ACTOR_TYPES)[number];
 
-export type OrgAuditEventOutput = {
-  id: string;
-  created_at: string;
-  actor_type: OrgAuditActorType;
-  actor_id: string | null;
-  actor_label: string;
-  action: string;
-  target_type: string | null;
-  target_id: string | null;
-  target_label: string | null;
-  project_id: string | null;
-  environment_id: string | null;
-  metadata: Record<string, unknown>;
-  client_ip: string | null;
-  user_agent: string | null;
-};
+export const DEFAULT_AUDIT_LIST_LIMIT = 50;
+export const MAX_AUDIT_LIST_LIMIT = 100;
+
+export const AuditActorTypeEnum = z.enum(ORG_AUDIT_ACTOR_TYPES).meta({
+  id: "AuditActorType",
+  description:
+    "`user`: a member, in the dashboard (`actor_id` is the user's id, `actor_label` their " +
+    "email). `api_key`: a request made with an API key (`actor_id` is the key's id). `system`: " +
+    "COSS itself, including COSS support.",
+});
+
+const AUDIT_EVENT_ID_EXAMPLE = "oaudit_01k7c8m4q2f3e9v6t5r1n0p8yz";
+
+const AUDIT_EVENT_EXAMPLE = {
+  object: "audit_event",
+  id: AUDIT_EVENT_ID_EXAMPLE,
+  created_at: "2026-01-15T09:30:00.000Z",
+  actor_type: "api_key",
+  actor_id: "key_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  actor_label: "key_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  action: "suppression.created",
+  target_type: "suppression",
+  target_id: "sup_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  target_label: "user@example.com",
+  project_id: "proj_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  environment_id: "env_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  metadata: { scope: "*", request_id: "req_01k7c8m4q2f3e9v6t5r1n0p8yz" },
+  client_ip: "203.0.113.7",
+  user_agent: "coss-node/0.1.0",
+} as const;
+
+export const AuditEvent = z
+  .object({
+    object: z.literal("audit_event"),
+    id: z.string().meta({ examples: [AUDIT_EVENT_ID_EXAMPLE] }),
+    created_at: z.iso.datetime(),
+    actor_type: AuditActorTypeEnum,
+    actor_id: z
+      .string()
+      .nullable()
+      .meta({ description: "The user's or API key's id; `null` for the system." }),
+    actor_label: z.string().meta({
+      description:
+        "Who made the change, copied when it was recorded so it outlives them: the user's " +
+        "email, the API key's id, or `COSS support`.",
+    }),
+    action: z.string().meta({
+      description:
+        "`<resource>.<verb>`, e.g. `api_key.created`, `domain.deleted`, `member.role_changed`.",
+    }),
+    target_type: z
+      .string()
+      .nullable()
+      .meta({ description: "What was changed: `domain`, `api_key`, `member`…" }),
+    target_id: z.string().nullable(),
+    target_label: z
+      .string()
+      .nullable()
+      .meta({ description: "A readable name for the target when it was changed." }),
+    project_id: z
+      .string()
+      .nullable()
+      .meta({ description: "`null` for organization-wide changes (domains, members…)." }),
+    environment_id: z
+      .string()
+      .nullable()
+      .meta({ description: "`null` for organization-wide changes (domains, members…)." }),
+    metadata: z
+      .record(z.string(), z.unknown())
+      .meta({ description: "Details of the change; API changes include their `request_id`." }),
+    client_ip: z.string().nullable(),
+    user_agent: z.string().nullable(),
+  })
+  .meta({ id: "AuditEvent", examples: [AUDIT_EVENT_EXAMPLE] });
+
+export type OrgAuditEventOutput = z.output<typeof AuditEvent>;
+
+export const AuditEventList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(AuditEvent),
+    has_more: z.boolean(),
+  })
+  .meta({
+    id: "AuditEventList",
+    examples: [{ object: "list", data: [AUDIT_EVENT_EXAMPLE], has_more: false }],
+  });
+
+export type AuditEventListOutput = z.output<typeof AuditEventList>;
+
+export const ListAuditEventsQuery = z
+  .strictObject({
+    action: csv(
+      z
+        .string()
+        .min(1)
+        .max(64)
+        .regex(/^[a-z][a-z0-9_.]*$/),
+      "Only these actions, comma-separated. An entry ending in `.` matches every action of " +
+        "that resource: `domain.,api_key.created`.",
+    ),
+    actor_type: csv(AuditActorTypeEnum, "Only these actor types, e.g. `user,api_key`."),
+    actor_id: z
+      .string()
+      .max(64)
+      .optional()
+      .meta({ description: "Only changes made by this user or API key." }),
+    target_id: z
+      .string()
+      .max(64)
+      .optional()
+      .meta({ description: "Only changes to this resource, e.g. a `dom_…` id." }),
+    environment_id: z
+      .string()
+      .max(64)
+      .optional()
+      .meta({ description: "Only changes in this environment." }),
+    from: z.iso
+      .datetime({ offset: true })
+      .optional()
+      .meta({ description: "Only events at or after this time." }),
+    to: z.iso
+      .datetime({ offset: true })
+      .optional()
+      .meta({ description: "Only events before this time." }),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_AUDIT_LIST_LIMIT)
+      .optional()
+      .meta({ description: `1-${MAX_AUDIT_LIST_LIMIT}, default ${DEFAULT_AUDIT_LIST_LIMIT}.` }),
+    after: z
+      .string()
+      .optional()
+      .meta({ description: "Cursor: the `id` of the last event of the previous page." }),
+  })
+  .meta({ description: "Events are returned newest first." });
+
+export type ListAuditEventsQueryOutput = z.output<typeof ListAuditEventsQuery>;

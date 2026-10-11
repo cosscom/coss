@@ -772,3 +772,32 @@ describe("coss.logs against the API", () => {
     expect(invalid.error).toMatchObject({ code: "invalid_range", status: 422 });
   });
 });
+
+describe("coss.auditEvents against the API", () => {
+  test("list and get read the organization's audit log from any environment", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const sandbox = clientFor(app, tenant.sandboxKey);
+    const created = await sandbox.email.suppressions.add({ address: "gone@example.com" });
+    expect(created.error).toBeNull();
+
+    // Read with the other environment's key: the audit log is organization-wide.
+    const live = clientFor(app, tenant.liveKey);
+    const listed = await live.auditEvents.list({ action: ["suppression."], actor_type: "api_key" });
+    expect(listed.error).toBeNull();
+    expect(listed.data).toMatchObject({ object: "list", has_more: false });
+    const event = listed.data?.data[0];
+    if (!event) throw new Error("missing audit event");
+    expect(event).toMatchObject({
+      object: "audit_event",
+      action: "suppression.created",
+      actor_type: "api_key",
+      target_id: created.data?.id,
+      environment_id: tenant.development.id,
+    });
+    expect(await live.auditEvents.get(event.id)).toEqual({ data: event, error: null });
+
+    const invalid = await live.auditEvents.list({ limit: 0 });
+    expect(invalid.error).toMatchObject({ code: "validation_error", status: 422 });
+  });
+});

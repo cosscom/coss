@@ -55,6 +55,7 @@ export async function recordOrgAuditEvent(
 
 export function toOrgAuditObject(row: OrgAuditEventRow): OrgAuditEventOutput {
   return {
+    object: "audit_event",
     id: row.id,
     created_at: row.createdAt.toISOString(),
     actor_type: row.actorType,
@@ -75,6 +76,7 @@ export function toOrgAuditObject(row: OrgAuditEventRow): OrgAuditEventOutput {
 export type OrgAuditFilters = {
   /** Exact actions, or prefixes ending in `.` (`domain.`). */
   actions?: string[];
+  actorTypes?: OrgAuditActorType[];
   actorId?: string;
   targetId?: string;
   environmentId?: string;
@@ -83,6 +85,11 @@ export type OrgAuditFilters = {
 };
 
 export const DEFAULT_ORG_AUDIT_LIMIT = 50;
+
+/** `LIKE` pattern for values starting with `prefix` (its `%`, `_` and `\` matched literally). */
+function startsWith(prefix: string): string {
+  return `${prefix.replace(/[\\%_]/g, (char) => `\\${char}`)}%`;
+}
 
 /** Newest first, paginated by `before` (the last id of the previous page). */
 export async function listOrgAuditEvents(input: {
@@ -107,8 +114,11 @@ export async function listOrgAuditEvents(input: {
         exact.length > 0 || prefixes.length > 0
           ? or(
               exact.length > 0 ? inArray(orgAuditEvent.action, exact) : undefined,
-              ...prefixes.map((prefix) => like(orgAuditEvent.action, `${prefix}%`)),
+              ...prefixes.map((prefix) => like(orgAuditEvent.action, startsWith(prefix))),
             )
+          : undefined,
+        filters.actorTypes && filters.actorTypes.length > 0
+          ? inArray(orgAuditEvent.actorType, filters.actorTypes)
           : undefined,
         filters.actorId ? eq(orgAuditEvent.actorId, filters.actorId) : undefined,
         filters.targetId ? eq(orgAuditEvent.targetId, filters.targetId) : undefined,
@@ -122,6 +132,20 @@ export async function listOrgAuditEvents(input: {
     .limit(limit + 1);
   const events = rows.slice(0, limit).map(toOrgAuditObject);
   return { events, nextBefore: rows.length > limit ? (events.at(-1)?.id ?? null) : null };
+}
+
+/** One event of the organization's audit log, or `null`. */
+export async function getOrgAuditEvent(
+  organizationId: string,
+  id: string,
+): Promise<OrgAuditEventOutput | null> {
+  if (!isId("oaudit", id)) return null;
+  const [row] = await db
+    .select()
+    .from(orgAuditEvent)
+    .where(and(eq(orgAuditEvent.organizationId, organizationId), eq(orgAuditEvent.id, id)))
+    .limit(1);
+  return row ? toOrgAuditObject(row) : null;
 }
 
 /** Distinct actions an organization has recorded (the dashboard's action filter). */

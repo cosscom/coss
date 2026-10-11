@@ -32,7 +32,14 @@ import type {
   SuppressionList,
   TrackingDomainObject,
 } from "@coss/email/schemas";
-import type { ListLogsQuery, LogEntry, LogList } from "@coss/logs/schemas";
+import type {
+  AuditEvent,
+  AuditEventList,
+  ListAuditEventsQuery,
+  ListLogsQuery,
+  LogEntry,
+  LogList,
+} from "@coss/logs/schemas";
 import type {
   AccountWebhookEvent,
   ReputationCheckObject,
@@ -62,12 +69,14 @@ import type {
   ExportSuppressionsParams,
   ImportSuppressionsParams,
   List,
+  ListAuditEventsParams,
   ListLogsParams,
   ListSuppressionsParams,
   ListWebhookDeliveriesParams,
   RescheduleEmailParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
   ApiVersion as SdkApiVersion,
+  AuditEvent as SdkAuditEvent,
   DeletedDomain as SdkDeletedDomain,
   DeletedSuppression as SdkDeletedSuppression,
   DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
@@ -228,6 +237,10 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof LogEntry>, SdkLog>>,
   Assert<MutuallyAssignable<z.output<typeof LogList>, List<SdkLog>>>,
   Assert<Equals<keyof z.input<typeof ListLogsQuery>, keyof ListLogsParams>>,
+  // Audit log: the same.
+  Assert<MutuallyAssignable<z.output<typeof AuditEvent>, SdkAuditEvent>>,
+  Assert<MutuallyAssignable<z.output<typeof AuditEventList>, List<SdkAuditEvent>>>,
+  Assert<Equals<keyof z.input<typeof ListAuditEventsQuery>, keyof ListAuditEventsParams>>,
   // Errors: every API error type is one the SDK knows, and issues have the same shape.
   Assert<ApiError["type"] extends CossErrorType ? true : false>,
   Assert<MutuallyAssignable<NonNullable<ApiError["issues"]>[number], CossErrorIssue>>,

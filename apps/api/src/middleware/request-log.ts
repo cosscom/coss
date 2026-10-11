@@ -12,11 +12,21 @@ import type { AppEnv } from "../types.ts";
 const MAX_LOGGED_RESPONSE_BYTES = 64 * 1024;
 const TYPE_ID = /^([a-z][a-z_]*)_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
 
-/** Requests that are not logged: anything outside `/v1`, preflights, and reading the logs. */
+/** Reads that are not logged: the logs themselves, and the audit log. */
+const UNLOGGED_READS = ["/v1/logs", "/v1/audit_events"];
+
+/**
+ * Requests that are not logged: anything outside `/v1`, preflights, and reading the logs or the
+ * audit log. The audit log is organization-wide and readable only by owners and admins, while
+ * every member can read an environment's log, so its responses must never be copied into one.
+ */
 function skipped(method: string, path: string): boolean {
   if (!path.startsWith("/v1/")) return true;
   if (method === "OPTIONS") return true;
-  return method === "GET" && (path === "/v1/logs" || path.startsWith("/v1/logs/"));
+  return (
+    method === "GET" &&
+    UNLOGGED_READS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
+  );
 }
 
 type ErrorEnvelope = { error?: { type?: unknown; code?: unknown } };

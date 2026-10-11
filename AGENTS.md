@@ -184,7 +184,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - New endpoint: `createRoute({ …, security: [{ bearerAuth: [] }], middleware: [requireApiKey({ <product>: ["<action>"] }), rateLimit("api.read" | "api.write" | "api.send")] })`
   + `router.openapi(route, handler)`, mounted in `createV1Router` (`src/routes/v1.ts`). Auth goes in `middleware` so it
   runs before validation (401 beats 422). Tenancy comes only from `c.var.auth` — environment-scoped resources filter by
-  `environmentId`, organization-scoped ones (domains) only by `organizationId`. Document responses with
+  `environmentId`, organization-scoped ones (domains, audit events) only by `organizationId`. Document responses with
   `jsonDoc`/`errorDoc`/`commonErrors` (`src/routes/docs.ts`, includes 429). The root `validationHook` turns zod failures into 422 + `issues`;
   a per-route hook must end with `validationHook(result)`. `test/app.test.ts` asserts the exact OpenAPI path list.
 - Every operation needs an `operationId` (it names its docs page). Wire schemas carry a whole-object
@@ -656,7 +656,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   ignore their own filter. Retention: the worker's `logs` loop keeps 7 days of partitions ahead and drops expired ones
   (`LOG_RETENTION_DAYS`); the default partition catches the rest. Search syntax lives in `@coss/logs/query`
   (`parseLogQuery`/`formatLogQuery`), shared by the dashboard. Permissions: `log:read` (every role and API key, backfilled
-  by `0029`), `audit:read` (owners, admins). The audit log records changes from dashboard actions (`recordAudit`, after
+  by `0029`), `audit:read` (owners, admins, and every API key — only owners and admins create keys; backfilled by
+  `0032`). `GET /v1/audit_events[/{id}]` (`coss.auditEvents`) reads the organization-wide audit log with a key of any
+  environment; its reads, like `GET /v1/logs*`, are never request-logged (members can read environment logs, not the
+  audit log). The audit log records changes from dashboard actions (`recordAudit`, after
   the change succeeded, best effort), API keys (`recordApiAudit`), Better Auth's invitation routes and platform admins
   (`supportAudit`: actor "COSS support", never the admin or their reason); new mutations should record one.
 - **Reputation notifications** (table `reputation_notification`, ids `repntf_`; `packages/reputation/src/notifications.ts`):
@@ -776,7 +779,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
 infrastructure itself (only its spec, images and runbook exist), tracking settings over the API,
-SCIM/directory sync, log drains/streaming to external sinks, the audit log over the API,
+SCIM/directory sync, log drains/streaming to external sinks,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos/deletion, email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.

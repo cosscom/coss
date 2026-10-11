@@ -1,4 +1,5 @@
 export {
+  getOrgAuditEvent,
   listOrgAuditActions,
   listOrgAuditEvents,
   type OrgAuditActor,
