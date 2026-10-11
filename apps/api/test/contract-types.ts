@@ -6,6 +6,7 @@ import type {
   CheckSuppressionQuery,
   CreateDomainRequest,
   CreateSuppressionRequest,
+  CreateTrackingDomainRequest,
   DeletedDomain,
   DeletedSuppression,
   DomainList,
@@ -29,6 +30,7 @@ import type {
   SuppressionCheck,
   SuppressionImport,
   SuppressionList,
+  TrackingDomainObject,
 } from "@coss/email/schemas";
 import type { ListLogsQuery, LogEntry, LogList } from "@coss/logs/schemas";
 import type {
@@ -53,6 +55,7 @@ import type {
   CossErrorType,
   CreateDomainParams,
   CreateSuppressionParams,
+  CreateTrackingDomainParams,
   CreateWebhookEndpointParams,
   Email,
   EmailBatch,
@@ -82,6 +85,7 @@ import type {
   Suppression as SdkSuppression,
   SuppressionCheck as SdkSuppressionCheck,
   SuppressionImport as SdkSuppressionImport,
+  TrackingDomain as SdkTrackingDomain,
   WebhookAttempt as SdkWebhookAttempt,
   WebhookDelivery as SdkWebhookDelivery,
   SendEmailParams,
@@ -161,6 +165,10 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof DomainRecordObject>, SdkDomainRecord>>,
   Assert<MutuallyAssignable<z.output<typeof DomainList>, List<SdkDomain>>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedDomain>, SdkDeletedDomain>>,
+  Assert<
+    MutuallyAssignable<z.input<typeof CreateTrackingDomainRequest>, CreateTrackingDomainParams>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof TrackingDomainObject>, SdkTrackingDomain>>,
   // Webhook endpoints: same, including the create-only `secret`.
   Assert<
     MutuallyAssignable<z.input<typeof CreateWebhookEndpointRequest>, CreateWebhookEndpointParams>

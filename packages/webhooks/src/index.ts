@@ -30,6 +30,7 @@ export {
 } from "./endpoints.ts";
 export { WebhookError, type WebhookErrorCode } from "./errors.ts";
 export { enqueueWebhookMessage } from "./outbox.ts";
+export { purgeExpiredWebhookMessages } from "./retention.ts";
 export {
   DESCRIPTION_MAX_LENGTH,
   DeletedWebhookEndpoint,

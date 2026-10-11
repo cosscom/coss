@@ -51,6 +51,8 @@ const emailService = createEmailService({
   sandboxProvider: email.sandboxProvider,
   queue: dispatchQueue,
   trackingBaseUrl: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
+  // Emails from a domain with an active custom tracking domain are tracked through it.
+  trackingDomainProvider: email.trackingHostnames.name,
   screen: classifier ? (input) => screenMessage(input, { classifier }) : undefined,
 });
 await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));

@@ -7,10 +7,12 @@ export type { EmailResource } from "./resources/email.ts";
 export type { LogsResource } from "./resources/logs.ts";
 export type { ReputationResource } from "./resources/reputation.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
+export type { TrackingDomainsResource } from "./resources/tracking-domains.ts";
 export type { WebhookDeliveriesResource } from "./resources/webhook-deliveries.ts";
 export type { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 export type {
   CreateDomainParams,
+  CreateTrackingDomainParams,
   DeletedDomain,
   Domain,
   DomainRecord,
@@ -18,6 +20,9 @@ export type {
   DomainRecordStatus,
   DomainStatus,
   MailFromStatus,
+  TrackingDomain,
+  TrackingDomainRecord,
+  TrackingDomainStatus,
 } from "./types/domain.ts";
 export type {
   Email,

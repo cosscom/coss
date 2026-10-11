@@ -4,6 +4,7 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
 import { ApiChangelog } from "./api-changelog";
+import { RetentionPeriod, RetentionTable } from "./retention";
 
 /** Components available in every MDX page without an import. */
 export function getMDXComponents(components?: MDXComponents) {
@@ -11,6 +12,8 @@ export function getMDXComponents(components?: MDXComponents) {
     ...defaultMdxComponents,
     ...Twoslash,
     ApiChangelog,
+    RetentionPeriod,
+    RetentionTable,
     Step,
     Steps,
     Tab,

@@ -14,7 +14,13 @@ const dev = process.env.NODE_ENV === "development";
 
 const nextConfig: NextConfig = {
   // Internal packages ship TypeScript source (no build step).
-  transpilePackages: ["@coss/ui", "@coss/auth", "@coss/versioning", "@coss/observability"],
+  transpilePackages: [
+    "@coss/ui",
+    "@coss/auth",
+    "@coss/versioning",
+    "@coss/retention",
+    "@coss/observability",
+  ],
   // Twoslash drives the TypeScript compiler while MDX compiles; it must not be bundled.
   serverExternalPackages: ["typescript"],
   // This app is a zone of coss.com next to the dashboard (the default zone, which owns bare

@@ -1081,7 +1081,31 @@ export const DOMAIN_RECORD_PURPOSES = ["dkim", "mail_from_mx", "mail_from_spf", 
 
 export const DOMAIN_RECORD_STATUSES = ["verified", "missing", "mismatch", "not_checked"] as const;
 
+export const TRACKING_DOMAIN_STATUSES = [
+  "pending",
+  "active",
+  "temporary_failure",
+  "failed",
+  "deleting",
+] as const;
+
 const DOMAIN_ID_EXAMPLE = "dom_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const TRACKING_DOMAIN_EXAMPLE = {
+  hostname: "links.acme.com",
+  status: "active",
+  record: {
+    type: "CNAME",
+    name: "links.acme.com",
+    value: "track.coss.com",
+    status: "verified",
+    found: [],
+  },
+  message: null,
+  created_at: "2026-01-15T09:45:00.000Z",
+  last_checked_at: "2026-01-15T09:52:00.000Z",
+  activated_at: "2026-01-15T09:52:00.000Z",
+  failed_at: null,
+} as const;
 const VERIFIED_RECORD = { priority: null, required: true, status: "verified", found: [] } as const;
 const DKIM_RECORD_EXAMPLE = {
   ...VERIFIED_RECORD,
@@ -1129,6 +1153,7 @@ const DOMAIN_EXAMPLE = {
   last_checked_at: "2026-01-15T09:42:10.000Z",
   verified_at: "2026-01-15T09:42:10.000Z",
   failed_at: null,
+  tracking: TRACKING_DOMAIN_EXAMPLE,
 } as const;
 
 export const DomainRecordObject = z
@@ -1152,6 +1177,52 @@ export const DomainRecordObject = z
   .meta({ id: "DomainRecord", examples: [DKIM_RECORD_EXAMPLE] });
 
 export type DomainRecordObjectOutput = z.output<typeof DomainRecordObject>;
+
+export const TrackingDomainObject = z
+  .object({
+    hostname: z.string().meta({
+      description: "The tracking hostname, a subdomain of the domain.",
+      examples: ["links.acme.com"],
+    }),
+    status: z.enum(TRACKING_DOMAIN_STATUSES).meta({
+      description:
+        "`pending` until the CNAME points at COSS and its certificate is issued, `active` once " +
+        "links and open pixels of emails sent from the domain use it, `temporary_failure` when " +
+        "an active hostname stopped working (emails fall back to the default tracking host " +
+        "meanwhile), `failed` when setup gave up (72 hours) — restart it with the domain's " +
+        "verify endpoint. `deleting` is a removal in progress.",
+    }),
+    record: z
+      .object({
+        type: z.literal("CNAME"),
+        name: z.string().meta({ description: "The fully qualified record name to create." }),
+        value: z.string().meta({ description: "The host the record must point at." }),
+        status: z.enum(DOMAIN_RECORD_STATUSES).meta({
+          description:
+            "What the last DNS check saw. `not_checked` means DNS has not been consulted yet.",
+        }),
+        found: z
+          .array(z.string())
+          .meta({ description: "What DNS returned when it did not match." }),
+      })
+      .meta({ description: "The DNS record to publish, with the result of the last check." }),
+    message: z.string().nullable().meta({
+      description: "What is holding the hostname up, when the certificate provider said.",
+    }),
+    created_at: z.iso.datetime(),
+    last_checked_at: z.iso.datetime().nullable(),
+    activated_at: z.iso.datetime().nullable(),
+    failed_at: z.iso.datetime().nullable(),
+  })
+  .meta({
+    id: "TrackingDomain",
+    description:
+      "A domain's custom tracking domain: open pixels and click redirects of emails sent from " +
+      "the domain use it while it is `active`.",
+    examples: [TRACKING_DOMAIN_EXAMPLE],
+  });
+
+export type TrackingDomainObjectOutput = z.output<typeof TrackingDomainObject>;
 
 export const DomainObject = z
   .object({
@@ -1179,6 +1250,9 @@ export const DomainObject = z
     last_checked_at: z.iso.datetime().nullable(),
     verified_at: z.iso.datetime().nullable(),
     failed_at: z.iso.datetime().nullable(),
+    // The custom tracking domain (`null` when none is set up). A union, not `.nullable()`, and no
+    // `.meta()`: the OpenAPI generator would drop the `null` or inline the `TrackingDomain` schema.
+    tracking: z.union([TrackingDomainObject, z.null()]),
   })
   .meta({ id: "Domain", examples: [DOMAIN_EXAMPLE] });
 
@@ -1231,6 +1305,23 @@ export const DeletedDomain = z
   });
 
 export type DeletedDomainOutput = z.output<typeof DeletedDomain>;
+
+export const CreateTrackingDomainRequest = z
+  .strictObject({
+    hostname: z
+      .string()
+      .min(1, "Enter a hostname, like links.acme.com.")
+      .max(DOMAIN_NAME_MAX_LENGTH, `Hostnames can be at most ${DOMAIN_NAME_MAX_LENGTH} characters.`)
+      .meta({
+        description:
+          "A subdomain of the domain to serve tracking links from, without a scheme or path. " +
+          "Point it at COSS with the CNAME record the response lists.",
+        examples: ["links.acme.com"],
+      }),
+  })
+  .meta({ id: "CreateTrackingDomainRequest", examples: [{ hostname: "links.acme.com" }] });
+
+export type CreateTrackingDomainRequestInput = z.input<typeof CreateTrackingDomainRequest>;
 const SuppressionAddress = z
   .string()
   .superRefine((value, ctx) => {

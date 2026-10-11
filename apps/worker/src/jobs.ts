@@ -6,6 +6,7 @@ import {
   type EmailService,
   emailReputationChecks,
   recheckDueDomains,
+  recheckDueTrackingDomains,
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
@@ -19,6 +20,7 @@ import { contentScreeningCheck } from "@coss/screening";
 import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
 import type { Loop } from "./loop.ts";
 import { startLoop } from "./loop.ts";
+import { runRetention } from "./retention.ts";
 import { pollSesEvents, type SqsApi } from "./sqs.ts";
 
 const WEBHOOK_BATCH = 20;
@@ -28,6 +30,7 @@ const REPUTATION_BATCH = 50;
 const NOTIFICATION_BATCH = 20;
 const AUTH_EMAIL_BATCH = 20;
 const SCHEDULED_BATCH = 50;
+const RETENTION_BATCH = 1000;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck];
 
@@ -64,9 +67,13 @@ export function startJobs(deps: WorkerDeps): Loop[] {
     startLoop({
       name: "domains",
       intervalMs: 30_000,
-      run: async () =>
-        (await recheckDueDomains({ limit: DOMAIN_BATCH, signal: deps.signal }, deps.domains)) ===
-        DOMAIN_BATCH,
+      // Sending domains, then their custom tracking domains.
+      run: async () => {
+        const opts = { limit: DOMAIN_BATCH, signal: deps.signal };
+        const domains = await recheckDueDomains(opts, deps.domains);
+        const tracking = await recheckDueTrackingDomains(opts, deps.domains);
+        return domains === DOMAIN_BATCH || tracking === DOMAIN_BATCH;
+      },
     }),
     startLoop({
       name: "scheduled-emails",
@@ -99,6 +106,12 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       run: async () =>
         (await sweepUnclaimedEmails(deps.dispatchQueue, { limit: SWEEP_BATCH })).failed ===
         SWEEP_BATCH,
+    }),
+    startLoop({
+      // Deletes data past its published retention (`@coss/retention`); catches up in full batches.
+      name: "retention",
+      intervalMs: 10 * 60_000,
+      run: () => runRetention({ limit: RETENTION_BATCH, signal: deps.signal }),
     }),
     startLoop({
       // Log retention: a week of daily partitions ahead, expired days dropped whole.

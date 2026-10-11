@@ -10,6 +10,7 @@ export {
   topCategory,
 } from "./classifier.ts";
 export { listScreenings } from "./read.ts";
+export { purgeExpiredScreenings } from "./retention.ts";
 export { shouldScreen } from "./sampling.ts";
 export {
   CONTENT_SCREENING_TRIGGER,

@@ -10,6 +10,7 @@ import type {
 } from "@aws-sdk/client-sesv2";
 import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
+import type { CloudflareCustomHostname } from "./cloudflare/custom-hostnames.ts";
 import type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 import type { DnsResolver } from "./dns.ts";
 import type { DomainRow } from "./domains.ts";
@@ -47,6 +48,8 @@ export function dispatchingEmailService(opts: {
   liveProvider: EmailProvider;
   sandboxProvider: EmailProvider;
   screen?: EmailServiceOptions["screen"];
+  trackingBaseUrl?: string;
+  trackingDomainProvider?: string;
 }): EmailService & { queue: MemoryDispatchQueue } {
   const queue = memoryDispatchQueue();
   const service = createEmailService({ ...opts, queue });
@@ -313,4 +316,70 @@ export function trackingUrls(html: string): { open: string | null; clicks: strin
     (match) => match[1] ?? "",
   );
   return { open, clicks };
+}
+
+/**
+ * Cloudflare's custom hostname API in memory, as a `fetch` for
+ * `CloudflareTrackingHostnameProvider`. Hostnames start pending; `activate` is what Cloudflare
+ * does once the CNAME resolves and the certificate is issued.
+ */
+export class FakeCloudflareApi {
+  readonly hostnames = new Map<string, CloudflareCustomHostname>();
+  readonly calls: { method: string; path: string; body: unknown }[] = [];
+  /** Makes the next request fail with this HTTP status (e.g. 500). */
+  failNext: number | null = null;
+  #next = 0;
+
+  readonly fetch = async (input: string, init?: RequestInit): Promise<Response> => {
+    const url = new URL(input);
+    const method = init?.method ?? "GET";
+    const body = typeof init?.body === "string" ? JSON.parse(init.body) : undefined;
+    this.calls.push({ method, path: url.pathname, body });
+    const reply = (status: number, result: unknown, errors: unknown[] = []) =>
+      Response.json({ success: status < 400, errors, result }, { status });
+    if (this.failNext) {
+      const status = this.failNext;
+      this.failNext = null;
+      return reply(status, null, [{ code: 1000, message: "Internal error" }]);
+    }
+    const id = /\/custom_hostnames\/([^/]+)$/.exec(url.pathname)?.[1];
+    if (method === "POST" && !id) {
+      const hostname = String(body?.hostname);
+      if ([...this.hostnames.values()].some((h) => h.hostname === hostname)) {
+        return reply(409, null, [{ code: 1406, message: "Duplicate custom hostname found." }]);
+      }
+      const created: CloudflareCustomHostname = {
+        id: `cf-${++this.#next}`,
+        hostname,
+        status: "pending",
+        ssl: { status: "pending_validation" },
+      };
+      this.hostnames.set(created.id, created);
+      return reply(200, created);
+    }
+    const found = id ? this.hostnames.get(id) : undefined;
+    if (!found) return reply(404, null, [{ code: 1436, message: "Custom hostname not found." }]);
+    if (method === "DELETE") {
+      this.hostnames.delete(found.id);
+      return reply(200, { id: found.id });
+    }
+    return reply(200, found);
+  };
+
+  /** The custom hostname registered for `hostname`. */
+  find(hostname: string): CloudflareCustomHostname | undefined {
+    return [...this.hostnames.values()].find((h) => h.hostname === hostname);
+  }
+
+  /** Changes what Cloudflare reports for `hostname`. */
+  set(hostname: string, update: Partial<Omit<CloudflareCustomHostname, "id" | "hostname">>): void {
+    const found = this.find(hostname);
+    if (!found) throw new Error(`no custom hostname ${hostname}`);
+    Object.assign(found, update);
+  }
+
+  /** The CNAME resolved and the certificate is live. */
+  activate(hostname: string): void {
+    this.set(hostname, { status: "active", ssl: { status: "active" } });
+  }
 }

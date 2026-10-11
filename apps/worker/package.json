@@ -23,7 +23,9 @@
     "@coss/logs": "workspace:*",
     "@coss/observability": "workspace:*",
     "@coss/reputation": "workspace:*",
+    "@coss/retention": "workspace:*",
     "@coss/screening": "workspace:*",
+    "@coss/tenancy": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@sentry/bun": "catalog:",
     "@t3-oss/env-core": "catalog:",
@@ -31,7 +33,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@coss/tenancy": "workspace:*",
     "@coss/tsconfig": "workspace:*",
     "@coss/versioning": "workspace:*",
     "@types/bun": "catalog:",

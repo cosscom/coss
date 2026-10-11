@@ -10,6 +10,7 @@
  */
 import { db, type Executor, schema } from "@coss/db";
 import { type CheckContext, type ReputationCheck, rateResult } from "@coss/reputation";
+import { RETENTION_DAYS } from "@coss/retention";
 import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { SIMULATOR_DOMAIN } from "./providers/fake.ts";
 
@@ -21,7 +22,7 @@ export const ROLLUP_SETTLE_MS = HOUR;
 /** Events bump hours that ended at least this long ago; the margin covers transaction length. */
 const ROLLUP_INVALIDATE_AFTER_MS = ROLLUP_SETTLE_MS / 2;
 /** Longest window (`windowDays` ≤ 30) plus a day. */
-const ROLLUP_RETENTION_MS = 31 * 24 * HOUR;
+const ROLLUP_RETENTION_MS = RETENTION_DAYS.reputationRollups * 24 * HOUR;
 
 export type SendingCounts = { recipients: number; bounces: number; complaints: number };
 

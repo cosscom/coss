@@ -13,6 +13,7 @@
   "dependencies": {
     "@coss/api": "workspace:*",
     "@coss/auth": "workspace:*",
+    "@coss/retention": "workspace:*",
     "@coss/observability": "workspace:*",
     "@coss/ui": "workspace:*",
     "@coss/versioning": "workspace:*",

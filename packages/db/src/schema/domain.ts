@@ -209,6 +209,8 @@ export const email = pgTable(
     index("email_scheduled_at_idx").on(t.scheduledAt).where(sql`${t.scheduledAt} is not null`),
     // The worker's sweeps for queued emails whose dispatch was lost or interrupted.
     index("email_queued_created_at_idx").on(t.createdAt).where(sql`${t.status} = 'queued'`),
+    // The worker's retention purge (oldest first, across organizations).
+    index("email_created_at_idx").on(t.createdAt),
     // Target for composite FKs that pin children to the same organization.
     unique("email_id_organization_unique").on(t.id, t.organizationId),
   ],
@@ -565,6 +567,73 @@ export const domain = pgTable(
   ],
 );
 
+export const trackingDomainStatus = pgEnum("tracking_domain_status", [
+  "pending",
+  "active",
+  "temporary_failure",
+  "failed",
+  "deleting",
+]);
+
+/** Result of checking the CNAME a tracking domain needs (same statuses as `DomainRecord`). */
+export type TrackingDomainRecord = {
+  type: "CNAME";
+  name: string;
+  value: string;
+  status: DomainRecord["status"];
+  found: string[];
+};
+
+/**
+ * The custom tracking hostname of a sending domain (e.g. `links.acme.com`, a CNAME to COSS's
+ * tracking host): open pixels and click redirects of emails sent from that domain use it once the
+ * provider (Cloudflare for SaaS) serves it with a certificate. At most one per domain; hostnames
+ * are unique across organizations while not `failed`.
+ */
+export const trackingDomain = pgTable(
+  "tracking_domain",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.trackingDomain)),
+    organizationId: text("organization_id").notNull(),
+    domainId: text("domain_id").notNull(),
+    // Lower-case ASCII (punycode), no trailing dot; a subdomain of the domain's name.
+    hostname: text("hostname").notNull(),
+    status: trackingDomainStatus("status").notNull().default("pending"),
+    provider: text("provider").notNull(),
+    // The provider's id for the hostname (a Cloudflare custom hostname id); null until created.
+    providerHostnameId: text("provider_hostname_id"),
+    record: jsonb("record").$type<TrackingDomainRecord>().notNull(),
+    // The latest problem the provider reported (certificate validation, blocked hostname…).
+    providerMessage: text("provider_message"),
+    // Verification gives up 72 hours after this (creation, or the latest restart).
+    verificationStartedAt: timestamp("verification_started_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
+    nextCheckAt: timestamp("next_check_at", { withTimezone: true }),
+    activatedAt: timestamp("activated_at", { withTimezone: true }),
+    failedAt: timestamp("failed_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "tracking_domain_domain_fk",
+      columns: [t.domainId, t.organizationId],
+      foreignColumns: [domain.id, domain.organizationId],
+    }).onDelete("cascade"),
+    unique("tracking_domain_domain_unique").on(t.domainId),
+    uniqueIndex("tracking_domain_hostname_active_unique")
+      .on(t.hostname)
+      .where(sql`${t.status} <> 'failed'`),
+    index("tracking_domain_next_check_at_idx")
+      .on(t.nextCheckAt)
+      .where(sql`${t.nextCheckAt} is not null`),
+  ],
+);
+
 /** A customer URL that receives signed event notifications for one environment. */
 export const webhookEndpoint = pgTable(
   "webhook_endpoint",
@@ -620,6 +689,8 @@ export const webhookMessage = pgTable(
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
     unique("webhook_message_id_organization_unique").on(t.id, t.organizationId),
+    // The worker's retention purge.
+    index("webhook_message_created_at_idx").on(t.createdAt),
   ],
 );
 
@@ -742,7 +813,10 @@ export const reputationEventType = pgEnum("reputation_event_type", [
 
 export const reputationActor = pgEnum("reputation_actor", ["system", "admin"]);
 
-/** Append-only history of an organization's standing changes (audit trail). */
+/**
+ * Append-only history of an organization's standing changes (audit trail). The worker deletes
+ * entries past the retention in `@coss/retention`, except each organization's latest transition.
+ */
 export const reputationEvent = pgTable(
   "reputation_event",
   {
@@ -885,6 +959,8 @@ export const contentScreening = pgTable(
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
     index("content_screening_organization_created_at_idx").on(t.organizationId, t.createdAt.desc()),
+    // The worker's retention purge.
+    index("content_screening_created_at_idx").on(t.createdAt),
   ],
 );
 
@@ -938,7 +1014,8 @@ export const organizationApiVersion = pgTable("organization_api_version", {
 });
 
 /**
- * Append-only log of platform admin actions (bans, role changes, impersonation, suspensions…).
+ * Append-only log of platform admin actions (bans, role changes, impersonation, suspensions…),
+ * kept for the retention in `@coss/retention` (the worker deletes older entries).
  * Platform-level, so `organization_id` is optional, and history: no FKs to the targets, and the
  * actor's email is copied so entries stay readable after the rows they name are gone.
  */
@@ -963,6 +1040,8 @@ export const adminAuditEvent = pgTable(
     index("admin_audit_event_organization_idx")
       .on(t.organizationId, t.id.desc())
       .where(sql`${t.organizationId} is not null`),
+    // The worker's retention purge.
+    index("admin_audit_event_created_at_idx").on(t.createdAt),
   ],
 );
 

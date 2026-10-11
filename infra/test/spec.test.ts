@@ -9,7 +9,12 @@ import { emailEnvShape, emailWorkerEnvShape } from "@coss/email/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { screeningEnvShape } from "@coss/screening/env";
-import { albListenerRules, cossComCacheBehaviours } from "../aws/routing.ts";
+import {
+  albListenerRules,
+  cossComCacheBehaviours,
+  TRACKING_HOST,
+  TRACKING_ORIGIN_VERIFY_HEADER,
+} from "../aws/routing.ts";
 import { SERVICES, type ServiceName } from "../aws/services.ts";
 
 const ROOT = path.resolve(import.meta.dir, "../..");
@@ -144,6 +149,29 @@ describe("routing", () => {
       );
     expect(sitePaths).toEqual(expect.arrayContaining(["/", "/docs", "/docs/*", "/site-assets/*"]));
     expect(sitePaths).not.toContain("/api/*");
+  });
+
+  test("tracking routes on customer hostnames reach the API only with Cloudflare's header", () => {
+    const tracking = rules.find((rule) =>
+      rule.conditions.some(
+        (condition) =>
+          condition.Field === "http-header" &&
+          condition.HttpHeaderConfig.HttpHeaderName === TRACKING_ORIGIN_VERIFY_HEADER,
+      ),
+    );
+    expect(tracking?.targetGroup).toBe("api");
+    expect(tracking?.conditions.map((condition) => condition.Field)).toEqual([
+      "path-pattern",
+      "http-header",
+    ]);
+    expect(tracking?.conditions[0]).toEqual({
+      Field: "path-pattern",
+      PathPatternConfig: { Values: ["/t/*"] },
+    });
+    // Before the coss.com path rules and the dashboard.
+    expect(rules.indexOf(tracking as (typeof rules)[number])).toBe(1);
+    const worker = SERVICES.find((service) => service.name === "worker");
+    expect(worker?.env.find((v) => v.name === "TRACKING_CNAME_TARGET")?.value).toBe(TRACKING_HOST);
   });
 
   test("CloudFront caches site paths and hashed assets, never the dashboard or auth", () => {
