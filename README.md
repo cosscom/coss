@@ -164,7 +164,7 @@ nothing goes unchecked. Tests are never cached. Artifacts are HMAC-signed with a
 1. Be a member of the `cal` team on Vercel.
 2. Log Turbo in (stores a token in Turbo's user config; the Vercel CLI's own login is not used):
    ```sh
-   bunx turbo login --sso-team=cal
+   bunx turbo login                 # pick the cal team if asked
    # headless box: create a token at https://vercel.com/account/tokens (scope: cal), then
    bunx turbo login --manual
    ```
