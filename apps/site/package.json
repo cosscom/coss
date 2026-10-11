@@ -14,6 +14,7 @@
     "@coss/api": "workspace:*",
     "@coss/auth": "workspace:*",
     "@coss/ui": "workspace:*",
+    "@coss/versioning": "workspace:*",
     "fumadocs-core": "16.17.1",
     "fumadocs-mdx": "15.4.7",
     "fumadocs-openapi": "12.4.1",

@@ -21,7 +21,8 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
-    "test": "bun test"
+    "test": "bun test",
+    "prepublishOnly": "echo 'coss is not published: the npm name belongs to a third party (see README).' && exit 1"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "0.18.5",

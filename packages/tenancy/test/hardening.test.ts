@@ -54,8 +54,10 @@ describe("authenticateApiKey", () => {
     });
     expect(statements.filter((sql) => sql.startsWith("select"))).toHaveLength(5);
     const writes = statements.filter((sql) => !sql.startsWith("select"));
-    expect(writes).toHaveLength(1);
+    // The organization's first request also pins its API version, once.
+    expect(writes).toHaveLength(2);
     expect(writes[0]).toStartWith('update "apikey" set "last_request"');
+    expect(writes[1]).toStartWith('insert into "organization_api_version"');
   });
 
   test("a failed usage write does not fail authentication", async () => {

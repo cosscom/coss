@@ -32,8 +32,13 @@ import type {
   ReputationCheckObject,
   ReputationObject,
 } from "@coss/reputation/schemas";
+import type { ApiVersion } from "@coss/versioning";
 import type {
   DeletedWebhookEndpoint,
+  ListWebhookDeliveriesQuery,
+  WebhookAttemptObject,
+  WebhookDeliveryList,
+  WebhookDeliveryObject,
   WebhookEndpointList,
   WebhookEndpointObject,
   WebhookEndpointWithSecret,
@@ -50,7 +55,9 @@ import type {
   ImportSuppressionsParams,
   List,
   ListSuppressionsParams,
+  ListWebhookDeliveriesParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
+  ApiVersion as SdkApiVersion,
   DeletedDomain as SdkDeletedDomain,
   DeletedSuppression as SdkDeletedSuppression,
   DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
@@ -67,6 +74,8 @@ import type {
   Suppression as SdkSuppression,
   SuppressionCheck as SdkSuppressionCheck,
   SuppressionImport as SdkSuppressionImport,
+  WebhookAttempt as SdkWebhookAttempt,
+  WebhookDelivery as SdkWebhookDelivery,
   SendEmailParams,
   TrackingOptions,
   UpdateWebhookEndpointParams,
@@ -98,6 +107,8 @@ type EmailOutput = z.output<typeof EmailObject>;
 type ApiError = ErrorEnvelopeBody["error"];
 
 export type Contract = [
+  // API versions: the SDK knows exactly the API's versions.
+  Assert<MutuallyAssignable<ApiVersion, SdkApiVersion>>,
   // Request: anything the SDK accepts is what the API validates, and vice versa.
   Assert<MutuallyAssignable<SendInput, SendEmailParams>>,
   Assert<Equals<keyof SendInput, keyof SendEmailParams>>,
@@ -144,6 +155,16 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointWithSecret>, SdkEndpointWithSecret>>,
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointList>, List<WebhookEndpoint>>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedWebhookEndpoint>, SdkDeletedWebhookEndpoint>>,
+  // Delivery logs (the SDK sends `limit` as a number).
+  Assert<
+    MutuallyAssignable<
+      Omit<z.input<typeof ListWebhookDeliveriesQuery>, "limit"> & { limit?: number },
+      ListWebhookDeliveriesParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof WebhookAttemptObject>, SdkWebhookAttempt>>,
+  Assert<MutuallyAssignable<z.output<typeof WebhookDeliveryObject>, SdkWebhookDelivery>>,
+  Assert<MutuallyAssignable<z.output<typeof WebhookDeliveryList>, List<SdkWebhookDelivery>>>,
   // Webhooks: every body COSS sends is exactly one member of the SDK's `WebhookEvent`.
   Assert<MutuallyAssignable<z.output<typeof EmailWebhookEvent>, SdkEmailWebhookEvent>>,
   Assert<

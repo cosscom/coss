@@ -17,7 +17,7 @@ import {
   EMAIL_RECIPIENT_STATUSES,
   type EmailEventType,
   type EmailRecipientStatus,
-  type EmailWebhookEventOutput,
+  type StoredEmailWebhookEvent,
 } from "./schemas.ts";
 import { autoSuppress } from "./suppressions.ts";
 
@@ -264,7 +264,7 @@ export async function recordProviderEvent(
   }
 
   for (const row of inserted) {
-    const payload: EmailWebhookEventOutput = {
+    const payload: StoredEmailWebhookEvent = {
       id: row.id,
       object: "event",
       type: row.type,

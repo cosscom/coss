@@ -19,6 +19,7 @@
     "@coss/reputation": "workspace:*",
     "@coss/ratelimit": "workspace:*",
     "@coss/tenancy": "workspace:*",
+    "@coss/versioning": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@hono/zod-openapi": "catalog:",
     "@t3-oss/env-core": "catalog:",
