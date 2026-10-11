@@ -17,6 +17,7 @@
   "dependencies": {
     "@coss/db": "workspace:*",
     "@coss/reputation": "workspace:*",
+    "@coss/retention": "workspace:*",
     "ai": "catalog:",
     "drizzle-orm": "catalog:",
     "zod": "catalog:"

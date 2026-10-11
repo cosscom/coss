@@ -85,6 +85,11 @@ export {
   sendingCounts,
 } from "./reputation-checks.ts";
 export {
+  purgeEmptyEmailBatches,
+  purgeExpiredEmails,
+  purgeExpiredReputationRollups,
+} from "./retention.ts";
+export {
   ALL_CATEGORIES,
   CheckSuppressionQuery,
   type CheckSuppressionQueryOutput,

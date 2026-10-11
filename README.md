@@ -126,6 +126,10 @@ resets) are printed to the dashboard's server console in development.
   tune thresholds and sampling, switch to shadow mode, or turn screening off per organization (e.g. for
   phishing-simulation senders). Locally `SCREENING_CLASSIFIER=fake` flags content containing `[coss-test:phishing]`
   (or `spam`, `malware`, `fraud`; `[coss-test:spam:0.8]` sets the score).
+- **Data retention** — the worker deletes data once it passes its published period (`packages/retention`, shown at
+  `/docs/data-retention` and in each organization's settings): emails with their events and links after 45 days,
+  webhook deliveries after 30, screening verdicts after 90, standing history and the admin audit log after 2 years,
+  expired sessions and invitations 7 days after expiry. Suppressions and configuration are kept until deleted.
 - **Platform admins** — the console at `/admin` (promote with `bun run admin:create --email …`): search users and
   organizations; ban users (with a reason and duration — signs them out everywhere), grant/remove the admin role,
   revoke sessions, impersonate (with a reason, never other admins); **suspend organizations** (API keys get 403

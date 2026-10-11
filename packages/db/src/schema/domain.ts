@@ -209,6 +209,8 @@ export const email = pgTable(
     index("email_scheduled_at_idx").on(t.scheduledAt).where(sql`${t.scheduledAt} is not null`),
     // The worker's sweeps for queued emails whose dispatch was lost or interrupted.
     index("email_queued_created_at_idx").on(t.createdAt).where(sql`${t.status} = 'queued'`),
+    // The worker's retention purge (oldest first, across organizations).
+    index("email_created_at_idx").on(t.createdAt),
     // Target for composite FKs that pin children to the same organization.
     unique("email_id_organization_unique").on(t.id, t.organizationId),
   ],
@@ -687,6 +689,8 @@ export const webhookMessage = pgTable(
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
     unique("webhook_message_id_organization_unique").on(t.id, t.organizationId),
+    // The worker's retention purge.
+    index("webhook_message_created_at_idx").on(t.createdAt),
   ],
 );
 
@@ -809,7 +813,10 @@ export const reputationEventType = pgEnum("reputation_event_type", [
 
 export const reputationActor = pgEnum("reputation_actor", ["system", "admin"]);
 
-/** Append-only history of an organization's standing changes (audit trail). */
+/**
+ * Append-only history of an organization's standing changes (audit trail). The worker deletes
+ * entries past the retention in `@coss/retention`, except each organization's latest transition.
+ */
 export const reputationEvent = pgTable(
   "reputation_event",
   {
@@ -952,6 +959,8 @@ export const contentScreening = pgTable(
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
     index("content_screening_organization_created_at_idx").on(t.organizationId, t.createdAt.desc()),
+    // The worker's retention purge.
+    index("content_screening_created_at_idx").on(t.createdAt),
   ],
 );
 
@@ -1005,7 +1014,8 @@ export const organizationApiVersion = pgTable("organization_api_version", {
 });
 
 /**
- * Append-only log of platform admin actions (bans, role changes, impersonation, suspensions…).
+ * Append-only log of platform admin actions (bans, role changes, impersonation, suspensions…),
+ * kept for the retention in `@coss/retention` (the worker deletes older entries).
  * Platform-level, so `organization_id` is optional, and history: no FKs to the targets, and the
  * actor's email is copied so entries stay readable after the rows they name are gone.
  */
@@ -1030,6 +1040,8 @@ export const adminAuditEvent = pgTable(
     index("admin_audit_event_organization_idx")
       .on(t.organizationId, t.id.desc())
       .where(sql`${t.organizationId} is not null`),
+    // The worker's retention purge.
+    index("admin_audit_event_created_at_idx").on(t.createdAt),
   ],
 );
 

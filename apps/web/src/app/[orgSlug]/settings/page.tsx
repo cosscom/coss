@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CopyButton } from "@/components/copy-button";
 import { PageHeader } from "@/components/page-header";
+import { RetentionPolicyCard } from "@/components/retention-policy";
 import { requireOrgMember } from "@/lib/session";
 import { UpgradeApiVersionButton } from "./api-version-form";
 import { LeaveOrganizationButton } from "./leave-organization-button";
@@ -166,6 +167,8 @@ export default async function OrganizationSettingsPage({
           ) : null}
         </CardPanel>
       </Card>
+
+      <RetentionPolicyCard />
 
       <Card>
         <CardHeader>

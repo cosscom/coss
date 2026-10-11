@@ -21,6 +21,7 @@
     "@coss/observability": "workspace:*",
     "@coss/ratelimit": "workspace:*",
     "@coss/reputation": "workspace:*",
+    "@coss/retention": "workspace:*",
     "@coss/screening": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/ui": "workspace:*",

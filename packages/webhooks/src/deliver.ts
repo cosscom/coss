@@ -300,23 +300,39 @@ export async function retryWebhookDelivery(input: {
   id: string;
 }): Promise<boolean> {
   if (!isId("whdel", input.id)) return false;
-  const [updated] = await db
-    .update(webhookDelivery)
-    .set({
-      status: "pending",
-      nextAttemptAt: new Date(),
-      leaseExpiresAt: null,
-      // A failed delivery gets exactly one more attempt.
-      attemptCount: sql`least(${webhookDelivery.attemptCount}, ${MAX_ATTEMPTS - 1})`,
-    })
-    .where(
-      and(
-        eq(webhookDelivery.organizationId, input.organizationId),
-        eq(webhookDelivery.endpointId, input.endpointId),
-        eq(webhookDelivery.id, input.id),
-        ne(webhookDelivery.status, "pending"),
-      ),
-    )
-    .returning({ id: webhookDelivery.id });
-  return Boolean(updated);
+  return db.transaction(async (tx) => {
+    // Serialize with retention on the parent, before locking/updating the child delivery.
+    const [message] = await tx
+      .select({ id: webhookMessage.id })
+      .from(webhookMessage)
+      .innerJoin(webhookDelivery, eq(webhookDelivery.messageId, webhookMessage.id))
+      .where(
+        and(
+          eq(webhookDelivery.organizationId, input.organizationId),
+          eq(webhookDelivery.endpointId, input.endpointId),
+          eq(webhookDelivery.id, input.id),
+        ),
+      )
+      .for("update", { of: webhookMessage });
+    if (!message) return false;
+    const [updated] = await tx
+      .update(webhookDelivery)
+      .set({
+        status: "pending",
+        nextAttemptAt: new Date(),
+        leaseExpiresAt: null,
+        // A failed delivery gets exactly one more attempt.
+        attemptCount: sql`least(${webhookDelivery.attemptCount}, ${MAX_ATTEMPTS - 1})`,
+      })
+      .where(
+        and(
+          eq(webhookDelivery.organizationId, input.organizationId),
+          eq(webhookDelivery.endpointId, input.endpointId),
+          eq(webhookDelivery.id, input.id),
+          ne(webhookDelivery.status, "pending"),
+        ),
+      )
+      .returning({ id: webhookDelivery.id });
+    return Boolean(updated);
+  });
 }

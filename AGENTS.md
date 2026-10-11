@@ -16,7 +16,7 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
-| `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
+| `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso plugins), org permissions, slug rules; `./sso`: SSO trust rules (server-only); `./emails`: the account email outbox (verification, password reset, invitation; no Better Auth import). |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO recovery, audit log and cross-org reads. |
@@ -28,16 +28,18 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `packages/observability` | `@coss/observability` | Sentry setup shared by every app: env shape (`./env`, zod only), `sentryConfig`/`sentryOptions`, PII scrubbing (`scrubEvent`), the browser init (`./browser`), the dashboard's envelope tunnel (`./tunnel`) and `withSentryConfig` options (`./build`). Takes each app's SDK; depends on no framework SDK and no workspace. |
 | `packages/logs` | `@coss/logs` | Environment logs and the org audit log: the day-partitioned `log_entry` table (API requests, email events, webhook attempts), the buffered fail-open request writer, queries (keyset pages, histogram, facets, related lines, CSV/NDJSON export), partition retention, `org_audit_event`; `./schemas` + `./query` (search syntax; zod only), `./testing`. |
 | `packages/versioning` | `@coss/versioning` | Dated public API versions (`Coss-Version`): `API_VERSIONS`, the `VERSION_CHANGES` registry and the engine that renders latest-shape responses/webhook payloads in older versions and upgrades older request bodies. Zero deps, client-safe; `./testing` (`testVersioning()`). |
+| `packages/retention` | `@coss/retention` | The data retention policy: `RETENTION_POLICY` (published by the docs and the dashboard) and `RETENTION_DAYS` (enforced by each package's purge, run by the worker). Zero deps, client-safe. |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens) and `globals.css` (the dashboard's stylesheet). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests; nothing here calls AWS. See `infra/AGENTS.md`. |
 
 Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `db ← auth ← tenancy`, `db ← logs ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`; `versioning` (no deps) ← `tenancy`, `webhooks`, `email` (`schemas` examples);
+`retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `worker`, `web`, `site`;
 `api → tenancy, email, reputation, webhooks, ratelimit, versioning, logs, db`;
-`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, logs, db, ui`; `site → ui, auth, versioning` (only the client-safe `@coss/auth/slugs` and the changelog) +
+`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, db, ui`; `site → ui, auth, versioning, retention` (only the client-safe `@coss/auth/slugs`, the changelog and the retention policy) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening` (`slugs`, `env` only);
-`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, db`; `sdk` and `ui` depend on no workspace.
+`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, tenancy, retention, db` (from tenancy only `./retention`, which imports nothing but `db`); `sdk` and `ui` depend on no workspace.
 Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`logs`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit or logs; Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`).
@@ -471,7 +473,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/versioning`, `@coss/logs/{schemas,query}`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
+  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -578,6 +580,22 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   settings, `organization:update`). The outbox stores the latest-shape event; `renderWebhookPayload` renders it in
   the endpoint's version at every attempt and adds `api_version` (signed, in the body). Outbox payloads are typed
   `Stored*WebhookEvent` (no `api_version`). Never version error envelopes, and never transform in handlers.
+- **Data retention** (`@coss/retention`): `RETENTION_DAYS` / `RETENTION_POLICY` are the only source of retention
+  periods — the docs page (`/docs/data-retention`, `<RetentionTable />`/`<RetentionPeriod of>` MDX components, also
+  rendered into `/llms*.txt`) and the dashboard's settings card render them, and each owning package's purge
+  enforces them: `purgeExpiredEmails`/`purgeEmptyEmailBatches`/`purgeExpiredReputationRollups` (`@coss/email`),
+  `purgeExpiredWebhookMessages` (`@coss/webhooks`), `purgeExpiredScreenings` (`@coss/screening`),
+  `purgeExpiredReputationNotifications`/`purgeExpiredReputationEvents` (`@coss/reputation`),
+  `purgeExpiredAuthRows`/`purgeExpiredAdminAuditEvents` (`@coss/tenancy/retention`). The worker's `retention` loop
+  (`apps/worker/src/retention.ts`, every 10 min, 1,000 rows per step, back-to-back while a step fills its batch) runs
+  them in order (emails before their batches). Purges are system-level `DELETE … WHERE id IN (oldest batch)` with
+  the condition re-checked, take `{ now, limit, scope }` (always pass `scope` in tests), and rely on cascades for
+  children. Never purge: `queued`/`scheduled` emails, messages with a `pending` delivery (suspended orgs' are held),
+  an org's latest reputation transition (notifications compare against it), `content_screening_counter` (the
+  sampling sequence), suppressions (they outlive their email; the dashboard hides "View email" past the cutoff).
+  Email retention must exceed the reputation window (≤ 30 days) and rollup recounts (31 days) — a test checks it. A
+  new table either gets a catalog entry + purge or is covered by an existing "while your account exists" rule; changing
+  a period changes the published policy, so treat it like a terms change.
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -585,7 +603,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - **Platform admin** (`/admin`, `@coss/tenancy/admin`): every admin page calls `requirePlatformAdmin()` itself — Next
   renders layouts and pages in parallel, so the layout's check alone would still stream the page's data to non-admins
   (verified). Actions use `requirePlatformAdminAction()` and record an `admin_audit_event` (append-only; no FKs; the
-  actor's email is copied); suspension/key revocation write it in the same transaction. Admins can't act on
+  actor's email is copied; deleted after `RETENTION_DAYS.adminAuditLog`); suspension/key revocation write it in the same transaction. Admins can't act on
   themselves; never send session tokens to the browser (revoke-one looks the token up server-side).
 - **Organization suspension** (`organization_suspension`, presence = suspended; reason is admin-internal): enforced in
   `authenticateApiKey` (`suspended` → 403 `organization_suspended`, only for otherwise-valid keys),
