@@ -191,7 +191,12 @@ async function skipReason(row: AuthEmailRow, now: Date): Promise<string | null> 
   }
   if (!row.userId) return "The account is gone.";
   const [account] = await db
-    .select({ email: user.email, emailVerified: user.emailVerified, banned: user.banned })
+    .select({
+      email: user.email,
+      emailVerified: user.emailVerified,
+      banned: user.banned,
+      banExpires: user.banExpires,
+    })
     .from(user)
     .where(eq(user.id, row.userId));
   if (!account && now.getTime() - row.createdAt.getTime() < ACCOUNT_COMMIT_GRACE_MS) {
@@ -199,7 +204,12 @@ async function skipReason(row: AuthEmailRow, now: Date): Promise<string | null> 
     throw new Error("The account does not exist yet.");
   }
   if (!account || account.email !== row.to) return "The account or its address changed.";
-  if (account.banned) return "The account is banned.";
+  if (
+    account.banned &&
+    (account.banExpires === null || account.banExpires.getTime() > now.getTime())
+  ) {
+    return "The account is banned.";
+  }
   if (row.kind === "verify_email" && account.emailVerified) return "Already verified.";
   return null;
 }

@@ -135,8 +135,12 @@ describe("account emails", () => {
     expect(skipped).toMatchObject({ status: "skipped", url: null });
   });
 
-  test("a password reset email carries a working link", async () => {
+  test("a password reset email works after a temporary ban expires, before signing in", async () => {
     const user = await createTestUser();
+    await db
+      .update(schema.user)
+      .set({ banned: true, banExpires: new Date(Date.now() - 60_000) })
+      .where(eq(schema.user.id, user.id));
     await auth.api.requestPasswordReset({
       body: { email: user.email, redirectTo: "/reset-password" },
     });
@@ -149,6 +153,30 @@ describe("account emails", () => {
     const newPassword = `new-${uniqueSuffix()}-password`;
     await auth.api.resetPassword({ body: { newPassword, token } });
     expect(await sessionHeaders(user.email, newPassword)).toBeInstanceOf(Headers);
+  });
+
+  test.each([
+    { label: "permanent", offset: null, status: "skipped" },
+    { label: "active temporary", offset: 60_000, status: "skipped" },
+    { label: "expiring now", offset: 0, status: "sent" },
+  ])("a $label ban leaves a password reset email $status", async ({ offset, status }) => {
+    const user = await createTestUser();
+    await auth.api.requestPasswordReset({
+      body: { email: user.email, redirectTo: "/reset-password" },
+    });
+    const now = new Date();
+    await db
+      .update(schema.user)
+      .set({ banned: true, banExpires: offset === null ? null : new Date(now.getTime() + offset) })
+      .where(eq(schema.user.id, user.id));
+    const { sent, sender } = recordingSender();
+    await runDueAuthEmails({ now, scope: { to: [user.email] } }, { sender });
+    expect(sent).toHaveLength(status === "sent" ? 1 : 0);
+    expect((await listAuthEmails([user.email]))[0]).toMatchObject({
+      status,
+      url: null,
+      lastError: status === "skipped" ? "The account is banned." : null,
+    });
   });
 
   test("an email whose link expired before it could be sent is skipped", async () => {
