@@ -10,6 +10,7 @@ export {
   EVALUATION_LEASE_MS,
   type EvaluationOutcome,
   evaluateOrganization,
+  policyOf,
   type ReputationDeps,
   runDueReputationEvaluations,
   WARNING_RECHECK_MS,

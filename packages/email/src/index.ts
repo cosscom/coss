@@ -171,6 +171,7 @@ export {
   type TrackingRuleInputOutput,
   WEBHOOK_EVENT_TYPES,
 } from "./schemas.ts";
+export { emailScreeningContent, htmlTextAndLinks } from "./screening.ts";
 export {
   cancelScheduledEmail,
   createEmailService,

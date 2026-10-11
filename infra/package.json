@@ -11,7 +11,8 @@
   "dependencies": {
     "@coss/auth": "workspace:*",
     "@coss/email": "workspace:*",
-    "@coss/ratelimit": "workspace:*"
+    "@coss/ratelimit": "workspace:*",
+    "@coss/screening": "workspace:*"
   },
   "devDependencies": {
     "@coss/tsconfig": "workspace:*",

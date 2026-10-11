@@ -1,4 +1,5 @@
 import { emailWorkerEnvShape } from "@coss/email/env";
+import { screeningEnvShape } from "@coss/screening/env";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
@@ -10,6 +11,8 @@ export const env = createEnv({
     API_PUBLIC_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
     API_PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
     ...emailWorkerEnvShape,
+    // AI content screening of sampled live emails before they are sent (@coss/screening).
+    ...screeningEnvShape,
     // Decrypts webhook signing secrets: 32 bytes, base64 (same value as the dashboard's).
     WEBHOOK_SECRETS_KEY: z
       .string()

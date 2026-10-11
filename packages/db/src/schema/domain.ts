@@ -9,6 +9,8 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
+  real,
   text,
   timestamp,
   unique,
@@ -718,6 +720,70 @@ export const reputationEvent = pgTable(
     index("reputation_event_organization_created_at_idx").on(t.organizationId, t.createdAt.desc()),
   ],
 );
+export const contentScreeningVerdict = pgEnum("content_screening_verdict", [
+  "clean",
+  "flagged",
+  "blocked",
+  "error",
+]);
+
+/**
+ * One AI content screening of an outgoing message (`@coss/screening`). Product-agnostic: the
+ * message is named by `product` + `subject_id` (no FK), and its content is never copied here.
+ */
+export const contentScreening = pgTable(
+  "content_screening",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.contentScreening)),
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    // e.g. `email`; `subject_id` is that product's message id.
+    product: text("product").notNull(),
+    subjectId: text("subject_id").notNull(),
+    // The message's position among the organization's live messages of this product.
+    sequence: integer("sequence").notNull(),
+    classifier: text("classifier").notNull(),
+    model: text("model"),
+    verdict: contentScreeningVerdict("verdict").notNull(),
+    // Whether a `blocked` verdict actually stopped the message (the policy's `enforce`).
+    enforced: boolean("enforced").notNull().default(false),
+    // Probability per category, e.g. `{ "spam": 0.02, "phishing": 0.97 }`.
+    scores: jsonb("scores").$type<Record<string, number>>().notNull().default({}),
+    topCategory: text("top_category"),
+    topScore: real("top_score"),
+    inputTokens: integer("input_tokens"),
+    latencyMs: integer("latency_ms").notNull(),
+    errorMessage: text("error_message"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "content_screening_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    index("content_screening_organization_created_at_idx").on(t.organizationId, t.createdAt.desc()),
+  ],
+);
+
+/** How many live messages of a product an organization has dispatched (screening samples by it). */
+export const contentScreeningCounter = pgTable(
+  "content_screening_counter",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    product: text("product").notNull(),
+    seen: integer("seen").notNull().default(0),
+    // A sampled screening failed, so the next message is screened instead.
+    owed: boolean("owed").notNull().default(false),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ columns: [t.organizationId, t.product] })],
+);
+
 /**
  * A platform admin's suspension of an organization; the row's presence is the suspension.
  * While it exists the organization's API keys are refused, its webhook deliveries are held and

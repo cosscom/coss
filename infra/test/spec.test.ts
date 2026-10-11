@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { emailEnvShape, emailWorkerEnvShape } from "@coss/email/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
+import { screeningEnvShape } from "@coss/screening/env";
 import { albListenerRules, cossComCacheBehaviours } from "../aws/routing.ts";
 import { SERVICES, type ServiceName } from "../aws/services.ts";
 
@@ -21,6 +22,7 @@ function schemaKeys(envFile: string, spread: Record<string, unknown>): string[] 
     ...own,
     ...(source.includes("...email") ? Object.keys(spread) : []),
     ...(source.includes("...rateLimitEnvShape") ? Object.keys(rateLimitEnvShape) : []),
+    ...(source.includes("...screeningEnvShape") ? Object.keys(screeningEnvShape) : []),
   ];
 }
 

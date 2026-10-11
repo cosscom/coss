@@ -12,6 +12,8 @@ import {
   workEmailDispatchQueue,
 } from "@coss/email/dispatch";
 import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
+import { screenMessage } from "@coss/screening";
+import { createClassifier } from "@coss/screening/runtime";
 import { createWebhookSender, parseSecretsKey } from "@coss/webhooks";
 import { env } from "./env.ts";
 import { startJobs } from "./jobs.ts";
@@ -20,6 +22,7 @@ import { createSqsApi } from "./sqs.ts";
 
 const config = emailRuntimeConfig(env);
 const email = createEmailRuntime(config);
+const classifier = createClassifier(env);
 const controller = new AbortController();
 let sesEvents: Parameters<typeof startJobs>[0]["sesEvents"];
 if (config.provider === "ses") {
@@ -42,6 +45,7 @@ const emailService = createEmailService({
   sandboxProvider: email.sandboxProvider,
   queue: dispatchQueue,
   trackingBaseUrl: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
+  screen: classifier ? (input) => screenMessage(input, { classifier }) : undefined,
 });
 await workEmailDispatchQueue(jobs, emailService);
 
@@ -57,7 +61,10 @@ const loops = startJobs({
     send: createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" }),
   },
 });
-console.info(`[worker] started (email-dispatch, ${loops.map((loop) => loop.name).join(", ")})`);
+console.info(
+  `[worker] started (email-dispatch, ${loops.map((loop) => loop.name).join(", ")}; ` +
+    `content screening: ${env.SCREENING_CLASSIFIER === "ai" ? env.SCREENING_MODEL : env.SCREENING_CLASSIFIER})`,
+);
 
 const shutdown = createShutdown({
   controller,

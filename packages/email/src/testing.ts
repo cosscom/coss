@@ -14,7 +14,7 @@ import type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 import type { DnsResolver } from "./dns.ts";
 import type { DomainRow } from "./domains.ts";
 import type { EmailProvider } from "./provider.ts";
-import { createEmailService, type EmailService } from "./service.ts";
+import { createEmailService, type EmailService, type EmailServiceOptions } from "./service.ts";
 import type { SesApi } from "./ses/api.ts";
 
 export type MemoryDispatchQueue = EmailDispatchQueue & {
@@ -46,6 +46,7 @@ export function memoryDispatchQueue(): MemoryDispatchQueue {
 export function dispatchingEmailService(opts: {
   liveProvider: EmailProvider;
   sandboxProvider: EmailProvider;
+  screen?: EmailServiceOptions["screen"];
 }): EmailService & { queue: MemoryDispatchQueue } {
   const queue = memoryDispatchQueue();
   const service = createEmailService({ ...opts, queue });

@@ -104,6 +104,16 @@ resets) are printed to the dashboard's server console in development.
   sends and can't create live keys; sandbox keys keep working. Customers see it in the dashboard (banner +
   **Reputation** page), via `GET /v1/reputation` and through `account.*` webhooks. Only platform admins reinstate
   (`/admin/organizations`), where they can also suspend manually and override thresholds per organization.
+- **Content screening** — right before a sampled live email reaches the provider, the worker asks an AI decision
+  model (TypeSafe AI's Jev through the Vercel AI SDK and AI Gateway, swappable with `SCREENING_MODEL`) how likely
+  it is spam, phishing, malware or fraud. Sampled: each organization's first 10 live emails, its 25th, 50th, 100th,
+  250th, 500th and 1000th, then 2% at random. At ≥ 0.95 the email fails with `content_rejected` and the
+  organization is suspended (the reputation guard's `content_screening` trigger); at ≥ 0.70 it is sent but the
+  organization is warned until the flag ages out of the window. Classifier errors and timeouts (3 s) never stop an
+  email; the sample moves to the next one. Admins see every verdict on the organization's reputation page and can
+  tune thresholds and sampling, switch to shadow mode, or turn screening off per organization (e.g. for
+  phishing-simulation senders). Locally `SCREENING_CLASSIFIER=fake` flags content containing `[coss-test:phishing]`
+  (or `spam`, `malware`, `fraud`; `[coss-test:spam:0.8]` sets the score).
 - **Platform admins** — the console at `/admin` (promote with `bun run admin:create --email …`): search users and
   organizations; ban users (with a reason and duration — signs them out everywhere), grant/remove the admin role,
   revoke sessions, impersonate (with a reason, never other admins); **suspend organizations** (API keys get 403
@@ -202,6 +212,16 @@ are left alone. Sending can't be limited by tag (SES authorizes sends against th
 and worker policies allow `ses:SendEmail` on any identity but only with the COSS configuration set (another set,
 or none, is denied); COSS always sends with the organization's tenant, which SES only allows for identities associated with it.
 
+## Content screening on Vercel AI Gateway
+
+1. Create an AI Gateway API key in the Vercel team that will pay for screening. Requests ask for zero data
+   retention (the content is customer email), which Vercel offers on Pro and Enterprise teams; without it,
+   requests fail and emails are sent unscreened (logged as `error` verdicts).
+2. Set `SCREENING_CLASSIFIER=ai` and `AI_GATEWAY_API_KEY` for the worker (only the worker screens).
+   `SCREENING_MODEL` defaults to `typesafe-ai/jev`; any Gateway decision model id works.
+3. Cost: one screening is about 2k input tokens (bodies are truncated to 8,000 characters) — about $0.0001 with
+   Jev — so the default sampling costs a few dollars per million live emails.
+
 ## Rate limits on ElastiCache Serverless for Valkey
 
 Rate limit counters live in Valkey (one GCRA bucket per key, updated atomically by a Lua script with the
@@ -296,7 +316,7 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
 ### Secrets and environment
 
 One Secrets Manager secret per stage (JSON), injected through each task definition's `secrets`:
-`VALKEY_URL` (from `valkey:bootstrap`), `DATABASE_URL`, `BETTER_AUTH_SECRET`, `WEBHOOK_SECRETS_KEY` and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (generate the
+`VALKEY_URL` (from `valkey:bootstrap`), `DATABASE_URL`, `BETTER_AUTH_SECRET`, `AI_GATEWAY_API_KEY` (worker), `WEBHOOK_SECRETS_KEY` and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (generate the
 last three with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable). The origin
 header value is a separate secret, used only by CloudFront and the ALB rules (rotate it by adding the new value to the
 rules, then CloudFront, then removing the old one). Plain values per service:
@@ -305,7 +325,7 @@ rules, then CloudFront, then removing the old one). Plain values per service:
 |---|---|
 | web | `BETTER_AUTH_URL=https://coss.com`, `API_PUBLIC_URL=https://api.coss.com`, `TRUSTED_PROXY_HOPS=2`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, optional `DATABASE_POOL_MAX`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX=coss`, `CLIENT_IP_HEADER=x-forwarded-for`, `TRUSTED_PROXY_COUNT=2` |
 | api | the same minus `TRUSTED_PROXY_HOPS`, plus `API_CORS_ORIGINS=https://coss.com` |
-| worker | `API_PUBLIC_URL=https://api.coss.com`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL` |
+| worker | `API_PUBLIC_URL=https://api.coss.com`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL`, `SCREENING_CLASSIFIER=ai`, optional `SCREENING_MODEL` |
 | site | none (static; everything it needs is in the image) |
 
 Images are built once and promoted through stages: builds set `SKIP_ENV_VALIDATION` and bake in nothing

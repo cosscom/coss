@@ -9,6 +9,7 @@ import {
   sweepUnclaimedEmails,
 } from "@coss/email";
 import { runDueReputationEvaluations } from "@coss/reputation";
+import { contentScreeningCheck } from "@coss/screening";
 import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
 import type { Loop } from "./loop.ts";
 import { startLoop } from "./loop.ts";
@@ -19,6 +20,8 @@ const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
 const REPUTATION_BATCH = 50;
 const SCHEDULED_BATCH = 50;
+// Content screening only records verdicts; this check turns them into warnings and suspensions.
+const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck];
 
 export type WorkerDeps = {
   /** Emails are dispatched by pg-boss workers; this loop only re-enqueues lost jobs. */
@@ -71,7 +74,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       run: async () =>
         (await runDueReputationEvaluations(
           { limit: REPUTATION_BATCH },
-          { checks: emailReputationChecks },
+          { checks: REPUTATION_CHECKS },
         )) === REPUTATION_BATCH,
     }),
     startLoop({

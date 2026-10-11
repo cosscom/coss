@@ -18,6 +18,7 @@ import { formatDateTime } from "@/lib/format";
 const TRIGGER_LABELS: Record<string, string> = {
   bounce_rate: "Bounce rate",
   complaint_rate: "Complaint rate",
+  content_screening: "Content screening",
   manual: "COSS review",
   policy: "Policy",
   evaluation: "Evaluation",
@@ -55,7 +56,9 @@ export function ReputationBanner(props: {
         <AlertDescription>
           {suspended
             ? `COSS suspended live sending for this organization (${triggerLabel(reason).toLowerCase()}). Sandbox keys still work. Contact support to resume sending.`
-            : `${triggerLabel(reason)} is approaching the level at which COSS suspends live sending automatically.`}{" "}
+            : reason === "content_screening"
+              ? "Content screening flagged some of your recent emails as possible spam or phishing. Emails it is confident about are blocked and suspend live sending automatically."
+              : `${triggerLabel(reason)} is approaching the level at which COSS suspends live sending automatically.`}{" "}
           <Link className="underline" href={props.href}>
             View reputation
           </Link>
@@ -81,6 +84,15 @@ export function ReputationChecks({ standing }: { standing: ReputationStandingRow
       {snapshot && snapshot.checks.length > 0 ? (
         <CardPanel className="flex flex-col gap-5">
           {snapshot.checks.map((check) => {
+            if (check.rate === null && check.suspendThreshold === null) {
+              // A verdict count (content screening), not a rate: no meter to fill.
+              return (
+                <div className="flex flex-col gap-1" key={check.trigger}>
+                  <span className="font-medium text-sm">{triggerLabel(check.trigger)}</span>
+                  <p className="text-muted-foreground text-xs">{check.message}</p>
+                </div>
+              );
+            }
             const ceiling = check.suspendThreshold ?? 1;
             const percent = Math.min(100, ((check.rate ?? 0) / (ceiling || 1)) * 100);
             return (

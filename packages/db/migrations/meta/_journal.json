@@ -120,6 +120,13 @@
       "when": 1791680940563,
       "tag": "0016_reputation_key_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791682883232,
+      "tag": "0017_rare_chimera",
+      "breakpoints": true
     }
   ]
 }
