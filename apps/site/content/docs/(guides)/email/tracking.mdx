@@ -1,0 +1,68 @@
+---
+title: Open and click tracking
+description: Count opens and clicks, and serve tracking links from your own domain.
+---
+
+COSS can record when recipients open an email (a 1×1 image at the end of the HTML) and click its
+links (each `http(s)` link is rewritten to a COSS redirect). Opens and clicks show up on the email
+in the dashboard and the API, and as `email.opened` and `email.clicked` webhook events.
+
+## Turning it on
+
+Tracking is off by default. Turn it on for an environment, or for one category of email, under
+**Tracking** in the environment's dashboard page, or for a single send with `tracking`:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data, error } = await coss.email.send({
+  from: "Acme <news@acme.com>",
+  to: "ada@example.com",
+  subject: "What's new in October",
+  html: '<p>Read the <a href="https://acme.com/blog">blog</a>.</p>',
+  tracking: { opens: true, clicks: true },
+});
+```
+
+For each of `opens` and `clicks`, the send's own setting wins, then its category's rule, then the
+environment default.
+
+- Only HTML bodies are tracked; the plain-text part is sent unchanged.
+- Add `data-coss-no-track` to a link to leave it as is. `mailto:`, `tel:` and links containing
+  merge tags are never rewritten.
+- Opens and clicks name a recipient only when the email had exactly one (not suppressed) recipient.
+- Mail clients that preload images inflate opens, and link scanners inflate clicks: treat the
+  counts as signals, not exact numbers.
+
+## Custom tracking domains
+
+By default, tracking links point at COSS's tracking host. A custom tracking domain serves them from
+a subdomain of your sending domain instead, such as `links.acme.com`, so the links in your emails
+match your brand and your From domain, and don't share a reputation with other senders.
+
+Set one up on a domain's page in the dashboard (**Domains**), or through the API:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const domainId: string;
+// ---cut---
+const { data: domain, error } = await coss.domains.tracking.create(domainId, {
+  hostname: "links.acme.com",
+});
+
+const record = domain?.tracking?.record;
+console.log(record?.type, record?.name, record?.value); // CNAME links.acme.com track.coss.com
+```
+
+Then publish the `CNAME` record at your DNS provider. COSS issues a certificate for the hostname once
+the record resolves, and checks it in the background; the tracking domain becomes `active` within
+minutes of the record propagating. Setup gives up after 72 hours; **Check now** in the dashboard
+(or `coss.domains.verify(id)`) starts it over.
+
+- Each domain has at most one tracking domain, and it must be a subdomain of that domain.
+- Emails use the tracking domain of their From domain (or of the closest verified parent domain)
+  while it is `active`. While it isn't, they use COSS's tracking host, so tracking keeps working.
+- Removing a tracking domain, or its `CNAME` record, breaks the links in emails already sent
+  through it. Keep the record in place for as long as those emails matter.

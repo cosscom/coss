@@ -2,6 +2,7 @@ import type { CossResult } from "../core/errors.ts";
 import type { HttpClient, RequestOptions } from "../core/http.ts";
 import type { CreateDomainParams, DeletedDomain, Domain } from "../types/domain.ts";
 import type { List } from "../types/email.ts";
+import { TrackingDomainsResource } from "./tracking-domains.ts";
 
 type ReadOptions = Pick<RequestOptions, "signal">;
 
@@ -11,10 +12,13 @@ type ReadOptions = Pick<RequestOptions, "signal">;
  */
 export class DomainsResource {
   readonly #http: HttpClient;
+  /** Each domain's custom tracking domain: add and remove it. */
+  readonly tracking: TrackingDomainsResource;
 
   /** @internal Use `new Coss().domains`. */
   constructor(http: HttpClient) {
     this.#http = http;
+    this.tracking = new TrackingDomainsResource(http);
   }
 
   /**
@@ -52,6 +56,7 @@ export class DomainsResource {
   /**
    * Checks the domain's records now instead of waiting for the next background check. A `failed`
    * domain starts verification over with fresh DKIM records, which have to be published again.
+   * Its tracking domain, if any, is checked too.
    */
   verify(id: string, options?: RequestOptions): Promise<CossResult<Domain>> {
     return this.#http.request<Domain>({

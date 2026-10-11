@@ -1,6 +1,7 @@
 import { type EmailEventOutput, getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
+import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
@@ -25,6 +26,7 @@ import { PageHeader } from "@/components/page-header";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { CancelEmailButton } from "./cancel-email-button";
+import { RescheduleEmailDialog } from "./reschedule-email-dialog";
 
 export const metadata: Metadata = { title: "Email" };
 
@@ -58,6 +60,10 @@ function eventDetail({ data }: EmailEventOutput): string {
   }
   if (data.click) return [data.click.url, data.click.user_agent].filter(Boolean).join(" · ");
   if (data.open) return data.open.user_agent ?? "";
+  if (data.reschedule) {
+    const { previous_scheduled_at, scheduled_at } = data.reschedule;
+    return `${formatDateTime(previous_scheduled_at)} → ${formatDateTime(scheduled_at)}`;
+  }
   return "";
 }
 
@@ -134,14 +140,40 @@ export default async function EmailPage({
         </Link>
         <PageHeader
           actions={
-            email.status === "scheduled" && can({ email: ["send"] }) ? (
-              <CancelEmailButton
-                emailId={email.id}
-                envSlug={environment.slug}
-                orgSlug={organization.slug}
-                projectSlug={project.slug}
-              />
-            ) : null
+            <>
+              {can({ log: ["read"] }) ? (
+                <Button
+                  render={
+                    <Link
+                      href={`/${organization.slug}/projects/${project.slug}/${environment.slug}/logs?${new URLSearchParams({ q: `resource:${email.id}`, range: "30d" })}`}
+                    />
+                  }
+                  size="sm"
+                  variant="outline"
+                >
+                  View logs
+                </Button>
+              ) : null}
+              {email.status === "scheduled" && can({ email: ["send"] }) ? (
+                <div className="flex gap-2">
+                  {email.scheduled_at ? (
+                    <RescheduleEmailDialog
+                      emailId={email.id}
+                      envSlug={environment.slug}
+                      orgSlug={organization.slug}
+                      projectSlug={project.slug}
+                      scheduledAt={email.scheduled_at}
+                    />
+                  ) : null}
+                  <CancelEmailButton
+                    emailId={email.id}
+                    envSlug={environment.slug}
+                    orgSlug={organization.slug}
+                    projectSlug={project.slug}
+                  />
+                </div>
+              ) : null}
+            </>
           }
           title={email.subject}
         />

@@ -10,6 +10,7 @@
     "environments",
     "webhooks",
     "data-retention",
+    "logs",
     "---Email---",
     "...email",
     "---TypeScript SDK---",
