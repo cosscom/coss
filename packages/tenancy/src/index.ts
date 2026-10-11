@@ -39,6 +39,28 @@ export {
 } from "./organizations.ts";
 export { createProject, getProject, listProjects, PROJECT_NAME_MAX_LENGTH } from "./projects.ts";
 export {
+  connectScim,
+  createScimToken,
+  disconnectScim,
+  getOrganizationScim,
+  hasScimConnection,
+  isScimManagedUser,
+  listScimEvents,
+  listScimGroupRoles,
+  listScimManagedUserIds,
+  MAX_SCIM_GROUP_ROLES,
+  type OrganizationScim,
+  parseScimGroupRoles,
+  revokeScimToken,
+  SCIM_TOKEN_LIFETIMES_DAYS,
+  type ScimConnectionStatus,
+  type ScimCredential,
+  type ScimEvent,
+  type ScimGroupRole,
+  type ScimTokenLifetimeDays,
+  setScimGroupRoles,
+} from "./scim.ts";
+export {
   getOrganizationSsoProvider,
   listOrganizationsRequiringSso,
   listOwnersWithoutPassword,

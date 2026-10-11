@@ -1077,6 +1077,29 @@ export const rateLimitOverride = pgTable(
   (t) => [unique("rate_limit_override_organization_bucket_unique").on(t.organizationId, t.bucket)],
 );
 
+/**
+ * Maps a directory (SCIM) group to an organization role: members of the group get `role` (admin wins over
+ * member). `group_name` is the group's displayName, trimmed and lower-cased. Read by the SCIM role projection
+ * (`@coss/auth` `scim.ts`); written only by `setScimGroupRoles` (@coss/tenancy).
+ */
+export const scimGroupRole = pgTable(
+  "scim_group_role",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.scimGroupRole)),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    groupName: text("group_name").notNull(),
+    // "admin" | "member" (never "owner": the directory doesn't manage owners).
+    role: text("role").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [unique("scim_group_role_organization_group_unique").on(t.organizationId, t.groupName)],
+);
+
 export const logSource = pgEnum("log_source", ["api", "email", "webhook"]);
 export type LogSource = (typeof logSource.enumValues)[number];
 

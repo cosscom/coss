@@ -7,7 +7,7 @@ import {
   type InvitableOrgRole,
   isOrgRole,
 } from "@coss/auth/permissions";
-import { getOrganizationMember, getPendingInvitation } from "@coss/tenancy";
+import { getOrganizationMember, getPendingInvitation, isScimManagedUser } from "@coss/tenancy";
 import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
@@ -20,6 +20,18 @@ import { requireOrgPermission } from "@/lib/session";
 
 function isInvitableRole(value: string): value is InvitableOrgRole {
   return (INVITABLE_ORG_ROLES as readonly string[]).includes(value);
+}
+
+const MANAGED_BY_DIRECTORY =
+  "This member is managed by your identity provider's directory: change them there.";
+
+/** Members an active directory (SCIM) user holds, except owners (the directory never changes those). */
+async function isDirectoryManaged(
+  organizationId: string,
+  target: { role: string; user: { id: string } },
+) {
+  if (target.role.split(",").includes("owner")) return false;
+  return isScimManagedUser({ organizationId, userId: target.user.id });
 }
 
 /**
@@ -172,6 +184,9 @@ export async function updateMemberRoleAction(
       throw new ForbiddenError("Only owners can change an owner's role or make someone an owner.");
     }
     if (role === target.role) return null;
+    if (role !== "owner" && (await isDirectoryManaged(organization.id, target))) {
+      throw new ActionError(MANAGED_BY_DIRECTORY);
+    }
 
     // organizationId is explicit: Better Auth would otherwise fall back to the active org.
     await auth.api.updateMemberRole({
@@ -214,6 +229,9 @@ export async function removeMemberAction(
     }
     if (!canRemoveOrgMember(member.role, target.role)) {
       throw new ForbiddenError("Only owners can remove an owner.");
+    }
+    if (await isDirectoryManaged(organization.id, target)) {
+      throw new ActionError(MANAGED_BY_DIRECTORY);
     }
 
     // organizationId is explicit: Better Auth would otherwise fall back to the active org.
