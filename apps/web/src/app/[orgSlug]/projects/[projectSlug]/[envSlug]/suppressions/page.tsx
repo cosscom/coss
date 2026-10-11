@@ -1,5 +1,6 @@
 import { listSuppressions } from "@coss/email";
 import { ListSuppressionsQuery } from "@coss/email/schemas";
+import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
 import { getEnvironment } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardPanel } from "@coss/ui/components/card";
@@ -43,6 +44,7 @@ export default async function SuppressionsPage({
   const { orgSlug, projectSlug, envSlug } = await params;
   const search = await searchParams;
   const { organization, can } = await requireOrgMember(orgSlug);
+  const emailsKeptSince = retentionCutoff(RETENTION_DAYS.emails);
   if (!can({ suppression: ["read"] })) notFound();
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
@@ -156,7 +158,9 @@ export default async function SuppressionsPage({
                     <TableCell>
                       <span className="flex items-center gap-2">
                         <SuppressionReasonBadge reason={suppression.reason} />
-                        {suppression.email_id ? (
+                        {/* The email is deleted after its retention; the entry outlives it. */}
+                        {suppression.email_id &&
+                        new Date(suppression.created_at) > emailsKeptSince ? (
                           <Link
                             className="text-muted-foreground text-xs hover:underline"
                             href={`${base}/emails/${suppression.email_id}`}

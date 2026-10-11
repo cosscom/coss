@@ -26,6 +26,7 @@ const { data, error } = await coss.email.send(
 
 Sends return HTTP `202` with `status: "queued"`. A background worker hands the email to the
 provider. Follow delivery with `coss.email.get()` or the `email.sent` / `email.failed` webhooks.
+Emails are kept for <RetentionPeriod of="emails" /> (see [data retention](/docs/data-retention)).
 
 ## Scheduling and cancellation
 

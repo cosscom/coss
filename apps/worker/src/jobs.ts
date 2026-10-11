@@ -17,6 +17,7 @@ import { contentScreeningCheck } from "@coss/screening";
 import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
 import type { Loop } from "./loop.ts";
 import { startLoop } from "./loop.ts";
+import { runRetention } from "./retention.ts";
 import { pollSesEvents, type SqsApi } from "./sqs.ts";
 
 const WEBHOOK_BATCH = 20;
@@ -25,6 +26,7 @@ const SWEEP_BATCH = 100;
 const REPUTATION_BATCH = 50;
 const NOTIFICATION_BATCH = 20;
 const SCHEDULED_BATCH = 50;
+const RETENTION_BATCH = 1000;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck];
 
@@ -92,6 +94,12 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       run: async () =>
         (await sweepUnclaimedEmails(deps.dispatchQueue, { limit: SWEEP_BATCH })).failed ===
         SWEEP_BATCH,
+    }),
+    startLoop({
+      // Deletes data past its published retention (`@coss/retention`); catches up in full batches.
+      name: "retention",
+      intervalMs: 10 * 60_000,
+      run: () => runRetention({ limit: RETENTION_BATCH, signal: deps.signal }),
     }),
   ];
   const notifications = deps.notifications;

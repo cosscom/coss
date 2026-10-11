@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
     "@coss/ratelimit",
     "@coss/screening",
     "@coss/versioning",
+    "@coss/retention",
   ],
   // A self-contained server (.next/standalone) for the container image. Tracing starts at the
   // monorepo root so workspace packages and Bun's isolated node_modules (node_modules/.bun) are
@@ -41,8 +42,12 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     // In production `/` is the site's landing page. Locally, the dashboard's port opens the dashboard.
+    // The docs are the site's (`/docs` in ZONE_ROUTES); locally it runs on its own port.
     if (!dev) return [];
-    return [{ source: "/", destination: DASHBOARD_PATH, permanent: false }];
+    return [
+      { source: "/", destination: DASHBOARD_PATH, permanent: false },
+      { source: "/docs/:path*", destination: `${DEV_SITE_ORIGIN}/docs/:path*`, permanent: false },
+    ];
   },
   async rewrites() {
     // The site owns the icon (see ZONE_ROUTES); locally it runs on its own port.

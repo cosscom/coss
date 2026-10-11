@@ -40,6 +40,7 @@
       "dependencies": {
         "@coss/api": "workspace:*",
         "@coss/auth": "workspace:*",
+        "@coss/retention": "workspace:*",
         "@coss/ui": "workspace:*",
         "@coss/versioning": "workspace:*",
         "fumadocs-core": "16.17.1",
@@ -80,6 +81,7 @@
         "@coss/email": "workspace:*",
         "@coss/ratelimit": "workspace:*",
         "@coss/reputation": "workspace:*",
+        "@coss/retention": "workspace:*",
         "@coss/screening": "workspace:*",
         "@coss/tenancy": "workspace:*",
         "@coss/ui": "workspace:*",
@@ -121,14 +123,15 @@
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
         "@coss/reputation": "workspace:*",
+        "@coss/retention": "workspace:*",
         "@coss/screening": "workspace:*",
+        "@coss/tenancy": "workspace:*",
         "@coss/webhooks": "workspace:*",
         "@t3-oss/env-core": "catalog:",
         "drizzle-orm": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@coss/tenancy": "workspace:*",
         "@coss/tsconfig": "workspace:*",
         "@coss/versioning": "workspace:*",
         "@types/bun": "catalog:",
@@ -193,6 +196,7 @@
         "@aws-sdk/client-sesv2": "catalog:",
         "@coss/db": "workspace:*",
         "@coss/reputation": "workspace:*",
+        "@coss/retention": "workspace:*",
         "@coss/screening": "workspace:*",
         "@coss/versioning": "workspace:*",
         "@coss/webhooks": "workspace:*",
@@ -230,6 +234,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@coss/db": "workspace:*",
+        "@coss/retention": "workspace:*",
         "@coss/webhooks": "workspace:*",
         "drizzle-orm": "catalog:",
         "zod": "catalog:",
@@ -242,12 +247,22 @@
         "typescript": "catalog:",
       },
     },
+    "packages/retention": {
+      "name": "@coss/retention",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/screening": {
       "name": "@coss/screening",
       "version": "0.0.0",
       "dependencies": {
         "@coss/db": "workspace:*",
         "@coss/reputation": "workspace:*",
+        "@coss/retention": "workspace:*",
         "ai": "catalog:",
         "drizzle-orm": "catalog:",
         "zod": "catalog:",
@@ -277,6 +292,7 @@
         "@better-auth/api-key": "catalog:",
         "@coss/auth": "workspace:*",
         "@coss/db": "workspace:*",
+        "@coss/retention": "workspace:*",
         "@coss/versioning": "workspace:*",
         "better-auth": "catalog:",
         "drizzle-orm": "catalog:",
@@ -331,6 +347,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@coss/db": "workspace:*",
+        "@coss/retention": "workspace:*",
         "@coss/versioning": "workspace:*",
         "drizzle-orm": "catalog:",
         "zod": "catalog:",
@@ -627,6 +644,8 @@
     "@coss/ratelimit": ["@coss/ratelimit@workspace:packages/ratelimit"],
 
     "@coss/reputation": ["@coss/reputation@workspace:packages/reputation"],
+
+    "@coss/retention": ["@coss/retention@workspace:packages/retention"],
 
     "@coss/screening": ["@coss/screening@workspace:packages/screening"],
 

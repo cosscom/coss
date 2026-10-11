@@ -20,14 +20,15 @@
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
     "@coss/reputation": "workspace:*",
+    "@coss/retention": "workspace:*",
     "@coss/screening": "workspace:*",
+    "@coss/tenancy": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@t3-oss/env-core": "catalog:",
     "drizzle-orm": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@coss/tenancy": "workspace:*",
     "@coss/tsconfig": "workspace:*",
     "@coss/versioning": "workspace:*",
     "@types/bun": "catalog:",

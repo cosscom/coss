@@ -30,6 +30,10 @@ export {
   renderNotification,
   runDueReputationNotifications,
 } from "./notifications.ts";
+export {
+  purgeExpiredReputationEvents,
+  purgeExpiredReputationNotifications,
+} from "./retention.ts";
 export * from "./schemas.ts";
 export {
   getOrganizationStanding,

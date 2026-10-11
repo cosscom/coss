@@ -13,6 +13,7 @@
   "dependencies": {
     "@coss/api": "workspace:*",
     "@coss/auth": "workspace:*",
+    "@coss/retention": "workspace:*",
     "@coss/ui": "workspace:*",
     "@coss/versioning": "workspace:*",
     "fumadocs-core": "16.17.1",

@@ -1,3 +1,4 @@
+import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
@@ -151,7 +152,8 @@ export default async function WebhookEndpointPage({
           <CardTitle>Recent deliveries</CardTitle>
           <CardDescription>
             Failed deliveries are retried for about a day (8 attempts). Any 2xx response counts as
-            delivered.
+            delivered. Deliveries are kept for{" "}
+            {formatRetentionDays(RETENTION_DAYS.webhookDeliveries)}.
           </CardDescription>
         </CardHeader>
         <CardPanel className="p-2">
