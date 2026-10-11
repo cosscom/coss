@@ -113,7 +113,7 @@ export function sendEmail(
  */
 export function apiRequest(
   app: TestApp,
-  method: "GET" | "POST" | "PATCH" | "DELETE",
+  method: "GET" | "HEAD" | "POST" | "PATCH" | "DELETE",
   path: string,
   opts: { key?: string | null; body?: unknown; headers?: Record<string, string> } = {},
 ): Promise<Response> {

@@ -24,7 +24,8 @@ function skipped(method: string, path: string): boolean {
   if (!path.startsWith("/v1/")) return true;
   if (method === "OPTIONS") return true;
   return (
-    method === "GET" &&
+    // Hono runs GET handlers for HEAD and strips the body after middleware completes.
+    (method === "GET" || method === "HEAD") &&
     UNLOGGED_READS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
   );
 }

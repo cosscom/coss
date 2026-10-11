@@ -155,18 +155,26 @@ describe("GET /v1/audit_events", () => {
     expect(refused.status).toBe(403);
   });
 
-  test("reading the audit log is never copied into the environment log", async () => {
-    const tenant = await createTestTenant();
-    await recordOrgAuditEvent({
-      organizationId: tenant.organization.id,
-      actor: { type: "user", id: tenant.owner.id, label: tenant.owner.email },
-      action: "member.removed",
-    });
-    const writer = memoryLogWriter();
-    const { app } = createTestApp({ logWriter: writer });
-    const [event] = (await listAudit(app, tenant.sandboxKey)).data;
-    await apiRequest(app, "GET", `/v1/audit_events/${event?.id}`, { key: tenant.sandboxKey });
-    await new Promise((resolve) => setTimeout(resolve, 30));
-    expect(writer.entries).toEqual([]);
-  });
+  test.each(["GET", "HEAD"])(
+    "%s audit reads are never copied into the environment log",
+    async (method) => {
+      const tenant = await createTestTenant();
+      await recordOrgAuditEvent({
+        organizationId: tenant.organization.id,
+        actor: { type: "user", id: tenant.owner.id, label: tenant.owner.email },
+        action: "member.removed",
+      });
+      const writer = memoryLogWriter();
+      const { app } = createTestApp({ logWriter: writer });
+      const [event] = (await listAudit(app, tenant.sandboxKey)).data;
+      if (!event) throw new Error("missing event");
+      for (const path of ["/v1/audit_events", `/v1/audit_events/${event.id}`]) {
+        const response = await apiRequest(app, method, path, { key: tenant.sandboxKey });
+        expect(response.status).toBe(200);
+        if (method === "HEAD") expect(await response.text()).toBe("");
+      }
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      expect(writer.entries).toEqual([]);
+    },
+  );
 });
