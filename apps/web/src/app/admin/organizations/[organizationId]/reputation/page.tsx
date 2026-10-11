@@ -4,6 +4,7 @@ import {
   listReputationEvents,
   ReputationPolicyOverrides,
 } from "@coss/reputation";
+import { listScreenings } from "@coss/screening";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,6 +17,7 @@ import {
 } from "@/components/reputation";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
+import { ContentScreenings } from "./screenings";
 import { PolicyForm, ReinstateButton, SuspendButton } from "./standing-actions";
 
 export const metadata: Metadata = { title: "Organization" };
@@ -27,7 +29,10 @@ export default async function AdminOrganizationPage({
   const { organizationId } = await params;
   const organization = await getOrganizationStanding(organizationId);
   if (!organization) notFound();
-  const events = await listReputationEvents(organization.organizationId, { limit: 100 });
+  const [events, screenings] = await Promise.all([
+    listReputationEvents(organization.organizationId, { limit: 100 }),
+    listScreenings(organization.organizationId, { limit: 50 }),
+  ]);
   const { standing } = organization;
   const overrides = ReputationPolicyOverrides.safeParse(standing?.policyOverrides ?? {});
 
@@ -65,6 +70,7 @@ export default async function AdminOrganizationPage({
         ) : null}
       </div>
       <ReputationChecks standing={standing} />
+      <ContentScreenings screenings={screenings} />
       <PolicyForm
         defaults={DEFAULT_REPUTATION_POLICY}
         organizationId={organization.organizationId}

@@ -4,7 +4,8 @@ COSS is a unified developer platform: one API key + one SDK (`coss.email.send()`
 scheduling…). This repo holds the dashboard, the public API, shared packages and the public SDK.
 Email delivery goes through the provider interface in `packages/email/src/provider.ts` (Amazon SES v2 with one SES
 tenant per organization, or the fake provider); sandbox environments always use the fake provider. Delivery events
-drive per-recipient status and signed customer webhooks. Rate limits (per API key, per-org send quotas, dashboard
+drive per-recipient status and signed customer webhooks. A sample of live messages is screened by an AI decision model
+(`@coss/screening`) before it is sent. Rate limits (per API key, per-org send quotas, dashboard
 auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/ratelimit`. Human setup docs (incl. running on SES): [README.md](./README.md).
 
 ## Layout
@@ -22,16 +23,17 @@ auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/rat
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (encrypted secrets), outbox, SSRF-safe signed delivery with retries; `./schemas` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks; `./schemas` (zod only: policy, wire schemas). |
+| `packages/screening` | `@coss/screening` | Product-agnostic AI content screening: sampling per org + product, the `ContentClassifier` interface (Vercel AI SDK `experimental_decide` adapter under `./ai`, `fakeClassifier` in `./testing`), verdict history, the `content_screening` reputation check; `./env` (zod only), `./runtime`. |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens) and `globals.css` (the dashboard's stylesheet). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests; nothing here calls AWS. See `infra/AGENTS.md`. |
 
-Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← reputation ← email`, `db ← ratelimit`; `api → tenancy, email, reputation, webhooks, ratelimit, db`;
-`web → auth, tenancy, email, reputation, webhooks, ratelimit, db, ui`; `site → ui, auth` (only the client-safe `@coss/auth/slugs`) +
-`@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit` (`slugs`, `env` only);
-`worker → email, reputation, webhooks, ratelimit, db`; `sdk` and `ui` depend on no workspace.
-Dev-only: `email`/`webhooks`/`reputation`/`ratelimit`/`worker → tenancy` (test fixtures — so tenancy must never import email, webhooks or ratelimit) and
+Runtime dependencies: `db ← auth ← tenancy`, `db ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`; `api → tenancy, email, reputation, webhooks, ratelimit, db`;
+`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, db, ui`; `site → ui, auth` (only the client-safe `@coss/auth/slugs`) +
+`@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening` (`slugs`, `env` only);
+`worker → email, reputation, screening, webhooks, ratelimit, db`; `sdk` and `ui` depend on no workspace.
+Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`worker → tenancy` (test fixtures — so tenancy must never import email, webhooks, screening or ratelimit) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`).
 
@@ -120,6 +122,7 @@ from the root or a package — the package script is what loads `.env` and the t
 | `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → per-IP limits off |
 | `TEST_VALKEY_URL` | ratelimit + api tests (keys under a random prefix, never flushed) |
 | `WEBHOOK_SECRETS_KEY` | api + web + worker: 32 bytes base64, encrypts endpoint signing secrets (losing it makes them unreadable) |
+| `SCREENING_CLASSIFIER`, `SCREENING_MODEL`, `AI_GATEWAY_API_KEY` | worker: content screening (`off`/`fake`/`ai`; a Vercel AI Gateway decision model id, default `typesafe-ai/jev`; the Gateway key, required with `ai`) |
 | `NODE_ENV`, `SKIP_ENV_VALIDATION` | `production` makes dev auth emails and the seed refuse to run; the latter skips t3-env (image builds set it) |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | `apps/web`: Server Actions key shared by every dashboard task of a stage (base64, 16/24/32 bytes); read at runtime, required in production |
 | `TRUSTED_PROXY_HOPS` | `apps/web`: proxies that append to `X-Forwarded-For` (CloudFront → ALB: `2`; default `0`). `src/proxy.ts` replaces the header with the one client address they vouch for, which Better Auth then uses (it ignores multi-value headers) |
@@ -252,7 +255,7 @@ from tasks — CI and image builds have no `.env`), the service in `infra/aws/se
 
 ## Tests
 
-- `bun:test`. DB-backed suites (`apps/api`, `apps/worker`, `packages/email`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
+- `bun:test`. DB-backed suites (`apps/api`, `apps/worker`, `packages/email`, `packages/reputation`, `packages/screening`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
   `bunfig.toml` → `@coss/db/testing`, which throws unless `TEST_DATABASE_URL` names a `*_test` database, then points
   `DATABASE_URL` at it. Other suites are DB-free; before adding DB tests elsewhere copy `packages/email/bunfig.toml` +
   `test/setup.ts`, or the tests hit the dev database.
@@ -266,7 +269,9 @@ from tasks — CI and image builds have no `.env`), the service in `infra/aws/se
   (`packages/email/test/dispatch.test.ts`). Rate limits: `memoryLimiter({ overrides })`,
   `testValkeyLimiter()` from `@coss/ratelimit/testing`; `createTestApp({ rateLimiter, clientIp })` (defaults to an
   in-memory limiter per app); tighten limits for a test org with `setRateLimitOverride`. Webhooks: `webhookReceiver()` (local server),
-  `testSender()`, `testManagementDeps` from `@coss/webhooks/testing`. Worker-style scans take `scope: { organizationIds }`
+  `testSender()`, `testManagementDeps` from `@coss/webhooks/testing`. Screening: `fakeClassifier({ scores, fail, delayMs })` from
+  `@coss/screening/testing` (markers like `[coss-test:phishing]` in the content score 0.99), `screenMessage(…, { random })`
+  for deterministic sampling, `Experimental_DecisionMockModelV4` (`ai/test`) for the AI SDK adapter; `dispatchingEmailService({ screen })`. Worker-style scans take `scope: { organizationIds }`
   and `now` — always pass `scope` in tests (the test DB is shared and never truncated). Session-bound Better Auth calls: sign in with
   `auth.api.signInEmail({ returnHeaders: true })` and forward the cookie (`packages/tenancy/test/hardening.test.ts`).
 
@@ -297,11 +302,12 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 8. Events/webhooks: record events in the product's own table and call `enqueueWebhookMessage(tx, …)` from
    `@coss/webhooks` in the same transaction; add the payload zod schema + SDK type + contract assertion.
 
-**Add a reputation trigger** (e.g. an AI review of an org's first email): a *measured* signal is a `ReputationCheck`
+**Add a reputation trigger**: a *measured* signal is a `ReputationCheck`
 (`{ trigger, evaluate(context) }`, see `packages/email/src/reputation-checks.ts`; `rateResult` grades rates) passed to
 `runDueReputationEvaluations` in `apps/worker/src/jobs.ts` — all checks of one evaluation share one `context` object,
 and mark the org due (`markReputationDue`) when new evidence arrives. A *one-off verdict* calls
-`suspendOrganization({ organizationId, trigger: "<name>", actor: { kind: "system" }, note })` directly. Either way add
+`suspendOrganization({ organizationId, trigger: "<name>", actor: { kind: "system" }, note }, tx?)` directly (content
+screening does both: it suspends on a block and its check keeps the verdicts in the window). Either way add
 the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx`); new thresholds go in
 `ReputationPolicy` (+ overrides schema and the admin `PolicyForm`).
 
@@ -412,7 +418,7 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
+  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -508,6 +514,22 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
   `authorizeLiveSender` checks `isSuspended` **first** (`EmailError("account_suspended")`, 403 `permission_error`; an
   idempotent replay still returns) and `liveKeyRestriction` refuses new live keys. It is independent of the SES tenant
   pause (`email_tenant.sending_status`, `sending_paused`), which SES itself lifts — never fold one into the other.
+- **Content screening** (`packages/screening`, tables `content_screening` (ids `scr_`) + `content_screening_counter`):
+  `screenMessage` runs in the worker for **live** messages only, inside `complete()` right before `provider.send` (after
+  the claim, so the stale-claim sweep covers a crash) — the `screen` option of `createEmailService`, wired only by the
+  worker. A product passes `product` + `subjectId` + a lazy `content()` (plain text, `prepareText`/`prepareLinks`:
+  truncated to 8,000 chars, link hosts+paths without query strings); the screening package never imports a product, so
+  SMS reuses it as is. Sampling (`ReputationPolicy.contentScreening`, per-org overrides in the admin `PolicyForm`): the
+  first `alwaysFirst`, the `milestones`, then `sampleRate` at random — never make it fully predictable. The position
+  comes from one `INSERT … ON CONFLICT … RETURNING new.seen, old.owed` (Postgres 18). **Fails open**: classifier
+  errors/timeouts (3 s) record an `error` verdict, owe the sample to the next message and send; `screen` throwing
+  also sends. Highest category score ≥ `blockThreshold` → `blocked`: the email fails `content_rejected` and
+  `suspendOrganization(trigger "content_screening")` in the verdict's transaction; ≥ `flagThreshold` → `flagged`
+  (sent, `markReputationDue`); `contentScreeningCheck` turns enforced verdicts in the window into `suspend`/`warning`.
+  `enforce: false` is shadow mode (record only); `enabled: false` screens nothing. Verdict rows never store content;
+  scores are admin-only (customers see `content_rejected` and the standing, never an oracle). The AI adapter asks one
+  boolean question per category with `experimental_decide` (renamed from `experimental_evaluate`), passes the message
+  as JSON state with "untrusted data" in every instruction, and always requests Gateway `zeroDataRetention`.
 - **Live keys** (`coss_live_`) require a verified email and can't be created while impersonating or reputation-suspended (`liveKeyRestriction`,
   `apps/web/src/lib/live-keys.ts`, enforced in the action and mirrored in the UI).
 - **Email preview iframe** (`…/emails/[emailId]/page.tsx`): `sandbox=""`, `referrerPolicy="no-referrer"`, CSP
@@ -540,6 +562,10 @@ the trigger's label to `TRIGGER_LABELS` (`apps/web/src/components/reputation.tsx
   delivery). SES complaints may list every recipient on the complaining domain (and each of them gets suppressed).
   SES never suppresses mailbox-simulator addresses, and with tenant-level suppression `suppressionlist@simulator.amazonses.com` is a plain hard bounce — only
   the fake provider simulates `suppressed` (via that address). Webhook secret rotation and key rotation for `WEBHOOK_SECRETS_KEY` are not built.
+- Content screening only samples (a sender can still get unsampled messages through, until the random sample or
+  bounces/complaints catch up) and its scores are uncalibrated model probabilities; thresholds were chosen, not
+  measured against labeled COSS traffic. Injected text in a message can lower its scores. An org-wide suspension from
+  one false positive needs an admin to reinstate.
 - Tracking does not filter bots: mail clients that prefetch images (e.g. Apple Mail Privacy Protection) inflate opens
   and link scanners inflate clicks. Providers send one message to every recipient, so hits on emails with several
   recipients have `recipient: null`.

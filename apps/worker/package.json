@@ -20,6 +20,7 @@
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
     "@coss/reputation": "workspace:*",
+    "@coss/screening": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@t3-oss/env-core": "catalog:",
     "drizzle-orm": "catalog:",

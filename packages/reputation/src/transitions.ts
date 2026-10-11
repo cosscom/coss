@@ -164,17 +164,21 @@ export async function applyTransition(
 
 /**
  * Suspends live sending. Used by the guard and by admins; one-off triggers (e.g. a content
- * review) call this directly with their own `trigger`. Returns `null` if already suspended.
+ * review) call this directly with their own `trigger`, optionally inside their own transaction
+ * `tx`. Returns `null` if already suspended.
  */
-export async function suspendOrganization(input: {
-  organizationId: string;
-  trigger: string;
-  actor: Actor;
-  note?: string | null;
-  metrics?: MetricsSnapshot | null;
-  now?: Date;
-}): Promise<ReputationEventRow | null> {
-  return db.transaction(async (tx) => {
+export async function suspendOrganization(
+  input: {
+    organizationId: string;
+    trigger: string;
+    actor: Actor;
+    note?: string | null;
+    metrics?: MetricsSnapshot | null;
+    now?: Date;
+  },
+  tx?: Executor,
+): Promise<ReputationEventRow | null> {
+  const run = async (tx: Executor) => {
     const current = await getReputationStanding(input.organizationId, tx);
     if (current?.status === "suspended") return null;
     return applyTransition(tx, {
@@ -184,7 +188,8 @@ export async function suspendOrganization(input: {
       type: "suspended",
       metrics: input.metrics ?? metricsSnapshot(current?.metrics),
     });
-  });
+  };
+  return tx ? run(tx) : db.transaction(run);
 }
 
 /**

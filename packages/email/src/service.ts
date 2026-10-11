@@ -1,5 +1,6 @@
 import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
+import type { ScreenInput, ScreenOutcome } from "@coss/screening";
 import { and, asc, eq, inArray, isNull, lte, notExists } from "drizzle-orm";
 import {
   insertAttachments,
@@ -24,6 +25,7 @@ import {
   parseEmailAddress,
   type SendEmailRequestOutput,
 } from "./schemas.ts";
+import { emailScreeningContent } from "./screening.ts";
 import { type SuppressionRow, suppressedRecipients } from "./suppressions.ts";
 import { newTrackingToken } from "./tracking.ts";
 import { instrumentHtml } from "./tracking-html.ts";
@@ -222,6 +224,16 @@ export type EmailServiceOptions = {
    * resolve to open or click tracking fail.
    */
   trackingBaseUrl?: string;
+  /**
+   * Content screening of live emails, right before they reach the provider (the worker passes
+   * `screenMessage` from `@coss/screening`). A `block` fails the email with `content_rejected`.
+   */
+  screen?: (input: ScreenInput) => Promise<Pick<ScreenOutcome, "action">>;
+};
+
+const CONTENT_REJECTED = {
+  code: "content_rejected",
+  message: "The email was blocked by content screening.",
 };
 
 export function createEmailService(opts: EmailServiceOptions): EmailService {
@@ -253,12 +265,30 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       )
       .returning({ id: email.id });
     if (!claimed) return currentEmail(row);
-    await complete(row, provider);
+    await complete(row, provider, sandbox);
     return currentEmail(row);
   }
 
+  /** Whether content screening refuses a live email (fails open: errors never block). */
+  async function screeningBlocks(row: EmailRow, sandbox: boolean): Promise<boolean> {
+    if (sandbox || !opts.screen) return false;
+    try {
+      const outcome = await opts.screen({
+        organizationId: row.organizationId,
+        environmentId: row.environmentId,
+        product: "email",
+        subjectId: row.id,
+        content: () => emailScreeningContent(row),
+      });
+      return outcome.action === "block";
+    } catch (error) {
+      console.error(`[email] content screening failed for ${row.id}:`, error);
+      return false;
+    }
+  }
+
   /** Sends an email this process claimed for `provider` and records the outcome. */
-  async function complete(row: EmailRow, provider: EmailProvider): Promise<void> {
+  async function complete(row: EmailRow, provider: EmailProvider, sandbox: boolean): Promise<void> {
     let outcome: Partial<EmailRow>;
     let events: ProviderEvent[];
     const attachments = await loadOutboundAttachments(row);
@@ -288,6 +318,14 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         errorMessage: "Every recipient is on the suppression list.",
       };
       events = [];
+    } else if (await screeningBlocks(row, sandbox)) {
+      outcome = {
+        status: "failed",
+        provider: provider.name,
+        errorCode: CONTENT_REJECTED.code,
+        errorMessage: CONTENT_REJECTED.message,
+      };
+      events = [failedEvent(row, provider.name, CONTENT_REJECTED)];
     } else {
       try {
         const result = await provider.send(await instrument(row, message));
@@ -410,7 +448,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       }
       return claimedRow;
     });
-    if (claimed) await complete(claimed, provider);
+    if (claimed) await complete(claimed, provider, sandbox);
   }
 
   async function dispatchDue(opts: DispatchDueOptions = {}): Promise<number> {

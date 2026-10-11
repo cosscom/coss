@@ -118,6 +118,30 @@ const rateLimits: EnvVar[] = [
   },
 ];
 
+const screening: EnvVar[] = [
+  {
+    name: "SCREENING_CLASSIFIER",
+    kind: "plain",
+    required: true,
+    value: "ai",
+    description: "AI content screening of sampled live emails before they are sent (off|fake|ai).",
+  },
+  {
+    name: "SCREENING_MODEL",
+    kind: "plain",
+    required: false,
+    value: "typesafe-ai/jev",
+    description: "Vercel AI Gateway decision model id; any Gateway decision model works.",
+  },
+  {
+    name: "AI_GATEWAY_API_KEY",
+    kind: "secret",
+    required: true,
+    description:
+      "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker only.",
+  },
+];
+
 const webhookKey: EnvVar = {
   name: "WEBHOOK_SECRETS_KEY",
   kind: "secret",
@@ -278,6 +302,7 @@ export const SERVICES: Service[] = [
         required: true,
         description: "Printed by ses:bootstrap.",
       },
+      ...screening,
       webhookKey,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
     ],

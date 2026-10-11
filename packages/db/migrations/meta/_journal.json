@@ -127,6 +127,13 @@
       "when": 1791683714668,
       "tag": "0017_wonderful_random",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791684273824,
+      "tag": "0018_melted_goblin_queen",
+      "breakpoints": true
     }
   ]
 }

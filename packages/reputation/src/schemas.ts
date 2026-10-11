@@ -39,6 +39,32 @@ export const RateThreshold = z
   });
 export type RateThreshold = z.output<typeof RateThreshold>;
 
+const Probability = z.number().min(0).max(1);
+
+/**
+ * AI content screening of a sample of each organization's live messages (`@coss/screening`).
+ * The highest category probability decides: at `blockThreshold` the message is refused and the
+ * organization suspended, at `flagThreshold` it is sent but the organization is warned.
+ */
+export const ContentScreeningPolicy = z
+  .strictObject({
+    enabled: z.boolean(),
+    /** Off (shadow mode): verdicts are only recorded; nothing is blocked, warned or suspended. */
+    enforce: z.boolean(),
+    blockThreshold: Probability,
+    flagThreshold: Probability,
+    /** Every one of the organization's first N live messages is screened. */
+    alwaysFirst: z.int().min(0).max(1000),
+    /** Later messages at these positions are screened too. */
+    milestones: z.array(z.int().min(1)).max(50),
+    /** Every other message is screened with this probability (unpredictable, so it can't be gamed). */
+    sampleRate: Probability,
+  })
+  .refine((value) => value.flagThreshold <= value.blockThreshold, {
+    message: "The flag threshold can't be above the block threshold.",
+  });
+export type ContentScreeningPolicy = z.output<typeof ContentScreeningPolicy>;
+
 export const ReputationPolicy = z.strictObject({
   /** Rolling window the rates are measured over (never before the last reinstatement). */
   windowDays: z.int().min(1).max(30),
@@ -48,6 +74,7 @@ export const ReputationPolicy = z.strictObject({
   complaintRate: RateThreshold,
   /** Count mailbox-simulator recipients (testing only: SES itself never counts them). */
   countSimulatorRecipients: z.boolean(),
+  contentScreening: ContentScreeningPolicy,
 });
 export type ReputationPolicy = z.output<typeof ReputationPolicy>;
 
@@ -60,6 +87,15 @@ export const DEFAULT_REPUTATION_POLICY: ReputationPolicy = {
   bounceRate: { warning: 0.04, suspend: 0.08, minimumRecipients: 200 },
   complaintRate: { warning: 0.0008, suspend: 0.003, minimumRecipients: 500 },
   countSimulatorRecipients: false,
+  contentScreening: {
+    enabled: true,
+    enforce: true,
+    blockThreshold: 0.95,
+    flagThreshold: 0.7,
+    alwaysFirst: 10,
+    milestones: [25, 50, 100, 250, 500, 1000],
+    sampleRate: 0.02,
+  },
 };
 
 export const ReputationPolicyOverrides = z.strictObject({
@@ -79,6 +115,17 @@ export const ReputationPolicyOverrides = z.strictObject({
     })
     .optional(),
   countSimulatorRecipients: z.boolean().optional(),
+  contentScreening: z
+    .strictObject({
+      enabled: z.boolean().optional(),
+      enforce: z.boolean().optional(),
+      blockThreshold: Probability.optional(),
+      flagThreshold: Probability.optional(),
+      alwaysFirst: z.int().min(0).max(1000).optional(),
+      milestones: z.array(z.int().min(1)).max(50).optional(),
+      sampleRate: Probability.optional(),
+    })
+    .optional(),
 });
 export type ReputationPolicyOverrides = z.output<typeof ReputationPolicyOverrides>;
 
@@ -91,6 +138,10 @@ export function effectivePolicy(overrides: unknown): ReputationPolicy {
     ...parsed,
     bounceRate: { ...DEFAULT_REPUTATION_POLICY.bounceRate, ...parsed.bounceRate },
     complaintRate: { ...DEFAULT_REPUTATION_POLICY.complaintRate, ...parsed.complaintRate },
+    contentScreening: {
+      ...DEFAULT_REPUTATION_POLICY.contentScreening,
+      ...parsed.contentScreening,
+    },
   });
 }
 

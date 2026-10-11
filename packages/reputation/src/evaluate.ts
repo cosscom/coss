@@ -28,7 +28,8 @@ export type EvaluationOutcome = {
   transitioned: boolean;
 };
 
-function policyOf(row: ReputationStandingRow | null): ReputationPolicy {
+/** The organization's effective policy; invalid stored overrides fall back to the defaults. */
+export function policyOf(row: ReputationStandingRow | null): ReputationPolicy {
   try {
     return effectivePolicy(row?.policyOverrides);
   } catch (error) {

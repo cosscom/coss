@@ -138,6 +138,7 @@ export function PolicyForm(props: {
     bounceRate: Partial<ReputationPolicy["bounceRate"]>;
     complaintRate: Partial<ReputationPolicy["complaintRate"]>;
     countSimulatorRecipients: boolean;
+    contentScreening: Partial<ReputationPolicy["contentScreening"]>;
   }> | null;
 }) {
   const [state, formAction, pending] = useActionState(updatePolicyAction, null);
@@ -168,6 +169,24 @@ export function PolicyForm(props: {
       defaults.complaintRate.suspend,
       overrides.complaintRate?.suspend,
     ],
+    [
+      "screeningFlag",
+      "Content screening flag (%)",
+      defaults.contentScreening.flagThreshold,
+      overrides.contentScreening?.flagThreshold,
+    ],
+    [
+      "screeningBlock",
+      "Content screening block (%)",
+      defaults.contentScreening.blockThreshold,
+      overrides.contentScreening?.blockThreshold,
+    ],
+    [
+      "screeningSample",
+      "Content screening sample (%)",
+      defaults.contentScreening.sampleRate,
+      overrides.contentScreening?.sampleRate,
+    ],
   ] as const;
   const countFields = [
     ["windowDays", "Window (days)", defaults.windowDays, overrides.windowDays],
@@ -182,6 +201,12 @@ export function PolicyForm(props: {
       "Complaint minimum recipients",
       defaults.complaintRate.minimumRecipients,
       overrides.complaintRate?.minimumRecipients,
+    ],
+    [
+      "screeningFirst",
+      "Always screen the first (messages)",
+      defaults.contentScreening.alwaysFirst,
+      overrides.contentScreening?.alwaysFirst,
     ],
   ] as const;
 
@@ -227,6 +252,20 @@ export function PolicyForm(props: {
               name="countSimulatorRecipients"
             />
             Count mailbox-simulator recipients (testing only)
+          </Label>
+          <Label>
+            <Checkbox
+              defaultChecked={overrides.contentScreening?.enforce === false}
+              name="screeningShadow"
+            />
+            Content screening in shadow mode (record verdicts, never block, warn or suspend)
+          </Label>
+          <Label>
+            <Checkbox
+              defaultChecked={overrides.contentScreening?.enabled === false}
+              name="screeningDisabled"
+            />
+            Disable content screening (e.g. phishing-simulation senders)
           </Label>
           <Field>
             <FieldLabel>Note</FieldLabel>

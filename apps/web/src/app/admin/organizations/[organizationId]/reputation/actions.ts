@@ -104,6 +104,15 @@ export async function updatePolicyAction(
         minimumRecipients: integerField(formData, "complaintMinimum"),
       },
       countSimulatorRecipients: formData.get("countSimulatorRecipients") === "on" || undefined,
+      contentScreening: {
+        // Both default to on, so only switching them off is an override.
+        enabled: formData.get("screeningDisabled") === "on" ? false : undefined,
+        enforce: formData.get("screeningShadow") === "on" ? false : undefined,
+        blockThreshold: percentField(formData, "screeningBlock"),
+        flagThreshold: percentField(formData, "screeningFlag"),
+        alwaysFirst: integerField(formData, "screeningFirst"),
+        sampleRate: percentField(formData, "screeningSample"),
+      },
     };
     await updateReputationPolicy({
       organizationId,
@@ -124,7 +133,7 @@ function withoutEmpty(overrides: ReputationPolicyOverrides): ReputationPolicyOve
     windowDays: overrides.windowDays,
     countSimulatorRecipients: overrides.countSimulatorRecipients,
   });
-  for (const key of ["bounceRate", "complaintRate"] as const) {
+  for (const key of ["bounceRate", "complaintRate", "contentScreening"] as const) {
     const group = clean(overrides[key] ?? {});
     if (Object.keys(group).length > 0) result[key] = group;
   }

@@ -96,4 +96,15 @@ describe("effectivePolicy", () => {
     expect(() => effectivePolicy({ nope: 1 })).toThrow();
     expect(() => effectivePolicy({ bounceRate: { warning: 0.5, suspend: 0.1 } })).toThrow();
   });
+
+  test("merges content screening overrides and keeps flag at or below block", () => {
+    const policy = effectivePolicy({ contentScreening: { enforce: false, sampleRate: 0.5 } });
+    expect(policy.contentScreening).toEqual({
+      ...DEFAULT_REPUTATION_POLICY.contentScreening,
+      enforce: false,
+      sampleRate: 0.5,
+    });
+    expect(() => effectivePolicy({ contentScreening: { flagThreshold: 0.99 } })).toThrow();
+    expect(() => effectivePolicy({ contentScreening: { sampleRate: 2 } })).toThrow();
+  });
 });
