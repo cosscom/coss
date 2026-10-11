@@ -110,6 +110,19 @@ describe("screenMessage", () => {
     expect(event?.note).toContain(subject.subjectId);
   });
 
+  test("never blocks or suspends COSS's own organization: a block only flags", async () => {
+    const tenant = await createTestTenant();
+    const outcome = await screenMessage(input(tenant, "Reset your password [coss-test:phishing]"), {
+      classifier: fakeClassifier(),
+      systemOrganizationId: tenant.organization.id,
+    });
+    expect(outcome.action).toBe("send");
+    expect(outcome.screening).toMatchObject({ verdict: "flagged", topCategory: "phishing" });
+    const standing = await getReputationStanding(tenant.organization.id);
+    expect(standing?.status).toBe("good");
+    expect(standing?.nextEvaluationAt).not.toBeNull();
+  });
+
   test("fails open on classifier errors and owes the sample to the next message", async () => {
     const tenant = await createTestTenant();
     await updateReputationPolicy({

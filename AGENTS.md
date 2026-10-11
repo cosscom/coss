@@ -140,7 +140,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX` | required with `EMAIL_PROVIDER=ses` (api, web, worker); printed by `ses:bootstrap`. AWS credentials come from the default chain (`globalPassThroughEnv` in `turbo.json`) |
 | `TRACKING_DOMAIN_PROVIDER`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`, `TRACKING_CNAME_TARGET` | api, web, worker: custom tracking domains (`fake` default, or `cloudflare`: Cloudflare for SaaS custom hostnames on the coss.com zone, which needs the token and zone id); customers CNAME to `TRACKING_CNAME_TARGET` (default `track.coss.com`); shape in `@coss/email/env` |
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
-| `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | worker: account emails (verification, password reset, invitation) and reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
+| `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | web reads the id only to refuse admin suspensions of COSS's own organization (`isSystemOrganization`, `apps/web/src/lib/system-organization.ts`); worker: account emails (verification, password reset, invitation) and reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
 | `VALKEY_URL`, `VALKEY_CLUSTER` | api + web: rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
 | `RATE_LIMIT_KEY_PREFIX` | api + web: namespaces Valkey keys (default `coss`) |
 | `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → per-IP limits off |
@@ -685,7 +685,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   hourly, as are unhealthy rates below minimum volume. Claims use a separate expiring lease; standing/policy
   revisions invalidate stale evaluations. Checks (`ReputationCheck`) measure; `decide` is the only automatic policy: worst severity wins, a warning
   clears when every check is `ok`, and **a suspension is never lifted automatically — only `reinstateOrganization`
-  (platform admin, note required)**. Every change goes through `applyTransition` (guarded update + history row +
+  (platform admin, note required)**. The worker never suspends COSS's own organization (the
+  `NOTIFICATIONS_ENVIRONMENT_ID`'s, passed as `systemOrganizationId` to the guard and `screenMessage`): `decide`
+  turns its `suspend` results into a warning and screening downgrades its blocks to flags. Admins can't suspend it
+  either: both admin suspend actions refuse it (`isSystemOrganization`) and the pages hide the buttons. Every change goes through `applyTransition` (guarded update + history row +
   `account.*` webhooks to live environments + a `reputation_notification` outbox row for warnings and suspensions,
   one transaction). Email's checks (`emailReputationChecks`) are per-recipient
   rates over live emails in the window (default 7 days, never before the last reinstatement), excluding
@@ -832,7 +835,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 
 - Account emails go to unverified addresses by design (sign-up verification, invitations) from COSS's own
   organization, so bounces from made-up sign-up addresses count against that organization's reputation like any
-  customer's: a suspension of it stops every account email until an admin reinstates it. Sign-up and verification
+  customer's — but the worker never suspends it on its own (`systemOrganizationId`: the guard only warns it and a
+  screening block only flags its message), and neither can platform admins (the dashboard reads the same variable).
+  If it was suspended before this rule, an admin can still lift it. Sign-up and verification
   resends are rate limited per IP and address; invitations only by Better Auth's pending-invitation limit per org.
 - Reputation rollups are kept per hour of email creation, so late events for an old hour make the next evaluation
   recount that whole hour. A send already past `authorizeLiveSender` when the org is suspended still goes out.

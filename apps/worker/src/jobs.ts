@@ -47,6 +47,8 @@ export type WorkerDeps = {
   authEmails: AuthEmailDeps | null;
   /** Emails owners and admins about warnings and suspensions; `null`: held until configured. */
   notifications: ReputationNotificationDeps | null;
+  /** COSS's own organization (`NOTIFICATIONS_ENVIRONMENT_ID`'s): the guard never suspends it. */
+  systemOrganizationId: string | null;
   /** Only with `EMAIL_PROVIDER=ses`. */
   sesEvents?: { sqs: SqsApi; tenantPrefix: string };
   /**
@@ -95,7 +97,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       run: async () =>
         (await runDueReputationEvaluations(
           { limit: REPUTATION_BATCH },
-          { checks: REPUTATION_CHECKS },
+          { checks: REPUTATION_CHECKS, systemOrganizationId: deps.systemOrganizationId },
         )) === REPUTATION_BATCH,
     }),
     startLoop({

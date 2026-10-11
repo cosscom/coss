@@ -42,6 +42,15 @@ if (config.provider === "ses") {
     tenantPrefix: config.ses.tenantPrefix,
   };
 }
+if (!env.NOTIFICATIONS_ENVIRONMENT_ID !== !env.NOTIFICATIONS_FROM) {
+  throw new Error("Set both NOTIFICATIONS_ENVIRONMENT_ID and NOTIFICATIONS_FROM, or neither.");
+}
+// COSS's own organization sends account and notification emails: neither the reputation guard
+// nor content screening may suspend it (an admin still can).
+const systemEnvironment = env.NOTIFICATIONS_ENVIRONMENT_ID
+  ? await notificationEnvironment(env.NOTIFICATIONS_ENVIRONMENT_ID)
+  : null;
+const systemOrganizationId = systemEnvironment?.organizationId ?? null;
 // Email dispatch runs on pg-boss (its own pool, woken by NOTIFY when a send commits).
 const jobs = await startJobBoss({ worker: true });
 await ensureEmailDispatchQueue(jobs);
@@ -53,7 +62,9 @@ const emailService = createEmailService({
   trackingBaseUrl: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
   // Emails from a domain with an active custom tracking domain are tracked through it.
   trackingDomainProvider: email.trackingHostnames.name,
-  screen: classifier ? (input) => screenMessage(input, { classifier }) : undefined,
+  screen: classifier
+    ? (input) => screenMessage(input, { classifier, systemOrganizationId })
+    : undefined,
 });
 await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
 
@@ -61,15 +72,12 @@ await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
 // out through COSS's own email product. Without a configured environment, reputation
 // notifications are printed in development and both are held in production (sent once
 // configured); the dashboard prints account email links itself outside production.
-if (!env.NOTIFICATIONS_ENVIRONMENT_ID !== !env.NOTIFICATIONS_FROM) {
-  throw new Error("Set both NOTIFICATIONS_ENVIRONMENT_ID and NOTIFICATIONS_FROM, or neither.");
-}
 let notifier: ReputationNotifier | null = logReputationNotifier;
 let authEmailSender: AuthEmailSender | null = null;
-if (env.NOTIFICATIONS_ENVIRONMENT_ID && env.NOTIFICATIONS_FROM) {
+if (systemEnvironment && env.NOTIFICATIONS_FROM) {
   const sender = {
     service: emailService,
-    environment: await notificationEnvironment(env.NOTIFICATIONS_ENVIRONMENT_ID),
+    environment: systemEnvironment,
     from: env.NOTIFICATIONS_FROM,
   };
   notifier = emailNotifier(sender);
@@ -85,6 +93,7 @@ if (env.NOTIFICATIONS_ENVIRONMENT_ID && env.NOTIFICATIONS_FROM) {
 }
 
 const loops = startJobs({
+  systemOrganizationId,
   dispatchQueue,
   sesEvents,
   signal: controller.signal,

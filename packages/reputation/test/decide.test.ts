@@ -46,6 +46,17 @@ describe("decide", () => {
     expect(decide(suspended, [result("bounce_rate", "suspend")])).toBeNull();
   });
 
+  test("an organization that can't be suspended is warned instead", () => {
+    const opts = { canSuspend: false };
+    expect(decide(good, [result("complaint_rate", "suspend")], opts)).toEqual({
+      to: "warning",
+      type: "warning_raised",
+      trigger: "complaint_rate",
+    });
+    expect(decide(warning, [result("bounce_rate", "suspend")], opts)).toBeNull();
+    expect(decide(warning, [result("bounce_rate", "ok")], opts)?.to).toBe("good");
+  });
+
   test("nothing happens to a good organization with ok results (or none)", () => {
     expect(decide(good, [result("bounce_rate", "ok")])).toBeNull();
     expect(decide(good, [])).toBeNull();

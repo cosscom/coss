@@ -30,6 +30,7 @@ import { ActionError, formString, runAction } from "@/lib/actions";
 import { supportAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import { requirePlatformAdminAction } from "@/lib/session";
+import { isSystemOrganization, SYSTEM_ORGANIZATION_MESSAGE } from "@/lib/system-organization";
 
 /**
  * Platform admin actions. Better Auth's admin HTTP routes are disabled (`disabledPaths`), so these
@@ -293,6 +294,9 @@ export async function suspendOrganizationAction(
   return runAction(async () => {
     const { actor } = await requirePlatformAdminAction();
     const organizationId = formOrganizationId(formData);
+    if (await isSystemOrganization(organizationId)) {
+      throw new ActionError(SYSTEM_ORGANIZATION_MESSAGE);
+    }
     await suspendOrganization({ organizationId, reason: requiredReason(formData), actor });
     await supportAudit(organizationId, "organization.suspended");
     refresh();

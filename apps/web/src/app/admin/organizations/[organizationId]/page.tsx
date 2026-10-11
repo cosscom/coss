@@ -45,6 +45,7 @@ import { DomainStatusBadge } from "@/components/domain-badges";
 import { PageHeader } from "@/components/page-header";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
+import { isSystemOrganization } from "@/lib/system-organization";
 import {
   disableOrganizationScimAction,
   disableOrganizationSsoAction,
@@ -89,6 +90,7 @@ export default async function AdminOrganizationPage({
     listRateLimitOverrides(organization.id),
     listAdminAuditEvents({ organizationId: organization.id, limit: 25 }),
   ]);
+  const isSystem = await isSystemOrganization(organization.id);
   const fields = { organizationId: organization.id };
 
   return (
@@ -123,6 +125,9 @@ export default async function AdminOrganizationPage({
             A suspended organization's API keys are refused with 403 organization_suspended, its
             webhook deliveries are held (they resume when lifted), and its dashboard is read-only.
             Members see that it is suspended, never the reason.
+            {isSystem && !suspension
+              ? " This is COSS's own organization (it sends account emails), so it can't be suspended."
+              : null}
           </CardDescription>
           <CardAction>
             {suspension ? (
@@ -135,7 +140,7 @@ export default async function AdminOrganizationPage({
                 title={`Lift the suspension of ${organization.name}?`}
                 triggerLabel="Lift suspension"
               />
-            ) : (
+            ) : isSystem ? null : (
               <AdminActionDialog
                 action={suspendOrganizationAction}
                 description="Its API keys stop working immediately, webhook deliveries are held, and members can only view the dashboard."
