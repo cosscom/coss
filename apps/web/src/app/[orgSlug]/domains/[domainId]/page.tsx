@@ -55,7 +55,7 @@ const STATUS_HELP = {
   failed:
     "The records weren't found within 72 hours, so verification stopped. Restart it to get new " +
     "records to publish.",
-  deleting: "This domain is being removed.",
+  deleting: "This domain is being removed. If it stays here, delete it again to finish.",
 } as const;
 
 const TRACKING_STATUS_HELP = {
@@ -141,9 +141,8 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
               {canVerify && domain.status !== "deleting" ? (
                 <VerifyDomainButton {...target} restart={domain.status === "failed"} />
               ) : null}
-              {canDelete && domain.status !== "deleting" ? (
-                <DeleteDomainButton {...target} name={domain.name} />
-              ) : null}
+              {/* Also while `deleting`: a deletion interrupted midway is finished by trying again. */}
+              {canDelete ? <DeleteDomainButton {...target} name={domain.name} /> : null}
             </>
           }
           description={STATUS_HELP[domain.status]}

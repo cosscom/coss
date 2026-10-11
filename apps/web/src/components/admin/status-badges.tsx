@@ -9,8 +9,9 @@ export function PlatformRoleBadge({ role }: { role: string | null }) {
   return <Badge variant={isAdmin ? "info" : "outline"}>{isAdmin ? "admin" : "user"}</Badge>;
 }
 
-export function OrganizationStatusBadge({ suspended }: { suspended: boolean }) {
-  return suspended ? (
+export function OrganizationStatusBadge(props: { suspended: boolean; deleting?: boolean }) {
+  if (props.deleting) return <Badge variant="error">deleting</Badge>;
+  return props.suspended ? (
     <Badge variant="error">suspended</Badge>
   ) : (
     <Badge variant="success">active</Badge>

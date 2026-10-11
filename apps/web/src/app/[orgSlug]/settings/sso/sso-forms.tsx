@@ -192,9 +192,9 @@ export function DeleteSsoProviderButton(props: { orgSlug: string }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove the SSO provider?</AlertDialogTitle>
             <AlertDialogDescription>
-              Nobody will be able to sign in with SSO, the SSO requirement is turned off, and every
-              account's link to this provider is deleted. Members without a password can set one
-              with “Forgot password”.
+              Nobody will be able to sign in with SSO, the SSO requirement is turned off, every
+              account's link to this provider is deleted and everyone signed in with it (you too, if
+              you did) is signed out. Members without a password can set one with “Forgot password”.
             </AlertDialogDescription>
             {state && !state.ok ? <FormError message={state.error} /> : null}
           </AlertDialogHeader>

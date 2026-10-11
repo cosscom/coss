@@ -54,4 +54,6 @@ export class FakeIdentityProvider implements IdentityProvider {
   async deleteDomainIdentity(input: { domain: string }): Promise<void> {
     this.#identities.delete(input.domain);
   }
+
+  async deleteTenant(): Promise<void> {}
 }

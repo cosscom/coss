@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { pool } from "@coss/db";
+import { db, pool, schema } from "@coss/db";
+import { uniqueSuffix } from "@coss/db/testing";
 import {
   FakeIdentityProvider,
   FakeTrackingHostnameProvider,
@@ -344,6 +345,41 @@ describe("DELETE /v1/domains/{id}", () => {
     expect(await res.json()).toEqual({ object: "domain", id: created.id, deleted: true });
     expect(afterwards.status).toBe(404);
     expect(reclaimed.status).toBe(200);
+  });
+
+  test("a domain the organization's SSO provider uses can't be deleted", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const domain = await createVerifiedDomain(tenant.organization.id);
+    const providerId = `sso_${uniqueSuffix()}`;
+    await db.insert(schema.ssoProvider).values({
+      id: `ssop_${uniqueSuffix()}`,
+      issuer: "https://idp.example.com",
+      userId: tenant.owner.id,
+      providerId,
+      organizationId: tenant.organization.id,
+      domain: `other.example.com, ${domain.name.toUpperCase()}`,
+      domainVerified: true,
+    });
+
+    const refused = await apiRequest(app, "DELETE", `/v1/domains/${domain.id}`, {
+      key: tenant.liveKey,
+    });
+    expect(refused.status).toBe(422);
+    expect(await errorOf(refused)).toMatchObject({
+      type: "invalid_request_error",
+      code: "domain_in_use_by_sso",
+    });
+
+    // Once it is off the provider, it goes.
+    await pool.query("update sso_provider set domain = $1 where provider_id = $2", [
+      "other.example.com",
+      providerId,
+    ]);
+    const res = await apiRequest(app, "DELETE", `/v1/domains/${domain.id}`, {
+      key: tenant.liveKey,
+    });
+    expect(res.status).toBe(200);
   });
 
   test("another organization's domain is 404 and stays put", async () => {

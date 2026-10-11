@@ -15,12 +15,14 @@ import {
   suspendOrganization,
   unsuspendOrganization,
 } from "../src/admin.ts";
+import { runDueOrganizationDeletions } from "../src/deletion.ts";
 import {
   connectScim,
   createScimToken,
   disconnectScim,
   getOrganizationScim,
   listScimManagedUserIds,
+  requestOrganizationDeletion,
   revokeScimToken,
   setScimGroupRoles,
   TenancyError,
@@ -492,4 +494,43 @@ describe("platform admin recovery", () => {
       disableOrganizationScim({ organizationId: tenant.organization.id, reason: "again", actor }),
     ).rejects.toBeInstanceOf(TenancyError);
   });
+});
+
+test("organization deletion revokes directory tokens and removes SCIM data without deleting accounts", async () => {
+  const tenant = await createScimTenant();
+  const organizationId = tenant.organization.id;
+  const email = `deletion-${uniqueSuffix()}@${tenant.domain}`;
+  await provision(tenant, email);
+  const user = await userByEmail(email);
+  await requestOrganizationDeletion({
+    organizationId,
+    actor: { userId: tenant.owner.id, email: tenant.owner.email },
+  });
+  expect((await scim(tenant.token, "GET", "/Users")).status).toBe(401);
+  await runDueOrganizationDeletions(
+    { batchSize: 1, scope: { organizationIds: [organizationId] } },
+    {
+      releaseProviderResources: async () => {},
+    },
+  );
+  for (const table of [
+    schema.scimUser,
+    schema.scimGroup,
+    schema.scimIdentityTombstone,
+    schema.scimConnectionBinding,
+    schema.scimManagedConnection,
+  ]) {
+    expect(
+      await db
+        .select({ id: table.id })
+        .from(table)
+        .where(eq(table.provisioningDomainId, organizationId)),
+    ).toEqual([]);
+  }
+  expect(await userByEmail(email)).toEqual(user);
+  const [subject] = await db
+    .select()
+    .from(schema.scimSubject)
+    .where(eq(schema.scimSubject.userId, user?.id ?? ""));
+  expect(subject?.profileSourceId).toBeNull();
 });

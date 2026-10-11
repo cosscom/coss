@@ -2,6 +2,7 @@
 
 import { DASHBOARD_PATH, validateOrgName, validateOrgSlug } from "@coss/auth/slugs";
 import {
+  requestOrganizationDeletion,
   setOrganizationApiVersion,
   setOrganizationTwoFactorRequired,
   TenancyError,
@@ -79,6 +80,36 @@ export async function leaveOrganizationAction(
       organizationId: organization.id,
       action: "member.left",
       target: { type: "user", id: session.user.id, label: session.user.email },
+    });
+    return null;
+  });
+  if (result.ok) redirect(DASHBOARD_PATH);
+  return result;
+}
+
+/**
+ * Deletes the organization (owners only, `organization:delete`): everyone is locked out at once and
+ * the worker deletes the rest (`requestOrganizationDeletion`). Typing the slug confirms it. Refused
+ * while the organization is suspended (`requireOrgPermission`) and while impersonating: platform
+ * admins delete organizations from the admin console, which records it.
+ */
+export async function deleteOrganizationAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const result = await runAction(async () => {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
+      organization: ["delete"],
+    });
+    if (session.session.impersonatedBy) {
+      throw new ActionError("Organizations can't be deleted while impersonating a user.");
+    }
+    if (formString(formData, "confirm") !== organization.slug) {
+      throw new ActionError(`Type ${organization.slug} to confirm.`);
+    }
+    await requestOrganizationDeletion({
+      organizationId: organization.id,
+      actor: { userId: session.user.id, email: session.user.email },
     });
     return null;
   });

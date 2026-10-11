@@ -30,7 +30,7 @@ import {
 } from "./schemas.ts";
 import type { TrackingHostnameProvider } from "./tracking-hostnames.ts";
 
-const { domain, emailTenant, trackingDomain } = schema;
+const { domain, emailTenant, ssoProvider, trackingDomain } = schema;
 
 export type DomainRow = typeof domain.$inferSelect;
 export type EmailTenantRow = typeof emailTenant.$inferSelect;
@@ -408,10 +408,29 @@ export async function checkDomain(
 }
 
 /**
+ * Whether the organization's SSO provider lists the domain. SSO only accepts addresses on verified
+ * email domains of the organization, so deleting one would end SSO sign-in for its people (and
+ * lock members out while the organization requires SSO). `sso_provider.domain` is comma-joined.
+ */
+async function usedBySso(organizationId: string, name: string): Promise<boolean> {
+  const providers = await db
+    .select({ domain: ssoProvider.domain })
+    .from(ssoProvider)
+    .where(eq(ssoProvider.organizationId, organizationId));
+  return providers.some((provider) =>
+    provider.domain.split(",").some((entry) => entry.trim().toLowerCase() === name),
+  );
+}
+
+/**
  * Removes the domain's tracking hostname at its provider (the row goes with the domain). Links in
  * emails already sent from it stop working.
  */
-async function releaseTrackingHostname(row: DomainRow, deps: DomainDeps): Promise<void> {
+async function releaseTrackingHostname(
+  row: Pick<DomainRow, "id" | "organizationId">,
+  deps: Pick<DomainDeps, "tracking">,
+  assertLease: () => Promise<void> = async () => {},
+): Promise<void> {
   const [tracked] = await db
     .select()
     .from(trackingDomain)
@@ -429,6 +448,7 @@ async function releaseTrackingHostname(row: DomainRow, deps: DomainDeps): Promis
     console.error(`[email:domains] releasing ${tracked.hostname} failed:`, error);
     throw new DomainError("provider_error", "The domain could not be removed. Try again shortly.");
   }
+  await assertLease();
   await db
     .update(trackingDomain)
     .set({ status: "failed", failedAt: new Date(), providerHostnameId: null, nextCheckAt: null })
@@ -441,6 +461,13 @@ export async function deleteDomain(
   deps: DomainDeps,
 ): Promise<void> {
   const row = await requireDomain(input);
+  if (await usedBySso(row.organizationId, row.name)) {
+    throw new DomainError(
+      "domain_in_use_by_sso",
+      `${row.name} is used by this organization's single sign-on. Remove it from the SSO ` +
+        "provider first.",
+    );
+  }
   const scope = and(eq(domain.id, row.id), eq(domain.organizationId, row.organizationId));
   await releaseTrackingHostname(row, deps);
   if (row.status !== "failed") {
@@ -462,6 +489,50 @@ export async function deleteDomain(
     }
   }
   await db.delete(domain).where(scope);
+}
+
+/**
+ * Organization deletion (worker, `OrganizationTeardownDeps.releaseProviderResources`): stops the
+ * organization's sends, removes its domains' provider identities and the domains, then its tenant.
+ * Idempotent; a failure leaves the rest for the retry. `failed` domains have no identity of
+ * theirs (the name may be another organization's by now), so only their rows go.
+ */
+export async function releaseOrganizationEmailResources(
+  organizationId: string,
+  deps: Pick<DomainDeps, "identity" | "tracking">,
+  assertLease: () => Promise<void> = async () => {},
+): Promise<void> {
+  await assertLease();
+  // At once, so scheduled sends due meanwhile are refused (`authorizeLiveSender`).
+  await db
+    .update(domain)
+    .set({ status: "deleting", canSend: false })
+    .where(and(eq(domain.organizationId, organizationId), ne(domain.status, "failed")));
+  const tenantRow = await getEmailTenant(organizationId);
+  const tenant = tenantRow ? tenantOf(tenantRow) : { tenantName: "", tenantArn: null };
+  const rows = await db
+    .select({ id: domain.id, name: domain.name, status: domain.status, provider: domain.provider })
+    .from(domain)
+    .where(eq(domain.organizationId, organizationId));
+  for (const row of rows) {
+    await assertLease();
+    await releaseTrackingHostname({ id: row.id, organizationId }, deps, assertLease);
+    await assertLease();
+    // Identities of another provider (e.g. fake domains in an SES deployment) aren't ours to touch.
+    if (row.status !== "failed" && row.provider === deps.identity.name) {
+      await deps.identity.deleteDomainIdentity({ tenant, domain: row.name });
+    }
+    await assertLease();
+    await db
+      .delete(domain)
+      .where(and(eq(domain.id, row.id), eq(domain.organizationId, organizationId)));
+  }
+  if (tenantRow) {
+    await assertLease();
+    if (tenantRow.provider === deps.identity.name) await deps.identity.deleteTenant(tenant);
+    await assertLease();
+    await db.delete(emailTenant).where(eq(emailTenant.organizationId, organizationId));
+  }
 }
 
 /**

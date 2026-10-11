@@ -11,6 +11,7 @@ mock.module("@coss/tenancy", () => ({ TenancyError: class extends Error {} }));
 const audit = mock(async () => {});
 mock.module("@coss/tenancy/admin", () => ({
   ADMIN_REASON_MAX_LENGTH: 500,
+  deleteOrganizationAsAdmin: mock(async () => {}),
   disableOrganizationScim: mock(async () => ({ complete: true })),
   disableOrganizationSso: mock(async () => {}),
   disableOrganizationSsoRequirement: mock(async () => {}),
@@ -58,12 +59,14 @@ mock.module("@/lib/auth", () => ({
   },
 }));
 const {
+  deleteOrganizationAsAdmin,
   resetUserTwoFactor,
   unlinkUserSso,
   disableOrganizationScim,
   disableOrganizationSso,
   disableOrganizationSsoRequirement,
 } = (await import("@coss/tenancy/admin")) as unknown as Record<
+  | "deleteOrganizationAsAdmin"
   | "resetUserTwoFactor"
   | "unlinkUserSso"
   | "disableOrganizationScim"
@@ -219,6 +222,38 @@ describe("SSO recovery", () => {
       form("organizationId", newId("org"), "Token leaked"),
     );
     expect(result.ok).toBe(false);
+  });
+});
+
+describe("organization deletion", () => {
+  test("needs an organization id and a reason, and passes the typed slug on", async () => {
+    const organizationId = newId("org");
+    const form = (id: string, reason: string) => {
+      const data = new FormData();
+      data.set("organizationId", id);
+      data.set("confirm", " acme ");
+      data.set("reason", reason);
+      return data;
+    };
+    expect((await actions.deleteOrganizationAdminAction(null, form(organizationId, ""))).ok).toBe(
+      false,
+    );
+    expect(
+      (await actions.deleteOrganizationAdminAction(null, form(newId("user"), "Closure"))).ok,
+    ).toBe(false);
+    expect(deleteOrganizationAsAdmin).not.toHaveBeenCalled();
+
+    expect(
+      await actions.deleteOrganizationAdminAction(null, form(organizationId, "Closure")),
+    ).toEqual({ ok: true, data: null });
+    expect(deleteOrganizationAsAdmin).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId,
+        confirmSlug: "acme",
+        reason: "Closure",
+        actor: expect.any(Object),
+      }),
+    );
   });
 });
 

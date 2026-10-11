@@ -165,6 +165,10 @@ export const deleteDomainRoute = createRoute({
     200: jsonDoc("The domain was removed.", DeletedDomain),
     ...commonErrors,
     404: domainNotFound,
+    422: errorDoc(
+      "The organization's single sign-on uses the domain (`domain_in_use_by_sso`): remove it " +
+        "from the SSO provider in the dashboard first.",
+    ),
     502: errorDoc("The delivery provider could not remove the domain; retry (`provider_error`)."),
   },
 });

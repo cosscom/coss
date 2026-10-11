@@ -6,8 +6,10 @@
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, asc, count, desc, eq, gt, ilike, inArray, lt, or, type SQL, sql } from "drizzle-orm";
+import { type OrganizationDeletion, requestOrganizationDeletion } from "./deletion.ts";
 import { TenancyError } from "./errors.ts";
 import { disconnectScim, getOrganizationScim } from "./scim.ts";
+import { revokeSsoProviderSessions } from "./sso.ts";
 
 const {
   adminAuditEvent,
@@ -16,6 +18,7 @@ const {
   environmentApiKey,
   member,
   organization,
+  organizationDeletion,
   organizationSuspension,
   project,
   session,
@@ -52,6 +55,7 @@ export const ADMIN_ACTIONS = [
   "organization.unsuspend",
   "organization.disable_sso_requirement",
   "organization.disable_sso",
+  "organization.delete",
   "organization.disable_scim",
   "api_key.revoke",
   "reputation.suspended",
@@ -253,6 +257,41 @@ export async function unsuspendOrganization(input: {
   });
 }
 
+/**
+ * Deletes an organization (see `requestOrganizationDeletion`), suspended or not: its members,
+ * invitations, API keys and SSO provider go at once, the worker removes the rest. Typing the slug
+ * is the confirmation. The audit entry outlives the organization.
+ */
+export async function deleteOrganizationAsAdmin(input: {
+  organizationId: string;
+  confirmSlug: string;
+  reason: string;
+  actor: AdminActor;
+}): Promise<void> {
+  const reason = normalizeReason(input.reason, true);
+  await db.transaction(async (tx) => {
+    const org = await requireOrganization(input.organizationId, tx);
+    if (input.confirmSlug.trim() !== org.slug) {
+      throw new TenancyError("invalid", `Type ${org.slug} to confirm.`);
+    }
+    const deletion = await requestOrganizationDeletion(
+      { organizationId: org.id, actor: input.actor, byPlatformAdmin: true },
+      tx,
+    );
+    await recordAdminAction(
+      {
+        actor: input.actor,
+        action: "organization.delete",
+        target: { type: "organization", id: org.id },
+        organizationId: org.id,
+        reason,
+        metadata: { slug: org.slug, name: deletion.organizationName, deletionId: deletion.id },
+      },
+      tx,
+    );
+  });
+}
+
 // --- Admin reads -----------------------------------------------------------------------------
 
 export type AdminOrganizationRow = {
@@ -262,6 +301,8 @@ export type AdminOrganizationRow = {
   createdAt: Date;
   memberCount: number;
   suspendedAt: Date | null;
+  /** Its deletion is pending (the worker is tearing it down). */
+  deleting: boolean;
 };
 
 /** `%`, `_` and `\` are literal in a search term. */
@@ -301,9 +342,17 @@ export async function listOrganizationsForAdmin(
         createdAt: organization.createdAt,
         memberCount: sql<number>`coalesce(${memberCount.count}, 0)::int`,
         suspendedAt: organizationSuspension.createdAt,
+        deleting: sql<boolean>`${organizationDeletion.id} is not null`,
       })
       .from(organization)
       .leftJoin(memberCount, eq(memberCount.organizationId, organization.id))
+      .leftJoin(
+        organizationDeletion,
+        and(
+          eq(organizationDeletion.organizationId, organization.id),
+          eq(organizationDeletion.status, "pending"),
+        ),
+      )
       .leftJoin(organizationSuspension, eq(organizationSuspension.organizationId, organization.id))
       .where(and(...filters))
       .orderBy(desc(organization.createdAt), desc(organization.id))
@@ -321,6 +370,8 @@ export async function listOrganizationsForAdmin(
 export type AdminOrganizationDetail = {
   organization: { id: string; name: string; slug: string; createdAt: Date };
   suspension: (OrganizationSuspension & { suspendedByEmail: string | null }) | null;
+  /** The pending deletion, or `null`. */
+  deletion: OrganizationDeletion | null;
 };
 
 /** One organization with its suspension (and who suspended it), or `null`. */
@@ -346,8 +397,19 @@ export async function getOrganizationForAdmin(
     .where(eq(organization.id, organizationId))
     .limit(1);
   if (!row) return null;
+  const [deletion] = await db
+    .select()
+    .from(organizationDeletion)
+    .where(
+      and(
+        eq(organizationDeletion.organizationId, organizationId),
+        eq(organizationDeletion.status, "pending"),
+      ),
+    )
+    .limit(1);
   return {
     organization: row.organization,
+    deletion: deletion ?? null,
     suspension:
       row.reason !== null && row.suspendedAt !== null
         ? {
@@ -640,6 +702,9 @@ export async function disableOrganizationSso(input: {
       throw new TenancyError("conflict", "This organization has no active SSO provider.");
     }
     await tx.update(organization).set({ requireSso: false }).where(eq(organization.id, org.id));
+    // A compromised IdP's sessions must not keep counting as SSO (they satisfy 2FA).
+    const providerIds = disabled.map((row) => row.providerId);
+    const revokedSessions = await revokeSsoProviderSessions({ providerIds }, tx);
     await recordAdminAction(
       {
         actor: input.actor,
@@ -647,7 +712,7 @@ export async function disableOrganizationSso(input: {
         target: { type: "organization", id: org.id },
         organizationId: org.id,
         reason,
-        metadata: { slug: org.slug, providerIds: disabled.map((row) => row.providerId) },
+        metadata: { slug: org.slug, providerIds, revokedSessions },
       },
       tx,
     );

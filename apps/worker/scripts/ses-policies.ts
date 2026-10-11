@@ -140,9 +140,10 @@ export function cossPolicies(
           Condition: managed,
         },
         {
-          Sid: "ReadCossTenants",
+          // `GetTenant` while releasing domains; `DeleteTenant` when an organization is deleted.
+          Sid: "ReadAndDeleteCossTenants",
           Effect: "Allow",
-          Action: ["ses:GetTenant"],
+          Action: ["ses:GetTenant", "ses:DeleteTenant"],
           Resource: [tenants],
         },
       ],
