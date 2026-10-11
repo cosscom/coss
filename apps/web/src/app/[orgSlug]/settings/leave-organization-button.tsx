@@ -31,8 +31,9 @@ export function LeaveOrganizationButton(props: { orgSlug: string; orgName: strin
           <AlertDialogHeader>
             <AlertDialogTitle>Leave {props.orgName}?</AlertDialogTitle>
             <AlertDialogDescription>
-              You will lose access to its projects, domains and emails right away. API keys you
-              created keep working. To come back, someone will have to invite you again.
+              You will lose access to its projects, domains and emails right away, and invitations
+              you sent are canceled. API keys you created keep working. To come back, someone will
+              have to invite you again.
             </AlertDialogDescription>
             {state && !state.ok ? <FormError message={state.error} /> : null}
           </AlertDialogHeader>

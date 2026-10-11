@@ -133,11 +133,22 @@ export async function resolveSsoUser(input: SSOUserResolutionInput): Promise<SSO
     .select({
       organizationId: schema.ssoProvider.organizationId,
       domain: schema.ssoProvider.domain,
+      // Requesting the deletion removes the provider; this covers a sign-in already under way.
+      deletionId: schema.organizationDeletion.id,
     })
     .from(schema.ssoProvider)
+    .leftJoin(
+      schema.organizationDeletion,
+      and(
+        eq(schema.organizationDeletion.organizationId, schema.ssoProvider.organizationId),
+        eq(schema.organizationDeletion.status, "pending"),
+      ),
+    )
     .where(eq(schema.ssoProvider.providerId, input.providerId))
     .limit(1);
-  if (!provider?.organizationId) return { action: "reject", code: SSO_REJECTIONS.provider };
+  if (!provider?.organizationId || provider.deletionId) {
+    return { action: "reject", code: SSO_REJECTIONS.provider };
+  }
   const organizationId = provider.organizationId;
   const email = input.providerUser.email.toLowerCase();
   const domain = await ssoDomainForEmail({

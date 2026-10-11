@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { db, type Executor, schema } from "@coss/db";
 import { appendLogEntries, type LogEntryInput, recordOrgAuditEvent } from "@coss/logs";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
+import { requestOrganizationDeletion, runDueOrganizationDeletions } from "@coss/tenancy/deletion";
 import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy/testing";
 import { and, eq, isNull } from "drizzle-orm";
 import { WebhookError } from "../src/errors.ts";
@@ -324,6 +325,45 @@ test("sibling drains can exhaust concurrently while recording their audit events
       ),
     );
   expect(audits).toHaveLength(2);
+});
+
+test("organization deletion stops queued drains and retries and removes their backlog", async () => {
+  const tenant = await createTestTenant();
+  const { drain } = await drainFor(tenant, "https://logs.example.com/retrying");
+  await appendLogEntries(db, [line(tenant)]);
+  const now = new Date();
+  await runDueLogDrainDeliveries(
+    { now, scope: scopeOf(tenant) },
+    {
+      ...deps,
+      send: async () => ({ status: 500, body: "failed" }),
+    },
+  );
+  await drainFor(tenant, "https://logs.example.com/queued");
+  await appendLogEntries(db, [line(tenant)]);
+  await requestOrganizationDeletion({
+    organizationId: tenant.organization.id,
+    actor: { userId: tenant.owner.id, email: tenant.owner.email },
+  });
+  expect(
+    await runDueLogDrainDeliveries(
+      { now: new Date(now.getTime() + 60 * SECOND), scope: scopeOf(tenant) },
+      {
+        ...deps,
+        send: async () => {
+          throw new Error("must not deliver after deletion");
+        },
+      },
+    ),
+  ).toBe(0);
+  await runDueOrganizationDeletions(
+    { scope: scopeOf(tenant), batchSize: 1 },
+    {
+      releaseProviderResources: async () => {},
+    },
+  );
+  expect(await queued(drain.id)).toEqual([]);
+  expect(await getLogDrain({ organizationId: tenant.organization.id, id: drain.id })).toBeNull();
 });
 
 describe("log drain management", () => {

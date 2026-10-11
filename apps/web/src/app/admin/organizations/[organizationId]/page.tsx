@@ -46,6 +46,7 @@ import { PageHeader } from "@/components/page-header";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
 import {
+  deleteOrganizationAdminAction,
   disableOrganizationScimAction,
   disableOrganizationSsoAction,
   disableOrganizationSsoRequirementAction,
@@ -78,7 +79,7 @@ export default async function AdminOrganizationPage({
   const { organizationId } = await params;
   const detail = await getOrganizationForAdmin(organizationId);
   if (!detail) notFound();
-  const { organization, suspension } = detail;
+  const { organization, suspension, deletion } = detail;
   const [members, keys, domains, tenant, sso, scim, rateLimits, { events }] = await Promise.all([
     listOrganizationMembers({ organizationId: organization.id }),
     listOrganizationApiKeysForAdmin(organization.id),
@@ -111,7 +112,7 @@ export default async function AdminOrganizationPage({
         title={
           <span className="flex flex-wrap items-center gap-2">
             {organization.name}
-            <OrganizationStatusBadge suspended={suspension !== null} />
+            <OrganizationStatusBadge deleting={deletion !== null} suspended={suspension !== null} />
           </span>
         }
       />
@@ -174,6 +175,26 @@ export default async function AdminOrganizationPage({
           </CardPanel>
         ) : null}
       </Card>
+
+      {deletion ? (
+        <Alert variant="error">
+          <AlertTitle>Being deleted since {formatDateTime(deletion.createdAt)}</AlertTitle>
+          <AlertDescription>
+            <p>
+              Requested by {deletion.requestedByEmail}
+              {deletion.byPlatformAdmin ? " (platform admin)" : ""}. Its members, invitations, API
+              keys and SSO provider are gone; the worker is deleting its domains, SES tenant and
+              data, then the organization.
+            </p>
+            {deletion.lastError ? (
+              <p>
+                Attempt {deletion.attemptCount} failed: {deletion.lastError}. It is retried
+                automatically.
+              </p>
+            ) : null}
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       <Card>
         <CardHeader>
@@ -503,6 +524,39 @@ export default async function AdminOrganizationPage({
           </Table>
         </CardPanel>
       </Card>
+
+      {deletion ? null : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Deletion</CardTitle>
+            <CardDescription>
+              Deletes the organization, also while it is suspended (members can't). Members,
+              invitations, API keys and the SSO provider go at once; the worker then releases its
+              domains and SES tenant and deletes its data. The audit log keeps this entry.
+            </CardDescription>
+            <CardAction>
+              <AdminActionDialog
+                action={deleteOrganizationAdminAction}
+                description="This can't be undone. Its domains become available to other organizations once they are released."
+                destructive
+                fields={fields}
+                reason="required"
+                reasonPlaceholder="e.g. Account closure requested in ticket #1234"
+                submitLabel="Delete organization"
+                title={`Delete ${organization.name}?`}
+                triggerLabel="Delete"
+              >
+                <Field>
+                  <FieldLabel>
+                    Type <code className="font-mono">{organization.slug}</code> to confirm
+                  </FieldLabel>
+                  <Input autoComplete="off" name="confirm" required spellCheck={false} />
+                </Field>
+              </AdminActionDialog>
+            </CardAction>
+          </CardHeader>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

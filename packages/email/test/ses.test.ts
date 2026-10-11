@@ -9,11 +9,13 @@ import {
   checkDomain,
   createDomain,
   deleteDomain,
+  releaseOrganizationEmailResources,
 } from "../src/domains.ts";
 import { EmailError } from "../src/errors.ts";
 import { ingestProviderEvents } from "../src/events.ts";
 import type { OutboundEmail } from "../src/provider.ts";
 import { IdentityTakenError } from "../src/provider.ts";
+import { FakeTrackingHostnameProvider } from "../src/providers/fake-tracking-hostnames.ts";
 import { getEmail } from "../src/read.ts";
 import { createEmailRuntime } from "../src/runtime.ts";
 import { SesIdentityProvider } from "../src/ses/identity.ts";
@@ -286,6 +288,110 @@ describe("SesIdentityProvider", () => {
     expect(api.identities.has("staging.com")).toBe(true);
     expect(api.operations()).not.toContain("deleteEmailIdentity");
     expect(api.identities.get("company.com")?.mailFrom).toBeNull();
+  });
+});
+
+describe("releaseOrganizationEmailResources", () => {
+  test("stops between provider operations when claim ownership is lost", async () => {
+    const api = new FakeSesApi();
+    const identity = new SesIdentityProvider(api, config);
+    const deps = { identity, dns: null, tracking: new FakeTrackingHostnameProvider() };
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const name = `lease-${uniqueSuffix()}.com`;
+    const domain = await createDomain({ organizationId, name, userId: null }, deps);
+    await expect(
+      releaseOrganizationEmailResources(organizationId, deps, async () => {
+        if (!api.identities.has(name)) throw new Error("Claim lost");
+      }),
+    ).rejects.toThrow("Claim lost");
+    expect(api.tenants.has(`test-${organizationId}`)).toBe(true);
+    expect(
+      await db
+        .select({ id: schema.domain.id })
+        .from(schema.domain)
+        .where(eq(schema.domain.id, domain.id)),
+    ).toHaveLength(1);
+    await releaseOrganizationEmailResources(organizationId, deps);
+    expect(api.tenants.has(`test-${organizationId}`)).toBe(false);
+  });
+
+  test("removes the organization's identities, domains and SES tenant", async () => {
+    const api = new FakeSesApi();
+    const identity = new SesIdentityProvider(api, config);
+    const deps = { identity, dns: null, tracking: new FakeTrackingHostnameProvider() };
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const name = `release-${uniqueSuffix()}.com`;
+    await createDomain({ organizationId, name, userId: null }, deps);
+    // A failed domain whose name another organization holds by now: its identity isn't ours.
+    const other = await identity.ensureTenant({ organizationId: "org_other" });
+    const taken = `taken-${uniqueSuffix()}.com`;
+    await identity.createDomainIdentity({
+      tenant: other,
+      domain: taken,
+      mailFromDomain: `send.${taken}`,
+    });
+    await db.insert(schema.domain).values({
+      organizationId,
+      name: taken,
+      status: "failed",
+      provider: "ses",
+      mailFromDomain: `send.${taken}`,
+    });
+
+    await releaseOrganizationEmailResources(organizationId, deps);
+    expect(api.identities.has(name)).toBe(false);
+    expect(api.identities.has(taken)).toBe(true);
+    expect(api.tenants.has(`test-${organizationId}`)).toBe(false);
+    expect(api.tenants.has("test-org_other")).toBe(true);
+    const domains = await db
+      .select({ id: schema.domain.id })
+      .from(schema.domain)
+      .where(eq(schema.domain.organizationId, organizationId));
+    expect(domains).toEqual([]);
+    const tenants = await db
+      .select({ id: schema.emailTenant.organizationId })
+      .from(schema.emailTenant)
+      .where(eq(schema.emailTenant.organizationId, organizationId));
+    expect(tenants).toEqual([]);
+    // Idempotent: a retry after a crash finds nothing left to do.
+    await releaseOrganizationEmailResources(organizationId, deps);
+  });
+
+  test("a provider failure leaves the rest for the retry, with sending stopped", async () => {
+    const api = new FakeSesApi();
+    const identity = new SesIdentityProvider(api, config);
+    const deps = { identity, dns: null, tracking: new FakeTrackingHostnameProvider() };
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const name = `retry-${uniqueSuffix()}.com`;
+    await createDomain({ organizationId, name, userId: null }, deps);
+    api.fail("deleteEmailIdentity", "ThrottlingException");
+
+    await expect(releaseOrganizationEmailResources(organizationId, deps)).rejects.toThrow();
+    const [row] = await db
+      .select({ status: schema.domain.status, canSend: schema.domain.canSend })
+      .from(schema.domain)
+      .where(eq(schema.domain.name, name));
+    expect(row).toEqual({ status: "deleting", canSend: false });
+    expect(api.tenants.has(`test-${organizationId}`)).toBe(true);
+
+    await releaseOrganizationEmailResources(organizationId, deps);
+    expect(api.identities.has(name)).toBe(false);
+    expect(api.tenants.has(`test-${organizationId}`)).toBe(false);
+  });
+
+  test("never deletes another deployment's tenant", async () => {
+    const api = new FakeSesApi();
+    const staging = new SesIdentityProvider(api, { ...config, tenantPrefix: "staging" });
+    const tenant = await staging.ensureTenant({ organizationId: "org_a" });
+    await new SesIdentityProvider(api, config).deleteTenant(tenant);
+    expect(api.tenants.has("staging-org_a")).toBe(true);
+    await staging.deleteTenant(tenant);
+    expect(api.tenants.has("staging-org_a")).toBe(false);
+    // Already gone: still fine.
+    await staging.deleteTenant(tenant);
   });
 });
 

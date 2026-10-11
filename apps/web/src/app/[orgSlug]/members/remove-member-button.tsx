@@ -39,8 +39,9 @@ export function RemoveMemberButton(props: {
               Remove {props.memberName} from {props.orgName}?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              They lose access right away. API keys they created keep working; revoke them
-              separately if needed. You can invite them again later.
+              They lose access right away and invitations they sent are canceled. API keys they
+              created keep working; revoke them separately if needed. You can invite them again
+              later.
             </AlertDialogDescription>
             {state && !state.ok ? <FormError message={state.error} /> : null}
           </AlertDialogHeader>

@@ -18,7 +18,14 @@ import { decryptSecret, type SecretsKeyRing } from "./secrets.ts";
 import type { WebhookSender } from "./sender.ts";
 import { signatureHeaders } from "./signing.ts";
 
-const { logDrain, logDrainAttempt, logDrainBatch, logDrainRecord, organizationSuspension } = schema;
+const {
+  logDrain,
+  logDrainAttempt,
+  logDrainBatch,
+  logDrainRecord,
+  organizationSuspension,
+  organizationDeletion,
+} = schema;
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
@@ -63,6 +70,21 @@ const notSuspended = (
       .where(eq(organizationSuspension.organizationId, organizationId)),
   );
 
+const notDeleting = (
+  organizationId: typeof logDrain.organizationId | typeof logDrainBatch.organizationId,
+) =>
+  notExists(
+    db
+      .select({ one: sql`1` })
+      .from(organizationDeletion)
+      .where(
+        and(
+          eq(organizationDeletion.organizationId, organizationId),
+          eq(organizationDeletion.status, "pending"),
+        ),
+      ),
+  );
+
 /** The lines of the next batch: oldest first, within both limits (a single oversized line still goes). */
 export function takeBatch<T extends { byteSize: number }>(records: readonly T[]): T[] {
   const taken: T[] = [];
@@ -90,6 +112,7 @@ async function formBatches(now: Date, limit: number, scope: Scope): Promise<LogD
         eq(logDrain.enabled, true),
         scope ? inArray(logDrain.organizationId, scope.organizationIds) : undefined,
         notSuspended(logDrain.organizationId),
+        notDeleting(logDrain.organizationId),
         notExists(
           db
             .select({ one: sql`1` })
@@ -195,6 +218,7 @@ async function claimDue(now: Date, limit: number, scope: Scope): Promise<LogDrai
         or(isNull(logDrainBatch.leaseExpiresAt), lt(logDrainBatch.leaseExpiresAt, now)),
         scope ? inArray(logDrainBatch.organizationId, scope.organizationIds) : undefined,
         notSuspended(logDrainBatch.organizationId),
+        notDeleting(logDrainBatch.organizationId),
       ),
     )
     .orderBy(asc(logDrainBatch.nextAttemptAt))

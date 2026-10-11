@@ -18,6 +18,12 @@ export {
   setOrganizationApiVersion,
 } from "./api-versions.ts";
 export {
+  getOrganizationDeletion,
+  isOrganizationBeingDeleted,
+  type OrganizationDeletion,
+  requestOrganizationDeletion,
+} from "./deletion.ts";
+export {
   DEFAULT_ENVIRONMENTS,
   getEnvironment,
   getEnvironmentById,
@@ -66,6 +72,7 @@ export {
   listOwnersWithoutPassword,
   listSsoLinkedMemberIds,
   type OrganizationSsoProvider,
+  revokeSsoProviderSessions,
   type SsoProviderType,
   setOrganizationSsoRequired,
   syncSsoDomainVerification,

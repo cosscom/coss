@@ -204,4 +204,14 @@ export class SesIdentityProvider implements IdentityProvider {
       if (!isSesError(error, "NotFoundException")) throw error;
     }
   }
+
+  async deleteTenant(tenant: ProviderTenant): Promise<void> {
+    // Only this deployment's tenants (`<prefix>-…`): stages may share an account.
+    if (!tenant.tenantName.startsWith(`${this.#config.tenantPrefix}-`)) return;
+    try {
+      await this.#api.deleteTenant({ TenantName: tenant.tenantName });
+    } catch (error) {
+      if (!isSesError(error, "NotFoundException")) throw error;
+    }
+  }
 }

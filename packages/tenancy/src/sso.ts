@@ -5,10 +5,10 @@
  * the organization's SSO requirement. Trust rules: `@coss/auth/sso`.
  */
 import { parseSsoDomains, unverifiedSsoDomains } from "@coss/auth/sso";
-import { db, schema } from "@coss/db";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { db, type Executor, schema } from "@coss/db";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 
-const { account, member, organization, ssoProvider, user } = schema;
+const { account, member, organization, session, ssoProvider, user } = schema;
 
 /** Better Auth's provider id for email + password accounts. */
 const CREDENTIAL_PROVIDER_ID = "credential";
@@ -190,4 +190,22 @@ export async function listSsoLinkedMemberIds(input: {
       ),
     );
   return new Set(rows.map((row) => row.memberId));
+}
+
+/**
+ * Signs out every session an SSO provider created, once the provider is removed or disabled: they
+ * would otherwise keep counting as signed in through the organization's IdP (for its SSO and
+ * two-factor requirements), even for a provider registered later under the same derived id.
+ * Returns how many were revoked.
+ */
+export async function revokeSsoProviderSessions(
+  input: { providerIds: string[] },
+  executor: Executor = db,
+): Promise<number> {
+  if (input.providerIds.length === 0) return 0;
+  const revoked = await executor
+    .delete(session)
+    .where(inArray(session.ssoProviderId, input.providerIds))
+    .returning({ id: session.id });
+  return revoked.length;
 }

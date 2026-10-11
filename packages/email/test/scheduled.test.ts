@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { queryLogs } from "@coss/logs";
+import { requestOrganizationDeletion } from "@coss/tenancy";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { eq, sql } from "drizzle-orm";
 import { EmailError } from "../src/errors.ts";
@@ -127,6 +128,22 @@ describe("scheduled sends", () => {
       .where(eq(schema.organizationSuspension.organizationId, tenant.organization.id));
     expect(await service.dispatchDue({ now: later(), scope: scopeOf(tenant) })).toBe(1);
     expect(sandboxProvider.sent).toHaveLength(1);
+  });
+
+  test("an organization being deleted never sends its scheduled emails", async () => {
+    const tenant = await createTestTenant();
+    const { service, sandboxProvider } = fakeProviders();
+    await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ scheduled_at: inAnHour() }),
+    });
+    await requestOrganizationDeletion({
+      organizationId: tenant.organization.id,
+      actor: { userId: tenant.owner.id, email: tenant.owner.email },
+    });
+    expect(await service.dispatchDue({ now: later(), scope: scopeOf(tenant) })).toBe(0);
+    expect(sandboxProvider.sent).toHaveLength(0);
   });
 
   test("scheduled sends instrument the provider HTML and retain the original", async () => {

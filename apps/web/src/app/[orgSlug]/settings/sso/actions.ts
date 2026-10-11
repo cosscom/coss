@@ -4,6 +4,7 @@ import { ssoProviderIdFor, unverifiedSsoDomains } from "@coss/auth/sso";
 import {
   getOrganizationSsoProvider,
   hasScimConnection,
+  revokeSsoProviderSessions,
   type SsoProviderType,
   setOrganizationSsoRequired,
   syncSsoDomainVerification,
@@ -141,7 +142,8 @@ export async function saveSsoProviderAction(
 
 /**
  * Removes the provider. Better Auth also deletes every account linked to it, so members who only
- * used SSO sign in with "Forgot password" from then on. The SSO requirement is turned off.
+ * used SSO sign in with "Forgot password" from then on; the sessions it created are signed out
+ * (the actor's own too, if it came from SSO). The SSO requirement is turned off.
  */
 export async function deleteSsoProviderAction(
   _previous: ActionResult | null,
@@ -163,6 +165,8 @@ export async function deleteSsoProviderAction(
       headers: await headers(),
       body: { providerId: existing.providerId },
     });
+    // Better Auth keeps them; a provider registered later would get the same id and trust them.
+    await revokeSsoProviderSessions({ providerIds: [existing.providerId] });
     await recordAudit(session, {
       organizationId: organization.id,
       action: "sso_provider.deleted",

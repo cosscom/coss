@@ -697,6 +697,8 @@ export const webhookMessage = pgTable(
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
     unique("webhook_message_id_organization_unique").on(t.id, t.organizationId),
+    // Deleting an environment (or an organization, `organization_deletion`) finds its messages.
+    index("webhook_message_environment_idx").on(t.environmentId),
     // The worker's retention purge.
     index("webhook_message_created_at_idx").on(t.createdAt),
   ],
@@ -1412,6 +1414,47 @@ export const authEmail = pgTable(
   },
   (t) => [
     index("auth_email_next_attempt_idx")
+      .on(t.nextAttemptAt)
+      .where(sql`${t.nextAttemptAt} IS NOT NULL`),
+  ],
+);
+
+export const organizationDeletionStatus = pgEnum("organization_deletion_status", [
+  "pending",
+  "completed",
+]);
+
+/**
+ * A request to delete an organization, and afterwards the record that it was deleted. While
+ * `pending`, the organization has no members, invitations, API keys or SSO provider (removed when
+ * the request is made) and the worker tears down its provider resources and data in batches, then
+ * deletes the organization row. History: no FKs, and the names are copied, so the row outlives
+ * the organization and its requester.
+ */
+export const organizationDeletion = pgTable(
+  "organization_deletion",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.organizationDeletion)),
+    organizationId: text("organization_id").notNull().unique("organization_deletion_org_unique"),
+    organizationName: text("organization_name").notNull(),
+    organizationSlug: text("organization_slug").notNull(),
+    requestedByUserId: text("requested_by_user_id"),
+    requestedByEmail: text("requested_by_email").notNull(),
+    // A platform admin deleted it from the admin console (also in `admin_audit_event`).
+    byPlatformAdmin: boolean("by_platform_admin").notNull().default(false),
+    status: organizationDeletionStatus("status").notNull().default("pending"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    // When the worker should (re)try; also the claim's lease. Null once completed.
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).defaultNow(),
+    lastError: text("last_error"),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("organization_deletion_next_attempt_idx")
       .on(t.nextAttemptAt)
       .where(sql`${t.nextAttemptAt} IS NOT NULL`),
   ],

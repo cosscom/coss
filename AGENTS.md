@@ -16,10 +16,10 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
-| `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
+| `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
-| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, audit log and cross-org reads. |
+| `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption; log drains (management, signed NDJSON batch delivery, retention); `./schemas`, `./env` (zod only). |
@@ -39,7 +39,7 @@ Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `
 `api → tenancy, email, reputation, webhooks, ratelimit, versioning, logs, db`;
 `web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, db, ui`; `site → ui, auth, versioning, retention` (only the client-safe `@coss/auth/slugs`, the changelog and the retention policy) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening` (`slugs`, `env` only);
-`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, tenancy, retention, db` (from tenancy only `./retention`, which imports nothing but `db`); `sdk` and `ui` depend on no workspace.
+`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, tenancy, retention, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk` and `ui` depend on no workspace.
 Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`logs`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit or logs; Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`).
@@ -430,6 +430,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     (server-side `auth.api.*` still works).
     Admin mutations go only through `apps/web/src/app/admin/actions.ts`, which records the audit log. Never re-enable
     them to "simplify" things.
+  - Invitations follow their inviter (`packages/auth/src/invitations.ts`): Better Auth accepts any pending one,
+    so `beforeAcceptInvitation` refuses it unless the inviter is still a member allowed to invite, and
+    `cancelStaleInvitations` cancels the rest after a member is removed, demoted (`afterRemoveMember`,
+    `afterUpdateMemberRole`) or leaves (a `hooks.after` on `/organization/leave`, which has no org hook).
   - `organizationHooks` validate org slugs on create/update, only allow canonical roles (`INVITABLE_ORG_ROLES`,
     `isOrgRole`), only cancel `pending` invitations (Better Auth would rewrite accepted ones) and refuse invitations,
     accepting/canceling them, organization updates and member changes while the org is suspended;
@@ -488,7 +492,11 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     see a banner; impersonation sessions are exempt. An SSO session from the org's own provider also satisfies its
     `requireTwoFactor` (the IdP owns MFA); another org's provider satisfies neither. API keys are unaffected.
     Admin recovery (audited, `@coss/tenancy/admin`): `unlinkUserSso`, `disableOrganizationSsoRequirement`,
-    `disableOrganizationSso` (clears `domainVerified`; saving again re-enables).
+    `disableOrganizationSso` (clears `domainVerified`; saving again re-enables). A domain the org's provider
+    lists can't be deleted (`deleteDomain` → `domain_in_use_by_sso`, 422): it would end SSO sign-in and, with
+    `requireSso`, lock members out; it must come off the provider first. Disabling or removing a provider
+    also signs out the sessions it created (`revokeSsoProviderSessions`): Better Auth keeps them, they would still
+    count as SSO for the org's requirements, and a later provider gets the same derived id.
   - **SCIM (directory sync)** (`@better-auth/scim`, `packages/auth/src/scim.ts`, `packages/tenancy/src/scim.ts`,
     endpoints at `/api/auth/scim/v2`): one **managed** connection per organization (`provisioningDomainId` = the
     organization id), created/rotated/revoked/decommissioned only through the plugin's serverOnly `auth.api.*`
@@ -524,7 +532,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
   `recordOpen`/`recordClick` (from the email's tracking token), `trackingBaseUrlFor` (dispatch; reads domain names
   across orgs like `authorizeLiveSender`), `reencryptWebhookSecrets` (operator script), and the worker scans `runDueWebhookDeliveries`, `runDueLogDrainDeliveries`, `recheckDueDomains`,
-  `recheckDueTrackingDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `EmailService.dispatchDue`
+  `recheckDueTrackingDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `runDueOrganizationDeletions`, `EmailService.dispatchDue`
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
@@ -734,7 +742,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   by hand also drops the backlog; nothing is queued for a disabled drain. Suspended organizations' drains are held.
   Drain deliveries are never written to `log_entry` (that would feed itself). Retention (`purgeExpiredLogDrainBatches`):
   finished batches after `RETENTION_DAYS.logDrainBatches`, unbatched lines after `logDrainBacklog`. Lines are not
-  versioned (like `GET /v1/logs`). Permissions: `logDrain` (members read; API keys all, backfilled by `0039`); revealing a
+  versioned (like `GET /v1/logs`). Permissions: `logDrain` (members read; API keys all, backfilled by `0040`); revealing a
   secret needs `logDrain:update`.
 - **Reputation notifications** (table `reputation_notification`, ids `repntf_`; `packages/reputation/src/notifications.ts`):
   the worker's `reputation-notifications` loop (`runDueReputationNotifications`, system-level) emails a warning or
@@ -764,6 +772,22 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   scores are admin-only (customers see `content_rejected` and the standing, never an oracle). The AI adapter asks one
   boolean question per category with `experimental_decide` (renamed from `experimental_evaluate`), passes the message
   as JSON state with "untrusted data" in every instruction, and always requests Gateway `zeroDataRetention`.
+- **Organization deletion** (`packages/tenancy/src/deletion.ts`, table `organization_deletion`, ids `orgdel_`; no
+  FKs, names copied, so it outlives the organization as the record): Better Auth's own delete stays off
+  (`disableOrganizationDeletion: true`) — it would drop the row without any teardown. `requestOrganizationDeletion`
+  (owners from settings, `organization:delete`, typed slug, not while suspended or impersonating; admins via
+  `deleteOrganizationAsAdmin`, audited, suspended included) inserts the row and runs `revokeOrganizationAccess` in
+  one transaction: API keys and SCIM tokens (no FK to the org), the SSO provider with its linked accounts and the sessions it
+  created, invitations and members. From then on scheduled sends never dispatch (`organizationActive` in the
+  email service), webhook and log drain deliveries are held, and the Better Auth org hooks / `resolveSsoUser` refuse it. The
+  worker's `organization-deletions` loop (`runDueOrganizationDeletions`, leased, 1 → 60 min backoff, never gives up)
+  claims one request at a time, heartbeats during provider cleanup and renews under a claim row lock for every
+  data batch (attempt-count ownership checks fence out stale workers). It repeats the revocation, calls `releaseProviderResources` (`releaseOrganizationEmailResources`: domains to
+  `deleting`, tracking hostnames, identities, domain rows, then the SES tenant via `DeleteTenant`, prefix-checked), deletes bulky data
+  (including SCIM directory records, environment logs, log drain records/batches and the org audit log) in batches of `DELETION_BATCH_SIZE` along indexed columns, then deletes the organization row
+  (cascading the rest) and marks the row `completed` in one transaction. A new table with a lot of rows per
+  organization belongs in `deleteOrganizationData`; anything held outside Postgres (a new provider resource)
+  belongs in `releaseProviderResources`. Admin audit events are kept (no FKs).
 - **Monitoring** (Sentry, `@coss/observability`): api and worker import `src/instrument.ts` first in `src/index.ts`
   (`@sentry/bun`; Bun has no runtime module hooks, so Hono gets `honoMiddleware(app)` in `createApp` — route names
   only, errors come from `onError`'s `console.error` — and pg/AWS calls aren't traced). The dashboard initializes
@@ -844,7 +868,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - Abuse prevention is best-effort: the disposable list only knows public burner services (refresh it), one-account-
   per-mailbox folds only well-known providers' dots/`+tags`, the DNS check lets every lookup failure through, and a
   Cloudflare siteverify outage blocks password sign-in, sign-up and reset (passkeys and SSO keep working).
-- Accepted: sign-up email enumeration; org deletion is disabled. A user ban does not cut off their orgs' API keys (keys
+- Accepted: sign-up email enumeration. A user ban does not cut off their orgs' API keys (keys
   are org-owned) — suspend the organization. Suspension does not pause the SES tenant itself;
   already-queued immediate sends finish, while scheduled sends wait for the suspension to be lifted.
 
@@ -862,7 +886,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 infrastructure itself (only its spec, images and runbook exist), tracking settings over the API,
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
-org logos/deletion, email change, npm publishing of the SDK,
+org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
+would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.
 
 <!-- BEGIN:turborepo-agent-rules -->

@@ -31,6 +31,7 @@ import {
   signUpEmailRejection,
 } from "./email-guard.ts";
 import { enqueueAuthEmail, RESET_PASSWORD_LINK_TTL_S, VERIFICATION_LINK_TTL_S } from "./emails.ts";
+import { cancelStaleInvitations, inviterStillAllowed } from "./invitations.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
 import {
   assertScimEmail,
@@ -85,14 +86,30 @@ function assertValidOrg(org: { name?: string | undefined; slug?: string | undefi
   if (error) throw new APIError("BAD_REQUEST", { message: error });
 }
 
-/** Membership changes are frozen while a platform admin has the organization suspended. */
+/**
+ * Membership changes are frozen while a platform admin has the organization suspended, and once
+ * its deletion is requested (which removes every member and invitation; this closes the races).
+ */
 async function assertOrgNotSuspended(organizationId: string): Promise<void> {
-  const [row] = await db
-    .select({ organizationId: schema.organizationSuspension.organizationId })
-    .from(schema.organizationSuspension)
-    .where(eq(schema.organizationSuspension.organizationId, organizationId))
-    .limit(1);
-  if (row) throw new APIError("FORBIDDEN", { message: "This organization is suspended." });
+  const [[deletion], [suspension]] = await Promise.all([
+    db
+      .select({ id: schema.organizationDeletion.id })
+      .from(schema.organizationDeletion)
+      .where(
+        and(
+          eq(schema.organizationDeletion.organizationId, organizationId),
+          eq(schema.organizationDeletion.status, "pending"),
+        ),
+      )
+      .limit(1),
+    db
+      .select({ organizationId: schema.organizationSuspension.organizationId })
+      .from(schema.organizationSuspension)
+      .where(eq(schema.organizationSuspension.organizationId, organizationId))
+      .limit(1),
+  ]);
+  if (deletion) throw new APIError("NOT_FOUND", { message: "This organization is being deleted." });
+  if (suspension) throw new APIError("FORBIDDEN", { message: "This organization is suspended." });
 }
 
 /**
@@ -310,6 +327,12 @@ export const authOptions = {
     },
   },
   hooks: {
+    // Leaving has no organization hook; cancel what the leaver sent (see ./invitations.ts).
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/organization/leave") return;
+      const organizationId = ctx.body?.organizationId;
+      if (typeof organizationId === "string") await cancelStaleInvitations(organizationId);
+    }),
     before: createAuthMiddleware(async (ctx) => {
       // Only the public sign-up: users created server-side (fixtures, seed, admins, SSO) skip it.
       if (ctx.path === "/sign-up/email") {
@@ -530,8 +553,26 @@ function serializedOrganization() {
         }
         await assertOrgNotSuspended(invitation.organizationId);
       },
-      beforeAcceptInvitation: async ({ organization: org }) => {
+      beforeAcceptInvitation: async ({ invitation, organization: org }) => {
         await assertOrgNotSuspended(org.id);
+        // Better Auth doesn't check that the inviter may still invite (see ./invitations.ts).
+        if (
+          !(await inviterStillAllowed({
+            organizationId: org.id,
+            inviterId: invitation.inviterId,
+          }))
+        ) {
+          throw new APIError("FORBIDDEN", {
+            message:
+              "This invitation is no longer valid. Ask the organization to invite you again.",
+          });
+        }
+      },
+      afterRemoveMember: async ({ organization: org }) => {
+        await cancelStaleInvitations(org.id);
+      },
+      afterUpdateMemberRole: async ({ organization: org }) => {
+        await cancelStaleInvitations(org.id);
       },
       afterAcceptInvitation: async ({ invitation, user, organization: org }) => {
         await recordOrgAudit({

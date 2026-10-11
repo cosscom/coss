@@ -205,6 +205,18 @@ export async function reconcileScimMembership(
   { database }: SCIMTransactionContext,
 ): Promise<void> {
   const organizationId = state.provisioningDomainId;
+  // An already-authenticated SCIM request must not restore access after deletion was requested.
+  const [deletion] = await db
+    .select({ id: schema.organizationDeletion.id })
+    .from(schema.organizationDeletion)
+    .where(
+      and(
+        eq(schema.organizationDeletion.organizationId, organizationId),
+        eq(schema.organizationDeletion.status, "pending"),
+      ),
+    )
+    .limit(1);
+  if (deletion) throw scimError("FORBIDDEN", "This organization is being deleted.");
   const member = await database.findOne<MemberRow>({
     model: "member",
     where: [

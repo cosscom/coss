@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { newId } from "@coss/db/id";
 import { queryLogs } from "@coss/logs";
+import { requestOrganizationDeletion } from "@coss/tenancy";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
 import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
@@ -554,6 +555,23 @@ describe("runDueWebhookDeliveries", () => {
       await unsuspendOrganization({ organizationId: tenant.organization.id, actor });
       expect(await runDueWebhookDeliveries({ scope: scopeOf(tenant) }, deliveryDeps)).toBe(1);
       expect(receiver.received).toHaveLength(1);
+    } finally {
+      receiver.stop();
+    }
+  });
+
+  test("nothing more is delivered once the organization's deletion is requested", async () => {
+    const tenant = await createTestTenant();
+    const receiver = webhookReceiver();
+    try {
+      await endpointFor(tenant, receiver.url);
+      await enqueue(tenant);
+      await requestOrganizationDeletion({
+        organizationId: tenant.organization.id,
+        actor: { userId: tenant.owner.id, email: tenant.owner.email },
+      });
+      expect(await runDueWebhookDeliveries({ scope: scopeOf(tenant) }, deliveryDeps)).toBe(0);
+      expect(receiver.received).toHaveLength(0);
     } finally {
       receiver.stop();
     }
