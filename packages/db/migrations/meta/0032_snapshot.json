@@ -1,5 +1,5 @@
 {
-  "id": "9eba0da8-ffdd-40da-b2a8-07144dd7aab6",
+  "id": "341bbbfd-9409-4a11-938b-99db8cea3ffe",
   "prevId": "cc685871-3842-4569-b5e2-cd506ca56df0",
   "version": "7",
   "dialect": "postgresql",
@@ -1130,9 +1130,31 @@
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "canonical_email": {
+          "name": "canonical_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "user_canonicalEmail_idx": {
+          "name": "user_canonicalEmail_idx",
+          "columns": [
+            {
+              "expression": "canonical_email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
@@ -5203,18 +5225,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "previous_secret_ciphertext": {
-          "name": "previous_secret_ciphertext",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "previous_secret_expires_at": {
-          "name": "previous_secret_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "enabled": {
           "name": "enabled",
           "type": "boolean",
@@ -5302,12 +5312,7 @@
         }
       },
       "policies": {},
-      "checkConstraints": {
-        "webhook_endpoint_previous_secret_check": {
-          "name": "webhook_endpoint_previous_secret_check",
-          "value": "(\"webhook_endpoint\".\"previous_secret_ciphertext\" is null) = (\"webhook_endpoint\".\"previous_secret_expires_at\" is null)"
-        }
-      },
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.webhook_message": {
