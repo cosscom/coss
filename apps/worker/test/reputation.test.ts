@@ -4,13 +4,8 @@
  * a signed `account.suspended` the published SDK verifies.
  */
 import { describe, expect, test } from "bun:test";
-import {
-  createEmailService,
-  EmailError,
-  emailReputationChecks,
-  FakeEmailProvider,
-} from "@coss/email";
-import { createVerifiedDomain } from "@coss/email/testing";
+import { EmailError, emailReputationChecks, FakeEmailProvider } from "@coss/email";
+import { createVerifiedDomain, dispatchingEmailService } from "@coss/email/testing";
 import { runDueReputationEvaluations, updateReputationPolicy } from "@coss/reputation";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { createWebhookEndpoint, runDueWebhookDeliveries } from "@coss/webhooks";
@@ -47,7 +42,10 @@ describe("live bounces → automatic suspension → webhook", () => {
       });
       const domain = await createVerifiedDomain(organizationId);
       const provider = new FakeEmailProvider({ log: false });
-      const service = createEmailService({ liveProvider: provider, sandboxProvider: provider });
+      const service = dispatchingEmailService({
+        liveProvider: provider,
+        sandboxProvider: provider,
+      });
       const send = () =>
         service.send({
           environment: {

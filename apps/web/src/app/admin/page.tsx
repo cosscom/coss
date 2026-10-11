@@ -1,95 +1,57 @@
-import { Badge } from "@coss/ui/components/badge";
-import { Card, CardPanel } from "@coss/ui/components/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@coss/ui/components/table";
+import { getAdminOverview, listAdminAuditEvents } from "@coss/tenancy/admin";
+import { Button } from "@coss/ui/components/button";
+import { Card, CardAction, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+import Link from "next/link";
+import { AuditLogTable } from "@/components/admin/audit-log-table";
 import { PageHeader } from "@/components/page-header";
-import { auth } from "@/lib/auth";
-import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
-import { UserActions } from "./user-actions";
 
 export const metadata: Metadata = { title: "Admin" };
 
-/** Every user of the platform (the layout restricts the console to platform admins). */
-export default async function AdminPage() {
-  const session = await requirePlatformAdmin();
+function Stat(props: { label: string; value: number; href: string }) {
+  return (
+    <Link className="rounded-xl border p-4 transition-colors hover:bg-accent/50" href={props.href}>
+      <p className="text-muted-foreground text-sm">{props.label}</p>
+      <p className="font-heading font-semibold text-2xl tabular-nums">{props.value}</p>
+    </Link>
+  );
+}
 
-  const { users, total } = await auth.api.listUsers({
-    headers: await headers(),
-    query: { limit: 100, sortBy: "createdAt", sortDirection: "desc" },
-  });
+export default async function AdminOverviewPage() {
+  await requirePlatformAdmin();
+  const [overview, { events }] = await Promise.all([
+    getAdminOverview(),
+    listAdminAuditEvents({ limit: 10 }),
+  ]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader
-        description={`${total} user${total === 1 ? "" : "s"}${total > users.length ? ` (showing the newest ${users.length})` : ""}.`}
-        title="Users"
-      />
+    <>
+      <PageHeader description="Users, organizations and every admin action." title="Overview" />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+        <Stat href="/admin/users" label="Users" value={overview.users} />
+        <Stat href="/admin/users?status=banned" label="Banned users" value={overview.bannedUsers} />
+        <Stat href="/admin/users?status=admin" label="Platform admins" value={overview.admins} />
+        <Stat href="/admin/organizations" label="Organizations" value={overview.organizations} />
+        <Stat
+          href="/admin/organizations?status=suspended"
+          label="Suspended organizations"
+          value={overview.suspendedOrganizations}
+        />
+      </div>
       <Card>
+        <CardHeader>
+          <CardTitle>Recent admin actions</CardTitle>
+          <CardAction>
+            <Button render={<Link href="/admin/audit" />} size="sm" variant="outline">
+              Full audit log
+            </Button>
+          </CardAction>
+        </CardHeader>
         <CardPanel className="p-2">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>
-                    {user.email}
-                    {user.emailVerified ? null : (
-                      <Badge className="ms-2" variant="warning">
-                        unverified
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={user.role === "admin" ? "info" : "outline"}>
-                      {user.role ?? "user"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {user.banned ? (
-                      <Badge variant="error">banned</Badge>
-                    ) : (
-                      <Badge variant="success">active</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDateTime(user.createdAt)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {user.id === session.user.id ? (
-                      <span className="text-muted-foreground text-sm">You</span>
-                    ) : (
-                      <UserActions
-                        banned={Boolean(user.banned)}
-                        isAdmin={user.role === "admin"}
-                        userId={user.id}
-                      />
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <AuditLogTable events={events} />
         </CardPanel>
       </Card>
-    </div>
+    </>
   );
 }

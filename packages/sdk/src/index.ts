@@ -18,15 +18,20 @@ export type {
 } from "./types/domain.ts";
 export type {
   Email,
+  EmailAttachment,
+  EmailAttachmentParams,
   EmailEvent,
   EmailEventData,
   EmailEventType,
+  EmailLink,
   EmailRecipient,
   EmailRecipientStatus,
   EmailStatus,
   EmailTag,
+  EmailTracking,
   List,
   SendEmailParams,
+  TrackingOptions,
 } from "./types/email.ts";
 export type {
   Reputation,
@@ -38,9 +43,13 @@ export type {
   CheckSuppressionParams,
   CreateSuppressionParams,
   DeletedSuppression,
+  ExportSuppressionsParams,
+  ImportSuppressionEntry,
+  ImportSuppressionsParams,
   ListSuppressionsParams,
   Suppression,
   SuppressionCheck,
+  SuppressionImport,
   SuppressionReason,
 } from "./types/suppression.ts";
 export type {

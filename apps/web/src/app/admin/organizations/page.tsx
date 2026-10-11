@@ -1,6 +1,4 @@
-import { listOrganizationStandings, metricsSnapshot, REPUTATION_STATUSES } from "@coss/reputation";
-import type { ReputationStatus } from "@coss/reputation/schemas";
-import { Button } from "@coss/ui/components/button";
+import { listOrganizationsForAdmin } from "@coss/tenancy/admin";
 import { Card, CardPanel } from "@coss/ui/components/card";
 import {
   Table,
@@ -12,107 +10,100 @@ import {
 } from "@coss/ui/components/table";
 import type { Metadata } from "next";
 import Link from "next/link";
+import {
+  ADMIN_PAGE_SIZE,
+  ListFilters,
+  listHref,
+  Pager,
+  pageParam,
+  stringParam,
+} from "@/components/admin/list-controls";
+import { OrganizationStatusBadge } from "@/components/admin/status-badges";
 import { PageHeader } from "@/components/page-header";
-import { formatRate, StandingBadge, triggerLabel } from "@/components/reputation";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
 
-export const metadata: Metadata = { title: "Organizations" };
+export const metadata: Metadata = { title: "Organizations · Admin" };
 
-function isStatus(value: unknown): value is ReputationStatus {
-  return typeof value === "string" && (REPUTATION_STATUSES as readonly string[]).includes(value);
-}
+const STATUSES = [
+  { value: "all", label: "All" },
+  { value: "suspended", label: "Suspended" },
+];
 
-/** Every organization with its reputation standing: suspended first, then warned. */
 export default async function AdminOrganizationsPage({
   searchParams,
 }: PageProps<"/admin/organizations">) {
   await requirePlatformAdmin();
-  const { status: rawStatus } = await searchParams;
-  const status = isStatus(rawStatus) ? rawStatus : undefined;
-  const organizations = await listOrganizationStandings({ status, limit: 200 });
+  const params = await searchParams;
+  const query = stringParam(params.q);
+  const status = stringParam(params.status) === "suspended" ? "suspended" : "all";
+  const page = pageParam(params.page);
+  const { organizations, total } = await listOrganizationsForAdmin({
+    search: query,
+    suspendedOnly: status === "suspended",
+    limit: ADMIN_PAGE_SIZE,
+    offset: (page - 1) * ADMIN_PAGE_SIZE,
+  });
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader
-        actions={
-          <div className="flex items-center gap-1">
-            {[undefined, ...REPUTATION_STATUSES].map((value) => (
-              <Button
-                key={value ?? "all"}
-                render={
-                  <Link
-                    href={value ? `/admin/organizations?status=${value}` : "/admin/organizations"}
-                  />
-                }
-                size="sm"
-                variant={value === status ? "secondary" : "ghost"}
-              >
-                {value ?? "all"}
-              </Button>
-            ))}
-          </div>
-        }
-        description="The reputation guard warns and suspends organizations automatically; only platform admins reinstate them."
-        title="Organizations"
+    <>
+      <PageHeader description="Every organization on the platform." title="Organizations" />
+      <ListFilters
+        path="/admin/organizations"
+        placeholder="Search by name, slug or organization id"
+        query={query}
+        status={status}
+        statuses={STATUSES}
       />
       <Card>
         <CardPanel className="p-2">
-          {organizations.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">No organizations.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Organization</TableHead>
-                  <TableHead>Standing</TableHead>
-                  <TableHead>Reason</TableHead>
-                  <TableHead className="text-right">Bounce rate</TableHead>
-                  <TableHead className="text-right">Complaint rate</TableHead>
-                  <TableHead className="text-right">Recipients</TableHead>
-                  <TableHead>Evaluated</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Slug</TableHead>
+                <TableHead>Members</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {organizations.map((organization) => (
+                <TableRow key={organization.id}>
+                  <TableCell className="font-medium">
+                    <Link
+                      className="hover:underline"
+                      href={`/admin/organizations/${organization.id}`}
+                    >
+                      {organization.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{organization.slug}</TableCell>
+                  <TableCell className="tabular-nums">{organization.memberCount}</TableCell>
+                  <TableCell>
+                    <OrganizationStatusBadge suspended={organization.suspendedAt !== null} />
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {formatDateTime(organization.createdAt)}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {organizations.map(({ organizationId, name, slug, standing }) => {
-                  const checks = metricsSnapshot(standing?.metrics)?.checks ?? [];
-                  const check = (trigger: string) =>
-                    checks.find((candidate) => candidate.trigger === trigger);
-                  return (
-                    <TableRow key={organizationId}>
-                      <TableCell>
-                        <Link
-                          className="font-medium hover:underline"
-                          href={`/admin/organizations/${organizationId}`}
-                        >
-                          {name}
-                        </Link>
-                        <span className="ms-2 text-muted-foreground text-xs">{slug}</span>
-                      </TableCell>
-                      <TableCell>
-                        <StandingBadge status={standing?.status ?? "good"} />
-                      </TableCell>
-                      <TableCell>{triggerLabel(standing?.reason ?? null)}</TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatRate(check("bounce_rate")?.rate ?? null)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatRate(check("complaint_rate")?.rate ?? null)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {checks[0]?.volume ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatDateTime(standing?.lastEvaluatedAt)}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
+              ))}
+            </TableBody>
+          </Table>
         </CardPanel>
       </Card>
-    </div>
+      <Pager
+        hrefFor={(target) =>
+          listHref("/admin/organizations", {
+            q: query,
+            status: status === "all" ? undefined : status,
+            page: target,
+          })
+        }
+        page={page}
+        shown={organizations.length}
+        total={total}
+      />
+    </>
   );
 }

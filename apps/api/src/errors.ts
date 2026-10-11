@@ -43,7 +43,7 @@ export const ErrorEnvelope = z
         )
         .optional()
         .meta({ description: "Every validation problem (`validation_error` only)." }),
-      request_id: z.string().meta({ example: "req_01k7c8m4q2f3e9v6t5r1n0p8yz" }),
+      request_id: z.string().meta({ examples: ["req_01k7c8m4q2f3e9v6t5r1n0p8yz"] }),
     }),
   })
   .meta({ id: "Error" });
@@ -136,7 +136,7 @@ function fromHttpException(error: HTTPException): ApiError {
 function fromEmailError(error: EmailError): ApiError {
   switch (error.code) {
     case "request_in_progress":
-      // The first request is still running; the SDK retries after Retry-After.
+      // Concurrent requests keep taking over the key; the SDK retries after Retry-After.
       return new ApiError(
         error.status,
         { type: "idempotency_error", code: error.code, message: error.message },
@@ -169,6 +169,8 @@ function fromEmailError(error: EmailError): ApiError {
         code: error.code,
         message: error.message,
       });
+    case "email_not_cancelable":
+      return invalidRequest(error.code, error.message);
   }
 }
 
@@ -228,11 +230,14 @@ export function toApiError(error: unknown): ApiError | null {
   return null;
 }
 
-export function payloadTooLarge(): ApiError {
+export function payloadTooLarge(limitBytes?: number): ApiError {
   return new ApiError(413, {
     type: "invalid_request_error",
     code: "payload_too_large",
-    message: "The request body is larger than the 5 MB limit.",
+    message:
+      limitBytes === undefined
+        ? "The request body is too large."
+        : `The request body is larger than the ${limitBytes / 1024 / 1024} MB limit.`,
   });
 }
 

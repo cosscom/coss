@@ -10,9 +10,63 @@ import type {
 } from "@aws-sdk/client-sesv2";
 import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
+import type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 import type { DnsResolver } from "./dns.ts";
 import type { DomainRow } from "./domains.ts";
+import type { EmailProvider } from "./provider.ts";
+import { createEmailService, type EmailService } from "./service.ts";
 import type { SesApi } from "./ses/api.ts";
+
+export type MemoryDispatchQueue = EmailDispatchQueue & {
+  /** Every enqueued job, oldest first (including jobs of rolled-back transactions). */
+  readonly jobs: EmailDispatchJob[];
+  /** Dispatches and forgets every recorded job, like the worker would. */
+  drain(service: Pick<EmailService, "dispatch">): Promise<void>;
+};
+
+/** A dispatch queue that records jobs in memory instead of using pg-boss. */
+export function memoryDispatchQueue(): MemoryDispatchQueue {
+  const jobs: EmailDispatchJob[] = [];
+  return {
+    jobs,
+    async enqueue(_tx, job) {
+      jobs.push(job);
+    },
+    async drain(service) {
+      for (const job of jobs.splice(0)) await service.dispatch(job);
+    },
+  };
+}
+
+/**
+ * An email service whose `send` also dispatches the new email before returning (as the worker
+ * would right after): for tests about what happens once an email is handed to its provider.
+ * Replays are returned as stored.
+ */
+export function dispatchingEmailService(opts: {
+  liveProvider: EmailProvider;
+  sandboxProvider: EmailProvider;
+}): EmailService & { queue: MemoryDispatchQueue } {
+  const queue = memoryDispatchQueue();
+  const service = createEmailService({ ...opts, queue });
+  return {
+    queue,
+    dispatch: service.dispatch,
+    dispatchDue: service.dispatchDue,
+    cancel: service.cancel,
+    replay: service.replay,
+    async send(input) {
+      const result = await service.send(input);
+      if (result.replayed) return result;
+      queue.jobs.splice(0);
+      const email = await service.dispatch({
+        organizationId: input.environment.organizationId,
+        emailId: result.email.id,
+      });
+      return { email, replayed: false };
+    },
+  };
+}
 
 /**
  * A verified, sendable domain of the organization, inserted directly (no provider involved).
@@ -232,4 +286,13 @@ export class FakeSesApi implements SesApi {
   operations(): string[] {
     return this.calls.map((call) => call.operation);
   }
+}
+
+/** The tracking URLs `instrumentHtml` put into an outbound HTML body, in document order. */
+export function trackingUrls(html: string): { open: string | null; clicks: string[] } {
+  const open = /src="([^"]*\/t\/o\/[A-Za-z0-9_-]+)"/.exec(html)?.[1] ?? null;
+  const clicks = [...html.matchAll(/href="([^"]*\/t\/c\/[A-Za-z0-9_-]+\/\d+)"/g)].map(
+    (match) => match[1] ?? "",
+  );
+  return { open, clicks };
 }

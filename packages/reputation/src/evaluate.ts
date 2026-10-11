@@ -3,7 +3,7 @@
  * scoped by the standing row's own organization.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, inArray, isNotNull, lte } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lte, or } from "drizzle-orm";
 import type { ReputationCheck } from "./checks.ts";
 import { decide } from "./decide.ts";
 import { effectivePolicy, type ReputationPolicy } from "./schemas.ts";
@@ -40,71 +40,112 @@ function policyOf(row: ReputationStandingRow | null): ReputationPolicy {
 
 /**
  * Runs every check for one organization, stores the results and applies what the guard decides.
- * `lease` is the `next_evaluation_at` the caller claimed: the next evaluation time is only
- * replaced if nothing marked the organization due again meanwhile.
+ * `lease` identifies the worker claim independently of the due marker, which holds new evidence.
  */
 export async function evaluateOrganization(
   organizationId: string,
   deps: ReputationDeps,
   opts: { now?: Date; lease?: Date } = {},
 ): Promise<EvaluationOutcome> {
-  const now = opts.now ?? new Date();
-  const row = await getReputationStanding(organizationId);
-  const policy = policyOf(row);
-  const windowStart = new Date(
-    Math.max(now.getTime() - policy.windowDays * DAY, row?.reinstatedAt?.getTime() ?? 0),
-  );
-  // One context object for every check, so checks can share work per evaluation.
-  const context = { organizationId, now, windowStart, policy };
-  const checks = await Promise.all(deps.checks.map((check) => check.evaluate(context)));
-  const metrics: MetricsSnapshot = {
-    windowStart: windowStart.toISOString(),
-    windowEnd: now.toISOString(),
-    checks,
-  };
-  const current = { status: row?.status ?? "good", reason: row?.reason ?? null };
-  const decision = decide(current, checks);
+  await db.insert(reputationStanding).values({ organizationId }).onConflictDoNothing();
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const now = opts.now ?? new Date();
+    const row = await getReputationStanding(organizationId);
+    const policy = policyOf(row);
+    const windowStart = new Date(
+      Math.max(now.getTime() - policy.windowDays * DAY, row?.reinstatedAt?.getTime() ?? 0),
+    );
+    // One context object for every check, so checks can share work per evaluation.
+    const context = { organizationId, now, windowStart, policy };
+    const checks = await Promise.all(deps.checks.map((check) => check.evaluate(context)));
+    const metrics: MetricsSnapshot = {
+      windowStart: windowStart.toISOString(),
+      windowEnd: now.toISOString(),
+      checks,
+    };
+    const current = { status: row?.status ?? "good", reason: row?.reason ?? null };
+    const decision = decide(current, checks);
 
-  return db.transaction(async (tx) => {
-    await tx.insert(reputationStanding).values({ organizationId }).onConflictDoNothing();
-    const transitioned = decision
-      ? Boolean(
-          await applyTransition(tx, {
-            organizationId,
-            from: current.status,
-            to: decision.to,
-            type: decision.type,
-            trigger: decision.trigger,
-            actor: { kind: "system" },
-            metrics,
-            now,
-          }),
-        )
-      : false;
-    const status = transitioned && decision ? decision.to : current.status;
-    const nextEvaluationAt =
-      status === "warning" ? new Date(now.getTime() + WARNING_RECHECK_MS) : null;
-    const thisOrganization = eq(reputationStanding.organizationId, organizationId);
-    await tx
-      .update(reputationStanding)
-      .set({ metrics, lastEvaluatedAt: now })
-      .where(thisOrganization);
-    await tx
-      .update(reputationStanding)
-      .set({ nextEvaluationAt })
-      .where(
-        opts.lease
-          ? and(thisOrganization, eq(reputationStanding.nextEvaluationAt, opts.lease))
-          : thisOrganization,
+    const outcome = await db.transaction(async (tx) => {
+      const [latest] = await tx
+        .select()
+        .from(reputationStanding)
+        .where(eq(reputationStanding.organizationId, organizationId))
+        .for("update");
+      if (!latest) throw new Error("Standing disappeared during evaluation.");
+      if (opts.lease && latest.evaluationLeaseUntil?.getTime() !== opts.lease.getTime()) {
+        throw new Error("Evaluation lease was superseded.");
+      }
+      // Compare a monotonic revision, so good -> suspended -> good is also detected.
+      if (latest.revision !== row?.revision) return null;
+      const transitioned = decision
+        ? Boolean(
+            await applyTransition(tx, {
+              organizationId,
+              from: current.status,
+              to: decision.to,
+              type: decision.type,
+              trigger: decision.trigger,
+              actor: { kind: "system" },
+              metrics,
+              now,
+            }),
+          )
+        : false;
+      const status = transitioned && decision ? decision.to : current.status;
+      const belowMinimumUnhealthy = checks.some(
+        (check) =>
+          check.minimumVolume !== null &&
+          check.volume < check.minimumVolume &&
+          check.rate !== null &&
+          check.warningThreshold !== null &&
+          check.rate >= check.warningThreshold,
       );
-    return { status, metrics, transitioned };
-  });
+      const scheduledAt =
+        status === "warning" || (status === "good" && belowMinimumUnhealthy)
+          ? new Date(now.getTime() + WARNING_RECHECK_MS)
+          : null;
+      // The claim consumed its due marker. Any pending marker now is newer evidence.
+      const nextEvaluationAt =
+        opts.lease && latest.nextEvaluationAt
+          ? scheduledAt && scheduledAt < latest.nextEvaluationAt
+            ? scheduledAt
+            : latest.nextEvaluationAt
+          : scheduledAt;
+      const thisOrganization = eq(reputationStanding.organizationId, organizationId);
+      await tx
+        .update(reputationStanding)
+        .set({
+          metrics,
+          lastEvaluatedAt: now,
+          revision: latest.revision + 1,
+          ...(opts.lease ? { evaluationLeaseUntil: null } : {}),
+        })
+        .where(thisOrganization);
+      await tx
+        .update(reputationStanding)
+        .set({ nextEvaluationAt })
+        .where(
+          opts.lease
+            ? thisOrganization
+            : and(
+                thisOrganization,
+                row?.nextEvaluationAt
+                  ? eq(reputationStanding.nextEvaluationAt, row.nextEvaluationAt)
+                  : isNull(reputationStanding.nextEvaluationAt),
+              ),
+        );
+      return { status, metrics, transitioned };
+    });
+    if (outcome) return outcome;
+  }
+  throw new Error("Standing or policy repeatedly changed during evaluation; retry required.");
 }
 
 /**
  * Evaluates organizations that are due (a new bounce or complaint, a warning to re-check, a
- * policy change), oldest first. Each is leased by moving `next_evaluation_at` forward, so
- * concurrent workers never evaluate one organization at once. Returns how many were evaluated.
+ * policy change), oldest first. Claims consume the due marker and have a separate expiring lease.
+ * Expired claims are retried even without new evidence. Returns how many were evaluated.
  * `scope` limits the scan to some organizations (tests).
  */
 export async function runDueReputationEvaluations(
@@ -112,6 +153,13 @@ export async function runDueReputationEvaluations(
   deps: ReputationDeps,
 ): Promise<number> {
   const now = opts.now ?? new Date();
+  const claimable = or(
+    and(
+      isNull(reputationStanding.evaluationLeaseUntil),
+      lte(reputationStanding.nextEvaluationAt, now),
+    ),
+    lte(reputationStanding.evaluationLeaseUntil, now),
+  );
   const due = await db
     .select({
       organizationId: reputationStanding.organizationId,
@@ -120,8 +168,7 @@ export async function runDueReputationEvaluations(
     .from(reputationStanding)
     .where(
       and(
-        isNotNull(reputationStanding.nextEvaluationAt),
-        lte(reputationStanding.nextEvaluationAt, now),
+        claimable,
         opts.scope
           ? inArray(reputationStanding.organizationId, opts.scope.organizationIds)
           : undefined,
@@ -132,17 +179,11 @@ export async function runDueReputationEvaluations(
 
   let evaluated = 0;
   for (const candidate of due) {
-    if (!candidate.nextEvaluationAt) continue;
     const lease = new Date(now.getTime() + EVALUATION_LEASE_MS);
     const [leased] = await db
       .update(reputationStanding)
-      .set({ nextEvaluationAt: lease })
-      .where(
-        and(
-          eq(reputationStanding.organizationId, candidate.organizationId),
-          eq(reputationStanding.nextEvaluationAt, candidate.nextEvaluationAt),
-        ),
-      )
+      .set({ nextEvaluationAt: null, evaluationLeaseUntil: lease })
+      .where(and(claimable, eq(reputationStanding.organizationId, candidate.organizationId)))
       .returning({ organizationId: reputationStanding.organizationId });
     if (!leased) continue;
     try {

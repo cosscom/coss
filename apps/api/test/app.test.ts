@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { HTTPException } from "hono/http-exception";
-import { BODY_LIMIT_BYTES } from "../src/app.ts";
+import { BODY_LIMIT_BYTES, SEND_BODY_LIMIT_BYTES } from "../src/body-limit.ts";
 import { toApiError } from "../src/errors.ts";
-import { createTestApp, emailBody, errorOf, REQUEST_ID, sendEmail } from "./helpers.ts";
+import { apiRequest, createTestApp, emailBody, errorOf, REQUEST_ID, sendEmail } from "./helpers.ts";
 
 describe("X-Request-Id", () => {
   test("is a fresh server-generated id on successes, errors and 404s", async () => {
@@ -18,7 +18,7 @@ describe("X-Request-Id", () => {
       await app.request("/health", { headers: spoofed }),
     ];
 
-    expect(responses.map((res) => res.status)).toEqual([200, 401, 404, 200]);
+    expect(responses.map((res) => res.status)).toEqual([202, 401, 404, 200]);
     const ids = responses.map((res) => res.headers.get("x-request-id"));
     for (const id of ids) expect(id).toMatch(REQUEST_ID);
     expect(new Set(ids).size).toBe(ids.length);
@@ -44,31 +44,66 @@ describe("app", () => {
     expect(await errorOf(res)).toMatchObject({ type: "not_found_error", code: "not_found" });
   });
 
-  test("a body over 5 MB is a 413 payload_too_large envelope", async () => {
+  test("a body over 5 MB is a 413 payload_too_large envelope outside of sends", async () => {
     const tenant = await createTestTenant();
-    const { app, sandboxProvider } = createTestApp();
-    const body = JSON.stringify(emailBody({ html: "x".repeat(BODY_LIMIT_BYTES) }));
+    const { app } = createTestApp();
 
-    const res = await sendEmail(app, tenant.sandboxKey, body);
+    const res = await apiRequest(app, "POST", "/v1/domains", {
+      key: tenant.liveKey,
+      body: { name: "x".repeat(BODY_LIMIT_BYTES) },
+    });
 
     expect(res.status).toBe(413);
     expect(await errorOf(res)).toMatchObject({
       type: "invalid_request_error",
       code: "payload_too_large",
+      message: "The request body is larger than the 5 MB limit.",
     });
-    expect(sandboxProvider.sent).toHaveLength(0);
   });
 
   test("a body just under the limit gets past the limit", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp();
-    const html = "x".repeat(BODY_LIMIT_BYTES - 1024);
 
-    // Invalid on purpose, so the 5 MB body is validated but never stored.
-    const res = await sendEmail(app, tenant.sandboxKey, emailBody({ html, subject: "" }));
+    const res = await apiRequest(app, "POST", "/v1/domains", {
+      key: tenant.liveKey,
+      body: { name: "x".repeat(BODY_LIMIT_BYTES - 1024) },
+    });
 
     expect(res.status).toBe(422);
-    expect((await errorOf(res)).param).toBe("subject");
+  });
+
+  test("sends accept bodies over 5 MB, up to their own 40 MB limit", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider, dispatch } = createTestApp();
+    const content = Buffer.alloc(BODY_LIMIT_BYTES, 1).toString("base64");
+
+    const ok = await sendEmail(
+      app,
+      tenant.sandboxKey,
+      emailBody({ attachments: [{ filename: "big.pdf", content }] }),
+    );
+    expect(ok.status).toBe(202);
+    await dispatch();
+    expect(sandboxProvider.sent[0]?.attachments[0]?.size).toBe(BODY_LIMIT_BYTES);
+
+    const tooLarge = await sendEmail(
+      app,
+      tenant.sandboxKey,
+      emailBody({ html: "x".repeat(SEND_BODY_LIMIT_BYTES) }),
+    );
+    expect(tooLarge.status).toBe(413);
+    expect(await errorOf(tooLarge)).toMatchObject({
+      code: "payload_too_large",
+      message: "The request body is larger than the 40 MB limit.",
+    });
+    expect(sandboxProvider.sent).toHaveLength(1);
+  });
+
+  test("sends authenticate before accepting a large body", async () => {
+    const { app } = createTestApp();
+    const res = await sendEmail(app, null, emailBody({ html: "x".repeat(SEND_BODY_LIMIT_BYTES) }));
+    expect(res.status).toBe(401);
   });
 });
 
@@ -94,10 +129,14 @@ describe("GET /openapi.json", () => {
       "/v1/domains/{id}/verify",
       "/v1/emails",
       "/v1/emails/{id}",
+      "/v1/emails/{id}/cancel",
       "/v1/emails/{id}/events",
+      "/v1/emails/{id}/links",
       "/v1/reputation",
       "/v1/suppressions",
       "/v1/suppressions/check",
+      "/v1/suppressions/export",
+      "/v1/suppressions/import",
       "/v1/suppressions/{id}",
       "/v1/webhook_endpoints",
       "/v1/webhook_endpoints/{id}",
@@ -118,6 +157,15 @@ describe("GET /openapi.json", () => {
     });
     expect(doc.paths["/v1/reputation"]?.get).toMatchObject({
       operationId: "getReputation",
+      security: [{ bearerAuth: [] }],
+    });
+    expect(doc.paths["/v1/emails/{id}/cancel"]?.post).toMatchObject({
+      operationId: "cancelEmail",
+      security: [{ bearerAuth: [] }],
+      parameters: [{ in: "path", name: "id", required: true }],
+    });
+    expect(doc.paths["/v1/emails/{id}/links"]?.get).toMatchObject({
+      operationId: "listEmailLinks",
       security: [{ bearerAuth: [] }],
     });
     expect(doc.paths["/v1/suppressions"]?.post).toMatchObject({ operationId: "createSuppression" });
@@ -182,6 +230,8 @@ describe("GET /openapi.json", () => {
         "DeletedSuppression",
         "Reputation",
         "ReputationCheck",
+        "ImportSuppressionsRequest",
+        "SuppressionImport",
         "CreateDomainRequest",
         "Domain",
         "DomainRecord",

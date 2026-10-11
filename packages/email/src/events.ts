@@ -10,6 +10,7 @@ import { isId } from "@coss/db/id";
 import { markReputationDue } from "@coss/reputation";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { purgeAttachmentContent } from "./attachments.ts";
 import type { ProviderEvent } from "./provider.ts";
 import {
   EMAIL_RECIPIENT_STATUSES,
@@ -34,6 +35,7 @@ const RANK: Record<EmailRecipientStatus, number> = {
   bounced: 4,
   suppressed: 4,
   failed: 4,
+  canceled: 4,
   complained: 5,
 };
 
@@ -42,7 +44,8 @@ export function statusesBelow(status: EmailRecipientStatus): EmailRecipientStatu
   return EMAIL_RECIPIENT_STATUSES.filter((candidate) => RANK[candidate] < RANK[status]);
 }
 
-const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus> = {
+/** `null`: engagement events (opens, clicks) never change a recipient's status or details. */
+const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus | null> = {
   "email.sent": "sent",
   "email.delivered": "delivered",
   "email.delivery_delayed": "delivery_delayed",
@@ -50,9 +53,14 @@ const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus> = {
   "email.complained": "complained",
   "email.failed": "failed",
   "email.suppressed": "suppressed",
+  // Recipients of a scheduled email stay `queued` (nothing ranks below it).
+  "email.scheduled": "queued",
+  "email.canceled": "canceled",
+  "email.opened": null,
+  "email.clicked": null,
 };
 
-function recipientStatus(event: ProviderEvent): EmailRecipientStatus {
+function recipientStatus(event: ProviderEvent): EmailRecipientStatus | null {
   if (event.type === "email.bounced" && event.suppressed) return "suppressed";
   return STATUS_BY_EVENT[event.type];
 }
@@ -186,10 +194,12 @@ export async function recordProviderEvent(
         .set({ status: "queued" })
         .where(and(scope, eq(emailRecipient.status, "failed")));
     }
-    await tx
+    const [sent] = await tx
       .update(email)
       .set(accepted)
-      .where(and(thisEmail, eq(email.status, "queued")));
+      .where(and(thisEmail, eq(email.status, "queued")))
+      .returning({ id: email.id });
+    if (sent || repaired) await purgeAttachmentContent(tx, target);
   }
 
   const status = recipientStatus(event);
@@ -197,7 +207,8 @@ export async function recordProviderEvent(
     event.recipients === null
       ? [...knownAddresses]
       : inserted.flatMap((row) => (row.recipient ? [row.recipient] : []));
-  if (affected.length > 0) {
+  const below = status ? statusesBelow(status) : [];
+  if (status && affected.length > 0 && below.length > 0) {
     await tx
       .update(emailRecipient)
       .set({
@@ -209,7 +220,7 @@ export async function recordProviderEvent(
         and(
           scope,
           inArray(emailRecipient.address, affected),
-          inArray(emailRecipient.status, statusesBelow(status)),
+          inArray(emailRecipient.status, below),
         ),
       );
   }

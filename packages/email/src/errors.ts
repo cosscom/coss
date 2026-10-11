@@ -4,7 +4,8 @@ export type EmailErrorCode =
   | "not_found"
   | "domain_not_verified"
   | "sending_paused"
-  | "account_suspended";
+  | "account_suspended"
+  | "email_not_cancelable";
 
 const STATUS_BY_CODE = {
   idempotency_key_reused: 422,
@@ -13,6 +14,8 @@ const STATUS_BY_CODE = {
   domain_not_verified: 422,
   sending_paused: 403,
   account_suspended: 403,
+  // Not 409: the SDK retries those.
+  email_not_cancelable: 422,
 } as const satisfies Record<EmailErrorCode, number>;
 
 /** Expected failures of the email service; `status` is the HTTP status the API should use. */

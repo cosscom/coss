@@ -1,6 +1,6 @@
 import type { CossResult } from "../core/errors.ts";
 import type { HttpClient, RequestOptions } from "../core/http.ts";
-import type { Email, EmailEvent, List, SendEmailParams } from "../types/email.ts";
+import type { Email, EmailEvent, EmailLink, List, SendEmailParams } from "../types/email.ts";
 import { SuppressionResource } from "./suppressions.ts";
 
 /** `coss.email`: transactional email. */
@@ -16,8 +16,10 @@ export class EmailResource {
   }
 
   /**
-   * Sends an email. Safe to retry: the request always carries an `Idempotency-Key` (yours, or a
-   * generated one reused across automatic retries), so the API never sends it twice.
+   * Sends an email. It is returned `queued` and handed to the delivery provider moments later:
+   * `get` it or listen for the `email.sent` / `email.failed` webhooks for the outcome. Safe to
+   * retry: the request always carries an `Idempotency-Key` (yours, or a generated one reused
+   * across automatic retries), so the API never sends it twice.
    */
   send(params: SendEmailParams, options?: RequestOptions): Promise<CossResult<Email>> {
     return this.#http.request<Email>({
@@ -38,6 +40,18 @@ export class EmailResource {
     });
   }
 
+  /**
+   * Cancels a scheduled email. Canceling an already canceled email returns it; any other email
+   * fails with `email_not_cancelable`.
+   */
+  cancel(id: string, options?: Pick<RequestOptions, "signal">): Promise<CossResult<Email>> {
+    return this.#http.request<Email>({
+      method: "POST",
+      path: `/v1/emails/${encodeURIComponent(id)}/cancel`,
+      signal: options?.signal,
+    });
+  }
+
   /** Lists an email's delivery events, oldest first. */
   listEvents(
     id: string,
@@ -46,6 +60,18 @@ export class EmailResource {
     return this.#http.request<List<EmailEvent>>({
       method: "GET",
       path: `/v1/emails/${encodeURIComponent(id)}/events`,
+      signal: options?.signal,
+    });
+  }
+
+  /** Lists the links tracked for clicks in an email, in document order, with click counts. */
+  listLinks(
+    id: string,
+    options?: Pick<RequestOptions, "signal">,
+  ): Promise<CossResult<List<EmailLink>>> {
+    return this.#http.request<List<EmailLink>>({
+      method: "GET",
+      path: `/v1/emails/${encodeURIComponent(id)}/links`,
       signal: options?.signal,
     });
   }

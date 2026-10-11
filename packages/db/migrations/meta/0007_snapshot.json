@@ -1,5 +1,5 @@
 {
-  "id": "3c8fb847-c4b3-4df3-88cc-382e6bf3383c",
+  "id": "55a36cf6-50c6-457c-bc86-a85d2667542e",
   "prevId": "117aa2d8-8e7f-42b1-9717-511e7bf8f68b",
   "version": "7",
   "dialect": "postgresql",
@@ -1291,27 +1291,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "email_organization_created_at_idx": {
-          "name": "email_organization_created_at_idx",
-          "columns": [
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -2104,239 +2083,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.reputation_event": {
-      "name": "reputation_event",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "reputation_event_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "trigger": {
-          "name": "trigger",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "actor": {
-          "name": "actor",
-          "type": "reputation_actor",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "actor_user_id": {
-          "name": "actor_user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "metrics": {
-          "name": "metrics",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "reputation_event_organization_created_at_idx": {
-          "name": "reputation_event_organization_created_at_idx",
-          "columns": [
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": false,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "reputation_event_organization_id_organization_id_fk": {
-          "name": "reputation_event_organization_id_organization_id_fk",
-          "tableFrom": "reputation_event",
-          "tableTo": "organization",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "reputation_event_actor_user_id_user_id_fk": {
-          "name": "reputation_event_actor_user_id_user_id_fk",
-          "tableFrom": "reputation_event",
-          "tableTo": "user",
-          "columnsFrom": [
-            "actor_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.reputation_standing": {
-      "name": "reputation_standing",
-      "schema": "",
-      "columns": {
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "reputation_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'good'"
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status_changed_at": {
-          "name": "status_changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "reinstated_at": {
-          "name": "reinstated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "policy_overrides": {
-          "name": "policy_overrides",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "metrics": {
-          "name": "metrics",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "last_evaluated_at": {
-          "name": "last_evaluated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "next_evaluation_at": {
-          "name": "next_evaluation_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "reputation_standing_next_evaluation_idx": {
-          "name": "reputation_standing_next_evaluation_idx",
-          "columns": [
-            {
-              "expression": "next_evaluation_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"reputation_standing\".\"next_evaluation_at\" IS NOT NULL",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "reputation_standing_organization_id_organization_id_fk": {
-          "name": "reputation_standing_organization_id_organization_id_fk",
-          "tableFrom": "reputation_standing",
-          "tableTo": "organization",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.webhook_attempt": {
       "name": "webhook_attempt",
       "schema": "",
@@ -2894,7 +2640,8 @@
       "values": [
         "bounce",
         "complaint",
-        "manual"
+        "manual",
+        "import"
       ]
     },
     "public.environment_mode": {
@@ -2913,34 +2660,6 @@
         "success",
         "temporary_failure",
         "failed"
-      ]
-    },
-    "public.reputation_actor": {
-      "name": "reputation_actor",
-      "schema": "public",
-      "values": [
-        "system",
-        "admin"
-      ]
-    },
-    "public.reputation_event_type": {
-      "name": "reputation_event_type",
-      "schema": "public",
-      "values": [
-        "warning_raised",
-        "warning_cleared",
-        "suspended",
-        "reinstated",
-        "policy_updated"
-      ]
-    },
-    "public.reputation_status": {
-      "name": "reputation_status",
-      "schema": "public",
-      "values": [
-        "good",
-        "warning",
-        "suspended"
       ]
     },
     "public.tenant_sending_status": {

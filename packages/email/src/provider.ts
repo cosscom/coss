@@ -14,6 +14,15 @@ export type OutboundEmail = {
   text: string | null;
   headers: Record<string, string>;
   tags: { name: string; value: string }[];
+  attachments: OutboundAttachment[];
+};
+
+export type OutboundAttachment = {
+  filename: string;
+  contentType: string;
+  /** Set for inline attachments, referenced from the HTML as `cid:<contentId>`. */
+  contentId: string | null;
+  content: Uint8Array;
 };
 
 /**

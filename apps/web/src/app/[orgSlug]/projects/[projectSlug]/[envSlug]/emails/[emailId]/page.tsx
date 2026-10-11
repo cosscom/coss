@@ -1,6 +1,6 @@
-import { orgRoleCan } from "@coss/auth/permissions";
-import { type EmailEventOutput, getEmail, listEmailEvents } from "@coss/email";
+import { type EmailEventOutput, getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
+import { Badge } from "@coss/ui/components/badge";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
@@ -19,10 +19,12 @@ import {
   EmailStatusBadge,
   RecipientStatusBadge,
   SandboxBadge,
+  TrackingBadge,
 } from "@/components/email-badges";
 import { PageHeader } from "@/components/page-header";
-import { formatDateTime } from "@/lib/format";
+import { formatBytes, formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
+import { CancelEmailButton } from "./cancel-email-button";
 
 export const metadata: Metadata = { title: "Email" };
 
@@ -54,6 +56,8 @@ function eventDetail({ data }: EmailEventOutput): string {
     const scope = data.suppression.scope === "*" ? "all emails" : data.suppression.scope;
     return `on the suppression list (${scope}, ${data.suppression.reason})`;
   }
+  if (data.click) return [data.click.url, data.click.user_agent].filter(Boolean).join(" · ");
+  if (data.open) return data.open.user_agent ?? "";
   return "";
 }
 
@@ -61,8 +65,8 @@ export default async function EmailPage({
   params,
 }: PageProps<"/[orgSlug]/projects/[projectSlug]/[envSlug]/emails/[emailId]">) {
   const { orgSlug, projectSlug, envSlug, emailId } = await params;
-  const { organization, member } = await requireOrgMember(orgSlug);
-  if (!orgRoleCan(member.role, { email: ["read"] })) notFound();
+  const { organization, can } = await requireOrgMember(orgSlug);
+  if (!can({ email: ["read"] })) notFound();
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;
@@ -78,6 +82,15 @@ export default async function EmailPage({
     emailId: email.id,
   });
 
+  const links = email.tracking.clicks
+    ? await listEmailLinks({
+        organizationId: organization.id,
+        environmentId: environment.id,
+        emailId: email.id,
+      })
+    : null;
+  const { tracking } = email;
+
   const rows: [string, ReactNode][] = [
     ["ID", <code key="id">{email.id}</code>],
     ["Status", <EmailStatusBadge key="status" status={email.status} />],
@@ -88,6 +101,9 @@ export default async function EmailPage({
     ["Bcc", list(email.bcc)],
     ["Reply-To", list(email.reply_to)],
     ["Created", formatDateTime(email.created_at)],
+    ...(email.scheduled_at
+      ? ([["Scheduled for", formatDateTime(email.scheduled_at)]] as [string, ReactNode][])
+      : []),
     ["Sent", formatDateTime(email.sent_at)],
     ["Category", email.category ?? "—"],
     [
@@ -113,7 +129,19 @@ export default async function EmailPage({
         >
           ← {project.name} · {environment.name}
         </Link>
-        <PageHeader title={email.subject} />
+        <PageHeader
+          actions={
+            email.status === "scheduled" && can({ email: ["send"] }) ? (
+              <CancelEmailButton
+                emailId={email.id}
+                envSlug={environment.slug}
+                orgSlug={organization.slug}
+                projectSlug={project.slug}
+              />
+            ) : null
+          }
+          title={email.subject}
+        />
       </div>
 
       <Card>
@@ -159,6 +187,111 @@ export default async function EmailPage({
               ))}
             </TableBody>
           </Table>
+        </CardPanel>
+      </Card>
+
+      {email.attachments.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Attachments</CardTitle>
+            <CardDescription>
+              Only metadata is kept: COSS discards the content once the email is sent.
+            </CardDescription>
+          </CardHeader>
+          <CardPanel className="p-2">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Filename</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Size</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {email.attachments.map((attachment) => (
+                  <TableRow key={attachment.id}>
+                    <TableCell className="break-all">
+                      <span className="flex flex-wrap items-center gap-2">
+                        {attachment.filename}
+                        {attachment.content_id !== null ? (
+                          <Badge variant="outline">inline · cid:{attachment.content_id}</Badge>
+                        ) : null}
+                      </span>
+                    </TableCell>
+                    <TableCell className="break-all">{attachment.content_type}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {formatBytes(attachment.size)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardPanel>
+        </Card>
+      ) : null}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Engagement</CardTitle>
+          <CardDescription>
+            Opens and clicks, if tracking was on when the email was sent. Opens can be inflated by
+            mail clients that preload images, clicks by link scanners.
+          </CardDescription>
+        </CardHeader>
+        <CardPanel className="p-2">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead />
+                <TableHead>Tracking</TableHead>
+                <TableHead>Count</TableHead>
+                <TableHead>First</TableHead>
+                <TableHead>Last</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableHead>Opens</TableHead>
+                <TableCell>
+                  <TrackingBadge on={tracking.opens} />
+                </TableCell>
+                <TableCell>{tracking.opens ? tracking.open_count : "—"}</TableCell>
+                <TableCell>{formatDateTime(tracking.first_opened_at)}</TableCell>
+                <TableCell>{formatDateTime(tracking.last_opened_at)}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableHead>Clicks</TableHead>
+                <TableCell>
+                  <TrackingBadge on={tracking.clicks} />
+                </TableCell>
+                <TableCell>{tracking.clicks ? tracking.click_count : "—"}</TableCell>
+                <TableCell>{formatDateTime(tracking.first_clicked_at)}</TableCell>
+                <TableCell>{formatDateTime(tracking.last_clicked_at)}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+          {links && links.links.length > 0 ? (
+            <Table className="mt-4">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Link</TableHead>
+                  <TableHead>Clicks</TableHead>
+                  <TableHead>Last click</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {links.links.map((link) => (
+                  <TableRow key={link.id}>
+                    <TableCell className="max-w-120 whitespace-normal break-all">
+                      {link.url}
+                    </TableCell>
+                    <TableCell>{link.click_count}</TableCell>
+                    <TableCell>{formatDateTime(link.last_clicked_at)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : null}
         </CardPanel>
       </Card>
 

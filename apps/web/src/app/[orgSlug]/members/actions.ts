@@ -2,6 +2,7 @@
 
 import {
   assignableOrgRoles,
+  canRemoveOrgMember,
   INVITABLE_ORG_ROLES,
   type InvitableOrgRole,
   isOrgRole,
@@ -40,6 +41,36 @@ export async function inviteMemberAction(
     });
     refresh();
     return { email };
+  });
+}
+
+/**
+ * Sends a pending invitation again with a fresh expiry; the invitation (and its link) stays the
+ * same. Only canonical invitable roles are re-sent (Better Auth reuses the stored role).
+ */
+export async function resendInvitationAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { organization } = await requireOrgPermission(formString(formData, "orgSlug"), {
+      invitation: ["create"],
+    });
+    const invitation = await getPendingInvitation({
+      organizationId: organization.id,
+      invitationId: formString(formData, "invitationId"),
+    });
+    if (!invitation) throw new ActionError("This invitation is no longer pending.");
+    const role = invitation.role ?? "member";
+    if (!isInvitableRole(role)) throw new ActionError("This invitation has an unknown role.");
+
+    // `resend: true` makes Better Auth extend and re-send the pending invitation for this email.
+    await auth.api.createInvitation({
+      headers: await headers(),
+      body: { email: invitation.email, role, organizationId: organization.id, resend: true },
+    });
+    refresh();
+    return null;
   });
 }
 
@@ -96,6 +127,40 @@ export async function updateMemberRoleAction(
     await auth.api.updateMemberRole({
       headers: await headers(),
       body: { memberId: target.id, role, organizationId: organization.id },
+    });
+    refresh();
+    return null;
+  });
+}
+
+/**
+ * Removes another member from the organization. `canRemoveOrgMember` gives a clear error for what
+ * Better Auth would reject anyway; Better Auth re-checks everything, including the last owner.
+ */
+export async function removeMemberAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { organization, member } = await requireOrgPermission(formString(formData, "orgSlug"), {
+      member: ["delete"],
+    });
+    const target = await getOrganizationMember({
+      organizationId: organization.id,
+      memberId: formString(formData, "memberId"),
+    });
+    if (!target) throw new ActionError("Member not found.");
+    if (target.id === member.id) {
+      throw new ActionError("To remove yourself, leave the organization from its settings.");
+    }
+    if (!canRemoveOrgMember(member.role, target.role)) {
+      throw new ForbiddenError("Only owners can remove an owner.");
+    }
+
+    // organizationId is explicit: Better Auth would otherwise fall back to the active org.
+    await auth.api.removeMember({
+      headers: await headers(),
+      body: { memberIdOrEmail: target.id, organizationId: organization.id },
     });
     refresh();
     return null;

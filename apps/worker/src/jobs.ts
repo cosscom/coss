@@ -1,9 +1,12 @@
 /** The worker's jobs, wired to their dependencies. Each run returns true when it found a full batch. */
 import {
   type DomainDeps,
+  type EmailDispatchQueue,
+  type EmailService,
   emailReputationChecks,
   recheckDueDomains,
   sweepStaleClaims,
+  sweepUnclaimedEmails,
 } from "@coss/email";
 import { runDueReputationEvaluations } from "@coss/reputation";
 import { runDueWebhookDeliveries, type WebhookDeliveryDeps } from "@coss/webhooks";
@@ -15,12 +18,22 @@ const WEBHOOK_BATCH = 20;
 const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
 const REPUTATION_BATCH = 50;
+const SCHEDULED_BATCH = 50;
 
 export type WorkerDeps = {
+  /** Emails are dispatched by pg-boss workers; this loop only re-enqueues lost jobs. */
+  dispatchQueue: EmailDispatchQueue;
   domains: DomainDeps;
+  /** Dispatches scheduled emails. */
+  email: Pick<EmailService, "dispatchDue">;
   webhooks: WebhookDeliveryDeps;
   /** Only with `EMAIL_PROVIDER=ses`. */
-  sesEvents?: { sqs: SqsApi; tenantPrefix: string; signal: AbortSignal };
+  sesEvents?: { sqs: SqsApi; tenantPrefix: string };
+  /**
+   * Aborted on shutdown: ends the SQS long poll and stops long runs between items. Each loop's
+   * current item (a webhook attempt, a domain check, a received SQS batch) still finishes.
+   */
+  signal: AbortSignal;
 };
 
 export function startJobs(deps: WorkerDeps): Loop[] {
@@ -35,7 +48,15 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       name: "domains",
       intervalMs: 30_000,
       run: async () =>
-        (await recheckDueDomains({ limit: DOMAIN_BATCH }, deps.domains)) === DOMAIN_BATCH,
+        (await recheckDueDomains({ limit: DOMAIN_BATCH, signal: deps.signal }, deps.domains)) ===
+        DOMAIN_BATCH,
+    }),
+    startLoop({
+      name: "scheduled-emails",
+      intervalMs: 5000,
+      run: async () =>
+        (await deps.email.dispatchDue({ limit: SCHEDULED_BATCH, signal: deps.signal })) ===
+        SCHEDULED_BATCH,
     }),
     startLoop({
       name: "stale-claims",
@@ -53,6 +74,15 @@ export function startJobs(deps: WorkerDeps): Loop[] {
           { checks: emailReputationChecks },
         )) === REPUTATION_BATCH,
     }),
+    startLoop({
+      name: "unclaimed",
+      intervalMs: 60_000,
+      // Busy only while there are more emails to fail (they leave the scan). Requeued emails may
+      // stay unclaimed behind a backlog, and rescanning them at once would only spin.
+      run: async () =>
+        (await sweepUnclaimedEmails(deps.dispatchQueue, { limit: SWEEP_BATCH })).failed ===
+        SWEEP_BATCH,
+    }),
   ];
   const ses = deps.sesEvents;
   if (ses) {
@@ -62,12 +92,12 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         // Each receive long-polls for up to 20 seconds, so poll again right away.
         intervalMs: 0,
         run: async () => {
-          if (ses.signal.aborted) return;
+          if (deps.signal.aborted) return;
           try {
-            await pollSesEvents(ses.sqs, { tenantPrefix: ses.tenantPrefix, signal: ses.signal });
+            await pollSesEvents(ses.sqs, { tenantPrefix: ses.tenantPrefix, signal: deps.signal });
           } catch (error) {
             // Shutting down aborts the long poll; that's not a failure.
-            if (!ses.signal.aborted) throw error;
+            if (!deps.signal.aborted) throw error;
           }
         },
       }),

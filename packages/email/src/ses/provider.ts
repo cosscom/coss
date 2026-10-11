@@ -1,4 +1,4 @@
-import type { Body } from "@aws-sdk/client-sesv2";
+import type { Attachment, Body } from "@aws-sdk/client-sesv2";
 import type { EmailProvider, OutboundEmail, SendResult } from "../provider.ts";
 import { parseEmailAddress } from "../schemas.ts";
 import { isSesError, type SesApi, type SesConfig, tenantNameFor } from "./api.ts";
@@ -23,6 +23,19 @@ function destination(message: OutboundEmail) {
     CcAddresses: unique(message.cc).map(encodeAddress),
     BccAddresses: unique(message.bcc).map(encodeAddress),
   };
+}
+
+/** SES builds the MIME parts; inline attachments are the ones with a content id. */
+function attachments(message: OutboundEmail): Attachment[] {
+  return message.attachments.map((attachment) => ({
+    RawContent: attachment.content,
+    FileName: attachment.filename,
+    ContentType: attachment.contentType,
+    ContentTransferEncoding: "BASE64",
+    ...(attachment.contentId === null
+      ? { ContentDisposition: "ATTACHMENT" }
+      : { ContentDisposition: "INLINE", ContentId: attachment.contentId }),
+  }));
 }
 
 /** Sends through SES v2 with the organization's tenant and the shared configuration set. */
@@ -55,6 +68,7 @@ export class SesEmailProvider implements EmailProvider {
           Subject: { Data: message.subject, Charset: "UTF-8" },
           Body: body,
           Headers: Object.entries(message.headers).map(([Name, Value]) => ({ Name, Value })),
+          ...(message.attachments.length ? { Attachments: attachments(message) } : {}),
         },
       },
       ConfigurationSetName: this.#config.configurationSet,

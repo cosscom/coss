@@ -16,12 +16,12 @@ import { ingestProviderEvents } from "../src/events.ts";
 import type { ProviderEvent } from "../src/provider.ts";
 import { FakeEmailProvider, SIMULATOR_DOMAIN } from "../src/providers/fake.ts";
 import { emailReputationChecks, sendingCounts } from "../src/reputation-checks.ts";
-import { createEmailService } from "../src/service.ts";
 import { addSuppression } from "../src/suppressions.ts";
+import { dispatchingEmailService } from "../src/testing.ts";
 import { params, sendEnvironment, verifiedFrom } from "./helpers.ts";
 
 const provider = new FakeEmailProvider({ log: false });
-const service = createEmailService({ liveProvider: provider, sandboxProvider: provider });
+const service = dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider });
 
 /** Sends one live email to `to`; returns its id and provider message id. */
 async function liveSend(tenant: TestTenant, from: string, to: string[]) {
@@ -214,4 +214,38 @@ describe("the send gate", () => {
     });
     expect(sandbox.replayed).toBe(false);
   });
+});
+
+test("successful sending across minimum volume is caught by the scheduled recheck", async () => {
+  const { markReputationDue, runDueReputationEvaluations, WARNING_RECHECK_MS } = await import(
+    "@coss/reputation"
+  );
+  const tenant = await createTestTenant();
+  const organizationId = tenant.organization.id;
+  const from = await verifiedFrom(organizationId);
+  const sent = await liveSend(tenant, from, recipients(50));
+  await ingestProviderEvents(recipients(20).map((address) => bounce(sent, address, "permanent")));
+  for (const [count, prefix] of [
+    [50, "second"],
+    [50, "third"],
+    [49, "fourth"],
+  ] as const) {
+    await liveSend(tenant, from, recipients(count, prefix));
+  }
+  const now = new Date();
+  const scope = { organizationIds: [organizationId] };
+  await markReputationDue(db, organizationId, now);
+  await runDueReputationEvaluations({ now, scope }, { checks: emailReputationChecks });
+  expect(await getReputationStanding(organizationId)).toMatchObject({
+    status: "good",
+    nextEvaluationAt: new Date(now.getTime() + WARNING_RECHECK_MS),
+  });
+  await liveSend(tenant, from, ["last@example.com"]);
+  expect(
+    await runDueReputationEvaluations(
+      { now: new Date(now.getTime() + WARNING_RECHECK_MS), scope },
+      { checks: emailReputationChecks },
+    ),
+  ).toBe(1);
+  expect(await isSuspended(organizationId)).toBe(true);
 });

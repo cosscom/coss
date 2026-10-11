@@ -1,5 +1,5 @@
 import "server-only";
-import { DomainError } from "@coss/email";
+import { DomainError, EmailError } from "@coss/email";
 import { ReputationError } from "@coss/reputation";
 import { TenancyError } from "@coss/tenancy";
 import { isAPIError } from "better-auth/api";
@@ -39,7 +39,8 @@ function userFacingMessage(error: unknown): string {
     error instanceof ActionError ||
     error instanceof TenancyError ||
     error instanceof DomainError ||
-    error instanceof ReputationError
+    error instanceof ReputationError ||
+    error instanceof EmailError
   ) {
     return error.message;
   }

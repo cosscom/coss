@@ -5,7 +5,7 @@
 import { db, type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { enqueueWebhookMessage } from "@coss/webhooks";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ReputationError } from "./errors.ts";
 import {
@@ -23,7 +23,35 @@ import {
   toCheckObject,
 } from "./standing.ts";
 
-const { environment, reputationEvent, reputationStanding } = schema;
+const { adminAuditEvent, environment, reputationEvent, reputationStanding, user } = schema;
+
+// Keep the platform audit trail atomic with reputation changes without importing tenancy.
+async function auditAdminChange(
+  tx: Executor,
+  input: {
+    organizationId: string;
+    userId: string;
+    action: string;
+    note?: string | null;
+    now: Date;
+  },
+): Promise<void> {
+  const [actor] = await tx
+    .select({ email: user.email })
+    .from(user)
+    .where(eq(user.id, input.userId));
+  if (!actor) throw new Error("Admin actor no longer exists.");
+  await tx.insert(adminAuditEvent).values({
+    actorUserId: input.userId,
+    actorEmail: actor.email,
+    action: input.action,
+    targetType: "organization",
+    targetId: input.organizationId,
+    organizationId: input.organizationId,
+    reason: input.note ?? null,
+    createdAt: input.now,
+  });
+}
 
 export type TransitionType = "warning_raised" | "warning_cleared" | "suspended" | "reinstated";
 
@@ -60,6 +88,7 @@ export async function applyTransition(
   const [updated] = await tx
     .update(reputationStanding)
     .set({
+      revision: sql`${reputationStanding.revision} + 1`,
       status: input.to,
       reason: input.to === "good" ? null : input.trigger,
       statusChangedAt: now,
@@ -88,6 +117,15 @@ export async function applyTransition(
     })
     .returning();
   if (!event) throw new Error("Inserting the reputation event returned no row.");
+  if (input.actor.kind === "admin") {
+    await auditAdminChange(tx, {
+      organizationId,
+      userId: input.actor.userId,
+      action: `reputation.${input.type}`,
+      note: input.note,
+      now,
+    });
+  }
 
   // Standing is organization-wide; announce it to every live environment's endpoints. Sandbox
   // environments never send real mail, so they are left out.
@@ -217,8 +255,19 @@ export async function updateReputationPolicy(input: {
       })
       .onConflictDoUpdate({
         target: reputationStanding.organizationId,
-        set: { policyOverrides: overrides, nextEvaluationAt: now },
+        set: {
+          policyOverrides: overrides,
+          nextEvaluationAt: now,
+          revision: sql`${reputationStanding.revision} + 1`,
+        },
       });
+    await auditAdminChange(tx, {
+      organizationId: input.organizationId,
+      userId: input.adminUserId,
+      action: "reputation.policy_updated",
+      note: input.note,
+      now,
+    });
     await tx.insert(reputationEvent).values({
       organizationId: input.organizationId,
       type: "policy_updated",

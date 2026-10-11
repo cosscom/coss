@@ -90,9 +90,21 @@ export const sampleEmail: Email = {
       last_event_at: "2026-10-09T12:00:01.000Z",
     },
   ],
+  attachments: [],
   sandbox: true,
+  tracking: {
+    opens: false,
+    clicks: false,
+    open_count: 0,
+    first_opened_at: null,
+    last_opened_at: null,
+    click_count: 0,
+    first_clicked_at: null,
+    last_clicked_at: null,
+  },
   created_at: "2026-10-09T12:00:00.000Z",
   sent_at: "2026-10-09T12:00:00.100Z",
+  scheduled_at: null,
 };
 
 export const sampleDomain: Domain = {

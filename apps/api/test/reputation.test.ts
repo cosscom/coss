@@ -42,7 +42,7 @@ describe("GET /v1/reputation", () => {
 
   test("reports a suspension, and live sends are refused with account_suspended", async () => {
     const tenant = await createTestTenant();
-    const { app, liveProvider, sandboxProvider } = createTestApp();
+    const { app, liveProvider, sandboxProvider, dispatch } = createTestApp();
     const from = await domainFrom(tenant.organization.id);
     await suspendOrganization({
       organizationId: tenant.organization.id,
@@ -61,7 +61,8 @@ describe("GET /v1/reputation", () => {
     });
     expect(liveProvider.sent).toHaveLength(0);
     const sandbox = await sendEmail(app, tenant.sandboxKey, emailBody());
-    expect(sandbox.status).toBe(200);
+    expect(sandbox.status).toBe(202);
+    await dispatch();
     expect(sandboxProvider.sent).toHaveLength(1);
   });
 

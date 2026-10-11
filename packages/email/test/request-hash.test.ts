@@ -31,9 +31,22 @@ describe("hashSendRequest", () => {
     expect(hashSendRequest(a)).toMatch(/^[0-9a-f]{64}$/);
     expect(hashSendRequest({ ...a, subject: "Hi!" })).not.toBe(hashSendRequest(a));
     expect(hashSendRequest({ ...a, category: "news" })).not.toBe(hashSendRequest(a));
+    expect(hashSendRequest({ ...a, scheduled_at: "2026-10-11T09:00:00.000Z" })).not.toBe(
+      hashSendRequest(a),
+    );
+    const attachment = {
+      filename: "a.txt",
+      content: "QQ==",
+      content_type: "text/plain",
+      content_id: null,
+    };
+    expect(hashSendRequest({ ...a, attachments: [attachment] })).not.toBe(hashSendRequest(a));
+    expect(hashSendRequest({ ...a, attachments: [{ ...attachment, content: "Qg==" }] })).not.toBe(
+      hashSendRequest({ ...a, attachments: [attachment] }),
+    );
   });
 
-  test("is unchanged for requests without a category (idempotent retries across deploys)", () => {
+  test("is unchanged for requests without a category, schedule or attachments (idempotent retries across deploys)", () => {
     const parsed = SendEmailRequest.parse({
       from: "hello@acme.com",
       to: "user@example.com",
@@ -42,5 +55,21 @@ describe("hashSendRequest", () => {
     });
     expect(Object.hasOwn(parsed, "category")).toBe(false);
     expect(canonicalJson(parsed)).not.toContain("category");
+    expect(Object.hasOwn(parsed, "scheduled_at")).toBe(false);
+    expect(canonicalJson(parsed)).not.toContain("scheduled_at");
+    expect(Object.hasOwn(parsed, "attachments")).toBe(false);
+    expect(canonicalJson(parsed)).not.toContain("attachments");
+  });
+
+  test("is unchanged for requests without tracking, and covers the tracking given", () => {
+    const base = { from: "hello@acme.com", to: "user@example.com", subject: "Hi", text: "x" };
+    const parsed = SendEmailRequest.parse(base);
+    expect(Object.hasOwn(parsed, "tracking")).toBe(false);
+    expect(canonicalJson(parsed)).not.toContain("tracking");
+    const empty = SendEmailRequest.parse({ ...base, tracking: {} });
+    const opens = SendEmailRequest.parse({ ...base, tracking: { opens: true } });
+    expect(canonicalJson(empty)).toContain('"tracking":{}');
+    expect(hashSendRequest(opens)).not.toBe(hashSendRequest(empty));
+    expect(() => SendEmailRequest.parse({ ...base, tracking: { pixels: true } })).toThrow();
   });
 });

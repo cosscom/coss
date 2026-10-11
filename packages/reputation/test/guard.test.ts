@@ -303,3 +303,241 @@ describe("admin operations", () => {
     expect((await getReputationStanding(orgId))?.policyOverrides).toBeNull();
   });
 });
+
+describe("evaluation races", () => {
+  test("new evidence cannot release an active lease or lose warning recovery", async () => {
+    const tenant = await createTestTenant();
+    const orgId = tenant.organization.id;
+    const now = new Date();
+    const later = new Date(now.getTime() + 1000);
+    const warning = controlledCheck("warning");
+    await markReputationDue(db, orgId, now);
+    const deps = {
+      checks: [
+        {
+          trigger: "bounce_rate",
+          async evaluate(context: CheckContext) {
+            await markReputationDue(db, orgId, later);
+            expect(
+              await runDueReputationEvaluations(
+                { now: later, scope: scopeOf(tenant) },
+                controlledCheck("ok").deps,
+              ),
+            ).toBe(0);
+            return warning.check.evaluate(context);
+          },
+        },
+      ],
+    };
+    expect(await runDueReputationEvaluations({ now, scope: scopeOf(tenant) }, deps)).toBe(1);
+    expect(await getReputationStanding(orgId)).toMatchObject({
+      status: "warning",
+      nextEvaluationAt: later,
+      evaluationLeaseUntil: null,
+    });
+    await runDueReputationEvaluations({ now: later, scope: scopeOf(tenant) }, warning.deps);
+    expect((await getReputationStanding(orgId))?.nextEvaluationAt).toEqual(
+      new Date(later.getTime() + WARNING_RECHECK_MS),
+    );
+  });
+
+  test("suspend and reinstate during a check invalidates the old good-state result", async () => {
+    const tenant = await createTestTenant();
+    const orgId = tenant.organization.id;
+    const reinstatedAt = new Date();
+    let calls = 0;
+    const deps = {
+      checks: [
+        {
+          trigger: "bounce_rate",
+          async evaluate(context: CheckContext) {
+            if (calls++ === 0) {
+              await suspendOrganization({
+                organizationId: orgId,
+                trigger: "manual",
+                actor: { kind: "admin", userId: tenant.owner.id },
+                now: reinstatedAt,
+              });
+              await reinstateOrganization({
+                organizationId: orgId,
+                adminUserId: tenant.owner.id,
+                note: "Reset",
+                now: reinstatedAt,
+              });
+              return controlledCheck("suspend").check.evaluate(context);
+            }
+            expect(context.windowStart).toEqual(reinstatedAt);
+            return controlledCheck("ok").check.evaluate(context);
+          },
+        },
+      ],
+    };
+    expect(await evaluateOrganization(orgId, deps)).toMatchObject({
+      status: "good",
+      transitioned: false,
+    });
+    expect(calls).toBe(2);
+    expect((await listReputationEvents(orgId)).map((event) => event.type)).toEqual([
+      "reinstated",
+      "suspended",
+    ]);
+  });
+
+  test("policy changes invalidate measured results even when the status stays good", async () => {
+    const tenant = await createTestTenant();
+    const orgId = tenant.organization.id;
+    let calls = 0;
+    const deps = {
+      checks: [
+        {
+          trigger: "bounce_rate",
+          async evaluate(context: CheckContext) {
+            if (calls++ === 0) {
+              await updateReputationPolicy({
+                organizationId: orgId,
+                adminUserId: tenant.owner.id,
+                overrides: { bounceRate: { suspend: 0.5 } },
+              });
+              return controlledCheck("suspend").check.evaluate(context);
+            }
+            expect(context.policy.bounceRate.suspend).toBe(0.5);
+            return controlledCheck("ok").check.evaluate(context);
+          },
+        },
+      ],
+    };
+    expect(await evaluateOrganization(orgId, deps)).toMatchObject({
+      status: "good",
+      transitioned: false,
+    });
+    expect(calls).toBe(2);
+    expect((await listReputationEvents(orgId)).map((event) => event.type)).toEqual([
+      "policy_updated",
+    ]);
+  });
+
+  test("unhealthy rates below minimum volume stay scheduled until volume crosses the minimum", async () => {
+    const { rateResult } = await import("../src/checks.ts");
+    const tenant = await createTestTenant();
+    const orgId = tenant.organization.id;
+    let volume = 199;
+    const deps = {
+      checks: [
+        {
+          trigger: "bounce_rate",
+          async evaluate(context: CheckContext) {
+            return rateResult({
+              trigger: "bounce_rate",
+              label: "Bounces",
+              count: 20,
+              volume,
+              threshold: context.policy.bounceRate,
+            });
+          },
+        },
+      ],
+    };
+    const now = new Date();
+    await markReputationDue(db, orgId, now);
+    await runDueReputationEvaluations({ now, scope: scopeOf(tenant) }, deps);
+    const later = new Date(now.getTime() + WARNING_RECHECK_MS);
+    expect(await getReputationStanding(orgId)).toMatchObject({
+      status: "good",
+      nextEvaluationAt: later,
+    });
+    volume++;
+    expect(await runDueReputationEvaluations({ now: later, scope: scopeOf(tenant) }, deps)).toBe(1);
+    expect(await isSuspended(orgId)).toBe(true);
+  });
+});
+
+test("an expired worker cannot overwrite the replacement worker's result", async () => {
+  const { EVALUATION_LEASE_MS } = await import("../src/evaluate.ts");
+  const tenant = await createTestTenant();
+  const orgId = tenant.organization.id;
+  const now = new Date();
+  const later = new Date(now.getTime() + EVALUATION_LEASE_MS);
+  await markReputationDue(db, orgId, now);
+  const deps = {
+    checks: [
+      {
+        trigger: "bounce_rate",
+        async evaluate(context: CheckContext) {
+          expect(
+            await runDueReputationEvaluations(
+              { now: later, scope: scopeOf(tenant) },
+              controlledCheck("warning").deps,
+            ),
+          ).toBe(1);
+          return controlledCheck("ok").check.evaluate(context);
+        },
+      },
+    ],
+  };
+  expect(await runDueReputationEvaluations({ now, scope: scopeOf(tenant) }, deps)).toBe(0);
+  expect(await getReputationStanding(orgId)).toMatchObject({
+    status: "warning",
+    nextEvaluationAt: new Date(later.getTime() + WARNING_RECHECK_MS),
+    lastEvaluatedAt: later,
+  });
+});
+
+test("administrative reputation changes also appear in the platform audit log", async () => {
+  const tenant = await createTestTenant();
+  const organizationId = tenant.organization.id;
+  await suspendOrganization({
+    organizationId,
+    trigger: "manual",
+    actor: { kind: "admin", userId: tenant.owner.id },
+    note: "Investigate",
+  });
+  await reinstateOrganization({ organizationId, adminUserId: tenant.owner.id, note: "Resolved" });
+  await updateReputationPolicy({ organizationId, adminUserId: tenant.owner.id, overrides: null });
+  const events = await db
+    .select()
+    .from(schema.adminAuditEvent)
+    .where(eq(schema.adminAuditEvent.organizationId, organizationId))
+    .orderBy(asc(schema.adminAuditEvent.id));
+  expect(events.map((event) => [event.action, event.actorEmail, event.reason])).toEqual([
+    ["reputation.suspended", tenant.owner.email, "Investigate"],
+    ["reputation.reinstated", tenant.owner.email, "Resolved"],
+    ["reputation.policy_updated", tenant.owner.email, null],
+  ]);
+});
+
+test("failed claims are retried after expiry without a new due marker", async () => {
+  const { EVALUATION_LEASE_MS } = await import("../src/evaluate.ts");
+  const tenant = await createTestTenant();
+  const orgId = tenant.organization.id;
+  const now = new Date();
+  await markReputationDue(db, orgId, now);
+  expect(
+    await runDueReputationEvaluations(
+      { now, scope: scopeOf(tenant) },
+      {
+        checks: [
+          {
+            trigger: "failure",
+            async evaluate() {
+              throw new Error("test failure");
+            },
+          },
+        ],
+      },
+    ),
+  ).toBe(0);
+  expect((await getReputationStanding(orgId))?.nextEvaluationAt).toBeNull();
+  expect(
+    await runDueReputationEvaluations(
+      { now, scope: scopeOf(tenant) },
+      controlledCheck("warning").deps,
+    ),
+  ).toBe(0);
+  expect(
+    await runDueReputationEvaluations(
+      { now: new Date(now.getTime() + EVALUATION_LEASE_MS), scope: scopeOf(tenant) },
+      controlledCheck("warning").deps,
+    ),
+  ).toBe(1);
+  expect((await getReputationStanding(orgId))?.status).toBe("warning");
+});

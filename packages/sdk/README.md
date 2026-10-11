@@ -28,7 +28,7 @@ const { data, error } = await coss.email.send({
 if (error) {
   console.error(error.type, error.code, error.message, error.request_id);
 } else {
-  console.log(data.id, data.status); // "email_01k…", "sent"
+  console.log(data.id, data.status); // "email_01k…", "queued" (sent moments later)
 }
 
 const { data: email } = await coss.email.get("email_01k…");
@@ -76,6 +76,30 @@ Each method also takes per-request options:
 await coss.email.send(params, { idempotencyKey: "welcome-user_123", signal: controller.signal });
 await coss.email.get(id, { signal });
 ```
+
+## Attachments
+
+Attach up to 20 files (25 MB combined) as base64. The content type defaults from the extension.
+A `content_id` makes an attachment inline, so the HTML can reference it as `cid:…`:
+
+```ts
+import { readFile } from "node:fs/promises";
+
+await coss.email.send({
+  from: "Acme <billing@acme.com>",
+  to: "user@example.com",
+  subject: "Your invoice",
+  html: '<img src="cid:logo@acme" alt="Acme"><p>Your invoice is attached.</p>',
+  attachments: [
+    { filename: "invoice.pdf", content: (await readFile("invoice.pdf")).toString("base64") },
+    { filename: "logo.png", content: logoBase64, content_id: "logo@acme" },
+  ],
+});
+```
+
+Emails only return attachment metadata (`id`, `filename`, `content_type`, `content_id`, `size`).
+COSS discards the content once the email is sent. Executables and other file types the delivery
+provider refuses (`.exe`, `.js`, `.bat`, …) are rejected with a `validation_error`.
 
 ## Domains
 
@@ -126,6 +150,26 @@ await coss.webhookEndpoints.delete(endpoint!.id);
 `update` only changes the fields you pass, and never the signing secret, so receivers keep
 verifying deliveries. `event_types: []` means every event type, including ones added later.
 
+## Scheduled sends
+
+Pass `scheduled_at` (ISO 8601 with an offset, at most 30 days ahead) to send later. The email
+comes back with the status `scheduled` and is sent at that time; a time that is not in the future
+sends immediately.
+
+```ts
+const { data: email } = await coss.email.send({
+  ...params,
+  scheduled_at: "2026-10-11T09:00:00Z", // or new Date(…).toISOString()
+}); // { status: "scheduled", scheduled_at: "2026-10-11T09:00:00.000Z", … }
+
+// Changed your mind? Cancel it until it is sent; to reschedule, cancel and send again.
+const { error } = await coss.email.cancel(email.id); // status "canceled"
+// error?.code === "email_not_cancelable" once it is being sent or was sent.
+```
+
+Scheduling and canceling are recorded as `email.scheduled` and `email.canceled` events (and
+webhooks).
+
 ## Suppressions
 
 Each environment has a suppression list. Sends skip suppressed recipients: they get the status
@@ -154,6 +198,45 @@ const { data: page } = await coss.email.suppressions.list({ limit: 50 }); // new
 await coss.email.suppressions.remove("sup_01k…"); // e.g. when they resubscribe
 ```
 
+Move whole lists in and out in bulk. `import` sends 1,000 entries per request and adds up the
+results; invalid entries are skipped and reported by their position, and entries already on the
+list are left unchanged, so importing again is safe:
+
+```ts
+const { data: result } = await coss.email.suppressions.import({
+  suppressions: [{ address: "jane@example.com" }, { address: "joe@example.com", scope: "marketing" }],
+}); // { created: 2, existing: 0, invalid: [] }
+
+// CSV with the columns address,scope,reason,created_at,email_id,id (oldest first).
+const { data: csv } = await coss.email.suppressions.export({ reason: "bounce" });
+```
+
+Imported entries have the reason `import`. The dashboard imports and exports the same CSV.
+
+### Open and click tracking
+
+Tracking is off unless the environment turns it on in the dashboard (a default, plus rules per
+category) or a send asks for it. COSS then adds an invisible image to the HTML body and sends its
+links through a redirect. Links with a `data-coss-no-track` attribute are left as they are.
+
+```ts
+const { data: sent } = await coss.email.send({
+  ...params,
+  html: '<p><a href="https://acme.com/start">Get started</a></p>',
+  tracking: { opens: true, clicks: true }, // overrides the environment's settings for this email
+});
+
+const { data: email } = await coss.email.get(sent.id);
+console.log(email?.tracking); // { opens: true, clicks: true, open_count: 1, click_count: 0, … }
+
+const { data: links } = await coss.email.listLinks(sent.id);
+// [{ url: "https://acme.com/start", click_count: 0, … }]
+```
+
+Opens and clicks arrive as `email.opened` and `email.clicked` events (in `listEvents` and in
+webhooks), with `data.open` / `data.click`. They name a recipient only when the email had exactly
+one. Mail clients that preload images and link scanners can inflate the numbers.
+
 ## Reputation
 
 COSS watches your live bounce and complaint rates. When one gets too high your organization is
@@ -165,12 +248,13 @@ const { data } = await coss.reputation.get();
 // { status: "warning", reason: "bounce_rate", checks: [{ trigger: "bounce_rate", rate: 0.051, … }], … }
 ```
 
+
 ## Webhooks
 
 Webhook endpoints receive `email.sent`, `email.delivered`, `email.delivery_delayed`,
-`email.bounced`, `email.complained`, `email.failed` and `email.suppressed` events, plus (production
-environments only) `account.reputation_warning`, `account.reputation_recovered`, `account.suspended`
-and `account.reinstated`, signed with
+`email.bounced`, `email.complained`, `email.failed`, `email.suppressed`, `email.opened` and
+`email.clicked` events, plus `account.reputation_warning`, `account.reputation_recovered`,
+`account.suspended` and `account.reinstated` for live environments, signed with
 [Standard Webhooks](https://www.standardwebhooks.com) headers. Verify them with the raw body:
 
 ```ts
@@ -214,8 +298,8 @@ interface CossError {
 | `authentication_error`  | 401               | `missing_api_key` or `invalid_api_key`                            |
 | `permission_error`      | 403               | The key lacks the permission (`insufficient_permissions`)         |
 | `not_found_error`       | 404               | No such resource in the key's environment                         |
-| `idempotency_error`     | 409 / 422         | `request_in_progress`, or `idempotency_key_reused` with a different body |
-| `rate_limit_error`      | 429               | Too many requests, or a domain was checked moments ago (`domain_recently_checked`) |
+| `idempotency_error`     | 409 / 422         | `request_in_progress` (retried automatically), or `idempotency_key_reused` with a different body |
+| `rate_limit_error`      | 429               | Too many requests with the key (`rate_limited`), the send quota is used up (`quota_exceeded`), or a domain was checked moments ago (`domain_recently_checked`) |
 | `api_error`             | 5xx, other        | Server error. Also used for responses that are not a COSS error envelope (`unexpected_response`) |
 | `connection_error`      | —                 | Network failure (`network_error`), or you aborted (`aborted`)      |
 | `timeout_error`         | —                 | An attempt exceeded `timeout` (`request_timeout`)                 |

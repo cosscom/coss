@@ -13,12 +13,17 @@ export const ID_PREFIXES = {
   member: "member",
   invitation: "invite",
   apiKey: "key",
+  twoFactor: "tfa",
+  passkey: "passkey",
   project: "proj",
   environment: "env",
   email: "email",
   emailRecipient: "rcpt",
+  emailAttachment: "att",
   emailEvent: "evt",
   emailSuppression: "sup",
+  emailTrackingRule: "etr",
+  emailLink: "lnk",
   domain: "dom",
   webhookEndpoint: "whep",
   webhookDelivery: "whdel",
@@ -26,7 +31,9 @@ export const ID_PREFIXES = {
   // Webhook messages that announce something other than an email event (e.g. `account.suspended`).
   webhookEvent: "evt",
   reputationEvent: "repev",
+  rateLimitOverride: "rlo",
   request: "req",
+  adminAuditEvent: "audit",
 } as const;
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES];

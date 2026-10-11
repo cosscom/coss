@@ -8,13 +8,14 @@ import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { authClient } from "@/lib/auth-client";
+import { nextQuery } from "@/lib/safe-redirect";
 
 export function ForgotPasswordForm({ next }: { next: string }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
 
-  const query = next === "/" ? "" : `?next=${encodeURIComponent(next)}`;
+  const query = nextQuery(next);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

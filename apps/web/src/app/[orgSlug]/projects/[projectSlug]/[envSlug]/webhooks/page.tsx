@@ -1,4 +1,3 @@
-import { orgRoleCan } from "@coss/auth/permissions";
 import { WEBHOOK_EVENT_TYPES } from "@coss/email/schemas";
 import { getEnvironment } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
@@ -27,8 +26,8 @@ export default async function WebhooksPage({
   params,
 }: PageProps<"/[orgSlug]/projects/[projectSlug]/[envSlug]/webhooks">) {
   const { orgSlug, projectSlug, envSlug } = await params;
-  const { organization, member } = await requireOrgMember(orgSlug);
-  if (!orgRoleCan(member.role, { webhook: ["read"] })) notFound();
+  const { organization, can } = await requireOrgMember(orgSlug);
+  if (!can({ webhook: ["read"] })) notFound();
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;
@@ -37,7 +36,7 @@ export default async function WebhooksPage({
     environmentId: environment.id,
   });
   const base = `/${organization.slug}/projects/${project.slug}/${environment.slug}`;
-  const canCreate = orgRoleCan(member.role, { webhook: ["create"] });
+  const canCreate = can({ webhook: ["create"] });
 
   return (
     <div className="flex flex-col gap-6">

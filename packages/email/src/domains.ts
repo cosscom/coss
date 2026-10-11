@@ -417,10 +417,16 @@ export async function deleteDomain(
 /**
  * System-level (worker): checks domains that are due, oldest first. Each is leased by moving its
  * `next_check_at` forward first, so concurrent workers never check the same domain at once.
- * `scope` limits the scan to some organizations (tests).
+ * `scope` limits the scan to some organizations (tests). Once `signal` aborts (the worker is
+ * shutting down), no further domain is leased; the rest stay due for the next run.
  */
 export async function recheckDueDomains(
-  opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } },
+  opts: {
+    now?: Date;
+    limit?: number;
+    scope?: { organizationIds: string[] };
+    signal?: AbortSignal;
+  },
   deps: DomainDeps,
 ): Promise<number> {
   const now = opts.now ?? new Date();
@@ -444,6 +450,7 @@ export async function recheckDueDomains(
     .limit(opts.limit ?? 25);
   let checked = 0;
   for (const candidate of due) {
+    if (opts.signal?.aborted) break;
     if (!candidate.nextCheckAt) continue;
     const [leased] = await db
       .update(domain)

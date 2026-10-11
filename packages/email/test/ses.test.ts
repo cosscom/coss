@@ -20,7 +20,7 @@ import { SesIdentityProvider } from "../src/ses/identity.ts";
 import { encodeAddress, encodeWords } from "../src/ses/mime.ts";
 import { parseSesMessage } from "../src/ses/parse.ts";
 import { SesEmailProvider } from "../src/ses/provider.ts";
-import { FakeSesApi } from "../src/testing.ts";
+import { dispatchingEmailService, FakeSesApi } from "../src/testing.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
 const config = { region: "eu-west-1", configurationSet: "coss-test", tenantPrefix: "test" };
@@ -39,6 +39,7 @@ function outbound(overrides: Partial<OutboundEmail> = {}): OutboundEmail {
     text: null,
     headers: {},
     tags: [{ name: "kind", value: "welcome" }],
+    attachments: [],
     ...overrides,
   };
 }
@@ -104,6 +105,46 @@ describe("SesEmailProvider", () => {
       TenantName: "test-org_01k7c8m4q2f3e9v6t5r1n0p8yz",
       EmailTags: [{ Name: "coss_email_id", Value: "email_01k7c8m4q2f3e9v6t5r1n0p8yz" }],
     });
+  });
+
+  test("hands attachments to SES, inline ones with their content id", async () => {
+    const api = new FakeSesApi();
+    const provider = new SesEmailProvider(api, config);
+    const pdf = new TextEncoder().encode("%PDF-1.7");
+    const png = new Uint8Array([137, 80, 78, 71]);
+
+    await provider.send(
+      outbound({
+        html: '<p>Hi <img src="cid:logo@acme"></p>',
+        attachments: [
+          {
+            filename: "invoice.pdf",
+            contentType: "application/pdf",
+            contentId: null,
+            content: pdf,
+          },
+          { filename: "logo.png", contentType: "image/png", contentId: "logo@acme", content: png },
+        ],
+      }),
+    );
+
+    expect(api.sent[0]?.Content?.Simple?.Attachments).toEqual([
+      {
+        RawContent: pdf,
+        FileName: "invoice.pdf",
+        ContentType: "application/pdf",
+        ContentTransferEncoding: "BASE64",
+        ContentDisposition: "ATTACHMENT",
+      },
+      {
+        RawContent: png,
+        FileName: "logo.png",
+        ContentType: "image/png",
+        ContentTransferEncoding: "BASE64",
+        ContentDisposition: "INLINE",
+        ContentId: "logo@acme",
+      },
+    ]);
   });
 
   test("retries throttling only", async () => {
@@ -471,7 +512,8 @@ describe("SES end to end (fake SES)", () => {
       canSend: true,
     });
 
-    const { email } = await runtime.emailService.send({
+    const service = dispatchingEmailService(runtime);
+    const { email } = await service.send({
       environment: sendEnvironment(tenant.production),
       apiKeyId: null,
       params: params({ from: `Acme <hello@${name}>`, to: ["a@example.com", "b@example.com"] }),

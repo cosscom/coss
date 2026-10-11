@@ -4,9 +4,9 @@
  * session's active organization.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, desc, eq, gt } from "drizzle-orm";
+import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
 
-const { invitation, member, organization, user } = schema;
+const { invitation, member, organization, organizationSuspension, user } = schema;
 
 export type OrganizationSummary = {
   id: string;
@@ -14,18 +14,22 @@ export type OrganizationSummary = {
   slug: string;
   logo: string | null;
   createdAt: Date;
+  /** Members must have two-factor authentication (TOTP) enabled to use the dashboard. */
+  requireTwoFactor: boolean;
 };
 
 export type Membership = {
   organization: OrganizationSummary;
   member: { id: string; organizationId: string; userId: string; role: string; createdAt: Date };
+  /** A platform admin suspended the organization: its dashboard is read-only. */
+  suspended: boolean;
 };
 
 export type OrganizationMember = {
   id: string;
   role: string;
   createdAt: Date;
-  user: { id: string; name: string; email: string };
+  user: { id: string; name: string; email: string; twoFactorEnabled: boolean };
 };
 
 export type PendingInvitation = {
@@ -43,13 +47,19 @@ const organizationColumns = {
   slug: organization.slug,
   logo: organization.logo,
   createdAt: organization.createdAt,
+  requireTwoFactor: sql<boolean>`coalesce(${organization.requireTwoFactor}, false)`,
 };
 
 const memberColumns = {
   id: member.id,
   role: member.role,
   createdAt: member.createdAt,
-  user: { id: user.id, name: user.name, email: user.email },
+  user: {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    twoFactorEnabled: sql<boolean>`coalesce(${user.twoFactorEnabled}, false)`,
+  },
 };
 
 /** The user's membership in the organization with this slug, or `null` if they are not a member. */
@@ -67,12 +77,16 @@ export async function getMembership(input: {
         role: member.role,
         createdAt: member.createdAt,
       },
+      suspendedAt: organizationSuspension.createdAt,
     })
     .from(member)
     .innerJoin(organization, eq(organization.id, member.organizationId))
+    .leftJoin(organizationSuspension, eq(organizationSuspension.organizationId, organization.id))
     .where(and(eq(organization.slug, input.organizationSlug), eq(member.userId, input.userId)))
     .limit(1);
-  return row ?? null;
+  if (!row) return null;
+  const { suspendedAt, ...membership } = row;
+  return { ...membership, suspended: suspendedAt !== null };
 }
 
 /** Members of an organization with their user's name and email, oldest first. */
@@ -143,4 +157,30 @@ export async function getPendingInvitation(input: {
     )
     .limit(1);
   return row ?? null;
+}
+
+/**
+ * Turns the organization's two-factor requirement on or off. The dashboard checks the actor's
+ * permission and their own two-factor status first.
+ */
+export async function setOrganizationTwoFactorRequired(input: {
+  organizationId: string;
+  required: boolean;
+}): Promise<void> {
+  await db
+    .update(organization)
+    .set({ requireTwoFactor: input.required })
+    .where(eq(organization.id, input.organizationId));
+}
+
+/** The user's organizations that require two-factor authentication, by name. */
+export async function listOrganizationsRequiringTwoFactor(input: {
+  userId: string;
+}): Promise<{ name: string; slug: string }[]> {
+  return db
+    .select({ name: organization.name, slug: organization.slug })
+    .from(member)
+    .innerJoin(organization, eq(organization.id, member.organizationId))
+    .where(and(eq(member.userId, input.userId), eq(organization.requireTwoFactor, true)))
+    .orderBy(asc(organization.name));
 }
