@@ -9,7 +9,7 @@ import { getBillingAccount, organizationLabel } from "./accounts.ts";
 import { evaluateStanding } from "./holds.ts";
 import { type InvoiceRow, invoiceLines, lockInvoice } from "./invoices.ts";
 import { enqueueBillingNotification } from "./notifications.ts";
-import { recordPayment } from "./payments.ts";
+import { recordPayment, recordProviderPayment } from "./payments.ts";
 import {
   type BillingProviders,
   type CollectResult,
@@ -218,13 +218,35 @@ async function syncInvoice(
         });
       }
       case "void":
-        await provider.voidInvoice(input);
-        await settleSync(invoice.id, now);
+      case "mark_uncollectible": {
+        if (invoice.syncAction === "void") await provider.voidInvoice(input);
+        else await provider.markUncollectible(input);
+        // The provider may already be paid and treat cancellation as a no-op. Reconcile
+        // before clearing the outbox: terminal invoices aren't scanned for lost webhooks.
+        const state = await provider.fetchInvoice(input);
+        await db.transaction(async (tx) => {
+          const current = await lockInvoice(tx, invoice.id);
+          if (!current) return;
+          if (state?.status === "paid")
+            await recordProviderPayment(
+              tx,
+              current,
+              {
+                amountCents: state.paidCents,
+                method: state.method ?? invoice.provider,
+                providerPaymentId: state.paymentId,
+                receivedAt: now,
+              },
+              now,
+              deps,
+            );
+          await tx
+            .update(billingInvoice)
+            .set({ syncAction: null, nextSyncAt: null, syncAttempts: 0, syncError: null })
+            .where(eq(billingInvoice.id, invoice.id));
+        });
         return null;
-      case "mark_uncollectible":
-        await provider.markUncollectible(input);
-        await settleSync(invoice.id, now);
-        return null;
+      }
       default:
         await settleSync(invoice.id, now);
         return null;

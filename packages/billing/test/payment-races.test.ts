@@ -6,6 +6,8 @@ import { contractAt } from "../src/contracts.ts";
 import { applyOutcome } from "../src/events.ts";
 import { listGrants } from "../src/grants.ts";
 import { getInvoice } from "../src/invoices.ts";
+import { markInvoiceUncollectible, voidInvoice } from "../src/payments.ts";
+import type { BillingProvider } from "../src/providers/provider.ts";
 import { collectInvoiceNow, runDueBillingSync } from "../src/sync.ts";
 import { testBillingProviders } from "../src/testing.ts";
 
@@ -240,4 +242,69 @@ test("a canceled push resumes after a lost provider response and is then voided"
   });
   expect(f.fake.calls.filter((c) => c.op === "voidInvoice")).toHaveLength(1);
   expect(f.fake.calls.filter((c) => c.op === "collect")).toHaveLength(0);
+});
+
+for (const action of ["void", "write_off"] as const) {
+  test(`a ${action} sync reconciles a payment even without its webhook`, async () => {
+    const f = await fixture();
+    const upgrade = await startUpgrade(f.input);
+    if (!upgrade.invoice) throw new Error("missing invoice");
+    await runDueBillingSync({ now, scope: f.scope }, f.deps);
+    const input = {
+      organizationId: f.organizationId,
+      invoiceId: upgrade.invoice.id,
+      actor: f.actor,
+      reason: "Cancel",
+      now,
+    };
+    if (action === "void") await voidInvoice(input);
+    else await markInvoiceUncollectible(input);
+    const provider: BillingProvider = f.fake;
+    provider.fetchInvoice = async () => ({
+      status: "paid",
+      paidCents: upgrade.invoice?.totalCents ?? 0n,
+      paymentId: null,
+      method: "card",
+    });
+    await runDueBillingSync({ now, scope: f.scope }, f.deps);
+    expect((await listGrants(f.organizationId)).map((grant) => grant.amount)).toEqual([
+      upgrade.invoice.totalCents,
+    ]);
+    expect(await contractAt(f.organizationId, now)).toBeNull();
+    expect((await getInvoice(f.organizationId, upgrade.invoice.id))?.syncAction).toBeNull();
+  });
+}
+
+test("credit sync reconciles a hosted payment when its webhook was lost", async () => {
+  const f = await fixture();
+  const invoice = await createOneOffInvoice({
+    organizationId: f.organizationId,
+    lines: [{ description: "Service", amountCents: 10000n }],
+    memo: null,
+    defaultProvider: "fake",
+    actor: f.actor,
+    reason: "Test",
+    now,
+  });
+  await runDueBillingSync({ now, scope: f.scope }, f.deps);
+  await createCreditNote({
+    organizationId: f.organizationId,
+    invoiceId: invoice.id,
+    amountCents: 10000n,
+    refundCents: 0n,
+    memo: "Correction",
+    actor: f.actor,
+    reason: "Test",
+    now,
+  });
+  const provider: BillingProvider = f.fake;
+  provider.fetchInvoice = async () => ({
+    status: "paid",
+    paidCents: 10000n,
+    paymentId: null,
+    method: "card",
+  });
+  await runDueCreditNoteSync({ now, scope: f.scope }, f.deps);
+  expect((await listGrants(f.organizationId)).map((grant) => grant.amount)).toEqual([10000n]);
+  expect((await getInvoice(f.organizationId, invoice.id))?.amountPaidCents).toBe(10000n);
 });

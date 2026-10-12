@@ -16,7 +16,7 @@ import {
   lockInvoice,
   nextCounter,
 } from "./invoices.ts";
-import { afterSettled } from "./payments.ts";
+import { afterSettled, recordProviderPayment } from "./payments.ts";
 import { type BillingProviders, providerFor } from "./providers/provider.ts";
 import { floorHour, periodOf } from "./time.ts";
 
@@ -271,15 +271,31 @@ export async function runDueCreditNoteSync(
           memo: note.memo,
         },
       );
-      await db
-        .update(billingCreditNote)
-        .set({
-          status: "issued",
-          providerCreditNoteId: created.providerCreditNoteId,
-          nextSyncAt: null,
-          syncError: null,
-        })
-        .where(eq(billingCreditNote.id, note.id));
+      const state = await provider.fetchInvoice({ invoice, lines: [], account: null });
+      await db.transaction(async (tx) => {
+        const current = await lockInvoice(tx, invoice.id);
+        if (current && state?.status === "paid")
+          await recordProviderPayment(
+            tx,
+            current,
+            {
+              amountCents: state.paidCents,
+              method: state.method ?? invoice.provider,
+              providerPaymentId: state.paymentId,
+              receivedAt: now,
+            },
+            now,
+          );
+        await tx
+          .update(billingCreditNote)
+          .set({
+            status: "issued",
+            providerCreditNoteId: created.providerCreditNoteId,
+            nextSyncAt: null,
+            syncError: null,
+          })
+          .where(eq(billingCreditNote.id, note.id));
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`[billing] credit note ${note.id} failed:`, error);

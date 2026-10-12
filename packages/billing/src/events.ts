@@ -4,14 +4,14 @@
  * (`runDueBillingEvents`). The provider re-reads each object, and states only move forward
  * (`paid` is final), so late, repeated and out-of-order events are harmless.
  */
-import { db, schema, type Transaction } from "@coss/db";
+import { db, schema } from "@coss/db";
 import { and, asc, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
 import type { BillingAccount } from "./accounts.ts";
 import { cancelContract, contractPendingOn } from "./contracts.ts";
 import { evaluateStanding } from "./holds.ts";
 import { lockInvoice } from "./invoices.ts";
 import { enqueueBillingNotification } from "./notifications.ts";
-import { recordPayment, voidInvoice } from "./payments.ts";
+import { recordProviderPayment, voidInvoice } from "./payments.ts";
 import {
   type BillingProviders,
   type ProviderOutcome,
@@ -20,14 +20,7 @@ import {
 } from "./providers/provider.ts";
 import { applyCollection } from "./sync.ts";
 
-const {
-  billingAccount,
-  billingCreditGrant,
-  billingInvoice,
-  billingPayment,
-  billingProviderEvent,
-  organization,
-} = schema;
+const { billingAccount, billingInvoice, billingProviderEvent } = schema;
 
 const MINUTE = 60 * 1000;
 const LEASE_MS = 5 * MINUTE;
@@ -150,33 +143,18 @@ export async function applyOutcome(
       await db.transaction(async (tx) => {
         const locked = await lockInvoice(tx, invoice.id);
         if (!locked) return;
-        // Provider invoice outcomes report cumulative paid amounts, not another payment.
-        const amountCents = outcome.amountCents - locked.amountPaidCents;
-        if (amountCents <= 0n) return;
-        const payment = {
-          amountCents,
-          method: outcome.method,
-          providerPaymentId: outcome.paymentId,
-          receivedAt: now,
-        };
-        if (locked.status === "void" || locked.status === "draft") {
-          // Paid after COSS gave it up (e.g. a 3-D Secure confirmation racing an expiry): the
-          // money arrived, so it becomes credit, and support is told.
-          await paymentForVoidedInvoice(tx, locked, payment, now);
-          return;
-        }
-        // Open, or written off and paid after all.
-        const open =
-          locked.status === "uncollectible" ? { ...locked, status: "open" as const } : locked;
-        if (locked.status === "uncollectible") {
-          await tx
-            .update(billingInvoice)
-            .set({ status: "open" })
-            .where(eq(billingInvoice.id, locked.id));
-        }
-        await recordPayment(tx, open, payment, now, {
-          systemOrganizationId: deps.systemOrganizationId,
-        });
+        await recordProviderPayment(
+          tx,
+          locked,
+          {
+            amountCents: outcome.amountCents,
+            method: outcome.method,
+            providerPaymentId: outcome.paymentId,
+            receivedAt: now,
+          },
+          now,
+          deps,
+        );
       });
       return;
     }
@@ -284,61 +262,6 @@ export async function applyOutcome(
       return;
     }
   }
-}
-
-/** A payment for an invoice COSS voided: recorded, kept as credit, and reported. */
-async function paymentForVoidedInvoice(
-  tx: Transaction,
-  invoice: typeof billingInvoice.$inferSelect,
-  payment: {
-    amountCents: bigint;
-    method: string;
-    providerPaymentId: string | null;
-    receivedAt: Date;
-  },
-  now: Date,
-): Promise<void> {
-  const inserted = await tx
-    .insert(billingPayment)
-    .values({
-      organizationId: invoice.organizationId,
-      invoiceId: invoice.id,
-      amountCents: payment.amountCents,
-      method: payment.method,
-      providerPaymentId: payment.providerPaymentId,
-      receivedAt: payment.receivedAt,
-      note: "Received after the invoice was voided; kept as credit.",
-    })
-    .onConflictDoNothing({ target: billingPayment.providerPaymentId })
-    .returning({ id: billingPayment.id });
-  if (!inserted.length) return;
-  await tx
-    .update(billingInvoice)
-    .set({
-      amountPaidCents: invoice.amountPaidCents + payment.amountCents,
-      paymentState: "paid_after_void",
-    })
-    .where(eq(billingInvoice.id, invoice.id));
-  const [org] = await tx
-    .select({ id: organization.id })
-    .from(organization)
-    .where(eq(organization.id, invoice.organizationId));
-  if (org) {
-    await tx.insert(billingCreditGrant).values({
-      organizationId: invoice.organizationId,
-      kind: "amount",
-      amount: payment.amountCents,
-      appliesTo: "any",
-      source: "refund",
-      description: `Payment for voided invoice ${invoice.number ?? invoice.id}`,
-      reason: "Paid after the invoice was voided",
-      effectiveAt: now,
-      expiresAt: null,
-    });
-  }
-  console.error(
-    `[billing] invoice ${invoice.id} (${invoice.organizationId}) was paid after it was voided: ${payment.amountCents} cents kept as credit; refund it if the customer asks.`,
-  );
 }
 
 /** Events awaiting processing or failed (the admin overview). */

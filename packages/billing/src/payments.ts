@@ -99,6 +99,105 @@ export async function recordPayment(
   return row;
 }
 
+/** Reconciles a provider's cumulative paid amount under the account and invoice locks. */
+export async function recordProviderPayment(
+  tx: Transaction,
+  invoice: InvoiceRow,
+  payment: PaymentInput,
+  now: Date,
+  opts: { systemOrganizationId?: string | null } = {},
+): Promise<void> {
+  const amountCents = payment.amountCents - invoice.amountPaidCents;
+  if (amountCents <= 0n) return;
+  const [canceledUpgrade] = await tx
+    .select({ id: schema.billingContract.id })
+    .from(schema.billingContract)
+    .where(
+      and(
+        eq(schema.billingContract.pendingInvoiceId, invoice.id),
+        eq(schema.billingContract.status, "canceled"),
+      ),
+    )
+    .limit(1);
+  const received = {
+    ...payment,
+    amountCents,
+    providerPaymentId: payment.providerPaymentId ?? null,
+  };
+  if (invoice.status === "void" || invoice.status === "draft" || canceledUpgrade) {
+    await paymentForCanceledInvoice(tx, invoice, received, now);
+    return;
+  }
+  if (invoice.status === "uncollectible") {
+    await tx
+      .update(billingInvoice)
+      .set({ status: "open" })
+      .where(eq(billingInvoice.id, invoice.id));
+  }
+  await recordPayment(
+    tx,
+    invoice.status === "uncollectible" ? { ...invoice, status: "open" } : invoice,
+    received,
+    now,
+    opts,
+  );
+}
+
+/** A payment for a canceled invoice or upgrade: recorded, credited, and reported. */
+async function paymentForCanceledInvoice(
+  tx: Transaction,
+  invoice: typeof schema.billingInvoice.$inferSelect,
+  payment: {
+    amountCents: bigint;
+    method: string;
+    providerPaymentId: string | null;
+    receivedAt: Date;
+  },
+  now: Date,
+): Promise<void> {
+  const inserted = await tx
+    .insert(billingPayment)
+    .values({
+      organizationId: invoice.organizationId,
+      invoiceId: invoice.id,
+      amountCents: payment.amountCents,
+      method: payment.method,
+      providerPaymentId: payment.providerPaymentId,
+      receivedAt: payment.receivedAt,
+      note: "Received after the invoice was canceled; kept as credit.",
+    })
+    .onConflictDoNothing({ target: billingPayment.providerPaymentId })
+    .returning({ id: billingPayment.id });
+  if (!inserted.length) return;
+  await tx
+    .update(billingInvoice)
+    .set({
+      amountPaidCents: invoice.amountPaidCents + payment.amountCents,
+      paymentState: "paid_after_void",
+    })
+    .where(eq(billingInvoice.id, invoice.id));
+  const [org] = await tx
+    .select({ id: schema.organization.id })
+    .from(schema.organization)
+    .where(eq(schema.organization.id, invoice.organizationId));
+  if (org) {
+    await tx.insert(schema.billingCreditGrant).values({
+      organizationId: invoice.organizationId,
+      kind: "amount",
+      amount: payment.amountCents,
+      appliesTo: "any",
+      source: "refund",
+      description: `Payment for canceled invoice ${invoice.number ?? invoice.id}`,
+      reason: "Paid after the invoice was canceled",
+      effectiveAt: now,
+      expiresAt: null,
+    });
+  }
+  console.error(
+    `[billing] invoice ${invoice.id} (${invoice.organizationId}) was paid after cancellation: ${payment.amountCents} cents kept as credit; refund it if the customer asks.`,
+  );
+}
+
 function paymentValues(invoice: InvoiceRow, payment: PaymentInput) {
   return {
     organizationId: invoice.organizationId,
