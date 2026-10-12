@@ -27,9 +27,11 @@ else
 fi
 network="$(aws ecs describe-services --cluster "$CLUSTER" --services "$service" \
   --query 'services[0].networkConfiguration' --output json)"
-overrides="$(jq -nc --arg name "$service" --arg role "$task_role" '
-  { containerOverrides: [{ name: $name, command: $ARGS.positional }] }
-  + (if $role != "" then { taskRoleArn: $role } else {} end)' --args "$@")"
+# NUL-separated, so arguments that look like jq options (`--name`) stay arguments.
+command_json="$(printf '%s\0' "$@" | jq -Rsc 'split("\u0000")[:-1]')"
+overrides="$(jq -nc --arg name "$service" --arg role "$task_role" --argjson command "$command_json" '
+  { containerOverrides: [{ name: $name, command: $command }] }
+  + (if $role != "" then { taskRoleArn: $role } else {} end)')"
 
 task="$(aws ecs run-task --cluster "$CLUSTER" --task-definition "$definition" --launch-type FARGATE \
   --network-configuration "$network" --overrides "$overrides" --started-by "ecs-task.sh" \

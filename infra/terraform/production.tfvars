@@ -1,5 +1,5 @@
 # Production (coss.com). No secrets here: secret variables live in the `coss/production` Secrets
-# Manager secret, the database password is passed as TF_VAR_db_password on first apply.
+# Manager secret, the database password is read from the stage secret (DATABASE_URL).
 
 account_id         = "294417174674"
 region             = "us-east-2"
@@ -14,11 +14,12 @@ external_origin_hosts = {
 }
 ses_name           = "coss"
 github_repository  = "cosscom/coss"
-initial_image_tag  = "TODO"
+initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
-db_instance_class = "db.t4g.medium"
-db_engine_version = "18.6"
+db_instance_class   = "db.t4g.medium"
+db_engine_version   = "18.6"
+db_password_version = 1
 
 autoscaling = {
   web    = { max = 6, cpu_target = 60 }

@@ -7,14 +7,25 @@ resource "aws_db_parameter_group" "main" {
   name   = "${local.name}-postgres18"
   family = "postgres18"
   parameter {
-    name  = "rds.force_ssl"
-    value = "1"
+    name         = "rds.force_ssl"
+    value        = "1"
+    apply_method = "pending-reboot"
   }
   # Logs statements slower than 1 s (no parameters: they can hold customer data).
   parameter {
     name  = "log_min_duration_statement"
     value = "1000"
   }
+}
+
+# The master password is the one in the stage secret's DATABASE_URL (what the apps use), read
+# ephemerally and written write-only: it never reaches the state.
+ephemeral "aws_secretsmanager_secret_version" "stage" {
+  secret_id = aws_secretsmanager_secret.stage.id
+}
+
+locals {
+  db_password = regex("^postgres://[^:]+:([^@]+)@", jsondecode(ephemeral.aws_secretsmanager_secret_version.stage.secret_string).DATABASE_URL)[0]
 }
 
 # Pool budget (README, "Deploying to AWS"): (web + api + worker max tasks) × DATABASE_POOL_MAX +
@@ -28,7 +39,7 @@ resource "aws_db_instance" "main" {
 
   db_name                               = "coss"
   username                              = "coss"
-  password_wo                           = var.db_password
+  password_wo                           = local.db_password
   password_wo_version                   = var.db_password_version
   ca_cert_identifier                    = "rds-ca-rsa2048-g1"
   parameter_group_name                  = aws_db_parameter_group.main.name

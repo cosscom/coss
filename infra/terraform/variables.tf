@@ -62,17 +62,9 @@ variable "db_engine_version" {
   type = string
 }
 
-variable "db_password" {
-  type        = string
-  ephemeral   = true
-  sensitive   = true
-  default     = null
-  description = "Master password, written once (bump db_password_version to change it). Never stored in state."
-}
-
 variable "db_password_version" {
-  type    = number
-  default = 1
+  type        = number
+  description = "Bump after changing the password in the stage secret's DATABASE_URL to apply it to RDS."
 }
 
 variable "cloudflare_ipv4_ranges" {
