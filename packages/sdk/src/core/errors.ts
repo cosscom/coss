@@ -6,6 +6,7 @@ export type CossErrorType =
   | "not_found_error"
   | "idempotency_error"
   | "rate_limit_error"
+  | "billing_error"
   | "api_error"
   | "connection_error"
   | "timeout_error";
@@ -44,6 +45,7 @@ const API_ERROR_TYPES: ReadonlySet<string> = new Set<CossErrorType>([
   "not_found_error",
   "idempotency_error",
   "rate_limit_error",
+  "billing_error",
   "api_error",
 ]);
 

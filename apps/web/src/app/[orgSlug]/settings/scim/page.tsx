@@ -14,6 +14,7 @@ import { notFound } from "next/navigation";
 import { CopyButton } from "@/components/copy-button";
 import { PageHeader } from "@/components/page-header";
 import { env } from "@/env";
+import { planHas } from "@/lib/billing";
 import { requireOrgMember } from "@/lib/session";
 import {
   CreateScimTokenForm,
@@ -70,6 +71,18 @@ export default async function DirectorySyncPage({ params }: PageProps<"/[orgSlug
         }
         title="Directory sync"
       />
+
+      {!scim && !(await planHas(organization.id, "scim")) ? (
+        <Alert variant="info">
+          <AlertTitle>Directory sync is part of the Enterprise plan</AlertTitle>
+          <AlertDescription>
+            Upgrade to set it up.{" "}
+            <Link className="underline" href={`/${organization.slug}/settings/billing/plans`}>
+              Compare plans
+            </Link>
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       {!scim && !ssoActive ? (
         <Alert variant="info">

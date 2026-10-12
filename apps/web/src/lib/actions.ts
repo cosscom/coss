@@ -1,4 +1,5 @@
 import "server-only";
+import { BillingError } from "@coss/billing";
 import { DomainError, EmailError } from "@coss/email";
 import { ReputationError } from "@coss/reputation";
 import { TenancyError } from "@coss/tenancy";
@@ -40,7 +41,8 @@ function userFacingMessage(error: unknown): string {
     error instanceof TenancyError ||
     error instanceof DomainError ||
     error instanceof ReputationError ||
-    error instanceof EmailError
+    error instanceof EmailError ||
+    error instanceof BillingError
   ) {
     return error.message;
   }

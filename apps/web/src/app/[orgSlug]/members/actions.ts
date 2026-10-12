@@ -7,7 +7,13 @@ import {
   type InvitableOrgRole,
   isOrgRole,
 } from "@coss/auth/permissions";
-import { getOrganizationMember, getPendingInvitation, isScimManagedUser } from "@coss/tenancy";
+import {
+  getOrganizationMember,
+  getPendingInvitation,
+  isScimManagedUser,
+  listOrganizationMembers,
+  listPendingInvitations,
+} from "@coss/tenancy";
 import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
@@ -15,6 +21,7 @@ import type { ActionResult } from "@/lib/action-result";
 import { ActionError, ForbiddenError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
+import { planGate } from "@/lib/billing";
 import { rateLimitRuntime } from "@/lib/rate-limit";
 import { requireOrgPermission } from "@/lib/session";
 
@@ -72,6 +79,17 @@ export async function inviteMemberAction(
     if (!z.email().safeParse(email).success) throw new ActionError("Enter a valid email address.");
     const role = formString(formData, "role");
     if (!isInvitableRole(role)) throw new ActionError("Choose a role: admin or member.");
+
+    // Pending invitations count: each may become a member.
+    const [members, invitations] = await Promise.all([
+      listOrganizationMembers({ organizationId: organization.id }),
+      listPendingInvitations({ organizationId: organization.id }),
+    ]);
+    await planGate().requireCapacity(
+      organization.id,
+      "members",
+      members.length + invitations.length,
+    );
 
     // organizationId is explicit: Better Auth would otherwise fall back to the active org.
     await withInvitationQuota(organization.id, async () =>

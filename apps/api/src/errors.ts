@@ -2,6 +2,7 @@
  * The public error envelope. Every non-2xx response is
  * `{ "error": { type, code, message, param?, issues?, request_id } }`, built only here.
  */
+import { BillingError } from "@coss/billing";
 import { DomainError, EmailError } from "@coss/email";
 import { WebhookError } from "@coss/webhooks";
 import type { Context } from "hono";
@@ -17,6 +18,7 @@ export const ERROR_TYPES = [
   "not_found_error",
   "idempotency_error",
   "rate_limit_error",
+  "billing_error",
   "api_error",
 ] as const;
 
@@ -169,6 +171,8 @@ function fromEmailError(error: EmailError): ApiError {
         code: error.code,
         message: error.message,
       });
+    case "billing_hold":
+      return new ApiError(402, { type: "billing_error", code: error.code, message: error.message });
     case "email_not_cancelable":
     case "email_not_reschedulable":
       return invalidRequest(error.code, error.message);
@@ -228,9 +232,31 @@ function fromWebhookError(error: WebhookError): ApiError {
   }
 }
 
+function fromBillingError(error: BillingError): ApiError {
+  // The plan or the account's billing stands in the way: 402, never retried by the SDK.
+  if (error.status === 402) {
+    return new ApiError(402, { type: "billing_error", code: error.code, message: error.message });
+  }
+  if (error.status === 404) {
+    return new ApiError(404, { type: "not_found_error", code: error.code, message: error.message });
+  }
+  if (error.status === 403) {
+    return new ApiError(403, {
+      type: "permission_error",
+      code: error.code,
+      message: error.message,
+    });
+  }
+  if (error.status >= 500) {
+    return new ApiError(503, { type: "api_error", code: error.code, message: error.message });
+  }
+  return invalidRequest(error.code, error.message);
+}
+
 /** Maps known error classes to their envelope; `null` means unexpected (a bug or an outage). */
 export function toApiError(error: unknown): ApiError | null {
   if (error instanceof ApiError) return error;
+  if (error instanceof BillingError) return fromBillingError(error);
   if (error instanceof EmailError) return fromEmailError(error);
   if (error instanceof DomainError) return fromDomainError(error);
   if (error instanceof WebhookError) return fromWebhookError(error);

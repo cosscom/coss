@@ -188,6 +188,10 @@ export const email = pgTable(
     sentAt: timestamp("sent_at", { withTimezone: true }),
     // When the email may be handed to the provider; set only for requests with `scheduled_at`.
     scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+    // Billing (`@coss/billing`): the recipients the send is billed for, frozen when a dispatcher
+    // claims it (suppressed ones excluded); `usage_recorded_at` marks it metered (once, when sent).
+    billableRecipients: integer("billable_recipients"),
+    usageRecordedAt: timestamp("usage_recorded_at", { withTimezone: true }),
   },
   (t) => [
     foreignKey({

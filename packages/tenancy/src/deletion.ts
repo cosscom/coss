@@ -15,6 +15,7 @@ import { TenancyError } from "./errors.ts";
 const {
   account,
   apikey,
+  billingUsage,
   contentScreening,
   email,
   emailBatch,
@@ -436,6 +437,19 @@ async function deleteOrganizationData(
     ))
   )
     return false;
+  // Hourly usage counters (billing): no id, so batches go by row address. The final invoice was
+  // made first (`releaseProviderResources`), and invoices keep their months' totals.
+  for (;;) {
+    if (signal?.aborted) return false;
+    const deleted = await db.transaction(async (tx) => {
+      await renewLease(deletion, tx);
+      const result = await tx.execute(
+        sql`delete from ${billingUsage} where ctid in (select ctid from ${billingUsage} where ${billingUsage.organizationId} = ${organizationId} limit ${batchSize})`,
+      );
+      return result.rowCount ?? 0;
+    });
+    if (deleted < batchSize) break;
+  }
   return deleteInBatches(
     deletion,
     contentScreening,

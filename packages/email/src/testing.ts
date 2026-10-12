@@ -51,6 +51,7 @@ export function dispatchingEmailService(opts: {
   screeningFailureAllowlist?: EmailServiceOptions["screeningFailureAllowlist"];
   trackingBaseUrl?: string;
   trackingDomainProvider?: string;
+  billing?: EmailServiceOptions["billing"];
 }): EmailService & { queue: MemoryDispatchQueue } {
   const queue = memoryDispatchQueue();
   const service = createEmailService({ ...opts, queue });

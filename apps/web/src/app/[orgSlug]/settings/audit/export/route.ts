@@ -11,7 +11,10 @@ export async function GET(
   ctx: RouteContext<"/[orgSlug]/settings/audit/export">,
 ) {
   const { orgSlug } = await ctx.params;
-  const { organization } = await requireAuditAccess(orgSlug);
+  const { organization, planAllows } = await requireAuditAccess(orgSlug);
+  if (!planAllows) {
+    return new Response("The audit log is available on the Pro plan and above.\n", { status: 402 });
+  }
   const filters = auditFiltersFrom(request.nextUrl.searchParams);
   const encoder = new TextEncoder();
   let before: string | undefined;

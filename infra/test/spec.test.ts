@@ -5,6 +5,7 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { billingEnvShape } from "@coss/billing/env";
 import { emailEnvShape, emailWorkerEnvShape } from "@coss/email/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
@@ -32,7 +33,16 @@ function schemaKeys(envFile: string, spread: Record<string, unknown>): string[] 
     ...(source.includes("...rateLimitEnvShape") ? Object.keys(rateLimitEnvShape) : []),
     ...(source.includes("...screeningEnvShape") ? Object.keys(screeningEnvShape) : []),
     ...(source.includes("...sentryEnvShape") ? Object.keys(sentryEnvShape) : []),
+    ...(source.includes("...billingEnvShape") ? billingKeys(envFile) : []),
   ];
+}
+
+/** The billing variables an app reads: the webhook secret only matters to the dashboard. */
+function billingKeys(envFile: string): string[] {
+  const keys = Object.keys(billingEnvShape);
+  return envFile.startsWith("apps/web/")
+    ? keys
+    : keys.filter((key) => key !== "STRIPE_WEBHOOK_SECRET");
 }
 
 const SCHEMAS: Record<Exclude<ServiceName, "site">, string[]> = {

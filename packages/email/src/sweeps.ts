@@ -7,8 +7,9 @@ import { and, asc, eq, gte, inArray, isNotNull, isNull, lt } from "drizzle-orm";
 import { purgeSendContent } from "./attachments.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
+import { recordEmailUsage } from "./usage.ts";
 
-const { email, emailEvent } = schema;
+const { email, emailEvent, environment } = schema;
 
 /** A claimed email still `queued` after this long was interrupted mid-send. */
 export const STALE_CLAIM_MS = 15 * 60 * 1000;
@@ -127,8 +128,15 @@ export async function sweepStaleClaims(opts: {
 }): Promise<number> {
   const now = opts.now ?? new Date();
   const stale = await db
-    .select({ id: email.id, organizationId: email.organizationId })
+    .select({ id: email.id, organizationId: email.organizationId, mode: environment.mode })
     .from(email)
+    .innerJoin(
+      environment,
+      and(
+        eq(environment.id, email.environmentId),
+        eq(environment.organizationId, email.organizationId),
+      ),
+    )
     .where(
       and(
         eq(email.status, "queued"),
@@ -165,7 +173,10 @@ export async function sweepStaleClaims(opts: {
           .set({ status: "sent", sentAt: sent.occurredAt })
           .where(thisEmail)
           .returning({ id: email.id });
-        if (updated) await purgeSendContent(tx, candidate);
+        if (updated) {
+          await purgeSendContent(tx, candidate);
+          if (candidate.mode === "live") await recordEmailUsage(tx, candidate);
+        }
         return Boolean(updated);
       }
       const [failed] = await tx
