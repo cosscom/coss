@@ -8,7 +8,7 @@ drive per-recipient status and signed customer webhooks. A sample of live messag
 (`@coss/screening`) before it is sent. Plans, contracts, metered usage, credits and invoices are `@coss/billing`
 (COSS rates usage itself; Stripe, behind a provider interface, only collects). Rate limits (per API key, per-org send quotas, dashboard
 auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/ratelimit`. Errors and traces go to
-Sentry (organization `coss`) through `@coss/observability`. Human setup docs (incl. running on SES): [README.md](./README.md).
+Sentry (organization `cosscom`) through `@coss/observability`. Human setup docs (incl. running on SES): [README.md](./README.md).
 
 ## Layout
 
@@ -34,7 +34,7 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens) and `globals.css` (the dashboard's stylesheet). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
-| `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests; nothing here calls AWS. See `infra/AGENTS.md`. |
+| `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests, and the production Terraform + deploy scripts that apply it. See `infra/AGENTS.md`. |
 
 Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `db ← auth ← tenancy`, `db ← logs ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`, `webhooks ← billing ← email` (packages take
 `billing`'s plan checks injected — `PlanGate`, `UsageGate`, and in webhooks the structural `WebhookPlanLimits`, since
@@ -158,7 +158,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `SCREENING_CLASSIFIER`, `SCREENING_MODEL`, `AI_GATEWAY_API_KEY` | worker: content screening (`off`/`fake`/`ai`; a Vercel AI Gateway decision model id, default `typesafe-ai/jev`; the Gateway key, required with `ai`) |
 | `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | api, worker, web: Sentry (each its own project's DSN; web's also serves browsers of both zones); unset → nothing reported. Read before t3-env (`src/instrument.ts`, `src/lib/monitoring-server.ts`, `/api/monitoring`) and validated by it (`sentryEnvShape`) |
 | `SENTRY_RELEASE` | api, worker: the image's commit (Dockerfile build argument); the Next apps' release is `NEXT_DEPLOYMENT_ID`, injected at build |
-| `SENTRY_AUTH_TOKEN` (`SENTRY_ORG`, `SENTRY_PROJECT`) | Next builds only (`globalPassThroughEnv`; a BuildKit secret in the Dockerfiles): uploads source maps to `coss`/`web` and deletes them from the build. Unset → no source maps |
+| `SENTRY_AUTH_TOKEN` (`SENTRY_ORG`, `SENTRY_PROJECT`) | Next builds only (`globalPassThroughEnv`; a BuildKit secret in the Dockerfiles): uploads source maps to `cosscom`/`web` and deletes them from the build. Unset → no source maps |
 | `NODE_ENV`, `SKIP_ENV_VALIDATION` | `production` makes dev auth emails and the seed refuse to run; the latter skips t3-env (image builds set it) |
 | `SKIP_BUILD_TYPECHECK` | `1` makes `next build` (web, site) skip its TypeScript check; set only by CI's build job (its check job typechecks) |
 | `TURBO_TOKEN`, `TURBO_TEAM`, `TURBO_REMOTE_CACHE_SIGNATURE_KEY` | turbo itself (Vercel Remote Cache, team `cal`): locally `turbo login` stores the token and `~/.config/coss/turbo.env` (sourced by the shell profile) sets the other two; in CI `secrets.TURBO_TOKEN`, `vars.TURBO_TEAM`, `secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY`. Never in `.env` (turbo doesn't read it) |
@@ -277,7 +277,8 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 ## coss.com zones
 
 - coss.com is shared by Next.js multi-zones, routed by the ALB (not Next rewrites): the dashboard is the default zone
-  (org slugs, `/dashboard`, `/api/*`, bare `/_next/*`); the site and the coss ui app get the paths in **`ZONE_ROUTES`**
+  (org slugs, `/dashboard`, `/api/*`, bare `/_next/*`); the site and the coss ui repository's apps (`/ui`, `/origin`,
+  deployed on Vercel and served by CloudFront from their own origins) get the paths in **`ZONE_ROUTES`**
   (`@coss/auth/slugs`, client-safe), from which `RESERVED_ORG_SLUGS`, the ALB rules and CloudFront behaviours
   (`infra/aws/routing.ts`) are derived. Adding a site page = a `ZONE_ROUTES` entry (unless `/docs` etc. covers it) +
   the route; `apps/site/test/reserved-slugs.test.ts` fails otherwise. The site's assets live under its
@@ -401,6 +402,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 
 - `packages/db/src/schema/auth.ts` (`bun run auth:generate`) and `packages/db/migrations/**` (`bun run db:generate`).
 - `apps/api/openapi.json` (`bun run openapi:generate`; excluded from Biome).
+- `infra/terraform/spec.json` (`bun run --cwd infra aws:spec:write`; excluded from Biome).
 - `packages/sdk/package.json` `exports`/`main`/`module`/`types` (rewritten by the SDK build — commit the result).
 - `packages/ui/src/{components,hooks,lib}`: vendored from the `@coss` registry and excluded from Biome; re-adding a
   component overwrites local edits.
@@ -978,8 +980,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   and suspensions (not recoveries or reinstatements), and only once the worker's `NOTIFICATIONS_*` variables point
   at a verified sender of COSS's own organization.
 
-**Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
-infrastructure itself (only its spec, images and runbook exist),
+**Not built yet** (don't assume these exist; delete a line when it ships): the real landing page,
+custom tracking domains in production (Cloudflare for SaaS isn't provisioned on the coss.com zone yet),
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which

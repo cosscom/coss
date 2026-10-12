@@ -172,6 +172,22 @@ try {
   step(`Created user group ${userGroupId}`);
 }
 
+// A cache can only be associated with an active (or modifying) user group, and a new one starts
+// out `creating`.
+async function waitForUserGroup(): Promise<void> {
+  const deadline = Date.now() + 10 * 60_000;
+  for (;;) {
+    const { UserGroups } = await elasticache.send(
+      new DescribeUserGroupsCommand({ UserGroupId: userGroupId }),
+    );
+    const status = UserGroups?.[0]?.Status;
+    if (status === "active" || status === "modifying") return;
+    if (Date.now() > deadline) throw new Error(`User group ${userGroupId} is still ${status}.`);
+    await sleep(10_000);
+  }
+}
+await waitForUserGroup();
+
 // 3. The serverless cache (TLS is always on).
 async function describeCache(): Promise<ServerlessCache | undefined> {
   try {

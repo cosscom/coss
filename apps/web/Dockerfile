@@ -41,6 +41,9 @@ RUN --mount=type=secret,id=sentry_auth_token,required=false \
 # and the static assets. No package manager, no sources.
 FROM node:${NODE_VERSION}-slim AS runtime
 # Postgres TLS: DATABASE_URL=…?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem
+# The directory first: ADD would create missing parents with the file's mode (644), and Node
+# exits when /etc/ssl exists but can't be read (its OpenSSL config is looked up there).
+RUN mkdir -p /etc/ssl/certs
 ADD --chmod=644 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \

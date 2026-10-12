@@ -5,6 +5,7 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { ZONE_ROUTES, type ZoneRoute } from "@coss/auth/slugs";
 import { billingEnvShape } from "@coss/billing/env";
 import { emailEnvShape, emailWorkerEnvShape } from "@coss/email/env";
 import { sentryEnvShape } from "@coss/observability/env";
@@ -13,10 +14,12 @@ import { screeningEnvShape } from "@coss/screening/env";
 import {
   albListenerRules,
   cossComCacheBehaviours,
+  EXTERNAL_ZONES,
   TRACKING_HOST,
   TRACKING_ORIGIN_VERIFY_HEADER,
 } from "../aws/routing.ts";
 import { SERVICES, type ServiceName } from "../aws/services.ts";
+import { awsSpecJson } from "../aws/spec.ts";
 
 const ROOT = path.resolve(import.meta.dir, "../..");
 const read = (file: string) => readFileSync(path.join(ROOT, file), "utf8");
@@ -192,5 +195,38 @@ describe("routing", () => {
     for (const pattern of patterns) expect(pattern.startsWith("/api")).toBe(false);
     expect(patterns).not.toContain("/");
     expect(patterns.length).toBeLessThanOrEqual(25);
+  });
+
+  test("external zones go to their own CloudFront origins, never the ALB", () => {
+    const albPaths = rules.flatMap((rule) =>
+      rule.conditions.flatMap((condition) =>
+        condition.Field === "path-pattern" ? condition.PathPatternConfig.Values : [],
+      ),
+    );
+    const behaviours = cossComCacheBehaviours();
+    const external = (ZONE_ROUTES as readonly ZoneRoute[]).filter((r) => r.zone !== "site");
+    expect(external.map((route) => route.zone).sort()).toEqual([...EXTERNAL_ZONES].sort());
+    for (const route of external) {
+      expect(albPaths).not.toContain(route.path);
+      const own = behaviours.filter(
+        (behaviour) =>
+          behaviour.pathPattern === route.path ||
+          behaviour.pathPattern.startsWith(`${route.path}/`),
+      );
+      expect(own.map((behaviour) => behaviour.pathPattern).sort()).toEqual(
+        [route.path, `${route.path}/*`].sort(),
+      );
+      for (const behaviour of own) expect(behaviour.origin as string).toBe(route.zone);
+    }
+    const externalPatterns = new Set(external.flatMap((r) => [r.path, `${r.path}/*`]));
+    for (const behaviour of behaviours.filter((b) => !externalPatterns.has(b.pathPattern))) {
+      expect(behaviour.origin).toBe("alb");
+    }
+  });
+});
+
+describe("terraform", () => {
+  test("terraform/spec.json matches the spec (run `bun run --cwd infra aws:spec:write`)", () => {
+    expect(read("infra/terraform/spec.json")).toBe(awsSpecJson());
   });
 });

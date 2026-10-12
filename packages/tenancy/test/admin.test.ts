@@ -71,6 +71,21 @@ describe("promoteToAdmin", () => {
     expect(row?.role).toBe("admin");
   });
 
+  test("verifies the address only when asked (bootstrapping a stage's first admin)", async () => {
+    const verified = async (id: string) =>
+      (
+        await db
+          .select({ emailVerified: schema.user.emailVerified })
+          .from(schema.user)
+          .where(eq(schema.user.id, id))
+      )[0]?.emailVerified;
+    const user = await createTestUser({ emailVerified: false });
+    await promoteToAdmin(user.email);
+    expect(await verified(user.id)).toBe(false);
+    await promoteToAdmin(user.email, { verifyEmail: true });
+    expect(await verified(user.id)).toBe(true);
+  });
+
   test("unknown email is not_found", async () => {
     await expectTenancyError(promoteToAdmin(`nobody-${uniqueSuffix()}@coss.test`), "not_found");
   });

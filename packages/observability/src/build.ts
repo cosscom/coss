@@ -7,7 +7,7 @@
  */
 
 /** The Sentry organization's slug. */
-export const SENTRY_ORG = "coss";
+export const SENTRY_ORG = "cosscom";
 
 /**
  * Sentry projects (slugs), one per runtime. Both Next.js zones of coss.com report to `web`: the
