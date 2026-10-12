@@ -180,6 +180,14 @@ export async function finalizeInvoice(
     { type: "billing.invoice_finalized", data: { invoice: toInvoiceSummary(row) } },
     now,
   );
+  if (!payable) {
+    await announce(
+      tx,
+      row.organizationId,
+      { type: "billing.invoice_paid", data: { invoice: toInvoiceSummary(row) } },
+      now,
+    );
+  }
   return row;
 }
 

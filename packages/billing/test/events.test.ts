@@ -108,6 +108,49 @@ describe("billing.* webhook events", () => {
     expect(events[3]?.data).not.toHaveProperty("invoice.lines");
   });
 
+  test("credit-covered invoices announce settlement once during finalization", async () => {
+    const tenant = await createTestTenant();
+    const org = tenant.organization.id;
+    const start = at("2026-10-01T00:00:00Z");
+    await createTestContract(org, { version: 1, plan: "pro" }, { effectiveFrom: start });
+    await createCreditGrant({
+      grant: {
+        organizationId: org,
+        kind: "amount",
+        amount: 2_500n,
+        appliesTo: "any",
+        source: "sla",
+        description: "Service credit",
+        effectiveAt: at("2026-09-01T00:00:00Z"),
+        expiresAt: null,
+      },
+      actor: { userId: tenant.owner.id, email: tenant.owner.email },
+      reason: "Service credit",
+    });
+    await withEndpoints(tenant);
+    const now = at("2026-10-01T00:20:00Z");
+    await runDueBillingPeriods({ now, scope: scopeOf(tenant) });
+    await runDueBillingPeriods({ now, scope: scopeOf(tenant) });
+    const deps = testBillingProviders();
+    await runDueBillingSync(
+      { now, scope: scopeOf(tenant) },
+      { providers: deps.providers, dashboardUrl: "https://coss.test" },
+    );
+    const [invoice] = await listInvoices(org);
+    expect(invoice).toMatchObject({ status: "paid", paidAt: now, syncAction: null });
+    const events = await billingEvents(tenant);
+    expect(events.map((event) => event.type)).toEqual([
+      "billing.invoice_finalized",
+      "billing.invoice_paid",
+    ]);
+    for (const event of events) {
+      expect(event.data).toMatchObject({
+        occurred_at: now.toISOString(),
+        invoice: { id: invoice?.id, status: "paid", total: 0, amount_due: 0 },
+      });
+    }
+  });
+
   test("plan changes and credits", async () => {
     const tenant = await createTestTenant();
     const org = tenant.organization.id;

@@ -3713,11 +3713,11 @@
               },
               "credit": {
                 "type": "integer",
-                "description": "Credit applied to it (your plan's fee is credit)."
+                "description": "Credit applied to this estimate (your plan's fee is credit)."
               },
               "total": {
                 "type": "integer",
-                "description": "What this month's usage adds to the next invoice so far."
+                "description": "Estimated total including usage and fees billed in arrears, after discounts and credits."
               }
             },
             "required": [

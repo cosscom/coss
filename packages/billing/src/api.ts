@@ -103,7 +103,7 @@ export async function billingObject(
       usage: toNumber(usageCents),
       discount: toNumber(discountCents),
       credit: toNumber(creditCents),
-      total: toNumber(usageCents - discountCents - creditCents),
+      total: toNumber(estimate.totals.totalCents),
     },
     credit_remaining: toNumber(creditLeft > 0n ? creditLeft : 0n),
     spend_limit: account?.spendLimitCents == null ? null : toNumber(account.spendLimitCents),

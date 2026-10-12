@@ -97,9 +97,12 @@ export const BillingObject = z
       .object({
         usage: Cents.meta({ description: "Usage this month at your rates." }),
         discount: Cents,
-        credit: Cents.meta({ description: "Credit applied to it (your plan's fee is credit)." }),
+        credit: Cents.meta({
+          description: "Credit applied to this estimate (your plan's fee is credit).",
+        }),
         total: Cents.meta({
-          description: "What this month's usage adds to the next invoice so far.",
+          description:
+            "Estimated total including usage and fees billed in arrears, after discounts and credits.",
         }),
       })
       .meta({ description: "This month so far, as it would be invoiced if it ended now." }),
