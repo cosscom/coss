@@ -3,6 +3,7 @@
  * public API, its OpenAPI document and contract tests share one definition. Must not import the
  * database: `@coss/email/schemas` is safe to load anywhere.
  */
+import { BILLING_EVENT_TYPES } from "@coss/billing/wire";
 import { ACCOUNT_EVENT_TYPES } from "@coss/reputation/schemas";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { z } from "zod";
@@ -650,9 +651,14 @@ export type EmailEventType = (typeof EMAIL_EVENT_TYPES)[number];
 
 /**
  * Every type a webhook endpoint can subscribe to: email events plus the organization's
- * reputation changes (`account.*`, delivered to live environments only).
+ * reputation changes (`account.*`) and billing events (`billing.*`), both delivered to live
+ * environments only.
  */
-export const WEBHOOK_EVENT_TYPES = [...EMAIL_EVENT_TYPES, ...ACCOUNT_EVENT_TYPES] as const;
+export const WEBHOOK_EVENT_TYPES = [
+  ...EMAIL_EVENT_TYPES,
+  ...ACCOUNT_EVENT_TYPES,
+  ...BILLING_EVENT_TYPES,
+] as const;
 // Examples shown in the API reference; test/schema-examples.test.ts parses each with its schema.
 const EMAIL_ID_EXAMPLE = "email_01k7c8m4q2f3e9v6t5r1n0p8yz";
 const RECIPIENT_EXAMPLE = {

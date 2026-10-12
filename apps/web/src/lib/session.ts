@@ -23,10 +23,14 @@ export type OrgContext = Membership & {
   ssoBreakGlass: boolean;
 };
 
-/** A suspended organization keeps read access only. */
-function onlyReads(permissions: OrgPermissions): boolean {
-  return Object.values(permissions).every((actions) =>
-    (actions as string[]).every((action) => action === "read"),
+/**
+ * A suspended organization keeps read access only, and its billing: paying an invoice or fixing
+ * the payment method must stay possible while it is suspended.
+ */
+function allowedWhileSuspended(permissions: OrgPermissions): boolean {
+  return Object.entries(permissions).every(
+    ([resource, actions]) =>
+      resource === "billing" || (actions as string[]).every((action) => action === "read"),
   );
 }
 
@@ -73,7 +77,7 @@ export const requireOrgMember = cache(async (orgSlug: string): Promise<OrgContex
   if (access.kind === "redirect") redirect(access.to);
   const can = (permissions: OrgPermissions) =>
     orgRoleCan(membership.member.role, permissions) &&
-    (!membership.suspended || onlyReads(permissions));
+    (!membership.suspended || allowedWhileSuspended(permissions));
   return { session, ...membership, can, viaSso: access.viaSso, ssoBreakGlass: access.breakGlass };
 });
 

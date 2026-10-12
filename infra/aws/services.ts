@@ -174,6 +174,23 @@ const screening: EnvVar[] = [
   },
 ];
 
+const billingProvider: EnvVar = {
+  name: "BILLING_PROVIDER",
+  kind: "plain",
+  required: true,
+  value: "stripe",
+  description:
+    "Payment provider of new billing accounts (fake|stripe); admins can move one to manual.",
+};
+
+const stripeSecretKey: EnvVar = {
+  name: "STRIPE_SECRET_KEY",
+  kind: "secret",
+  required: true,
+  value: "A restricted Stripe key (customers, invoices, Checkout, Customer Portal, credit notes)",
+  description: "Stripe API key: the dashboard opens Checkout and the portal, the worker invoices.",
+};
+
 const webhookKey: EnvVar = {
   name: "WEBHOOK_SECRETS_KEY",
   kind: "secret",
@@ -285,6 +302,16 @@ export const SERVICES: Service[] = [
       ...email,
       webhookKey,
       notificationsEnvironment,
+      billingProvider,
+      stripeSecretKey,
+      {
+        name: "STRIPE_WEBHOOK_SECRET",
+        kind: "secret",
+        required: true,
+        value:
+          "The signing secret of the Stripe webhook endpoint https://coss.com/api/billing/webhook",
+        description: "Verifies Stripe webhook signatures (the dashboard's billing webhook route).",
+      },
       {
         name: "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY",
         kind: "secret",
@@ -418,6 +445,8 @@ export const SERVICES: Service[] = [
       },
       ...screening,
       webhookKey,
+      billingProvider,
+      stripeSecretKey,
       {
         name: "BETTER_AUTH_URL",
         kind: "plain",

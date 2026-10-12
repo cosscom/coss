@@ -20,7 +20,7 @@ import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { validationHook } from "../validation.ts";
-import { commonErrors, errorDoc, requestIdHeader } from "./docs.ts";
+import { billingErrorDoc, commonErrors, errorDoc, requestIdHeader } from "./docs.ts";
 
 export const IDEMPOTENCY_KEY_MAX_LENGTH = 256;
 
@@ -95,6 +95,9 @@ export const sendEmailRoute = createRoute({
       },
       content: { "application/json": { schema: EmailObject } },
     },
+    402: billingErrorDoc(
+      "Live sending is paused for an overdue invoice or the spend limit (`billing_hold`), or the send would go past the plan's monthly allowance (`usage_limit_exceeded`)",
+    ),
     400: errorDoc(
       "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid " +
         "(`invalid_idempotency_key`).",
@@ -167,6 +170,9 @@ export const sendEmailBatchRoute = createRoute({
       },
       content: { "application/json": { schema: EmailBatchObject } },
     },
+    402: billingErrorDoc(
+      "Live sending is paused for an overdue invoice or the spend limit (`billing_hold`), or the send would go past the plan's monthly allowance (`usage_limit_exceeded`)",
+    ),
     400: errorDoc(
       "The body is not valid JSON (`invalid_json`) or the `Idempotency-Key` header is invalid " +
         "(`invalid_idempotency_key`).",

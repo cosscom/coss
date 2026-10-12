@@ -14,6 +14,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ModeBadge } from "@/components/email-badges";
 import { PageHeader } from "@/components/page-header";
+import { planHas } from "@/lib/billing";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { CreateDrainDialog } from "./create-drain-dialog";
@@ -31,10 +32,10 @@ export default async function LogDrainsPage({
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;
-  const drains = await listLogDrains({
-    organizationId: organization.id,
-    environmentId: environment.id,
-  });
+  const [drains, planAllows] = await Promise.all([
+    listLogDrains({ organizationId: organization.id, environmentId: environment.id }),
+    planHas(organization.id, "logDrains"),
+  ]);
   const base = `/${organization.slug}/projects/${project.slug}/${environment.slug}`;
 
   return (
@@ -45,7 +46,7 @@ export default async function LogDrainsPage({
         </Link>
         <PageHeader
           actions={
-            can({ logDrain: ["create"] }) ? (
+            can({ logDrain: ["create"] }) && planAllows ? (
               <CreateDrainDialog
                 envSlug={environment.slug}
                 orgSlug={organization.slug}
@@ -64,7 +65,17 @@ export default async function LogDrainsPage({
 
       <Card>
         <CardPanel className="p-2">
-          {drains.length === 0 ? (
+          {drains.length === 0 && !planAllows ? (
+            <p className="p-4 text-muted-foreground text-sm">
+              Log drains are part of the Scale plan and above.{" "}
+              <Link
+                className="text-foreground underline"
+                href={`/${organization.slug}/settings/billing/plans`}
+              >
+                Compare plans
+              </Link>
+            </p>
+          ) : drains.length === 0 ? (
             <p className="p-4 text-muted-foreground text-sm">
               No log drains yet. Add one to send this environment's logs to an HTTPS endpoint you
               run, as they are written.

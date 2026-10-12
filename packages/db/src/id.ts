@@ -62,6 +62,17 @@ export const ID_PREFIXES = {
   logDrainAttempt: "drainatt",
   adminAuditEvent: "audit",
   organizationDeletion: "orgdel",
+  billingAccount: "bacct",
+  billingContract: "bcon",
+  billingCreditGrant: "bcg",
+  billingCreditEntry: "bce",
+  billingPeriod: "bper",
+  billingInvoice: "inv",
+  billingInvoiceLine: "invl",
+  billingPayment: "bpay",
+  billingCreditNote: "bcn",
+  billingProviderEvent: "bpev",
+  billingNotification: "bntf",
 } as const;
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES];

@@ -109,6 +109,7 @@ export async function createLogDrain(
   },
   deps: WebhookManagementDeps,
 ): Promise<{ drain: LogDrainRow; secret: string }> {
+  await deps.plans?.requireFeature(input.organizationId, "logDrains");
   const url = checkedUrl(input.url, deps);
   const [env] = await db
     .select({ projectId: environment.projectId })
@@ -230,6 +231,8 @@ export async function updateLogDrain(
   },
   deps: WebhookManagementDeps,
 ): Promise<LogDrainRow> {
+  // Re-enabling one is like creating it; disabling or editing is always allowed.
+  if (input.enabled === true) await deps.plans?.requireFeature(input.organizationId, "logDrains");
   const changes = {
     ...(input.url !== undefined && { url: checkedUrl(input.url, deps) }),
     ...(input.description !== undefined && {

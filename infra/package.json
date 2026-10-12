@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@coss/auth": "workspace:*",
+    "@coss/billing": "workspace:*",
     "@coss/email": "workspace:*",
     "@coss/observability": "workspace:*",
     "@coss/ratelimit": "workspace:*",

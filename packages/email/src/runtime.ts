@@ -2,6 +2,7 @@
  * Builds the email product's providers from configuration. Apps validate their environment and
  * pass it here, so the API, dashboard and worker all wire providers the same way.
  */
+import type { PlanGate } from "@coss/billing/gate";
 import {
   type CloudflareConfig,
   CloudflareTrackingHostnameProvider,
@@ -100,7 +101,11 @@ function createTrackingHostnameProvider(
   });
 }
 
-export function createEmailRuntime(config: EmailRuntimeConfig): EmailRuntime {
+/** `plans`: the organization's plan limits on domains (the apps pass `createPlanGate()`). */
+export function createEmailRuntime(
+  config: EmailRuntimeConfig,
+  extras: { plans?: PlanGate } = {},
+): EmailRuntime {
   const sandboxProvider = new FakeEmailProvider({ log: config.log });
   let liveProvider: EmailProvider;
   let identity: IdentityProvider;
@@ -127,6 +132,6 @@ export function createEmailRuntime(config: EmailRuntimeConfig): EmailRuntime {
     identity,
     dns,
     trackingHostnames,
-    domainDeps: { identity, dns, tracking: trackingHostnames },
+    domainDeps: { identity, dns, tracking: trackingHostnames, plans: extras.plans },
   };
 }

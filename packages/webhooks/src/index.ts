@@ -30,6 +30,7 @@ export {
   type WebhookDeliveryWithPayload,
   type WebhookEndpointRow,
   type WebhookManagementDeps,
+  type WebhookPlanLimits,
 } from "./endpoints.ts";
 export { WebhookError, type WebhookErrorCode } from "./errors.ts";
 export {

@@ -13,8 +13,9 @@
   "dependencies": {
     "@coss/api": "workspace:*",
     "@coss/auth": "workspace:*",
-    "@coss/retention": "workspace:*",
+    "@coss/billing": "workspace:*",
     "@coss/observability": "workspace:*",
+    "@coss/retention": "workspace:*",
     "@coss/ui": "workspace:*",
     "@coss/versioning": "workspace:*",
     "@sentry/nextjs": "catalog:",

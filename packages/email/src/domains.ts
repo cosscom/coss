@@ -2,6 +2,9 @@
  * Sending domains: organization-owned identities with Easy DKIM and a custom MAIL FROM
  * subdomain, verified by the provider and re-checked by the worker.
  */
+
+import type { PlanGate } from "@coss/billing/gate";
+import { isOnBillingHold } from "@coss/billing/metering";
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { isSuspended } from "@coss/reputation";
@@ -41,6 +44,8 @@ export type DomainDeps = {
   dns: DnsResolver | null;
   /** Serves custom tracking hostnames (`tracking-domains.ts`). */
   tracking: TrackingHostnameProvider;
+  /** The organization's plan (domains, tracking domains); unset: nothing is limited (tests). */
+  plans?: PlanGate;
 };
 
 /** Subdomain used as the envelope sender (bounces and complaints come back to it). */
@@ -284,6 +289,13 @@ export async function createDomain(
 ): Promise<DomainRow> {
   const name = normalizeDomainName(input.name);
   await assertPendingCapacity(input.organizationId);
+  if (deps.plans) {
+    const [existing] = await db
+      .select({ value: count() })
+      .from(domain)
+      .where(and(eq(domain.organizationId, input.organizationId), ne(domain.status, "failed")));
+    await deps.plans.requireCapacity(input.organizationId, "domains", existing?.value ?? 0);
+  }
   let claimed: DomainRow | undefined;
   try {
     [claimed] = await db
@@ -613,6 +625,14 @@ export async function authorizeLiveSender(input: {
       "account_suspended",
       "Live sending is suspended for this organization because of its sending reputation " +
         "(high bounce or complaint rates). Sandbox keys still work. Contact support to resume.",
+    );
+  }
+  // A billing hold is not a suspension: paying (or the next period) lifts it.
+  if (await isOnBillingHold(input.organizationId)) {
+    throw new EmailError(
+      "billing_hold",
+      "Live sending is paused for this organization: an invoice is overdue or its spend limit " +
+        "was reached. Sandbox keys still work. See the organization's billing settings.",
     );
   }
   const address = parseEmailAddress(input.from).address.toLowerCase();

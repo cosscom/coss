@@ -13,8 +13,14 @@ export function rateLimitEnvAfterProxy(input: WebRateLimitEnv): RateLimitEnv {
   return { ...input, TRUSTED_PROXY_COUNT: 1 };
 }
 
-/** The rate limiter configured by `VALKEY_URL` (in-memory without it, outside production). */
+/**
+ * The rate limiter configured by `VALKEY_URL` (in-memory without it, outside production), with
+ * each organization's plan rules under its admin overrides.
+ */
 export function rateLimitRuntime(): RateLimitRuntime {
-  globalForRateLimit.__cossRateLimit ??= createRateLimitRuntime(rateLimitEnvAfterProxy(env));
+  globalForRateLimit.__cossRateLimit ??= createRateLimitRuntime(rateLimitEnvAfterProxy(env), {
+    // Loaded on the first organization-scoped check (public routes never need billing).
+    planRules: async (organizationId) => (await import("./billing")).planRules(organizationId),
+  });
   return globalForRateLimit.__cossRateLimit;
 }

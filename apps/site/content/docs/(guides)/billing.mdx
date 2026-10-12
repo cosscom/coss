@@ -1,0 +1,127 @@
+---
+title: Plans and billing
+description: How COSS plans, usage credit, volume pricing and invoices work.
+icon: CreditCard
+---
+
+Every organization is on a plan. A paid plan's monthly fee is **usage credit**: it is spent on
+usage of any COSS product, so a month costs the larger of the fee and your usage (plus any
+add-ons). The Free plan has no credit but includes a monthly allowance.
+
+<PlanTable />
+
+Enterprise plans are sold as annual contracts: custom rates, committed volumes, invoicing with
+payment terms, and direct debit. [Contact sales](mailto:sales@coss.com).
+
+## Usage
+
+Usage is counted per product and billed at these rates:
+
+<UsageRates />
+
+- **Email** is counted per recipient handed to the email provider: every address in `to`, `cc`
+  and `bcc` once, except suppressed addresses. Emails that fail before sending, or are canceled,
+  cost nothing. Sandbox environments are never billed.
+- **Volume pricing is graduated**: each band is priced at its own rate, so there's no cliff. With
+  2,000,000 emails in a month, the first 1,000,000 cost $0.40 per 1,000 and the next 1,000,000
+  $0.30 per 1,000: $700.
+- Usage is counted in calendar months (UTC), and the bands start over each month.
+
+## How a month is billed
+
+Your plan's fee is charged at the start of each month, and becomes that month's credit. At the
+end of the month, its usage is rated, the credit is applied, and anything beyond it is charged
+on the next month's invoice with the next fee.
+
+For example, on Pro with 2,000,000 emails in October:
+
+| | |
+| --- | --- |
+| October fee (charged October 1) | $25.00 |
+| October usage | $700.00 |
+| October credit | -$25.00 |
+| **Charged November 1** (with November's $25 fee) | **$675.00** |
+
+Over the month you paid $700: the larger of the fee and the usage.
+
+## Changing plans
+
+- **Upgrades** take effect as soon as they're paid: you pay the difference for the rest of the
+  month, and get the same difference as extra credit.
+- **Downgrades and cancellations** take effect at the end of the month, and can be undone until
+  then. Remove what the lower plan doesn't include first (for example, single sign-on or log
+  drains): a downgrade is refused while you still use it.
+- If a month starts on Free and you upgrade, Free's allowance still covers its first emails.
+
+## Limits and paused sending
+
+- On **Free**, live sends past the month's allowance are refused with a `402` `billing_error`
+  (`usage_limit_exceeded`) until the next month or an upgrade.
+- If an invoice can't be collected, we retry it and email your billing contacts. Once it's
+  overdue past the grace period (14 days unless your contract says otherwise), live sending is
+  paused (`402`, `billing_hold`) until it's paid. Sandbox keys keep working, and scheduled emails
+  wait rather than fail.
+- Owners can set a **spend limit**: when usage beyond your credit reaches it, live sending pauses
+  until the next month or until the limit is raised. Usage alerts go out at 80% and 100% of your
+  credit (owners can change the thresholds).
+
+## Credits
+
+Besides your plan's credit, COSS support can add credits, in dollars or as free units of a
+product (for example, 50,000 free emails). Credits that apply to one product are used before
+general ones, and those expiring soonest go first. Your billing settings list every credit with
+what's left of it.
+
+## Invoices and payment
+
+Invoices are in US dollars. By default they're charged to your card; contracts can be invoiced
+with payment terms (bank transfer) or charged by direct debit. Billing settings show your invoices
+and their PDFs, and let owners update the payment method and billing details.
+
+## Billing API and events
+
+Read the organization's billing with any API key (billing is organization-wide, so every
+environment's key sees the same). Plan changes, payment methods and spend limits stay in the
+dashboard.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: billing } = await coss.billing.get();
+// The plan, this month's usage and what it would cost so far (cents), standing and limits.
+console.log(billing?.plan, billing?.estimate.total, billing?.status);
+//                   ^?
+
+// Usage per day and environment, oldest first.
+const { data: usage } = await coss.billing.usage({ granularity: "day", group_by: "environment" });
+
+// Invoices (newest first) and credits.
+const { data: invoices } = await coss.billing.invoices.list({ status: "open" });
+const { data: credits } = await coss.billing.credits.list();
+```
+
+Amounts are integers in cents; unit prices are dollar strings (`"0.0004"`). Lists page with
+`after` (the last `id`) while `has_more` is true. Usage covers up to 400 days per request (7 by
+hour) and is kept for 400 days.
+
+Subscribe a webhook endpoint to the `billing.*` [events](/docs/webhooks#organization-events) to
+follow invoices, payments, plan changes, usage alerts and paused sending as they happen:
+
+```ts twoslash
+import { verifyWebhook } from "coss";
+declare const body: string;
+declare const headers: Headers;
+declare function notifyFinance(message: string): void;
+// ---cut---
+const event = await verifyWebhook(body, headers, process.env.COSS_WEBHOOK_SECRET!);
+if (event.type === "billing.invoice_payment_failed") {
+  notifyFinance(`${event.data.invoice.number}: ${event.data.failure.message}`);
+} else if (event.type === "billing.usage_threshold_reached") {
+  console.log(`${event.data.percent}% of this month's ${event.data.of} used`);
+}
+```
+
+Billing events go to live environments' endpoints only. `billing.plan_changed` is sent when a
+change is decided, with the moment it applies in `effective_at` (a downgrade's is the start of
+next month); `change` is `reverted` when a scheduled change is undone.

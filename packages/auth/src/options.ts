@@ -32,6 +32,7 @@ import {
 } from "./email-guard.ts";
 import { enqueueAuthEmail, RESET_PASSWORD_LINK_TTL_S, VERIFICATION_LINK_TTL_S } from "./emails.ts";
 import { cancelStaleInvitations, inviterStillAllowed } from "./invitations.ts";
+import { membershipLimitFor } from "./limits.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
 import {
   assertScimEmail,
@@ -507,6 +508,8 @@ function serializedOrganization() {
     // email to read or accept invitations. Keep this defense independent of sign-up policy.
     requireEmailVerificationOnInvitation: true,
     invitationLimit: MAX_PENDING_INVITATIONS,
+    // The organization's plan (accepting an invitation and adding members check it).
+    membershipLimit: (_user, organization) => membershipLimitFor(organization.id),
     // `true` = limit reached. Counts organizations the user owns (the number option would count
     // memberships, so being invited to five organizations would block creating one's own).
     organizationLimit: async (user) => {

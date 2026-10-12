@@ -1,3 +1,4 @@
+import type { PlanGate } from "@coss/billing/gate";
 import type { RateLimiter } from "@coss/ratelimit";
 import type { ApiKeyContext, RefusedKeyContext } from "@coss/tenancy";
 import type { Versioning } from "@coss/versioning";
@@ -12,6 +13,8 @@ export type AppEnv = {
     /** A valid key `requireApiKey` refused (permissions, suspension): lets the refusal be logged. */
     attemptedAuth: RefusedKeyContext;
     rateLimiter: RateLimiter;
+    /** The organizations' plans (`@coss/billing`); `null`: nothing is limited (tests). */
+    plans: PlanGate | null;
     /** The caller's address per `CLIENT_IP_HEADER`; `null` disables per-IP limits. */
     clientIp: string | null;
     /** The API's versions and the changes between them. */

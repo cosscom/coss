@@ -24,6 +24,15 @@ export async function register() {
     if (production && !process.env.SKIP_ENV_VALIDATION && !env.TURNSTILE_SECRET_KEY) {
       throw new Error("TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY are required in production.");
     }
+    // Checkout and the portal need the secret key; Stripe's webhooks need the signing secret.
+    if (
+      env.BILLING_PROVIDER === "stripe" &&
+      (!env.STRIPE_SECRET_KEY || (production && !env.STRIPE_WEBHOOK_SECRET))
+    ) {
+      throw new Error(
+        "BILLING_PROVIDER=stripe requires STRIPE_SECRET_KEY (and STRIPE_WEBHOOK_SECRET in production).",
+      );
+    }
   } catch (error) {
     if (!production) throw error;
     console.error("[web] Refusing to start:", error);

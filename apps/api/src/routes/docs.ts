@@ -24,6 +24,13 @@ const retryAfterHeader: HeaderDoc = {
   schema: { type: "integer" },
 };
 
+/** A plan or billing refusal (`billing_error`, 402): the reason is in `code`. */
+export function billingErrorDoc(reasons: string) {
+  return errorDoc(
+    `${reasons} (\`billing_error\`). Never retried: it needs a plan change or a payment.`,
+  );
+}
+
 /** The errors every authenticated endpoint can return. */
 export const commonErrors = {
   401: errorDoc("The API key is missing, invalid, revoked or expired (`authentication_error`)."),

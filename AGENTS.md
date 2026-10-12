@@ -5,7 +5,8 @@ scheduling…). This repo holds the dashboard, the public API, shared packages a
 Email delivery goes through the provider interface in `packages/email/src/provider.ts` (Amazon SES v2 with one SES
 tenant per organization, or the fake provider); sandbox environments always use the fake provider. Delivery events
 drive per-recipient status and signed customer webhooks. A sample of live messages is screened by an AI decision model
-(`@coss/screening`) before it is sent. Rate limits (per API key, per-org send quotas, dashboard
+(`@coss/screening`) before it is sent. Plans, contracts, metered usage, credits and invoices are `@coss/billing`
+(COSS rates usage itself; Stripe, behind a provider interface, only collects). Rate limits (per API key, per-org send quotas, dashboard
 auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/ratelimit`. Errors and traces go to
 Sentry (organization `coss`) through `@coss/observability`. Human setup docs (incl. running on SES): [README.md](./README.md).
 
@@ -25,6 +26,7 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption; log drains (management, signed NDJSON batch delivery, retention); `./schemas`, `./env` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
 | `packages/screening` | `@coss/screening` | Product-agnostic AI content screening: sampling per org + product, the `ContentClassifier` interface (Vercel AI SDK `experimental_decide` adapter under `./ai`, `fakeClassifier` in `./testing`), verdict history, the `content_screening` reputation check; `./env` (zod only), `./runtime`. |
+| `packages/billing` | `@coss/billing` | Plans and billing: the price catalog (`./catalog`: meters, list rates, plans, entitlements, add-ons) and contract terms (`./schemas`), both client-safe; the pure rating engine (`./engine`); accounts, contracts (self-serve and sales), hourly metered usage (`./metering`, the only module products import), credit grants and their ledger, month closes, invoices, payments, credit notes, dunning and holds, usage alerts, plan enforcement (`PlanGate`/`UsageGate` types in `./gate`), providers (fake, manual, Stripe under `./stripe`), the public API's read models and `billing.*` webhook events (wire schemas in `./wire`, client-safe); `./env` (zod only), `./runtime`, `./testing`. `scripts/seed.ts`, `scripts/close-period.ts`. |
 | `packages/observability` | `@coss/observability` | Sentry setup shared by every app: env shape (`./env`, zod only), `sentryConfig`/`sentryOptions`, PII scrubbing (`scrubEvent`), the browser init (`./browser`), the dashboard's envelope tunnel (`./tunnel`) and `withSentryConfig` options (`./build`). Takes each app's SDK; depends on no framework SDK and no workspace. |
 | `packages/logs` | `@coss/logs` | Environment logs and the org audit log: the day-partitioned `log_entry` table (API requests, email events, webhook attempts), the buffered fail-open request writer, queries (keyset pages, histogram, facets, related lines, CSV/NDJSON export), partition retention, `org_audit_event`, the log drain outbox (`log_drain_record`, written by `appendLogEntries`/`recordOrgAuditEvent`); `./schemas` + `./query` (search syntax; zod only), `./testing`. |
 | `packages/versioning` | `@coss/versioning` | Dated public API versions (`Coss-Version`): `API_VERSIONS`, the `VERSION_CHANGES` registry and the engine that renders latest-shape responses/webhook payloads in older versions and upgrades older request bodies. Zero deps, client-safe; `./testing` (`testVersioning()`). |
@@ -34,13 +36,15 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests; nothing here calls AWS. See `infra/AGENTS.md`. |
 
-Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `db ← auth ← tenancy`, `db ← logs ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`; `versioning` (no deps) ← `tenancy`, `webhooks`, `email` (`schemas` examples);
-`retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `worker`, `web`, `site`;
-`api → tenancy, email, reputation, webhooks, ratelimit, versioning, logs, db`;
-`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, db, ui`; `site → ui, auth, versioning, retention` (only the client-safe `@coss/auth/slugs`, the changelog and the retention policy) +
-`@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening` (`slugs`, `env` only);
-`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, tenancy, retention, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk` and `ui` depend on no workspace.
-Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`logs`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit or logs; Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
+Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `db ← auth ← tenancy`, `db ← logs ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`, `webhooks ← billing ← email` (packages take
+`billing`'s plan checks injected — `PlanGate`, `UsageGate`, and in webhooks the structural `WebhookPlanLimits`, since
+billing enqueues `billing.*` events through it — and email imports only `./metering`, `./gate` and `./wire`); `versioning` (no deps) ← `tenancy`, `webhooks`, `email`, `billing` (`schemas`/`wire` examples);
+`retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `billing`, `worker`, `web`, `site`;
+`api → tenancy, email, reputation, webhooks, ratelimit, versioning, logs, billing, db`;
+`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, db, ui`; `site → ui, auth, versioning, retention, billing` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy and `@coss/billing/{catalog,money}`) +
+`@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening, billing` (`slugs`, `env` only);
+`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk` and `ui` depend on no workspace.
+Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`).
 
@@ -80,6 +84,9 @@ bun run ratelimit:set --org acme [--bucket api.read --limit 100 [--period 1s] [-
                                                #   not audited — prefer the admin console's organization page)
 bun run webhooks:reencrypt [--dry-run]         # re-encrypt webhook endpoint secrets with the first
                                                #   WEBHOOK_SECRETS_KEY (step 3 of a key rotation, README)
+bun run billing:close-period --org acme [--at 2026-11-01T00:20:00Z]
+                                               # development only: close billing months as if it were --at
+                                               #   (see this month's invoice early); the worker collects it
 ```
 
 Single package: `bun run --cwd <pkg> test [filter]` (after `bun run db:migrate:test` once). Don't run bare `bun test`
@@ -147,6 +154,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `TEST_VALKEY_URL` | ratelimit + api tests (keys under a random prefix, never flushed) |
 | `WEBHOOK_SECRETS_KEY` | api + web + worker: comma-separated 32-byte base64 keys, newest first (the first encrypts, all decrypt); encrypts endpoint signing secrets (losing it makes them unreadable). Shape in `@coss/webhooks/env` |
 | `LOG_RETENTION_DAYS` | worker: days of environment logs kept (1-31, default 30); whole expired day partitions are dropped hourly |
+| `BILLING_PROVIDER`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | web + worker: the payment provider of new billing accounts (`fake` default, or `stripe`, which needs the key); the webhook secret only the dashboard (`/api/billing/webhook`). Shape in `@coss/billing/env` |
 | `SCREENING_CLASSIFIER`, `SCREENING_MODEL`, `AI_GATEWAY_API_KEY` | worker: content screening (`off`/`fake`/`ai`; a Vercel AI Gateway decision model id, default `typesafe-ai/jev`; the Gateway key, required with `ai`) |
 | `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | api, worker, web: Sentry (each its own project's DSN; web's also serves browsers of both zones); unset → nothing reported. Read before t3-env (`src/instrument.ts`, `src/lib/monitoring-server.ts`, `/api/monitoring`) and validated by it (`sentryEnvShape`) |
 | `SENTRY_RELEASE` | api, worker: the image's commit (Dockerfile build argument); the Next apps' release is `NEXT_DEPLOYMENT_ID`, injected at build |
@@ -188,7 +196,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - New endpoint: `createRoute({ …, security: [{ bearerAuth: [] }], middleware: [requireApiKey({ <product>: ["<action>"] }), rateLimit("api.read" | "api.write" | "api.send")] })`
   + `router.openapi(route, handler)`, mounted in `createV1Router` (`src/routes/v1.ts`). Auth goes in `middleware` so it
   runs before validation (401 beats 422). Tenancy comes only from `c.var.auth` — environment-scoped resources filter by
-  `environmentId`, organization-scoped ones (domains, audit events) only by `organizationId`. Document responses with
+  `environmentId`, organization-scoped ones (domains, audit events, billing) only by `organizationId`. Document responses with
   `jsonDoc`/`errorDoc`/`commonErrors` (`src/routes/docs.ts`, includes 429). The root `validationHook` turns zod failures into 422 + `issues`;
   a per-route hook must end with `validationHook(result)`. `test/app.test.ts` asserts the exact OpenAPI path list.
 - Every operation needs an `operationId` (it names its docs page). Wire schemas carry a whole-object
@@ -304,7 +312,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 
 ## Tests
 
-- `bun:test`. DB-backed suites (`apps/api`, `apps/worker`, `packages/email`, `packages/reputation`, `packages/screening`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
+- `bun:test`. DB-backed suites (`apps/api`, `apps/worker`, `packages/billing`, `packages/email`, `packages/reputation`, `packages/screening`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
   `bunfig.toml` → `@coss/db/testing`, which throws unless `TEST_DATABASE_URL` names a `*_test` database, then points
   `DATABASE_URL` at it. Other suites are DB-free; before adding DB tests elsewhere copy `packages/email/bunfig.toml` +
   `test/setup.ts`, or the tests hit the dev database.
@@ -320,7 +328,10 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   `testValkeyLimiter()` from `@coss/ratelimit/testing`; `createTestApp({ rateLimiter, clientIp })` (defaults to an
   in-memory limiter per app); tighten limits for a test org with `setRateLimitOverride`. Webhooks: `webhookReceiver()` (local server),
   `testSender()`, `testManagementDeps` from `@coss/webhooks/testing`. Screening: `fakeClassifier({ scores, fail, delayMs })` from
-  `@coss/screening/testing` (markers like `[coss-test:phishing]` in the content score 0.99), `screenMessage(…, { random })`
+  `@coss/screening/testing` (markers like `[coss-test:phishing]` in the content score 0.99). Billing (`@coss/billing/testing`):
+`createTestContract(orgId, terms, { effectiveFrom })`, `recordTestUsage({ …, at })`, `testBillingProviders()` (a
+`FakeBillingProvider` with `willCollect(...)`/`fail(op)`), `FakeStripeApi` (`fetch` for `StripeBillingProvider`);
+month closes, dunning and usage checks take `now` and `scope`; `createTestApp({ plans, billing })`, `screenMessage(…, { random })`
   for deterministic sampling, `Experimental_DecisionMockModelV4` (`ai/test`) for the AI SDK adapter; `dispatchingEmailService({ screen })`. Worker-style scans take `scope: { organizationIds }`
   and `now` — always pass `scope` in tests (the test DB is shared and never truncated). Session-bound Better Auth calls: sign in with
   `auth.api.signInEmail({ returnHeaders: true })` and forward the cookie (`packages/tenancy/test/hardening.test.ts`).
@@ -355,6 +366,11 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
    (only for rows actually inserted, so deduplicated events aren't logged twice), and add a `LogSource` value
    (enum migration + `LOG_SOURCES` + SDK `LogSource`). Mutations of the product's settings record
    `recordAudit` (dashboard) / `recordApiAudit` (API) audit events.
+10. Billing: its meter is in `METERS` and priced in `RATE_CARDS` (`@coss/billing/catalog`; SMS, video and scheduling
+   already are). Call `recordUsage(tx, …)` from `@coss/billing/metering` once per billable event, in the transaction
+   that makes it billable (guard it with a compare-and-set, like `email.usage_recorded_at`), and reserve capped usage
+   at acceptance through an injected `UsageGate` (as `EmailServiceOptions.billing` does). Plan-gated creation takes an
+   injected `PlanGate`.
 
 **Partitioned tables** (only `log_entry` so far): drizzle-kit can't declare partitioning, so declare the table in the
 schema as usual (composite primary key including the partition column), `db:generate` it, then add a `--custom`
@@ -414,7 +430,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
     `environment_api_key`; metadata is client-writable),
-    `defaultPermissions: API_KEY_PERMISSIONS` (every product: email, domain, webhook, suppression, reputation), prefixes
+    `defaultPermissions: API_KEY_PERMISSIONS` (every product: email, domain, webhook, suppression, reputation, billing `read` — backfilled by `0043`), prefixes
     `coss_live_` / `coss_test_` by environment mode (`API_KEY_PREFIX`), key format `/^coss_(live|test)_[A-Za-z]{64}$/`.
   - Keys are created only by `createEnvironmentApiKey` (server-side, no headers) and authenticated only by
     `authenticateApiKey`; keys without an `environment_api_key` binding fail closed. `authenticateApiKey` never calls
@@ -537,7 +553,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}` and `@coss/email/{runtime,ses,dispatch}` are server-only. Server-only web
+  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch}` and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -648,6 +664,74 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   settings, `organization:update`). The outbox stores the latest-shape event; `renderWebhookPayload` renders it in
   the endpoint's version at every attempt and adds `api_version` (signed, in the body). Outbox payloads are typed
   `Stored*WebhookEvent` (no `api_version`). Never version error envelopes, and never transform in handlers.
+- **Billing** (`packages/billing`; tables `billing_*`, ids `bacct_`, `bcon_`, `bcg_`, `bce_`, `bper_`, `inv_`, `invl_`,
+  `bpay_`, `bcn_`, `bpev_`, `bntf_`): COSS owns the catalog, contracts, metering, rating, credits, invoices and
+  dunning; a `BillingProvider` (per `billing_account.provider`: `fake`, `stripe` or `manual` for off-Stripe deals) only
+  keeps customers and payment methods, issues the invoices COSS pushes (numbered by COSS, `auto_advance: false`) and
+  collects them. Never move pricing into Stripe objects (prices, subscriptions, meters).
+  - **Catalog** (`./catalog`, client-safe, reviewed like code): `METERS`, dated `RATE_CARDS` (a price change is a new
+    card; periods before it keep the old prices), `PLANS` (Free/Pro/Scale/Enterprise: fee = spendable usage credit,
+    included units, `overage: blocked | billed`, entitlements incl. plan rate limits), `ADD_ONS` (empty until named).
+    The docs' `/docs/billing` (`<PlanTable />`, `<UsageRates />`) and the dashboard render it.
+  - **Contracts** (`billing_contract`, `terms` jsonb = `ContractTerms` v1, zod, bigints as strings): a confirmed
+    contract is in effect while `effective_from <= t < effective_until`; **time decides, never a loop**; none in effect
+    = Free (no rows). Every change takes `lockBillingAccount` first, which keeps contracts from overlapping. Self-serve
+    contracts store only `{ version: 1, plan }`; sales contracts pin what they override (fee, rates/tiers, discounts,
+    commitments, add-ons, entitlements, caps). A future contract starts on the 1st of a month (UTC); one starting now
+    (or backdated within the open month) is invoiced for the rest of it at once. Self-serve plan changes are refused on
+    `sales`/`internal` contracts.
+  - **Money**: unit prices are bigint **nanos**, every stored amount bigint **cents**; a line is rounded once
+    (half away from zero) and an invoice's total is the sum of its lines. USD only (`currency` column).
+  - **Metering** (`billing_usage`, hourly counters by org/environment/meter/dimension, 8 shards, no FK to the
+    environment): products call `recordUsage(tx, …)` in the transaction that makes usage billable; the hour is the
+    transaction's (`date_trunc('hour', transaction_timestamp(), 'UTC')`), so a month is closed only after
+    `USAGE_SETTLE_MS`. Email is metered at `sent` (all four paths: `complete`, both `recordProviderEvent` transitions,
+    `sweepStaleClaims`) for its `billable_recipients` (non-suppressed, frozen at claim), once
+    (`usage_recorded_at` compare-and-set); sandbox never.
+  - **Rating** (`./engine`, pure, most tests): graduated or volume tiers carried across the month's contract segments
+    (or the term, `tierWindow: term`); included units and unit grants take the period's first positions (Free's
+    allowance per period, never prorated); dollar grants drawn down most specific scope first, then soonest expiry;
+    capped plans never charge usage (`write_off`); minimum-spend shortfalls at their period's end; fees and add-ons in
+    advance or arrears; each month's fee becomes its credit grant. Charges and grants are idempotent across invoices by
+    `charge_key` / `grant_key` (voiding an invoice clears its keys, reverses its credit entries and voids grants it
+    funded).
+  - **Month close** (`runDueBillingPeriods`, worker `billing-periods`): one invoice per account and month
+    (`billing_period` makes it idempotent) with the month's arrears and the next month's advance charges; only accounts
+    with a contract around it. Upgrades take effect once their prorated invoice is paid (`pending` contract, grants
+    deferred in `terms_snapshot.pendingGrants`, expired after a day); downgrades and cancellations at the month's end,
+    refused while the org uses something the lower plan lacks (the dashboard's preflight), and creation meanwhile is
+    checked against both plans (`creatableEntitlements`). Auto-renewing contracts get a successor a week before
+    their term ends; non-renewing ones end with their term.
+  - **Collection**: `billing-sync` pushes and collects (charge, or send with net terms); `billing-collection` retries
+    failed charges (+3/+5/+7 days), reminds about net-terms invoices, sets `past_due`, and after `grace_days` places a
+    `delinquent` **billing hold** (`billing_hold`, presence = held). A hold makes `authorizeLiveSender` refuse
+    (`EmailError("billing_hold")`, 402) and holds scheduled sends (`organizationActive`) — never fails them; paying lifts
+    it. Holds are independent of reputation suspensions: never fold one into the other. Spend limits place a
+    `spend_limit` hold (worker `billing-usage`), lifted by the next month or a higher limit. COSS's own organization is
+    never held or capped (`systemOrganizationId`).
+  - **Provider events**: the dashboard's `/api/billing/webhook` (public) verifies Stripe's signature and only stores the
+    event (`billing_provider_event`); the worker's `billing-events` loop re-reads each object from Stripe and moves
+    states forward only (`paid` is final). `billing-reconcile` re-checks quiet open invoices hourly.
+  - **Enforcement is injected**: `PlanGate` (`DomainDeps.plans`, `WebhookManagementDeps.plans`, the API's `plans`
+    option → `requirePlanFeature`), `UsageGate` (`EmailServiceOptions.billing`: Free's cap, reserved in the send's
+    transaction against `billing_quota`, refused as `BillingError("usage_limit_exceeded")`), plan rate limits
+    (`createRateLimitRuntime({ planRules })`: default < plan < admin override), the member limit
+    (`setMembershipLimitResolver`). Packages and test helpers default to unenforced; the apps wire the real ones.
+    Errors: `BillingError` (402 codes → API `billing_error`, never retried by the SDK).
+  - **Admin changes** (contracts, credits, invoice voids/payments/credit notes/one-off invoices, account settings,
+    holds) write `admin_audit_event` in their transaction (`auditBillingChange`; `billing.*` in `ADMIN_ACTIONS`).
+  - **Public API and events** (`apps/api/src/routes/billing.ts`, read models in `src/api.ts`, wire schemas in
+    `./wire`): `GET /v1/billing`, `/v1/billing/usage` (≤ 400 days, 7 by hour), `/v1/billing/invoices[/{id}]`
+    (finalized only; drafts are never exposed) and `/v1/billing/credits`, read-only with `billing:read` from any
+    environment's key (`coss.billing`). Changes stay in the dashboard. `billing.*` events (`BILLING_EVENT_TYPES`, part
+    of `WEBHOOK_EVENT_TYPES`) go through `announce(tx, organizationId, …)` to every **live** environment's endpoints, in
+    the transaction that decided them: invoice finalized/paid/payment failed/voided, plan changed (also when scheduled
+    or undone), usage threshold, hold placed/lifted, credit granted. Emit them only when the change actually applied
+    (`placeHold`/`liftHold`/`enqueueBillingNotification` return whether they did). Payloads carry invoice summaries
+    (no lines) and customer-facing credit fields — never internal reasons, notes or admin identities.
+  - **Invoices outlive the organization** (no FK, names copied, `RETENTION_DAYS.invoices`); deleting an organization
+    issues one `final` invoice for the running month (`finalizeOrganizationBilling`, in `releaseProviderResources`)
+    and leaves the Stripe customer so it can still be collected; owners can't request deletion with open invoices.
 - **Data retention** (`@coss/retention`): `RETENTION_DAYS` / `RETENTION_POLICY` are the only source of retention
   periods — the docs page (`/docs/data-retention`, `<RetentionTable />`/`<RetentionPeriod of>` MDX components, also
   rendered into `/llms*.txt`) and the dashboard's settings card render them, and each owning package's purge
@@ -900,7 +984,9 @@ log drain secret rolls and custom request headers (vendor intake APIs that need 
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
 would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,
-email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys.
+email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys, self-serve add-ons (none is named yet), an automatic direct-debit policy (only per-account
+required payment methods), multi-currency, a pricing page on the site, metering for SMS/video/scheduling (their meters
+and rates exist; the products don't).
 
 <!-- BEGIN:turborepo-agent-rules -->
 

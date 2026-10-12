@@ -64,6 +64,20 @@ export const ADMIN_ACTIONS = [
   // Recorded by `changeRateLimitOverride` (@coss/ratelimit).
   "rate_limit.override_set",
   "rate_limit.override_reset",
+  // Recorded by `@coss/billing` (`BillingAdminAction`).
+  "billing.account_updated",
+  "billing.contract_created",
+  "billing.contract_canceled",
+  "billing.credit_granted",
+  "billing.credit_voided",
+  "billing.invoice_created",
+  "billing.invoice_voided",
+  "billing.invoice_paid",
+  "billing.invoice_uncollectible",
+  "billing.invoice_resynced",
+  "billing.credit_note_created",
+  "billing.hold_placed",
+  "billing.hold_lifted",
 ] as const;
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 

@@ -313,6 +313,8 @@ describe("error mapping", () => {
     [409, "idempotency_error", "request_in_progress"],
     [422, "idempotency_error", "idempotency_key_reused"],
     [429, "rate_limit_error", "rate_limited"],
+    [402, "billing_error", "usage_limit_exceeded"],
+    [402, "billing_error", "billing_hold"],
     [500, "api_error", "internal_error"],
     [503, "api_error", "service_unavailable"],
   ];
