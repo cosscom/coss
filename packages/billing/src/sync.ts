@@ -140,27 +140,50 @@ async function syncInvoice(
             `/${invoice.organizationSlug}/settings/billing/invoices/${invoice.id}`,
             deps.dashboardUrl,
           ).toString();
-        const taxed = pushed.totalCents !== undefined && pushed.totalCents !== invoice.totalCents;
-        await db
-          .update(billingInvoice)
-          .set({
-            providerCustomerId: input.invoice.providerCustomerId,
-            providerInvoiceId: pushed.providerInvoiceId,
-            hostedUrl,
-            pdfUrl: pushed.pdfUrl,
-            ...(taxed && pushed.totalCents !== undefined
-              ? {
-                  taxCents: pushed.taxCents ?? pushed.totalCents - invoice.totalCents,
-                  totalCents: pushed.totalCents,
-                  amountDueCents: pushed.totalCents - invoice.amountPaidCents,
-                }
-              : {}),
-            syncAction: "collect",
-            nextSyncAt: now,
-            syncAttempts: 0,
-            syncError: null,
-          })
-          .where(and(eq(billingInvoice.id, invoice.id), eq(billingInvoice.syncAction, "push")));
+        await db.transaction(async (tx) => {
+          const current = await lockInvoice(tx, invoice.id);
+          if (!current) return;
+          // A duplicate push must not restart a collection that already completed.
+          if (
+            current.providerInvoiceId === pushed.providerInvoiceId &&
+            current.syncAction !== "push"
+          )
+            return;
+          const action =
+            current.status === "void"
+              ? "void"
+              : current.status === "uncollectible"
+                ? "mark_uncollectible"
+                : current.status === "open"
+                  ? "collect"
+                  : null;
+          const taxed = pushed.totalCents !== undefined && pushed.totalCents !== current.totalCents;
+          await tx
+            .update(billingInvoice)
+            .set({
+              providerCustomerId: input.invoice.providerCustomerId,
+              providerInvoiceId: pushed.providerInvoiceId,
+              hostedUrl,
+              pdfUrl: pushed.pdfUrl,
+              ...(taxed && pushed.totalCents !== undefined
+                ? {
+                    taxCents: pushed.taxCents ?? pushed.totalCents - current.totalCents,
+                    totalCents: pushed.totalCents,
+                    ...(current.status === "open"
+                      ? {
+                          amountDueCents:
+                            current.amountDueCents + pushed.totalCents - current.totalCents,
+                        }
+                      : {}),
+                  }
+                : {}),
+              syncAction: action,
+              nextSyncAt: action ? now : null,
+              syncAttempts: 0,
+              syncError: null,
+            })
+            .where(eq(billingInvoice.id, current.id));
+        });
         return null;
       }
       case "collect": {

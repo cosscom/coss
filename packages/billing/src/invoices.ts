@@ -215,6 +215,18 @@ export async function getInvoice(
 }
 
 export async function lockInvoice(tx: Transaction, invoiceId: string): Promise<InvoiceRow | null> {
+  // Every billing mutation takes the account before an invoice. Payments also update
+  // contracts and standing, so taking these locks in reverse order can deadlock.
+  const [owner] = await tx
+    .select({ accountId: billingInvoice.accountId })
+    .from(billingInvoice)
+    .where(eq(billingInvoice.id, invoiceId));
+  if (!owner) return null;
+  await tx
+    .select({ id: schema.billingAccount.id })
+    .from(schema.billingAccount)
+    .where(eq(schema.billingAccount.id, owner.accountId))
+    .for("update");
   const [row] = await tx
     .select()
     .from(billingInvoice)

@@ -487,7 +487,7 @@ export async function endContract(input: {
     const contract = await getContract(input.organizationId, input.contractId, tx);
     if (!contract) throw new BillingError("not_found", "That contract doesn't exist.");
     if (contract.status === "pending") {
-      await cancelContract(tx, contract.id, now);
+      await dropPendingUpgrade(tx, input.organizationId, input.reason, now);
     } else if (contract.effectiveFrom >= at) {
       await cancelContract(tx, contract.id, now);
     } else {

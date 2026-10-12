@@ -123,7 +123,7 @@ async function creditPayment(
 
 /**
  * A paid invoice settles the upgrade waiting on it (in the payment's transaction, which already
- * holds the invoice's lock: the account's lock comes next, before any contract row).
+ * holds the account and invoice locks, in that order).
  * - A contract change made since the upgrade began wins: the upgrade is canceled and its payment
  *   becomes credit.
  * - Paid after the month it started in closed (a slow direct debit): that month was billed

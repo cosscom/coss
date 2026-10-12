@@ -9,6 +9,7 @@ import { and, asc, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
 import type { BillingAccount } from "./accounts.ts";
 import { cancelContract, contractPendingOn } from "./contracts.ts";
 import { evaluateStanding } from "./holds.ts";
+import { lockInvoice } from "./invoices.ts";
 import { enqueueBillingNotification } from "./notifications.ts";
 import { recordPayment, voidInvoice } from "./payments.ts";
 import {
@@ -145,16 +146,15 @@ export async function applyOutcome(
   switch (outcome.kind) {
     case "invoice_paid": {
       const invoice = await invoiceByProviderId(provider, outcome.providerInvoiceId);
-      if (!invoice || invoice.status === "paid") return;
+      if (!invoice) return;
       await db.transaction(async (tx) => {
-        const [locked] = await tx
-          .select()
-          .from(billingInvoice)
-          .where(eq(billingInvoice.id, invoice.id))
-          .for("update");
-        if (!locked || locked.status === "paid") return;
+        const locked = await lockInvoice(tx, invoice.id);
+        if (!locked) return;
+        // Provider invoice outcomes report cumulative paid amounts, not another payment.
+        const amountCents = outcome.amountCents - locked.amountPaidCents;
+        if (amountCents <= 0n) return;
         const payment = {
-          amountCents: outcome.amountCents > 0n ? outcome.amountCents : locked.amountDueCents,
+          amountCents,
           method: outcome.method,
           providerPaymentId: outcome.paymentId,
           receivedAt: now,
@@ -229,6 +229,8 @@ export async function applyOutcome(
       const invoice = await invoiceByProviderId(provider, outcome.providerInvoiceId);
       if (invoice?.status !== "open") return;
       await db.transaction(async (tx) => {
+        const locked = await lockInvoice(tx, invoice.id);
+        if (locked?.status !== "open") return;
         const [row] = await tx
           .update(billingInvoice)
           .set({

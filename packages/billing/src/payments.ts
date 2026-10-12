@@ -39,7 +39,7 @@ export async function recordPayment(
   now: Date,
   opts: { systemOrganizationId?: string | null } = {},
 ): Promise<InvoiceRow> {
-  if (invoice.status !== "open") return invoice;
+  if (invoice.status !== "open" && invoice.status !== "paid") return invoice;
   if (payment.providerPaymentId) {
     const inserted = await tx
       .insert(billingPayment)
@@ -74,7 +74,28 @@ export async function recordPayment(
     .where(eq(billingInvoice.id, invoice.id))
     .returning();
   if (!row) throw new Error(`Invoice ${invoice.id} disappeared.`);
-  if (settled) await afterSettled(tx, row, now, opts.systemOrganizationId);
+  if (due < 0n) {
+    // A hosted payment can arrive before a pending credit reaches the provider.
+    // Preserve the excess as COSS credit; the provider credit note is out of band.
+    const [organization] = await tx
+      .select({ id: schema.organization.id })
+      .from(schema.organization)
+      .where(eq(schema.organization.id, invoice.organizationId));
+    if (organization)
+      await tx.insert(schema.billingCreditGrant).values({
+        organizationId: invoice.organizationId,
+        kind: "amount",
+        amount: -due,
+        appliesTo: "any",
+        source: "refund",
+        description: `Overpayment of invoice ${invoice.number ?? invoice.id}`,
+        reason: "Payment exceeded the remaining balance",
+        effectiveAt: now,
+        expiresAt: null,
+      });
+  }
+  if (settled && invoice.status !== "paid")
+    await afterSettled(tx, row, now, opts.systemOrganizationId);
   return row;
 }
 
@@ -147,8 +168,16 @@ export async function voidInvoiceInTransaction(
       amountDueCents: 0n,
       nextCollectionAt: null,
       paymentState: null,
-      syncAction: invoice.providerInvoiceId ? "void" : null,
-      nextSyncAt: invoice.providerInvoiceId ? now : null,
+      // An in-flight push must finish recording its provider ID, even after cancellation.
+      syncAction: invoice.providerInvoiceId
+        ? "void"
+        : invoice.syncAction === "push" && invoice.syncAttempts > 0
+          ? "push"
+          : null,
+      nextSyncAt:
+        invoice.providerInvoiceId || (invoice.syncAction === "push" && invoice.syncAttempts > 0)
+          ? now
+          : null,
     })
     .where(eq(billingInvoice.id, invoice.id))
     .returning();
@@ -195,8 +224,15 @@ export async function markInvoiceUncollectible(input: {
       .set({
         status: "uncollectible",
         nextCollectionAt: null,
-        syncAction: invoice.providerInvoiceId ? "mark_uncollectible" : null,
-        nextSyncAt: invoice.providerInvoiceId ? now : null,
+        syncAction: invoice.providerInvoiceId
+          ? "mark_uncollectible"
+          : invoice.syncAction === "push" && invoice.syncAttempts > 0
+            ? "push"
+            : null,
+        nextSyncAt:
+          invoice.providerInvoiceId || (invoice.syncAction === "push" && invoice.syncAttempts > 0)
+            ? now
+            : null,
       })
       .where(eq(billingInvoice.id, invoice.id))
       .returning();
