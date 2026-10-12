@@ -591,7 +591,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   customer HTML), storing the links first. Clicks redirect only to stored URLs. `email.opened`/`email.clicked` go through
   `recordProviderEvent` (source `coss`, deduplicated per minute and link) and never change a recipient's status;
   they name a recipient only when the email had exactly one non-suppressed recipient. Events store the user agent,
-  never the IP. Settings need `environment:update`. The parsed send request omits `tracking` when absent (request hashes).
+  never the IP. Settings need `environment:update` in the dashboard; over the API (`/v1/tracking_settings`,
+  `coss.email.tracking`: `PATCH`/`DELETE` `…/default` and `…/categories/{category}`, unset fields keep their value)
+  reads need `email:read` and changes `email:send` (a sender already overrides them per send; no new permission),
+  audited as `tracking_rule.saved`/`.deleted` like the dashboard. The parsed send request omits `tracking` when absent (request hashes).
 - **Custom tracking domains** (`packages/email/src/tracking-domains.ts`, table `tracking_domain`, ids `tdom_`):
   at most one per sending domain, a strict subdomain of it outside its MAIL FROM subdomain, and the hostname's most
   specific domain across orgs must be that domain. Served by a `TrackingHostnameProvider` (`DomainDeps.tracking`):
@@ -892,7 +895,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   at a verified sender of COSS's own organization.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page, the AWS
-infrastructure itself (only its spec, images and runbook exist), tracking settings over the API,
+infrastructure itself (only its spec, images and runbook exist),
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which

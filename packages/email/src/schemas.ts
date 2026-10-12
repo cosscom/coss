@@ -1470,6 +1470,120 @@ export const TrackingRuleInput = z.strictObject({
 });
 
 export type TrackingRuleInputOutput = z.output<typeof TrackingRuleInput>;
+
+const TRACKING_RULE_ID_EXAMPLE = "etr_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const TRACKING_DEFAULT_EXAMPLE = {
+  object: "tracking_rule",
+  id: "etr_01k7c8k1d9w4x2b7n3m5q6r8st",
+  category: null,
+  opens: true,
+  clicks: true,
+  created_at: "2026-01-15T09:30:00.000Z",
+  updated_at: "2026-01-15T09:30:00.000Z",
+} as const;
+const TRACKING_RULE_EXAMPLE = {
+  object: "tracking_rule",
+  id: TRACKING_RULE_ID_EXAMPLE,
+  category: "password-reset",
+  opens: false,
+  clicks: false,
+  created_at: "2026-01-16T10:00:00.000Z",
+  updated_at: "2026-01-16T10:00:00.000Z",
+} as const;
+
+export const TrackingRule = z
+  .object({
+    object: z.literal("tracking_rule"),
+    id: z.string().meta({ examples: [TRACKING_RULE_ID_EXAMPLE] }),
+    category: z.string().nullable().meta({
+      description: "The category the rule applies to; `null` for the environment default.",
+    }),
+    opens: z.boolean().meta({ description: "Whether opens are tracked." }),
+    clicks: z.boolean().meta({ description: "Whether clicks are tracked." }),
+    created_at: z.iso.datetime(),
+    updated_at: z.iso.datetime(),
+  })
+  .meta({
+    id: "TrackingRule",
+    description:
+      "An environment's tracking default (`category: null`) or the rule for one category. " +
+      "Emails are fixed to the settings that applied when they were sent.",
+    examples: [TRACKING_RULE_EXAMPLE],
+  });
+
+export type TrackingRuleOutput = z.output<typeof TrackingRule>;
+
+export const TrackingSettings = z
+  .object({
+    object: z.literal("tracking_settings"),
+    // A union, not `.nullable()`, and no `.meta()`: the OpenAPI generator would drop the `null`
+    // or inline the `TrackingRule` schema (as for `Domain.tracking`).
+    default: z.union([TrackingRule, z.null()]),
+    categories: z.array(TrackingRule).meta({ description: "Category rules, by category name." }),
+  })
+  .meta({
+    id: "TrackingSettings",
+    description:
+      "Open and click tracking settings of the API key's environment. For each of `opens` and " +
+      "`clicks`, a send's own `tracking` wins, then its category's rule, then `default` (the " +
+      "environment default; `null` when none is set), then off.",
+    examples: [
+      {
+        object: "tracking_settings",
+        default: TRACKING_DEFAULT_EXAMPLE,
+        categories: [TRACKING_RULE_EXAMPLE],
+      },
+    ],
+  });
+
+export type TrackingSettingsOutput = z.output<typeof TrackingSettings>;
+
+export const UpdateTrackingRuleRequest = z
+  .strictObject({
+    opens: z.boolean().optional().meta({ description: "Track opens." }),
+    clicks: z.boolean().optional().meta({ description: "Track clicks." }),
+  })
+  .refine((value) => value.opens !== undefined || value.clicks !== undefined, {
+    error: "Provide opens, clicks or both.",
+  })
+  .meta({
+    id: "UpdateTrackingRuleRequest",
+    description:
+      "Fields left out keep their current value; a new rule starts with both off. A send's own " +
+      "`tracking` option still wins over the rule.",
+    examples: [{ opens: false, clicks: false }],
+  });
+
+export type UpdateTrackingRuleRequestInput = z.input<typeof UpdateTrackingRuleRequest>;
+export type UpdateTrackingRuleRequestOutput = z.output<typeof UpdateTrackingRuleRequest>;
+
+export const TrackingCategoryParams = z.object({
+  category: Category.meta({
+    description: "The category, as sent in `category`.",
+    examples: ["password-reset"],
+  }),
+});
+
+export const DeletedTrackingRule = z
+  .object({
+    object: z.literal("tracking_rule"),
+    id: z.string(),
+    category: z.string().nullable(),
+    deleted: z.literal(true),
+  })
+  .meta({
+    id: "DeletedTrackingRule",
+    examples: [
+      {
+        object: "tracking_rule",
+        id: TRACKING_RULE_ID_EXAMPLE,
+        category: "password-reset",
+        deleted: true,
+      },
+    ],
+  });
+
+export type DeletedTrackingRuleOutput = z.output<typeof DeletedTrackingRule>;
 export const MAX_SUPPRESSION_IMPORT_ENTRIES = 1000;
 
 export const ImportSuppressionsRequest = z

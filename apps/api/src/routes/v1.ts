@@ -9,6 +9,7 @@ import { createLogDrainRoutes } from "./log-drains.ts";
 import { createLogRoutes } from "./logs.ts";
 import { createReputationRoutes } from "./reputation.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
+import { createTrackingSettingsRoutes } from "./tracking-settings.ts";
 import { createWebhookEndpointRoutes } from "./webhook-endpoints.ts";
 
 export type V1Dependencies = {
@@ -24,6 +25,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   v1.route("/", createDomainRoutes(deps.domainDeps));
   v1.route("/", createWebhookEndpointRoutes(deps.webhookDeps));
   v1.route("/", createSuppressionRoutes());
+  v1.route("/", createTrackingSettingsRoutes());
   v1.route("/", createReputationRoutes());
   v1.route("/", createLogRoutes());
   v1.route("/", createAuditEventRoutes());

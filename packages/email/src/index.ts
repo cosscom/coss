@@ -269,11 +269,15 @@ export {
 } from "./tracking-html.ts";
 export {
   deleteTrackingRule,
+  deleteTrackingRuleFor,
   getTrackingSettings,
   type ResolvedTracking,
   resolveTracking,
   type TrackingEnvironment,
   type TrackingRuleRow,
   type TrackingSettings,
+  toTrackingRuleObject,
+  toTrackingSettingsObject,
+  updateTrackingRule,
   upsertTrackingRule,
 } from "./tracking-settings.ts";

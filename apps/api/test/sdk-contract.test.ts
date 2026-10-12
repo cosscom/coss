@@ -553,6 +553,60 @@ describe("coss.domains against the API", () => {
   });
 });
 
+describe("coss.email.tracking against the API", () => {
+  test("update, read and remove the default and category rules; sends follow them", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    expect(await coss.email.tracking.get()).toEqual({
+      data: { object: "tracking_settings", default: null, categories: [] },
+      error: null,
+    });
+    const defaultRule = await coss.email.tracking.updateDefault({ opens: true, clicks: true });
+    expect(defaultRule.data).toMatchObject({ category: null, opens: true, clicks: true });
+    const resetRule = await coss.email.tracking.updateCategory("password-reset", { opens: false });
+    expect(resetRule.data).toMatchObject({
+      object: "tracking_rule",
+      category: "password-reset",
+      opens: false,
+      clicks: false,
+    });
+    expect(await coss.email.tracking.get()).toEqual({
+      data: {
+        object: "tracking_settings",
+        default: defaultRule.data,
+        categories: resetRule.data ? [resetRule.data] : [],
+      },
+      error: null,
+    });
+
+    const sent = await coss.email.send({
+      from: "Acme <hello@acme.com>",
+      to: "user@example.com",
+      subject: "Reset your password",
+      html: "<p>Hi</p>",
+      category: "password-reset",
+    });
+    expect(sent.data?.tracking).toMatchObject({ opens: false, clicks: false });
+
+    expect(await coss.email.tracking.removeCategory("password-reset")).toEqual({
+      data: {
+        object: "tracking_rule",
+        id: resetRule.data?.id ?? "",
+        category: "password-reset",
+        deleted: true,
+      },
+      error: null,
+    });
+    expect((await coss.email.tracking.removeDefault()).data).toMatchObject({ deleted: true });
+    const gone = await coss.email.tracking.removeDefault();
+    expect(gone.error).toMatchObject({ type: "not_found_error", code: "not_found", status: 404 });
+    const invalid = await coss.email.tracking.updateCategory("has space", { opens: true });
+    expect(invalid.error).toMatchObject({ code: "validation_error", param: "category" });
+  });
+});
+
 describe("coss.domains.tracking against the API", () => {
   test("create and delete a tracking domain", async () => {
     const tenant = await createTestTenant();
