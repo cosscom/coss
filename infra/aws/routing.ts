@@ -35,12 +35,14 @@ export const DASHBOARD_HOST = "coss.com";
 export const API_HOST = "api.coss.com";
 
 /**
- * Custom tracking domains (Cloudflare for SaaS): customers CNAME e.g. `links.acme.com` to this
- * fallback origin (a proxied record in the coss.com zone, pointing at the ALB), and Cloudflare
- * forwards their requests to the ALB with the customer's hostname as `Host`. The default for
- * `TRACKING_CNAME_TARGET`.
+ * Tracking links live on their own domain, `cosslinks.com` (a self-serve Cloudflare account
+ * separate from coss.com's), so a sender's abuse flagged by URL blocklists never lands on
+ * coss.com. This host is both the default tracking URL (`TRACKING_PUBLIC_URL`) and the Cloudflare
+ * for SaaS fallback origin customers CNAME their tracking domains (e.g. `links.acme.com`) to: a
+ * proxied record pointing at the ALB, which gets every request with the caller's hostname as
+ * `Host`. The default for `TRACKING_CNAME_TARGET`.
  */
-export const TRACKING_HOST = "track.coss.com";
+export const TRACKING_HOST = "track.cosslinks.com";
 /** Added to every request by a Cloudflare request header transform rule (its own secret). */
 export const TRACKING_ORIGIN_VERIFY_HEADER = "X-Tracking-Origin-Verify";
 export const TRACKING_ORIGIN_VERIFY_PLACEHOLDER = "<tracking-origin-verify-secret>";

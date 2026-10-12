@@ -74,7 +74,7 @@ const { data: domain, error } = await coss.domains.tracking.create(domainId, {
 });
 
 const record = domain?.tracking?.record;
-console.log(record?.type, record?.name, record?.value); // CNAME links.acme.com track.coss.com
+console.log(record?.type, record?.name, record?.value); // CNAME links.acme.com track.cosslinks.com
 ```
 
 Then publish the `CNAME` record at your DNS provider. COSS issues a certificate for the hostname once

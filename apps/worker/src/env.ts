@@ -12,6 +12,8 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
     // The public API serves the tracking URLs embedded by the dispatch worker.
     API_PUBLIC_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
+    // Origin of the tracking links, when they shouldn't use API_PUBLIC_URL (production's own domain).
+    TRACKING_PUBLIC_URL: z.url().optional(),
     API_PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
     ...emailWorkerEnvShape,
     // AI content screening of sampled live emails before they are sent (@coss/screening).

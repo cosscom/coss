@@ -15,6 +15,9 @@ export const env = createEnv({
     // Public origin of this API (OpenAPI `servers`). Required in production: the request-origin
     // fallback sees the load balancer's http hop, not the client's https URL.
     API_PUBLIC_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
+    // Origin of the open/click tracking links in emails (`/t/*`, served by this API whatever the
+    // host). Defaults to API_PUBLIC_URL; production uses a separate domain (infra/aws/routing.ts).
+    TRACKING_PUBLIC_URL: z.url().optional(),
     // Comma-separated browser origins allowed to call /v1 (the docs' API playground).
     API_CORS_ORIGINS: z
       .string()

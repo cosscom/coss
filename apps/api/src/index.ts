@@ -34,7 +34,7 @@ const app = createApp({
     liveProvider: email.liveProvider,
     sandboxProvider: email.sandboxProvider,
     queue: pgBossDispatchQueue(jobs),
-    trackingBaseUrl: publicUrl,
+    trackingBaseUrl: env.TRACKING_PUBLIC_URL ?? publicUrl,
     trackingDomainProvider: email.trackingHostnames.name,
     billing: createUsageGate(),
   }),

@@ -100,7 +100,7 @@ resets) are printed to the dashboard's server console in development.
   own redirect (`API_PUBLIC_URL/t/…`) when it hands the email to the provider; the stored email keeps the original
   HTML. Opens and clicks show up as `email.opened` / `email.clicked` events, webhooks, counts on the email
   (`tracking`) and per-link click counts. Independent of SES's own tracking, which stays off.
-  A verified domain can have a **custom tracking domain** (e.g. `links.acme.com`, a CNAME to `track.coss.com`):
+  A verified domain can have a **custom tracking domain** (e.g. `links.acme.com`, a CNAME to `track.cosslinks.com`):
   emails from it are tracked through that hostname while it is active. COSS registers it as a Cloudflare for SaaS
   custom hostname (`TRACKING_DOMAIN_PROVIDER=cloudflare`), which issues its certificate and proxies `/t/*` to the API.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
@@ -391,7 +391,8 @@ Cloudflare DNS (coss.com zone, DNS only)
                               │                                                 ├─▶ site   (Next, :3002)  ├─▶ RDS Postgres
                               ├─ /ui, /ui/*         ─▶ coss ui   (Vercel)       └─▶ api    (Bun,  :3001) ─┤   Valkey
                               └─ /origin, /origin/* ─▶ Origin UI (Vercel)    worker (Bun, no load balancer)┘   SES · SNS · SQS
-  track.coss.com + customer tracking domains (Cloudflare for SaaS, proxied) ──(X-Tracking-Origin-Verify)──▶ ALB /t/* ─▶ api
+  Cloudflare DNS (cosslinks.com zone, self-serve account, proxied)
+  track.cosslinks.com + customer tracking domains (Cloudflare for SaaS) ──(X-Tracking-Origin-Verify)──▶ ALB /t/* ─▶ api
 ```
 
 ### Resources (`infra/terraform`)
@@ -458,16 +459,18 @@ Cloudflare DNS (coss.com zone, DNS only)
   run as a one-off task (below).
 - **DNS (Cloudflare, zone `coss.com`):** `coss.com` and `api.coss.com` are DNS-only CNAMEs (flattened at the apex)
   to their distributions; ACM validation CNAMEs; DKIM and MAIL FROM records of COSS's own sending domain.
-- **Custom tracking domains (Cloudflare for SaaS, on the coss.com zone):** not provisioned on the zone yet (the
-  custom hostname API answers "no quota has been allocated"; ask Cloudflare to enable SSL for SaaS on the
-  enterprise contract). Then: create the fallback origin `track.coss.com` as a **proxied** record pointing at the
-  ALB's DNS name (`terraform output alb_dns_name`); COSS registers each customer domain as a custom hostname (HTTP
-  certificate validation) through the API with `CLOUDFLARE_API_TOKEN` (zone-scoped, SSL and Certificates: Edit) and
-  `CLOUDFLARE_ZONE_ID`. Add a request header transform rule that sets `X-Tracking-Origin-Verify: <secret>` (Secrets
-  Manager `coss/production/tracking-origin-verify`) on requests to custom hostnames, and a configuration rule for SSL
-  **Full** on them (not the zone default): Cloudflare connects with the customer's hostname as SNI, which the ALB's
-  certificate doesn't cover; the header secret is what proves a request came through Cloudflare. Cloudflare bills
-  custom hostnames beyond the plan's allowance.
+- **Tracking links (`cosslinks.com`, a self-serve Cloudflare account, not the coss.com zone):** every tracking
+  link points at a domain of its own, so a sender's abuse flagged by URL blocklists never lands on coss.com.
+  `track.cosslinks.com` is a **proxied** record pointing at the ALB's DNS name (`terraform output alb_dns_name`):
+  it is the default tracking origin (`TRACKING_PUBLIC_URL`, api + worker) and the Cloudflare for SaaS fallback
+  origin customers CNAME their tracking domains to (`TRACKING_CNAME_TARGET`). COSS registers each customer domain
+  as a custom hostname (HTTP certificate validation) with `CLOUDFLARE_API_TOKEN` (an account token scoped to the
+  zone, SSL and Certificates: Edit) and `CLOUDFLARE_ZONE_ID`. A request header transform rule sets
+  `X-Tracking-Origin-Verify: <secret>` (Secrets Manager `coss/production/tracking-origin-verify`) on every request
+  in the zone: the ALB forwards `/t/*` with it to the api target group for any host, and nothing else. SSL mode
+  **Full** (zone-wide; the zone serves nothing else): Cloudflare connects with the caller's hostname as SNI, which
+  the ALB's certificate doesn't cover; the header secret is what proves a request came through Cloudflare. The
+  apex redirects to coss.com. Free plan: 100 custom hostnames included, then $0.10 each per month.
 
 ### Monitoring and cost guardrails
 
