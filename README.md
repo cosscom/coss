@@ -545,8 +545,9 @@ Cloudflare) → `valkey:bootstrap` → stage secret values (`put-secret.sh`) →
 CloudFront, WAF) → migrate → `ses-bootstrap` one-off task → test through CloudFront with
 `curl --resolve coss.com:443:<distribution IP>` → DNS in Cloudflare → sign up on the dashboard → `create-admin
 --verify-email` (sign-in needs a verified address, and no verification email can go out yet) →
-create COSS's own organization in the dashboard, add and verify its sending domain (`coss.com`; an SES identity for
-it created outside COSS must be deleted first, COSS never adopts one), and set the worker's
+create COSS's own organization in the dashboard, add and verify its sending domain (`coss.com`: reserved for
+everyone else, so only a platform admin can add it, from the dashboard; an SES identity for it created outside COSS
+must be deleted first, COSS never adopts one), and set the worker's
 `NOTIFICATIONS_ENVIRONMENT_ID` (its project's live environment, `env_…`) and `NOTIFICATIONS_FROM` (e.g. `COSS
 <notifications@coss.com>`) in `production.tfvars`, apply, and redeploy. Until then the worker logs a warning at
 startup and holds account emails (sign-up verification, password resets, invitations — dropped once their link
