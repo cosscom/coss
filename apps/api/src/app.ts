@@ -185,6 +185,10 @@ export function openApiDocumentConfig(serverUrl: string) {
         name: "Suppressions",
         description: "Addresses that sends skip, added by bounces, complaints or you.",
       },
+      {
+        name: "Tracking",
+        description: "Which emails of the environment have their opens and clicks tracked.",
+      },
       { name: "Domains", description: "The organization's verified sending domains." },
       {
         name: "Webhook endpoints",

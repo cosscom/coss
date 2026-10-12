@@ -109,6 +109,23 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   },
   "GET /v1/suppressions/{id}": { method: "email.suppressions.get", args: (r) => [pathId(r)] },
   "DELETE /v1/suppressions/{id}": { method: "email.suppressions.remove", args: (r) => [pathId(r)] },
+  "GET /v1/tracking_settings": { method: "email.tracking.get", args: () => [] },
+  "PATCH /v1/tracking_settings/default": {
+    method: "email.tracking.updateDefault",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/tracking_settings/default": {
+    method: "email.tracking.removeDefault",
+    args: () => [],
+  },
+  "PATCH /v1/tracking_settings/categories/{category}": {
+    method: "email.tracking.updateCategory",
+    args: (request) => [pathParam(request, "category"), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/tracking_settings/categories/{category}": {
+    method: "email.tracking.removeCategory",
+    args: (request) => [pathParam(request, "category")],
+  },
   "POST /v1/domains": {
     method: "domains.create",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],

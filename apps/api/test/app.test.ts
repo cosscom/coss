@@ -182,6 +182,9 @@ describe("GET /openapi.json", () => {
       "/v1/suppressions/export",
       "/v1/suppressions/import",
       "/v1/suppressions/{id}",
+      "/v1/tracking_settings",
+      "/v1/tracking_settings/categories/{category}",
+      "/v1/tracking_settings/default",
       "/v1/webhook_endpoints",
       "/v1/webhook_endpoints/{id}",
       "/v1/webhook_endpoints/{id}/deliveries",
@@ -291,7 +294,8 @@ describe("GET /openapi.json", () => {
           ([route]) =>
             String(route).includes("domains") ||
             String(route).includes("webhook") ||
-            String(route).includes("log_drains"),
+            String(route).includes("log_drains") ||
+            String(route).includes("tracking_settings"),
         ),
     ).toEqual([
       ["post /v1/domains", "createDomain"],
@@ -310,6 +314,11 @@ describe("GET /openapi.json", () => {
       ["get /v1/webhook_endpoints/{id}/deliveries", "listWebhookDeliveries"],
       ["get /v1/webhook_endpoints/{id}/deliveries/{delivery_id}", "getWebhookDelivery"],
       ["post /v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry", "retryWebhookDelivery"],
+      ["get /v1/tracking_settings", "getTrackingSettings"],
+      ["patch /v1/tracking_settings/default", "updateTrackingDefault"],
+      ["delete /v1/tracking_settings/default", "deleteTrackingDefault"],
+      ["patch /v1/tracking_settings/categories/{category}", "updateTrackingCategory"],
+      ["delete /v1/tracking_settings/categories/{category}", "deleteTrackingCategory"],
       ["post /v1/log_drains", "createLogDrain"],
       ["get /v1/log_drains", "listLogDrains"],
       ["get /v1/log_drains/{id}", "getLogDrain"],
@@ -351,6 +360,10 @@ describe("GET /openapi.json", () => {
         "DeletedDomain",
         "TrackingDomain",
         "CreateTrackingDomainRequest",
+        "TrackingSettings",
+        "TrackingRule",
+        "UpdateTrackingRuleRequest",
+        "DeletedTrackingRule",
         "CreateWebhookEndpointRequest",
         "UpdateWebhookEndpointRequest",
         "RollWebhookEndpointSecretRequest",

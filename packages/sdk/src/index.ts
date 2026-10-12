@@ -14,6 +14,7 @@ export type { LogDrainBatchesResource, LogDrainsResource } from "./resources/log
 export type { LogsResource } from "./resources/logs.ts";
 export type { ReputationResource } from "./resources/reputation.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
+export type { TrackingResource } from "./resources/tracking.ts";
 export type { TrackingDomainsResource } from "./resources/tracking-domains.ts";
 export type { WebhookDeliveriesResource } from "./resources/webhook-deliveries.ts";
 export type { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
@@ -100,6 +101,12 @@ export type {
   SuppressionImport,
   SuppressionReason,
 } from "./types/suppression.ts";
+export type {
+  DeletedTrackingRule,
+  TrackingRule,
+  TrackingSettings,
+  UpdateTrackingRuleParams,
+} from "./types/tracking.ts";
 export type {
   AccountEventType,
   AccountWebhookEvent,
