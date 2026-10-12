@@ -4,7 +4,7 @@
  * import each other's callers).
  */
 import { schema, type Transaction } from "@coss/db";
-import { and, eq, gt, ne } from "drizzle-orm";
+import { and, eq, gt, ne, sql } from "drizzle-orm";
 import { type BillingAccount, lockBillingAccount, organizationLabel } from "./accounts.ts";
 import { announcePlanChange } from "./announce.ts";
 import {
@@ -148,7 +148,12 @@ export async function settlePendingContract(
         eq(billingContract.organizationId, pending.organizationId),
         ne(billingContract.id, pending.id),
         eq(billingContract.status, "confirmed"),
-        gt(billingContract.createdAt, pending.createdAt),
+        // Against the stored value: `pending.createdAt` came back as a JS Date (milliseconds), so a
+        // contract created earlier in the same millisecond (microseconds) would look newer.
+        gt(
+          billingContract.createdAt,
+          sql`(SELECT pending.created_at FROM billing_contract AS pending WHERE pending.id = ${pending.id})`,
+        ),
       ),
     )
     .limit(1);

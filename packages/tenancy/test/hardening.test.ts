@@ -238,7 +238,9 @@ describe("invitations follow their inviter", () => {
     });
     expect(await invitationStatus(fromLeaver.invitation.id)).toBe("canceled");
     expect(await invitationStatus(fromOwner.invitation.id)).toBe("pending");
-  });
+    // About 13 password hashes and checks (scrypt, CPU-bound by design): well under a second
+    // alone, but CI runs every package's tests at once on a few cores.
+  }, 30_000);
 
   test("an invitation whose inviter may no longer invite can't be accepted", async () => {
     const tenant = await createTestTenant();

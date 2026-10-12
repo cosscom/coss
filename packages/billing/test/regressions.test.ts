@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { db } from "@coss/db";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
+import { sql } from "drizzle-orm";
 import { RATE_CARDS } from "../src/catalog/rates.ts";
 import { startUpgrade } from "../src/changes.ts";
 import { contractAt } from "../src/contracts.ts";
@@ -185,6 +187,38 @@ describe("payments and contracts", () => {
     // November's difference: $250 less the $25 Pro was charged.
     const followUp = (await invoicesOf(tenant)).filter((row) => row.kind === "plan_change").at(-1);
     expect(followUp?.totalCents).toBe(22_500n);
+  });
+
+  test("a contract created earlier in the same millisecond is not a later plan change", async () => {
+    const tenant = await createTestTenant();
+    const org = tenant.organization.id;
+    const deps = testBillingProviders();
+    await createTestContract(
+      org,
+      { version: 1, plan: "pro" },
+      { effectiveFrom: at("2026-10-01T00:00:00Z") },
+    );
+    const { invoice } = await startUpgrade({
+      organizationId: org,
+      plan: "scale",
+      userId: null,
+      defaultProvider: "fake",
+      now: at("2026-10-20T12:00:00Z"),
+    });
+    // Both contracts in one millisecond, the upgrade microseconds later: a JS Date of the
+    // upgrade's creation (milliseconds) is earlier than the Pro contract's stored timestamp.
+    await db.execute(sql`
+      UPDATE billing_contract
+      SET created_at = CASE WHEN status = 'pending'
+        THEN timestamptz '2026-10-20 12:00:00.000900+00'
+        ELSE timestamptz '2026-10-20 12:00:00.000100+00' END
+      WHERE organization_id = ${org}`);
+    await collectInvoiceNow(
+      invoice?.id ?? "",
+      { providers: deps.providers, dashboardUrl: "https://coss.test" },
+      at("2026-10-20T12:05:00Z"),
+    );
+    expect(await contractAt(org, at("2026-10-21T00:00:00Z"))).toMatchObject({ plan: "scale" });
   });
 
   test("moving from an internal contract to a paid one bills the paid one's first month", async () => {

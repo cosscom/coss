@@ -57,6 +57,12 @@ export function lineByteSize(line: Record<string, unknown>): number {
   return Buffer.byteLength(JSON.stringify(line)) + 1;
 }
 
+/**
+ * The millisecond the last record ids were stamped with. A write in the same millisecond takes the
+ * next one, so its records sort after the previous write's (random ids of one millisecond don't).
+ */
+let lastIdMs = 0;
+
 /** Queues each line for the given drains that take its source; returns how many records were written. */
 export async function insertLogDrainRecords(
   executor: Executor,
@@ -81,9 +87,10 @@ export async function insertLogDrainRecords(
     }
   }
   if (values.length === 0) return 0;
-  // Ids order delivery: make them ascend in the order the lines were written (random ids of one
-  // millisecond would shuffle them).
-  const now = Date.now();
+  // Ids order delivery: make them ascend in the order the lines were written, within this write
+  // (sorted) and after every earlier one (`lastIdMs`).
+  const now = Math.max(Date.now(), lastIdMs + 1);
+  lastIdMs = now;
   const ids = values.map(() => newId(ID_PREFIXES.logDrainRecord, now)).sort();
   values.forEach((value, index) => {
     value.id = ids[index];

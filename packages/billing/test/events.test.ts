@@ -39,7 +39,8 @@ async function billingEvents(tenant: TestTenant) {
     .select()
     .from(schema.webhookMessage)
     .where(eq(schema.webhookMessage.organizationId, tenant.organization.id))
-    .orderBy(asc(schema.webhookMessage.id));
+    // Transactions first: ids (random within a millisecond) only order events of one transaction.
+    .orderBy(asc(schema.webhookMessage.createdAt), asc(schema.webhookMessage.id));
   for (const message of messages) {
     // Every environment gets them, but only live ones: sandbox endpoints never hear about billing.
     expect(message.environmentId).toBe(tenant.production.id);

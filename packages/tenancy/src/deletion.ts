@@ -193,7 +193,7 @@ export type OrganizationTeardownDeps = {
 type Claimed = typeof organizationDeletion.$inferSelect;
 
 async function claimDue(
-  now: Date,
+  now: Date | undefined,
   attemptedIds: string[],
   scope?: { organizationIds: string[] },
 ): Promise<Claimed[]> {
@@ -205,7 +205,12 @@ async function claimDue(
         eq(organizationDeletion.status, "pending"),
         attemptedIds.length ? notInArray(organizationDeletion.id, attemptedIds) : undefined,
         isNotNull(organizationDeletion.nextAttemptAt),
-        lte(organizationDeletion.nextAttemptAt, now),
+        // Without an explicit `now`, the database's own clock: `next_attempt_at` defaults to its
+        // `now()` (microseconds), which a JS Date (milliseconds) taken in the same millisecond
+        // would see as still in the future.
+        now
+          ? lte(organizationDeletion.nextAttemptAt, now)
+          : sql`${organizationDeletion.nextAttemptAt} <= clock_timestamp()`,
         scope ? inArray(organizationDeletion.organizationId, scope.organizationIds) : undefined,
       ),
     )
@@ -511,7 +516,7 @@ export async function runDueOrganizationDeletions(
 ): Promise<number> {
   const attemptedIds: string[] = [];
   while (attemptedIds.length < (opts.limit ?? 5) && !opts.signal?.aborted) {
-    const [deletion] = await claimDue(opts.now ?? new Date(), attemptedIds, opts.scope);
+    const [deletion] = await claimDue(opts.now, attemptedIds, opts.scope);
     if (!deletion) break;
     attemptedIds.push(deletion.id);
     try {
