@@ -198,3 +198,45 @@ test("usage batches reach active organizations and inactive holds beyond the fir
     .where(eq(schema.billingNotification.organizationId, active.organization.id));
   expect(alerts.some((row) => row.kind === "usage_threshold")).toBe(true);
 });
+
+test("Stripe invoices reject manual payments before and after being pushed", async () => {
+  const f = await fixture();
+  for (const providerInvoiceId of [null, `in_external_${f.invoice.id}`]) {
+    await db
+      .update(schema.billingInvoice)
+      .set({ provider: "stripe", providerInvoiceId })
+      .where(eq(schema.billingInvoice.id, f.invoice.id));
+    await expect(
+      recordManualPayment({
+        organizationId: f.organizationId,
+        invoiceId: f.invoice.id,
+        payment: { amountCents: 6_000n, method: "wire", receivedAt: now },
+        actor: f.actor,
+        reason: "Partial wire",
+        now,
+      }),
+    ).rejects.toThrow("Manual payments aren't supported for Stripe invoices");
+    expect(await getInvoice(f.organizationId, f.invoice.id)).toMatchObject({
+      amountDueCents: 10_000n,
+      amountPaidCents: 0n,
+    });
+  }
+});
+
+test("standing scans reach later pages even when earlier accounts stay overdue", async () => {
+  const first = await fixture();
+  const second = await fixture();
+  for (const f of [first, second]) {
+    await db
+      .update(schema.billingInvoice)
+      .set({ dueAt: new Date(now.getTime() - 30 * day), nextCollectionAt: null })
+      .where(eq(schema.billingInvoice.id, f.invoice.id));
+  }
+  const scope = { organizationIds: [first.organizationId, second.organizationId] };
+  await runDueBillingCollection({ now, scope, limit: 1 });
+  for (const f of [first, second]) {
+    expect((await holdsOf(f.organizationId)).some((hold) => hold.reason === "delinquent")).toBe(
+      true,
+    );
+  }
+});

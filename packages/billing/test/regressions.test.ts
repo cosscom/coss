@@ -247,3 +247,52 @@ describe("engine", () => {
     expect(new Set(keys).size).toBe(2);
   });
 });
+
+test("concurrent upgrades void the replaced invoice and collect only the surviving upgrade", async () => {
+  const tenant = await createTestTenant();
+  const now = at("2026-10-12T12:00:00Z");
+  const input = {
+    organizationId: tenant.organization.id,
+    plan: "pro" as const,
+    userId: tenant.owner.id,
+    defaultProvider: "fake" as const,
+    now,
+  };
+  const results = await Promise.all([startUpgrade(input), startUpgrade(input)]);
+  const invoices = await invoicesOf(tenant);
+  expect(invoices.map((invoice) => invoice.status).sort()).toEqual(["open", "void"]);
+  const { fake, providers } = testBillingProviders();
+  for (const result of results) {
+    if (!result.invoice) throw new Error("Expected upgrade invoice");
+    await collectInvoiceNow(
+      result.invoice.id,
+      { providers, dashboardUrl: "https://coss.test" },
+      now,
+    );
+  }
+  expect(fake.calls.filter((call) => call.op === "collect")).toHaveLength(1);
+  expect((await contractAt(tenant.organization.id, now))?.plan).toBe("pro");
+});
+
+test("replacing an upgrade refuses while its payment is processing", async () => {
+  const tenant = await createTestTenant();
+  const now = at("2026-10-12T12:00:00Z");
+  const input = {
+    organizationId: tenant.organization.id,
+    plan: "pro" as const,
+    userId: tenant.owner.id,
+    defaultProvider: "fake" as const,
+    now,
+  };
+  const upgrade = await startUpgrade(input);
+  const { fake, providers } = testBillingProviders();
+  fake.willCollect({ state: "processing" });
+  if (!upgrade.invoice) throw new Error("Expected upgrade invoice");
+  await collectInvoiceNow(
+    upgrade.invoice.id,
+    { providers, dashboardUrl: "https://coss.test" },
+    now,
+  );
+  await expect(startUpgrade(input)).rejects.toThrow("still being processed");
+  expect((await invoicesOf(tenant)).map((invoice) => invoice.status)).toEqual(["open"]);
+});

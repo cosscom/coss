@@ -104,68 +104,73 @@ export async function afterSettled(
 }
 
 /** Voids an unpaid invoice: its charges can be billed again, its credits are given back. */
-export async function voidInvoice(input: {
+type VoidInvoiceInput = {
   organizationId: string;
   invoiceId: string;
   actor: AdminActor | null;
   reason: string;
   now?: Date;
-}): Promise<InvoiceRow> {
+};
+
+export async function voidInvoice(input: VoidInvoiceInput): Promise<InvoiceRow> {
+  return db.transaction((tx) => voidInvoiceInTransaction(tx, input));
+}
+
+/** Voids an invoice as part of an existing billing change. */
+export async function voidInvoiceInTransaction(
+  tx: Transaction,
+  input: VoidInvoiceInput,
+): Promise<InvoiceRow> {
   const now = input.now ?? new Date();
-  return db.transaction(async (tx) => {
-    const invoice = await lockInvoice(tx, input.invoiceId);
-    if (!invoice || invoice.organizationId !== input.organizationId) {
-      throw new BillingError("not_found", "That invoice doesn't exist.");
-    }
-    if (invoice.status !== "open" && invoice.status !== "draft") {
-      throw new BillingError("invoice_state", `A ${invoice.status} invoice can't be voided.`);
-    }
-    if (invoice.amountPaidCents > 0n) {
-      throw new BillingError(
-        "invoice_state",
-        "A partly paid invoice can't be voided; issue a credit note.",
-      );
-    }
-    if (invoice.paymentState === "processing") {
-      // A debit that may still settle: its outcome comes first.
-      throw new BillingError(
-        "invoice_state",
-        "A payment for this invoice is still being processed.",
-      );
-    }
-    const [row] = await tx
-      .update(billingInvoice)
-      .set({
-        status: "void",
-        voidedAt: now,
-        amountDueCents: 0n,
-        nextCollectionAt: null,
-        paymentState: null,
-        syncAction: invoice.providerInvoiceId ? "void" : null,
-        nextSyncAt: invoice.providerInvoiceId ? now : null,
-      })
-      .where(eq(billingInvoice.id, invoice.id))
-      .returning();
-    if (!row) throw new Error(`Invoice ${invoice.id} disappeared.`);
-    await tx
-      .update(billingInvoiceLine)
-      .set({ chargeKey: null })
-      .where(eq(billingInvoiceLine.invoiceId, invoice.id));
-    await reverseInvoiceCredits(tx, invoice.organizationId, invoice.id, now);
-    const pending = await contractPendingOn(invoice.id, tx);
-    if (pending) await cancelContract(tx, pending.id, now);
-    await evaluateStanding(tx, invoice.accountId, now);
-    if (input.actor) {
-      await auditBillingChange(tx, {
-        actor: input.actor,
-        action: "billing.invoice_voided",
-        organizationId: invoice.organizationId,
-        reason: input.reason,
-        metadata: { invoiceId: invoice.id, number: invoice.number },
-      });
-    }
-    return row;
-  });
+  const invoice = await lockInvoice(tx, input.invoiceId);
+  if (!invoice || invoice.organizationId !== input.organizationId) {
+    throw new BillingError("not_found", "That invoice doesn't exist.");
+  }
+  if (invoice.status !== "open" && invoice.status !== "draft") {
+    throw new BillingError("invoice_state", `A ${invoice.status} invoice can't be voided.`);
+  }
+  if (invoice.amountPaidCents > 0n) {
+    throw new BillingError(
+      "invoice_state",
+      "A partly paid invoice can't be voided; issue a credit note.",
+    );
+  }
+  if (invoice.paymentState === "processing") {
+    // A debit that may still settle: its outcome comes first.
+    throw new BillingError("invoice_state", "A payment for this invoice is still being processed.");
+  }
+  const [row] = await tx
+    .update(billingInvoice)
+    .set({
+      status: "void",
+      voidedAt: now,
+      amountDueCents: 0n,
+      nextCollectionAt: null,
+      paymentState: null,
+      syncAction: invoice.providerInvoiceId ? "void" : null,
+      nextSyncAt: invoice.providerInvoiceId ? now : null,
+    })
+    .where(eq(billingInvoice.id, invoice.id))
+    .returning();
+  if (!row) throw new Error(`Invoice ${invoice.id} disappeared.`);
+  await tx
+    .update(billingInvoiceLine)
+    .set({ chargeKey: null })
+    .where(eq(billingInvoiceLine.invoiceId, invoice.id));
+  await reverseInvoiceCredits(tx, invoice.organizationId, invoice.id, now);
+  const pending = await contractPendingOn(invoice.id, tx);
+  if (pending) await cancelContract(tx, pending.id, now);
+  await evaluateStanding(tx, invoice.accountId, now);
+  if (input.actor) {
+    await auditBillingChange(tx, {
+      actor: input.actor,
+      action: "billing.invoice_voided",
+      organizationId: invoice.organizationId,
+      reason: input.reason,
+      metadata: { invoiceId: invoice.id, number: invoice.number },
+    });
+  }
+  return row;
 }
 
 /** Writes an unpaid invoice off: it stops counting as overdue (no more collection). */
@@ -230,6 +235,12 @@ export async function recordManualPayment(input: {
     }
     if (invoice.status !== "open") {
       throw new BillingError("invoice_state", `A ${invoice.status} invoice can't take a payment.`);
+    }
+    if (invoice.provider === "stripe") {
+      throw new BillingError(
+        "invalid_change",
+        "Manual payments aren't supported for Stripe invoices. Record the payment through Stripe.",
+      );
     }
     if (input.payment.amountCents > invoice.amountDueCents) {
       throw new BillingError("invalid_change", "That's more than the invoice's amount due.");

@@ -182,6 +182,8 @@ export class FakeStripeApi {
       if (!customer) return notFound;
       if (method === "POST") {
         const pm = params["invoice_settings[default_payment_method]"];
+        if (params.email !== undefined) customer.email = params.email || null;
+        if (params.name !== undefined) customer.name = params.name;
         if (pm) customer.invoice_settings = { default_payment_method: pm };
         return ok(customer);
       }

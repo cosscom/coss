@@ -352,3 +352,36 @@ describe("credit notes", () => {
     });
   });
 });
+
+test("existing Stripe customers receive the saved contact before invoice creation and sending", async () => {
+  const { api, stripe } = setup();
+  const organization = { id: "org_1", name: "Acme", slug: "acme" };
+  const customerId = await stripe.ensureCustomer(account({ billingEmail: null }), organization);
+  const saved = account({
+    providerCustomerId: customerId,
+    billingEmail: "new@acme.test",
+    billingName: "Acme Billing",
+  });
+  expect(await stripe.ensureCustomer(saved, organization)).toBe(customerId);
+  expect(api.customers.get(customerId)).toMatchObject({
+    email: "new@acme.test",
+    name: "Acme Billing",
+  });
+  const target = invoice({ providerCustomerId: customerId, collectionMethod: "send_invoice" });
+  const pushed = await stripe.pushInvoice({
+    invoice: target,
+    lines: [line("invl_1", 1000n, "Fee")],
+    account: saved,
+  });
+  await stripe.collect({
+    invoice: { ...target, providerInvoiceId: pushed.providerInvoiceId },
+    lines: [],
+    account: { ...saved, billingEmail: "latest@acme.test" },
+  });
+  expect(api.customers.get(customerId)?.email).toBe("latest@acme.test");
+  const send = api.requests.findIndex((request) => request.path.endsWith("/send"));
+  expect(api.requests[send - 1]?.params.email).toBe("latest@acme.test");
+  await stripe.ensureCustomer({ ...saved, billingEmail: null }, organization);
+  expect(api.customers.get(customerId)?.email).toBeNull();
+  expect(api.customers.size).toBe(1);
+});

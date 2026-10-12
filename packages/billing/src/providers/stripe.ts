@@ -92,7 +92,10 @@ export class StripeBillingProvider implements BillingProvider {
   }
 
   async ensureCustomer(account: BillingAccount, organization: OrganizationLabel): Promise<string> {
-    if (account.providerCustomerId) return account.providerCustomerId;
+    if (account.providerCustomerId) {
+      await this.#syncCustomerDetails(account.providerCustomerId, account, organization.name);
+      return account.providerCustomerId;
+    }
     const customer = await this.#stripe.customers.create(
       {
         name: account.billingName ?? organization.name,
@@ -104,9 +107,21 @@ export class StripeBillingProvider implements BillingProvider {
     return customer.id;
   }
 
+  async #syncCustomerDetails(
+    customerId: string,
+    account: BillingAccount,
+    organizationName: string,
+  ) {
+    await this.#stripe.customers.update(customerId, {
+      name: account.billingName ?? organizationName,
+      email: account.billingEmail ?? "",
+    });
+  }
+
   async pushInvoice({ invoice, lines, account }: ProviderInvoice): Promise<PushResult> {
     const customer = invoice.providerCustomerId;
     if (!customer) throw new Error(`Invoice ${invoice.id} has no Stripe customer.`);
+    if (account) await this.#syncCustomerDetails(customer, account, invoice.organizationName);
     const key = `coss:invoice:${invoice.id}`;
     const sendInvoice = invoice.collectionMethod === "send_invoice";
     let stripeInvoice = invoice.providerInvoiceId
@@ -179,6 +194,13 @@ export class StripeBillingProvider implements BillingProvider {
   async collect({ invoice, account }: ProviderInvoice): Promise<CollectResult> {
     const id = invoice.providerInvoiceId;
     if (!id) throw new Error(`Invoice ${invoice.id} wasn't pushed to Stripe.`);
+    if (account && invoice.providerCustomerId) {
+      await this.#syncCustomerDetails(
+        invoice.providerCustomerId,
+        account,
+        invoice.organizationName,
+      );
+    }
     if (invoice.collectionMethod === "send_invoice") {
       await this.#stripe.invoices.sendInvoice(
         id,

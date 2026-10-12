@@ -8,7 +8,7 @@
  * - Sales contracts (platform admins) take effect now (backdated within the open month at most)
  *   or at the start of a future month, from any terms.
  */
-import { db, schema } from "@coss/db";
+import { db, schema, type Transaction } from "@coss/db";
 import { and, asc, eq, gt, inArray, isNotNull, isNull, lte, ne, or } from "drizzle-orm";
 import { lockBillingAccount, type ProviderName } from "./accounts.ts";
 import { type AdminActor, auditBillingChange } from "./audit.ts";
@@ -29,9 +29,9 @@ import {
 } from "./contracts.ts";
 import { resolveTermsAt } from "./engine/terms.ts";
 import { BillingError } from "./errors.ts";
-import { getInvoice, type InvoiceRow } from "./invoices.ts";
+import { type InvoiceRow, lockInvoice } from "./invoices.ts";
 import { enqueueBillingNotification } from "./notifications.ts";
-import { afterSettled, voidInvoice } from "./payments.ts";
+import { afterSettled, voidInvoice, voidInvoiceInTransaction } from "./payments.ts";
 import { billingStateAt, FREE_TERMS } from "./resolve.ts";
 import {
   type ContractTerms,
@@ -56,14 +56,15 @@ function rank(plan: PlanKey): number {
  * is being processed (a direct debit): its outcome must come first.
  */
 async function dropPendingUpgrade(
+  tx: Transaction,
   organizationId: string,
   reason: string,
   now: Date,
 ): Promise<void> {
-  const pending = await pendingContract(organizationId);
+  const pending = await pendingContract(organizationId, tx);
   if (!pending) return;
   if (pending.pendingInvoiceId) {
-    const invoice = await getInvoice(organizationId, pending.pendingInvoiceId);
+    const invoice = await lockInvoice(tx, pending.pendingInvoiceId);
     if (invoice?.paymentState === "processing") {
       throw new BillingError(
         "invalid_change",
@@ -71,11 +72,17 @@ async function dropPendingUpgrade(
       );
     }
     if (invoice?.status === "open" || invoice?.status === "draft") {
-      await voidInvoice({ organizationId, invoiceId: invoice.id, actor: null, reason, now });
+      await voidInvoiceInTransaction(tx, {
+        organizationId,
+        invoiceId: invoice.id,
+        actor: null,
+        reason,
+        now,
+      });
       return;
     }
   }
-  await db.transaction((tx) => cancelContract(tx, pending.id, now));
+  await cancelContract(tx, pending.id, now);
 }
 
 /**
@@ -98,9 +105,9 @@ export async function startUpgrade(input: {
     );
   }
   // Retrying an upgrade replaces the one still waiting for payment.
-  await dropPendingUpgrade(input.organizationId, "Replaced by a new upgrade.", now);
   return db.transaction(async (tx) => {
     const account = await lockBillingAccount(tx, input.organizationId, input.defaultProvider);
+    await dropPendingUpgrade(tx, input.organizationId, "Replaced by a new upgrade.", now);
     const state = await billingStateAt(input.organizationId, now, tx);
     if (state.contract && state.contract.kind !== "self_serve") {
       throw new BillingError(
@@ -114,8 +121,6 @@ export async function startUpgrade(input: {
         `You're already on ${PLANS[state.terms.plan].name}; that isn't an upgrade.`,
       );
     }
-    const leftover = await pendingContract(input.organizationId, tx);
-    if (leftover) await cancelContract(tx, leftover.id, now);
     const at = floorHour(now);
     const contract = await insertContract(
       tx,
@@ -166,7 +171,6 @@ export async function scheduleDowngrade(input: {
   now?: Date;
 }): Promise<{ at: Date }> {
   const now = input.now ?? new Date();
-  await dropPendingUpgrade(input.organizationId, "Replaced by a downgrade.", now);
   const blockers = await input.preflight(input.organizationId, input.plan);
   if (blockers.length) {
     throw new BillingError(
@@ -176,6 +180,7 @@ export async function scheduleDowngrade(input: {
   }
   return db.transaction(async (tx) => {
     await lockBillingAccount(tx, input.organizationId, input.defaultProvider);
+    await dropPendingUpgrade(tx, input.organizationId, "Replaced by a downgrade.", now);
     const state = await billingStateAt(input.organizationId, now, tx);
     const current = state.contract;
     if (!current) throw new BillingError("invalid_change", "You're on the Free plan already.");
@@ -377,13 +382,13 @@ export async function createContract(input: {
   const now = input.now ?? new Date();
   const terms = parseContractTerms(input.contract.terms);
   const start = validateContract({ ...input.contract, terms }, now);
-  await dropPendingUpgrade(input.contract.organizationId, "Replaced by a new contract.", now);
   return db.transaction(async (tx) => {
     const account = await lockBillingAccount(
       tx,
       input.contract.organizationId,
       input.defaultProvider,
     );
+    await dropPendingUpgrade(tx, input.contract.organizationId, "Replaced by a new contract.", now);
     // Backdating only replaces the one contract in effect then: a later change (already
     // invoiced) would otherwise be undone without its charges being reversed.
     const [later] = await tx

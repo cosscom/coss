@@ -5,7 +5,7 @@
  * days. System-level: spans organizations.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, inArray, isNotNull, lt, lte, ne, or } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNotNull, lt, lte, ne, or } from "drizzle-orm";
 import { evaluateStanding } from "./holds.ts";
 import { enqueueBillingNotification } from "./notifications.ts";
 
@@ -22,7 +22,7 @@ export async function runDueBillingCollection(opts: {
   systemOrganizationId?: string | null;
 }): Promise<number> {
   const now = opts.now ?? new Date();
-  const limit = opts.limit ?? 50;
+  const limit = Math.max(1, opts.limit ?? 50);
   const scope = opts.scope
     ? inArray(billingInvoice.organizationId, opts.scope.organizationIds)
     : undefined;
@@ -75,28 +75,38 @@ export async function runDueBillingCollection(opts: {
   }
 
   // Standing: accounts with something overdue, and accounts that may have recovered.
-  const accounts = await db
-    .selectDistinct({ id: billingAccount.id })
-    .from(billingAccount)
-    .leftJoin(
-      billingInvoice,
-      and(
-        eq(billingInvoice.accountId, billingAccount.id),
-        eq(billingInvoice.status, "open"),
-        lt(billingInvoice.dueAt, now),
-      ),
-    )
-    .where(
-      and(
-        or(ne(billingAccount.status, "active"), isNotNull(billingInvoice.id)),
-        opts.scope ? inArray(billingAccount.organizationId, opts.scope.organizationIds) : undefined,
-      ),
-    )
-    // Every account that may change standing, each run (few are ever past due).
-    .orderBy(asc(billingAccount.id))
-    .limit(1000);
-  for (const account of accounts) {
-    await db.transaction((tx) => evaluateStanding(tx, account.id, now, opts.systemOrganizationId));
+  let cursor: string | undefined;
+  for (;;) {
+    const accounts = await db
+      .selectDistinct({ id: billingAccount.id })
+      .from(billingAccount)
+      .leftJoin(
+        billingInvoice,
+        and(
+          eq(billingInvoice.accountId, billingAccount.id),
+          eq(billingInvoice.status, "open"),
+          lt(billingInvoice.dueAt, now),
+        ),
+      )
+      .where(
+        and(
+          cursor ? gt(billingAccount.id, cursor) : undefined,
+          or(ne(billingAccount.status, "active"), isNotNull(billingInvoice.id)),
+          opts.scope
+            ? inArray(billingAccount.organizationId, opts.scope.organizationIds)
+            : undefined,
+        ),
+      )
+      // Every account that may change standing, each run (few are ever past due).
+      .orderBy(asc(billingAccount.id))
+      .limit(limit);
+    for (const account of accounts) {
+      await db.transaction((tx) =>
+        evaluateStanding(tx, account.id, now, opts.systemOrganizationId),
+      );
+    }
+    if (accounts.length < limit) break;
+    cursor = accounts.at(-1)?.id;
   }
   // Only the invoices fill a batch (accounts are re-evaluated every run).
   return due.length;
