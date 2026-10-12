@@ -20,7 +20,6 @@ import type {
 /** The API version requests use (the SDK's own, pinned with it). */
 export const STRIPE_API_VERSION = "2026-08-26.dahlia";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 /** Payment method types Checkout can set up (bank transfers are paid per invoice, not saved). */
 const SETUP_METHODS = new Set(["card", "us_bank_account", "sepa_debit", "bacs_debit"]);
 
@@ -131,13 +130,10 @@ export class StripeBillingProvider implements BillingProvider {
             customer,
             currency: invoice.currency,
             collection_method: invoice.collectionMethod,
+            // COSS owns the due date. Relative days change on retries and can violate
+            // Stripe's requirement that an idempotency key always has identical parameters.
             ...(sendInvoice
-              ? {
-                  days_until_due: Math.max(
-                    1,
-                    Math.round(((invoice.dueAt?.getTime() ?? Date.now()) - Date.now()) / DAY_MS),
-                  ),
-                }
+              ? { due_date: seconds(invoice.dueAt ?? invoice.finalizedAt ?? invoice.createdAt) }
               : {}),
             auto_advance: false,
             pending_invoice_items_behavior: "exclude",
@@ -268,6 +264,18 @@ export class StripeBillingProvider implements BillingProvider {
     note: { id: string; amountCents: bigint; refundCents: bigint; memo: string },
   ): Promise<{ providerCreditNoteId: string | null }> {
     if (!invoice.providerInvoiceId) return { providerCreditNoteId: null };
+    // A previous attempt may have succeeded before its response was lost. In particular,
+    // a full credit makes an open invoice paid, changing the parameters calculated below.
+    for await (const existing of this.#stripe.creditNotes.list({
+      invoice: invoice.providerInvoiceId,
+      limit: 100,
+    })) {
+      if (existing.metadata?.coss_credit_note_id === note.id) {
+        if (existing.status === "void")
+          throw new Error(`Credit note ${existing.id} was voided at Stripe.`);
+        return { providerCreditNoteId: existing.id };
+      }
+    }
     // On a paid invoice, Stripe needs the whole amount accounted for: what isn't refunded is
     // credit COSS keeps itself (a grant), i.e. out of band for Stripe.
     const current = await this.#stripe.invoices.retrieve(invoice.providerInvoiceId);

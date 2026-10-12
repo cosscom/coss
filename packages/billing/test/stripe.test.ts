@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
 import type { BillingAccount } from "../src/accounts.ts";
 import type { InvoiceLineRow, InvoiceRow } from "../src/invoices.ts";
 import { StripeBillingProvider } from "../src/providers/stripe.ts";
@@ -344,7 +344,9 @@ describe("credit notes", () => {
       { invoice: target, lines: [], account: null },
       { id: "bcn_1", amountCents: 4_000n, refundCents: 1_000n, memo: "Correction" },
     );
-    const request = api.requests.find((entry) => entry.path === "/v1/credit_notes");
+    const request = api.requests.find(
+      (entry) => entry.path === "/v1/credit_notes" && entry.method === "POST",
+    );
     expect(request?.params).toMatchObject({
       amount: "4000",
       refund_amount: "1000",
@@ -384,4 +386,76 @@ test("existing Stripe customers receive the saved contact before invoice creatio
   await stripe.ensureCustomer({ ...saved, billingEmail: null }, organization);
   expect(api.customers.get(customerId)?.email).toBeNull();
   expect(api.customers.size).toBe(1);
+});
+
+test("a fully credited invoice retries safely after losing the provider response", async () => {
+  const api = new FakeStripeApi();
+  let loseResponse = false;
+  const stripe = new StripeBillingProvider({
+    secretKey: "sk_test_fake",
+    fetch: async (input, init) => {
+      const response = await api.fetch(input, init);
+      if (loseResponse && String(input).endsWith("/v1/credit_notes") && init?.method === "POST") {
+        throw new Error("Lost response after creating credit note");
+      }
+      return response;
+    },
+  });
+  const customer = await stripe.ensureCustomer(account(), {
+    id: "org_1",
+    name: "Acme",
+    slug: "acme",
+  });
+  const pushed = await stripe.pushInvoice({
+    invoice: invoice({ providerCustomerId: customer }),
+    lines: [line("invl_1", 1000n, "Service")],
+    account: null,
+  });
+  const input = {
+    invoice: invoice({ providerInvoiceId: pushed.providerInvoiceId }),
+    lines: [],
+    account: null,
+  };
+  const note = { id: "bcn_lost", amountCents: 1000n, refundCents: 0n, memo: "Correction" };
+  loseResponse = true;
+  await expect(stripe.createCreditNote(input, note)).rejects.toThrow();
+  loseResponse = false;
+  const recovered = await stripe.createCreditNote(input, note);
+  expect(recovered.providerCreditNoteId).toBe([...api.creditNotes.keys()][0] ?? null);
+  expect(api.creditNotes.size).toBe(1);
+});
+
+test("a delayed invoice push retries with the original net terms", async () => {
+  const { api, stripe } = setup();
+  const customer = await stripe.ensureCustomer(account(), {
+    id: "org_1",
+    name: "Acme",
+    slug: "acme",
+  });
+  const finalizedAt = new Date();
+  const input = {
+    invoice: invoice({
+      providerCustomerId: customer,
+      collectionMethod: "send_invoice",
+      finalizedAt,
+      dueAt: new Date(finalizedAt.getTime() + 30 * 86400000),
+    }),
+    lines: [line("invl_1", 1000n, "Fee")],
+    account: account(),
+  };
+  const pushed = await stripe.pushInvoice(input);
+  const clock = spyOn(Date, "now").mockReturnValue(finalizedAt.getTime() + 86400000);
+  try {
+    expect((await stripe.pushInvoice(input)).providerInvoiceId).toBe(pushed.providerInvoiceId);
+    expect(api.invoices.size).toBe(1);
+    const creates = api.requests.filter(
+      (request) => request.method === "POST" && request.path === "/v1/invoices",
+    );
+    expect(creates.map((request) => request.params.due_date)).toEqual([
+      String(Math.floor((finalizedAt.getTime() + 30 * 86400000) / 1000)),
+      String(Math.floor((finalizedAt.getTime() + 30 * 86400000) / 1000)),
+    ]);
+  } finally {
+    clock.mockRestore();
+  }
 });

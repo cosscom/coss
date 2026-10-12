@@ -90,13 +90,14 @@ export class FakeStripeApi {
     params: Record<string, string>;
     idempotencyKey: string | null;
   }[] = [];
+  readonly creditNotes = new Map<string, StripeObject>();
   readonly customers = new Map<string, StripeObject>();
   readonly invoices = new Map<string, StripeObject>();
   readonly sessions = new Map<string, StripeObject>();
   readonly paymentMethods = new Map<string, StripeObject>();
   /** How the next `pay` calls end (then `paid`). */
   readonly payOutcomes: ("paid" | "declined" | "authentication_required" | "processing")[] = [];
-  #replies = new Map<string, { status: number; body: unknown }>();
+  #replies = new Map<string, { status: number; body: unknown; params: string }>();
   #ids = 0;
 
   #id(prefix: string): string {
@@ -138,8 +139,20 @@ export class FakeStripeApi {
     this.requests.push({ method, path: url.pathname, params, idempotencyKey });
     const replayKey = idempotencyKey ? `${method} ${url.pathname} ${idempotencyKey}` : null;
     const cached = replayKey ? this.#replies.get(replayKey) : undefined;
-    const reply = cached ?? this.#handle(method, url.pathname, params);
-    if (replayKey && !cached) this.#replies.set(replayKey, reply);
+    const serialized = JSON.stringify(
+      Object.entries(params).sort(([a], [b]) => a.localeCompare(b)),
+    );
+    const reply =
+      cached && cached.params !== serialized
+        ? {
+            status: 400,
+            body: {
+              error: { type: "idempotency_error", message: "Idempotency parameters changed" },
+            },
+          }
+        : (cached ?? this.#handle(method, url.pathname, params));
+    if (replayKey && !cached)
+      this.#replies.set(replayKey, { ...structuredClone(reply), params: serialized });
     return new Response(JSON.stringify(reply.body), {
       status: reply.status,
       headers: { "content-type": "application/json", "request-id": "req_fake" },
@@ -338,13 +351,35 @@ export class FakeStripeApi {
       });
     }
 
-    if (resource === "credit_notes" && method === "POST") {
+    if (resource === "credit_notes" && method === "GET") {
+      const all = [...this.creditNotes.values()].filter((note) => note.invoice === params.invoice);
+      const offset = params.starting_after
+        ? all.findIndex((note) => note.id === params.starting_after) + 1
+        : 0;
+      const data = all.slice(offset, offset + Number(params.limit ?? 10));
       return ok({
+        object: "list",
+        data,
+        has_more: offset + data.length < all.length,
+        url: "/v1/credit_notes",
+      });
+    }
+    if (resource === "credit_notes" && method === "POST") {
+      const note = {
         id: this.#id("cn"),
         object: "credit_note",
         invoice: params.invoice,
         amount: Number(params.amount),
-      });
+        metadata: metadata(),
+        status: "issued",
+      };
+      this.creditNotes.set(note.id, note);
+      const invoice = this.invoices.get(params.invoice ?? "");
+      if (invoice?.status === "open") {
+        invoice.amount_remaining = Number(invoice.amount_remaining ?? invoice.total) - note.amount;
+        if (invoice.amount_remaining === 0) invoice.status = "paid";
+      }
+      return ok(note);
     }
 
     return notFound;
