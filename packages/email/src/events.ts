@@ -22,6 +22,7 @@ import {
   type StoredEmailWebhookEvent,
 } from "./schemas.ts";
 import { autoSuppress } from "./suppressions.ts";
+import { recordEmailUsage } from "./usage.ts";
 
 const { email, emailEvent, emailRecipient, environment } = schema;
 
@@ -209,7 +210,10 @@ export async function recordProviderEvent(
       .set(accepted)
       .where(and(thisEmail, eq(email.status, "queued")))
       .returning({ id: email.id });
-    if (sent || repaired) await purgeSendContent(tx, target);
+    if (sent || repaired) {
+      await purgeSendContent(tx, target);
+      if (target.mode === "live") await recordEmailUsage(tx, target);
+    }
   }
 
   const status = recipientStatus(event);

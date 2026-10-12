@@ -1,4 +1,5 @@
 /** Webhook endpoints of an environment, and their delivery log. */
+import type { PlanGate } from "@coss/billing/gate";
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { versioning } from "@coss/versioning";
@@ -31,6 +32,8 @@ export type WebhookManagementDeps = {
   secretsKeys: SecretsKeyRing;
   /** Accept `http:` and private hosts (local development only). */
   allowInsecureUrls: boolean;
+  /** The organization's plan (endpoints per environment, log drains); unset: not limited. */
+  plans?: PlanGate;
 };
 
 /** When the endpoint's previous secret stops signing; `null` when none signs any more. */
@@ -116,10 +119,17 @@ export async function createWebhookEndpoint(
         eq(webhookEndpoint.environmentId, input.environmentId),
       ),
     );
-  if ((existing?.value ?? 0) >= MAX_ENDPOINTS_PER_ENVIRONMENT) {
+  // The plan's limit, which a contract may raise above the default.
+  const limit = deps.plans
+    ? ((await deps.plans.limit(input.organizationId, "webhookEndpointsPerEnvironment")) ??
+      Number.POSITIVE_INFINITY)
+    : MAX_ENDPOINTS_PER_ENVIRONMENT;
+  if ((existing?.value ?? 0) >= limit) {
     throw new WebhookError(
       "too_many_endpoints",
-      `An environment can have at most ${MAX_ENDPOINTS_PER_ENVIRONMENT} webhook endpoints.`,
+      deps.plans && limit < MAX_ENDPOINTS_PER_ENVIRONMENT
+        ? `Your plan allows ${limit} webhook endpoints per environment. Upgrade to add more.`
+        : `An environment can have at most ${limit} webhook endpoints.`,
     );
   }
   const secret = generateSigningSecret();

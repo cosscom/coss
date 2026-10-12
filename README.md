@@ -326,6 +326,32 @@ A warning is logged in either case.
    fallback subject instead of trusting the load balancer's socket address; email-address and token/key
    buckets still apply where available.
 
+## Billing on Stripe
+
+COSS computes every invoice itself (`@coss/billing`: plans, contracts, usage, credits); Stripe only stores
+customers and payment methods, issues the invoices COSS pushes and collects them. Without Stripe
+(`BILLING_PROVIDER=fake`, the default) every charge succeeds and nothing leaves COSS.
+
+1. Create a restricted key with write access to Customers, Invoices, Invoice Items, Credit Notes, Checkout
+   Sessions, Customer Portal and Setup Intents, and read access to Payment Methods and Invoice Payments. Set it as
+   `STRIPE_SECRET_KEY` for the dashboard and the worker, with `BILLING_PROVIDER=stripe`.
+2. Add a webhook endpoint `https://coss.com/api/billing/webhook` for `invoice.paid`, `invoice.payment_succeeded`,
+   `invoice.payment_failed`, `invoice.payment_action_required`, `invoice.voided`, `invoice.marked_uncollectible`,
+   `checkout.session.completed`, `customer.updated` and `charge.dispute.created`; set its signing secret as
+   `STRIPE_WEBHOOK_SECRET` (dashboard only). Locally: `stripe listen --forward-to localhost:3000/api/billing/webhook`.
+3. Customer Portal (Settings → Billing → Customer portal): allow updating payment methods, the billing address
+   and tax IDs; turn off everything about subscriptions and invoices' cancellation (COSS has no Stripe
+   subscriptions).
+4. Turn off Stripe's automatic collection features that would duplicate COSS's: Smart Retries and failed-payment
+   emails for invoices (COSS retries charges and emails billing contacts itself). Invoice and receipt emails from
+   Stripe are fine to keep.
+5. Enable the payment method types you offer (cards; ACH Direct Debit, SEPA and Bacs Direct Debit for accounts that
+   need them; bank transfers for invoices with payment terms). Each account's allowed and required types are set in
+   the admin console. Stripe Tax is used only for accounts set to `stripe_automatic` tax.
+
+Sales deals, credits and invoice adjustments are made in the admin console (`/admin/organizations/<id>/billing`);
+deals invoiced off-Stripe use an account's `manual` provider (COSS emails the invoice; an admin records payments).
+
 ## Error monitoring on Sentry
 
 Errors and traces go to the Sentry organization `coss` (`@coss/observability`). Create three projects —

@@ -1,0 +1,354 @@
+import { describe, expect, test } from "bun:test";
+import type { BillingAccount } from "../src/accounts.ts";
+import type { InvoiceLineRow, InvoiceRow } from "../src/invoices.ts";
+import { StripeBillingProvider } from "../src/providers/stripe.ts";
+import { FakeStripeApi } from "../src/testing.ts";
+
+function account(overrides: Partial<BillingAccount> = {}): BillingAccount {
+  return {
+    id: "bacct_1",
+    organizationId: "org_1",
+    provider: "stripe",
+    providerCustomerId: null,
+    collectionMethod: "charge_automatically",
+    netTermsDays: 30,
+    allowedPaymentMethods: ["card", "us_bank_account"],
+    requiredPaymentMethods: [],
+    taxMode: "none",
+    billingEmail: "billing@acme.test",
+    billingCc: [],
+    billingName: null,
+    billingAddress: null,
+    taxId: null,
+    spendLimitCents: null,
+    alertThresholds: [80, 100],
+    graceDays: 14,
+    status: "active",
+    pastDueSince: null,
+    holdExemptUntil: null,
+    paymentMethod: null,
+    notes: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+function invoice(overrides: Partial<InvoiceRow> = {}): InvoiceRow {
+  return {
+    id: "inv_1",
+    organizationId: "org_1",
+    accountId: "bacct_1",
+    organizationName: "Acme",
+    organizationSlug: "acme",
+    number: "COSS-000042",
+    kind: "period",
+    status: "open",
+    currency: "usd",
+    periodStart: new Date("2026-10-01T00:00:00Z"),
+    periodEnd: new Date("2026-11-01T00:00:00Z"),
+    subtotalCents: 72_500n,
+    discountCents: 0n,
+    creditCents: 2_500n,
+    taxCents: 0n,
+    totalCents: 70_000n,
+    amountPaidCents: 0n,
+    amountDueCents: 70_000n,
+    collectionMethod: "charge_automatically",
+    provider: "stripe",
+    providerCustomerId: null,
+    providerInvoiceId: null,
+    hostedUrl: null,
+    pdfUrl: null,
+    billingEmail: null,
+    dueAt: new Date(),
+    finalizedAt: new Date(),
+    paidAt: null,
+    voidedAt: null,
+    syncAction: "push",
+    syncAttempts: 1,
+    nextSyncAt: null,
+    syncError: null,
+    collectionAttempts: 0,
+    nextCollectionAt: null,
+    paymentState: null,
+    paymentError: null,
+    termsSnapshot: null,
+    memo: null,
+    createdByUserId: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+function line(id: string, amountCents: bigint, description: string): InvoiceLineRow {
+  return {
+    id,
+    invoiceId: "inv_1",
+    organizationId: "org_1",
+    position: 0,
+    kind: "usage",
+    description,
+    meter: null,
+    dimension: null,
+    quantity: null,
+    coveredUnits: null,
+    unitNanos: null,
+    amountCents,
+    periodStart: new Date("2026-10-01T00:00:00Z"),
+    periodEnd: new Date("2026-11-01T00:00:00Z"),
+    contractId: null,
+    grantId: null,
+    chargeKey: null,
+    detail: null,
+  };
+}
+
+function setup() {
+  const api = new FakeStripeApi();
+  const stripe = new StripeBillingProvider({ secretKey: "sk_test_fake", fetch: api.fetch });
+  return { api, stripe };
+}
+
+describe("StripeBillingProvider", () => {
+  test("pushes an invoice: customer, numbered draft, one item per line, finalized without auto-advance", async () => {
+    const { api, stripe } = setup();
+    const customerId = await stripe.ensureCustomer(account(), {
+      id: "org_1",
+      name: "Acme",
+      slug: "acme",
+    });
+    const lines = [
+      line("invl_1", 70_000n, "Email: 2,000,000 recipients"),
+      line("invl_2", 2_500n, "Pro plan"),
+      line("invl_3", -2_500n, "Credit applied"),
+      line("invl_4", 0n, "Free units"),
+    ];
+    const pushed = await stripe.pushInvoice({
+      invoice: invoice({ providerCustomerId: customerId }),
+      lines,
+      account: account({ providerCustomerId: customerId }),
+    });
+    expect(pushed).toMatchObject({
+      totalCents: 70_000n,
+      taxCents: 0n,
+      hostedUrl: expect.stringContaining("https://invoice.stripe.test/"),
+    });
+    const created = api.invoices.get(pushed.providerInvoiceId ?? "");
+    expect(created).toMatchObject({
+      number: "COSS-000042",
+      auto_advance: false,
+      status: "open",
+      metadata: { coss_invoice_id: "inv_1" },
+    });
+    const items = api.requests.filter((request) => request.path === "/v1/invoiceitems");
+    expect(items.map((request) => [request.params.amount, request.idempotencyKey])).toEqual([
+      ["70000", "coss:invoice:inv_1:line:invl_1"],
+      ["2500", "coss:invoice:inv_1:line:invl_2"],
+      ["-2500", "coss:invoice:inv_1:line:invl_3"],
+    ]);
+    // A retry after a crash replays the same requests (idempotency keys) instead of duplicating.
+    const again = await stripe.pushInvoice({
+      invoice: invoice({
+        providerCustomerId: customerId,
+        providerInvoiceId: pushed.providerInvoiceId,
+      }),
+      lines,
+      account: account({ providerCustomerId: customerId }),
+    });
+    expect(again.providerInvoiceId).toBe(pushed.providerInvoiceId);
+    expect(api.invoices.size).toBe(1);
+  });
+
+  test("collects: paid, declined, needs authentication, still processing", async () => {
+    const { api, stripe } = setup();
+    const customerId = await stripe.ensureCustomer(account(), {
+      id: "org_1",
+      name: "Acme",
+      slug: "acme",
+    });
+    const pushed = await stripe.pushInvoice({
+      invoice: invoice({ providerCustomerId: customerId }),
+      lines: [line("invl_1", 1_000n, "Usage")],
+      account: null,
+    });
+    const target = invoice({
+      providerCustomerId: customerId,
+      providerInvoiceId: pushed.providerInvoiceId,
+    });
+    api.payOutcomes.push("declined", "authentication_required", "processing");
+    expect(await stripe.collect({ invoice: target, lines: [], account: null })).toEqual({
+      state: "failed",
+      error: "Your card was declined.",
+    });
+    expect(
+      await stripe.collect({
+        invoice: { ...target, collectionAttempts: 1 },
+        lines: [],
+        account: null,
+      }),
+    ).toMatchObject({
+      state: "requires_action",
+      hostedUrl: expect.stringContaining("https://invoice.stripe.test/"),
+    });
+    expect(
+      await stripe.collect({
+        invoice: { ...target, collectionAttempts: 2 },
+        lines: [],
+        account: null,
+      }),
+    ).toEqual({
+      state: "processing",
+    });
+    expect(
+      await stripe.collect({
+        invoice: { ...target, collectionAttempts: 3 },
+        lines: [],
+        account: null,
+      }),
+    ).toMatchObject({
+      state: "paid",
+      amountCents: 1_000n,
+      paymentId: `pi_for_${pushed.providerInvoiceId}`,
+    });
+    const keys = api.requests
+      .filter((request) => request.path.endsWith("/pay"))
+      .map((request) => request.idempotencyKey);
+    expect(new Set(keys).size).toBe(4);
+  });
+
+  test("invoices with net terms are sent, not charged", async () => {
+    const { api, stripe } = setup();
+    const customerId = await stripe.ensureCustomer(account(), {
+      id: "org_1",
+      name: "Acme",
+      slug: "acme",
+    });
+    const target = invoice({ providerCustomerId: customerId, collectionMethod: "send_invoice" });
+    const pushed = await stripe.pushInvoice({
+      invoice: target,
+      lines: [line("invl_1", 1_000n, "Fee")],
+      account: null,
+    });
+    expect(
+      api.requests.find((request) => request.path === "/v1/invoices")?.params.collection_method,
+    ).toBe("send_invoice");
+    const result = await stripe.collect({
+      invoice: { ...target, providerInvoiceId: pushed.providerInvoiceId },
+      lines: [],
+      account: null,
+    });
+    expect(result).toEqual({ state: "sent" });
+  });
+
+  test("a setup session makes the new card the default", async () => {
+    const { api, stripe } = setup();
+    const customerId = await stripe.ensureCustomer(account(), {
+      id: "org_1",
+      name: "Acme",
+      slug: "acme",
+    });
+    const withCustomer = account({ providerCustomerId: customerId });
+    const session = await stripe.createSetupSession(
+      withCustomer,
+      { id: "org_1", name: "Acme", slug: "acme" },
+      {
+        returnUrl: "https://coss.test/acme/settings/billing",
+        cancelUrl: "https://coss.test/acme/settings/billing",
+        methods: ["card", "us_bank_account", "customer_balance"],
+      },
+    );
+    expect(session.url).toContain("https://checkout.stripe.test/");
+    const created = api.requests.find((request) => request.path === "/v1/checkout/sessions");
+    expect(created?.params).toMatchObject({
+      mode: "setup",
+      "payment_method_types[0]": "card",
+      "payment_method_types[1]": "us_bank_account",
+    });
+    expect(created?.params.success_url).toContain("setup={CHECKOUT_SESSION_ID}");
+    // Someone else's session (another customer) is refused.
+    expect(
+      await stripe.completeSetup(account({ providerCustomerId: "cus_other" }), session.sessionId),
+    ).toBeNull();
+    api.completeSession(session.sessionId);
+    expect(await stripe.completeSetup(withCustomer, session.sessionId)).toEqual({
+      type: "card",
+      brand: "visa",
+      last4: "4242",
+      expMonth: 12,
+      expYear: 2030,
+    });
+    expect(await stripe.paymentMethod(withCustomer)).toMatchObject({ last4: "4242" });
+  });
+
+  test("events are read from the invoice's current state", async () => {
+    const { stripe } = setup();
+    const customerId = await stripe.ensureCustomer(account(), {
+      id: "org_1",
+      name: "Acme",
+      slug: "acme",
+    });
+    const pushed = await stripe.pushInvoice({
+      invoice: invoice({ providerCustomerId: customerId }),
+      lines: [line("invl_1", 1_000n, "Usage")],
+      account: null,
+    });
+    const event = (type: string) => ({
+      id: `evt_${type}`,
+      type,
+      payload: { data: { object: { id: pushed.providerInvoiceId, object: "invoice" } } },
+    });
+    // A stale `payment_failed` for an invoice that is open.
+    expect(await stripe.interpretEvent(event("invoice.payment_failed"))).toEqual([
+      {
+        kind: "invoice_payment_failed",
+        providerInvoiceId: pushed.providerInvoiceId ?? "",
+        error: "The payment failed.",
+      },
+    ]);
+    await stripe.collect({
+      invoice: invoice({ providerInvoiceId: pushed.providerInvoiceId }),
+      lines: [],
+      account: null,
+    });
+    // Once paid, any invoice event reports it paid.
+    expect(await stripe.interpretEvent(event("invoice.payment_failed"))).toMatchObject([
+      { kind: "invoice_paid", amountCents: 1_000n },
+    ]);
+    expect(
+      await stripe.interpretEvent({ id: "evt_x", type: "product.created", payload: {} }),
+    ).toEqual([]);
+  });
+});
+
+describe("credit notes", () => {
+  test("on a paid invoice, what isn't refunded is out of band (COSS keeps it as credit)", async () => {
+    const { api, stripe } = setup();
+    const customerId = await stripe.ensureCustomer(account(), {
+      id: "org_1",
+      name: "Acme",
+      slug: "acme",
+    });
+    const pushed = await stripe.pushInvoice({
+      invoice: invoice({ providerCustomerId: customerId }),
+      lines: [line("invl_1", 10_000n, "Usage")],
+      account: null,
+    });
+    const target = invoice({
+      providerCustomerId: customerId,
+      providerInvoiceId: pushed.providerInvoiceId,
+    });
+    await stripe.collect({ invoice: target, lines: [], account: null });
+    await stripe.createCreditNote(
+      { invoice: target, lines: [], account: null },
+      { id: "bcn_1", amountCents: 4_000n, refundCents: 1_000n, memo: "Correction" },
+    );
+    const request = api.requests.find((entry) => entry.path === "/v1/credit_notes");
+    expect(request?.params).toMatchObject({
+      amount: "4000",
+      refund_amount: "1000",
+      out_of_band_amount: "3000",
+    });
+  });
+});

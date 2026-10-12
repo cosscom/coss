@@ -13,6 +13,7 @@ import {
 import { refresh } from "next/cache";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
+import { planGate } from "@/lib/billing";
 import { requireOrgPermission } from "@/lib/session";
 
 function formLifetime(formData: FormData): ScimTokenLifetimeDays {
@@ -31,6 +32,7 @@ export async function connectScimAction(
     const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
       scim: ["update"],
     });
+    await planGate().requireFeature(organization.id, "scim");
     const { token } = await connectScim({
       organizationId: organization.id,
       actorId: session.user.id,

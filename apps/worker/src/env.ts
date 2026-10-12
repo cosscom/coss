@@ -1,3 +1,4 @@
+import { billingEnvShape } from "@coss/billing/env";
 import { emailWorkerEnvShape } from "@coss/email/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { screeningEnvShape } from "@coss/screening/env";
@@ -26,6 +27,8 @@ export const env = createEnv({
     BETTER_AUTH_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
     // Decrypts webhook signing secrets (same value as the dashboard's and the API's).
     ...webhookEnvShape,
+    // Billing (@coss/billing): the payment provider new accounts use, and Stripe's API key.
+    ...billingEnvShape,
     // Error monitoring; read by src/instrument.ts before this schema runs.
     ...sentryEnvShape,
     // The image's commit (Dockerfile build argument), Sentry's release.

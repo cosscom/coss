@@ -15,6 +15,7 @@
       "name": "@coss/api",
       "version": "0.0.0",
       "dependencies": {
+        "@coss/billing": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
         "@coss/logs": "workspace:*",
@@ -43,6 +44,7 @@
       "dependencies": {
         "@coss/api": "workspace:*",
         "@coss/auth": "workspace:*",
+        "@coss/billing": "workspace:*",
         "@coss/observability": "workspace:*",
         "@coss/retention": "workspace:*",
         "@coss/ui": "workspace:*",
@@ -83,6 +85,7 @@
         "@better-auth/passkey": "catalog:",
         "@better-auth/sso": "catalog:",
         "@coss/auth": "workspace:*",
+        "@coss/billing": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
         "@coss/logs": "workspace:*",
@@ -130,6 +133,7 @@
         "@aws-sdk/client-sns": "catalog:",
         "@aws-sdk/client-sqs": "catalog:",
         "@coss/auth": "workspace:*",
+        "@coss/billing": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
         "@coss/logs": "workspace:*",
@@ -157,6 +161,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@coss/auth": "workspace:*",
+        "@coss/billing": "workspace:*",
         "@coss/email": "workspace:*",
         "@coss/observability": "workspace:*",
         "@coss/ratelimit": "workspace:*",
@@ -188,6 +193,23 @@
         "typescript": "catalog:",
       },
     },
+    "packages/billing": {
+      "name": "@coss/billing",
+      "version": "0.0.0",
+      "dependencies": {
+        "@coss/db": "workspace:*",
+        "@coss/retention": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "stripe": "22.6.2",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@coss/tenancy": "workspace:*",
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/db": {
       "name": "@coss/db",
       "version": "0.0.0",
@@ -209,6 +231,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@aws-sdk/client-sesv2": "catalog:",
+        "@coss/billing": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/logs": "workspace:*",
         "@coss/reputation": "workspace:*",
@@ -390,6 +413,7 @@
       "name": "@coss/webhooks",
       "version": "0.0.0",
       "dependencies": {
+        "@coss/billing": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/logs": "workspace:*",
         "@coss/retention": "workspace:*",
@@ -690,6 +714,8 @@
     "@coss/api": ["@coss/api@workspace:apps/api"],
 
     "@coss/auth": ["@coss/auth@workspace:packages/auth"],
+
+    "@coss/billing": ["@coss/billing@workspace:packages/billing"],
 
     "@coss/db": ["@coss/db@workspace:packages/db"],
 
@@ -2008,6 +2034,8 @@
     "standard-as-callback": ["standard-as-callback@2.1.0", "", {}, "sha512-qoRRSyROncaz1z0mvYqIE4lCd9p2R90i6GxW3uZv5ucSu8tU7B5HXUP1gG8pVZsYNVaXjk8ClXHPttLyxAL48A=="],
 
     "stringify-entities": ["stringify-entities@4.0.4", "", { "dependencies": { "character-entities-html4": "^2.0.0", "character-entities-legacy": "^3.0.0" } }, "sha512-IwfBptatlO+QCJUo19AqvrPNqlVMpW9YEL2LIVY+Rpv2qsjCGxaDLNRgeGsQWJhfItebuJhsGSLjaBbNSQ+ieg=="],
+
+    "stripe": ["stripe@22.6.2", "", { "peerDependencies": { "@types/node": ">=18" }, "optionalPeers": ["@types/node"] }, "sha512-PwRE2scocvXqDKPiskMa5vRJEAEkq46W69XyUYmAwrNSLr675lQnfqLwnsndAWizwgihOWw/irLmoFRo3ez7ew=="],
 
     "strnum": ["strnum@2.5.1", "", { "dependencies": { "anynum": "^1.0.1" } }, "sha512-UM4nTLWzQiDBseVxUGxN0wJzIk0UU89Qi7pKXz9qISo+lhviJikTuikBsK/oFRlpvYHvSdz0TVoLyQ+sEpYwxA=="],
 

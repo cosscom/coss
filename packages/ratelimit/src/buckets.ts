@@ -231,6 +231,17 @@ export const BUCKETS = {
     overridable: false,
     failureMode: "deny",
   },
+  // The payment provider's webhooks (the dashboard's `/api/billing/webhook`): signatures are
+  // checked before anything is stored, so this only bounds the work forged requests cause. Stripe
+  // retries what is refused, so a store outage allows rather than drops events.
+  "billing.webhooks": {
+    scope: "ip",
+    limit: 50,
+    periodMs: SECOND,
+    burst: 200,
+    overridable: false,
+    failureMode: "allow",
+  },
   // Public recipient-facing tracking endpoints. The token bucket always bounds database work for
   // one message; the IP bucket also limits callers when the deployment has a trusted client IP.
   "tracking.token": {

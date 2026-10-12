@@ -2,7 +2,7 @@ import { listOrgAuditActions, listOrgAuditEvents } from "@coss/logs";
 import type { OrgAuditEventOutput } from "@coss/logs/schemas";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardPanel } from "@coss/ui/components/card";
+import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
   TableBody,
@@ -50,7 +50,8 @@ export default async function AuditLogPage({
 }: PageProps<"/[orgSlug]/settings/audit">) {
   const { orgSlug } = await params;
   const search = await searchParams;
-  const { organization } = await requireAuditAccess(orgSlug);
+  const { organization, planAllows } = await requireAuditAccess(orgSlug);
+  if (!planAllows) return <AuditLogUpsell orgSlug={organization.slug} />;
   const filters = auditFiltersFrom(search);
   const before = typeof search.before === "string" ? search.before : undefined;
   const [{ events, nextBefore }, actions] = await Promise.all([
@@ -241,6 +242,36 @@ export default async function AuditLogPage({
           ) : null}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+/** Plans without the audit log: it keeps recording, so upgrading shows the history too. */
+function AuditLogUpsell(props: { orgSlug: string }) {
+  return (
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        description={
+          <Link className="underline" href={`/${props.orgSlug}/settings`}>
+            Back to settings
+          </Link>
+        }
+        title="Audit log"
+      />
+      <Card>
+        <CardHeader>
+          <CardTitle>The audit log is part of the Pro plan</CardTitle>
+          <CardDescription>
+            See who changed API keys, members, domains, webhooks and settings, from the dashboard or
+            the API. Changes are already being recorded: upgrade to see them.
+          </CardDescription>
+        </CardHeader>
+        <CardPanel>
+          <Button render={<Link href={`/${props.orgSlug}/settings/billing/plans`} />} size="sm">
+            Compare plans
+          </Button>
+        </CardPanel>
+      </Card>
     </div>
   );
 }

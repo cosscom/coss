@@ -1,9 +1,11 @@
 import "server-only";
 import { setOrgAuditRecorder } from "@coss/auth/audit";
+import { setMembershipLimitResolver } from "@coss/auth/limits";
 import { authOptions } from "@coss/auth/options";
 import { recordOrgAuditEvent } from "@coss/logs";
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
+import { memberLimit } from "./billing";
 
 /**
  * The dashboard's Better Auth instance: the shared options plus `nextCookies()`, which lets
@@ -16,5 +18,7 @@ export const auth = betterAuth({
 
 // Invitations accepted or rejected on Better Auth's own routes land in the org's audit log too.
 setOrgAuditRecorder((record) => recordOrgAuditEvent(record));
+// Accepting an invitation adds a member: the organization's plan limits how many it may have.
+setMembershipLimitResolver(memberLimit);
 
 export type Session = typeof auth.$Infer.Session;
