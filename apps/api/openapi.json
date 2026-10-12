@@ -1462,7 +1462,7 @@
               "record": {
                 "type": "CNAME",
                 "name": "links.acme.com",
-                "value": "track.coss.com",
+                "value": "track.cosslinks.com",
                 "status": "verified",
                 "found": []
               },
@@ -1671,7 +1671,7 @@
             "record": {
               "type": "CNAME",
               "name": "links.acme.com",
-              "value": "track.coss.com",
+              "value": "track.cosslinks.com",
               "status": "verified",
               "found": []
             },
@@ -1795,7 +1795,7 @@
                   "record": {
                     "type": "CNAME",
                     "name": "links.acme.com",
-                    "value": "track.coss.com",
+                    "value": "track.cosslinks.com",
                     "status": "verified",
                     "found": []
                   },

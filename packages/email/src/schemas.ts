@@ -1102,7 +1102,7 @@ const TRACKING_DOMAIN_EXAMPLE = {
   record: {
     type: "CNAME",
     name: "links.acme.com",
-    value: "track.coss.com",
+    value: "track.cosslinks.com",
     status: "verified",
     found: [],
   },

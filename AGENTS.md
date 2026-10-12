@@ -145,7 +145,8 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `API_CORS_ORIGINS` | `apps/api`: comma-separated browser origins allowed on `/v1/*` (the docs' playground); default `https://coss.com`, locally `http://localhost:3002` |
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
 | `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX` | required with `EMAIL_PROVIDER=ses` (api, web, worker); printed by `ses:bootstrap`. AWS credentials come from the default chain (`globalPassThroughEnv` in `turbo.json`) |
-| `TRACKING_DOMAIN_PROVIDER`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`, `TRACKING_CNAME_TARGET` | api, web, worker: custom tracking domains (`fake` default, or `cloudflare`: Cloudflare for SaaS custom hostnames on the coss.com zone, which needs the token and zone id); customers CNAME to `TRACKING_CNAME_TARGET` (default `track.coss.com`); shape in `@coss/email/env` |
+| `TRACKING_DOMAIN_PROVIDER`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`, `TRACKING_CNAME_TARGET` | api, web, worker: custom tracking domains (`fake` default, or `cloudflare`: Cloudflare for SaaS custom hostnames on the cosslinks.com zone, which needs the token and zone id); customers CNAME to `TRACKING_CNAME_TARGET` (default `track.cosslinks.com`); shape in `@coss/email/env` |
+| `TRACKING_PUBLIC_URL` | api + worker: origin of the open/click tracking links in emails (default `API_PUBLIC_URL`); production `https://track.cosslinks.com`, a domain of its own so senders' abuse never lands on coss.com |
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
 | `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | web reads the id only to refuse admin suspensions of COSS's own organization (`isSystemOrganization`, `apps/web/src/lib/system-organization.ts`); worker: account emails (verification, password reset, invitation) and reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
 | `VALKEY_URL`, `VALKEY_CLUSTER` | api + web: rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
@@ -627,8 +628,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   be the org's and its tracking domain `active` with that provider, else `trackingBaseUrl`. Nothing is stored on the
   email, and the `/t/*` routes ignore `Host`. Removing one breaks links in emails already sent through it. API:
   `POST`/`DELETE /v1/domains/{id}/tracking` (`domain:create`/`domain:delete`, no new permission), `Domain.tracking`
-  (a `z.union([…, z.null()])`: `.nullable()` loses `null` in the OpenAPI document). Edge: Cloudflare's fallback
-  origin `track.coss.com` → ALB rule `/t/*` + `X-Tracking-Origin-Verify` → api (`infra/aws/routing.ts`).
+  (a `z.union([…, z.null()])`: `.nullable()` loses `null` in the OpenAPI document). Edge: `track.cosslinks.com`
+  (the default tracking host, `TRACKING_PUBLIC_URL`, and Cloudflare's fallback origin; zone `cosslinks.com` in a
+  self-serve Cloudflare account, never the coss.com zone) → ALB rule `/t/*` + `X-Tracking-Origin-Verify` → api
+  (`infra/aws/routing.ts`).
 - **Scheduled sends** (`scheduled_at`, ISO 8601 with an offset, ≤ 30 days ahead; a past time sends now): stored as
   `scheduled` with a COSS-source `email.scheduled` event and sent by the worker's `dispatchDue` (every 5 s).
   It claims straight from `scheduled` (compare-and-set to `queued` + `provider`), after

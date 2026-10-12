@@ -83,7 +83,7 @@ const trackingDomains: EnvVar[] = [
     name: "TRACKING_CNAME_TARGET",
     kind: "plain",
     required: false,
-    value: "track.coss.com",
+    value: "track.cosslinks.com",
     description: "The zone's fallback origin, which customers CNAME their tracking domain to.",
   },
 ];
@@ -218,6 +218,16 @@ const auth: EnvVar[] = [
       "Origin of both zones (site and dashboard): base URL, trusted origin, secure cookies.",
   },
 ];
+
+const trackingPublicUrl: EnvVar = {
+  name: "TRACKING_PUBLIC_URL",
+  kind: "plain",
+  required: false,
+  value: "https://track.cosslinks.com",
+  description:
+    "Origin of the open/click tracking links in emails (defaults to API_PUBLIC_URL): its own " +
+    "domain, so abuse flagged by URL blocklists never lands on coss.com (infra/aws/routing.ts).",
+};
 
 const apiPublicUrl: EnvVar = {
   name: "API_PUBLIC_URL",
@@ -402,6 +412,7 @@ export const SERVICES: Service[] = [
         description: "Browser origins allowed on /v1/* (the docs' playground).",
       },
       ...email,
+      trackingPublicUrl,
       webhookKey,
       ...sentry("api"),
       sentryRelease,
@@ -423,6 +434,7 @@ export const SERVICES: Service[] = [
       ...db,
       ...email,
       apiPublicUrl,
+      trackingPublicUrl,
       {
         name: "API_PORT",
         kind: "plain",

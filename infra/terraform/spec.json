@@ -129,7 +129,7 @@
           "name": "TRACKING_CNAME_TARGET",
           "kind": "plain",
           "required": false,
-          "value": "track.coss.com",
+          "value": "track.cosslinks.com",
           "description": "The zone's fallback origin, which customers CNAME their tracking domain to."
         },
         {
@@ -423,8 +423,15 @@
           "name": "TRACKING_CNAME_TARGET",
           "kind": "plain",
           "required": false,
-          "value": "track.coss.com",
+          "value": "track.cosslinks.com",
           "description": "The zone's fallback origin, which customers CNAME their tracking domain to."
+        },
+        {
+          "name": "TRACKING_PUBLIC_URL",
+          "kind": "plain",
+          "required": false,
+          "value": "https://track.cosslinks.com",
+          "description": "Origin of the open/click tracking links in emails (defaults to API_PUBLIC_URL): its own domain, so abuse flagged by URL blocklists never lands on coss.com (infra/aws/routing.ts)."
         },
         {
           "name": "WEBHOOK_SECRETS_KEY",
@@ -549,7 +556,7 @@
           "name": "TRACKING_CNAME_TARGET",
           "kind": "plain",
           "required": false,
-          "value": "track.coss.com",
+          "value": "track.cosslinks.com",
           "description": "The zone's fallback origin, which customers CNAME their tracking domain to."
         },
         {
@@ -558,6 +565,13 @@
           "required": true,
           "value": "https://api.coss.com",
           "description": "The API's public origin (OpenAPI, dashboard snippets and email tracking URLs)."
+        },
+        {
+          "name": "TRACKING_PUBLIC_URL",
+          "kind": "plain",
+          "required": false,
+          "value": "https://track.cosslinks.com",
+          "description": "Origin of the open/click tracking links in emails (defaults to API_PUBLIC_URL): its own domain, so abuse flagged by URL blocklists never lands on coss.com (infra/aws/routing.ts)."
         },
         {
           "name": "API_PORT",
