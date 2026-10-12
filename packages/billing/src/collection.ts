@@ -60,12 +60,10 @@ export async function runDueBillingCollection(opts: {
         now,
       });
       const base = invoice.dueAt ?? now;
-      const nextDays = overdue ? OVERDUE_REMINDER_DAYS[reminders - 1] : OVERDUE_REMINDER_DAYS[0];
-      const next = !overdue
-        ? new Date(base.getTime() + (OVERDUE_REMINDER_DAYS[0] ?? 1) * DAY_MS)
-        : nextDays !== undefined
-          ? new Date(base.getTime() + nextDays * DAY_MS)
-          : null;
+      const next =
+        OVERDUE_REMINDER_DAYS.map((days) => new Date(base.getTime() + days * DAY_MS)).find(
+          (reminder) => reminder > now,
+        ) ?? null;
       await tx
         .update(billingInvoice)
         .set({

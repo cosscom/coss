@@ -3,8 +3,8 @@
  * or sent with net terms); voids and write-offs are mirrored. Run by the worker; also called
  * directly to collect an upgrade's invoice while the customer waits.
  */
-import { db, schema } from "@coss/db";
-import { and, asc, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
+import { db, schema, type Transaction } from "@coss/db";
+import { and, asc, eq, inArray, isNotNull, lte, ne, sql } from "drizzle-orm";
 import { getBillingAccount, organizationLabel } from "./accounts.ts";
 import { evaluateStanding } from "./holds.ts";
 import { type InvoiceRow, invoiceLines, lockInvoice } from "./invoices.ts";
@@ -164,9 +164,35 @@ async function syncInvoice(
         return null;
       }
       case "collect": {
-        const result = await provider.collect(input);
-        await applyCollection(invoice, result, deps, now);
-        return result;
+        return await db.transaction(async (tx) => {
+          // Credit creation takes this same lock. Keep it through collection and recording
+          // the result so a credit cannot be classified against a stale unpaid balance.
+          const current = await lockInvoice(tx, invoice.id);
+          if (current?.status !== "open" || current.syncAction !== "collect") return null;
+          const [unissued] = await tx
+            .select({ id: schema.billingCreditNote.id })
+            .from(schema.billingCreditNote)
+            .where(
+              and(
+                eq(schema.billingCreditNote.invoiceId, current.id),
+                ne(schema.billingCreditNote.status, "issued"),
+              ),
+            )
+            .limit(1);
+          if (unissued) {
+            await tx
+              .update(billingInvoice)
+              .set({
+                nextSyncAt: new Date(now.getTime() + MINUTE),
+                syncError: "Waiting for invoice credit notes to reach the provider.",
+              })
+              .where(eq(billingInvoice.id, current.id));
+            return null;
+          }
+          const result = await provider.collect({ ...input, invoice: current });
+          await applyCollectionInTransaction(tx, current, result, deps, now);
+          return result;
+        });
       }
       case "void":
         await provider.voidInvoice(input);
@@ -208,92 +234,100 @@ export async function applyCollection(
   deps: Pick<BillingSyncDeps, "systemOrganizationId">,
   now: Date,
 ): Promise<void> {
-  await db.transaction(async (tx) => {
-    const current = await lockInvoice(tx, invoice.id);
-    if (current?.status !== "open") return;
-    const done = { syncAction: null, nextSyncAt: null, syncAttempts: 0, syncError: null };
-    switch (result.state) {
-      case "paid":
-        await tx.update(billingInvoice).set(done).where(eq(billingInvoice.id, current.id));
-        await recordPayment(
-          tx,
-          { ...current, ...done },
-          {
-            amountCents: result.amountCents,
-            method: result.method,
-            providerPaymentId: result.paymentId,
-            receivedAt: now,
-          },
-          now,
-          { systemOrganizationId: deps.systemOrganizationId },
-        );
-        return;
-      case "processing":
-        await tx
-          .update(billingInvoice)
-          .set({ ...done, paymentState: "processing", paymentError: null })
-          .where(eq(billingInvoice.id, current.id));
-        return;
-      case "requires_action":
-        await tx
-          .update(billingInvoice)
-          .set({
-            ...done,
-            paymentState: "requires_action",
-            hostedUrl: result.hostedUrl ?? current.hostedUrl,
-            nextCollectionAt: nextRetry(current, now),
-            collectionAttempts: current.collectionAttempts + 1,
-          })
-          .where(eq(billingInvoice.id, current.id));
+  await db.transaction((tx) => applyCollectionInTransaction(tx, invoice, result, deps, now));
+}
+
+async function applyCollectionInTransaction(
+  tx: Transaction,
+  invoice: InvoiceRow,
+  result: CollectResult,
+  deps: Pick<BillingSyncDeps, "systemOrganizationId">,
+  now: Date,
+): Promise<void> {
+  const current = await lockInvoice(tx, invoice.id);
+  if (current?.status !== "open") return;
+  const done = { syncAction: null, nextSyncAt: null, syncAttempts: 0, syncError: null };
+  switch (result.state) {
+    case "paid":
+      await tx.update(billingInvoice).set(done).where(eq(billingInvoice.id, current.id));
+      await recordPayment(
+        tx,
+        { ...current, ...done },
+        {
+          amountCents: result.amountCents,
+          method: result.method,
+          providerPaymentId: result.paymentId,
+          receivedAt: now,
+        },
+        now,
+        { systemOrganizationId: deps.systemOrganizationId },
+      );
+      return;
+    case "processing":
+      await tx
+        .update(billingInvoice)
+        .set({ ...done, paymentState: "processing", paymentError: null })
+        .where(eq(billingInvoice.id, current.id));
+      return;
+    case "requires_action":
+      await tx
+        .update(billingInvoice)
+        .set({
+          ...done,
+          paymentState: "requires_action",
+          hostedUrl: result.hostedUrl ?? current.hostedUrl,
+          nextCollectionAt: nextRetry(current, now),
+          collectionAttempts: current.collectionAttempts + 1,
+        })
+        .where(eq(billingInvoice.id, current.id));
+      await enqueueBillingNotification(tx, {
+        organizationId: current.organizationId,
+        kind: "payment_action_required",
+        dedupeKey: `action:${current.id}:${current.collectionAttempts}`,
+        payload: { invoiceId: current.id },
+        now,
+      });
+      return;
+    case "failed":
+      await tx
+        .update(billingInvoice)
+        .set({
+          ...done,
+          paymentState: "failed",
+          paymentError: result.error.slice(0, 500),
+          nextCollectionAt: nextRetry(current, now),
+          collectionAttempts: current.collectionAttempts + 1,
+        })
+        .where(eq(billingInvoice.id, current.id));
+      await enqueueBillingNotification(tx, {
+        organizationId: current.organizationId,
+        kind: "payment_failed",
+        dedupeKey: `failed:${current.id}:${current.collectionAttempts}`,
+        payload: { invoiceId: current.id, error: result.error.slice(0, 200) },
+        now,
+      });
+      await evaluateStanding(tx, current.accountId, now, deps.systemOrganizationId);
+      return;
+    case "sent": {
+      const reminder = current.dueAt
+        ? new Date(Math.max(now.getTime(), current.dueAt.getTime() - 3 * DAY_MS))
+        : null;
+      await tx
+        .update(billingInvoice)
+        .set({ ...done, nextCollectionAt: reminder })
+        .where(eq(billingInvoice.id, current.id));
+      if (current.provider === "manual") {
         await enqueueBillingNotification(tx, {
           organizationId: current.organizationId,
-          kind: "payment_action_required",
-          dedupeKey: `action:${current.id}:${current.collectionAttempts}`,
+          kind: "invoice_issued",
+          dedupeKey: `issued:${current.id}`,
           payload: { invoiceId: current.id },
           now,
         });
-        return;
-      case "failed":
-        await tx
-          .update(billingInvoice)
-          .set({
-            ...done,
-            paymentState: "failed",
-            paymentError: result.error.slice(0, 500),
-            nextCollectionAt: nextRetry(current, now),
-            collectionAttempts: current.collectionAttempts + 1,
-          })
-          .where(eq(billingInvoice.id, current.id));
-        await enqueueBillingNotification(tx, {
-          organizationId: current.organizationId,
-          kind: "payment_failed",
-          dedupeKey: `failed:${current.id}:${current.collectionAttempts}`,
-          payload: { invoiceId: current.id, error: result.error.slice(0, 200) },
-          now,
-        });
-        await evaluateStanding(tx, current.accountId, now, deps.systemOrganizationId);
-        return;
-      case "sent": {
-        const reminder = current.dueAt
-          ? new Date(Math.max(now.getTime(), current.dueAt.getTime() - 3 * DAY_MS))
-          : null;
-        await tx
-          .update(billingInvoice)
-          .set({ ...done, nextCollectionAt: reminder })
-          .where(eq(billingInvoice.id, current.id));
-        if (current.provider === "manual") {
-          await enqueueBillingNotification(tx, {
-            organizationId: current.organizationId,
-            kind: "invoice_issued",
-            dedupeKey: `issued:${current.id}`,
-            payload: { invoiceId: current.id },
-            now,
-          });
-        }
-        return;
       }
+      return;
     }
-  });
+  }
 }
 
 /** When to try a failed charge again (`null`: the schedule is over; the grace period decides). */

@@ -116,6 +116,18 @@ export async function createCreditNote(input: {
         "The invoice hasn't been issued at Stripe yet. Try again in a minute.",
       );
     }
+    if (invoice.paymentState === "processing") {
+      throw new BillingError(
+        "invoice_state",
+        "Wait for the payment to settle before crediting it.",
+      );
+    }
+    if (invoice.status === "open" && input.amountCents > invoice.amountDueCents) {
+      throw new BillingError(
+        "invalid_change",
+        "An open invoice can only be credited up to its remaining balance.",
+      );
+    }
     const [prior] = await tx
       .select({
         amount: sum(billingCreditNote.amountCents),
@@ -218,7 +230,7 @@ export async function listCreditNotes(organizationId: string): Promise<CreditNot
 
 /** Mirrors pending credit notes (and their refunds) at the provider. Returns how many were tried. */
 export async function runDueCreditNoteSync(
-  opts: { now?: Date; limit?: number },
+  opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } },
   deps: { providers: BillingProviders },
 ): Promise<number> {
   const now = opts.now ?? new Date();
@@ -229,6 +241,9 @@ export async function runDueCreditNoteSync(
     .where(
       and(
         eq(billingCreditNote.status, "pending"),
+        opts.scope
+          ? inArray(billingCreditNote.organizationId, opts.scope.organizationIds)
+          : undefined,
         isNotNull(billingCreditNote.nextSyncAt),
         lte(billingCreditNote.nextSyncAt, now),
       ),

@@ -21,6 +21,7 @@ const DEFAULT_THRESHOLDS = [80, 100];
 
 export async function runBillingUsageChecks(opts: {
   now?: Date;
+  /** Batch size; every candidate is checked on each run. */
   limit?: number;
   scope?: { organizationIds: string[] };
   systemOrganizationId?: string | null;
@@ -33,14 +34,15 @@ export async function runBillingUsageChecks(opts: {
     .where(inArray(schema.billingHold.reason, ["spend_limit"]));
   let candidates = [...new Set([...active, ...held.map((row) => row.organizationId)])];
   if (opts.scope) candidates = candidates.filter((id) => opts.scope?.organizationIds.includes(id));
-  candidates = candidates
-    .filter((id) => id !== opts.systemOrganizationId)
-    .slice(0, opts.limit ?? 200);
-  for (const organizationId of candidates) {
-    try {
-      await checkOrganization(organizationId, now);
-    } catch (error) {
-      console.error(`[billing] usage check of ${organizationId} failed:`, error);
+  candidates = candidates.filter((id) => id !== opts.systemOrganizationId);
+  const batchSize = Math.max(1, Math.floor(opts.limit ?? 200));
+  for (let offset = 0; offset < candidates.length; offset += batchSize) {
+    for (const organizationId of candidates.slice(offset, offset + batchSize)) {
+      try {
+        await checkOrganization(organizationId, now);
+      } catch (error) {
+        console.error(`[billing] usage check of ${organizationId} failed:`, error);
+      }
     }
   }
   return candidates.length;
