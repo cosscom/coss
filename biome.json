@@ -9,6 +9,7 @@
       "!!**/.turbo",
       "!!packages/db/migrations",
       "!!apps/api/openapi.json",
+      "!!infra/terraform/spec.json",
       "!!packages/ui/src/components",
       "!!packages/ui/src/hooks",
       "!!packages/ui/src/lib"

@@ -354,7 +354,7 @@ deals invoiced off-Stripe use an account's `manual` provider (COSS emails the in
 
 ## Error monitoring on Sentry
 
-Errors and traces go to the Sentry organization `coss` (`@coss/observability`). Create three projects —
+Errors and traces go to the Sentry organization `cosscom` (`@coss/observability`, EU region). Create three projects —
 `web` (Next.js), `api` (Bun) and `worker` (Bun) — and set each service's `SENTRY_DSN` to its project's DSN
 (Project settings → Client Keys), plus `SENTRY_ENVIRONMENT` (the stage) and optionally
 `SENTRY_TRACES_SAMPLE_RATE` (default 0.1). Without a DSN nothing is reported, so local development and CI

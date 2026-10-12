@@ -1,10 +1,27 @@
 /**
  * coss.com's edge routing, derived from ZONE_ROUTES (@coss/auth/slugs) so a new site path can't
- * be missed: ALB listener rules pick the app, CloudFront behaviours only decide caching.
+ * be missed: ALB listener rules pick the app, CloudFront behaviours decide caching and send the
+ * coss ui repository's zones to their own origins (they run outside AWS, which an ALB can't
+ * forward to).
  */
 import { SITE_ASSET_PREFIX, ZONE_ROUTES, type ZoneRoute } from "@coss/auth/slugs";
 
-export type TargetGroup = "web" | "site" | "api" | "ui";
+export type TargetGroup = "web" | "site" | "api";
+
+/**
+ * CloudFront origins of the coss.com distribution: the ALB (every app in ECS), and one per zone
+ * of the coss ui repository (Vercel projects serving their base path, `/ui` and `/origin`; their
+ * hosts are set at provisioning).
+ */
+export type ExternalZone = "ui" | "origin";
+export type Origin = "alb" | ExternalZone;
+export const EXTERNAL_ZONES: readonly ExternalZone[] = ["ui", "origin"];
+
+/**
+ * External origins are addressed by their own hostname (the Vercel project's production domain),
+ * so the viewer's `Host` (coss.com) must not be forwarded to them; the ALB gets everything.
+ */
+export const EXTERNAL_ORIGIN_REQUEST_POLICY = "Managed-AllViewerExceptHostHeader";
 
 /** The header CloudFront adds to every origin request; the ALB forwards nothing without it. */
 export const ORIGIN_VERIFY_HEADER = "X-Origin-Verify";
@@ -84,22 +101,21 @@ export function albListenerRules(): ListenerRule[] {
       ],
     },
   ];
-  for (const zone of ["site", "ui"] as const) {
-    const patterns = (ZONE_ROUTES as readonly ZoneRoute[])
-      .filter((route) => route.zone === zone)
-      .flatMap(albPathPatterns);
-    for (let index = 0; index < patterns.length; index += PATHS_PER_RULE) {
-      rules.push({
-        targetGroup: zone,
-        conditions: [
-          {
-            Field: "path-pattern",
-            PathPatternConfig: { Values: patterns.slice(index, index + PATHS_PER_RULE) },
-          },
-          verified,
-        ],
-      });
-    }
+  // External zones never reach the ALB: CloudFront sends them to their own origins.
+  const sitePatterns = (ZONE_ROUTES as readonly ZoneRoute[])
+    .filter((route) => route.zone === "site")
+    .flatMap(albPathPatterns);
+  for (let index = 0; index < sitePatterns.length; index += PATHS_PER_RULE) {
+    rules.push({
+      targetGroup: "site",
+      conditions: [
+        {
+          Field: "path-pattern",
+          PathPatternConfig: { Values: sitePatterns.slice(index, index + PATHS_PER_RULE) },
+        },
+        verified,
+      ],
+    });
   }
   rules.push({
     targetGroup: "web",
@@ -115,6 +131,7 @@ export function albListenerRules(): ListenerRule[] {
 export type CacheBehaviour = {
   /** CloudFront path pattern. */
   pathPattern: string;
+  origin: Origin;
   /** "origin": honour the origin's Cache-Control (`coss-origin-cache-control` cache policy). */
   cache: "origin";
   reason: string;
@@ -129,6 +146,7 @@ export function cossComCacheBehaviours(): CacheBehaviour[] {
   const behaviours: CacheBehaviour[] = [
     {
       pathPattern: "/_next/static/*",
+      origin: "alb",
       cache: "origin",
       reason: "The dashboard's hashed, immutable assets (also keeps old chunks during deploys).",
     },
@@ -144,6 +162,7 @@ export function cossComCacheBehaviours(): CacheBehaviour[] {
     for (const pathPattern of patterns) {
       behaviours.push({
         pathPattern,
+        origin: route.zone === "site" ? "alb" : route.zone,
         cache: "origin",
         reason: `${route.zone} zone (${route.path})`,
       });

@@ -228,7 +228,7 @@ const apiPublicUrl: EnvVar = {
 };
 
 /**
- * Error and performance monitoring (Sentry organization `coss`, see @coss/observability). Each
+ * Error and performance monitoring (Sentry organization `cosscom`, see @coss/observability). Each
  * runtime has its own project; DSNs aren't secrets (browsers receive the dashboard's).
  */
 function sentry(project: "web" | "api" | "worker"): EnvVar[] {

@@ -6,7 +6,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "aws:spec": "bun aws/print.ts"
+    "aws:spec": "bun aws/print.ts",
+    "aws:spec:write": "bun aws/print.ts --out terraform/spec.json"
   },
   "dependencies": {
     "@coss/auth": "workspace:*",

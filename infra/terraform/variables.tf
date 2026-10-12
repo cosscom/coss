@@ -1,0 +1,95 @@
+variable "account_id" {
+  type        = string
+  description = "The stage's AWS account (one account per stage: SES identities are account-wide)."
+}
+
+variable "region" {
+  type = string
+}
+
+variable "stage" {
+  type        = string
+  description = "Names resources (`coss-<stage>-…` where it matters) and the stage secret `coss/<stage>`."
+}
+
+variable "availability_zones" {
+  type = list(string)
+}
+
+variable "vpc_cidr" {
+  type = string
+}
+
+variable "dashboard_host" {
+  type        = string
+  description = "coss.com: the dashboard and site zones (DASHBOARD_HOST in infra/aws/routing.ts)."
+}
+
+variable "api_host" {
+  type        = string
+  description = "api.coss.com (API_HOST in infra/aws/routing.ts)."
+}
+
+variable "external_origin_hosts" {
+  type        = map(string)
+  description = "Production hostname of each external zone (spec.json cloudFront.origins other than alb): the coss ui repository's Vercel projects."
+}
+
+variable "ses_name" {
+  type        = string
+  description = "The `--name` given to ses:bootstrap: its IAM policies are /coss/<name>-{api,dashboard,worker}."
+}
+
+variable "initial_image_tag" {
+  type        = string
+  description = "Image tag of the first task definitions; afterwards the deploy workflow owns the tag (SSM)."
+}
+
+variable "plain_env" {
+  type        = map(map(string))
+  description = "Plain environment values per service. Names and kinds come from spec.json; a required plain variable without a value fails the plan."
+}
+
+variable "autoscaling" {
+  type = map(object({ max = number, cpu_target = number }))
+}
+
+variable "db_instance_class" {
+  type = string
+}
+
+variable "db_engine_version" {
+  type = string
+}
+
+variable "db_password" {
+  type        = string
+  ephemeral   = true
+  sensitive   = true
+  default     = null
+  description = "Master password, written once (bump db_password_version to change it). Never stored in state."
+}
+
+variable "db_password_version" {
+  type    = number
+  default = 1
+}
+
+variable "cloudflare_ipv4_ranges" {
+  type        = list(string)
+  description = "https://www.cloudflare.com/ips-v4: Cloudflare for SaaS reaches the ALB from these (tracking domains)."
+}
+
+variable "waf_rate_limits" {
+  type        = object({ dashboard = number, api = number })
+  description = "Requests per IP per 5 minutes before WAF blocks (flood protection; the apps rate-limit precisely)."
+}
+
+variable "log_retention_days" {
+  type = number
+}
+
+variable "github_repository" {
+  type        = string
+  description = "owner/name of the repository whose `production` environment may deploy."
+}

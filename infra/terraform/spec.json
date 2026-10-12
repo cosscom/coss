@@ -1,0 +1,1123 @@
+{
+  "services": [
+    {
+      "name": "web",
+      "dockerfile": "apps/web/Dockerfile",
+      "port": 3000,
+      "healthCheckPath": "/api/health",
+      "stopTimeout": 30,
+      "cpu": 512,
+      "memory": 1024,
+      "minTasks": 2,
+      "needsInternet": true,
+      "taskRolePolicy": "dashboard",
+      "env": [
+        {
+          "name": "DATABASE_URL",
+          "kind": "secret",
+          "required": true,
+          "value": "postgres://<user>:<password>@<rds-endpoint>:5432/coss?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem",
+          "description": "RDS Postgres over verified TLS (the images ship the RDS CA bundle at that path)."
+        },
+        {
+          "name": "DATABASE_POOL_MAX",
+          "kind": "plain",
+          "required": false,
+          "value": "10",
+          "description": "pg pool size per task. Sum over all tasks must stay below RDS max_connections."
+        },
+        {
+          "name": "BETTER_AUTH_SECRET",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage)",
+          "description": "Signs sessions. Same value for web and api."
+        },
+        {
+          "name": "BETTER_AUTH_URL",
+          "kind": "plain",
+          "required": true,
+          "value": "https://coss.com",
+          "description": "Origin of both zones (site and dashboard): base URL, trusted origin, secure cookies."
+        },
+        {
+          "name": "VALKEY_URL",
+          "kind": "secret",
+          "required": true,
+          "description": "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web and api."
+        },
+        {
+          "name": "VALKEY_CLUSTER",
+          "kind": "plain",
+          "required": true,
+          "value": "true",
+          "description": "ElastiCache Serverless uses the cluster protocol."
+        },
+        {
+          "name": "RATE_LIMIT_KEY_PREFIX",
+          "kind": "plain",
+          "required": false,
+          "value": "coss",
+          "description": "Counter namespace; must match the cache user's ACL."
+        },
+        {
+          "name": "CLIENT_IP_HEADER",
+          "kind": "plain",
+          "required": true,
+          "value": "x-forwarded-for",
+          "description": "Enables per-IP limits using the trusted proxy chain."
+        },
+        {
+          "name": "TRUSTED_PROXY_COUNT",
+          "kind": "plain",
+          "required": true,
+          "value": "2",
+          "description": "CloudFront and ALB append to X-Forwarded-For."
+        },
+        {
+          "name": "API_PUBLIC_URL",
+          "kind": "plain",
+          "required": true,
+          "value": "https://api.coss.com",
+          "description": "The API's public origin (OpenAPI, dashboard snippets and email tracking URLs)."
+        },
+        {
+          "name": "EMAIL_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "ses",
+          "description": "Live environments send through SES."
+        },
+        {
+          "name": "AWS_REGION",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "SES_CONFIGURATION_SET",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "SES_TENANT_PREFIX",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "TRACKING_DOMAIN_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "cloudflare",
+          "description": "Custom tracking domains are Cloudflare for SaaS custom hostnames."
+        },
+        {
+          "name": "CLOUDFLARE_API_TOKEN",
+          "kind": "secret",
+          "required": true,
+          "description": "Cloudflare API token limited to the coss.com zone with SSL and Certificates: Edit (custom hostnames). Same value for web, api and worker."
+        },
+        {
+          "name": "CLOUDFLARE_ZONE_ID",
+          "kind": "plain",
+          "required": true,
+          "description": "The coss.com zone id (Cloudflare dashboard, zone overview)."
+        },
+        {
+          "name": "TRACKING_CNAME_TARGET",
+          "kind": "plain",
+          "required": false,
+          "value": "track.coss.com",
+          "description": "The zone's fallback origin, which customers CNAME their tracking domain to."
+        },
+        {
+          "name": "WEBHOOK_SECRETS_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage; losing it makes endpoint secrets unreadable). A comma-separated list while rotating: the first encrypts, every one decrypts",
+          "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
+        },
+        {
+          "name": "NOTIFICATIONS_ENVIRONMENT_ID",
+          "kind": "plain",
+          "required": false,
+          "value": "env_… (a live environment of COSS's own organization)",
+          "description": "Sends account emails (sign-up verification, password resets, invitations) and reputation notifications through COSS itself (worker); neither the worker nor admins (dashboard) may suspend its organization. Unset until COSS's organization has a verified domain: both are held, and nobody can verify their email address."
+        },
+        {
+          "name": "BILLING_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "stripe",
+          "description": "Payment provider of new billing accounts (fake|stripe); admins can move one to manual."
+        },
+        {
+          "name": "STRIPE_SECRET_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "A restricted Stripe key (customers, invoices, Checkout, Customer Portal, credit notes)",
+          "description": "Stripe API key: the dashboard opens Checkout and the portal, the worker invoices."
+        },
+        {
+          "name": "STRIPE_WEBHOOK_SECRET",
+          "kind": "secret",
+          "required": true,
+          "value": "The signing secret of the Stripe webhook endpoint https://coss.com/api/billing/webhook",
+          "description": "Verifies Stripe webhook signatures (the dashboard's billing webhook route)."
+        },
+        {
+          "name": "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage)",
+          "description": "Shared by every dashboard task so Server Actions work across tasks."
+        },
+        {
+          "name": "TRUSTED_PROXY_HOPS",
+          "kind": "plain",
+          "required": true,
+          "value": "2",
+          "description": "CloudFront + ALB append to X-Forwarded-For; the client is the entry they vouch for."
+        },
+        {
+          "name": "TURNSTILE_SITE_KEY",
+          "kind": "plain",
+          "required": true,
+          "value": "Cloudflare Turnstile widget site key (hostname: the dashboard's)",
+          "description": "Public; rendered on sign-up, sign-in and password reset."
+        },
+        {
+          "name": "TURNSTILE_SECRET_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "the same widget's secret key",
+          "description": "Better Auth's captcha plugin verifies tokens with it (siteverify)."
+        },
+        {
+          "name": "SENTRY_DSN",
+          "kind": "plain",
+          "required": false,
+          "value": "DSN of the `web` Sentry project (Project settings → Client Keys)",
+          "description": "The dashboard's server and every browser on coss.com (dashboard and site, through /api/monitoring). Unset: nothing is reported."
+        },
+        {
+          "name": "SENTRY_ENVIRONMENT",
+          "kind": "plain",
+          "required": false,
+          "value": "production (the stage's name)",
+          "description": "Sentry environment; defaults to NODE_ENV."
+        },
+        {
+          "name": "SENTRY_TRACES_SAMPLE_RATE",
+          "kind": "plain",
+          "required": false,
+          "value": "0.1",
+          "description": "Share of requests/jobs traced (0–1)."
+        },
+        {
+          "name": "NODE_ENV",
+          "kind": "image",
+          "required": true,
+          "value": "production",
+          "description": ""
+        },
+        {
+          "name": "PORT",
+          "kind": "image",
+          "required": true,
+          "value": "3000",
+          "description": ""
+        },
+        {
+          "name": "HOSTNAME",
+          "kind": "image",
+          "required": true,
+          "value": "0.0.0.0",
+          "description": ""
+        },
+        {
+          "name": "KEEP_ALIVE_TIMEOUT",
+          "kind": "image",
+          "required": true,
+          "value": "75000",
+          "description": "Above the ALB idle timeout (60 s), or the ALB may reuse a closing connection (502)."
+        }
+      ]
+    },
+    {
+      "name": "site",
+      "dockerfile": "apps/site/Dockerfile",
+      "port": 3002,
+      "healthCheckPath": "/api/health",
+      "stopTimeout": 30,
+      "cpu": 256,
+      "memory": 512,
+      "minTasks": 2,
+      "needsInternet": false,
+      "env": [
+        {
+          "name": "NODE_ENV",
+          "kind": "image",
+          "required": true,
+          "value": "production",
+          "description": ""
+        },
+        {
+          "name": "PORT",
+          "kind": "image",
+          "required": true,
+          "value": "3002",
+          "description": ""
+        },
+        {
+          "name": "HOSTNAME",
+          "kind": "image",
+          "required": true,
+          "value": "0.0.0.0",
+          "description": ""
+        },
+        {
+          "name": "KEEP_ALIVE_TIMEOUT",
+          "kind": "image",
+          "required": true,
+          "value": "75000",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "api",
+      "dockerfile": "apps/api/Dockerfile",
+      "port": 3001,
+      "healthCheckPath": "/health",
+      "stopTimeout": 30,
+      "cpu": 512,
+      "memory": 1024,
+      "minTasks": 2,
+      "needsInternet": true,
+      "taskRolePolicy": "api",
+      "env": [
+        {
+          "name": "DATABASE_URL",
+          "kind": "secret",
+          "required": true,
+          "value": "postgres://<user>:<password>@<rds-endpoint>:5432/coss?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem",
+          "description": "RDS Postgres over verified TLS (the images ship the RDS CA bundle at that path)."
+        },
+        {
+          "name": "DATABASE_POOL_MAX",
+          "kind": "plain",
+          "required": false,
+          "value": "10",
+          "description": "pg pool size per task. Sum over all tasks must stay below RDS max_connections."
+        },
+        {
+          "name": "BETTER_AUTH_SECRET",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage)",
+          "description": "Signs sessions. Same value for web and api."
+        },
+        {
+          "name": "BETTER_AUTH_URL",
+          "kind": "plain",
+          "required": true,
+          "value": "https://coss.com",
+          "description": "Origin of both zones (site and dashboard): base URL, trusted origin, secure cookies."
+        },
+        {
+          "name": "VALKEY_URL",
+          "kind": "secret",
+          "required": true,
+          "description": "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web and api."
+        },
+        {
+          "name": "VALKEY_CLUSTER",
+          "kind": "plain",
+          "required": true,
+          "value": "true",
+          "description": "ElastiCache Serverless uses the cluster protocol."
+        },
+        {
+          "name": "RATE_LIMIT_KEY_PREFIX",
+          "kind": "plain",
+          "required": false,
+          "value": "coss",
+          "description": "Counter namespace; must match the cache user's ACL."
+        },
+        {
+          "name": "CLIENT_IP_HEADER",
+          "kind": "plain",
+          "required": true,
+          "value": "x-forwarded-for",
+          "description": "Enables per-IP limits using the trusted proxy chain."
+        },
+        {
+          "name": "TRUSTED_PROXY_COUNT",
+          "kind": "plain",
+          "required": true,
+          "value": "2",
+          "description": "CloudFront and ALB append to X-Forwarded-For."
+        },
+        {
+          "name": "API_PUBLIC_URL",
+          "kind": "plain",
+          "required": true,
+          "value": "https://api.coss.com",
+          "description": "The API's public origin (OpenAPI, dashboard snippets and email tracking URLs)."
+        },
+        {
+          "name": "API_CORS_ORIGINS",
+          "kind": "plain",
+          "required": false,
+          "value": "https://coss.com",
+          "description": "Browser origins allowed on /v1/* (the docs' playground)."
+        },
+        {
+          "name": "EMAIL_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "ses",
+          "description": "Live environments send through SES."
+        },
+        {
+          "name": "AWS_REGION",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "SES_CONFIGURATION_SET",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "SES_TENANT_PREFIX",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "TRACKING_DOMAIN_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "cloudflare",
+          "description": "Custom tracking domains are Cloudflare for SaaS custom hostnames."
+        },
+        {
+          "name": "CLOUDFLARE_API_TOKEN",
+          "kind": "secret",
+          "required": true,
+          "description": "Cloudflare API token limited to the coss.com zone with SSL and Certificates: Edit (custom hostnames). Same value for web, api and worker."
+        },
+        {
+          "name": "CLOUDFLARE_ZONE_ID",
+          "kind": "plain",
+          "required": true,
+          "description": "The coss.com zone id (Cloudflare dashboard, zone overview)."
+        },
+        {
+          "name": "TRACKING_CNAME_TARGET",
+          "kind": "plain",
+          "required": false,
+          "value": "track.coss.com",
+          "description": "The zone's fallback origin, which customers CNAME their tracking domain to."
+        },
+        {
+          "name": "WEBHOOK_SECRETS_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage; losing it makes endpoint secrets unreadable). A comma-separated list while rotating: the first encrypts, every one decrypts",
+          "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
+        },
+        {
+          "name": "SENTRY_DSN",
+          "kind": "plain",
+          "required": false,
+          "value": "DSN of the `api` Sentry project (Project settings → Client Keys)",
+          "description": "Unset: nothing is reported."
+        },
+        {
+          "name": "SENTRY_ENVIRONMENT",
+          "kind": "plain",
+          "required": false,
+          "value": "production (the stage's name)",
+          "description": "Sentry environment; defaults to NODE_ENV."
+        },
+        {
+          "name": "SENTRY_TRACES_SAMPLE_RATE",
+          "kind": "plain",
+          "required": false,
+          "value": "0.1",
+          "description": "Share of requests/jobs traced (0–1)."
+        },
+        {
+          "name": "SENTRY_RELEASE",
+          "kind": "plain",
+          "required": false,
+          "value": "Set by the image (build argument SENTRY_RELEASE, the commit); don't override.",
+          "description": "Sentry release of every event."
+        },
+        {
+          "name": "NODE_ENV",
+          "kind": "image",
+          "required": true,
+          "value": "production",
+          "description": ""
+        },
+        {
+          "name": "API_PORT",
+          "kind": "image",
+          "required": true,
+          "value": "3001",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "worker",
+      "dockerfile": "apps/worker/Dockerfile",
+      "stopTimeout": 120,
+      "cpu": 256,
+      "memory": 512,
+      "minTasks": 1,
+      "needsInternet": true,
+      "taskRolePolicy": "worker",
+      "env": [
+        {
+          "name": "DATABASE_URL",
+          "kind": "secret",
+          "required": true,
+          "value": "postgres://<user>:<password>@<rds-endpoint>:5432/coss?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem",
+          "description": "RDS Postgres over verified TLS (the images ship the RDS CA bundle at that path)."
+        },
+        {
+          "name": "DATABASE_POOL_MAX",
+          "kind": "plain",
+          "required": false,
+          "value": "10",
+          "description": "pg pool size per task. Sum over all tasks must stay below RDS max_connections."
+        },
+        {
+          "name": "EMAIL_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "ses",
+          "description": "Live environments send through SES."
+        },
+        {
+          "name": "AWS_REGION",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "SES_CONFIGURATION_SET",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "SES_TENANT_PREFIX",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "TRACKING_DOMAIN_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "cloudflare",
+          "description": "Custom tracking domains are Cloudflare for SaaS custom hostnames."
+        },
+        {
+          "name": "CLOUDFLARE_API_TOKEN",
+          "kind": "secret",
+          "required": true,
+          "description": "Cloudflare API token limited to the coss.com zone with SSL and Certificates: Edit (custom hostnames). Same value for web, api and worker."
+        },
+        {
+          "name": "CLOUDFLARE_ZONE_ID",
+          "kind": "plain",
+          "required": true,
+          "description": "The coss.com zone id (Cloudflare dashboard, zone overview)."
+        },
+        {
+          "name": "TRACKING_CNAME_TARGET",
+          "kind": "plain",
+          "required": false,
+          "value": "track.coss.com",
+          "description": "The zone's fallback origin, which customers CNAME their tracking domain to."
+        },
+        {
+          "name": "API_PUBLIC_URL",
+          "kind": "plain",
+          "required": true,
+          "value": "https://api.coss.com",
+          "description": "The API's public origin (OpenAPI, dashboard snippets and email tracking URLs)."
+        },
+        {
+          "name": "API_PORT",
+          "kind": "plain",
+          "required": false,
+          "value": "3001",
+          "description": "Development fallback port when API_PUBLIC_URL is unset."
+        },
+        {
+          "name": "SES_EVENTS_QUEUE_URL",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "LOG_RETENTION_DAYS",
+          "kind": "plain",
+          "required": false,
+          "value": "30",
+          "description": "Days of environment logs kept (1-31); expired days are dropped hourly."
+        },
+        {
+          "name": "SCREENING_CLASSIFIER",
+          "kind": "plain",
+          "required": true,
+          "value": "ai",
+          "description": "AI content screening of sampled live emails before they are sent (off|fake|ai)."
+        },
+        {
+          "name": "SCREENING_MODEL",
+          "kind": "plain",
+          "required": false,
+          "value": "typesafe-ai/jev",
+          "description": "Vercel AI Gateway decision model id; any Gateway decision model works."
+        },
+        {
+          "name": "AI_GATEWAY_API_KEY",
+          "kind": "secret",
+          "required": true,
+          "description": "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker only."
+        },
+        {
+          "name": "WEBHOOK_SECRETS_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage; losing it makes endpoint secrets unreadable). A comma-separated list while rotating: the first encrypts, every one decrypts",
+          "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
+        },
+        {
+          "name": "BILLING_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "stripe",
+          "description": "Payment provider of new billing accounts (fake|stripe); admins can move one to manual."
+        },
+        {
+          "name": "STRIPE_SECRET_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "A restricted Stripe key (customers, invoices, Checkout, Customer Portal, credit notes)",
+          "description": "Stripe API key: the dashboard opens Checkout and the portal, the worker invoices."
+        },
+        {
+          "name": "BETTER_AUTH_URL",
+          "kind": "plain",
+          "required": true,
+          "value": "https://coss.com",
+          "description": "The dashboard's origin, for links in reputation notification emails."
+        },
+        {
+          "name": "NOTIFICATIONS_ENVIRONMENT_ID",
+          "kind": "plain",
+          "required": false,
+          "value": "env_… (a live environment of COSS's own organization)",
+          "description": "Sends account emails (sign-up verification, password resets, invitations) and reputation notifications through COSS itself (worker); neither the worker nor admins (dashboard) may suspend its organization. Unset until COSS's organization has a verified domain: both are held, and nobody can verify their email address."
+        },
+        {
+          "name": "NOTIFICATIONS_FROM",
+          "kind": "plain",
+          "required": false,
+          "value": "COSS <notifications@coss.com>",
+          "description": "Sender of notification emails, on a verified domain of that organization."
+        },
+        {
+          "name": "SENTRY_DSN",
+          "kind": "plain",
+          "required": false,
+          "value": "DSN of the `worker` Sentry project (Project settings → Client Keys)",
+          "description": "Unset: nothing is reported."
+        },
+        {
+          "name": "SENTRY_ENVIRONMENT",
+          "kind": "plain",
+          "required": false,
+          "value": "production (the stage's name)",
+          "description": "Sentry environment; defaults to NODE_ENV."
+        },
+        {
+          "name": "SENTRY_TRACES_SAMPLE_RATE",
+          "kind": "plain",
+          "required": false,
+          "value": "0.1",
+          "description": "Share of requests/jobs traced (0–1)."
+        },
+        {
+          "name": "SENTRY_RELEASE",
+          "kind": "plain",
+          "required": false,
+          "value": "Set by the image (build argument SENTRY_RELEASE, the commit); don't override.",
+          "description": "Sentry release of every event."
+        },
+        {
+          "name": "NODE_ENV",
+          "kind": "image",
+          "required": true,
+          "value": "production",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "oneOffTasks": [
+    {
+      "name": "migrate",
+      "image": "worker",
+      "command": [
+        "bun",
+        "packages/db/src/migrate.ts"
+      ],
+      "when": "Before every deploy, alone (never two at once). Needs only DATABASE_URL."
+    },
+    {
+      "name": "ses-bootstrap",
+      "image": "worker",
+      "command": [
+        "bun",
+        "apps/worker/scripts/ses-bootstrap.ts",
+        "--name",
+        "coss",
+        "--tenant-prefix",
+        "coss"
+      ],
+      "when": "Once per stage after the first migrate, and after upgrades that change it. Needs DATABASE_URL, AWS_REGION and a task role allowed to manage SES, SNS, SQS, EventBridge, IAM and CloudWatch."
+    },
+    {
+      "name": "create-admin",
+      "image": "api",
+      "command": [
+        "bun",
+        "packages/tenancy/scripts/create-admin.ts",
+        "--email",
+        "<email>"
+      ],
+      "when": "Once, after that user signed up: makes them a platform admin. Run with the api service's environment."
+    },
+    {
+      "name": "webhooks-reencrypt",
+      "image": "worker",
+      "command": [
+        "bun",
+        "apps/worker/scripts/webhooks-reencrypt.ts"
+      ],
+      "when": "When rotating WEBHOOK_SECRETS_KEY, after every service runs with the new key first: moves endpoint secrets onto it so older keys can be removed. Needs DATABASE_URL and WEBHOOK_SECRETS_KEY."
+    }
+  ],
+  "alb": {
+    "idleTimeoutSeconds": 60,
+    "httpsListener": {
+      "defaultAction": {
+        "Type": "fixed-response",
+        "FixedResponseConfig": {
+          "StatusCode": "403"
+        }
+      },
+      "rules": [
+        {
+          "priority": 10,
+          "targetGroup": "api",
+          "conditions": [
+            {
+              "Field": "host-header",
+              "HostHeaderConfig": {
+                "Values": [
+                  "api.coss.com"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 20,
+          "targetGroup": "api",
+          "conditions": [
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
+                  "/t/*"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Tracking-Origin-Verify",
+                "Values": [
+                  "<tracking-origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 30,
+          "targetGroup": "site",
+          "conditions": [
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
+                  "/",
+                  "/pricing",
+                  "/docs"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 40,
+          "targetGroup": "site",
+          "conditions": [
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
+                  "/docs/*",
+                  "/legal",
+                  "/legal/*"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 50,
+          "targetGroup": "site",
+          "conditions": [
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
+                  "/llms.txt",
+                  "/llms-full.txt",
+                  "/site-assets"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 60,
+          "targetGroup": "site",
+          "conditions": [
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
+                  "/site-assets/*",
+                  "/icon.svg",
+                  "/favicon.ico"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 70,
+          "targetGroup": "site",
+          "conditions": [
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
+                  "/robots.txt",
+                  "/sitemap.xml",
+                  "/.well-known"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 80,
+          "targetGroup": "site",
+          "conditions": [
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
+                  "/.well-known/*"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 90,
+          "targetGroup": "web",
+          "conditions": [
+            {
+              "Field": "host-header",
+              "HostHeaderConfig": {
+                "Values": [
+                  "coss.com"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "placeholders": {
+      "<origin-verify-secret>": "the origin-verify secret (CloudFront's custom header)",
+      "<tracking-origin-verify-secret>": "the X-Tracking-Origin-Verify secret (Cloudflare's transform rule)"
+    }
+  },
+  "cloudFront": {
+    "origins": {
+      "alb": {
+        "customHeader": {
+          "HeaderName": "X-Origin-Verify",
+          "HeaderValue": "<origin-verify-secret>"
+        },
+        "originRequestPolicy": "Managed-AllViewer"
+      },
+      "ui": {
+        "host": "the ui zone's production hostname (Vercel), set at provisioning",
+        "originRequestPolicy": "Managed-AllViewerExceptHostHeader"
+      },
+      "origin": {
+        "host": "the origin zone's production hostname (Vercel), set at provisioning",
+        "originRequestPolicy": "Managed-AllViewerExceptHostHeader"
+      }
+    },
+    "cachePolicies": {
+      "default": "Managed-CachingDisabled",
+      "coss-origin-cache-control": {
+        "MinTTL": 0,
+        "DefaultTTL": 0,
+        "MaxTTL": 31536000,
+        "headers": [
+          "RSC",
+          "Next-Router-Prefetch",
+          "Next-Router-State-Tree",
+          "Next-Router-Segment-Prefetch"
+        ],
+        "queryStrings": "all",
+        "cookies": "none",
+        "enableAcceptEncodingGzip": true,
+        "enableAcceptEncodingBrotli": true
+      }
+    },
+    "distributions": {
+      "coss.com": {
+        "cachedBehaviours": [
+          {
+            "pathPattern": "/_next/static/*",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "The dashboard's hashed, immutable assets (also keeps old chunks during deploys)."
+          },
+          {
+            "pathPattern": "/pricing",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/pricing)"
+          },
+          {
+            "pathPattern": "/docs",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/docs)"
+          },
+          {
+            "pathPattern": "/docs/*",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/docs)"
+          },
+          {
+            "pathPattern": "/legal",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/legal)"
+          },
+          {
+            "pathPattern": "/legal/*",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/legal)"
+          },
+          {
+            "pathPattern": "/llms.txt",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/llms.txt)"
+          },
+          {
+            "pathPattern": "/llms-full.txt",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/llms-full.txt)"
+          },
+          {
+            "pathPattern": "/site-assets/*",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/site-assets)"
+          },
+          {
+            "pathPattern": "/icon.svg",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/icon.svg)"
+          },
+          {
+            "pathPattern": "/favicon.ico",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/favicon.ico)"
+          },
+          {
+            "pathPattern": "/robots.txt",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/robots.txt)"
+          },
+          {
+            "pathPattern": "/sitemap.xml",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/sitemap.xml)"
+          },
+          {
+            "pathPattern": "/.well-known",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/.well-known)"
+          },
+          {
+            "pathPattern": "/.well-known/*",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/.well-known)"
+          },
+          {
+            "pathPattern": "/ui",
+            "origin": "ui",
+            "cache": "origin",
+            "reason": "ui zone (/ui)"
+          },
+          {
+            "pathPattern": "/ui/*",
+            "origin": "ui",
+            "cache": "origin",
+            "reason": "ui zone (/ui)"
+          },
+          {
+            "pathPattern": "/origin",
+            "origin": "origin",
+            "cache": "origin",
+            "reason": "origin zone (/origin)"
+          },
+          {
+            "pathPattern": "/origin/*",
+            "origin": "origin",
+            "cache": "origin",
+            "reason": "origin zone (/origin)"
+          }
+        ]
+      },
+      "api.coss.com": {
+        "cachedBehaviours": []
+      }
+    },
+    "invalidateAfterSiteDeploy": [
+      "/*"
+    ]
+  }
+}
