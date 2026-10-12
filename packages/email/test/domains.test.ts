@@ -67,6 +67,16 @@ describe("normalizeDomainName", () => {
   ])("rejects %p", (name) => {
     expect(() => normalizeDomainName(name)).toThrow(DomainError);
   });
+
+  test("reserved domains only with allowReserved (COSS's own organization)", () => {
+    expect(() => normalizeDomainName("coss.com")).toThrow(DomainError);
+    expect(() => normalizeDomainName("mail.coss.com")).toThrow(DomainError);
+    expect(normalizeDomainName("coss.com", { allowReserved: true })).toBe("coss.com");
+    // Still a valid name first: the bounce subdomain stays reserved.
+    expect(() => normalizeDomainName("send.coss.com", { allowReserved: true })).toThrow(
+      DomainError,
+    );
+  });
 });
 
 describe("createDomain", () => {

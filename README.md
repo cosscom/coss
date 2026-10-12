@@ -536,14 +536,15 @@ One-off tasks (from `infra/`, with admin credentials):
 scripts/ecs-task.sh worker -- bun packages/db/src/migrate.ts
 scripts/ecs-task.sh --task-role "$(terraform -chdir=terraform output -raw bootstrap_role_arn)" worker -- \
   bun apps/worker/scripts/ses-bootstrap.ts --name coss --tenant-prefix coss --alert-email ops@coss.com
-scripts/ecs-task.sh api -- bun packages/tenancy/scripts/create-admin.ts --email you@example.com
+scripts/ecs-task.sh api -- bun packages/tenancy/scripts/create-admin.ts --email you@example.com [--verify-email]
 scripts/ecs-task.sh worker -- bun apps/worker/scripts/webhooks-reencrypt.ts --dry-run
 ```
 
 First deployment of a stage: Terraform (network, RDS, IAM, secrets, ECR, certificates; validation CNAMEs in
 Cloudflare) → `valkey:bootstrap` → stage secret values (`put-secret.sh`) → images → Terraform (services, ALB,
 CloudFront, WAF) → migrate → `ses-bootstrap` one-off task → test through CloudFront with
-`curl --resolve coss.com:443:<distribution IP>` → DNS in Cloudflare → sign up on the dashboard → `create-admin` →
+`curl --resolve coss.com:443:<distribution IP>` → DNS in Cloudflare → sign up on the dashboard → `create-admin
+--verify-email` (sign-in needs a verified address, and no verification email can go out yet) →
 create COSS's own organization in the dashboard, add and verify its sending domain (`coss.com`; an SES identity for
 it created outside COSS must be deleted first, COSS never adopts one), and set the worker's
 `NOTIFICATIONS_ENVIRONMENT_ID` (its project's live environment, `env_…`) and `NOTIFICATIONS_FROM` (e.g. `COSS

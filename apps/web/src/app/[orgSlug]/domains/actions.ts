@@ -17,7 +17,7 @@ import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
 import { emailRuntime } from "@/lib/email-runtime";
-import { type OrgContext, requireOrgPermission } from "@/lib/session";
+import { isPlatformAdmin, type OrgContext, requireOrgPermission } from "@/lib/session";
 
 /** A manual "Verify now" waits at least this long after the previous check. */
 const MANUAL_CHECK_INTERVAL_MS = 10_000;
@@ -46,6 +46,8 @@ export async function addDomainAction(
         organizationId: context.organization.id,
         name: formString(formData, "name"),
         userId: context.session.user.id,
+        // COSS's own organization sends from coss.com, which no one else may claim.
+        allowReserved: isPlatformAdmin(context.session),
       },
       emailRuntime().domainDeps,
     );

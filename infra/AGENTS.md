@@ -21,4 +21,5 @@ in `external_origin_hosts`). Terraform applies the generated rules as printed (p
 rule, a fixed 403 default action). Never put secret values in tfvars, the state or a commit; `terraform apply` needs
 admin credentials for the account and is run by a human or an agent they asked, not by CI. Services ignore
 `task_definition` changes: after an environment change, run the Deploy workflow (it registers revisions from the
-latest task definition).
+latest task definition). Terraform's own task definitions use the deployed image tag (SSM `/coss/production/image-tag`),
+so a plan after a deploy shows them being replaced: harmless, it only re-registers them with the running image.
