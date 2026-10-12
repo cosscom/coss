@@ -6,6 +6,7 @@
 import { schema, type Transaction } from "@coss/db";
 import { and, eq, gt, ne } from "drizzle-orm";
 import { type BillingAccount, lockBillingAccount, organizationLabel } from "./accounts.ts";
+import { announcePlanChange } from "./announce.ts";
 import {
   type Contract,
   cancelContract,
@@ -159,7 +160,19 @@ export async function settlePendingContract(
 
   const current = periodOf(now);
   if (pending.effectiveFrom >= current.start) {
+    const before = await contractAt(pending.organizationId, pending.effectiveFrom, tx);
     await confirmContract(tx, pending, now);
+    await announcePlanChange(
+      tx,
+      pending.organizationId,
+      {
+        change: "upgrade",
+        plan: pending.terms.plan,
+        previousPlan: before?.terms.plan ?? "free",
+        effectiveAt: pending.effectiveFrom,
+      },
+      now,
+    );
     await insertComposedGrants(
       tx,
       invoice.organizationId,
@@ -176,6 +189,17 @@ export async function settlePendingContract(
     .returning();
   if (!moved) return;
   const contract = await confirmContract(tx, { ...pending, effectiveFrom: current.start }, now);
+  await announcePlanChange(
+    tx,
+    pending.organizationId,
+    {
+      change: "upgrade",
+      plan: pending.terms.plan,
+      previousPlan: previous?.terms.plan ?? "free",
+      effectiveAt: current.start,
+    },
+    now,
+  );
   await creditPayment(tx, invoice, "Payment for an upgrade that took effect the next month", now);
   const composition = await composeChange(tx, previous, contract, current.start);
   await invoiceChange(tx, account, composition, {

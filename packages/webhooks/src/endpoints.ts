@@ -1,5 +1,4 @@
 /** Webhook endpoints of an environment, and their delivery log. */
-import type { PlanGate } from "@coss/billing/gate";
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { versioning } from "@coss/versioning";
@@ -27,13 +26,22 @@ export type WebhookAttemptRow = typeof webhookAttempt.$inferSelect;
 
 export const MAX_ENDPOINTS_PER_ENVIRONMENT = 10;
 
+/**
+ * The organization's plan, as webhook management needs it: structurally `@coss/billing`'s
+ * `PlanGate` (webhooks can't depend on billing, which sends its events through them).
+ */
+export type WebhookPlanLimits = {
+  requireFeature(organizationId: string, feature: "logDrains"): Promise<void>;
+  limit(organizationId: string, limit: "webhookEndpointsPerEnvironment"): Promise<number | null>;
+};
+
 export type WebhookManagementDeps = {
   /** From `WEBHOOK_SECRETS_KEY` (`parseSecretsKeys`). */
   secretsKeys: SecretsKeyRing;
   /** Accept `http:` and private hosts (local development only). */
   allowInsecureUrls: boolean;
   /** The organization's plan (endpoints per environment, log drains); unset: not limited. */
-  plans?: PlanGate;
+  plans?: WebhookPlanLimits;
 };
 
 /** When the endpoint's previous secret stops signing; `null` when none signs any more. */

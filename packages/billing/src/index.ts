@@ -6,6 +6,8 @@
 export * from "./accounts.ts";
 export * from "./adjustments.ts";
 export * from "./alerts.ts";
+export { announce } from "./announce.ts";
+export * from "./api.ts";
 export { type AdminActor, auditBillingChange, type BillingAdminAction } from "./audit.ts";
 export * from "./catalog/index.ts";
 export * from "./changes.ts";
@@ -23,6 +25,7 @@ export * from "./invoices.ts";
 export { billingHoldExists, isOnBillingHold, recordUsage, type UsageInput } from "./metering.ts";
 export * from "./money.ts";
 export * from "./notifications.ts";
+export * from "./objects.ts";
 export * from "./overview.ts";
 export * from "./payments.ts";
 export * from "./periods.ts";

@@ -6,9 +6,11 @@
 import { db, schema, type Transaction } from "@coss/db";
 import { and, asc, eq, inArray, isNotNull, lte, ne, sql } from "drizzle-orm";
 import { getBillingAccount, organizationLabel } from "./accounts.ts";
+import { announce } from "./announce.ts";
 import { evaluateStanding } from "./holds.ts";
 import { type InvoiceRow, invoiceLines, lockInvoice } from "./invoices.ts";
 import { enqueueBillingNotification } from "./notifications.ts";
+import { toInvoiceSummary } from "./objects.ts";
 import { recordPayment, recordProviderPayment } from "./payments.ts";
 import {
   type BillingProviders,
@@ -361,6 +363,18 @@ async function applyCollectionInTransaction(
         payload: { invoiceId: current.id, error: result.error.slice(0, 200) },
         now,
       });
+      await announce(
+        tx,
+        current.organizationId,
+        {
+          type: "billing.invoice_payment_failed",
+          data: {
+            invoice: toInvoiceSummary(current),
+            failure: { message: result.error.slice(0, 200) },
+          },
+        },
+        now,
+      );
       await evaluateStanding(tx, current.accountId, now, deps.systemOrganizationId);
       return;
     case "sent": {

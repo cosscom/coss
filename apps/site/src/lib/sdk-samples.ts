@@ -26,6 +26,20 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     args: (request) => [tsValue(batchEmails(request.body)), requestOptions(request)],
   },
   "GET /v1/reputation": { method: "reputation.get", args: () => [] },
+  "GET /v1/billing": { method: "billing.get", args: () => [] },
+  "GET /v1/billing/usage": { method: "billing.usage", args: (request) => [queryParams(request)] },
+  "GET /v1/billing/invoices": {
+    method: "billing.invoices.list",
+    args: (request) => [queryParams(request)],
+  },
+  "GET /v1/billing/invoices/{id}": {
+    method: "billing.invoices.get",
+    args: (request) => [pathId(request)],
+  },
+  "GET /v1/billing/credits": {
+    method: "billing.credits.list",
+    args: (request) => [queryParams(request)],
+  },
   "GET /v1/logs": { method: "logs.list", args: (request) => [queryParams(request)] },
   "GET /v1/logs/{id}": { method: "logs.get", args: (request) => [pathId(request)] },
   "GET /v1/audit_events": { method: "auditEvents.list", args: (request) => [queryParams(request)] },

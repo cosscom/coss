@@ -14,7 +14,8 @@
     "./env": "./src/env.ts",
     "./runtime": "./src/runtime.ts",
     "./stripe": "./src/providers/stripe.ts",
-    "./gate": "./src/gate.ts"
+    "./gate": "./src/gate.ts",
+    "./wire": "./src/wire.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -25,6 +26,8 @@
   "dependencies": {
     "@coss/db": "workspace:*",
     "@coss/retention": "workspace:*",
+    "@coss/versioning": "workspace:*",
+    "@coss/webhooks": "workspace:*",
     "drizzle-orm": "catalog:",
     "stripe": "22.6.2",
     "zod": "catalog:"

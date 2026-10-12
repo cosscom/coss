@@ -5,8 +5,10 @@
 import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { and, asc, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import type { BillingAccount, OrganizationLabel } from "./accounts.ts";
+import { announce } from "./announce.ts";
 import type { DraftGrant, DraftLine, GrantApplication, LineKind } from "./engine/types.ts";
 import { insertApplications, insertComposedGrants } from "./grants.ts";
+import { toInvoiceSummary } from "./objects.ts";
 import type { Interval } from "./time.ts";
 
 const { billingCounter, billingInvoice, billingInvoiceLine } = schema;
@@ -172,6 +174,20 @@ export async function finalizeInvoice(
     .where(and(eq(billingInvoice.id, invoice.id), eq(billingInvoice.status, "draft")))
     .returning();
   if (!row) throw new Error(`Invoice ${invoice.id} is no longer a draft.`);
+  await announce(
+    tx,
+    row.organizationId,
+    { type: "billing.invoice_finalized", data: { invoice: toInvoiceSummary(row) } },
+    now,
+  );
+  if (!payable) {
+    await announce(
+      tx,
+      row.organizationId,
+      { type: "billing.invoice_paid", data: { invoice: toInvoiceSummary(row) } },
+      now,
+    );
+  }
   return row;
 }
 

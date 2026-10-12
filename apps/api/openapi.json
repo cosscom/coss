@@ -2003,10 +2003,19 @@
                 "account.reputation_warning",
                 "account.reputation_recovered",
                 "account.suspended",
-                "account.reinstated"
+                "account.reinstated",
+                "billing.invoice_finalized",
+                "billing.invoice_paid",
+                "billing.invoice_payment_failed",
+                "billing.invoice_voided",
+                "billing.plan_changed",
+                "billing.usage_threshold_reached",
+                "billing.hold_placed",
+                "billing.hold_lifted",
+                "billing.credit_granted"
               ]
             },
-            "maxItems": 16,
+            "maxItems": 25,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -2212,10 +2221,19 @@
                 "account.reputation_warning",
                 "account.reputation_recovered",
                 "account.suspended",
-                "account.reinstated"
+                "account.reinstated",
+                "billing.invoice_finalized",
+                "billing.invoice_paid",
+                "billing.invoice_payment_failed",
+                "billing.invoice_voided",
+                "billing.plan_changed",
+                "billing.usage_threshold_reached",
+                "billing.hold_placed",
+                "billing.hold_lifted",
+                "billing.credit_granted"
               ]
             },
-            "maxItems": 16,
+            "maxItems": 25,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {
@@ -3490,6 +3508,1277 @@
           "system"
         ],
         "description": "`user`: a member, in the dashboard (`actor_id` is the user's id, `actor_label` their email). `api_key`: a request made with an API key (`actor_id` is the key's id). `system`: COSS itself, including COSS support."
+      },
+      "Billing": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "billing"
+            ]
+          },
+          "organization_id": {
+            "type": "string"
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "free",
+              "pro",
+              "scale",
+              "enterprise"
+            ],
+            "description": "The plan in effect now (`free` without a contract)."
+          },
+          "contract": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "self_serve",
+                  "sales",
+                  "internal"
+                ]
+              },
+              "effective_from": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "effective_until": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "term_end": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time",
+                "description": "End of a committed term."
+              },
+              "auto_renew": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "effective_from",
+              "effective_until",
+              "term_end",
+              "auto_renew"
+            ],
+            "description": "The contract in effect; `null` on the Free plan."
+          },
+          "scheduled_change": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "effective_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "plan": {
+                "type": "string",
+                "enum": [
+                  "free",
+                  "pro",
+                  "scale",
+                  "enterprise"
+                ]
+              }
+            },
+            "required": [
+              "effective_at",
+              "plan"
+            ],
+            "description": "A plan change that takes effect later (a downgrade, a cancellation)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "past_due",
+              "delinquent"
+            ],
+            "description": "`past_due`: an invoice is overdue; `delinquent`: past its grace period, and live sending is held."
+          },
+          "holds": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "delinquent",
+                    "spend_limit",
+                    "admin"
+                  ]
+                },
+                "since": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "reason",
+                "since"
+              ]
+            },
+            "description": "Billing holds on live sending (sandbox keys keep working)."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "usd"
+            ]
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "end": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "description": "The current billing month (UTC)."
+          },
+          "usage": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "meter": {
+                  "type": "string",
+                  "enum": [
+                    "email.recipients",
+                    "sms.segments",
+                    "video.participant_minutes",
+                    "scheduling.bookings"
+                  ],
+                  "description": "What is counted, e.g. `email.recipients`."
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "included": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "description": "The plan's monthly allowance where usage stops (Free), else `null`."
+                }
+              },
+              "required": [
+                "meter",
+                "quantity",
+                "included"
+              ]
+            }
+          },
+          "estimate": {
+            "type": "object",
+            "properties": {
+              "usage": {
+                "type": "integer",
+                "description": "Usage this month at your rates."
+              },
+              "discount": {
+                "type": "integer",
+                "description": "An amount in cents (USD)."
+              },
+              "credit": {
+                "type": "integer",
+                "description": "Credit applied to this estimate (your plan's fee is credit)."
+              },
+              "total": {
+                "type": "integer",
+                "description": "Estimated total including usage and fees billed in arrears, after discounts and credits."
+              }
+            },
+            "required": [
+              "usage",
+              "discount",
+              "credit",
+              "total"
+            ],
+            "description": "This month so far, as it would be invoiced if it ended now."
+          },
+          "credit_remaining": {
+            "type": "integer",
+            "description": "Unused credit usable this month."
+          },
+          "spend_limit": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Usage beyond the credit past which live sending is held; `null`: none."
+          },
+          "payment_method": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "brand": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "last4": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "brand",
+              "last4"
+            ]
+          },
+          "features": {
+            "type": "object",
+            "properties": {
+              "tracking_domains": {
+                "type": "boolean"
+              },
+              "audit_log": {
+                "type": "boolean"
+              },
+              "log_drains": {
+                "type": "boolean"
+              },
+              "sso": {
+                "type": "boolean"
+              },
+              "scim": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "tracking_domains",
+              "audit_log",
+              "log_drains",
+              "sso",
+              "scim"
+            ]
+          },
+          "limits": {
+            "type": "object",
+            "properties": {
+              "domains": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "members": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "webhook_endpoints_per_environment": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "domains",
+              "members",
+              "webhook_endpoints_per_environment"
+            ],
+            "description": "Resource limits (`null`: unlimited)."
+          }
+        },
+        "required": [
+          "object",
+          "organization_id",
+          "plan",
+          "contract",
+          "scheduled_change",
+          "status",
+          "holds",
+          "currency",
+          "period",
+          "usage",
+          "estimate",
+          "credit_remaining",
+          "spend_limit",
+          "payment_method",
+          "features",
+          "limits"
+        ],
+        "examples": [
+          {
+            "object": "billing",
+            "organization_id": "org_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "plan": "pro",
+            "contract": {
+              "id": "bcon_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "kind": "self_serve",
+              "effective_from": "2026-10-01T00:00:00.000Z",
+              "effective_until": null,
+              "term_end": null,
+              "auto_renew": false
+            },
+            "scheduled_change": null,
+            "status": "active",
+            "holds": [],
+            "currency": "usd",
+            "period": {
+              "start": "2026-10-01T00:00:00.000Z",
+              "end": "2026-11-01T00:00:00.000Z"
+            },
+            "usage": [
+              {
+                "meter": "email.recipients",
+                "quantity": 120000,
+                "included": null
+              }
+            ],
+            "estimate": {
+              "usage": 4800,
+              "discount": 0,
+              "credit": 2500,
+              "total": 2300
+            },
+            "credit_remaining": 0,
+            "spend_limit": null,
+            "payment_method": {
+              "type": "card",
+              "brand": "visa",
+              "last4": "4242"
+            },
+            "features": {
+              "tracking_domains": true,
+              "audit_log": true,
+              "log_drains": false,
+              "sso": false,
+              "scim": false
+            },
+            "limits": {
+              "domains": 10,
+              "members": 10,
+              "webhook_endpoints_per_environment": 10
+            }
+          }
+        ]
+      },
+      "UsageList": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Usage"
+            }
+          },
+          "has_more": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "data",
+          "has_more"
+        ],
+        "examples": [
+          {
+            "object": "list",
+            "data": [
+              {
+                "object": "usage",
+                "meter": "email.recipients",
+                "dimension": null,
+                "environment_id": null,
+                "start": "2026-10-12T00:00:00.000Z",
+                "end": "2026-10-13T00:00:00.000Z",
+                "quantity": 4200
+              }
+            ],
+            "has_more": false
+          }
+        ]
+      },
+      "Usage": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "usage"
+            ]
+          },
+          "meter": {
+            "type": "string",
+            "enum": [
+              "email.recipients",
+              "sms.segments",
+              "video.participant_minutes",
+              "scheduling.bookings"
+            ],
+            "description": "What is counted, e.g. `email.recipients`."
+          },
+          "dimension": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "e.g. `country=US` for SMS; `null` for none."
+          },
+          "environment_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Set with `group_by=environment`."
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "object",
+          "meter",
+          "dimension",
+          "environment_id",
+          "start",
+          "end",
+          "quantity"
+        ],
+        "examples": [
+          {
+            "object": "usage",
+            "meter": "email.recipients",
+            "dimension": null,
+            "environment_id": null,
+            "start": "2026-10-12T00:00:00.000Z",
+            "end": "2026-10-13T00:00:00.000Z",
+            "quantity": 4200
+          }
+        ]
+      },
+      "InvoiceList": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvoiceSummary"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "object",
+          "data",
+          "has_more"
+        ],
+        "examples": [
+          {
+            "object": "list",
+            "data": [
+              {
+                "object": "invoice",
+                "id": "inv_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "number": "COSS-000042",
+                "kind": "period",
+                "status": "paid",
+                "currency": "usd",
+                "period": {
+                  "start": "2026-10-01T00:00:00.000Z",
+                  "end": "2026-11-01T00:00:00.000Z"
+                },
+                "subtotal": 7300,
+                "discount": 0,
+                "credit": 2500,
+                "tax": 0,
+                "total": 4800,
+                "amount_paid": 4800,
+                "amount_due": 0,
+                "collection_method": "charge_automatically",
+                "due_at": "2026-11-01T00:20:00.000Z",
+                "finalized_at": "2026-11-01T00:20:00.000Z",
+                "paid_at": "2026-11-01T00:21:00.000Z",
+                "voided_at": null,
+                "hosted_url": "https://invoice.stripe.com/i/acct_123/test_YWNjdF8x",
+                "pdf_url": "https://pay.stripe.com/invoice/acct_123/test_YWNjdF8x/pdf"
+              }
+            ],
+            "has_more": false
+          }
+        ]
+      },
+      "InvoiceSummary": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "invoice"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "period",
+              "plan_change",
+              "one_off",
+              "final"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "paid",
+              "void",
+              "uncollectible"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "usd"
+            ]
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "end": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ]
+          },
+          "subtotal": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "discount": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "credit": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "tax": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "total": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "amount_paid": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "amount_due": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "collection_method": {
+            "type": "string",
+            "enum": [
+              "charge_automatically",
+              "send_invoice"
+            ]
+          },
+          "due_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "finalized_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "paid_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "voided_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "hosted_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A page to view (and pay) the invoice."
+          },
+          "pdf_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "number",
+          "kind",
+          "status",
+          "currency",
+          "period",
+          "subtotal",
+          "discount",
+          "credit",
+          "tax",
+          "total",
+          "amount_paid",
+          "amount_due",
+          "collection_method",
+          "due_at",
+          "finalized_at",
+          "paid_at",
+          "voided_at",
+          "hosted_url",
+          "pdf_url"
+        ],
+        "examples": [
+          {
+            "object": "invoice",
+            "id": "inv_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "number": "COSS-000042",
+            "kind": "period",
+            "status": "paid",
+            "currency": "usd",
+            "period": {
+              "start": "2026-10-01T00:00:00.000Z",
+              "end": "2026-11-01T00:00:00.000Z"
+            },
+            "subtotal": 7300,
+            "discount": 0,
+            "credit": 2500,
+            "tax": 0,
+            "total": 4800,
+            "amount_paid": 4800,
+            "amount_due": 0,
+            "collection_method": "charge_automatically",
+            "due_at": "2026-11-01T00:20:00.000Z",
+            "finalized_at": "2026-11-01T00:20:00.000Z",
+            "paid_at": "2026-11-01T00:21:00.000Z",
+            "voided_at": null,
+            "hosted_url": "https://invoice.stripe.com/i/acct_123/test_YWNjdF8x",
+            "pdf_url": "https://pay.stripe.com/invoice/acct_123/test_YWNjdF8x/pdf"
+          }
+        ]
+      },
+      "Invoice": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "invoice"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "period",
+              "plan_change",
+              "one_off",
+              "final"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "paid",
+              "void",
+              "uncollectible"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "usd"
+            ]
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "end": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ]
+          },
+          "subtotal": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "discount": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "credit": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "tax": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "total": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "amount_paid": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "amount_due": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "collection_method": {
+            "type": "string",
+            "enum": [
+              "charge_automatically",
+              "send_invoice"
+            ]
+          },
+          "due_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "finalized_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "paid_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "voided_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "hosted_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A page to view (and pay) the invoice."
+          },
+          "pdf_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvoiceLine"
+            }
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "number",
+          "kind",
+          "status",
+          "currency",
+          "period",
+          "subtotal",
+          "discount",
+          "credit",
+          "tax",
+          "total",
+          "amount_paid",
+          "amount_due",
+          "collection_method",
+          "due_at",
+          "finalized_at",
+          "paid_at",
+          "voided_at",
+          "hosted_url",
+          "pdf_url",
+          "lines"
+        ],
+        "examples": [
+          {
+            "object": "invoice",
+            "id": "inv_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "number": "COSS-000042",
+            "kind": "period",
+            "status": "paid",
+            "currency": "usd",
+            "period": {
+              "start": "2026-10-01T00:00:00.000Z",
+              "end": "2026-11-01T00:00:00.000Z"
+            },
+            "subtotal": 7300,
+            "discount": 0,
+            "credit": 2500,
+            "tax": 0,
+            "total": 4800,
+            "amount_paid": 4800,
+            "amount_due": 0,
+            "collection_method": "charge_automatically",
+            "due_at": "2026-11-01T00:20:00.000Z",
+            "finalized_at": "2026-11-01T00:20:00.000Z",
+            "paid_at": "2026-11-01T00:21:00.000Z",
+            "voided_at": null,
+            "hosted_url": "https://invoice.stripe.com/i/acct_123/test_YWNjdF8x",
+            "pdf_url": "https://pay.stripe.com/invoice/acct_123/test_YWNjdF8x/pdf",
+            "lines": [
+              {
+                "object": "invoice_line",
+                "id": "invl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "kind": "usage",
+                "description": "Email: 120,000 recipients",
+                "meter": "email.recipients",
+                "dimension": null,
+                "quantity": 120000,
+                "included_quantity": 0,
+                "unit_price": "0.0004",
+                "amount": 4800,
+                "period": {
+                  "start": "2026-10-01T00:00:00.000Z",
+                  "end": "2026-11-01T00:00:00.000Z"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "InvoiceLine": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "invoice_line"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "plan_fee",
+              "proration",
+              "usage",
+              "credit",
+              "discount",
+              "commitment_fee",
+              "commitment_shortfall",
+              "add_on",
+              "adjustment",
+              "write_off"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "meter": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "email.recipients",
+              "sms.segments",
+              "video.participant_minutes",
+              "scheduling.bookings",
+              null
+            ],
+            "description": "What is counted, e.g. `email.recipients`."
+          },
+          "dimension": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "quantity": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "included_quantity": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Units covered by an allowance or committed volume (not charged)."
+          },
+          "unit_price": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Dollars per unit, e.g. `0.0004`; `null` when the price varies by volume."
+          },
+          "amount": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "end": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "kind",
+          "description",
+          "meter",
+          "dimension",
+          "quantity",
+          "included_quantity",
+          "unit_price",
+          "amount",
+          "period"
+        ],
+        "examples": [
+          {
+            "object": "invoice_line",
+            "id": "invl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "kind": "usage",
+            "description": "Email: 120,000 recipients",
+            "meter": "email.recipients",
+            "dimension": null,
+            "quantity": 120000,
+            "included_quantity": 0,
+            "unit_price": "0.0004",
+            "amount": 4800,
+            "period": {
+              "start": "2026-10-01T00:00:00.000Z",
+              "end": "2026-11-01T00:00:00.000Z"
+            }
+          }
+        ]
+      },
+      "CreditList": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Credit"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "object",
+          "data",
+          "has_more"
+        ],
+        "examples": [
+          {
+            "object": "list",
+            "data": [
+              {
+                "object": "credit",
+                "id": "bcg_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "kind": "units",
+                "amount": 50000,
+                "remaining": 12000,
+                "meter": "email.recipients",
+                "meters": null,
+                "applies_to": "usage",
+                "source": "support",
+                "description": "Migration credit",
+                "effective_at": "2026-10-01T00:00:00.000Z",
+                "expires_at": "2027-01-01T00:00:00.000Z",
+                "voided_at": null,
+                "created_at": "2026-10-01T09:30:00.000Z"
+              }
+            ],
+            "has_more": false
+          }
+        ]
+      },
+      "Credit": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "credit"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "amount",
+              "units"
+            ],
+            "description": "`amount`: dollars (`amount` and `remaining` in cents); `units`: free units of `meter`."
+          },
+          "amount": {
+            "type": "integer"
+          },
+          "remaining": {
+            "type": "integer"
+          },
+          "meter": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "email.recipients",
+              "sms.segments",
+              "video.participant_minutes",
+              "scheduling.bookings",
+              null
+            ],
+            "description": "What a `units` credit covers."
+          },
+          "meters": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "email.recipients",
+                "sms.segments",
+                "video.participant_minutes",
+                "scheduling.bookings"
+              ],
+              "description": "What is counted, e.g. `email.recipients`."
+            },
+            "description": "What an `amount` credit pays for (`null`: any usage)."
+          },
+          "applies_to": {
+            "type": "string",
+            "enum": [
+              "usage",
+              "any"
+            ],
+            "description": "`any`: also fees and other charges."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "fee",
+              "commitment",
+              "support",
+              "promotion",
+              "refund",
+              "sla"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "voided_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "kind",
+          "amount",
+          "remaining",
+          "meter",
+          "meters",
+          "applies_to",
+          "source",
+          "description",
+          "effective_at",
+          "expires_at",
+          "voided_at",
+          "created_at"
+        ],
+        "examples": [
+          {
+            "object": "credit",
+            "id": "bcg_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "kind": "units",
+            "amount": 50000,
+            "remaining": 12000,
+            "meter": "email.recipients",
+            "meters": null,
+            "applies_to": "usage",
+            "source": "support",
+            "description": "Migration credit",
+            "effective_at": "2026-10-01T00:00:00.000Z",
+            "expires_at": "2027-01-01T00:00:00.000Z",
+            "voided_at": null,
+            "created_at": "2026-10-01T09:30:00.000Z"
+          }
+        ]
       },
       "LogDrainWithSecret": {
         "type": "object",
@@ -12865,6 +14154,1165 @@
           },
           "404": {
             "description": "No audit event with this id exists in the organization (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/billing": {
+      "get": {
+        "operationId": "getBilling",
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Retrieve the organization's billing",
+        "description": "The organization's plan (and contract), the current billing month's usage and what it would add to the next invoice so far, its standing (`past_due`, billing holds), payment method, and what the plan includes. Organization-wide: every environment's key sees the same. Plan changes are made in the dashboard; subscribe to the `billing.*` webhook events to follow them.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The organization's billing.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Billing"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
+      }
+    },
+    "/v1/billing/usage": {
+      "get": {
+        "operationId": "listBillingUsage",
+        "tags": [
+          "Billing"
+        ],
+        "summary": "List usage",
+        "description": "Billable usage over a range (the current billing month by default), per meter, dimension and bucket (`hour`, `day` or `month`, UTC), oldest first; with `group_by=environment`, per environment too. Only live environments are billed, so only they appear. Usage counts when it becomes billable (an email when the provider accepts it) and is kept for 400 days.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Start (inclusive). Defaults to the start of the current billing month."
+            },
+            "required": false,
+            "description": "Start (inclusive). Defaults to the start of the current billing month.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "End (exclusive). Defaults to now. At most 400 days after `from` (7 by hour)."
+            },
+            "required": false,
+            "description": "End (exclusive). Defaults to now. At most 400 days after `from` (7 by hour).",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "hour",
+                "day",
+                "month"
+              ],
+              "description": "Bucket size (UTC). Defaults to `day`."
+            },
+            "required": false,
+            "description": "Bucket size (UTC). Defaults to `day`.",
+            "name": "granularity",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "environment"
+              ],
+              "description": "Split each bucket per environment."
+            },
+            "required": false,
+            "description": "Split each bucket per environment.",
+            "name": "group_by",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "email.recipients",
+                "sms.segments",
+                "video.participant_minutes",
+                "scheduling.bookings"
+              ],
+              "description": "Only this meter."
+            },
+            "required": false,
+            "description": "Only this meter.",
+            "name": "meter",
+            "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage, oldest first.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter failed validation (`validation_error`), or the range is empty or too long (`invalid_range`: at most 400 days, 7 by hour).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/billing/invoices": {
+      "get": {
+        "operationId": "listInvoices",
+        "tags": [
+          "Billing"
+        ],
+        "summary": "List invoices",
+        "description": "The organization's invoices, newest first, without their lines. Pass the last `id` as `after` to get the next page while `has_more` is true.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "paid",
+                "void",
+                "uncollectible"
+              ],
+              "description": "Only invoices in this status."
+            },
+            "required": false,
+            "description": "Only invoices in this status.",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "Continue after this id (the last of the previous page)."
+            },
+            "required": false,
+            "description": "Continue after this id (the last of the previous page).",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "At most this many (default 20)."
+            },
+            "required": false,
+            "description": "At most this many (default 20).",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of invoices.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter failed validation (`validation_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/billing/invoices/{id}": {
+      "get": {
+        "operationId": "getInvoice",
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Retrieve an invoice",
+        "description": "One invoice with its lines.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The invoice's id.",
+              "examples": [
+                "inv_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The invoice's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The invoice.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No invoice with this id exists in the organization (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/billing/credits": {
+      "get": {
+        "operationId": "listCredits",
+        "tags": [
+          "Billing"
+        ],
+        "summary": "List credits",
+        "description": "The organization's credits, newest first: each month's plan credit, prepaid commitments and credits from COSS support (in dollars, or free units of a product), with what's left. Only usable ones by default (`status=all` for every one). Pass the last `id` as `after` to get the next page while `has_more` is true.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "all"
+              ],
+              "description": "`active` (default): usable now or later, with something left; `all`: every credit, newest first."
+            },
+            "required": false,
+            "description": "`active` (default): usable now or later, with something left; `all`: every credit, newest first.",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "Continue after this id (the last of the previous page)."
+            },
+            "required": false,
+            "description": "Continue after this id (the last of the previous page).",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "At most this many (default 20)."
+            },
+            "required": false,
+            "description": "At most this many (default 20).",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of credits.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter failed validation (`validation_error`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

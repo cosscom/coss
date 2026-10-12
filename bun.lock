@@ -199,6 +199,8 @@
       "dependencies": {
         "@coss/db": "workspace:*",
         "@coss/retention": "workspace:*",
+        "@coss/versioning": "workspace:*",
+        "@coss/webhooks": "workspace:*",
         "drizzle-orm": "catalog:",
         "stripe": "22.6.2",
         "zod": "catalog:",
@@ -413,7 +415,6 @@
       "name": "@coss/webhooks",
       "version": "0.0.0",
       "dependencies": {
-        "@coss/billing": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/logs": "workspace:*",
         "@coss/retention": "workspace:*",

@@ -65,15 +65,15 @@ export async function enqueueBillingNotification(
     payload: Record<string, unknown>;
     now?: Date;
   },
-): Promise<void> {
+): Promise<boolean> {
   const now = input.now ?? new Date();
   // Final invoices outlive their organization: nobody is left to tell (and the row's FK needs it).
   const [org] = await tx
     .select({ id: organization.id })
     .from(organization)
     .where(eq(organization.id, input.organizationId));
-  if (!org) return;
-  await tx
+  if (!org) return false;
+  const inserted = await tx
     .insert(billingNotification)
     .values({
       organizationId: input.organizationId,
@@ -83,7 +83,10 @@ export async function enqueueBillingNotification(
       nextAttemptAt: now,
       createdAt: now,
     })
-    .onConflictDoNothing({ target: billingNotification.dedupeKey });
+    .onConflictDoNothing({ target: billingNotification.dedupeKey })
+    .returning({ id: billingNotification.id });
+  // Whether it is new (each dedupe key is sent once).
+  return inserted.length > 0;
 }
 
 export async function listBillingNotifications(organizationId: string) {
