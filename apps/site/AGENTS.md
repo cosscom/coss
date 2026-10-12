@@ -1,8 +1,8 @@
 # AGENTS.md — apps/site (coss.com)
 
-Landing page (`/`) and docs (`/docs`) on Next.js 16 + [Fumadocs](https://fumadocs.dev), port :3002. Fully static
-apart from the docs search (`/docs/search.json`) and the health check; no env vars, no database. It shares coss.com
-with the dashboard (`apps/web`, the default zone): dashboard pages and Better Auth (`/api/auth/*`) are same-origin in
+Landing page (`/`), pricing (`/pricing`) and docs (`/docs`) on Next.js 16 + [Fumadocs](https://fumadocs.dev), port
+:3002. Fully static apart from the docs search (`/docs/search.json`) and the health check; no env vars, no database.
+It shares coss.com with the dashboard (`apps/web`, the default zone): dashboard pages and Better Auth (`/api/auth/*`) are same-origin in
 production, and the load balancer sends this app only the paths in `ZONE_ROUTES` (`@coss/auth/slugs`). Fumadocs is
 the **Base UI** build: `fumadocs-ui` is an npm alias of `@fumadocs/base-ui` (so `fumadocs-openapi`/`fumadocs-twoslash`,
 which peer on `fumadocs-ui`, get it too); keep
@@ -25,7 +25,8 @@ the macro API, `staticSource` and code-usage APIs are recent.
 | `src/app/{icon.svg,robots.ts,sitemap.ts}` | coss.com's root files: the site owns them (the dashboard links to `/icon.svg`). |
 | `src/lib/sdk-samples.ts` | `METHOD /path` → `coss` method + argument builders for the SDK tab. |
 | `src/instrumentation-client.ts`, `src/app/global-error.tsx` | Browser error monitoring (Sentry): configuration from the dashboard's `/api/monitoring` (same origin on coss.com; `next.config.ts` proxies it in `next dev`), events tunnelled through it to the dashboard's `web` project. The server reports nothing. |
-| `src/app/(home)` | Placeholder landing page (coss ui components), the legal pages and `SiteFooter`. |
+| `src/app/(home)` | Placeholder landing page (coss ui components), the pricing page, the legal pages and `SiteFooter`. |
+| `src/app/(home)/pricing`, `src/components/pricing/`, `src/lib/pricing.ts` | `/pricing`: plan cards, an email bill estimator (a client island rating with `@coss/billing/engine`'s `chargeRange`, so it matches invoices), usage rate cards, the plan comparison (`planRows()`, shared with the billing guide's `<PlanTable />`) and an FAQ. Every price, limit and allowance comes from `@coss/billing/catalog`; product availability from `PRODUCTS` (`src/lib/site.ts`). |
 | `content/legal/`, `src/lib/legal.ts`, `src/app/(home)/legal` | Terms, Privacy Policy, Acceptable Use Policy, Data Processing Addendum (incorporated into the Terms) at `/legal/…` (Cal.com, Inc. is the legal entity). Their own `defineDocs` collection + `loader`, so they stay out of the docs' sidebar, search and `/llms.txt`; frontmatter needs `lastUpdated` (YYYY-MM-DD). The sign-up form links to `/legal/terms` and `/legal/privacy`. |
 
 ## Rules
@@ -47,8 +48,9 @@ the macro API, `staticSource` and code-usage APIs are recent.
   type error **fails the build** — fix the snippet or the SDK, don't add `@noErrors`. Use `// ---cut---` to hide
   setup lines and `//    ^?` to show a type. Blocks are written to `.twoslash/` while checked (git-ignored).
   No Twoslash types cache on purpose: it would hide SDK changes that break snippets.
-- Internal links are absolute (`/docs/…`). Facts in the docs (limits, retry schedules, statuses) must match the code;
-  update the page when the behaviour changes.
+- Internal links are absolute (`/docs/…`). Facts in the docs and on the pricing page (limits, retry schedules,
+  statuses, billing rules) must match the code; update the page when the behaviour changes. Never hard-code a price
+  or limit: read it from `@coss/billing/catalog` (the pricing FAQ computes its worked example too).
 - **Dashboard links** use `dashboardUrl(path)` and a plain `<a>` (another zone: no `next/link`). In `next dev` they
   point at :3000 and `next.config.ts` proxies `/api/auth/*` there; localhost cookies are shared across ports, so a
   dashboard sign-in shows here. Never read the session server-side in pages: that makes them dynamic.

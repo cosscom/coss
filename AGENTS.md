@@ -41,7 +41,7 @@ Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `
 billing enqueues `billing.*` events through it — and email imports only `./metering`, `./gate` and `./wire`); `versioning` (no deps) ← `tenancy`, `webhooks`, `email`, `billing` (`schemas`/`wire` examples);
 `retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `billing`, `worker`, `web`, `site`;
 `api → tenancy, email, reputation, webhooks, ratelimit, versioning, logs, billing, db`;
-`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, db, ui`; `site → ui, auth, versioning, retention, billing` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy and `@coss/billing/{catalog,money}`) +
+`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, db, ui`; `site → ui, auth, versioning, retention, billing` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy and `@coss/billing/{catalog,money,engine}`) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening, billing` (`slugs`, `env` only);
 `worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk` and `ui` depend on no workspace.
 Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
@@ -982,7 +982,7 @@ IdP-initiated SAML and SAML single logout, more than one SSO provider per organi
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
 would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys, self-serve add-ons (none is named yet), an automatic direct-debit policy (only per-account
-required payment methods), multi-currency, a pricing page on the site, metering for SMS/video/scheduling (their meters
+required payment methods), multi-currency, metering for SMS/video/scheduling (their meters
 and rates exist; the products don't).
 
 <!-- BEGIN:turborepo-agent-rules -->

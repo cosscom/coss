@@ -14,6 +14,7 @@ export function baseOptions(): BaseLayoutProps {
 
 /** Header links of the landing page. In the docs, the sidebar tabs cover the sections. */
 export const homeLinks: BaseLayoutProps["links"] = [
+  { text: "Pricing", url: "/pricing" },
   { text: "Docs", url: "/docs" },
   { text: "API Reference", url: "/docs/api-reference" },
   { type: "custom", secondary: true, children: <AccountLinks /> },
