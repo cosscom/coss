@@ -7,6 +7,7 @@
 import { db, schema } from "@coss/db";
 import { inArray } from "drizzle-orm";
 import { getBillingAccount } from "./accounts.ts";
+import { announce } from "./announce.ts";
 import { METERS, type MeterKey } from "./catalog/meters.ts";
 import { grantsFor } from "./grants.ts";
 import { liftHold, placeHold } from "./holds.ts";
@@ -57,13 +58,36 @@ async function checkOrganization(organizationId: string, now: Date): Promise<voi
     estimatePeriod(organizationId, now),
   ]);
   const thresholds = account?.alertThresholds.length ? account.alertThresholds : DEFAULT_THRESHOLDS;
-  const alert = (key: string, percent: number, what: string, blocked: boolean) =>
-    enqueueBillingNotification(db, {
-      organizationId,
-      kind: "usage_threshold",
-      dedupeKey: `usage:${organizationId}:${periodKey}:${key}:${percent}`,
-      payload: { percent, what, period: formatPeriod(period), blocked: blocked ? "true" : "false" },
-      now,
+  // The email and the webhook event go out once per threshold and month (the dedupe key).
+  const alert = (meter: MeterKey | null, percent: number, what: string, blocked: boolean) =>
+    db.transaction(async (tx) => {
+      const fresh = await enqueueBillingNotification(tx, {
+        organizationId,
+        kind: "usage_threshold",
+        dedupeKey: `usage:${organizationId}:${periodKey}:${meter ?? "credit"}:${percent}`,
+        payload: {
+          percent,
+          what,
+          period: formatPeriod(period),
+          blocked: blocked ? "true" : "false",
+        },
+        now,
+      });
+      if (!fresh) return;
+      await announce(
+        tx,
+        organizationId,
+        {
+          type: "billing.usage_threshold_reached",
+          data: {
+            percent,
+            of: meter ? "allowance" : "credit",
+            meter,
+            period: { start: period.start.toISOString(), end: period.end.toISOString() },
+          },
+        },
+        now,
+      );
     });
 
   // Capped plans: the share of each allowance used.
@@ -92,7 +116,7 @@ async function checkOrganization(organizationId: string, now: Date): Promise<voi
   if (credit > 0n && estimate.usageCents > 0n) {
     const share = Number((estimate.usageCents * 10_000n) / credit) / 100;
     const crossed = thresholds.filter((t) => share >= t).at(-1);
-    if (crossed !== undefined) await alert("credit", crossed, "usage credit", false);
+    if (crossed !== undefined) await alert(null, crossed, "usage credit", false);
   }
 
   // Spend limit: usage beyond the month's credit (not fees or commitment shortfalls, which the
@@ -107,22 +131,23 @@ async function checkOrganization(organizationId: string, now: Date): Promise<voi
   const overage = usageNet > estimate.creditUsedCents ? usageNet - estimate.creditUsedCents : 0n;
   const limit = account?.spendLimitCents ?? null;
   if (limit !== null && overage > limit) {
-    const placed = await placeHold(
-      db,
-      organizationId,
-      "spend_limit",
-      `Over ${formatCents(limit)} in ${periodKey}`,
-    );
-    if (placed) {
-      await enqueueBillingNotification(db, {
+    await db.transaction(async (tx) => {
+      const placed = await placeHold(
+        tx,
+        organizationId,
+        "spend_limit",
+        `Over ${formatCents(limit)} in ${periodKey}`,
+      );
+      if (!placed) return;
+      await enqueueBillingNotification(tx, {
         organizationId,
         kind: "spend_limit_reached",
         dedupeKey: `spend:${organizationId}:${periodKey}:${limit}`,
         payload: { limit: formatCents(limit) },
         now,
       });
-    }
+    });
   } else {
-    await liftHold(db, organizationId, "spend_limit");
+    await db.transaction((tx) => liftHold(tx, organizationId, "spend_limit"));
   }
 }

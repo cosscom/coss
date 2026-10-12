@@ -6,6 +6,7 @@
 import { db, schema } from "@coss/db";
 import { and, asc, eq, inArray, isNotNull, lte, sql, sum } from "drizzle-orm";
 import { lockBillingAccount, organizationLabel, type ProviderName } from "./accounts.ts";
+import { announce } from "./announce.ts";
 import { type AdminActor, auditBillingChange } from "./audit.ts";
 import type { DraftLine } from "./engine/types.ts";
 import { BillingError } from "./errors.ts";
@@ -16,6 +17,7 @@ import {
   lockInvoice,
   nextCounter,
 } from "./invoices.ts";
+import { toInvoiceSummary } from "./objects.ts";
 import { afterSettled, recordProviderPayment } from "./payments.ts";
 import { type BillingProviders, providerFor } from "./providers/provider.ts";
 import { floorHour, periodOf } from "./time.ts";
@@ -187,7 +189,15 @@ export async function createCreditNote(input: {
         )
         .where(eq(billingInvoice.id, invoice.id))
         .returning();
-      if (row && due <= 0n) await afterSettled(tx, row, now);
+      if (row && due <= 0n) {
+        await announce(
+          tx,
+          row.organizationId,
+          { type: "billing.invoice_paid", data: { invoice: toInvoiceSummary(row) } },
+          now,
+        );
+        await afterSettled(tx, row, now);
+      }
     } else if (input.amountCents > input.refundCents) {
       // What isn't refunded pays for later invoices.
       await tx.insert(billingCreditGrant).values({

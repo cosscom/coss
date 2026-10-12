@@ -77,3 +77,51 @@ what's left of it.
 Invoices are in US dollars. By default they're charged to your card; contracts can be invoiced
 with payment terms (bank transfer) or charged by direct debit. Billing settings show your invoices
 and their PDFs, and let owners update the payment method and billing details.
+
+## Billing API and events
+
+Read the organization's billing with any API key (billing is organization-wide, so every
+environment's key sees the same). Plan changes, payment methods and spend limits stay in the
+dashboard.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: billing } = await coss.billing.get();
+// The plan, this month's usage and what it would cost so far (cents), standing and limits.
+console.log(billing?.plan, billing?.estimate.total, billing?.status);
+//                   ^?
+
+// Usage per day and environment, oldest first.
+const { data: usage } = await coss.billing.usage({ granularity: "day", group_by: "environment" });
+
+// Invoices (newest first) and credits.
+const { data: invoices } = await coss.billing.invoices.list({ status: "open" });
+const { data: credits } = await coss.billing.credits.list();
+```
+
+Amounts are integers in cents; unit prices are dollar strings (`"0.0004"`). Lists page with
+`after` (the last `id`) while `has_more` is true. Usage covers up to 400 days per request (7 by
+hour) and is kept for 400 days.
+
+Subscribe a webhook endpoint to the `billing.*` [events](/docs/webhooks#organization-events) to
+follow invoices, payments, plan changes, usage alerts and paused sending as they happen:
+
+```ts twoslash
+import { verifyWebhook } from "coss";
+declare const body: string;
+declare const headers: Headers;
+declare function notifyFinance(message: string): void;
+// ---cut---
+const event = await verifyWebhook(body, headers, process.env.COSS_WEBHOOK_SECRET!);
+if (event.type === "billing.invoice_payment_failed") {
+  notifyFinance(`${event.data.invoice.number}: ${event.data.failure.message}`);
+} else if (event.type === "billing.usage_threshold_reached") {
+  console.log(`${event.data.percent}% of this month's ${event.data.of} used`);
+}
+```
+
+Billing events go to live environments' endpoints only. `billing.plan_changed` is sent when a
+change is decided, with the moment it applies in `effective_at` (a downgrade's is the start of
+next month); `change` is `reverted` when a scheduled change is undone.

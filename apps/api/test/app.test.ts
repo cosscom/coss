@@ -154,6 +154,11 @@ describe("GET /openapi.json", () => {
     expect(Object.keys(doc.paths).sort()).toEqual([
       "/v1/audit_events",
       "/v1/audit_events/{id}",
+      "/v1/billing",
+      "/v1/billing/credits",
+      "/v1/billing/invoices",
+      "/v1/billing/invoices/{id}",
+      "/v1/billing/usage",
       "/v1/domains",
       "/v1/domains/{id}",
       "/v1/domains/{id}/tracking",

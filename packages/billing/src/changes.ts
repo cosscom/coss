@@ -11,6 +11,7 @@
 import { db, schema, type Transaction } from "@coss/db";
 import { and, asc, eq, gt, inArray, isNotNull, isNull, lte, ne, or } from "drizzle-orm";
 import { lockBillingAccount, type ProviderName } from "./accounts.ts";
+import { announcePlanChange } from "./announce.ts";
 import { type AdminActor, auditBillingChange } from "./audit.ts";
 import { INTERVAL_MONTHS } from "./catalog/add-ons.ts";
 import { PLANS, type PlanKey } from "./catalog/plans.ts";
@@ -194,6 +195,17 @@ export async function scheduleDowngrade(input: {
       throw new BillingError("invalid_change", "That isn't a downgrade.");
     }
     const at = nextPeriod(periodOf(now)).start;
+    await announcePlanChange(
+      tx,
+      input.organizationId,
+      {
+        change: input.plan === "free" ? "cancellation" : "downgrade",
+        plan: input.plan,
+        previousPlan: current.terms.plan,
+        effectiveAt: at,
+      },
+      now,
+    );
     if (input.plan === "free") {
       await endContractAt(tx, current.id, at);
       const scheduled = await nextContractAfter(input.organizationId, now, tx);
@@ -241,6 +253,17 @@ export async function cancelScheduledChange(input: {
     }
     if (state.scheduled.contract) await cancelContract(tx, state.scheduled.contract.id, now);
     await clearContractEnd(tx, state.contract.id);
+    await announcePlanChange(
+      tx,
+      input.organizationId,
+      {
+        change: "reverted",
+        plan: state.contract.terms.plan,
+        previousPlan: state.scheduled.terms.plan,
+        effectiveAt: state.scheduled.at,
+      },
+      now,
+    );
   });
 }
 
@@ -411,6 +434,7 @@ export async function createContract(input: {
     }
     const previous =
       start <= now ? await contractAt(input.contract.organizationId, start, tx) : null;
+    const before = previous ?? (await contractAt(input.contract.organizationId, start, tx));
     const contract = await insertContract(
       tx,
       {
@@ -458,6 +482,17 @@ export async function createContract(input: {
         invoiceId: invoice?.id ?? null,
       },
     });
+    await announcePlanChange(
+      tx,
+      input.contract.organizationId,
+      {
+        change: "contract",
+        plan: terms.plan,
+        previousPlan: before?.terms.plan ?? "free",
+        effectiveAt: start,
+      },
+      now,
+    );
     return { contract, invoice };
   });
 }
@@ -495,6 +530,21 @@ export async function endContract(input: {
         throw new BillingError("invalid_contract", "That contract has already ended.");
       }
       await endContractAt(tx, contract.id, at);
+    }
+    if (contract.status === "confirmed") {
+      const effectiveAt = contract.effectiveFrom > at ? contract.effectiveFrom : at;
+      const following = await contractAt(input.organizationId, effectiveAt, tx);
+      await announcePlanChange(
+        tx,
+        input.organizationId,
+        {
+          change: "contract",
+          plan: following?.terms.plan ?? "free",
+          previousPlan: contract.terms.plan,
+          effectiveAt,
+        },
+        now,
+      );
     }
     await auditBillingChange(tx, {
       actor: input.actor,

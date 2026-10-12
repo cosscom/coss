@@ -5,6 +5,7 @@
  */
 import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { and, asc, eq, lt } from "drizzle-orm";
+import { announce } from "./announce.ts";
 import { type AdminActor, auditBillingChange } from "./audit.ts";
 import { enqueueBillingNotification } from "./notifications.ts";
 
@@ -30,7 +31,9 @@ export async function placeHold(
     .values({ organizationId, reason, note })
     .onConflictDoNothing()
     .returning({ reason: billingHold.reason });
-  return inserted.length > 0;
+  if (!inserted.length) return false;
+  await announce(tx, organizationId, { type: "billing.hold_placed", data: { reason } });
+  return true;
 }
 
 /** Lifts a hold; returns whether there was one. */
@@ -43,7 +46,9 @@ export async function liftHold(
     .delete(billingHold)
     .where(and(eq(billingHold.organizationId, organizationId), eq(billingHold.reason, reason)))
     .returning({ reason: billingHold.reason });
-  return deleted.length > 0;
+  if (!deleted.length) return false;
+  await announce(tx, organizationId, { type: "billing.hold_lifted", data: { reason } });
+  return true;
 }
 
 /**

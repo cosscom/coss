@@ -1,6 +1,7 @@
 import { API_VERSION, type ApiVersion } from "./api-version.ts";
 import { type FetchLike, HttpClient } from "./core/http.ts";
 import { AuditEventsResource } from "./resources/audit-events.ts";
+import { BillingResource } from "./resources/billing.ts";
 import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
 import { LogDrainsResource } from "./resources/log-drains.ts";
@@ -84,6 +85,8 @@ export class Coss {
   readonly logDrains: LogDrainsResource;
   /** The organization's audit log: changes by members, API keys and COSS support (`coss.auditEvents.list()`). */
   readonly auditEvents: AuditEventsResource;
+  /** The organization's plan, usage, invoices and credits (`coss.billing.get()`). */
+  readonly billing: BillingResource;
 
   /**
    * Throws only for programmer errors: no API key, or running in a browser without
@@ -125,5 +128,6 @@ export class Coss {
     this.logs = new LogsResource(http);
     this.logDrains = new LogDrainsResource(http);
     this.auditEvents = new AuditEventsResource(http);
+    this.billing = new BillingResource(http);
   }
 }

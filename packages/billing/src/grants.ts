@@ -4,10 +4,12 @@
  */
 import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { and, desc, eq, gt, inArray, isNull, like, lt, or, sql } from "drizzle-orm";
+import { announce } from "./announce.ts";
 import { type AdminActor, auditBillingChange } from "./audit.ts";
 import { isMeterKey, type MeterKey } from "./catalog/meters.ts";
 import type { DraftGrant, GrantApplication, GrantBalance, GrantSource } from "./engine/types.ts";
 import { BillingError } from "./errors.ts";
+import { toCreditObject } from "./objects.ts";
 import type { Interval } from "./time.ts";
 
 const { billingCreditEntry, billingCreditGrant } = schema;
@@ -284,6 +286,10 @@ export async function createCreditGrant(input: {
         source: row.source,
         expiresAt: row.expiresAt?.toISOString() ?? null,
       },
+    });
+    await announce(tx, grant.organizationId, {
+      type: "billing.credit_granted",
+      data: { credit: toCreditObject({ ...row, used: 0n, remaining: row.amount }) },
     });
     return row;
   });

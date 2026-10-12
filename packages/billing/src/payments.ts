@@ -6,12 +6,14 @@
 import { db, schema, type Transaction } from "@coss/db";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { lockBillingAccount } from "./accounts.ts";
+import { announce } from "./announce.ts";
 import { type AdminActor, auditBillingChange } from "./audit.ts";
 import { cancelContract, contractPendingOn } from "./contracts.ts";
 import { BillingError } from "./errors.ts";
 import { reverseInvoiceCredits } from "./grants.ts";
 import { evaluateStanding } from "./holds.ts";
 import { type InvoiceRow, lockInvoice } from "./invoices.ts";
+import { toInvoiceSummary } from "./objects.ts";
 import { settlePendingContract } from "./upgrades.ts";
 
 const { billingInvoice, billingInvoiceLine, billingPayment } = schema;
@@ -94,8 +96,15 @@ export async function recordPayment(
         expiresAt: null,
       });
   }
-  if (settled && invoice.status !== "paid")
+  if (settled && invoice.status !== "paid") {
+    await announce(
+      tx,
+      row.organizationId,
+      { type: "billing.invoice_paid", data: { invoice: toInvoiceSummary(row) } },
+      now,
+    );
     await afterSettled(tx, row, now, opts.systemOrganizationId);
+  }
   return row;
 }
 
@@ -301,6 +310,15 @@ export async function voidInvoiceInTransaction(
     .set({ chargeKey: null })
     .where(eq(billingInvoiceLine.invoiceId, invoice.id));
   await reverseInvoiceCredits(tx, invoice.organizationId, invoice.id, now);
+  // A draft was never announced (it was never finalized).
+  if (invoice.status === "open") {
+    await announce(
+      tx,
+      row.organizationId,
+      { type: "billing.invoice_voided", data: { invoice: toInvoiceSummary(row) } },
+      now,
+    );
+  }
   const pending = await contractPendingOn(invoice.id, tx);
   if (pending) await cancelContract(tx, pending.id, now);
   await evaluateStanding(tx, invoice.accountId, now);

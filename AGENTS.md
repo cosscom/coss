@@ -26,7 +26,7 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption; log drains (management, signed NDJSON batch delivery, retention); `./schemas`, `./env` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
 | `packages/screening` | `@coss/screening` | Product-agnostic AI content screening: sampling per org + product, the `ContentClassifier` interface (Vercel AI SDK `experimental_decide` adapter under `./ai`, `fakeClassifier` in `./testing`), verdict history, the `content_screening` reputation check; `./env` (zod only), `./runtime`. |
-| `packages/billing` | `@coss/billing` | Plans and billing: the price catalog (`./catalog`: meters, list rates, plans, entitlements, add-ons) and contract terms (`./schemas`), both client-safe; the pure rating engine (`./engine`); accounts, contracts (self-serve and sales), hourly metered usage (`./metering`, the only module products import), credit grants and their ledger, month closes, invoices, payments, credit notes, dunning and holds, usage alerts, plan enforcement (`PlanGate`/`UsageGate` types in `./gate`), providers (fake, manual, Stripe under `./stripe`); `./env` (zod only), `./runtime`, `./testing`. `scripts/seed.ts`, `scripts/close-period.ts`. |
+| `packages/billing` | `@coss/billing` | Plans and billing: the price catalog (`./catalog`: meters, list rates, plans, entitlements, add-ons) and contract terms (`./schemas`), both client-safe; the pure rating engine (`./engine`); accounts, contracts (self-serve and sales), hourly metered usage (`./metering`, the only module products import), credit grants and their ledger, month closes, invoices, payments, credit notes, dunning and holds, usage alerts, plan enforcement (`PlanGate`/`UsageGate` types in `./gate`), providers (fake, manual, Stripe under `./stripe`), the public API's read models and `billing.*` webhook events (wire schemas in `./wire`, client-safe); `./env` (zod only), `./runtime`, `./testing`. `scripts/seed.ts`, `scripts/close-period.ts`. |
 | `packages/observability` | `@coss/observability` | Sentry setup shared by every app: env shape (`./env`, zod only), `sentryConfig`/`sentryOptions`, PII scrubbing (`scrubEvent`), the browser init (`./browser`), the dashboard's envelope tunnel (`./tunnel`) and `withSentryConfig` options (`./build`). Takes each app's SDK; depends on no framework SDK and no workspace. |
 | `packages/logs` | `@coss/logs` | Environment logs and the org audit log: the day-partitioned `log_entry` table (API requests, email events, webhook attempts), the buffered fail-open request writer, queries (keyset pages, histogram, facets, related lines, CSV/NDJSON export), partition retention, `org_audit_event`, the log drain outbox (`log_drain_record`, written by `appendLogEntries`/`recordOrgAuditEvent`); `./schemas` + `./query` (search syntax; zod only), `./testing`. |
 | `packages/versioning` | `@coss/versioning` | Dated public API versions (`Coss-Version`): `API_VERSIONS`, the `VERSION_CHANGES` registry and the engine that renders latest-shape responses/webhook payloads in older versions and upgrades older request bodies. Zero deps, client-safe; `./testing` (`testVersioning()`). |
@@ -36,8 +36,9 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests; nothing here calls AWS. See `infra/AGENTS.md`. |
 
-Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `db ← auth ← tenancy`, `db ← logs ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`, `db ← billing ← webhooks, email` (packages take
-`billing`'s plan checks injected — `PlanGate`, `UsageGate` — and import only `./metering` and `./gate`); `versioning` (no deps) ← `tenancy`, `webhooks`, `email` (`schemas` examples);
+Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `db ← auth ← tenancy`, `db ← logs ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`, `webhooks ← billing ← email` (packages take
+`billing`'s plan checks injected — `PlanGate`, `UsageGate`, and in webhooks the structural `WebhookPlanLimits`, since
+billing enqueues `billing.*` events through it — and email imports only `./metering`, `./gate` and `./wire`); `versioning` (no deps) ← `tenancy`, `webhooks`, `email`, `billing` (`schemas`/`wire` examples);
 `retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `billing`, `worker`, `web`, `site`;
 `api → tenancy, email, reputation, webhooks, ratelimit, versioning, logs, billing, db`;
 `web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, db, ui`; `site → ui, auth, versioning, retention, billing` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy and `@coss/billing/{catalog,money}`) +
@@ -195,7 +196,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - New endpoint: `createRoute({ …, security: [{ bearerAuth: [] }], middleware: [requireApiKey({ <product>: ["<action>"] }), rateLimit("api.read" | "api.write" | "api.send")] })`
   + `router.openapi(route, handler)`, mounted in `createV1Router` (`src/routes/v1.ts`). Auth goes in `middleware` so it
   runs before validation (401 beats 422). Tenancy comes only from `c.var.auth` — environment-scoped resources filter by
-  `environmentId`, organization-scoped ones (domains, audit events) only by `organizationId`. Document responses with
+  `environmentId`, organization-scoped ones (domains, audit events, billing) only by `organizationId`. Document responses with
   `jsonDoc`/`errorDoc`/`commonErrors` (`src/routes/docs.ts`, includes 429). The root `validationHook` turns zod failures into 422 + `issues`;
   a per-route hook must end with `validationHook(result)`. `test/app.test.ts` asserts the exact OpenAPI path list.
 - Every operation needs an `operationId` (it names its docs page). Wire schemas carry a whole-object
@@ -429,7 +430,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
     `environment_api_key`; metadata is client-writable),
-    `defaultPermissions: API_KEY_PERMISSIONS` (every product: email, domain, webhook, suppression, reputation), prefixes
+    `defaultPermissions: API_KEY_PERMISSIONS` (every product: email, domain, webhook, suppression, reputation, billing `read` — backfilled by `0043`), prefixes
     `coss_live_` / `coss_test_` by environment mode (`API_KEY_PREFIX`), key format `/^coss_(live|test)_[A-Za-z]{64}$/`.
   - Keys are created only by `createEnvironmentApiKey` (server-side, no headers) and authenticated only by
     `authenticateApiKey`; keys without an `environment_api_key` binding fail closed. `authenticateApiKey` never calls
@@ -552,7 +553,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch}` and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
+  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch}` and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -716,6 +717,15 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     Errors: `BillingError` (402 codes → API `billing_error`, never retried by the SDK).
   - **Admin changes** (contracts, credits, invoice voids/payments/credit notes/one-off invoices, account settings,
     holds) write `admin_audit_event` in their transaction (`auditBillingChange`; `billing.*` in `ADMIN_ACTIONS`).
+  - **Public API and events** (`apps/api/src/routes/billing.ts`, read models in `src/api.ts`, wire schemas in
+    `./wire`): `GET /v1/billing`, `/v1/billing/usage` (≤ 400 days, 7 by hour), `/v1/billing/invoices[/{id}]`
+    (finalized only; drafts are never exposed) and `/v1/billing/credits`, read-only with `billing:read` from any
+    environment's key (`coss.billing`). Changes stay in the dashboard. `billing.*` events (`BILLING_EVENT_TYPES`, part
+    of `WEBHOOK_EVENT_TYPES`) go through `announce(tx, organizationId, …)` to every **live** environment's endpoints, in
+    the transaction that decided them: invoice finalized/paid/payment failed/voided, plan changed (also when scheduled
+    or undone), usage threshold, hold placed/lifted, credit granted. Emit them only when the change actually applied
+    (`placeHold`/`liftHold`/`enqueueBillingNotification` return whether they did). Payloads carry invoice summaries
+    (no lines) and customer-facing credit fields — never internal reasons, notes or admin identities.
   - **Invoices outlive the organization** (no FK, names copied, `RETENTION_DAYS.invoices`); deleting an organization
     issues one `final` invoice for the running month (`finalizeOrganizationBilling`, in `releaseProviderResources`)
     and leaves the Stripe customer so it can still be collected; owners can't request deletion with open invoices.
@@ -971,8 +981,7 @@ log drain secret rolls and custom request headers (vendor intake APIs that need 
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
 would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,
-email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys, a public billing/usage API and
-`billing.*` webhooks, self-serve add-ons (none is named yet), an automatic direct-debit policy (only per-account
+email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys, self-serve add-ons (none is named yet), an automatic direct-debit policy (only per-account
 required payment methods), multi-currency, a pricing page on the site, metering for SMS/video/scheduling (their meters
 and rates exist; the products don't).
 
