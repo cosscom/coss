@@ -2,16 +2,9 @@ import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@coss/ui/components/card";
 import Link from "next/link";
-import { SITE_DESCRIPTION } from "@/lib/site";
+import { PRODUCTS, SITE_DESCRIPTION } from "@/lib/site";
 
 // Placeholder landing page.
-const PRODUCTS = [
-  { name: "Email", description: "Transactional email from your own domains.", available: true },
-  { name: "SMS", description: "Text messages worldwide.", available: false },
-  { name: "Video", description: "Rooms and recordings.", available: false },
-  { name: "Scheduling", description: "Bookings and availability.", available: false },
-];
-
 const SNIPPET = `import { Coss } from "coss";
 
 const coss = new Coss({ apiKey: process.env.COSS_API_KEY });

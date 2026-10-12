@@ -10,7 +10,8 @@ import {
   RATE_CARDS,
   type Rate,
 } from "@coss/billing/catalog";
-import { formatCents, formatUnitPrice } from "@coss/billing/money";
+import { formatUnitPrice } from "@coss/billing/money";
+import { formatPrice } from "./pricing";
 
 /** The plans and their features, as rows (shared by the MDX table and the Markdown for /llms*.txt). */
 export function planRows(): { label: string; values: string[] }[] {
@@ -22,7 +23,7 @@ export function planRows(): { label: string; values: string[] }[] {
       ([meter, n]) =>
         `${n.toLocaleString("en-US")} ${METERS[meter as keyof typeof METERS].label.toLowerCase()} ${METERS[meter as keyof typeof METERS].units} a month`,
     );
-    if (plan.feeCents > 0n) units.unshift(`${formatCents(plan.feeCents)} of usage`);
+    if (plan.feeCents > 0n) units.unshift(`${formatPrice(plan.feeCents)} of usage`);
     return units.join(", ") || "None";
   };
   return [
@@ -30,10 +31,10 @@ export function planRows(): { label: string; values: string[] }[] {
       label: "Price",
       values: plans.map((plan) =>
         plan.key === "enterprise"
-          ? `From ${formatCents(plan.feeCents)}/month, annual commitment`
+          ? `From ${formatPrice(plan.feeCents)}/month, annual commitment`
           : plan.feeCents === 0n
             ? "Free"
-            : `${formatCents(plan.feeCents)}/month`,
+            : `${formatPrice(plan.feeCents)}/month`,
       ),
     },
     { label: "Included", values: PLAN_KEYS.map(included) },
@@ -46,6 +47,16 @@ export function planRows(): { label: string; values: string[] }[] {
             ? "Not available"
             : "Usage rates below",
       ),
+    },
+    {
+      label: "Sending rate",
+      values: plans.map((plan) => {
+        if (plan.key === "enterprise") return "Custom";
+        const { rateLimits } = plan.entitlements;
+        const second = rateLimits["email.recipients.second"].limit.toLocaleString("en-US");
+        const day = rateLimits["email.recipients.day"].limit.toLocaleString("en-US");
+        return `${second} emails a second, ${day} a day`;
+      }),
     },
     ...LIMIT_KEYS.map((key) => ({
       label: LIMIT_LABELS[key],

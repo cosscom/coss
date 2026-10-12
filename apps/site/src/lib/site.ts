@@ -3,6 +3,26 @@ export const SITE_URL = "https://coss.com";
 export const SITE_DESCRIPTION =
   "One API key and one SDK for email, and soon SMS, video, scheduling and more.";
 export const DOCS_ROUTE = "/docs";
+/** Where Enterprise inquiries go (the pricing page and the billing guide). */
+export const SALES_EMAIL = "sales@coss.com";
+
+/** COSS's products, and whether each can be used yet (the landing and pricing pages). */
+export const PRODUCTS = [
+  {
+    key: "email",
+    name: "Email",
+    description: "Transactional email from your own domains.",
+    available: true,
+  },
+  { key: "sms", name: "SMS", description: "Text messages worldwide.", available: false },
+  { key: "video", name: "Video", description: "Rooms and recordings.", available: false },
+  {
+    key: "scheduling",
+    name: "Scheduling",
+    description: "Bookings and availability.",
+    available: false,
+  },
+] as const;
 /** The docs' search endpoint. Under /docs: on coss.com, `/api/*` belongs to the dashboard. */
 export const SEARCH_API = `${DOCS_ROUTE}/search.json`;
 

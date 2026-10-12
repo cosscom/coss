@@ -6,7 +6,10 @@ describe("renderBillingComponents", () => {
   test("renders the plans and the usage rates from the catalog", () => {
     const text = renderBillingComponents("<PlanTable />\n\n<UsageRates />");
     expect(text).toContain(
-      "| Price | Free | $25.00/month | $250.00/month | From $2,000.00/month, annual commitment |",
+      "| Price | Free | $25/month | $250/month | From $2,000/month, annual commitment |",
+    );
+    expect(text).toContain(
+      "| Sending rate | 2 emails a second, 3,000 a day | 14 emails a second, 100,000 a day | 50 emails a second, 1,000,000 a day | Custom |",
     );
     expect(text).toContain(
       "| Email | $0.40 per 1,000 recipients for the first 1,000,000; $0.30 per 1,000 recipients from 1,000,001 to 10,000,000; $0.22 per 1,000 recipients beyond 10,000,000 | |",
