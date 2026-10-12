@@ -85,3 +85,13 @@ variable "github_repository" {
   type        = string
   description = "owner/name of the repository whose `production` environment may deploy."
 }
+
+variable "alert_email" {
+  type        = string
+  description = "Receives alarms, budget alerts and cost anomalies."
+}
+
+variable "monthly_budget_usd" {
+  type        = number
+  description = "Monthly AWS spend that triggers budget alerts (80% actual, 100% forecasted)."
+}

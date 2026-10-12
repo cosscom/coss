@@ -17,6 +17,9 @@ github_repository  = "cosscom/coss"
 initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
+alert_email        = "bailey@coss.com"
+monthly_budget_usd = 600
+
 db_instance_class   = "db.t4g.medium"
 db_engine_version   = "18.6"
 db_password_version = 1

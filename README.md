@@ -469,6 +469,20 @@ Cloudflare DNS (coss.com zone, DNS only)
   certificate doesn't cover; the header secret is what proves a request came through Cloudflare. Cloudflare bills
   custom hostnames beyond the plan's allowance.
 
+### Monitoring and cost guardrails
+
+- **Errors and uptime:** Sentry (organization `cosscom`). Every server and browser reports errors; the `web` project
+  filters errors caused by browser extensions and web crawlers. Uptime monitors check `https://coss.com/api/health`
+  (`web`) and `https://api.coss.com/health` (`api`) every minute from several regions.
+- **Alarms** (`infra/terraform/monitoring.tf`, notify the `coss-alerts` SNS topic → `alert_email`): per service,
+  fewer running tasks than its minimum, memory above 85 %, CPU above 90 % (autoscaling saturated); load balancer
+  5xx, per-target 5xx and unhealthy targets; RDS CPU, CPU credits (t4g), free storage, free memory and connections
+  (> 300 of ~410); Valkey throttling (raise `--max-ecpu`); plus ses:bootstrap's SES event queue backlog and dead
+  letters. Route 53 health checks and CloudFront metrics exist only in us-east-1, which the organization's SCP
+  denies: uptime is Sentry's.
+- **Cost:** an AWS budget (`monthly_budget_usd`, email at 80 % actual and 100 % forecasted) and Cost Anomaly
+  Detection per service (daily email for anomalies ≥ $25).
+
 ### Secrets and environment
 
 One Secrets Manager secret per stage, `coss/production` (JSON), injected through each task definition's `secrets`
