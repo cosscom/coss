@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { createTestTenant } from "@coss/tenancy/testing";
+import { getBillingAccount, updateBillingAccountSettings } from "../src/accounts.ts";
 import { createCreditNote, createOneOffInvoice, runDueCreditNoteSync } from "../src/adjustments.ts";
 import { endContract, startUpgrade } from "../src/changes.ts";
 import { contractAt } from "../src/contracts.ts";
@@ -307,4 +308,66 @@ test("credit sync reconciles a hosted payment when its webhook was lost", async 
   await runDueCreditNoteSync({ now, scope: f.scope }, f.deps);
   expect((await listGrants(f.organizationId)).map((grant) => grant.amount)).toEqual([10000n]);
   expect((await getInvoice(f.organizationId, invoice.id))?.amountPaidCents).toBe(10000n);
+});
+
+for (const paidCents of [0n, 8000n]) {
+  test(`provider settlement with ${paidCents} cents of cash clears the remaining balance`, async () => {
+    const f = await fixture();
+    const invoice = await createOneOffInvoice({
+      organizationId: f.organizationId,
+      lines: [{ description: "Service", amountCents: 10000n }],
+      memo: null,
+      defaultProvider: "fake",
+      actor: f.actor,
+      reason: "Test",
+      now,
+    });
+    await runDueBillingSync({ now, scope: f.scope }, f.deps);
+    const outcome = {
+      kind: "invoice_paid" as const,
+      providerInvoiceId: `in_fake_${invoice.id}`,
+      paymentId: null,
+      amountCents: paidCents,
+      method: "card",
+    };
+    await applyOutcome(outcome, "fake", {}, now);
+    await applyOutcome(outcome, "fake", {}, now);
+    expect(await getInvoice(f.organizationId, invoice.id)).toMatchObject({
+      status: "paid",
+      amountDueCents: 0n,
+      amountPaidCents: paidCents,
+    });
+    expect(await listGrants(f.organizationId)).toHaveLength(0);
+  });
+}
+
+test("provider changes wait for unsettled invoices and cancellation sync", async () => {
+  const f = await fixture();
+  const upgrade = await startUpgrade(f.input);
+  if (!upgrade.invoice) throw new Error("missing invoice");
+  const change = () =>
+    updateBillingAccountSettings({
+      organizationId: f.organizationId,
+      defaultProvider: "fake",
+      settings: { provider: "manual" },
+      actor: f.actor,
+      reason: "Switch provider",
+    });
+  await expect(change()).rejects.toThrow("unsettled invoices");
+  await runDueBillingSync({ now, scope: f.scope }, f.deps);
+  await voidInvoice({
+    organizationId: f.organizationId,
+    invoiceId: upgrade.invoice.id,
+    actor: f.actor,
+    reason: "Cancel",
+    now,
+  });
+  await expect(change()).rejects.toThrow("unsettled invoices");
+  await runDueBillingSync({ now, scope: f.scope }, f.deps);
+  await change();
+  expect(await getBillingAccount(f.organizationId)).toMatchObject({
+    provider: "manual",
+    providerCustomerId: null,
+    paymentMethod: null,
+  });
 });

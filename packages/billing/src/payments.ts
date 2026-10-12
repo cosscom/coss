@@ -108,7 +108,7 @@ export async function recordProviderPayment(
   opts: { systemOrganizationId?: string | null } = {},
 ): Promise<void> {
   const amountCents = payment.amountCents - invoice.amountPaidCents;
-  if (amountCents <= 0n) return;
+  if (amountCents < 0n) return;
   const [canceledUpgrade] = await tx
     .select({ id: schema.billingContract.id })
     .from(schema.billingContract)
@@ -125,7 +125,7 @@ export async function recordProviderPayment(
     providerPaymentId: payment.providerPaymentId ?? null,
   };
   if (invoice.status === "void" || invoice.status === "draft" || canceledUpgrade) {
-    await paymentForCanceledInvoice(tx, invoice, received, now);
+    if (amountCents > 0n) await paymentForCanceledInvoice(tx, invoice, received, now);
     return;
   }
   if (invoice.status === "uncollectible") {
@@ -134,13 +134,28 @@ export async function recordProviderPayment(
       .set({ status: "open" })
       .where(eq(billingInvoice.id, invoice.id));
   }
-  await recordPayment(
-    tx,
-    invoice.status === "uncollectible" ? { ...invoice, status: "open" } : invoice,
-    received,
-    now,
-    opts,
-  );
+  let current =
+    invoice.status === "uncollectible" ? { ...invoice, status: "open" as const } : invoice;
+  if (amountCents > 0n) current = await recordPayment(tx, current, received, now, opts);
+  if (current.status === "open") {
+    // Stripe can settle using its customer balance, a credit note, or minimum-charge
+    // deferral. Accept its paid state without fabricating an additional cash payment.
+    const [settled] = await tx
+      .update(billingInvoice)
+      .set({
+        status: "paid",
+        amountDueCents: 0n,
+        paidAt: now,
+        paymentState: null,
+        paymentError: null,
+        nextCollectionAt: null,
+        syncAction: null,
+        nextSyncAt: null,
+      })
+      .where(eq(billingInvoice.id, invoice.id))
+      .returning();
+    if (settled) await afterSettled(tx, settled, now, opts.systemOrganizationId);
+  }
 }
 
 /** A payment for a canceled invoice or upgrade: recorded, credited, and reported. */

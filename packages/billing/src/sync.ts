@@ -295,7 +295,7 @@ async function applyCollectionInTransaction(
   switch (result.state) {
     case "paid":
       await tx.update(billingInvoice).set(done).where(eq(billingInvoice.id, current.id));
-      await recordPayment(
+      await (current.provider === "stripe" ? recordProviderPayment : recordPayment)(
         tx,
         { ...current, ...done },
         {

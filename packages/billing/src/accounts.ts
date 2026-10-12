@@ -1,6 +1,6 @@
 /** Billing accounts: one per organization, created on first need. */
 import { db, type Executor, schema, type Transaction } from "@coss/db";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, or } from "drizzle-orm";
 import { type AdminActor, auditBillingChange } from "./audit.ts";
 import { BillingError } from "./errors.ts";
 
@@ -120,9 +120,32 @@ export async function updateBillingAccountSettings(input: {
     // A customer belongs to one provider: switching forgets it (the next invoice creates one).
     const changingProvider =
       input.settings.provider !== undefined && input.settings.provider !== previous.provider;
+    if (changingProvider) {
+      const [unsettled] = await tx
+        .select({ id: schema.billingInvoice.id })
+        .from(schema.billingInvoice)
+        .where(
+          and(
+            eq(schema.billingInvoice.accountId, previous.id),
+            or(
+              inArray(schema.billingInvoice.status, ["draft", "open"]),
+              isNotNull(schema.billingInvoice.syncAction),
+            ),
+          ),
+        )
+        .limit(1);
+      if (unsettled)
+        throw new BillingError(
+          "invalid_change",
+          "Resolve unsettled invoices and their provider sync before changing providers.",
+        );
+    }
     const [row] = await tx
       .update(billingAccount)
-      .set({ ...input.settings, ...(changingProvider ? { providerCustomerId: null } : {}) })
+      .set({
+        ...input.settings,
+        ...(changingProvider ? { providerCustomerId: null, paymentMethod: null } : {}),
+      })
       .where(eq(billingAccount.id, previous.id))
       .returning();
     if (!row) throw new BillingError("not_found", "The billing account no longer exists.");
