@@ -5,8 +5,9 @@
  * days. System-level: spans organizations.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, gt, inArray, isNotNull, lt, lte, ne, or } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNotNull, isNull, lt, lte, ne, or } from "drizzle-orm";
 import { evaluateStanding } from "./holds.ts";
+import { lockInvoice } from "./invoices.ts";
 import { enqueueBillingNotification } from "./notifications.ts";
 
 const { billingAccount, billingInvoice } = schema;
@@ -33,6 +34,7 @@ export async function runDueBillingCollection(opts: {
     .where(
       and(
         eq(billingInvoice.status, "open"),
+        or(isNull(billingInvoice.paymentState), ne(billingInvoice.paymentState, "processing")),
         isNotNull(billingInvoice.nextCollectionAt),
         lte(billingInvoice.nextCollectionAt, now),
         scope,
@@ -40,8 +42,16 @@ export async function runDueBillingCollection(opts: {
     )
     .orderBy(asc(billingInvoice.nextCollectionAt))
     .limit(limit);
-  for (const invoice of due) {
+  for (const candidate of due) {
     await db.transaction(async (tx) => {
+      const invoice = await lockInvoice(tx, candidate.id);
+      if (
+        invoice?.status !== "open" ||
+        invoice.paymentState === "processing" ||
+        !invoice.nextCollectionAt ||
+        invoice.nextCollectionAt > now
+      )
+        return;
       if (invoice.collectionMethod === "charge_automatically") {
         // Try the charge again through the outbox.
         await tx

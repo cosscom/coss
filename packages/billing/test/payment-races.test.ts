@@ -3,13 +3,15 @@ import { createTestTenant } from "@coss/tenancy/testing";
 import { getBillingAccount, updateBillingAccountSettings } from "../src/accounts.ts";
 import { createCreditNote, createOneOffInvoice, runDueCreditNoteSync } from "../src/adjustments.ts";
 import { endContract, startUpgrade } from "../src/changes.ts";
+import { runDueBillingCollection } from "../src/collection.ts";
 import { contractAt } from "../src/contracts.ts";
 import { applyOutcome } from "../src/events.ts";
 import { listGrants } from "../src/grants.ts";
 import { getInvoice } from "../src/invoices.ts";
-import { markInvoiceUncollectible, voidInvoice } from "../src/payments.ts";
+import { markInvoiceUncollectible, resyncInvoice, voidInvoice } from "../src/payments.ts";
 import type { BillingProvider } from "../src/providers/provider.ts";
-import { collectInvoiceNow, runDueBillingSync } from "../src/sync.ts";
+import { ensureProviderCustomer } from "../src/setup.ts";
+import { applyCollection, collectInvoiceNow, runDueBillingSync } from "../src/sync.ts";
 import { testBillingProviders } from "../src/testing.ts";
 
 const now = new Date("2026-10-12T12:00:00Z");
@@ -370,4 +372,64 @@ test("provider changes wait for unsettled invoices and cancellation sync", async
     providerCustomerId: null,
     paymentMethod: null,
   });
+});
+
+test("starting an asynchronous retry removes the old retry schedule", async () => {
+  const f = await fixture();
+  const upgrade = await startUpgrade(f.input);
+  if (!upgrade.invoice) throw new Error("missing invoice");
+  f.fake.willCollect({ state: "failed", error: "Declined" }, { state: "processing" });
+  await collectInvoiceNow(upgrade.invoice.id, f.deps, now);
+  const input = {
+    organizationId: f.organizationId,
+    invoiceId: upgrade.invoice.id,
+    actor: f.actor,
+    reason: "Try new payment method",
+    now,
+  };
+  await resyncInvoice(input);
+  await collectInvoiceNow(upgrade.invoice.id, f.deps, now);
+  await runDueBillingCollection({ now: new Date(now.getTime() + 4 * 86400000), scope: f.scope });
+  expect(await getInvoice(f.organizationId, upgrade.invoice.id)).toMatchObject({
+    paymentState: "processing",
+    nextCollectionAt: null,
+    syncAction: null,
+  });
+  await expect(resyncInvoice(input)).rejects.toThrow("still being processed");
+});
+
+test("a delayed customer-creation response cannot overwrite a changed provider", async () => {
+  const f = await fixture();
+  f.fake.ensureCustomer = async (account) => {
+    await updateBillingAccountSettings({
+      organizationId: f.organizationId,
+      defaultProvider: "fake",
+      settings: { provider: "manual" },
+      actor: f.actor,
+      reason: "Switch provider",
+    });
+    return `cus_old_${account.id}`;
+  };
+  await expect(ensureProviderCustomer(f.organizationId, "fake", f.deps.providers)).rejects.toThrow(
+    "changed",
+  );
+  expect(await getBillingAccount(f.organizationId)).toMatchObject({
+    provider: "manual",
+    providerCustomerId: null,
+  });
+});
+
+test("concurrent failure outcomes advance the retry schedule only once", async () => {
+  const f = await fixture();
+  const upgrade = await startUpgrade(f.input);
+  if (!upgrade.invoice) throw new Error("missing invoice");
+  f.fake.willCollect({ state: "processing" });
+  await collectInvoiceNow(upgrade.invoice.id, f.deps, now);
+  const invoice = await getInvoice(f.organizationId, upgrade.invoice.id);
+  if (!invoice) throw new Error("missing invoice");
+  await Promise.all([
+    applyCollection(invoice, { state: "failed", error: "Debit returned" }, {}, now),
+    applyCollection(invoice, { state: "failed", error: "Debit returned" }, {}, now),
+  ]);
+  expect((await getInvoice(f.organizationId, upgrade.invoice.id))?.collectionAttempts).toBe(1);
 });

@@ -171,7 +171,13 @@ export async function applyOutcome(
       if (invoice?.status !== "open") return;
       await db
         .update(billingInvoice)
-        .set({ paymentState: "processing", paymentError: null })
+        .set({
+          paymentState: "processing",
+          paymentError: null,
+          nextCollectionAt: null,
+          syncAction: null,
+          nextSyncAt: null,
+        })
         .where(and(eq(billingInvoice.id, invoice.id), eq(billingInvoice.status, "open")));
       return;
     }

@@ -279,7 +279,17 @@ export async function applyCollection(
   deps: Pick<BillingSyncDeps, "systemOrganizationId">,
   now: Date,
 ): Promise<void> {
-  await db.transaction((tx) => applyCollectionInTransaction(tx, invoice, result, deps, now));
+  await db.transaction(async (tx) => {
+    const current = await lockInvoice(tx, invoice.id);
+    // Another event or collection attempt may already have moved this payment forward.
+    if (
+      !current ||
+      current.paymentState !== invoice.paymentState ||
+      current.collectionAttempts !== invoice.collectionAttempts
+    )
+      return;
+    await applyCollectionInTransaction(tx, current, result, deps, now);
+  });
 }
 
 async function applyCollectionInTransaction(
@@ -311,7 +321,7 @@ async function applyCollectionInTransaction(
     case "processing":
       await tx
         .update(billingInvoice)
-        .set({ ...done, paymentState: "processing", paymentError: null })
+        .set({ ...done, paymentState: "processing", paymentError: null, nextCollectionAt: null })
         .where(eq(billingInvoice.id, current.id));
       return;
     case "requires_action":

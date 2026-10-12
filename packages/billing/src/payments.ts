@@ -333,6 +333,12 @@ export async function markInvoiceUncollectible(input: {
     if (invoice.status !== "open") {
       throw new BillingError("invoice_state", `A ${invoice.status} invoice can't be written off.`);
     }
+    if (invoice.paymentState === "processing") {
+      throw new BillingError(
+        "invoice_state",
+        "A payment for this invoice is still being processed.",
+      );
+    }
     const [row] = await tx
       .update(billingInvoice)
       .set({
@@ -434,6 +440,12 @@ export async function resyncInvoice(input: {
     }
     if (invoice.status !== "open") {
       throw new BillingError("invoice_state", `A ${invoice.status} invoice has nothing to retry.`);
+    }
+    if (invoice.paymentState === "processing") {
+      throw new BillingError(
+        "invoice_state",
+        "A payment for this invoice is still being processed.",
+      );
     }
     await tx
       .update(billingInvoice)

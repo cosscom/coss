@@ -3,7 +3,7 @@
  * what the account keeps of the default one. Also the admin overview's cross-account reads.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, gt, inArray, isNotNull, lte, ne } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNotNull, isNull, lte, ne } from "drizzle-orm";
 import {
   type BillingAccount,
   ensureBillingAccount,
@@ -33,9 +33,10 @@ export async function ensureProviderCustomer(
   const [row] = await db
     .update(billingAccount)
     .set({ providerCustomerId: customerId })
-    .where(eq(billingAccount.id, account.id))
+    .where(and(eq(billingAccount.id, account.id), eq(billingAccount.provider, account.provider)))
     .returning();
-  return row ?? account;
+  if (!row) throw new BillingError("invalid_change", "The billing provider changed. Try again.");
+  return row;
 }
 
 /** A hosted page to add a payment method (`null`: the account's provider has none, e.g. manual). */
@@ -81,9 +82,18 @@ export async function completePaymentSetup(input: {
   const [row] = await db
     .update(billingAccount)
     .set({ paymentMethod: method })
-    .where(eq(billingAccount.id, account.id))
+    .where(
+      and(
+        eq(billingAccount.id, account.id),
+        eq(billingAccount.provider, account.provider),
+        account.providerCustomerId
+          ? eq(billingAccount.providerCustomerId, account.providerCustomerId)
+          : isNull(billingAccount.providerCustomerId),
+      ),
+    )
     .returning();
-  return row ?? account;
+  if (!row) throw new BillingError("invalid_change", "The billing provider changed. Try again.");
+  return row;
 }
 
 /** A hosted page to manage payment methods and billing details. */
@@ -114,9 +124,18 @@ export async function refreshPaymentMethod(input: {
   const [row] = await db
     .update(billingAccount)
     .set({ paymentMethod: method })
-    .where(eq(billingAccount.id, account.id))
+    .where(
+      and(
+        eq(billingAccount.id, account.id),
+        eq(billingAccount.provider, account.provider),
+        account.providerCustomerId
+          ? eq(billingAccount.providerCustomerId, account.providerCustomerId)
+          : isNull(billingAccount.providerCustomerId),
+      ),
+    )
     .returning();
-  return row ?? account;
+  if (!row) throw new BillingError("invalid_change", "The billing provider changed. Try again.");
+  return row;
 }
 
 /** Accounts that need a look (admin overview): overdue, held, pending upgrades, terms ending soon. */

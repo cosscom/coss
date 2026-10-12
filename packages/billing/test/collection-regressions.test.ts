@@ -240,3 +240,29 @@ test("standing scans reach later pages even when earlier accounts stay overdue",
     );
   }
 });
+
+test("an old processing invoice does not occupy the collection batch", async () => {
+  const processing = await fixture();
+  const ready = await fixture();
+  await db
+    .update(schema.billingInvoice)
+    .set({
+      paymentState: "processing",
+      syncAction: null,
+      nextCollectionAt: new Date(now.getTime() - day),
+    })
+    .where(eq(schema.billingInvoice.id, processing.invoice.id));
+  await db
+    .update(schema.billingInvoice)
+    .set({ syncAction: null, nextCollectionAt: now })
+    .where(eq(schema.billingInvoice.id, ready.invoice.id));
+  await runDueBillingCollection({
+    now,
+    limit: 1,
+    scope: { organizationIds: [processing.organizationId, ready.organizationId] },
+  });
+  expect((await getInvoice(ready.organizationId, ready.invoice.id))?.syncAction).toBe("collect");
+  expect(
+    (await getInvoice(processing.organizationId, processing.invoice.id))?.syncAction,
+  ).toBeNull();
+});
