@@ -1,4 +1,5 @@
 import "./landing.css";
+import { fontCalSans } from "@coss/ui/fonts";
 import { HomeLayout } from "fumadocs-ui/layouts/home";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { JetBrains_Mono } from "next/font/google";
@@ -6,7 +7,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { baseOptions } from "@/lib/layout.shared";
 import { SHIPYARD } from "@/lib/shipyard";
 
-// The landing page's own monospace face, as at berthd.app (its sans is the site's Inter).
+// The landing page's own faces: Cal Sans for the headlines, JetBrains Mono as at berthd.app (its
+// body sans is the site's Inter).
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" });
 
 /** Header links of Shipyard's landing page: its docs, the download, and its repository. */
@@ -18,7 +20,11 @@ const links: BaseLayoutProps["links"] = [
 
 export default function Layout({ children }: LayoutProps<"/shipyard">) {
   return (
-    <HomeLayout {...baseOptions()} className={mono.variable} links={links}>
+    <HomeLayout
+      {...baseOptions()}
+      className={`${fontCalSans.variable} ${mono.variable}`}
+      links={links}
+    >
       {children}
       <SiteFooter />
     </HomeLayout>

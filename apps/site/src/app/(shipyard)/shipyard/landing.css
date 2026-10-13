@@ -1,7 +1,7 @@
 /* Shipyard's landing page, as it was at berthd.app (the repository's
    site/styles.css), scoped to .shipyard-landing under coss.com's layout and
-   header. Its own type (the site's Inter, and JetBrains Mono from
-   layout.tsx) and tokens (Shipyard Light and Shipyard Dark, by the site's
+   header. Its own type (Cal Sans for the headlines and JetBrains Mono, both
+   from layout.tsx; the site's Inter for the rest) and tokens (Shipyard Light and Shipyard Dark, by the site's
    theme class) and coss-ui's buttons. The harbour at the top is the only
    picture that isn't a screenshot. The few url()s here are under the page's
    path (public/shipyard, see src/lib/shipyard.ts). */
@@ -25,6 +25,7 @@
   --shadow: 0 1px 2px rgb(20 22 30 / 0.04), 0 24px 60px -28px rgb(20 22 30 / 0.28);
   --sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --heading: var(--font-cal-sans), var(--sans);
   --band: clamp(340px, 58vh, 600px);
   color-scheme: light;
 }
@@ -71,11 +72,16 @@
   outline-offset: 2px;
   border-radius: 6px;
 }
+/* Headlines in Cal Sans: its optical size follows the font size (the build peaks at 32), at the
+   Base geometry (GEOM 50, as coss.com sets its brand). */
 .shipyard-landing h1,
 .shipyard-landing h2 {
   margin: 0;
+  font-family: var(--heading);
   font-weight: 600;
-  letter-spacing: -0.022em;
+  font-optical-sizing: auto;
+  font-variation-settings: "GEOM" 50;
+  letter-spacing: -0.01em;
   text-wrap: balance;
 }
 .shipyard-landing p {
