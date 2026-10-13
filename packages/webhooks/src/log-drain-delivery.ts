@@ -7,7 +7,7 @@
  */
 import { db, type Executor, schema } from "@coss/db";
 import { recordOrgAuditEvent } from "@coss/logs";
-import { and, asc, eq, exists, inArray, isNull, lt, lte, notExists, or, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lt, lte, notExists, or, sql } from "drizzle-orm";
 import type { LogDrainDisabledReason } from "./log-drain-schemas.ts";
 import {
   discardLogDrainBacklog,
@@ -98,12 +98,20 @@ export function takeBatch<T extends { byteSize: number }>(records: readonly T[])
 }
 
 /**
- * Starts a batch for each drain (up to `limit`) that has queued lines and no open batch. Each drain
- * is locked while its batch forms (`FOR NO KEY UPDATE SKIP LOCKED`: it doesn't block the key-share
- * locks of lines being queued for it); the partial unique index on open batches settles any race.
+ * Starts a batch for each drain (up to `limit`) that has queued lines and no open batch, the drains
+ * whose oldest queued line is oldest first: with more drains than `limit`, a busy drain can't keep
+ * the others waiting (their lines would be purged as an expired backlog), since every batch it
+ * forms moves its oldest line forward. Each drain is locked while its batch forms (`FOR NO KEY
+ * UPDATE SKIP LOCKED`: it doesn't block the key-share locks of lines being queued for it); the
+ * partial unique index on open batches settles any race.
  */
 async function formBatches(now: Date, limit: number, scope: Scope): Promise<LogDrainBatchRow[]> {
   if (limit <= 0) return [];
+  // Record ids ascend in write order; `log_drain_record_queued_idx` answers this per drain.
+  const oldestQueued = sql<string | null>`(
+    select min(${logDrainRecord.id}) from ${logDrainRecord}
+    where ${logDrainRecord.drainId} = ${logDrain.id} and ${logDrainRecord.batchId} is null
+  )`;
   const candidates = await db
     .select({ id: logDrain.id, organizationId: logDrain.organizationId })
     .from(logDrain)
@@ -124,16 +132,10 @@ async function formBatches(now: Date, limit: number, scope: Scope): Promise<LogD
               ),
             ),
         ),
-        exists(
-          db
-            .select({ one: sql`1` })
-            .from(logDrainRecord)
-            .where(
-              and(sql`${logDrainRecord.drainId} = ${logDrain.id}`, isNull(logDrainRecord.batchId)),
-            ),
-        ),
+        sql`${oldestQueued} is not null`,
       ),
     )
+    .orderBy(sql`${oldestQueued}`)
     .limit(limit);
   const formed: LogDrainBatchRow[] = [];
   for (const candidate of candidates) {

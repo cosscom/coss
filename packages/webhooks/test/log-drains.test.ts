@@ -554,6 +554,33 @@ describe("the log drain outbox", () => {
 });
 
 describe("log drain delivery", () => {
+  test("a busy drain can't starve the others: oldest queued line first", async () => {
+    const tenant = await createTestTenant();
+    const { drain: busy } = await drainFor(tenant, "https://busy.example.com/in", ["email"]);
+    const { drain: quiet } = await drainFor(tenant, "https://quiet.example.com/in", ["api"]);
+    const emailLine = (n: number) =>
+      line(tenant, { source: "email", type: "email.sent", message: `sent ${n}`, requestId: null });
+    await appendLogEntries(db, [emailLine(0)]);
+    await appendLogEntries(db, [line(tenant)]);
+    const served: string[] = [];
+    const send = async ({ url }: { url: string }) => {
+      served.push(new URL(url).hostname);
+      return { status: 200, body: "ok" };
+    };
+    // One batch per run, and the busy drain gets a newer line after every run.
+    for (let run = 1; run <= 3; run++) {
+      expect(
+        await runDueLogDrainDeliveries({ limit: 1, scope: scopeOf(tenant) }, { ...deps, send }),
+      ).toBe(1);
+      await appendLogEntries(db, [emailLine(run)]);
+    }
+    expect(served).toEqual(["busy.example.com", "quiet.example.com", "busy.example.com"]);
+    expect(
+      await countQueuedLogDrainLines({ organizationId: tenant.organization.id, drainId: busy.id }),
+    ).toBe(1);
+    expect(await queued(quiet.id)).toSatisfy((records) => records.every((r) => r.batchId));
+  });
+
   test("posts queued lines as signed NDJSON, in order, one batch per request", async () => {
     const tenant = await createTestTenant();
     const receiver = webhookReceiver();

@@ -210,9 +210,9 @@ export const email = pgTable(
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
     // Reputation checks scan an organization's recent emails.
     index("email_organization_created_at_idx").on(t.organizationId, t.createdAt),
-    // Due-scan for scheduled sends. Not filtered on `status = 'scheduled'`: a new enum value
-    // can't be used in the migration transaction that adds it.
-    index("email_scheduled_at_idx").on(t.scheduledAt).where(sql`${t.scheduledAt} is not null`),
+    // Due-scan for scheduled sends (`dispatchDue`, every 5 s): only rows still waiting, so the
+    // scan never walks emails already sent or immediate sends with a past time.
+    index("email_scheduled_due_idx").on(t.scheduledAt).where(sql`${t.status} = 'scheduled'`),
     // The worker's sweeps for queued emails whose dispatch was lost or interrupted.
     index("email_queued_created_at_idx").on(t.createdAt).where(sql`${t.status} = 'queued'`),
     // The worker's retention purge (oldest first, across organizations).
