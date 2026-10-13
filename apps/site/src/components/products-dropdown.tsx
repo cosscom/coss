@@ -22,7 +22,7 @@ export function ProductsDropdown() {
             // biome-ignore lint/a11y/useAnchorContent: the item's label renders inside
             render={item.zone ? <a href={item.href} /> : <Link href={item.href} />}
           >
-            <span className="font-bold font-heading in-data-highlighted:text-foreground text-muted-foreground">
+            <span className="font-medium in-data-highlighted:text-foreground text-muted-foreground [font-variation-settings:'GEOM'_25]">
               {item.label}
             </span>
             {item.badge && (
