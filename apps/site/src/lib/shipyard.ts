@@ -14,6 +14,7 @@ export const SHIPYARD = {
   title: "Shipyard - coding agents on your own boxes",
   description:
     "Shipyard runs Claude Code, Codex and other coding agents on your own dev boxes. Work with them from your laptop; close it, and they keep going.",
+  githubRepo: "cosscom/shipyard",
   github: "https://github.com/cosscom/shipyard",
   /** The docs (content/shipyard, src/lib/shipyard-docs.ts) and their own search index. */
   docs: "/shipyard/docs",

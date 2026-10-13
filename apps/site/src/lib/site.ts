@@ -5,8 +5,9 @@ export const SITE_DESCRIPTION =
 export const DOCS_ROUTE = "/docs";
 /** Shiki themes of every code block (source.config.ts and the Shipyard docs' collection). */
 export const CODE_THEMES = { light: "github-light", dark: "github-dark" } as const;
-/** The repository, linked from the header (like coss.com/ui's). */
-export const GITHUB_URL = "https://github.com/cosscom/coss";
+/** The repository, linked from the header with its stars (like coss.com/ui's). */
+export const GITHUB_REPO = "cosscom/coss";
+export const GITHUB_URL = `https://github.com/${GITHUB_REPO}`;
 
 export interface NavItem {
   href: string;

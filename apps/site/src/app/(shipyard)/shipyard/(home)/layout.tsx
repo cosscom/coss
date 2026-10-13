@@ -9,6 +9,7 @@ import { shipyardSource } from "@/lib/shipyard-docs";
 export default function Layout({ children }: LayoutProps<"/shipyard">) {
   return (
     <SiteShell
+      github={{ repo: SHIPYARD.githubRepo, href: SHIPYARD.github }}
       items={SHIPYARD_LINKS}
       searchApi={SHIPYARD.searchApi}
       tree={shipyardSource.getPageTree()}

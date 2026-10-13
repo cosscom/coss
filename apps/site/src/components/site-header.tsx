@@ -5,7 +5,7 @@ import { NAV_ITEMS, type NavItem, SEARCH_API } from "@/lib/site";
 import { source } from "@/lib/source";
 import { AccountLinks } from "./account-links";
 import { CommandMenu } from "./command-menu";
-import { GitHubLink } from "./github-link";
+import { COSS_GITHUB, GitHubLink, type GitHubRepo } from "./github-link";
 import { MainNav } from "./main-nav";
 import { MobileNav } from "./mobile-nav";
 import { ModeSwitcher } from "./mode-switcher";
@@ -20,10 +20,13 @@ export function SiteHeader({
   items = NAV_ITEMS,
   tree = source.getPageTree(),
   searchApi = SEARCH_API,
+  github = COSS_GITHUB,
 }: {
   items?: readonly NavItem[];
   tree?: PageTree.Root;
   searchApi?: string;
+  /** The repository the GitHub link and its stars point at (a product's own on its pages). */
+  github?: GitHubRepo;
 }) {
   return (
     <header className="sticky top-0 z-40 w-full bg-sidebar/80 backdrop-blur-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border/64">
@@ -42,7 +45,7 @@ export function SiteHeader({
           </div>
           <Separator className="h-5 max-md:hidden" orientation="vertical" />
           <AccountLinks />
-          <GitHubLink />
+          <GitHubLink {...github} />
           <ModeSwitcher />
         </div>
       </div>

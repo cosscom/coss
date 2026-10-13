@@ -11,7 +11,12 @@ export default function Layout({ children }: LayoutProps<"/shipyard/docs">) {
   // own search index (/shipyard/docs/search.json).
   const tree = shipyardSource.getPageTree();
   return (
-    <SiteShell items={SHIPYARD_LINKS} searchApi={SHIPYARD.searchApi} tree={tree}>
+    <SiteShell
+      github={{ repo: SHIPYARD.githubRepo, href: SHIPYARD.github }}
+      items={SHIPYARD_LINKS}
+      searchApi={SHIPYARD.searchApi}
+      tree={tree}
+    >
       <DocsLayoutFrame tree={tree}>{children}</DocsLayoutFrame>
     </SiteShell>
   );
