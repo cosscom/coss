@@ -348,6 +348,12 @@ export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
     const { organizationId } = c.var.auth;
     const row = await requireDomain(organizationId, id);
     await createTrackingDomain({ organizationId, domainId: row.id, hostname }, deps);
+    await recordApiAudit(c, {
+      action: "tracking_domain.created",
+      target: { type: "domain", id: row.id, label: row.name },
+      environmentScoped: false,
+      metadata: { hostname },
+    });
     return c.json(await domainObject(row), 200);
   });
 
@@ -356,6 +362,11 @@ export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
     const { organizationId } = c.var.auth;
     const row = await requireDomain(organizationId, id);
     await deleteTrackingDomain({ organizationId, domainId: row.id }, deps);
+    await recordApiAudit(c, {
+      action: "tracking_domain.deleted",
+      target: { type: "domain", id: row.id, label: row.name },
+      environmentScoped: false,
+    });
     return c.json(await domainObject(row), 200);
   });
 

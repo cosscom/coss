@@ -111,14 +111,17 @@ export async function addTrackingDomainAction(
       domain: ["create"],
     });
     const domain = await domainFromForm(context, formData);
+    const hostname = formString(formData, "hostname");
     await createTrackingDomain(
-      {
-        organizationId: domain.organizationId,
-        domainId: domain.id,
-        hostname: formString(formData, "hostname"),
-      },
+      { organizationId: domain.organizationId, domainId: domain.id, hostname },
       emailRuntime().domainDeps,
     );
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "tracking_domain.created",
+      target: { type: "domain", id: domain.id, label: domain.name },
+      metadata: { hostname },
+    });
     refresh();
     return null;
   });
@@ -161,6 +164,11 @@ export async function removeTrackingDomainAction(
       { organizationId: domain.organizationId, domainId: domain.id },
       emailRuntime().domainDeps,
     );
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "tracking_domain.deleted",
+      target: { type: "domain", id: domain.id, label: domain.name },
+    });
     refresh();
     return null;
   });

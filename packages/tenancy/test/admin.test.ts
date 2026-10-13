@@ -178,7 +178,7 @@ describe("organization suspension", () => {
   });
 
   test.each(["owner", "admin"] as const)(
-    "blocks invitation cancellation over HTTP for a suspended org's %s",
+    "blocks invitation cancellation for a suspended org's %s",
     async (role) => {
       const tenant = await createTestTenant();
       const actor = await adminActor();
@@ -190,28 +190,18 @@ describe("organization suspension", () => {
         headers,
         body: { email: `invite-${uniqueSuffix()}@coss.test`, role: "member", organizationId },
       });
-      const base = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
-      headers.set("origin", base);
-      headers.set("content-type", "application/json");
+      // The route is closed over HTTP; the dashboard's action calls it server-side.
       const cancel = () =>
-        auth.handler(
-          new Request(`${base}/api/auth/organization/cancel-invitation`, {
-            method: "POST",
-            headers,
-            body: JSON.stringify({ invitationId: invitation.id }),
-          }),
-        );
+        auth.api.cancelInvitation({ headers, body: { invitationId: invitation.id } });
       await suspendOrganization({ organizationId, reason: "Abuse", actor });
-      const response = await cancel();
-      expect(response.status).toBe(403);
-      expect(await response.json()).toMatchObject({ message: "This organization is suspended." });
+      await expect(cancel()).rejects.toThrow("This organization is suspended.");
       const [pending] = await db
         .select()
         .from(schema.invitation)
         .where(eq(schema.invitation.id, invitation.id));
       expect(pending?.status).toBe("pending");
       await unsuspendOrganization({ organizationId, actor });
-      expect((await cancel()).status).toBe(200);
+      await cancel();
       const [canceled] = await db
         .select()
         .from(schema.invitation)
