@@ -7,6 +7,7 @@ import {
   ALB_IDLE_TIMEOUT_SECONDS,
   albListenerRules,
   cossComCacheBehaviours,
+  deployInvalidationPaths,
   EXTERNAL_ORIGIN_REQUEST_POLICY,
   EXTERNAL_ZONES,
   NEXT_CACHE_KEY_HEADERS,
@@ -68,7 +69,7 @@ export function awsSpec() {
         "coss.com": { cachedBehaviours: cossComCacheBehaviours() },
         "api.coss.com": { cachedBehaviours: [] },
       },
-      invalidateAfterSiteDeploy: ["/*"],
+      invalidateAfterDeploy: deployInvalidationPaths(),
     },
   };
 }

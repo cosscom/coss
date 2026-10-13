@@ -14,6 +14,7 @@ import { screeningEnvShape } from "@coss/screening/env";
 import {
   albListenerRules,
   cossComCacheBehaviours,
+  deployInvalidationPaths,
   EXTERNAL_ZONES,
   TRACKING_HOST,
   TRACKING_ORIGIN_VERIFY_HEADER,
@@ -195,6 +196,16 @@ describe("routing", () => {
     for (const pattern of patterns) expect(pattern.startsWith("/api")).toBe(false);
     expect(patterns).not.toContain("/");
     expect(patterns.length).toBeLessThanOrEqual(25);
+  });
+
+  test("deploys invalidate the site's cached paths, never hashed assets or external zones", () => {
+    const paths = deployInvalidationPaths();
+    expect(paths).toEqual(expect.arrayContaining(["/docs", "/docs/*", "/legal/*", "/llms.txt"]));
+    for (const kept of ["/_next/static/*", "/site-assets/*", "/ui", "/ui/*", "/origin/*", "/*"]) {
+      expect(paths).not.toContain(kept);
+    }
+    // CloudFront: at most 15 wildcard paths in progress per distribution.
+    expect(paths.filter((path) => path.includes("*")).length).toBeLessThanOrEqual(15);
   });
 
   test("external zones go to their own CloudFront origins, never the ALB", () => {

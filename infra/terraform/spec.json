@@ -1014,7 +1014,7 @@
             "pathPattern": "/_next/static/*",
             "origin": "alb",
             "cache": "origin",
-            "reason": "The dashboard's hashed, immutable assets (also keeps old chunks during deploys)."
+            "reason": "The dashboard's hashed, immutable assets (and old chunks for tabs opened before a deploy)."
           },
           {
             "pathPattern": "/pricing",
@@ -1130,8 +1130,20 @@
         "cachedBehaviours": []
       }
     },
-    "invalidateAfterSiteDeploy": [
-      "/*"
+    "invalidateAfterDeploy": [
+      "/pricing",
+      "/docs",
+      "/docs/*",
+      "/legal",
+      "/legal/*",
+      "/llms.txt",
+      "/llms-full.txt",
+      "/icon.svg",
+      "/favicon.ico",
+      "/robots.txt",
+      "/sitemap.xml",
+      "/.well-known",
+      "/.well-known/*"
     ]
   }
 }

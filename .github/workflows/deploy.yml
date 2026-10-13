@@ -31,7 +31,10 @@ env:
 
 jobs:
   prepare:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    # Only CI runs of pushes to main (a pull request from a fork's `main` branch would match too).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
@@ -113,8 +116,11 @@ jobs:
         run: infra/scripts/ecs-deploy.sh "$TAG" web site
       - name: Record the deployed commit
         run: aws ssm put-parameter --name "/coss/$STAGE/image-tag" --value "$TAG" --overwrite >/dev/null
-      # Docs pages are cached for a year at the edge.
+      # Docs pages are cached for a year at the edge. Only our apps' cached paths, never the hashed
+      # assets: tabs opened before this deploy still load their old chunks from the cache.
       - name: Invalidate the coss.com CDN
         env:
           DISTRIBUTION_ID: ${{ vars.DASHBOARD_DISTRIBUTION_ID }}
-        run: aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' --query Invalidation.Id --output text
+        run: |
+          mapfile -t paths < <(jq -r '.cloudFront.invalidateAfterDeploy[]' infra/terraform/spec.json)
+          aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "${paths[@]}" --query Invalidation.Id --output text
