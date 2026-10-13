@@ -112,9 +112,15 @@ describe("GET /v1/logs", () => {
     const { app } = createTestApp({ logWriter: writer });
     const memory = memoryLogWriter();
     const { app: other } = createTestApp({ logWriter: memory });
+    // Lines are ordered by their millisecond (ids are UUIDv7 of `occurred_at`); requests within
+    // one millisecond have no defined order, so keep them apart.
+    const apart = () => new Promise((resolve) => setTimeout(resolve, 3));
     await sendEmail(app, tenant.sandboxKey, emailBody());
+    await apart();
     await sendEmail(app, tenant.sandboxKey, { to: "nobody" });
+    await apart();
     await apiRequest(app, "GET", "/v1/suppressions", { key: tenant.sandboxKey });
+    await apart();
     // Another environment's key.
     await sendEmail(app, tenant.liveKey, emailBody());
     await new Promise((resolve) => setTimeout(resolve, 30));

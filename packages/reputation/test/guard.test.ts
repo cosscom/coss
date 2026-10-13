@@ -518,7 +518,8 @@ test("administrative reputation changes also appear in the platform audit log", 
     .select()
     .from(schema.adminAuditEvent)
     .where(eq(schema.adminAuditEvent.organizationId, organizationId))
-    .orderBy(asc(schema.adminAuditEvent.id));
+    // The log's own order (ids are random within one millisecond).
+    .orderBy(asc(schema.adminAuditEvent.createdAt), asc(schema.adminAuditEvent.sequence));
   expect(events.map((event) => [event.action, event.actorEmail, event.reason])).toEqual([
     ["reputation.suspended", tenant.owner.email, "Investigate"],
     ["reputation.reinstated", tenant.owner.email, "Resolved"],

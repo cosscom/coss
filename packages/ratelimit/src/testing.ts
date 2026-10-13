@@ -3,12 +3,19 @@ import { createRateLimiter, type RateLimiter } from "./limiter.ts";
 import type { OverrideSource } from "./overrides.ts";
 import { MemoryStore, ValkeyStore } from "./store.ts";
 
-/** A limiter counting in memory (the default of `createApp` and other test setups). */
+/**
+ * The clock of `memoryLimiter` unless a test passes its own: frozen, so buckets never refill
+ * mid-test and assertions don't depend on how fast the machine runs the requests (a burst loop
+ * slower than one refill interval used to let an extra request through on busy CI runners).
+ */
+export const FROZEN_NOW = (): number => 1_000_000;
+
+/** A limiter counting in memory with a frozen clock (`now` to move time yourself). */
 export function memoryLimiter(
   opts: { overrides?: OverrideSource; now?: () => number } = {},
 ): RateLimiter {
   return createRateLimiter({
-    store: new MemoryStore({ now: opts.now }),
+    store: new MemoryStore({ now: opts.now ?? FROZEN_NOW }),
     overrides: opts.overrides,
   });
 }

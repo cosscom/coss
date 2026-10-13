@@ -1,5 +1,6 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
 import { idTimestamp } from "@coss/db/id";
+import { insertLogDrainRecords } from "../src/drain-outbox.ts";
 import { toLogRow } from "../src/entries.ts";
 import { csvField, logCsvRow } from "../src/export.ts";
 import { formatLogQuery, parseLogQuery, statusRange } from "../src/query.ts";
@@ -140,5 +141,45 @@ describe("ListLogsQuery", () => {
     expect(parsed.method).toEqual(["POST"]);
     expect(ListLogsQuery.safeParse({ level: "loud" }).success).toBe(false);
     expect(ListLogsQuery.safeParse({ status: "600" }).success).toBe(false);
+  });
+});
+
+describe("log drain record ids", () => {
+  test("ascend across writes made in the same millisecond", async () => {
+    const inserted: { id?: string }[] = [];
+    // Captures the rows instead of writing them (insert → values → onConflictDoNothing).
+    const executor = {
+      insert: () => ({
+        values: (rows: { id?: string }[]) => ({
+          onConflictDoNothing: async () => {
+            inserted.push(...rows);
+          },
+        }),
+      }),
+    } as unknown as Parameters<typeof insertLogDrainRecords>[0];
+    const drain = { id: "drain_1", organizationId: "org_1", environmentId: "env_1", sources: [] };
+    const line = (sourceId: string) => ({
+      organizationId: "org_1",
+      environmentId: "env_1",
+      source: "api" as const,
+      sourceId,
+      line: { id: sourceId },
+    });
+    const clock = spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 12, 12));
+    try {
+      for (let write = 0; write < 20; write++) {
+        await insertLogDrainRecords(
+          executor,
+          [drain],
+          [line(`log_${write}a`), line(`log_${write}b`)],
+        );
+      }
+    } finally {
+      clock.mockRestore();
+    }
+    const ids = inserted.map((row) => row.id ?? "");
+    expect(ids).toHaveLength(40);
+    expect(ids).toEqual([...ids].sort());
+    expect(new Set(ids).size).toBe(40);
   });
 });
