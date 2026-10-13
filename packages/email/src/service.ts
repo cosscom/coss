@@ -15,11 +15,12 @@ import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
-import type {
-  EmailProvider,
-  OutboundAttachment,
-  OutboundEmail,
-  ProviderEvent,
+import {
+  type EmailProvider,
+  type OutboundAttachment,
+  type OutboundEmail,
+  type ProviderEvent,
+  UncertainSendError,
 } from "./provider.ts";
 import { type EmailRow, selectEmailsWithMode, toEmailObjects } from "./read.ts";
 import { canonicalJson, hashSendBatchRequest, hashSendRequest } from "./request-hash.ts";
@@ -316,6 +317,9 @@ const SCREENING_UNAVAILABLE = {
   message: "The email was held because content screening was unavailable.",
 };
 
+/** A held email is dispatched (and screened) again this long after its screening failed. */
+export const SCREENING_RETRY_DELAY_S = 60;
+
 export function createEmailService(opts: EmailServiceOptions): EmailService {
   const trackingBaseUrl = opts.trackingBaseUrl?.replace(/\/+$/, "");
   // Sandbox environments never reach a real provider, whatever `liveProvider` is.
@@ -362,6 +366,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         product: "email",
         subjectId: row.id,
         content: () => emailScreeningContent(row),
+        retry: row.errorCode === SCREENING_UNAVAILABLE.code,
       });
       if (outcome.action !== "block") return null;
       return outcome.screening?.verdict === "error" ? SCREENING_UNAVAILABLE : CONTENT_REJECTED;
@@ -369,6 +374,40 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       console.error(`[email] content screening failed for ${row.id}:`, error);
       return opts.screeningFailureAllowlist?.has(row.organizationId) ? null : SCREENING_UNAVAILABLE;
     }
+  }
+
+  /**
+   * Gives back the claim on an email whose screening couldn't run (the classifier is down): it is
+   * dispatched and screened again in `SCREENING_RETRY_DELAY_S`, and keeps being held until the
+   * unclaimed sweep fails it (`content_screening_unavailable`, `UNCLAIMED_FAIL_MS` after it was
+   * due). The error code marks it as held, so its retry is screened again (`retry`).
+   */
+  async function holdForScreening(row: EmailRow, provider: EmailProvider): Promise<void> {
+    await db.transaction(async (tx) => {
+      const [held] = await tx
+        .update(email)
+        .set({
+          provider: null,
+          errorCode: SCREENING_UNAVAILABLE.code,
+          errorMessage: SCREENING_UNAVAILABLE.message,
+        })
+        .where(
+          and(
+            eq(email.id, row.id),
+            eq(email.organizationId, row.organizationId),
+            eq(email.status, "queued"),
+            eq(email.provider, provider.name),
+          ),
+        )
+        .returning({ id: email.id });
+      if (held) {
+        await opts.queue.enqueue(
+          tx,
+          { organizationId: row.organizationId, emailId: row.id },
+          { delaySeconds: SCREENING_RETRY_DELAY_S },
+        );
+      }
+    });
   }
 
   /** Sends an email this process claimed for `provider` and records the outcome. */
@@ -380,6 +419,10 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const hasRecipients = message.to.length + message.cc.length + message.bcc.length > 0;
     const screeningError =
       attachments !== null && hasRecipients ? await screeningFailure(row, sandbox) : null;
+    if (screeningError === SCREENING_UNAVAILABLE) {
+      await holdForScreening(row, provider);
+      return;
+    }
     if (attachments === null) {
       // Content is only purged once an email leaves `queued`, so this means a bug elsewhere:
       // never send the email without the attachments it was requested with.
@@ -421,9 +464,18 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           provider: provider.name,
           providerMessageId: result.providerMessageId,
           sentAt: new Date(),
+          // A held email that got through on a retry.
+          errorCode: null,
+          errorMessage: null,
         };
         events = result.events ?? [];
       } catch (error) {
+        if (error instanceof UncertainSendError) {
+          // The provider may be delivering it: never fail it here, and never send it again. It
+          // stays claimed; the provider's `Send` event or the stale-claim sweep settles it.
+          console.error(`[email] provider "${provider.name}" may have sent ${row.id}:`, error);
+          return;
+        }
         console.error(`[email] provider "${provider.name}" failed to send ${row.id}:`, error);
         outcome = {
           status: "failed",
@@ -454,8 +506,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       await purgeSendContent(tx, row);
       // A failure only counts if it is the recorded outcome; provider events are facts either way.
       if (!updated && outcome.status === "failed") return;
-      // Billed once, whichever path got the email to `sent` first.
-      if (outcome.status === "sent" && !sandbox) await recordEmailUsage(tx, row);
+      // Billed once, whichever path got the email to `sent` first (a `Send` event that beat this
+      // update meters it itself; a `Reject` that beat it means it was never sent).
+      if (updated && outcome.status === "sent" && !sandbox) await recordEmailUsage(tx, row);
       for (const event of events) await recordProviderEvent(tx, event);
     });
   }

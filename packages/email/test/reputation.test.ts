@@ -259,9 +259,12 @@ describe("hourly rollups", () => {
   const HOUR = 3_600_000;
   const hourStart = (ms: number) => Math.floor(ms / HOUR) * HOUR;
 
-  /** Moves emails back in time, into closed (rolled-up) hours. */
+  /** Moves emails back in time (created and sent), into closed (rolled-up) hours. */
   async function backdate(emailIds: string[], createdAt: Date) {
-    await db.update(schema.email).set({ createdAt }).where(inArray(schema.email.id, emailIds));
+    await db
+      .update(schema.email)
+      .set({ createdAt, sentAt: createdAt })
+      .where(inArray(schema.email.id, emailIds));
   }
 
   const rollups = (organizationId: string) =>
@@ -352,6 +355,37 @@ describe("hourly rollups", () => {
     expect(await sendingCounts(ctx)).toEqual({ recipients: 5, bounces: 0, complaints: 1 });
     const [recounted] = await db.select().from(schema.emailReputationRollup).where(bucket);
     expect(recounted).toMatchObject({ complaints: 1, computedRevision: after?.revision });
+  });
+
+  test("emails count when they were sent: a send scheduled weeks ahead counts when it goes out", async () => {
+    const tenant = await createTestTenant();
+    const orgId = tenant.organization.id;
+    const from = await verifiedFrom(orgId);
+    const scheduled = await liveSend(tenant, from, recipients(4, "late"));
+    const createdAt = new Date(Date.now() - 20 * 86_400_000);
+    const sentAt = new Date(Date.now() - 3 * HOUR);
+    await db
+      .update(schema.email)
+      .set({ createdAt, sentAt })
+      .where(eq(schema.email.id, scheduled.id));
+    await ingestProviderEvents([bounce(scheduled, "late0@example.com", "permanent")]);
+
+    const ctx = weekContext(tenant);
+    // Created 20 days ago, outside the week; sent 3 hours ago, inside it.
+    expect(await sendingCounts(ctx)).toEqual({ recipients: 4, bounces: 1, complaints: 0 });
+    const [rollup] = await rollups(orgId).then((rows) => rows.filter((row) => row.recipients > 0));
+    expect(rollup?.bucketStart).toEqual(new Date(hourStart(sentAt.getTime())));
+
+    // Late evidence invalidates the hour it was sent in, not the hour it was created in.
+    const sentHour = and(
+      eq(schema.emailReputationRollup.organizationId, orgId),
+      eq(schema.emailReputationRollup.bucketStart, new Date(hourStart(sentAt.getTime()))),
+    );
+    const [before] = await db.select().from(schema.emailReputationRollup).where(sentHour);
+    await ingestProviderEvents([complaint(scheduled, "late1@example.com")]);
+    const [after] = await db.select().from(schema.emailReputationRollup).where(sentHour);
+    expect(after?.revision).toBe((before?.revision ?? 0) + 1);
+    expect(await sendingCounts(ctx)).toEqual({ recipients: 4, bounces: 1, complaints: 1 });
   });
 
   test("events for emails of open hours never touch the rollups", async () => {

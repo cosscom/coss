@@ -59,6 +59,7 @@ export {
   type ProviderEvent,
   type ProviderTenant,
   type SendResult,
+  UncertainSendError,
 } from "./provider.ts";
 export {
   FakeEmailProvider,

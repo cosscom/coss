@@ -135,7 +135,7 @@ describe("screenMessage", () => {
     });
   });
 
-  test("fails closed in enforcement mode on classifier errors and owes the next sample", async () => {
+  test("fails closed in enforcement mode on classifier errors; the held message is retried", async () => {
     const tenant = await createTestTenant();
     await updateReputationPolicy({
       organizationId: tenant.organization.id,
@@ -143,19 +143,46 @@ describe("screenMessage", () => {
       overrides: { contentScreening: { alwaysFirst: 1, milestones: [] } },
     });
     const failing = fakeClassifier({ fail: true });
-    const failed = await screenMessage(input(tenant), { classifier: failing, random: never });
+    const held = input(tenant);
+    const failed = await screenMessage(held, { classifier: failing, random: never });
     expect(failed.action).toBe("block");
-    expect(failed.screening).toMatchObject({ verdict: "error", enforced: true });
+    expect(failed.screening).toMatchObject({ verdict: "error", enforced: true, sequence: 1 });
     expect(failed.screening?.errorMessage).toContain("fake classifier failure");
-    expect((await counter(tenant.organization.id))?.owed).toBe(true);
-
-    // Message 2 is not sampled on its own, but takes the owed sample.
-    const classifier = fakeClassifier();
-    const next = await screenMessage(input(tenant), { classifier, random: never });
-    expect(next.screening).toMatchObject({ verdict: "clean", sequence: 2 });
+    // The product holds the message and retries it, so no sample passes to the next message:
+    // during an outage, unsampled messages keep going out instead of each hitting the classifier.
     expect((await counter(tenant.organization.id))?.owed).toBe(false);
-    await screenMessage(input(tenant), { classifier, random: never });
+    const classifier = fakeClassifier();
+    expect(await screenMessage(input(tenant), { classifier, random: never })).toMatchObject({
+      action: "send",
+      screening: null,
+    });
+    expect(classifier.calls).toHaveLength(0);
+
+    // The retry is screened (it was a sample) at its old position, without being counted again.
+    const retried = await screenMessage({ ...held, retry: true }, { classifier, random: never });
+    expect(retried).toMatchObject({ action: "send", screening: { verdict: "clean", sequence: 1 } });
     expect(classifier.calls).toHaveLength(1);
+    expect((await counter(tenant.organization.id))?.seen).toBe(2);
+  });
+
+  test("shadow mode owes a failed sample to the next message once, never a chain", async () => {
+    const tenant = await createTestTenant();
+    await updateReputationPolicy({
+      organizationId: tenant.organization.id,
+      adminUserId: tenant.owner.id,
+      overrides: { contentScreening: { enforce: false, alwaysFirst: 1, milestones: [] } },
+    });
+    const failing = fakeClassifier({ fail: true });
+    const first = await screenMessage(input(tenant), { classifier: failing, random: never });
+    expect(first).toMatchObject({ action: "send", screening: { verdict: "error" } });
+    expect((await counter(tenant.organization.id))?.owed).toBe(true);
+    // Message 2 takes the owed sample; failing again, it doesn't pass it on.
+    const second = await screenMessage(input(tenant), { classifier: failing, random: never });
+    expect(second).toMatchObject({ action: "send", screening: { verdict: "error", sequence: 2 } });
+    expect((await counter(tenant.organization.id))?.owed).toBe(false);
+    const third = await screenMessage(input(tenant), { classifier: failing, random: never });
+    expect(third).toMatchObject({ action: "send", screening: null });
+    expect(failing.calls).toHaveLength(2);
   });
 
   test("times out slow classifiers", async () => {

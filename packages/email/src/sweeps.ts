@@ -3,7 +3,7 @@
  * span organizations, and every write is scoped by the email's own organization.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, gte, inArray, isNotNull, isNull, lt } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, lt, sql } from "drizzle-orm";
 import { purgeSendContent } from "./attachments.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
@@ -22,22 +22,41 @@ export const UNCLAIMED_FAIL_MS = 60 * 60 * 1000;
 
 type Scope = { organizationIds: string[] };
 
-/** Unclaimed `queued` emails created before `before`, optionally since `since`, oldest first. */
+/**
+ * When a queued email became due: when it was created, or for a scheduled send held after its
+ * screening failed, when it was scheduled for.
+ */
+const DUE_AT = sql`greatest(${email.createdAt}, coalesce(${email.scheduledAt}, ${email.createdAt}))`;
+
+/** Unclaimed `queued` emails due before `before`, optionally since `since`, oldest first. */
 function unclaimedBefore(before: Date, limit: number, scope: Scope | undefined, since?: Date) {
   return db
-    .select({ id: email.id, organizationId: email.organizationId })
+    .select({ id: email.id, organizationId: email.organizationId, errorCode: email.errorCode })
     .from(email)
     .where(
       and(
         eq(email.status, "queued"),
         isNull(email.provider),
-        lt(email.createdAt, before),
-        since ? gte(email.createdAt, since) : undefined,
+        sql`${DUE_AT} < ${before.toISOString()}::timestamptz`,
+        since ? sql`${DUE_AT} >= ${since.toISOString()}::timestamptz` : undefined,
         scope ? inArray(email.organizationId, scope.organizationIds) : undefined,
       ),
     )
     .orderBy(asc(email.createdAt))
     .limit(limit);
+}
+
+/** Why an email that was never handed over in time failed. */
+function dispatchFailure(errorCode: string | null) {
+  return errorCode === "content_screening_unavailable"
+    ? {
+        code: errorCode,
+        message: "The email was held because content screening was unavailable, and it gave up.",
+      }
+    : {
+        code: "dispatch_failed",
+        message: "The email could not be handed to the email provider in time.",
+      };
 }
 
 /**
@@ -61,14 +80,11 @@ export async function sweepUnclaimedEmails(
   let failed = 0;
   const expired = await unclaimedBefore(failureThreshold, limit, opts.scope);
   for (const candidate of expired) {
+    const failure = dispatchFailure(candidate.errorCode);
     const done = await db.transaction(async (tx) => {
       const [updated] = await tx
         .update(email)
-        .set({
-          status: "failed",
-          errorCode: "dispatch_failed",
-          errorMessage: "The email could not be handed to the provider in time.",
-        })
+        .set({ status: "failed", errorCode: failure.code, errorMessage: failure.message })
         .where(
           and(
             eq(email.id, candidate.id),
@@ -88,13 +104,8 @@ export async function sweepUnclaimedEmails(
         type: "email.failed",
         recipients: null,
         occurredAt: now,
-        sourceId: "dispatch_failed",
-        data: {
-          failure: {
-            code: "dispatch_failed",
-            message: "The email could not be handed to the email provider in time.",
-          },
-        },
+        sourceId: failure.code,
+        data: { failure },
       });
       return true;
     });

@@ -53,8 +53,22 @@ export type SendResult = {
 };
 
 /**
+ * Thrown by a provider when it can't tell whether the message was accepted (a timeout, a dropped
+ * connection, a server error): the email must not be failed (the provider may be delivering it)
+ * nor sent again. The service leaves it claimed; the provider's own `Send` event or the
+ * stale-claim sweep settles it.
+ */
+export class UncertainSendError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = "UncertainSendError";
+  }
+}
+
+/**
  * Delivery seam (fake or SES). `send` resolves once the provider accepted the message and throws
- * when it did not; the service records either outcome on the email row.
+ * when it did not (`UncertainSendError` when it can't tell); the service records the outcome on
+ * the email row.
  */
 export interface EmailProvider {
   readonly name: string;

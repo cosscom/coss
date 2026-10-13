@@ -131,7 +131,8 @@ resets) are printed to the dashboard's server console in development.
   250th, 500th and 1000th, then 2% at random. At ≥ 0.95 the email fails with `content_rejected` and the
   organization is suspended (the reputation guard's `content_screening` trigger); at ≥ 0.70 it is sent but the
   organization is warned until the flag ages out of the window. In enforcement mode, classifier errors and
-  timeouts (3 s) hold the email as `content_screening_unavailable`; the sample also moves to the next one. COSS's
+  timeouts (3 s) hold the email: it is tried (and screened) again every minute, and fails as
+  `content_screening_unavailable` only if screening is still down an hour after it was due. COSS's
   own notification organization always sends so an AI outage cannot stop account recovery. Admins see every verdict on the organization's reputation page and can
   tune thresholds and sampling, switch to shadow mode, or turn screening off per organization (e.g. for
   phishing-simulation senders). Locally `SCREENING_CLASSIFIER=fake` flags content containing `[coss-test:phishing]`
@@ -297,8 +298,9 @@ or none, is denied); COSS always sends with the organization's tenant, which SES
 
 1. Create an AI Gateway API key in the Vercel team that will pay for screening. Requests ask for zero data
    retention (the content is customer email), which Vercel offers on Pro and Enterprise teams. In enforced
-   mode, a failed request records an `error` verdict and holds the email with
-   `content_screening_unavailable`; shadow mode records the failure and sends the email.
+   mode, a failed request records an `error` verdict and holds the email for a retry a minute later (it fails
+   with `content_screening_unavailable` after an hour of outage); shadow mode records the failure and sends the
+   email.
 2. Set `SCREENING_CLASSIFIER=ai` and `AI_GATEWAY_API_KEY` for the worker (only the worker screens).
    `SCREENING_MODEL` defaults to `typesafe-ai/jev`; any Gateway decision model id works.
 3. Cost: one screening is about 2k input tokens (bodies are truncated to 8,000 characters) — about $0.0001 with
