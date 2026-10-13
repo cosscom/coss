@@ -67,6 +67,22 @@ export function summarizePaymentMethod(method: Stripe.PaymentMethod): PaymentMet
   return summary;
 }
 
+/**
+ * What a Stripe invoice paid of its own COSS invoice. Stripe marks an invoice below its minimum
+ * charge paid without charging it and adds the amount, as a customer balance debit, to the next
+ * invoice it finalizes. That part belongs to the earlier invoice, which COSS already settled
+ * (`recordProviderPayment` accepts Stripe's paid state), so it must not count as an overpayment
+ * of this one (it would become COSS credit). COSS never credits the Stripe balance (credit notes
+ * refund or are out of band), so a negative starting balance doesn't occur.
+ */
+export function paidTowardInvoice(invoice: {
+  amount_paid: number;
+  starting_balance?: number | null;
+}): bigint {
+  const carriedDebit = Math.max(0, invoice.starting_balance ?? 0);
+  return BigInt(Math.max(0, invoice.amount_paid - carriedDebit));
+}
+
 export class StripeBillingProvider implements BillingProvider {
   readonly name = "stripe" as const;
   readonly #stripe: Stripe;
@@ -113,7 +129,8 @@ export class StripeBillingProvider implements BillingProvider {
   ) {
     await this.#stripe.customers.update(customerId, {
       name: account.billingName ?? organizationName,
-      email: account.billingEmail ?? "",
+      // Without a billing email of COSS's, keep the customer's (set in the Customer Portal).
+      ...(account.billingEmail ? { email: account.billingEmail } : {}),
     });
   }
 
@@ -222,7 +239,7 @@ export class StripeBillingProvider implements BillingProvider {
           state: "paid",
           paymentId: await this.#paymentId(id),
           method: account?.paymentMethod?.type ?? "card",
-          amountCents: BigInt(paid.amount_paid),
+          amountCents: paidTowardInvoice(paid),
         };
       }
       // A debit that settles over days: the outcome arrives as `invoice.paid` or `invoice.payment_failed`.
@@ -325,7 +342,7 @@ export class StripeBillingProvider implements BillingProvider {
       return null;
     return {
       status: status as ProviderInvoiceState["status"],
-      paidCents: BigInt(current.amount_paid),
+      paidCents: paidTowardInvoice(current),
       paymentId: status === "paid" ? await this.#paymentId(current.id) : null,
       method: null,
     };
@@ -421,7 +438,7 @@ export class StripeBillingProvider implements BillingProvider {
               kind: "invoice_paid",
               providerInvoiceId: invoice.id,
               paymentId: await this.#paymentId(invoice.id),
-              amountCents: BigInt(invoice.amount_paid),
+              amountCents: paidTowardInvoice(invoice),
               method: "stripe",
             },
           ];

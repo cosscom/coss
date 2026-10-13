@@ -69,7 +69,20 @@ describe("billing.* webhook events", () => {
         { providers: deps.providers, dashboardUrl: "https://coss.test" },
       );
     }
-    await runDueBillingCollection({ now: at("2026-10-16T00:00:00Z"), scope: scopeOf(tenant) });
+    // Every retry (days 3, 8 and 15) fails too; the hold comes after the last one.
+    for (const retryAt of [
+      "2026-10-04T01:00:00Z",
+      "2026-10-09T02:00:00Z",
+      "2026-10-16T03:00:00Z",
+    ]) {
+      await runDueBillingCollection({ now: at(retryAt), scope: scopeOf(tenant) });
+      deps.fake.willCollect({ state: "failed", error: "insufficient funds" });
+      await runDueBillingSync(
+        { now: at(retryAt), scope: scopeOf(tenant) },
+        { providers: deps.providers, dashboardUrl: "https://coss.test" },
+      );
+    }
+    await runDueBillingCollection({ now: at("2026-10-16T03:30:00Z"), scope: scopeOf(tenant) });
     const [invoice] = await listInvoices(org, { limit: 1 });
     await recordManualPayment({
       organizationId: org,
@@ -78,16 +91,19 @@ describe("billing.* webhook events", () => {
         amountCents: 2_500n,
         method: "wire",
         reference: "WIRE-1",
-        receivedAt: at("2026-10-16T00:00:00Z"),
+        receivedAt: at("2026-10-16T04:00:00Z"),
       },
       actor: { userId: tenant.owner.id, email: tenant.owner.email },
       reason: "Wire received",
-      now: at("2026-10-16T01:00:00Z"),
+      now: at("2026-10-16T05:00:00Z"),
     });
 
     const events = await billingEvents(tenant);
     expect(events.map((event) => event.type)).toEqual([
       "billing.invoice_finalized",
+      "billing.invoice_payment_failed",
+      "billing.invoice_payment_failed",
+      "billing.invoice_payment_failed",
       "billing.invoice_payment_failed",
       "billing.hold_placed",
       "billing.invoice_paid",
@@ -97,16 +113,20 @@ describe("billing.* webhook events", () => {
       expect(event.data.organization_id).toBe(org);
       expect(event.api_version).toBe(LATEST_API_VERSION);
     }
+    const ofType = (type: string) => events.find((event) => event.type === type);
     expect(events[0]?.data).toMatchObject({
       invoice: { id: invoice?.id, status: "open", total: 2_500, amount_due: 2_500 },
     });
-    expect(events[1]?.data).toMatchObject({ failure: { message: "insufficient funds" } });
-    expect(events[2]?.data).toMatchObject({ reason: "delinquent" });
-    expect(events[3]?.data).toMatchObject({
+    expect(ofType("billing.invoice_payment_failed")?.data).toMatchObject({
+      failure: { message: "insufficient funds" },
+    });
+    expect(ofType("billing.hold_placed")?.data).toMatchObject({ reason: "delinquent" });
+    const paid = ofType("billing.invoice_paid");
+    expect(paid?.data).toMatchObject({
       invoice: { id: invoice?.id, status: "paid", amount_due: 0 },
     });
     // No line items in events: they can be long. Fetch the invoice for those.
-    expect(events[3]?.data).not.toHaveProperty("invoice.lines");
+    expect(paid?.data).not.toHaveProperty("invoice.lines");
   });
 
   test("credit-covered invoices announce settlement once during finalization", async () => {

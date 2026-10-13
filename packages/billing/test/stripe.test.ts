@@ -389,9 +389,68 @@ test("existing Stripe customers receive the saved contact before invoice creatio
   expect(api.customers.get(customerId)?.email).toBe("latest@acme.test");
   const send = api.requests.findIndex((request) => request.path.endsWith("/send"));
   expect(api.requests[send - 1]?.params.email).toBe("latest@acme.test");
+  // Without a billing email of COSS's, Stripe keeps the customer's own (set in the Customer
+  // Portal): COSS never wipes it.
+  const customer = api.customers.get(customerId);
+  if (customer) customer.email = "portal@acme.test";
   await stripe.ensureCustomer({ ...saved, billingEmail: null }, organization);
-  expect(api.customers.get(customerId)?.email).toBeNull();
+  await stripe.pushInvoice({
+    invoice: invoice({ id: "inv_2", providerCustomerId: customerId }),
+    lines: [line("invl_2", 1000n, "Fee")],
+    account: { ...saved, billingEmail: null },
+  });
+  expect(api.customers.get(customerId)?.email).toBe("portal@acme.test");
+  expect(
+    api.requests.some(
+      (request) => request.path === `/v1/customers/${customerId}` && request.params.email === "",
+    ),
+  ).toBe(false);
   expect(api.customers.size).toBe(1);
+});
+
+test("an invoice below Stripe's minimum charge doesn't count as an overpayment of the next", async () => {
+  const { api, stripe } = setup();
+  const organization = { id: "org_1", name: "Acme", slug: "acme" };
+  const customerId = await stripe.ensureCustomer(account(), organization);
+  const saved = account({ providerCustomerId: customerId });
+
+  // 30¢ (a proration in the last hour of a month): Stripe marks it paid without charging and
+  // adds it to the customer's next invoice.
+  const small = invoice({ id: "inv_small", providerCustomerId: customerId });
+  const pushedSmall = await stripe.pushInvoice({
+    invoice: small,
+    lines: [line("invl_small", 30n, "Proration")],
+    account: saved,
+  });
+  const smallTarget = { ...small, providerInvoiceId: pushedSmall.providerInvoiceId };
+  expect(await stripe.collect({ invoice: smallTarget, lines: [], account: saved })).toMatchObject({
+    state: "paid",
+    amountCents: 0n,
+  });
+  expect(api.customers.get(customerId)?.balance).toBe(30);
+
+  // The next invoice is charged $25.30, of which $25.00 is its own.
+  const next = invoice({ id: "inv_next", providerCustomerId: customerId });
+  const pushedNext = await stripe.pushInvoice({
+    invoice: next,
+    lines: [line("invl_next", 2_500n, "Pro")],
+    account: saved,
+  });
+  const nextTarget = { ...next, providerInvoiceId: pushedNext.providerInvoiceId };
+  expect(await stripe.collect({ invoice: nextTarget, lines: [], account: saved })).toMatchObject({
+    state: "paid",
+    amountCents: 2_500n,
+  });
+  expect(api.invoices.get(pushedNext.providerInvoiceId ?? "")?.amount_paid).toBe(2_530);
+  expect(
+    (await stripe.fetchInvoice({ invoice: nextTarget, lines: [], account: saved }))?.paidCents,
+  ).toBe(2_500n);
+  const outcomes = await stripe.interpretEvent({
+    id: "evt_paid",
+    type: "invoice.paid",
+    payload: { data: { object: { id: pushedNext.providerInvoiceId } } },
+  });
+  expect(outcomes).toMatchObject([{ kind: "invoice_paid", amountCents: 2_500n }]);
 });
 
 test("a fully credited invoice retries safely after losing the provider response", async () => {

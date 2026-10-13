@@ -78,10 +78,15 @@ export async function recordTestUsage(input: {
 
 type StripeObject = Record<string, unknown> & { id: string };
 
+/** Stripe's minimum charge in USD: smaller invoices are marked paid and carried forward. */
+const STRIPE_MINIMUM_CHARGE_CENTS = 50;
+
 /**
  * An in-memory Stripe API for `StripeBillingProvider` (its `fetch`): customers, invoices and
  * their items, payments, Checkout setup sessions, portal sessions and credit notes. Requests are
- * recorded with their idempotency keys; a repeated key replays the first response.
+ * recorded with their idempotency keys; a repeated key replays the first response. Like Stripe,
+ * an invoice below the minimum charge is marked paid uncharged and its amount is added to the
+ * customer's next invoice (the customer's invoice `balance`).
  */
 export class FakeStripeApi {
   readonly requests: {
@@ -204,6 +209,8 @@ export class FakeStripeApi {
           email: params.email ?? null,
           metadata: metadata(),
           invoice_settings: { default_payment_method: null as unknown },
+          // The invoice balance: a debit (positive) is added to the next finalized invoice.
+          balance: 0,
         };
         this.customers.set(customer.id, customer);
         return ok(customer);
@@ -238,6 +245,8 @@ export class FakeStripeApi {
           total: 0,
           amount_paid: 0,
           amount_due: 0,
+          starting_balance: 0,
+          ending_balance: null as number | null,
           total_taxes: [],
           hosted_invoice_url: null as string | null,
           invoice_pdf: null as string | null,
@@ -255,12 +264,20 @@ export class FakeStripeApi {
       }
       if (method === "GET") return ok(invoice);
       switch (action) {
-        case "finalize":
+        case "finalize": {
+          // Stripe applies the customer's invoice balance at finalization (a debit in full).
+          const customer = this.customers.get(String(invoice.customer));
+          const balance = Number(customer?.balance ?? 0);
+          const applied = balance > 0 ? balance : Math.max(balance, -(invoice.total as number));
           invoice.status = "open";
-          invoice.amount_due = invoice.total;
+          invoice.starting_balance = balance;
+          invoice.ending_balance = balance - applied;
+          if (customer) customer.balance = balance - applied;
+          invoice.amount_due = (invoice.total as number) + applied;
           invoice.hosted_invoice_url = `https://invoice.stripe.test/${invoice.id}`;
           invoice.invoice_pdf = `https://invoice.stripe.test/${invoice.id}.pdf`;
           return ok(invoice);
+        }
         case "pay": {
           // As Stripe: paying a paid invoice, or charging a customer with no default payment
           // method, is an invalid request (not a card error).
@@ -300,8 +317,16 @@ export class FakeStripeApi {
             };
           }
           if (outcome === "paid") {
+            const due = invoice.amount_due as number;
             invoice.status = "paid";
-            invoice.amount_paid = invoice.total;
+            if (due > 0 && due < STRIPE_MINIMUM_CHARGE_CENTS) {
+              // Below the minimum charge: marked paid uncharged, the amount moved to the
+              // customer's invoice balance (`invoice_too_small`) for the next invoice.
+              const customer = this.customers.get(String(invoice.customer));
+              if (customer) customer.balance = Number(customer.balance ?? 0) + due;
+            } else {
+              invoice.amount_paid = due;
+            }
             invoice.amount_due = 0;
           }
           return ok(invoice);

@@ -69,7 +69,15 @@ export async function evaluateStanding(
     .for("update");
   if (!account) return "active";
   const [oldestOverdue] = await tx
-    .select({ id: billingInvoice.id, dueAt: billingInvoice.dueAt, number: billingInvoice.number })
+    .select({
+      id: billingInvoice.id,
+      dueAt: billingInvoice.dueAt,
+      number: billingInvoice.number,
+      collectionMethod: billingInvoice.collectionMethod,
+      nextCollectionAt: billingInvoice.nextCollectionAt,
+      syncAction: billingInvoice.syncAction,
+      paymentState: billingInvoice.paymentState,
+    })
     .from(billingInvoice)
     .where(
       and(
@@ -100,8 +108,16 @@ export async function evaluateStanding(
   }
 
   const since = oldestOverdue.dueAt;
+  // A failed charge still has a retry (or a charge) to come: hold only once the last one failed,
+  // even past the grace days (retries end on day 15, after the default 14).
+  const stillCollecting =
+    oldestOverdue.collectionMethod === "charge_automatically" &&
+    (oldestOverdue.nextCollectionAt !== null ||
+      oldestOverdue.syncAction !== null ||
+      oldestOverdue.paymentState === "processing");
   const delinquent =
     since.getTime() + account.graceDays * DAY_MS <= now.getTime() &&
+    !stillCollecting &&
     !(account.holdExemptUntil && account.holdExemptUntil > now) &&
     account.organizationId !== systemOrganizationId;
   const status = delinquent ? "delinquent" : "past_due";

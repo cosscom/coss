@@ -12,6 +12,7 @@ import {
   PLANS,
   periodOf,
   rateCardAt,
+  scheduledManagedContract,
 } from "@coss/billing";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
@@ -49,9 +50,13 @@ export default async function PlansPage({
   if (!can({ billing: ["read"] })) notFound();
   const canManage = can({ billing: ["update"] });
   const now = new Date();
-  const state = await billingStateAt(organization.id, now);
+  const [state, managedNext] = await Promise.all([
+    billingStateAt(organization.id, now),
+    scheduledManagedContract(organization.id, now),
+  ]);
   const current = PLANS[state.terms.plan];
-  const selfServe = !state.contract || state.contract.kind === "self_serve";
+  // Self-serve changes are refused under a sales contract and while one is scheduled.
+  const selfServe = (!state.contract || state.contract.kind === "self_serve") && !managedNext;
   const changesOn = nextPeriod(periodOf(now)).start;
   const rates = rateCardAt(now).rates;
 
@@ -71,7 +76,9 @@ export default async function PlansPage({
 
       {selfServe ? null : (
         <p className="text-muted-foreground text-sm">
-          Your plan is managed by your contract. Contact your account manager to change it.
+          {managedNext && (!state.contract || state.contract.kind === "self_serve")
+            ? `A contract with your account manager starts on ${formatDate(managedNext.effectiveFrom)}. Contact them to change your plan.`
+            : "Your plan is managed by your contract. Contact your account manager to change it."}
         </p>
       )}
 

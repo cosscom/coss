@@ -229,7 +229,8 @@ test("standing scans reach later pages even when earlier accounts stay overdue",
   for (const f of [first, second]) {
     await db
       .update(schema.billingInvoice)
-      .set({ dueAt: new Date(now.getTime() - 30 * day), nextCollectionAt: null })
+      // Collection is over (every retry failed): only the hold is left to place.
+      .set({ dueAt: new Date(now.getTime() - 30 * day), nextCollectionAt: null, syncAction: null })
       .where(eq(schema.billingInvoice.id, f.invoice.id));
   }
   const scope = { organizationIds: [first.organizationId, second.organizationId] };
