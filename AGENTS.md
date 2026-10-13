@@ -692,7 +692,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     contracts store only `{ version: 1, plan }`; sales contracts pin what they override (fee, rates/tiers, discounts,
     commitments, add-ons, entitlements, caps). A future contract starts on the 1st of a month (UTC); one starting now
     (or backdated within the open month) is invoiced for the rest of it at once. Self-serve plan changes are refused on
-    `sales`/`internal` contracts.
+    `sales`/`internal` contracts and while one is scheduled (`scheduledManagedContract`); a self-serve contract never
+    cancels a scheduled managed one (`supersedeAt` ends it where that one starts).
   - **Money**: unit prices are bigint **nanos**, every stored amount bigint **cents**; a line is rounded once
     (half away from zero) and an invoice's total is the sum of its lines. USD only (`currency` column).
   - **Metering** (`billing_usage`, hourly counters by org/environment/meter/dimension, 8 shards, no FK to the
@@ -714,14 +715,18 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     deferred in `terms_snapshot.pendingGrants`, expired after a day); downgrades and cancellations at the month's end,
     refused while the org uses something the lower plan lacks (the dashboard's preflight), and creation meanwhile is
     checked against both plans (`creatableEntitlements`). Auto-renewing contracts get a successor a week before
-    their term ends; non-renewing ones end with their term.
+    their term ends (note `renewalNote(id)`; ending the contract cancels it if it hasn't started); non-renewing ones
+    end with their term.
   - **Collection**: `billing-sync` pushes and collects (charge, or send with net terms). A charge is never attempted
     without a payment method (`no_payment_method`): a pending upgrade's invoice waits for one (its customer is in
     Checkout; returning collects at once through `collectInvoiceNow`, which also retries a failed or 3-D Secure
     charge), anything else is dunned as `No payment method on file.`. Stripe's invalid-request refusals are read
-    back (an invoice already paid on the hosted page is recorded as paid). `billing-collection` retries
-    failed charges (+3/+5/+7 days), reminds about net-terms invoices, sets `past_due`, and after `grace_days` places a
-    `delinquent` **billing hold** (`billing_hold`, presence = held). A hold makes `authorizeLiveSender` refuse
+    back (an invoice already paid on the hosted page is recorded as paid). Stripe carries invoices below its minimum
+    charge to the next one (customer balance); every paid amount COSS reads leaves that debit out
+    (`paidTowardInvoice`). `billing-collection` retries failed charges (+3/+5/+7 days), reminds about net-terms
+    invoices, sets `past_due`, and after `grace_days` (and, for an automatic charge, once no retry or charge is left
+    to come) places a `delinquent` **billing hold** (`billing_hold`, presence = held). A hold makes
+    `authorizeLiveSender` refuse
     (`EmailError("billing_hold")`, 402) and holds scheduled sends (`organizationActive`) — never fails them; paying lifts
     it. Holds are independent of reputation suspensions: never fold one into the other. Spend limits place a
     `spend_limit` hold (worker `billing-usage`), lifted by the next month or a higher limit. COSS's own organization is
