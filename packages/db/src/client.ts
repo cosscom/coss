@@ -13,6 +13,12 @@ export const pool: pg.Pool =
   new pg.Pool({
     connectionString: process.env.DATABASE_URL,
     max: Number(process.env.DATABASE_POOL_MAX ?? 10),
+    // A new connection costs TCP + TLS (verify-full) + SCRAM. pg-pool closes idle ones after 10 s,
+    // so a quiet dashboard would reconnect on nearly every page: keep two open for good and the
+    // rest for 5 minutes. `allowExitOnIdle` lets scripts exit with idle connections left open.
+    min: 2,
+    idleTimeoutMillis: 5 * 60_000,
+    allowExitOnIdle: true,
   });
 
 if (process.env.NODE_ENV !== "production") globalForDb.__cossPgPool = pool;

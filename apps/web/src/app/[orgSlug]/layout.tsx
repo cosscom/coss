@@ -1,6 +1,6 @@
 import { getReputationStanding } from "@coss/reputation";
+import { listUserOrganizations } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { BillingBanner } from "@/components/billing/billing-banner";
 import { OrgSwitcher } from "@/components/org-switcher";
@@ -8,17 +8,14 @@ import { ReputationBanner } from "@/components/reputation";
 import { SiteHeader } from "@/components/site-header";
 import { SsoBreakGlassAlert } from "@/components/sso-break-glass-alert";
 import { SuspendedAlert } from "@/components/suspended-alert";
-import { auth } from "@/lib/auth";
 import { billingBannerState } from "@/lib/billing";
 import { requireOrgMember } from "@/lib/session";
 
 export default async function OrganizationLayout({ children, params }: LayoutProps<"/[orgSlug]">) {
   const { orgSlug } = await params;
   const { session, organization, suspended, ssoBreakGlass, can } = await requireOrgMember(orgSlug);
-  const organizations = (await auth.api.listOrganizations({ headers: await headers() }))
-    .map(({ name, slug }) => ({ name, slug }))
-    .toSorted((a, b) => a.name.localeCompare(b.name));
-  const [standing, billing] = await Promise.all([
+  const [organizations, standing, billing] = await Promise.all([
+    listUserOrganizations({ userId: session.user.id }),
     getReputationStanding(organization.id),
     can({ billing: ["read"] }) ? billingBannerState(organization.id) : null,
   ]);

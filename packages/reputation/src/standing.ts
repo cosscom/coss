@@ -113,7 +113,8 @@ export async function listReputationEvents(
     .from(reputationEvent)
     .leftJoin(user, eq(user.id, reputationEvent.actorUserId))
     .where(eq(reputationEvent.organizationId, organizationId))
-    .orderBy(desc(reputationEvent.createdAt), desc(reputationEvent.id))
+    // Matches the (organization_id, created_at DESC NULLS LAST) index.
+    .orderBy(sql`${reputationEvent.createdAt} desc nulls last`, desc(reputationEvent.id))
     .limit(opts.limit ?? 50);
   return rows.map((row) => ({ ...row.event, actorEmail: row.actorEmail }));
 }

@@ -14,7 +14,11 @@ export type BrowserSdk = {
   // biome-ignore lint/suspicious/noExplicitAny: each SDK types its own options.
   init(options: any): unknown;
   browserTracingIntegration(): Integration;
+  captureRouterTransitionStart(href: string, navigationType: string): void;
 };
+
+/** Next's `onRouterTransitionStart` hook (`instrumentation-client.ts`). */
+export type RouterTransitionHook = (href: string, navigationType: string) => void;
 
 function isConfig(value: unknown): value is SentryConfig {
   if (!value || typeof value !== "object") return false;
@@ -27,26 +31,46 @@ function isConfig(value: unknown): value is SentryConfig {
 }
 
 /**
- * Fetches the configuration and starts the SDK; does nothing while monitoring is off or the
- * configuration can't be loaded. Errors thrown before it resolves (a few milliseconds after the
- * page loads) aren't reported.
+ * Fetches the configuration, then loads the SDK through `load` (a dynamic import, so the SDK is a
+ * chunk of its own that no page waits for) and starts it; does nothing while monitoring is off or
+ * the configuration can't be loaded. Errors thrown before it has started (shortly after the page
+ * loads) aren't reported. Returns the app's `onRouterTransitionStart`, a no-op until then.
  */
-export async function initBrowserMonitoring(
-  sdk: BrowserSdk,
+export function startBrowserMonitoring(
+  load: () => Promise<BrowserSdk>,
   service: Extract<SentryService, "web" | "site">,
-): Promise<void> {
+): RouterTransitionHook {
+  let started: BrowserSdk | undefined;
+  void initBrowserMonitoring(load, service).then((sdk) => {
+    started = sdk;
+  });
+  return (href, navigationType) => started?.captureRouterTransitionStart(href, navigationType);
+}
+
+/** Starts the SDK as {@link startBrowserMonitoring} describes; resolves to it once started. */
+export async function initBrowserMonitoring(
+  load: () => Promise<BrowserSdk>,
+  service: Extract<SentryService, "web" | "site">,
+): Promise<BrowserSdk | undefined> {
   let config: unknown;
   try {
     const response = await fetch(SENTRY_TUNNEL_PATH, { credentials: "omit" });
-    if (!response.ok) return;
+    if (!response.ok) return undefined;
     config = await response.json();
   } catch {
-    return;
+    return undefined;
   }
-  if (!isConfig(config)) return;
+  if (!isConfig(config)) return undefined;
+  let sdk: BrowserSdk;
+  try {
+    sdk = await load();
+  } catch {
+    return undefined;
+  }
   sdk.init({
     ...sentryOptions(config, service),
     tunnel: SENTRY_TUNNEL_PATH,
     integrations: [sdk.browserTracingIntegration()],
   });
+  return sdk;
 }

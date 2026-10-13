@@ -319,7 +319,8 @@ export async function pageLogDrainBatches(input: {
         afterCursor,
       ),
     )
-    .orderBy(desc(logDrainBatch.createdAt), desc(logDrainBatch.id))
+    // Matches the (drain_id, created_at DESC NULLS LAST) index.
+    .orderBy(sql`${logDrainBatch.createdAt} desc nulls last`, desc(logDrainBatch.id))
     .limit(limit + 1);
   const page = rows.slice(0, limit);
   return { batches: await withAttempts(input.organizationId, page), hasMore: rows.length > limit };

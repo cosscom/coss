@@ -76,25 +76,15 @@ export default async function EmailPage({
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;
-  const email = await getEmail({
-    organizationId: organization.id,
-    environmentId: environment.id,
-    id: emailId,
-  });
+  // One round trip: the events and links lookups check the email themselves (null when absent).
+  const scope = { organizationId: organization.id, environmentId: environment.id };
+  const [email, events, trackedLinks] = await Promise.all([
+    getEmail({ ...scope, id: emailId }),
+    listEmailEvents({ ...scope, emailId }),
+    listEmailLinks({ ...scope, emailId }),
+  ]);
   if (!email) notFound();
-  const events = await listEmailEvents({
-    organizationId: organization.id,
-    environmentId: environment.id,
-    emailId: email.id,
-  });
-
-  const links = email.tracking.clicks
-    ? await listEmailLinks({
-        organizationId: organization.id,
-        environmentId: environment.id,
-        emailId: email.id,
-      })
-    : null;
+  const links = email.tracking.clicks ? trackedLinks : null;
   const { tracking } = email;
 
   const rows: [string, ReactNode][] = [

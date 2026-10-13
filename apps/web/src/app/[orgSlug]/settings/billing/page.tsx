@@ -119,12 +119,15 @@ async function finishSetup(
 
 async function environmentLabels(organizationId: string): Promise<Map<string, string>> {
   const projects = await listProjects({ organizationId });
+  const environments = await Promise.all(
+    projects.map((project) => listEnvironments({ organizationId, projectId: project.id })),
+  );
   const labels = new Map<string, string>();
-  for (const project of projects) {
-    for (const environment of await listEnvironments({ organizationId, projectId: project.id })) {
+  projects.forEach((project, index) => {
+    for (const environment of environments[index] ?? []) {
       labels.set(environment.id, `${project.name} / ${environment.name}`);
     }
-  }
+  });
   return labels;
 }
 

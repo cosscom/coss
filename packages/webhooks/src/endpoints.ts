@@ -403,7 +403,8 @@ export async function pageWebhookDeliveries(input: {
         afterCursor,
       ),
     )
-    .orderBy(desc(webhookDelivery.createdAt), desc(webhookDelivery.id))
+    // Matches the (endpoint_id, created_at DESC NULLS LAST) index.
+    .orderBy(sql`${webhookDelivery.createdAt} desc nulls last`, desc(webhookDelivery.id))
     .limit(limit + 1);
   const page = rows.slice(0, limit);
   if (page.length === 0) return { deliveries: [], hasMore: false };

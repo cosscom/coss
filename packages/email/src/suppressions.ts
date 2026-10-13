@@ -277,7 +277,11 @@ export async function listSuppressions(
           : undefined,
       ),
     )
-    .orderBy(desc(emailSuppression.createdAt), desc(emailSuppression.sequence))
+    // Matches the (environment_id, created_at DESC NULLS LAST, sequence DESC NULLS LAST) index.
+    .orderBy(
+      sql`${emailSuppression.createdAt} desc nulls last`,
+      sql`${emailSuppression.sequence} desc nulls last`,
+    )
     .limit(limit + 1);
   return {
     object: "list",

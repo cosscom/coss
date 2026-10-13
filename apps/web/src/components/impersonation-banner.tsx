@@ -3,7 +3,6 @@
 import { Button } from "@coss/ui/components/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { authClient } from "@/lib/auth-client";
 
 export function ImpersonationBanner({ email }: { email: string }) {
   const router = useRouter();
@@ -20,6 +19,8 @@ export function ImpersonationBanner({ email }: { email: string }) {
         onClick={async () => {
           setPending(true);
           setError(null);
+          // Loaded on click: the client (every plugin) would weigh on every page.
+          const { authClient } = await import("@/lib/auth-client");
           const { error } = await authClient.admin.stopImpersonating();
           if (error) {
             setError(error.message ?? "Could not stop impersonating.");
