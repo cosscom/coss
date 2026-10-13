@@ -159,7 +159,9 @@ export function createValkeyClient(opts: ValkeyConnectionOptions): ValkeyClient 
     password,
     tls,
     commandTimeout: opts.commandTimeoutMs ?? 100,
-    connectTimeout: 2000,
+    // A booting dashboard task (0.5 vCPU) takes over 2 s for its first TLS connection; commands
+    // fail fast meanwhile (no offline queue), so a longer connect only delays readiness.
+    connectTimeout: 5000,
     // Fail fast instead of queueing while disconnected; the limiter applies each bucket's policy.
     maxRetriesPerRequest: 0,
   };
@@ -174,8 +176,7 @@ export function createValkeyClient(opts: ValkeyConnectionOptions): ValkeyClient 
       // ElastiCache's TLS certificates name the hostnames, not the IPs they resolve to.
       dnsLookup: (address, callback) => callback(null, address),
       enableOfflineQueue: false,
-      // A booting dashboard task (0.5 vCPU) can take over 2 s for its first TLS handshake + slots
-      // fetch; that only delays readiness (commands fail fast meanwhile), so allow it.
+      // The first slots fetch runs on that slow first connection too.
       slotsRefreshTimeout: 5000,
       redisOptions: common,
     });
