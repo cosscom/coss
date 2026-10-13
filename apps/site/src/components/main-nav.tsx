@@ -31,6 +31,7 @@ export function MainNav({
           key={item.href}
           render={
             item.external ? (
+              // biome-ignore lint/a11y/useAnchorContent: the button's label renders inside
               <a href={item.href} rel="noreferrer" target="_blank" />
             ) : (
               <Link className={cn(item === active && "text-primary")} href={item.href} />

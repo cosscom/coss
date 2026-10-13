@@ -1,6 +1,6 @@
 # AGENTS.md — apps/site (coss.com)
 
-Landing page (`/`), pricing (`/pricing`) and docs (`/docs`) on Next.js 16 + [Fumadocs](https://fumadocs.dev), port
+Landing page (`/`), pricing (`/pricing`), Shipyard's landing page (`/shipyard`) and docs (`/docs`) on Next.js 16 + [Fumadocs](https://fumadocs.dev), port
 :3002. Fully static apart from the docs search (`/docs/search.json`) and the health check; no env vars, no database.
 It shares coss.com with the dashboard (`apps/web`, the default zone): dashboard pages and Better Auth (`/api/auth/*`) are same-origin in
 production, and the load balancer sends this app only the paths in `ZONE_ROUTES` (`@coss/auth/slugs`). Fumadocs is
@@ -25,15 +25,23 @@ the macro API, `staticSource` and code-usage APIs are recent.
 | `src/app/{icon.svg,robots.ts,sitemap.ts}` | coss.com's root files: the site owns them (the dashboard links to `/icon.svg`). |
 | `src/lib/sdk-samples.ts` | `METHOD /path` → `coss` method + argument builders for the SDK tab. |
 | `src/instrumentation-client.ts`, `src/app/global-error.tsx` | Browser error monitoring (Sentry): configuration from the dashboard's `/api/monitoring` (same origin on coss.com; `next.config.ts` proxies it in `next dev`), events tunnelled through it to the dashboard's `web` project. The server reports nothing. |
+| `src/app/layout.tsx`, `src/components/site-shell.tsx`, `src/components/site-header.tsx` | The root layout only sets the fonts (`@coss/ui/fonts`) and Fumadocs' `RootProvider` (theme; its search dialog is off). Each route group renders `SiteShell`: the page rails and header of coss.com/ui (the coss ui docs), copied here and adapted — wordmark + section (`SectionLabel`), `MainNav` (`NAV_ITEMS`, or a landing page's own `items`), the ⌘K `CommandMenu` (coss ui's command palette over Fumadocs' `/docs/search.json`; an empty query lists every page), `AccountLinks`, the GitHub link, `ModeSwitcher`; below `lg` the `MobileNav` drawer lists the sections and every docs page. |
+| `src/app/docs/layout.tsx`, `src/app/docs/[[...slug]]/page.tsx`, `src/components/docs-sidebar.tsx`, `src/components/docs-toc.tsx`, `src/lib/docs-tree.ts` | The docs page of coss.com/ui: coss ui's `Sidebar` with the groups of the current root folder (`activeRoot`/`groupsOf` turn Fumadocs' page tree — roots, `---Separators---`, nested folders — into labelled groups), the card-framed page with "Copy Markdown" (`pageMarkdown`, the same text as `/llms-full.txt`), the "On This Page" table of contents and `DocsFooter`. OpenAPI operations render through `fumadocs-openapi` inside the same frame (in Fumadocs' `prose`). |
+| `src/components/mdx.tsx`, `src/components/docs-table.tsx` | MDX components: coss ui's docs typography (headings with anchor links, lists, tables, inline code, `Callout` as a coss ui `Alert`, `Cards`/`Card` as linked cards) over Fumadocs' content pipeline (`pre` is Fumadocs' `CodeBlock` with Shiki/Twoslash output, `CodeBlockTabs` for ` ```package-install `, `Steps`/`Step`, `Tabs`/`Tab`). `DocsTable` & co. are shared with the generated plan, rate and retention tables. |
 | `src/app/(home)` | Placeholder landing page (coss ui components), the pricing page, the legal pages and `SiteFooter`. |
 | `src/app/(home)/pricing`, `src/components/pricing/`, `src/lib/pricing.ts` | `/pricing`: plan cards, an email bill estimator (a client island rating with `@coss/billing/engine`'s `chargeRange`, so it matches invoices), usage rate cards, the plan comparison (`planRows()`, shared with the billing guide's `<PlanTable />`) and an FAQ. Every price, limit and allowance comes from `@coss/billing/catalog`; product availability from `PRODUCTS` (`src/lib/site.ts`). |
+| `src/app/(shipyard)/shipyard`, `src/components/shipyard/runtime.tsx`, `src/lib/shipyard.ts`, `public/shipyard/assets/` | `/shipyard`: Shipyard's landing page as it was at berthd.app (moved from the coss ui repository's `apps/shipyard`), in its own route group with its own header links. The page is static markup styled by `landing.css` (scoped to `.shipyard-landing`, its own tokens; the layout loads Cal Sans from `@coss/ui/fonts` for its headlines and JetBrains Mono); the harbour, the night loop, the chapters' loops and line scenes are plain scripts in `public/shipyard/assets` (same-origin, so the CSP allows them) that `LandingRuntime` appends after the first paint and redraws on theme changes. `SHIPYARD` holds its copy, paths and outbound links: downloads, the live demo and the box's install line stay on berthd.app / GitHub releases, and the docs link to the `cosscom/shipyard` repository until they move here. |
 | `content/legal/`, `src/lib/legal.ts`, `src/app/(home)/legal` | Terms, Privacy Policy, Acceptable Use Policy, Data Processing Addendum (incorporated into the Terms) at `/legal/…` (Cal.com, Inc. is the legal entity). Their own `defineDocs` collection + `loader`, so they stay out of the docs' sidebar, search and `/llms.txt`; frontmatter needs `lastUpdated` (YYYY-MM-DD). The sign-up form links to `/legal/terms` and `/legal/privacy`. |
 
 ## Rules
 
-- **Styling is coss ui.** `src/app/global.css` imports `tailwindcss`, `@coss/ui/theme.css` (tokens), then
-  `fumadocs-ui/css/shadcn.css` (maps Fumadocs colors onto those tokens), the Fumadocs/OpenAPI/Twoslash presets. Use
-  `@coss/ui/components/*` for custom UI; don't add a Fumadocs color theme or hard-coded colors.
+- **Styling is coss ui, the look is coss.com/ui.** `src/app/global.css` imports `tailwindcss`, `@coss/ui/theme.css`
+  (tokens), then `fumadocs-ui/css/shadcn.css` (maps Fumadocs colors onto those tokens), the Fumadocs/OpenAPI/Twoslash
+  presets (still needed by the code blocks, the OpenAPI pages and Twoslash popups), and the coss ui sites' `container`
+  width. Use `@coss/ui/components/*` for custom UI; don't add a Fumadocs color theme or hard-coded colors. The
+  header, sidebar, page frame and MDX typography are ports of the coss ui repository's `apps/ui` (keep them
+  recognisably the same; Fumadocs' layouts (`fumadocs-ui/layouts/*`) are not used). Fonts come from `@coss/ui/fonts`
+  (self-hosted, so the CSP's `font-src 'self'` holds).
 - **API reference comes from the snapshot.** After changing API routes run `bun run openapi:generate` (root) and
   commit `apps/api/openapi.json`; `apps/api/test/openapi-snapshot.test.ts` fails when it is stale. Never import
   `@coss/api` code (it pulls in the DB and AWS SDK) — only `@coss/api/openapi.json`.

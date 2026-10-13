@@ -27,6 +27,9 @@ export default function RootLayout({ children }) {
 - `fontSans` — Cal Sans 2.010 variable font (`CalSansVF.woff2` upright, `CalSansVF-Italic.woff2` italic)
 - `fontHeading` — Alias of `fontSans`; use when wiring a separate `--font-heading` variable
 - `fontMono` — Paper Mono for code and monospace UI
+- `fontCalSans` — The upright Cal Sans alone as `--font-cal-sans`, for a page that keeps its own body sans (Shipyard's landing page)
+
+`CalSansVF.woff2` is the `calsans-cossui` build (licence: `OFL.txt`); the italic is the upstream build.
 
 ## Separate heading font
 
