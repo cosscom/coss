@@ -70,16 +70,16 @@ export default async function EnvironmentPage({
   if (!found) notFound();
   const { project, environment } = found;
 
-  const [environments, keys, emails] = await Promise.all([
+  const live = environment.mode === "live";
+  const [environments, keys, emails, domains, createRestriction] = await Promise.all([
     listEnvironments({ organizationId: organization.id, projectId: project.id }),
     listEnvironmentApiKeys({ organizationId: organization.id, environmentId: environment.id }),
     listEmails({ organizationId: organization.id, environmentId: environment.id, limit: 50 }),
+    live ? listDomains({ organizationId: organization.id }) : null,
+    live ? liveKeyRestriction(session, organization.id) : null,
   ]);
   // Live keys must send from a verified domain; sandbox keys accept any address.
-  const sendingDomain =
-    environment.mode === "live"
-      ? (await listDomains({ organizationId: organization.id })).find((d) => d.canSend)?.name
-      : "example.com";
+  const sendingDomain = domains ? domains.find((d) => d.canSend)?.name : "example.com";
 
   const projectPath = `/${organization.slug}/projects/${project.slug}`;
   const target = {
@@ -89,8 +89,6 @@ export default async function EnvironmentPage({
   };
   const canCreateKey = can({ apiKey: ["create"] });
   const canRevokeKey = can({ apiKey: ["delete"] });
-  const createRestriction =
-    environment.mode === "live" ? await liveKeyRestriction(session, organization.id) : null;
   const apiUrl = env.API_PUBLIC_URL;
   const from = `onboarding@${sendingDomain ?? "your-verified-domain.com"}`;
   const curl = quickStartCurl(apiUrl, from);

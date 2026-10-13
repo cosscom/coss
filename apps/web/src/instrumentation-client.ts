@@ -1,7 +1,8 @@
-import { initBrowserMonitoring } from "@coss/observability/browser";
-import * as Sentry from "@sentry/nextjs";
+import { startBrowserMonitoring } from "@coss/observability/browser";
 
 // Configured at runtime by the dashboard's /api/monitoring (the image is built once for every stage).
-void initBrowserMonitoring(Sentry, "web");
-
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+// The SDK is loaded only once that says monitoring is on, so no page waits for it.
+export const onRouterTransitionStart = startBrowserMonitoring(
+  () => import("./lib/monitoring-browser"),
+  "web",
+);

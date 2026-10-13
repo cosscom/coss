@@ -890,9 +890,12 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   (`@sentry/bun`; Bun has no runtime module hooks, so Hono gets `honoMiddleware(app)` in `createApp` — route names
   only, errors come from `onError`'s `console.error` — and pg/AWS calls aren't traced). The dashboard initializes
   its server in `register()` after env validation and exports `onRequestError`; both Next apps' browsers run
-  `initBrowserMonitoring` (`src/instrumentation-client.ts`), which fetches the config from the dashboard's
+  `startBrowserMonitoring` (`src/instrumentation-client.ts`), which fetches the config from the dashboard's
   `/api/monitoring` (public in `proxy.ts`; the site proxies it in `next dev`) and tunnels envelopes through it
-  (only the configured DSN's — never make it an open relay or add a Sentry origin to a CSP). Every server runs
+  (only the configured DSN's — never make it an open relay or add a Sentry origin to a CSP). The browser SDK is
+  dynamically imported from `src/lib/monitoring-browser.ts` (named re-exports) only once that config arrives:
+  client code never imports `@sentry/nextjs` statically, and never `import * as Sentry` (the namespace defeats
+  tree-shaking and shipped Session Replay — ~150 KB gzipped — on every page). Every server runs
   `captureConsoleIntegration({ levels: ["error"] })`: a `console.error` with an error **is** a Sentry event, so
   packages keep logging handled failures that way and never import an SDK (expected outcomes don't belong in
   `console.error`). Every SDK uses `sentryOptions`: `DATA_COLLECTION` turns off what SDK v11 collects by default (bodies, IPs, cookies, query strings, AI prompts, local variables — never loosen it) and the `scrub*` hooks mask what remains; new URL secrets

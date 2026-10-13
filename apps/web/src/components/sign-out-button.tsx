@@ -3,7 +3,6 @@
 import { Button } from "@coss/ui/components/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { authClient } from "@/lib/auth-client";
 
 export function SignOutButton({ redirectTo = "/sign-in" }: { redirectTo?: string }) {
   const router = useRouter();
@@ -14,6 +13,8 @@ export function SignOutButton({ redirectTo = "/sign-in" }: { redirectTo?: string
       loading={pending}
       onClick={async () => {
         setPending(true);
+        // Loaded on click: the client (every plugin) would weigh on every page.
+        const { authClient } = await import("@/lib/auth-client");
         await authClient.signOut();
         router.push(redirectTo);
         router.refresh();
