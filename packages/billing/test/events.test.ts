@@ -134,7 +134,8 @@ describe("billing.* webhook events", () => {
     });
     // No line items in events: they can be long. Fetch the invoice for those.
     expect(paid?.data).not.toHaveProperty("invoice.lines");
-  });
+    // A whole month of collection: 3-4 s alone in CI, where every package's tests run at once.
+  }, 30_000);
 
   test("credit-covered invoices announce settlement once during finalization", async () => {
     const tenant = await createTestTenant();
