@@ -208,8 +208,13 @@ export const email = pgTable(
     // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
     unique("email_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
-    // Reputation checks scan an organization's recent emails.
     index("email_organization_created_at_idx").on(t.organizationId, t.createdAt),
+    // Reputation checks scan an organization's emails by the time they were sent
+    // (`@coss/email` reputation-checks.ts `SEND_TIME`; keep the expression identical).
+    index("email_organization_send_time_idx").on(
+      t.organizationId,
+      sql`coalesce(${t.sentAt}, ${t.createdAt})`,
+    ),
     // Due-scan for scheduled sends (`dispatchDue`, every 5 s): only rows still waiting, so the
     // scan never walks emails already sent or immediate sends with a past time.
     index("email_scheduled_due_idx").on(t.scheduledAt).where(sql`${t.status} = 'scheduled'`),

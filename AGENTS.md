@@ -568,7 +568,11 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
-  `maxAttempts: 1` and only throttling is retried. Never adopt an existing SES identity held by another tenant
+  `maxAttempts: 1` and only throttling is retried. An outcome SES may have accepted (a timeout, a reset connection,
+  a 5xx, anything but a documented rejection or a 4xx) is an `UncertainSendError`: the email stays claimed (`queued`
+  + provider) for SES's `Send` event or the stale-claim sweep, never failed on the spot or sent again; a `Send` event
+  also repairs `provider_error`. A whole-message `Reject`/`Rendering Failure` after acceptance fails the email (usage
+  recorded at `sent` stays). Never adopt an existing SES identity held by another tenant
   (`IdentityTakenError`), and only recreate/delete identities tagged `coss_managed=<tenant prefix>` (orphans COSS
   created get fresh DKIM keys; identities managed outside COSS in the same account are never touched). The most specific verified domain across all orgs
   decides who may send from a From domain. Use one AWS account (or region) per stage. IAM policies live in
@@ -616,7 +620,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   (`track_opens`/`track_clicks` + a random `tracking_token`) at send. `email.html` always keeps the original:
   `deliver` instruments only the provider's copy (`instrumentHtml` splices the original string — never re-serialize
   customer HTML), storing the links first. Clicks redirect only to stored URLs. `email.opened`/`email.clicked` go through
-  `recordProviderEvent` (source `coss`, deduplicated per minute and link) and never change a recipient's status;
+  `recordProviderEvent` (source `coss`, deduplicated per UTC day and link) and never change a recipient's status;
   they name a recipient only when the email had exactly one non-suppressed recipient. Events store the user agent,
   never the IP. Settings need `environment:update` in the dashboard; over the API (`/v1/tracking_settings`,
   `coss.email.tracking`: `PATCH`/`DELETE` `…/default` and `…/categories/{category}`, unset fields keep their value)
@@ -804,9 +808,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   either: both admin suspend actions refuse it (`isSystemOrganization`) and the pages hide the buttons. Every change goes through `applyTransition` (guarded update + history row +
   `account.*` webhooks to live environments + a `reputation_notification` outbox row for warnings and suspensions,
   one transaction). Email's checks (`emailReputationChecks`) are per-recipient
-  rates over live emails in the window (default 7 days, never before the last reinstatement), excluding
+  rates over live emails sent in the window (by `coalesce(sent_at, created_at)`, `SEND_TIME`, so a send scheduled weeks
+  ahead counts when it goes out; default 7 days, never before the last reinstatement), excluding
   suppressed/failed/queued/canceled recipients and `SIMULATOR_DOMAIN` (unless the `countSimulatorRecipients` override is on).
-  Closed hours (ended ≥ `ROLLUP_SETTLE_MS` ago) are counted once into `email_reputation_rollup` (by email `created_at`,
+  Closed hours (ended ≥ `ROLLUP_SETTLE_MS` ago) are counted once into `email_reputation_rollup` (by that send hour,
   simulator counts kept apart); `recordProviderEvent` bumps an hour's `revision` when a live event changes its counts,
   and the next evaluation recounts only stale hours (CAS on the revision read before counting) plus the window's open
   edges live. Any new write path that changes recipient statuses must invalidate the same way;
@@ -872,9 +877,14 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   SMS reuses it as is. Sampling (`ReputationPolicy.contentScreening`, per-org overrides in the admin `PolicyForm`): the
   first `alwaysFirst`, the `milestones`, then `sampleRate` at random — never make it fully predictable. The position
   comes from one `INSERT … ON CONFLICT … RETURNING new.seen, old.owed` (Postgres 18). Classifier errors/timeouts
-  (3 s) record an `error` verdict and owe the sample to the next message. Enforced screening holds that email as
-  `content_screening_unavailable`; shadow mode and COSS's own notification organization send it. An unexpected
-  `screen` throw follows the same default-deny rule, with that notification organization as the only allowlist entry.
+  (3 s) record an `error` verdict. Enforced screening **holds** that email: the claim is given back (`provider` NULL,
+  `error_code = 'content_screening_unavailable'` as the marker) and it is dispatched again in
+  `SCREENING_RETRY_DELAY_S`, its retry screened again at its old position (`retry`, never counted twice), until it is
+  sent or the unclaimed sweep fails it `content_screening_unavailable` an hour after it was due (`UNCLAIMED_FAIL_MS`,
+  from `scheduled_at` for scheduled sends) — an unscreened sample is never sent. Shadow mode and COSS's own
+  notification organization send it and owe the sample to the next message, once (an owed or retried sample that
+  fails passes nothing on, so an outage doesn't put every message through the classifier). An unexpected `screen`
+  throw follows the same default-deny rule (held), with that notification organization as the only allowlist entry.
   Highest category score ≥ `blockThreshold` → `blocked`: the email fails `content_rejected` and
   `suspendOrganization(trigger "content_screening")` in the verdict's transaction; ≥ `flagThreshold` → `flagged`
   (sent, `markReputationDue`); `contentScreeningCheck` turns enforced verdicts in the window into `suspend`/`warning`.
@@ -947,7 +957,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - Sends are asynchronous: `POST /v1/emails` stores the email and its `email-dispatch` pg-boss job in one transaction
   and returns 202 `queued`; the worker runs `dispatch`, which claims the email (sets `provider`) before calling the
   provider, so a job that runs twice never sends twice. Retries with the same `Idempotency-Key` replay the email in its
-  current state (queued included). If a worker dies after the claim, the row stays `queued` until the stale-claim sweep
+  current state (queued included). If a worker dies after the claim (or SES's answer is lost: a timeout or reset
+  connection, `UncertainSendError`), the row stays `queued` until the stale-claim sweep
   (15 min) marks it `sent` (if SES reported it) or `failed`/`dispatch_interrupted` (a late SES `Send` event still
   repairs it). An email still unclaimed after 10 min (its job exhausted its retries) is re-enqueued, and after 1 hour
   (`UNCLAIMED_FAIL_MS`) it is `failed`/`dispatch_failed` with an `email.failed` webhook — so a worker outage longer than
@@ -992,8 +1003,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   screening block only flags its message), and neither can platform admins (the dashboard reads the same variable).
   If it was suspended before this rule, an admin can still lift it. Sign-up and verification
   resends are rate limited per IP and address; invitations only by Better Auth's pending-invitation limit per org.
-- Reputation rollups are kept per hour of email creation, so late events for an old hour make the next evaluation
-  recount that whole hour. A send already past `authorizeLiveSender` when the org is suspended still goes out.
+- Reputation rollups are kept per hour of sending, so late events for an old hour make the next evaluation
+  recount that whole hour. Emails are purged 45 days after creation, so a send scheduled weeks ahead can be gone
+  before it leaves a 30-day window; its closed hour keeps its rolled-up counts unless a later event forces a recount. A send already past `authorizeLiveSender` when the org is suspended still goes out.
   Customers are told by banner, page, API, webhooks and a notification email to owners/admins — only for warnings
   and suspensions (not recoveries or reinstatements), and only once the worker's `NOTIFICATIONS_*` variables point
   at a verified sender of COSS's own organization.

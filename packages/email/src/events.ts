@@ -195,7 +195,11 @@ export async function recordProviderEvent(
       .update(email)
       .set(accepted)
       .where(
-        and(thisEmail, eq(email.status, "failed"), eq(email.errorCode, "dispatch_interrupted")),
+        and(
+          thisEmail,
+          eq(email.status, "failed"),
+          inArray(email.errorCode, ["dispatch_interrupted", "provider_error"]),
+        ),
       )
       .returning({ id: email.id });
     if (repaired) {
@@ -214,6 +218,29 @@ export async function recordProviderEvent(
       await purgeSendContent(tx, target);
       if (target.mode === "live") await recordEmailUsage(tx, target);
     }
+  }
+
+  if (event.type === "email.failed" && !fromCoss && event.recipients === null) {
+    // The provider gave up on the whole message after accepting it (SES `Reject`, `Rendering
+    // Failure`): the email failed, whether or not the send call had returned yet. Usage already
+    // recorded at `sent` stays (the provider processed the request).
+    const failure = event.data.failure;
+    const [failed] = await tx
+      .update(email)
+      .set({
+        status: "failed",
+        errorCode: failure?.code ?? "provider_failure",
+        errorMessage: failure?.message ?? "The email provider could not send the email.",
+      })
+      .where(
+        and(
+          eq(email.id, target.id),
+          eq(email.organizationId, target.organizationId),
+          inArray(email.status, ["queued", "sent"]),
+        ),
+      )
+      .returning({ id: email.id });
+    if (failed) await purgeSendContent(tx, target);
   }
 
   const status = recipientStatus(event);
@@ -256,7 +283,7 @@ export async function recordProviderEvent(
     await markReputationDue(tx, target.organizationId);
   }
   if ((suppressReason || recipientsChanged) && target.mode === "live") {
-    await invalidateReputationRollup(tx, target.organizationId, target.createdAt);
+    await invalidateReputationRollup(tx, target.organizationId, target.id);
   }
   if (suppressReason) {
     for (const row of inserted) {
