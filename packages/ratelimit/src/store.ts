@@ -167,7 +167,12 @@ export function createValkeyClient(opts: ValkeyConnectionOptions): ValkeyClient 
   };
   const onError = throttled(
     opts.onError ??
-      ((error) => console.warn(`[ratelimit] Valkey connection error: ${error.message}`)),
+      ((error) => {
+        // A cluster's "Failed to refresh slots cache" wraps the node error that explains it.
+        const cause = (error as Error & { lastNodeError?: unknown }).lastNodeError;
+        const detail = cause instanceof Error ? ` (${cause.name}: ${cause.message})` : "";
+        console.warn(`[ratelimit] Valkey connection error: ${error.message}${detail}`);
+      }),
     10_000,
   );
 
