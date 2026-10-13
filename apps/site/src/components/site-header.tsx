@@ -9,6 +9,7 @@ import { COSS_GITHUB, GitHubLink, type GitHubRepo } from "./github-link";
 import { MainNav } from "./main-nav";
 import { MobileNav } from "./mobile-nav";
 import { ModeSwitcher } from "./mode-switcher";
+import { ProductsDropdown } from "./products-dropdown";
 import { SectionLabel } from "./section-label";
 
 /**
@@ -39,6 +40,7 @@ export function SiteHeader({
           <SectionLabel />
         </div>
         <div className="ms-auto flex items-center gap-2 md:flex-1 md:justify-end">
+          <ProductsDropdown />
           <MainNav className="hidden lg:flex" items={items} />
           <div className="mx-2 hidden w-full flex-1 md:flex md:w-auto md:flex-none">
             <CommandMenu navItems={items} searchApi={searchApi} tree={tree} />

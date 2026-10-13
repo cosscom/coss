@@ -2,6 +2,7 @@ import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@coss/ui/components/card";
 import Link from "next/link";
+import { SHIPYARD } from "@/lib/shipyard";
 import { PRODUCTS, SITE_DESCRIPTION } from "@/lib/site";
 
 // Placeholder landing page.
@@ -50,6 +51,22 @@ export default function HomePage() {
             </CardHeader>
           </Card>
         ))}
+      </section>
+
+      <section className="flex flex-col items-start gap-4 rounded-2xl border bg-card p-6 sm:p-8">
+        <h2 className="flex items-center gap-2 font-heading font-semibold text-2xl">
+          {SHIPYARD.name}
+          <Badge variant="info">New</Badge>
+        </h2>
+        <p className="max-w-2xl text-muted-foreground">
+          {SHIPYARD.description} Open source, from the team behind coss.com.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Button render={<Link href={SHIPYARD.path} />}>About Shipyard</Button>
+          <Button render={<Link href={SHIPYARD.docs} />} variant="outline">
+            Shipyard docs
+          </Button>
+        </div>
       </section>
     </main>
   );

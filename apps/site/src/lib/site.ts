@@ -16,6 +16,21 @@ export interface NavItem {
   external?: boolean;
 }
 
+/**
+ * The header's "Products" menu: coss.com's products. `zone`: served by another app of coss.com
+ * (the coss ui repository's), so a plain link rather than `next/link`.
+ */
+export const PRODUCT_MENU: readonly {
+  label: string;
+  href: string;
+  badge?: string;
+  zone?: boolean;
+}[] = [
+  { label: "coss.com sdk", href: DOCS_ROUTE },
+  { label: "coss.com ui", href: "/ui", zone: true },
+  { label: "shipyard", href: "/shipyard", badge: "New" },
+];
+
 /** The header's sections (also the first group of the command menu and the mobile menu). */
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: DOCS_ROUTE, label: "Docs" },
