@@ -1,5 +1,5 @@
 import { API_KEY_PREFIX } from "@coss/auth/constants";
-import { type EmailObjectOutput, listDomains, listEmails } from "@coss/email";
+import { type EmailListItem, listDomains, listEmails } from "@coss/email";
 import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment, listEnvironmentApiKeys, listEnvironments } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
@@ -49,7 +49,7 @@ function quickStartCurl(apiUrl: string, from: string): string {
 }
 
 /** "2 opens · 1 click" for tracked emails, "—" for untracked ones. */
-function engagement({ tracking }: EmailObjectOutput): string {
+function engagement({ tracking }: EmailListItem): string {
   const parts = [
     tracking.opens
       ? `${tracking.open_count} ${tracking.open_count === 1 ? "open" : "opens"}`

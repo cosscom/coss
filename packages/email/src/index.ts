@@ -70,6 +70,7 @@ export {
 export { FakeIdentityProvider } from "./providers/fake-identity.ts";
 export { FakeTrackingHostnameProvider } from "./providers/fake-tracking-hostnames.ts";
 export {
+  type EmailListItem,
   type EmailRecipientRow,
   type EmailRow,
   getEmail,
