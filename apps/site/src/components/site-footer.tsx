@@ -33,10 +33,7 @@ function Colophon({ className }: { className?: string }) {
           coss.com
         </Link>
       </p>
-      <p className="text-muted-foreground text-sm">
-        © {new Date().getFullYear()} Cal.com, Inc. — the leading commercial open source company
-        (&ldquo;coss&rdquo;).
-      </p>
+      <p className="text-muted-foreground text-sm">© {new Date().getFullYear()} Cal.com, Inc.</p>
     </div>
   );
 }
