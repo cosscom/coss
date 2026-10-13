@@ -49,6 +49,8 @@ ENV NODE_ENV=production \
 WORKDIR /app
 COPY --from=build /repo/apps/site/.next/standalone ./
 COPY --from=build /repo/apps/site/.next/static ./apps/site/.next/static
+# The standalone output leaves public/ out (Shipyard's landing page assets, under /shipyard/assets).
+COPY --from=build /repo/apps/site/public ./apps/site/public
 # Next writes its cache under .next at runtime; everything else stays root-owned and read-only.
 RUN mkdir -p apps/site/.next/cache && chown node:node apps/site/.next/cache
 USER node

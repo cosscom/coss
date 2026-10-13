@@ -3,7 +3,7 @@
  * everything declared reaches tasks through turbo, and the Dockerfiles use the repo's versions.
  */
 import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { ZONE_ROUTES, type ZoneRoute } from "@coss/auth/slugs";
 import { billingEnvShape } from "@coss/billing/env";
@@ -123,6 +123,15 @@ describe("Dockerfiles", () => {
       expect(dockerfile).toMatch(/^USER (node|bun)$/m);
     });
   }
+
+  test("a Next app's image includes its public/ folder (the standalone output leaves it out)", () => {
+    for (const app of ["web", "site"]) {
+      if (!existsSync(path.join(ROOT, `apps/${app}/public`))) continue;
+      expect(read(`apps/${app}/Dockerfile`)).toContain(
+        `COPY --from=build /repo/apps/${app}/public ./apps/${app}/public`,
+      );
+    }
+  });
 
   test(".dockerignore keeps env files out of every image", () => {
     const ignored = read(".dockerignore").split("\n");
