@@ -18,6 +18,7 @@ import { PLANS, type PlanKey } from "./catalog/plans.ts";
 import {
   type Contract,
   cancelContract,
+  cancelRenewalsOf,
   clearContractEnd,
   confirmContract,
   contractAt,
@@ -26,6 +27,8 @@ import {
   insertContract,
   nextContractAfter,
   pendingContract,
+  renewalNote,
+  scheduledManagedContract,
   setPendingInvoice,
 } from "./contracts.ts";
 import { resolveTermsAt } from "./engine/terms.ts";
@@ -87,6 +90,23 @@ async function dropPendingUpgrade(
 }
 
 /**
+ * Self-serve changes are refused while a sales or internal contract is scheduled: the deal an
+ * admin set up must not be replaced from the dashboard.
+ */
+async function refuseWhileManagedContractScheduled(
+  tx: Transaction,
+  organizationId: string,
+  now: Date,
+): Promise<void> {
+  if (await scheduledManagedContract(organizationId, now, tx)) {
+    throw new BillingError(
+      "self_serve_unavailable",
+      "A contract with your account manager starts soon. Contact them to change your plan.",
+    );
+  }
+}
+
+/**
  * Starts a self-serve upgrade: a pending contract and its prorated invoice. The caller collects
  * the invoice right away (`collectInvoiceNow`); paying it confirms the contract.
  */
@@ -108,6 +128,7 @@ export async function startUpgrade(input: {
   // Retrying an upgrade replaces the one still waiting for payment.
   return db.transaction(async (tx) => {
     const account = await lockBillingAccount(tx, input.organizationId, input.defaultProvider);
+    await refuseWhileManagedContractScheduled(tx, input.organizationId, now);
     await dropPendingUpgrade(tx, input.organizationId, "Replaced by a new upgrade.", now);
     const state = await billingStateAt(input.organizationId, now, tx);
     if (state.contract && state.contract.kind !== "self_serve") {
@@ -181,6 +202,7 @@ export async function scheduleDowngrade(input: {
   }
   return db.transaction(async (tx) => {
     await lockBillingAccount(tx, input.organizationId, input.defaultProvider);
+    await refuseWhileManagedContractScheduled(tx, input.organizationId, now);
     await dropPendingUpgrade(tx, input.organizationId, "Replaced by a downgrade.", now);
     const state = await billingStateAt(input.organizationId, now, tx);
     const current = state.contract;
@@ -531,6 +553,7 @@ export async function endContract(input: {
       }
       await endContractAt(tx, contract.id, at);
     }
+    if (contract.status === "confirmed") await cancelRenewalsOf(tx, contract.id, at, now);
     if (contract.status === "confirmed") {
       const effectiveAt = contract.effectiveFrom > at ? contract.effectiveFrom : at;
       const following = await contractAt(input.organizationId, effectiveAt, tx);
@@ -608,7 +631,7 @@ export async function runContractRenewals(opts: {
           effectiveFrom: termEnd,
           termEnd: addMonths(termEnd, months),
           autoRenew: true,
-          note: `Renewal of ${fresh.id}`,
+          note: renewalNote(fresh.id),
           reference: fresh.reference,
         },
         now,

@@ -4,7 +4,7 @@
  * under the account lock (`lockBillingAccount`), which is what keeps contracts from overlapping.
  */
 import { db, type Executor, schema, type Transaction } from "@coss/db";
-import { and, asc, desc, eq, gt, gte, inArray, isNull, lt, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, inArray, isNull, lt, lte, ne, or } from "drizzle-orm";
 import { stringifyWithBigInt } from "./money.ts";
 import { type ContractTerms, parseContractTerms } from "./schemas.ts";
 import type { Interval } from "./time.ts";
@@ -151,8 +151,32 @@ export async function supersededIds(
   return new Set(rows.flatMap((row) => (row.id ? [row.id] : [])));
 }
 
+/** The first confirmed sales or internal contract starting after `at` (set up by an admin). */
+export async function scheduledManagedContract(
+  organizationId: string,
+  at: Date,
+  executor: Executor = db,
+): Promise<Contract | null> {
+  const [row] = await executor
+    .select()
+    .from(billingContract)
+    .where(
+      and(
+        eq(billingContract.organizationId, organizationId),
+        eq(billingContract.status, "confirmed"),
+        ne(billingContract.kind, "self_serve"),
+        gt(billingContract.effectiveFrom, at),
+      ),
+    )
+    .orderBy(asc(billingContract.effectiveFrom))
+    .limit(1);
+  return row ? toContract(row) : null;
+}
+
 /**
  * Ends what is in effect at `at` there, and cancels confirmed contracts scheduled from `at` on.
+ * A self-serve contract never cancels a scheduled sales or internal contract (a customer's plan
+ * change mustn't undo an admin's deal): it ends where that one starts instead (`until`).
  * Returns the contract that was in effect (the new one supersedes it).
  */
 async function supersedeAt(
@@ -160,7 +184,8 @@ async function supersedeAt(
   organizationId: string,
   at: Date,
   now: Date,
-): Promise<Contract | null> {
+  kind: ContractRow["kind"],
+): Promise<{ previous: Contract | null; until: Date | null }> {
   const current = await contractAt(organizationId, at, tx);
   if (current) {
     await tx
@@ -168,6 +193,7 @@ async function supersedeAt(
       .set({ effectiveUntil: at })
       .where(eq(billingContract.id, current.id));
   }
+  const selfServe = kind === "self_serve";
   await tx
     .update(billingContract)
     .set({ status: "canceled", canceledAt: now })
@@ -176,9 +202,18 @@ async function supersedeAt(
         eq(billingContract.organizationId, organizationId),
         eq(billingContract.status, "confirmed"),
         gte(billingContract.effectiveFrom, at),
+        selfServe ? eq(billingContract.kind, "self_serve") : undefined,
       ),
     );
-  return current;
+  const managed = selfServe ? await scheduledManagedContract(organizationId, at, tx) : null;
+  return { previous: current, until: managed?.effectiveFrom ?? null };
+}
+
+/** The earlier of two ends (`null`: open-ended). */
+function earlierEnd(a: Date | null, b: Date | null): Date | null {
+  if (!a) return b;
+  if (!b) return a;
+  return a < b ? a : b;
 }
 
 export type NewContract = {
@@ -203,10 +238,10 @@ export async function insertContract(
   input: NewContract,
   now: Date,
 ): Promise<Contract> {
-  const previous =
+  const { previous, until } =
     input.status === "confirmed"
-      ? await supersedeAt(tx, input.organizationId, input.effectiveFrom, now)
-      : null;
+      ? await supersedeAt(tx, input.organizationId, input.effectiveFrom, now, input.kind)
+      : { previous: null, until: null };
   const [row] = await tx
     .insert(billingContract)
     .values({
@@ -217,7 +252,7 @@ export async function insertContract(
       plan: input.terms.plan,
       terms: storedTerms(input.terms),
       effectiveFrom: input.effectiveFrom,
-      effectiveUntil: input.effectiveUntil ?? null,
+      effectiveUntil: earlierEnd(input.effectiveUntil ?? null, until),
       termEnd: input.termEnd ?? null,
       autoRenew: input.autoRenew ?? false,
       supersedesId: previous?.id ?? null,
@@ -237,13 +272,20 @@ export async function confirmContract(
   contract: Contract,
   now: Date,
 ): Promise<Contract> {
-  const previous = await supersedeAt(tx, contract.organizationId, contract.effectiveFrom, now);
+  const { previous, until } = await supersedeAt(
+    tx,
+    contract.organizationId,
+    contract.effectiveFrom,
+    now,
+    contract.kind,
+  );
   const [row] = await tx
     .update(billingContract)
     .set({
       status: "confirmed",
       supersedesId: previous?.id ?? null,
       pendingExpiresAt: null,
+      effectiveUntil: earlierEnd(contract.effectiveUntil, until),
     })
     .where(and(eq(billingContract.id, contract.id), eq(billingContract.status, "pending")))
     .returning();
@@ -259,6 +301,37 @@ export async function cancelContract(
     .update(billingContract)
     .set({ status: "canceled", canceledAt: now, pendingExpiresAt: null })
     .where(eq(billingContract.id, contractId));
+}
+
+/** The note `runContractRenewals` gives a renewal: how its contract's renewal is recognized. */
+export function renewalNote(contractId: string): string {
+  return `Renewal of ${contractId}`;
+}
+
+/**
+ * Cancels the renewal of `contractId` that starts at or after `from` (created a week before its
+ * term ends): ending the contract must not leave next term's renewal running. Returns how many
+ * were canceled.
+ */
+export async function cancelRenewalsOf(
+  tx: Transaction,
+  contractId: string,
+  from: Date,
+  now: Date,
+): Promise<number> {
+  const rows = await tx
+    .update(billingContract)
+    .set({ status: "canceled", canceledAt: now })
+    .where(
+      and(
+        eq(billingContract.supersedesId, contractId),
+        eq(billingContract.status, "confirmed"),
+        eq(billingContract.note, renewalNote(contractId)),
+        gte(billingContract.effectiveFrom, from),
+      ),
+    )
+    .returning({ id: billingContract.id });
+  return rows.length;
 }
 
 /** Ends a contract at `at` (a cancellation at the period's end), without a successor. */

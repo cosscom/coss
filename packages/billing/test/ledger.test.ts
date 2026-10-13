@@ -405,7 +405,26 @@ describe("collection", () => {
     expect((await lockedAccount(org)).status).toBe("past_due");
     expect(await isOnBillingHold(org)).toBe(false);
 
-    await runDueBillingCollection({ now: at("2026-10-16T00:00:00Z"), scope: scopeOf(tenant) });
+    // Retries on days 3 and 8 fail too.
+    for (const retryAt of ["2026-10-04T01:00:00Z", "2026-10-09T02:00:00Z"]) {
+      await runDueBillingCollection({ now: at(retryAt), scope: scopeOf(tenant) });
+      deps.fake.willCollect({ state: "failed", error: "insufficient funds" });
+      await syncAll(tenant, deps, at(retryAt));
+    }
+    // Past the 14 grace days, but the last retry (day 15) is still to come: no hold yet.
+    await runDueBillingCollection({ now: at("2026-10-15T12:00:00Z"), scope: scopeOf(tenant) });
+    expect((await lockedAccount(org)).status).toBe("past_due");
+    expect(await isOnBillingHold(org)).toBe(false);
+
+    // The last retry fails: held.
+    await runDueBillingCollection({ now: at("2026-10-16T03:00:00Z"), scope: scopeOf(tenant) });
+    deps.fake.willCollect({ state: "failed", error: "insufficient funds" });
+    await syncAll(tenant, deps, at("2026-10-16T03:00:00Z"));
+    expect((await invoicesOf(tenant))[0]).toMatchObject({
+      collectionAttempts: 4,
+      nextCollectionAt: null,
+    });
+    await runDueBillingCollection({ now: at("2026-10-16T03:30:00Z"), scope: scopeOf(tenant) });
     expect((await lockedAccount(org)).status).toBe("delinquent");
     expect((await holdsOf(org)).map((hold) => hold.reason)).toEqual(["delinquent"]);
 
@@ -416,11 +435,11 @@ describe("collection", () => {
         amountCents: 2_500n,
         method: "wire",
         reference: "WIRE-1",
-        receivedAt: at("2026-10-16T00:00:00Z"),
+        receivedAt: at("2026-10-16T04:00:00Z"),
       },
       actor: { userId: tenant.owner.id, email: tenant.owner.email },
       reason: "Wire received",
-      now: at("2026-10-16T01:00:00Z"),
+      now: at("2026-10-16T05:00:00Z"),
     });
     expect(await isOnBillingHold(org)).toBe(false);
     expect((await lockedAccount(org)).status).toBe("active");
