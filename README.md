@@ -517,10 +517,17 @@ wrong. AWS credentials come from the task role.
   `coss-production-ses-bootstrap` (SES, SNS, SQS, EventBridge, CloudWatch alarms, IAM policies under `/coss/`).
 - **Deploys** (`coss-production-deploy`): the role of the CodeBuild project whose runners execute the Deploy
   workflow's AWS jobs (ECR push, task definitions, service updates, the migrate task, `iam:PassRole` on the task
-  roles, the CloudFront invalidation). The organization's SCP forbids IAM identity providers, so GitHub OIDC isn't
-  available; the runners are started by a webhook (through the `coss-production-github` CodeConnections connection
-  to the AWS Connector app on `cosscom`) only for jobs of the workflow named `Deploy`. Anyone who can push a workflow
-  with that name can use them: keep write access to the repository tight.
+  roles, the CloudFront invalidation, read-only ALB/CloudFront reads for the routing check). The organization's SCP
+  forbids IAM identity providers, so GitHub OIDC isn't available; the runners are started by a webhook (through the
+  `coss-production-github` CodeConnections connection to the AWS Connector app on `cosscom`) only for jobs of the
+  workflow named `Deploy`. CodeBuild can't filter those jobs by branch (`HEAD_REF` only applies to push and pull
+  request events; `WORKFLOW_NAME` is the only workflow-job filter), and the organization's GitHub plan has no
+  branch protection or rulesets for private repositories. What stops a branch: the workflow's first job refuses
+  anything but `deploy.yml` from `main`, and the AWS jobs need the `production` environment, whose deployment
+  branch policy allows only `main`. Neither stops someone with write access from pushing a *different* workflow named
+  `Deploy` without them, whose jobs get this role, which can read every production secret (it passes the execution
+  role): keep write access to the repository tight. Closing that needs GitHub Team (a push ruleset restricting
+  `.github/workflows/**`) or an `ACTOR_ACCOUNT_ID` allow-list on the webhook.
 
 ### Deploy order
 
@@ -543,6 +550,11 @@ an earlier commit's images, e.g. a rollback):
    the worker finishes each loop's current item).
 4. Record the commit in SSM (`/coss/production/image-tag`, read by Terraform) and invalidate the spec's
    `cloudFront.invalidateAfterDeploy` paths on the coss.com distribution.
+5. Check routing (`infra/scripts/check-routing.sh`, also runnable locally): the ALB's rules and the coss.com
+   distribution's cached behaviours must match `infra/terraform/spec.json`. Routing changes (a new `ZONE_ROUTES`
+   entry, i.e. a new site page or zone) only go live with `terraform apply`, which deploys never run, so until
+   someone applies them this step fails with "routing drift: run terraform apply" and the differences. The code
+   ships either way.
 
 Infrastructure changes: `cd infra/terraform && terraform init && terraform plan -var-file=production.tfvars` with
 admin credentials for the account, then `apply`. Services ignore task definition changes; after changing

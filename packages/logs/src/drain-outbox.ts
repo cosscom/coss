@@ -58,8 +58,11 @@ export function lineByteSize(line: Record<string, unknown>): number {
 }
 
 /**
- * The millisecond the last record ids were stamped with. A write in the same millisecond takes the
- * next one, so its records sort after the previous write's (random ids of one millisecond don't).
+ * The millisecond this process last stamped record ids with. A later write of this process in the
+ * same millisecond takes the next one, so its records sort after the previous write's (random ids
+ * of one millisecond don't). Best effort: other processes (every api and worker task) keep their
+ * own, ids are stamped before the transaction commits, and above 1,000 writes a second the stamp
+ * runs ahead of the clock.
  */
 let lastIdMs = 0;
 
@@ -88,7 +91,7 @@ export async function insertLogDrainRecords(
   }
   if (values.length === 0) return 0;
   // Ids order delivery: make them ascend in the order the lines were written, within this write
-  // (sorted) and after every earlier one (`lastIdMs`).
+  // (sorted) and after this process's earlier writes (`lastIdMs`).
   const now = Math.max(Date.now(), lastIdMs + 1);
   lastIdMs = now;
   const ids = values.map(() => newId(ID_PREFIXES.logDrainRecord, now)).sort();

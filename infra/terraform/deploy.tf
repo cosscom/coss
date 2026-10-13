@@ -136,7 +136,7 @@ resource "aws_iam_role_policy" "deploy_build" {
   })
 }
 
-# Migrations, rollouts and the CDN invalidation.
+# Migrations, rollouts, the CDN invalidation and the routing check.
 resource "aws_iam_role_policy" "deploy" {
   name = "rollout"
   role = aws_iam_role.deploy.id
@@ -191,8 +191,15 @@ resource "aws_iam_role_policy" "deploy" {
       {
         Sid      = "Invalidate"
         Effect   = "Allow"
-        Action   = ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation"]
+        Action   = ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation", "cloudfront:GetDistributionConfig"]
         Resource = aws_cloudfront_distribution.dashboard.arn
+      },
+      {
+        # infra/scripts/check-routing.sh (read-only; these Describe actions have no resource level).
+        Sid      = "RoutingCheck"
+        Effect   = "Allow"
+        Action   = ["elasticloadbalancing:DescribeLoadBalancers", "elasticloadbalancing:DescribeListeners", "elasticloadbalancing:DescribeRules"]
+        Resource = "*"
       },
     ]
   })
