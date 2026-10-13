@@ -23,6 +23,31 @@ const { email, emailEvent, emailLink, emailRecipient, environment } = schema;
 /** Every tracked link of one email is returned at once. */
 const MAX_LINKS = 1000;
 
+type TrackingColumns = Pick<
+  EmailRow,
+  | "trackOpens"
+  | "trackClicks"
+  | "openCount"
+  | "firstOpenedAt"
+  | "lastOpenedAt"
+  | "clickCount"
+  | "firstClickedAt"
+  | "lastClickedAt"
+>;
+
+function trackingObject(row: TrackingColumns): EmailObjectOutput["tracking"] {
+  return {
+    opens: row.trackOpens,
+    clicks: row.trackClicks,
+    open_count: row.openCount,
+    first_opened_at: row.firstOpenedAt?.toISOString() ?? null,
+    last_opened_at: row.lastOpenedAt?.toISOString() ?? null,
+    click_count: row.clickCount,
+    first_clicked_at: row.firstClickedAt?.toISOString() ?? null,
+    last_clicked_at: row.lastClickedAt?.toISOString() ?? null,
+  };
+}
+
 export function toEmailObject(
   row: EmailRow,
   opts: {
@@ -54,16 +79,7 @@ export function toEmailObject(
     })),
     attachments: opts.attachments.map(toAttachmentObject),
     sandbox: opts.sandbox,
-    tracking: {
-      opens: row.trackOpens,
-      clicks: row.trackClicks,
-      open_count: row.openCount,
-      first_opened_at: row.firstOpenedAt?.toISOString() ?? null,
-      last_opened_at: row.lastOpenedAt?.toISOString() ?? null,
-      click_count: row.clickCount,
-      first_clicked_at: row.firstClickedAt?.toISOString() ?? null,
-      last_clicked_at: row.lastClickedAt?.toISOString() ?? null,
-    },
+    tracking: trackingObject(row),
     created_at: row.createdAt.toISOString(),
     sent_at: row.sentAt?.toISOString() ?? null,
     scheduled_at: row.scheduledAt?.toISOString() ?? null,
@@ -155,22 +171,70 @@ export async function getEmail(input: {
   return object ?? null;
 }
 
-/** Newest first; `limit` defaults to 50 and is capped at 100. */
+/**
+ * A row of the dashboard's email list: what the table shows, never the content, headers,
+ * recipients or attachments (bodies can be megabytes each).
+ */
+export type EmailListItem = Pick<
+  EmailObjectOutput,
+  "id" | "to" | "subject" | "status" | "sandbox" | "tracking" | "created_at" | "scheduled_at"
+>;
+
+/** Newest first; `limit` defaults to 50 and is capped at 100. One query. */
 export async function listEmails(input: {
   organizationId: string;
   environmentId: string;
   limit?: number;
-}): Promise<EmailObjectOutput[]> {
+}): Promise<EmailListItem[]> {
   const requested = Math.trunc(input.limit ?? DEFAULT_LIST_LIMIT);
   const limit = Number.isFinite(requested)
     ? Math.min(Math.max(requested, 1), MAX_LIST_LIMIT)
     : DEFAULT_LIST_LIMIT;
-  const rows = await selectEmailsWithMode(
-    input.organizationId,
-    eq(email.environmentId, input.environmentId),
-    limit,
-  );
-  return toEmailObjects(input.organizationId, rows);
+  const rows = await db
+    .select({
+      id: email.id,
+      to: email.to,
+      subject: email.subject,
+      status: email.status,
+      mode: environment.mode,
+      trackOpens: email.trackOpens,
+      trackClicks: email.trackClicks,
+      openCount: email.openCount,
+      firstOpenedAt: email.firstOpenedAt,
+      lastOpenedAt: email.lastOpenedAt,
+      clickCount: email.clickCount,
+      firstClickedAt: email.firstClickedAt,
+      lastClickedAt: email.lastClickedAt,
+      createdAt: email.createdAt,
+      scheduledAt: email.scheduledAt,
+    })
+    .from(email)
+    .innerJoin(
+      environment,
+      and(
+        eq(environment.id, email.environmentId),
+        eq(environment.organizationId, email.organizationId),
+      ),
+    )
+    .where(
+      and(
+        eq(email.organizationId, input.organizationId),
+        eq(email.environmentId, input.environmentId),
+      ),
+    )
+    // As in selectEmailsWithMode: the (environment_id, created_at DESC NULLS LAST) index.
+    .orderBy(sql`${email.createdAt} desc nulls last`, desc(email.id))
+    .limit(limit);
+  return rows.map((row) => ({
+    id: row.id,
+    to: row.to,
+    subject: row.subject,
+    status: row.status,
+    sandbox: row.mode === "sandbox",
+    tracking: trackingObject(row),
+    created_at: row.createdAt.toISOString(),
+    scheduled_at: row.scheduledAt?.toISOString() ?? null,
+  }));
 }
 
 export function toEmailEventObject(row: typeof emailEvent.$inferSelect): EmailEventOutput {
