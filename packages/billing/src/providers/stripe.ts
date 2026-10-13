@@ -263,7 +263,7 @@ export class StripeBillingProvider implements BillingProvider {
               state: "paid",
               paymentId: await this.#paymentId(id),
               method: "stripe",
-              amountCents: BigInt(current.amount_paid),
+              amountCents: paidTowardInvoice(current),
             };
           }
           // Voided or written off at Stripe meanwhile: no payment to fail. The sync retries and

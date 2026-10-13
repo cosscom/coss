@@ -412,6 +412,7 @@ test("an invoice below Stripe's minimum charge doesn't count as an overpayment o
   const { api, stripe } = setup();
   const organization = { id: "org_1", name: "Acme", slug: "acme" };
   const customerId = await stripe.ensureCustomer(account(), organization);
+  api.attachPaymentMethod(customerId);
   const saved = account({ providerCustomerId: customerId });
 
   // 30¢ (a proration in the last hour of a month): Stripe marks it paid without charging and
@@ -451,6 +452,33 @@ test("an invoice below Stripe's minimum charge doesn't count as an overpayment o
     payload: { data: { object: { id: pushedNext.providerInvoiceId } } },
   });
   expect(outcomes).toMatchObject([{ kind: "invoice_paid", amountCents: 2_500n }]);
+});
+
+test("an invoice paid on the hosted page, read back on a retry, leaves a carried debit out", async () => {
+  const { api, stripe } = setup();
+  const organization = { id: "org_1", name: "Acme", slug: "acme" };
+  const customerId = await stripe.ensureCustomer(account(), organization);
+  api.attachPaymentMethod(customerId);
+  const saved = account({ providerCustomerId: customerId });
+  const customer = api.customers.get(customerId);
+  if (customer) customer.balance = 30; // An earlier invoice below the minimum charge.
+  const target = invoice({ id: "inv_hosted", providerCustomerId: customerId });
+  const pushed = await stripe.pushInvoice({
+    invoice: target,
+    lines: [line("invl_hosted", 2_500n, "Pro")],
+    account: saved,
+  });
+  // The customer pays $25.30 on the hosted page before COSS's retry.
+  const stripeInvoice = api.invoices.get(pushed.providerInvoiceId ?? "");
+  if (stripeInvoice)
+    Object.assign(stripeInvoice, { status: "paid", amount_paid: 2_530, amount_due: 0 });
+  expect(
+    await stripe.collect({
+      invoice: { ...target, providerInvoiceId: pushed.providerInvoiceId },
+      lines: [],
+      account: saved,
+    }),
+  ).toMatchObject({ state: "paid", amountCents: 2_500n });
 });
 
 test("a fully credited invoice retries safely after losing the provider response", async () => {

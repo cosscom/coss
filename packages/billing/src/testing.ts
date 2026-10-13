@@ -322,7 +322,6 @@ export class FakeStripeApi {
             if (due > 0 && due < STRIPE_MINIMUM_CHARGE_CENTS) {
               // Below the minimum charge: marked paid uncharged, the amount moved to the
               // customer's invoice balance (`invoice_too_small`) for the next invoice.
-              const customer = this.customers.get(String(invoice.customer));
               if (customer) customer.balance = Number(customer.balance ?? 0) + due;
             } else {
               invoice.amount_paid = due;
