@@ -50,6 +50,23 @@ describe("browser monitoring", () => {
     expect(calls.inits[0]).toMatchObject({ dsn: CONFIG.dsn, tunnel: SENTRY_TUNNEL_PATH });
   });
 
+  test("reports only errors from scripts of the page's own origin", async () => {
+    serveConfig(() => Response.json(CONFIG));
+    const { calls, load } = fakeSdk();
+    const location = Object.getOwnPropertyDescriptor(globalThis, "location");
+    Object.defineProperty(globalThis, "location", {
+      value: { origin: "https://coss.com" },
+      configurable: true,
+    });
+    try {
+      await initBrowserMonitoring(load, "site");
+    } finally {
+      if (location) Object.defineProperty(globalThis, "location", location);
+      else Reflect.deleteProperty(globalThis, "location");
+    }
+    expect(calls.inits[0]).toMatchObject({ allowUrls: ["https://coss.com/"] });
+  });
+
   test("never loads the SDK while monitoring is off or unreachable", async () => {
     for (const respond of [
       () => new Response(null, { status: 404 }),

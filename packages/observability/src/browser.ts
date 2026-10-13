@@ -67,10 +67,14 @@ export async function initBrowserMonitoring(
   } catch {
     return undefined;
   }
+  const origin = (globalThis as { location?: { origin?: string } }).location?.origin;
   sdk.init({
     ...sentryOptions(config, service),
     tunnel: SENTRY_TUNNEL_PATH,
     integrations: [sdk.browserTracingIntegration()],
+    // Only errors thrown by our own scripts: extensions and other injected code also run in the
+    // page (`app:///…`, `chrome-extension://…` frames) and would otherwise be reported as ours.
+    ...(origin ? { allowUrls: [`${origin}/`] } : {}),
   });
   return sdk;
 }
