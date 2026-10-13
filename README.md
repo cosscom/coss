@@ -435,8 +435,9 @@ Cloudflare DNS (coss.com zone, DNS only)
     match exactly `/`). The cached behaviours from the spec use the policy `coss-production-origin-cache-control`,
     which honours the origin's `Cache-Control`: min/default TTL 0, max 1 year, all query strings (`_rsc`), no
     cookies, and the headers `RSC`, `Next-Router-Prefetch`, `Next-Router-State-Tree`, `Next-Router-Segment-Prefetch`
-    in the cache key. Docs pages are sent with `s-maxage=31536000`: the deploy workflow invalidates `/*` after
-    every rollout.
+    in the cache key. Docs pages are sent with `s-maxage=31536000`: the deploy workflow invalidates the site's
+    cached paths after every rollout (`cloudFront.invalidateAfterDeploy` in the spec), never the hashed asset
+    folders, so tabs opened before a deploy can still load their old chunks.
   - `api.coss.com`: the ALB only, never cached.
   - WAF web ACLs (scope `CLOUDFRONT`): a per-IP rate rule (5,000 / 5 min on coss.com, 20,000 on the API; floods
     only, the apps rate-limit precisely), AWS IP reputation, common and known-bad-inputs rule groups. Rules that
@@ -540,8 +541,8 @@ an earlier commit's images, e.g. a rollback):
    new revision of its latest task definition with the new image, and the script fails if the circuit breaker rolled
    it back. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
    the worker finishes each loop's current item).
-4. Record the commit in SSM (`/coss/production/image-tag`, read by Terraform) and invalidate `/*` on the coss.com
-   distribution.
+4. Record the commit in SSM (`/coss/production/image-tag`, read by Terraform) and invalidate the spec's
+   `cloudFront.invalidateAfterDeploy` paths on the coss.com distribution.
 
 Infrastructure changes: `cd infra/terraform && terraform init && terraform plan -var-file=production.tfvars` with
 admin credentials for the account, then `apply`. Services ignore task definition changes; after changing

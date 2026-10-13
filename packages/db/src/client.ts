@@ -19,6 +19,9 @@ export const pool: pg.Pool =
     min: 2,
     idleTimeoutMillis: 5 * 60_000,
     allowExitOnIdle: true,
+    // Kept connections must notice a peer that vanished without a reset (a Multi-AZ failover)
+    // instead of hanging the next query on them.
+    keepAlive: true,
   });
 
 if (process.env.NODE_ENV !== "production") globalForDb.__cossPgPool = pool;

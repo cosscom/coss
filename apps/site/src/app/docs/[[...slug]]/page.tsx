@@ -38,6 +38,10 @@ export function generateStaticParams() {
   return source.generateParams();
 }
 
+// Every page is prerendered: anything else is a 404 straight away, never rendered on demand
+// (which would also try to cache the result in the read-only image).
+export const dynamicParams = false;
+
 export async function generateMetadata({
   params,
 }: PageProps<"/docs/[[...slug]]">): Promise<Metadata> {

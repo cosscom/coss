@@ -33,9 +33,15 @@ overrides="$(jq -nc --arg name "$service" --arg role "$task_role" --argjson comm
   { containerOverrides: [{ name: $name, command: $command }] }
   + (if $role != "" then { taskRoleArn: $role } else {} end)')"
 
-task="$(aws ecs run-task --cluster "$CLUSTER" --task-definition "$definition" --launch-type FARGATE \
-  --network-configuration "$network" --overrides "$overrides" --started-by "ecs-task.sh" \
-  --query 'tasks[0].taskArn' --output text)"
+started="$(aws ecs run-task --cluster "$CLUSTER" --task-definition "$definition" --launch-type FARGATE \
+  --network-configuration "$network" --overrides "$overrides" --started-by "ecs-task.sh" --output json)"
+task="$(jq -r '.tasks[0].taskArn // empty' <<<"$started")"
+# Fargate can refuse to place the task (capacity, quota): it then reports `failures` and no task,
+# which the wait below would never see stop.
+if [ -z "$task" ]; then
+  echo "the task wasn't started: $(jq -c '.failures' <<<"$started")" >&2
+  exit 1
+fi
 echo "started ${task##*/} ($*)"
 aws ecs wait tasks-stopped --cluster "$CLUSTER" --tasks "$task" || true
 while [ "$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$task" --query 'tasks[0].lastStatus' --output text)" != "STOPPED" ]; do

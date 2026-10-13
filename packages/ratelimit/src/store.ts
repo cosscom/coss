@@ -174,7 +174,9 @@ export function createValkeyClient(opts: ValkeyConnectionOptions): ValkeyClient 
       // ElastiCache's TLS certificates name the hostnames, not the IPs they resolve to.
       dnsLookup: (address, callback) => callback(null, address),
       enableOfflineQueue: false,
-      slotsRefreshTimeout: 2000,
+      // A booting dashboard task (0.5 vCPU) can take over 2 s for its first TLS handshake + slots
+      // fetch; that only delays readiness (commands fail fast meanwhile), so allow it.
+      slotsRefreshTimeout: 5000,
       redisOptions: common,
     });
     cluster.on("error", onError);

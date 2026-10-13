@@ -13,11 +13,13 @@ import {
 } from "@coss/email";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
+import { env } from "@/env";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
 import { emailRuntime } from "@/lib/email-runtime";
 import { isPlatformAdmin, type OrgContext, requireOrgPermission } from "@/lib/session";
+import { isSystemOrganization } from "@/lib/system-organization";
 
 /** A manual "Verify now" waits at least this long after the previous check. */
 const MANUAL_CHECK_INTERVAL_MS = 10_000;
@@ -46,8 +48,12 @@ export async function addDomainAction(
         organizationId: context.organization.id,
         name: formString(formData, "name"),
         userId: context.session.user.id,
-        // COSS's own organization sends from coss.com, which no one else may claim.
-        allowReserved: isPlatformAdmin(context.session),
+        // COSS's own organization sends from coss.com, which no one else may claim: platform admins
+        // may add reserved domains there only (anywhere until it is configured, to bootstrap it).
+        allowReserved:
+          isPlatformAdmin(context.session) &&
+          (!env.NOTIFICATIONS_ENVIRONMENT_ID ||
+            (await isSystemOrganization(context.organization.id))),
       },
       emailRuntime().domainDeps,
     );

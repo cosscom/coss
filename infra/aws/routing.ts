@@ -150,7 +150,8 @@ export function cossComCacheBehaviours(): CacheBehaviour[] {
       pathPattern: "/_next/static/*",
       origin: "alb",
       cache: "origin",
-      reason: "The dashboard's hashed, immutable assets (also keeps old chunks during deploys).",
+      reason:
+        "The dashboard's hashed, immutable assets (and old chunks for tabs opened before a deploy).",
     },
   ];
   for (const route of ZONE_ROUTES as readonly ZoneRoute[]) {
@@ -171,6 +172,23 @@ export function cossComCacheBehaviours(): CacheBehaviour[] {
     }
   }
   return behaviours;
+}
+
+/** Cached paths whose names are content hashes: a new build never reuses one. */
+const IMMUTABLE_PATTERNS = new Set(["/_next/static/*", `${SITE_ASSET_PREFIX}/*`]);
+
+/**
+ * What the Deploy workflow invalidates on the coss.com distribution after a rollout: our own
+ * apps' cached paths (docs pages are cached for a year). Never the hashed asset folders, whose
+ * cached old chunks keep tabs opened before the deploy working (the new tasks don't have them),
+ * nor the external zones, which deploy on their own.
+ */
+export function deployInvalidationPaths(): string[] {
+  return cossComCacheBehaviours()
+    .filter(
+      (behaviour) => behaviour.origin === "alb" && !IMMUTABLE_PATTERNS.has(behaviour.pathPattern),
+    )
+    .map((behaviour) => behaviour.pathPattern);
 }
 
 /**

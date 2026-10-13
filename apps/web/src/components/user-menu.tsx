@@ -14,6 +14,7 @@ import {
 import { ChevronDownIcon, LogOutIcon, SettingsIcon, ShieldIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { postAuth } from "@/lib/auth-post";
 
 /** The signed-in user's menu: account settings, the admin console (platform admins) and sign out. */
 export function UserMenu(props: { name: string; email: string; isAdmin: boolean }) {
@@ -47,9 +48,7 @@ export function UserMenu(props: { name: string; email: string; isAdmin: boolean 
         <MenuSeparator />
         <MenuItem
           onClick={async () => {
-            // Loaded on click: the client (every plugin) would weigh on every page.
-            const { authClient } = await import("@/lib/auth-client");
-            await authClient.signOut();
+            await postAuth("/sign-out");
             router.push("/sign-in");
             router.refresh();
           }}
