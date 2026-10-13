@@ -707,7 +707,11 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     refused while the org uses something the lower plan lacks (the dashboard's preflight), and creation meanwhile is
     checked against both plans (`creatableEntitlements`). Auto-renewing contracts get a successor a week before
     their term ends; non-renewing ones end with their term.
-  - **Collection**: `billing-sync` pushes and collects (charge, or send with net terms); `billing-collection` retries
+  - **Collection**: `billing-sync` pushes and collects (charge, or send with net terms). A charge is never attempted
+    without a payment method (`no_payment_method`): a pending upgrade's invoice waits for one (its customer is in
+    Checkout; returning collects at once through `collectInvoiceNow`, which also retries a failed or 3-D Secure
+    charge), anything else is dunned as `No payment method on file.`. Stripe's invalid-request refusals are read
+    back (an invoice already paid on the hosted page is recorded as paid). `billing-collection` retries
     failed charges (+3/+5/+7 days), reminds about net-terms invoices, sets `past_due`, and after `grace_days` places a
     `delinquent` **billing hold** (`billing_hold`, presence = held). A hold makes `authorizeLiveSender` refuse
     (`EmailError("billing_hold")`, 402) and holds scheduled sends (`organizationActive`) — never fails them; paying lifts

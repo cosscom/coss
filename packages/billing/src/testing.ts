@@ -99,10 +99,27 @@ export class FakeStripeApi {
   readonly payOutcomes: ("paid" | "declined" | "authentication_required" | "processing")[] = [];
   #replies = new Map<string, { status: number; body: unknown; params: string }>();
   #ids = 0;
+  // Ids are unique across instances: the test database is shared and provider ids are unique.
+  readonly #instance = crypto.randomUUID().slice(0, 8);
 
   #id(prefix: string): string {
     this.#ids++;
-    return `${prefix}_fake${this.#ids}`;
+    return `${prefix}_fake${this.#instance}${this.#ids}`;
+  }
+
+  /** Gives a customer a default card, as a finished Checkout or the Customer Portal would. */
+  attachPaymentMethod(customerId: string): StripeObject {
+    const customer = this.customers.get(customerId);
+    if (!customer) throw new Error(`No customer ${customerId}`);
+    const method = {
+      id: this.#id("pm"),
+      object: "payment_method",
+      type: "card",
+      card: { brand: "visa", last4: "4242", exp_month: 12, exp_year: 2030 },
+    };
+    this.paymentMethods.set(method.id, method);
+    customer.invoice_settings = { default_payment_method: method.id };
+    return method;
   }
 
   /** Completes a setup session as if the customer added a card in Checkout. */
@@ -245,6 +262,18 @@ export class FakeStripeApi {
           invoice.invoice_pdf = `https://invoice.stripe.test/${invoice.id}.pdf`;
           return ok(invoice);
         case "pay": {
+          // As Stripe: paying a paid invoice, or charging a customer with no default payment
+          // method, is an invalid request (not a card error).
+          const refuse = (message: string) => ({
+            status: 400,
+            body: { error: { type: "invalid_request_error", message } },
+          });
+          if (invoice.status === "paid") return refuse("Invoice is already paid.");
+          const customer = this.customers.get(invoice.customer as string);
+          const settings = customer?.invoice_settings as { default_payment_method?: unknown };
+          if (!settings?.default_payment_method) {
+            return refuse("There is no `default_payment_method` set on this Customer or Invoice.");
+          }
           const outcome = this.payOutcomes.shift() ?? "paid";
           if (outcome === "declined") {
             return {
