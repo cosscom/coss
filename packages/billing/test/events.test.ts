@@ -13,7 +13,7 @@ import { recordManualPayment } from "../src/payments.ts";
 import { runDueBillingPeriods } from "../src/periods.ts";
 import { runDueBillingSync } from "../src/sync.ts";
 import { createTestContract, testBillingProviders } from "../src/testing.ts";
-import { BillingWebhookEvent } from "../src/wire.ts";
+import { BILLING_EVENT_TYPES, type BillingEventType, BillingWebhookEvent } from "../src/wire.ts";
 
 const at = (iso: string) => new Date(iso);
 const scopeOf = (tenant: TestTenant) => ({ organizationIds: [tenant.organization.id] });
@@ -39,8 +39,15 @@ async function billingEvents(tenant: TestTenant) {
     .select()
     .from(schema.webhookMessage)
     .where(eq(schema.webhookMessage.organizationId, tenant.organization.id))
-    // Transactions first: ids (random within a millisecond) only order events of one transaction.
-    .orderBy(asc(schema.webhookMessage.createdAt), asc(schema.webhookMessage.id));
+    // In transaction order. Events of one transaction share `created_at` and their order isn't
+    // defined (ids are random within a millisecond), so they compare in the catalog's order.
+    .orderBy(asc(schema.webhookMessage.createdAt));
+  messages.sort(
+    (a, b) =>
+      a.createdAt.getTime() - b.createdAt.getTime() ||
+      BILLING_EVENT_TYPES.indexOf(a.type as BillingEventType) -
+        BILLING_EVENT_TYPES.indexOf(b.type as BillingEventType),
+  );
   for (const message of messages) {
     // Every environment gets them, but only live ones: sandbox endpoints never hear about billing.
     expect(message.environmentId).toBe(tenant.production.id);
