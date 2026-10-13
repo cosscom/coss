@@ -16,7 +16,7 @@ Sentry (organization `cosscom`) through `@coss/observability`. Human setup docs 
 |---|---|---|
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
-| `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
+| `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page, Shipyard's landing page at `/shipyard` + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |

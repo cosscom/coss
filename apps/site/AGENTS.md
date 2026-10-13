@@ -1,6 +1,6 @@
 # AGENTS.md — apps/site (coss.com)
 
-Landing page (`/`), pricing (`/pricing`) and docs (`/docs`) on Next.js 16 + [Fumadocs](https://fumadocs.dev), port
+Landing page (`/`), pricing (`/pricing`), Shipyard's landing page (`/shipyard`) and docs (`/docs`) on Next.js 16 + [Fumadocs](https://fumadocs.dev), port
 :3002. Fully static apart from the docs search (`/docs/search.json`) and the health check; no env vars, no database.
 It shares coss.com with the dashboard (`apps/web`, the default zone): dashboard pages and Better Auth (`/api/auth/*`) are same-origin in
 production, and the load balancer sends this app only the paths in `ZONE_ROUTES` (`@coss/auth/slugs`). Fumadocs is
@@ -27,6 +27,7 @@ the macro API, `staticSource` and code-usage APIs are recent.
 | `src/instrumentation-client.ts`, `src/app/global-error.tsx` | Browser error monitoring (Sentry): configuration from the dashboard's `/api/monitoring` (same origin on coss.com; `next.config.ts` proxies it in `next dev`), events tunnelled through it to the dashboard's `web` project. The server reports nothing. |
 | `src/app/(home)` | Placeholder landing page (coss ui components), the pricing page, the legal pages and `SiteFooter`. |
 | `src/app/(home)/pricing`, `src/components/pricing/`, `src/lib/pricing.ts` | `/pricing`: plan cards, an email bill estimator (a client island rating with `@coss/billing/engine`'s `chargeRange`, so it matches invoices), usage rate cards, the plan comparison (`planRows()`, shared with the billing guide's `<PlanTable />`) and an FAQ. Every price, limit and allowance comes from `@coss/billing/catalog`; product availability from `PRODUCTS` (`src/lib/site.ts`). |
+| `src/app/(shipyard)/shipyard`, `src/components/shipyard/runtime.tsx`, `src/lib/shipyard.ts`, `public/shipyard/assets/` | `/shipyard`: Shipyard's landing page as it was at berthd.app (moved from the coss ui repository's `apps/shipyard`), in its own route group with its own header links. The page is static markup styled by `landing.css` (scoped to `.shipyard-landing`, its own tokens, JetBrains Mono from the layout); the harbour, the night loop, the chapters' loops and line scenes are plain scripts in `public/shipyard/assets` (same-origin, so the CSP allows them) that `LandingRuntime` appends after the first paint and redraws on theme changes. `SHIPYARD` holds its copy, paths and outbound links: downloads, the live demo and the box's install line stay on berthd.app / GitHub releases, and the docs link to the `cosscom/shipyard` repository until they move here. |
 | `content/legal/`, `src/lib/legal.ts`, `src/app/(home)/legal` | Terms, Privacy Policy, Acceptable Use Policy, Data Processing Addendum (incorporated into the Terms) at `/legal/…` (Cal.com, Inc. is the legal entity). Their own `defineDocs` collection + `loader`, so they stay out of the docs' sidebar, search and `/llms.txt`; frontmatter needs `lastUpdated` (YYYY-MM-DD). The sign-up form links to `/legal/terms` and `/legal/privacy`. |
 
 ## Rules

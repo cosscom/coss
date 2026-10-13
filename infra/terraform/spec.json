@@ -803,7 +803,7 @@
                 "Values": [
                   "/",
                   "/pricing",
-                  "/docs"
+                  "/shipyard"
                 ]
               }
             },
@@ -826,9 +826,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
-                  "/docs/*",
-                  "/legal",
-                  "/legal/*"
+                  "/shipyard/*",
+                  "/docs",
+                  "/docs/*"
                 ]
               }
             },
@@ -851,9 +851,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
-                  "/llms.txt",
-                  "/llms-full.txt",
-                  "/site-assets"
+                  "/legal",
+                  "/legal/*",
+                  "/llms.txt"
                 ]
               }
             },
@@ -876,9 +876,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
-                  "/site-assets/*",
-                  "/icon.svg",
-                  "/favicon.ico"
+                  "/llms-full.txt",
+                  "/site-assets",
+                  "/site-assets/*"
                 ]
               }
             },
@@ -901,9 +901,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
-                  "/robots.txt",
-                  "/sitemap.xml",
-                  "/.well-known"
+                  "/icon.svg",
+                  "/favicon.ico",
+                  "/robots.txt"
                 ]
               }
             },
@@ -926,6 +926,8 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/sitemap.xml",
+                  "/.well-known",
                   "/.well-known/*"
                 ]
               }
@@ -1021,6 +1023,18 @@
             "origin": "alb",
             "cache": "origin",
             "reason": "site zone (/pricing)"
+          },
+          {
+            "pathPattern": "/shipyard",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/shipyard)"
+          },
+          {
+            "pathPattern": "/shipyard/*",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/shipyard)"
           },
           {
             "pathPattern": "/docs",
@@ -1132,6 +1146,8 @@
     },
     "invalidateAfterDeploy": [
       "/pricing",
+      "/shipyard",
+      "/shipyard/*",
       "/docs",
       "/docs/*",
       "/legal",
