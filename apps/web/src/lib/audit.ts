@@ -3,6 +3,7 @@ import { type OrgAuditActor, recordOrgAuditEvent } from "@coss/logs";
 import { headers } from "next/headers";
 import { env } from "@/env";
 import type { Session } from "./auth";
+import { auditClientIp } from "./client-ip";
 
 export type AuditInput = {
   organizationId: string;
@@ -22,9 +23,7 @@ export function sessionActor(session: Session): OrgAuditActor {
 /** The client address `src/proxy.ts` vouched for, if proxies are configured. */
 async function requestContext(): Promise<{ clientIp: string | null; userAgent: string | null }> {
   const list = await headers();
-  const forwarded = list.get("x-forwarded-for");
-  const clientIp =
-    env.TRUSTED_PROXY_HOPS > 0 && forwarded && forwarded !== "unknown" ? forwarded : null;
+  const clientIp = auditClientIp(list.get("x-forwarded-for"), env.TRUSTED_PROXY_HOPS);
   return { clientIp, userAgent: list.get("user-agent") };
 }
 

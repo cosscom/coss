@@ -59,6 +59,8 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Skip Next internals, the favicon and any path with a file extension (static assets).
-  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|.*\\..*).*)"],
+  // Skip Next internals and the two root files `next dev` proxies to the site. Paths with dots go
+  // through like any other: the dashboard has no public/ folder, and their X-Forwarded-For must be
+  // replaced too (rate limits, sessions and audit events read it).
+  matcher: ["/((?!_next/static/|_next/image|favicon\\.ico$|icon\\.svg$).*)"],
 };

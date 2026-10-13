@@ -267,8 +267,8 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   webhook secret needs `webhook:update` (members can read endpoints but never see secrets).
 - Org settings (`[orgSlug]/settings`: rename, slug change, leave, 2FA requirement; `settings/sso`: SSO provider and
   requirement; `settings/scim`: directory sync) and account settings (top-level `/settings`: name,
-  verification email, password change, sessions) call `auth.api.*` server-side — `/organization/update` stays a
-  disabled HTTP path. `canRemoveOrgMember`/`assignableOrgRoles` mirror Better Auth's owner rules for the UI; Better
+  verification email, password change, sessions) call `auth.api.*` server-side — their HTTP routes stay disabled
+  (`disabledPaths`, below). `canRemoveOrgMember`/`assignableOrgRoles` mirror Better Auth's owner rules for the UI; Better
   Auth alone protects the last owner. Account actions refuse while impersonating.
 - Session-bound Better Auth calls made while *rendering* pass `authHeaders()` (`src/lib/session.ts`), not raw
   `headers()`: after an action replaces the session cookie (password change), Next re-renders with the new cookies
@@ -442,13 +442,21 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     once a minute (`LAST_USED_RESOLUTION_MS`). Re-check it against `validateApiKey` when bumping Better Auth or
     using a new key option (quotas, refills, per-key rate limits). Revocation: `getKeyBinding`
     ownership check, then `auth.api.deleteApiKey` with session headers.
-  - `disabledPaths` blocks the HTTP routes `/api-key/{create,update,get,list,delete}`, `/organization/{update,invite-member}` and
-    every admin-plugin mutation (`/admin/{create-user,update-user,remove-user,set-role,set-user-password,ban-user,
+  - `disabledPaths` blocks the HTTP routes `/api-key/{create,update,get,list,delete}`, **every organization-plugin
+    route except `/organization/create` and `/organization/accept-invitation`** (`ORGANIZATION_PATHS` minus
+    `ORGANIZATION_HTTP_PATHS` — Better Auth's routes skip `orgAccess` (SSO/2FA requirements), the directory-managed
+    member lock and the audit log, which the dashboard's actions apply before calling `auth.api.*`; add a new
+    plugin route to `ORGANIZATION_PATHS`), the account routes (`/update-user`, `/change-password`,
+    `/change-email`, `/delete-user`, `/list-sessions` — it returns every session's token —, `/revoke-session(s)`,
+    `/revoke-other-sessions`, `/update-session`, linked accounts and their tokens), every admin-plugin mutation
+    (`/admin/{create-user,update-user,remove-user,set-role,set-user-password,ban-user,
     unban-user,impersonate-user,revoke-user-session,revoke-user-sessions}`) and SSO provider management
     (`/sso/{register,update-provider,delete-provider,providers,get-provider,request-domain-verification,verify-domain}`)
-    (server-side `auth.api.*` still works).
+    (server-side `auth.api.*` still works; the browser's `authClient` calls only sign-in/up, password reset,
+    verification email, two-factor, passkeys and those two organization routes).
     Admin mutations go only through `apps/web/src/app/admin/actions.ts`, which records the audit log. Never re-enable
-    them to "simplify" things.
+    them to "simplify" things. Impersonation sessions are also refused account changes (`ACCOUNT_CHANGE_PATHS` in
+    `hooks.before`) for every caller, like factor management.
   - Invitations follow their inviter (`packages/auth/src/invitations.ts`): Better Auth accepts any pending one,
     so `beforeAcceptInvitation` refuses it unless the inviter is still a member allowed to invite, and
     `cancelStaleInvitations` cancels the rest after a member is removed, demoted (`afterRemoveMember`,

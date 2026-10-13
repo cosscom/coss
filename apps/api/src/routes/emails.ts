@@ -13,6 +13,7 @@ import {
 import type { RateLimitRequest } from "@coss/ratelimit";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
+import { recordApiAudit } from "../audit.ts";
 import { limitBody, SEND_BODY_LIMIT_BYTES } from "../body-limit.ts";
 import { ApiError, notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
@@ -495,6 +496,10 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     const { id } = c.req.valid("param");
     const { organizationId, environmentId } = c.var.auth;
     const email = await emailService.cancel({ organizationId, environmentId, emailId: id });
+    await recordApiAudit(c, {
+      action: "email.canceled",
+      target: { type: "email", id: email.id },
+    });
     return c.json(email, 200);
   });
 
@@ -507,6 +512,11 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       environmentId,
       emailId: id,
       scheduledAt: scheduled_at,
+    });
+    await recordApiAudit(c, {
+      action: "email.rescheduled",
+      target: { type: "email", id: email.id },
+      metadata: { scheduled_at: email.scheduled_at },
     });
     return c.json(email, 200);
   });

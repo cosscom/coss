@@ -13,6 +13,7 @@ import {
 import { refresh } from "next/cache";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
+import { recordAudit } from "@/lib/audit";
 import { planGate } from "@/lib/billing";
 import { requireOrgPermission } from "@/lib/session";
 
@@ -33,10 +34,17 @@ export async function connectScimAction(
       scim: ["update"],
     });
     await planGate().requireFeature(organization.id, "scim");
-    const { token } = await connectScim({
+    const lifetimeDays = formLifetime(formData);
+    const { connectionId, token } = await connectScim({
       organizationId: organization.id,
       actorId: session.user.id,
-      lifetimeDays: formLifetime(formData),
+      lifetimeDays,
+    });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "scim_connection.created",
+      target: { type: "scim_connection", id: connectionId },
+      metadata: { token_lifetime_days: lifetimeDays },
     });
     refresh();
     return { token };
@@ -52,10 +60,17 @@ export async function createScimTokenAction(
     const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
       scim: ["update"],
     });
-    const { token } = await createScimToken({
+    const lifetimeDays = formLifetime(formData);
+    const { credentialId, token } = await createScimToken({
       organizationId: organization.id,
       actorId: session.user.id,
-      lifetimeDays: formLifetime(formData),
+      lifetimeDays,
+    });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "scim_token.created",
+      target: { type: "scim_token", id: credentialId },
+      metadata: { lifetime_days: lifetimeDays },
     });
     refresh();
     return { token };
@@ -70,10 +85,16 @@ export async function revokeScimTokenAction(
     const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
       scim: ["update"],
     });
+    const credentialId = formString(formData, "credentialId");
     await revokeScimToken({
       organizationId: organization.id,
       actorId: session.user.id,
-      credentialId: formString(formData, "credentialId"),
+      credentialId,
+    });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "scim_token.revoked",
+      target: { type: "scim_token", id: credentialId },
     });
     refresh();
     return null;
@@ -96,6 +117,14 @@ export async function disconnectScimAction(
       organizationId: organization.id,
       actorId: session.user.id,
     });
+    // Once, when the directory is fully released (a large one takes several runs).
+    if (result.complete) {
+      await recordAudit(session, {
+        organizationId: organization.id,
+        action: "scim_connection.deleted",
+        target: { type: "organization", id: organization.id, label: organization.name },
+      });
+    }
     refresh();
     return result;
   });
@@ -107,7 +136,7 @@ export async function saveScimGroupRolesAction(
   formData: FormData,
 ): Promise<ActionResult> {
   return runAction(async () => {
-    const { organization } = await requireOrgPermission(formString(formData, "orgSlug"), {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
       scim: ["update"],
     });
     const names = formData.getAll("groupName");
@@ -118,6 +147,12 @@ export async function saveScimGroupRolesAction(
       mappings.push({ groupName: name, role: roles[index] === "admin" ? "admin" : "member" });
     });
     await setScimGroupRoles({ organizationId: organization.id, mappings });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "scim_group_roles.updated",
+      target: { type: "organization", id: organization.id, label: organization.name },
+      metadata: { mappings: mappings.map(({ groupName, role }) => ({ group: groupName, role })) },
+    });
     refresh();
     return null;
   });
