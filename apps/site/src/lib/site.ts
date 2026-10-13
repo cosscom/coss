@@ -3,6 +3,8 @@ export const SITE_URL = "https://coss.com";
 export const SITE_DESCRIPTION =
   "One API key and one SDK for email, and soon SMS, video, scheduling and more.";
 export const DOCS_ROUTE = "/docs";
+/** Shiki themes of every code block (source.config.ts and the Shipyard docs' collection). */
+export const CODE_THEMES = { light: "github-light", dark: "github-dark" } as const;
 /** Where Enterprise inquiries go (the pricing page and the billing guide). */
 export const SALES_EMAIL = "sales@coss.com";
 

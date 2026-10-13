@@ -20,7 +20,7 @@ const links = SHIPYARD.links;
 
 // Shipyard's landing page, as it was at berthd.app: the harbour, the pitch at its foot, and the
 // film's story in six chapters, each with one of the app's line scenes and a short loop of the
-// real app. Its styles are ./landing.css (imported by the layout); what moves on it (the dithered
+// real app. Its styles are ./landing.css (imported by its layout); what moves on it (the dithered
 // harbour, the night loop, the chapters' loops and scenes, and the copy button) is
 // public/shipyard/assets/*.js, brought in by components/shipyard/runtime.tsx once the page has
 // painted. The launch film's lightbox returns once the film is hosted.

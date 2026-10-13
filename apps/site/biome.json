@@ -13,7 +13,7 @@
   },
   "overrides": [
     {
-      "includes": ["src/app/(shipyard)/shipyard/**"],
+      "includes": ["src/app/(shipyard)/**", "src/components/shipyard/**"],
       "linter": {
         "rules": {
           "performance": {
