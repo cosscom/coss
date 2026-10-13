@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Sets one key of the stage secret (`coss/<stage>`, a JSON object) without printing its value or
-# writing it to disk. The value comes from the clipboard, stdin or a fresh random key:
+# writing it to disk or putting it in a command line. The value comes from the clipboard, stdin or a
+# fresh random key:
 #   scripts/put-secret.sh STRIPE_SECRET_KEY --clipboard
 #   scripts/put-secret.sh BETTER_AUTH_SECRET --generate
 #   printf %s "$value" | scripts/put-secret.sh DATABASE_URL --stdin
@@ -35,10 +36,14 @@ read_secret() {
   fi
 }
 
+# Values only travel through pipes: never in a process's arguments (visible to every process of
+# the machine, and to tools that log command lines) and never in a file (bash 3's here-strings
+# are temporary files). printf is a builtin, so it runs without an argument list of its own.
 current="$(read_secret)"
-updated="$(jq -c --arg name "$name" --arg value "$value" '. + {($name): $value}' <<<"$current")"
-aws secretsmanager put-secret-value --region "$region" --secret-id "$secret_id" \
-  --secret-string "$updated" >/dev/null
+updated="$(printf %s "$current" | jq -c --arg name "$name" --rawfile value <(printf %s "$value") \
+  '. + {($name): $value}')"
+printf %s "$updated" | aws secretsmanager put-secret-value --region "$region" --secret-id "$secret_id" \
+  --secret-string file:///dev/stdin >/dev/null
 # Reads are eventually consistent: wait until the new version is what readers get, so the next
 # call doesn't start from the previous one (and drop this key).
 for _ in $(seq 30); do

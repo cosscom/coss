@@ -987,7 +987,6 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   at a verified sender of COSS's own organization.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page,
-custom tracking domains in production (Cloudflare for SaaS isn't provisioned on the coss.com zone yet),
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
