@@ -4,9 +4,10 @@
  * directly to collect an upgrade's invoice while the customer waits.
  */
 import { db, schema, type Transaction } from "@coss/db";
-import { and, asc, eq, inArray, isNotNull, lte, ne, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, lte, ne, sql } from "drizzle-orm";
 import { getBillingAccount, organizationLabel } from "./accounts.ts";
 import { announce } from "./announce.ts";
+import { contractPendingOn } from "./contracts.ts";
 import { evaluateStanding } from "./holds.ts";
 import { type InvoiceRow, invoiceLines, lockInvoice } from "./invoices.ts";
 import { enqueueBillingNotification } from "./notifications.ts";
@@ -26,6 +27,12 @@ const DAY_MS = 24 * 60 * MINUTE;
 export const SYNC_LEASE_MS = 5 * MINUTE;
 /** Days after a failed charge that it is retried (then the account's grace period runs out). */
 export const RETRY_DAYS = [3, 5, 7] as const;
+/**
+ * How often an upgrade's invoice waiting for a payment method looks again (the customer may finish
+ * Checkout without coming back to the dashboard; its event records the method).
+ */
+export const PAYMENT_METHOD_RECHECK_MS = 15 * MINUTE;
+export const NO_PAYMENT_METHOD_ERROR = "No payment method on file.";
 
 export type BillingSyncDeps = {
   providers: BillingProviders;
@@ -78,14 +85,29 @@ export async function runDueBillingSync(
 }
 
 /**
- * Pushes and collects one invoice right away (an upgrade the customer is waiting on). Returns
- * the collection's outcome (`null` when there was nothing to collect).
+ * Pushes and collects one invoice right away (an upgrade the customer is waiting on, e.g. back
+ * from adding a card in Checkout). A charge that already ended (failed, or waiting for 3-D
+ * Secure) is tried again: the customer is here, perhaps with a new payment method. Returns the
+ * collection's outcome (`null` when there was nothing to collect).
  */
 export async function collectInvoiceNow(
   invoiceId: string,
   deps: BillingSyncDeps,
   now: Date = new Date(),
 ): Promise<CollectResult | null> {
+  await db
+    .update(billingInvoice)
+    .set({ syncAction: "collect", nextSyncAt: now, nextCollectionAt: null, syncError: null })
+    .where(
+      and(
+        eq(billingInvoice.id, invoiceId),
+        isNull(billingInvoice.syncAction),
+        eq(billingInvoice.status, "open"),
+        eq(billingInvoice.collectionMethod, "charge_automatically"),
+        isNotNull(billingInvoice.providerInvoiceId),
+        inArray(billingInvoice.paymentState, ["failed", "requires_action"]),
+      ),
+    );
   let result: CollectResult | null = null;
   for (let step = 0; step < 2; step++) {
     const [row] = await db
@@ -297,12 +319,32 @@ export async function applyCollection(
 async function applyCollectionInTransaction(
   tx: Transaction,
   invoice: InvoiceRow,
-  result: CollectResult,
+  outcome: CollectResult,
   deps: Pick<BillingSyncDeps, "systemOrganizationId">,
   now: Date,
 ): Promise<void> {
   const current = await lockInvoice(tx, invoice.id);
   if (current?.status !== "open") return;
+  let result = outcome;
+  if (result.state === "no_payment_method") {
+    // An upgrade's customer is sent to Checkout to add one while this runs: wait for it (no
+    // failure, no notification, no retry spent). Coming back collects at once
+    // (`collectInvoiceNow`); an upgrade nobody pays for is given up after a day.
+    if (await contractPendingOn(current.id, tx)) {
+      await tx
+        .update(billingInvoice)
+        .set({
+          syncAction: "collect",
+          nextSyncAt: new Date(now.getTime() + PAYMENT_METHOD_RECHECK_MS),
+          syncAttempts: 0,
+          syncError: "Waiting for a payment method.",
+        })
+        .where(eq(billingInvoice.id, current.id));
+      return;
+    }
+    // Anything else is dunned like a declined charge: the customer must add one.
+    result = { state: "failed", error: NO_PAYMENT_METHOD_ERROR };
+  }
   const done = { syncAction: null, nextSyncAt: null, syncAttempts: 0, syncError: null };
   switch (result.state) {
     case "paid":

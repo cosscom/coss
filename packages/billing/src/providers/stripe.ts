@@ -205,6 +205,12 @@ export class StripeBillingProvider implements BillingProvider {
       );
       return { state: "sent" };
     }
+    // Stripe refuses to charge a customer without a default payment method (an invalid request,
+    // not a declined card), so don't ask: the caller waits or duns. Checked live when COSS has
+    // none recorded, since the Portal or Checkout may have added one before its event arrived.
+    if (account && !account.paymentMethod && !(await this.paymentMethod(account))) {
+      return { state: "no_payment_method" };
+    }
     try {
       const paid = await this.#stripe.invoices.pay(
         id,
@@ -230,7 +236,24 @@ export class StripeBillingProvider implements BillingProvider {
           const current = await this.#stripe.invoices.retrieve(id);
           return { state: "requires_action", hostedUrl: current.hosted_invoice_url ?? null };
         }
-        if (error.type === "StripeCardError" || error.type === "StripeInvalidRequestError") {
+        if (error.type === "StripeCardError") return { state: "failed", error: error.message };
+        if (error.type === "StripeInvalidRequestError") {
+          // Not a declined payment: read the invoice back. A retry that comes after the customer
+          // paid on the hosted page ("Invoice is already paid") records that payment.
+          const current = await this.#stripe.invoices.retrieve(id);
+          if (current.status === "paid") {
+            return {
+              state: "paid",
+              paymentId: await this.#paymentId(id),
+              method: "stripe",
+              amountCents: BigInt(current.amount_paid),
+            };
+          }
+          // Voided or written off at Stripe meanwhile: no payment to fail. The sync retries and
+          // reports it; a provider event or the reconcile brings the status.
+          if (current.status !== "open") throw error;
+          // Stripe won't charge this invoice as it stands (e.g. the default payment method isn't
+          // one the invoice allows): the customer must act, as for a declined card.
           return { state: "failed", error: error.message };
         }
       }

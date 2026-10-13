@@ -31,6 +31,11 @@ export type CollectResult =
   /** The customer must confirm (3-D Secure) on the hosted invoice page. */
   | { state: "requires_action"; hostedUrl: string | null }
   | { state: "failed"; error: string }
+  /**
+   * Nothing was charged: the customer has no payment method yet (an upgrade's customer may be
+   * adding one in Checkout right now). The caller decides whether to wait or dun.
+   */
+  | { state: "no_payment_method" }
   /** `send_invoice`: the invoice was sent; the customer pays it by its due date. */
   | { state: "sent" };
 

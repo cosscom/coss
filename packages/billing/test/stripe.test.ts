@@ -168,6 +168,8 @@ describe("StripeBillingProvider", () => {
       name: "Acme",
       slug: "acme",
     });
+    // Stripe charges only a customer with a default payment method.
+    api.attachPaymentMethod(customerId);
     const pushed = await stripe.pushInvoice({
       invoice: invoice({ providerCustomerId: customerId }),
       lines: [line("invl_1", 1_000n, "Usage")],
@@ -283,12 +285,14 @@ describe("StripeBillingProvider", () => {
   });
 
   test("events are read from the invoice's current state", async () => {
-    const { stripe } = setup();
+    const { api, stripe } = setup();
     const customerId = await stripe.ensureCustomer(account(), {
       id: "org_1",
       name: "Acme",
       slug: "acme",
     });
+    // Stripe charges only a customer with a default payment method.
+    api.attachPaymentMethod(customerId);
     const pushed = await stripe.pushInvoice({
       invoice: invoice({ providerCustomerId: customerId }),
       lines: [line("invl_1", 1_000n, "Usage")],
@@ -330,6 +334,8 @@ describe("credit notes", () => {
       name: "Acme",
       slug: "acme",
     });
+    // Stripe charges only a customer with a default payment method.
+    api.attachPaymentMethod(customerId);
     const pushed = await stripe.pushInvoice({
       invoice: invoice({ providerCustomerId: customerId }),
       lines: [line("invl_1", 10_000n, "Usage")],
