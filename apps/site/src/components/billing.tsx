@@ -1,52 +1,53 @@
 import { PLAN_KEYS, PLANS } from "@coss/billing/catalog";
 import { planRows, rateRows } from "@/lib/billing-text";
+import { DocsTable, DocsTd, DocsTh, DocsTr } from "./docs-table";
 
 /** The plans side by side (from `@coss/billing/catalog`, which billing enforces). */
 export function PlanTable() {
   return (
-    <table>
+    <DocsTable>
       <thead>
-        <tr>
-          <th />
+        <DocsTr>
+          <DocsTh />
           {PLAN_KEYS.map((key) => (
-            <th key={key}>{PLANS[key].name}</th>
+            <DocsTh key={key}>{PLANS[key].name}</DocsTh>
           ))}
-        </tr>
+        </DocsTr>
       </thead>
       <tbody>
         {planRows().map((row) => (
-          <tr key={row.label}>
-            <td>{row.label}</td>
+          <DocsTr key={row.label}>
+            <DocsTd>{row.label}</DocsTd>
             {row.values.map((value, index) => (
-              <td key={PLAN_KEYS[index]}>{value}</td>
+              <DocsTd key={PLAN_KEYS[index]}>{value}</DocsTd>
             ))}
-          </tr>
+          </DocsTr>
         ))}
       </tbody>
-    </table>
+    </DocsTable>
   );
 }
 
 /** The list usage rates per product. */
 export function UsageRates() {
   return (
-    <table>
+    <DocsTable>
       <thead>
-        <tr>
-          <th>Product</th>
-          <th>Rate</th>
-          <th />
-        </tr>
+        <DocsTr>
+          <DocsTh>Product</DocsTh>
+          <DocsTh>Rate</DocsTh>
+          <DocsTh />
+        </DocsTr>
       </thead>
       <tbody>
         {rateRows().map((row) => (
-          <tr key={row.product}>
-            <td>{row.product}</td>
-            <td>{row.rate}</td>
-            <td>{row.note}</td>
-          </tr>
+          <DocsTr key={row.product}>
+            <DocsTd>{row.product}</DocsTd>
+            <DocsTd>{row.rate}</DocsTd>
+            <DocsTd>{row.note}</DocsTd>
+          </DocsTr>
         ))}
       </tbody>
-    </table>
+    </DocsTable>
   );
 }

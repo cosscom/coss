@@ -1,15 +1,20 @@
 import "./landing.css";
-import { HomeLayout } from "fumadocs-ui/layouts/home";
 import { SiteFooter } from "@/components/site-footer";
-import { baseOptions } from "@/lib/layout.shared";
-import { SHIPYARD_LINKS } from "@/lib/shipyard";
+import { SiteShell } from "@/components/site-shell";
+import { SHIPYARD, SHIPYARD_LINKS } from "@/lib/shipyard";
+import { shipyardSource } from "@/lib/shipyard-docs";
 
-// The landing page (the fonts come from ../layout.tsx, the page's styles from ./landing.css).
+// The landing page (the fonts come from ../layout.tsx, the page's styles from ./landing.css) in
+// the site's shell, with Shipyard's header links; its ⌘K menu searches Shipyard's docs.
 export default function Layout({ children }: LayoutProps<"/shipyard">) {
   return (
-    <HomeLayout {...baseOptions()} links={SHIPYARD_LINKS}>
+    <SiteShell
+      items={SHIPYARD_LINKS}
+      searchApi={SHIPYARD.searchApi}
+      tree={shipyardSource.getPageTree()}
+    >
       {children}
       <SiteFooter />
-    </HomeLayout>
+    </SiteShell>
   );
 }

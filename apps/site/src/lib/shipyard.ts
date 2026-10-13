@@ -1,5 +1,4 @@
-import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
-import { SITE_URL } from "./site.ts";
+import { type NavItem, SITE_URL } from "./site.ts";
 
 /**
  * Shipyard's landing page and docs at coss.com/shipyard (moved here from the coss ui repository's
@@ -35,8 +34,8 @@ export const SHIPYARD = {
 } as const;
 
 /** Header links of Shipyard's landing page and docs: the docs, the download, and its repository. */
-export const SHIPYARD_LINKS: BaseLayoutProps["links"] = [
-  { text: "Docs", url: SHIPYARD.docs },
-  { text: "Download", url: `${SHIPYARD.path}#install-now` },
-  { text: "GitHub", url: SHIPYARD.github, external: true },
+export const SHIPYARD_LINKS: readonly NavItem[] = [
+  { label: "Docs", href: SHIPYARD.docs },
+  { label: "Download", href: `${SHIPYARD.path}#install-now` },
+  { label: "GitHub", href: SHIPYARD.github, external: true },
 ];

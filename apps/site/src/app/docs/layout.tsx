@@ -1,23 +1,14 @@
-import { DocsLayout } from "fumadocs-ui/layouts/docs";
-import { AccountLinks } from "@/components/account-links";
-import { LegalLinks } from "@/components/site-footer";
-import { baseOptions } from "@/lib/layout.shared";
+import { DocsLayoutFrame } from "@/components/docs-frame";
+import { SiteShell } from "@/components/site-shell";
 import { source } from "@/lib/source";
 
 export default function Layout({ children }: LayoutProps<"/docs">) {
-  // Top-level folders with `"root": true` in their meta.json become the sidebar tabs.
+  // The docs layout of coss.com/ui: the sidebar shows the current root folder (Guides or API
+  // Reference, the top-level folders with `"root": true` in their meta.json).
+  const tree = source.getPageTree();
   return (
-    <DocsLayout
-      tree={source.getPageTree()}
-      {...baseOptions()}
-      sidebar={{
-        banner: <AccountLinks />,
-        footer: (
-          <LegalLinks className="flex flex-wrap gap-x-3 gap-y-1 px-2 text-muted-foreground text-xs" />
-        ),
-      }}
-    >
-      {children}
-    </DocsLayout>
+    <SiteShell tree={tree}>
+      <DocsLayoutFrame tree={tree}>{children}</DocsLayoutFrame>
+    </SiteShell>
   );
 }

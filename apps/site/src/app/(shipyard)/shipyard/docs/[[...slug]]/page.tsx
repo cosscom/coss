@@ -1,6 +1,6 @@
-import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { DocsPageFrame } from "@/components/docs-frame";
 import { getShipyardMDXComponents } from "@/components/shipyard/docs/mdx";
 import { SHIPYARD } from "@/lib/shipyard";
 import { shipyardSource } from "@/lib/shipyard-docs";
@@ -10,15 +10,17 @@ export default async function Page({ params }: PageProps<"/shipyard/docs/[[...sl
   const page = shipyardSource.getPage(slug);
   if (!page) notFound();
 
+  const markdown = `# ${page.data.title} (${page.url})\n\n${await page.data.getText("processed")}`;
   const MDX = page.data.body;
   return (
-    <DocsPage full={page.data.full} toc={page.data.toc}>
-      <DocsTitle>{page.data.title}</DocsTitle>
-      <DocsDescription>{page.data.description}</DocsDescription>
-      <DocsBody>
-        <MDX components={getShipyardMDXComponents()} />
-      </DocsBody>
-    </DocsPage>
+    <DocsPageFrame
+      description={page.data.description}
+      markdown={markdown}
+      title={page.data.title}
+      toc={page.data.toc}
+    >
+      <MDX components={getShipyardMDXComponents()} />
+    </DocsPageFrame>
   );
 }
 

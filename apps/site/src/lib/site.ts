@@ -5,6 +5,22 @@ export const SITE_DESCRIPTION =
 export const DOCS_ROUTE = "/docs";
 /** Shiki themes of every code block (source.config.ts and the Shipyard docs' collection). */
 export const CODE_THEMES = { light: "github-light", dark: "github-dark" } as const;
+/** The repository, linked from the header (like coss.com/ui's). */
+export const GITHUB_URL = "https://github.com/cosscom/coss";
+
+export interface NavItem {
+  href: string;
+  label: string;
+  /** Another site: a plain link in a new tab. */
+  external?: boolean;
+}
+
+/** The header's sections (also the first group of the command menu and the mobile menu). */
+export const NAV_ITEMS: readonly NavItem[] = [
+  { href: DOCS_ROUTE, label: "Docs" },
+  { href: `${DOCS_ROUTE}/api-reference`, label: "API Reference" },
+  { href: "/pricing", label: "Pricing" },
+];
 /** Where Enterprise inquiries go (the pricing page and the billing guide). */
 export const SALES_EMAIL = "sales@coss.com";
 

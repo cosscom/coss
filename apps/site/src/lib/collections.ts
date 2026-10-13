@@ -40,6 +40,7 @@ export const shipyard = defineDocs({
   dir: "content/shipyard",
   docs: {
     schema: pageSchema,
+    postprocess: { includeProcessedMarkdown: true },
     mdxOptions: applyMdxPreset({
       rehypeCodeOptions: { themes: CODE_THEMES },
       rehypePlugins: (plugins) => [...plugins, rehypeNowrapTokens, rehypeReference],

@@ -1,6 +1,7 @@
 /* Shipyard's own pieces in its docs (this folder): callouts, the stage on the
    introduction, the numbered path of cards, screenshots, and the reference
-   tables src/lib/shipyard/rehype-reference.ts makes linkable. The brand's rules:
+   tables src/lib/shipyard/rehype-reference.ts makes linkable (callouts and
+   cards are the site's, src/components/mdx.tsx). The brand's rules:
    one outline all round, never a coloured stripe; amber only for what needs
    you. Tokens are coss ui's. */
 
@@ -14,68 +15,6 @@
   --berth-amber: #e8a33d;
 }
 
-.berth-callout {
-  display: flex;
-  gap: 12px;
-  margin: 1.25rem 0;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--card);
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: var(--berth-fg-2);
-}
-.berth-callout[data-type="warning"] {
-  border-color: color-mix(in srgb, var(--berth-amber) 55%, var(--border));
-}
-.berth-callout[data-type="error"] {
-  border-color: color-mix(in srgb, var(--destructive) 50%, var(--border));
-}
-.berth-callout-icon {
-  flex: none;
-  width: 18px;
-  height: 18px;
-  margin-top: 2px;
-  color: var(--muted-foreground);
-}
-.berth-callout[data-type="warning"] .berth-callout-icon {
-  color: var(--berth-amber);
-}
-.berth-callout[data-type="error"] .berth-callout-icon {
-  color: var(--destructive);
-}
-.berth-callout-body {
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-}
-.berth-callout-title {
-  margin: 0;
-  font-weight: 600;
-  color: var(--foreground);
-}
-.berth-callout-text > * {
-  margin: 0;
-}
-.berth-callout-text > * + * {
-  margin-top: 0.5em;
-}
-.berth-callout-text a {
-  color: var(--foreground);
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--foreground) 35%, transparent);
-  text-underline-offset: 3px;
-}
-.berth-callout-text code {
-  font-size: 0.86em;
-  padding: 0.1em 0.32em;
-  border-radius: 5px;
-  background: var(--berth-code-bg);
-  border: 1px solid var(--berth-border-soft);
-  color: var(--foreground);
-  overflow-wrap: anywhere;
-}
 .berth-stage {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -270,24 +209,24 @@ a.berth-field-link:hover code {
   text-decoration-color: color-mix(in srgb, var(--foreground) 40%, transparent);
   text-underline-offset: 3px;
 }
-#nd-page .berth-stage-text figure.shiki pre {
+[data-slot="docs"] .berth-stage-text figure.shiki pre {
   width: auto;
   min-width: 0;
   padding-right: 0;
   white-space: pre-wrap;
 }
-#nd-page .berth-stage-text figure.shiki .line {
+[data-slot="docs"] .berth-stage-text figure.shiki .line {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   padding-left: calc(var(--padding-left) + 2ch);
   text-indent: -2ch;
 }
-#nd-page .berth-stage-text figure.shiki .line > span {
+[data-slot="docs"] .berth-stage-text figure.shiki .line > span {
   display: inline-block;
   max-width: 100%;
   text-indent: 0;
 }
-#nd-page .berth-stage-text figure.shiki .line > span:only-child {
+[data-slot="docs"] .berth-stage-text figure.shiki .line > span:only-child {
   display: inline;
 }
 .berth-shot {
