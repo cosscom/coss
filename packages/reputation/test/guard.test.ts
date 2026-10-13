@@ -366,6 +366,8 @@ describe("evaluation races", () => {
     const tenant = await createTestTenant();
     const orgId = tenant.organization.id;
     const reinstatedAt = new Date();
+    // Suspended just before: events with the same time have no defined order (random ids).
+    const suspendedAt = new Date(reinstatedAt.getTime() - 1);
     let calls = 0;
     const deps = {
       checks: [
@@ -377,7 +379,7 @@ describe("evaluation races", () => {
                 organizationId: orgId,
                 trigger: "manual",
                 actor: { kind: "admin", userId: tenant.owner.id },
-                now: reinstatedAt,
+                now: suspendedAt,
               });
               await reinstateOrganization({
                 organizationId: orgId,
