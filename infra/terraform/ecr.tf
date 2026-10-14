@@ -41,3 +41,14 @@ resource "aws_ssm_parameter" "image_tag" {
     ignore_changes = [insecure_value]
   }
 }
+
+# oven/bun, copied from Docker Hub by the deploy workflow once per Bun version (linux/arm64): image
+# builds pull their base images from here and ECR Public, never from Docker Hub, whose anonymous
+# pull limit CodeBuild's shared addresses keep exhausting.
+resource "aws_ecr_repository" "base_bun" {
+  name                 = "coss/base/bun"
+  image_tag_mutability = "IMMUTABLE"
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}

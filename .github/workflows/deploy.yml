@@ -83,6 +83,22 @@ jobs:
             exit 0
           fi
           aws ecr get-login-password | docker login --username AWS --password-stdin "$REGISTRY"
+          # Base images never come from Docker Hub here: CodeBuild's shared addresses keep running
+          # out of its anonymous pulls. Node is on ECR Public; Bun is copied into our ECR once per
+          # version (this pull is the only one, and is retried until Docker Hub allows it).
+          bun_version="$(sed -n 's/^ARG BUN_VERSION=//p' "apps/$SERVICE/Dockerfile")"
+          bun_image="$REGISTRY/coss/base/bun"
+          if ! aws ecr describe-images --repository-name coss/base/bun --image-ids "imageTag=$bun_version-slim" >/dev/null 2>&1; then
+            for attempt in 1 2 3 4 5 6; do
+              docker pull --platform linux/arm64 "oven/bun:$bun_version-slim" && break
+              [ "$attempt" = 6 ] && exit 1
+              sleep $((attempt * 30))
+            done
+            docker tag "oven/bun:$bun_version-slim" "$bun_image:$bun_version-slim"
+            # Another matrix job may have pushed it first (the tag is immutable).
+            docker push "$bun_image:$bun_version-slim" \
+              || aws ecr describe-images --repository-name coss/base/bun --image-ids "imageTag=$bun_version-slim" >/dev/null
+          fi
           case "$SERVICE" in
             web | site) release_arg="NEXT_DEPLOYMENT_ID=$TAG" ;;
             *) release_arg="SENTRY_RELEASE=$TAG" ;;
@@ -101,6 +117,8 @@ jobs:
             --file "apps/$SERVICE/Dockerfile" \
             --platform linux/arm64 \
             --build-arg "$release_arg" \
+            --build-arg "BUN_IMAGE=$bun_image" \
+            --build-arg NODE_IMAGE=public.ecr.aws/docker/library/node \
             --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN \
             --cache-from "type=registry,ref=$cache" \
             "${cache_to[@]}" \

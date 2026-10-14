@@ -588,7 +588,10 @@ failed and a re-run passed, re-run the Deploy run's failed jobs:
 
 1. Build and push the four images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
    apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
-   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker), skipping images that exist.
+   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker), skipping images that exist. Base
+   images never come from Docker Hub there (CodeBuild's shared addresses exhaust its anonymous pull limit): Node from
+   ECR Public (`NODE_IMAGE`), Bun from `coss/base/bun` in our ECR (`BUN_IMAGE`), which the workflow fills from Docker
+   Hub once per Bun version. Local builds keep Docker Hub (the Dockerfiles' defaults).
 2. Run migrations as a one-off task from the new worker image (`infra/scripts/ecs-task.sh --image-tag <sha> worker --
    bun packages/db/src/migrate.ts`; never two at once, the deploy job's concurrency group). Migrations must be
    backward compatible with the running code.
