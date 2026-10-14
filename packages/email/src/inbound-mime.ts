@@ -42,10 +42,18 @@ export type ParsedInboundMessage = {
   attachments: ParsedAttachment[];
 };
 
+// PostgreSQL text and JSONB cannot contain NUL. Keep the original bytes in the content store.
+function databaseText(value: string): string {
+  return value.replaceAll("\0", "");
+}
+
 const QUOTE_NEEDED = /["<>,;:@()[\]\\]/;
 
 function formatMailbox(name: string, address: string): string {
-  const cleanName = name.replace(/\p{Cc}/gu, " ").trim();
+  address = databaseText(address);
+  const cleanName = databaseText(name)
+    .replace(/\p{Cc}/gu, " ")
+    .trim();
   if (!cleanName) return address;
   const display = QUOTE_NEEDED.test(cleanName)
     ? `"${cleanName.replace(/["\\]/g, "\\$&")}"`
@@ -67,6 +75,7 @@ function formatAddresses(addresses: readonly Address[] | Address | undefined): s
 
 function cut(value: string | undefined, max: number): { value: string | null; cut: boolean } {
   if (value === undefined) return { value: null, cut: false };
+  value = databaseText(value);
   if (value.length <= max) return { value, cut: false };
   return { value: value.slice(0, max), cut: true };
 }
@@ -78,7 +87,7 @@ function bytesOf(content: ArrayBuffer | Uint8Array | string): Uint8Array {
 
 function messageIds(value: string | undefined): string[] {
   if (!value) return [];
-  return (value.match(/<[^<>\s]+>/g) ?? []).slice(0, REFERENCES_MAX);
+  return (databaseText(value).match(/<[^<>\s]+>/g) ?? []).slice(0, REFERENCES_MAX);
 }
 
 /** An empty result for a message the parser rejects (only the raw message is kept then). */
@@ -117,14 +126,16 @@ export async function parseInboundMessage(raw: Uint8Array): Promise<ParsedInboun
   const headers: { name: string; value: string }[] = [];
   let headerLength = 0;
   for (const header of email.headers) {
-    const value = header.value.slice(0, HEADER_VALUE_MAX_LENGTH);
-    if (value.length < header.value.length) truncated = true;
-    headerLength += header.originalKey.length + value.length;
+    const cleanValue = databaseText(header.value);
+    const name = databaseText(header.originalKey);
+    const value = cleanValue.slice(0, HEADER_VALUE_MAX_LENGTH);
+    if (value.length < cleanValue.length) truncated = true;
+    headerLength += name.length + value.length;
     if (headerLength > RECEIVED_HEADERS_MAX_LENGTH) {
       truncated = true;
       break;
     }
-    headers.push({ name: header.originalKey, value });
+    headers.push({ name, value });
   }
   const text = cut(email.text, RECEIVED_BODY_MAX_LENGTH);
   const html = cut(email.html, RECEIVED_BODY_MAX_LENGTH);
@@ -135,9 +146,9 @@ export async function parseInboundMessage(raw: Uint8Array): Promise<ParsedInboun
     to: formatAddresses(email.to),
     cc: formatAddresses(email.cc),
     replyTo: formatAddresses(email.replyTo),
-    subject: email.subject ?? null,
-    messageId: email.messageId ?? null,
-    inReplyTo: email.inReplyTo ?? null,
+    subject: email.subject === undefined ? null : databaseText(email.subject),
+    messageId: email.messageId === undefined ? null : databaseText(email.messageId),
+    inReplyTo: email.inReplyTo === undefined ? null : databaseText(email.inReplyTo),
     references: messageIds(email.references),
     sentAt: sentAt && !Number.isNaN(sentAt.getTime()) ? sentAt : null,
     headers,
@@ -147,9 +158,11 @@ export async function parseInboundMessage(raw: Uint8Array): Promise<ParsedInboun
     attachments: email.attachments.map((attachment) => {
       const content = bytesOf(attachment.content);
       return {
-        filename: attachment.filename,
-        contentType: attachment.mimeType || "application/octet-stream",
-        contentId: attachment.contentId?.replace(/^<|>$/g, "") || null,
+        filename: attachment.filename === null ? null : databaseText(attachment.filename),
+        contentType: databaseText(attachment.mimeType) || "application/octet-stream",
+        contentId: attachment.contentId
+          ? databaseText(attachment.contentId).replace(/^<|>$/g, "") || null
+          : null,
         disposition: attachment.disposition === "inline" ? "inline" : "attachment",
         content,
         size: content.byteLength,

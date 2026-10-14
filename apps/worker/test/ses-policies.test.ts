@@ -106,8 +106,8 @@ describe("cossPolicies with receiving", () => {
       statement.Action.some((action) => action.startsWith("s3:")),
     );
 
-  test("the api and dashboard only read and delete received email content", () => {
-    for (const app of ["api", "dashboard"] as const) {
+  test("the api only reads and deletes received email content", () => {
+    for (const app of ["api"] as const) {
       expect(s3(app)).toEqual([
         expect.objectContaining({
           Action: ["s3:GetObject", "s3:DeleteObject"],
@@ -117,7 +117,20 @@ describe("cossPolicies with receiving", () => {
     }
   });
 
-  test("only the worker reads landed messages, writes content and lists organizations", () => {
+  test("the dashboard can store simulations only under the content prefix", () => {
+    expect(s3("dashboard")).toEqual([
+      expect.objectContaining({
+        Action: ["s3:GetObject", "s3:DeleteObject"],
+        Resource: ["arn:aws:s3:::coss-inbound-123456789012/orgs/*"],
+      }),
+      expect.objectContaining({
+        Action: ["s3:PutObject"],
+        Resource: ["arn:aws:s3:::coss-inbound-123456789012/orgs/*"],
+      }),
+    ]);
+  });
+
+  test("only the worker reads landed messages and lists organizations", () => {
     const resources = s3("worker").flatMap((statement) => statement.Resource);
     expect(resources).toEqual([
       "arn:aws:s3:::coss-inbound-123456789012/landing/*",

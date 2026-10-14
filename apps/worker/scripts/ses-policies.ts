@@ -115,6 +115,16 @@ export function cossPolicies(
           Condition: managed,
         },
         ...contentReads,
+        ...(bucket
+          ? [
+              {
+                Sid: "StoreSimulatedReceivedEmailContent",
+                Effect: "Allow" as const,
+                Action: ["s3:PutObject"],
+                Resource: [`${bucket}/orgs/*`],
+              },
+            ]
+          : []),
       ],
     },
     worker: {

@@ -119,6 +119,48 @@ describe("receiveEmail", () => {
     ).toBeNull();
   });
 
+  test("stores decoded NUL-containing MIME safely while preserving content bytes", async () => {
+    const tenant = await createTestTenant();
+    const to = await managedAddress(tenant);
+    const raw = buildTestMessage({
+      from: "sender@example.com",
+      to: ["to\0@example.com"],
+      cc: ["cc\0@example.com"],
+      subject: "hello\0world",
+      text: "hello\0world",
+      html: "<p>hello\0world</p>",
+      messageId: "<message\0@example.com>",
+      headers: {
+        "Reply-To": "reply\0@example.com",
+        "In-Reply-To": "<parent\0@example.com>",
+        References: "<parent\0@example.com>",
+        "X-Test": "hello\0world",
+      },
+      attachments: [
+        { filename: "a\0.txt", contentType: "text/plain", content: new Uint8Array([0, 1, 0]) },
+      ],
+    });
+    const outcomes = await receiveEmail(message({ recipients: [to], rawBytes: raw }), deps);
+    expect(outcomes[0]?.kind).toBe("received");
+    const [row] = await rowsFor(tenant.production.id);
+    expect(row).toMatchObject({
+      subject: "helloworld",
+      text: "helloworld",
+      html: "<p>helloworld</p>",
+      messageId: "<message@example.com>",
+      inReplyTo: "<parent@example.com>",
+      references: ["<parent@example.com>"],
+    });
+    expect(JSON.stringify(row)).not.toContain("\\u0000");
+    expect(await store.get(row?.rawKey ?? "")).toEqual(raw);
+    const attachments = await db
+      .select()
+      .from(schema.receivedEmailAttachment)
+      .where(eq(schema.receivedEmailAttachment.receivedEmailId, row?.id ?? ""));
+    expect(attachments[0]?.filename).toBe("a.txt");
+    expect(await store.get(attachments[0]?.contentKey ?? "")).toEqual(new Uint8Array([0, 1, 0]));
+  });
+
   test("routes a receiving domain's hostname to its environment", async () => {
     const tenant = await createTestTenant();
     const parent = await createVerifiedDomain(tenant.organization.id);
