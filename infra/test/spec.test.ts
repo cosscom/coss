@@ -125,6 +125,10 @@ describe("Dockerfiles", () => {
         expect(dockerfile).toContain(`ARG NODE_VERSION=${nodeMajor}\n`);
       }
       expect(dockerfile).toContain("bun install --frozen-lockfile");
+      // DATABASE_URL verifies RDS's certificate against this bundle (sslrootcert).
+      if (service.env.some((variable) => variable.name === "DATABASE_URL")) {
+        expect(dockerfile).toContain("/etc/ssl/certs/rds-global-bundle.pem");
+      }
       expect(dockerfile).toMatch(/^USER (node|bun)$/m);
     });
   }
