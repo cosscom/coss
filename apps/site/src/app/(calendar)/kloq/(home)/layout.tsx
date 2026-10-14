@@ -8,7 +8,6 @@ import { calendarSource } from "@/lib/calendar-docs";
 export default function Layout({ children }: LayoutProps<"/kloq">) {
   return (
     <SiteShell
-      github={{ repo: CALENDAR.githubRepo, href: CALENDAR.github }}
       items={CALENDAR_LINKS}
       searchApi={CALENDAR.searchApi}
       tree={calendarSource.getPageTree()}
