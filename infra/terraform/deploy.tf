@@ -84,6 +84,13 @@ resource "aws_codebuild_webhook" "deploy" {
       type    = "WORKFLOW_NAME"
       pattern = "^Deploy$"
     }
+    # The repository is public: anyone can open a pull request with a workflow named "Deploy"
+    # asking for this runner, whose role deploys production. Only the people allowed to push
+    # (whose merges and dispatches run Deploy) get one.
+    filter {
+      type    = "ACTOR_ACCOUNT_ID"
+      pattern = "^(${join("|", var.deploy_actor_ids)})$"
+    }
   }
 }
 

@@ -30,6 +30,11 @@ variable "api_host" {
   description = "api.coss.com (API_HOST in infra/aws/routing.ts)."
 }
 
+variable "deploy_actor_ids" {
+  type        = list(string)
+  description = "Numeric GitHub user ids allowed to start the deploy runner (`gh api users/<login> --jq .id`)."
+}
+
 variable "portal_host" {
   type        = string
   description = "The Hooks portal's host (PORTAL_HOST in infra/aws/routing.ts)."

@@ -572,14 +572,15 @@ wrong. AWS credentials come from the task role.
   roles, the CloudFront invalidation, read-only ALB/CloudFront reads for the routing check). The organization's SCP
   forbids IAM identity providers, so GitHub OIDC isn't available; the runners are started by a webhook (through the
   `coss-production-github` CodeConnections connection to the AWS Connector app on `cosscom`) only for jobs of the
-  workflow named `Deploy`. CodeBuild can't filter those jobs by branch (`HEAD_REF` only applies to push and pull
-  request events; `WORKFLOW_NAME` is the only workflow-job filter), and the organization's GitHub plan has no
-  branch protection or rulesets for private repositories. What stops a branch: the workflow's first job refuses
-  anything but `deploy.yml` from `main`, and the AWS jobs need the `production` environment, whose deployment
-  branch policy allows only `main`. Neither stops someone with write access from pushing a *different* workflow named
-  `Deploy` without them, whose jobs get this role, which can read every production secret (it passes the execution
-  role): keep write access to the repository tight. Closing that needs GitHub Team (a push ruleset restricting
-  `.github/workflows/**`) or an `ACTOR_ACCOUNT_ID` allow-list on the webhook.
+  workflow named `Deploy`, and only when the job's actor is on `deploy_actor_ids` (`production.tfvars`: the
+  numeric GitHub ids of the people with write access; add a new maintainer there, or their merges won't deploy).
+  The repository is public, so that allow-list is what keeps a stranger's pull request (with its own workflow
+  named `Deploy`) off this role, which can read every production secret (it passes the execution role); verified
+  by excluding an actor and dispatching (no runner started). Fork pull requests also need a maintainer's approval
+  before any workflow runs (Settings → Actions: all external contributors). CodeBuild can't filter workflow jobs
+  by branch (`HEAD_REF` only applies to push and pull request events): the workflow's first job refuses anything
+  but `deploy.yml` from `main`, and the AWS jobs need the `production` environment, whose deployment branch policy
+  allows only `main`.
 
 ### Deploy order
 

@@ -13,8 +13,11 @@ external_origin_hosts = {
   ui     = "coss-com-ui.vercel.app"
   origin = "coss-com-origin.vercel.app"
 }
-ses_name           = "coss"
-github_repository  = "cosscom/coss"
+ses_name          = "coss"
+github_repository = "cosscom/coss"
+# Who may start the deploy runner (people with write access): keithwillcode, PeerRich, pumfleet,
+# sean-brydon. Add a new maintainer here before their merges can deploy.
+deploy_actor_ids   = ["2538462", "8019099", "25907159", "55134778"]
 initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
