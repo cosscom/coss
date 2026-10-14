@@ -30,7 +30,7 @@ function zoneShortName(zone: string, on: Date): string {
 function hourInZone(zone: string, day: Date, hour: number): string {
   // The represented day at this wall hour, read on the host's clock. For a
   // host running the browser's own zone (the common case) this is exact;
-  // pair with coss calendar's built-in multi-zone gutter when using displayTimeZone.
+  // pair with kloq's built-in multi-zone gutter when using displayTimeZone.
   const at = new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour, 0, 0);
   return new Intl.DateTimeFormat("en-US", {
     timeZone: zone,

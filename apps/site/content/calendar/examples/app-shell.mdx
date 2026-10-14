@@ -18,7 +18,7 @@ fixed `w-44` that only appears once the frame is wide enough (`hidden
 the calendar's cell is `min-w-0 flex-1`, so the row, not its content, decides
 its size. `<Kloq>` — which is `h-full` and never reaches for the window —
 fills it. That is the whole of
-"[the container is the contract](/calendar/docs/quick-start#the-container-is-the-contract)":
+"[the container is the contract](/kloq/docs/quick-start#the-container-is-the-contract)":
 give the component a box with a height and it renders into it.
 
 `<Kloq>` renders no app bar of its own. `Header` is passed as `children`, so
@@ -27,11 +27,11 @@ it lands above the surface inside the calendar's provider, and it calls
 for the title via `formatViewTitle` and `step` / `goToday` / `atToday` for
 the range controls; the segmented control reads `viewSetting` and calls
 `switchView`. `Kloq.Toolbar` is only the
-bordered row. See [toolbar & chrome](/calendar/docs/chrome).
+bordered row. See [toolbar & chrome](/kloq/docs/chrome).
 
 The calendar measures its own cell, not the window. At full width the cell
 is about 730px: the stock
-[responsive collapse](/calendar/docs/views#the-responsive-collapse) leaves three days
+[responsive collapse](/kloq/docs/views#the-responsive-collapse) leaves three days
 alone there and turns a seven-column week into three. Narrow the frame until
 the sidebar drops away and the cell falls under 640px, where the collapse
 shows a single day. The switcher disables what does not fit with
@@ -45,6 +45,6 @@ belongs.
 ## Take it further
 
 Move `view` and `date` into your router and pass them as controlled props —
-[View and date in the URL](/calendar/docs/examples/url-state) does exactly that — and
+[View and date in the URL](/kloq/docs/examples/url-state) does exactly that — and
 the header keeps working unchanged, because `useKloq()` reports the effective
 state either way.

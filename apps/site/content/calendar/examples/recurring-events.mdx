@@ -10,7 +10,7 @@ already been moved once, so it is drawn from a detached event rather than the
 series.
 
 Edit the selected rule with the builder — the grid re-expands on every
-change. Then drag any instance: coss calendar asks whether you meant this event, this
+change. Then drag any instance: kloq asks whether you meant this event, this
 and following, or all of them.
 
 <Example name="recurring-events" />
@@ -21,7 +21,7 @@ and following, or all of them.
   `RRULE:` prefix. `data.ts` seeds `FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR`,
   `FREQ=WEEKLY;INTERVAL=2;BYDAY=TH` and an all-day
   `FREQ=MONTHLY;BYMONTHDAY=25`, all inside the subset the built-in
-  `expandRecurrence` handles. See [Recurrence](/calendar/docs/recurrence) for the
+  `expandRecurrence` handles. See [Recurrence](/kloq/docs/recurrence) for the
   frequencies and by-parts it models.
 - The moved Wednesday instance is two fields: `exdates` on the master (the
   occurrence start that no longer draws) and `recurrenceId` on the detached
@@ -33,7 +33,7 @@ and following, or all of them.
 - `RRuleBuilder` is the panel's recurrence control, standalone. It takes the
   rule as `value`, the series' start as `date` (presets like "the first
   Thursday" derive from it) and commits through `onChange`; `SeriesPanel` writes
-  the new rule with `store.update` from [`useKloqStore`](/calendar/docs/api).
+  the new rule with `store.update` from [`useKloqStore`](/kloq/docs/api).
 - `SeriesPanel` is a child of `<Kloq>`, so it renders above the surface and can
   read the store with `useSyncExternalStore(store.subscribe,
   store.getSnapshot)`. The "next" readout is gated on `useIsClient()` because
@@ -48,7 +48,7 @@ and following, or all of them.
 
 Pass a controlled `events` array and the same drags arrive through
 `onEventsChange` as plain data — see
-[Controlled state](/calendar/docs/controlled-state). A rule the builder cannot express
+[Controlled state](/kloq/docs/controlled-state). A rule the builder cannot express
 (`BYWEEKNO`, several `BYMONTHDAY` values) is never rewritten: it shows as a
 read-only "Custom rule" chip, and `registerRecurrenceEngine` lets a richer
 engine expand it.

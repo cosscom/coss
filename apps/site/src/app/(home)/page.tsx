@@ -75,7 +75,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* The Calendar UI: a live, seeded calendar. */}
+      {/* kloq: a live, seeded calendar. */}
       <section className="grid gap-8 overflow-hidden rounded-2xl border bg-card lg:grid-cols-[minmax(0,26rem)_1fr]">
         <div className="flex flex-col items-start gap-4 p-6 sm:p-8">
           <h2 className="flex items-center gap-2 font-heading font-semibold text-2xl">
@@ -84,7 +84,7 @@ export default function HomePage() {
           </h2>
           <p className="text-muted-foreground">{CALENDAR.description}</p>
           <div className="flex flex-wrap gap-3">
-            <Button render={<Link href={CALENDAR.path} />}>About the Calendar UI</Button>
+            <Button render={<Link href={CALENDAR.path} />}>About kloq</Button>
             <Button render={<Link href={CALENDAR.docs} />} variant="outline">
               Calendar docs
             </Button>

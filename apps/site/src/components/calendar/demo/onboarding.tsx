@@ -163,7 +163,7 @@ export function OnboardingDemo({
 
   const steps: { title: string; body: React.ReactNode }[] = [
     {
-      title: "Welcome to coss calendar",
+      title: "Welcome to kloq",
       body: (
         <div className="flex flex-col items-start gap-4">
           <p className="text-sm text-muted-foreground">
@@ -214,8 +214,8 @@ export function OnboardingDemo({
       body: (
         <div className="flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
-            coss calendar can redraw the whole grid in another zone, or keep a second zone alongside
-            your own — handy when half your meetings live in someone else&apos;s afternoon.
+            kloq can redraw the whole grid in another zone, or keep a second zone alongside your own
+            — handy when half your meetings live in someone else&apos;s afternoon.
           </p>
           <div className="flex flex-col gap-3">
             <ZoneSelect
@@ -270,7 +270,7 @@ export function OnboardingDemo({
         <DialogHeader>
           <DialogTitle>{steps[step].title}</DialogTitle>
           <DialogDescription className="sr-only">
-            coss calendar onboarding, step {step + 1} of {steps.length}
+            kloq onboarding, step {step + 1} of {steps.length}
           </DialogDescription>
         </DialogHeader>
         <div className="px-6 pb-6">{steps[step].body}</div>

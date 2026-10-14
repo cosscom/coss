@@ -7,7 +7,7 @@ description: Rooms, staff or machines as rows along a horizontal time axis — d
 instead of top to bottom, and the rows are whatever you name them — rooms,
 staff, trucks, machines — instead of days. It is the seventh view shape, and
 the odd one out: it doesn't draw the all-day lane, it isn't part of the
-[responsive collapse](/calendar/docs/views#the-responsive-collapse) (there's no
+[responsive collapse](/kloq/docs/views#the-responsive-collapse) (there's no
 narrower n-day span to fall back to, so a timeline just scrolls), and it
 keeps its own visible-span model instead of `view.days`.
 
@@ -20,7 +20,7 @@ keeps its own visible-span model instead of `view.days`.
 `lanes` is empty by default — nothing renders without it. Passing it also adds
 a Timeline entry to the stock view switcher (and sets `useKloq().timeline` for
 your own). Each one is a
-[`Lane`](/calendar/docs/resources):
+[`Lane`](/kloq/docs/resources):
 
 ```ts
 interface Lane {
@@ -35,7 +35,7 @@ interface Lane {
 
 `parentId` is on the type today but does nothing yet — see
 [what's not here](#what-is-not-here). How an event maps onto a lane is a
-separate question, covered in [Resources & lanes](/calendar/docs/resources).
+separate question, covered in [Resources & lanes](/kloq/docs/resources).
 
 ## The visible span: `timelineWindow`
 
@@ -102,8 +102,8 @@ into a fortnight planner:
 />
 ```
 
-See the [full example](/calendar/docs/examples/room-booking) for the first shape end
-to end; [Shift scheduler](/calendar/docs/examples/shift-roster) is the controlled
+See the [full example](/kloq/docs/examples/room-booking) for the first shape end
+to end; [Shift scheduler](/kloq/docs/examples/shift-roster) is the controlled
 shape too, pinning the current calendar week with hour slots.
 
 <Callout type="warn">
@@ -127,19 +127,19 @@ lane + minute instead of day + minute:
 - **Drag to create** — drag on empty canvas to draw a new booking, snapped to
   `slotMinutes`.
 - **Drag to move** — grab a bar and drag it. Drag across rows and the drop
-  reassigns it: the engine calls your [`LaneAdapter`](/calendar/docs/resources)'s
+  reassigns it: the engine calls your [`LaneAdapter`](/kloq/docs/resources)'s
   `assign(event, newLaneId)` for you, the same inverse `laneOf` describes.
 - **Resize** — drag either edge to change the start or end independently.
 - **Double-click** — creates a default-duration booking at the clicked lane
   and time, same as the calendar's double-click quick-create.
 
-[Constraints](/calendar/docs/constraints) apply unchanged: `minDate`/`maxDate`,
+[Constraints](/kloq/docs/constraints) apply unchanged: `minDate`/`maxDate`,
 `isSlotDisabled` and `canDrop` all run against timeline gestures exactly as
 they do against the calendar's, including the **origin exemption** — a
 booking already sitting across refused time can still be dragged, so long as
 the drag doesn't newly occupy *more* refused time. See
-[Constraints](/calendar/docs/constraints#what-is-refused-exactly) for what "newly
-occupies" means, and its [timeline gesture names](/calendar/docs/constraints#timeline-gestures)
+[Constraints](/kloq/docs/constraints#what-is-refused-exactly) for what "newly
+occupies" means, and its [timeline gesture names](/kloq/docs/constraints#timeline-gestures)
 if you're writing a `canDrop` that branches on which surface asked.
 
 A booking that crosses midnight is drawn as a single continuous bar — the
@@ -165,7 +165,7 @@ The same keys as the calendar, remapped onto lanes:
   neighbouring lane (the same reassignment a cross-row drag makes).
 - **`⌥⇧` + `←` / `→`** resize the end; **`⌥⇧⌘`** resizes the start.
 - **`1`–`5`** recolour the selection, and the create key (`c` unless the
-  [keymap](/calendar/docs/keyboard) rebinds it) books a default-length slot on the
+  [keymap](/kloq/docs/keyboard) rebinds it) books a default-length slot on the
   current lane.
 - **`Enter`**, **`Escape`**, **`Delete`** and **`⌘A` / `⌘C` / `⌘X` / `⌘D`** act
   on any bar in the window, on any of its days.
@@ -194,9 +194,9 @@ deliberately no separate "max overlaps" knob.
 
 ## Slots
 
-Four new [component slots](/calendar/docs/slots#the-six-calendar-slots) join the six the
+Four new [component slots](/kloq/docs/slots#the-six-calendar-slots) join the six the
 calendar already has: `TimelineBlock`, `ResourceGutter`, `TimelineHeader`,
-`TimelineRow`. Their contracts are on the [Slots](/calendar/docs/slots) page.
+`TimelineRow`. Their contracts are on the [Slots](/kloq/docs/slots) page.
 
 ## What is not here
 

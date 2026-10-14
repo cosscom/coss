@@ -18,7 +18,7 @@ are invited, so the panel asks for your RSVP.
   returns the unregister, so leaving the page cleans up.
 - Events carry a `calendarId` and no `color`. Absence means inherit:
   `resolveEventColor` draws each one in its calendar's colour, so moving an
-  event between calendars in the panel retints it ([Events](/calendar/docs/events)).
+  event between calendars in the panel retints it ([Events](/kloq/docs/events)).
 - `<CalendarList />` reads the registry when given no props. Each row is a
   checkbox that calls `setCalendarVisible`; the calendar filters through
   `filterVisibleEvents` on every render. `useCalendarSources()` in the bar
@@ -30,13 +30,13 @@ are invited, so the panel asks for your RSVP.
   picker never offers for new events; its events are `readOnly` too.
 - `defaultEvents` with `persistence={false}` is the uncontrolled, ephemeral
   store: drags work, ⌘Z works, nothing is written anywhere
-  ([Persistence](/calendar/docs/persistence)).
+  ([Persistence](/kloq/docs/persistence)).
 
 ## Take it further
 
 - Register what your OAuth flow actually returned — the registry is the only
-  seam; coss calendar ships no provider code.
+  seam; kloq ships no provider code.
 - Give the list `accountActions` for the conferencing picker and
-  Disconnect, or render the full [Settings dialog](/calendar/docs/settings).
+  Disconnect, or render the full [Settings dialog](/kloq/docs/settings).
 - Pass `showDeclinedEvents={false}` and decline the release go/no-go: it
   leaves the grid but stays findable in ⌘K.

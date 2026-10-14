@@ -8,7 +8,7 @@
  * pages, linked in `sources`.
  *
  * A comparison page that overstates its case gets found out in one `npm view`.
- * The pages are also the only place coss calendar admits, in public, where it loses —
+ * The pages are also the only place kloq admits, in public, where it loses —
  * which is the part that makes the rest of it believable.
  */
 
@@ -18,11 +18,11 @@ export const CHECKED = "2026-09-01";
 export interface CompareRow {
   /** what is being compared */
   label: string;
-  /** coss calendar's answer */
+  /** kloq's answer */
   kloq: string;
   /** theirs */
   them: string;
-  /** true when this row is a genuine advantage for coss calendar — rendered, not implied */
+  /** true when this row is a genuine advantage for kloq — rendered, not implied */
   win?: boolean;
   /** true when this row is a genuine advantage for them */
   loss?: boolean;
@@ -48,7 +48,7 @@ export interface Competitor {
   rows: CompareRow[];
   /** the trust section: when they are the right answer, in their words not ours */
   chooseThem: { title: string; body: string }[];
-  /** and when coss calendar is */
+  /** and when kloq is */
   chooseKloq: { title: string; body: string }[];
   /** what moving over actually involves */
   migration: { from: string; to: string; note: string }[];
@@ -77,7 +77,7 @@ const FULLCALENDAR: Competitor = {
   pkg: "@fullcalendar/react",
   query: "FullCalendar alternative for React",
   verdict:
-    "FullCalendar is the safer choice for most teams. coss calendar is the better one if the calendar is the product.",
+    "FullCalendar is the safer choice for most teams. kloq is the better one if the calendar is the product.",
   lede: "FullCalendar is the most widely deployed calendar in the JavaScript ecosystem, and it has earned that. It is older, broader, battle-tested across four frameworks, and its React connector is first-class. If you need a calendar to exist inside your app, install it and move on. This page is about the narrower case where that is not enough.",
   version: "7.0.2",
   published: "2026-07-24",
@@ -104,7 +104,7 @@ const FULLCALENDAR: Competitor = {
       label: "Resource / timeline views",
       kloq: "Built in",
       them: "Premium plugins",
-      note: "kloq schedules rooms, staff or machines on a horizontal timeline with the same drag primitives as the calendar: create, move a bar across rows to reassign its resource, resize, a context menu, zoom and a now indicator. FullCalendar's plugins are older and go further: theirs groups resources into a tree, and coss calendar has no grouping and is untested past a few hundred rows. Above that, or if you need a resource hierarchy, theirs is the one that works.",
+      note: "kloq schedules rooms, staff or machines on a horizontal timeline with the same drag primitives as the calendar: create, move a bar across rows to reassign its resource, resize, a context menu, zoom and a now indicator. FullCalendar's plugins are older and go further: theirs groups resources into a tree, and kloq has no grouping and is untested past a few hundred rows. Above that, or if you need a resource hierarchy, theirs is the one that works.",
     },
     {
       label: "Frameworks",
@@ -139,25 +139,25 @@ const FULLCALENDAR: Competitor = {
   chooseThem: [
     {
       title: "You need resource grouping or hundreds of rows",
-      body: "Rooms down the side, time across the top: coss calendar does this now too. But FullCalendar's premium timeline view groups resources into a tree, and coss calendar has no grouping and no virtualization — past a few hundred rows, theirs is the one built for it.",
+      body: "Rooms down the side, time across the top: kloq does this now too. But FullCalendar's premium timeline view groups resources into a tree, and kloq has no grouping and no virtualization — past a few hundred rows, theirs is the one built for it.",
     },
     {
       title: "You are not on React 19",
-      body: "FullCalendar's React connector supports 17, 18 and 19. coss calendar requires 19 and will not install below it.",
+      body: "FullCalendar's React connector supports 17, 18 and 19. kloq requires 19 and will not install below it.",
     },
     {
       title: "You need the calendar in more than one framework",
-      body: "One FullCalendar API across React, Vue, Angular and vanilla. coss calendar is a React component and intends to stay one.",
+      body: "One FullCalendar API across React, Vue, Angular and vanilla. kloq is a React component and intends to stay one.",
     },
     {
       title: "Boring is the requirement",
-      body: "A decade of production use, an enormous body of Stack Overflow answers, and a support contract you can buy. coss calendar is version 0.1.0 and cannot honestly claim any of that.",
+      body: "A decade of production use, an enormous body of Stack Overflow answers, and a support contract you can buy. kloq is version 0.1.0 and cannot honestly claim any of that.",
     },
   ],
   chooseKloq: [
     {
       title: "The calendar is the product, not a feature of it",
-      body: "When people will spend hours a day dragging things around, the gesture quality stops being a detail. coss calendar welds the grabbed point under the pointer, ramps edge auto-scroll, and springs a rejected change home — the drag engine writes transforms straight to the DOM and React sees nothing until you drop.",
+      body: "When people will spend hours a day dragging things around, the gesture quality stops being a detail. kloq welds the grabbed point under the pointer, ramps edge auto-scroll, and springs a rejected change home — the drag engine writes transforms straight to the DOM and React sees nothing until you drop.",
     },
     {
       title: "You want to own the code",
@@ -172,7 +172,7 @@ const FULLCALENDAR: Competitor = {
     {
       from: "events={[{ title, start, end }]}",
       to: "defaultEvents={[{ id, title, start, end }]}",
-      note: "Both take plain objects with real Date or ISO instants. coss calendar requires an id and discriminates timed vs all-day on an allDay flag.",
+      note: "Both take plain objects with real Date or ISO instants. kloq requires an id and discriminates timed vs all-day on an allDay flag.",
     },
     {
       from: "eventDrop / eventResize callbacks",
@@ -210,7 +210,7 @@ const REACT_BIG_CALENDAR: Competitor = {
   pkg: "react-big-calendar",
   query: "react-big-calendar alternative",
   verdict:
-    "react-big-calendar is free, complete and everywhere. coss calendar is the answer when its interactions stop feeling good enough.",
+    "react-big-calendar is free, complete and everywhere. kloq is the answer when its interactions stop feeling good enough.",
   lede: "react-big-calendar is MIT, includes every feature, and draws more than a million downloads a week. The comparison is about how the calendar feels under a pointer and what you carry to get it.",
   version: "1.20.0",
   published: "2026-06-01",
@@ -238,14 +238,14 @@ const REACT_BIG_CALENDAR: Competitor = {
       label: "Views",
       kloq: "Day, n-day (2–14), week, month, agenda, year",
       them: "Month, week, day, agenda",
-      note: "Drag only runs on coss calendar's time-grid views; month and agenda are navigation surfaces by design, where react-big-calendar does let you drag.",
+      note: "Drag only runs on kloq's time-grid views; month and agenda are navigation surfaces by design, where react-big-calendar does let you drag.",
     },
     {
       label: "Resource / timeline views",
       kloq: "Built in",
       them: "Not built",
       win: true,
-      note: "react-big-calendar can split its day and week views into per-resource columns, but time still runs top to bottom. Nothing lays resources down the side with time running horizontally, which is what coss calendar's timeline does.",
+      note: "react-big-calendar can split its day and week views into per-resource columns, but time still runs top to bottom. Nothing lays resources down the side with time running horizontally, which is what kloq's timeline does.",
     },
     {
       label: "React versions",
@@ -280,25 +280,25 @@ const REACT_BIG_CALENDAR: Competitor = {
   chooseThem: [
     {
       title: "Your users drag events around a month grid",
-      body: "react-big-calendar supports dragging in month view. coss calendar deliberately does not: month, agenda and year are selection-and-navigation surfaces, and the drag engine only runs on the time grid.",
+      body: "react-big-calendar supports dragging in month view. kloq deliberately does not: month, agenda and year are selection-and-navigation surfaces, and the drag engine only runs on the time grid.",
     },
     {
       title: "Your app already uses SASS for theming",
-      body: "react-big-calendar exposes SASS variables. coss calendar expects Tailwind v4 tokens, so adopting it would change your styling setup.",
+      body: "react-big-calendar exposes SASS variables. kloq expects Tailwind v4 tokens, so adopting it would change your styling setup.",
     },
     {
       title: "You are already on moment, luxon or globalize",
-      body: "Its localizer system is built around exactly those. coss calendar uses the platform's Intl and has no localizer seam to plug into.",
+      body: "Its localizer system is built around exactly those. kloq uses the platform's Intl and has no localizer seam to plug into.",
     },
     {
       title: "You need React 16, 17 or 18",
-      body: "react-big-calendar supports back to 16.14. coss calendar requires React 19.",
+      body: "react-big-calendar supports back to 16.14. kloq requires React 19.",
     },
   ],
   chooseKloq: [
     {
       title: "The gestures have started to annoy people",
-      body: "This is the honest reason teams leave. coss calendar's drag engine runs one rAF loop, writes transforms straight to DOM nodes, keeps the grabbed point welded under the pointer, and eases into 15-minute snaps instead of teleporting. Escape springs a drag home.",
+      body: "This is the honest reason teams leave. kloq's drag engine runs one rAF loop, writes transforms straight to DOM nodes, keeps the grabbed point welded under the pointer, and eases into 15-minute snaps instead of teleporting. Escape springs a drag home.",
     },
     {
       title: "You want recurrence and ICS without assembling them",
@@ -306,11 +306,11 @@ const REACT_BIG_CALENDAR: Competitor = {
     },
     {
       title: "Your bundle already carries too much",
-      body: "react-big-calendar declares twelve runtime dependencies, among them four date libraries. coss calendar declares five and reaches for Intl.",
+      body: "react-big-calendar declares twelve runtime dependencies, among them four date libraries. kloq declares five and reaches for Intl.",
     },
     {
       title: "You want the library in your repo",
-      body: "The shadcn registry installs coss calendar as ordinary files in your repo, so you can adjust its internals without maintaining a fork.",
+      body: "The shadcn registry installs kloq as ordinary files in your repo, so you can adjust its internals without maintaining a fork.",
     },
   ],
   migration: [
@@ -327,7 +327,7 @@ const REACT_BIG_CALENDAR: Competitor = {
     {
       from: "withDragAndDrop(Calendar)",
       to: "— nothing —",
-      note: "Dragging is not an addon. It is the part of coss calendar that exists.",
+      note: "Dragging is not an addon. It is the part of kloq that exists.",
     },
     {
       from: "onEventDrop / onEventResize",
@@ -355,7 +355,7 @@ const SCHEDULE_X: Competitor = {
   pkg: "@schedule-x/calendar",
   query: "Schedule-X alternative for React",
   verdict:
-    "Schedule-X keeps dragging in premium plugins. In coss calendar every interaction ships in the npm package.",
+    "Schedule-X keeps dragging in premium plugins. In kloq every interaction ships in the npm package.",
   lede: "Schedule-X is a good-looking, modern calendar with an MIT core and optional premium plugins. This comparison looks at which interactions each project includes in its npm package.",
   version: "4.7.0",
   published: "2026-08-27",
@@ -395,7 +395,7 @@ const SCHEDULE_X: Competitor = {
       kloq: "Built in",
       them: "Premium plugin",
       win: true,
-      note: "Both schedule resources on a horizontal axis. coss calendar's ships in the component; Schedule-X's resource view is behind the premium licence.",
+      note: "Both schedule resources on a horizontal axis. kloq's ships in the component; Schedule-X's resource view is behind the premium licence.",
     },
     {
       label: "Runtime",
@@ -423,7 +423,7 @@ const SCHEDULE_X: Competitor = {
     },
     {
       title: "You want a Temporal-based date model",
-      body: "Schedule-X builds on the Temporal API through a polyfill it declares as a peer dependency. coss calendar works in Date and Intl, which is more familiar and less future-proof.",
+      body: "Schedule-X builds on the Temporal API through a polyfill it declares as a peer dependency. kloq works in Date and Intl, which is more familiar and less future-proof.",
     },
     {
       title: "You are not on React",
@@ -431,17 +431,17 @@ const SCHEDULE_X: Competitor = {
     },
     {
       title: "You want a project that has shipped four majors",
-      body: "Schedule-X is at 4.7.0 with a real release history. coss calendar is at 0.1.0 and has not earned that comparison.",
+      body: "Schedule-X is at 4.7.0 with a real release history. kloq is at 0.1.0 and has not earned that comparison.",
     },
   ],
   chooseKloq: [
     {
       title: "You do not want the interactions behind a paywall",
-      body: "Drag, resize, drag-to-create and the event panel are premium plugins in Schedule-X. In coss calendar they are in the npm build, including the design mode.",
+      body: "Drag, resize, drag-to-create and the event panel are premium plugins in Schedule-X. In kloq they are in the npm build, including the design mode.",
     },
     {
       title: "You want the source in your own repo",
-      body: "The shadcn registry installs coss calendar as files under components/kloq/, where you can adjust its internals directly.",
+      body: "The shadcn registry installs kloq as files under components/kloq/, where you can adjust its internals directly.",
     },
     {
       title: "You want one React component",
@@ -466,7 +466,7 @@ const SCHEDULE_X: Competitor = {
     {
       from: "callbacks.onEventUpdate",
       to: "onCommit(change)",
-      note: "Same idea. coss calendar applies optimistically and springs the block back if you reject it.",
+      note: "Same idea. kloq applies optimistically and springs the block back if you reject it.",
     },
     {
       from: "$app.calendarEvents.set(...)",

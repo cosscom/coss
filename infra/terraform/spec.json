@@ -827,8 +827,8 @@
               "PathPatternConfig": {
                 "Values": [
                   "/shipyard/*",
-                  "/calendar",
-                  "/calendar/*"
+                  "/kloq",
+                  "/kloq/*"
                 ]
               }
             },
@@ -1061,16 +1061,16 @@
             "reason": "site zone (/shipyard)"
           },
           {
-            "pathPattern": "/calendar",
+            "pathPattern": "/kloq",
             "origin": "alb",
             "cache": "origin",
-            "reason": "site zone (/calendar)"
+            "reason": "site zone (/kloq)"
           },
           {
-            "pathPattern": "/calendar/*",
+            "pathPattern": "/kloq/*",
             "origin": "alb",
             "cache": "origin",
-            "reason": "site zone (/calendar)"
+            "reason": "site zone (/kloq)"
           },
           {
             "pathPattern": "/docs",
@@ -1184,8 +1184,8 @@
       "/pricing",
       "/shipyard",
       "/shipyard/*",
-      "/calendar",
-      "/calendar/*",
+      "/kloq",
+      "/kloq/*",
       "/docs",
       "/docs/*",
       "/legal",

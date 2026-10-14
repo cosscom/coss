@@ -23,7 +23,7 @@ without opening the download.
   approximated). The sample feed carries one of each kind on purpose: a
   `VALARM` (reminders are not imported), a `STATUS:CANCELLED` event, an
   `X-` vendor property, and a `DTSTART;TZID=…` that is read as local
-  wall-clock time and preserved on `timeZone`. See [ICS](/calendar/docs/ics).
+  wall-clock time and preserved on `timeZone`. See [ICS](/kloq/docs/ics).
 - A `UID` becomes the event `id`, so importing the same feed twice is
   idempotent: the bar filters out ids the store already has and adds the
   rest with one `store.batch`, which is one committed change and one undo
@@ -49,4 +49,4 @@ Copy and paste speak the same format: `eventsToICS` / `parseClipboardEvents`
 are what <Kbd>⌘C</Kbd> and <Kbd>⌘V</Kbd> use, so events copied here paste
 into any calendar app that accepts ICS, and back. Wire `parseICS` to a URL
 fetch and you have a subscription; wire the export to `onCommit` and every
-change streams out — see [Optimistic sync](/calendar/docs/optimistic-sync).
+change streams out — see [Optimistic sync](/kloq/docs/optimistic-sync).

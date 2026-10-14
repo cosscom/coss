@@ -20,7 +20,7 @@ absolute, only the wall clock you read them against does. `"Local"` in the
 picker passes `undefined`, which means the browser's own zone. A column that
 matches the display zone is filtered out of `timeZones`, since it would only
 repeat the main axis. See
-[time zones](/calendar/docs/time-zones#displaytimezone--travel-to-time-zone).
+[time zones](/kloq/docs/time-zones#displaytimezone--travel-to-time-zone).
 
 `timeZones={["Europe/London", "America/New_York", "Asia/Tokyo"]}` adds a
 gutter column per zone, left of the main one and in that order. Setting it
@@ -38,7 +38,7 @@ panel and the block's accessible name add the event's own clock:
 `onTimeZonesClick` fires when the zone labels in the gutter corner are
 pressed. The component ships no picker; here it opens the select above the
 calendar, which is exactly the host-owns-the-picker split described on the
-[time zones](/calendar/docs/time-zones#ontimezonesclick--the-host-owns-the-picker)
+[time zones](/kloq/docs/time-zones#ontimezonesclick--the-host-owns-the-picker)
 page.
 
 The readout on the right is `zoneOffsetLabel(new Date(), zone)`. The

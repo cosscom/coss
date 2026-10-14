@@ -2,7 +2,7 @@
  * The registry catalog — which items exist and which source files each
  * ships. `apps/site/scripts/build-calendar-registry.mjs` imports this (Node's native type
  * stripping), inlines the file contents, and writes
- * `src/lib/calendar/registry/generated.json`; the `/calendar/r/[name]` route serves that.
+ * `src/lib/calendar/registry/generated.json`; the `/kloq/r/[name]` route serves that.
  *
  * The npm package `kloq` is the compiled build. The registry serves the
  * source: the `kloq` item IS the calendar — the whole library source,
@@ -35,7 +35,7 @@ export interface RegistryItemDef {
 }
 
 /** The registry dependency every add-on block declares on the core. */
-export const CORE_ITEM_URL = "https://coss.com/calendar/r/kloq.json";
+export const CORE_ITEM_URL = "https://coss.com/kloq/r/kloq.json";
 
 export const REGISTRY_ITEMS: RegistryItemDef[] = [
   {
@@ -63,7 +63,7 @@ export const REGISTRY_ITEMS: RegistryItemDef[] = [
     name: "calendar",
     title: "Calendar starter",
     description:
-      "A full-page coss calendar calendar with the stock toolbar — the quick start as a drop-in block.",
+      "A full-page kloq calendar with the stock toolbar — the quick start as a drop-in block.",
     type: "registry:block",
     dependencies: [],
     registryDependencies: [CORE_ITEM_URL],

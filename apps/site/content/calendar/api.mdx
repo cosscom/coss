@@ -1,6 +1,6 @@
 ---
 title: API reference
-description: Every export of the copied coss calendar source — the root module, themes, settings and design-mode — grouped by area.
+description: Every export of the copied kloq source — the root module, themes, settings and design-mode — grouped by area.
 ---
 
 Every export, grouped by area — the component and its chrome, then the pure layers underneath, then the three companion modules. Types ship alongside the values they describe.
@@ -37,7 +37,7 @@ Every export, grouped by area — the component and its chrome, then the pure la
 | `useKloqStore()` | hook | The event store, inside slots. |
 | `localStorageAdapter` / `STORAGE_KEY` / `eventsStorageKey` | adapter + constant + function | The default persistence, its default key, and the key under the current `storage` prefix. |
 | `SEED_EVENTS` / `buildSeedEvents` / `newEventId` | data + functions | The sample events and the id factory. |
-| `PersistenceAdapter` / `OnCommit` / `KloqChange` / `KloqStore` / `KloqBatchOp` | types | The store's contracts — see [Persistence](/calendar/docs/persistence) and [Optimistic sync](/calendar/docs/optimistic-sync). |
+| `PersistenceAdapter` / `OnCommit` / `KloqChange` / `KloqStore` / `KloqBatchOp` | types | The store's contracts — see [Persistence](/kloq/docs/persistence) and [Optimistic sync](/kloq/docs/optimistic-sync). |
 | `isV2Event` / `migrateV1` / `readPayload` / `PAYLOAD_VERSION` / `PayloadV2` | functions + constants | The versioned localStorage payload and its migration. |
 
 ## Event model & instants
@@ -66,12 +66,12 @@ Every export, grouped by area — the component and its chrome, then the pure la
 
 | Export | Kind | Notes |
 | --- | --- | --- |
-| `registerCommands` / `clearCommands` / `getCommands` / `subscribeCommands` / `KloqCommand` | functions + type | The open ⌘K registry — see [Command palette](/calendar/docs/command-palette). |
+| `registerCommands` / `clearCommands` / `getCommands` / `subscribeCommands` / `KloqCommand` | functions + type | The open ⌘K registry — see [Command palette](/kloq/docs/command-palette). |
 | `COMMAND_GROUPS` / `DEFAULT_COMMAND_GROUP` / `groupCommands` / `matchesQuery` / `normalizeQuery` | constants + functions | The palette's grouping and ranking model. |
 | `BUILT_IN_COMMANDS` / `commandAllowed` / `BuiltInCommand` | constant + function + type | Every built-in ⌘K id (families as `:*`) and the allowlist matcher behind `commandPalette.commands`. |
-| `parseQuickAdd` / `quickAddPreview` / `highlightSegments` / `UNTITLED` / `DEFAULT_QUICK_ADD_MIN` | functions + constants | Natural-language event entry — see [Quick add](/calendar/docs/quick-add). |
+| `parseQuickAdd` / `quickAddPreview` / `highlightSegments` / `UNTITLED` / `DEFAULT_QUICK_ADD_MIN` | functions + constants | Natural-language event entry — see [Quick add](/kloq/docs/quick-add). |
 | `QUICK_ADD_KINDS` / `QUICK_ADD_KIND_ORDER` | constants | Each token kind's label, swatch and underline `mark`, and the order a legend lists them in. |
-| `QuickAddInput` / `MoveToInput` | components | The quick-add field and the "move to…" field, standalone — see [Quick add input](/calendar/docs/quick-add-input). Both take `announce` (default true) to read their preview out as it changes. |
+| `QuickAddInput` / `MoveToInput` | components | The quick-add field and the "move to…" field, standalone — see [Quick add input](/kloq/docs/quick-add-input). Both take `announce` (default true) to read their preview out as it changes. |
 | `searchEvents` / `EventSearchOptions` / `EventSearchResult` | function + types | Whole-store search, as ⌘K uses it. |
 | `formatWhen` / `formatEventWhen` / `formatDayLabel` / `formatDurationShort` / `allDayDisplayEnd` | functions | The shared "when" formatters. |
 | `KEY_ACTIONS` / `resolveKeymap` / `actionForEvent` / `bindingFromEvent` / `displayKey` / `isBindableKey` | constants + functions | The remappable keyboard layer; `Keymap` / `KeyActionId` / `ResolvedKeymap` alongside. |
@@ -99,12 +99,12 @@ Every export, grouped by area — the component and its chrome, then the pure la
 above: `lanes` (`readonly Lane[]`, empty by default — nothing renders without
 rows), `laneAdapter` (`LaneAdapter`, defaults to `byResourceId()`), and
 `timelineWindow` (`TimelineWindowConfig`, see [Resource
-timeline](/calendar/docs/timeline#the-visible-span-timelinewindow) for its two modes).
+timeline](/kloq/docs/timeline#the-visible-span-timelinewindow) for its two modes).
 The exports underneath:
 
 | Export | Kind | Notes |
 | --- | --- | --- |
-| `Lane` / `LaneAdapter` | types | The row-binding seam — see [Resources & lanes](/calendar/docs/resources). |
+| `Lane` / `LaneAdapter` | types | The row-binding seam — see [Resources & lanes](/kloq/docs/resources). |
 | `byResourceId` | function | The default adapter: reads `event.resourceId` (or a named field) as the lane id. |
 | `resolveWindow` | function | Props in (`TimelineWindowConfig` + the anchor date), a concrete `TimelineWindow` out. |
 | `TimelineWindow` / `TimelineWindowConfig` | types | The resolved window and what a host passes for it. |
@@ -116,12 +116,12 @@ The exports underneath:
   (`projectTimeline`, `layoutLane`, `maxSubRows`, `ticksOf`, `zoomWindow`,
   `createHorizontalAxis`) is deliberately **not** exported — the seam a host
   is meant to use is `lanes` / `laneAdapter` / `timelineWindow` plus the four
-  [slots](/calendar/docs/slots), not the layout math underneath them.
+  [slots](/kloq/docs/slots), not the layout math underneath them.
 </Callout>
 
 ## Time zones, recurrence, ICS, reminders
 
-These four areas have their own pages; the exports are enumerated there. Time zones: the full pure layer from `wallClockIn` to `searchZones`, plus `MultiTimeZoneGutter` and the authored-zone helpers. Recurrence: the RRULE library, the expansion seam, the this/following/all plans, `RRuleBuilder` and `RecurrenceScopeDialog`. ICS: `toICS` / `downloadICS` out, `parseICS` and its structural layer in. Reminders: normalization, descriptions and fire-time math from `normalizeReminders` to `nextReminderAcross`, plus the `ReminderField` control — coss calendar computes fire times, the host delivers.
+These four areas have their own pages; the exports are enumerated there. Time zones: the full pure layer from `wallClockIn` to `searchZones`, plus `MultiTimeZoneGutter` and the authored-zone helpers. Recurrence: the RRULE library, the expansion seam, the this/following/all plans, `RRuleBuilder` and `RecurrenceScopeDialog`. ICS: `toICS` / `downloadICS` out, `parseICS` and its structural layer in. Reminders: normalization, descriptions and fire-time math from `normalizeReminders` to `nextReminderAcross`, plus the `ReminderField` control — kloq computes fire times, the host delivers.
 
 ## Multi-calendar & accounts
 

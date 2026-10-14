@@ -24,7 +24,7 @@ export function ExampleGallery() {
               {items.map((e) => (
                 <li key={e.slug}>
                   <Card
-                    href={`/calendar/docs/examples/${e.slug}`}
+                    href={`/kloq/docs/examples/${e.slug}`}
                     title={e.title}
                     description={e.description}
                     lead={<LiveDot />}

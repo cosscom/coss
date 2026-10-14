@@ -65,7 +65,7 @@ Options: `dateOrder` ("month-first" default; either way an unambiguous half wins
 The view half is exported too. `highlightSegments(input, result.tokens, result.ignored?)` interleaves the input with its tokens — concatenating every segment's text reproduces the input exactly, the property the caret-aligned underline overlay depends on. Pass `ignored` and those runs come back flagged `ignored: true`, for a struck-through treatment. `QUICK_ADD_KINDS` holds each kind's label, swatch and `mark` classes — an underline style as well as a colour, because a theme may give two kinds the same colour — and `QUICK_ADD_KIND_ORDER` lists the kinds in legend order. `quickAddPreview` folds a result into one renderable line: the title (never blank — `UNTITLED` covers an all-metadata input), the resolved when, and chips for location and attendees.
 
 And the finished field — underline, preview line, commit — ships assembled as
-[`QuickAddInput`](/calendar/docs/quick-add-input), with a live demo on its own page.
+[`QuickAddInput`](/kloq/docs/quick-add-input), with a live demo on its own page.
 
 <Callout>
   The parser guarantees tokens are sorted, disjoint, in bounds, and that

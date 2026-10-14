@@ -1,5 +1,5 @@
 /*
- * The Calendar UI's pages (kloq.dev's globals.css and docs/components.css, under /calendar):
+ * kloq's pages (kloq.dev's globals.css and docs/components.css, under /kloq):
  * the landing page's type steps and motion, the docs' code frames, tables and callouts. Imported
  * by global.css, so the utilities are part of the site's one Tailwind build.
  */

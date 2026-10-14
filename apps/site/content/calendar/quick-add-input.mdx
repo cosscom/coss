@@ -6,7 +6,7 @@ description: "The ⌘K quick-add field as a standalone component: the live under
 The field inside <Kbd>⌘K</Kbd> — type a sentence, watch the underline claim
 the phrases it understood, press <Kbd>↵</Kbd> — ships on its own as
 `QuickAddInput`. It is fully controlled and does no parsing: you hold the
-text, run [`parseQuickAdd`](/calendar/docs/quick-add), and pass both in. The result
+text, run [`parseQuickAdd`](/kloq/docs/quick-add), and pass both in. The result
 your commit handler acts on is by construction the one the underline drew —
 there is no second parse to disagree with the first.
 
@@ -118,6 +118,6 @@ that drives `value` itself, where every scripted keystroke would be read out.
 </Callout>
 
 The grammar itself — what parses, the claim table, `dateOrder` and
-`defaultDurationMin` — lives on the [quick add](/calendar/docs/quick-add) page, and
-[`MoveToInput`](/calendar/docs/command-palette#move-to), its sibling for rescheduling,
+`defaultDurationMin` — lives on the [quick add](/kloq/docs/quick-add) page, and
+[`MoveToInput`](/kloq/docs/command-palette#move-to), its sibling for rescheduling,
 on the command palette page.

@@ -4,7 +4,7 @@ description: The row-binding seam for the timeline — laneOf, assign, byResourc
 ---
 
 Nothing about an event is a resource. `CalEvent` gains no `resourceId` field,
-no `roomId`, nothing — the [timeline](/calendar/docs/timeline) doesn't know what a row
+no `roomId`, nothing — the [timeline](/kloq/docs/timeline) doesn't know what a row
 *means*, only that you can name one and, given an event, say which one it's
 on. That seam is the `LaneAdapter`.
 
@@ -93,7 +93,7 @@ same constraints. The lane list is the one place a "board" idea and a
 ## `laneIndexOf`: resolving an id to a position
 
 Hosts never call this — it's internal to the timeline's projection, not an
-export (a custom `ResourceGutter` or [`TimelineRow`](/calendar/docs/slots) gets its
+export (a custom `ResourceGutter` or [`TimelineRow`](/kloq/docs/slots) gets its
 lane and bars handed in as props) — but its rule decides what renders:
 
 ```ts
@@ -113,5 +113,5 @@ parent — "Front of house" containing Ada and Ben, say. It's on the type so a
 host adopting the timeline now doesn't need a breaking change later, but v1
 ignores it: every lane in `lanes` renders as one flat row, in the order you
 pass them, regardless of `parentId`. See [what's not
-here](/calendar/docs/timeline#what-is-not-here) for the rest of what the timeline
+here](/kloq/docs/timeline#what-is-not-here) for the rest of what the timeline
 doesn't attempt yet.

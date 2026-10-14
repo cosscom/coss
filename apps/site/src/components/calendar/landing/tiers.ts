@@ -1,7 +1,7 @@
 import { REGISTRY_ITEMS } from "@/lib/calendar/registry/manifest";
 
-export const SOURCE_HREF = "/calendar/docs/registry";
-export const INSTALL_HREF = "/calendar/docs/installation";
+export const SOURCE_HREF = "/kloq/docs/registry";
+export const INSTALL_HREF = "/kloq/docs/installation";
 
 const core = REGISTRY_ITEMS.find((item) => item.name === "kloq");
 

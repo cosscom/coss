@@ -10,14 +10,14 @@ import { abs } from "@/lib/calendar/site";
 const ORGANIZATION = {
   "@type": "Organization",
   name: "kloq",
-  url: abs("/calendar"),
+  url: abs("/kloq"),
 };
 
 export const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "kloq",
-  url: abs("/calendar"),
+  url: abs("/kloq"),
   description:
     "A React calendar component obsessed with micro-perfection — hand-tuned drag physics, a design mode that annotates its own craft, and a command palette that reaches everything.",
   publisher: ORGANIZATION,
@@ -27,7 +27,7 @@ export const softwareSchema = () => ({
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "kloq",
-  url: abs("/calendar"),
+  url: abs("/kloq"),
   applicationCategory: "DeveloperApplication",
   applicationSubCategory: "React component library",
   operatingSystem: "Web browser",
@@ -73,17 +73,17 @@ export const docsSchema = ({
       headline: title,
       description,
       url: abs(url),
-      isPartOf: { "@type": "WebSite", name: "kloq", url: abs("/calendar") },
-      about: { "@type": "SoftwareApplication", name: "kloq", url: abs("/calendar") },
+      isPartOf: { "@type": "WebSite", name: "kloq", url: abs("/kloq") },
+      about: { "@type": "SoftwareApplication", name: "kloq", url: abs("/kloq") },
       author: ORGANIZATION,
       publisher: ORGANIZATION,
     },
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "kloq", item: abs("/calendar") },
-        { "@type": "ListItem", position: 2, name: "Docs", item: abs("/calendar/docs") },
-        ...(url === "/calendar/docs"
+        { "@type": "ListItem", position: 1, name: "kloq", item: abs("/kloq") },
+        { "@type": "ListItem", position: 2, name: "Docs", item: abs("/kloq/docs") },
+        ...(url === "/kloq/docs"
           ? []
           : [{ "@type": "ListItem", position: 3, name: title, item: abs(url) }]),
       ],
@@ -99,24 +99,24 @@ export const compareSchema = (c: Competitor) => ({
       "@type": "Article",
       headline: `kloq vs ${c.name}`,
       description: c.verdict,
-      url: abs(`/calendar/compare/${c.slug}`),
+      url: abs(`/kloq/compare/${c.slug}`),
       author: ORGANIZATION,
       publisher: ORGANIZATION,
       about: [
-        { "@type": "SoftwareApplication", name: "kloq", url: abs("/calendar") },
+        { "@type": "SoftwareApplication", name: "kloq", url: abs("/kloq") },
         { "@type": "SoftwareApplication", name: c.name },
       ],
     },
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "kloq", item: abs("/calendar") },
-        { "@type": "ListItem", position: 2, name: "Compare", item: abs("/calendar/compare") },
+        { "@type": "ListItem", position: 1, name: "kloq", item: abs("/kloq") },
+        { "@type": "ListItem", position: 2, name: "Compare", item: abs("/kloq/compare") },
         {
           "@type": "ListItem",
           position: 3,
           name: `kloq vs ${c.name}`,
-          item: abs(`/calendar/compare/${c.slug}`),
+          item: abs(`/kloq/compare/${c.slug}`),
         },
       ],
     },
@@ -139,19 +139,19 @@ export const toolSchema = ({
       "@type": "WebApplication",
       name,
       description,
-      url: abs(`/calendar/tools/${slug}`),
+      url: abs(`/kloq/tools/${slug}`),
       applicationCategory: "DeveloperApplication",
       browserRequirements: "Requires JavaScript",
       offers: { "@type": "Offer", price: 0, priceCurrency: "USD" },
-      isPartOf: { "@type": "WebSite", name: "kloq", url: abs("/calendar") },
+      isPartOf: { "@type": "WebSite", name: "kloq", url: abs("/kloq") },
       author: ORGANIZATION,
     },
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "kloq", item: abs("/calendar") },
-        { "@type": "ListItem", position: 2, name: "Tools", item: abs("/calendar/tools") },
-        { "@type": "ListItem", position: 3, name, item: abs(`/calendar/tools/${slug}`) },
+        { "@type": "ListItem", position: 1, name: "kloq", item: abs("/kloq") },
+        { "@type": "ListItem", position: 2, name: "Tools", item: abs("/kloq/tools") },
+        { "@type": "ListItem", position: 3, name, item: abs(`/kloq/tools/${slug}`) },
       ],
     },
   ],

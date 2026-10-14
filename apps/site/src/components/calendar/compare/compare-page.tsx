@@ -88,13 +88,13 @@ export function ComparePage({ competitor: c }: { competitor: Competitor }) {
           eyebrow={[
             <Link
               key="compare"
-              href="/calendar/compare"
+              href="/kloq/compare"
               className="-my-1 inline-block py-1 hover:text-foreground"
             >
               compare
             </Link>,
             <span key="pair" className="text-foreground">
-              coss calendar vs {c.name}
+              kloq vs {c.name}
             </span>,
             `checked ${CHECKED}`,
           ]}
@@ -104,8 +104,8 @@ export function ComparePage({ competitor: c }: { competitor: Competitor }) {
             <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
               <Stat label={c.pkg} value={`v${c.version}`} />
               <Stat label="npm, last week" value={c.downloads.toLocaleString("en-US")} />
-              <Stat label="rows coss calendar wins" value={String(wins)} />
-              <Stat label="rows coss calendar loses" value={String(losses)} />
+              <Stat label="rows kloq wins" value={String(wins)} />
+              <Stat label="rows kloq loses" value={String(losses)} />
             </dl>
           }
         />
@@ -126,7 +126,7 @@ export function ComparePage({ competitor: c }: { competitor: Competitor }) {
                   <RuledColumn className="md:w-1/3 xl:w-2/5">
                     <span className="sr-only">Compared</span>
                   </RuledColumn>
-                  <RuledColumn className="md:w-1/4">coss calendar</RuledColumn>
+                  <RuledColumn className="md:w-1/4">kloq</RuledColumn>
                   <RuledColumn>{c.name}</RuledColumn>
                   <RuledColumn className="text-right md:w-28">verdict</RuledColumn>
                 </RuledRow>
@@ -141,7 +141,7 @@ export function ComparePage({ competitor: c }: { competitor: Competitor }) {
                       )}
                     </RuledRowHead>
                     <RuledCell className={ANSWER}>
-                      <CellLabel>coss calendar</CellLabel>
+                      <CellLabel>kloq</CellLabel>
                       <span>{row.kloq}</span>
                     </RuledCell>
                     <RuledCell className={cn(ANSWER, !row.loss && "text-muted-foreground")}>
@@ -174,7 +174,7 @@ export function ComparePage({ competitor: c }: { competitor: Competitor }) {
           <Reveal>
             <SectionHead
               index="03"
-              label="choose coss calendar"
+              label="choose kloq"
               title="And when we would say ours."
               lede="The narrower case — but it is the one this whole library was built for."
             />
@@ -242,11 +242,11 @@ export function ComparePage({ competitor: c }: { competitor: Competitor }) {
               ))}
             </ul>
             <div className="mt-12 flex flex-wrap gap-3">
-              <Button size="lg" render={<Link href="/calendar/demo" />}>
+              <Button size="lg" render={<Link href="/kloq/demo" />}>
                 Try the calendar
               </Button>
               <InstallCta size="lg" variant="outline" />
-              <Button size="lg" variant="ghost" render={<Link href="/calendar/compare" />}>
+              <Button size="lg" variant="ghost" render={<Link href="/kloq/compare" />}>
                 All comparisons
               </Button>
             </div>

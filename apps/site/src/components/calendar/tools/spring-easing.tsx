@@ -132,7 +132,7 @@ export function SpringEasing() {
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            The first three are the springs coss calendar actually ships.
+            The first three are the springs kloq actually ships.
           </p>
         </div>
       </Pane>

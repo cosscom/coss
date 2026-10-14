@@ -52,11 +52,11 @@ export class FakeServer {
     this.set({ reject });
   }
 
-  /** Rejecting is what makes coss calendar revert — the thrown error is the whole protocol. */
+  /** Rejecting is what makes kloq revert — the thrown error is the whole protocol. */
   async commit(change: KloqChange): Promise<void> {
     this.set({ inFlight: this.state.inFlight + 1 });
     await sleep(this.state.latency);
-    // coss calendar ignores the promise of a reset (nothing to revert to), so a reset never fails
+    // kloq ignores the promise of a reset (nothing to revert to), so a reset never fails
     const ok = change.type === "reset" || !this.state.reject;
     const entry = { id: ++this.seq, label: describeChange(change), ok };
     this.set({ inFlight: this.state.inFlight - 1, log: [entry, ...this.state.log].slice(0, 4) });

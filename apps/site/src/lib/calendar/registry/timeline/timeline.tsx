@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * coss calendar starter — a full-page resource timeline.
+ * kloq starter — a full-page resource timeline.
  *
  * Rooms as lanes, `byResourceId()` as the adapter: each booking names its
  * room through a plain `resourceId` field, and dragging one across rows
@@ -14,7 +14,7 @@
  * exactly but stop navigation from moving it, which is the wrong trade for
  * a starter meant to feel alive out of the box.
  *
- * Uncontrolled otherwise: coss calendar owns the anchor date and persists bookings to
+ * Uncontrolled otherwise: kloq owns the anchor date and persists bookings to
  * localStorage, same as the calendar starter. Delete the wrapper div's
  * height at your peril — <Kloq> is h-full and renders into whatever box you
  * give it.

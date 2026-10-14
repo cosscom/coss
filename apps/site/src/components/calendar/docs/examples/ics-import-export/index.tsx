@@ -19,7 +19,7 @@ import { CodePanes } from "@/components/calendar/site/code-panes";
 import { Bar } from "../parts";
 import { sampleFeed } from "./data";
 
-// without this the store starts from coss calendar's sample week
+// without this the store starts from kloq's sample week
 const EMPTY: CalEvent[] = [];
 
 function download(text: string, name: string) {

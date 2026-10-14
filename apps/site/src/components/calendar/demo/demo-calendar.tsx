@@ -246,8 +246,8 @@ export function DemoCalendar() {
                 embeddable split. The parts read shared state via useKloq(). */}
             <Kloq.Toolbar>
               <h1 className="shrink-0 font-bold font-heading text-lg [font-variation-settings:'GEOM'_50,'opsz'_32]">
-                <Link className="text-foreground" href="/calendar">
-                  coss.com <span className="text-muted-foreground/64">calendar</span>
+                <Link className="text-foreground" href="/kloq">
+                  coss.com <span className="text-muted-foreground/64">kloq</span>
                 </Link>
               </h1>
               <div className="flex flex-auto items-center gap-2">
@@ -266,7 +266,7 @@ export function DemoCalendar() {
                 <div className="hidden items-center gap-2 sm:flex">
                   <Kloq.Reset />
                   <Separator orientation="vertical" className="mx-1 h-5" />
-                  <Button size="sm" render={<Link href="/calendar/docs/installation" />}>
+                  <Button size="sm" render={<Link href="/kloq/docs/installation" />}>
                     Install
                   </Button>
                 </div>

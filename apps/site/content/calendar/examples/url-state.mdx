@@ -18,7 +18,7 @@ a week it reads `view=day`, because a day is what is drawn.
   switcher, the month picker and the arrow keys all *ask* through
   `onViewChange` / `onDateChange`, and nothing moves until the props change.
   That is what makes the URL authoritative: the calendar cannot drift from it.
-  See [Controlled state](/calendar/docs/controlled-state).
+  See [Controlled state](/kloq/docs/controlled-state).
 - The query string is the state. `search` holds it verbatim; `view` and `date`
   are derived from it with `useMemo`. `navigate` builds the next string,
   writes it with `window.history`, and stores it — no router navigation, no
@@ -35,23 +35,23 @@ a week it reads `view=day`, because a day is what is drawn.
   integer inside `MIN_N_DAY_VIEW … MAX_N_DAY_VIEW`; `parseDate` accepts
   `YYYY-MM-DD` only, and rejects a date that would roll over by checking that
   the parsed `Date` formats back — through `toDateOnlyString` — to the same
-  string. Anything else falls back to today's week. See [Views & navigation](/calendar/docs/views).
+  string. Anything else falls back to today's week. See [Views & navigation](/kloq/docs/views).
 - The chrome is the stock `<Kloq.Toolbar />`. Its parts read the same
   controlled state through `useKloq()`, which is why they need no wiring.
-  See [Toolbar & chrome](/calendar/docs/chrome).
+  See [Toolbar & chrome](/kloq/docs/chrome).
 - The responsive collapse stays on, and the URL follows it. A box under 900px
-  squeezes a week to three days, one under 640px to a single day, and coss calendar
+  squeezes a week to three days, one under 640px to a single day, and kloq
   reports that *effective* view through `onViewChange`; widen the box and it
   asks for the week back the same way. Because a view change replaces the
   history entry, the width can rewrite the link as often as it likes without
   piling up entries or trapping the back button.
-  See [Views & navigation](/calendar/docs/views).
+  See [Views & navigation](/kloq/docs/views).
 
 ## Take it further
 
 - Prefer one history entry per visit? Use `replaceState` for dates too — the
   link still shares, the back button leaves the page.
-- Put it in the path instead: `/calendar/week/2026-08-31`. The parsing does not
+- Put it in the path instead: `/kloq/week/2026-08-31`. The parsing does not
   change; read `usePathname()` instead of `location.search`.
 - Keep the *intent* in the URL instead of the view on screen: a child of
   `<Kloq>` can read `useKloq().collapsed`, and a view change reported while

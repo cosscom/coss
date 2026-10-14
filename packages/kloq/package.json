@@ -1,7 +1,7 @@
 {
   "name": "kloq",
   "version": "0.1.0",
-  "description": "The calendar behind coss.com/calendar: hand-tuned drag interactions, coss ui components, a Figma-style design mode.",
+  "description": "The calendar behind coss.com/kloq: hand-tuned drag interactions, coss ui components, a Figma-style design mode.",
   "license": "MIT",
   "private": true,
   "type": "module",

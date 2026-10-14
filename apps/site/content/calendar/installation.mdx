@@ -3,7 +3,7 @@ title: Installation
 description: Two ways in — the npm package, or the source registry that lands the whole calendar in your repo.
 ---
 
-coss calendar ships two ways. **npm** gives you the compiled, typed build.
+kloq ships two ways. **npm** gives you the compiled, typed build.
 The **source registry** copies the whole calendar — engine, views, themes,
 design mode — into your repo as MIT-licensed source you can edit,
 through one shadcn CLI command.
@@ -65,14 +65,14 @@ import "@/components/kloq/styles/kloq.css";
 <Callout>
   The stylesheet is scoped: every token lives on `[data-kloq-root]` — the
   calendar and the container its menus render into — and it never writes to
-  `:root`, `html`, `body` or `*`. To give your whole page coss calendar's look instead,
+  `:root`, `html`, `body` or `*`. To give your whole page kloq's look instead,
   put `data-kloq-root` on `<body>` and import `styles/tokens.css` for the
   page-level resets.
 </Callout>
 
 ## Light and dark
 
-coss calendar follows a `dark` class on `<html>` — the coss / shadcn convention — and
+kloq follows a `dark` class on `<html>` — the coss / shadcn convention — and
 leaves that class alone unless you call `setScheme`. If your app runs no
 scheme convention at all (no `dark` or `light` class on `<html>`), the
 calendar follows the OS on its own, scoped to itself, so it never paints
