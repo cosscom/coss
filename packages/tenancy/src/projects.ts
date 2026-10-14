@@ -92,6 +92,35 @@ export async function listProjects(input: { organizationId: string }): Promise<P
     .orderBy(asc(project.createdAt), asc(project.id));
 }
 
+/**
+ * Projects of an organization (oldest first), each with its environments in display order: one
+ * query, for navigation that lists every project's environments.
+ */
+export async function listProjectsWithEnvironments(input: {
+  organizationId: string;
+}): Promise<{ project: Project; environments: Environment[] }[]> {
+  const rows = await db
+    .select({ project, environment })
+    .from(project)
+    .innerJoin(
+      environment,
+      and(
+        eq(environment.projectId, project.id),
+        eq(environment.organizationId, project.organizationId),
+      ),
+    )
+    .where(eq(project.organizationId, input.organizationId))
+    .orderBy(asc(project.createdAt), asc(project.id));
+  const byProject = new Map<string, { project: Project; environments: Environment[] }>();
+  for (const row of rows) {
+    const entry = byProject.get(row.project.id) ?? { project: row.project, environments: [] };
+    entry.environments.push(row.environment);
+    byProject.set(row.project.id, entry);
+  }
+  for (const entry of byProject.values()) entry.environments.sort(compareEnvironments);
+  return [...byProject.values()];
+}
+
 export async function getProject(input: {
   organizationId: string;
   slug: string;

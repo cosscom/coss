@@ -111,6 +111,7 @@
         "better-auth": "catalog:",
         "lucide-react": "catalog:",
         "next": "catalog:",
+        "next-themes": "^0.4.6",
         "pg": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",

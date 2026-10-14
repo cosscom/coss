@@ -16,6 +16,7 @@ import {
 } from "@coss/ui/components/dialog";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
+import { PlusIcon } from "lucide-react";
 import { useActionState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
@@ -26,7 +27,10 @@ type Target = { orgSlug: string; projectSlug: string; envSlug: string };
 export function CreateApiKeyDialog(props: Target & { environmentName: string }) {
   return (
     <Dialog>
-      <DialogTrigger render={<Button size="sm" />}>Create API key</DialogTrigger>
+      <DialogTrigger render={<Button size="sm" />}>
+        <PlusIcon />
+        Create API key
+      </DialogTrigger>
       <DialogPopup>
         {/* The popup unmounts when closed, which also discards the shown key and form state. */}
         <CreateApiKeyForm {...props} />

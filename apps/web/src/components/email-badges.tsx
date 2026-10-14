@@ -6,6 +6,7 @@ import type {
 } from "@coss/email";
 import type { EnvironmentMode } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
+import { StatusDot, type StatusTone } from "./status-dot";
 
 const STATUS_VARIANT = {
   queued: "secondary",
@@ -17,6 +18,31 @@ const STATUS_VARIANT = {
 
 export function EmailStatusBadge({ status }: { status: EmailObjectOutput["status"] }) {
   return <Badge variant={STATUS_VARIANT[status]}>{status}</Badge>;
+}
+
+const STATUS_TONE = {
+  queued: "neutral",
+  sent: "success",
+  failed: "error",
+  scheduled: "info",
+  canceled: "neutral",
+} as const satisfies Record<EmailObjectOutput["status"], StatusTone>;
+
+const STATUS_LABEL = {
+  queued: "Queued",
+  sent: "Sent",
+  failed: "Failed",
+  scheduled: "Scheduled",
+  canceled: "Canceled",
+} as const satisfies Record<EmailObjectOutput["status"], string>;
+
+/** An email's status as a dot and label, for dense lists. */
+export function EmailStatusDot({ status }: { status: EmailObjectOutput["status"] }) {
+  return (
+    <StatusDot pulse={status === "queued"} tone={STATUS_TONE[status]}>
+      {STATUS_LABEL[status]}
+    </StatusDot>
+  );
 }
 
 const RECIPIENT_STATUS_VARIANT = {
@@ -81,10 +107,14 @@ export function SandboxBadge({ sandbox }: { sandbox: boolean }) {
 }
 
 export function ModeBadge({ mode }: { mode: EnvironmentMode }) {
-  return mode === "live" ? (
-    <Badge variant="warning">Live</Badge>
-  ) : (
-    <Badge variant="info">Sandbox</Badge>
+  return (
+    <Badge variant="outline">
+      {mode === "live" ? (
+        <StatusDot tone="success">Live</StatusDot>
+      ) : (
+        <StatusDot tone="info">Sandbox</StatusDot>
+      )}
+    </Badge>
   );
 }
 

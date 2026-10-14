@@ -71,13 +71,18 @@ export {
 export { FakeIdentityProvider } from "./providers/fake-identity.ts";
 export { FakeTrackingHostnameProvider } from "./providers/fake-tracking-hostnames.ts";
 export {
+  type EmailActivity,
+  type EmailActivityDay,
+  type EmailListFilters,
   type EmailListItem,
   type EmailRecipientRow,
   type EmailRow,
+  emailActivity,
   getEmail,
   listEmailEvents,
   listEmailLinks,
   listEmails,
+  listEmailsPage,
   toEmailEventObject,
   toEmailLinkObject,
   toEmailObject,
