@@ -1,10 +1,12 @@
 /**
  * Fixed signals for sandbox environments, so integrations can exercise every decision without
- * real abuse: documentation addresses (192.0.2.0/24, RFC 5737) and `.test` email domains
- * (RFC 6761) behave as documented in the "Testing" guide. Live environments never use these.
+ * real abuse: documentation addresses (192.0.2.0/24, RFC 5737), `.test` email domains (RFC 6761),
+ * captcha tokens and content markers behave as documented in the "Testing" guide. Live
+ * environments never use these.
  */
 import type { MailDomainVerdict } from "@coss/signals/email";
 import { type IpSignals, normalizeIp } from "@coss/signals/ip";
+import { CONTENT_CATEGORIES, type ContentCategory } from "./schemas.ts";
 
 const RESIDENTIAL = { asn: 64500, as_name: "Example Broadband", country: "GB" } as const;
 
@@ -72,4 +74,23 @@ export function sandboxCaptchaVerdict(token: string): boolean | null {
   if (token === SANDBOX_CAPTCHA_TOKENS.pass) return true;
   if (token === SANDBOX_CAPTCHA_TOKENS.fail) return false;
   return null;
+}
+
+const CONTENT_MARKER = /\[coss-test:([a-z]+)(?::([01](?:\.\d+)?))?\]/g;
+
+/**
+ * Content scores in sandbox environments (no model): `[coss-test:<category>]` in the text scores
+ * 0.99 in that category, `[coss-test:<category>:<score>]` exactly `<score>`; the rest score 0.01.
+ * The same markers as COSS's own content screening.
+ */
+export function sandboxContentScores(text: string): Record<ContentCategory, number> {
+  const scores = Object.fromEntries(
+    CONTENT_CATEGORIES.map((category) => [category, 0.01]),
+  ) as Record<ContentCategory, number>;
+  for (const [, category, score] of text.matchAll(CONTENT_MARKER)) {
+    if ((CONTENT_CATEGORIES as readonly string[]).includes(category ?? "")) {
+      scores[category as ContentCategory] = score === undefined ? 0.99 : Number(score);
+    }
+  }
+  return scores;
 }

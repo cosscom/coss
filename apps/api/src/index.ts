@@ -47,9 +47,14 @@ const app = createApp({
     allowInsecureUrls: process.env.NODE_ENV !== "production",
     plans,
   },
-  // Velocity counters share the rate limiter's Valkey connection; captcha secrets are encrypted
-  // with the webhook key ring.
-  riskDeps: createRiskDeps(env, { valkey: rateLimits.valkey, secretsKeys }),
+  // Velocity counters and customers' rate limit buckets share the rate limiter's Valkey
+  // connection; classifications charge its `risk.classify*` buckets; captcha secrets are
+  // encrypted with the webhook key ring.
+  riskDeps: createRiskDeps(env, {
+    valkey: rateLimits.valkey,
+    limiter: rateLimits.limiter,
+    secretsKeys,
+  }),
   plans,
   publicUrl: env.API_PUBLIC_URL,
   portalUrl: env.PORTAL_PUBLIC_URL ?? null,

@@ -1,7 +1,14 @@
 /**
  * Builds risk's dependencies from validated env, once per process. The API passes the rate
- * limiter's Valkey connection for velocity; the dashboard only needs the hasher.
+ * limiter's Valkey connection (velocity, customers' buckets) and the limiter itself (the
+ * classification budget); the dashboard only needs the hasher.
  */
+import { MemoryStore, type RateLimiter, ValkeyStore } from "@coss/ratelimit";
+import {
+  createClassifier,
+  DEFAULT_SCREENING_MODEL,
+  type ScreeningEnv,
+} from "@coss/screening/runtime";
 import { cachedMailDomainCheck } from "@coss/signals/email";
 import { rdapClient } from "@coss/signals/rdap";
 import type { SecretsKeyRing } from "@coss/webhooks";
@@ -25,10 +32,20 @@ export function riskHasherFromEnv(env: RiskEnv, opts: { production?: boolean } =
 }
 
 export function createRiskDeps(
-  env: RiskEnv & { RATE_LIMIT_KEY_PREFIX?: string | undefined },
-  opts: { valkey: Redis | Cluster | null; secretsKeys: SecretsKeyRing; production?: boolean },
+  env: RiskEnv &
+    Partial<Pick<ScreeningEnv, "SCREENING_MODEL" | "AI_GATEWAY_API_KEY">> & {
+      RATE_LIMIT_KEY_PREFIX?: string | undefined;
+    },
+  opts: {
+    valkey: Redis | Cluster | null;
+    secretsKeys: SecretsKeyRing;
+    /** Charges the `risk.classify*` buckets before live classifications. */
+    limiter?: RateLimiter;
+    production?: boolean;
+  },
 ): RiskDeps {
   const rdap = rdapClient();
+  const { limiter } = opts;
   return {
     hash: riskHasherFromEnv(env, opts),
     ipIntelligence: createIpIntelligenceSource(),
@@ -39,5 +56,22 @@ export function createRiskDeps(
     checkMailDomain: cachedMailDomainCheck(),
     domainAge: (domain) => rdap.registration(domain),
     secretsKeys: opts.secretsKeys,
+    classifier: createClassifier({
+      SCREENING_CLASSIFIER: env.RISK_CLASSIFIER ?? "off",
+      SCREENING_MODEL: env.SCREENING_MODEL ?? DEFAULT_SCREENING_MODEL,
+      AI_GATEWAY_API_KEY: env.AI_GATEWAY_API_KEY,
+    }),
+    chargeClassification: limiter
+      ? async (organizationId) =>
+          (
+            await limiter.consume({
+              buckets: ["risk.classify", "risk.classify.day"],
+              subject: organizationId,
+              organizationId,
+            })
+          ).allowed
+      : undefined,
+    // Customers' buckets share the velocity connection; in memory without Valkey (development).
+    limits: opts.valkey ? new ValkeyStore(opts.valkey) : new MemoryStore(),
   };
 }

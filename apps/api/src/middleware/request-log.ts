@@ -37,6 +37,16 @@ function skipped(method: string, path: string): boolean {
  */
 const CONTENT_RESPONSES = ["/v1/received_emails"];
 
+/**
+ * Requests carrying content the log must not copy: text sent for classification, which COSS
+ * promises to keep nowhere (assessments' `content` is redacted by `redactBody`).
+ */
+const CONTENT_REQUESTS = ["/v1/risk/content/classify"];
+
+function keepsRequestBody(path: string): boolean {
+  return !CONTENT_REQUESTS.includes(path);
+}
+
 function keepsResponseBody(path: string, status: number): boolean {
   if (status >= 400) return true;
   return !CONTENT_RESPONSES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
@@ -125,7 +135,9 @@ export function requestLog(writer: LogWriter) {
     const route = c.req.routePath.endsWith("*") ? null : c.req.routePath;
     // Only bodies the handler already parsed (no second read of a 40 MB upload); Hono caches
     // what `c.req.json()` read as text.
-    const requestText = c.req.bodyCache.text as Promise<string> | undefined;
+    const requestText = keepsRequestBody(path)
+      ? (c.req.bodyCache.text as Promise<string> | undefined)
+      : undefined;
     const length = Number(response.headers.get("content-length") ?? Number.NaN);
     const responseCopy =
       isJson(response.headers) &&

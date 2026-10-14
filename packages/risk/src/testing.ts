@@ -2,6 +2,8 @@
  * Test helpers: deterministic dependencies (fixed IP data, fake DNS, in-memory velocity) and the
  * addresses they know.
  */
+import { MemoryStore } from "@coss/ratelimit";
+import { fakeClassifier } from "@coss/screening/testing";
 import type { CaptchaVerdict } from "@coss/signals/captcha";
 import type { MailDomainVerdict } from "@coss/signals/email";
 import {
@@ -105,7 +107,10 @@ export const TEST_HASH_KEY: Uint8Array = new TextEncoder().encode(
   "coss-risk-test-hash-key-0123456789abcdef",
 );
 
-/** Dependencies for tests, with a fresh in-memory velocity store and its own key prefix. */
+/**
+ * Dependencies for tests: a fresh in-memory velocity store and rate limit store, its own key
+ * prefix, and the fake classifier (`[coss-test:<category>]` markers, also in live environments).
+ */
 export function testRiskDeps(
   overrides: Partial<RiskDeps> = {},
 ): RiskDeps & { velocity: MemoryVelocityStore | RiskDeps["velocity"] } {
@@ -118,6 +123,8 @@ export function testRiskDeps(
     domainAge: fakeDomainAges(),
     secretsKeys: TEST_SECRETS_KEYS,
     verifyCaptcha: fakeCaptcha(),
+    classifier: fakeClassifier(),
+    limits: new MemoryStore(),
     ...overrides,
   } as RiskDeps & { velocity: MemoryVelocityStore | RiskDeps["velocity"] };
 }

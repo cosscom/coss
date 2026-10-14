@@ -75,10 +75,13 @@ import type {
   ReputationObject,
 } from "@coss/reputation/schemas";
 import type {
+  CheckRiskLimitRequest,
   CreateRiskAssessmentRequest,
   CreateRiskFeedbackRequest,
+  CreateRiskLimitBucketRequest,
   CreateRiskListEntryRequest,
   CreateRiskRuleRequest,
+  DeletedRiskLimitBucket,
   DeletedRiskListEntry,
   DeletedRiskRule,
   ForgottenRiskUser,
@@ -86,6 +89,15 @@ import type {
   ListRiskListEntriesQuery,
   RiskAssessment,
   RiskAssessmentList,
+  RiskContentClassification,
+  RiskContentClassifyRequest,
+  RiskEmailCheck,
+  RiskEmailCheckRequest,
+  RiskIpCheck,
+  RiskIpCheckRequest,
+  RiskLimit,
+  RiskLimitBucket,
+  RiskLimitBucketList,
   RiskListEntry,
   RiskListEntryList,
   RiskRule,
@@ -93,6 +105,7 @@ import type {
   RiskRuleList,
   RiskSettings,
   RiskWebhookEvent,
+  UpdateRiskLimitBucketRequest,
   UpdateRiskRuleRequest,
   UpdateRiskSettingsRequest,
 } from "@coss/risk/schemas";
@@ -123,12 +136,14 @@ import type {
 } from "@coss/webhooks/schemas";
 import type {
   AssessRiskParams,
+  CheckRiskLimitParams,
   CheckSuppressionParams,
   CossErrorIssue,
   CossErrorType,
   CreateDomainParams,
   CreateLogDrainParams,
   CreateReceivingDomainParams,
+  CreateRiskLimitBucketParams,
   CreateRiskListEntryParams,
   CreateRiskRuleParams,
   CreateSuppressionParams,
@@ -168,6 +183,7 @@ import type {
   DeletedDomain as SdkDeletedDomain,
   DeletedLogDrain as SdkDeletedLogDrain,
   DeletedReceivedEmail as SdkDeletedReceivedEmail,
+  DeletedRiskLimitBucket as SdkDeletedRiskLimitBucket,
   DeletedRiskListEntry as SdkDeletedRiskListEntry,
   DeletedRiskRule as SdkDeletedRiskRule,
   DeletedSuppression as SdkDeletedSuppression,
@@ -196,6 +212,11 @@ import type {
   Reputation as SdkReputation,
   ReputationCheck as SdkReputationCheck,
   RiskAssessment as SdkRiskAssessment,
+  RiskContentClassification as SdkRiskContentClassification,
+  RiskEmailCheck as SdkRiskEmailCheck,
+  RiskIpCheck as SdkRiskIpCheck,
+  RiskLimit as SdkRiskLimit,
+  RiskLimitBucket as SdkRiskLimitBucket,
   RiskListEntry as SdkRiskListEntry,
   RiskRule as SdkRiskRule,
   RiskRuleCondition as SdkRiskRuleCondition,
@@ -213,6 +234,7 @@ import type {
   SendEmailParams,
   TrackingOptions,
   UpdateLogDrainParams,
+  UpdateRiskLimitBucketParams,
   UpdateRiskRuleParams,
   UpdateRiskSettingsParams,
   UpdateTrackingRuleParams,
@@ -506,6 +528,31 @@ export type Contract = [
   Assert<MutuallyAssignable<z.input<typeof CreateRiskRuleRequest>, CreateRiskRuleParams>>,
   Assert<MutuallyAssignable<z.input<typeof UpdateRiskRuleRequest>, UpdateRiskRuleParams>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedRiskRule>, SdkDeletedRiskRule>>,
+  // Risk building blocks (the SDK takes the email/IP/text as arguments) and rate limits.
+  Assert<MutuallyAssignable<z.input<typeof RiskEmailCheckRequest>, { email: string }>>,
+  Assert<MutuallyAssignable<z.output<typeof RiskEmailCheck>, SdkRiskEmailCheck>>,
+  Assert<MutuallyAssignable<z.input<typeof RiskIpCheckRequest>, { ip: string }>>,
+  Assert<MutuallyAssignable<z.output<typeof RiskIpCheck>, SdkRiskIpCheck>>,
+  Assert<MutuallyAssignable<z.input<typeof RiskContentClassifyRequest>, { text: string }>>,
+  Assert<
+    MutuallyAssignable<z.output<typeof RiskContentClassification>, SdkRiskContentClassification>
+  >,
+  Assert<MutuallyAssignable<z.input<typeof CheckRiskLimitRequest>, CheckRiskLimitParams>>,
+  Assert<MutuallyAssignable<z.output<typeof RiskLimit>, SdkRiskLimit>>,
+  Assert<MutuallyAssignable<z.output<typeof RiskLimitBucket>, SdkRiskLimitBucket>>,
+  Assert<
+    MutuallyAssignable<
+      z.output<typeof RiskLimitBucketList>,
+      List<SdkRiskLimitBucket> & { has_more: false }
+    >
+  >,
+  Assert<
+    MutuallyAssignable<z.input<typeof CreateRiskLimitBucketRequest>, CreateRiskLimitBucketParams>
+  >,
+  Assert<
+    MutuallyAssignable<z.input<typeof UpdateRiskLimitBucketRequest>, UpdateRiskLimitBucketParams>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof DeletedRiskLimitBucket>, SdkDeletedRiskLimitBucket>>,
   // Errors: every API error type is one the SDK knows, and issues have the same shape.
   Assert<ApiError["type"] extends CossErrorType ? true : false>,
   Assert<MutuallyAssignable<NonNullable<ApiError["issues"]>[number], CossErrorIssue>>,

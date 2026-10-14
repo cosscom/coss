@@ -3,6 +3,7 @@ import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { riskEnvShape } from "@coss/risk/env";
+import { screeningEnvShape } from "@coss/screening/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
@@ -48,6 +49,10 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? riskEnvShape.RISK_HASH_KEY.unwrap()
         : riskEnvShape.RISK_HASH_KEY,
+    // Risk's content classification (`ai`: SCREENING_MODEL through the AI Gateway).
+    RISK_CLASSIFIER: riskEnvShape.RISK_CLASSIFIER,
+    SCREENING_MODEL: screeningEnvShape.SCREENING_MODEL,
+    AI_GATEWAY_API_KEY: screeningEnvShape.AI_GATEWAY_API_KEY,
     // Error and performance monitoring; read by src/instrument.ts before this schema runs.
     ...sentryEnvShape,
     // The image's commit (Dockerfile build argument), Sentry's release.

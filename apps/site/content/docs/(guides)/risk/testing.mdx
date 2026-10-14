@@ -18,8 +18,13 @@ these test inputs (documentation addresses and `.test` domains, which never belo
 | Any other `….test` domain   | A domain that receives mail (no DNS lookup)         |
 | Captcha token `test-pass`   | A token the provider accepts                         |
 | Captcha token `test-fail`   | A token the provider refuses (`captcha.failed`)      |
+| Content with `[coss-test:phishing]` | Scores 0.99 in that category (any of `spam`, `phishing`, `malware`, `fraud`) |
+| Content with `[coss-test:spam:0.4]` | Scores exactly 0.4 in that category |
+| Any other content           | Scores 0.01 in every category (no model call)        |
 
-The captcha test tokens work without a captcha provider in the settings. Typos (`@gmail.con`), role
+The captcha test tokens work without a captcha provider in the settings, and content markers
+without any model; sandbox classifications don't count against the organization's limit.
+[Email and IP checks](/docs/risk/lookups) see the same test addresses. Typos (`@gmail.con`), role
 accounts (`info@`), velocity, duplicates, login history, feedback, lists, rules and settings work as
 in live environments.
 

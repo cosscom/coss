@@ -10,8 +10,9 @@ SQS → the worker; see "Receiving email" below). A sample of live messages is s
 (COSS rates usage itself; Stripe, behind a provider interface, only collects). Rate limits (per API key, per-org send quotas, dashboard
 auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/ratelimit`. Errors and traces go to
 Sentry (organization `cosscom`) through `@coss/observability`. COSS Risk (`@coss/risk`, `coss.risk.assess()`) assesses customers' sign-ups, logins and other
-events: email/IP signals (`@coss/signals`) plus what each environment remembers (velocity in Valkey, duplicate
-mailboxes, fraud reports, allow/block lists) become `allow`/`review`/`block` with reasons. Human setup docs (incl. running on SES): [README.md](./README.md).
+events: email/IP signals (`@coss/signals`), content scores, plus what each environment remembers (velocity in Valkey,
+duplicate mailboxes, fraud reports, allow/block lists) and its rules become `allow`/`review`/`block` with reasons; the
+signals are also building blocks of their own, next to rate limiting as a service (`coss.risk.limit()`). Human setup docs (incl. running on SES): [README.md](./README.md).
 
 ## License
 
@@ -37,8 +38,8 @@ the SDK.
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption, endpoint auto-disable and recovery; log drains (management, signed NDJSON batch delivery, retention); `./engine` (the delivery engine shared by every product: holds, lease fencing, retry outcomes, the HTTP attempt, endpoint health, a bounded runner); `./schemas`, `./env` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
 | `packages/hooks` | `@coss/hooks` | Hooks, webhooks as a service: applications (one per customer's end user, by id or `uid`), event types, endpoints (own secrets, filters, rate limits, auto-disable), messages fanned out to deliveries (day-partitioned, idempotent sends), the delivery worker on the shared engine, endpoint recovery, portal sessions and settings; `./schemas`, `./env` (zod only), `./testing`. |
-| `packages/screening` | `@coss/screening` | Product-agnostic AI content screening: sampling per org + product, the `ContentClassifier` interface (Vercel AI SDK `experimental_decide` adapter under `./ai`, `fakeClassifier` in `./testing`), verdict history, the `content_screening` reputation check; `./env` (zod only), `./runtime`. |
-| `packages/risk` | `@coss/risk` | Risk assessments: `assessRisk` (signals under a time budget, scoring, decision, one transaction with the log line, mailbox identity and `risk.assessment.review` webhook), velocity (`VELOCITY_SCRIPT` in Valkey or memory), lists, feedback + fraud memory, forgetting users, IP datasets (`refreshDueDatasets` in the worker, `createIpIntelligenceSource` in the API), sandbox fixtures, purges; `./schemas` (zod only: wire schemas, `REASONS`, `VELOCITY_RULES`, `RISK_EVENT_TYPES`), `./env` (zod only), `./runtime`, `./datasets`, `./testing`. |
+| `packages/screening` | `@coss/screening` | Product-agnostic AI content screening: sampling per org + product, the `ContentClassifier` interface (`./classifier`; content kinds `email`, `sms` and `text`, the last for risk's user content; Vercel AI SDK `experimental_decide` adapter under `./ai`, `fakeClassifier` in `./testing`), `prepareText`/`prepareLinks` (`./text`), verdict history, the `content_screening` reputation check; `./env` (zod only), `./runtime`. `./classifier`, `./text`, `./ai`, `./runtime` and `./testing` import no workspace package. |
+| `packages/risk` | `@coss/risk` | Risk assessments: `assessRisk` (signals under a time budget, scoring, decision, one transaction with the log line, mailbox identity and `risk.assessment.review` webhook), velocity (`VELOCITY_SCRIPT` in Valkey or memory), lists, feedback + fraud memory, forgetting users, IP datasets (`refreshDueDatasets` in the worker, `createIpIntelligenceSource` in the API), the building blocks (`checkEmail`, `checkIp`, `classifyContent` in `lookups.ts`), customers' rate limit buckets (`checkRiskLimit` in `limits.ts`), sandbox fixtures, purges; `./schemas` (zod only: wire schemas, `REASONS`, `VELOCITY_RULES`, `RISK_EVENT_TYPES`), `./env` (zod only), `./runtime`, `./datasets`, `./testing`. |
 | `packages/billing` | `@coss/billing` | Plans and billing: the price catalog (`./catalog`: meters, list rates, plans, entitlements, add-ons) and contract terms (`./schemas`), both client-safe; the pure rating engine (`./engine`); accounts, contracts (self-serve and sales), hourly metered usage (`./metering`, the only module products import), credit grants and their ledger, month closes, invoices, payments, credit notes, dunning and holds, usage alerts, plan enforcement (`PlanGate`/`UsageGate` types in `./gate`), providers (fake, manual, Stripe under `./stripe`), the public API's read models and `billing.*` webhook events (wire schemas in `./wire`, client-safe); `./env` (zod only), `./runtime`, `./testing`. `scripts/seed.ts`, `scripts/close-period.ts`. |
 | `packages/observability` | `@coss/observability` | Sentry setup shared by every app: env shape (`./env`, zod only), `sentryConfig`/`sentryOptions`, PII scrubbing (`scrubEvent`), the browser init (`./browser`), the dashboard's envelope tunnel (`./tunnel`) and `withSentryConfig` options (`./build`). Takes each app's SDK; depends on no framework SDK and no workspace. |
 | `packages/logs` | `@coss/logs` | Environment logs and the org audit log: the day-partitioned `log_entry` table (API requests, email events, webhook attempts), the buffered fail-open request writer, queries (keyset pages, histogram, facets, related lines, CSV/NDJSON export), partition retention, `org_audit_event`, the log drain outbox (`log_drain_record`, written by `appendLogEntries`/`recordOrgAuditEvent`); `./schemas` + `./query` (search syntax; zod only), `./testing`. |
@@ -51,11 +52,11 @@ the SDK.
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests, and the production Terraform + deploy scripts that apply it. See `infra/AGENTS.md`. |
 
 Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `portal`, `infra`; `signals` (no workspace deps) ← `auth`, `webhooks`, `risk`; `db ← auth ← tenancy`,
-`db ← logs ← webhooks ← risk` (`risk` also `→ signals, ratelimit, retention`; `email` imports only `@coss/risk/schemas`, for `WEBHOOK_EVENT_TYPES`), `db ← logs ← webhooks ← reputation ← screening ← email`, `reputation ← hooks`, `db ← ratelimit`, `webhooks ← billing ← email` (packages take
+`db ← logs ← webhooks ← risk` (`risk` also `→ signals, ratelimit, retention, screening` — only screening's DB-free `./classifier`, `./text`, `./runtime`, `./testing`; `email` imports only `@coss/risk/schemas`, for `WEBHOOK_EVENT_TYPES`), `db ← logs ← webhooks ← reputation ← screening ← email`, `reputation ← hooks`, `db ← ratelimit`, `webhooks ← billing ← email` (packages take
 `billing`'s plan checks injected — `PlanGate`, `UsageGate`, and in webhooks the structural `WebhookPlanLimits`, since
 billing enqueues `billing.*` events through it — and email imports only `./metering`, `./gate` and `./wire`); `versioning` (no deps) ← `tenancy`, `webhooks`, `email`, `billing` (`schemas`/`wire` examples);
 `retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `hooks`, `billing`, `worker`, `web`, `site`;
-`api → tenancy, email, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, db`;
+`api → tenancy, email, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, screening (`./env` only), db`;
 `web → auth, tenancy, email, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, db, ui`; `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, hooks, ratelimit, screening, billing` (`slugs`, `env` only);
 `worker → auth (`./emails` only), email, hooks, reputation, screening, webhooks, ratelimit, logs, risk, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui` and `kloq` depend on no workspace (`site → kloq`).
@@ -180,7 +181,8 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `WORKER_LOOPS` | worker: comma-separated loops to run (`WORKER_LOOP_NAMES` in `apps/worker/src/jobs.ts`, plus `email-dispatch`); unset runs all. A second worker service with `hooks` scales Hooks deliveries on their own |
 | `LOG_RETENTION_DAYS` | worker: days of environment logs kept (1-31, default 30); whole expired day partitions are dropped hourly |
 | `BILLING_PROVIDER`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | web + worker: the payment provider of new billing accounts (`fake` default, or `stripe`, which needs the key); the webhook secret only the dashboard (`/api/billing/webhook`). Shape in `@coss/billing/env` |
-| `SCREENING_CLASSIFIER`, `SCREENING_MODEL`, `AI_GATEWAY_API_KEY` | worker: content screening (`off`/`fake`/`ai`; a Vercel AI Gateway decision model id, default `typesafe-ai/jev`; the Gateway key, required with `ai`) |
+| `SCREENING_CLASSIFIER`, `SCREENING_MODEL`, `AI_GATEWAY_API_KEY` | worker: content screening (`off`/`fake`/`ai`; a Vercel AI Gateway decision model id, default `typesafe-ai/jev`; the Gateway key, required with `ai`). The model and key also serve the api's `RISK_CLASSIFIER` |
+| `RISK_CLASSIFIER` | api: risk's content classification in live environments (`off` default: classify answers 503 and assessments skip content; `fake`: the `[coss-test:…]` markers; `ai`: `SCREENING_MODEL` with `AI_GATEWAY_API_KEY`). Sandbox environments always use the markers |
 | `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | api, worker, web: Sentry (each its own project's DSN; web's also serves browsers of both zones); unset → nothing reported. Read before t3-env (`src/instrument.ts`, `src/lib/monitoring-server.ts`, `/api/monitoring`) and validated by it (`sentryEnvShape`) |
 | `SENTRY_RELEASE` | api, worker: the image's commit (Dockerfile build argument); the Next apps' release is `NEXT_DEPLOYMENT_ID`, injected at build |
 | `SENTRY_AUTH_TOKEN` (`SENTRY_ORG`, `SENTRY_PROJECT`) | Next builds only (`globalPassThroughEnv`; a BuildKit secret in the Dockerfiles): uploads source maps to `cosscom`/`web` and deletes them from the build. Unset → no source maps |
@@ -1057,7 +1059,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   belongs in `releaseProviderResources`. Admin audit events are kept (no FKs).
 - **Risk** (`packages/risk`, tables `risk_assessment` (ids `rsk_`), `risk_feedback` (`rskfb_`), `risk_identity`
   (`rskid_`), `risk_report` (`rskrep_`), `risk_list_entry` (`rskle_`), `risk_rule` (`rskrule_`), `risk_settings`
-  (one row per environment), `risk_user_network` (`rskun_`), platform tables `risk_dataset` and `risk_domain_age`):
+  (one row per environment), `risk_user_network` (`rskun_`), `risk_limit_bucket` (`rsklb_`), platform tables
+  `risk_dataset` and `risk_domain_age`):
   `assessRisk` collects every signal in parallel and **fails open per signal** (DNS 800 ms, RDAP domain age 1 s —
   a slower lookup keeps running and fills `risk_domain_age` —, captcha siteverify 2 s, Valkey's 100 ms command
   timeout, missing datasets → listed in `degraded`, never an error). Order of decision: allow list, block list, the
@@ -1085,6 +1088,22 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   documented in `/docs/risk/testing`. Credit IPinfo where its data is shown (CC BY-SA). Permissions: `risk`
   (`assess`, `read`, `feedback`, `update` for settings), `riskList` and `riskRule` (backfilled by `0047` and `0054`);
   members read. Resolving an open review sends `risk.assessment.reviewed`.
+  **Content** (`content: { text }` on assessments, `POST /v1/risk/content/classify`): scored per category
+  (`CONTENT_CATEGORIES`) by the `text` kind of `@coss/screening`'s classifier at request time (3 s; sandbox
+  environments read the markers in `sandboxContentScores`), **outside** the assessment's transaction and after a
+  replay pre-check, so neither a held connection nor a retry pays for it. COSS never decides from scores:
+  `content.*` reasons fire only at the environment's `content_thresholds`, and rules test `content.*` fields. The
+  text is never stored or logged — the classify route keeps no request body (`CONTENT_REQUESTS` in
+  `request-log.ts`) and `redactBody` keeps only string lengths inside `content` objects. Live classifications
+  charge the organization's `risk.classify`/`risk.classify.day` buckets (`chargeClassification`): over them, classify
+  is a 429 and assessments go on without content (`degraded: ["content"]`). The building blocks
+  (`/v1/risk/email/check`, `/ip/check`, classify) store and count nothing about the address or text and share
+  `risk:assess` and the `risk.assess` bucket. **Rate limiting as a service** (`POST /v1/risk/limits`): GCRA through
+  `@coss/ratelimit`'s `RateLimitStore` (the API's Valkey connection) with the bucket's own rule read on every
+  check; keys are HMACs (`limit_key`), store keys `<prefix>:risk:l:{<bucket id>:<hash>}` (an `Idempotency-Key`
+  caches an allowed answer for an hour under the same hash tag); a store failure answers with the bucket's
+  `on_failure` (`degraded: true`). Buckets need `risk:read`/`risk:update`; checks `risk:assess` and the
+  `risk.limit` bucket (fails open, so the customer's own `on_failure` decides).
 - **Monitoring** (Sentry, `@coss/observability`): api and worker import `src/instrument.ts` first in `src/index.ts`
   (`@sentry/bun`; Bun has no runtime module hooks, so Hono gets `honoMiddleware(app)` in `createApp` — route names
   only, errors come from `onError`'s `console.error` — and pg/AWS calls aren't traced). The dashboard initializes
@@ -1191,8 +1210,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   and suspensions (not recoveries or reinstatements), and only once the worker's `NOTIFICATIONS_*` variables point
   at a verified sender of COSS's own organization.
 
-**Not built yet** (don't assume these exist; delete a line when it ships): content signals in risk assessments, the
-risk building-block endpoints (email/IP lookups, content classification, rate limiting as a service), learning from
+**Not built yet** (don't assume these exist; delete a line when it ships): learning from
 feedback, a paid VPN/proxy data provider, the real landing page,
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,

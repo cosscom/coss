@@ -72,7 +72,11 @@ used.
   IP addresses up in data we download and host ourselves; we don't send them to anyone. To tell how old an email
   domain is, we ask its registry over RDAP, sending only the domain name. If you configure a captcha provider
   (Cloudflare Turnstile or hCaptcha), we send it the captcha token, your secret key and the person's IP address
-  to verify the token.
+  to verify the token. If you send text the person wrote (a profile bio, a message) with an assessment or to be
+  classified, AI models score it through Vercel's AI Gateway, with zero data retention; we keep only the scores, never
+  the text.
+- **Rate limiting for your service:** the keys you check against your own rate limit buckets (for example a user's
+  email address) are kept only as keyed hashes, in our cache, until their bucket refills.
 - **Domains and webhooks:** the sending domains you verify and their DNS records; your webhook endpoint URLs and
   signing secrets (encrypted at rest), and a record of each delivery attempt, including up to 1 KB of your endpoint's
   response.
@@ -130,8 +134,8 @@ We share personal data only as described here:
   services to us:
   - **Amazon Web Services, Inc.** (United States): hosting, databases, caching, queues and email delivery (Amazon
     SES).
-  - **Vercel, Inc.** (United States) and the model providers available through its AI Gateway: AI content screening,
-    with zero data retention.
+  - **Vercel, Inc.** (United States) and the model providers available through its AI Gateway: AI content screening
+    and the classification of content submitted for risk assessment, with zero data retention.
   - **Cloudflare, Inc.** (United States): DNS for coss.com.
 
   The complete, current list of Cal.com subprocessors is in our Trust Center at

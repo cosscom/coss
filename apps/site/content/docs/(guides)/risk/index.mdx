@@ -21,6 +21,8 @@ every decision. COSS combines:
   addresses, the network (ASN) and country.
 - **Your captcha**: the token of your Turnstile or hCaptcha widget, verified with the provider
   ([settings](/docs/risk/settings#captcha)).
+- **Content**: what the user wrote (a bio, a message), scored for spam, phishing, malware and fraud
+  by an AI model ([content classification](/docs/risk/content)).
 - **What this environment has seen**: how often the same IP address, subnet, email domain, mailbox
   or user came by in the last hour and day; whether the mailbox already has an account (dots and
   `+tags` folded at Gmail and similar); the countries and networks each user logged in from; and
@@ -91,12 +93,19 @@ The SDK retries network errors and server errors with the same `Idempotency-Key`
 assessment returns the first result without counting the event again. Assessments are limited to
 100 per second per API key (bursts of 200).
 
-When a signal is unavailable (a slow DNS lookup, missing IP data), the assessment is made without it
-and the group is listed in `degraded`; it never fails because of it.
+When a signal is unavailable (a slow DNS lookup, missing IP data, a failed classification), the
+assessment is made without it and the group is listed in `degraded`; it never fails because of it.
+
+## Building blocks
+
+Each signal is also available on its own, without an assessment or anything stored:
+[email and IP checks](/docs/risk/lookups) and [content classification](/docs/risk/content). And
+[rate limiting](/docs/risk/rate-limits) gives your own endpoints COSS's limiter, with buckets you
+define.
 
 ## What is stored
 
-Assessments keep the email address, IP address and user agent for
+Assessments keep the email address, IP address and user agent (never content, only its scores) for
 <RetentionPeriod of="risk_personal_data" />, then only keyed hashes of them; decisions, reasons and
 signals stay for <RetentionPeriod of="risk_assessments" />. When you delete one of your users, call
 `coss.risk.users.forget(userId)` (see [Forgetting users](/docs/risk/lists-and-feedback#forgetting-users)).

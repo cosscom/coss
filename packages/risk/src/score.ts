@@ -123,6 +123,11 @@ export function reasonMessage(reason: StoredReason): string {
       return "The captcha token was refused.";
     case "captcha.missing":
       return "No captcha token, while your settings require one.";
+    case "content.spam":
+    case "content.phishing":
+    case "content.malware":
+    case "content.fraud":
+      return `The content's ${reason.code.slice("content.".length)} score (${reason.value ?? "?"}) reached your threshold (${reason.threshold ?? "?"}).`;
     case "rule.matched":
       return `Your rule "${reason.name ?? reason.rule ?? "rule"}" matched.`;
     case "list.blocked":

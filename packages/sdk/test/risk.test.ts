@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { Coss, type List, type RiskAssessment, type RiskListEntry } from "../src/index.ts";
+import {
+  Coss,
+  type List,
+  type RiskAssessment,
+  type RiskLimit,
+  type RiskListEntry,
+} from "../src/index.ts";
 import { apiError, json, mockFetch } from "./helpers.ts";
 
 const API_KEY = "coss_test_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl";
@@ -19,7 +25,14 @@ const assessment: RiskAssessment = {
       suggestion: "gmail.com",
     },
   ],
-  signals: { email: null, ip: null, velocity: { ip_1h: 1 }, captcha: null, login: null },
+  signals: {
+    email: null,
+    ip: null,
+    velocity: { ip_1h: 1 },
+    captcha: null,
+    login: null,
+    content: null,
+  },
   user: { id: null, email: "x@gmail.con" },
   ip: "203.0.113.7",
   degraded: [],
@@ -186,6 +199,69 @@ describe("coss.risk.settings and coss.risk.rules", () => {
       ["GET", `${BASE}/rules/${rule.id}`],
       ["PATCH", `${BASE}/rules/${rule.id}`],
       ["DELETE", `${BASE}/rules/${rule.id}`],
+    ]);
+  });
+});
+
+describe("coss.risk building blocks and rate limits", () => {
+  test("checkEmail, checkIp and classify POST their input", async () => {
+    const { risk, calls } = client(json(200, {}));
+    await risk.checkEmail("ada@gnail.com");
+    await risk.checkIp("203.0.113.7");
+    await risk.classify({ text: "Win a prize" });
+    expect(calls.map((call) => [call.method, call.url, JSON.parse(call.body ?? "")])).toEqual([
+      ["POST", `${BASE}/email/check`, { email: "ada@gnail.com" }],
+      ["POST", `${BASE}/ip/check`, { ip: "203.0.113.7" }],
+      ["POST", `${BASE}/content/classify`, { text: "Win a prize" }],
+    ]);
+  });
+
+  test("limit retries with the same idempotency key", async () => {
+    const answer: RiskLimit = {
+      object: "risk_limit",
+      bucket: "password_reset",
+      allowed: true,
+      limit: 5,
+      remaining: 4,
+      reset_ms: 720000,
+      retry_after_ms: 0,
+      degraded: false,
+    };
+    const { risk, calls } = client(
+      apiError(503, { type: "api_error", code: "unavailable" }),
+      json(200, answer),
+    );
+    expect(await risk.limit({ bucket: "password_reset", key: "ada@example.com" })).toEqual({
+      data: answer,
+      error: null,
+    });
+    expect(calls.map((call) => call.url)).toEqual([`${BASE}/limits`, `${BASE}/limits`]);
+    const key = calls[0]?.headers.get("idempotency-key");
+    expect(key).toBeTruthy();
+    expect(calls[1]?.headers.get("idempotency-key")).toBe(key);
+  });
+
+  test("limitBuckets CRUD; create is never retried", async () => {
+    const failing = client(apiError(503, { type: "api_error", code: "unavailable" }));
+    const result = await failing.risk.limitBuckets.create({
+      name: "password_reset",
+      limit: 5,
+      period_seconds: 3600,
+    });
+    expect(result.error?.code).toBe("unavailable");
+    expect(failing.calls).toHaveLength(1);
+
+    const id = "rsklb_01k5f9yq8re8vb6q2wmz0tb2xd";
+    const { risk, calls } = client(json(200, {}));
+    await risk.limitBuckets.list();
+    await risk.limitBuckets.get(id);
+    await risk.limitBuckets.update(id, { burst: 10 });
+    await risk.limitBuckets.delete(id);
+    expect(calls.map((call) => [call.method, call.url])).toEqual([
+      ["GET", `${BASE}/limit_buckets`],
+      ["GET", `${BASE}/limit_buckets/${id}`],
+      ["PATCH", `${BASE}/limit_buckets/${id}`],
+      ["DELETE", `${BASE}/limit_buckets/${id}`],
     ]);
   });
 });

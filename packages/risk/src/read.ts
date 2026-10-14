@@ -27,6 +27,8 @@ export type StoredSignals = {
   velocity: RiskAssessmentOutput["signals"]["velocity"];
   captcha: RiskAssessmentOutput["signals"]["captcha"];
   login: RiskAssessmentOutput["signals"]["login"];
+  /** Scores only: the content itself is never stored. */
+  content: RiskAssessmentOutput["signals"]["content"];
 };
 
 export function inRiskEnvironment(scope: RiskEnvironmentScope): SQL | undefined {
@@ -60,6 +62,7 @@ export function toRiskAssessmentObject(row: RiskAssessmentRow): RiskAssessmentOu
       velocity: signals.velocity ?? null,
       captcha: signals.captcha ?? null,
       login: signals.login ?? null,
+      content: signals.content ?? null,
     },
     user: { id: row.userId, email: row.email },
     ip: row.ip,

@@ -30,6 +30,7 @@ describe("settings", () => {
       block_threshold: 0.85,
       disabled_reasons: [],
       captcha: null,
+      content_thresholds: { spam: null, phishing: null, malware: null, fraud: null },
       updated_at: null,
     });
     // Disposable (0.7) is a review by default…

@@ -67,6 +67,34 @@ export const BUCKETS = {
     overridable: true,
     failureMode: "deny",
   },
+  // Content classification (`POST /v1/risk/content/classify`, and assessments with `content`):
+  // every call asks an AI model, so it is capped per organization as well as by the key's
+  // `risk.assess` bucket. Assessments over it go without content (`degraded`) instead of failing.
+  "risk.classify": {
+    scope: "org",
+    limit: 10,
+    periodMs: SECOND,
+    burst: 20,
+    overridable: true,
+    failureMode: "deny",
+  },
+  "risk.classify.day": {
+    scope: "org",
+    limit: 10_000,
+    periodMs: DAY,
+    overridable: true,
+    failureMode: "deny",
+  },
+  // Rate limiting as a service (`POST /v1/risk/limits`): the call itself, per key. Customers' own
+  // buckets decide what a store outage means for them, so this one lets the request through.
+  "risk.limit": {
+    scope: "key",
+    limit: 500,
+    periodMs: SECOND,
+    burst: 1000,
+    overridable: true,
+    failureMode: "allow",
+  },
   // Database-backed API key verification. These run before the key lookup, so a valid or
   // attacker-chosen key cannot turn the database pool into the first line of rate limiting.
   "api.authentication.key": {

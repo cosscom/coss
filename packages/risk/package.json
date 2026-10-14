@@ -20,6 +20,7 @@
     "@coss/logs": "workspace:*",
     "@coss/ratelimit": "workspace:*",
     "@coss/retention": "workspace:*",
+    "@coss/screening": "workspace:*",
     "@coss/signals": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "drizzle-orm": "catalog:",

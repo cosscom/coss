@@ -1,0 +1,57 @@
+---
+title: Email and IP checks
+description: Look up an email or IP address on its own, without an assessment.
+---
+
+The signals behind assessments are also available alone, for when you want a fact rather than a
+decision: checking an address as someone types it, or enriching your own records. Checks are
+stateless: COSS stores and counts nothing about the address, so they never say an address was seen
+before (assessments do, through velocity and duplicates).
+
+## Email
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data } = await coss.risk.checkEmail("ada@gnail.com");
+// {
+//   valid: true, domain: "gnail.com", canonical: "ada@gnail.com",
+//   disposable: false, deliverability: "deliverable",
+//   role_account: false, free_provider: false,
+//   suggestion: "gmail.com", domain_age_days: 7300, degraded: []
+// }
+```
+
+- `canonical` folds the provider's aliasing (dots and `+tags` at Gmail and similar): two addresses
+  with the same canonical form reach one inbox.
+- `deliverability` comes from DNS (MX, A and AAAA records): `undeliverable` when the domain doesn't
+  exist, has a null MX or has no record to deliver to; `unknown` when the lookup failed or took
+  longer than 800 ms.
+- `domain_age_days` comes from the domain's registry (RDAP), only for organizations' own domains
+  (not free providers or disposable domains). COSS sends the registry only the domain.
+- Lookups that failed are listed in `degraded` (`email_dns`, `domain_age`).
+
+## IP
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data } = await coss.risk.checkIp("185.220.101.1");
+// {
+//   ip: "185.220.101.1", version: 4, private: false, tor: true,
+//   hosting: false, hosting_provider: null, hosting_kind: null,
+//   asn: 60729, as_name: "…", country: "DE", degraded: []
+// }
+```
+
+- `hosting_kind` is `cloud` (a provider's published ranges: AWS, Google Cloud, Oracle,
+  DigitalOcean…), `hosting` (a hosting network) or `vpn` (a network mostly used by commercial VPN and
+  proxy services).
+- `asn`, `as_name` and `country` come from IPinfo Lite. Network and country data by
+  [IPinfo](https://ipinfo.io).
+- `degraded: ["ip_data"]` means some IP data is unavailable at the moment.
+
+Both checks count against the same per-key limit as assessments (100 per second, bursts of 200), and
+sandbox keys see the [test inputs](/docs/risk/testing).

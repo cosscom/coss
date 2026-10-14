@@ -14,7 +14,10 @@ const SECRET_KEYS: ReadonlySet<string> = new Set([
   "privatekey",
   "signingsecret",
 ]);
-/** Keys holding base64 payloads: replaced by their size. */
+/**
+ * Keys holding content: a string (base64 attachments) is replaced by its size, and so is every
+ * string inside an object (risk assessments' `content: { text }`, people's own words).
+ */
 const CONTENT_KEYS: ReadonlySet<string> = new Set(["content"]);
 
 export const REDACTED = "[redacted]";
@@ -50,6 +53,8 @@ function redactValue(value: unknown, depth: number): unknown {
       out[key] = REDACTED;
     } else if (CONTENT_KEYS.has(normalized) && typeof item === "string") {
       out[key] = `[${item.length} characters]`;
+    } else if (CONTENT_KEYS.has(normalized) && item !== null && typeof item === "object") {
+      out[key] = sizesOnly(item, depth + 1);
     } else {
       out[key] = redactValue(item, depth + 1);
     }
@@ -57,8 +62,21 @@ function redactValue(value: unknown, depth: number): unknown {
   return out;
 }
 
+/** The shape of a value with every string replaced by its length. */
+function sizesOnly(value: unknown, depth: number): unknown {
+  if (typeof value === "string") return `[${value.length} characters]`;
+  if (value === null || typeof value !== "object") return value;
+  if (depth >= MAX_DEPTH) return "[…]";
+  if (Array.isArray(value)) {
+    return value.slice(0, MAX_ARRAY_ITEMS).map((item) => sizesOnly(item, depth + 1));
+  }
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [key, sizesOnly(item, depth + 1)]),
+  );
+}
+
 /**
- * A JSON body as a log may keep it: secrets replaced, base64 `content` replaced by its length,
+ * A JSON body as a log may keep it: secrets replaced, `content` replaced by its length(s),
  * long strings and arrays cut, and at most `MAX_LOGGED_BODY` bytes overall (beyond that only
  * `{ truncated: true, preview }`).
  */

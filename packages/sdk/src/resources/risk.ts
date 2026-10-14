@@ -3,21 +3,30 @@ import type { HttpClient, RequestOptions } from "../core/http.ts";
 import type { List } from "../types/email.ts";
 import type {
   AssessRiskParams,
+  CheckRiskLimitParams,
+  CreateRiskLimitBucketParams,
   CreateRiskListEntryParams,
   CreateRiskRuleParams,
+  DeletedRiskLimitBucket,
   DeletedRiskListEntry,
   DeletedRiskRule,
   ForgottenRiskUser,
   ListRiskAssessmentsParams,
   ListRiskListEntriesParams,
   RiskAssessment,
+  RiskContentClassification,
+  RiskEmailCheck,
   RiskFeedbackParams,
+  RiskIpCheck,
+  RiskLimit,
+  RiskLimitBucket,
   RiskList,
   RiskListEntry,
   RiskListEntryType,
   RiskListEntryValue,
   RiskRule,
   RiskSettings,
+  UpdateRiskLimitBucketParams,
   UpdateRiskRuleParams,
   UpdateRiskSettingsParams,
 } from "../types/risk.ts";
@@ -234,6 +243,71 @@ export class RiskRulesResource {
   }
 }
 
+/**
+ * `coss.risk.limitBuckets`: your rate limit buckets, which `coss.risk.limit()` charges per key.
+ */
+export class RiskLimitBucketsResource {
+  readonly #http: HttpClient;
+
+  /** @internal Use `new Coss().risk.limitBuckets`. */
+  constructor(http: HttpClient) {
+    this.#http = http;
+  }
+
+  /** Creates a bucket. Not retried automatically: a retry would find its name taken. */
+  create(
+    params: CreateRiskLimitBucketParams,
+    options?: ReadOptions,
+  ): Promise<CossResult<RiskLimitBucket>> {
+    return this.#http.request<RiskLimitBucket>({
+      method: "POST",
+      path: "/v1/risk/limit_buckets",
+      body: params,
+      retry: false,
+      signal: options?.signal,
+    });
+  }
+
+  /** Every bucket, by name. */
+  list(options?: ReadOptions): Promise<CossResult<List<RiskLimitBucket>>> {
+    return this.#http.request<List<RiskLimitBucket>>({
+      method: "GET",
+      path: "/v1/risk/limit_buckets",
+      signal: options?.signal,
+    });
+  }
+
+  get(id: string, options?: ReadOptions): Promise<CossResult<RiskLimitBucket>> {
+    return this.#http.request<RiskLimitBucket>({
+      method: "GET",
+      path: `/v1/risk/limit_buckets/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+    });
+  }
+
+  /** Changes the fields given; the next check uses them. */
+  update(
+    id: string,
+    params: UpdateRiskLimitBucketParams,
+    options?: ReadOptions,
+  ): Promise<CossResult<RiskLimitBucket>> {
+    return this.#http.request<RiskLimitBucket>({
+      method: "PATCH",
+      path: `/v1/risk/limit_buckets/${encodeURIComponent(id)}`,
+      body: params,
+      signal: options?.signal,
+    });
+  }
+
+  delete(id: string, options?: ReadOptions): Promise<CossResult<DeletedRiskLimitBucket>> {
+    return this.#http.request<DeletedRiskLimitBucket>({
+      method: "DELETE",
+      path: `/v1/risk/limit_buckets/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+    });
+  }
+}
+
 /** `coss.risk.users`: what COSS remembers about your users. */
 export class RiskUsersResource {
   readonly #http: HttpClient;
@@ -276,6 +350,8 @@ export class RiskResource {
   readonly settings: RiskSettingsResource;
   /** Rules (`create`, `list`, `get`, `update`, `delete`). */
   readonly rules: RiskRulesResource;
+  /** Your rate limit buckets (`create`, `list`, `get`, `update`, `delete`). */
+  readonly limitBuckets: RiskLimitBucketsResource;
   readonly #http: HttpClient;
 
   /** @internal Use `new Coss().risk`. */
@@ -286,6 +362,7 @@ export class RiskResource {
     this.users = new RiskUsersResource(http);
     this.settings = new RiskSettingsResource(http);
     this.rules = new RiskRulesResource(http);
+    this.limitBuckets = new RiskLimitBucketsResource(http);
   }
 
   /**
@@ -314,6 +391,64 @@ export class RiskResource {
     return this.#http.request<RiskAssessment>({
       method: "POST",
       path: `/v1/risk/assessments/${encodeURIComponent(id)}/feedback`,
+      body: params,
+      idempotencyKey: options?.idempotencyKey,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Checks an email address on its own: syntax, disposable domains, deliverability, role
+   * accounts, free providers, the canonical mailbox, typos and domain age. Nothing is stored.
+   */
+  checkEmail(email: string, options?: ReadOptions): Promise<CossResult<RiskEmailCheck>> {
+    return this.#http.request<RiskEmailCheck>({
+      method: "POST",
+      path: "/v1/risk/email/check",
+      body: { email },
+      signal: options?.signal,
+    });
+  }
+
+  /** Checks an IP address on its own: Tor, cloud, hosting and VPN networks, ASN and country. */
+  checkIp(ip: string, options?: ReadOptions): Promise<CossResult<RiskIpCheck>> {
+    return this.#http.request<RiskIpCheck>({
+      method: "POST",
+      path: "/v1/risk/ip/check",
+      body: { ip },
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Scores text for spam, phishing, malware and fraud. Scores only, never a verdict: you choose
+   * the thresholds. The text is neither stored nor logged.
+   */
+  classify(
+    params: { text: string },
+    options?: ReadOptions,
+  ): Promise<CossResult<RiskContentClassification>> {
+    return this.#http.request<RiskContentClassification>({
+      method: "POST",
+      path: "/v1/risk/content/classify",
+      body: params,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Takes `cost` tokens (default 1) from `key`'s share of one of your buckets
+   * (`coss.risk.limitBuckets`). Retries reuse one `Idempotency-Key`, so they are charged once.
+   *
+   * ```ts
+   * const { data } = await coss.risk.limit({ bucket: "password_reset", key: email });
+   * if (data && !data.allowed) return tooManyRequests(data.retry_after_ms);
+   * ```
+   */
+  limit(params: CheckRiskLimitParams, options?: RequestOptions): Promise<CossResult<RiskLimit>> {
+    return this.#http.request<RiskLimit>({
+      method: "POST",
+      path: "/v1/risk/limits",
       body: params,
       idempotencyKey: options?.idempotencyKey,
       signal: options?.signal,

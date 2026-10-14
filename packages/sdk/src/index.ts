@@ -26,6 +26,7 @@ export type { ReceivingDomainsResource } from "./resources/receiving-domains.ts"
 export type { ReputationResource } from "./resources/reputation.ts";
 export type {
   RiskAssessmentsResource,
+  RiskLimitBucketsResource,
   RiskListsResource,
   RiskResource,
   RiskRulesResource,
@@ -154,8 +155,11 @@ export type {
 } from "./types/reputation.ts";
 export type {
   AssessRiskParams,
+  CheckRiskLimitParams,
+  CreateRiskLimitBucketParams,
   CreateRiskListEntryParams,
   CreateRiskRuleParams,
+  DeletedRiskLimitBucket,
   DeletedRiskListEntry,
   DeletedRiskRule,
   ForgottenRiskUser,
@@ -164,12 +168,20 @@ export type {
   RiskAssessment,
   RiskCaptchaProvider,
   RiskCaptchaSignals,
+  RiskContentCategory,
+  RiskContentClassification,
+  RiskContentScores,
   RiskDecision,
   RiskDegradedSignal,
+  RiskEmailCheck,
   RiskEmailSignals,
   RiskEvent,
   RiskFeedbackParams,
+  RiskIpCheck,
   RiskIpSignals,
+  RiskLimit,
+  RiskLimitBucket,
+  RiskLimitFailureMode,
   RiskList,
   RiskListEntry,
   RiskListEntryType,
@@ -182,6 +194,7 @@ export type {
   RiskRuleCondition,
   RiskRuleField,
   RiskSettings,
+  UpdateRiskLimitBucketParams,
   UpdateRiskRuleParams,
   UpdateRiskSettingsParams,
 } from "./types/risk.ts";

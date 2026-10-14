@@ -1,4 +1,5 @@
 import { getRiskAssessment } from "@coss/risk";
+import { CONTENT_CATEGORIES } from "@coss/risk/schemas";
 import { getEnvironment } from "@coss/tenancy";
 import { ShieldCheckIcon } from "lucide-react";
 import type { Metadata } from "next";
@@ -39,7 +40,7 @@ export default async function RiskAssessmentPage({
   if (!assessment) notFound();
 
   // Signals stay after the address itself is removed (90 days); without signals there was none.
-  const { email, ip, velocity, captcha, login } = assessment.signals;
+  const { email, ip, velocity, captcha, login, content } = assessment.signals;
 
   return (
     <div className="flex flex-col gap-6">
@@ -182,6 +183,13 @@ export default async function RiskAssessmentPage({
                           .filter(Boolean)
                           .join(" · ")
                       : "usual country and network"}
+                  </SpecItem>
+                ) : null}
+                {content ? (
+                  <SpecItem label="Content scores" mono>
+                    {CONTENT_CATEGORIES.map(
+                      (category) => `${category} ${content[category].toFixed(2)}`,
+                    ).join(" · ")}
                   </SpecItem>
                 ) : null}
                 {velocity && Object.keys(velocity).length > 0 ? (

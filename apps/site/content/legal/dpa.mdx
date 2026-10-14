@@ -240,7 +240,8 @@ bounce, complaint and suppression events, including information returned by reci
 Customer enables tracking, the time of opens and clicks, the clicked link and the user agent of the request (not the
 IP address); and, for risk assessments, the email addresses, IP addresses, user agents and user identifiers Customer
 submits, data derived from them (domain and network characteristics, country, counts of recent events) and keyed
-hashes of them.
+hashes of them; text Customer submits for content classification (processed transiently, never stored); and keyed
+hashes of the keys Customer checks against its rate limit buckets.
 
 **Special categories of data.** None intended. Customer will not submit special categories of data unless agreed in
 writing (see [section 3.2](#3-customers-obligations)).
@@ -250,7 +251,8 @@ writing (see [section 3.2](#3-customers-obligations)).
 **Nature and purpose of the processing.** Receiving, storing, screening, transmitting and delivering messages on
 Customer's instructions; recording and reporting delivery events; maintaining suppression lists; measuring open and
 click tracking where enabled; assessing the fraud and abuse risk of events Customer submits and remembering, as keyed
-hashes, identifiers seen in Customer's environments; sending webhook events to endpoints Customer configures;
+hashes, identifiers seen in Customer's environments; classifying content Customer submits; rate limiting requests to
+Customer's own services on Customer's instruction; sending webhook events to endpoints Customer configures;
 protecting the Services and data subjects from spam, phishing, malware and fraud; and providing support.
 
 **Duration and retention.** For the term of the Agreement and until deletion under [section 10](#10-deletion-and-return).
@@ -285,7 +287,10 @@ provider that retains nothing; screening verdicts never store message content. R
 addresses only as hashes. Risk assessments keep email addresses, IP addresses and user agents for 90 days, remember
 identifiers across assessments only as keyed hashes, look IP addresses up in locally hosted data, and send
 domain registries (RDAP) only domain names. Captcha secrets are stored encrypted. Captcha tokens and IP
-addresses go to the captcha provider Customer configures, on Customer's instruction.
+addresses go to the captcha provider Customer configures, on Customer's instruction. Content classification sends up
+to 8,000 characters of the submitted text and link hosts and paths without query strings to a provider that retains
+nothing, and keeps only the resulting scores; the text is never stored or logged. Rate limit keys are kept only as
+keyed hashes, in a cache, until their bucket refills.
 
 **Network and application security.** Outbound webhook requests are restricted to public addresses, with protections
 against server-side request forgery. Rate limits protect authentication and the API from abuse. Customer-supplied HTML
@@ -311,7 +316,7 @@ bound by written agreements (see [section 5](#5-subprocessors)).
 | Subprocessor | Purpose | Location |
 | --- | --- | --- |
 | Amazon Web Services, Inc. | Hosting, databases, storage, caching, queues, content delivery and email delivery (Amazon SES) | United States |
-| Vercel, Inc. (AI Gateway) and the AI model providers available through it | Automated content screening of a sample of live messages, with zero data retention | United States |
+| Vercel, Inc. (AI Gateway) and the AI model providers available through it | Automated content screening of a sample of live messages, and classification of content Customer submits to Risk, with zero data retention | United States |
 
 The current list, including any changes announced under [section 5.3](#5-subprocessors), is maintained at
 [trust.cal.com](https://trust.cal.com).

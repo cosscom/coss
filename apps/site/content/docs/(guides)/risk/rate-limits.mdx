@@ -1,0 +1,54 @@
+---
+title: Rate limiting
+description: Limit your own endpoints per user, email or IP address with buckets you define.
+---
+
+COSS limits its own API with GCRA buckets in Valkey; `coss.risk.limit()` gives you the same engine
+for your endpoints. Define a bucket once, then check a key against it on every request:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const form: { email: string };
+// ---cut---
+// Once (or in the dashboard, Risk → Rate limits): 5 password resets per hour per address.
+await coss.risk.limitBuckets.create({ name: "password_reset", limit: 5, period_seconds: 3600 });
+
+// On every request:
+const { data } = await coss.risk.limit({ bucket: "password_reset", key: form.email });
+if (data && !data.allowed) {
+  const seconds = Math.ceil((data.retry_after_ms ?? 0) / 1000);
+  throw new Error(`Too many attempts. Try again in ${seconds} seconds.`);
+}
+```
+
+## Buckets
+
+Each key (a user id, an email address, an IP address, anything that identifies who or what you
+limit) gets its own bucket of `burst` tokens, refilling at `limit` per `period_seconds`:
+
+- `limit` and `period_seconds` (1 second to 1 day) set the long-run rate.
+- `burst` (default `limit`) is how many requests a key can make at once. With `limit: 10,
+  period_seconds: 60, burst: 30`, a key can make 30 requests right away, then 10 a minute.
+- `on_failure` is the answer while COSS can't count (its store is unavailable): `allow` (the
+  default, fail open) or `deny`. The answer then has `degraded: true`.
+
+An environment has at most 100 buckets; names are unique in it and can't change. Changing a
+bucket applies to the next check, and keys keep what they already spent.
+
+## Checks
+
+`coss.risk.limit({ bucket, key, cost })` takes `cost` tokens (default 1) and answers:
+
+| Field            | Meaning                                                                 |
+| ---------------- | ----------------------------------------------------------------------- |
+| `allowed`        | Let the request through. Denied requests take no tokens.                |
+| `remaining`      | Tokens the key has left.                                                |
+| `reset_ms`       | Milliseconds until the key's bucket is full again.                      |
+| `retry_after_ms` | When denied, milliseconds until the same request would fit (`null` when `cost` is above the bucket's size). |
+| `degraded`       | COSS couldn't count; `allowed` is the bucket's `on_failure`.           |
+
+A denied check is still a `200`: only a bucket that doesn't exist (`404`) or an invalid request is
+an error. The SDK retries network errors with the same `Idempotency-Key`, and a retried check is
+charged once. COSS keeps only a keyed hash of each key, never the key itself. Checks are limited
+to 500 per second per API key (bursts of 1,000).

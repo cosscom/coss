@@ -1,6 +1,10 @@
 "use client";
 
-import type { RiskReasonCode, RiskSettingsOutput } from "@coss/risk/schemas";
+import {
+  CONTENT_CATEGORIES,
+  type RiskReasonCode,
+  type RiskSettingsOutput,
+} from "@coss/risk/schemas";
 import { Button } from "@coss/ui/components/button";
 import { Checkbox } from "@coss/ui/components/checkbox";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
@@ -127,6 +131,30 @@ export function RiskSettingsForm(props: {
             </Label>
           </>
         )}
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-4" disabled={!props.canUpdate}>
+        <legend className="mb-2 font-semibold">Content thresholds</legend>
+        <p className="text-muted-foreground text-sm">
+          Assessments with content fire content.&lt;category&gt; when its score reaches the
+          threshold. Leave a category empty and it never fires; rules can still test its score.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-4">
+          {CONTENT_CATEGORIES.map((category) => (
+            <Field key={category}>
+              <FieldLabel className="capitalize">{category}</FieldLabel>
+              <Input
+                defaultValue={props.settings.content_thresholds[category] ?? ""}
+                max={1}
+                min={0.01}
+                name={`contentThreshold.${category}`}
+                placeholder="Off"
+                step={0.01}
+                type="number"
+              />
+            </Field>
+          ))}
+        </div>
       </fieldset>
 
       <fieldset className="flex flex-col gap-3" disabled={!props.canUpdate}>
