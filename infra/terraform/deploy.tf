@@ -165,6 +165,16 @@ resource "aws_iam_role_policy" "deploy" {
         }
       },
       {
+        # ecs-deploy.sh: how long the worker's new tasks have been running.
+        Sid      = "ServiceTasks"
+        Effect   = "Allow"
+        Action   = ["ecs:ListTasks"]
+        Resource = "*"
+        Condition = {
+          ArnEquals = { "ecs:cluster" = aws_ecs_cluster.main.arn }
+        }
+      },
+      {
         Sid      = "MigrateStatus"
         Effect   = "Allow"
         Action   = ["ecs:DescribeTasks"]
