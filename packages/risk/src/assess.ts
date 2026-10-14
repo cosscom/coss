@@ -725,7 +725,7 @@ async function insertAssessment(
 /** The values rules test (`RULE_FIELDS`), from the collected signals. */
 function ruleFacts(collected: Collected, extra: { score: number; duplicate: boolean }): RuleFacts {
   const { email, ip, velocity, captcha, login } = collected.signals;
-  const v = (key: string) => (velocity ? (velocity[key] ?? 0) : null);
+  const v = (key: string) => velocity?.[key] ?? null;
   return {
     "email.valid": email ? email.valid : null,
     "email.disposable": email ? email.disposable : null,

@@ -45,7 +45,11 @@ async function settingsRow(executor: Executor, scope: Scope): Promise<SettingsRo
 function resolve(row: SettingsRow | null): ResolvedRiskSettings {
   return {
     thresholds: row
-      ? { review: row.reviewThreshold, block: row.blockThreshold }
+      ? {
+          // PostgreSQL `real` adds float32 noise; scores and settings use three decimals.
+          review: Math.round(row.reviewThreshold * 1000) / 1000,
+          block: Math.round(row.blockThreshold * 1000) / 1000,
+        }
       : { ...DEFAULT_THRESHOLDS },
     disabledReasons: new Set((row?.disabledReasons ?? []) as RiskReasonCode[]),
     captcha:
@@ -75,9 +79,8 @@ function toObject(row: SettingsRow | null): RiskSettingsOutput {
   const resolved = resolve(row);
   return {
     object: "risk_settings",
-    // `real` is single precision: 0.85 would read back as 0.8500000238418579.
-    review_threshold: Math.round(resolved.thresholds.review * 1000) / 1000,
-    block_threshold: Math.round(resolved.thresholds.block * 1000) / 1000,
+    review_threshold: resolved.thresholds.review,
+    block_threshold: resolved.thresholds.block,
     disabled_reasons: [...resolved.disabledReasons] as RiskSettingsOutput["disabled_reasons"],
     captcha: resolved.captcha
       ? { provider: resolved.captcha.provider, required: resolved.captcha.required }

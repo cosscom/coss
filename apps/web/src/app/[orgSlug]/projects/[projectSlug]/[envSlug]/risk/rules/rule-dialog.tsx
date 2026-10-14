@@ -327,6 +327,7 @@ function RuleForm(props: Target & { rule?: RiskRuleOutput }) {
                           : "Value"
                     }
                     required
+                    step={type === "number" ? "any" : undefined}
                     type={type === "number" ? "number" : "text"}
                     value={condition.value}
                   />

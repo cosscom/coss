@@ -53,6 +53,43 @@ describe("verifyCaptcha", () => {
     expect(calls[0]?.url).toBe(SITEVERIFY_URLS.hcaptcha);
   });
 
+  test.each([
+    "internal-error",
+    "missing-input-secret",
+    "invalid-input-secret",
+    "bad-request",
+    "missing-remoteip",
+    "invalid-remoteip",
+    "not-using-dummy-passcode",
+    "sitekey-secret-mismatch",
+  ])("HTTP 200 service/configuration failure %s throws", async (code) => {
+    const { fetcher } = siteverify({ success: false, "error-codes": [code] });
+    await expect(
+      verifyCaptcha({ provider: "turnstile", secret: "s", token: "t", fetch: fetcher }),
+    ).rejects.toThrow("service or configuration error");
+  });
+
+  test.each([
+    "missing-input-response",
+    "invalid-input-response",
+    "expired-input-response",
+    "already-seen-response",
+    "timeout-or-duplicate",
+  ])("token rejection %s stays a false verdict", async (code) => {
+    const { fetcher } = siteverify({ success: false, "error-codes": [code] });
+    expect(
+      (await verifyCaptcha({ provider: "hcaptcha", secret: "s", token: "t", fetch: fetcher }))
+        .success,
+    ).toBe(false);
+  });
+
+  test.each([null, {}, { success: "false" }])("malformed verdict %j throws", async (answer) => {
+    const { fetcher } = siteverify(answer);
+    await expect(
+      verifyCaptcha({ provider: "turnstile", secret: "s", token: "t", fetch: fetcher }),
+    ).rejects.toThrow("invalid verdict");
+  });
+
   test("a provider error throws", async () => {
     const { fetcher } = siteverify({}, 500);
     await expect(

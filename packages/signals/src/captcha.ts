@@ -11,6 +11,18 @@ export const SITEVERIFY_URLS: Record<CaptchaProvider, string> = {
   hcaptcha: "https://api.hcaptcha.com/siteverify",
 };
 
+// Service and integration failures don't establish whether the user token is valid.
+const SERVICE_ERROR_CODES = new Set([
+  "internal-error",
+  "missing-input-secret",
+  "invalid-input-secret",
+  "bad-request",
+  "missing-remoteip",
+  "invalid-remoteip",
+  "not-using-dummy-passcode",
+  "sitekey-secret-mismatch",
+]);
+
 export type CaptchaVerdict = {
   success: boolean;
   /** The site the token was issued for. */
@@ -45,12 +57,19 @@ export async function verifyCaptcha(input: {
     action?: unknown;
     "error-codes"?: unknown;
   };
+  if (!data || typeof data.success !== "boolean") {
+    throw new Error(`${input.provider} siteverify returned an invalid verdict`);
+  }
+  const errorCodes = Array.isArray(data["error-codes"])
+    ? data["error-codes"].filter((code): code is string => typeof code === "string")
+    : [];
+  if (errorCodes.some((code) => SERVICE_ERROR_CODES.has(code))) {
+    throw new Error(`${input.provider} siteverify service or configuration error`);
+  }
   return {
-    success: data.success === true,
+    success: data.success,
     hostname: typeof data.hostname === "string" ? data.hostname : null,
     action: typeof data.action === "string" ? data.action : null,
-    errorCodes: Array.isArray(data["error-codes"])
-      ? data["error-codes"].filter((code): code is string => typeof code === "string")
-      : [],
+    errorCodes,
   };
 }

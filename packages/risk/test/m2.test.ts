@@ -56,6 +56,31 @@ describe("settings", () => {
     expect(after.signals.email?.role_account).toBe(true);
   });
 
+  test("persisted threshold boundaries agree with settings and partial updates", async () => {
+    const { assess, live } = await setup({ verifyCaptcha: fakeCaptcha({ bad: false }) });
+    await updateRiskSettings(
+      live,
+      settings({
+        review_threshold: 0.6,
+        block_threshold: 0.6,
+        captcha: { provider: "turnstile", secret: "secret" },
+      }),
+      TEST_SECRETS_KEYS,
+    );
+    // A partial update must accept equality with the persisted float32 review threshold.
+    expect(
+      (await updateRiskSettings(live, settings({ block_threshold: 0.6 }), TEST_SECRETS_KEYS))
+        ?.block_threshold,
+    ).toBe(0.6);
+    const result = (await assess({ event: "signup", captcha: { token: "bad" } })).assessment;
+    expect(result.score).toBe(0.6);
+    expect(result.decision).toBe("block");
+    await updateRiskSettings(live, settings({ block_threshold: 0.85 }), TEST_SECRETS_KEYS);
+    expect((await assess({ event: "signup", captcha: { token: "bad" } })).assessment.decision).toBe(
+      "review",
+    );
+  });
+
   test("thresholds stay ordered; decision reasons can't be disabled", async () => {
     const { live } = await setup();
     await expect(
@@ -212,6 +237,32 @@ describe("rules", () => {
     expect(
       (await assess({ event: "login", user: { id: "u2" }, ip: TEST_IPS.tor })).assessment.decision,
     ).toBe("allow");
+  });
+
+  test("an absent velocity dimension cannot match an allow rule", async () => {
+    const { assess, live } = await setup();
+    await createRiskRule(
+      live,
+      rule({
+        name: "Low IP velocity",
+        conditions: [{ field: "velocity.ip_1h", operator: "lt", value: 5 }],
+        action: "allow",
+      }),
+    );
+    const missing = (await assess({ event: "signup", user: { email: "a@mailinator.com" } }))
+      .assessment;
+    expect(missing.signals.velocity).not.toBeNull();
+    expect(missing.decision).toBe("review");
+    expect(codes(missing)).not.toContain("rule.matched");
+    const present = (
+      await assess({
+        event: "signup",
+        user: { email: "b@mailinator.com" },
+        ip: TEST_IPS.residential,
+      })
+    ).assessment;
+    expect(present.decision).toBe("allow");
+    expect(codes(present)).toContain("rule.matched");
   });
 
   test("score and velocity conditions; CRUD; the per-environment limit", async () => {
