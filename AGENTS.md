@@ -13,6 +13,12 @@ Sentry (organization `cosscom`) through `@coss/observability`. COSS Risk (`@coss
 events: email/IP signals (`@coss/signals`) plus what each environment remembers (velocity in Valkey, duplicate
 mailboxes, fraud reports, allow/block lists) become `allow`/`review`/`block` with reasons. Human setup docs (incl. running on SES): [README.md](./README.md).
 
+## License
+
+`AGPL-3.0-only` (root `LICENSE`), except `packages/sdk` (MIT, its own `LICENSE`: customers bundle it), `packages/kloq`
+(MIT, vendored) and the fonts (OFL). New code is AGPL unless it lives in one of those; never copy AGPL code into
+the SDK.
+
 ## Layout
 
 | Path | Package | What |

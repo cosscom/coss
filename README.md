@@ -707,3 +707,13 @@ webhooks:reencrypt` does step 3 against `DATABASE_URL`.
 
 - Next's data cache is per task (in memory and on local disk). Nothing uses `revalidateTag`/ISR today; a shared
   `cacheHandler` is needed before anything does.
+
+## License
+
+COSS is licensed under the [GNU Affero General Public License v3.0](./LICENSE) (`AGPL-3.0-only`), Copyright (c)
+2026 Cal.com, Inc. — except:
+
+- `packages/sdk` (the `coss` npm package): [MIT](./packages/sdk/LICENSE), so applications can bundle it freely.
+- `packages/kloq`: [MIT](./packages/kloq/LICENSE), vendored from `cosscom/calendar` (as is the kloq registry the
+  site serves).
+- The fonts in `packages/ui/src/fonts`: [SIL Open Font License 1.1](./packages/ui/src/fonts/OFL.txt).
