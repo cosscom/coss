@@ -134,7 +134,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "risk_memory",
     label: "Risk memory",
     description:
-      "Keyed hashes of mailboxes that have an account, and of identifiers you reported as fraud or abuse (IP addresses count for 30 days), counted from when they were last seen.",
+      "Keyed hashes of mailboxes that have an account and of identifiers you reported as fraud or abuse (IP addresses count for 30 days), and the countries and networks each user logged in from (by keyed hash of your user id), counted from when they were last seen.",
     period: { days: RETENTION_DAYS.riskMemory, after: "creation" },
   },
   {

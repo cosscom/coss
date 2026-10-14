@@ -16,13 +16,17 @@ Every assessment comes with a `score` (0-1) and the `reasons` behind it, so you 
 every decision. COSS combines:
 
 - **Email signals**: syntax, disposable domains, domains that can't receive mail, role accounts
-  (`info@`), free providers and typos (`gmail.con`).
+  (`info@`), free providers, typos (`gmail.con`) and domains registered in the last 30 days.
 - **IP signals**: Tor exit nodes, cloud and hosting networks, networks used by VPNs, private
   addresses, the network (ASN) and country.
+- **Your captcha**: the token of your Turnstile or hCaptcha widget, verified with the provider
+  ([settings](/docs/risk/settings#captcha)).
 - **What this environment has seen**: how often the same IP address, subnet, email domain, mailbox
   or user came by in the last hour and day; whether the mailbox already has an account (dots and
-  `+tags` folded at Gmail and similar); and identifiers you reported as fraud.
-- **Your [allow and block lists](/docs/risk/lists-and-feedback#lists)**.
+  `+tags` folded at Gmail and similar); the countries and networks each user logged in from; and
+  identifiers you reported as fraud.
+- **Your [allow and block lists](/docs/risk/lists-and-feedback#lists)** and
+  **[rules](/docs/risk/rules)**, and your [settings](/docs/risk/settings).
 
 ## Assessing a sign-up
 

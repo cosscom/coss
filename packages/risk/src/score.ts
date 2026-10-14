@@ -25,6 +25,8 @@ export type StoredReason = {
   previous_assessment?: string;
   entry?: string;
   type?: RiskListEntryType;
+  rule?: string;
+  name?: string;
 };
 
 export function scoreReasons(reasons: readonly StoredReason[]): number {
@@ -35,23 +37,29 @@ export function scoreReasons(reasons: readonly StoredReason[]): number {
 
 export type Thresholds = { review: number; block: number };
 
-/** Lists first (allow beats block), then the thresholds. */
+/** Lists first (allow beats block), then the first matching rule, then the thresholds. */
 export function decide(
   score: number,
   reasons: readonly StoredReason[],
   thresholds: Thresholds = DEFAULT_THRESHOLDS,
+  ruleAction: RiskDecision | null = null,
 ): RiskDecision {
   if (reasons.some((reason) => reason.code === "list.allowed")) return "allow";
   if (reasons.some((reason) => reason.code === "list.blocked")) return "block";
+  if (ruleAction) return ruleAction;
   if (score >= thresholds.block) return "block";
   if (score >= thresholds.review) return "review";
   return "allow";
 }
 
-/** List matches first, then by weight (most significant first), then by code. */
+/** Decisions first (lists, then rules), then by weight (most significant first), then by code. */
 export function sortReasons(reasons: readonly StoredReason[]): StoredReason[] {
   const rank = (reason: StoredReason) =>
-    reason.code.startsWith("list.") ? 2 : REASONS[reason.code].weight;
+    reason.code.startsWith("list.")
+      ? 3
+      : reason.code === "rule.matched"
+        ? 2
+        : REASONS[reason.code].weight;
   return [...reasons].sort((a, b) => rank(b) - rank(a) || a.code.localeCompare(b.code));
 }
 
@@ -85,6 +93,8 @@ export function reasonMessage(reason: StoredReason): string {
       return "The email address is a role account, not a person.";
     case "email.typo":
       return `The domain looks like a typo of ${reason.suggestion ?? "a popular domain"}.`;
+    case "email.domain_new":
+      return "The email domain was registered in the last 30 days.";
     case "ip.tor":
       return "The IP address is a Tor exit node.";
     case "ip.vpn_network":
@@ -105,6 +115,16 @@ export function reasonMessage(reason: StoredReason): string {
       return "This IP address was reported as fraud or abuse in the last 30 days.";
     case "history.fraud_subnet":
       return "This subnet was reported as fraud or abuse in the last 30 days.";
+    case "login.new_country":
+      return "This user never logged in from this country before.";
+    case "login.new_network":
+      return "This user never logged in from this network before.";
+    case "captcha.failed":
+      return "The captcha token was refused.";
+    case "captcha.missing":
+      return "No captcha token, while your settings require one.";
+    case "rule.matched":
+      return `Your rule "${reason.name ?? reason.rule ?? "rule"}" matched.`;
     case "list.blocked":
       return `Your block list matched (${reason.type ?? "entry"}).`;
     case "list.allowed":

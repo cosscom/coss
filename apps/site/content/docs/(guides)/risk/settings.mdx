@@ -1,0 +1,61 @@
+---
+title: Settings
+description: Thresholds, reasons you don't want, and captcha verification for an environment.
+---
+
+Each environment has its own risk settings, in the dashboard (**Risk → Settings**) or through the API.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.risk.settings.update({
+  review_threshold: 0.4,
+  block_threshold: 0.9,
+  disabled_reasons: ["email.role_account"],
+});
+```
+
+## Thresholds
+
+A score at or above `review_threshold` is `review`, at or above `block_threshold` is `block`
+(defaults <RiskThreshold of="review" /> and <RiskThreshold of="block" />). Lists and rules decide
+before the thresholds. `review_threshold` can't be above `block_threshold`; setting them equal skips
+`review`.
+
+## Disabled reasons
+
+Reasons you list in `disabled_reasons` never fire: they don't appear in assessments or count in the
+score. [Rules](/docs/risk/rules) still see the facts behind them. Decision reasons (`list.*`,
+`rule.matched`) can't be disabled.
+
+## Captcha
+
+Pass the token of your captcha widget with assessments and COSS verifies it with the provider:
+`captcha.failed` when the provider refuses it. Set the provider and your **secret key** first; the
+secret is stored encrypted and never returned.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const turnstileToken: string;
+// ---cut---
+await coss.risk.settings.update({
+  captcha: { provider: "turnstile", secret: "0x4AAAAAAA…", required: true },
+});
+
+const { data } = await coss.risk.assess({
+  event: "signup",
+  user: { email: "ada@acme.com" },
+  captcha: { token: turnstileToken },
+});
+```
+
+- Providers: Cloudflare Turnstile (`turnstile`) and hCaptcha (`hcaptcha`). COSS sends them the token,
+  your secret and the client's IP address.
+- With `required: true`, assessments without a token get `captcha.missing`.
+- Tokens are single-use: verify each one once. A retried assessment (same `Idempotency-Key`) returns
+  the first result without verifying again.
+- If the provider can't be reached, the assessment goes on without the captcha and lists `captcha` in
+  `degraded`.
+- `captcha: null` turns verification off and deletes the secret.

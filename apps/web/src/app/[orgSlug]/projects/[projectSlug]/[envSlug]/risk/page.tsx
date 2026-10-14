@@ -19,6 +19,7 @@ import { PageHeader } from "@/components/page-header";
 import { RiskDecisionBadge, RiskOutcomeBadge } from "@/components/risk-badges";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
+import { ResolveButtons } from "./resolve-buttons";
 
 export const metadata: Metadata = { title: "Risk" };
 
@@ -60,6 +61,12 @@ export default async function RiskPage({
     : null;
 
   const base = `/${organization.slug}/projects/${project.slug}/${environment.slug}`;
+  const resolving = view.id === "review" && can({ risk: ["feedback"] });
+  const target = {
+    orgSlug: organization.slug,
+    projectSlug: project.slug,
+    envSlug: environment.slug,
+  };
   const riskPath = `${base}/risk`;
   const viewPath = (id: string) => (id === "all" ? riskPath : `${riskPath}?view=${id}`);
   const last = page?.data.at(-1);
@@ -76,11 +83,21 @@ export default async function RiskPage({
         </Link>
         <PageHeader
           actions={
-            can({ riskList: ["read"] }) ? (
-              <Button render={<Link href={`${riskPath}/lists`} />} size="sm" variant="outline">
-                Allow &amp; block lists
+            <div className="flex gap-2">
+              {can({ riskRule: ["read"] }) ? (
+                <Button render={<Link href={`${riskPath}/rules`} />} size="sm" variant="outline">
+                  Rules
+                </Button>
+              ) : null}
+              {can({ riskList: ["read"] }) ? (
+                <Button render={<Link href={`${riskPath}/lists`} />} size="sm" variant="outline">
+                  Allow &amp; block lists
+                </Button>
+              ) : null}
+              <Button render={<Link href={`${riskPath}/settings`} />} size="sm" variant="outline">
+                Settings
               </Button>
-            ) : null
+            </div>
           }
           description="Every assessment of sign-ups, logins and other events made with this environment's API keys: the decision, its score and the reasons behind it. Reviews stay open until you report an outcome."
           title={
@@ -124,6 +141,7 @@ export default async function RiskPage({
                   <TableHead>Decision</TableHead>
                   <TableHead>Score</TableHead>
                   <TableHead>Reasons</TableHead>
+                  {resolving ? <TableHead className="w-0" /> : null}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -152,6 +170,11 @@ export default async function RiskPage({
                     <TableCell className="max-w-80 truncate text-muted-foreground text-xs">
                       {assessment.reasons.map((reason) => reason.code).join(", ") || "—"}
                     </TableCell>
+                    {resolving ? (
+                      <TableCell>
+                        <ResolveButtons {...target} assessmentId={assessment.id} />
+                      </TableCell>
+                    ) : null}
                   </TableRow>
                 ))}
               </TableBody>

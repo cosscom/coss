@@ -1,6 +1,8 @@
 export type RiskErrorCode =
   | "not_found"
   | "invalid_list_value"
+  | "invalid_settings"
+  | "too_many_rules"
   | "idempotency_key_reused"
   | "request_in_progress";
 

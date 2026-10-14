@@ -33,6 +33,7 @@ const {
   riskIdentity,
   riskListEntry,
   riskReport,
+  riskUserNetwork,
   organizationDeletion,
   organizationSuspension,
   scimConnectionBinding,
@@ -431,7 +432,7 @@ async function deleteOrganizationData(
         ),
       ],
       // Risk assessments (their feedback cascades) and what the environment remembers.
-      ...[riskAssessment, riskIdentity, riskReport, riskListEntry].map(
+      ...[riskAssessment, riskIdentity, riskReport, riskListEntry, riskUserNetwork].map(
         (table) =>
           [
             table,

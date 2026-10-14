@@ -4,13 +4,20 @@
  * account is gone: drop what identifies them).
  */
 import { db, schema } from "@coss/db";
+import { ID_PREFIXES, newId } from "@coss/db/id";
 import { appendLogEntries, lineByteSize, logSearchText } from "@coss/logs";
+import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { RiskHasher } from "./hash.ts";
 import { inRiskEnvironment, type RiskEnvironmentScope, toRiskAssessmentObject } from "./read.ts";
-import type { CreateRiskFeedbackRequestOutput, RiskAssessmentOutput } from "./schemas.ts";
+import type {
+  CreateRiskFeedbackRequestOutput,
+  RiskAssessmentOutput,
+  StoredRiskWebhookEvent,
+} from "./schemas.ts";
+import { type StoredReason, toReasonObject } from "./score.ts";
 
-const { riskAssessment, riskFeedback, riskIdentity, riskReport } = schema;
+const { riskAssessment, riskFeedback, riskIdentity, riskReport, riskUserNetwork } = schema;
 
 export type RiskFeedbackActor = { source: "api" | "dashboard"; actorId: string | null };
 
@@ -118,6 +125,35 @@ export async function recordRiskFeedback(
         searchTerms: [params.outcome],
       },
     ]);
+    // Resolving a review announces it, so a queue kept elsewhere can close it.
+    if (current.reviewStatus === "open") {
+      const id = newId(ID_PREFIXES.webhookEvent);
+      const payload: StoredRiskWebhookEvent = {
+        id,
+        object: "event",
+        type: "risk.assessment.reviewed",
+        created_at: now.toISOString(),
+        data: {
+          assessment_id: current.id,
+          event: current.event,
+          event_name: current.eventName,
+          decision: current.decision,
+          score: Math.round(current.score * 1000) / 1000,
+          reasons: (current.reasons as StoredReason[]).map(toReasonObject),
+          user_id: current.userId,
+          outcome: params.outcome,
+          occurred_at: now.toISOString(),
+        },
+      };
+      await enqueueWebhookMessage(tx, {
+        id,
+        organizationId: current.organizationId,
+        environmentId: current.environmentId,
+        type: payload.type,
+        payload,
+        now,
+      });
+    }
     return updated ?? current;
   });
   return row ? toRiskAssessmentObject(row) : null;
@@ -149,6 +185,15 @@ export async function forgetRiskUser(
     await tx
       .delete(riskIdentity)
       .where(and(inEnvironment(riskIdentity), eq(riskIdentity.userId, userId)));
+    await tx
+      .delete(riskUserNetwork)
+      .where(
+        and(
+          eq(riskUserNetwork.organizationId, scope.organizationId),
+          eq(riskUserNetwork.environmentId, scope.environmentId),
+          eq(riskUserNetwork.userHash, hash(scope.environmentId, "user", userId)),
+        ),
+      );
     await tx
       .delete(riskReport)
       .where(

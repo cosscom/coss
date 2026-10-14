@@ -1,0 +1,49 @@
+---
+title: Rules
+description: Decide specific cases yourself, like "block sign-ups with a disposable email from a data center".
+---
+
+The score weighs every signal together. When you know exactly what you want for a case, write a
+rule. Rules are checked after your [lists](/docs/risk/lists-and-feedback#lists) and before the score
+thresholds. The first enabled rule (lowest `position`, then oldest) whose conditions match the event
+decides, and the assessment gets a `rule.matched` reason naming it.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: rule } = await coss.risk.rules.create({
+  name: "Disposable email from a data center",
+  position: 10,
+  events: ["signup"],
+  conditions: [
+    { field: "email.disposable", operator: "is", value: true },
+    { field: "ip.hosting", operator: "is", value: true },
+  ],
+  action: "block",
+});
+
+// Checked first (lower position): trust logins from your office network.
+await coss.risk.rules.create({
+  name: "Office network",
+  position: 0,
+  events: ["login"],
+  conditions: [{ field: "ip.asn", operator: "in", value: ["64500", "64501"] }],
+  action: "allow",
+});
+```
+
+- `match: "all"` (the default) needs every condition; `match: "any"` needs one.
+- `events` limits a rule to some events; empty means every event.
+- A field without a value never matches, whatever the operator: a rule about `ip.country` doesn't
+  fire for an assessment without an IP address, and `neq` doesn't fire either.
+- Rules see the facts behind [disabled reasons](/docs/risk/settings#disabled-reasons), so you can
+  turn a reason off for the score and still use it in a rule.
+- An environment has at most 50 rules. Edit them in the dashboard (**Risk → Rules**) or with
+  `coss.risk.rules.update(id, { enabled: false })`.
+
+## Fields
+
+String comparisons ignore case; `in` and `not_in` take a list of up to 100 strings.
+
+<RiskRuleFieldTable />

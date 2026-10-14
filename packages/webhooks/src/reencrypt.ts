@@ -4,7 +4,7 @@
  * organizations, and every write is scoped by the row's own id and organization.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, gt, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import {
   decryptSecret,
   encryptSecret,
@@ -12,7 +12,7 @@ import {
   type SecretsKeyRing,
 } from "./secrets.ts";
 
-const { logDrain, webhookEndpoint } = schema;
+const { logDrain, riskSettings, webhookEndpoint } = schema;
 
 export type ReencryptResult = {
   /** Endpoints and log drains looked at. */
@@ -121,7 +121,80 @@ export async function reencryptWebhookSecrets(opts: {
     after = last.id;
   }
   await reencryptLogDrainSecrets({ ...opts, batchSize }, result);
+  await reencryptCaptchaSecrets({ ...opts, batchSize }, result);
   return result;
+}
+
+/** Risk settings' captcha secrets (encrypted with the same key ring, `@coss/risk`). */
+async function reencryptCaptchaSecrets(
+  opts: {
+    keys: SecretsKeyRing;
+    dryRun?: boolean;
+    batchSize: number;
+    scope?: { organizationIds: string[] };
+  },
+  result: ReencryptResult,
+): Promise<void> {
+  const { keys } = opts;
+  let after = "";
+  for (;;) {
+    const rows = await db
+      .select({
+        id: riskSettings.environmentId,
+        organizationId: riskSettings.organizationId,
+        secretCiphertext: riskSettings.captchaSecretCiphertext,
+      })
+      .from(riskSettings)
+      .where(
+        and(
+          gt(riskSettings.environmentId, after),
+          isNotNull(riskSettings.captchaSecretCiphertext),
+          opts.scope ? inArray(riskSettings.organizationId, opts.scope.organizationIds) : undefined,
+        ),
+      )
+      .orderBy(asc(riskSettings.environmentId))
+      .limit(opts.batchSize);
+    for (const row of rows) {
+      const stored = row.secretCiphertext;
+      if (!stored) continue;
+      result.checked++;
+      if (isEncryptedWithPrimary(stored, keys)) continue;
+      let secretCiphertext: string;
+      try {
+        secretCiphertext = encryptSecret(decryptSecret(stored, keys), keys);
+      } catch (error) {
+        result.unreadable.push({
+          id: row.id,
+          organizationId: row.organizationId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        continue;
+      }
+      if (opts.dryRun) {
+        result.reencrypted++;
+        continue;
+      }
+      const [updated] = await db
+        .update(riskSettings)
+        .set({
+          captchaSecretCiphertext: secretCiphertext,
+          updatedAt: sql`${riskSettings.updatedAt}`,
+        })
+        .where(
+          and(
+            eq(riskSettings.environmentId, row.id),
+            eq(riskSettings.organizationId, row.organizationId),
+            eq(riskSettings.captchaSecretCiphertext, stored),
+          ),
+        )
+        .returning({ id: riskSettings.environmentId });
+      if (updated) result.reencrypted++;
+      else result.conflicts++;
+    }
+    const last = rows.at(-1);
+    if (!last || rows.length < opts.batchSize) break;
+    after = last.id;
+  }
 }
 
 /** Log drains have one secret each (no rolls). */

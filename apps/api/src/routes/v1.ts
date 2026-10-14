@@ -11,6 +11,7 @@ import { createLogDrainRoutes } from "./log-drains.ts";
 import { createLogRoutes } from "./logs.ts";
 import { createReputationRoutes } from "./reputation.ts";
 import { createRiskRoutes } from "./risk.ts";
+import { createRiskConfigRoutes } from "./risk-config.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
 import { createTrackingSettingsRoutes } from "./tracking-settings.ts";
 import { createWebhookEndpointRoutes } from "./webhook-endpoints.ts";
@@ -37,5 +38,6 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   // Drain secrets use the same key ring as webhook endpoints.
   v1.route("/", createLogDrainRoutes(deps.webhookDeps));
   v1.route("/", createRiskRoutes(deps.riskDeps));
+  v1.route("/", createRiskConfigRoutes(deps.riskDeps));
   return v1;
 }

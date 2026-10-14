@@ -8,7 +8,10 @@ import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
 import { and, asc, inArray, isNull, lt, or, type SQL } from "drizzle-orm";
 import { NETWORK_REPORT_TTL_MS } from "./assess.ts";
 
-const { riskAssessment, riskIdentity, riskReport } = schema;
+const { riskAssessment, riskDomainAge, riskIdentity, riskReport, riskUserNetwork } = schema;
+
+/** Cached domain ages are refreshed long before this; older rows are domains nobody uses. */
+const DOMAIN_AGE_CACHE_DAYS = 90;
 
 type PurgeOptions = { now?: Date; limit?: number; scope?: { organizationIds: string[] } };
 
@@ -62,8 +65,9 @@ export async function purgeExpiredRiskAssessments(opts: PurgeOptions = {}): Prom
 }
 
 /**
- * Deletes mailbox identities not seen within `riskMemory`, network reports once they stop
- * counting (30 days) and other reports after `riskMemory`. Returns [identities, reports].
+ * Deletes mailbox identities and users' login networks not seen within `riskMemory`, network
+ * reports once they stop counting (30 days), other reports after `riskMemory`, and cached domain
+ * ages nobody looked up for 90 days. Returns [identities, reports, networks, domain ages].
  */
 export async function purgeExpiredRiskMemory(opts: PurgeOptions = {}): Promise<number[]> {
   const now = opts.now ?? new Date();
@@ -101,5 +105,36 @@ export async function purgeExpiredRiskMemory(opts: PurgeOptions = {}): Promise<n
     .delete(riskReport)
     .where(and(inArray(riskReport.id, reportIds), staleReport))
     .returning({ id: riskReport.id });
-  return [identities.length, reports.length];
+  const staleNetwork = and(
+    lt(riskUserNetwork.lastSeenAt, cutoff),
+    opts.scope ? inArray(riskUserNetwork.organizationId, opts.scope.organizationIds) : undefined,
+  );
+  const networkIds = db
+    .select({ id: riskUserNetwork.id })
+    .from(riskUserNetwork)
+    .where(staleNetwork)
+    .orderBy(asc(riskUserNetwork.lastSeenAt))
+    .limit(opts.limit ?? 1000);
+  const networks = await db
+    .delete(riskUserNetwork)
+    .where(and(inArray(riskUserNetwork.id, networkIds), staleNetwork))
+    .returning({ id: riskUserNetwork.id });
+
+  // Platform-wide cache: tests scope it away (other suites share it).
+  let domainAges = 0;
+  if (!opts.scope) {
+    const staleDomain = lt(riskDomainAge.checkedAt, retentionCutoff(DOMAIN_AGE_CACHE_DAYS, now));
+    const domains = db
+      .select({ domain: riskDomainAge.domain })
+      .from(riskDomainAge)
+      .where(staleDomain)
+      .limit(opts.limit ?? 1000);
+    domainAges = (
+      await db
+        .delete(riskDomainAge)
+        .where(and(inArray(riskDomainAge.domain, domains), staleDomain))
+        .returning({ domain: riskDomainAge.domain })
+    ).length;
+  }
+  return [identities.length, reports.length, networks.length, domainAges];
 }

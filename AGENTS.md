@@ -793,7 +793,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `v2:<key id>` prefix is the AAD; ids are derived from the keys), encrypted with the first key, decrypted with the
   one named. Keyless `v1:` rows from before are still read by trying every key until `webhooks:reencrypt` rewrites
   them. Every write of a secret column goes through `encryptSecret`, and `reencryptWebhookSecrets` must cover every
-  encrypted column (today the endpoints' `secret_ciphertext` and `previous_secret_ciphertext`, and `log_drain.secret_ciphertext`). Rotation runbook: README.md,
+  encrypted column (today the endpoints' `secret_ciphertext` and `previous_secret_ciphertext`, `log_drain.secret_ciphertext` and `risk_settings.captcha_secret_ciphertext`). Rotation runbook: README.md,
   "Rotating `WEBHOOK_SECRETS_KEY`". The initial upgrade from v1-only readers must use README.md's
   "Upgrading from v1 webhook secret storage" coordinated cutover, not a rolling deployment.
 - **Secret rolls** (`rollWebhookEndpointSecret`, `POST /v1/webhook_endpoints/{id}/roll_secret`, the dashboard's
@@ -926,11 +926,19 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   organization belongs in `deleteOrganizationData`; anything held outside Postgres (a new provider resource)
   belongs in `releaseProviderResources`. Admin audit events are kept (no FKs).
 - **Risk** (`packages/risk`, tables `risk_assessment` (ids `rsk_`), `risk_feedback` (`rskfb_`), `risk_identity`
-  (`rskid_`), `risk_report` (`rskrep_`), `risk_list_entry` (`rskle_`), platform table `risk_dataset`): `assessRisk`
-  collects every signal in parallel and **fails open per signal** (DNS 800 ms, Valkey's 100 ms command timeout,
-  missing datasets → listed in `degraded`, never an error). Order of decision: allow list, block list, then the
-  score (`1 − Π(1 − weight)` over `REASONS`; thresholds `DEFAULT_THRESHOLDS`) — change weights only with the golden
-  cases in `packages/risk/test/score.test.ts`. Memory is **HMAC-only** (`riskHasher`, `RISK_HASH_KEY`, separated by
+  (`rskid_`), `risk_report` (`rskrep_`), `risk_list_entry` (`rskle_`), `risk_rule` (`rskrule_`), `risk_settings`
+  (one row per environment), `risk_user_network` (`rskun_`), platform tables `risk_dataset` and `risk_domain_age`):
+  `assessRisk` collects every signal in parallel and **fails open per signal** (DNS 800 ms, RDAP domain age 1 s —
+  a slower lookup keeps running and fills `risk_domain_age` —, captcha siteverify 2 s, Valkey's 100 ms command
+  timeout, missing datasets → listed in `degraded`, never an error). Order of decision: allow list, block list, the
+  first enabled matching rule (`firstMatchingRule`: `position`, then age; facts from `ruleFacts`, a field without a
+  value never matches; rules see facts behind disabled reasons), then the score (`1 − Π(1 − weight)` over enabled
+  `REASONS`; thresholds from `risk_settings`, else `DEFAULT_THRESHOLDS`) — change weights only with the golden cases
+  in `packages/risk/test/score.test.ts`. New rule fields go in `RULE_FIELDS` (schemas) and `ruleFacts` (assess.ts)
+  together. Captcha secrets are encrypted with the webhook key ring (`encryptSecret`; `reencryptWebhookSecrets`
+  covers `risk_settings.captcha_secret_ciphertext`) and never returned or logged (request logs redact `secret`
+  and `token`). RDAP lookups send only the domain, never for free or disposable domains. Login networks are keyed
+  by the user hash; only users with history get `login.*`, and `block` decisions are never remembered. Memory is **HMAC-only** (`riskHasher`, `RISK_HASH_KEY`, separated by
   environment and kind): velocity keys `<prefix>:risk:v:<event>:<dimension>:{<hash>}` (one key per call, so
   cluster-safe; private IPs never counted), mailbox identities (only rows with a user id count as accounts;
   serialized per mailbox by `pg_advisory_xact_lock` in the insert transaction; `block` decisions never claim the
@@ -943,9 +951,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   including `previous_user` in other assessments' reasons. IP data: the worker's `risk-datasets` loop downloads Tor,
   cloud ranges and IPinfo Lite into `risk_dataset` (never replacing a good copy with a smaller or invalid one); API
   processes reload changed ones every 5 minutes. Sandbox environments use the fixtures in `src/sandbox.ts`
-  (`192.0.2.x`, `@disposable.test`, `@undeliverable.test`), documented in `/docs/risk/testing`. Credit IPinfo where
-  its data is shown (CC BY-SA). Permissions: `risk` (`assess`, `read`, `feedback`) and `riskList` (backfilled by
-  `0047`); members read.
+  (`192.0.2.x`, `@disposable.test`, `@undeliverable.test`, `@new.test`, captcha tokens `test-pass`/`test-fail`),
+  documented in `/docs/risk/testing`. Credit IPinfo where its data is shown (CC BY-SA). Permissions: `risk`
+  (`assess`, `read`, `feedback`, `update` for settings), `riskList` and `riskRule` (backfilled by `0047` and `0049`);
+  members read. Resolving an open review sends `risk.assessment.reviewed`.
 - **Monitoring** (Sentry, `@coss/observability`): api and worker import `src/instrument.ts` first in `src/index.ts`
   (`@sentry/bun`; Bun has no runtime module hooks, so Hono gets `honoMiddleware(app)` in `createApp` — route names
   only, errors come from `onError`'s `console.error` — and pg/AWS calls aren't traced). The dashboard initializes
@@ -1048,10 +1057,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   and suspensions (not recoveries or reinstatements), and only once the worker's `NOTIFICATIONS_*` variables point
   at a verified sender of COSS's own organization.
 
-**Not built yet** (don't assume these exist; delete a line when it ships): risk rules (a structured rule builder),
-per-environment risk settings (thresholds, reason weights), captcha and content signals and RDAP domain age in
-assessments, "new country/network for this user" memory, the risk building-block endpoints (email/IP lookups, content
-classification, rate limiting as a service), learning from feedback, a paid VPN/proxy data provider, the real landing page,
+**Not built yet** (don't assume these exist; delete a line when it ships): content signals in risk assessments, the
+risk building-block endpoints (email/IP lookups, content classification, rate limiting as a service), learning from
+feedback, a paid VPN/proxy data provider, the real landing page,
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which

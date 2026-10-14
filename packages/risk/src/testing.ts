@@ -2,6 +2,7 @@
  * Test helpers: deterministic dependencies (fixed IP data, fake DNS, in-memory velocity) and the
  * addresses they know.
  */
+import type { CaptchaVerdict } from "@coss/signals/captcha";
 import type { MailDomainVerdict } from "@coss/signals/email";
 import {
   type AsnRecord,
@@ -9,8 +10,10 @@ import {
   type IpIntelligence,
   IpRangeSet,
 } from "@coss/signals/ip";
+import { TEST_SECRETS_KEYS } from "@coss/webhooks/testing";
 import type { RiskDeps } from "./assess.ts";
 import type { IpIntelligenceSource } from "./datasets.ts";
+import type { DomainAgeLookup } from "./domain-age.ts";
 import { riskHasher } from "./hash.ts";
 import { MemoryVelocityStore } from "./velocity.ts";
 
@@ -58,6 +61,46 @@ export function fakeMailDomains(
   return async (domain) => verdicts[domain] ?? "deliverable";
 }
 
+/** Fake RDAP: listed domains were registered that many days ago; others have no record. */
+export function fakeDomainAges(ages: Record<string, number> = {}): DomainAgeLookup & {
+  calls: string[];
+} {
+  const calls: string[] = [];
+  const lookup = async (domain: string) => {
+    calls.push(domain);
+    const days = ages[domain];
+    return days === undefined
+      ? { status: "not_found" as const, registeredAt: null }
+      : // An hour more, so `days` survives the time between the lookup and the age's "now".
+        {
+          status: "found" as const,
+          registeredAt: new Date(Date.now() - days * 86_400_000 - 3_600_000),
+        };
+  };
+  return Object.assign(lookup, { calls });
+}
+
+/** Fake siteverify: listed tokens pass or fail; others make the provider throw. */
+export function fakeCaptcha(
+  tokens: Record<string, boolean> = {},
+): NonNullable<RiskDeps["verifyCaptcha"]> & { calls: { token: string; secret: string }[] } {
+  const calls: { token: string; secret: string }[] = [];
+  const verify = async (input: { token: string; secret: string }): Promise<CaptchaVerdict> => {
+    calls.push({ token: input.token, secret: input.secret });
+    const success = tokens[input.token];
+    if (success === undefined) throw new Error("siteverify unreachable");
+    return {
+      success,
+      hostname: "acme.test",
+      action: null,
+      errorCodes: success ? [] : ["invalid-input-response"],
+    };
+  };
+  return Object.assign(verify, { calls }) as NonNullable<RiskDeps["verifyCaptcha"]> & {
+    calls: { token: string; secret: string }[];
+  };
+}
+
 export const TEST_HASH_KEY: Uint8Array = new TextEncoder().encode(
   "coss-risk-test-hash-key-0123456789abcdef",
 );
@@ -72,6 +115,9 @@ export function testRiskDeps(
     velocity: new MemoryVelocityStore(),
     keyPrefix: `test-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
     checkMailDomain: fakeMailDomains(),
+    domainAge: fakeDomainAges(),
+    secretsKeys: TEST_SECRETS_KEYS,
+    verifyCaptcha: fakeCaptcha(),
     ...overrides,
-  };
+  } as RiskDeps & { velocity: MemoryVelocityStore | RiskDeps["velocity"] };
 }

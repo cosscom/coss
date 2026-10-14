@@ -25,6 +25,8 @@ export type StoredSignals = {
   email: Omit<NonNullable<RiskAssessmentOutput["signals"]["email"]>, "domain"> | null;
   ip: RiskAssessmentOutput["signals"]["ip"];
   velocity: RiskAssessmentOutput["signals"]["velocity"];
+  captcha: RiskAssessmentOutput["signals"]["captcha"];
+  login: RiskAssessmentOutput["signals"]["login"];
 };
 
 export function inRiskEnvironment(scope: RiskEnvironmentScope): SQL | undefined {
@@ -46,11 +48,18 @@ export function toRiskAssessmentObject(row: RiskAssessmentRow): RiskAssessmentOu
     score: Math.round(row.score * 1000) / 1000,
     reasons: (row.reasons as StoredReason[]).map(toReasonObject),
     signals: {
+      // Assessments made before a signal existed have no value for it.
       email: signals.email
-        ? { domain: row.email ? emailDomainOf(row.email) : null, ...signals.email }
+        ? {
+            domain: row.email ? emailDomainOf(row.email) : null,
+            ...signals.email,
+            domain_age_days: signals.email.domain_age_days ?? null,
+          }
         : null,
       ip: signals.ip ?? null,
       velocity: signals.velocity ?? null,
+      captcha: signals.captcha ?? null,
+      login: signals.login ?? null,
     },
     user: { id: row.userId, email: row.email },
     ip: row.ip,

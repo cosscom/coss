@@ -35,11 +35,13 @@ export const orgStatements = {
   logDrain: ["create", "read", "update", "delete"],
   // The organization's audit log: owners and admins.
   audit: ["read"],
-  // Risk assessments: run them (API keys), read them, and report outcomes (feedback, review
-  // resolutions, forgetting a user).
-  risk: ["assess", "read", "feedback"],
+  // Risk assessments: run them (API keys), read them, report outcomes (feedback, review
+  // resolutions, forgetting a user) and change the environment's risk settings (`update`).
+  risk: ["assess", "read", "feedback", "update"],
   // An environment's risk allow and block lists.
   riskList: ["create", "read", "delete"],
+  // An environment's risk rules.
+  riskRule: ["create", "read", "update", "delete"],
   // Plan, invoices, payment methods and spend controls: owners manage, admins read.
   billing: ["read", "update"],
 } as const;
@@ -57,8 +59,9 @@ const fullCossAccess = {
   reputation: ["read"],
   log: ["read"],
   logDrain: ["create", "read", "update", "delete"],
-  risk: ["assess", "read", "feedback"],
+  risk: ["assess", "read", "feedback", "update"],
   riskList: ["create", "read", "delete"],
+  riskRule: ["create", "read", "update", "delete"],
 } as const;
 
 const readOnlyCossAccess = {
@@ -74,6 +77,7 @@ const readOnlyCossAccess = {
   logDrain: ["read"],
   risk: ["read"],
   riskList: ["read"],
+  riskRule: ["read"],
 } as const;
 
 export const orgRoles = {

@@ -52,8 +52,10 @@ await coss.risk.feedback(assessmentId, { outcome: "fraud", note: "Chargeback" })
 `review` decisions stay open until you send feedback for them. Find them in the dashboard (**Risk →
 Review queue**, where each assessment has Legitimate, Abuse and Fraud buttons), with
 `coss.risk.assessments.list({ review_status: "open" })`, or as they happen with a webhook endpoint
-subscribed to `risk.assessment.review`. Its payload has the assessment's id, event, decision, score,
-reasons and your user id, never the email or IP address:
+subscribed to `risk.assessment.review`. Resolving one (feedback from the API or the dashboard) sends
+`risk.assessment.reviewed` with the `outcome`, so a queue you keep elsewhere can close it. Payloads
+have the assessment's id, event, decision, score, reasons and your user id, never the email or IP
+address:
 
 ```json
 {
@@ -75,6 +77,7 @@ reasons and your user id, never the email or IP address:
       }
     ],
     "user_id": "u_42",
+    "outcome": null,
     "occurred_at": "2026-10-14T12:00:00.000Z"
   }
 }

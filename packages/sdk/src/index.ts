@@ -17,6 +17,8 @@ export type {
   RiskAssessmentsResource,
   RiskListsResource,
   RiskResource,
+  RiskRulesResource,
+  RiskSettingsResource,
   RiskUsersResource,
 } from "./resources/risk.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
@@ -97,11 +99,15 @@ export type {
 export type {
   AssessRiskParams,
   CreateRiskListEntryParams,
+  CreateRiskRuleParams,
   DeletedRiskListEntry,
+  DeletedRiskRule,
   ForgottenRiskUser,
   ListRiskAssessmentsParams,
   ListRiskListEntriesParams,
   RiskAssessment,
+  RiskCaptchaProvider,
+  RiskCaptchaSignals,
   RiskDecision,
   RiskDegradedSignal,
   RiskEmailSignals,
@@ -112,9 +118,16 @@ export type {
   RiskListEntry,
   RiskListEntryType,
   RiskListEntryValue,
+  RiskLoginSignals,
   RiskOutcome,
   RiskReason,
   RiskReasonCode,
+  RiskRule,
+  RiskRuleCondition,
+  RiskRuleField,
+  RiskSettings,
+  UpdateRiskRuleParams,
+  UpdateRiskSettingsParams,
 } from "./types/risk.ts";
 export type {
   CheckSuppressionParams,

@@ -1,7 +1,9 @@
 /**
- * `POST /v1/risk/assessments`: collects the signals of one event (email, IP, velocity, lists,
- * what the environment remembers), turns them into reasons, a score and a decision, and stores the
- * assessment with its log line, mailbox identity and (for `review`) webhook in one transaction.
+ * `POST /v1/risk/assessments`: collects the signals of one event (email, domain age, IP,
+ * captcha, velocity, lists, what the environment remembers), turns them into reasons, a score and
+ * a decision (lists, then the environment's rules, then its thresholds), and stores the
+ * assessment with its log line, mailbox identity, login networks and (for `review`) webhook in one
+ * transaction.
  *
  * Every signal is best-effort: a slow DNS lookup, missing IP data or an unreachable Valkey make
  * the assessment go without it (listed in `degraded`) rather than fail.
@@ -10,22 +12,29 @@ import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { IDEMPOTENCY_KEY_TTL_MS, isReplayOf, requestHash } from "@coss/db/idempotency";
 import { appendLogEntries } from "@coss/logs";
+import { type CaptchaVerdict, verifyCaptcha } from "@coss/signals/captcha";
 import { analyzeEmail, type EmailAnalysis, type MailDomainVerdict } from "@coss/signals/email";
 import { type IpSignals, isBlockedAddress, normalizeIp, subnetOf } from "@coss/signals/ip";
-import { enqueueWebhookMessage } from "@coss/webhooks";
+import { enqueueWebhookMessage, type SecretsKeyRing } from "@coss/webhooks";
 import { and, eq, gte, isNotNull, ne, or, type SQL, sql } from "drizzle-orm";
 import type { IpIntelligenceSource } from "./datasets.ts";
+import { type DomainAgeLookup, domainAge } from "./domain-age.ts";
 import { RiskError } from "./errors.ts";
 import type { RiskHasher, RiskHashKind } from "./hash.ts";
 import { type ListMatch, matchListEntries } from "./lists.ts";
+import { rememberUserNetwork, userNetworks } from "./networks.ts";
 import { type RiskAssessmentRow, type StoredSignals, toRiskAssessmentObject } from "./read.ts";
+import { firstMatchingRule, listRiskRuleRows, type RiskRuleRow, type RuleFacts } from "./rules.ts";
 import {
   SANDBOX_DISPOSABLE_DOMAIN,
+  sandboxCaptchaVerdict,
+  sandboxDomainAgeDays,
   sandboxIpSignals,
   sandboxMailDomainVerdict,
 } from "./sandbox.ts";
 import {
   type CreateRiskAssessmentRequestOutput,
+  NEW_DOMAIN_DAYS,
   type RiskAssessmentOutput,
   type RiskDegradedSignal,
   type StoredRiskWebhookEvent,
@@ -34,14 +43,8 @@ import {
   velocityDimensionsFor,
   velocityGroup,
 } from "./schemas.ts";
-import {
-  decide,
-  type StoredReason,
-  scoreReasons,
-  sortReasons,
-  type Thresholds,
-  toReasonObject,
-} from "./score.ts";
+import { decide, type StoredReason, scoreReasons, sortReasons, toReasonObject } from "./score.ts";
+import { captchaSecret, type ResolvedRiskSettings, resolveRiskSettings } from "./settings.ts";
 import { type VelocityStore, velocityKey } from "./velocity.ts";
 
 const { riskAssessment, riskIdentity, riskReport } = schema;
@@ -49,6 +52,8 @@ const { riskAssessment, riskIdentity, riskReport } = schema;
 /** IP and subnet fraud reports only count this long; mailboxes and users until forgotten. */
 export const NETWORK_REPORT_TTL_MS = 30 * 24 * 60 * 60_000;
 const DEFAULT_DNS_TIMEOUT_MS = 800;
+const DEFAULT_DOMAIN_AGE_TIMEOUT_MS = 1000;
+const DEFAULT_CAPTCHA_TIMEOUT_MS = 2000;
 
 export type RiskDeps = {
   hash: RiskHasher;
@@ -59,7 +64,14 @@ export type RiskDeps = {
   keyPrefix: string;
   checkMailDomain: (domain: string) => Promise<MailDomainVerdict>;
   dnsTimeoutMs?: number;
-  thresholds?: Thresholds;
+  /** Registration dates (RDAP); `null`: no domain age (reported as degraded). */
+  domainAge: DomainAgeLookup | null;
+  domainAgeTimeoutMs?: number;
+  /** Decrypts the environment's captcha secret (`WEBHOOK_SECRETS_KEY`). */
+  secretsKeys: SecretsKeyRing;
+  /** Defaults to the providers' `siteverify` (`@coss/signals/captcha`). */
+  verifyCaptcha?: typeof verifyCaptcha;
+  captchaTimeoutMs?: number;
 };
 
 /** The authenticated environment (from the API key). */
@@ -88,6 +100,8 @@ type Collected = {
   email: EmailAnalysis | null;
   ip: string | null;
   hashes: Hashes;
+  /** Facts rules can test that aren't in `signals` (whether or not their reason is disabled). */
+  flags: { history: boolean; domainNew: boolean | null };
 };
 
 const IDEMPOTENCY_ERRORS = {
@@ -145,8 +159,12 @@ export async function assessRisk(
       }
     }
     // Use this connection for reads too: waiting retries may occupy the rest of the pool.
-    const collected = await collectSignals(tx, deps, environment, params, ipSignals);
-    const row = await insertAssessment(tx, deps, input, collected, {
+    const [settings, rules] = await Promise.all([
+      resolveRiskSettings(tx, environment),
+      listRiskRuleRows(tx, environment),
+    ]);
+    const collected = await collectSignals(tx, deps, environment, params, ipSignals, settings);
+    const row = await insertAssessment(tx, input, collected, settings, rules, {
       idempotencyKey,
       requestHash: hash,
     });
@@ -172,6 +190,7 @@ async function collectSignals(
   environment: RiskAssessEnvironment,
   params: CreateRiskAssessmentRequestOutput,
   resolvedIpSignals: Awaited<ReturnType<typeof ipSignalsFor>>,
+  settings: ResolvedRiskSettings,
 ): Promise<Collected> {
   const sandbox = environment.mode === "sandbox";
   const env = environment.environmentId;
@@ -191,20 +210,27 @@ async function collectSignals(
   }
   if (userId) hashes.user = deps.hash(env, "user", userId);
 
-  const [deliverability, ipSignals, velocity, listMatches, reports] = await Promise.all([
-    emailDeliverability(deps, email, sandbox),
-    resolvedIpSignals,
-    countVelocity(deps, environment, params, email, ip, hashes),
-    matchListEntries(executor, environment, {
-      mailbox: email?.valid ? email.canonical : null,
-      domain: email?.valid ? email.domain : null,
-      ip,
-      asn: null,
-      country: null,
-      userId,
-    }),
-    reportedHashes(executor, environment, hashes),
-  ]);
+  const [deliverability, age, captcha, ipSignals, velocity, listMatches, reports, networks] =
+    await Promise.all([
+      emailDeliverability(deps, email, sandbox),
+      emailDomainAge(executor, deps, email, sandbox),
+      captchaVerdict(deps, settings, params, ip, sandbox),
+      resolvedIpSignals,
+      countVelocity(deps, environment, params, email, ip, hashes),
+      matchListEntries(executor, environment, {
+        mailbox: email?.valid ? email.canonical : null,
+        domain: email?.valid ? email.domain : null,
+        ip,
+        asn: null,
+        country: null,
+        userId,
+      }),
+      reportedHashes(executor, environment, hashes),
+      // Logins compare the network with the user's earlier ones.
+      params.event === "login" && hashes.user
+        ? userNetworks(executor, environment, hashes.user)
+        : null,
+    ]);
 
   // Email.
   let emailSignals: StoredSignals["email"] = null;
@@ -212,6 +238,7 @@ async function collectSignals(
     const disposable =
       email.disposable || (sandbox && email.valid && email.domain === SANDBOX_DISPOSABLE_DOMAIN);
     if (deliverability === "unknown" && email.valid) degraded.add("email_dns");
+    if (age.degraded) degraded.add("domain_age");
     emailSignals = {
       valid: email.valid,
       disposable,
@@ -219,12 +246,25 @@ async function collectSignals(
       role_account: email.role,
       free_provider: email.free,
       suggestion: email.suggestion,
+      domain_age_days: age.days,
     };
     if (!email.valid) reasons.push({ code: "email.invalid" });
     if (disposable) reasons.push({ code: "email.disposable" });
     if (deliverability === "undeliverable") reasons.push({ code: "email.undeliverable" });
     if (email.role) reasons.push({ code: "email.role_account" });
     if (email.suggestion) reasons.push({ code: "email.typo", suggestion: email.suggestion });
+    if (age.days !== null && age.days < NEW_DOMAIN_DAYS) reasons.push({ code: "email.domain_new" });
+  }
+
+  // Captcha.
+  let captchaSignals: StoredSignals["captcha"] = null;
+  if (params.captcha) {
+    if (captcha.degraded) degraded.add("captcha");
+    captchaSignals = { provided: true, passed: captcha.passed };
+    if (captcha.passed === false) reasons.push({ code: "captcha.failed" });
+  } else if (settings.captcha?.required) {
+    captchaSignals = { provided: false, passed: null };
+    reasons.push({ code: "captcha.missing" });
   }
 
   // IP.
@@ -291,6 +331,20 @@ async function collectSignals(
     }
   }
 
+  // Login networks: only users with history have something to compare with.
+  let loginSignals: StoredSignals["login"] = null;
+  if (networks && ipObject && (networks.countries.size > 0 || networks.asns.size > 0)) {
+    const newCountry =
+      networks.countries.size > 0 &&
+      ipObject.country !== null &&
+      !networks.countries.has(ipObject.country);
+    const newNetwork =
+      networks.asns.size > 0 && ipObject.asn !== null && !networks.asns.has(String(ipObject.asn));
+    loginSignals = { new_country: newCountry, new_network: newNetwork };
+    if (newCountry) reasons.push({ code: "login.new_country" });
+    if (newNetwork) reasons.push({ code: "login.new_network" });
+  }
+
   // Memory.
   if (reports.has("mailbox")) reasons.push({ code: "history.fraud_mailbox" });
   if (reports.has("user")) reasons.push({ code: "history.fraud_user" });
@@ -298,13 +352,73 @@ async function collectSignals(
   else if (reports.has("subnet")) reasons.push({ code: "history.fraud_subnet" });
 
   return {
-    signals: { email: emailSignals, ip: ipObject, velocity },
+    signals: {
+      email: emailSignals,
+      ip: ipObject,
+      velocity,
+      captcha: captchaSignals,
+      login: loginSignals,
+    },
     reasons,
     degraded: [...degraded].sort(),
     email,
     ip,
     hashes,
+    flags: {
+      history: reports.size > 0,
+      domainNew: age.days === null ? null : age.days < NEW_DOMAIN_DAYS,
+    },
   };
+}
+
+/** Domain age, looked up only for organizations' own domains (not free or disposable ones). */
+async function emailDomainAge(
+  executor: Executor,
+  deps: RiskDeps,
+  email: EmailAnalysis | null,
+  sandbox: boolean,
+): Promise<{ days: number | null; degraded: boolean }> {
+  if (!email?.valid || email.free || email.disposable) return { days: null, degraded: false };
+  if (sandbox && (email.domain === "test" || email.domain.endsWith(".test"))) {
+    return { days: sandboxDomainAgeDays(email.domain), degraded: false };
+  }
+  if (!deps.domainAge) return { days: null, degraded: true };
+  return domainAge(executor, deps.domainAge, email.domain, {
+    timeoutMs: deps.domainAgeTimeoutMs ?? DEFAULT_DOMAIN_AGE_TIMEOUT_MS,
+  });
+}
+
+/** `passed: null` when the token couldn't be checked; `degraded` when the provider failed. */
+async function captchaVerdict(
+  deps: RiskDeps,
+  settings: ResolvedRiskSettings,
+  params: CreateRiskAssessmentRequestOutput,
+  ip: string | null,
+  sandbox: boolean,
+): Promise<{ passed: boolean | null; degraded: boolean }> {
+  const token = params.captcha?.token;
+  if (!token) return { passed: null, degraded: false };
+  const fixture = sandbox ? sandboxCaptchaVerdict(token) : null;
+  if (fixture !== null) return { passed: fixture, degraded: false };
+  if (!settings.captcha) return { passed: null, degraded: false };
+  const verify = deps.verifyCaptcha ?? verifyCaptcha;
+  const timeoutMs = deps.captchaTimeoutMs ?? DEFAULT_CAPTCHA_TIMEOUT_MS;
+  try {
+    const verdict: CaptchaVerdict = await verify({
+      provider: settings.captcha.provider,
+      secret: captchaSecret(settings, deps.secretsKeys) ?? "",
+      token,
+      remoteIp: ip && !isBlockedAddress(ip) ? ip : null,
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    return { passed: verdict.success, degraded: false };
+  } catch (error) {
+    console.warn(
+      "[risk] Captcha verification failed:",
+      error instanceof Error ? error.message : error,
+    );
+    return { passed: null, degraded: true };
+  }
 }
 
 function dedupeMatches(matches: ListMatch[]): ListMatch[] {
@@ -428,9 +542,10 @@ async function reportedHashes(
 
 async function insertAssessment(
   tx: Transaction,
-  deps: RiskDeps,
   input: AssessRiskInput,
   collected: Collected,
+  settings: ResolvedRiskSettings,
+  rules: readonly RiskRuleRow[],
   key: { idempotencyKey: string | null; requestHash: string | null },
 ): Promise<RiskAssessmentRow | undefined> {
   const { environment, params } = input;
@@ -469,9 +584,20 @@ async function insertAssessment(
     }
   }
 
-  const sorted = sortReasons(reasons);
-  const score = scoreReasons(sorted);
-  const decision = decide(score, sorted, deps.thresholds);
+  // Disabled reasons never fire; rules still see the facts behind them.
+  const enabled = reasons.filter((reason) => !settings.disabledReasons.has(reason.code));
+  const score = scoreReasons(enabled);
+  const listed = enabled.some((reason) => reason.code.startsWith("list."));
+  const rule = listed
+    ? null
+    : firstMatchingRule(
+        rules,
+        params.event,
+        ruleFacts(collected, { score, duplicate: previous !== undefined }),
+      );
+  if (rule) enabled.push({ code: "rule.matched", rule: rule.id, name: rule.name });
+  const sorted = sortReasons(enabled);
+  const decision = decide(score, sorted, settings.thresholds, rule?.action ?? null);
   const now = new Date();
 
   const [row] = await tx
@@ -528,6 +654,18 @@ async function insertAssessment(
       });
   }
 
+  // Where users sign up and log in from, for `login.new_*` on later logins.
+  const network = collected.signals.ip;
+  if (
+    (params.event === "signup" || params.event === "login") &&
+    collected.hashes.user &&
+    network &&
+    !network.private &&
+    decision !== "block"
+  ) {
+    await rememberUserNetwork(tx, environment, collected.hashes.user, network, now);
+  }
+
   const label = params.event === "custom" ? (params.event_name ?? "custom") : params.event;
   await appendLogEntries(tx, [
     {
@@ -568,6 +706,7 @@ async function insertAssessment(
         score,
         reasons: sorted.map(toReasonObject),
         user_id: userId,
+        outcome: null,
         occurred_at: now.toISOString(),
       },
     };
@@ -581,4 +720,44 @@ async function insertAssessment(
     });
   }
   return row;
+}
+
+/** The values rules test (`RULE_FIELDS`), from the collected signals. */
+function ruleFacts(collected: Collected, extra: { score: number; duplicate: boolean }): RuleFacts {
+  const { email, ip, velocity, captcha, login } = collected.signals;
+  const v = (key: string) => (velocity ? (velocity[key] ?? 0) : null);
+  return {
+    "email.valid": email ? email.valid : null,
+    "email.disposable": email ? email.disposable : null,
+    "email.undeliverable": email ? email.deliverability === "undeliverable" : null,
+    "email.role_account": email ? email.role_account : null,
+    "email.free_provider": email ? email.free_provider : null,
+    "email.typo": email ? email.suggestion !== null : null,
+    "email.domain_new": collected.flags.domainNew,
+    "email.domain": collected.email?.valid ? collected.email.domain : null,
+    "email.domain_age_days": email?.domain_age_days ?? null,
+    "ip.tor": ip ? ip.tor : null,
+    "ip.hosting": ip ? ip.hosting : null,
+    "ip.vpn": ip ? ip.hosting_kind === "vpn" : null,
+    "ip.private": ip ? ip.private : null,
+    "ip.country": ip?.country ?? null,
+    "ip.asn": ip?.asn ? String(ip.asn) : null,
+    "ip.hosting_provider": ip?.hosting_provider ?? null,
+    "captcha.passed": captcha ? captcha.passed : null,
+    "duplicate.canonical_mailbox": collected.email?.valid ? extra.duplicate : null,
+    "history.fraud": collected.flags.history,
+    "login.new_country": login ? login.new_country : null,
+    "login.new_network": login ? login.new_network : null,
+    score: extra.score,
+    "velocity.ip_1h": v("ip_1h"),
+    "velocity.ip_24h": v("ip_24h"),
+    "velocity.subnet_1h": v("subnet_1h"),
+    "velocity.subnet_24h": v("subnet_24h"),
+    "velocity.email_domain_1h": v("email_domain_1h"),
+    "velocity.email_domain_24h": v("email_domain_24h"),
+    "velocity.mailbox_1h": v("mailbox_1h"),
+    "velocity.mailbox_24h": v("mailbox_24h"),
+    "velocity.user_1h": v("user_1h"),
+    "velocity.user_24h": v("user_24h"),
+  };
 }

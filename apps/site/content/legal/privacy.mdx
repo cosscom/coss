@@ -68,7 +68,11 @@ used.
   the email domain is disposable or can receive mail, the IP address's network and country and whether it is a Tor exit
   or a hosting network, and counts of recent events). To recognize the same person, network or mailbox in later
   assessments of the same environment, we keep only keyed hashes of the email address, IP address, network and your
-  user id. We look IP addresses up in data we download and host ourselves; we don't send them to anyone.
+  user id, and the countries and networks each user logged in from (by keyed hash of the user id). We look
+  IP addresses up in data we download and host ourselves; we don't send them to anyone. To tell how old an email
+  domain is, we ask its registry over RDAP, sending only the domain name. If you configure a captcha provider
+  (Cloudflare Turnstile or hCaptcha), we send it the captcha token, your secret key and the person's IP address
+  to verify the token.
 - **Domains and webhooks:** the sending domains you verify and their DNS records; your webhook endpoint URLs and
   signing secrets (encrypted at rest), and a record of each delivery attempt, including up to 1 KB of your endpoint's
   response.

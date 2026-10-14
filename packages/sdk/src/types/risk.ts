@@ -18,7 +18,7 @@ export type RiskList = "allow" | "block";
 export type RiskListEntryType = "email" | "domain" | "ip" | "asn" | "country" | "user";
 
 /** Signal groups an assessment was made without (a lookup failed or timed out). */
-export type RiskDegradedSignal = "email_dns" | "ip_data" | "velocity";
+export type RiskDegradedSignal = "email_dns" | "domain_age" | "ip_data" | "velocity" | "captcha";
 
 /** Every reason an assessment can give (see the reason catalog in the docs). */
 export type RiskReasonCode =
@@ -27,6 +27,7 @@ export type RiskReasonCode =
   | "email.undeliverable"
   | "email.role_account"
   | "email.typo"
+  | "email.domain_new"
   | "ip.tor"
   | "ip.vpn_network"
   | "ip.hosting_provider"
@@ -45,6 +46,11 @@ export type RiskReasonCode =
   | "history.fraud_user"
   | "history.fraud_ip"
   | "history.fraud_subnet"
+  | "login.new_country"
+  | "login.new_network"
+  | "captcha.failed"
+  | "captcha.missing"
+  | "rule.matched"
   | "list.blocked"
   | "list.allowed";
 
@@ -70,6 +76,10 @@ export interface RiskReason {
   entry?: string;
   /** `list.*`: what matched. */
   type?: RiskListEntryType;
+  /** `rule.matched`: the rule's id. */
+  rule?: string;
+  /** `rule.matched`: the rule's name. */
+  name?: string;
 }
 
 export interface RiskEmailSignals {
@@ -82,6 +92,23 @@ export interface RiskEmailSignals {
   role_account: boolean;
   free_provider: boolean;
   suggestion: string | null;
+  /**
+   * Days since the domain was registered (RDAP); `null` when unknown or not looked up (free
+   * providers, disposable domains).
+   */
+  domain_age_days: number | null;
+}
+
+export interface RiskCaptchaSignals {
+  provided: boolean;
+  /** `null` when it couldn't be checked (no captcha configured, or the provider was unreachable). */
+  passed: boolean | null;
+}
+
+/** Logins of a user with history: whether the country or network is new for them. */
+export interface RiskLoginSignals {
+  new_country: boolean;
+  new_network: boolean;
 }
 
 export interface RiskIpSignals {
@@ -116,6 +143,8 @@ export interface RiskAssessment {
      * `<dimension>_<window>` (e.g. `ip_1h`, `mailbox_24h`); `null` when unavailable.
      */
     velocity: Record<string, number> | null;
+    captcha: RiskCaptchaSignals | null;
+    login: RiskLoginSignals | null;
   };
   user: { id: string | null; email: string | null };
   /** `null` once removed (90 days after the assessment). */
@@ -144,6 +173,11 @@ export interface AssessRiskParams {
   ip?: string;
   /** The client's user agent. */
   user_agent?: string;
+  /**
+   * The token your captcha widget (Turnstile or hCaptcha, set in the risk settings) gave the
+   * browser. Verified once: don't reuse it.
+   */
+  captcha?: { token: string };
 }
 
 /** Query of `GET /v1/risk/assessments`. */
@@ -220,6 +254,124 @@ export interface DeletedRiskListEntry {
 export interface ForgottenRiskUser {
   object: "risk_user";
   /** Your user id. */
+  id: string;
+  deleted: true;
+}
+
+export type RiskCaptchaProvider = "turnstile" | "hcaptcha";
+
+/** The environment's risk settings. */
+export interface RiskSettings {
+  object: "risk_settings";
+  /** Scores at or above it are `review`. */
+  review_threshold: number;
+  /** Scores at or above it are `block`. */
+  block_threshold: number;
+  /** Reasons that never fire in this environment. */
+  disabled_reasons: RiskReasonCode[];
+  /** The captcha provider assessments verify tokens with (never the secret). */
+  captcha: { provider: RiskCaptchaProvider; required: boolean } | null;
+  /** ISO 8601 timestamp; `null` while on the defaults. */
+  updated_at: string | null;
+}
+
+/** Body of `PATCH /v1/risk/settings`: only the fields given change. */
+export interface UpdateRiskSettingsParams {
+  review_threshold?: number;
+  block_threshold?: number;
+  disabled_reasons?: RiskReasonCode[];
+  /** `null` turns captcha verification off and deletes the secret. */
+  captcha?: {
+    provider: RiskCaptchaProvider;
+    /** Required when setting a provider for the first time or changing it. */
+    secret?: string;
+    /** Assessments without a token get `captcha.missing`. */
+    required?: boolean;
+  } | null;
+}
+
+/** A field a rule condition can test (see the rules guide). */
+export type RiskRuleField =
+  | "email.valid"
+  | "email.disposable"
+  | "email.undeliverable"
+  | "email.role_account"
+  | "email.free_provider"
+  | "email.typo"
+  | "email.domain_new"
+  | "email.domain"
+  | "email.domain_age_days"
+  | "ip.tor"
+  | "ip.hosting"
+  | "ip.vpn"
+  | "ip.private"
+  | "ip.country"
+  | "ip.asn"
+  | "ip.hosting_provider"
+  | "captcha.passed"
+  | "duplicate.canonical_mailbox"
+  | "history.fraud"
+  | "login.new_country"
+  | "login.new_network"
+  | "score"
+  | "velocity.ip_1h"
+  | "velocity.ip_24h"
+  | "velocity.subnet_1h"
+  | "velocity.subnet_24h"
+  | "velocity.email_domain_1h"
+  | "velocity.email_domain_24h"
+  | "velocity.mailbox_1h"
+  | "velocity.mailbox_24h"
+  | "velocity.user_1h"
+  | "velocity.user_24h";
+
+/** A test of one field. A field without a value (no IP, no email…) never matches. */
+export interface RiskRuleCondition {
+  field: RiskRuleField;
+  /** `is` (booleans); `eq`, `neq`, `gt`, `gte`, `lt`, `lte` (numbers); `eq`, `neq`, `in`, `not_in` (strings). */
+  operator: "is" | "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "in" | "not_in";
+  value: boolean | number | string | string[];
+}
+
+/** A rule: the first enabled one whose conditions match decides (after the lists). */
+export interface RiskRule {
+  object: "risk_rule";
+  id: string;
+  name: string;
+  enabled: boolean;
+  /** Rules are tried in ascending order. */
+  position: number;
+  /** Events it applies to; empty: every event. */
+  events: RiskEvent[];
+  /** `all`: every condition must hold. `any`: one is enough. */
+  match: "all" | "any";
+  conditions: RiskRuleCondition[];
+  action: RiskDecision;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  /** ISO 8601 timestamp. */
+  updated_at: string;
+}
+
+/** Body of `POST /v1/risk/rules`. */
+export interface CreateRiskRuleParams {
+  name: string;
+  enabled?: boolean;
+  /** Default 0. */
+  position?: number;
+  events?: RiskEvent[];
+  /** Default `all`. */
+  match?: "all" | "any";
+  conditions: RiskRuleCondition[];
+  action: RiskDecision;
+}
+
+/** Body of `PATCH /v1/risk/rules/{id}`: only the fields given change. */
+export type UpdateRiskRuleParams = Partial<CreateRiskRuleParams>;
+
+/** Response of `DELETE /v1/risk/rules/{id}`. */
+export interface DeletedRiskRule {
+  object: "risk_rule";
   id: string;
   deleted: true;
 }
