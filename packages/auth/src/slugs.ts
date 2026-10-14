@@ -120,6 +120,8 @@ const FUTURE_SITE_SEGMENTS = [
   "inbox",
   "ai",
   "agents",
+  "hooks",
+  "webhooks",
   // Marketing and company pages
   "home",
   "pricing",

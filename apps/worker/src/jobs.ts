@@ -81,17 +81,45 @@ export type WorkerDeps = {
    * current item (a webhook attempt, a domain check, a received SQS batch) still finishes.
    */
   signal: AbortSignal;
+  /** Run only these loops (`WORKER_LOOPS`); all of them when absent. */
+  loops?: ReadonlySet<string>;
 };
 
+/**
+ * Every loop (and pg-boss's email dispatch), by name, for `WORKER_LOOPS`. The conditional ones
+ * (`auth-emails`, `reputation-notifications`, `ses-events`) also need their configuration.
+ */
+export const WORKER_LOOP_NAMES = [
+  "email-dispatch",
+  "webhooks",
+  "hooks",
+  "hooks-maintenance",
+  "log-drains",
+  "domains",
+  "scheduled-emails",
+  "stale-claims",
+  "reputation",
+  "organization-deletions",
+  "unclaimed",
+  "retention",
+  "partitions",
+  "auth-emails",
+  "reputation-notifications",
+  "ses-events",
+] as const;
+
 export function startJobs(deps: WorkerDeps): Loop[] {
-  const loops = [
-    startLoop({
+  // Only the loops this worker runs (`WORKER_LOOPS`), e.g. a fleet dedicated to Hooks deliveries.
+  const start = (options: Parameters<typeof startLoop>[0]): Loop | null =>
+    !deps.loops || deps.loops.has(options.name) ? startLoop(options) : null;
+  const loops: (Loop | null)[] = [
+    start({
       name: "webhooks",
       intervalMs: 1000,
       run: async () =>
         (await runDueWebhookDeliveries({ limit: WEBHOOK_BATCH }, deps.webhooks)) === WEBHOOK_BATCH,
     }),
-    startLoop({
+    start({
       // Hooks: customers' messages to their users' endpoints. Busy whenever a batch is full.
       name: "hooks",
       intervalMs: 500,
@@ -101,7 +129,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
           deps.hooks,
         )) === HOOK_BATCH,
     }),
-    startLoop({
+    start({
       // Puts off held organizations' deliveries (so they never block the queue's head) and
       // requeues the failed deliveries of endpoint recoveries, in batches.
       name: "hooks-maintenance",
@@ -112,7 +140,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         return parked === HOOK_PARK_BATCH || recovered === HOOK_RECOVERY_BATCH;
       },
     }),
-    startLoop({
+    start({
       // Environment logs streamed to log drains, in NDJSON batches.
       name: "log-drains",
       intervalMs: 1000,
@@ -120,7 +148,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         (await runDueLogDrainDeliveries({ limit: LOG_DRAIN_BATCH }, deps.webhooks)) ===
         LOG_DRAIN_BATCH,
     }),
-    startLoop({
+    start({
       name: "domains",
       intervalMs: 30_000,
       // Sending domains, then their custom tracking domains.
@@ -131,19 +159,19 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         return domains === DOMAIN_BATCH || tracking === DOMAIN_BATCH;
       },
     }),
-    startLoop({
+    start({
       name: "scheduled-emails",
       intervalMs: 5000,
       run: async () =>
         (await deps.email.dispatchDue({ limit: SCHEDULED_BATCH, signal: deps.signal })) ===
         SCHEDULED_BATCH,
     }),
-    startLoop({
+    start({
       name: "stale-claims",
       intervalMs: 60_000,
       run: async () => (await sweepStaleClaims({ limit: SWEEP_BATCH })) === SWEEP_BATCH,
     }),
-    startLoop({
+    start({
       // The reputation guard: re-checks organizations with new bounces or complaints, and
       // suspends live sending on its own when a rate crosses the policy.
       name: "reputation",
@@ -154,7 +182,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
           { checks: REPUTATION_CHECKS, systemOrganizationId: deps.systemOrganizationId },
         )) === REPUTATION_BATCH,
     }),
-    startLoop({
+    start({
       // Organization deletions: releases domains and the SES tenant, then deletes the data.
       name: "organization-deletions",
       intervalMs: 10_000,
@@ -167,7 +195,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
           },
         )) === DELETION_BATCH,
     }),
-    startLoop({
+    start({
       name: "unclaimed",
       intervalMs: 60_000,
       // Busy only while there are more emails to fail (they leave the scan). Requeued emails may
@@ -176,13 +204,13 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         (await sweepUnclaimedEmails(deps.dispatchQueue, { limit: SWEEP_BATCH })).failed ===
         SWEEP_BATCH,
     }),
-    startLoop({
+    start({
       // Deletes data past its published retention (`@coss/retention`); catches up in full batches.
       name: "retention",
       intervalMs: 10 * 60_000,
       run: () => runRetention({ limit: RETENTION_BATCH, signal: deps.signal }),
     }),
-    startLoop({
+    start({
       // Partitioned tables (environment logs, Hooks messages): a week of daily partitions ahead,
       // expired days dropped whole.
       name: "partitions",
@@ -208,7 +236,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
   const authEmails = deps.authEmails;
   if (authEmails) {
     loops.push(
-      startLoop({
+      start({
         name: "auth-emails",
         // Someone is waiting for these (a sign-up, a password reset).
         intervalMs: 2000,
@@ -220,7 +248,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
   const notifications = deps.notifications;
   if (notifications) {
     loops.push(
-      startLoop({
+      start({
         name: "reputation-notifications",
         intervalMs: 5000,
         run: async () =>
@@ -232,7 +260,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
   const ses = deps.sesEvents;
   if (ses) {
     loops.push(
-      startLoop({
+      start({
         name: "ses-events",
         // Each receive long-polls for up to 20 seconds, so poll again right away.
         intervalMs: 0,
@@ -248,5 +276,5 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       }),
     );
   }
-  return loops;
+  return loops.filter((loop): loop is Loop => loop !== null);
 }

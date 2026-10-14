@@ -16,6 +16,21 @@ export const env = createEnv({
     ...emailWorkerEnvShape,
     // AI content screening of sampled live emails before they are sent (@coss/screening).
     ...screeningEnvShape,
+    // Comma-separated loops this worker runs (`WORKER_LOOP_NAMES` in src/jobs.ts), e.g. `hooks` for
+    // tasks dedicated to Hooks deliveries; unset runs every loop.
+    WORKER_LOOPS: z
+      .string()
+      .optional()
+      .transform((value) =>
+        value
+          ? new Set(
+              value
+                .split(",")
+                .map((name) => name.trim())
+                .filter(Boolean),
+            )
+          : undefined,
+      ),
     // Days of environment logs kept (@coss/logs); expired days are dropped hourly.
     LOG_RETENTION_DAYS: z.coerce.number().int().min(1).max(31).default(30),
     // Reputation notification emails (warnings, suspensions) to organization owners and admins,

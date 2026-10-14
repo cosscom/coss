@@ -24,11 +24,20 @@ import { createWebhookSender, parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
 import { env } from "./env.ts";
 import { hookThrottle } from "./hooks-throttle.ts";
-import { startJobs } from "./jobs.ts";
+import { startJobs, WORKER_LOOP_NAMES } from "./jobs.ts";
 import { monitoredDispatch } from "./monitoring.ts";
 import { createShutdown } from "./shutdown.ts";
 import { createSqsApi } from "./sqs.ts";
 
+const unknownLoops = [...(env.WORKER_LOOPS ?? [])].filter(
+  (name) => !(WORKER_LOOP_NAMES as readonly string[]).includes(name),
+);
+if (unknownLoops.length > 0) {
+  throw new Error(
+    `WORKER_LOOPS names unknown loops: ${unknownLoops.join(", ")} (known: ${WORKER_LOOP_NAMES.join(", ")}).`,
+  );
+}
+const runs = (name: string) => !env.WORKER_LOOPS || env.WORKER_LOOPS.has(name);
 const config = emailRuntimeConfig(env);
 const email = createEmailRuntime(config);
 const classifier = createClassifier(env);
@@ -70,7 +79,7 @@ const emailService = createEmailService({
     : undefined,
   screeningFailureAllowlist: systemOrganizationId ? new Set([systemOrganizationId]) : undefined,
 });
-await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
+if (runs("email-dispatch")) await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
 
 // Account emails (verification, password resets, invitations) and reputation notifications go
 // out through COSS's own email product. Without a configured environment, reputation
@@ -124,9 +133,10 @@ const loops = startJobs({
     onFinished: (finished) => recordHookDeliveryOutcomes(finished),
   },
   logRetentionDays: env.LOG_RETENTION_DAYS,
+  loops: env.WORKER_LOOPS,
 });
 console.info(
-  `[worker] started (email-dispatch, ${loops.map((loop) => loop.name).join(", ")}; ` +
+  `[worker] started (${[...(runs("email-dispatch") ? ["email-dispatch"] : []), ...loops.map((loop) => loop.name)].join(", ")}; ` +
     `content screening: ${env.SCREENING_CLASSIFIER === "ai" ? env.SCREENING_MODEL : env.SCREENING_CLASSIFIER})`,
 );
 

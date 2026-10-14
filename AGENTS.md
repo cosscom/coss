@@ -81,6 +81,9 @@ AWS_REGION=… bun run valkey:bootstrap --subnet-ids … --security-group-ids �
 bun run ratelimit:set --org acme [--bucket api.read --limit 100 [--period 1s] [--burst 200] | --reset]
                                                # show/change an org's rate limit overrides (~1 min to apply;
                                                #   not audited — prefer the admin console's organization page)
+bun run --cwd apps/worker hooks:load [--applications 20 --endpoints 3 --messages 2000]
+                                               # Hooks load test on the test database: send and
+                                               #   delivery throughput, the claim query's plan
 bun run webhooks:reencrypt [--dry-run]         # re-encrypt webhook endpoint secrets with the first
                                                #   WEBHOOK_SECRETS_KEY (step 3 of a key rotation, README)
 ```
@@ -150,6 +153,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → public unauthenticated limits use an aggregate fallback subject instead of a per-IP subject |
 | `TEST_VALKEY_URL` | ratelimit + api tests (keys under a random prefix, never flushed) |
 | `WEBHOOK_SECRETS_KEY` | api + web + worker: comma-separated 32-byte base64 keys, newest first (the first encrypts, all decrypt); encrypts endpoint signing secrets (losing it makes them unreadable). Shape in `@coss/webhooks/env` |
+| `WORKER_LOOPS` | worker: comma-separated loops to run (`WORKER_LOOP_NAMES` in `apps/worker/src/jobs.ts`, plus `email-dispatch`); unset runs all. A second worker service with `hooks` scales Hooks deliveries on their own |
 | `LOG_RETENTION_DAYS` | worker: days of environment logs kept (1-31, default 30); whole expired day partitions are dropped hourly |
 | `SCREENING_CLASSIFIER`, `SCREENING_MODEL`, `AI_GATEWAY_API_KEY` | worker: content screening (`off`/`fake`/`ai`; a Vercel AI Gateway decision model id, default `typesafe-ai/jev`; the Gateway key, required with `ai`) |
 | `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | api, worker, web: Sentry (each its own project's DSN; web's also serves browsers of both zones); unset → nothing reported. Read before t3-env (`src/instrument.ts`, `src/lib/monitoring-server.ts`, `/api/monitoring`) and validated by it (`sentryEnvShape`) |

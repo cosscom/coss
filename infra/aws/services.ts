@@ -452,6 +452,13 @@ export const SERVICES: Service[] = [
         description: "Printed by ses:bootstrap.",
       },
       {
+        name: "WORKER_LOOPS",
+        kind: "plain",
+        required: false,
+        description:
+          "Unset: every loop. A second worker service (same image) with `hooks` runs only Hooks deliveries, so their volume scales apart from everything else.",
+      },
+      {
         name: "LOG_RETENTION_DAYS",
         kind: "plain",
         required: false,
