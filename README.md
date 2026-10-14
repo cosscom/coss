@@ -455,7 +455,7 @@ Cloudflare DNS (coss.com zone, DNS only)
   | 30–80 | the site's paths (`/`, `/pricing`, `/docs*`, `/legal*`, `/llms*.txt`, `/site-assets/*`, root files, `/.well-known*`; 3 per rule) + `X-Origin-Verify` | site |
   | 90 | host `coss.com` + `X-Origin-Verify` (every other path: org slugs, `/dashboard`, `/api/*`, `/_next/*`) | web |
 
-  Target groups: health checks `/api/health` (web, site) and `/health` (api), HTTP 200, no database access;
+  Target groups: health checks `/api/health` (web, site, portal) and `/health` (api), HTTP 200, no database access;
   deregistration delay 30 s. Keep the idle timeout at 60 s: the apps hold idle connections for 75 s
   (`KEEP_ALIVE_TIMEOUT`, Bun `idleTimeout`) so the ALB never reuses one they are closing.
 - **CloudFront + WAF:** two distributions, certificates from ACM in us-east-1, HTTP→HTTPS redirect, a response
@@ -505,6 +505,14 @@ Cloudflare DNS (coss.com zone, DNS only)
   **Full** (zone-wide; the zone serves nothing else): Cloudflare connects with the caller's hostname as SNI, which
   the ALB's certificate doesn't cover; the header secret is what proves a request came through Cloudflare. The
   apex redirects to coss.com. Free plan: 100 custom hostnames included, then $0.10 each per month.
+
+- **Hooks portal (not deployed yet):** `apps/portal` (with its Dockerfile) serves the portal customers embed for
+  their users. It must run on a registrable domain of its own (never under coss.com, which would make it same-site
+  with the dashboard). To ship it: register the domain; add a `portal` service to `infra/aws/services.ts` (port
+  3003, `/api/health`; `DATABASE_URL`, `WEBHOOK_SECRETS_KEY`, the Valkey variables, Sentry), an ALB host rule for the
+  domain, a CloudFront distribution (`/_next/static/*` cached) and the deploy workflow's matrix; let its tasks reach
+  RDS and Valkey; then set `PORTAL_PUBLIC_URL=https://<portal domain>` for web and api (until then creating a portal
+  session answers 503 `portal_unavailable`).
 
 ### Monitoring and cost guardrails
 
@@ -587,7 +595,8 @@ failed and a re-run passed, re-run the Deploy run's failed jobs:
 3. Roll out all four services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
    of its latest task definition with the new image, and the script fails if the circuit breaker rolled it back. A
    service behind the load balancer counts as deployed once its new tasks passed their health checks and the old
-   ones are draining; the worker (no health check) once its old tasks are gone. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
+   ones are draining; the worker (no health check) once its old tasks are gone and the new ones ran for 60 s
+   without a failure. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
    the worker finishes each loop's current item).
 4. Record the commit in SSM (`/coss/production/image-tag`, read by Terraform) and invalidate the spec's
    `cloudFront.invalidateAfterDeploy` paths on the coss.com distribution.

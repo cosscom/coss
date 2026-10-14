@@ -29,12 +29,14 @@ import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
 import {
   deleteWebhookEndpointAction,
+  recoverWebhookEndpointAction,
   retryWebhookDeliveryAction,
   revealWebhookSecretAction,
   rollWebhookSecretAction,
   setWebhookEndpointEnabledAction,
   upgradeWebhookEndpointVersionAction,
 } from "../actions";
+import { DEFAULT_RECOVER_SINCE_HOURS, RECOVER_SINCE_OPTIONS } from "../recover";
 import { DEFAULT_PREVIOUS_SECRET_OPTION, PREVIOUS_SECRET_OPTIONS } from "../secret-roll";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string; endpointId: string };
@@ -246,6 +248,85 @@ export function RetryDeliveryButton(props: Target & { deliveryId: string }) {
       {state && !state.ok ? (
         <span className="text-destructive-foreground text-xs">{state.error}</span>
       ) : null}
+    </form>
+  );
+}
+
+export function RecoverDeliveriesButton(props: Target) {
+  return (
+    <Dialog>
+      <DialogTrigger render={<Button size="sm" variant="outline" />}>Recover failed</DialogTrigger>
+      <DialogPopup>
+        <RecoverDeliveriesForm {...props} />
+      </DialogPopup>
+    </Dialog>
+  );
+}
+
+function RecoverDeliveriesForm(props: Target) {
+  const [state, formAction, pending] = useActionState(recoverWebhookEndpointAction, null);
+  if (state?.ok) {
+    const { requeued, hasMore } = state.data;
+    return (
+      <>
+        <DialogHeader>
+          <DialogTitle>
+            {requeued === 0
+              ? "No failed deliveries"
+              : `${requeued} ${requeued === 1 ? "delivery" : "deliveries"} queued`}
+          </DialogTitle>
+          <DialogDescription>
+            {requeued === 0
+              ? "Nothing failed in that period."
+              : "Each gets one more attempt within the next minute."}
+            {hasMore ? " More failed in that period: recover again to queue the rest." : ""}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose render={<Button />}>Done</DialogClose>
+        </DialogFooter>
+      </>
+    );
+  }
+  return (
+    // `contents` keeps header/panel/footer as direct flex children of the popup (coss ui pattern).
+    <form action={formAction} className="contents">
+      <TargetInputs {...props} />
+      <DialogHeader>
+        <DialogTitle>Recover failed deliveries?</DialogTitle>
+        <DialogDescription>
+          Deliveries that failed every attempt are sent once more, to the endpoint's current URL and
+          signed with its current secret. Use this after fixing a receiver that was down.
+        </DialogDescription>
+      </DialogHeader>
+      <DialogPanel className="flex flex-col gap-4">
+        <RadioGroup
+          aria-label="Recover deliveries that failed in"
+          defaultValue={String(DEFAULT_RECOVER_SINCE_HOURS)}
+          name="sinceHours"
+        >
+          {RECOVER_SINCE_OPTIONS.map((option) => (
+            <Label className="items-start gap-3" key={option.hours}>
+              <Radio className="mt-0.5" value={String(option.hours)} />
+              <span className="flex flex-col gap-0.5">
+                {option.label}
+                {"description" in option ? (
+                  <span className="font-normal text-muted-foreground text-xs">
+                    {option.description}
+                  </span>
+                ) : null}
+              </span>
+            </Label>
+          ))}
+        </RadioGroup>
+        {state && !state.ok ? <FormError message={state.error} /> : null}
+      </DialogPanel>
+      <DialogFooter>
+        <DialogClose render={<Button variant="ghost" />}>Cancel</DialogClose>
+        <Button loading={pending} type="submit">
+          Recover
+        </Button>
+      </DialogFooter>
     </form>
   );
 }

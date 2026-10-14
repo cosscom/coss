@@ -7,6 +7,7 @@ import { BILLING_EVENT_TYPES } from "@coss/billing/wire";
 import { ACCOUNT_EVENT_TYPES } from "@coss/reputation/schemas";
 import { RISK_EVENT_TYPES } from "@coss/risk/schemas";
 import { LATEST_API_VERSION } from "@coss/versioning";
+import { HOOK_OPERATIONAL_EVENT_TYPES } from "@coss/webhooks/schemas";
 import { z } from "zod";
 
 export const MAX_RECIPIENTS = 50;
@@ -664,6 +665,7 @@ export const WEBHOOK_EVENT_TYPES = [
   ...EMAIL_EVENT_TYPES,
   ...RECEIVED_EMAIL_EVENT_TYPES,
   ...ACCOUNT_EVENT_TYPES,
+  ...HOOK_OPERATIONAL_EVENT_TYPES,
   ...BILLING_EVENT_TYPES,
   ...RISK_EVENT_TYPES,
 ] as const;

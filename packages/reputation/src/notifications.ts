@@ -281,6 +281,8 @@ const ADVICE: Record<string, string> = {
   complaint_rate: "Only send to people who asked for your email, and make it easy to unsubscribe.",
   content_screening:
     "Review what your recent emails contain: content screening found possible spam or phishing.",
+  hook_failure_rate:
+    "Most Hooks messages fail at your applications' endpoints: check that they are your users' real URLs, and disable or delete the ones that no longer answer.",
 };
 
 type Block = { paragraph: string } | { list: string[] } | { link: { label: string; url: string } };

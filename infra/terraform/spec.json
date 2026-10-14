@@ -153,6 +153,12 @@
           "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
         },
         {
+          "name": "PORTAL_PUBLIC_URL",
+          "kind": "plain",
+          "required": false,
+          "description": "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed."
+        },
+        {
           "name": "RISK_HASH_KEY",
           "kind": "secret",
           "required": true,
@@ -502,6 +508,12 @@
           "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
         },
         {
+          "name": "PORTAL_PUBLIC_URL",
+          "kind": "plain",
+          "required": false,
+          "description": "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed."
+        },
+        {
           "name": "RISK_HASH_KEY",
           "kind": "secret",
           "required": true,
@@ -666,6 +678,12 @@
           "kind": "plain",
           "required": true,
           "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "WORKER_LOOPS",
+          "kind": "plain",
+          "required": false,
+          "description": "Unset: every loop. A second worker service (same image) with `hooks` runs only Hooks deliveries, so their volume scales apart from everything else."
         },
         {
           "name": "SES_INBOUND_QUEUE_URL",

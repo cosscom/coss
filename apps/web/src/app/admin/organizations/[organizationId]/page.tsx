@@ -70,6 +70,11 @@ const BUCKET_LABELS: Partial<Record<BucketName, string>> = {
   "email.recipients.day": "Live recipients per day, per organization",
   "email.sandbox_recipients.day": "Sandbox recipients per day, per environment",
   "dashboard.invitations": "Member invitations per day, per organization",
+  "hooks.messages.second": "Live Hooks messages per second, per organization",
+  "hooks.deliveries.day": "Live Hooks deliveries per day (fan-out), per organization",
+  "hooks.sandbox_deliveries.day": "Sandbox Hooks deliveries per day, per environment",
+  "hooks.endpoint.attempts": "Hooks attempts per second, per endpoint (unless it sets its own)",
+  "hooks.destination.attempts": "Hooks attempts per second, per destination host",
 };
 
 const OVERRIDABLE_BUCKETS = BUCKET_NAMES.filter((name) => BUCKETS[name].overridable);

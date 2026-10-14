@@ -16,6 +16,7 @@ import {
   runDueBillingSync,
   runDueCreditNoteSync,
 } from "@coss/billing";
+import { dropExpiredPartitions, ensurePartitions, HOOK_PARTITIONS } from "@coss/db/partitions";
 import {
   type DomainDeps,
   type EmailDispatchQueue,
@@ -29,12 +30,20 @@ import {
   sweepUnclaimedEmails,
 } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
+import {
+  type HookDeliveryDeps,
+  hookFailureRateCheck,
+  parkHeldHookDeliveries,
+  runDueHookDeliveries,
+  runDueHookRecoveries,
+} from "@coss/hooks";
 import { dropExpiredLogPartitions, ensureLogPartitions } from "@coss/logs";
 import {
   type ReputationNotificationDeps,
   runDueReputationEvaluations,
   runDueReputationNotifications,
 } from "@coss/reputation";
+import { RETENTION_DAYS } from "@coss/retention";
 import { refreshDueDatasets } from "@coss/risk";
 import { contentScreeningCheck } from "@coss/screening";
 import { runDueOrganizationDeletions } from "@coss/tenancy/deletion";
@@ -50,6 +59,10 @@ import { runRetention } from "./retention.ts";
 import { pollSesEvents, type SqsApi } from "./sqs.ts";
 
 const WEBHOOK_BATCH = 20;
+const HOOK_BATCH = 200;
+const HOOK_CONCURRENCY = 100;
+const HOOK_PARK_BATCH = 5000;
+const HOOK_RECOVERY_BATCH = 1000;
 const LOG_DRAIN_BATCH = 10;
 const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
@@ -61,7 +74,8 @@ const DELETION_BATCH = 5;
 const RETENTION_BATCH = 1000;
 const BILLING_BATCH = 20;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
-const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck];
+// Hooks delivery failures warn by default (their policy has no suspension threshold).
+const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck, hookFailureRateCheck];
 
 export type WorkerDeps = {
   /** Emails are dispatched by pg-boss workers; this loop only re-enqueues lost jobs. */
@@ -71,6 +85,8 @@ export type WorkerDeps = {
   email: Pick<EmailService, "dispatchDue">;
   /** Also delivers log drain batches (same signing keys and sender). */
   webhooks: WebhookDeliveryDeps;
+  /** Delivers Hooks messages (same signing keys and sender, plus the delivery rate limits). */
+  hooks: HookDeliveryDeps;
   /** How long environment logs are kept (`LOG_RETENTION_DAYS`). */
   logRetentionDays: number;
   /** Downloads IPinfo Lite for risk's ASN and country signals (`IPINFO_TOKEN`); `null`: skipped. */
@@ -100,17 +116,76 @@ export type WorkerDeps = {
    * current item (a webhook attempt, a domain check, a received SQS batch) still finishes.
    */
   signal: AbortSignal;
+  /** Run only these loops (`WORKER_LOOPS`); all of them when absent. */
+  loops?: ReadonlySet<string>;
 };
 
+/**
+ * Every loop (and pg-boss's email dispatch), by name, for `WORKER_LOOPS`. The conditional ones
+ * (`billing-notifications`, `auth-emails`, `reputation-notifications`, `ses-events`, `ses-inbound`)
+ * also need their configuration.
+ */
+export const WORKER_LOOP_NAMES = [
+  "email-dispatch",
+  "webhooks",
+  "hooks",
+  "hooks-maintenance",
+  "log-drains",
+  "domains",
+  "scheduled-emails",
+  "stale-claims",
+  "reputation",
+  "organization-deletions",
+  "unclaimed",
+  "retention",
+  "partitions",
+  "risk-datasets",
+  "billing-periods",
+  "billing-sync",
+  "billing-collection",
+  "billing-events",
+  "billing-usage",
+  "billing-reconcile",
+  "billing-notifications",
+  "auth-emails",
+  "reputation-notifications",
+  "ses-events",
+  "ses-inbound",
+] as const;
+
 export function startJobs(deps: WorkerDeps): Loop[] {
-  const loops = [
-    startLoop({
+  // Only the loops this worker runs (`WORKER_LOOPS`), e.g. a fleet dedicated to Hooks deliveries.
+  const start = (options: Parameters<typeof startLoop>[0]): Loop | null =>
+    !deps.loops || deps.loops.has(options.name) ? startLoop(options) : null;
+  const loops: (Loop | null)[] = [
+    start({
       name: "webhooks",
       intervalMs: 1000,
       run: async () =>
         (await runDueWebhookDeliveries({ limit: WEBHOOK_BATCH }, deps.webhooks)) === WEBHOOK_BATCH,
     }),
-    startLoop({
+    start({
+      // Hooks: customers' messages to their users' endpoints. Busy whenever a batch is full.
+      name: "hooks",
+      intervalMs: 500,
+      run: async () =>
+        (await runDueHookDeliveries(
+          { limit: HOOK_BATCH, concurrency: HOOK_CONCURRENCY },
+          deps.hooks,
+        )) === HOOK_BATCH,
+    }),
+    start({
+      // Puts off held organizations' deliveries (so they never block the queue's head) and
+      // requeues the failed deliveries of endpoint recoveries, in batches.
+      name: "hooks-maintenance",
+      intervalMs: 10_000,
+      run: async () => {
+        const parked = await parkHeldHookDeliveries({ limit: HOOK_PARK_BATCH });
+        const recovered = await runDueHookRecoveries({ limit: HOOK_RECOVERY_BATCH });
+        return parked === HOOK_PARK_BATCH || recovered === HOOK_RECOVERY_BATCH;
+      },
+    }),
+    start({
       // Environment logs streamed to log drains, in NDJSON batches.
       name: "log-drains",
       intervalMs: 1000,
@@ -118,7 +193,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         (await runDueLogDrainDeliveries({ limit: LOG_DRAIN_BATCH }, deps.webhooks)) ===
         LOG_DRAIN_BATCH,
     }),
-    startLoop({
+    start({
       name: "domains",
       intervalMs: 30_000,
       // Sending domains, then their custom tracking and receiving domains.
@@ -132,19 +207,19 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         return domains === DOMAIN_BATCH || tracking === DOMAIN_BATCH || receiving === DOMAIN_BATCH;
       },
     }),
-    startLoop({
+    start({
       name: "scheduled-emails",
       intervalMs: 5000,
       run: async () =>
         (await deps.email.dispatchDue({ limit: SCHEDULED_BATCH, signal: deps.signal })) ===
         SCHEDULED_BATCH,
     }),
-    startLoop({
+    start({
       name: "stale-claims",
       intervalMs: 60_000,
       run: async () => (await sweepStaleClaims({ limit: SWEEP_BATCH })) === SWEEP_BATCH,
     }),
-    startLoop({
+    start({
       // The reputation guard: re-checks organizations with new bounces or complaints, and
       // suspends live sending on its own when a rate crosses the policy.
       name: "reputation",
@@ -155,7 +230,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
           { checks: REPUTATION_CHECKS, systemOrganizationId: deps.systemOrganizationId },
         )) === REPUTATION_BATCH,
     }),
-    startLoop({
+    start({
       // Organization deletions: releases domains and the SES tenant, then deletes the data.
       name: "organization-deletions",
       intervalMs: 10_000,
@@ -175,7 +250,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
           },
         )) === DELETION_BATCH,
     }),
-    startLoop({
+    start({
       name: "unclaimed",
       intervalMs: 60_000,
       // Busy only while there are more emails to fail (they leave the scan). Requeued emails may
@@ -184,13 +259,13 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         (await sweepUnclaimedEmails(deps.dispatchQueue, { limit: SWEEP_BATCH })).failed ===
         SWEEP_BATCH,
     }),
-    startLoop({
+    start({
       // Deletes data past its published retention (`@coss/retention`); catches up in full batches.
       name: "retention",
       intervalMs: 10 * 60_000,
       run: () => runRetention({ limit: RETENTION_BATCH, signal: deps.signal }),
     }),
-    startLoop({
+    start({
       // Risk's IP datasets (Tor exits, cloud ranges, IPinfo Lite), each on its own schedule; the
       // API reloads changed ones. A failed download keeps the stored copy.
       name: "risk-datasets",
@@ -209,16 +284,24 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         }
       },
     }),
-    startLoop({
-      // Log retention: a week of daily partitions ahead, expired days dropped whole.
-      name: "logs",
+    start({
+      // Partitioned tables (environment logs, Hooks messages): a week of daily partitions ahead,
+      // expired days dropped whole.
+      name: "partitions",
       intervalMs: 60 * 60_000,
       run: async () => {
         const created = await ensureLogPartitions();
         const dropped = await dropExpiredLogPartitions({ retentionDays: deps.logRetentionDays });
+        // Children first, so a delivery never outlives its message.
+        for (const spec of HOOK_PARTITIONS) {
+          created.push(...(await ensurePartitions(spec)));
+          dropped.push(
+            ...(await dropExpiredPartitions(spec, { retentionDays: RETENTION_DAYS.hookMessages })),
+          );
+        }
         if (created.length > 0 || dropped.length > 0) {
           console.info(
-            `[worker:logs] created ${created.length}, dropped ${dropped.length} log partitions`,
+            `[worker:partitions] created ${created.length}, dropped ${dropped.length} partitions`,
           );
         }
       },
@@ -227,7 +310,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
   const billing = deps.billing;
   const system = deps.systemOrganizationId;
   loops.push(
-    startLoop({
+    start({
       // Closes ended months into invoices (after the usage settle window), renews contracts,
       // and gives up unpaid upgrades.
       name: "billing-periods",
@@ -239,7 +322,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         return closed === BILLING_BATCH;
       },
     }),
-    startLoop({
+    start({
       // Pushes invoices to their provider and collects them; mirrors voids and credit notes.
       name: "billing-sync",
       intervalMs: 5000,
@@ -256,7 +339,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         return invoices === BILLING_BATCH;
       },
     }),
-    startLoop({
+    start({
       // Dunning: retries failed charges, reminds about invoices with net terms, and holds live
       // sending once an invoice is overdue past the account's grace days.
       name: "billing-collection",
@@ -265,7 +348,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         (await runDueBillingCollection({ limit: BILLING_BATCH, systemOrganizationId: system })) ===
         BILLING_BATCH,
     }),
-    startLoop({
+    start({
       // Payment provider events (Stripe webhooks) stored by the dashboard.
       name: "billing-events",
       intervalMs: 2000,
@@ -275,7 +358,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
           { providers: billing.providers, systemOrganizationId: system },
         )) === BILLING_BATCH,
     }),
-    startLoop({
+    start({
       // Usage alerts and spend-limit holds.
       name: "billing-usage",
       intervalMs: 5 * 60_000,
@@ -283,7 +366,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         await runBillingUsageChecks({ systemOrganizationId: system });
       },
     }),
-    startLoop({
+    start({
       // Open invoices the provider may have settled without us hearing (a lost webhook).
       name: "billing-reconcile",
       intervalMs: 60 * 60_000,
@@ -298,7 +381,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
   const billingNotifier = billing.notifier;
   if (billingNotifier) {
     loops.push(
-      startLoop({
+      start({
         name: "billing-notifications",
         intervalMs: 5000,
         run: async () =>
@@ -312,7 +395,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
   const authEmails = deps.authEmails;
   if (authEmails) {
     loops.push(
-      startLoop({
+      start({
         name: "auth-emails",
         // Someone is waiting for these (a sign-up, a password reset).
         intervalMs: 2000,
@@ -324,7 +407,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
   const notifications = deps.notifications;
   if (notifications) {
     loops.push(
-      startLoop({
+      start({
         name: "reputation-notifications",
         intervalMs: 5000,
         run: async () =>
@@ -336,7 +419,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
   const ses = deps.sesEvents;
   if (ses) {
     loops.push(
-      startLoop({
+      start({
         name: "ses-events",
         // Each receive long-polls for up to 20 seconds, so poll again right away.
         intervalMs: 0,
@@ -355,7 +438,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
   const sesInbound = deps.sesInbound;
   if (sesInbound) {
     loops.push(
-      startLoop({
+      start({
         name: "ses-inbound",
         // Each receive long-polls for up to 20 seconds, so poll again right away.
         intervalMs: 0,
@@ -370,5 +453,5 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       }),
     );
   }
-  return loops;
+  return loops.filter((loop): loop is Loop => loop !== null);
 }

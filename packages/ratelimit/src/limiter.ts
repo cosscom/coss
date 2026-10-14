@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import {
+  assertValidRule,
   BUCKETS,
   type BucketDefinition,
   type BucketName,
@@ -19,6 +20,11 @@ export type RateLimitRequest = {
   organizationId?: string | undefined;
   /** Tokens to take (e.g. recipients). Defaults to 1. */
   cost?: number;
+  /**
+   * Replaces the bucket's rule (and any override) for this call, e.g. a Hooks endpoint's own rate.
+   * Single-bucket requests only.
+   */
+  rule?: LimitRule;
   /** Reuse an allowed charge across retries. Only for positive charges; do not refund these. */
   idempotency?: { key: string; ttlMs: number };
   /** Only report whether the request would be allowed. */
@@ -89,16 +95,24 @@ export function createRateLimiter(opts: RateLimiterOptions): RateLimiter {
       // Different scopes hash to different cluster slots; they can't be charged atomically.
       throw new Error(`Buckets of one rate limit request must share a scope (${scope}).`);
     }
+    if (request.rule) {
+      if (request.buckets.length !== 1) {
+        throw new Error("A rate limit request with its own rule charges exactly one bucket.");
+      }
+      assertValidRule(request.rule);
+    }
     return scope;
   }
 
   async function resolve(request: RateLimitRequest, scope: BucketScope) {
-    const custom = request.organizationId ? await overrides(request.organizationId) : {};
+    const custom =
+      request.organizationId && !request.rule ? await overrides(request.organizationId) : {};
     // The hash tag keeps every bucket of one subject in one cluster slot.
     const tag = `{${scope}:${normalizeSubject(scope, request.subject)}}`;
     return request.buckets.map((bucket) => {
       const definition = BUCKETS[bucket];
-      const rule: LimitRule = (definition.overridable && custom[bucket]) || definition;
+      const rule: LimitRule =
+        request.rule ?? ((definition.overridable && custom[bucket]) || definition);
       const burst = rule.burst ?? rule.limit;
       const spec: LimitSpec = {
         key: `${prefix}:rl:${tag}:${bucket}`,

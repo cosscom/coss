@@ -4,9 +4,11 @@ import type { List } from "../types/email.ts";
 import type {
   CreateWebhookEndpointParams,
   DeletedWebhookEndpoint,
+  RecoverWebhookEndpointParams,
   RollWebhookEndpointSecretParams,
   UpdateWebhookEndpointParams,
   WebhookEndpoint,
+  WebhookEndpointRecovery,
   WebhookEndpointWithSecret,
 } from "../types/webhook-endpoint.ts";
 import { WebhookDeliveriesResource } from "./webhook-deliveries.ts";
@@ -100,6 +102,26 @@ export class WebhookEndpointsResource {
       path: `/v1/webhook_endpoints/${encodeURIComponent(id)}/roll_secret`,
       retry: false,
       body: params,
+      idempotencyKey: options?.idempotencyKey,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Queues the endpoint's deliveries that failed since `since` for one more attempt each (at most
+   * 1,000 per call; while `has_more` is true, call again with the same `since`), e.g. after fixing a
+   * receiver that was down. The endpoint must be enabled.
+   */
+  recover(
+    id: string,
+    params: RecoverWebhookEndpointParams,
+    options?: RequestOptions,
+  ): Promise<CossResult<WebhookEndpointRecovery>> {
+    const since = params.since instanceof Date ? params.since.toISOString() : params.since;
+    return this.#http.request<WebhookEndpointRecovery>({
+      method: "POST",
+      path: `/v1/webhook_endpoints/${encodeURIComponent(id)}/recover`,
+      body: { since },
       idempotencyKey: options?.idempotencyKey,
       signal: options?.signal,
     });

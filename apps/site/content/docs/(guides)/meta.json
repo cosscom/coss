@@ -16,6 +16,8 @@
     "log-drains",
     "---Email---",
     "...email",
+    "---Hooks---",
+    "...hooks",
     "---Risk---",
     "...risk",
     "---TypeScript SDK---",

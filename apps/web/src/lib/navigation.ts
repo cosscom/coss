@@ -1,5 +1,6 @@
 import {
   BanIcon,
+  BoxesIcon,
   BuildingIcon,
   CableIcon,
   CreditCardIcon,
@@ -15,10 +16,12 @@ import {
   MailIcon,
   MonitorSmartphoneIcon,
   MousePointerClickIcon,
+  PanelsTopLeftIcon,
   ScrollTextIcon,
   SettingsIcon,
   ShieldAlertIcon,
   ShieldIcon,
+  TagsIcon,
   UserIcon,
   UsersIcon,
   WebhookIcon,
@@ -56,6 +59,14 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
     items: [
       { label: "Assessments", path: "/risk", icon: ShieldAlertIcon },
       { label: "Lists", path: "/risk/lists", icon: ListChecksIcon },
+    ],
+  },
+  {
+    label: "Hooks",
+    items: [
+      { label: "Applications", path: "/hooks", icon: BoxesIcon },
+      { label: "Event types", path: "/hooks/event-types", icon: TagsIcon },
+      { label: "Portal settings", path: "/hooks/settings", icon: PanelsTopLeftIcon },
     ],
   },
   {
@@ -142,6 +153,10 @@ export function segmentLabel(segment: string): string | undefined {
 
 const SEGMENT_LABELS: Record<string, string> = {
   emails: "Emails",
+  hooks: "Hooks",
+  "event-types": "Event types",
+  endpoints: "Endpoints",
+  messages: "Messages",
   received: "Received",
   suppressions: "Suppressions",
   tracking: "Tracking",

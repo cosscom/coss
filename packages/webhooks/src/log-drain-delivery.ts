@@ -8,6 +8,17 @@
 import { db, type Executor, schema } from "@coss/db";
 import { recordOrgAuditEvent } from "@coss/logs";
 import { and, asc, eq, inArray, isNull, lt, lte, notExists, or, sql } from "drizzle-orm";
+import {
+  deliveryOutcome,
+  HOUR,
+  leaseUntil,
+  MINUTE,
+  organizationNotHeld,
+  runClaimed,
+  SECOND,
+  sendAttempt,
+  stillOwned,
+} from "./engine/index.ts";
 import type { LogDrainDisabledReason } from "./log-drain-schemas.ts";
 import {
   discardLogDrainBacklog,
@@ -18,18 +29,7 @@ import { decryptSecret, type SecretsKeyRing } from "./secrets.ts";
 import type { WebhookSender } from "./sender.ts";
 import { signatureHeaders } from "./signing.ts";
 
-const {
-  logDrain,
-  logDrainAttempt,
-  logDrainBatch,
-  logDrainRecord,
-  organizationSuspension,
-  organizationDeletion,
-} = schema;
-
-const SECOND = 1000;
-const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
+const { logDrain, logDrainAttempt, logDrainBatch, logDrainRecord } = schema;
 
 /** Wait before each retry: 10 attempts over roughly a day, then the drain is disabled. */
 export const LOG_DRAIN_RETRY_DELAYS_MS = [
@@ -48,8 +48,6 @@ export const MAX_BATCH_LINES = 500;
 export const MAX_BATCH_BYTES = 1_000_000;
 export const LOG_DRAIN_TIMEOUT_MS = 15_000;
 export const LOG_DRAIN_CONTENT_TYPE = "application/x-ndjson";
-const LEASE_MS = 2 * MINUTE;
-const ERROR_MAX_LENGTH = 500;
 
 export type LogDrainDeliveryDeps = {
   /** From `WEBHOOK_SECRETS_KEY` (`parseSecretsKeys`). */
@@ -59,31 +57,6 @@ export type LogDrainDeliveryDeps = {
 };
 
 type Scope = { organizationIds: string[] } | undefined;
-
-const notSuspended = (
-  organizationId: typeof logDrain.organizationId | typeof logDrainBatch.organizationId,
-) =>
-  notExists(
-    db
-      .select({ one: sql`1` })
-      .from(organizationSuspension)
-      .where(eq(organizationSuspension.organizationId, organizationId)),
-  );
-
-const notDeleting = (
-  organizationId: typeof logDrain.organizationId | typeof logDrainBatch.organizationId,
-) =>
-  notExists(
-    db
-      .select({ one: sql`1` })
-      .from(organizationDeletion)
-      .where(
-        and(
-          eq(organizationDeletion.organizationId, organizationId),
-          eq(organizationDeletion.status, "pending"),
-        ),
-      ),
-  );
 
 /** The lines of the next batch: oldest first, within both limits (a single oversized line still goes). */
 export function takeBatch<T extends { byteSize: number }>(records: readonly T[]): T[] {
@@ -119,8 +92,7 @@ async function formBatches(now: Date, limit: number, scope: Scope): Promise<LogD
       and(
         eq(logDrain.enabled, true),
         scope ? inArray(logDrain.organizationId, scope.organizationIds) : undefined,
-        notSuspended(logDrain.organizationId),
-        notDeleting(logDrain.organizationId),
+        organizationNotHeld(logDrain.organizationId),
         notExists(
           db
             .select({ one: sql`1` })
@@ -175,7 +147,7 @@ async function formBatches(now: Date, limit: number, scope: Scope): Promise<LogD
             recordCount: lines.length,
             byteSize: lines.reduce((sum, line) => sum + line.byteSize, 0),
             nextAttemptAt: now,
-            leaseExpiresAt: new Date(now.getTime() + LEASE_MS),
+            leaseExpiresAt: leaseUntil(now),
           })
           .onConflictDoNothing()
           .returning();
@@ -219,8 +191,7 @@ async function claimDue(now: Date, limit: number, scope: Scope): Promise<LogDrai
         lte(logDrainBatch.nextAttemptAt, now),
         or(isNull(logDrainBatch.leaseExpiresAt), lt(logDrainBatch.leaseExpiresAt, now)),
         scope ? inArray(logDrainBatch.organizationId, scope.organizationIds) : undefined,
-        notSuspended(logDrainBatch.organizationId),
-        notDeleting(logDrainBatch.organizationId),
+        organizationNotHeld(logDrainBatch.organizationId),
       ),
     )
     .orderBy(asc(logDrainBatch.nextAttemptAt))
@@ -228,14 +199,9 @@ async function claimDue(now: Date, limit: number, scope: Scope): Promise<LogDrai
     .for("update", { skipLocked: true });
   return db
     .update(logDrainBatch)
-    .set({ leaseExpiresAt: new Date(now.getTime() + LEASE_MS) })
+    .set({ leaseExpiresAt: leaseUntil(now) })
     .where(inArray(logDrainBatch.id, due))
     .returning();
-}
-
-function describeError(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.slice(0, ERROR_MAX_LENGTH) || "Request failed.";
 }
 
 /** The request body: one JSON object per line, each line ending with `\n`. */
@@ -285,10 +251,7 @@ function ownedBatch(batch: LogDrainBatchRow) {
   return and(
     eq(logDrainBatch.id, batch.id),
     eq(logDrainBatch.organizationId, batch.organizationId),
-    eq(logDrainBatch.status, "pending"),
-    batch.leaseExpiresAt
-      ? eq(logDrainBatch.leaseExpiresAt, batch.leaseExpiresAt)
-      : isNull(logDrainBatch.leaseExpiresAt),
+    stillOwned(logDrainBatch, batch.leaseExpiresAt),
   );
 }
 
@@ -335,31 +298,21 @@ async function attempt(batch: LogDrainBatchRow, now: Date, deps: LogDrainDeliver
     "coss-log-drain-id": drain.id,
     "coss-environment-id": drain.environmentId,
   };
-  const started = performance.now();
-  let statusCode: number | null = null;
-  let responseExcerpt: string | null = null;
-  let error: string | null = null;
-  try {
-    const response = await deps.send({
-      url: drain.url,
-      headers,
-      body,
-      timeoutMs: deps.timeoutMs ?? LOG_DRAIN_TIMEOUT_MS,
-      contentType: LOG_DRAIN_CONTENT_TYPE,
-      userAgent: "COSS-LogDrains/1.0",
-    });
-    statusCode = response.status;
-    responseExcerpt = response.body || null;
-    if (statusCode < 200 || statusCode >= 300) error = `HTTP ${statusCode}`;
-  } catch (cause) {
-    error = describeError(cause);
-  }
-  const durationMs = Math.round(performance.now() - started);
-
-  const attempts = batch.attemptCount + 1;
-  const succeeded = error === null;
-  const exhausted = !succeeded && attempts >= LOG_DRAIN_MAX_ATTEMPTS;
-  const retryDelay = LOG_DRAIN_RETRY_DELAYS_MS[attempts - 1] ?? 0;
+  const result = await sendAttempt(deps.send, {
+    url: drain.url,
+    headers,
+    body,
+    timeoutMs: deps.timeoutMs ?? LOG_DRAIN_TIMEOUT_MS,
+    contentType: LOG_DRAIN_CONTENT_TYPE,
+    userAgent: "COSS-LogDrains/1.0",
+  });
+  const outcome = deliveryOutcome({
+    attemptCount: batch.attemptCount,
+    succeeded: result.succeeded,
+    schedule: LOG_DRAIN_RETRY_DELAYS_MS,
+    now,
+  });
+  const { exhausted } = outcome;
   await db.transaction(async (tx) => {
     // Match management's lock order (drain, then batch), and block new outbox selections
     // before exhaustion can disable this drain and discard its backlog.
@@ -382,13 +335,13 @@ async function attempt(batch: LogDrainBatchRow, now: Date, deps: LogDrainDeliver
     const [finished] = await tx
       .update(logDrainBatch)
       .set({
-        status: succeeded ? "succeeded" : exhausted ? "failed" : "pending",
-        attemptCount: attempts,
+        status: outcome.status,
+        attemptCount: outcome.attemptCount,
         byteSize: Buffer.byteLength(body),
-        nextAttemptAt: succeeded || exhausted ? null : new Date(now.getTime() + retryDelay),
+        nextAttemptAt: outcome.nextAttemptAt,
         leaseExpiresAt: null,
-        lastStatusCode: statusCode,
-        lastError: error,
+        lastStatusCode: result.statusCode,
+        lastError: result.error,
       })
       .where(ours)
       .returning({ id: logDrainBatch.id });
@@ -397,10 +350,10 @@ async function attempt(batch: LogDrainBatchRow, now: Date, deps: LogDrainDeliver
       organizationId: batch.organizationId,
       batchId: batch.id,
       attemptedAt: now,
-      statusCode,
-      durationMs,
-      error,
-      responseExcerpt,
+      statusCode: result.statusCode,
+      durationMs: result.durationMs,
+      error: result.error,
+      responseExcerpt: result.responseExcerpt,
     });
     if (exhausted) await disableFailingDrain(tx, batch, now);
   });
@@ -420,14 +373,12 @@ export async function runDueLogDrainDeliveries(
   const retries = await claimDue(now, limit, opts.scope);
   const formed = await formBatches(now, limit - retries.length, opts.scope);
   const batches = [...retries, ...formed];
-  await Promise.all(
-    batches.map((batch) =>
-      attempt(batch, now, deps).catch(async (error: unknown) => {
-        console.error(`[log-drains] batch ${batch.id} failed unexpectedly:`, error);
-        // Release the lease; the batch is retried when it falls due again.
-        await db.update(logDrainBatch).set({ leaseExpiresAt: null }).where(ownedBatch(batch));
-      }),
-    ),
+  await runClaimed(
+    batches,
+    { concurrency: limit, label: (batch) => `[log-drains] batch ${batch.id}` },
+    (batch) => attempt(batch, now, deps),
+    // Release the lease; the batch is retried when it falls due again.
+    (batch) => db.update(logDrainBatch).set({ leaseExpiresAt: null }).where(ownedBatch(batch)),
   );
   return batches.length;
 }

@@ -7,6 +7,7 @@ import {
   createWebhookEndpoint,
   deleteWebhookEndpoint,
   getWebhookEndpoint,
+  recoverWebhookEndpoint,
   retryWebhookDelivery,
   revealWebhookSecret,
   rollWebhookEndpointSecret,
@@ -20,6 +21,7 @@ import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
 import { type OrgContext, requireOrgPermission } from "@/lib/session";
 import { webhookManagementDeps } from "@/lib/webhooks";
+import { RECOVER_SINCE_OPTIONS } from "./recover";
 import { PREVIOUS_SECRET_OPTIONS } from "./secret-roll";
 
 /** The environment addressed by the form's slugs, inside the already-authorized organization. */
@@ -249,5 +251,31 @@ export async function retryWebhookDeliveryAction(
     });
     refresh();
     return null;
+  });
+}
+
+/** Requeues the endpoint's deliveries that failed within the chosen period, for one more attempt each. */
+export async function recoverWebhookEndpointAction(
+  _previous: ActionResult<{ requeued: number; hasMore: boolean }> | null,
+  formData: FormData,
+): Promise<ActionResult<{ requeued: number; hasMore: boolean }>> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      webhook: ["update"],
+    });
+    const endpoint = await endpointFromForm(context, formData);
+    const chosen = formString(formData, "sinceHours");
+    const option = RECOVER_SINCE_OPTIONS.find(({ hours }) => String(hours) === chosen);
+    if (!option) throw new ActionError("Choose how far back to recover.");
+    const since = new Date(Date.now() - option.hours * 3_600_000);
+    const result = await userFacing(() =>
+      recoverWebhookEndpoint({ organizationId: context.organization.id, id: endpoint.id, since }),
+    );
+    await endpointAudit(context, endpoint, "webhook_endpoint.recovered", {
+      since: since.toISOString(),
+      requeued: result.requeued,
+    });
+    refresh();
+    return result;
   });
 }

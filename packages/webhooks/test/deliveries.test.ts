@@ -7,10 +7,11 @@ import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin"
 import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { TEST_NEXT_VERSION, testVersioning } from "@coss/versioning/testing";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   MAX_ATTEMPTS,
   RETRY_DELAYS_MS,
+  recoverWebhookEndpoint,
   renderWebhookPayload,
   retryWebhookDelivery,
   runDueWebhookDeliveries,
@@ -23,6 +24,7 @@ import {
   toWebhookEndpointObject,
   updateWebhookEndpoint,
 } from "../src/endpoints.ts";
+import { LEASE_MS } from "../src/engine/index.ts";
 import { WebhookError } from "../src/errors.ts";
 import { enqueueWebhookMessage } from "../src/outbox.ts";
 import { signPayload } from "../src/signing.ts";
@@ -303,6 +305,9 @@ describe("toWebhookEndpointObject", () => {
       event_types: ["email.sent"],
       api_version: LATEST_API_VERSION,
       enabled: true,
+      disabled_reason: null,
+      disabled_at: null,
+      failing_since: null,
       previous_secret_expires_at: null,
       created_at: endpoint.createdAt.toISOString(),
       updated_at: endpoint.updatedAt.toISOString(),
@@ -575,6 +580,217 @@ describe("runDueWebhookDeliveries", () => {
     } finally {
       receiver.stop();
     }
+  });
+});
+
+describe("leases", () => {
+  test("a worker whose lease was taken over records nothing", async () => {
+    const tenant = await createTestTenant();
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let calls = 0;
+    const receiver = webhookReceiver(async () => {
+      // The first worker's request hangs until its lease has been taken over.
+      if (++calls === 1) await gate;
+      return new Response("ok");
+    });
+    try {
+      const { endpoint } = await endpointFor(tenant, receiver.url);
+      await enqueue(tenant);
+      const scope = scopeOf(tenant);
+      const now = new Date();
+      const late = runDueWebhookDeliveries({ now, scope }, deliveryDeps);
+      while (receiver.received.length === 0) await Bun.sleep(5);
+
+      const takeover = new Date(now.getTime() + LEASE_MS + 1000);
+      expect(await runDueWebhookDeliveries({ now: takeover, scope }, deliveryDeps)).toBe(1);
+      release();
+      expect(await late).toBe(1);
+
+      const [delivery] = await listWebhookDeliveries({
+        organizationId: tenant.organization.id,
+        endpointId: endpoint.id,
+      });
+      expect(receiver.received).toHaveLength(2);
+      expect(delivery).toMatchObject({ status: "succeeded", attemptCount: 1 });
+      expect(delivery?.attempts.map((attempt) => attempt.attemptedAt)).toEqual([takeover]);
+    } finally {
+      release();
+      receiver.stop();
+    }
+  });
+});
+
+describe("endpoint health", () => {
+  const endpointRow = (id: string) =>
+    db.select().from(schema.webhookEndpoint).where(eq(schema.webhookEndpoint.id, id));
+
+  /** Runs one delivery through every attempt, starting at `start`; returns when it gave up. */
+  async function failForGood(tenant: TestTenant, start: Date, deps = deliveryDeps) {
+    await enqueue(tenant);
+    // Never before the delivery was queued.
+    let now = new Date(Math.max(start.getTime(), Date.now()));
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      await runDueWebhookDeliveries({ now, scope: scopeOf(tenant) }, deps);
+      now = new Date(now.getTime() + (RETRY_DELAYS_MS[attempt - 1] ?? 0));
+    }
+    return now;
+  }
+
+  test("an endpoint switched off without a reason (code from before the column) reads as manual", async () => {
+    const tenant = await createTestTenant();
+    const { endpoint } = await endpointFor(tenant, "https://example.com/hook");
+    // What the code running during a deploy's migration does: `enabled` alone.
+    await db
+      .update(schema.webhookEndpoint)
+      .set({ enabled: false })
+      .where(eq(schema.webhookEndpoint.id, endpoint.id));
+    const [row] = await endpointRow(endpoint.id);
+    expect(toWebhookEndpointObject(row as NonNullable<typeof row>)).toMatchObject({
+      enabled: false,
+      disabled_reason: "manual",
+    });
+  });
+
+  test("tracks a failure streak and disables an endpoint failing for too long", async () => {
+    const tenant = await createTestTenant();
+    let status = 500;
+    const receiver = webhookReceiver(() => new Response("down", { status }));
+    const deps = { ...deliveryDeps, disableAfterMs: 2 * 24 * 3_600_000 };
+    try {
+      const { endpoint } = await endpointFor(tenant, receiver.url);
+      const start = new Date();
+      const firstGaveUp = await failForGood(tenant, start, deps);
+      const [failing] = await endpointRow(endpoint.id);
+      const since = failing?.failingSince?.getTime();
+      expect(failing?.enabled).toBe(true);
+      expect(since).toBeNumber();
+
+      // A success clears the streak; the next failure for good starts a new one.
+      status = 200;
+      await enqueue(tenant);
+      await runDueWebhookDeliveries({ now: firstGaveUp, scope: scopeOf(tenant) }, deps);
+      expect((await endpointRow(endpoint.id))[0]?.failingSince).toBeNull();
+
+      status = 500;
+      const later = await failForGood(tenant, firstGaveUp, deps);
+      expect((await endpointRow(endpoint.id))[0]).toMatchObject({ enabled: true });
+      // Still failing two days on: the next delivery to give up disables the endpoint.
+      await failForGood(tenant, new Date(later.getTime() + 2 * 24 * 3_600_000), deps);
+      const [disabled] = await endpointRow(endpoint.id);
+      expect(disabled).toMatchObject({ enabled: false, disabledReason: "failing" });
+      expect(disabled?.failingSince?.getTime()).toBeGreaterThan(since ?? 0);
+      expect(toWebhookEndpointObject(disabled as NonNullable<typeof disabled>)).toMatchObject({
+        enabled: false,
+        disabled_reason: "failing",
+      });
+      const audit = await db
+        .select()
+        .from(schema.orgAuditEvent)
+        .where(
+          and(
+            eq(schema.orgAuditEvent.organizationId, tenant.organization.id),
+            eq(schema.orgAuditEvent.action, "webhook_endpoint.disabled"),
+          ),
+        );
+      expect(audit).toHaveLength(1);
+      expect(audit[0]).toMatchObject({ actorType: "system", targetId: endpoint.id });
+
+      // Enabling it again clears the reason and the streak.
+      const enabled = await updateWebhookEndpoint(
+        { organizationId: tenant.organization.id, id: endpoint.id, enabled: true },
+        testManagementDeps,
+      );
+      expect(enabled).toMatchObject({
+        enabled: true,
+        disabledReason: null,
+        disabledAt: null,
+        failingSince: null,
+      });
+    } finally {
+      receiver.stop();
+    }
+  });
+
+  test("disabling by hand records `manual`, and disabling again keeps the first time", async () => {
+    const tenant = await createTestTenant();
+    const { endpoint } = await endpointFor(tenant, "https://example.com/hook");
+    const off = () =>
+      updateWebhookEndpoint(
+        { organizationId: tenant.organization.id, id: endpoint.id, enabled: false },
+        testManagementDeps,
+      );
+    const first = await off();
+    expect(first).toMatchObject({ enabled: false, disabledReason: "manual" });
+    const second = await off();
+    expect(second.disabledAt).toEqual(first.disabledAt);
+  });
+});
+
+describe("recoverWebhookEndpoint", () => {
+  test("requeues failed deliveries since a time, once each, in batches", async () => {
+    const tenant = await createTestTenant();
+    let status = 500;
+    const receiver = webhookReceiver(() => new Response("", { status }));
+    try {
+      const { endpoint } = await endpointFor(tenant, receiver.url);
+      const organizationId = tenant.organization.id;
+      for (let i = 0; i < 3; i++) await enqueue(tenant);
+      await db
+        .update(schema.webhookDelivery)
+        .set({ status: "failed", attemptCount: MAX_ATTEMPTS, nextAttemptAt: null })
+        .where(eq(schema.webhookDelivery.endpointId, endpoint.id));
+      const since = new Date(Date.now() - 60_000);
+
+      expect(
+        await recoverWebhookEndpoint({ organizationId, id: endpoint.id, since, limit: 2 }),
+      ).toEqual({ requeued: 2, hasMore: true });
+      expect(await recoverWebhookEndpoint({ organizationId, id: endpoint.id, since })).toEqual({
+        requeued: 1,
+        hasMore: false,
+      });
+      // Nothing failed since a later time; another organization's endpoint is not found.
+      expect(
+        await recoverWebhookEndpoint({ organizationId, id: endpoint.id, since: new Date() }),
+      ).toEqual({ requeued: 0, hasMore: false });
+      const other = await createTestTenant();
+      await expect(
+        recoverWebhookEndpoint({ organizationId: other.organization.id, id: endpoint.id, since }),
+      ).rejects.toMatchObject({ code: "not_found" });
+
+      // Spread over the next minute, each gets one more attempt.
+      status = 200;
+      const scope = scopeOf(tenant);
+      const inAMinute = new Date(Date.now() + 61_000);
+      expect(await runDueWebhookDeliveries({ now: inAMinute, scope }, deliveryDeps)).toBe(3);
+      const deliveries = await listWebhookDeliveries({ organizationId, endpointId: endpoint.id });
+      expect(deliveries.map((delivery) => delivery.status)).toEqual([
+        "succeeded",
+        "succeeded",
+        "succeeded",
+      ]);
+      expect(deliveries.every((delivery) => delivery.attemptCount === MAX_ATTEMPTS)).toBe(true);
+    } finally {
+      receiver.stop();
+    }
+  });
+
+  test("refuses a disabled endpoint", async () => {
+    const tenant = await createTestTenant();
+    const { endpoint } = await endpointFor(tenant, "https://example.com/hook");
+    await updateWebhookEndpoint(
+      { organizationId: tenant.organization.id, id: endpoint.id, enabled: false },
+      testManagementDeps,
+    );
+    const error = await recoverWebhookEndpoint({
+      organizationId: tenant.organization.id,
+      id: endpoint.id,
+      since: new Date(0),
+    }).catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(WebhookError);
+    expect(error).toMatchObject({ code: "endpoint_disabled" });
   });
 });
 

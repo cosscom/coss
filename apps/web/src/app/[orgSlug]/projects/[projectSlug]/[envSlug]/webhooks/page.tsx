@@ -17,10 +17,10 @@ import { ModeBadge } from "@/components/email-badges";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
-import { StatusDot } from "@/components/status-dot";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { CreateEndpointDialog } from "./create-endpoint-dialog";
+import { EndpointStatusBadge } from "./endpoint-status";
 
 export const metadata: Metadata = { title: "Webhooks" };
 
@@ -100,11 +100,7 @@ export default async function WebhooksPage({
                       : `${endpoint.eventTypes.length} ${endpoint.eventTypes.length === 1 ? "event" : "events"}`}
                   </TableCell>
                   <TableCell>
-                    {endpoint.enabled ? (
-                      <StatusDot tone="success">Enabled</StatusDot>
-                    ) : (
-                      <StatusDot tone="neutral">Disabled</StatusDot>
-                    )}
+                    <EndpointStatusBadge endpoint={endpoint} />
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
                     {formatDateTime(endpoint.createdAt)}

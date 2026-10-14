@@ -162,8 +162,12 @@ export default async function AuditLogPage({
             </TableHeader>
             <TableBody>
               {events.map((event) => {
+                // Changes made in the Hooks portal keep their label (the key or member that
+                // opened the portal is the actor id).
                 const actorLabel =
-                  event.actor_type === "api_key" && event.actor_id
+                  event.actor_type === "api_key" &&
+                  event.actor_id &&
+                  !event.actor_label.startsWith("Portal · ")
                     ? `API key ${keyNames[event.actor_id] ?? event.actor_id}`
                     : event.actor_label;
                 const detail = details(event);

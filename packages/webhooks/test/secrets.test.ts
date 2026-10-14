@@ -17,6 +17,7 @@ import { reencryptWebhookSecrets } from "../src/reencrypt.ts";
 import { DEFAULT_PREVIOUS_SECRET_EXPIRES_IN } from "../src/schemas.ts";
 import {
   decryptSecret,
+  encryptSecret,
   isEncryptedWithPrimary,
   type SecretsKeyRing,
   secretsKeyRing,
@@ -224,6 +225,49 @@ describe("reencryptWebhookSecrets", () => {
       previousSecretCiphertext: null,
       previousSecretExpiresAt: null,
     });
+  });
+
+  test("covers Hooks endpoint secrets too", async () => {
+    const tenant = await createTestTenant();
+    const scope = { organizationIds: [tenant.organization.id] };
+    const before = secretsKeyRing([OLD_KEY]);
+    const during = secretsKeyRing([NEW_KEY, OLD_KEY]);
+    const after = secretsKeyRing([NEW_KEY]);
+    const [application] = await db
+      .insert(schema.hookApplication)
+      .values({
+        organizationId: tenant.organization.id,
+        projectId: tenant.project.id,
+        environmentId: tenant.development.id,
+        name: "Acme",
+      })
+      .returning();
+    if (!application) throw new Error("no application");
+    const [endpoint] = await db
+      .insert(schema.hookEndpoint)
+      .values({
+        organizationId: tenant.organization.id,
+        projectId: tenant.project.id,
+        environmentId: tenant.development.id,
+        applicationId: application.id,
+        url: "https://example.com/hook",
+        secretCiphertext: encryptSecret("whsec_current", before),
+        previousSecretCiphertext: encryptSecret("whsec_previous", before),
+        previousSecretExpiresAt: new Date(Date.now() + 10 * HOUR),
+      })
+      .returning();
+    if (!endpoint) throw new Error("no endpoint");
+
+    expect(await reencryptWebhookSecrets({ keys: during, scope })).toMatchObject({
+      checked: 1,
+      reencrypted: 1,
+    });
+    const [row] = await db
+      .select()
+      .from(schema.hookEndpoint)
+      .where(eq(schema.hookEndpoint.id, endpoint.id));
+    expect(decryptSecret(row?.secretCiphertext ?? "", after)).toBe("whsec_current");
+    expect(decryptSecret(row?.previousSecretCiphertext ?? "", after)).toBe("whsec_previous");
   });
 
   test("reports secrets no listed key decrypts and leaves them alone", async () => {

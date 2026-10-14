@@ -127,6 +127,14 @@ const email: EnvVar[] = [
   ...trackingDomains,
 ];
 
+const portalPublicUrl: EnvVar = {
+  name: "PORTAL_PUBLIC_URL",
+  kind: "plain",
+  required: false,
+  description:
+    "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed.",
+};
+
 const rateLimits: EnvVar[] = [
   {
     name: "VALKEY_URL",
@@ -335,6 +343,7 @@ export const SERVICES: Service[] = [
       apiPublicUrl,
       ...email,
       webhookKey,
+      portalPublicUrl,
       riskHashKey,
       notificationsEnvironment,
       billingProvider,
@@ -469,6 +478,7 @@ export const SERVICES: Service[] = [
       ...email,
       trackingPublicUrl,
       webhookKey,
+      portalPublicUrl,
       riskHashKey,
       ...sentry("api"),
       sentryRelease,
@@ -505,12 +515,20 @@ export const SERVICES: Service[] = [
         description: "Printed by ses:bootstrap.",
       },
       {
+        name: "WORKER_LOOPS",
+        kind: "plain",
+        required: false,
+        description:
+          "Unset: every loop. A second worker service (same image) with `hooks` runs only Hooks deliveries, so their volume scales apart from everything else.",
+      },
+      {
         name: "SES_INBOUND_QUEUE_URL",
         kind: "plain",
         required: false,
         description: "Receiving: the queue of SES receipt notifications. Printed by ses:bootstrap.",
       },
-      // The daily inbound limit per organization (`email.inbound.day`) is counted in Valkey.
+      // Counted in Valkey: the daily inbound limit per organization (`email.inbound.day`) and
+      // Hooks delivery attempts.
       ...rateLimits.filter((v) =>
         ["VALKEY_URL", "VALKEY_CLUSTER", "RATE_LIMIT_KEY_PREFIX"].includes(v.name),
       ),
@@ -525,6 +543,7 @@ export const SERVICES: Service[] = [
       webhookKey,
       billingProvider,
       stripeSecretKey,
+      // Hooks delivery attempts are rate limited per endpoint and destination host.
       {
         name: "IPINFO_TOKEN",
         kind: "secret",

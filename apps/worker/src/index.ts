@@ -18,6 +18,7 @@ import {
 } from "@coss/email/dispatch";
 import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
 import { createS3Api } from "@coss/email/ses";
+import { recordHookDeliveryOutcomes } from "@coss/hooks";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
 import { screenMessage } from "@coss/screening";
@@ -25,12 +26,22 @@ import { createClassifier } from "@coss/screening/runtime";
 import { createWebhookSender, parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
 import { env } from "./env.ts";
+import { hookThrottle } from "./hooks-throttle.ts";
 import { inboundQuota, type SesInboundDeps } from "./inbound.ts";
-import { startJobs } from "./jobs.ts";
+import { startJobs, WORKER_LOOP_NAMES } from "./jobs.ts";
 import { monitoredDispatch } from "./monitoring.ts";
 import { createShutdown } from "./shutdown.ts";
 import { createSqsApi } from "./sqs.ts";
 
+const unknownLoops = [...(env.WORKER_LOOPS ?? [])].filter(
+  (name) => !(WORKER_LOOP_NAMES as readonly string[]).includes(name),
+);
+if (unknownLoops.length > 0) {
+  throw new Error(
+    `WORKER_LOOPS names unknown loops: ${unknownLoops.join(", ")} (known: ${WORKER_LOOP_NAMES.join(", ")}).`,
+  );
+}
+const runs = (name: string) => !env.WORKER_LOOPS || env.WORKER_LOOPS.has(name);
 const config = emailRuntimeConfig(env);
 const email = createEmailRuntime(config);
 const billing = createBillingRuntime(env);
@@ -48,7 +59,8 @@ if (config.provider === "ses") {
     tenantPrefix: config.ses.tenantPrefix,
   };
 }
-// Receiving: the daily inbound limit per organization, and (SES) the receipt notification queue.
+// Rate limits counted in Valkey: receiving's daily inbound limit per organization, and Hooks
+// delivery attempts per endpoint and destination host. Then (SES) the receipt notification queue.
 const rateLimits = createRateLimitRuntime({
   VALKEY_URL: env.VALKEY_URL,
   VALKEY_CLUSTER: env.VALKEY_CLUSTER,
@@ -102,7 +114,7 @@ const emailService = createEmailService({
   // Internal sends count against their organization's allowance (COSS's own is never capped).
   billing: createUsageGate({ systemOrganizationId }),
 });
-await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
+if (runs("email-dispatch")) await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
 
 // Account emails (verification, password resets, invitations) and reputation notifications go
 // out through COSS's own email product. Without a configured environment, reputation
@@ -131,6 +143,10 @@ if (systemEnvironment && env.NOTIFICATIONS_FROM) {
   billingNotifier = null;
 }
 
+const secretsKeys = parseSecretsKeys(env.WEBHOOK_SECRETS_KEY);
+// The dashboard accepts local endpoints outside production; let them be reached there too.
+const send = createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" });
+
 const loops = startJobs({
   systemOrganizationId,
   dispatchQueue,
@@ -145,10 +161,13 @@ const loops = startJobs({
     notifier,
     dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
   },
-  webhooks: {
-    secretsKeys: parseSecretsKeys(env.WEBHOOK_SECRETS_KEY),
-    // The dashboard accepts local endpoints outside production; let them be reached there too.
-    send: createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" }),
+  webhooks: { secretsKeys, send },
+  hooks: {
+    secretsKeys,
+    send,
+    throttle: hookThrottle(rateLimits.limiter),
+    // Live delivery outcomes feed the `hook_failure_rate` reputation check.
+    onFinished: (finished) => recordHookDeliveryOutcomes(finished),
   },
   logRetentionDays: env.LOG_RETENTION_DAYS,
   ipinfoToken: env.IPINFO_TOKEN ?? null,
@@ -158,9 +177,10 @@ const loops = startJobs({
     dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
     notifier: billingNotifier,
   },
+  loops: env.WORKER_LOOPS,
 });
 console.info(
-  `[worker] started (email-dispatch, ${loops.map((loop) => loop.name).join(", ")}; ` +
+  `[worker] started (${[...(runs("email-dispatch") ? ["email-dispatch"] : []), ...loops.map((loop) => loop.name)].join(", ")}; ` +
     `content screening: ${env.SCREENING_CLASSIFIER === "ai" ? env.SCREENING_MODEL : env.SCREENING_CLASSIFIER})`,
 );
 

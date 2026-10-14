@@ -17,6 +17,12 @@ import {
   purgeExpiredReputationRollups,
 } from "@coss/email";
 import {
+  purgeExpiredHookDeliveryRollups,
+  purgeExpiredHookIdempotencyKeys,
+  purgeExpiredHookPortalSessions,
+  purgeFinishedHookRecoveries,
+} from "@coss/hooks";
+import {
   purgeExpiredReputationEvents,
   purgeExpiredReputationNotifications,
 } from "@coss/reputation";
@@ -48,6 +54,11 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "inbound drop counts", purge: purgeExpiredInboundDropCounters },
   { name: "webhook messages", purge: purgeExpiredWebhookMessages },
   { name: "log drain batches and backlog", purge: purgeExpiredLogDrainBatches },
+  // Hooks messages, deliveries and attempts leave with their partitions (the `partitions` loop).
+  { name: "hook idempotency keys", purge: purgeExpiredHookIdempotencyKeys },
+  { name: "hook portal sessions", purge: purgeExpiredHookPortalSessions },
+  { name: "hook recoveries", purge: purgeFinishedHookRecoveries },
+  { name: "hook delivery rollups", purge: purgeExpiredHookDeliveryRollups },
   { name: "content screenings", purge: purgeExpiredScreenings },
   // Personal data first: it goes long before the assessment itself.
   { name: "risk personal data", purge: purgeExpiredRiskPersonalData },

@@ -1,0 +1,51 @@
+---
+title: Receiving messages
+description: What your customers' endpoints receive, and how they verify it. Share this with them.
+---
+
+Each delivery is an HTTPS `POST` to the endpoint with:
+
+- the message's payload as the JSON body (`Content-Type: application/json`);
+- [Standard Webhooks](https://www.standardwebhooks.com) headers: `webhook-id` (the message id, the
+  same on every retry and for every endpoint), `webhook-timestamp` (Unix seconds) and
+  `webhook-signature` (`v1,<base64 HMAC-SHA256>`, one per active secret, space-separated);
+- `coss-event-type`: the message's event type;
+- `User-Agent: COSS-Hooks/1.0`.
+
+Any 2xx response within 15 seconds counts as delivered; only the first 1 KB of the response is
+kept. Redirects are not followed.
+
+## Verify every request
+
+Verify the signature over the raw body with the endpoint's secret (`whsec_…`) before trusting it.
+Any Standard Webhooks library works, or the `coss` package:
+
+```ts twoslash
+import { verifyWebhook, WebhookVerificationError } from "coss";
+declare const request: Request;
+declare const ENDPOINT_SECRET: string;
+type InvoicePaid = { invoice_id: string; amount: number };
+// ---cut---
+try {
+  const payload = await verifyWebhook<InvoicePaid>(
+    await request.text(), // the raw body, not re-serialized JSON
+    request.headers,
+    ENDPOINT_SECRET,
+  );
+  // payload.invoice_id …
+} catch (error) {
+  if (error instanceof WebhookVerificationError) {
+    // Reject: not from your provider, or too old (a replay).
+  }
+  throw error;
+}
+```
+
+Requests older than 5 minutes fail verification, which stops replays. During a secret roll each
+request carries a signature for both secrets, so receivers keep working while they switch.
+
+## Duplicates and order
+
+Retries mean a receiver can see a message more than once: use `webhook-id` to skip ones it already
+handled. Messages are not delivered in order, especially across retries; carry a timestamp or
+version in the payload if order matters.

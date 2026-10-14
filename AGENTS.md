@@ -20,15 +20,17 @@ mailboxes, fraud reports, allow/block lists) become `allow`/`review`/`block` wit
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page, Shipyard's landing page and docs at `/shipyard`, kloq's pages at `/kloq` (landing page, demo, tools, comparisons, docs, shadcn registry) + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
+| `apps/portal` | `@coss/portal` | The Hooks portal (:3003) on its own domain: customers' users manage one application's endpoints and see its deliveries, signed in by a session the customer's backend creates (token in the URL fragment, never a cookie). See `apps/portal/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events and received emails from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
-| `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
+| `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss); `./idempotency` (`withIdempotencyKey`, request hashes); `./partitions` (daily range partitions: create ahead, drop expired). |
 | `packages/signals` | `@coss/signals` | Stateless abuse signals shared by COSS's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./social`: Google/GitHub sign-in (server-only); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), receiving (received emails, receiving domains, managed inbound addresses, the content store), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
-| `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption; log drains (management, signed NDJSON batch delivery, retention); `./schemas`, `./env` (zod only). |
+| `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption, endpoint auto-disable and recovery; log drains (management, signed NDJSON batch delivery, retention); `./engine` (the delivery engine shared by every product: holds, lease fencing, retry outcomes, the HTTP attempt, endpoint health, a bounded runner); `./schemas`, `./env` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
+| `packages/hooks` | `@coss/hooks` | Hooks, webhooks as a service: applications (one per customer's end user, by id or `uid`), event types, endpoints (own secrets, filters, rate limits, auto-disable), messages fanned out to deliveries (day-partitioned, idempotent sends), the delivery worker on the shared engine, endpoint recovery, portal sessions and settings; `./schemas`, `./env` (zod only), `./testing`. |
 | `packages/screening` | `@coss/screening` | Product-agnostic AI content screening: sampling per org + product, the `ContentClassifier` interface (Vercel AI SDK `experimental_decide` adapter under `./ai`, `fakeClassifier` in `./testing`), verdict history, the `content_screening` reputation check; `./env` (zod only), `./runtime`. |
 | `packages/risk` | `@coss/risk` | Risk assessments: `assessRisk` (signals under a time budget, scoring, decision, one transaction with the log line, mailbox identity and `risk.assessment.review` webhook), velocity (`VELOCITY_SCRIPT` in Valkey or memory), lists, feedback + fraud memory, forgetting users, IP datasets (`refreshDueDatasets` in the worker, `createIpIntelligenceSource` in the API), sandbox fixtures, purges; `./schemas` (zod only: wire schemas, `REASONS`, `VELOCITY_RULES`, `RISK_EVENT_TYPES`), `./env` (zod only), `./runtime`, `./datasets`, `./testing`. |
 | `packages/billing` | `@coss/billing` | Plans and billing: the price catalog (`./catalog`: meters, list rates, plans, entitlements, add-ons) and contract terms (`./schemas`), both client-safe; the pure rating engine (`./engine`); accounts, contracts (self-serve and sales), hourly metered usage (`./metering`, the only module products import), credit grants and their ledger, month closes, invoices, payments, credit notes, dunning and holds, usage alerts, plan enforcement (`PlanGate`/`UsageGate` types in `./gate`), providers (fake, manual, Stripe under `./stripe`), the public API's read models and `billing.*` webhook events (wire schemas in `./wire`, client-safe); `./env` (zod only), `./runtime`, `./testing`. `scripts/seed.ts`, `scripts/close-period.ts`. |
@@ -42,16 +44,16 @@ mailboxes, fraud reports, allow/block lists) become `allow`/`review`/`block` wit
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests, and the production Terraform + deploy scripts that apply it. See `infra/AGENTS.md`. |
 
-Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `signals` (no workspace deps) ← `auth`, `webhooks`, `risk`; `db ← auth ← tenancy`,
-`db ← logs ← webhooks ← risk` (`risk` also `→ signals, ratelimit, retention`; `email` imports only `@coss/risk/schemas`, for `WEBHOOK_EVENT_TYPES`), `db ← logs ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`, `webhooks ← billing ← email` (packages take
+Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `portal`, `infra`; `signals` (no workspace deps) ← `auth`, `webhooks`, `risk`; `db ← auth ← tenancy`,
+`db ← logs ← webhooks ← risk` (`risk` also `→ signals, ratelimit, retention`; `email` imports only `@coss/risk/schemas`, for `WEBHOOK_EVENT_TYPES`), `db ← logs ← webhooks ← reputation ← screening ← email`, `reputation ← hooks`, `db ← ratelimit`, `webhooks ← billing ← email` (packages take
 `billing`'s plan checks injected — `PlanGate`, `UsageGate`, and in webhooks the structural `WebhookPlanLimits`, since
 billing enqueues `billing.*` events through it — and email imports only `./metering`, `./gate` and `./wire`); `versioning` (no deps) ← `tenancy`, `webhooks`, `email`, `billing` (`schemas`/`wire` examples);
-`retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `billing`, `worker`, `web`, `site`;
-`api → tenancy, email, reputation, webhooks, ratelimit, versioning, logs, billing, risk, db`;
-`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
-`@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening, billing` (`slugs`, `env` only);
-`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, risk, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui` and `kloq` depend on no workspace (`site → kloq`).
-Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`risk`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
+`retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `hooks`, `billing`, `worker`, `web`, `site`;
+`api → tenancy, email, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, db`;
+`web → auth, tenancy, email, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, db, ui`; `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
+`@coss/api/openapi.json` (data only, never api code); `infra → auth, email, hooks, ratelimit, screening, billing` (`slugs`, `env` only);
+`worker → auth (`./emails` only), email, hooks, reputation, screening, webhooks, ratelimit, logs, risk, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui` and `kloq` depend on no workspace (`site → kloq`).
+Dev-only: `email`/`webhooks`/`hooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`risk`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`).
 
@@ -62,7 +64,7 @@ Valkey (or Redis) at `TEST_VALKEY_URL` for the ratelimit/api tests.
 
 ```sh
 bun install                 # never npm/pnpm/yarn
-bun run dev                 # web :3000 + api :3001 + site :3002 + worker (turbo TUI; agents: bunx turbo run dev --ui=stream)
+bun run dev                 # web :3000 + api :3001 + site :3002 + portal :3003 + worker (turbo TUI; agents: bunx turbo run dev --ui=stream)
 bun run lint                # biome ci .            bun run format → biome check --write .
 bun run typecheck           # tsc --noEmit per workspace (TS 7); web runs `next typegen` first; builds the SDK first
 bun run test                # migrates TEST_DATABASE_URL, then `bun test` in every workspace (uncached; SDK built first)
@@ -89,6 +91,9 @@ AWS_REGION=… bun run valkey:bootstrap --subnet-ids … --security-group-ids �
 bun run ratelimit:set --org acme [--bucket api.read --limit 100 [--period 1s] [--burst 200] | --reset]
                                                # show/change an org's rate limit overrides (~1 min to apply;
                                                #   not audited — prefer the admin console's organization page)
+bun run --cwd apps/worker hooks:load [--applications 20 --endpoints 3 --messages 2000]
+                                               # Hooks load test on the test database: send and
+                                               #   delivery throughput, the claim query's plan
 bun run webhooks:reencrypt [--dry-run]         # re-encrypt webhook endpoint secrets with the first
                                                #   WEBHOOK_SECRETS_KEY (step 3 of a key rotation, README)
 bun run billing:close-period --org acme [--at 2026-11-01T00:20:00Z]
@@ -148,6 +153,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `TEST_DATABASE_URL` | must name a `*_test` database; swapped in by `@coss/db/testing`; `db:migrate:test` |
 | `DATABASE_POOL_MAX` | optional pg pool size (default 10) |
 | `BETTER_AUTH_SECRET` (≥ 32 chars), `BETTER_AUTH_URL` | `packages/auth/src/options.ts` (base URL, trusted origin, invitation links); `BETTER_AUTH_URL` also `apps/worker` (dashboard links in notification emails) |
+| `PORTAL_PUBLIC_URL` | api, web ("Open portal"): origin of the Hooks portal (`apps/portal`, its own registrable domain); portal session links point there. Default `http://localhost:3003` outside production |
 | `API_PORT`, `API_PUBLIC_URL` | `apps/api` (port; OpenAPI `servers` and email tracking URLs, falls back to the request origin outside production); `API_PUBLIC_URL` also `apps/worker` (email tracking) and `apps/web` (quick-start snippets, read at runtime) |
 | `API_CORS_ORIGINS` | `apps/api`: comma-separated browser origins allowed on `/v1/*` (the docs' playground); default `https://coss.com`, locally `http://localhost:3002` |
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
@@ -158,13 +164,14 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `INBOUND_MANAGED_DOMAIN`, `SES_INBOUND_BUCKET` | api, web, worker: receiving. The managed inbound domain (`<label>.<domain>` addresses per environment; default `inbound.coss.test` with the fake provider) and, with SES, the bucket received content lives in (both or neither with SES; unset → receiving off). Printed by `ses:bootstrap --managed-domain` |
 | `SES_INBOUND_QUEUE_URL` | worker with SES receiving: the SQS queue of receipt notifications |
 | `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | web reads the id only to refuse admin suspensions of COSS's own organization (`isSystemOrganization`, `apps/web/src/lib/system-organization.ts`); worker: account emails (verification, password reset, invitation) and reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
-| `VALKEY_URL`, `VALKEY_CLUSTER` | api + web + worker (the daily inbound limit): rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
+| `VALKEY_URL`, `VALKEY_CLUSTER` | api + web + worker (the daily inbound limit, Hooks delivery limits): rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
 | `RATE_LIMIT_KEY_PREFIX` | api + web: namespaces Valkey keys (default `coss`) |
 | `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → public unauthenticated limits use an aggregate fallback subject instead of a per-IP subject |
 | `TEST_VALKEY_URL` | ratelimit + api tests (keys under a random prefix, never flushed) |
 | `RISK_HASH_KEY` | api + web: 32-byte base64 key of every HMAC risk remembers identifiers by (velocity keys, mailbox identities, fraud reports); required in production, a fixed development key otherwise. Changing it resets that memory |
 | `IPINFO_TOKEN` | worker: downloads IPinfo Lite (ASN + country, CC BY-SA 4.0) for risk's IP signals; unset → Tor and cloud ranges only |
 | `WEBHOOK_SECRETS_KEY` | api + web + worker: comma-separated 32-byte base64 keys, newest first (the first encrypts, all decrypt); encrypts endpoint signing secrets (losing it makes them unreadable). Shape in `@coss/webhooks/env` |
+| `WORKER_LOOPS` | worker: comma-separated loops to run (`WORKER_LOOP_NAMES` in `apps/worker/src/jobs.ts`, plus `email-dispatch`); unset runs all. A second worker service with `hooks` scales Hooks deliveries on their own |
 | `LOG_RETENTION_DAYS` | worker: days of environment logs kept (1-31, default 30); whole expired day partitions are dropped hourly |
 | `BILLING_PROVIDER`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | web + worker: the payment provider of new billing accounts (`fake` default, or `stripe`, which needs the key); the webhook secret only the dashboard (`/api/billing/webhook`). Shape in `@coss/billing/env` |
 | `SCREENING_CLASSIFIER`, `SCREENING_MODEL`, `AI_GATEWAY_API_KEY` | worker: content screening (`off`/`fake`/`ai`; a Vercel AI Gateway decision model id, default `typesafe-ai/jev`; the Gateway key, required with `ai`) |
@@ -315,7 +322,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 
 ## Containers and deployment (AWS)
 
-- `apps/{web,site,api,worker}/Dockerfile`, built from the repository root (`docker build -f apps/web/Dockerfile .`):
+- `apps/{web,site,portal,api,worker}/Dockerfile`, built from the repository root (`docker build -f apps/web/Dockerfile .`):
   `turbo prune --docker` (works with `bun.lock` and the isolated linker) → `bun install --frozen-lockfile` → build →
   a small non-root runtime image. Bun/Node/turbo versions are `ARG`s that `infra/test` keeps equal to `package.json`.
 - Next apps use `output: "standalone"` with `outputFileTracingRoot` at the monorepo root; the traced
@@ -325,7 +332,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - Build once, deploy to any stage: nothing stage-specific at build time (`SKIP_ENV_VALIDATION`), validation at
   startup. `next.config.ts` runs only at build/dev time and is serialized into the standalone server: decide nothing
   there from runtime env.
-- Health checks: `/api/health` (web, site; public in `proxy.ts`), `/health` (api); none touch the database.
+- Health checks: `/api/health` (web, site, portal; public in `proxy.ts`), `/health` (api); none touch the database.
 - SIGTERM: Next drains itself; the API (`src/server.ts`) stops accepting, finishes in-flight requests, closes the pg
   pool; the worker (`src/shutdown.ts`) aborts the SQS poll and long runs between items, waits for each loop's current
   run, closes the pool. Idle keep-alive timeouts (75 s) exceed the ALB's 60 s.
@@ -334,7 +341,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 
 ## Tests
 
-- `bun:test`. DB-backed suites (`apps/api`, `apps/worker`, `packages/billing`, `packages/email`, `packages/reputation`, `packages/risk`, `packages/screening`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
+- `bun:test`. DB-backed suites (`apps/api`, `apps/worker`, `packages/billing`, `packages/email`, `packages/hooks`, `packages/reputation`, `packages/risk`, `packages/screening`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
   `bunfig.toml` → `@coss/db/testing`, which throws unless `TEST_DATABASE_URL` names a `*_test` database, then points
   `DATABASE_URL` at it. Other suites are DB-free; before adding DB tests elsewhere copy `packages/email/bunfig.toml` +
   `test/setup.ts`, or the tests hit the dev database.
@@ -351,7 +358,8 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   (`packages/email/test/dispatch.test.ts`). Rate limits: `memoryLimiter({ overrides })`,
   `testValkeyLimiter()` from `@coss/ratelimit/testing`; `createTestApp({ rateLimiter, clientIp })` (defaults to an
   in-memory limiter per app); tighten limits for a test org with `setRateLimitOverride`. Webhooks: `webhookReceiver()` (local server),
-  `testSender()`, `testManagementDeps` from `@coss/webhooks/testing`. Screening: `fakeClassifier({ scores, fail, delayMs })` from
+  `testSender()`, `testManagementDeps` from `@coss/webhooks/testing`. Hooks: `testHookDeps`, `testHookDeliveryDeps({ send, throttle, … })` (no jitter)
+  from `@coss/hooks/testing`; the test preload creates this week's Hooks partitions (they have no default partition). Screening: `fakeClassifier({ scores, fail, delayMs })` from
   `@coss/screening/testing` (markers like `[coss-test:phishing]` in the content score 0.99). Billing (`@coss/billing/testing`):
 `createTestContract(orgId, terms, { effectiveFrom })`, `recordTestUsage({ …, at })`, `testBillingProviders()` (a
 `FakeBillingProvider` with `willCollect(...)`/`fail(op)`), `FakeStripeApi` (`fetch` for `StripeBillingProvider`);
@@ -399,7 +407,11 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 **Partitioned tables** (only `log_entry` so far): drizzle-kit can't declare partitioning, so declare the table in the
 schema as usual (composite primary key including the partition column), `db:generate` it, then add a `--custom`
 migration that drops the still-empty table and recreates it identically with `PARTITION BY` (see `0027`/`0028`).
-Later column changes generated by drizzle-kit apply to partitioned tables as they are.
+Later column changes generated by drizzle-kit apply to partitioned tables as they are. The worker keeps daily
+partitions ahead and drops expired ones through `@coss/db/partitions` (`ensurePartitions`/`dropExpiredPartitions`,
+by `{ table, column, defaultPartition }`): a table with a default partition is dropped under a short ACCESS EXCLUSIVE
+lock; one without is detached `CONCURRENTLY` (Postgres refuses that with a default partition), but rejects inserts
+outside its created days. Nothing may hold an FK into a partitioned table.
 
 **Make a breaking API change** (renaming/removing a field, changing a type or default — additive changes need none of
 this): append today's date to `API_VERSIONS` (`packages/versioning/src/versions.ts`) and add a `VersionChange` to
@@ -458,7 +470,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
     `environment_api_key`; metadata is client-writable),
-    `defaultPermissions: API_KEY_PERMISSIONS` (every product: email, domain, webhook, suppression, reputation, billing `read` — backfilled by `0043`), prefixes
+    `defaultPermissions: API_KEY_PERMISSIONS` (every product: email, domain, webhook, suppression, reputation, billing `read` — backfilled by `0043`, hook — backfilled by `0052`), prefixes
     `coss_live_` / `coss_test_` by environment mode (`API_KEY_PREFIX`), key format `/^coss_(live|test)_[A-Za-z]{64}$/`.
   - Keys are created only by `createEnvironmentApiKey` (server-side, no headers) and authenticated only by
     `authenticateApiKey`; keys without an `environment_api_key` binding fail closed. `authenticateApiKey` never calls
@@ -596,13 +608,13 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
   `recordOpen`/`recordClick` (from the email's tracking token), `trackingBaseUrlFor` (dispatch; reads domain names
-  across orgs like `authorizeLiveSender`), `receiveEmail`/`routeRecipients` (receiving; from the envelope recipients), `reencryptWebhookSecrets` (operator script), and the worker scans `runDueWebhookDeliveries`, `runDueLogDrainDeliveries`, `recheckDueDomains`,
+  across orgs like `authorizeLiveSender`), `receiveEmail`/`routeRecipients` (receiving; from the envelope recipients), `reencryptWebhookSecrets` (operator script), `authenticateHookPortalSession` (from the session), and the worker scans `runDueWebhookDeliveries`, `runDueLogDrainDeliveries`, `runDueHookDeliveries`, `parkHeldHookDeliveries`, `runDueHookRecoveries`, the Hooks purges, `recheckDueDomains`,
   `recheckDueTrackingDomains`, `recheckDueReceivingDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `runDueOrganizationDeletions`, `EmailService.dispatchDue`
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/risk/{schemas,env}`, `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch}`, `@coss/risk/{runtime,datasets}`, `@coss/signals/*` and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
+  `@coss/email/env`, `@coss/hooks/{schemas,env}`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch}`, `@coss/risk/{runtime,datasets}`, `@coss/signals/*` and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -811,9 +823,12 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   (`apps/worker/src/retention.ts`, every 10 min, 1,000 rows per step, back-to-back while a step fills its batch) runs
   them in order (emails before their batches). Purges are system-level `DELETE … WHERE id IN (oldest batch)` with
   the condition re-checked, take `{ now, limit, scope }` (always pass `scope` in tests), and rely on cascades for
-  children. Never purge: `queued`/`scheduled` emails, messages with a `pending` delivery (suspended orgs' are held),
+  children. Never purge: `queued`/`scheduled` emails, webhook messages with a `pending` delivery (suspended orgs' are held),
   an org's latest reputation transition (notifications compare against it), `content_screening_counter` (the
   sampling sequence), suppressions (they outlive their email; the dashboard hides "View email" past the cutoff).
+  The exception is Hooks: messages, deliveries and attempts are dropped by whole days with their partitions
+  (`RETENTION_DAYS.hookMessages`, the worker's `partitions` loop), pending or not (the policy says so); its small tables
+  have purges (`purgeExpiredHookIdempotencyKeys`, `purgeExpiredHookPortalSessions`, `purgeFinishedHookRecoveries`).
   Email retention must exceed the reputation window (≤ 30 days) and rollup recounts (31 days) — a test checks it. A
   new table either gets a catalog entry + purge or is covered by an existing "while your account exists" rule; changing
   a period changes the published policy, so treat it like a terms change.
@@ -846,15 +861,29 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   IAM policies may delete those). The dashboard's **Send a test email** (`receiveFakeEmail`) is for sandbox
   environments, or any while the dashboard runs the fake provider, and only to the environment's own addresses.
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
-  to the checked address; no redirects; 10 s timeout; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
+  to the checked address; no redirects; 10 s timeout for COSS's own webhooks and log drains, 15 s for Hooks; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
   `WEBHOOK_SECRETS_KEY`, a key ring (`parseSecretsKeys`): stored as `v2:<key id>:<iv>:<ciphertext>:<tag>` (the
   `v2:<key id>` prefix is the AAD; ids are derived from the keys), encrypted with the first key, decrypted with the
   one named. Keyless `v1:` rows from before are still read by trying every key until `webhooks:reencrypt` rewrites
   them. Every write of a secret column goes through `encryptSecret`, and `reencryptWebhookSecrets` must cover every
-  encrypted column (today the endpoints' `secret_ciphertext` and `previous_secret_ciphertext`, and `log_drain.secret_ciphertext`). Rotation runbook: README.md,
+  encrypted column (today the webhook and Hooks endpoints' `secret_ciphertext` and `previous_secret_ciphertext`, and `log_drain.secret_ciphertext`). Rotation runbook: README.md,
   "Rotating `WEBHOOK_SECRETS_KEY`". The initial upgrade from v1-only readers must use README.md's
   "Upgrading from v1 webhook secret storage" coordinated cutover, not a rolling deployment.
+- **Delivery engine** (`@coss/webhooks/engine`): webhook deliveries, log drain batches (and future products) share
+  `organizationNotHeld` (suspended or deleting orgs are held), `deliveryOutcome` (retry schedules; jitter only with
+  an injected `random`), `sendAttempt`, `endpointHealth` and `runClaimed`; each product keeps its own tables and SQL.
+  A claimed row's `lease_expires_at` is its fencing token: always bind it from a JS `Date` (`leaseUntil`), finish
+  with a `stillOwned` update **first**, and write attempt rows, log lines and health changes only when that update
+  matched, so a worker whose lease was taken over records nothing.
+- **Endpoint health** (`webhook_endpoint.failing_since`, `disabled_reason` `manual`|`failing`, `disabled_at`; no
+  CHECK ties them to `enabled`, since code running during a deploy's migration sets `enabled` alone, so a disabled
+  endpoint without a reason reads as `manual`): a delivery that failed every attempt starts a streak, any success ends it
+  (both written only when they change), and one failing for good 5 days into a streak
+  (`DISABLE_FAILING_ENDPOINT_AFTER_MS`) disables the endpoint with a system `webhook_endpoint.disabled` audit event.
+  Enabling it clears the streak. `recoverWebhookEndpoint` (`POST /v1/webhook_endpoints/{id}/recover`,
+  `webhook:update`) requeues failed deliveries since a time, ≤ 1,000 per call, locking their parent messages first
+  (in id order) like `retryWebhookDelivery`, so retention can't purge what it requeued.
 - **Secret rolls** (`rollWebhookEndpointSecret`, `POST /v1/webhook_endpoints/{id}/roll_secret`, the dashboard's
   **Roll secret**, `webhook:update`): one UPDATE moves the current secret to `previous_secret_ciphertext` with
   `previous_secret_expires_at` (default a day, at most a week, `0` = none; both columns or neither, a CHECK) and
@@ -862,6 +891,35 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   each attempt), which `verifyWebhook` already accepts. A second roll drops the older previous secret, so rolls are
   not idempotent and the SDK never retries them. The new secret is returned only in that response; reads expose
   `previous_secret_expires_at`, never a secret.
+- **Hooks** (`packages/hooks`, `/v1/hooks/*`, `coss.hooks`, permission `hook`): customer messages are opaque JSON
+  with customer-defined types, kept apart from COSS's own `webhook_*` tables (which render through `@coss/versioning`)
+  on the shared delivery engine. Every function takes `organizationId` (+ the environment or application); the API
+  addresses applications by id **or** `uid` (`requireHookApplication`). `hook_message`/`hook_delivery`/`hook_attempt`
+  are partitioned by UTC day of the **message** (migrations 0050/0051) with **no default partition** (expired days
+  are detached `CONCURRENTLY`; `migrate.ts`, the test preload and the worker keep days ahead): nothing has an FK into
+  them, they have none to applications or endpoints (deleting one must never cascade into millions of rows; a
+  delivery to a missing endpoint fails at its attempt) and none to `environment` either (dropping a partition that
+  references a table takes an ACCESS EXCLUSIVE lock on that table; organization deletion deletes them). Their
+  `created_at` and ids are bound from the same JS millisecond (`newId(prefix, ms)`, never `defaultNow()`), so an id
+  alone finds its partition: every lookup by id adds the partition column (`cursorOf`). Idempotency keys live in
+  `hook_idempotency_key` (a partitioned table can't be unique on them). Sends are charged per fan-out
+  (`hooks.messages.second`/`hooks.deliveries.day`, sandbox `hooks.sandbox_deliveries.day`, refunded on replays and
+  errors); live sends refuse reputation-suspended orgs (`account_suspended`), replays still return. Delivery
+  (`runDueHookDeliveries`): claims at most `MAX_IN_FLIGHT_PER_ENDPOINT` per endpoint, skips held orgs
+  (`parkHeldHookDeliveries` puts their due rows off an hour so they never block the queue's head), batch-loads
+  messages and endpoints, charges `hookThrottle` (per endpoint, `org:host`, global per host; a denial reschedules
+  without counting an attempt), then signs the stored payload (`webhook-id` = message id) and finishes fenced. Payloads
+  are normalized JSON (parsed and re-serialized), and `OPAQUE_FIELDS` keeps versioning out of payloads, schemas,
+  examples and metadata. Portal sessions: only the token's sha256 is stored; the URL is `<PORTAL_PUBLIC_URL>/s/<id>#<token>`
+  — never put a token in a path, query or cookie. `reencryptWebhookSecrets` must also cover `hook_endpoint` secrets.
+  Abuse: an endpoint failing for 5 days is disabled (`endpointHealth`), which records a `hook_endpoint.disabled` audit
+  event and sends the customer's own webhook endpoints a `hook_endpoint.disabled` event (`HOOK_OPERATIONAL_EVENT_TYPES`
+  in `@coss/webhooks/schemas`, part of `WEBHOOK_EVENT_TYPES`), in the same transaction. Live outcomes are counted per
+  org and hour into `hook_delivery_rollup` (once per claimed batch, `recordHookDeliveryOutcomes`, the worker's
+  `onFinished`; sandbox never counts) for the `hook_failure_rate` check (`hookFailureRateCheck`), which only warns by
+  default (`ReputationPolicy.hookFailureRate.suspend: null`; admins can set one per org). Dashboard:
+  `[envSlug]/hooks/*` (applications, endpoints, messages, event types, portal settings; `hook:*` permissions);
+  "Open portal" mints a session for the signed-in member (`createHookPortalSession({ userId })`).
 - **Platform admin** (`/admin`, `@coss/tenancy/admin`): every admin page calls `requirePlatformAdmin()` itself — Next
   renders layouts and pages in parallel, so the layout's check alone would still stream the page's data to non-admins
   (verified). Actions use `requirePlatformAdminAction()` and record an `admin_audit_event` (append-only; no FKs; the
@@ -1123,7 +1181,11 @@ org logos, user account deletion (before adding it: `sso_provider.user_id` and `
 would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,
 email/SMS two-factor codes, sign-in providers other than Google and GitHub, "trust this device" for 2FA, renaming passkeys, self-serve add-ons (none is named yet), an automatic direct-debit policy (only per-account
 required payment methods), multi-currency, metering for SMS/video/scheduling (their meters
-and rates exist; the products don't).
+and rates exist; the products don't), the Hooks portal's deployment (it needs a registered domain: `apps/portal`
+exists, the production spec doesn't list it yet), and
+these Hooks features: channels, payload transformations, custom endpoint headers, sending one message to several
+applications, strict ordering, portal custom domains, per-destination rate-limit overrides, Hooks attempts in
+environment logs and log drains.
 
 <!-- BEGIN:turborepo-agent-rules -->
 
