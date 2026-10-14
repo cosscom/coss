@@ -1,26 +1,27 @@
 import { formatRetentionPeriod, RETENTION_POLICY } from "@coss/retention";
+import { DocsTable, DocsTd, DocsTh, DocsTr } from "./docs-table";
 
 /** The published retention policy as a table (from `@coss/retention`, which the worker enforces). */
 export function RetentionTable() {
   return (
-    <table>
+    <DocsTable>
       <thead>
-        <tr>
-          <th>Data</th>
-          <th>Kept</th>
-          <th>Details</th>
-        </tr>
+        <DocsTr>
+          <DocsTh>Data</DocsTh>
+          <DocsTh>Kept</DocsTh>
+          <DocsTh>Details</DocsTh>
+        </DocsTr>
       </thead>
       <tbody>
         {RETENTION_POLICY.map((rule) => (
-          <tr key={rule.id} id={`retention-${rule.id}`}>
-            <td>{rule.label}</td>
-            <td className="whitespace-nowrap">{formatRetentionPeriod(rule.period)}</td>
-            <td>{rule.description}</td>
-          </tr>
+          <DocsTr key={rule.id} id={`retention-${rule.id}`}>
+            <DocsTd>{rule.label}</DocsTd>
+            <DocsTd className="whitespace-nowrap">{formatRetentionPeriod(rule.period)}</DocsTd>
+            <DocsTd>{rule.description}</DocsTd>
+          </DocsTr>
         ))}
       </tbody>
-    </table>
+    </DocsTable>
   );
 }
 

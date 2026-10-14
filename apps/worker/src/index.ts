@@ -6,6 +6,8 @@
 // First: monitoring reports failures while starting, too.
 import "./instrument.ts";
 import type { AuthEmailSender } from "@coss/auth/emails";
+import { type BillingNotifier, createUsageGate, logBillingNotifier } from "@coss/billing";
+import { createBillingRuntime } from "@coss/billing/runtime";
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
 import { createEmailService, emailNotifier, notificationEnvironment } from "@coss/email";
@@ -40,6 +42,7 @@ if (unknownLoops.length > 0) {
 const runs = (name: string) => !env.WORKER_LOOPS || env.WORKER_LOOPS.has(name);
 const config = emailRuntimeConfig(env);
 const email = createEmailRuntime(config);
+const billing = createBillingRuntime(env);
 const classifier = createClassifier(env);
 const controller = new AbortController();
 let sesEvents: Parameters<typeof startJobs>[0]["sesEvents"];
@@ -71,13 +74,16 @@ const emailService = createEmailService({
   liveProvider: email.liveProvider,
   sandboxProvider: email.sandboxProvider,
   queue: dispatchQueue,
-  trackingBaseUrl: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
+  trackingBaseUrl:
+    env.TRACKING_PUBLIC_URL ?? env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
   // Emails from a domain with an active custom tracking domain are tracked through it.
   trackingDomainProvider: email.trackingHostnames.name,
   screen: classifier
     ? (input) => screenMessage(input, { classifier, systemOrganizationId })
     : undefined,
   screeningFailureAllowlist: systemOrganizationId ? new Set([systemOrganizationId]) : undefined,
+  // Internal sends count against their organization's allowance (COSS's own is never capped).
+  billing: createUsageGate({ systemOrganizationId }),
 });
 if (runs("email-dispatch")) await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
 
@@ -86,6 +92,7 @@ if (runs("email-dispatch")) await workEmailDispatchQueue(jobs, monitoredDispatch
 // notifications are printed in development and both are held in production (sent once
 // configured); the dashboard prints account email links itself outside production.
 let notifier: ReputationNotifier | null = logReputationNotifier;
+let billingNotifier: BillingNotifier | null = logBillingNotifier;
 let authEmailSender: AuthEmailSender | null = null;
 if (systemEnvironment && env.NOTIFICATIONS_FROM) {
   const sender = {
@@ -94,6 +101,7 @@ if (systemEnvironment && env.NOTIFICATIONS_FROM) {
     from: env.NOTIFICATIONS_FROM,
   };
   notifier = emailNotifier(sender);
+  billingNotifier = notifier;
   // Their links are secrets: the stored email keeps no body once it is sent.
   authEmailSender = emailNotifier({ ...sender, discardBody: true });
 } else if (process.env.NODE_ENV === "production") {
@@ -103,10 +111,15 @@ if (systemEnvironment && env.NOTIFICATIONS_FROM) {
       "held until they are configured.",
   );
   notifier = null;
+  billingNotifier = null;
 }
 
-// Hooks delivery attempts are rate limited per endpoint and destination host (Valkey, shared).
-const rateLimits = createRateLimitRuntime(env);
+// Hooks delivery attempts are rate limited per endpoint and destination host: in Valkey (shared by
+// every worker) when the worker can reach it, else per task in memory.
+const rateLimits = createRateLimitRuntime(env, { production: false });
+if (!env.VALKEY_URL && process.env.NODE_ENV === "production") {
+  console.warn("[worker] VALKEY_URL is unset: Hooks delivery rate limits are counted per task.");
+}
 await rateLimits.ready();
 const secretsKeys = parseSecretsKeys(env.WEBHOOK_SECRETS_KEY);
 // The dashboard accepts local endpoints outside production; let them be reached there too.
@@ -133,6 +146,12 @@ const loops = startJobs({
     onFinished: (finished) => recordHookDeliveryOutcomes(finished),
   },
   logRetentionDays: env.LOG_RETENTION_DAYS,
+  billing: {
+    providers: billing.providers,
+    defaultProvider: billing.defaultProvider,
+    dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
+    notifier: billingNotifier,
+  },
   loops: env.WORKER_LOOPS,
 });
 console.info(

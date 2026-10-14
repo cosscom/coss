@@ -1,0 +1,123 @@
+---
+title: Quick add input
+description: "The ⌘K quick-add field as a standalone component: the live underline, the preview line, and a commit you own."
+---
+
+The field inside <Kbd>⌘K</Kbd> — type a sentence, watch the underline claim
+the phrases it understood, press <Kbd>↵</Kbd> — ships on its own as
+`QuickAddInput`. It is fully controlled and does no parsing: you hold the
+text, run [`parseQuickAdd`](/kloq/docs/quick-add), and pass both in. The result
+your commit handler acts on is by construction the one the underline drew —
+there is no second parse to disagree with the first.
+
+This one is live — type, or press a phrase to load one; <Kbd>↵</Kbd> "creates"
+into the list under the field:
+
+<QuickAddInputDemo />
+
+## Wiring it
+
+Three pieces of state — the text, a clock, and the parse derived from them:
+
+```tsx
+import { useMemo, useState } from "react";
+import { parseQuickAdd, QuickAddInput } from "@/components/kloq";
+
+function AddBar({ onCreate }: { onCreate: (r: QuickAddResult) => void }) {
+  const [value, setValue] = useState("");
+  const [now] = useState(() => new Date());
+  const result = useMemo(() => parseQuickAdd(value, now), [value, now]);
+
+  return (
+    <QuickAddInput
+      value={value}
+      onValueChange={setValue}
+      result={result}
+      now={now}
+      onCommit={() => {
+        if (!result.start || !result.end) return;
+        onCreate(result);
+        setValue("");
+      }}
+    />
+  );
+}
+```
+
+The component draws no outer border and opens no popover — it is the inside
+of a surface, with its own separators between the input, the preview, and the
+legend. Drop it into whatever holds it: a dialog, a card, a sidebar header.
+Inside `<Kloq>`'s own <Kbd>⌘K</Kbd> it sits in the command dialog; the demo
+above wraps it in a plain bordered frame.
+
+## Props
+
+<TypeTable
+  type={{
+    value: { type: "string", description: "The text, controlled." },
+    onValueChange: { type: "(value: string) => void", description: "Every keystroke." },
+    result: { type: "QuickAddResult", description: "The parse of `value`. The component never parses — the underline and the preview draw exactly what you pass." },
+    now: { type: "Date", description: "The clock the parse used; the preview's when-line resolves against the same instant." },
+    onCommit: { type: "() => void", description: "Enter on a non-empty value. Read the draft from the `result` you already hold." },
+    onBack: { optional: true, type: "() => void", description: "Escape: a first press clears a non-empty value, a press on an empty one calls this. ⌘K uses it to return to the command list." },
+    autoFocus: { optional: true, type: "boolean", description: "Focus the input on mount; default true. Turn it off when the field isn't the reason the surface opened." },
+    announce: { optional: true, type: "boolean", description: "Read the preview line out as it changes; default true." },
+  }}
+/>
+
+## Committing the draft
+
+`onCommit` receives nothing because everything is already in your `result`.
+One conversion matters when building a store event: the parser's all-day
+`end` is the *inclusive* last day ("all day friday" starts and ends Friday),
+while the store's all-day `end` is exclusive:
+
+```tsx
+import { formatInstant, toDateOnlyString, type CalEvent } from "@/components/kloq";
+
+const dayAfter = new Date(result.end);
+dayAfter.setDate(dayAfter.getDate() + 1);
+
+const event: CalEvent = result.allDay
+  ? { id, title, allDay: true, start: toDateOnlyString(result.start), end: toDateOnlyString(dayAfter) }
+  : { id, title, start: formatInstant(result.start), end: formatInstant(result.end) };
+```
+
+with `title` from `quickAddPreview(result, now).title` — never blank, even
+for an input that was all metadata — and `result.location` / a mapped
+`result.attendees` filling the rest.
+
+## How the underline works
+
+The `<input>` renders its text transparent; underneath sits an `aria-hidden`
+mirror `div` holding the same string split by `highlightSegments` into plain
+and understood runs, the understood ones underlined and tinted by token kind.
+Each kind has its own underline style as well as its own colour
+(`QUICK_ADD_KINDS`), and a phrase the parser read but overruled — a length
+beside an explicit range — is struck through instead, from `result.ignored`.
+The two layers share one set of type metrics and the mirror copies the
+input's `scrollLeft`, so the highlight sits under the characters at every
+width. The parser's token guarantee — sorted, disjoint, in bounds,
+`input.slice(t.start, t.end) === t.text` — is what makes the trick safe:
+concatenating the segments reproduces the input exactly, so the overlay can
+never drift.
+
+The preview line under the field is `quickAddPreview` — title, resolved
+when, chips, and a struck-through "ignored:" note when the parse overruled
+something — in a fixed-height box (a growing one would shift everything
+below it on each keystroke), announced politely to screen readers via
+`aria-live` and tied to the input with `aria-describedby`. The legend maps
+the underline colors to kinds, so color is never the only channel. Pass
+`announce={false}` to keep the preview out of the live region — for a demo
+that drives `value` itself, where every scripted keystroke would be read out.
+
+<Callout>
+  Escape inside the field stops its own propagation — clearing the text
+  doesn't close a dialog around it. The surrounding surface only sees Escape
+  once the field is empty and has handed control back through `onBack`.
+</Callout>
+
+The grammar itself — what parses, the claim table, `dateOrder` and
+`defaultDurationMin` — lives on the [quick add](/kloq/docs/quick-add) page, and
+[`MoveToInput`](/kloq/docs/command-palette#move-to), its sibling for rescheduling,
+on the command palette page.

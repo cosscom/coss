@@ -1,6 +1,7 @@
 import { API_VERSION, type ApiVersion } from "./api-version.ts";
 import { type FetchLike, HttpClient } from "./core/http.ts";
 import { AuditEventsResource } from "./resources/audit-events.ts";
+import { BillingResource } from "./resources/billing.ts";
 import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
 import { HooksResource } from "./resources/hooks.ts";
@@ -87,6 +88,8 @@ export class Coss {
   readonly auditEvents: AuditEventsResource;
   /** Hooks, webhooks as a service: `coss.hooks.messages.send()` delivers to your users' endpoints. */
   readonly hooks: HooksResource;
+  /** The organization's plan, usage, invoices and credits (`coss.billing.get()`). */
+  readonly billing: BillingResource;
 
   /**
    * Throws only for programmer errors: no API key, or running in a browser without
@@ -129,5 +132,6 @@ export class Coss {
     this.logDrains = new LogDrainsResource(http);
     this.auditEvents = new AuditEventsResource(http);
     this.hooks = new HooksResource(http);
+    this.billing = new BillingResource(http);
   }
 }

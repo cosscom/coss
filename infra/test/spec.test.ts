@@ -3,8 +3,10 @@
  * everything declared reaches tasks through turbo, and the Dockerfiles use the repo's versions.
  */
 import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { ZONE_ROUTES, type ZoneRoute } from "@coss/auth/slugs";
+import { billingEnvShape } from "@coss/billing/env";
 import { emailEnvShape, emailWorkerEnvShape } from "@coss/email/env";
 import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
@@ -13,10 +15,13 @@ import { screeningEnvShape } from "@coss/screening/env";
 import {
   albListenerRules,
   cossComCacheBehaviours,
+  deployInvalidationPaths,
+  EXTERNAL_ZONES,
   TRACKING_HOST,
   TRACKING_ORIGIN_VERIFY_HEADER,
 } from "../aws/routing.ts";
 import { SERVICES, type ServiceName } from "../aws/services.ts";
+import { awsSpecJson } from "../aws/spec.ts";
 
 const ROOT = path.resolve(import.meta.dir, "../..");
 const read = (file: string) => readFileSync(path.join(ROOT, file), "utf8");
@@ -34,14 +39,22 @@ function schemaKeys(envFile: string, spread: Record<string, unknown>): string[] 
     ...(source.includes("...hookEnvShape") ? Object.keys(hookEnvShape) : []),
     ...(source.includes("...screeningEnvShape") ? Object.keys(screeningEnvShape) : []),
     ...(source.includes("...sentryEnvShape") ? Object.keys(sentryEnvShape) : []),
+    ...(source.includes("...billingEnvShape") ? billingKeys(envFile) : []),
   ];
+}
+
+/** The billing variables an app reads: the webhook secret only matters to the dashboard. */
+function billingKeys(envFile: string): string[] {
+  const keys = Object.keys(billingEnvShape);
+  return envFile.startsWith("apps/web/")
+    ? keys
+    : keys.filter((key) => key !== "STRIPE_WEBHOOK_SECRET");
 }
 
 const SCHEMAS: Record<Exclude<ServiceName, "site">, string[]> = {
   web: schemaKeys("apps/web/src/env.ts", emailEnvShape),
   api: schemaKeys("apps/api/src/env.ts", emailEnvShape),
   worker: schemaKeys("apps/worker/src/env.ts", emailWorkerEnvShape),
-  portal: schemaKeys("apps/portal/src/env.ts", {}),
 };
 
 describe("services", () => {
@@ -112,6 +125,15 @@ describe("Dockerfiles", () => {
       expect(dockerfile).toMatch(/^USER (node|bun)$/m);
     });
   }
+
+  test("a Next app's image includes its public/ folder (the standalone output leaves it out)", () => {
+    for (const app of ["web", "site"]) {
+      if (!existsSync(path.join(ROOT, `apps/${app}/public`))) continue;
+      expect(read(`apps/${app}/Dockerfile`)).toContain(
+        `COPY --from=build /repo/apps/${app}/public ./apps/${app}/public`,
+      );
+    }
+  });
 
   test(".dockerignore keeps env files out of every image", () => {
     const ignored = read(".dockerignore").split("\n");
@@ -185,5 +207,48 @@ describe("routing", () => {
     for (const pattern of patterns) expect(pattern.startsWith("/api")).toBe(false);
     expect(patterns).not.toContain("/");
     expect(patterns.length).toBeLessThanOrEqual(25);
+  });
+
+  test("deploys invalidate the site's cached paths, never hashed assets or external zones", () => {
+    const paths = deployInvalidationPaths();
+    expect(paths).toEqual(expect.arrayContaining(["/docs", "/docs/*", "/legal/*", "/llms.txt"]));
+    for (const kept of ["/_next/static/*", "/site-assets/*", "/ui", "/ui/*", "/origin/*", "/*"]) {
+      expect(paths).not.toContain(kept);
+    }
+    // CloudFront: at most 15 wildcard paths in progress per distribution.
+    expect(paths.filter((path) => path.includes("*")).length).toBeLessThanOrEqual(15);
+  });
+
+  test("external zones go to their own CloudFront origins, never the ALB", () => {
+    const albPaths = rules.flatMap((rule) =>
+      rule.conditions.flatMap((condition) =>
+        condition.Field === "path-pattern" ? condition.PathPatternConfig.Values : [],
+      ),
+    );
+    const behaviours = cossComCacheBehaviours();
+    const external = (ZONE_ROUTES as readonly ZoneRoute[]).filter((r) => r.zone !== "site");
+    expect(external.map((route) => route.zone).sort()).toEqual([...EXTERNAL_ZONES].sort());
+    for (const route of external) {
+      expect(albPaths).not.toContain(route.path);
+      const own = behaviours.filter(
+        (behaviour) =>
+          behaviour.pathPattern === route.path ||
+          behaviour.pathPattern.startsWith(`${route.path}/`),
+      );
+      expect(own.map((behaviour) => behaviour.pathPattern).sort()).toEqual(
+        [route.path, `${route.path}/*`].sort(),
+      );
+      for (const behaviour of own) expect(behaviour.origin as string).toBe(route.zone);
+    }
+    const externalPatterns = new Set(external.flatMap((r) => [r.path, `${r.path}/*`]));
+    for (const behaviour of behaviours.filter((b) => !externalPatterns.has(b.pathPattern))) {
+      expect(behaviour.origin).toBe("alb");
+    }
+  });
+});
+
+describe("terraform", () => {
+  test("terraform/spec.json matches the spec (run `bun run --cwd infra aws:spec:write`)", () => {
+    expect(read("infra/terraform/spec.json")).toBe(awsSpecJson());
   });
 });

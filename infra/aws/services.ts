@@ -4,7 +4,7 @@
  * infra/test checks it against the apps' env schemas, turbo.json and the Dockerfiles.
  */
 
-export type ServiceName = "web" | "site" | "api" | "worker" | "portal";
+export type ServiceName = "web" | "site" | "api" | "worker";
 
 /**
  * - `plain`: a task-definition `environment` value (`value`: the production value, or how to get it).
@@ -83,7 +83,7 @@ const trackingDomains: EnvVar[] = [
     name: "TRACKING_CNAME_TARGET",
     kind: "plain",
     required: false,
-    value: "track.coss.com",
+    value: "track.cosslinks.com",
     description: "The zone's fallback origin, which customers CNAME their tracking domain to.",
   },
 ];
@@ -115,11 +115,49 @@ const email: EnvVar[] = [
 const portalPublicUrl: EnvVar = {
   name: "PORTAL_PUBLIC_URL",
   kind: "plain",
-  required: true,
-  value: "https://portal.example",
+  required: false,
   description:
-    "Origin of the Hooks portal (its own registrable domain); portal session links point there.",
+    "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed.",
 };
+
+/**
+ * The worker's Hooks delivery limits. Optional: the cache's security group admits only web and api
+ * today (terraform/network.tf), so the worker counts in memory per task until it is opened to the
+ * worker and VALKEY_URL is declared for it as a secret.
+ */
+const workerRateLimits: EnvVar[] = [
+  {
+    name: "VALKEY_URL",
+    kind: "plain",
+    required: false,
+    description:
+      "Not set yet (see above). Once the worker can reach the cache, make this a `secret` like web's and api's.",
+  },
+  {
+    name: "VALKEY_CLUSTER",
+    kind: "plain",
+    required: false,
+    description: "`true` with VALKEY_URL (ElastiCache Serverless).",
+  },
+  {
+    name: "RATE_LIMIT_KEY_PREFIX",
+    kind: "plain",
+    required: false,
+    description: "Counter namespace, as web's and api's.",
+  },
+  {
+    name: "CLIENT_IP_HEADER",
+    kind: "plain",
+    required: false,
+    description: "Unused by the worker (it serves no requests).",
+  },
+  {
+    name: "TRUSTED_PROXY_COUNT",
+    kind: "plain",
+    required: false,
+    description: "Unused by the worker (it serves no requests).",
+  },
+];
 
 const rateLimits: EnvVar[] = [
   {
@@ -127,7 +165,7 @@ const rateLimits: EnvVar[] = [
     kind: "secret",
     required: true,
     description:
-      "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web, api and the worker (Hooks delivery limits).",
+      "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web and api.",
   },
   {
     name: "VALKEY_CLUSTER",
@@ -183,6 +221,23 @@ const screening: EnvVar[] = [
   },
 ];
 
+const billingProvider: EnvVar = {
+  name: "BILLING_PROVIDER",
+  kind: "plain",
+  required: true,
+  value: "stripe",
+  description:
+    "Payment provider of new billing accounts (fake|stripe); admins can move one to manual.",
+};
+
+const stripeSecretKey: EnvVar = {
+  name: "STRIPE_SECRET_KEY",
+  kind: "secret",
+  required: true,
+  value: "A restricted Stripe key (customers, invoices, Checkout, Customer Portal, credit notes)",
+  description: "Stripe API key: the dashboard opens Checkout and the portal, the worker invoices.",
+};
+
 const webhookKey: EnvVar = {
   name: "WEBHOOK_SECRETS_KEY",
   kind: "secret",
@@ -211,6 +266,16 @@ const auth: EnvVar[] = [
   },
 ];
 
+const trackingPublicUrl: EnvVar = {
+  name: "TRACKING_PUBLIC_URL",
+  kind: "plain",
+  required: false,
+  value: "https://track.cosslinks.com",
+  description:
+    "Origin of the open/click tracking links in emails (defaults to API_PUBLIC_URL): its own " +
+    "domain, so abuse flagged by URL blocklists never lands on coss.com (infra/aws/routing.ts).",
+};
+
 const apiPublicUrl: EnvVar = {
   name: "API_PUBLIC_URL",
   kind: "plain",
@@ -220,7 +285,7 @@ const apiPublicUrl: EnvVar = {
 };
 
 /**
- * Error and performance monitoring (Sentry organization `coss`, see @coss/observability). Each
+ * Error and performance monitoring (Sentry organization `cosscom`, see @coss/observability). Each
  * runtime has its own project; DSNs aren't secrets (browsers receive the dashboard's).
  */
 function sentry(project: "web" | "api" | "worker"): EnvVar[] {
@@ -295,6 +360,16 @@ export const SERVICES: Service[] = [
       webhookKey,
       portalPublicUrl,
       notificationsEnvironment,
+      billingProvider,
+      stripeSecretKey,
+      {
+        name: "STRIPE_WEBHOOK_SECRET",
+        kind: "secret",
+        required: true,
+        value:
+          "The signing secret of the Stripe webhook endpoint https://coss.com/api/billing/webhook",
+        description: "Verifies Stripe webhook signatures (the dashboard's billing webhook route).",
+      },
       {
         name: "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY",
         kind: "secret",
@@ -385,43 +460,13 @@ export const SERVICES: Service[] = [
         description: "Browser origins allowed on /v1/* (the docs' playground).",
       },
       ...email,
+      trackingPublicUrl,
       webhookKey,
       portalPublicUrl,
       ...sentry("api"),
       sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "API_PORT", kind: "image", required: true, value: "3001", description: "" },
-    ],
-  },
-  {
-    // The Hooks portal (its own domain): customers' users manage their endpoints here, signed in
-    // by a session the customer's backend creates. Reads and writes Hooks data directly.
-    name: "portal",
-    dockerfile: "apps/portal/Dockerfile",
-    port: 3003,
-    healthCheckPath: "/api/health",
-    stopTimeout: 30,
-    cpu: 256,
-    memory: 512,
-    minTasks: 2,
-    needsInternet: false,
-    env: [
-      ...db,
-      // Its per-session and per-IP limits share the API's Valkey.
-      ...rateLimits,
-      webhookKey,
-      // The dashboard's Sentry project (events are tagged `service: portal`).
-      ...sentry("web"),
-      { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
-      { name: "PORT", kind: "image", required: true, value: "3003", description: "" },
-      { name: "HOSTNAME", kind: "image", required: true, value: "0.0.0.0", description: "" },
-      {
-        name: "KEEP_ALIVE_TIMEOUT",
-        kind: "image",
-        required: true,
-        value: "75000",
-        description: "",
-      },
     ],
   },
   {
@@ -438,6 +483,7 @@ export const SERVICES: Service[] = [
       ...db,
       ...email,
       apiPublicUrl,
+      trackingPublicUrl,
       {
         name: "API_PORT",
         kind: "plain",
@@ -467,8 +513,10 @@ export const SERVICES: Service[] = [
       },
       ...screening,
       webhookKey,
+      billingProvider,
+      stripeSecretKey,
       // Hooks delivery attempts are rate limited per endpoint and destination host.
-      ...rateLimits,
+      ...workerRateLimits,
       {
         name: "BETTER_AUTH_URL",
         kind: "plain",

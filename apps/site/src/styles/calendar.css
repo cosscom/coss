@@ -1,0 +1,255 @@
+/*
+ * kloq's pages (kloq.dev's globals.css and docs/components.css, under /kloq):
+ * the landing page's type steps and motion, the docs' code frames, tables and callouts. Imported
+ * by global.css, so the utilities are part of the site's one Tailwind build.
+ */
+
+/* kloq's tokens beyond coss ui's, for the pages around the calendars (kloq.css defines them only
+   inside a [data-kloq-root], which every <Kloq> is): the brand red of the "now" line, pins and
+   live dots. The pages themselves keep the site's tokens. */
+:root {
+  --brand: var(--color-red-500);
+  --brand-foreground: var(--color-red-600);
+}
+.dark {
+  --brand-foreground: var(--color-red-400);
+}
+
+/* the marketing page H1; `page-title-sm` is the tool / compare-detail step. Both stay at or
+   above the SectionHead title (30px, 36px from sm) at every width. Cal Sans' Base drawing
+   (GEOM 50), as the site's and Shipyard's headlines. */
+@utility page-title {
+  font-family: var(--font-heading);
+  font-variation-settings: "GEOM" 50;
+  font-size: clamp(2.25rem, 6vw, 3.75rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+@utility page-title-sm {
+  font-family: var(--font-heading);
+  font-variation-settings: "GEOM" 50;
+  font-size: clamp(2rem, 5.8vw, 3.25rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+/* the landing's own H1: one step above `page-title` */
+@utility landing-display {
+  font-family: var(--font-heading);
+  font-variation-settings: "GEOM" 50;
+  font-size: clamp(2.25rem, 7.5vw, 6.25rem);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+/* `landing-rise` staggers a hero on load (delay per element). It moves, it never fades:
+   text that starts at opacity 0 is not painted, and LCP waits for the animation. */
+@keyframes landing-rise {
+  from {
+    translate: 0 14px;
+  }
+}
+
+@utility landing-rise {
+  @variant motion-safe {
+    animation: landing-rise 0.7s var(--ease-emphasized) backwards;
+  }
+}
+
+/* `landing-reveal` (<Reveal>) fades a block up as it enters its scroller, over 7rem at most
+   (a `delay` stretches that) and never past the point where the block is fully inside. No
+   backwards fill: anything not yet reached, and every browser without scroll timelines,
+   renders the block as it is. A block holding focus is never dimmed. */
+@keyframes landing-reveal {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+}
+
+@utility landing-reveal {
+  @supports (animation-timeline: view()) {
+    @variant motion-safe {
+      &:not(:focus-within) {
+        animation: landing-reveal linear forwards;
+        animation-timeline: view();
+        animation-range: entry 0% entry min(100%, calc(7rem + var(--reveal-offset, 0px)));
+      }
+    }
+  }
+}
+
+/* Landing motifs: the clock hands */
+@keyframes landing-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes landing-tick {
+  0%,
+  86% {
+    rotate: 0deg;
+  }
+  88%,
+  96% {
+    rotate: 6deg;
+  }
+  98%,
+  100% {
+    rotate: 0deg;
+  }
+}
+
+@utility landing-sweep {
+  @variant motion-safe {
+    animation: landing-sweep 60s linear infinite;
+  }
+}
+
+@utility landing-tick {
+  @variant motion-safe {
+    animation: landing-tick 5s ease-in-out infinite;
+  }
+}
+
+/* animations the demo's toasts use */
+@theme inline {
+  --animate-skeleton: skeleton 2s -1s infinite linear;
+  --animate-toast-success-odd: toast-success-odd 0.32s cubic-bezier(0.5, 1, 0.89, 1);
+  --animate-toast-success-even: toast-success-even 0.32s cubic-bezier(0.5, 1, 0.89, 1);
+  --animate-toast-error-odd: toast-error-odd 0.28s cubic-bezier(0.5, 1, 0.89, 1);
+  --animate-toast-error-even: toast-error-even 0.28s cubic-bezier(0.5, 1, 0.89, 1);
+  @keyframes skeleton {
+    to {
+      background-position: -200% 0;
+    }
+  }
+  @keyframes toast-success-odd {
+    0% {
+      scale: 1;
+    }
+    30% {
+      scale: 1.025;
+    }
+    60% {
+      scale: 0.99;
+    }
+    100% {
+      scale: 1;
+    }
+  }
+  @keyframes toast-error-odd {
+    0% {
+      translate: 0 0;
+    }
+    25% {
+      translate: -3px 0;
+    }
+    50% {
+      translate: 3px 0;
+    }
+    75% {
+      translate: -3px 0;
+    }
+    100% {
+      translate: 0 0;
+    }
+  }
+  @keyframes toast-success-even {
+    0% {
+      scale: 1;
+    }
+    30% {
+      scale: 1.025;
+    }
+    60% {
+      scale: 0.99;
+    }
+    100% {
+      scale: 1;
+    }
+  }
+  @keyframes toast-error-even {
+    0% {
+      translate: 0 0;
+    }
+    25% {
+      translate: -3px 0;
+    }
+    50% {
+      translate: 3px 0;
+    }
+    75% {
+      translate: -3px 0;
+    }
+    100% {
+      translate: 0 0;
+    }
+  }
+}
+
+/* The docs' own frames (examples, the playground, the registry snippet): kloq.dev's code block. */
+.docs-inline-code {
+  @apply rounded-md border-0 bg-muted px-1.5 py-0.5 font-mono font-normal text-foreground;
+  font-size: 0.875em;
+}
+.docs-code .highlighted {
+  @apply bg-code-highlight;
+}
+.docs-code .highlighted::after {
+  @apply border-brand;
+}
+.docs-code .highlighted-word {
+  @apply border-border bg-code-highlight;
+}
+.docs-code[data-line-numbers] .line::after {
+  @apply text-muted-foreground;
+}
+.docs-code [data-slot="scroll-area-viewport"]:focus-visible {
+  @apply ring-inset ring-offset-0;
+}
+/* github-dark comments are 3.6:1 on the code surface; github-light parameters are 3.5:1 */
+.dark figure.docs-code code span[style*="--shiki-dark:#6A737D" i] {
+  color: var(--muted-foreground);
+}
+:root:not(.dark) figure.docs-code code span[style*="--shiki-light:#E36209" i] {
+  color: var(--warning-foreground);
+}
+
+/* Tables (the TypeTable): the table primitive's prose variant. Below 36rem of column a row
+   becomes one stacked block: first cell as its title, the header row left to assistive tech. */
+.docs-table {
+  container-type: inline-size;
+  @apply my-6;
+}
+.docs-table :is(th, td):first-child code {
+  @apply whitespace-nowrap;
+}
+@container (width < 36rem) {
+  .docs-table :is(table, tbody, tr, tbody th, td) {
+    display: block;
+  }
+  .docs-table thead {
+    @apply sr-only;
+  }
+  .docs-table tr {
+    @apply py-3;
+  }
+  .docs-table tbody :is(th, td) {
+    @apply w-auto p-0;
+  }
+  .docs-table tbody :is(th, td) + td {
+    @apply pt-1;
+  }
+  .docs-table :is(th, td):first-child code,
+  .docs-table code {
+    @apply whitespace-normal wrap-anywhere;
+  }
+}

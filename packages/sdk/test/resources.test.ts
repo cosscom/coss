@@ -94,7 +94,7 @@ describe("coss.domains.tracking", () => {
       record: {
         type: "CNAME" as const,
         name: "links.acme.com",
-        value: "track.coss.com",
+        value: "track.cosslinks.com",
         status: "missing" as const,
         found: [],
       },

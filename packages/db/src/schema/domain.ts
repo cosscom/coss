@@ -188,6 +188,10 @@ export const email = pgTable(
     sentAt: timestamp("sent_at", { withTimezone: true }),
     // When the email may be handed to the provider; set only for requests with `scheduled_at`.
     scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+    // Billing (`@coss/billing`): the recipients the send is billed for, frozen when a dispatcher
+    // claims it (suppressed ones excluded); `usage_recorded_at` marks it metered (once, when sent).
+    billableRecipients: integer("billable_recipients"),
+    usageRecordedAt: timestamp("usage_recorded_at", { withTimezone: true }),
   },
   (t) => [
     foreignKey({
@@ -204,11 +208,16 @@ export const email = pgTable(
     // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
     unique("email_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
-    // Reputation checks scan an organization's recent emails.
     index("email_organization_created_at_idx").on(t.organizationId, t.createdAt),
-    // Due-scan for scheduled sends. Not filtered on `status = 'scheduled'`: a new enum value
-    // can't be used in the migration transaction that adds it.
-    index("email_scheduled_at_idx").on(t.scheduledAt).where(sql`${t.scheduledAt} is not null`),
+    // Reputation checks scan an organization's emails by the time they were sent
+    // (`@coss/email` reputation-checks.ts `SEND_TIME`; keep the expression identical).
+    index("email_organization_send_time_idx").on(
+      t.organizationId,
+      sql`coalesce(${t.sentAt}, ${t.createdAt})`,
+    ),
+    // Due-scan for scheduled sends (`dispatchDue`, every 5 s): only rows still waiting, so the
+    // scan never walks emails already sent or immediate sends with a past time.
+    index("email_scheduled_due_idx").on(t.scheduledAt).where(sql`${t.status} = 'scheduled'`),
     // The worker's sweeps for queued emails whose dispatch was lost or interrupted.
     index("email_queued_created_at_idx").on(t.createdAt).where(sql`${t.status} = 'queued'`),
     // The worker's retention purge (oldest first, across organizations).
@@ -687,10 +696,9 @@ export const webhookEndpoint = pgTable(
       "webhook_endpoint_previous_secret_check",
       sql`(${t.previousSecretCiphertext} is null) = (${t.previousSecretExpiresAt} is null)`,
     ),
-    check(
-      "webhook_endpoint_disabled_check",
-      sql`${t.enabled} = (${t.disabledReason} is null) and (${t.disabledReason} is null) = (${t.disabledAt} is null)`,
-    ),
+    // No CHECK tying `enabled` to `disabled_reason`/`disabled_at` (unlike `hook_endpoint`): the
+    // code running while a deploy migrates sets `enabled` alone. Readers treat a reasonless
+    // disabled endpoint as disabled by hand.
   ],
 );
 
@@ -1740,9 +1748,10 @@ export const hookEndpointRecovery = pgTable(
 
 /*
  * Messages, deliveries and attempts are partitioned by UTC day of the message's creation (migration
- * 0044), without a default partition, so whole days are dropped together after retention. Nothing
- * holds an FK into them, and they hold none to applications or endpoints (deleting one must never
- * cascade into millions of rows); ids carry the message's timestamp, so an id alone finds its
+ * 0047), without a default partition, so whole days are dropped together after retention. Nothing
+ * holds an FK into them, and they hold none at all: deleting an application or endpoint must never
+ * cascade into millions of rows, and dropping a partition that references `environment` would take
+ * an ACCESS EXCLUSIVE lock on it (organization deletion deletes them explicitly); ids carry the message's timestamp, so an id alone finds its
  * partition (`idTimestamp`). Created-at values and ids are always bound from the same JS millisecond.
  */
 
@@ -1765,11 +1774,6 @@ export const hookMessage = pgTable(
   },
   (t) => [
     primaryKey({ name: "hook_message_pkey", columns: [t.createdAt, t.id] }),
-    foreignKey({
-      name: "hook_message_environment_fk",
-      columns: [t.environmentId, t.organizationId],
-      foreignColumns: [environment.id, environment.organizationId],
-    }).onDelete("cascade"),
     index("hook_message_application_created_at_idx").on(
       t.applicationId,
       t.createdAt.desc(),

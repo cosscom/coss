@@ -1,0 +1,65 @@
+---
+title: Time zones
+description: displayTimeZone, extra gutter columns, per-event authored zones, and the pure Intl-backed zone layer.
+---
+
+No tz database ships with the component and none ever will — everything goes through `Intl`, which is DST-correct, half- and quarter-hour correct, and updated by the platform. Three props cover the product surface; the pure layer underneath is exported whole.
+
+## displayTimeZone — travel to time zone
+
+`displayTimeZone` redraws the whole grid in another zone: a 9am London call viewed with `"Asia/Tokyo"` renders at 5pm, in Tokyo's column, with Tokyo's day headers, Tokyo's now-line and Tokyo's gutter — and a new event dragged out is stored with a `+09:00` offset.
+
+```tsx
+<Kloq displayTimeZone="Asia/Tokyo" />
+```
+
+The events do not change. Their instants are absolute; only the wall clock you are reading them against does. An invalid or unknown zone falls back to the browser's, so the resolved zone is always a real IANA id.
+
+## timeZones — extra gutter columns
+
+`timeZones` adds zone columns to the gutter, left of the main one and in the order given. Unknown zones and duplicates are dropped. Setting it swaps the built-in `TimeGutter` for the multi-zone one — a `components.TimeGutter` override still wins.
+
+```tsx
+<Kloq
+  timeZones={[
+    "America/Los_Angeles",
+    { timeZone: "Asia/Tokyo", label: "TOK" }, // object form overrides the heading
+  ]}
+/>
+```
+
+The column component itself is exported — `MultiTimeZoneGutter`, plus `createMultiTimeZoneGutter`, `multiZoneGutterWidth`, `zoneTimeAt` and `formatZoneTime` — for anyone wiring it as a slot by hand.
+
+## onTimeZonesClick — the host owns the picker
+
+Press the zone labels in the gutter corner and `onTimeZonesClick` fires. Provide it and the labels render as a real button — including a lone local-zone label when no zones are configured yet, so the feature stays discoverable. The component owns no zone-picking UI: the host opens whatever surface edits `displayTimeZone` / `timeZones` and passes the result back as props. Picker helpers are exported: `COMMON_ZONES`, `listCommonZones`, `listAllZones` and `searchZones`.
+
+## Per-event authored zones
+
+A timed event may carry `timeZone` — the zone it was authored in. When that disagrees with the zone the grid is drawn in, the event panel and the block's accessible name annotate it with the event's own clock: `"9:00 AM – 10:00 AM GMT+1 · London"`. The predicates and formatters behind that are exported — `isForeignZone`, `hasForeignZone`, `formatAuthoredTime`, `describeAuthoredZone`, `eventZoneNote` — and `describeAuthoredZone` returns `""` when there is nothing to say.
+
+<Callout>
+  Duplicating an event (⌥-drag) keeps the original's authored `timeZone` — a
+  copy of a Tokyo meeting is still a Tokyo meeting.
+</Callout>
+
+## The pure layer
+
+Every zone computation is exported from the package root. The interesting one is `instantFromWallClock`: the inverse of reading a clock is not a function, because a wall time can happen zero times (the spring-forward gap) or twice (the fall-back overlap). `resolveWallClock` reports which, and the `Disambiguation` policy says what to do — gap shifts forward past it, overlap takes the earlier.
+
+| Export | Type | Notes |
+| --- | --- | --- |
+| wallClockIn / instantFromWallClock | function | Instant ↔ wall clock, both directions, DST-aware. |
+| resolveWallClock | function | Names a wall time's kind — unique, gap, or overlap — with the resolution policy on `Disambiguation`. |
+| zonedDate / unzonedInstant | function | The proxy `Date` whose local getters read another zone's clock, and the only correct way back. |
+| zoneOffsetMinutes / zoneOffsetLabel / zoneAbbr / zoneLongName / zoneCityLabel | function | Offsets and labels for a zone at a given instant. |
+| formatInstantInZone / formatInZone / hourLabel | function | Formatting in an explicit zone. |
+| localZone / isValidTimeZone / coerceTimeZone / canonicalZone / sameZone | function | Zone identity and validation. |
+| COMMON_ZONES / listCommonZones / listAllZones / searchZones | data + functions | Everything a zone picker needs. |
+| displayDate / displayNow | function | The display-zone bridge: a `Date` in display space, or now on the display zone's clock. |
+
+<Callout type="warn">
+  A proxy from `zonedDate` is not a moment — `proxy.getTime()` is meaningless.
+  Feed proxies to wall-clock helpers; call `unzonedInstant(proxy, zone)` to get
+  a real instant back.
+</Callout>

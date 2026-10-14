@@ -8,6 +8,7 @@ import { asc, eq } from "drizzle-orm";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { emailScreeningContent, htmlTextAndLinks } from "../src/screening.ts";
 import { createEmailService } from "../src/service.ts";
+import { sweepUnclaimedEmails } from "../src/sweeps.ts";
 import { dispatchingEmailService, memoryDispatchQueue } from "../src/testing.ts";
 import { params, sendEnvironment, verifiedFrom } from "./helpers.ts";
 
@@ -164,25 +165,92 @@ describe("dispatch with content screening", () => {
     expect(classifier.calls).toHaveLength(0);
   });
 
-  test("fails closed when screening itself throws", async () => {
+  test("holds a live email while screening is unavailable, and sends it once it is back", async () => {
     const tenant = await createTestTenant();
     const liveProvider = new FakeEmailProvider({ log: false });
+    let classifier = fakeClassifier({ fail: true });
     const service = dispatchingEmailService({
       liveProvider,
       sandboxProvider: new FakeEmailProvider({ log: false }),
-      screen: async () => {
-        throw new Error("database unavailable");
-      },
+      screen: (input) => screenMessage(input, { classifier }),
     });
     const { email } = await service.send({
       environment: sendEnvironment(tenant.production),
       apiKeyId: null,
       params: params({ from: await verifiedFrom(tenant.organization.id) }),
     });
-    expect(email.status).toBe("failed");
-    const [row] = await db.select().from(schema.email).where(eq(schema.email.id, email.id));
-    expect(row?.errorCode).toBe("content_screening_unavailable");
+
+    // Held, not failed: unclaimed again, marked, and dispatched again later.
+    expect(email.status).toBe("queued");
+    const [held] = await db.select().from(schema.email).where(eq(schema.email.id, email.id));
+    expect(held).toMatchObject({ provider: null, errorCode: "content_screening_unavailable" });
+    expect(await eventsOf(email.id)).toEqual([]);
     expect(liveProvider.sent).toHaveLength(0);
+    expect(service.queue.jobs).toEqual([
+      { organizationId: tenant.organization.id, emailId: email.id },
+    ]);
+
+    classifier = fakeClassifier();
+    await service.queue.drain(service);
+    const [sent] = await db.select().from(schema.email).where(eq(schema.email.id, email.id));
+    expect(sent).toMatchObject({ status: "sent", errorCode: null, errorMessage: null });
+    expect(liveProvider.sent).toHaveLength(1);
+    // Screened again on the retry (it was a sample).
+    expect(classifier.calls).toHaveLength(1);
+    const verdicts = (await listScreenings(tenant.organization.id)).map((s) => s.verdict);
+    expect(verdicts.sort()).toEqual(["clean", "error"]);
+  });
+
+  test("a held email gives up an hour after it was due, as content_screening_unavailable", async () => {
+    const tenant = await createTestTenant();
+    const service = dispatchingEmailService({
+      liveProvider: new FakeEmailProvider({ log: false }),
+      sandboxProvider: new FakeEmailProvider({ log: false }),
+      screen: async () => {
+        throw new Error("database unavailable");
+      },
+    });
+    const from = await verifiedFrom(tenant.organization.id);
+    const scope = { organizationIds: [tenant.organization.id] };
+    const { email: immediate } = await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({ from }),
+    });
+    expect(immediate.status).toBe("queued");
+    const queue = memoryDispatchQueue();
+    const createdAt = new Date(immediate.created_at).getTime();
+    expect(
+      await sweepUnclaimedEmails(queue, { now: new Date(createdAt + 61 * 60_000), scope }),
+    ).toMatchObject({ failed: 1 });
+    const [failed] = await db.select().from(schema.email).where(eq(schema.email.id, immediate.id));
+    expect(failed).toMatchObject({ status: "failed", errorCode: "content_screening_unavailable" });
+    expect((await eventsOf(immediate.id)).map((e) => e.details)).toEqual([
+      { failure: expect.objectContaining({ code: "content_screening_unavailable" }) },
+    ]);
+
+    // A scheduled send held when it fell due counts its hour from then, not from its creation.
+    const scheduledAt = new Date(Date.now() + 2 * 86_400_000);
+    const { email: scheduled } = await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({ from, scheduled_at: scheduledAt.toISOString() }),
+    });
+    expect(scheduled.status).toBe("scheduled");
+    await service.dispatchDue({ now: new Date(scheduledAt.getTime() + 1000), scope });
+    const [heldScheduled] = await db
+      .select()
+      .from(schema.email)
+      .where(eq(schema.email.id, scheduled.id));
+    expect(heldScheduled).toMatchObject({ status: "queued", provider: null });
+    const due = scheduledAt.getTime();
+    expect(await sweepUnclaimedEmails(queue, { now: new Date(due + 30 * 60_000), scope })).toEqual({
+      failed: 0,
+      requeued: 1,
+    });
+    expect(
+      await sweepUnclaimedEmails(queue, { now: new Date(due + 61 * 60_000), scope }),
+    ).toMatchObject({ failed: 1 });
   });
 
   test("keeps account mail available when screening itself throws", async () => {

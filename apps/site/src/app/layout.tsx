@@ -1,11 +1,8 @@
 import "./global.css";
+import { fontMono, fontSans } from "@coss/ui/fonts";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import type { Metadata } from "next";
-import { Geist_Mono, Inter } from "next/font/google";
-import { SEARCH_API, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
-
-const sans = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -16,9 +13,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // next-themes (inside RootProvider) sets the `dark` class before hydration.
-    <html className={`${sans.variable} ${mono.variable}`} lang="en" suppressHydrationWarning>
-      <body className="flex min-h-dvh flex-col bg-background font-sans text-foreground antialiased">
-        <RootProvider search={{ options: { api: SEARCH_API } }}>{children}</RootProvider>
+    <html
+      className={`${fontSans.variable} ${fontMono.variable}`}
+      lang="en"
+      suppressHydrationWarning
+    >
+      {/* The header and page frame are each route group's `SiteShell` (src/components/site-shell.tsx). */}
+      <body className="relative bg-sidebar font-sans text-foreground antialiased">
+        {/* Fumadocs' own search dialog stays off: the header's command menu searches instead. */}
+        <RootProvider search={{ enabled: false }}>{children}</RootProvider>
       </body>
     </html>
   );

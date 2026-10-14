@@ -1,0 +1,78 @@
+---
+title: Quick start
+description: "A working calendar in one component: container, toolbar, defaults, and where to go next."
+---
+
+`<Kloq>` fills its container and renders no app bar of its own — the toolbar
+is a child you compose. With no props at all you get an uncontrolled week
+view, sample events, and localStorage persistence — pass
+`defaultEvents={[]}` to start empty.
+
+## Your first calendar
+
+Import the stylesheet once, in your root layout — CSS imported inside a page
+or component only reaches that route.
+
+```tsx title="app/layout.tsx"
+import "kloq/styles.css";
+```
+
+Then render the calendar. It works straight from a server component:
+
+```tsx title="app/page.tsx"
+import { Kloq, KloqToolbar } from "kloq";
+
+export default function Page() {
+  return (
+    <div className="h-dvh">
+      <Kloq>
+        <KloqToolbar />
+      </Kloq>
+    </div>
+  );
+}
+```
+
+<Callout>
+  The dotted forms — `Kloq.Toolbar`, `Kloq.Nav`, `Kloq.Reset` — are the same
+  components, but a server component can't reach a property of a client
+  export, so use them only inside files marked `"use client"`. From a server
+  component, use the named exports.
+</Callout>
+
+That is the whole program. This one is live — drag on empty grid to create,
+grab a block to move it, take an edge to resize, double-click for quick add,
+`⌘K` for the command palette:
+
+<DocDemo height="30rem" toolbar />
+
+<Callout>
+  The embedded demos on these pages run with `persistence={false}` — nothing
+  you do here is saved. Your app gets localStorage by default.
+</Callout>
+
+## What's in the box
+
+The default calendar is deliberately complete: drag-to-create with snap
+magnetism, move with a welded pointer, resize with oversized hit zones, an
+all-day lane with mid-gesture promotion, undo/redo on `⌘Z`, a `⌘K` palette,
+keyboard navigation, a `?` shortcuts sheet, and ⌥D design mode. Everything
+else in these docs is about taking control of pieces of it.
+
+Want to feel it before installing? The [demo](/kloq/demo) is this exact component,
+backed by localStorage — nothing leaves your browser.
+
+## The container is the contract
+
+`<Kloq>` is `h-full`: it renders into whatever box you give it and never
+reaches for the window. Give it a real height (`h-dvh`, a grid row, a flex
+column) or it will collapse to nothing — the one mistake everyone makes first.
+When its own box gets too narrow for a seven-column grid it collapses on its
+own — three days below ~900px, a single day (or a compact month) below 640px;
+`responsive={false}` opts out.
+
+## Where to go next
+
+Feed it your own data on the events page, wire it to a backend with
+persistence and optimistic sync, restyle it with theming and slots — or open
+the playground and flip every prop with a knob.

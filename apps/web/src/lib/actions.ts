@@ -1,4 +1,5 @@
 import "server-only";
+import { BillingError } from "@coss/billing";
 import { IdempotencyError } from "@coss/db/idempotency";
 import { DomainError, EmailError } from "@coss/email";
 import { HookError } from "@coss/hooks";
@@ -43,6 +44,7 @@ function userFacingMessage(error: unknown): string {
     error instanceof DomainError ||
     error instanceof ReputationError ||
     error instanceof EmailError ||
+    error instanceof BillingError ||
     error instanceof HookError ||
     error instanceof IdempotencyError
   ) {

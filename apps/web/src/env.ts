@@ -1,3 +1,4 @@
+import { billingEnvShape } from "@coss/billing/env";
 import { emailEnvShape } from "@coss/email/env";
 import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
@@ -33,6 +34,9 @@ export const env = createEnv({
     ...webhookEnvShape,
     // Where the Hooks portal is served ("Open portal" links).
     ...hookEnvShape,
+    // Payment provider of new billing accounts (`fake` or `stripe`), Checkout and the Customer
+    // Portal; the Stripe webhook route verifies signatures with STRIPE_WEBHOOK_SECRET.
+    ...billingEnvShape,
     // Server Actions encrypt closed-over variables with this key; every instance of a stage must
     // share it. Without it, each build embeds its own random key. Builds don't need it; production
     // servers refuse to start without it (src/instrumentation.ts).

@@ -255,6 +255,7 @@ export const createHookPortalSessionRoute = createRoute({
     ...commonErrors,
     404: applicationNotFound,
     422: errorDoc("The body failed validation (`validation_error`)."),
+    503: errorDoc("The portal isn't available yet (`portal_unavailable`)."),
   },
 });
 
@@ -267,7 +268,7 @@ function invalidIdempotencyKey(): ApiError {
   });
 }
 
-export function createHookMessageRoutes(opts: { portalUrl: string }): OpenAPIHono<AppEnv> {
+export function createHookMessageRoutes(opts: { portalUrl: string | null }): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
 
   router.openapi(
@@ -408,6 +409,14 @@ export function createHookMessageRoutes(opts: { portalUrl: string }): OpenAPIHon
   router.openapi(createHookPortalSessionRoute, async (c) => {
     const application = await requireApplication(c.var.auth, c.req.valid("param").application);
     const body = c.req.valid("json");
+    const portalUrl = opts.portalUrl;
+    if (!portalUrl) {
+      throw new ApiError(503, {
+        type: "api_error",
+        code: "portal_unavailable",
+        message: "The Hooks portal isn't available yet.",
+      });
+    }
     const { session, token } = await createHookPortalSession({
       application,
       expiresIn: body.expires_in,
@@ -428,7 +437,7 @@ export function createHookMessageRoutes(opts: { portalUrl: string }): OpenAPIHon
         object: "hook_portal_session" as const,
         id: session.id,
         application_id: application.id,
-        url: portalSessionUrl(opts.portalUrl, session.id, token),
+        url: portalSessionUrl(portalUrl, session.id, token),
         token,
         read_only: session.readOnly,
         expires_at: session.expiresAt.toISOString(),

@@ -103,12 +103,20 @@ export default async function AdminOrganizationPage({
     <>
       <PageHeader
         actions={
-          <Link
-            className="text-sm underline"
-            href={`/admin/organizations/${organizationId}/reputation`}
-          >
-            Sending reputation
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              className="text-sm underline"
+              href={`/admin/organizations/${organizationId}/billing`}
+            >
+              Billing
+            </Link>
+            <Link
+              className="text-sm underline"
+              href={`/admin/organizations/${organizationId}/reputation`}
+            >
+              Sending reputation
+            </Link>
+          </div>
         }
         description={
           <>

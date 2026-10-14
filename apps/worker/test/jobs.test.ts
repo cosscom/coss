@@ -4,7 +4,10 @@ import { startJobs, WORKER_LOOP_NAMES, type WorkerDeps } from "../src/jobs.ts";
 
 test("WORKER_LOOPS starts only the named loops", async () => {
   // No loop named: nothing starts (so nothing touches the shared test database).
-  const loops = startJobs({ loops: new Set<string>() } as unknown as WorkerDeps);
+  const loops = startJobs({
+    loops: new Set<string>(),
+    billing: { notifier: null },
+  } as unknown as WorkerDeps);
   expect(loops).toEqual([]);
 });
 

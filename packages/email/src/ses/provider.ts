@@ -1,5 +1,10 @@
 import type { Attachment, Body } from "@aws-sdk/client-sesv2";
-import type { EmailProvider, OutboundEmail, SendResult } from "../provider.ts";
+import {
+  type EmailProvider,
+  type OutboundEmail,
+  type SendResult,
+  UncertainSendError,
+} from "../provider.ts";
 import { parseEmailAddress } from "../schemas.ts";
 import { isSesError, type SesApi, type SesConfig, tenantNameFor } from "./api.ts";
 import { encodeAddress } from "./mime.ts";
@@ -7,6 +12,30 @@ import { encodeAddress } from "./mime.ts";
 /** Only tag set on SES messages: maps delivery events back to the email (never customer tags). */
 export const EMAIL_ID_TAG = "coss_email_id";
 const THROTTLE_RETRIES = 2;
+
+/** `SendEmail`'s documented errors: SES answered and refused the request, so nothing was sent. */
+const REJECTIONS = new Set([
+  "AccountSuspendedException",
+  "BadRequestException",
+  "LimitExceededException",
+  "MailFromDomainNotVerifiedException",
+  "MessageRejected",
+  "NotFoundException",
+  "SendingPausedException",
+  "TooManyRequestsException",
+]);
+
+/**
+ * Whether SES certainly refused the request: a documented rejection, or any answer below 500.
+ * Anything else (a timeout, a reset connection, a 5xx) may have reached SES after all.
+ */
+function isRejection(error: unknown): boolean {
+  const name = (error as { name?: unknown } | null)?.name;
+  if (typeof name === "string" && REJECTIONS.has(name)) return true;
+  const status = (error as { $metadata?: { httpStatusCode?: unknown } } | null)?.$metadata
+    ?.httpStatusCode;
+  return typeof status === "number" && status < 500;
+}
 
 /** Each address once across to → cc → bcc, as SES counts every listed address. */
 function destination(message: OutboundEmail) {
@@ -76,17 +105,23 @@ export class SesEmailProvider implements EmailProvider {
       EmailTags: [{ Name: EMAIL_ID_TAG, Value: message.emailId }],
     };
     for (let attempt = 0; ; attempt++) {
+      let messageId: string | undefined;
       try {
-        const { MessageId } = await this.#api.sendEmail(input);
-        if (!MessageId) throw new Error("SES accepted the email without a message id.");
-        return { providerMessageId: MessageId };
+        messageId = (await this.#api.sendEmail(input)).MessageId;
       } catch (error) {
         // Throttled requests were rejected before sending, so they are safe to retry.
-        if (!isSesError(error, "TooManyRequestsException") || attempt >= THROTTLE_RETRIES) {
-          throw error;
+        if (isSesError(error, "TooManyRequestsException") && attempt < THROTTLE_RETRIES) {
+          await this.#sleep(200 * 2 ** attempt);
+          continue;
         }
-        await this.#sleep(200 * 2 ** attempt);
+        if (isRejection(error)) throw error;
+        throw new UncertainSendError(
+          `SES may have accepted the email: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        );
       }
+      if (!messageId) throw new UncertainSendError("SES accepted the email without a message id.");
+      return { providerMessageId: messageId };
     }
   }
 }

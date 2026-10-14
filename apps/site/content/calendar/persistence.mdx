@@ -1,0 +1,108 @@
+---
+title: Persistence
+description: The PersistenceAdapter contract, the localStorage default, and the versioned payload migration.
+---
+
+Uncontrolled persistence is one prop: omit it for localStorage, pass `false`
+for ephemeral, or bring an adapter. Either way, `save` fires only on committed
+changes — the drag engine never touches the store mid-gesture, so persistence
+hangs off exactly the commit boundary.
+
+## The adapter contract
+
+```tsx
+import type { PersistenceAdapter } from "@/components/kloq";
+
+const adapter: PersistenceAdapter = {
+  // may be async; null means "no stored copy" — the seeds stay
+  load: () => fetchEvents(),
+  // called only on committed changes — never mid-drag
+  save: (events) => putEvents(events),
+  // optional: wipe the stored copy (reset falls back to save(seeds))
+  clear: () => deleteAll(),
+};
+
+<Kloq persistence={adapter} />
+<Kloq persistence={false} />  // nothing leaves the component
+```
+
+The semantics are precise. `load` runs once, from a layout effect after mount —
+never on the server — and may return a promise; the seeds render until it
+resolves, then the stored copy swaps in. Returning `null` means "no stored
+copy", which keeps the seeds rather than blanking the calendar. `save` receives
+the full next array on every committed change — one write per commit, and a
+batch (a paste, a bulk delete) is *one* commit. `clear` is optional: reset
+calls it when present and falls back to `save(seeds)` when not.
+
+<Callout>
+  Hydration safety is why `load` is deferred: the server snapshot is always the
+  seeds, so server and first client render agree byte-for-byte, and the
+  persisted copy arrives in the first effect — sync or async, same path.
+</Callout>
+
+## The localStorage default
+
+Omit `persistence` and you get `localStorageAdapter()` — exported, so you can
+also call it yourself with a custom key. It writes a versioned payload
+(`{ v: 2, events }`) under `STORAGE_KEY` (`"kloq:events:v2"`) — or under
+`<prefix>:events:v2` when the `storage` prop names another prefix
+(`eventsStorageKey()` returns the key in use). With `storage={false}` it reads
+and writes nothing.
+
+Behind `<Kloq>` the default adapter also batches its writes: a burst of commits
+becomes one write of the latest state about 300 ms after the last of them (and
+at least every 2 s while commits keep coming), and anything still queued is
+written when the page is hidden or unloaded and when the calendar unmounts. A
+custom `persistence` adapter is never batched — its `save` is called
+synchronously, once per commit.
+
+```tsx
+import { localStorageAdapter } from "@/components/kloq";
+
+// a fixed key, whatever the `storage` prefix is
+<Kloq persistence={localStorageAdapter("myapp:calendar")} />
+```
+
+Every failure path degrades to the seeds: corrupted JSON, private mode, quota.
+Writes that fail are non-fatal — the change still applies in memory.
+
+## Versioned payloads
+
+The payload version lives in the data, not the key. `readPayload` accepts the
+current `{ v: 2, events }` shape and a bare array (the v1 format), and returns
+`null` for anything else — corrupt JSON, a future version written by a newer
+build — so the caller keeps its seeds rather than rendering nonsense. A v1
+payload had no dates, only week-relative offsets, so `migrateV1` maps it onto
+the Monday-start week containing the migration date and the result is written
+back as v2 immediately — the reinterpret happens once, not sliding forward a
+week at a time.
+
+One guard worth knowing about: when a *non-empty* payload survives validation
+with nothing left, `readPayload` returns `null` instead of `[]`. "We couldn't
+read any of your data" is not the same as "you have no data" — returning an
+empty array would render a blank calendar that then saves itself over the
+original on the next commit. A genuinely emptied calendar round-trips fine.
+
+<TypeTable
+  label="export"
+  type={{
+    "localStorageAdapter(key?)": { type: "(key?: string) => PersistenceAdapter", description: "The default adapter. Omit `key` to follow the `storage` prefix." },
+    "STORAGE_KEY": { type: "\"kloq:events:v2\"", description: "Where the default adapter writes under the default prefix." },
+    "eventsStorageKey(prefix?)": { type: "(prefix?: string) => string", description: "The events key for a prefix; the current one when omitted." },
+    "PAYLOAD_VERSION / PayloadV2": { type: "2", description: "The versioned envelope: `{ v: 2, events }`." },
+    "readPayload(raw)": { type: "ReadResult | null", description: "Reads any known version; `migrated: true` asks the caller to write v2 back." },
+    "migrateV1(raw, now?)": { type: "CalEvent[]", description: "The lossy-but-deliberate v1 mapping onto the current week." },
+    "isV2Event(x)": { type: "x is CalEvent", description: "Per-event validation — id present, both instants parseable, all-day instants date-only." },
+    "buildSeedEvents(now?) / SEED_EVENTS": { type: "CalEvent[]", description: "The sample week, anchored on the week containing today." },
+    "newEventId()": { type: "() => string", description: "The id generator the built-in create paths use." },
+  }}
+/>
+
+## An adapter is not a sync engine
+
+An adapter is deliberately dumb — full-array in, full-array out. That is
+exactly right for localStorage, an ephemeral demo, or a single-user document.
+For a real backend you usually want the change-level seam instead: `onCommit`
+hands you each committed change with enough context to make an API call and
+reverts the UI if you reject it. The two compose — the next page is about that
+seam.

@@ -17,6 +17,7 @@ import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
+import { planGate } from "@/lib/billing";
 import { requireOrgPermission } from "@/lib/session";
 import { discoverOidcEndpoints, httpsUrl, samlConfigFrom } from "@/lib/sso";
 
@@ -53,6 +54,8 @@ export async function saveSsoProviderAction(
     }
 
     const existing = await getOrganizationSsoProvider({ organizationId: organization.id });
+    // A configured provider keeps working whatever the plan; setting one up needs SSO in it.
+    if (!existing) await planGate().requireFeature(organization.id, "sso");
     if (existing && existing.type !== type) {
       throw new ActionError("Remove the current provider before switching protocols.");
     }

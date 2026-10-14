@@ -1,0 +1,41 @@
+{
+  "name": "@coss/billing",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./catalog": "./src/catalog/index.ts",
+    "./schemas": "./src/schemas.ts",
+    "./engine": "./src/engine/index.ts",
+    "./money": "./src/money.ts",
+    "./metering": "./src/metering.ts",
+    "./testing": "./src/testing.ts",
+    "./env": "./src/env.ts",
+    "./runtime": "./src/runtime.ts",
+    "./stripe": "./src/providers/stripe.ts",
+    "./gate": "./src/gate.ts",
+    "./wire": "./src/wire.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun --env-file=../../.env test",
+    "db:seed": "bun --env-file=../../.env scripts/seed.ts",
+    "close-period": "bun --env-file=../../.env scripts/close-period.ts"
+  },
+  "dependencies": {
+    "@coss/db": "workspace:*",
+    "@coss/retention": "workspace:*",
+    "@coss/versioning": "workspace:*",
+    "@coss/webhooks": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "stripe": "22.6.2",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@coss/tenancy": "workspace:*",
+    "@coss/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

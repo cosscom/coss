@@ -2,7 +2,6 @@
 
 import "./global.css";
 import { Button } from "@coss/ui/components/button";
-import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 /** Replaces the root layout when it throws while rendering; reports the error to Sentry. */
@@ -14,7 +13,10 @@ export default function GlobalError({
   retry: () => void;
 }) {
   useEffect(() => {
-    Sentry.captureException(error);
+    // The SDK's own chunk (instrumentation-client.ts); a no-op while monitoring is off.
+    void import("../lib/monitoring-browser").then(({ captureException }) =>
+      captureException(error),
+    );
   }, [error]);
 
   return (

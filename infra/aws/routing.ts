@@ -1,10 +1,27 @@
 /**
  * coss.com's edge routing, derived from ZONE_ROUTES (@coss/auth/slugs) so a new site path can't
- * be missed: ALB listener rules pick the app, CloudFront behaviours only decide caching.
+ * be missed: ALB listener rules pick the app, CloudFront behaviours decide caching and send the
+ * coss ui repository's zones to their own origins (they run outside AWS, which an ALB can't
+ * forward to).
  */
 import { SITE_ASSET_PREFIX, ZONE_ROUTES, type ZoneRoute } from "@coss/auth/slugs";
 
-export type TargetGroup = "web" | "site" | "api" | "ui" | "portal";
+export type TargetGroup = "web" | "site" | "api";
+
+/**
+ * CloudFront origins of the coss.com distribution: the ALB (every app in ECS), and one per zone
+ * of the coss ui repository (Vercel projects serving their base path, `/ui` and `/origin`; their
+ * hosts are set at provisioning).
+ */
+export type ExternalZone = "ui" | "origin";
+export type Origin = "alb" | ExternalZone;
+export const EXTERNAL_ZONES: readonly ExternalZone[] = ["ui", "origin"];
+
+/**
+ * External origins are addressed by their own hostname (the Vercel project's production domain),
+ * so the viewer's `Host` (coss.com) must not be forwarded to them; the ALB gets everything.
+ */
+export const EXTERNAL_ORIGIN_REQUEST_POLICY = "Managed-AllViewerExceptHostHeader";
 
 /** The header CloudFront adds to every origin request; the ALB forwards nothing without it. */
 export const ORIGIN_VERIFY_HEADER = "X-Origin-Verify";
@@ -18,18 +35,14 @@ export const DASHBOARD_HOST = "coss.com";
 export const API_HOST = "api.coss.com";
 
 /**
- * The Hooks portal's host: a registrable domain of its own (not under coss.com), so nothing it runs
- * is same-site with the dashboard. A placeholder until the domain is registered (README.md).
+ * Tracking links live on their own domain, `cosslinks.com` (a self-serve Cloudflare account
+ * separate from coss.com's), so a sender's abuse flagged by URL blocklists never lands on
+ * coss.com. This host is both the default tracking URL (`TRACKING_PUBLIC_URL`) and the Cloudflare
+ * for SaaS fallback origin customers CNAME their tracking domains (e.g. `links.acme.com`) to: a
+ * proxied record pointing at the ALB, which gets every request with the caller's hostname as
+ * `Host`. The default for `TRACKING_CNAME_TARGET`.
  */
-export const PORTAL_HOST = "<portal-domain>";
-
-/**
- * Custom tracking domains (Cloudflare for SaaS): customers CNAME e.g. `links.acme.com` to this
- * fallback origin (a proxied record in the coss.com zone, pointing at the ALB), and Cloudflare
- * forwards their requests to the ALB with the customer's hostname as `Host`. The default for
- * `TRACKING_CNAME_TARGET`.
- */
-export const TRACKING_HOST = "track.coss.com";
+export const TRACKING_HOST = "track.cosslinks.com";
 /** Added to every request by a Cloudflare request header transform rule (its own secret). */
 export const TRACKING_ORIGIN_VERIFY_HEADER = "X-Tracking-Origin-Verify";
 export const TRACKING_ORIGIN_VERIFY_PLACEHOLDER = "<tracking-origin-verify-secret>";
@@ -90,27 +103,21 @@ export function albListenerRules(): ListenerRule[] {
       ],
     },
   ];
-  // The portal's own domain (its own CloudFront distribution, same origin header).
-  rules.push({
-    targetGroup: "portal",
-    conditions: [{ Field: "host-header", HostHeaderConfig: { Values: [PORTAL_HOST] } }, verified],
-  });
-  for (const zone of ["site", "ui"] as const) {
-    const patterns = (ZONE_ROUTES as readonly ZoneRoute[])
-      .filter((route) => route.zone === zone)
-      .flatMap(albPathPatterns);
-    for (let index = 0; index < patterns.length; index += PATHS_PER_RULE) {
-      rules.push({
-        targetGroup: zone,
-        conditions: [
-          {
-            Field: "path-pattern",
-            PathPatternConfig: { Values: patterns.slice(index, index + PATHS_PER_RULE) },
-          },
-          verified,
-        ],
-      });
-    }
+  // External zones never reach the ALB: CloudFront sends them to their own origins.
+  const sitePatterns = (ZONE_ROUTES as readonly ZoneRoute[])
+    .filter((route) => route.zone === "site")
+    .flatMap(albPathPatterns);
+  for (let index = 0; index < sitePatterns.length; index += PATHS_PER_RULE) {
+    rules.push({
+      targetGroup: "site",
+      conditions: [
+        {
+          Field: "path-pattern",
+          PathPatternConfig: { Values: sitePatterns.slice(index, index + PATHS_PER_RULE) },
+        },
+        verified,
+      ],
+    });
   }
   rules.push({
     targetGroup: "web",
@@ -126,6 +133,7 @@ export function albListenerRules(): ListenerRule[] {
 export type CacheBehaviour = {
   /** CloudFront path pattern. */
   pathPattern: string;
+  origin: Origin;
   /** "origin": honour the origin's Cache-Control (`coss-origin-cache-control` cache policy). */
   cache: "origin";
   reason: string;
@@ -140,8 +148,10 @@ export function cossComCacheBehaviours(): CacheBehaviour[] {
   const behaviours: CacheBehaviour[] = [
     {
       pathPattern: "/_next/static/*",
+      origin: "alb",
       cache: "origin",
-      reason: "The dashboard's hashed, immutable assets (also keeps old chunks during deploys).",
+      reason:
+        "The dashboard's hashed, immutable assets (and old chunks for tabs opened before a deploy).",
     },
   ];
   for (const route of ZONE_ROUTES as readonly ZoneRoute[]) {
@@ -155,12 +165,30 @@ export function cossComCacheBehaviours(): CacheBehaviour[] {
     for (const pathPattern of patterns) {
       behaviours.push({
         pathPattern,
+        origin: route.zone === "site" ? "alb" : route.zone,
         cache: "origin",
         reason: `${route.zone} zone (${route.path})`,
       });
     }
   }
   return behaviours;
+}
+
+/** Cached paths whose names are content hashes: a new build never reuses one. */
+const IMMUTABLE_PATTERNS = new Set(["/_next/static/*", `${SITE_ASSET_PREFIX}/*`]);
+
+/**
+ * What the Deploy workflow invalidates on the coss.com distribution after a rollout: our own
+ * apps' cached paths (docs pages are cached for a year). Never the hashed asset folders, whose
+ * cached old chunks keep tabs opened before the deploy working (the new tasks don't have them),
+ * nor the external zones, which deploy on their own.
+ */
+export function deployInvalidationPaths(): string[] {
+  return cossComCacheBehaviours()
+    .filter(
+      (behaviour) => behaviour.origin === "alb" && !IMMUTABLE_PATTERNS.has(behaviour.pathPattern),
+    )
+    .map((behaviour) => behaviour.pathPattern);
 }
 
 /**

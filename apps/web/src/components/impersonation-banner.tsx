@@ -3,7 +3,7 @@
 import { Button } from "@coss/ui/components/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { authClient } from "@/lib/auth-client";
+import { postAuth } from "@/lib/auth-post";
 
 export function ImpersonationBanner({ email }: { email: string }) {
   const router = useRouter();
@@ -20,9 +20,9 @@ export function ImpersonationBanner({ email }: { email: string }) {
         onClick={async () => {
           setPending(true);
           setError(null);
-          const { error } = await authClient.admin.stopImpersonating();
+          const { error } = await postAuth("/admin/stop-impersonating");
           if (error) {
-            setError(error.message ?? "Could not stop impersonating.");
+            setError(error);
             setPending(false);
             return;
           }

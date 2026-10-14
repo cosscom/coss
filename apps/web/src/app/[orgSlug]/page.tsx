@@ -51,7 +51,7 @@ export default async function ProjectsPage({ params }: PageProps<"/[orgSlug]">) 
                     <TableCell>
                       <Link
                         className="font-medium underline-offset-4 hover:underline"
-                        href={`/${organization.slug}/projects/${project.slug}`}
+                        href={`/${organization.slug}/projects/${project.slug}/development`}
                       >
                         {project.name}
                       </Link>

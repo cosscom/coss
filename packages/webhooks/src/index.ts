@@ -32,6 +32,7 @@ export {
   type WebhookDeliveryWithPayload,
   type WebhookEndpointRow,
   type WebhookManagementDeps,
+  type WebhookPlanLimits,
 } from "./endpoints.ts";
 export { DISABLE_FAILING_ENDPOINT_AFTER_MS } from "./engine/index.ts";
 export { WebhookError, type WebhookErrorCode } from "./errors.ts";

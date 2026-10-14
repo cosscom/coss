@@ -30,7 +30,9 @@ export {
   type OverrideActor,
   type OverrideRules,
   type OverrideSource,
+  type PlanRuleSource,
   setRateLimitOverride,
+  withPlanRules,
 } from "./overrides.ts";
 export { createRateLimitRuntime, type RateLimitRuntime } from "./runtime.ts";
 export {

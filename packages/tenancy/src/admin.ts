@@ -27,10 +27,15 @@ const {
 } = schema;
 
 /** Grants the platform admin role; used by the seed and `admin:create`. The user must exist. */
-export async function promoteToAdmin(email: string): Promise<{ id: string; email: string }> {
+export async function promoteToAdmin(
+  email: string,
+  options: { verifyEmail?: boolean } = {},
+): Promise<{ id: string; email: string }> {
   const [row] = await db
     .update(user)
-    .set({ role: "admin" })
+    // verifyEmail: a new stage's first admin can't receive the verification email until COSS's
+    // own organization (which they create) sends mail; the operator vouches for the address.
+    .set({ role: "admin", ...(options.verifyEmail ? { emailVerified: true } : {}) })
     .where(sql`lower(${user.email}) = lower(${email.trim()})`)
     .returning({ id: user.id, email: user.email });
   if (!row) throw new TenancyError("not_found", `No user with email "${email}".`);
@@ -64,6 +69,20 @@ export const ADMIN_ACTIONS = [
   // Recorded by `changeRateLimitOverride` (@coss/ratelimit).
   "rate_limit.override_set",
   "rate_limit.override_reset",
+  // Recorded by `@coss/billing` (`BillingAdminAction`).
+  "billing.account_updated",
+  "billing.contract_created",
+  "billing.contract_canceled",
+  "billing.credit_granted",
+  "billing.credit_voided",
+  "billing.invoice_created",
+  "billing.invoice_voided",
+  "billing.invoice_paid",
+  "billing.invoice_uncollectible",
+  "billing.invoice_resynced",
+  "billing.credit_note_created",
+  "billing.hold_placed",
+  "billing.hold_lifted",
 ] as const;
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 

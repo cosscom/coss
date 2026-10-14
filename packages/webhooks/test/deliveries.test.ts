@@ -639,6 +639,21 @@ describe("endpoint health", () => {
     return now;
   }
 
+  test("an endpoint switched off without a reason (code from before the column) reads as manual", async () => {
+    const tenant = await createTestTenant();
+    const { endpoint } = await endpointFor(tenant, "https://example.com/hook");
+    // What the code running during a deploy's migration does: `enabled` alone.
+    await db
+      .update(schema.webhookEndpoint)
+      .set({ enabled: false })
+      .where(eq(schema.webhookEndpoint.id, endpoint.id));
+    const [row] = await endpointRow(endpoint.id);
+    expect(toWebhookEndpointObject(row as NonNullable<typeof row>)).toMatchObject({
+      enabled: false,
+      disabled_reason: "manual",
+    });
+  });
+
   test("tracks a failure streak and disables an endpoint failing for too long", async () => {
     const tenant = await createTestTenant();
     let status = 500;

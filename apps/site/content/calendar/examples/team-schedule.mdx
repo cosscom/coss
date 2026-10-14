@@ -1,0 +1,42 @@
+---
+title: Team calendar
+description: Two accounts, five calendars, colour inherited from the calendar — with a calendar list that toggles each one.
+---
+
+One person's week across a personal Google account and a work Microsoft 365
+account. Every event is tinted by the calendar it belongs to, not by a colour
+of its own. Untick a calendar in the list and its events leave the grid; tick
+"Who is out" to see the read-only absence feed. Open the roadmap review — you
+are invited, so the panel asks for your RSVP.
+
+<Example name="team-schedule" />
+
+## How it works
+
+- `registerCalendarAccount(account, ...calendars)` puts an account and its
+  calendars into the source registry. The example calls it from an effect and
+  returns the unregister, so leaving the page cleans up.
+- Events carry a `calendarId` and no `color`. Absence means inherit:
+  `resolveEventColor` draws each one in its calendar's colour, so moving an
+  event between calendars in the panel retints it ([Events](/kloq/docs/events)).
+- `<CalendarList />` reads the registry when given no props. Each row is a
+  checkbox that calls `setCalendarVisible`; the calendar filters through
+  `filterVisibleEvents` on every render. `useCalendarSources()` in the bar
+  above the list is the same subscription, used for the count.
+- `currentUserEmail` tells the calendar who "you" are. Where that address is
+  on the invite, the event panel grows an RSVP control and conflict detection
+  asks "does this clash for me".
+- A `readOnly` calendar ("Who is out") is a lock in the list and a calendar the
+  picker never offers for new events; its events are `readOnly` too.
+- `defaultEvents` with `persistence={false}` is the uncontrolled, ephemeral
+  store: drags work, ⌘Z works, nothing is written anywhere
+  ([Persistence](/kloq/docs/persistence)).
+
+## Take it further
+
+- Register what your OAuth flow actually returned — the registry is the only
+  seam; kloq ships no provider code.
+- Give the list `accountActions` for the conferencing picker and
+  Disconnect, or render the full [Settings dialog](/kloq/docs/settings).
+- Pass `showDeclinedEvents={false}` and decline the release go/no-go: it
+  leaves the grid but stays findable in ⌘K.

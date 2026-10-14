@@ -1,60 +1,17 @@
 /**
  * Prints the deployment spec as JSON for whoever provisions AWS:
  *   bun run --cwd infra aws:spec
- * Placeholders like <origin-verify-secret> are filled in at provisioning time.
+ * or rewrites the copy Terraform reads (a test fails when it is stale):
+ *   bun run --cwd infra aws:spec:write
  */
-import {
-  ALB_IDLE_TIMEOUT_SECONDS,
-  albListenerRules,
-  cossComCacheBehaviours,
-  NEXT_CACHE_KEY_HEADERS,
-  ORIGIN_VERIFY_HEADER,
-  ORIGIN_VERIFY_PLACEHOLDER,
-  PORTAL_HOST,
-} from "./routing.ts";
-import { ONE_OFF_TASKS, SERVICES } from "./services.ts";
+import { writeFileSync } from "node:fs";
+import { awsSpecJson } from "./spec.ts";
 
-const spec = {
-  services: SERVICES,
-  oneOffTasks: ONE_OFF_TASKS,
-  alb: {
-    idleTimeoutSeconds: ALB_IDLE_TIMEOUT_SECONDS,
-    httpsListener: {
-      defaultAction: { Type: "fixed-response", FixedResponseConfig: { StatusCode: "403" } },
-      rules: albListenerRules(),
-    },
-  },
-  cloudFront: {
-    originCustomHeader: {
-      HeaderName: ORIGIN_VERIFY_HEADER,
-      HeaderValue: ORIGIN_VERIFY_PLACEHOLDER,
-    },
-    originRequestPolicy: "Managed-AllViewer",
-    cachePolicies: {
-      default: "Managed-CachingDisabled",
-      "coss-origin-cache-control": {
-        MinTTL: 0,
-        DefaultTTL: 0,
-        MaxTTL: 31_536_000,
-        headers: NEXT_CACHE_KEY_HEADERS,
-        queryStrings: "all",
-        cookies: "none",
-        enableAcceptEncodingGzip: true,
-        enableAcceptEncodingBrotli: true,
-      },
-    },
-    distributions: {
-      "coss.com": { cachedBehaviours: cossComCacheBehaviours() },
-      "api.coss.com": { cachedBehaviours: [] },
-      // The Hooks portal: only its hashed assets are cached (pages carry per-session headers).
-      [PORTAL_HOST]: {
-        cachedBehaviours: [
-          { pathPattern: "/_next/static/*", cache: "origin", reason: "Hashed, immutable assets." },
-        ],
-      },
-    },
-    invalidateAfterSiteDeploy: ["/*"],
-  },
-};
-
-console.log(JSON.stringify(spec, null, 2));
+const out = process.argv.indexOf("--out");
+if (out === -1) {
+  process.stdout.write(awsSpecJson());
+} else {
+  const file = process.argv[out + 1];
+  if (!file) throw new Error("--out needs a file");
+  writeFileSync(file, awsSpecJson());
+}

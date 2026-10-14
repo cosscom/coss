@@ -28,6 +28,19 @@ const ACTION_LABELS: Record<string, { label: string; variant: "error" | "success
   "api_key.revoke": { label: "Revoked API key", variant: "error" },
   "rate_limit.override_set": { label: "Changed a rate limit", variant: "info" },
   "rate_limit.override_reset": { label: "Reset a rate limit", variant: "info" },
+  "billing.account_updated": { label: "Changed billing settings", variant: "info" },
+  "billing.contract_created": { label: "Created a contract", variant: "info" },
+  "billing.contract_canceled": { label: "Ended a contract", variant: "error" },
+  "billing.credit_granted": { label: "Granted credit", variant: "success" },
+  "billing.credit_voided": { label: "Voided credit", variant: "error" },
+  "billing.invoice_created": { label: "Created an invoice", variant: "info" },
+  "billing.invoice_voided": { label: "Voided an invoice", variant: "error" },
+  "billing.invoice_paid": { label: "Recorded a payment", variant: "success" },
+  "billing.invoice_uncollectible": { label: "Wrote off an invoice", variant: "error" },
+  "billing.invoice_resynced": { label: "Retried an invoice", variant: "info" },
+  "billing.credit_note_created": { label: "Issued a credit note", variant: "info" },
+  "billing.hold_placed": { label: "Paused live sending (billing)", variant: "error" },
+  "billing.hold_lifted": { label: "Resumed live sending (billing)", variant: "success" },
 };
 
 function targetHref(event: AdminAuditEvent): string | null {
@@ -48,6 +61,8 @@ function describe(event: AdminAuditEvent): string {
   if (typeof meta.name === "string") parts.push(`“${meta.name}”`);
   if (typeof meta.start === "string") parts.push(`${meta.start}…`);
   if (typeof meta.bucket === "string") parts.push(meta.bucket + ruleChange(meta));
+  if (typeof meta.number === "string") parts.push(meta.number);
+  if (typeof meta.plan === "string") parts.push(meta.plan);
   return parts.join(" · ") || event.targetId;
 }
 

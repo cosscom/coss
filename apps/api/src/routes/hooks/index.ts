@@ -7,7 +7,7 @@ import { createHookEventTypeRoutes } from "./event-types.ts";
 import { createHookMessageRoutes } from "./messages.ts";
 
 /** Hooks (webhooks as a service): `/v1/hooks/*`. */
-export function createHookRoutes(deps: HookManagementDeps & { portalUrl: string }) {
+export function createHookRoutes(deps: HookManagementDeps & { portalUrl: string | null }) {
   const router = new OpenAPIHono<AppEnv>();
   router.route("/", createHookEventTypeRoutes());
   router.route("/", createHookApplicationRoutes());

@@ -34,7 +34,7 @@ import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
-import { commonErrors, errorDoc, jsonDoc } from "./docs.ts";
+import { billingErrorDoc, commonErrors, errorDoc, jsonDoc } from "./docs.ts";
 
 const DrainIdParams = z.object({
   id: z.string().meta({
@@ -92,6 +92,9 @@ export const createLogDrainRoute = createRoute({
     200: jsonDoc("The drain and its signing secret.", LogDrainWithSecret),
     ...bodyErrors,
     ...commonErrors,
+    402: billingErrorDoc(
+      "The organization's plan doesn't include log drains (`plan_feature_unavailable`)",
+    ),
     422: errorDoc(
       "The body failed validation (`validation_error`), the URL is not a usable https:// URL " +
         "(`invalid_url`), or the environment already has " +
@@ -160,6 +163,9 @@ export const updateLogDrainRoute = createRoute({
     200: jsonDoc("The updated drain.", LogDrainObject),
     ...bodyErrors,
     ...commonErrors,
+    402: billingErrorDoc(
+      "Re-enabling the drain needs a plan with log drains (`plan_feature_unavailable`)",
+    ),
     404: drainNotFound,
     422: errorDoc(
       "The body failed validation (`validation_error`) or the URL is not a usable https:// URL " +

@@ -100,7 +100,7 @@ resets) are printed to the dashboard's server console in development.
   own redirect (`API_PUBLIC_URL/t/…`) when it hands the email to the provider; the stored email keeps the original
   HTML. Opens and clicks show up as `email.opened` / `email.clicked` events, webhooks, counts on the email
   (`tracking`) and per-link click counts. Independent of SES's own tracking, which stays off.
-  A verified domain can have a **custom tracking domain** (e.g. `links.acme.com`, a CNAME to `track.coss.com`):
+  A verified domain can have a **custom tracking domain** (e.g. `links.acme.com`, a CNAME to `track.cosslinks.com`):
   emails from it are tracked through that hostname while it is active. COSS registers it as a Cloudflare for SaaS
   custom hostname (`TRACKING_DOMAIN_PROVIDER=cloudflare`), which issues its certificate and proxies `/t/*` to the API.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
@@ -131,7 +131,8 @@ resets) are printed to the dashboard's server console in development.
   250th, 500th and 1000th, then 2% at random. At ≥ 0.95 the email fails with `content_rejected` and the
   organization is suspended (the reputation guard's `content_screening` trigger); at ≥ 0.70 it is sent but the
   organization is warned until the flag ages out of the window. In enforcement mode, classifier errors and
-  timeouts (3 s) hold the email as `content_screening_unavailable`; the sample also moves to the next one. COSS's
+  timeouts (3 s) hold the email: it is tried (and screened) again every minute, and fails as
+  `content_screening_unavailable` only if screening is still down an hour after it was due. COSS's
   own notification organization always sends so an AI outage cannot stop account recovery. Admins see every verdict on the organization's reputation page and can
   tune thresholds and sampling, switch to shadow mode, or turn screening off per organization (e.g. for
   phishing-simulation senders). Locally `SCREENING_CLASSIFIER=fake` flags content containing `[coss-test:phishing]`
@@ -297,8 +298,9 @@ or none, is denied); COSS always sends with the organization's tenant, which SES
 
 1. Create an AI Gateway API key in the Vercel team that will pay for screening. Requests ask for zero data
    retention (the content is customer email), which Vercel offers on Pro and Enterprise teams. In enforced
-   mode, a failed request records an `error` verdict and holds the email with
-   `content_screening_unavailable`; shadow mode records the failure and sends the email.
+   mode, a failed request records an `error` verdict and holds the email for a retry a minute later (it fails
+   with `content_screening_unavailable` after an hour of outage); shadow mode records the failure and sends the
+   email.
 2. Set `SCREENING_CLASSIFIER=ai` and `AI_GATEWAY_API_KEY` for the worker (only the worker screens).
    `SCREENING_MODEL` defaults to `typesafe-ai/jev`; any Gateway decision model id works.
 3. Cost: one screening is about 2k input tokens (bodies are truncated to 8,000 characters) — about $0.0001 with
@@ -326,9 +328,35 @@ A warning is logged in either case.
    fallback subject instead of trusting the load balancer's socket address; email-address and token/key
    buckets still apply where available.
 
+## Billing on Stripe
+
+COSS computes every invoice itself (`@coss/billing`: plans, contracts, usage, credits); Stripe only stores
+customers and payment methods, issues the invoices COSS pushes and collects them. Without Stripe
+(`BILLING_PROVIDER=fake`, the default) every charge succeeds and nothing leaves COSS.
+
+1. Create a restricted key with write access to Customers, Invoices, Invoice Items, Credit Notes, Checkout
+   Sessions, Customer Portal and Setup Intents, and read access to Payment Methods and Invoice Payments. Set it as
+   `STRIPE_SECRET_KEY` for the dashboard and the worker, with `BILLING_PROVIDER=stripe`.
+2. Add a webhook endpoint `https://coss.com/api/billing/webhook` for `invoice.paid`, `invoice.payment_succeeded`,
+   `invoice.payment_failed`, `invoice.payment_action_required`, `invoice.voided`, `invoice.marked_uncollectible`,
+   `checkout.session.completed`, `customer.updated` and `charge.dispute.created`; set its signing secret as
+   `STRIPE_WEBHOOK_SECRET` (dashboard only). Locally: `stripe listen --forward-to localhost:3000/api/billing/webhook`.
+3. Customer Portal (Settings → Billing → Customer portal): allow updating payment methods, the billing address
+   and tax IDs; turn off everything about subscriptions and invoices' cancellation (COSS has no Stripe
+   subscriptions).
+4. Turn off Stripe's automatic collection features that would duplicate COSS's: Smart Retries and failed-payment
+   emails for invoices (COSS retries charges and emails billing contacts itself). Invoice and receipt emails from
+   Stripe are fine to keep.
+5. Enable the payment method types you offer (cards; ACH Direct Debit, SEPA and Bacs Direct Debit for accounts that
+   need them; bank transfers for invoices with payment terms). Each account's allowed and required types are set in
+   the admin console. Stripe Tax is used only for accounts set to `stripe_automatic` tax.
+
+Sales deals, credits and invoice adjustments are made in the admin console (`/admin/organizations/<id>/billing`);
+deals invoiced off-Stripe use an account's `manual` provider (COSS emails the invoice; an admin records payments).
+
 ## Error monitoring on Sentry
 
-Errors and traces go to the Sentry organization `coss` (`@coss/observability`). Create three projects —
+Errors and traces go to the Sentry organization `cosscom` (`@coss/observability`, EU region). Create three projects —
 `web` (Next.js), `api` (Bun) and `worker` (Bun) — and set each service's `SENTRY_DSN` to its project's DSN
 (Project settings → Client Keys), plus `SENTRY_ENVIRONMENT` (the stage) and optionally
 `SENTRY_TRACES_SAMPLE_RATE` (default 0.1). Without a DSN nothing is reported, so local development and CI
@@ -351,131 +379,166 @@ send nothing unless you set one.
 
 ## Deploying to AWS
 
-Everything runs on AWS; nothing is provisioned yet. The repository holds what provisioning needs: one
-Dockerfile per app (`apps/{web,site,portal,api,worker}/Dockerfile`, built from the repository root) and a
-machine-readable spec in [`infra/`](./infra/AGENTS.md): `bun run --cwd infra aws:spec` prints every service's
-port, health check, stop timeout, size, task-role policy and env vars, the ALB listener rules and the
-CloudFront behaviours as JSON. This section is the runbook around it.
+Production runs in AWS account `294417174674`, region **us-east-2** (the organization's guardrails allow no other
+region for regional services). The repository holds everything it takes: one Dockerfile per app
+(`apps/{web,site,api,worker}/Dockerfile`, built from the repository root), a machine-readable spec in
+[`infra/`](./infra/AGENTS.md) (`bun run --cwd infra aws:spec` prints every service's port, health check, stop
+timeout, size, task-role policy and env vars, the ALB listener rules and the CloudFront behaviours as JSON), the
+Terraform that provisions it from that spec (`infra/terraform`) and the deploy workflow
+(`.github/workflows/deploy.yml`). This section is the runbook around them.
 
 ```
-viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─┬─▶ web    (Next, :3000) ─┐
-          coss.com, api.coss.com                              ├─▶ site   (Next, :3002)  ├─▶ RDS Postgres
-                                                              ├─▶ api    (Bun,  :3001) ─┤   SES · SNS · SQS
-          <portal domain> (Hooks portal)                      ├─▶ portal (Next, :3003) ─┤   EventBridge
-                                                              └─▶ ui     (coss ui app)  │   ElastiCache
-                                                     worker (Bun, no load balancer) ────┘
+Cloudflare DNS (coss.com zone, DNS only)
+  coss.com, api.coss.com ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─┬─▶ web    (Next, :3000) ─┐
+                              │                                                 ├─▶ site   (Next, :3002)  ├─▶ RDS Postgres
+                              ├─ /ui, /ui/*         ─▶ coss ui   (Vercel)       └─▶ api    (Bun,  :3001) ─┤   Valkey
+                              └─ /origin, /origin/* ─▶ Origin UI (Vercel)    worker (Bun, no load balancer)┘   SES · SNS · SQS
+  Cloudflare DNS (cosslinks.com zone, self-serve account, proxied)
+  track.cosslinks.com + customer tracking domains (Cloudflare for SaaS) ──(X-Tracking-Origin-Verify)──▶ ALB /t/* ─▶ api
 ```
 
-### Resources
+### Resources (`infra/terraform`)
 
-- **Network:** a VPC over 2+ AZs; public subnets for the ALB and the NAT gateway, private subnets for tasks and
-  RDS. Security groups: ALB inbound 443 only from the managed prefix list
-  `com.amazonaws.global.cloudfront.origin-facing`; each service's tasks inbound only from the ALB on their port;
-  RDS 5432 only from the web, portal, api and worker tasks; ElastiCache Serverless 6379 only from web, portal, api
-  and worker (the worker rate-limits Hooks deliveries).
-- **NAT gateway (required):** the worker delivers customer webhooks to arbitrary public URLs and ports, and
-  domain verification in web, api and worker queries public DNS (1.1.1.1 / 8.8.8.8, port 53) directly. The site
-  needs no egress. **Cost trap:** NAT charges per GB processed, so keep AWS traffic off it with VPC endpoints:
-  interface endpoints for `sqs`, `secretsmanager`, `ecr.api`, `ecr.dkr`, `logs` (and the SES API if
-  `aws ec2 describe-vpc-endpoint-services` lists one for your region), plus the free `s3` gateway endpoint (ECR
-  image layers).
-- **ECS on Fargate (arm64):** one cluster, five services (`web`, `site`, `portal`, `api`, `worker`), one ECR repository per
-  image, CloudWatch log groups (`awslogs`). Task sizes, minimum counts and `stopTimeout` (worker 120 s) are in
-  `infra/aws/services.ts`.
-- **ALB:** HTTPS listener with an ACM certificate (in the stack's region) for `coss.com` and `api.coss.com`
-  (CloudFront forwards the viewer `Host`, and validates the origin certificate against it). Default action: fixed
-  403. Rules from the spec, which are generated from `ZONE_ROUTES` in `packages/auth/src/slugs.ts`:
+- **Network:** a VPC (`10.40.0.0/16`) over us-east-2a/b; public subnets for the ALB and one NAT gateway per AZ,
+  private subnets for tasks, RDS and Valkey. Security groups: the ALB takes 443 only from the managed prefix list
+  `com.amazonaws.global.cloudfront.origin-facing` (its own group: the list weighs ~55 rules) and from Cloudflare's
+  IPv4 ranges (tracking domains); each service's tasks only from the ALB on their port; RDS 5432 only from web, api
+  and worker; Valkey 6379 only from web and api.
+- **NAT gateways (required):** the worker delivers customer webhooks to arbitrary public URLs and ports, and domain
+  verification in web, api and worker queries public DNS (1.1.1.1 / 8.8.8.8, port 53) directly. AWS traffic stays
+  off them through VPC endpoints: interface endpoints for `sqs`, `secretsmanager`, `ecr.api`, `ecr.dkr`, `logs` and
+  `email` (the SES API), plus the free `s3` gateway endpoint (ECR image layers).
+- **ECS on Fargate (arm64):** cluster `coss-production`, services `web`, `site`, `api`, `worker`, task definitions
+  built from `spec.json` (sizes, minimum counts, `stopTimeout`, env names and kinds; plain values from
+  `production.tfvars`, secrets from the stage secret), CPU target-tracking autoscaling, deployment circuit breaker
+  with rollback, ECS Exec. ECR repositories `coss/<service>` (immutable commit tags; `buildcache` is the BuildKit
+  cache). Logs in `/coss/production/<service>` (30 days).
+- **ALB:** HTTPS listener with an ACM certificate (us-east-2) for `coss.com` and `api.coss.com` (CloudFront forwards
+  the viewer `Host`, and validates the origin certificate against it). Default action: fixed 403. Rules exactly as
+  the spec prints them (generated from `ZONE_ROUTES` in `packages/auth/src/slugs.ts`):
 
-  | Priority | Conditions (all also require `X-Origin-Verify`) | Target group |
+  | Priority | Conditions | Target group |
   |---|---|---|
-  | 10 | host `api.coss.com` | api |
-  | 20 | `/t/*` with `X-Tracking-Origin-Verify` instead (customer tracking domains) | api |
-  | 30 | host `<portal domain>` (`PORTAL_HOST`) | portal |
-  | 40… | the site's paths: `/`, `/docs`, `/docs/*`, `/llms.txt`, `/llms-full.txt`, `/site-assets/*`, `/icon.svg`, `/favicon.ico`, `/robots.txt`, `/sitemap.xml`, `/.well-known/*` (3 per rule) | site |
-  | … | `/ui`, `/ui/*` | ui (separate app) |
-  | last | host `coss.com` (every other path: org slugs, `/dashboard`, `/api/auth/*`, `/_next/*`) | web |
+  | 10 | host `api.coss.com` + `X-Origin-Verify` | api |
+  | 20 | path `/t/*` + `X-Tracking-Origin-Verify` (any host: customer tracking domains through Cloudflare) | api |
+  | 30–80 | the site's paths (`/`, `/pricing`, `/docs*`, `/legal*`, `/llms*.txt`, `/site-assets/*`, root files, `/.well-known*`; 3 per rule) + `X-Origin-Verify` | site |
+  | 90 | host `coss.com` + `X-Origin-Verify` (every other path: org slugs, `/dashboard`, `/api/*`, `/_next/*`) | web |
 
   Target groups: health checks `/api/health` (web, site, portal) and `/health` (api), HTTP 200, no database access;
   deregistration delay 30 s. Keep the idle timeout at 60 s: the apps hold idle connections for 75 s
   (`KEEP_ALIVE_TIMEOUT`, Bun `idleTimeout`) so the ALB never reuses one they are closing.
-- **CloudFront + WAF:** two distributions with the ALB as their only origin (HTTPS only, custom header
-  `X-Origin-Verify: <secret>`), certificates from ACM in us-east-1, HTTP→HTTPS redirect, a response headers policy
-  that adds HSTS. Every behaviour uses the origin request policy `Managed-AllViewer` (all viewer headers including
-  `Host`, cookies and query strings).
-  - `coss.com`: default behaviour `Managed-CachingDisabled` (dashboard, auth, server actions, and the landing page,
-    since a path pattern can't match exactly `/`). The cached behaviours from the spec (`/_next/static/*`,
-    `/site-assets/*`, `/docs`, `/docs/*`, `/llms*.txt`, root files, `/.well-known/*`, `/ui*`) use a custom cache
-    policy that honours the origin's `Cache-Control`: min/default TTL 0, max 1 year, all query strings (`_rsc`),
-    no cookies, and the headers `RSC`, `Next-Router-Prefetch`, `Next-Router-State-Tree`,
-    `Next-Router-Segment-Prefetch` in the cache key. Docs pages are sent with `s-maxage=31536000`: **invalidate
-    `/*` after every site deploy.**
-  - `api.coss.com`: default behaviour only, never cached.
-  - WAF web ACLs (scope `CLOUDFRONT`): AWS managed rule groups (common, known bad inputs, IP reputation) plus a
-    rate-based rule until app-level rate limiting exists. Set the common rule set's `SizeRestrictions_BODY` to
-    count: API sends (HTML bodies) and dashboard requests routinely exceed its 8 KB limit.
-- **RDS Postgres 18:** private, encrypted, Multi-AZ for production. Apps connect with
+- **CloudFront + WAF:** two distributions, certificates from ACM in us-east-1, HTTP→HTTPS redirect, a response
+  headers policy that adds HSTS (2 years, subdomains, preload).
+  - `coss.com`: origins `alb` (HTTPS only, custom header `X-Origin-Verify: <secret>`, origin request policy
+    `Managed-AllViewer`, so `Host`, cookies and query strings reach the apps) and one per external zone of the coss
+    ui repository: `ui` → `coss-com-ui.vercel.app`, `origin` → `coss-com-origin.vercel.app` (Vercel projects serving
+    their base path; `Managed-AllViewerExceptHostHeader`, so Vercel sees its own hostname). Default behaviour
+    `Managed-CachingDisabled` (dashboard, auth, server actions, and the landing page, since a path pattern can't
+    match exactly `/`). The cached behaviours from the spec use the policy `coss-production-origin-cache-control`,
+    which honours the origin's `Cache-Control`: min/default TTL 0, max 1 year, all query strings (`_rsc`), no
+    cookies, and the headers `RSC`, `Next-Router-Prefetch`, `Next-Router-State-Tree`, `Next-Router-Segment-Prefetch`
+    in the cache key. Docs pages are sent with `s-maxage=31536000`: the deploy workflow invalidates the site's
+    cached paths after every rollout (`cloudFront.invalidateAfterDeploy` in the spec), never the hashed asset
+    folders, so tabs opened before a deploy can still load their old chunks.
+  - `api.coss.com`: the ALB only, never cached.
+  - WAF web ACLs (scope `CLOUDFRONT`): a per-IP rate rule (5,000 / 5 min on coss.com, 20,000 on the API; floods
+    only, the apps rate-limit precisely), AWS IP reputation, common and known-bad-inputs rule groups. Rules that
+    legitimate traffic trips are counted instead of blocking: `SizeRestrictions_BODY` (both), and on the API
+    `CrossSiteScripting_BODY` (sends carry whole HTML emails) and `NoUserAgent_HEADER` (some SDK runtimes).
+- **RDS Postgres 18:** `coss-production`, `db.t4g.medium`, Multi-AZ, encrypted, 14-day backups, deletion
+  protection, Performance Insights, `rds.force_ssl`. Apps connect with
   `?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem` (each image ships the RDS CA bundle
-  there). **Pool sizing:** every task opens up to `DATABASE_POOL_MAX` (default 10) app connections.
-  Each API task also opens one pg-boss metadata connection; each worker adds up to four pg-boss
-  connections and one LISTEN connection. Budget
-  `(max web + max api + max worker tasks) × DATABASE_POOL_MAX + max api tasks + 5 × max worker tasks`,
-  plus two connections for migrations and a few for operators. Keep the total below `max_connections` (`SHOW max_connections;` — on RDS it scales with instance memory, roughly
-  `memory / 9.5 MB`). Lower the pool size or add RDS Proxy before scaling task counts past that.
+  there). The master password is set through a write-only argument and never stored in the Terraform state.
+  **Pool sizing:** every task opens up to `DATABASE_POOL_MAX` (default 10) app connections. Each API task also opens
+  one pg-boss metadata connection; each worker adds up to four pg-boss connections and one LISTEN connection. Budget
+  `(max web + max api + max worker tasks) × DATABASE_POOL_MAX + max api tasks + 5 × max worker tasks`, plus two
+  connections for migrations and a few for operators (today ≈ 160 of ~410). Keep the total below `max_connections`
+  (`SHOW max_connections;` — on RDS it scales with instance memory, roughly `memory / 9.5 MB`). Lower the pool size
+  or add RDS Proxy before scaling task counts past that.
+- **ElastiCache Serverless (Valkey):** created by `valkey:bootstrap` (see
+  [Rate limits on ElastiCache Serverless for Valkey](#rate-limits-on-elasticache-serverless-for-valkey)) in the
+  private subnets with the `coss-production-valkey` security group.
 - **SES, SNS, SQS, EventBridge:** created by `ses:bootstrap` (see [Running on Amazon SES](#running-on-amazon-ses)),
   run as a one-off task (below).
-- **Route 53:** `coss.com` and `api.coss.com` alias records to their distributions.
-- **Hooks portal domain:** register a domain of its own for the portal (not a coss.com subdomain: it must not be
-  same-site with the dashboard) and set `PORTAL_HOST` in `infra/aws/routing.ts` to it. A third distribution
-  (`/_next/static/*` cached, everything else not; same origin header), its name on the ALB certificate, DNS to the
-  distribution, and `PORTAL_PUBLIC_URL=https://<portal domain>` on the api and web services.
-- **Custom tracking domains (Cloudflare for SaaS, on the coss.com zone):** enable Cloudflare for SaaS on the zone
-  and create the fallback origin `track.coss.com` as a **proxied** record pointing at the ALB's DNS name. Customer
-  tracking domains CNAME to it; COSS registers each as a custom hostname (HTTP certificate validation) through the
-  API with `CLOUDFLARE_API_TOKEN` (zone-scoped, SSL and Certificates: Edit) and `CLOUDFLARE_ZONE_ID`. Add a request
-  header transform rule that sets `X-Tracking-Origin-Verify: <secret>` on requests to custom hostnames: the ALB
-  forwards `/t/*` with that header to the api target group for any host (rule from the spec, `infra/aws/routing.ts`),
-  and nothing else. Allow Cloudflare's IP ranges (https://www.cloudflare.com/ips/) on the ALB's 443 next to the
-  CloudFront prefix list. SSL mode **Full**: Cloudflare connects with the customer's hostname as SNI, which the
-  ALB's certificate doesn't cover; the header secret is what proves a request came through Cloudflare. Cloudflare
-  bills custom hostnames beyond the plan's allowance.
+- **DNS (Cloudflare, zone `coss.com`):** `coss.com` and `api.coss.com` are DNS-only CNAMEs (flattened at the apex)
+  to their distributions; ACM validation CNAMEs; DKIM and MAIL FROM records of COSS's own sending domain.
+- **Tracking links (`cosslinks.com`, a self-serve Cloudflare account, not the coss.com zone):** every tracking
+  link points at a domain of its own, so a sender's abuse flagged by URL blocklists never lands on coss.com.
+  `track.cosslinks.com` is a **proxied** record pointing at the ALB's DNS name (`terraform output alb_dns_name`):
+  it is the default tracking origin (`TRACKING_PUBLIC_URL`, api + worker) and the Cloudflare for SaaS fallback
+  origin customers CNAME their tracking domains to (`TRACKING_CNAME_TARGET`). COSS registers each customer domain
+  as a custom hostname (HTTP certificate validation) with `CLOUDFLARE_API_TOKEN` (an account token scoped to the
+  zone, SSL and Certificates: Edit) and `CLOUDFLARE_ZONE_ID`. A request header transform rule sets
+  `X-Tracking-Origin-Verify: <secret>` (Secrets Manager `coss/production/tracking-origin-verify`) on every request
+  in the zone: the ALB forwards `/t/*` with it to the api target group for any host, and nothing else. SSL mode
+  **Full** (zone-wide; the zone serves nothing else): Cloudflare connects with the caller's hostname as SNI, which
+  the ALB's certificate doesn't cover; the header secret is what proves a request came through Cloudflare. The
+  apex redirects to coss.com. Free plan: 100 custom hostnames included, then $0.10 each per month.
+
+- **Hooks portal (not deployed yet):** `apps/portal` (with its Dockerfile) serves the portal customers embed for
+  their users. It must run on a registrable domain of its own (never under coss.com, which would make it same-site
+  with the dashboard). To ship it: register the domain; add a `portal` service to `infra/aws/services.ts` (port
+  3003, `/api/health`; `DATABASE_URL`, `WEBHOOK_SECRETS_KEY`, the Valkey variables, Sentry), an ALB host rule for the
+  domain, a CloudFront distribution (`/_next/static/*` cached) and the deploy workflow's matrix; let its tasks reach
+  RDS and Valkey; then set `PORTAL_PUBLIC_URL=https://<portal domain>` for web and api (until then creating a portal
+  session answers 503 `portal_unavailable`). The worker's Hooks delivery limits count per task until its security
+  group may reach Valkey and `VALKEY_URL` is declared for it as a secret.
+
+### Monitoring and cost guardrails
+
+- **Errors and uptime:** Sentry (organization `cosscom`). Every server and browser reports errors; the `web` project
+  filters errors caused by browser extensions and web crawlers. Uptime monitors check `https://coss.com/api/health`
+  (`web`) and `https://api.coss.com/health` (`api`) every minute from several regions.
+- **Alarms** (`infra/terraform/monitoring.tf`, notify the `coss-alerts` SNS topic → `alert_email`): per service,
+  fewer running tasks than its minimum, memory above 85 %, CPU above 90 % (autoscaling saturated); load balancer
+  5xx, per-target 5xx and unhealthy targets; RDS CPU, CPU credits (t4g), free storage, free memory and connections
+  (> 300 of ~410); Valkey throttling (raise `--max-ecpu`); plus ses:bootstrap's SES event queue backlog and dead
+  letters. Route 53 health checks and CloudFront metrics exist only in us-east-1, which the organization's SCP
+  denies: uptime is Sentry's.
+- **Cost:** an AWS budget (`monthly_budget_usd`, email at 80 % actual and 100 % forecasted) and Cost Anomaly
+  Detection per service (daily email for anomalies ≥ $25).
 
 ### Secrets and environment
 
-One Secrets Manager secret per stage (JSON), injected through each task definition's `secrets`:
-`VALKEY_URL` (from `valkey:bootstrap`), `DATABASE_URL`, `BETTER_AUTH_SECRET`, `AI_GATEWAY_API_KEY` (worker), `WEBHOOK_SECRETS_KEY` and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (generate the
-last three with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable, see
-[Rotating `WEBHOOK_SECRETS_KEY`](#rotating-webhook_secrets_key) to change it),
-`TURNSTILE_SECRET_KEY` (web; from a Cloudflare Turnstile widget, managed mode, whose hostnames include the
-dashboard's). The origin
-header value is a separate secret, used only by CloudFront and the ALB rules (rotate it by adding the new value to the
-rules, then CloudFront, then removing the old one); so is the tracking origin header (Cloudflare's transform rule and
-the ALB's tracking rule). `CLOUDFLARE_API_TOKEN` (web, api, worker) is in the stage secret. Plain values per service
-(web, api and worker also take `TRACKING_DOMAIN_PROVIDER=cloudflare`, `CLOUDFLARE_ZONE_ID` and optional
-`TRACKING_CNAME_TARGET`):
+One Secrets Manager secret per stage, `coss/production` (JSON), injected through each task definition's `secrets`
+(one key per `secret` variable of `infra/aws/services.ts`): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `VALKEY_URL`,
+`WEBHOOK_SECRETS_KEY`, `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`, `TURNSTILE_SECRET_KEY`, `CLOUDFLARE_API_TOKEN`,
+`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AI_GATEWAY_API_KEY`. Terraform creates only the container; values are
+written with `infra/terraform/scripts/put-secret.sh NAME --generate | --clipboard | --stdin`, which never prints them
+(losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable, see
+[Rotating `WEBHOOK_SECRETS_KEY`](#rotating-webhook_secrets_key) to change it). Tasks read secrets when they start:
+redeploy after changing one. The two origin header values are separate secrets (`coss/production/origin-verify`,
+`coss/production/tracking-origin-verify`), generated by Terraform for CloudFront, Cloudflare and the ALB rules
+(rotate one by adding the new value to the rules, then the sender, then removing the old one).
 
-| Service | Variables |
-|---|---|
-| web | `BETTER_AUTH_URL=https://coss.com`, `API_PUBLIC_URL=https://api.coss.com`, `TRUSTED_PROXY_HOPS=2`, `TURNSTILE_SITE_KEY` (the same widget's), `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, optional `DATABASE_POOL_MAX`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX=coss`, `CLIENT_IP_HEADER=x-forwarded-for`, `TRUSTED_PROXY_COUNT=2` |
-| api | the same minus `TRUSTED_PROXY_HOPS`, plus `API_CORS_ORIGINS=https://coss.com` (both web and api also take `PORTAL_PUBLIC_URL`) |
-| worker | `VALKEY_URL` (stage secret), `VALKEY_CLUSTER=true`, `API_PUBLIC_URL=https://api.coss.com`, `BETTER_AUTH_URL=https://coss.com`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL`, `SCREENING_CLASSIFIER=ai`, optional `SCREENING_MODEL`, `NOTIFICATIONS_ENVIRONMENT_ID` + `NOTIFICATIONS_FROM` (see below) |
-| site | none (static; everything it needs is in the image) |
-| portal | `DATABASE_URL`, `WEBHOOK_SECRETS_KEY` (stage secret), `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX=coss`, `CLIENT_IP_HEADER=x-forwarded-for`, `TRUSTED_PROXY_COUNT=2`, optional `DATABASE_POOL_MAX` |
+Plain values live in `infra/terraform/production.tfvars` (`plain_env`, per service); the plan fails when a required
+plain variable of the spec has no value or tfvars sets one the spec doesn't declare. `SENTRY_*` DSNs come from the
+`cosscom` Sentry organization (EU region). The site needs nothing: everything it needs is in the image.
 
-Every service but the site also takes `SENTRY_DSN` (its own project's), `SENTRY_ENVIRONMENT` and optionally
-`SENTRY_TRACES_SAMPLE_RATE` (see [Error monitoring on Sentry](#error-monitoring-on-sentry)).
-
-Images are built once and promoted through stages: builds set `SKIP_ENV_VALIDATION` and bake in nothing
-stage-specific (only the commit: `NEXT_DEPLOYMENT_ID`, `SENTRY_RELEASE`). Each server validates its environment at startup and exits
-if it is wrong. AWS credentials come from the task role.
+Images are built once and promoted: builds set `SKIP_ENV_VALIDATION` and bake in nothing stage-specific (only the
+commit: `NEXT_DEPLOYMENT_ID`, `SENTRY_RELEASE`). Each server validates its environment at startup and exits if it is
+wrong. AWS credentials come from the task role.
 
 ### IAM
 
-- **Execution role** (shared): pull from ECR, write logs, read the stage's secret (`secretsmanager:GetSecretValue`,
-  plus `kms:Decrypt` with a customer key).
-- **Task roles:** web → `<name>-dashboard`, api → `<name>-api`, worker → `<name>-worker`: the policies
-  `ses:bootstrap` creates under `/coss/` (defined in
-  [`apps/worker/scripts/ses-policies.ts`](./apps/worker/scripts/ses-policies.ts)). The site gets no permissions.
-  The `ses-bootstrap` one-off task needs a role that can manage SES, SNS, SQS, EventBridge, IAM and CloudWatch.
+- **Execution role** (`coss-production-ecs-execution`, shared): pull from ECR, write logs, read the stage secret.
+- **Task roles:** web → `coss-dashboard`, api → `coss-api`, worker → `coss-worker`: the policies `ses:bootstrap`
+  creates under `/coss/` (defined in [`apps/worker/scripts/ses-policies.ts`](./apps/worker/scripts/ses-policies.ts)),
+  plus ECS Exec. The site gets no permissions. The `ses-bootstrap` one-off task runs with
+  `coss-production-ses-bootstrap` (SES, SNS, SQS, EventBridge, CloudWatch alarms, IAM policies under `/coss/`).
+- **Deploys** (`coss-production-deploy`): the role of the CodeBuild project whose runners execute the Deploy
+  workflow's AWS jobs (ECR push, task definitions, service updates, the migrate task, `iam:PassRole` on the task
+  roles, the CloudFront invalidation, read-only ALB/CloudFront reads for the routing check). The organization's SCP
+  forbids IAM identity providers, so GitHub OIDC isn't available; the runners are started by a webhook (through the
+  `coss-production-github` CodeConnections connection to the AWS Connector app on `cosscom`) only for jobs of the
+  workflow named `Deploy`. CodeBuild can't filter those jobs by branch (`HEAD_REF` only applies to push and pull
+  request events; `WORKFLOW_NAME` is the only workflow-job filter), and the organization's GitHub plan has no
+  branch protection or rulesets for private repositories. What stops a branch: the workflow's first job refuses
+  anything but `deploy.yml` from `main`, and the AWS jobs need the `production` environment, whose deployment
+  branch policy allows only `main`. Neither stops someone with write access from pushing a *different* workflow named
+  `Deploy` without them, whose jobs get this role, which can read every production secret (it passes the execution
+  role): keep write access to the repository tight. Closing that needs GitHub Team (a push ruleset restricting
+  `.github/workflows/**`) or an `ACTOR_ACCOUNT_ID` allow-list on the webhook.
 
 ### Deploy order
 
@@ -483,28 +546,56 @@ if it is wrong. AWS credentials come from the task role.
 [one-time coordinated upgrade](#upgrading-from-v1-webhook-secret-storage) below instead of step 3's rolling
 deployment. This applies even when `WEBHOOK_SECRETS_KEY` is unchanged.
 
-1. Build and push the four images, tagged with the commit (`docker build --platform linux/arm64 -f
-   apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
-   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker).
-2. Run migrations as a one-off task from the worker image: `bun packages/db/src/migrate.ts` (needs only
-   `DATABASE_URL`; never two at once). Wait for exit code 0. Migrations must be backward compatible with the
-   running code.
-3. Update `api` and `worker`, then `web`, `site` and `portal`. Rolling deploys keep 100 % healthy; SIGTERM drains each task
-   (Next and the API finish in-flight requests, the worker finishes each loop's current item).
-4. Invalidate `/*` on the coss.com distribution once the site is stable.
+The Deploy workflow does this after CI passes on main (or by hand from the Actions tab; with `image_tag` it redeploys
+an earlier commit's images, e.g. a rollback):
 
-First deployment of a stage: network, RDS, ElastiCache (`valkey:bootstrap`) and secrets → images → migrate → `ses-bootstrap` one-off task
-(`bun apps/worker/scripts/ses-bootstrap.ts --name coss --tenant-prefix coss`, prints the SES variables) → services,
-ALB, CloudFront, WAF, DNS → sign up on the dashboard → `create-admin` one-off task from the api image
-(`bun packages/tenancy/scripts/create-admin.ts --email you@example.com`, with the api's environment) → request SES
-production access → create COSS's own organization in the dashboard, add and verify its sending domain (e.g.
-`coss.com`), and set the worker's `NOTIFICATIONS_ENVIRONMENT_ID` (its project's live environment, `env_…`) and
-`NOTIFICATIONS_FROM` (e.g. `COSS <notifications@coss.com>`). Until then the worker logs a warning at startup and
-holds account emails (sign-up verification, password resets, invitations — dropped once their link expires: an hour,
-or the invitation's 48 hours) and reputation notification emails (dropped after 3 days), so nobody can verify their
-address or create a live key; afterwards, ask for a new verification email from account settings. They are ordinary
-live emails of that organization: its dashboard shows their delivery, and its suppressions and reputation
-guard apply. Account emails keep no body once sent (their links are secrets).
+1. Build and push the four images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
+   apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
+   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker), skipping images that exist.
+2. Run migrations as a one-off task from the new worker image (`infra/scripts/ecs-task.sh --image-tag <sha> worker --
+   bun packages/db/src/migrate.ts`; never two at once, the workflow's concurrency group). Migrations must be
+   backward compatible with the running code.
+3. Roll out `api` and `worker`, then `web` and `site` (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a
+   new revision of its latest task definition with the new image, and the script fails if the circuit breaker rolled
+   it back. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
+   the worker finishes each loop's current item).
+4. Record the commit in SSM (`/coss/production/image-tag`, read by Terraform) and invalidate the spec's
+   `cloudFront.invalidateAfterDeploy` paths on the coss.com distribution.
+5. Check routing (`infra/scripts/check-routing.sh`, also runnable locally): the ALB's rules and the coss.com
+   distribution's cached behaviours must match `infra/terraform/spec.json`. Routing changes (a new `ZONE_ROUTES`
+   entry, i.e. a new site page or zone) only go live with `terraform apply`, which deploys never run, so until
+   someone applies them this step fails with "routing drift: run terraform apply" and the differences. The code
+   ships either way.
+
+Infrastructure changes: `cd infra/terraform && terraform init && terraform plan -var-file=production.tfvars` with
+admin credentials for the account, then `apply`. Services ignore task definition changes; after changing
+environment values, run the Deploy workflow by hand so the services pick up the new revision.
+
+One-off tasks (from `infra/`, with admin credentials):
+
+```sh
+scripts/ecs-task.sh worker -- bun packages/db/src/migrate.ts
+scripts/ecs-task.sh --task-role "$(terraform -chdir=terraform output -raw bootstrap_role_arn)" worker -- \
+  bun apps/worker/scripts/ses-bootstrap.ts --name coss --tenant-prefix coss --alert-email ops@coss.com
+scripts/ecs-task.sh api -- bun packages/tenancy/scripts/create-admin.ts --email you@example.com [--verify-email]
+scripts/ecs-task.sh worker -- bun apps/worker/scripts/webhooks-reencrypt.ts --dry-run
+```
+
+First deployment of a stage: Terraform (network, RDS, IAM, secrets, ECR, certificates; validation CNAMEs in
+Cloudflare) → `valkey:bootstrap` → stage secret values (`put-secret.sh`) → images → Terraform (services, ALB,
+CloudFront, WAF) → migrate → `ses-bootstrap` one-off task → test through CloudFront with
+`curl --resolve coss.com:443:<distribution IP>` → DNS in Cloudflare → sign up on the dashboard → `create-admin
+--verify-email` (sign-in needs a verified address, and no verification email can go out yet) →
+create COSS's own organization in the dashboard, add and verify its sending domain (`coss.com`: reserved for
+everyone else, so only a platform admin can add it, from the dashboard; an SES identity for it created outside COSS
+must be deleted first, COSS never adopts one), and set the worker's
+`NOTIFICATIONS_ENVIRONMENT_ID` (its project's live environment, `env_…`) and `NOTIFICATIONS_FROM` (e.g. `COSS
+<notifications@coss.com>`) in `production.tfvars`, apply, and redeploy. Until then the worker logs a warning at
+startup and holds account emails (sign-up verification, password resets, invitations — dropped once their link
+expires: an hour, or the invitation's 48 hours) and reputation notification emails (dropped after 3 days), so nobody
+can verify their address or create a live key; afterwards, ask for a new verification email from account settings.
+They are ordinary live emails of that organization: its dashboard shows their delivery, and its suppressions and
+reputation guard apply. Account emails keep no body once sent (their links are secrets).
 
 ### Upgrading from v1 webhook secret storage
 

@@ -1,0 +1,59 @@
+---
+title: View and date in the URL
+description: Controlled view and date mirrored into the query string, so a link opens the same week and the browser's back button steps the calendar.
+---
+
+Step forward and look at the address bar: `?view=…&date=…` follows. Switch
+to month view; it follows again. Press the browser's back button and the
+calendar steps back to the date you came from. Copy the link, open it in
+another tab, and it lands on the same view of the same date — a calendar you
+can share. The link always names the view on screen: in a box too narrow for
+a week it reads `view=day`, because a day is what is drawn.
+
+<Example name="url-state" />
+
+## How it works
+
+- `view` and `date` are controlled. With both props set, ‹ ›, Today, the view
+  switcher, the month picker and the arrow keys all *ask* through
+  `onViewChange` / `onDateChange`, and nothing moves until the props change.
+  That is what makes the URL authoritative: the calendar cannot drift from it.
+  See [Controlled state](/kloq/docs/controlled-state).
+- The query string is the state. `search` holds it verbatim; `view` and `date`
+  are derived from it with `useMemo`. `navigate` builds the next string,
+  writes it with `window.history`, and stores it — no router navigation, no
+  server round-trip. A new date is `pushState`, so back and forward walk the
+  dates you visited; a new view is `replaceState`, so it rewrites the entry
+  it is on. Next.js patches both, so `useSearchParams` elsewhere on the page
+  stays in sync for free.
+- Back and forward are a `popstate` listener that reads `location.search` back
+  into state. The initial read runs in an effect, never during render, so the
+  server-rendered markup and the first client paint agree; it also
+  `replaceState`s a normalised query, so a bare or broken link becomes
+  `?view=week&date=<today>` without adding a history entry.
+- Parsing is strict. `parseView` accepts the five named views and an n-day
+  integer inside `MIN_N_DAY_VIEW … MAX_N_DAY_VIEW`; `parseDate` accepts
+  `YYYY-MM-DD` only, and rejects a date that would roll over by checking that
+  the parsed `Date` formats back — through `toDateOnlyString` — to the same
+  string. Anything else falls back to today's week. See [Views & navigation](/kloq/docs/views).
+- The chrome is the stock `<Kloq.Toolbar />`. Its parts read the same
+  controlled state through `useKloq()`, which is why they need no wiring.
+  See [Toolbar & chrome](/kloq/docs/chrome).
+- The responsive collapse stays on, and the URL follows it. A box under 900px
+  squeezes a week to three days, one under 640px to a single day, and kloq
+  reports that *effective* view through `onViewChange`; widen the box and it
+  asks for the week back the same way. Because a view change replaces the
+  history entry, the width can rewrite the link as often as it likes without
+  piling up entries or trapping the back button.
+  See [Views & navigation](/kloq/docs/views).
+
+## Take it further
+
+- Prefer one history entry per visit? Use `replaceState` for dates too — the
+  link still shares, the back button leaves the page.
+- Put it in the path instead: `/kloq/week/2026-08-31`. The parsing does not
+  change; read `usePathname()` instead of `location.search`.
+- Keep the *intent* in the URL instead of the view on screen: a child of
+  `<Kloq>` can read `useKloq().collapsed`, and a view change reported while
+  it is true is the width talking, not the user — ignore it and the link says
+  `week` on every device.

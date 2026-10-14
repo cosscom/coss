@@ -46,6 +46,7 @@ if (error?.code === "validation_error") {
 | `not_found_error`       | 404             | No such resource in the key's environment                            |
 | `idempotency_error`     | 409 / 422       | `request_in_progress`, or `idempotency_key_reused` with a different body |
 | `rate_limit_error`      | 429             | Too many requests                                                    |
+| `billing_error`         | 402             | `usage_limit_exceeded`, `billing_hold`, `plan_limit_reached` or `plan_feature_unavailable` (never retried; see [Plans and billing](/docs/billing)) |
 | `api_error`             | 5xx, other      | Server error, or a response that is not a COSS error (`unexpected_response`) |
 | `connection_error`      | none            | Network failure (`network_error`), or you aborted (`aborted`)        |
 | `timeout_error`         | none            | An attempt exceeded `timeout` (`request_timeout`)                    |

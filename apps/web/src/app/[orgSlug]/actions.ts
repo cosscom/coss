@@ -25,7 +25,7 @@ export async function createProjectAction(
       target: { type: "project", id: project.id, label: project.name },
       projectId: project.id,
     });
-    return `/${organization.slug}/projects/${project.slug}`;
+    return `/${organization.slug}/projects/${project.slug}/development`;
   });
   if (result.ok) redirect(result.data);
   return result;

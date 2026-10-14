@@ -1,0 +1,92 @@
+resource "aws_lb" "main" {
+  name                       = local.name
+  load_balancer_type         = "application"
+  internal                   = false
+  subnets                    = [for subnet in aws_subnet.public : subnet.id]
+  security_groups            = [aws_security_group.alb_cloudfront.id, aws_security_group.alb_cloudflare.id]
+  idle_timeout               = local.spec.alb.idleTimeoutSeconds
+  drop_invalid_header_fields = true
+  enable_deletion_protection = true
+}
+
+resource "aws_lb_target_group" "service" {
+  for_each             = local.lb_services
+  name                 = "${local.name}-${each.key}"
+  vpc_id               = aws_vpc.main.id
+  target_type          = "ip"
+  protocol             = "HTTP"
+  port                 = each.value.port
+  deregistration_delay = 30
+
+  health_check {
+    path                = each.value.healthCheckPath
+    matcher             = "200"
+    interval            = 15
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+  }
+}
+
+# A request without CloudFront's (or Cloudflare's, for tracking) origin header matches no rule.
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = aws_acm_certificate_validation.alb.certificate_arn
+
+  default_action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      status_code  = local.spec.alb.httpsListener.defaultAction.FixedResponseConfig.StatusCode
+    }
+  }
+}
+
+locals {
+  header_secrets = {
+    "<origin-verify-secret>"          = random_password.origin_verify.result
+    "<tracking-origin-verify-secret>" = random_password.tracking_origin_verify.result
+  }
+}
+
+# Exactly the rules printed by the spec (priorities, conditions), placeholders filled in.
+resource "aws_lb_listener_rule" "spec" {
+  for_each     = { for rule in local.spec.alb.httpsListener.rules : tostring(rule.priority) => rule }
+  listener_arn = aws_lb_listener.https.arn
+  priority     = each.value.priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.service[each.value.targetGroup].arn
+  }
+
+  dynamic "condition" {
+    for_each = [for condition in each.value.conditions : condition if condition.Field == "host-header"]
+    content {
+      host_header {
+        values = condition.value.HostHeaderConfig.Values
+      }
+    }
+  }
+
+  dynamic "condition" {
+    for_each = [for condition in each.value.conditions : condition if condition.Field == "path-pattern"]
+    content {
+      path_pattern {
+        values = condition.value.PathPatternConfig.Values
+      }
+    }
+  }
+
+  dynamic "condition" {
+    for_each = [for condition in each.value.conditions : condition if condition.Field == "http-header"]
+    content {
+      http_header {
+        http_header_name = condition.value.HttpHeaderConfig.HttpHeaderName
+        values           = [for value in condition.value.HttpHeaderConfig.Values : local.header_secrets[value]]
+      }
+    }
+  }
+}

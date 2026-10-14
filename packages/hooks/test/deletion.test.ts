@@ -3,7 +3,7 @@ import { db, schema } from "@coss/db";
 import { requestOrganizationDeletion } from "@coss/tenancy";
 import { runDueOrganizationDeletions } from "@coss/tenancy/deletion";
 import { createTestTenant } from "@coss/tenancy/testing";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { createHookApplication } from "../src/applications.ts";
 import { runDueHookDeliveries } from "../src/deliver.ts";
 import { createHookEndpoint } from "../src/endpoints.ts";
@@ -65,4 +65,21 @@ test("deleting the organization revokes portal sessions, then deletes every Hook
     const rows = await db.select().from(table).where(eq(table.organizationId, organizationId));
     expect(rows).toEqual([]);
   }
+});
+
+test("the partitioned tables reference nothing, so dropping a day locks no other table", async () => {
+  // Dropping a partition (or its constraint) that references a table takes an ACCESS EXCLUSIVE
+  // lock on that table: one on `environment` would stall every API request while it waits.
+  const result = await db.execute<{ table: string }>(sql`
+    select conrelid::regclass::text as table from pg_constraint
+    where contype = 'f'
+      and conrelid in (
+        select oid from pg_class where relname in ('hook_message', 'hook_delivery', 'hook_attempt')
+        union
+        select inhrelid from pg_inherits
+        where inhparent in (
+          select oid from pg_class where relname in ('hook_message', 'hook_delivery', 'hook_attempt')
+        )
+      )`);
+  expect(result.rows).toEqual([]);
 });

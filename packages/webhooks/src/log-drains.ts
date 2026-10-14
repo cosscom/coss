@@ -109,6 +109,7 @@ export async function createLogDrain(
   },
   deps: WebhookManagementDeps,
 ): Promise<{ drain: LogDrainRow; secret: string }> {
+  await deps.plans?.requireFeature(input.organizationId, "logDrains");
   const url = checkedUrl(input.url, deps);
   const [env] = await db
     .select({ projectId: environment.projectId })
@@ -230,6 +231,8 @@ export async function updateLogDrain(
   },
   deps: WebhookManagementDeps,
 ): Promise<LogDrainRow> {
+  // Re-enabling one is like creating it; disabling or editing is always allowed.
+  if (input.enabled === true) await deps.plans?.requireFeature(input.organizationId, "logDrains");
   const changes = {
     ...(input.url !== undefined && { url: checkedUrl(input.url, deps) }),
     ...(input.description !== undefined && {
@@ -316,7 +319,8 @@ export async function pageLogDrainBatches(input: {
         afterCursor,
       ),
     )
-    .orderBy(desc(logDrainBatch.createdAt), desc(logDrainBatch.id))
+    // Matches the (drain_id, created_at DESC NULLS LAST) index.
+    .orderBy(sql`${logDrainBatch.createdAt} desc nulls last`, desc(logDrainBatch.id))
     .limit(limit + 1);
   const page = rows.slice(0, limit);
   return { batches: await withAttempts(input.organizationId, page), hasMore: rows.length > limit };

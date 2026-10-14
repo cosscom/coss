@@ -2,16 +2,13 @@ import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@coss/ui/components/card";
 import Link from "next/link";
-import { SITE_DESCRIPTION } from "@/lib/site";
+import { SampleCalendar } from "@/components/calendar/landing/sample-calendar";
+import { ShipyardHarbour } from "@/components/shipyard/harbour";
+import { CALENDAR } from "@/lib/calendar";
+import { SHIPYARD } from "@/lib/shipyard";
+import { PRODUCTS, SITE_DESCRIPTION } from "@/lib/site";
 
 // Placeholder landing page.
-const PRODUCTS = [
-  { name: "Email", description: "Transactional email from your own domains.", available: true },
-  { name: "SMS", description: "Text messages worldwide.", available: false },
-  { name: "Video", description: "Rooms and recordings.", available: false },
-  { name: "Scheduling", description: "Bookings and availability.", available: false },
-];
-
 const SNIPPET = `import { Coss } from "coss";
 
 const coss = new Coss({ apiKey: process.env.COSS_API_KEY });
@@ -57,6 +54,48 @@ export default function HomePage() {
             </CardHeader>
           </Card>
         ))}
+      </section>
+
+      <section className="relative overflow-hidden rounded-2xl border bg-card">
+        <ShipyardHarbour className="h-56 sm:h-80" />
+        <div className="-mt-12 relative flex flex-col items-start gap-4 p-6 sm:-mt-16 sm:p-8">
+          <h2 className="flex items-center gap-2 font-heading font-semibold text-2xl">
+            {SHIPYARD.name}
+            <Badge variant="info">New</Badge>
+          </h2>
+          <p className="max-w-2xl text-muted-foreground">
+            {SHIPYARD.description} Open source, from the team behind coss.com.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button render={<Link href={SHIPYARD.path} />}>About Shipyard</Button>
+            <Button render={<Link href={SHIPYARD.docs} />} variant="outline">
+              Shipyard docs
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* kloq: a live, seeded calendar. */}
+      <section className="grid gap-8 overflow-hidden rounded-2xl border bg-card lg:grid-cols-[minmax(0,26rem)_1fr]">
+        <div className="flex flex-col items-start gap-4 p-6 sm:p-8">
+          <h2 className="flex items-center gap-2 font-heading font-semibold text-2xl">
+            {CALENDAR.name}
+            <Badge variant="info">New</Badge>
+          </h2>
+          <p className="text-muted-foreground">{CALENDAR.description}</p>
+          <div className="flex flex-wrap gap-3">
+            <Button render={<Link href={CALENDAR.path} />}>About kloq</Button>
+            <Button render={<Link href={CALENDAR.docs} />} variant="outline">
+              Calendar docs
+            </Button>
+            <Button render={<Link href={CALENDAR.demo} />} variant="ghost">
+              Live demo
+            </Button>
+          </div>
+        </div>
+        <div className="min-w-0 p-4 pt-0 lg:p-6 lg:ps-0">
+          <SampleCalendar className="h-96 lg:h-104" />
+        </div>
       </section>
     </main>
   );

@@ -1,0 +1,144 @@
+name: Deploy
+
+# Production deploys (README, "Deploying to AWS"): builds the four images, migrates, then rolls out
+# api + worker, then web + site, and invalidates the coss.com CDN. Jobs that touch AWS run on
+# CodeBuild-hosted runners whose role holds the credentials (infra/terraform/deploy.tf); nothing
+# AWS-related is stored in GitHub. Runs after CI passes on main; run it by hand to redeploy (e.g.
+# after a Terraform environment change) or, with `image_tag`, to roll back to an earlier commit.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Commit whose images to deploy (already built, e.g. a rollback). Empty builds this run's commit.
+        required: false
+        default: ""
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-2
+  STAGE: production
+  REGISTRY: 294417174674.dkr.ecr.us-east-2.amazonaws.com
+
+jobs:
+  prepare:
+    # Only CI runs of pushes to main (a pull request from a fork's `main` branch would match too).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      build: ${{ steps.tag.outputs.build }}
+    steps:
+      # This file, from main, only (workflow_run always runs on the default branch; a dispatch picks a
+      # ref). The jobs on the CodeBuild runner also need the `production` environment, which only
+      # allows main. Neither stops a different workflow named "Deploy" (README, "Deploying to AWS").
+      - name: Refuse anything but main
+        env:
+          REF: ${{ github.ref }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+        run: |
+          if [ "$REF" != refs/heads/main ] || [ "$WORKFLOW_REF" != "$GITHUB_REPOSITORY/.github/workflows/deploy.yml@refs/heads/main" ]; then
+            echo "Production deploys run only from main ($WORKFLOW_REF)." >&2
+            exit 1
+          fi
+      - id: tag
+        env:
+          INPUT_TAG: ${{ inputs.image_tag }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          if [ -n "$INPUT_TAG" ]; then
+            echo "tag=$INPUT_TAG" >> "$GITHUB_OUTPUT"
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: prepare
+    if: needs.prepare.outputs.build == 'true'
+    environment: production
+    runs-on: codebuild-coss-production-deploy-${{ github.run_id }}-${{ github.run_attempt }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: true
+      matrix:
+        service: [web, site, api, worker]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+      - name: Build and push ${{ matrix.service }}
+        env:
+          SERVICE: ${{ matrix.service }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          # Uploads the Next.js apps' source maps to Sentry (a BuildKit secret, never in a layer).
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          image="$REGISTRY/coss/$SERVICE"
+          if aws ecr describe-images --repository-name "coss/$SERVICE" --image-ids "imageTag=$TAG" >/dev/null 2>&1; then
+            echo "$image:$TAG already exists"
+            exit 0
+          fi
+          aws ecr get-login-password | docker login --username AWS --password-stdin "$REGISTRY"
+          case "$SERVICE" in
+            web | site) release_arg="NEXT_DEPLOYMENT_ID=$TAG" ;;
+            *) release_arg="SENTRY_RELEASE=$TAG" ;;
+          esac
+          docker buildx create --use --driver docker-container >/dev/null
+          docker buildx build . \
+            --file "apps/$SERVICE/Dockerfile" \
+            --platform linux/arm64 \
+            --build-arg "$release_arg" \
+            --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN \
+            --cache-from "type=registry,ref=$image:buildcache" \
+            --cache-to "type=registry,ref=$image:buildcache,mode=max,image-manifest=true,oci-mediatypes=true" \
+            --provenance=false \
+            --tag "$image:$TAG" \
+            --push
+
+  deploy:
+    needs: [prepare, build]
+    if: always() && needs.prepare.result == 'success' && (needs.build.result == 'success' || needs.build.result == 'skipped')
+    environment: production
+    runs-on: codebuild-coss-production-deploy-${{ github.run_id }}-${{ github.run_attempt }}
+    timeout-minutes: 60
+    env:
+      TAG: ${{ needs.prepare.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # Migrations must be backward compatible with the running code; never two at once (the
+      # concurrency group above).
+      - name: Migrate
+        run: infra/scripts/ecs-task.sh --image-tag "$TAG" worker -- bun packages/db/src/migrate.ts
+      - name: Roll out api and worker
+        run: infra/scripts/ecs-deploy.sh "$TAG" api worker
+      - name: Roll out web and site
+        run: infra/scripts/ecs-deploy.sh "$TAG" web site
+      - name: Record the deployed commit
+        run: aws ssm put-parameter --name "/coss/$STAGE/image-tag" --value "$TAG" --overwrite >/dev/null
+      # Docs pages are cached for a year at the edge. Only our apps' cached paths, never the hashed
+      # assets: tabs opened before this deploy still load their old chunks from the cache.
+      - name: Invalidate the coss.com CDN
+        env:
+          DISTRIBUTION_ID: ${{ vars.DASHBOARD_DISTRIBUTION_ID }}
+        run: |
+          mapfile -t paths < <(jq -r '.cloudFront.invalidateAfterDeploy[]' infra/terraform/spec.json)
+          aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "${paths[@]}" --query Invalidation.Id --output text
+      # Last, so the code ships either way: routing (ALB rules, CloudFront behaviours) only changes
+      # with `terraform apply`, and a route that was never applied fails this job until it is.
+      - name: Check routing against the spec
+        env:
+          DISTRIBUTION_ID: ${{ vars.DASHBOARD_DISTRIBUTION_ID }}
+        run: infra/scripts/check-routing.sh

@@ -1,0 +1,54 @@
+---
+title: Recurring events (RRULE)
+description: Weekday standups, a fortnightly review and a monthly payday — as RRULE strings, expanded live, edited this / following / all.
+---
+
+Three series, stored as three events. Pick one above the grid and the row
+under it shows the same rule in plain English, the `rrule` string as it sits
+on the `CalEvent`, and the next time it fires. Wednesday's standup has
+already been moved once, so it is drawn from a detached event rather than the
+series.
+
+Edit the selected rule with the builder — the grid re-expands on every
+change. Then drag any instance: kloq asks whether you meant this event, this
+and following, or all of them.
+
+<Example name="recurring-events" />
+
+## How it works
+
+- A series is one event with an `rrule` — the RFC 5545 value without its
+  `RRULE:` prefix. `data.ts` seeds `FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR`,
+  `FREQ=WEEKLY;INTERVAL=2;BYDAY=TH` and an all-day
+  `FREQ=MONTHLY;BYMONTHDAY=25`, all inside the subset the built-in
+  `expandRecurrence` handles. See [Recurrence](/kloq/docs/recurrence) for the
+  frequencies and by-parts it models.
+- The moved Wednesday instance is two fields: `exdates` on the master (the
+  occurrence start that no longer draws) and `recurrenceId` on the detached
+  event (the occurrence it replaces). That is exactly what "change this
+  event" writes when you drag one instance.
+- `describeRRule(rule)` renders the plain-English line; `nextOccurrence(event,
+  from)` finds the next instance strictly after an instant. Both are pure and
+  take the rule as a string or as `parseRRule` output.
+- `RRuleBuilder` is the panel's recurrence control, standalone. It takes the
+  rule as `value`, the series' start as `date` (presets like "the first
+  Thursday" derive from it) and commits through `onChange`; `SeriesPanel` writes
+  the new rule with `store.update` from [`useKloqStore`](/kloq/docs/api).
+- `SeriesPanel` is a child of `<Kloq>`, so it renders above the surface and can
+  read the store with `useSyncExternalStore(store.subscribe,
+  store.getSnapshot)`. The "next" readout is gated on `useIsClient()` because
+  it depends on the clock and must not hydrate.
+- Dragging, resizing or deleting an instance opens the built-in
+  `RecurrenceScopeDialog`; the chosen scope becomes a `RecurrencePlan` from
+  `editOccurrence` / `deleteOccurrence` and is applied as one batch, so undo
+  reverts the whole answer. On the first occurrence "this and following" is
+  the same as "all", and the dialog offers only two choices.
+
+## Take it further
+
+Pass a controlled `events` array and the same drags arrive through
+`onEventsChange` as plain data — see
+[Controlled state](/kloq/docs/controlled-state). A rule the builder cannot express
+(`BYWEEKNO`, several `BYMONTHDAY` values) is never rewritten: it shows as a
+read-only "Custom rule" chip, and `registerRecurrenceEngine` lets a richer
+engine expand it.

@@ -421,6 +421,11 @@ export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAP
       },
       deps,
     );
+    await recordApiAudit(c, {
+      action: "webhook_endpoint.secret_rolled",
+      target: { type: "webhook_endpoint", id: endpoint.id, label: endpoint.url },
+      metadata: { previous_secret_expires_in: body.previous_secret_expires_in ?? null },
+    });
     return c.json({ ...toWebhookEndpointObject(endpoint), secret }, 200);
   });
 

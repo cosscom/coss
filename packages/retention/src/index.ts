@@ -28,6 +28,14 @@ export const RETENTION_DAYS = {
   adminAuditLog: 730,
   /** Sessions, verification tokens and invitations, counted from their expiry. */
   expiredAuth: 7,
+  /** Invoices, with their lines, payments and credit notes: what tax law needs (they outlive the account). */
+  invoices: 3650,
+  /** Hourly metered usage (invoices keep each month's totals). */
+  billingUsage: 400,
+  /** Events received from the payment provider, once processed. */
+  billingProviderEvents: 30,
+  /** Settled billing notification emails (usage alerts, payment reminders). */
+  billingNotifications: 90,
   /**
    * Hooks messages with their deliveries and attempts: whole days are dropped (by message day),
    * including deliveries still held for a suspended organization and messages of deleted
@@ -141,6 +149,32 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { days: RETENTION_DAYS.expiredAuth, after: "expiry" },
   },
   {
+    id: "invoices",
+    label: "Invoices and payments",
+    description:
+      "Invoices with their line items, payments and credit notes, as tax law requires. Kept after your account is closed.",
+    period: { days: RETENTION_DAYS.invoices, after: "creation" },
+  },
+  {
+    id: "billing_usage",
+    label: "Usage records",
+    description:
+      "Hourly counts of billable usage per environment. Each invoice keeps its month's totals.",
+    period: { days: RETENTION_DAYS.billingUsage, after: "creation" },
+  },
+  {
+    id: "billing_notifications",
+    label: "Billing notification emails",
+    description: "Records of usage alerts and payment reminders sent to your billing contacts.",
+    period: { days: RETENTION_DAYS.billingNotifications, after: "creation" },
+  },
+  {
+    id: "payment_provider_events",
+    label: "Payment provider events",
+    description: "Notifications from our payment processor about invoices and payments.",
+    period: { days: RETENTION_DAYS.billingProviderEvents, after: "creation" },
+  },
+  {
     id: "suppressions",
     label: "Suppressions",
     description:
@@ -151,7 +185,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "account",
     label: "Account and configuration",
     description:
-      "Users, organizations, projects, environments, API keys, domains, webhook endpoints, log drains, Hooks applications, event types and endpoints, and settings. Items you delete (a key, a domain, an endpoint, a drain, an application) are removed right away.",
+      "Users, organizations, projects, environments, API keys, domains, webhook endpoints, log drains, Hooks applications, event types and endpoints, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, an endpoint, a drain, an application) are removed right away.",
     period: { until: "closed" },
   },
 ];

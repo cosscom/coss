@@ -27,11 +27,22 @@ export type WebhookAttemptRow = typeof webhookAttempt.$inferSelect;
 
 export const MAX_ENDPOINTS_PER_ENVIRONMENT = 10;
 
+/**
+ * The organization's plan, as webhook management needs it: structurally `@coss/billing`'s
+ * `PlanGate` (webhooks can't depend on billing, which sends its events through them).
+ */
+export type WebhookPlanLimits = {
+  requireFeature(organizationId: string, feature: "logDrains"): Promise<void>;
+  limit(organizationId: string, limit: "webhookEndpointsPerEnvironment"): Promise<number | null>;
+};
+
 export type WebhookManagementDeps = {
   /** From `WEBHOOK_SECRETS_KEY` (`parseSecretsKeys`). */
   secretsKeys: SecretsKeyRing;
   /** Accept `http:` and private hosts (local development only). */
   allowInsecureUrls: boolean;
+  /** The organization's plan (endpoints per environment, log drains); unset: not limited. */
+  plans?: WebhookPlanLimits;
 };
 
 /** When the endpoint's previous secret stops signing; `null` when none signs any more. */
@@ -52,7 +63,10 @@ export function toWebhookEndpointObject(row: WebhookEndpointRow): WebhookEndpoin
     event_types: row.eventTypes,
     api_version: row.apiVersion,
     enabled: row.enabled,
-    disabled_reason: row.disabledReason as WebhookEndpointDisabledReason | null,
+    // Code from before these columns switched endpoints off without a reason: by hand.
+    disabled_reason: row.enabled
+      ? null
+      : ((row.disabledReason as WebhookEndpointDisabledReason | null) ?? "manual"),
     disabled_at: row.disabledAt?.toISOString() ?? null,
     failing_since: row.failingSince?.toISOString() ?? null,
     previous_secret_expires_at: previousSecretExpiresAt(row)?.toISOString() ?? null,
@@ -120,10 +134,17 @@ export async function createWebhookEndpoint(
         eq(webhookEndpoint.environmentId, input.environmentId),
       ),
     );
-  if ((existing?.value ?? 0) >= MAX_ENDPOINTS_PER_ENVIRONMENT) {
+  // The plan's limit, which a contract may raise above the default.
+  const limit = deps.plans
+    ? ((await deps.plans.limit(input.organizationId, "webhookEndpointsPerEnvironment")) ??
+      Number.POSITIVE_INFINITY)
+    : MAX_ENDPOINTS_PER_ENVIRONMENT;
+  if ((existing?.value ?? 0) >= limit) {
     throw new WebhookError(
       "too_many_endpoints",
-      `An environment can have at most ${MAX_ENDPOINTS_PER_ENVIRONMENT} webhook endpoints.`,
+      deps.plans && limit < MAX_ENDPOINTS_PER_ENVIRONMENT
+        ? `Your plan allows ${limit} webhook endpoints per environment. Upgrade to add more.`
+        : `An environment can have at most ${limit} webhook endpoints.`,
     );
   }
   const secret = generateSigningSecret();
@@ -408,7 +429,8 @@ export async function pageWebhookDeliveries(input: {
         afterCursor,
       ),
     )
-    .orderBy(desc(webhookDelivery.createdAt), desc(webhookDelivery.id))
+    // Matches the (endpoint_id, created_at DESC NULLS LAST) index.
+    .orderBy(sql`${webhookDelivery.createdAt} desc nulls last`, desc(webhookDelivery.id))
     .limit(limit + 1);
   const page = rows.slice(0, limit);
   if (page.length === 0) return { deliveries: [], hasMore: false };

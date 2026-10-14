@@ -1,0 +1,75 @@
+/* Unlayered on purpose: these must win over the prose plugin's (0,2,0) selectors without `!important`. */
+@reference "../../app/globals.css";
+
+.docs-inline-code {
+  @apply rounded-md border-0 bg-muted px-1.5 py-0.5 font-mono font-normal text-foreground;
+  font-size: 0.875em;
+}
+
+/* code blocks: shiki notation lines */
+.docs-code .highlighted {
+  @apply bg-code-highlight;
+}
+.docs-code .highlighted::after {
+  @apply border-brand;
+}
+.docs-code .highlighted-word {
+  @apply border-border bg-code-highlight;
+}
+.docs-code[data-line-numbers] .line::after {
+  @apply text-muted-foreground;
+}
+/* the figure clips, so the scroller's ring is drawn inside it */
+.docs-code [data-slot="scroll-area-viewport"]:focus-visible {
+  @apply ring-inset ring-offset-0;
+}
+/* github-dark comments are 3.6:1 on the code surface; github-light parameters are 3.5:1 */
+.dark figure.docs-code code span[style*="--shiki-dark:#6A737D" i] {
+  color: var(--muted-foreground);
+}
+:root:not(.dark) figure.docs-code code span[style*="--shiki-light:#E36209" i] {
+  color: var(--warning-foreground);
+}
+
+/* callout bodies: prose content without its outer margins. The extra `.prose` outranks docs.css,
+   which addresses prose children from `#nd-page`. */
+#nd-page .prose .docs-prose-body > :first-child {
+  margin-top: 0;
+}
+#nd-page .prose .docs-prose-body > :last-child {
+  margin-bottom: 0;
+}
+#nd-page .prose .docs-prose-body > p {
+  @apply my-2;
+}
+
+/* Tables (markdown and TypeTable) are the table primitive's prose variant. Below 36rem of column
+   a row becomes one stacked block: first cell as its title, the header row left to assistive tech. */
+.docs-table {
+  container-type: inline-size;
+  @apply my-6;
+}
+.docs-table :is(th, td):first-child code {
+  @apply whitespace-nowrap;
+}
+@container (width < 36rem) {
+  .docs-table :is(table, tbody, tr, tbody th, td) {
+    display: block;
+  }
+  .docs-table thead {
+    @apply sr-only;
+  }
+  .docs-table tr {
+    @apply py-3;
+  }
+  .docs-table tbody :is(th, td) {
+    @apply w-auto p-0;
+  }
+  .docs-table tbody :is(th, td) + td {
+    @apply pt-1;
+  }
+  .docs-table :is(th, td):first-child code,
+  .docs-table code {
+    @apply whitespace-normal wrap-anywhere;
+  }
+}

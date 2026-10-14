@@ -238,7 +238,9 @@ describe("invitations follow their inviter", () => {
     });
     expect(await invitationStatus(fromLeaver.invitation.id)).toBe("canceled");
     expect(await invitationStatus(fromOwner.invitation.id)).toBe("pending");
-  });
+    // About 13 password hashes and checks (scrypt, CPU-bound by design): well under a second
+    // alone, but CI runs every package's tests at once on a few cores.
+  }, 30_000);
 
   test("an invitation whose inviter may no longer invite can't be accepted", async () => {
     const tenant = await createTestTenant();
@@ -374,6 +376,96 @@ describe("removing members and leaving", () => {
     expect(await roleOf(member)).toBeUndefined();
     await expect(leave(owner)).rejects.toThrow();
     expect(await roleOf(owner)).toBe("owner");
+  });
+});
+
+describe("organization HTTP routes", () => {
+  test("only create and accept-invitation are open; the dashboard's server-side calls still work", async () => {
+    const { organizationId, owner, admin, member, memberId, roleOf } = await roleFixture();
+    const headers = await sessionHeaders(admin.email, admin.password);
+    headers.set("content-type", "application/json");
+    const base = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+    headers.set("origin", base);
+    const post = (path: string, body: unknown) =>
+      auth.handler(
+        new Request(`${base}/api/auth/organization/${path}`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body),
+        }),
+      );
+
+    // These skip the dashboard's SSO and 2FA requirements, directory locks and audit log.
+    const closed = [
+      post("remove-member", { memberIdOrEmail: memberId(member), organizationId }),
+      post("update-member-role", { memberId: memberId(member), role: "admin", organizationId }),
+      post("cancel-invitation", { invitationId: "invite_x" }),
+      post("set-active", { organizationId }),
+      post("leave", { organizationId }),
+      post("reject-invitation", { invitationId: "invite_x" }),
+      post("check-slug", { slug: "anything" }),
+      auth.handler(
+        new Request(
+          `${base}/api/auth/organization/get-full-organization?organizationId=${organizationId}`,
+          { headers },
+        ),
+      ),
+      auth.handler(
+        new Request(`${base}/api/auth/organization/list-members?organizationId=${organizationId}`, {
+          headers,
+        }),
+      ),
+      auth.handler(new Request(`${base}/api/auth/organization/list`, { headers })),
+    ];
+    for (const response of await Promise.all(closed)) expect(response.status).toBe(404);
+    expect(await roleOf(member)).toBe("member");
+    expect(await roleOf(admin)).toBe("admin");
+
+    // Still open for the browser (onboarding and the invitation page): reaches Better Auth.
+    expect((await post("accept-invitation", { invitationId: "invite_x" })).status).not.toBe(404);
+
+    // The dashboard's server actions call the same endpoints through auth.api.
+    await auth.api.removeMember({
+      headers: await sessionHeaders(owner.email, owner.password),
+      body: { memberIdOrEmail: memberId(member), organizationId },
+    });
+    expect(await roleOf(member)).toBeUndefined();
+  });
+});
+
+describe("account HTTP routes", () => {
+  test("account settings and sessions are closed over HTTP, open to the server", async () => {
+    const user = await createTestUser();
+    const headers = await sessionHeaders(user.email, user.password);
+    headers.set("content-type", "application/json");
+    const base = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+    headers.set("origin", base);
+
+    const listed = await auth.handler(new Request(`${base}/api/auth/list-sessions`, { headers }));
+    expect(listed.status).toBe(404);
+    for (const path of ["update-user", "change-password", "revoke-sessions"]) {
+      const response = await auth.handler(
+        new Request(`${base}/api/auth/${path}`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            name: "Renamed",
+            currentPassword: user.password,
+            newPassword: "x",
+          }),
+        }),
+      );
+      expect(response.status).toBe(404);
+    }
+
+    // The settings page and its actions use auth.api.
+    expect(await auth.api.listSessions({ headers })).toHaveLength(1);
+    await auth.api.updateUser({ headers, body: { name: "Renamed" } });
+    const [row] = await db
+      .select({ name: schema.user.name })
+      .from(schema.user)
+      .where(eq(schema.user.id, user.id));
+    expect(row?.name).toBe("Renamed");
   });
 });
 
