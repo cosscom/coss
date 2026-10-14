@@ -1,25 +1,28 @@
 import { Badge } from "@coss/ui/components/badge";
+import { StatusDot, type StatusTone } from "../status-dot";
 
-const VARIANTS = {
-  draft: "outline",
+const TONES = {
+  draft: "neutral",
   open: "warning",
   paid: "success",
-  void: "secondary",
+  void: "neutral",
   uncollectible: "error",
-} as const;
+} as const satisfies Record<string, StatusTone>;
 
 export function InvoiceStatusBadge(props: {
-  status: keyof typeof VARIANTS;
+  status: keyof typeof TONES;
   overdue?: boolean;
   paymentState?: string | null;
 }) {
-  if (props.status === "open" && props.paymentState === "processing") {
-    return <Badge variant="info">Processing</Badge>;
-  }
-  if (props.status === "open" && props.overdue) return <Badge variant="error">Overdue</Badge>;
+  const [tone, label]: [StatusTone, string] =
+    props.status === "open" && props.paymentState === "processing"
+      ? ["info", "Processing"]
+      : props.status === "open" && props.overdue
+        ? ["error", "Overdue"]
+        : [TONES[props.status], props.status === "open" ? "Due" : props.status];
   return (
-    <Badge className="capitalize" variant={VARIANTS[props.status]}>
-      {props.status === "open" ? "Due" : props.status}
+    <Badge className="capitalize" variant="outline">
+      <StatusDot tone={tone}>{label}</StatusDot>
     </Badge>
   );
 }

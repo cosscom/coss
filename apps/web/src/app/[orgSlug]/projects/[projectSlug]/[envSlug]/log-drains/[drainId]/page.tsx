@@ -1,8 +1,6 @@
 import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment } from "@coss/tenancy";
 import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
-import { Badge } from "@coss/ui/components/badge";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
   TableBody,
@@ -18,10 +16,14 @@ import {
   type LogDrainBatchLogEntry,
   pageLogDrainBatches,
 } from "@coss/webhooks";
+import { PackageIcon } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
+import { SpecItem, SpecList } from "@/components/spec-list";
+import { StatusDot, type StatusTone } from "@/components/status-dot";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { DrainStatusBadge } from "../drain-status";
@@ -39,7 +41,7 @@ const BATCH_STATUS = {
   pending: ["warning", "Pending"],
   succeeded: ["success", "Sent"],
   failed: ["error", "Failed"],
-} as const satisfies Record<LogDrainBatchLogEntry["status"], readonly [string, string]>;
+} as const satisfies Record<LogDrainBatchLogEntry["status"], readonly [StatusTone, string]>;
 
 function lastResult(batch: LogDrainBatchLogEntry): string {
   const last = batch.attempts.at(-1);
@@ -77,31 +79,28 @@ export default async function LogDrainPage({
     envSlug: environment.slug,
     drainId: drain.id,
   };
-  const base = `/${organization.slug}/projects/${project.slug}/${environment.slug}`;
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Link
-          className="text-muted-foreground text-sm hover:text-foreground"
-          href={`${base}/log-drains`}
-        >
-          ← Log drains · {project.name} · {environment.name}
-        </Link>
-        <PageHeader
-          actions={
-            <>
-              {canUpdate ? <EditSourcesButton {...target} sources={drain.sources} /> : null}
-              {canUpdate ? <ToggleDrainButton {...target} enabled={drain.enabled} /> : null}
-              {can({ logDrain: ["delete"] }) ? (
-                <DeleteDrainButton {...target} url={drain.url} />
-              ) : null}
-            </>
-          }
-          description={drain.description ?? undefined}
-          title={<span className="break-all">{drain.url}</span>}
-        />
-      </div>
+      <PageHeader
+        actions={
+          <>
+            {canUpdate ? <EditSourcesButton {...target} sources={drain.sources} /> : null}
+            {canUpdate ? <ToggleDrainButton {...target} enabled={drain.enabled} /> : null}
+            {can({ logDrain: ["delete"] }) ? (
+              <DeleteDrainButton {...target} url={drain.url} />
+            ) : null}
+          </>
+        }
+        description={drain.description ?? undefined}
+        meta={
+          <>
+            <DrainStatusBadge drain={drain} />
+            <code className="font-mono text-xs">{drain.id}</code>
+          </>
+        }
+        title={<span className="break-all font-mono text-xl sm:text-2xl">{drain.url}</span>}
+      />
 
       {!drain.enabled && drain.disabledReason === "failing" ? (
         <Alert variant="error">
@@ -114,112 +113,103 @@ export default async function LogDrainPage({
         </Alert>
       ) : null}
 
-      <Card>
-        <CardPanel className="p-2">
-          <Table>
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <Panel title="Details">
+          <PanelBody flush>
+            <SpecList>
+              <SpecItem label="Sources">{sourcesSummary(drain.sources)}</SpecItem>
+              <SpecItem label="Waiting" mono>
+                {queued === 1 ? "1 line" : `${queued.toLocaleString("en-US")} lines`}
+              </SpecItem>
+              <SpecItem label="Created" mono>
+                {formatDateTime(drain.createdAt)}
+              </SpecItem>
+            </SpecList>
+          </PanelBody>
+        </Panel>
+
+        {canUpdate ? (
+          <Panel
+            description={
+              <>
+                Requests carry <code className="font-mono">webhook-id</code> (the batch id),{" "}
+                <code className="font-mono">webhook-timestamp</code> and{" "}
+                <code className="font-mono">webhook-signature</code> headers (Standard Webhooks).
+                Verify them with this secret before storing the lines.
+              </>
+            }
+            title="Signing secret"
+          >
+            <PanelBody>
+              <RevealDrainSecret {...target} />
+            </PanelBody>
+          </Panel>
+        ) : null}
+      </div>
+
+      <Panel
+        description={`Each batch is one NDJSON request of up to 500 lines. Failed batches are retried for about a day (${LOG_DRAIN_MAX_ATTEMPTS} attempts); any 2xx response counts as sent. Batches are kept for ${formatRetentionDays(RETENTION_DAYS.logDrainBatches)}.`}
+        title="Recent batches"
+      >
+        {batches.length === 0 ? (
+          <PanelBody flush>
+            <EmptyState
+              compact
+              description="Batches appear here as lines are written and sent."
+              icon={PackageIcon}
+              title="No batches yet"
+            />
+          </PanelBody>
+        ) : (
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Batch</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Lines</TableHead>
+                <TableHead>Attempts</TableHead>
+                <TableHead>Last result</TableHead>
+                <TableHead>Next attempt</TableHead>
+              </TableRow>
+            </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableHead className="w-32">Status</TableHead>
-                <TableCell>
-                  <DrainStatusBadge drain={drain} />
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableHead>Sources</TableHead>
-                <TableCell className="whitespace-normal">{sourcesSummary(drain.sources)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableHead>Waiting</TableHead>
-                <TableCell>
-                  {queued === 1 ? "1 line" : `${queued.toLocaleString("en-US")} lines`}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableHead>Created</TableHead>
-                <TableCell>{formatDateTime(drain.createdAt)}</TableCell>
-              </TableRow>
+              {batches.map((batch) => {
+                const [tone, label] = BATCH_STATUS[batch.status];
+                const excerpt = batch.attempts.at(-1)?.responseExcerpt;
+                return (
+                  <TableRow key={batch.id}>
+                    <TableCell>
+                      <div className="text-xs">{formatDateTime(batch.createdAt)}</div>
+                      <div className="font-mono text-muted-foreground text-xs">{batch.id}</div>
+                    </TableCell>
+                    <TableCell>
+                      <StatusDot pulse={batch.status === "pending"} tone={tone}>
+                        {label}
+                      </StatusDot>
+                    </TableCell>
+                    <TableCell className="font-mono">
+                      {batch.recordCount}
+                      <div className="text-muted-foreground text-xs">
+                        {formatBytes(batch.byteSize)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono">{batch.attemptCount}</TableCell>
+                    <TableCell className="max-w-64 whitespace-normal break-all font-mono text-muted-foreground text-xs">
+                      {lastResult(batch)}
+                      {excerpt && batch.status !== "succeeded" ? (
+                        <div className="mt-1 line-clamp-2">{excerpt}</div>
+                      ) : null}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatDateTime(batch.nextAttemptAt)}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
-        </CardPanel>
-      </Card>
-
-      {canUpdate ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Signing secret</CardTitle>
-            <CardDescription>
-              Requests carry <code>webhook-id</code> (the batch id), <code>webhook-timestamp</code>{" "}
-              and <code>webhook-signature</code> headers (Standard Webhooks). Verify them with this
-              secret before storing the lines.
-            </CardDescription>
-          </CardHeader>
-          <CardPanel>
-            <RevealDrainSecret {...target} />
-          </CardPanel>
-        </Card>
-      ) : null}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent batches</CardTitle>
-          <CardDescription>
-            Each batch is one NDJSON request of up to 500 lines. Failed batches are retried for
-            about a day ({LOG_DRAIN_MAX_ATTEMPTS} attempts); any 2xx response counts as sent.
-            Batches are kept for {formatRetentionDays(RETENTION_DAYS.logDrainBatches)}.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="p-2">
-          {batches.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">No batches yet.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Batch</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Lines</TableHead>
-                  <TableHead>Attempts</TableHead>
-                  <TableHead>Last result</TableHead>
-                  <TableHead>Next attempt</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {batches.map((batch) => {
-                  const [variant, label] = BATCH_STATUS[batch.status];
-                  const excerpt = batch.attempts.at(-1)?.responseExcerpt;
-                  return (
-                    <TableRow key={batch.id}>
-                      <TableCell>
-                        <div className="text-xs">{formatDateTime(batch.createdAt)}</div>
-                        <div className="font-mono text-muted-foreground text-xs">{batch.id}</div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={variant}>{label}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {batch.recordCount}
-                        <div className="text-muted-foreground text-xs">
-                          {formatBytes(batch.byteSize)}
-                        </div>
-                      </TableCell>
-                      <TableCell>{batch.attemptCount}</TableCell>
-                      <TableCell className="max-w-64 whitespace-normal break-all text-xs">
-                        {lastResult(batch)}
-                        {excerpt && batch.status !== "succeeded" ? (
-                          <div className="mt-1 line-clamp-2 font-mono text-muted-foreground">
-                            {excerpt}
-                          </div>
-                        ) : null}
-                      </TableCell>
-                      <TableCell>{formatDateTime(batch.nextAttemptAt)}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
+        )}
+      </Panel>
     </div>
   );
 }

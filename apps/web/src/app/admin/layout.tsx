@@ -1,7 +1,6 @@
 import { DASHBOARD_PATH } from "@coss/auth/slugs";
-import { Button } from "@coss/ui/components/button";
-import Link from "next/link";
-import { SignOutButton } from "@/components/sign-out-button";
+import { AppShell } from "@/components/shell/app-shell";
+import { AreaSidebar } from "@/components/shell/area-sidebar";
 import { requirePlatformAdmin } from "@/lib/session";
 
 /**
@@ -10,44 +9,23 @@ import { requirePlatformAdmin } from "@/lib/session";
  */
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const { session } = await requirePlatformAdmin();
+  const user = { name: session.user.name, email: session.user.email, isAdmin: true };
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3">
-          <Link className="font-semibold" href="/admin">
-            COSS <span className="font-normal text-muted-foreground">admin</span>
-          </Link>
-          <nav className="flex items-center gap-1">
-            <Button render={<Link href="/admin" />} size="sm" variant="ghost">
-              Overview
-            </Button>
-            <Button render={<Link href="/admin/users" />} size="sm" variant="ghost">
-              Users
-            </Button>
-            <Button render={<Link href="/admin/organizations" />} size="sm" variant="ghost">
-              Organizations
-            </Button>
-            <Button render={<Link href="/admin/audit" />} size="sm" variant="ghost">
-              Audit log
-            </Button>
-            <Button render={<Link href="/admin/reputation" />} size="sm" variant="ghost">
-              Reputation
-            </Button>
-            <Button render={<Link href="/admin/billing" />} size="sm" variant="ghost">
-              Billing
-            </Button>
-          </nav>
-          <div className="ms-auto flex items-center gap-2">
-            <Button render={<Link href={DASHBOARD_PATH} />} size="sm" variant="ghost">
-              Dashboard
-            </Button>
-            <span className="text-muted-foreground text-sm">{session.user.email}</span>
-            <SignOutButton />
-          </div>
-        </div>
-      </header>
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">{children}</main>
-    </div>
+    <AppShell
+      command={{ isAdmin: true }}
+      names={{ "/admin": "Admin" }}
+      session={session}
+      sidebar={
+        <AreaSidebar
+          area="admin"
+          back={{ href: DASHBOARD_PATH, label: "Dashboard" }}
+          label="admin"
+          user={user}
+        />
+      }
+    >
+      {children}
+    </AppShell>
   );
 }

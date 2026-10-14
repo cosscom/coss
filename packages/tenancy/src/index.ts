@@ -44,7 +44,13 @@ export {
   type PendingInvitation,
   setOrganizationTwoFactorRequired,
 } from "./organizations.ts";
-export { createProject, getProject, listProjects, PROJECT_NAME_MAX_LENGTH } from "./projects.ts";
+export {
+  createProject,
+  getProject,
+  listProjects,
+  listProjectsWithEnvironments,
+  PROJECT_NAME_MAX_LENGTH,
+} from "./projects.ts";
 export {
   connectScim,
   createScimToken,

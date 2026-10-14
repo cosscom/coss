@@ -6,7 +6,6 @@ import {
   listUserSsoAccountsForAdmin,
 } from "@coss/tenancy/admin";
 import { Badge } from "@coss/ui/components/badge";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { Field, FieldLabel } from "@coss/ui/components/field";
 import {
   Select,
@@ -34,6 +33,8 @@ import {
   UserStatusBadge,
 } from "@/components/admin/status-badges";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
+import { SpecItem, SpecList } from "@/components/spec-list";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
 import {
@@ -56,15 +57,6 @@ const BAN_DURATIONS = [
   { value: "30d", label: "For 30 days" },
 ];
 
-function Detail(props: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <dt className="text-muted-foreground text-xs">{props.label}</dt>
-      <dd className="text-sm">{props.children}</dd>
-    </div>
-  );
-}
-
 export default async function AdminUserPage({ params }: PageProps<"/admin/users/[userId]">) {
   // Every admin page checks itself: Next renders the layout and the page in parallel, so the
   // layout's check alone would not keep this page's data out of the response.
@@ -84,63 +76,63 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
   const fields = { userId: user.id };
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
       <PageHeader
         description={user.email}
-        title={
-          <span className="flex flex-wrap items-center gap-2">
-            {user.name}
+        meta={
+          <>
             <PlatformRoleBadge role={user.role} />
             <UserStatusBadge banned={user.banned} />
-          </span>
+          </>
         }
+        title={user.name}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Account</CardTitle>
-        </CardHeader>
-        <CardPanel>
-          <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <Detail label="User id">
-              <code className="text-xs">{user.id}</code>
-            </Detail>
-            <Detail label="Created">{formatDateTime(user.createdAt)}</Detail>
-            <Detail label="Email">
+      <Panel title="Account">
+        <PanelBody flush>
+          <SpecList columns={2}>
+            <SpecItem label="User ID" mono>
+              {user.id}
+            </SpecItem>
+            <SpecItem label="Created" mono>
+              {formatDateTime(user.createdAt)}
+            </SpecItem>
+            <SpecItem label="Email">
               {user.emailVerified ? "Verified" : <Badge variant="warning">unverified</Badge>}
-            </Detail>
-            <Detail label="Two-factor">{user.twoFactorEnabled ? "On" : "Off"}</Detail>
-            <Detail label="SSO">
+            </SpecItem>
+            <SpecItem label="Two-factor">{user.twoFactorEnabled ? "On" : "Off"}</SpecItem>
+            <SpecItem label="SSO">
               {ssoAccounts.length === 0
                 ? "Not linked"
                 : ssoAccounts
                     .map((account) => account.organization?.name ?? account.providerId)
                     .join(", ")}
-            </Detail>
-            <Detail label="Active sessions">{sessions.length}</Detail>
+            </SpecItem>
+            <SpecItem label="Active sessions" mono>
+              {sessions.length}
+            </SpecItem>
             {user.banned ? (
               <>
-                <Detail label="Ban reason">{user.banReason ?? "—"}</Detail>
-                <Detail label="Ban expires">
+                <SpecItem label="Ban reason">{user.banReason ?? "—"}</SpecItem>
+                <SpecItem label="Ban expires" mono>
                   {user.banExpires ? formatDateTime(user.banExpires) : "Never"}
-                </Detail>
+                </SpecItem>
               </>
             ) : null}
-          </dl>
-        </CardPanel>
-      </Card>
+          </SpecList>
+        </PanelBody>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Controls</CardTitle>
-          <CardDescription>
-            {isSelf
-              ? "This is your account. Another admin has to change it."
-              : "Every action asks for a reason and is recorded in the audit log."}
-          </CardDescription>
-        </CardHeader>
+      <Panel
+        description={
+          isSelf
+            ? "This is your account. Another admin has to change it."
+            : "Every action asks for a reason and is recorded in the audit log."
+        }
+        title="Controls"
+      >
         {isSelf ? null : (
-          <CardPanel className="flex flex-col gap-4">
+          <PanelBody className="flex flex-col gap-4">
             <div className="flex flex-wrap gap-2">
               {user.banned ? (
                 <AdminActionDialog
@@ -255,124 +247,112 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
                 Admins can't be impersonated; remove the admin role first.
               </p>
             ) : null}
-          </CardPanel>
+          </PanelBody>
         )}
-      </Card>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Organizations</CardTitle>
-        </CardHeader>
-        <CardPanel className="p-2">
-          {memberships.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">Not a member of any organization.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Organization</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Joined</TableHead>
+      <Panel title="Organizations">
+        {memberships.length === 0 ? (
+          <PanelBody className="text-muted-foreground text-sm">
+            Not a member of any organization.
+          </PanelBody>
+        ) : (
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Organization</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Joined</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {memberships.map((membership) => (
+                <TableRow key={membership.memberId}>
+                  <TableCell className="font-medium">
+                    <Link
+                      className="hover:underline"
+                      href={`/admin/organizations/${membership.organization.id}`}
+                    >
+                      {membership.organization.name}
+                    </Link>{" "}
+                    <span className="font-mono text-muted-foreground text-xs">
+                      /{membership.organization.slug}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{membership.role}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <OrganizationStatusBadge suspended={membership.suspended} />
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {formatDateTime(membership.createdAt)}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {memberships.map((membership) => (
-                  <TableRow key={membership.memberId}>
-                    <TableCell className="font-medium">
-                      <Link
-                        className="hover:underline"
-                        href={`/admin/organizations/${membership.organization.id}`}
-                      >
-                        {membership.organization.name}
-                      </Link>{" "}
-                      <span className="text-muted-foreground">/{membership.organization.slug}</span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{membership.role}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <OrganizationStatusBadge suspended={membership.suspended} />
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatDateTime(membership.createdAt)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Active sessions</CardTitle>
-        </CardHeader>
-        <CardPanel className="p-2">
-          {sessions.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">No active sessions.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Started</TableHead>
-                  <TableHead>Expires</TableHead>
-                  <TableHead>IP address</TableHead>
-                  <TableHead>Device</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+      <Panel title="Active sessions">
+        {sessions.length === 0 ? (
+          <PanelBody className="text-muted-foreground text-sm">No active sessions.</PanelBody>
+        ) : (
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Started</TableHead>
+                <TableHead>Expires</TableHead>
+                <TableHead>IP address</TableHead>
+                <TableHead>Device</TableHead>
+                <TableHead className="w-0" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions.map((session) => (
+                <TableRow key={session.id}>
+                  <TableCell className="whitespace-nowrap">
+                    {formatDateTime(session.createdAt)}
+                    {session.impersonatedBy ? (
+                      <Badge className="ms-2" variant="warning">
+                        impersonation
+                      </Badge>
+                    ) : null}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                    {formatDateTime(session.expiresAt)}
+                  </TableCell>
+                  <TableCell className="font-mono text-muted-foreground text-xs">
+                    {session.ipAddress ?? "—"}
+                  </TableCell>
+                  <TableCell className="max-w-72 truncate text-muted-foreground">
+                    {session.userAgent ?? "—"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {isSelf ? null : (
+                      <AdminActionDialog
+                        action={revokeUserSessionAction}
+                        description="Signs this device out."
+                        fields={{ ...fields, sessionId: session.id }}
+                        reason="optional"
+                        submitLabel="Revoke session"
+                        title="Revoke this session?"
+                        triggerLabel="Revoke"
+                      />
+                    )}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sessions.map((session) => (
-                  <TableRow key={session.id}>
-                    <TableCell className="whitespace-nowrap">
-                      {formatDateTime(session.createdAt)}
-                      {session.impersonatedBy ? (
-                        <Badge className="ms-2" variant="warning">
-                          impersonation
-                        </Badge>
-                      ) : null}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatDateTime(session.expiresAt)}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {session.ipAddress ?? "—"}
-                    </TableCell>
-                    <TableCell className="max-w-72 truncate text-muted-foreground">
-                      {session.userAgent ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {isSelf ? null : (
-                        <AdminActionDialog
-                          action={revokeUserSessionAction}
-                          description="Signs this device out."
-                          fields={{ ...fields, sessionId: session.id }}
-                          reason="optional"
-                          submitLabel="Revoke session"
-                          title="Revoke this session?"
-                          triggerLabel="Revoke"
-                        />
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Admin activity</CardTitle>
-          <CardDescription>Admin actions taken on this user, newest first.</CardDescription>
-        </CardHeader>
-        <CardPanel className="p-2">
-          <AuditLogTable events={events} />
-        </CardPanel>
-      </Card>
-    </>
+      <Panel description="Admin actions taken on this user, newest first." title="Admin activity">
+        <AuditLogTable events={events} />
+      </Panel>
+    </div>
   );
 }

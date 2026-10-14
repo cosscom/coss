@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { AuthFrame } from "@/components/auth-frame";
 import { SignOutButton } from "@/components/sign-out-button";
 import { auth } from "@/lib/auth";
 import { getSession } from "@/lib/session";
@@ -17,8 +18,8 @@ export const metadata: Metadata = { title: "Accept invitation" };
 
 function InvitationCard(props: { title: string; description: ReactNode; children?: ReactNode }) {
   return (
-    <main className="flex min-h-dvh items-center justify-center p-6">
-      <Card className="w-full max-w-sm">
+    <AuthFrame>
+      <Card>
         <CardHeader>
           <CardTitle>{props.title}</CardTitle>
           <CardDescription>{props.description}</CardDescription>
@@ -27,7 +28,7 @@ function InvitationCard(props: { title: string; description: ReactNode; children
           <CardPanel className="flex flex-col gap-3">{props.children}</CardPanel>
         ) : null}
       </Card>
-    </main>
+    </AuthFrame>
   );
 }
 

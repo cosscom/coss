@@ -1,5 +1,5 @@
 import { getEnvironment } from "@coss/tenancy";
-import { Card, CardPanel } from "@coss/ui/components/card";
+import { Button } from "@coss/ui/components/button";
 import {
   Table,
   TableBody,
@@ -9,11 +9,14 @@ import {
   TableRow,
 } from "@coss/ui/components/table";
 import { listLogDrains } from "@coss/webhooks";
+import { CableIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ModeBadge } from "@/components/email-badges";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
 import { planHas } from "@/lib/billing";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
@@ -38,85 +41,94 @@ export default async function LogDrainsPage({
   ]);
   const base = `/${organization.slug}/projects/${project.slug}/${environment.slug}`;
 
+  const create =
+    can({ logDrain: ["create"] }) && planAllows ? (
+      <CreateDrainDialog
+        envSlug={environment.slug}
+        orgSlug={organization.slug}
+        projectSlug={project.slug}
+      />
+    ) : null;
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Link className="text-muted-foreground text-sm hover:text-foreground" href={base}>
-          ← {project.name} · {environment.name}
-        </Link>
-        <PageHeader
-          actions={
-            can({ logDrain: ["create"] }) && planAllows ? (
-              <CreateDrainDialog
-                envSlug={environment.slug}
-                orgSlug={organization.slug}
-                projectSlug={project.slug}
-              />
-            ) : null
-          }
-          description="Stream this environment's API requests, email events, webhook attempts and audit events to your own logging stack."
-          title={
-            <span className="flex items-center gap-2">
-              Log drains <ModeBadge mode={environment.mode} />
-            </span>
-          }
-        />
-      </div>
+      <PageHeader
+        actions={create}
+        description="Stream this environment's API requests, email events, webhook attempts and audit events to your own logging stack."
+        meta={<ModeBadge mode={environment.mode} />}
+        title="Log drains"
+      />
 
-      <Card>
-        <CardPanel className="p-2">
-          {drains.length === 0 && !planAllows ? (
-            <p className="p-4 text-muted-foreground text-sm">
-              Log drains are part of the Scale plan and above.{" "}
-              <Link
-                className="text-foreground underline"
-                href={`/${organization.slug}/settings/billing/plans`}
-              >
-                Compare plans
-              </Link>
-            </p>
-          ) : drains.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">
-              No log drains yet. Add one to send this environment's logs to an HTTPS endpoint you
-              run, as they are written.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>URL</TableHead>
-                  <TableHead>Sources</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
+      <Panel>
+        {drains.length === 0 && !planAllows ? (
+          <PanelBody flush>
+            <EmptyState
+              action={
+                <Button
+                  render={<Link href={`/${organization.slug}/settings/billing/plans`} />}
+                  size="sm"
+                  variant="outline"
+                >
+                  Compare plans
+                </Button>
+              }
+              compact
+              description="Log drains are part of the Scale plan and above."
+              icon={CableIcon}
+              title="Upgrade to stream logs"
+            />
+          </PanelBody>
+        ) : drains.length === 0 ? (
+          <PanelBody flush>
+            <EmptyState
+              action={create}
+              compact
+              description="Add one to send this environment's logs to an HTTPS endpoint you run, as they are written."
+              icon={CableIcon}
+              title="No log drains yet"
+            />
+          </PanelBody>
+        ) : (
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>URL</TableHead>
+                <TableHead>Sources</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {drains.map((drain) => (
+                <TableRow key={drain.id}>
+                  <TableCell className="max-w-96 truncate">
+                    <Link
+                      className="font-medium font-mono text-[0.8125rem] underline-offset-4 before:absolute before:inset-0 hover:underline"
+                      href={`${base}/log-drains/${drain.id}`}
+                    >
+                      {drain.url}
+                    </Link>
+                    {drain.description ? (
+                      <div className="truncate text-muted-foreground text-xs">
+                        {drain.description}
+                      </div>
+                    ) : null}
+                  </TableCell>
+                  <TableCell className="whitespace-normal text-muted-foreground">
+                    {sourcesSummary(drain.sources)}
+                  </TableCell>
+                  <TableCell>
+                    <DrainStatusBadge drain={drain} />
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">
+                    {formatDateTime(drain.createdAt)}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {drains.map((drain) => (
-                  <TableRow key={drain.id}>
-                    <TableCell className="max-w-80 truncate font-medium">
-                      <Link className="hover:underline" href={`${base}/log-drains/${drain.id}`}>
-                        {drain.url}
-                      </Link>
-                      {drain.description ? (
-                        <div className="truncate text-muted-foreground text-xs">
-                          {drain.description}
-                        </div>
-                      ) : null}
-                    </TableCell>
-                    <TableCell className="whitespace-normal">
-                      {sourcesSummary(drain.sources)}
-                    </TableCell>
-                    <TableCell>
-                      <DrainStatusBadge drain={drain} />
-                    </TableCell>
-                    <TableCell>{formatDateTime(drain.createdAt)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Panel>
     </div>
   );
 }

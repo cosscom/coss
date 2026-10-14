@@ -7,12 +7,14 @@ import {
 } from "@coss/tenancy";
 import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CopyButton } from "@/components/copy-button";
-import { PageHeader } from "@/components/page-header";
+import { CopyValue } from "@/components/copy-value";
+import { Panel, PanelBody } from "@/components/panel";
+import { SectionHeader } from "@/components/section-header";
+import { SpecItem, SpecList } from "@/components/spec-list";
+import { StatusDot } from "@/components/status-dot";
 import { env } from "@/env";
 import { planHas } from "@/lib/billing";
 import { requireOrgMember } from "@/lib/session";
@@ -59,15 +61,16 @@ export default async function DirectorySyncPage({ params }: PageProps<"/[orgSlug
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        description={
-          <>
-            Let your identity provider (Okta, Microsoft Entra ID, JumpCloud…) add, update and remove
-            members over SCIM 2.0.{" "}
-            <Link className="underline" href={`/${organization.slug}/settings`}>
-              Back to settings
-            </Link>
-          </>
+      <SectionHeader
+        description="Let your identity provider (Okta, Microsoft Entra ID, JumpCloud…) add, update and remove members over SCIM 2.0."
+        meta={
+          scim ? (
+            <Badge variant="outline">
+              <StatusDot tone={scim.status === "active" ? "success" : "warning"}>
+                {scim.status === "active" ? "Connected" : "Disconnecting"}
+              </StatusDot>
+            </Badge>
+          ) : null
         }
         title="Directory sync"
       />
@@ -120,65 +123,46 @@ export default async function DirectorySyncPage({ params }: PageProps<"/[orgSlug
         </Alert>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Directory
-            {scim ? (
-              <Badge variant={scim.status === "active" ? "success" : "warning"}>
-                {scim.status === "active" ? "Connected" : "Disconnecting"}
-              </Badge>
-            ) : null}
-          </CardTitle>
-          <CardDescription>
-            {scim
-              ? `Connected ${dateFormat.format(scim.createdAt)} · ${scim.activeUsers} active user${scim.activeUsers === 1 ? "" : "s"}, ${scim.inactiveUsers} deactivated · ${scim.groups} group${scim.groups === 1 ? "" : "s"}.`
-              : "Active directory users become members (or admins, through the group mappings below). Deactivating or deleting a user removes them from this organization and ends their SSO sessions here. While a directory is connected, only its active users can sign in with SSO; owners are never changed."}
-          </CardDescription>
-        </CardHeader>
+      <Panel
+        description={
+          scim
+            ? `Connected ${dateFormat.format(scim.createdAt)} · ${scim.activeUsers} active user${scim.activeUsers === 1 ? "" : "s"}, ${scim.inactiveUsers} deactivated · ${scim.groups} group${scim.groups === 1 ? "" : "s"}.`
+            : "Active directory users become members (or admins, through the group mappings below). Deactivating or deleting a user removes them from this organization and ends their SSO sessions here. While a directory is connected, only its active users can sign in with SSO; owners are never changed."
+        }
+        title="Directory"
+      >
         {canUpdate ? (
-          <CardPanel className="flex flex-col gap-4">
+          <PanelBody className="flex flex-col gap-4">
             <ScimConnectionControls
               canConnect={ssoActive}
               orgSlug={organization.slug}
               status={scim?.status ?? "none"}
             />
-          </CardPanel>
+          </PanelBody>
         ) : null}
-      </Card>
+      </Panel>
 
       {canUpdate ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Values for your identity provider</CardTitle>
-            <CardDescription>
-              In your identity provider's SCIM provisioning settings, use this base URL and a bearer
-              token from below. Users are matched by their primary email address (or userName when
-              they have no email).
-            </CardDescription>
-          </CardHeader>
-          <CardPanel className="flex flex-col gap-1">
-            <span className="font-medium text-sm">SCIM base URL</span>
-            <div className="flex items-center gap-2">
-              <code className="min-w-0 flex-1 truncate rounded-md bg-muted px-2 py-1 font-mono text-xs">
-                {baseUrl}
-              </code>
-              <CopyButton value={baseUrl} />
-            </div>
-          </CardPanel>
-        </Card>
+        <Panel
+          description="In your identity provider's SCIM provisioning settings, use this base URL and a bearer token from below. Users are matched by their primary email address (or userName when they have no email)."
+          title="Values for your identity provider"
+        >
+          <PanelBody flush>
+            <SpecList>
+              <SpecItem label="SCIM base URL" stacked>
+                <CopyValue value={baseUrl} />
+              </SpecItem>
+            </SpecList>
+          </PanelBody>
+        </Panel>
       ) : null}
 
       {scim && canUpdate ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Tokens</CardTitle>
-            <CardDescription>
-              Up to two tokens work at a time, so you can replace one without a gap: create a new
-              token, update your identity provider, then revoke the old one.
-            </CardDescription>
-          </CardHeader>
-          <CardPanel className="flex flex-col gap-4">
+        <Panel
+          description="Up to two tokens work at a time, so you can replace one without a gap: create a new token, update your identity provider, then revoke the old one."
+          title="Tokens"
+        >
+          <PanelBody className="flex flex-col gap-4">
             {scim.credentials.length === 0 ? (
               <p className="text-muted-foreground text-sm">
                 No working token. Create one to resume syncing.
@@ -194,7 +178,7 @@ export default async function DirectorySyncPage({ params }: PageProps<"/[orgSlug
                       <span className="flex items-center gap-2">
                         Created {dateFormat.format(credential.createdAt)}
                         {credential.status === "expired" ? (
-                          <Badge variant="warning">Expired</Badge>
+                          <StatusDot tone="warning">Expired</StatusDot>
                         ) : null}
                       </span>
                       <span className="text-muted-foreground text-xs">
@@ -219,37 +203,32 @@ export default async function DirectorySyncPage({ params }: PageProps<"/[orgSlug
               disabled={scim.status !== "active" || activeTokens >= 2}
               orgSlug={organization.slug}
             />
-          </CardPanel>
-        </Card>
+          </PanelBody>
+        </Panel>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Group roles</CardTitle>
-          <CardDescription>
-            Members of a directory group mapped to admin become admins; everyone else is a member.
-            Group names are matched without regard to case. Saving applies the mappings to every
-            directory user at once.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel>
+      <Panel
+        description="Members of a directory group mapped to admin become admins; everyone else is a member. Group names are matched without regard to case. Saving applies the mappings to every directory user at once."
+        title="Group roles"
+      >
+        <PanelBody>
           <ScimGroupRolesForm
             disabled={!canUpdate}
             mappings={mappings}
             orgSlug={organization.slug}
           />
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
       {scim && events.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent activity</CardTitle>
-          </CardHeader>
-          <CardPanel>
-            <ul className="flex flex-col gap-2 text-sm">
+        <Panel title="Recent activity">
+          <PanelBody flush>
+            <ul className="flex flex-col text-sm">
               {events.map((event) => (
-                <li className="flex flex-wrap justify-between gap-2" key={event.sequence}>
+                <li
+                  className="flex flex-wrap justify-between gap-2 border-t px-5 py-2.5 first:border-t-0"
+                  key={event.sequence}
+                >
                   <span>
                     {eventLabel(event)}
                     <span className="text-muted-foreground">
@@ -257,14 +236,14 @@ export default async function DirectorySyncPage({ params }: PageProps<"/[orgSlug
                       · {event.actorEmail ?? "COSS support"}
                     </span>
                   </span>
-                  <span className="text-muted-foreground">
+                  <span className="font-mono text-muted-foreground text-xs">
                     {dateTimeFormat.format(event.createdAt)}
                   </span>
                 </li>
               ))}
             </ul>
-          </CardPanel>
-        </Card>
+          </PanelBody>
+        </Panel>
       ) : null}
     </div>
   );

@@ -16,7 +16,6 @@ import {
 } from "@coss/billing/catalog";
 import { formatCents, parseDollarsToCents, parseDollarsToNanos } from "@coss/billing/money";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { Checkbox } from "@coss/ui/components/checkbox";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
@@ -31,6 +30,7 @@ import {
 import { Textarea } from "@coss/ui/components/textarea";
 import { useActionState, useMemo, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { Panel, PanelBody, PanelDescription, PanelHeader, PanelTitle } from "@/components/panel";
 import { createContractAction, simulateContractAction } from "./actions";
 
 type Option = { value: string; label: string };
@@ -391,14 +391,14 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
       <input name="organizationId" type="hidden" value={props.organizationId} />
       <input name="terms" type="hidden" value={terms} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Plan and fee</CardTitle>
-          <CardDescription>
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Plan and fee</PanelTitle>
+          <PanelDescription>
             The plan sets entitlements and list prices; everything below overrides it.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="grid gap-4 sm:grid-cols-2">
+          </PanelDescription>
+        </PanelHeader>
+        <PanelBody className="grid gap-4 sm:grid-cols-2">
           <Field>
             <FieldLabel>Base plan</FieldLabel>
             <Choice
@@ -482,18 +482,18 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
               value={state.overage}
             />
           </Field>
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Usage pricing</CardTitle>
-          <CardDescription>
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Usage pricing</PanelTitle>
+          <PanelDescription>
             Per product: list prices, a discount on them, or the deal's own tiers (prices per{" "}
             {"the product's display unit"}; leave the last tier's limit empty).
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-6">
+          </PanelDescription>
+        </PanelHeader>
+        <PanelBody className="flex flex-col gap-6">
           {METER_KEYS.map((meter) => {
             const rate = state.rates[meter];
             const definition = METERS[meter];
@@ -637,18 +637,18 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
               </div>
             );
           })}
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Commitments</CardTitle>
-          <CardDescription>
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Commitments</PanelTitle>
+          <PanelDescription>
             Minimum spend (the shortfall is invoiced at the period's end), prepaid spend (drawn down
             as credit) or prepaid units of one product (committed volume, e.g. SMS).
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-3">
+          </PanelDescription>
+        </PanelHeader>
+        <PanelBody className="flex flex-col gap-3">
           {state.commitments.map((row, index) => (
             <div className="grid gap-2 rounded-lg border p-3 sm:grid-cols-4" key={row.uid}>
               <Input
@@ -790,14 +790,14 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
               Add a commitment
             </Button>
           </div>
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Discounts and add-ons</CardTitle>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-3">
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Discounts and add-ons</PanelTitle>
+        </PanelHeader>
+        <PanelBody className="flex flex-col gap-3">
           {state.discounts.map((row, index) => (
             <div className="grid gap-2 sm:grid-cols-5" key={row.uid}>
               <Choice
@@ -918,15 +918,15 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
               Add an add-on
             </Button>
           </div>
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Entitlements</CardTitle>
-          <CardDescription>Leave as default to keep the plan's.</CardDescription>
-        </CardHeader>
-        <CardPanel className="grid gap-4 sm:grid-cols-3">
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Entitlements</PanelTitle>
+          <PanelDescription>Leave as default to keep the plan's.</PanelDescription>
+        </PanelHeader>
+        <PanelBody className="grid gap-4 sm:grid-cols-3">
           {FEATURE_KEYS.map((feature) => (
             <Field key={feature}>
               <FieldLabel>{FEATURE_LABELS[feature]}</FieldLabel>
@@ -989,17 +989,17 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
               value={state.sendPerDay}
             />
           </Field>
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Terms (JSON)</CardTitle>
-          <CardDescription>
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Terms (JSON)</PanelTitle>
+          <PanelDescription>
             What the contract stores. Edit it directly for anything the form doesn't cover.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-3">
+          </PanelDescription>
+        </PanelHeader>
+        <PanelBody className="flex flex-col gap-3">
           <Label className="flex items-center gap-2">
             <Checkbox
               checked={advanced}
@@ -1018,14 +1018,14 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
             rows={12}
             value={advanced ? json : built.json}
           />
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Term and approval</CardTitle>
-        </CardHeader>
-        <CardPanel className="grid gap-4 sm:grid-cols-2">
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Term and approval</PanelTitle>
+        </PanelHeader>
+        <PanelBody className="grid gap-4 sm:grid-cols-2">
           <Field>
             <FieldLabel>Kind</FieldLabel>
             <Select
@@ -1122,21 +1122,21 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
               Create contract
             </Button>
           </div>
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
       {simulation?.ok
         ? simulation.data.map((result) => (
-            <Card key={result.period}>
-              <CardHeader>
-                <CardTitle>{result.period}</CardTitle>
-                <CardDescription>
+            <Panel key={result.period}>
+              <PanelHeader>
+                <PanelTitle>{result.period}</PanelTitle>
+                <PanelDescription>
                   With these terms: {formatCents(BigInt(result.simulated.totalCents))} (fee
                   included, before existing credits). Actually:{" "}
                   {formatCents(BigInt(result.actual.totalCents))} (usage and arrears only).
-                </CardDescription>
-              </CardHeader>
-              <CardPanel className="grid gap-4 sm:grid-cols-2 text-sm">
+                </PanelDescription>
+              </PanelHeader>
+              <PanelBody className="grid gap-4 sm:grid-cols-2 text-sm">
                 {(["simulated", "actual"] as const).map((side) => (
                   <ul className="flex flex-col gap-1" key={side}>
                     <li className="font-medium">
@@ -1160,8 +1160,8 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
                     {warning}
                   </p>
                 ))}
-              </CardPanel>
-            </Card>
+              </PanelBody>
+            </Panel>
           ))
         : null}
     </form>

@@ -267,6 +267,13 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   the org is suspended). Read data straight
   from `@coss/tenancy` / `@coss/email` (the dashboard never calls the public API). Server code uses `auth` from
   `@/lib/auth`; client code uses `authClient` from `@/lib/auth-client`.
+- Layout follows coss.com's docs (`apps/site/DESIGN.md`: grayscale, Cal Sans/Paper Mono, hue only for status):
+  `AppShell` (`src/components/shell/`) is the sidebar + framed page with breadcrumbs and ⌘K, used by the
+  `[orgSlug]`, `/settings` and `/admin` layouts. `src/lib/navigation.ts` is the one list of pages the sidebar,
+  breadcrumbs, ⌘K and settings tabs read — add a page there. Its items carry icon components, so server components
+  pass an area name (`SubNav nav=…`, `AreaSidebar area=…`), never the lists. Pages compose `PageHeader`, `Panel`
+  (`<Table variant="card">` or `PanelBody` inside), `EmptyState`, `SpecList`, `StatRow`, `StatusDot`; no back
+  links (breadcrumbs). `data-page-width="full"` on a page lifts the shell's `max-w-6xl`.
 - Mutations live in a colocated `actions.ts` (`"use server"`): `(prev: ActionResult<T> | null, formData) => runAction(…)`
   (`src/lib/actions.ts`). Start with `requireOrgPermission(formString(formData, "orgSlug"), {…})`, re-check that target
   ids belong to that org (`getKeyBinding`, `getOrganizationMember`, `getPendingInvitation`, `getDomain`,
@@ -285,8 +292,9 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   `webhookManagementDeps()` (`src/lib/webhooks.ts`); domain/webhook errors carry user-facing messages. Revealing a
   webhook secret needs `webhook:update` (members can read endpoints but never see secrets).
 - Org settings (`[orgSlug]/settings`: rename, slug change, leave, 2FA requirement; `settings/sso`: SSO provider and
-  requirement; `settings/scim`: directory sync) and account settings (top-level `/settings`: name,
-  verification email, password change, sessions) call `auth.api.*` server-side — their HTTP routes stay disabled
+  requirement; `settings/scim`: directory sync) and account settings (top-level `/settings`: name and
+  verification email; `/settings/security`: password, connected accounts, two-factor, passkeys;
+  `/settings/sessions`) call `auth.api.*` server-side — their HTTP routes stay disabled
   (`disabledPaths`, below). `canRemoveOrgMember`/`assignableOrgRoles` mirror Better Auth's owner rules for the UI; Better
   Auth alone protects the last owner. Account actions refuse while impersonating.
 - Session-bound Better Auth calls made while *rendering* pass `authHeaders()` (`src/lib/session.ts`), not raw
@@ -589,7 +597,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     `disableOrganizationScim` (audited `organization.disable_scim`).
   - **2FA enforcement:** `organization.requireTwoFactor` (additional field, `input: false`; written only by
     `setOrganizationTwoFactorRequired` from org settings, which needs `organization:update` and an actor with 2FA).
-    `requireOrgMember` redirects members without `user.twoFactorEnabled` to `/settings` — passkeys don't satisfy it
+    `requireOrgMember` redirects members without `user.twoFactorEnabled` to `/settings/security` — passkeys don't satisfy it
     (the password still works without a code). API keys are unaffected. Admin recovery: `resetUserTwoFactor` (audited).
   - `packages/auth` must not import `next/*` or `"server-only"` (the `auth` CLI loads `src/auth.ts` on Node).
     `nextCookies()` is appended last, only in `apps/web/src/lib/auth.ts`.

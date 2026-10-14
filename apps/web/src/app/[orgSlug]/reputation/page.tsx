@@ -24,11 +24,8 @@ export default async function ReputationPage({ params }: PageProps<"/[orgSlug]/r
     <div className="flex flex-col gap-6">
       <PageHeader
         description="COSS watches the bounce and complaint rates of your live sending and suspends it automatically when they get too high, to protect deliverability for everyone. Sandbox sending is never affected."
-        title={
-          <span className="flex items-center gap-3">
-            Reputation <StandingBadge status={standing?.status ?? "good"} />
-          </span>
-        }
+        meta={<StandingBadge status={standing?.status ?? "good"} />}
+        title="Reputation"
       />
       {tenant?.sendingStatus === "disabled" ? (
         <SendingPausedAlert cause={tenant.statusCause} />

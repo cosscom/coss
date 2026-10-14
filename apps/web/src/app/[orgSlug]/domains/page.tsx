@@ -1,5 +1,4 @@
 import { getEmailTenant, listDomains } from "@coss/email";
-import { Card, CardPanel } from "@coss/ui/components/card";
 import {
   Table,
   TableBody,
@@ -8,13 +7,16 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { GlobeIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DomainStatusBadge } from "@/components/domain-badges";
+import { DomainStatusDot } from "@/components/domain-badges";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
 import { SendingPausedAlert } from "@/components/sending-paused-alert";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, formatRelative } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { AddDomainDialog } from "./add-domain-dialog";
 
@@ -29,11 +31,13 @@ export default async function DomainsPage({ params }: PageProps<"/[orgSlug]/doma
     getEmailTenant(organization.id),
   ]);
   const canCreate = can({ domain: ["create"] });
+  const addDialog = canCreate ? <AddDomainDialog orgSlug={organization.slug} /> : null;
+  const now = new Date();
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        actions={canCreate ? <AddDomainDialog orgSlug={organization.slug} /> : null}
+        actions={addDialog}
         description="Live API keys can send from verified domains of this organization, in every project."
         title="Domains"
       />
@@ -42,45 +46,55 @@ export default async function DomainsPage({ params }: PageProps<"/[orgSlug]/doma
         <SendingPausedAlert cause={tenant.statusCause} />
       ) : null}
 
-      <Card>
-        <CardPanel className="p-2">
-          {domains.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">
-              No domains yet. Add one to send from your own address with live API keys.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Domain</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Last checked</TableHead>
-                  <TableHead>Added</TableHead>
+      <Panel>
+        {domains.length === 0 ? (
+          <PanelBody flush>
+            <EmptyState
+              action={addDialog}
+              description="Add one to send from your own address with live API keys."
+              icon={GlobeIcon}
+              title="No domains yet"
+            />
+          </PanelBody>
+        ) : (
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Domain</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Last checked</TableHead>
+                <TableHead className="text-right">Added</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {domains.map((domain) => (
+                <TableRow key={domain.id}>
+                  <TableCell>
+                    <Link
+                      className="font-medium font-mono text-[0.8125rem] underline-offset-4 before:absolute before:inset-0 hover:underline"
+                      href={`/${organization.slug}/domains/${domain.id}`}
+                    >
+                      {domain.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <DomainStatusDot status={domain.status} />
+                  </TableCell>
+                  <TableCell
+                    className="text-muted-foreground"
+                    title={formatDateTime(domain.lastCheckedAt)}
+                  >
+                    {domain.lastCheckedAt ? formatRelative(domain.lastCheckedAt, now) : "—"}
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">
+                    {formatDateTime(domain.createdAt)}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {domains.map((domain) => (
-                  <TableRow key={domain.id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        className="hover:underline"
-                        href={`/${organization.slug}/domains/${domain.id}`}
-                      >
-                        {domain.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <DomainStatusBadge status={domain.status} />
-                    </TableCell>
-                    <TableCell>{formatDateTime(domain.lastCheckedAt)}</TableCell>
-                    <TableCell>{formatDateTime(domain.createdAt)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Panel>
     </div>
   );
 }

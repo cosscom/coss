@@ -145,7 +145,7 @@ function socialProviderField(formData: FormData): SocialProvider {
 
 /**
  * Sends the browser to Google or GitHub to connect that account; Better Auth's callback links it
- * and returns to /settings (`?error=` on failure). The account may use another address.
+ * and returns to /settings/security (`?error=` on failure). The account may use another address.
  */
 export async function connectSocialAccountAction(
   _previous: ActionResult | null,
@@ -161,8 +161,8 @@ export async function connectSocialAccountAction(
       headers: await headers(),
       body: {
         provider,
-        callbackURL: "/settings",
-        errorCallbackURL: "/settings",
+        callbackURL: "/settings/security",
+        errorCallbackURL: "/settings/security",
         disableRedirect: true,
       },
     });

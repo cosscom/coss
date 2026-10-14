@@ -1,7 +1,6 @@
 import { listOrganizationStandings, metricsSnapshot, REPUTATION_STATUSES } from "@coss/reputation";
 import type { ReputationStatus } from "@coss/reputation/schemas";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardPanel } from "@coss/ui/components/card";
 import {
   Table,
   TableBody,
@@ -13,6 +12,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
 import { formatRate, StandingBadge, triggerLabel } from "@/components/reputation";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
@@ -54,63 +54,61 @@ export default async function AdminOrganizationsPage({
         description="The reputation guard warns and suspends organizations automatically; only platform admins reinstate them."
         title="Organizations"
       />
-      <Card>
-        <CardPanel className="p-2">
-          {organizations.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">No organizations.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Organization</TableHead>
-                  <TableHead>Standing</TableHead>
-                  <TableHead>Reason</TableHead>
-                  <TableHead className="text-right">Bounce rate</TableHead>
-                  <TableHead className="text-right">Complaint rate</TableHead>
-                  <TableHead className="text-right">Recipients</TableHead>
-                  <TableHead>Evaluated</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {organizations.map(({ organizationId, name, slug, standing }) => {
-                  const checks = metricsSnapshot(standing?.metrics)?.checks ?? [];
-                  const check = (trigger: string) =>
-                    checks.find((candidate) => candidate.trigger === trigger);
-                  return (
-                    <TableRow key={organizationId}>
-                      <TableCell>
-                        <Link
-                          className="font-medium hover:underline"
-                          href={`/admin/organizations/${organizationId}/reputation`}
-                        >
-                          {name}
-                        </Link>
-                        <span className="ms-2 text-muted-foreground text-xs">{slug}</span>
-                      </TableCell>
-                      <TableCell>
-                        <StandingBadge status={standing?.status ?? "good"} />
-                      </TableCell>
-                      <TableCell>{triggerLabel(standing?.reason ?? null)}</TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatRate(check("bounce_rate")?.rate ?? null)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatRate(check("complaint_rate")?.rate ?? null)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {checks[0]?.volume ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatDateTime(standing?.lastEvaluatedAt)}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
+      <Panel>
+        {organizations.length === 0 ? (
+          <PanelBody className="text-muted-foreground text-sm">No organizations.</PanelBody>
+        ) : (
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Organization</TableHead>
+                <TableHead>Standing</TableHead>
+                <TableHead>Reason</TableHead>
+                <TableHead className="text-right">Bounce rate</TableHead>
+                <TableHead className="text-right">Complaint rate</TableHead>
+                <TableHead className="text-right">Recipients</TableHead>
+                <TableHead>Evaluated</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {organizations.map(({ organizationId, name, slug, standing }) => {
+                const checks = metricsSnapshot(standing?.metrics)?.checks ?? [];
+                const check = (trigger: string) =>
+                  checks.find((candidate) => candidate.trigger === trigger);
+                return (
+                  <TableRow key={organizationId}>
+                    <TableCell>
+                      <Link
+                        className="font-medium hover:underline"
+                        href={`/admin/organizations/${organizationId}/reputation`}
+                      >
+                        {name}
+                      </Link>
+                      <span className="ms-2 text-muted-foreground text-xs">{slug}</span>
+                    </TableCell>
+                    <TableCell>
+                      <StandingBadge status={standing?.status ?? "good"} />
+                    </TableCell>
+                    <TableCell>{triggerLabel(standing?.reason ?? null)}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatRate(check("bounce_rate")?.rate ?? null)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatRate(check("complaint_rate")?.rate ?? null)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {checks[0]?.volume ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatDateTime(standing?.lastEvaluatedAt)}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </Panel>
     </div>
   );
 }

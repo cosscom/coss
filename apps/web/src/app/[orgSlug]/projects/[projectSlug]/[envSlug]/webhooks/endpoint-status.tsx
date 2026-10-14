@@ -1,5 +1,5 @@
-import { Badge } from "@coss/ui/components/badge";
 import type { WebhookEndpointRow } from "@coss/webhooks";
+import { StatusDot } from "@/components/status-dot";
 
 export function EndpointStatusBadge({
   endpoint,
@@ -8,13 +8,13 @@ export function EndpointStatusBadge({
 }) {
   if (endpoint.enabled) {
     return endpoint.failingSince ? (
-      <Badge variant="warning">Failing</Badge>
+      <StatusDot tone="warning">Failing</StatusDot>
     ) : (
-      <Badge variant="success">Enabled</Badge>
+      <StatusDot tone="success">Enabled</StatusDot>
     );
   }
   if (endpoint.disabledReason === "failing") {
-    return <Badge variant="error">Disabled: failing</Badge>;
+    return <StatusDot tone="error">Disabled: failing</StatusDot>;
   }
-  return <Badge variant="secondary">Disabled</Badge>;
+  return <StatusDot tone="neutral">Disabled</StatusDot>;
 }

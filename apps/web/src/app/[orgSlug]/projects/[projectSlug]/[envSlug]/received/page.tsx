@@ -11,14 +11,6 @@ import { Alert, AlertDescription } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardHeader,
-  CardPanel,
-  CardTitle,
-} from "@coss/ui/components/card";
-import {
   Table,
   TableBody,
   TableCell,
@@ -26,14 +18,18 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { InboxIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CopyButton } from "@/components/copy-button";
-import { ReceivedStatusBadge } from "@/components/email-badges";
+import { CopyValue } from "@/components/copy-value";
+import { CursorPager } from "@/components/cursor-pager";
+import { ModeBadge, ReceivedStatusBadge } from "@/components/email-badges";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
 import { emailRuntime } from "@/lib/email-runtime";
-import { formatBytes, formatDateTime } from "@/lib/format";
+import { formatBytes, formatDateTime, formatRelative } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { SimulateReceivedEmailDialog } from "./received-forms";
 import { canSimulateReceiving } from "./simulate";
@@ -84,22 +80,20 @@ export default async function ReceivedEmailsPage({
   };
   const simulate = address && can({ email: ["send"] }) && canSimulateReceiving(environment.mode);
 
+  const now = new Date();
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Link className="text-muted-foreground text-sm hover:text-foreground" href={base}>
-          ← {project.name} · {environment.name}
-        </Link>
-        <PageHeader
-          actions={
-            simulate ? (
-              <SimulateReceivedEmailDialog {...formTarget} defaultTo={`hello@${address.domain}`} />
-            ) : null
-          }
-          description={`Emails sent to this environment's addresses. Each one also triggers an email.received webhook. Received emails are kept for ${formatRetentionDays(RETENTION_DAYS.receivedEmails)}.`}
-          title="Received emails"
-        />
-      </div>
+      <PageHeader
+        actions={
+          simulate ? (
+            <SimulateReceivedEmailDialog {...formTarget} defaultTo={`hello@${address.domain}`} />
+          ) : null
+        }
+        description={`Emails sent to this environment's addresses. Each one also triggers an email.received webhook. Received emails are kept for ${formatRetentionDays(RETENTION_DAYS.receivedEmails)}.`}
+        meta={<ModeBadge mode={environment.mode} />}
+        title="Received emails"
+      />
 
       {dropped > 0 ? (
         <Alert variant="warning">
@@ -110,130 +104,156 @@ export default async function ReceivedEmailsPage({
         </Alert>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Addresses</CardTitle>
-          <CardDescription>
+      <Panel
+        description={
+          <>
             Email to any address at these domains is received here.{" "}
-            <Link className="underline" href={`/${organization.slug}/domains`}>
+            <Link className="underline underline-offset-4" href={`/${organization.slug}/domains`}>
               Add your own domain
             </Link>{" "}
             from a domain&apos;s page.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="p-2">
-          {!inbound ? (
-            <p className="p-4 text-muted-foreground text-sm">
-              This deployment does not receive email.
-            </p>
-          ) : (
-            <Table>
-              <TableBody>
-                {address ? (
-                  <TableRow>
-                    <TableCell className="font-mono text-sm">*@{address.domain}</TableCell>
-                    <TableCell className="text-muted-foreground">COSS inbound address</TableCell>
-                    <TableCell className="text-right">
-                      <CopyButton label="Copy domain" value={address.domain} />
-                    </TableCell>
-                  </TableRow>
-                ) : null}
-                {receivingDomains.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="font-mono text-sm">*@{row.hostname}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      <Link
-                        className="underline"
-                        href={`/${organization.slug}/domains/${row.domainId}`}
-                      >
-                        Your domain
-                      </Link>{" "}
-                      (MX {row.record.status.replaceAll("_", " ")})
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <CopyButton label="Copy domain" value={row.hostname} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Inbox</CardTitle>
-          <CardDescription>Newest first.</CardDescription>
-          {after ? (
-            <CardAction>
-              <Button render={<Link href={listPath} />} size="sm" variant="outline">
-                Newest
-              </Button>
-            </CardAction>
-          ) : null}
-        </CardHeader>
-        <CardPanel className="p-2">
-          {!page ? (
-            <p className="p-4 text-muted-foreground text-sm">Invalid page.</p>
-          ) : page.data.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">No received emails yet.</p>
-          ) : (
-            <Table>
-              <TableHeader>
+          </>
+        }
+        title="Addresses"
+      >
+        {!inbound ? (
+          <PanelBody flush>
+            <EmptyState
+              compact
+              description="This deployment does not receive email."
+              icon={InboxIcon}
+              title="Receiving is off"
+            />
+          </PanelBody>
+        ) : (
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Domain</TableHead>
+                <TableHead>Source</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {address ? (
                 <TableRow>
-                  <TableHead>Received</TableHead>
-                  <TableHead>From</TableHead>
-                  <TableHead>To</TableHead>
-                  <TableHead>Subject</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Size</TableHead>
+                  <TableCell>
+                    <CopyValue display={`*@${address.domain}`} value={address.domain} />
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">COSS inbound address</TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {page.data.map((email) => (
-                  <TableRow key={email.id}>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatDateTime(email.received_at)}
-                    </TableCell>
-                    <TableCell className="max-w-56 truncate">
-                      {email.from ?? (email.mail_from || "—")}
-                    </TableCell>
-                    <TableCell className="max-w-56 truncate">
-                      {email.recipients.join(", ")}
-                    </TableCell>
-                    <TableCell className="max-w-72 truncate">
-                      <Link
-                        className="font-medium underline-offset-4 hover:underline"
-                        href={`${listPath}/${email.id}`}
-                      >
-                        {email.subject || "(no subject)"}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <ReceivedStatusBadge status={email.status} />
-                        {email.spam ? <Badge variant="warning">spam</Badge> : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatBytes(email.size)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
+              ) : null}
+              {receivingDomains.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>
+                    <CopyValue display={`*@${row.hostname}`} value={row.hostname} />
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    <Link
+                      className="underline underline-offset-4"
+                      href={`/${organization.slug}/domains/${row.domainId}`}
+                    >
+                      Your domain
+                    </Link>{" "}
+                    <span className="font-mono text-xs">
+                      (MX {row.record.status.replaceAll("_", " ")})
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Panel>
 
-      {nextPage ? (
-        <div className="flex gap-2">
-          <Button render={<Link href={nextPage} />} size="sm" variant="outline">
-            Older emails
-          </Button>
-        </div>
-      ) : null}
+      <Panel
+        footer={
+          page && (page.data.length > 0 || after) ? (
+            <CursorPager
+              newestHref={after ? listPath : undefined}
+              olderHref={nextPage ?? undefined}
+              summary={`${page.data.length} ${page.data.length === 1 ? "email" : "emails"}${after ? " (older)" : ""}`}
+            />
+          ) : null
+        }
+        title="Inbox"
+      >
+        {!page ? (
+          <PanelBody flush>
+            <EmptyState
+              action={
+                <Button render={<Link href={listPath} />} size="sm" variant="outline">
+                  Newest
+                </Button>
+              }
+              compact
+              description="This page of the inbox doesn't exist."
+              icon={InboxIcon}
+              title="Invalid page"
+            />
+          </PanelBody>
+        ) : page.data.length === 0 ? (
+          <PanelBody flush>
+            <EmptyState
+              compact
+              description={
+                address
+                  ? `Send an email to any address at ${address.domain} and it shows up here.`
+                  : "Emails sent to this environment's addresses show up here."
+              }
+              icon={InboxIcon}
+              title="No received emails yet"
+            />
+          </PanelBody>
+        ) : (
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-32">Status</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead>From</TableHead>
+                <TableHead>To</TableHead>
+                <TableHead className="text-right">Size</TableHead>
+                <TableHead className="text-right">Received</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {page.data.map((email) => (
+                <TableRow key={email.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      <ReceivedStatusBadge status={email.status} />
+                      {email.spam ? <Badge variant="warning">spam</Badge> : null}
+                    </div>
+                  </TableCell>
+                  <TableCell className="max-w-72 truncate">
+                    <Link
+                      className="font-medium underline-offset-4 before:absolute before:inset-0 hover:underline"
+                      href={`${listPath}/${email.id}`}
+                    >
+                      {email.subject || "(no subject)"}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="max-w-56 truncate text-muted-foreground">
+                    {email.from ?? (email.mail_from || "—")}
+                  </TableCell>
+                  <TableCell className="max-w-56 truncate text-muted-foreground">
+                    {email.recipients.join(", ")}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-right font-mono text-muted-foreground text-xs">
+                    {formatBytes(email.size)}
+                  </TableCell>
+                  <TableCell
+                    className="text-right font-mono text-muted-foreground text-xs"
+                    title={formatDateTime(email.received_at)}
+                  >
+                    {formatRelative(email.received_at, now)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Panel>
     </div>
   );
 }

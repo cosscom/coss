@@ -4,3 +4,22 @@
 
 /* Scan the dashboard for class names (path relative to this file). */
 @source "../../../../apps/web/src/**/*.{ts,tsx}";
+
+/* From coss.com (apps/site/src/app/global.css): the drafting dot grid behind empty states and the
+ * auth pages' panel, and the dotted leader between a spec label and its value. */
+.drafting-grid {
+  background-image: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--foreground) 16%, transparent) 1px,
+    transparent 1.2px
+  );
+  background-size: 1.5rem 1.5rem;
+  background-position: center;
+}
+
+.leader {
+  flex: 1;
+  min-width: 1.5rem;
+  border-bottom: 1px dotted color-mix(in srgb, var(--foreground) 32%, transparent);
+  translate: 0 -0.3em;
+}

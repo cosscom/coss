@@ -5,13 +5,13 @@ import {
 } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { versioning } from "@coss/versioning";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CopyButton } from "@/components/copy-button";
-import { PageHeader } from "@/components/page-header";
+import { CopyValue } from "@/components/copy-value";
+import { Panel, PanelBody, PanelRow } from "@/components/panel";
 import { RetentionPolicyCard } from "@/components/retention-policy";
+import { StatusDot } from "@/components/status-dot";
 import { requireOrgMember } from "@/lib/session";
 import { UpgradeApiVersionButton } from "./api-version-form";
 import { DeleteOrganizationButton } from "./delete-organization-button";
@@ -49,225 +49,181 @@ export default async function OrganizationSettingsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader description={`Manage ${organization.name}.`} title="Settings" />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>General</CardTitle>
-          <CardDescription>
-            {canUpdate
-              ? "The organization's name and the first segment of every dashboard URL."
-              : "Only owners and admins can change these."}
-          </CardDescription>
-        </CardHeader>
-        <CardPanel>
+      <Panel
+        description={
+          canUpdate
+            ? "The organization's name and the first segment of every dashboard URL."
+            : "Only owners and admins can change these."
+        }
+        title="General"
+      >
+        <PanelBody>
           <OrganizationForm
             disabled={!canUpdate}
             name={organization.name}
             orgSlug={organization.slug}
           />
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Two-factor authentication
-            {organization.requireTwoFactor ? <Badge variant="success">Required</Badge> : null}
-          </CardTitle>
-          <CardDescription>
-            {organization.requireTwoFactor
-              ? "Members must use an authenticator app to sign in with a password. Anyone without one is asked to set it up before they can open this organization (signing in with this organization's SSO counts instead)."
-              : "Require every member to use an authenticator app when signing in with a password. Members without one are asked to set it up on their next visit (signing in with this organization's SSO counts instead)."}{" "}
-            {withoutTwoFactor > 0
-              ? `${withoutTwoFactor} of ${members.length} member${members.length === 1 ? " doesn't" : "s don't"} have it yet.`
-              : "Every member has it set up."}
-          </CardDescription>
-        </CardHeader>
-        {canUpdate ? (
-          <CardPanel className="flex flex-col gap-3">
-            {!organization.requireTwoFactor && !hasTwoFactor ? (
-              <p className="text-muted-foreground text-sm">
-                <Link className="text-foreground underline" href="/settings">
-                  Set up two-factor authentication
-                </Link>{" "}
-                for your own account before requiring it.
-              </p>
-            ) : null}
-            <TwoFactorRequirementForm
-              canRequire={hasTwoFactor}
-              orgSlug={organization.slug}
-              required={organization.requireTwoFactor}
-            />
-          </CardPanel>
-        ) : null}
-      </Card>
-
-      {can({ billing: ["read"] }) ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Billing</CardTitle>
-            <CardDescription>
-              Your plan, usage this month, invoices, payment method and spend controls.
-            </CardDescription>
-          </CardHeader>
-          <CardPanel>
-            <Button
-              render={<Link href={`/${organization.slug}/settings/billing`} />}
-              size="sm"
-              variant="outline"
+      <Panel title="Security">
+        <PanelBody flush>
+          <PanelRow
+            description={
+              <>
+                {organization.requireTwoFactor
+                  ? "Members must use an authenticator app to sign in with a password. Anyone without one is asked to set it up before they can open this organization (signing in with this organization's SSO counts instead)."
+                  : "Require every member to use an authenticator app when signing in with a password. Members without one are asked to set it up on their next visit (signing in with this organization's SSO counts instead)."}{" "}
+                {withoutTwoFactor > 0
+                  ? `${withoutTwoFactor} of ${members.length} member${members.length === 1 ? " doesn't" : "s don't"} have it yet.`
+                  : "Every member has it set up."}
+              </>
+            }
+            label={
+              <span className="flex items-center gap-2">
+                Two-factor authentication
+                {organization.requireTwoFactor ? (
+                  <Badge variant="outline">
+                    <StatusDot tone="success">Required</StatusDot>
+                  </Badge>
+                ) : null}
+              </span>
+            }
+          >
+            {canUpdate ? (
+              <>
+                {!organization.requireTwoFactor && !hasTwoFactor ? (
+                  <p className="text-muted-foreground text-sm">
+                    <Link
+                      className="text-foreground underline underline-offset-4"
+                      href="/settings/security"
+                    >
+                      Set up two-factor authentication
+                    </Link>{" "}
+                    for your own account before requiring it.
+                  </p>
+                ) : null}
+                <TwoFactorRequirementForm
+                  canRequire={hasTwoFactor}
+                  orgSlug={organization.slug}
+                  required={organization.requireTwoFactor}
+                />
+              </>
+            ) : (
+              <span className="text-muted-foreground text-sm">
+                {organization.requireTwoFactor ? "Required" : "Not required"}
+              </span>
+            )}
+          </PanelRow>
+          {canReadSso ? (
+            <PanelRow
+              description="Let members sign in through your identity provider with OpenID Connect or SAML, and optionally require it."
+              label="Single sign-on"
             >
-              Open billing
-            </Button>
-          </CardPanel>
-        </Card>
-      ) : null}
-
-      {canReadSso ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Single sign-on
-              {organization.requireSso ? <Badge variant="success">Required</Badge> : null}
-            </CardTitle>
-            <CardDescription>
-              Let members sign in through your identity provider with OpenID Connect or SAML, and
-              optionally require it.
-            </CardDescription>
-          </CardHeader>
-          <CardPanel>
-            <Button
-              render={<Link href={`/${organization.slug}/settings/sso`} />}
-              size="sm"
-              variant="outline"
-            >
-              Configure SSO
-            </Button>
-          </CardPanel>
-        </Card>
-      ) : null}
-
-      {canReadScim ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Directory sync
-              {scimConnected ? <Badge variant="success">Connected</Badge> : null}
-            </CardTitle>
-            <CardDescription>
-              Let your identity provider add and remove members, and set admins from its groups,
-              over SCIM.
-            </CardDescription>
-          </CardHeader>
-          <CardPanel>
-            <Button
-              render={<Link href={`/${organization.slug}/settings/scim`} />}
-              size="sm"
-              variant="outline"
-            >
-              Configure directory sync
-            </Button>
-          </CardPanel>
-        </Card>
-      ) : null}
-
-      {can({ audit: ["read"] }) ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Audit log</CardTitle>
-            <CardDescription>
-              Who changed what: API keys, members, domains, webhooks, suppressions and settings,
-              from the dashboard or the API.
-            </CardDescription>
-          </CardHeader>
-          <CardPanel>
-            <Button
-              render={<Link href={`/${organization.slug}/settings/audit`} />}
-              size="sm"
-              variant="outline"
-            >
-              View audit log
-            </Button>
-          </CardPanel>
-        </Card>
-      ) : null}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            API version
-            {pinnedApiVersion === null || pinnedApiVersion === versioning.latest ? (
-              <Badge variant="success">Latest</Badge>
-            ) : null}
-          </CardTitle>
-          <CardDescription>
-            API requests without a <code>Coss-Version</code> header use this version. The SDK always
-            sends the version it was built for.{" "}
-            {pinnedApiVersion === null
-              ? `It is set to the latest version (${versioning.latest}) on your first API request.`
-              : null}
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-wrap items-center gap-3">
-          <code className="rounded-md bg-muted px-2 py-1 font-mono text-sm">
-            {pinnedApiVersion ?? versioning.latest}
-          </code>
-          {canUpdate && pinnedApiVersion !== null && pinnedApiVersion < versioning.latest ? (
-            <UpgradeApiVersionButton
-              changes={apiVersionChanges}
-              latest={versioning.latest}
-              orgSlug={organization.slug}
-            />
+              <div className="flex flex-wrap items-center gap-3">
+                <StatusDot tone={organization.requireSso ? "success" : "neutral"}>
+                  {organization.requireSso ? "Required" : "Optional"}
+                </StatusDot>
+                <Button
+                  render={<Link href={`/${organization.slug}/settings/sso`} />}
+                  size="sm"
+                  variant="outline"
+                >
+                  Configure
+                </Button>
+              </div>
+            </PanelRow>
           ) : null}
-        </CardPanel>
-      </Card>
+          {canReadScim ? (
+            <PanelRow
+              description="Let your identity provider add and remove members, and set admins from its groups, over SCIM."
+              label="Directory sync"
+            >
+              <div className="flex flex-wrap items-center gap-3">
+                <StatusDot tone={scimConnected ? "success" : "neutral"}>
+                  {scimConnected ? "Connected" : "Not connected"}
+                </StatusDot>
+                <Button
+                  render={<Link href={`/${organization.slug}/settings/scim`} />}
+                  size="sm"
+                  variant="outline"
+                >
+                  Configure
+                </Button>
+              </div>
+            </PanelRow>
+          ) : null}
+        </PanelBody>
+      </Panel>
+
+      <Panel title="API">
+        <PanelBody flush>
+          <PanelRow
+            description={
+              <>
+                API requests without a <code className="font-mono">Coss-Version</code> header use
+                this version. The SDK always sends the version it was built for.{" "}
+                {pinnedApiVersion === null
+                  ? `It is set to the latest version (${versioning.latest}) on your first API request.`
+                  : null}
+              </>
+            }
+            label="API version"
+          >
+            <div className="flex flex-wrap items-center gap-3">
+              <code className="font-mono text-sm">{pinnedApiVersion ?? versioning.latest}</code>
+              {pinnedApiVersion === null || pinnedApiVersion === versioning.latest ? (
+                <Badge variant="outline">
+                  <StatusDot tone="success">Latest</StatusDot>
+                </Badge>
+              ) : null}
+              {canUpdate && pinnedApiVersion !== null && pinnedApiVersion < versioning.latest ? (
+                <UpgradeApiVersionButton
+                  changes={apiVersionChanges}
+                  latest={versioning.latest}
+                  orgSlug={organization.slug}
+                />
+              ) : null}
+            </div>
+          </PanelRow>
+          <PanelRow description="Include it when you contact support." label="Organization ID">
+            <CopyValue value={organization.id} />
+          </PanelRow>
+        </PanelBody>
+      </Panel>
 
       <RetentionPolicyCard />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Organization ID</CardTitle>
-          <CardDescription>Include it when you contact support.</CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-wrap items-center gap-3">
-          <code className="rounded-md bg-muted px-2 py-1 font-mono text-sm">{organization.id}</code>
-          <CopyButton value={organization.id} />
-        </CardPanel>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Leave organization</CardTitle>
-          <CardDescription>
-            {lastOwner
-              ? "You're the only owner. Make another member an owner before you leave."
-              : "Remove yourself from this organization."}
-          </CardDescription>
-        </CardHeader>
-        {lastOwner || suspended ? null : (
-          <CardPanel>
-            <LeaveOrganizationButton orgName={organization.name} orgSlug={organization.slug} />
-          </CardPanel>
-        )}
-      </Card>
-
-      {isOwner ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Delete organization</CardTitle>
-            <CardDescription>
-              {suspended
-                ? "A suspended organization can't be deleted. Contact support."
-                : "Permanently delete this organization with its projects, emails, domains, suppression lists and webhooks. Members lose access and API keys stop working immediately."}
-            </CardDescription>
-          </CardHeader>
-          {canDelete ? (
-            <CardPanel>
-              <DeleteOrganizationButton orgName={organization.name} orgSlug={organization.slug} />
-            </CardPanel>
+      <Panel className="border-destructive/24" title="Danger zone">
+        <PanelBody flush>
+          <PanelRow
+            description={
+              lastOwner
+                ? "You're the only owner. Make another member an owner before you leave."
+                : "Remove yourself from this organization."
+            }
+            label="Leave organization"
+          >
+            {lastOwner || suspended ? null : (
+              <LeaveOrganizationButton orgName={organization.name} orgSlug={organization.slug} />
+            )}
+          </PanelRow>
+          {isOwner ? (
+            <PanelRow
+              description={
+                suspended
+                  ? "A suspended organization can't be deleted. Contact support."
+                  : "Permanently delete this organization with its projects, emails, domains, suppression lists and webhooks. Members lose access and API keys stop working immediately."
+              }
+              label="Delete organization"
+            >
+              {canDelete ? (
+                <DeleteOrganizationButton orgName={organization.name} orgSlug={organization.slug} />
+              ) : null}
+            </PanelRow>
           ) : null}
-        </Card>
-      ) : null}
+        </PanelBody>
+      </Panel>
     </div>
   );
 }

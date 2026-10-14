@@ -1,6 +1,5 @@
 import { type AdminUserStatus, listUsersForAdmin } from "@coss/tenancy/admin";
 import { Badge } from "@coss/ui/components/badge";
-import { Card, CardPanel } from "@coss/ui/components/card";
 import {
   Table,
   TableBody,
@@ -9,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { UsersIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -20,7 +20,9 @@ import {
   stringParam,
 } from "@/components/admin/list-controls";
 import { PlatformRoleBadge, UserStatusBadge } from "@/components/admin/status-badges";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
 
@@ -50,7 +52,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
   });
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
       <PageHeader description="Everyone with a COSS account." title="Users" />
       <ListFilters
         path="/admin/users"
@@ -59,9 +61,33 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
         status={status}
         statuses={[...STATUSES]}
       />
-      <Card>
-        <CardPanel className="p-2">
-          <Table>
+      <Panel
+        footer={
+          <Pager
+            hrefFor={(target) =>
+              listHref("/admin/users", {
+                q: query,
+                status: status === "all" ? undefined : status,
+                page: target,
+              })
+            }
+            page={page}
+            shown={users.length}
+            total={total}
+          />
+        }
+      >
+        {users.length === 0 ? (
+          <PanelBody flush>
+            <EmptyState
+              compact
+              description="No user matches these filters."
+              icon={UsersIcon}
+              title="No users found"
+            />
+          </PanelBody>
+        ) : (
+          <Table variant="card">
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
@@ -100,20 +126,8 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
               ))}
             </TableBody>
           </Table>
-        </CardPanel>
-      </Card>
-      <Pager
-        hrefFor={(target) =>
-          listHref("/admin/users", {
-            q: query,
-            status: status === "all" ? undefined : status,
-            page: target,
-          })
-        }
-        page={page}
-        shown={users.length}
-        total={total}
-      />
-    </>
+        )}
+      </Panel>
+    </div>
   );
 }
