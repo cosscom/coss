@@ -1,0 +1,47 @@
+---
+title: Conference agenda
+description: A public, read-only programme in 24-hour time with tracks as locations and a details sheet on click.
+---
+
+Two days of a conference programme, this week's Wednesday and Thursday.
+"Programme" is the agenda list; "Timetable" is the day grid, where parallel
+tracks sit side by side. Click any session for its abstract and speakers.
+Nothing can be dragged: every session is read-only.
+
+<Example name="conference-agenda" />
+
+## How it works
+
+- Every event is `readOnly: true`. The engine skips the drag half of a
+  pointer-down on them and the keyboard layer refuses to move them — a public
+  programme is read, not edited ([Events](/calendar/docs/events)).
+- `locale="en-GB"` and `hour12={false}` put every label on a 24-hour clock;
+  the sheet formats its own time line with `formatRange` and the same
+  options ([Settings](/calendar/docs/settings)).
+- `view` and `date` are controlled — plain React state passed down. The
+  header is a child of `<Kloq>`, so its segmented control and ‹ › go through
+  `useKloq()` (`switchView`, `step`) and come back as `onViewChange` and
+  `onDateChange`, the same way a click on a day heading in the programme
+  opens that day's timetable
+  ([Controlled state](/calendar/docs/controlled-state), [Views](/calendar/docs/views)).
+- `date` starts on the first conference day. The agenda lists 30 days from
+  there; the day view opens on it.
+- The details sheet is the `EventPanel` slot, not a listener on
+  `onEventClick`: a slot opens from every view, including the agenda list,
+  and replaces the built-in editor rather than stacking on top of it
+  ([Slots](/calendar/docs/slots)). It receives a `PlacedOccurrence` — `event.source`
+  is the stored session, `startMin` / `endMin` are the grid's minutes. The
+  slot unmounts as soon as `onClose` runs, so the sheet keeps its own `open`
+  state and calls `onClose` from `onOpenChangeComplete`, after it has slid
+  out.
+- Tracks are the `location` field, and speakers are `attendees`; "Add to my
+  calendar" is `downloadICS(session)` ([ICS](/calendar/docs/ics)).
+
+## Take it further
+
+- Colour the tracks through registered calendars instead of per-event
+  colours, and let attendees hide the ones they don't care about.
+- Mark the sessions a visitor starred with a second, writable calendar and
+  export just those.
+- Multi-city programme: `displayTimeZone` draws the grid in the venue's zone
+  wherever the visitor is ([Time zones](/calendar/docs/time-zones)).

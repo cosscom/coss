@@ -1,0 +1,90 @@
+---
+title: Controlled state
+description: view, date and events as controlled or uncontrolled props, plus onRangeChange and controlled undo/redo.
+---
+
+Three pieces of state follow the standard React convention: `view`, `date` and
+`events`. Provide the prop and it is authoritative; omit it and the component
+owns it, starting from its `default*` twin. The change callbacks fire either
+way.
+
+## view and date
+
+When `view` is set, the in-app switcher and ⌘K only *request* a change through
+`onViewChange` — nothing moves until you pass a new value. `date` works
+identically: prev/next, Today, ⌘K jump-to-day and the arrow keys all report
+through `onDateChange` and change nothing on their own.
+
+```tsx title="app/calendar.tsx"
+const [view, setView] = useState<KloqView>("week");
+const [date, setDate] = useState(() => new Date());
+
+<Kloq
+  view={view}
+  onViewChange={setView}
+  date={date}
+  onDateChange={setDate}
+/>
+```
+
+`KloqView` is `"day" | "week" | "month" | "agenda" | "year"` or an n-day span
+(2–14). One nuance: the responsive collapse never rewrites your controlled
+`view` — your prop is the *intent*, the collapse is derived, reported through
+`onViewChange`, and undone when the box widens.
+
+## events
+
+Providing `events` switches the internal store off entirely — no seeds, no
+persistence, no built-in history. Every committed interaction arrives as a full
+next array through `onEventsChange`; you store it wherever your state lives.
+
+```tsx
+const [events, setEvents] = useState<CalEvent[]>(initial);
+
+<Kloq events={events} onEventsChange={setEvents} />
+```
+
+<Callout>
+  Controlled `events` and the `persistence` prop are mutually exclusive by
+  construction — persistence belongs to the internal store, and a controlled
+  component has none. For a backend, pair controlled events with `onCommit`
+  (next page) or keep the store uncontrolled and hand it an adapter.
+</Callout>
+
+## onRangeChange — what to fetch
+
+`onRangeChange(start, end)` reports the visible range as `[start, end)`, `end`
+being midnight after the last visible day. It fires once on mount and then on
+every view or date change — exactly the signal a host with a real backend needs
+to know what to fetch. `rangePadding` widens what it reports by N days (or
+`{ before, after }`), so each fetch already covers the next page and stepping
+into it never shows a stale one.
+
+```tsx
+<Kloq
+  events={events}
+  onEventsChange={setEvents}
+  onRangeChange={(start, end) => {
+    fetchEvents(start, end).then(setEvents);
+  }}
+/>
+```
+
+## Controlled undo/redo
+
+Uncontrolled, history is built in: `⌘Z` / `⇧⌘Z` just work, animated.
+Controlled, the component cannot know what "undo" means in your store — provide
+`onUndo` / `onRedo` and the same keys call them instead.
+
+## The full table
+
+<TypeTable
+  type={{
+    "view / defaultView / onViewChange": { type: "KloqView", description: "The current view. Controlled when view is set." },
+    "date / defaultDate / onDateChange": { type: "Date", description: "The anchor date. Controlled when date is set." },
+    "events / defaultEvents / onEventsChange": { type: "CalEvent[]", description: "The store. Controlled when events is set — persistence off." },
+    onRangeChange: { optional: true, type: "(start: Date, end: Date) => void", description: "Visible [start, end); fires on mount and every view/date change." },
+    rangePadding: { optional: true, type: "number | { before, after }", description: "Days to widen the reported range by, so a fetch prefetches the neighbouring page. Default 0." },
+    "onUndo / onRedo": { type: "() => void", description: "⌘Z/⇧⌘Z targets in controlled mode; ignored when uncontrolled." },
+  }}
+/>

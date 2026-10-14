@@ -1,0 +1,50 @@
+---
+title: Shift scheduler
+description: Five people, one week, as timeline lanes — drag to schedule, drag across rows to reassign a shift to someone else.
+---
+
+Five people, one week, opening to close, each on their own row. A shift is a
+bar coloured by the person working it; days off are wider bars covering the
+whole day, labelled "All day" and hatched because they are marked free. The legend counts rostered hours
+from the live events — resize Ben's Saturday and his number moves.
+
+<Example name="shift-roster" />
+
+## How it works
+
+- `view="timeline"` with `lanes={LANES}` — one [`Lane`](/calendar/docs/resources) per
+  person, rather than the day columns a `week` view would give this a
+  calendar-shaped approximation of ([Resource timeline](/calendar/docs/timeline)).
+- `timelineWindow` is **controlled**: `start`/`end` pin the window to this
+  calendar week exactly (`slotMinutes: 60`), so the roster never drifts —
+  there's no toolbar ‹ › here, because a controlled window doesn't move with
+  it ([the two `timelineWindow` modes](/calendar/docs/timeline#the-visible-span-timelinewindow)).
+- The `LaneAdapter` is hand-rolled, not `byResourceId()`: reassigning a shift
+  to someone else's row doesn't just repoint `personId` — `assign` also
+  repaints the bar's colour and retitles it to the new person, so a dragged
+  shift reads correctly on arrival instead of carrying its old owner's name
+  along. `assign`'s contract is "the patch that puts this event on `laneId`",
+  and nothing limits that patch to the field `laneOf` reads
+  ([a worked custom adapter](/calendar/docs/resources#a-row-is-whatever-you-say-it-is)).
+- Days off are ordinary events with `allDay: true` spanning midnight to
+  midnight (`dateOnlyAt` / `dateOnlyAfter`) — the
+  timeline has no all-day lane to promote them into, so they render as a bar
+  the width of the day; `busy: false` is what draws the hatch.
+- `workingHours` (`{ start: 6, end: 22 }`) tints outside the café's hours on
+  every day the window covers, and `density="compact"` shrinks the bars to
+  fit five rows without scrolling.
+- `events` / `onEventsChange` make the roster React state
+  ([Controlled state](/calendar/docs/controlled-state)); `hoursByPerson` in `data.ts`
+  sums `wallMinutesBetween` over it on every render, which is why the legend
+  follows a resize.
+
+## Take it further
+
+- Put each person's row height up with `Lane.height` for anyone who
+  regularly gets double-covered, the same lever the
+  [room booking](/calendar/docs/examples/room-booking) example uses for its busiest
+  room ([the overflow cap](/calendar/docs/timeline#row-height-and-the-overflow-cap)).
+- Add `onCommit` to push each change to a rota service and let a rejection
+  spring the shift back ([Optimistic sync](/calendar/docs/optimistic-sync)).
+- Flag understaffed hours: `findConflicts` gives you overlaps, and the gaps
+  are the complement.

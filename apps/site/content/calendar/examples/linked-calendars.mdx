@@ -1,0 +1,46 @@
+---
+title: Linked month and day views
+description: A month overview beside a day view, both controlled by the same date — click a day on the left, it opens on the right.
+---
+
+Two `<Kloq>` instances, one `useState`. Click a date number in the month on
+the left and the day view on the right jumps there; step the day view with
+‹ › and the month follows. They share the events too, so a block moved on the
+right moves on the left.
+
+<Example name="linked-calendars" />
+
+## How it works
+
+Both instances get the same `date` and the same `onDateChange`, so either one
+navigating updates the other — the standard
+[controlled pattern](/calendar/docs/controlled-state#view-and-date), applied twice.
+`view` is controlled as well, pinned to `"month"` on the left and `"day"` on
+the right.
+
+Clicking a date number in a month view calls the calendar's `jumpToDay`,
+which reports `onDateChange(date)` and then requests `onViewChange("day")`.
+The date lands in the shared state; the view request goes nowhere because
+`view` is controlled and no `onViewChange` is wired — so the month stays a
+month and the day view, reading the same date, opens that day.
+
+`events` / `onEventsChange` are shared the same way. Controlled events switch
+the internal store off, so a drag on the right commits through
+`onEventsChange` into the one array both instances render from.
+
+`responsive={false}` on both. The views are pinned, so there is nothing for
+the [responsive collapse](/calendar/docs/views#the-responsive-collapse) to request;
+turning it off keeps `onViewChange` quiet. The month still draws its compact
+dot form below 640px — that is a density choice tied to the box width, not a
+view change, and it is what makes a 320px month legible.
+
+The strip above each calendar is one component, `Nav` from `parts.tsx`,
+rendered twice. It calls `useKloq()` and gets the state of whichever instance it sits inside — `step`,
+`goToday`, `atToday` and the resolved `view` for `formatViewTitle`. See
+[toolbar & chrome](/calendar/docs/chrome#usekloq).
+
+## Take it further
+
+Add `onViewChange` to the right-hand instance and let it switch between
+`"day"` and `3`; the month still only ever reports the date. Or mirror the
+shared date into the URL, as in [View and date in the URL](/calendar/docs/examples/url-state).

@@ -1,0 +1,42 @@
+{
+  "name": "kloq",
+  "version": "0.1.0",
+  "description": "The calendar behind coss.com/calendar: hand-tuned drag interactions, coss ui components, a Figma-style design mode.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./themes": "./src/lib/themes.ts",
+    "./design-mode": "./src/design-mode/index.ts",
+    "./settings": "./src/settings.ts",
+    "./styles.css": "./src/styles/kloq.css",
+    "./tokens.css": "./src/styles/tokens.css"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "catalog:",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "catalog:",
+    "tailwind-merge": "^3.7.0"
+  },
+  "peerDependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@coss/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:"
+  }
+}

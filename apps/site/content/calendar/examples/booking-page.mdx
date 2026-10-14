@@ -1,0 +1,54 @@
+---
+title: Booking calendar
+description: A Cal.com-style availability picker — busy time hatched and refused by constraints, click a free slot to book.
+---
+
+Three days of a host's calendar, clipped to 9–18. The hatched bands are her
+busy time — not events, just refused time the grid draws and defends. Click
+any free half-hour and a green draft appears with a confirm card beside it;
+drag or resize the draft to adjust it, then confirm. Try dragging the draft
+into a hatch: the snap holds it out.
+
+<Example name="booking-page" />
+
+## How it works
+
+- The host's busy time is a `BusyCalendar` — windows keyed by ISO date,
+  `"2026-09-02": [["12:00", "13:00"]]` — the shape an availability endpoint
+  returns. `hostConstraints` folds it into one
+  [`constraints`](/calendar/docs/constraints) object: `minDate` blocks the past, and
+  `isSlotDisabled` refuses those windows, anything outside 9–17, and every
+  confirmed booking. The grid hatches the refused time and refuses create,
+  move, resize and slot clicks into it — no placeholder "Busy" events
+  anywhere.
+- The constraints are rebuilt from `busy` and `events` in a `useMemo`, so the
+  moment a booking is confirmed its time joins the hatch for the next
+  visitor.
+- `onSlotClick` fires for a click on free canvas, already snapped. The
+  example re-checks the full 30-minute call with `createConstraints` +
+  `slotAllowed` — the same pure helpers the grid runs — because a click near
+  the end of the day proposes an end the clicked slot alone can't vouch for.
+- `dayStartHour={9}` / `dayEndHour={18}` clip the grid; `workingHours` tints
+  the bookable band inside it ([Settings](/calendar/docs/settings)). `snapMinutes={30}`
+  and `minEventMinutes={30}` make every drag land on a half-hour.
+- `events` / `onEventsChange` keep the array in React state
+  ([Controlled state](/calendar/docs/controlled-state)): confirmed bookings are
+  `readOnly` events, and whatever else the grid hands back — a drag-create, a
+  moved draft — folds into the one green `draft`.
+- `components={{ EventPanel: () => null }}` swaps the built-in editor for
+  nothing; the confirm card beside the grid is the panel ([Slots](/calendar/docs/slots)).
+  The card is a `Form` of `Field`s, so a missing name or a malformed address
+  is answered inline, under the input.
+  `view={3}` with `responsive={false}` keeps three columns at every width,
+  and the nav strip (`Nav` in `parts.tsx`) is built on `useKloq()` ([Toolbar & chrome](/calendar/docs/chrome)).
+
+## Take it further
+
+- Feed `isSlotDisabled` from a fetch keyed on `onRangeChange`, so paging to
+  next week loads that week's busy windows — the pattern is on the
+  [constraints page](/calendar/docs/constraints).
+- Draw the grid in the host's zone with `displayTimeZone="Europe/London"`
+  and add the visitor's as a gutter column with `timeZones`
+  ([Time zones](/calendar/docs/time-zones)).
+- On confirm, `POST` the booking and hand the visitor a `.ics` with
+  `downloadICS(booking)` ([ICS](/calendar/docs/ics)).

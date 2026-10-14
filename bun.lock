@@ -42,6 +42,7 @@
       "name": "@coss/site",
       "version": "0.0.0",
       "dependencies": {
+        "@base-ui/react": "catalog:",
         "@coss/api": "workspace:*",
         "@coss/auth": "workspace:*",
         "@coss/billing": "workspace:*",
@@ -52,11 +53,13 @@
         "@hugeicons/core-free-icons": "^4.3.5",
         "@hugeicons/react": "^1.1.10",
         "@sentry/nextjs": "catalog:",
+        "class-variance-authority": "^0.7.1",
         "fumadocs-core": "16.17.1",
         "fumadocs-mdx": "15.4.7",
         "fumadocs-openapi": "12.4.1",
         "fumadocs-twoslash": "4.0.2",
         "fumadocs-ui": "npm:@fumadocs/base-ui@16.17.1",
+        "kloq": "workspace:*",
         "lucide-react": "catalog:",
         "next": "catalog:",
         "react": "catalog:",
@@ -253,6 +256,30 @@
         "@coss/tsconfig": "workspace:*",
         "@types/bun": "catalog:",
         "typescript": "catalog:",
+      },
+    },
+    "packages/kloq": {
+      "name": "kloq",
+      "version": "0.1.0",
+      "dependencies": {
+        "@base-ui/react": "catalog:",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "lucide-react": "catalog:",
+        "tailwind-merge": "^3.7.0",
+      },
+      "devDependencies": {
+        "@coss/tsconfig": "workspace:*",
+        "@types/node": "catalog:",
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "typescript": "catalog:",
+      },
+      "peerDependencies": {
+        "react": "^19.3.0",
+        "react-dom": "^19.3.0",
       },
     },
     "packages/logs": {
@@ -1673,6 +1700,8 @@
     "jsonc-parser": ["jsonc-parser@3.3.1", "", {}, "sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ=="],
 
     "kleur": ["kleur@3.0.3", "", {}, "sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w=="],
+
+    "kloq": ["kloq@workspace:packages/kloq"],
 
     "kysely": ["kysely@0.29.6", "", {}, "sha512-hHaB8C/rfzDDtr/t8YZwxAuPJTT0zHyaPoVzcXwDYhYNAgH/4sIfVhi/XLLIY+bL/FqaIJnjATDbi8ObSELmxg=="],
 

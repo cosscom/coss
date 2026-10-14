@@ -29,6 +29,7 @@ export const PRODUCT_MENU: readonly {
   { label: "coss.com sdk", href: DOCS_ROUTE },
   { label: "coss.com ui", href: "/ui", zone: true },
   { label: "shipyard", href: "/shipyard", badge: "New" },
+  { label: "calendar ui kit", href: "/calendar", badge: "New" },
 ];
 
 /** The header's sections (also the first group of the command menu and the mobile menu). */

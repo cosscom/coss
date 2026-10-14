@@ -1,0 +1,97 @@
+---
+title: Optimistic sync
+description: "The onCommit seam: changes land instantly, rejections spring back. KloqChange, batching, and wiring a real API."
+---
+
+`onCommit` is called on every committed change. The change lands immediately —
+the calendar never waits on your server — and if the promise you return
+rejects, the store reverts and the affected blocks spring back to where they
+were, with a shake that owns the mistake.
+
+## The seam
+
+```tsx
+<Kloq
+  onCommit={async (change) => {
+    const res = await fetch("/api/events", {
+      method: "POST",
+      body: JSON.stringify(change),
+    });
+    if (!res.ok) throw new Error("declined"); // -> revert spring
+  }}
+/>
+```
+
+Return nothing (or a promise that resolves) and the change stands. Reject and
+the revert is not a teleport: the component captures the affected blocks'
+geometry *before* the revert applies, then FLIPs them back with the cancel
+spring. Failure is designed, not just handled.
+
+<Callout>
+  Try it live on the [demo](/calendar/demo): open design mode (`⌥D`), find the Network
+  panel, switch the simulated server on and raise the failure rate — then drag
+  something. That panel drives exactly this seam.
+</Callout>
+
+## What a change looks like
+
+`KloqChange` is a discriminated union, and each variant carries enough to make
+the corresponding API call without diffing arrays:
+
+```tsx
+type KloqChange =
+  | { type: "add"; event: CalEvent }
+  | { type: "update"; id: string; patch: CalEventPatch; prev: CalEvent }
+  | { type: "remove"; event: CalEvent }
+  | { type: "reset" }
+  | { type: "batch"; changes: KloqChange[] };
+```
+
+`update` carries both the `patch` and the full `prev` event — the patch for a
+PATCH request, the prev for conflict headers or your own undo bookkeeping.
+`remove` carries the whole removed event, not just an id, for the same reason.
+A `batch` is several mutations that happened together — a multi-event paste, a
+bulk delete, a recolour of a selection — delivered as *one* change so it is one
+API call, at most one persistence write, and one undo step. `changes` is in application
+order and never itself contains a batch.
+
+## How it composes
+
+| Setup | Type | Notes |
+| --- | --- | --- |
+| uncontrolled + onCommit | localStorage + API | The store persists locally and mirrors every commit to your server. Rejection reverts both. |
+| uncontrolled + adapter + onCommit | async backend | An async `load` pulls the server copy in after mount; `onCommit` pushes changes out. The demo's FakeServer is exactly this pair. |
+| controlled events + onCommit | your state + API | You own the array via `onEventsChange`; the seam still applies, and a rejection pushes the previous array back through `onEventsChange`. |
+
+The controlled case is worth restating: reverts are not a special channel. A
+rejected commit simply calls `onEventsChange` with the pre-change array — your
+state setter is the revert mechanism, so there is nothing extra to wire.
+
+## Fetching the visible range
+
+`onCommit` is the write path; `onRangeChange` is the read path. It reports the
+visible range as `[start, end)` on mount and on every view or date change —
+fetch that window, hand the result to `events`, and the two seams together are
+a complete backend integration:
+
+```tsx
+const [events, setEvents] = useState<CalEvent[]>([]);
+
+<Kloq
+  events={events}
+  onEventsChange={setEvents}
+  onRangeChange={(start, end) =>
+    fetchEvents(start, end).then(setEvents)
+  }
+  onCommit={(change) => api.apply(change)} // reject -> revert
+/>
+```
+
+## Testing failure without a backend
+
+The demo app ships a `FakeServer` (`src/demo/fake-server.ts` in the repo) — an
+in-memory `PersistenceAdapter` plus an `onCommit` that waits a configurable
+latency and fails at a configurable rate. It implements the design-mode Network
+panel's handle, so the knobs are drivable live. If you are building a backend
+consumer, copying that class is the fastest way to exercise every async path —
+including the ones you hope never run — before the backend exists.

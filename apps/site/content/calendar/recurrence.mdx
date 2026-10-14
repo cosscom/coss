@@ -1,0 +1,67 @@
+---
+title: Recurrence
+description: RRULE on CalEvent, the expansion seam, occurrence placements, and this/following/all edit semantics.
+---
+
+A repeating event is one stored master carrying an RFC 5545 `RRULE`, expanded into occurrences at render time. Parsing, expansion and the "this event / this and following / all events" semantics are all pure, all exported, and the expansion engine is a seam you can replace.
+
+## The fields on CalEvent
+
+```tsx
+const standup: CalEvent = {
+  id: "standup",
+  title: "Standup",
+  start: "2026-01-05T09:00:00+00:00",
+  end: "2026-01-05T09:30:00+00:00",
+  rrule: "FREQ=WEEKLY;BYDAY=MO;COUNT=4", // no "RRULE:" prefix
+};
+```
+
+<TypeTable
+  type={{
+    rrule: { optional: true, type: "string", description: "The `RRULE` value without its prefix. Authored by the built-in builder, parsed by `parseRRule`." },
+    exdates: { optional: true, type: "Instant[]", description: "Excluded occurrence starts — RFC 5545 `EXDATE`. Written by \"delete this event\" on an instance." },
+    recurrenceId: { optional: true, type: "Instant", description: "Marks a detached event — the single event \"edit this occurrence\" left behind — holding the occurrence start it replaces (RFC 5545 `RECURRENCE-ID`)." },
+  }}
+/>
+
+## The RRULE library
+
+`parseRRule` → `RRuleParts` → `serializeRRule` is byte-stable, and three rules hold it together. Nothing throws on input — `parseRRule` returns `null` for anything it cannot make sense of. Nothing misunderstood is silently dropped — unrecognised properties survive on `RRuleParts.extra` and are re-emitted, while `isExpressible` reports `false` so the UI shows the rule read-only instead of rewriting it. And no timezone conversion, anywhere — `UNTIL` is kept as the literal calendar fields the rule spelled, with `untilToDate` / `untilFromDate` at the edges.
+
+Frequencies are `DAILY | WEEKLY | MONTHLY | YEARLY` — RFC 5545's sub-hourly frequencies are rejected rather than mis-summarised. `describeRRule` renders the live human-readable summary, and `presetsFor` / `presetIdFor` drive the builder's preset menu (including "the second Monday" via `nthWeekdayOfMonth`). The builder itself ships as `RRuleBuilder`.
+
+## Expansion is a seam
+
+The built-in `expandRecurrence` covers exactly what the builder emits. Anything richer — or a backend that already knows the answer — is registered through `registerRecurrenceEngine`, and every surface picks it up.
+
+```tsx
+import { registerRecurrenceEngine, type ExpandRecurrenceFn } from "@/components/kloq";
+import { expandWithRRuleLib } from "./my-engine"; // e.g. wrapping the rrule package
+
+registerRecurrenceEngine(expandWithRRuleLib);
+registerRecurrenceEngine(null); // back to the built-in
+```
+
+Expansion is bounded, always: every loop is capped (`DEFAULT_OCCURRENCE_LIMIT`, `DEFAULT_MAX_ITERATIONS`) and reports `truncated: true` rather than hanging on `FREQ=DAILY` with no end. Occurrences keep the wall-clock time — a 9am standup is 9am on both sides of a DST boundary. A rule that doesn't parse, or carries a property the engine doesn't model (`BYWEEKNO`, …), degrades to a single occurrence at the master's own start rather than a plausible-looking wrong series.
+
+## Placements vs the master
+
+Each occurrence renders as its own placement, whose `PlacementId` encodes the master id and the occurrence start (`occurrenceKey`). A placement id is *not* a store id — `store.get` of one returns `undefined`; `masterIdOf` is the bridge back. `occurrenceStartOf`, `isOccurrenceKey`, `occurrenceAt`, `nextOccurrence` and `previousOccurrence` round out the reading side.
+
+## Editing an instance: this / following / all
+
+A drag, resize, nudge or delete aimed at one occurrence must not rewrite the series — that exact bug is what the pure layer's regression tests pin. Every such gesture routes through `editOccurrence` / `deleteOccurrence`, which take a `RecurrenceScope` — `"this" | "following" | "all"` — and return a `RecurrencePlan`: a list of plain store operations, not effects.
+
+| Scope | Type | Notes |
+| --- | --- | --- |
+| `"this"` | edit | Detaches a single event (new id, no rule, a `recurrenceId` pointing at the slot it replaces) and adds an `exdates` entry to the master. For delete: just the `exdates` entry. |
+| `"following"` | edit / delete | Splits the series: the master's rule is trimmed to end before this occurrence, and edits continue as a new series. On the first occurrence it collapses to `"all"`. |
+| `"all"` | edit / delete | One update (or remove) on the master; every occurrence follows. |
+
+Because a plan is data, `applyPlan` pushes it through the ordinary commit path — persistence, the optimistic `onCommit` seam and undo/redo all see it as the changes it really is. The chooser UI ships too, as `RecurrenceScopeDialog`.
+
+<Callout>
+  A rule the builder cannot express is never rewritten by a gesture: it
+  round-trips untouched and shows as a read-only chip in the panel.
+</Callout>

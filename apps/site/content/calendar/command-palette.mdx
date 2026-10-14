@@ -1,0 +1,183 @@
+---
+title: Command palette
+description: ⌘K ships with the component — an open command registry, whole-store event search, and a natural-language "move to…". Your commands rank alongside the built-ins.
+---
+
+<Kbd>⌘K</Kbd> ships with the component, built on one rule borrowed from Notion
+Calendar: *if it's an action, it's in ⌘K*. The registry is open — your
+commands appear grouped alongside the built-ins, and registering one is a
+plain function call, no provider, no prop threading.
+
+## Registering commands
+
+`registerCommands` is variadic — pass one command or several — and returns an
+unregister function covering exactly what that call added, which makes it a
+one-liner from an effect:
+
+```tsx
+import { registerCommands } from "@/components/kloq";
+
+useEffect(() => registerCommands(
+  {
+    id: "app:invite",
+    label: "Invite a teammate",
+    keywords: "share add member",
+    group: "Team",
+    run: () => openInviteDialog(),
+  },
+), []);
+```
+
+Ids are stable identity: re-registering an id replaces the command *in
+place*, keeping its original slot in the menu — which is what stops a toggling
+command from jumping around as you use it.
+
+## The command shape
+
+<TypeTable
+  type={{
+    id: { type: "string", description: "Stable identity — re-registering the same id replaces it in place." },
+    label: { type: "string", description: "What the row says. For a toggle, describe the action (“Hide weekends”), not the state." },
+    keywords: { optional: true, type: "string", description: "Extra words to match on that aren't in the label — synonyms, whatever the user might actually type." },
+    hint: { optional: true, type: "string", description: "Shortcut hint rendered on the right, e.g. `\"⌘K\"`. Purely cosmetic — it binds nothing." },
+    group: { optional: true, type: "string", description: "Group heading. Unknown groups render after the built-in ones, in registration order." },
+    order: { optional: true, type: "number", description: "Sort key within a group; lower first, default 0. The sort is stable, so untouched commands hold their slot." },
+    checked: { optional: true, type: "boolean", description: "Live state for toggle-ish commands — the row renders a check when present." },
+    disabled: { optional: true, type: "boolean", description: "Rendered dimmed and non-selectable." },
+    run: { type: "() => void", description: "The action." },
+  }}
+/>
+
+## Grouping and ranking
+
+Built-in groups have a fixed order — `Quick add, Events, Calendar, Navigation,
+View, Appearance, App` (`COMMAND_GROUPS`) — and everything else follows, in
+the order the groups were first seen. A host registering a "Demo" group can
+never reshuffle itself above Navigation, and two host groups keep their
+registration order. A command that names no group lands in
+`DEFAULT_COMMAND_GROUP` ("Commands"). Empty groups are never emitted.
+
+Matching is deliberately simple: the query is folded (lowercased, diacritics
+stripped — "Rosé" is findable by typing "rose"), then every
+whitespace-separated token must appear somewhere in the label + keywords. AND
+across tokens, substring within one, order never matters — and an empty query
+matches everything, so the unfiltered menu is the same code path as the
+filtered one.
+
+## The pure half, exported
+
+Grouping and matching live outside React so the rules that decide what the
+menu looks like are unit-testable without rendering. They're exported for
+hosts building their own palette surfaces:
+
+```tsx
+import {
+  getCommands,       // current commands, in registration order
+  subscribeCommands, // fires when the set changes
+  clearCommands,     // test/teardown helper — drops everything
+  groupCommands,     // bucket into ordered CommandGroupModel[]
+  matchesQuery,      // the AND-of-tokens matcher
+  normalizeQuery,    // lowercase, diacritics stripped, whitespace collapsed
+} from "@/components/kloq";
+```
+
+<Callout>
+  The registry is module-level, like the design-mode network sim: one per
+  page, shared by every `<Kloq>` on it. That is the point — a page has one
+  <Kbd>⌘K</Kbd>, and everything actionable belongs in it.
+</Callout>
+
+## Removing, replacing, turning it off
+
+The `commandPalette` prop owns all three. `false` removes <Kbd>⌘K</Kbd>
+entirely: the binding is never claimed — an app shell's own palette keeps the
+key even with focus in the grid — the menu never mounts,
+`useKloq().openCommand` becomes a no-op, and the shortcuts sheet stops
+advertising it:
+
+```tsx
+<Kloq commandPalette={false} />
+```
+
+To remove *some* built-ins, pass an allowlist of ids. `BUILT_IN_COMMANDS` is
+the full list, exported — spread and filter it. A `:*` entry is a family
+minted at render time — `event:*` the search results, `jump:*` the
+visible-day jumps, `view:*` the view switches — and a family can also be
+narrowed to exact members (`"view:week"`):
+
+```tsx
+import { BUILT_IN_COMMANDS } from "@/components/kloq";
+
+<Kloq
+  commandPalette={{
+    commands: BUILT_IN_COMMANDS.filter(
+      (c) => c !== "reset" && c !== "design-mode",
+    ),
+  }}
+/>
+```
+
+To *replace* a built-in, register your own command with its id — a registered
+command always shadows the built-in sharing one, so
+`registerCommands({ id: "reset", label: "Clear my calendar", run: wipe })`
+swaps the stock reset for yours. The allowlist never touches registered
+commands: you added them, they show.
+
+## Searching events
+
+Typing doesn't just filter commands — the same query runs over every event in
+the store (the whole store, not the visible range) and matches land in the
+Events group with a when-line each. Picking one jumps to its date, selects it,
+and opens the panel, so <Kbd>⌘K</Kbd> is also "take me to that meeting in
+March". The ranking is `searchEvents`, pure and exported:
+
+```tsx
+import { searchEvents, formatEventWhen } from "@/components/kloq";
+
+const hits = searchEvents(events, "standup sam", { now, limit: 6 });
+hits[0].event;                       // best match
+formatEventWhen(hits[0].event, now); // "Fri, 8 Aug · 1:00 PM – 2:00 PM · 1h"
+```
+
+The matcher is the same AND-of-tokens rule as commands, but *where* a token
+lands is scored: exact title, then title prefix, word start, substring, then
+location, attendees (name or email), description. Equal scores break on
+distance from `now` — of ten "standup"s the nearest one wins, past or
+future — then on start time, then id, so the ranking is fully deterministic.
+
+`formatEventWhen` is the when-line itself: the year appears only when it isn't
+`now`'s, a cross-midnight end is labelled with its day, and an all-day event's
+exclusive stored end becomes the inclusive last day you'd say out loud. The
+pieces ship separately — `formatWhen`, `formatDayLabel`,
+`formatDurationShort`, `allDayDisplayEnd` — for rendering your own result
+rows.
+
+## Move to…
+
+With an event selected, the palette offers *Move "…" to…* — reschedule it in
+the same language quick add understands. `parseMoveTarget` is the pure half:
+
+```tsx
+import { parseMoveTarget } from "@/components/kloq";
+
+const t = parseMoveTarget("next tuesday", { start, end }, now);
+// t.start / t.end — the destination, duration preserved
+// t.changed      → { date: true, time: false } — the time was inherited
+```
+
+Two grammars, tried in order. A relative shift — `+2h`, `-30m`, `an hour
+later`, `2 weeks forward` — moves the event by exactly that much, and
+`-30m earlier` reads as a typo rather than a double negative: backwards wins.
+Everything else falls through to `parseQuickAdd`, and only the halves the
+input named are replaced — `3pm` keeps the day, `next tuesday` keeps the
+time — with `t.changed` reporting which, so the preview can badge "same day"
+or "same time". Duration is always preserved (`end` is definitionally
+`start` + the original duration), `tokens` carries the understood spans for
+the same live underline quick add draws, and `null` means nothing was
+understood — Enter stays inert instead of guessing.
+
+The field inside the menu is exported too: `MoveToInput` — controlled value,
+the live before → after preview with its inherited-half badge, `onCommit`
+handing you the resolved `MoveTarget` on <Kbd>↵</Kbd>. Like
+[`QuickAddInput`](/calendar/docs/quick-add-input), it's there for hosts mounting the
+surface outside the menu.

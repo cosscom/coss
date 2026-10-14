@@ -1,0 +1,95 @@
+---
+title: Events
+description: "CalEvent: the discriminated union on allDay, real instants, colors, attendees, and every optional field."
+---
+
+A `CalEvent` is a discriminated union on `allDay`. Timed events carry
+offset-qualified instants; all-day events carry date-only instants with an
+exclusive end — the RFC 5545 conventions, so events round-trip to real
+calendars without translation.
+
+## The two shapes
+
+```tsx
+import type { CalEvent } from "@/components/kloq";
+
+const events: CalEvent[] = [
+  {
+    id: "1",
+    title: "Deep work",
+    start: "2026-08-05T10:00:00+01:00", // offset-qualified instant
+    end: "2026-08-05T11:30:00+01:00",
+    color: "blue",
+  },
+  {
+    id: "2",
+    title: "OOO — Croatia",
+    allDay: true,
+    start: "2026-08-06", // date-only instant
+    end: "2026-08-08",   // EXCLUSIVE: covers the 6th and 7th
+  },
+];
+```
+
+The union means the compiler enforces the difference: a timed event cannot
+carry date-only strings, and an all-day event cannot carry clock times. `end`
+on an all-day event is exclusive — the same convention RFC 5545 uses for a
+date-only `DTEND` — so a one-day event ends on the *next* date.
+
+<Callout>
+  Instants are strings, not `Date`s, because a `Date` cannot say which zone it
+  was authored in. Helpers like `instantAt`, `parseInstant`, `instantPlus` and
+  `toDateOnlyString` are exported for building them.
+</Callout>
+
+## Color is optional on purpose
+
+`color` is one of five palette keys —
+`"blue" | "violet" | "emerald" | "amber" | "rose"` — and an event with no
+color of its own takes its calendar's (`resolveEventColor`). An event that
+names a color keeps it wherever it moves. That absence-means-inherit rule is
+how a source calendar's color tints everything nobody colored by hand;
+`DEFAULT_EVENT_COLOR` is what an event with neither is drawn in.
+
+## Every optional field
+
+<TypeTable
+  type={{
+    description: { optional: true, type: "string", description: "Free text, shown in the event panel." },
+    location: { optional: true, type: "string", description: "A room, an address, \"Zoom\"." },
+    meetingUrl: { optional: true, type: "string", description: "Video-call link; rendered as a Join affordance." },
+    attendees: { optional: true, type: "Attendee[]", description: "Invitees in insertion order; `email` is the dedupe key. Helpers: `addAttendee`, `removeAttendee`, `summarize`, `initialsFor`." },
+    organizer: { optional: true, type: "string", description: "RFC 5545 `ORGANIZER` as a bare address — its own field, never inferred from the attendee list." },
+    reminders: { optional: true, type: "Reminder[]", description: "Alerts as offsets from the start. coss calendar stores them; delivery is the host's job." },
+    busy: { optional: true, type: "boolean", description: "Free/busy. Absent means busy — `isBusy` encodes that default." },
+    readOnly: { optional: true, type: "boolean", description: "The event can't be edited, moved, resized or deleted from the UI." },
+    calendarId: { optional: true, type: "string", description: "The source calendar the event belongs to." },
+    rrule: { optional: true, type: "string", description: "RFC 5545 `RRULE` value without the prefix — see the recurrence page." },
+    timeZone: { optional: true, type: "string", description: "The zone the event was authored in — see the time-zones page." },
+  }}
+/>
+
+## Attendees and RSVP
+
+Pass `currentUserEmail` on `<Kloq>` and the event panel grows an RSVP control
+whenever that address is actually on the invite; conflict detection starts
+answering "does this clash *for me*" instead of "do these two overlap"; and
+`showDeclinedEvents={false}` filters events you have declined out of every
+surface — still in the store, still findable in ⌘K search, just not on your
+calendar.
+
+```tsx
+<Kloq
+  currentUserEmail="ada@example.com"
+  showDeclinedEvents={false}
+/>
+```
+
+## CalEvent vs PlacedEvent
+
+Slots never receive a raw `CalEvent` — they receive a `PlacedEvent`: the
+event projected into the current view's column/minute space, carrying a
+branded `PlacementId`. For a recurring event the two differ (one stored
+master, many placed instances); `masterIdOf` is the bridge back to the store
+id. Segment predicates `continuesBefore` / `continuesAfter` tell a custom
+block to square off the cut edge of a cross-midnight event.

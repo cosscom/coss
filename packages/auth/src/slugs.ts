@@ -33,11 +33,13 @@ export const SITE_ASSET_PREFIX = "/site-assets";
  * entry here (unless an existing prefix covers it) + the route in apps/site.
  */
 export const ZONE_ROUTES = [
-  // apps/site: landing page, pricing, Shipyard's landing page (and its assets), docs (incl. their
-  // search at /docs/search.json), legal pages, LLM text files.
+  // apps/site: landing page, pricing, Shipyard's landing page (and its assets), the Calendar UI
+  // kit's pages (landing page, demo, tools, comparisons, docs and its shadcn registry), docs (incl.
+  // their search at /docs/search.json), legal pages, LLM text files.
   { zone: "site", path: "/", prefix: false },
   { zone: "site", path: "/pricing", prefix: false },
   { zone: "site", path: "/shipyard", prefix: true },
+  { zone: "site", path: "/calendar", prefix: true },
   { zone: "site", path: "/docs", prefix: true },
   { zone: "site", path: "/legal", prefix: true },
   { zone: "site", path: "/llms.txt", prefix: false },
@@ -115,7 +117,6 @@ const FUTURE_SITE_SEGMENTS = [
   "push",
   "notifications",
   "scheduling",
-  "calendar",
   "booking",
   "bookings",
   "meetings",

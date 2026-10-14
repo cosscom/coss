@@ -48,3 +48,19 @@ export const shipyard = defineDocs({
   },
   meta: { schema: metaSchema },
 });
+
+/**
+ * The Calendar UI kit's docs at /calendar/docs (src/lib/calendar-docs.ts), moved from the
+ * `cosscom/calendar` repository's `content/docs`. Their own collection, out of coss's docs sidebar,
+ * search and /llms.txt; the global options are replaced per collection, so Shiki's themes are set
+ * here again (no Twoslash: the examples are rendered live, not type-checked).
+ */
+export const calendar = defineDocs({
+  dir: "content/calendar",
+  docs: {
+    schema: pageSchema,
+    postprocess: { includeProcessedMarkdown: true },
+    mdxOptions: applyMdxPreset({ rehypeCodeOptions: { themes: CODE_THEMES } }),
+  },
+  meta: { schema: metaSchema },
+});

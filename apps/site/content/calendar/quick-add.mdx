@@ -1,0 +1,74 @@
+---
+title: Quick add
+description: "Natural-language event entry: parseQuickAdd, the grammar it understands, and the offsets that power the live underline."
+---
+
+One line of typing becomes a draft event. `parseQuickAdd("lunch with sam@acme.com tomorrow 1pm for 90 minutes", now)` resolves the when, collects the attendees, and — the part that makes it feel magic rather than guessy — reports the exact source offsets of every phrase it consumed, so the input underlines what it understood as you type.
+
+## Using it
+
+Double-click empty grid (or press `C` for a new event at the next hour) and type. The parser also powers the `⌘K` palette's Quick add group. It's pure — no React, no DOM, not even an import — and exported for your own surfaces:
+
+```tsx
+import { parseQuickAdd } from "@/components/kloq";
+
+const r = parseQuickAdd("dinner @ Padella friday 7pm", new Date());
+// r.title       → "dinner"
+// r.start/r.end → Friday 19:00–19:30 (local time)
+// r.location    → "Padella"
+// r.confidence  → "full"
+// r.tokens      → the claimed spans, sorted by source offset
+```
+
+`now` is a parameter on purpose — nothing inside calls `new Date()`, so every relative phrase resolves against the caller's clock and the whole thing is deterministic and testable. All arithmetic is local-time through the `Date` constructor's overflow, which is what keeps it correct across DST in every zone.
+
+## What it understands
+
+| Input | Type | Notes |
+| --- | --- | --- |
+| standup tomorrow 2pm | date + time | Tomorrow 14:00–14:30 — a lone start defaults to 30 minutes. |
+| review 1-2pm | range | 13:00–14:00 — the meridiem is borrowed leftwards across the dash. |
+| call from 2 to 4 | range | 14:00–16:00 — bare hours read via the afternoon heuristic, both ends the same way; from/to, until, till, dashes all work. |
+| call at 3 / standup at 9 / dinner at 7 | bare hour | After `at`, 1–6 are afternoon and 7–11 morning; 12 is noon. An evening cue in the phrase (dinner, drinks, tonight, evening, night) reads 7–11 as evening, and straight after one of those words the `at` is optional when the hour ends the phrase: `drinks 8`, `dinner 7-9`. Elsewhere a bare number stays in the title (`sprint 3 planning`). `7am`, `07:00` and `19:30` always mean what they say. |
+| sync in 10 minutes / lunch in an hour | offset | A start that far from `now`, at the default length — `in half an hour`, `in 1.5 hours` and `in 1 hour 30 minutes` too. |
+| party tomorrow 9pm to midnight | cross-midnight | The end carries onto the next day rather than inverting. |
+| deep work for 90 minutes at 2pm | duration | 14:00–15:30. `for 30min`, `for 1h`, `for half an hour`, fractional hours, and bare adjectival durations (`45min gym`) all parse. Adjacent hours and minutes add up: `1h 30m`, `for an hour and 15 minutes`. |
+| gym tomorrow morning for 45 mins | part of day | morning / afternoon / evening / tonight supply the hour. |
+| coffee next friday | weekday | A bare weekday resolves forwards (today counts); `next friday` is always exactly a week past the bare reading, so the two can never collide. |
+| offsite all day on 12 Aug | all-day | Explicit `all day`, or any date with no time. Ordinals, month names, numeric dates (`12/08`, month-first by default) and years all parse. |
+| dinner @ Padella | location | `at` / `@` + a venue. `at 3pm` is never stolen — the time pass claims ranges first. |
+| retro in the Blue Room / standup in Room 4 | location | `in` names a place only in forms that can't be anything else: `the … Room`, `my office`, `Room 4`, `Turing Hall`, `Berlin office`. `lunch in London`, `training in Python` and `call in the morning` stay as written. |
+| lunch with sam@acme.com | attendees | Bare emails anywhere, deduped case-insensitively; a leading `with` / `w/` is swallowed. |
+
+Passes run in one fixed left-to-right claim table, and each may only claim source ranges no earlier pass took — how `at 3pm` beats the location rule, and how an email that happens to contain `3pm` is never read as a time. A time that already passed today rolls to tomorrow — unless a day was named, in which case you said what you meant. What isn't recognised stays in the title, casing and punctuation intact.
+
+A phrase can also be understood and overruled. An explicit range is authoritative: in `design sync 3-4pm for 90 minutes` the event runs 15:00–16:00, and `for 90 minutes` is neither applied nor left in the title — it is reported in `ignored`, so a field can show that it was read and set aside. The same goes for a second length (`gym for 1h for 2h` is one hour) and for a time or length beside `all day`.
+
+## The result
+
+<TypeTable
+  type={{
+    title: { type: "string", description: "The input with every `tokens` and `ignored` phrase stripped and the seams tidied." },
+    "start / end": { type: "Date | null", description: "null only for blank input — otherwise there is always a usable draft." },
+    "allDay / durationMin": { type: "boolean / number | null", description: "durationMin is null for all-day." },
+    "attendees / location": { type: "string[] / string | null", description: "Bare emails in order; the first venue." },
+    confidence: { type: '"none" | "partial" | "full"', description: "none: treat the whole string as a title. full: a day and a time (or an explicit all-day) both landed." },
+    tokens: { type: "QuickAddToken[]", description: "Every span applied to the result — text, [start, end) offsets, kind: date | time | duration | location | attendee. Sorted by offset." },
+    ignored: { type: "QuickAddToken[]", description: "Spans understood but overruled, such as a length beside a range. Applied to nothing, stripped from the title, sorted by offset." },
+  }}
+/>
+
+Options: `dateOrder` ("month-first" default; either way an unambiguous half wins) and `defaultDurationMin` (default 30, matching quick-create).
+
+## Building the preview UI
+
+The view half is exported too. `highlightSegments(input, result.tokens, result.ignored?)` interleaves the input with its tokens — concatenating every segment's text reproduces the input exactly, the property the caret-aligned underline overlay depends on. Pass `ignored` and those runs come back flagged `ignored: true`, for a struck-through treatment. `QUICK_ADD_KINDS` holds each kind's label, swatch and `mark` classes — an underline style as well as a colour, because a theme may give two kinds the same colour — and `QUICK_ADD_KIND_ORDER` lists the kinds in legend order. `quickAddPreview` folds a result into one renderable line: the title (never blank — `UNTITLED` covers an all-metadata input), the resolved when, and chips for location and attendees.
+
+And the finished field — underline, preview line, commit — ships assembled as
+[`QuickAddInput`](/calendar/docs/quick-add-input), with a live demo on its own page.
+
+<Callout>
+  The parser guarantees tokens are sorted, disjoint, in bounds, and that
+  `input.slice(t.start, t.end) === t.text` — so the underline can never
+  highlight the wrong `at`.
+</Callout>
