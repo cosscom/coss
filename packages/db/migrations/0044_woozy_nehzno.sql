@@ -1,2 +1,0 @@
-ALTER TABLE "risk_report" DROP CONSTRAINT "risk_report_value_unique";--> statement-breakpoint
-ALTER TABLE "risk_report" ADD CONSTRAINT "risk_report_value_unique" UNIQUE("environment_id","kind","value_hash","assessment_id");

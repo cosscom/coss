@@ -14,7 +14,7 @@ import {
 import { EmailError } from "../src/errors.ts";
 import { ingestProviderEvents } from "../src/events.ts";
 import type { OutboundEmail } from "../src/provider.ts";
-import { IdentityTakenError } from "../src/provider.ts";
+import { IdentityTakenError, UncertainSendError } from "../src/provider.ts";
 import { FakeTrackingHostnameProvider } from "../src/providers/fake-tracking-hostnames.ts";
 import { getEmail } from "../src/read.ts";
 import { createEmailRuntime } from "../src/runtime.ts";
@@ -22,6 +22,7 @@ import { SesIdentityProvider } from "../src/ses/identity.ts";
 import { encodeAddress, encodeWords } from "../src/ses/mime.ts";
 import { parseSesMessage } from "../src/ses/parse.ts";
 import { SesEmailProvider } from "../src/ses/provider.ts";
+import { sweepStaleClaims } from "../src/sweeps.ts";
 import { dispatchingEmailService, FakeSesApi } from "../src/testing.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
@@ -161,6 +162,135 @@ describe("SesEmailProvider", () => {
     api.fail("sendEmail", "MessageRejected");
     await expect(provider.send(outbound())).rejects.toThrow("MessageRejected");
     expect(api.operations()).toHaveLength(7);
+  });
+
+  test("tells refused requests apart from ones SES may have accepted", async () => {
+    const api = new FakeSesApi();
+    const provider = new SesEmailProvider(api, config, { sleep: async () => {} });
+    const refused = [
+      Object.assign(new Error("Email address is not verified."), { name: "MessageRejected" }),
+      Object.assign(new Error("Bad"), { name: "SomethingNew", $metadata: { httpStatusCode: 400 } }),
+    ];
+    for (const error of refused) {
+      api.failures.set("sendEmail", [error]);
+      const thrown = await provider.send(outbound()).catch((e: unknown) => e);
+      expect(thrown).toBe(error);
+    }
+    const uncertain = [
+      Object.assign(new Error("Socket timed out"), { name: "TimeoutError" }),
+      Object.assign(new Error("read ECONNRESET"), { code: "ECONNRESET", $metadata: {} }),
+      Object.assign(new Error("Internal"), {
+        name: "InternalFailure",
+        $metadata: { httpStatusCode: 500 },
+      }),
+    ];
+    for (const error of uncertain) {
+      api.failures.set("sendEmail", [error]);
+      const thrown = await provider.send(outbound()).catch((e: unknown) => e);
+      expect(thrown).toBeInstanceOf(UncertainSendError);
+      expect((thrown as Error).cause).toBe(error);
+    }
+  });
+});
+
+describe("SES send outcomes (fake SES)", () => {
+  async function sesService() {
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const api = new FakeSesApi();
+    const runtime = createEmailRuntime({
+      provider: "ses",
+      ses: { ...config, tenantPrefix: `t${uniqueSuffix()}`.slice(0, 32) },
+      sesApi: api,
+      dns: null,
+      log: false,
+    });
+    const name = `t-${uniqueSuffix()}.coss.test`;
+    const domain = await createDomain({ organizationId, name, userId: null }, runtime.domainDeps);
+    api.verify(name);
+    await checkDomain({ organizationId, id: domain.id }, runtime.domainDeps);
+    const service = dispatchingEmailService(runtime);
+    const send = async () =>
+      (
+        await service.send({
+          environment: sendEnvironment(tenant.production),
+          apiKeyId: null,
+          params: params({ from: `Acme <hello@${name}>`, to: ["a@example.com"] }),
+        })
+      ).email;
+    const row = async (id: string) =>
+      (await db.select().from(schema.email).where(eq(schema.email.id, id)))[0];
+    return { tenant, api, send, row };
+  }
+
+  async function ingest(record: unknown) {
+    const parsed = parseSesMessage(JSON.stringify(record));
+    if (parsed.kind !== "events") throw new Error("expected events");
+    await ingestProviderEvents(parsed.events);
+  }
+
+  test("a timeout leaves the email claimed: SES's Send event settles it, else the sweep", async () => {
+    const { tenant, api, send, row } = await sesService();
+    const scope = { organizationIds: [tenant.organization.id] };
+
+    api.failures.set("sendEmail", [
+      Object.assign(new Error("Socket timed out"), { name: "TimeoutError" }),
+    ]);
+    const accepted = await send();
+    // Not failed, not sent again: claimed until SES tells.
+    expect(accepted.status).toBe("queued");
+    expect(await row(accepted.id)).toMatchObject({ provider: "ses", errorCode: null });
+    expect(api.operations().filter((op) => op === "sendEmail")).toHaveLength(1);
+    const mail = { ...MAIL, messageId: "ses-late", tags: { coss_email_id: [accepted.id] } };
+    await ingest({ eventType: "Send", mail, send: {} });
+    expect(await row(accepted.id)).toMatchObject({
+      status: "sent",
+      providerMessageId: "ses-late",
+      usageRecordedAt: expect.any(Date),
+    });
+
+    // Never heard of: the stale-claim sweep fails it, repairably.
+    api.failures.set("sendEmail", [
+      Object.assign(new Error("read ECONNRESET"), { code: "ECONNRESET" }),
+    ]);
+    const lost = await send();
+    expect(lost.status).toBe("queued");
+    expect(await sweepStaleClaims({ now: new Date(Date.now() + 16 * 60_000), scope })).toBe(1);
+    expect(await row(lost.id)).toMatchObject({
+      status: "failed",
+      errorCode: "dispatch_interrupted",
+      usageRecordedAt: null,
+    });
+  });
+
+  test("a refused send fails at once, and a Send event would still repair it", async () => {
+    const { api, send, row } = await sesService();
+    api.fail("sendEmail", "MessageRejected");
+    const refused = await send();
+    expect(refused.status).toBe("failed");
+    expect(await row(refused.id)).toMatchObject({ errorCode: "provider_error" });
+    const mail = { ...MAIL, messageId: "ses-odd", tags: { coss_email_id: [refused.id] } };
+    await ingest({ eventType: "Send", mail, send: {} });
+    expect(await row(refused.id)).toMatchObject({ status: "sent", errorCode: null });
+  });
+
+  test("a Reject after Send fails the email", async () => {
+    const { send, row } = await sesService();
+    const email = await send();
+    expect(email.status).toBe("sent");
+    const providerMessageId = (await row(email.id))?.providerMessageId;
+    const mail = { ...MAIL, messageId: providerMessageId, tags: { coss_email_id: [email.id] } };
+    await ingest({ eventType: "Send", mail, send: {} });
+    await ingest({ eventType: "Reject", mail, reject: { reason: "Bad content" } });
+    const failed = await row(email.id);
+    expect(failed).toMatchObject({ status: "failed", errorCode: "rejected" });
+    if (!failed) throw new Error("no email");
+    const after = await getEmail({
+      organizationId: failed.organizationId,
+      environmentId: failed.environmentId,
+      id: email.id,
+    });
+    expect(after?.recipients.map((r) => r.status)).toEqual(["failed"]);
   });
 });
 

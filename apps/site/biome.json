@@ -2,7 +2,28 @@
   "root": false,
   "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
   "extends": "//",
+  "files": {
+    "includes": ["**", "!!public/shipyard/assets"]
+  },
   "linter": {
-    "domains": { "next": "recommended", "react": "recommended" }
-  }
+    "domains": {
+      "next": "recommended",
+      "react": "recommended"
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["src/app/(shipyard)/**", "src/components/shipyard/**"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noImgElement": "off"
+          },
+          "style": {
+            "noDescendingSpecificity": "off"
+          }
+        }
+      }
+    }
+  ]
 }

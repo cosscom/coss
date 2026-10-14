@@ -27,6 +27,7 @@ import {
 import { DISPOSABLE_EMAIL, signUpEmailRejection } from "./email-guard.ts";
 import { enqueueAuthEmail, RESET_PASSWORD_LINK_TTL_S, VERIFICATION_LINK_TTL_S } from "./emails.ts";
 import { cancelStaleInvitations, inviterStillAllowed } from "./invitations.ts";
+import { membershipLimitFor } from "./limits.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
 import {
   assertScimEmail,
@@ -123,6 +124,75 @@ const FACTOR_MANAGEMENT_PATHS: ReadonlySet<string> = new Set([
   "/passkey/update-passkey",
   "/passkey/delete-passkey",
 ]);
+
+/**
+ * Endpoints that change the account itself (profile, password, sessions, linked accounts). The
+ * dashboard's account actions already refuse while impersonating; this holds for every caller.
+ */
+const ACCOUNT_CHANGE_PATHS: ReadonlySet<string> = new Set([
+  "/update-user",
+  "/change-password",
+  "/change-email",
+  "/set-password",
+  "/delete-user",
+  "/revoke-session",
+  "/revoke-sessions",
+  "/revoke-other-sessions",
+  "/link-social",
+  "/unlink-account",
+  "/send-verification-email",
+]);
+
+/**
+ * Organization plugin routes the browser calls (`authClient.organization.*`): creating an
+ * organization (onboarding) and accepting an invitation. Every other organization route is closed
+ * over HTTP: the dashboard calls them server-side (`auth.api.*`) after its own checks (SSO and 2FA
+ * requirements, directory-managed members, the audit log), which Better Auth's routes skip.
+ */
+const ORGANIZATION_HTTP_PATHS: ReadonlySet<string> = new Set([
+  "/organization/create",
+  "/organization/accept-invitation",
+]);
+
+/** Every organization plugin route, from the plugin's own endpoint table. */
+const ORGANIZATION_PATHS: readonly string[] = [
+  "/organization/accept-invitation",
+  "/organization/add-team-member",
+  "/organization/cancel-invitation",
+  "/organization/check-slug",
+  "/organization/create",
+  "/organization/create-role",
+  "/organization/create-team",
+  "/organization/delete",
+  "/organization/delete-role",
+  "/organization/get-active-member",
+  "/organization/get-active-member-role",
+  "/organization/get-full-organization",
+  "/organization/get-invitation",
+  "/organization/get-organization",
+  "/organization/get-role",
+  "/organization/has-permission",
+  "/organization/invite-member",
+  "/organization/leave",
+  "/organization/list",
+  "/organization/list-invitations",
+  "/organization/list-members",
+  "/organization/list-roles",
+  "/organization/list-team-members",
+  "/organization/list-teams",
+  "/organization/list-user-invitations",
+  "/organization/list-user-teams",
+  "/organization/reject-invitation",
+  "/organization/remove-member",
+  "/organization/remove-team",
+  "/organization/remove-team-member",
+  "/organization/set-active",
+  "/organization/set-active-team",
+  "/organization/update",
+  "/organization/update-member-role",
+  "/organization/update-role",
+  "/organization/update-team",
+];
 
 /** Organizations one user may own (platform admins are exempt). */
 export const MAX_OWNED_ORGANIZATIONS = 5;
@@ -236,9 +306,27 @@ export const authOptions = {
     "/api-key/get",
     "/api-key/list",
     "/api-key/delete",
-    "/organization/update",
-    // Invitations go through the dashboard's server action, which rate-limits them per organization.
-    "/organization/invite-member",
+    // Organizations, members and invitations (incl. invitation emails, rate limited per
+    // organization) change only through the dashboard's server actions; see above.
+    ...ORGANIZATION_PATHS.filter((path) => !ORGANIZATION_HTTP_PATHS.has(path)),
+    // Account settings and sessions go through the dashboard's server actions too (which refuse
+    // while impersonating); /list-sessions would hand the browser every session's token, and the
+    // linked-account routes an IdP's tokens.
+    "/update-user",
+    "/change-password",
+    "/change-email",
+    "/delete-user",
+    "/list-sessions",
+    "/revoke-session",
+    "/revoke-sessions",
+    "/revoke-other-sessions",
+    "/update-session",
+    "/list-accounts",
+    "/link-social",
+    "/unlink-account",
+    "/get-access-token",
+    "/refresh-token",
+    "/account-info",
     "/admin/remove-user",
     "/admin/create-user",
     "/admin/update-user",
@@ -341,6 +429,15 @@ export const authOptions = {
           throw new APIError("FORBIDDEN", {
             message:
               "Two-factor settings and passkeys can't be changed while impersonating a user.",
+          });
+        }
+        return;
+      }
+      if (ACCOUNT_CHANGE_PATHS.has(ctx.path)) {
+        const session = await getSessionFromCtx(ctx);
+        if (session?.session.impersonatedBy) {
+          throw new APIError("FORBIDDEN", {
+            message: "Account settings can't be changed while impersonating a user.",
           });
         }
         return;
@@ -502,6 +599,8 @@ function serializedOrganization() {
     // email to read or accept invitations. Keep this defense independent of sign-up policy.
     requireEmailVerificationOnInvitation: true,
     invitationLimit: MAX_PENDING_INVITATIONS,
+    // The organization's plan (accepting an invitation and adding members check it).
+    membershipLimit: (_user, organization) => membershipLimitFor(organization.id),
     // `true` = limit reached. Counts organizations the user owns (the number option would count
     // memberships, so being invited to five organizations would block creating one's own).
     organizationLimit: async (user) => {

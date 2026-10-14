@@ -4,6 +4,8 @@
  * contract-types.ts (compile time).
  */
 import { describe, expect, test } from "bun:test";
+import { createCreditGrant, runDueBillingPeriods } from "@coss/billing";
+import { createTestContract, recordTestUsage } from "@coss/billing/testing";
 import { db } from "@coss/db";
 import { newId } from "@coss/db/id";
 import { createVerifiedDomain, trackingUrls } from "@coss/email/testing";
@@ -553,6 +555,60 @@ describe("coss.domains against the API", () => {
   });
 });
 
+describe("coss.email.tracking against the API", () => {
+  test("update, read and remove the default and category rules; sends follow them", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    expect(await coss.email.tracking.get()).toEqual({
+      data: { object: "tracking_settings", default: null, categories: [] },
+      error: null,
+    });
+    const defaultRule = await coss.email.tracking.updateDefault({ opens: true, clicks: true });
+    expect(defaultRule.data).toMatchObject({ category: null, opens: true, clicks: true });
+    const resetRule = await coss.email.tracking.updateCategory("password-reset", { opens: false });
+    expect(resetRule.data).toMatchObject({
+      object: "tracking_rule",
+      category: "password-reset",
+      opens: false,
+      clicks: false,
+    });
+    expect(await coss.email.tracking.get()).toEqual({
+      data: {
+        object: "tracking_settings",
+        default: defaultRule.data,
+        categories: resetRule.data ? [resetRule.data] : [],
+      },
+      error: null,
+    });
+
+    const sent = await coss.email.send({
+      from: "Acme <hello@acme.com>",
+      to: "user@example.com",
+      subject: "Reset your password",
+      html: "<p>Hi</p>",
+      category: "password-reset",
+    });
+    expect(sent.data?.tracking).toMatchObject({ opens: false, clicks: false });
+
+    expect(await coss.email.tracking.removeCategory("password-reset")).toEqual({
+      data: {
+        object: "tracking_rule",
+        id: resetRule.data?.id ?? "",
+        category: "password-reset",
+        deleted: true,
+      },
+      error: null,
+    });
+    expect((await coss.email.tracking.removeDefault()).data).toMatchObject({ deleted: true });
+    const gone = await coss.email.tracking.removeDefault();
+    expect(gone.error).toMatchObject({ type: "not_found_error", code: "not_found", status: 404 });
+    const invalid = await coss.email.tracking.updateCategory("has space", { opens: true });
+    expect(invalid.error).toMatchObject({ code: "validation_error", param: "category" });
+  });
+});
+
 describe("coss.domains.tracking against the API", () => {
   test("create and delete a tracking domain", async () => {
     const tenant = await createTestTenant();
@@ -998,5 +1054,96 @@ describe("coss.risk against the API", () => {
     } finally {
       receiver.stop();
     }
+  });
+});
+
+describe("coss.billing against the API", () => {
+  test("get, usage, invoices and credits from any environment's key", async () => {
+    const tenant = await createTestTenant();
+    const org = tenant.organization.id;
+    const { app } = createTestApp();
+    await createTestContract(
+      org,
+      { version: 1, plan: "pro" },
+      { effectiveFrom: new Date("2026-08-01T00:00:00Z") },
+    );
+    await runDueBillingPeriods({
+      now: new Date("2026-10-01T00:20:00Z"),
+      scope: { organizationIds: [org] },
+    });
+    await recordTestUsage({
+      organizationId: org,
+      environmentId: tenant.production.id,
+      meter: "email.recipients",
+      quantity: 1_200,
+      at: new Date("2026-09-14T08:00:00Z"),
+    });
+    const credit = await createCreditGrant({
+      grant: {
+        organizationId: org,
+        kind: "units",
+        amount: 10_000n,
+        meter: "email.recipients",
+        source: "promotion",
+        description: "Welcome credit",
+        effectiveAt: new Date("2026-09-01T00:00:00Z"),
+        expiresAt: null,
+      },
+      actor: { userId: tenant.owner.id, email: tenant.owner.email },
+      reason: "test",
+    });
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    const billing = await coss.billing.get();
+    expect(billing.error).toBeNull();
+    expect(billing.data).toMatchObject({ object: "billing", organization_id: org, plan: "pro" });
+
+    const usage = await coss.billing.usage({
+      from: "2026-09-01T00:00:00Z",
+      to: "2026-10-01T00:00:00Z",
+      granularity: "month",
+      group_by: "environment",
+      meter: "email.recipients",
+    });
+    expect(usage).toEqual({
+      data: {
+        object: "list",
+        has_more: false,
+        data: [
+          {
+            object: "usage",
+            meter: "email.recipients",
+            dimension: null,
+            environment_id: tenant.production.id,
+            start: "2026-09-01T00:00:00.000Z",
+            end: "2026-10-01T00:00:00.000Z",
+            quantity: 1_200,
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const invoices = await coss.billing.invoices.list({ limit: 1 });
+    expect(invoices.data).toMatchObject({ object: "list", has_more: true });
+    const summary = invoices.data?.data[0];
+    if (!summary) throw new Error("missing invoice");
+    const invoice = await coss.billing.invoices.get(summary.id);
+    expect(invoice.data).toEqual({ ...summary, lines: expect.any(Array) });
+    const missing = await coss.billing.invoices.get("inv_01k7c8m4q2f3e9v6t5r1n0p8yz");
+    expect(missing.error).toMatchObject({
+      type: "not_found_error",
+      code: "not_found",
+      status: 404,
+    });
+
+    const credits = await coss.billing.credits.list({ status: "all" });
+    expect(credits.data?.data.map((row) => row.id)).toContain(credit.id);
+
+    const invalid = await coss.billing.usage({
+      from: "2026-09-02T00:00:00Z",
+      to: "2026-09-01T00:00:00Z",
+    });
+    expect(invalid.error).toMatchObject({ code: "invalid_range", status: 422 });
   });
 });

@@ -34,6 +34,14 @@ export const RETENTION_DAYS = {
   riskPersonalData: 90,
   /** What an environment remembers (hashed mailboxes and reported identifiers), since last seen. */
   riskMemory: 365,
+  /** Invoices, with their lines, payments and credit notes: what tax law needs (they outlive the account). */
+  invoices: 3650,
+  /** Hourly metered usage (invoices keep each month's totals). */
+  billingUsage: 400,
+  /** Events received from the payment provider, once processed. */
+  billingProviderEvents: 30,
+  /** Settled billing notification emails (usage alerts, payment reminders). */
+  billingNotifications: 90,
 } as const satisfies Record<string, number>;
 
 export type RetentionPeriod =
@@ -143,6 +151,32 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { days: RETENTION_DAYS.expiredAuth, after: "expiry" },
   },
   {
+    id: "invoices",
+    label: "Invoices and payments",
+    description:
+      "Invoices with their line items, payments and credit notes, as tax law requires. Kept after your account is closed.",
+    period: { days: RETENTION_DAYS.invoices, after: "creation" },
+  },
+  {
+    id: "billing_usage",
+    label: "Usage records",
+    description:
+      "Hourly counts of billable usage per environment. Each invoice keeps its month's totals.",
+    period: { days: RETENTION_DAYS.billingUsage, after: "creation" },
+  },
+  {
+    id: "billing_notifications",
+    label: "Billing notification emails",
+    description: "Records of usage alerts and payment reminders sent to your billing contacts.",
+    period: { days: RETENTION_DAYS.billingNotifications, after: "creation" },
+  },
+  {
+    id: "payment_provider_events",
+    label: "Payment provider events",
+    description: "Notifications from our payment processor about invoices and payments.",
+    period: { days: RETENTION_DAYS.billingProviderEvents, after: "creation" },
+  },
+  {
     id: "suppressions",
     label: "Suppressions",
     description:
@@ -153,7 +187,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "account",
     label: "Account and configuration",
     description:
-      "Users, organizations, projects, environments, API keys, domains, webhook endpoints, log drains, risk allow and block lists, and settings. Items you delete (a key, a domain, an endpoint, a drain) are removed right away.",
+      "Users, organizations, projects, environments, API keys, domains, webhook endpoints, log drains, risk allow and block lists, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, an endpoint, a drain) are removed right away.",
     period: { until: "closed" },
   },
 ];

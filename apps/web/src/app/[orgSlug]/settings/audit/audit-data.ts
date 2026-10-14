@@ -1,7 +1,9 @@
 import "server-only";
+import { BillingError } from "@coss/billing";
 import type { OrgAuditFilters } from "@coss/logs";
 import { apiKeyNames, listEnvironments, listProjects } from "@coss/tenancy";
 import { notFound } from "next/navigation";
+import { planGate } from "@/lib/billing";
 import { requireOrgMember } from "@/lib/session";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -11,11 +13,22 @@ function single(value: string | string[] | undefined): string | undefined {
   return first?.trim() || undefined;
 }
 
-/** The organization whose audit log is served, for members who may read it (owners, admins). */
+/**
+ * The organization whose audit log is served, for members who may read it (owners, admins).
+ * `planAllows` is false on plans without the audit log: it keeps recording, but only shows
+ * an upgrade prompt.
+ */
 export async function requireAuditAccess(orgSlug: string) {
   const context = await requireOrgMember(orgSlug);
   if (!context.can({ audit: ["read"] })) notFound();
-  return context;
+  const planAllows = await planGate()
+    .requireFeature(context.organization.id, "auditLog")
+    .then(() => true)
+    .catch((error: unknown) => {
+      if (error instanceof BillingError) return false;
+      throw error;
+    });
+  return { ...context, planAllows };
 }
 
 /** `?action=domain.` (a prefix ending in `.`, or an exact action) and `?actor=<id>`. */

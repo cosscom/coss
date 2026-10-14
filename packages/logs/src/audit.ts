@@ -178,7 +178,12 @@ export async function listOrgAuditEvents(input: {
           : undefined,
       ),
     )
-    .orderBy(desc(orgAuditEvent.createdAt), desc(orgAuditEvent.sequence))
+    // Matches the (organization_id[, action], created_at DESC NULLS LAST, sequence DESC NULLS LAST)
+    // indexes.
+    .orderBy(
+      sql`${orgAuditEvent.createdAt} desc nulls last`,
+      sql`${orgAuditEvent.sequence} desc nulls last`,
+    )
     .limit(limit + 1);
   const events = rows.slice(0, limit).map(toOrgAuditObject);
   return { events, nextBefore: rows.length > limit ? (events.at(-1)?.id ?? null) : null };

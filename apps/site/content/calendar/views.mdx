@@ -1,0 +1,108 @@
+---
+title: Views & navigation
+description: Day, week, n-day, month, agenda, year — what each shows, what prev/next step by, and the responsive collapse.
+---
+
+Six calendar-shaped views — day, n-day, week, month, agenda, year — behind one
+prop, plus a seventh that isn't calendar-shaped at all. `KloqView` is a
+string name or a number: pass `3` and you have a 3-day view, up to 14.
+Switching animates: events shared across views FLIP to their new columns
+rather than teleporting.
+
+## Try them
+
+<Playground knobs={["defaultView", "weekStartsOn", "showWeekNumbers"]} toolbar height="30rem" />
+
+## The seven shapes
+
+| View | Type | Notes |
+| --- | --- | --- |
+| `"day"` | time grid | One column, full drag engine. |
+| `2–14` | time grid | The n-day view. `2` is the floor because a 1-day n-view is just `"day"`; 14 the ceiling. |
+| `"week"` | time grid | Seven columns, first one set by `weekStartsOn` (0 = Sunday … 6 = Saturday; default Monday). |
+| `"month"` | month cells | Always 6 rows of 7 — a stable height beats a jumping one. Neighbouring-month days render dimmed. |
+| `"agenda"` | list | A 30-day rolling list from the anchor date. |
+| `"year"` | heat map | Twelve mini-month grids for the anchor's calendar year. |
+| `"timeline"` | resource rows | Rooms, staff or machines as rows along a horizontal time axis. See [Resource timeline](/kloq/docs/timeline). |
+
+Only the time-grid shapes — day, n-day, week — draw the scrollable hour grid
+and its all-day lane. Month and agenda are selection-and-navigation surfaces;
+drags there are deliberately not a thing. The timeline draws its own
+horizontal surface, with the drag engine and a now indicator of its own —
+next section.
+
+## The odd one out: `"timeline"`
+
+`"timeline"` shares the drag engine with the time-grid shapes — create, move,
+resize, all constraint-aware — but nothing else about its layout. Rows are
+lanes you supply via `lanes`, not days; there's no all-day lane, because
+there's no day column for an all-day event to sit above; and its own visible
+span is set by [`timelineWindow`](/kloq/docs/timeline#the-visible-span-timelinewindow),
+which can be tied to the anchor date the way every other view's range is, or
+pinned independently of it. It's also the one view the [responsive
+collapse](#the-responsive-collapse) leaves alone — there's no narrower n-day
+span to fall back to, so a timeline just scrolls instead of collapsing.
+Passing `lanes` is also what puts it in the stock view switcher, as "Timeline".
+Reach for it when the axis your host cares about is a resource, not a day —
+see [Resource timeline](/kloq/docs/timeline) and [Resources & lanes](/kloq/docs/resources).
+
+## What ‹ › step by
+
+A step moves by the view's own unit: a day in day view, n days in an n-day view
+(pages tile rather than overlap), a week in week view, a *calendar* month in
+month view, 30 days in agenda, a year in year view, and a day in timeline
+(one step of the anchor, regardless of how many hours or days
+`timelineWindow` derives around it — see [Resource
+timeline](/kloq/docs/timeline#the-visible-span-timelinewindow) for what that
+anchor drives and what a controlled `timelineWindow` opts out of). Adding 30 days to a month
+view would drift off the 1st within a year — so a month anchor is normalised to
+the 1st, and a year anchor to 1 January, where stepping cannot overflow. All of
+this is pure and exported, so a custom toolbar can reuse it instead of
+reimplementing it:
+
+```tsx
+import { stepAnchor, todayAnchor, formatViewTitle, resolveView } from "@/components/kloq";
+
+const next = stepAnchor("month", date, 1);   // the 1st of next month
+const today = todayAnchor("month");          // "this month", not "today"
+const view = resolveView("week", 1, date);   // ViewDescriptor: days, todayIndex…
+const title = formatViewTitle(view);         // "Feb – Mar 2026"
+```
+
+`formatViewTitle` collapses the parts the two ends of a span share: same month
+→ `February 2026`, same year → `Feb – Mar 2026`, spanning years →
+`Dec 2025 – Jan 2026`. And what the *arrow keys* move by is its own prop:
+`navigationKeys="range"` (default) pages like the chevrons; `"day"` makes ←/→
+a cursor that always moves one day. `PageUp`/`PageDown` always page — they mean
+"page" everywhere else on the web.
+
+## The responsive collapse
+
+A seven-column week squeezed into 360px is unusable — a column is ~43px,
+narrower than a fingertip. So below 640px of the *component's own box* (a
+ResizeObserver, not a media query — a 400px calendar in a desktop sidebar is
+narrow no matter the viewport) the time-grid views collapse to a single day
+and the month draws a dot per event instead of titled chips. The year view
+stays a year: it lays its twelve months out in one to four columns to fit
+the box. Between 640px and 900px a week squeezes to three days instead. On by
+default; `responsive={false}` opts out, and
+`responsive={{ breakpoint, mediumBreakpoint, mediumDays, collapseTo }}` tunes
+the tiers.
+
+<Callout>
+  The collapse never rewrites a controlled `view`. Your prop is the *intent*;
+  what renders is the *effective* view, derived from intent + width, reported
+  through `onViewChange` so your switcher can follow — and the pre-collapse
+  intent is requested back when the box widens. A host that ignores the
+  callbacks still renders correctly.
+</Callout>
+
+## ISO week numbers
+
+`showWeekNumbers` puts ISO 8601 week numbers in the time grid's gutter corner.
+ISO, deliberately: weeks start on Monday, week 1 is the week containing the
+year's first Thursday, and late December can be week 1 of the *next* year. That
+is what every European calendar, payroll system and sprint board means by
+"week 32", and a home-grown `ceil(dayOfYear / 7)` disagrees with all of them
+for a few days each year, silently. It is independent of `weekStartsOn` on
+purpose, and `isoWeek` / `isoWeekYear` are exported for your own chrome.

@@ -29,4 +29,6 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   logDrain: ["create", "read", "update", "delete"],
   risk: ["assess", "read", "feedback"],
   riskList: ["create", "read", "delete"],
+  // The organization's plan, usage, invoices and credits (read only; changes need the dashboard).
+  billing: ["read"],
 };

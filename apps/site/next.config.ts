@@ -20,7 +20,9 @@ const nextConfig: NextConfig = {
     "@coss/versioning",
     "@coss/retention",
     "@coss/risk",
+    "@coss/billing",
     "@coss/observability",
+    "kloq",
   ],
   // Twoslash drives the TypeScript compiler while MDX compiles; it must not be bundled.
   serverExternalPackages: ["typescript"],

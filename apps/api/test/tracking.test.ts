@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createVerifiedDomain, trackingUrls } from "@coss/email/testing";
-import { createRateLimiter, MemoryStore } from "@coss/ratelimit";
+import { memoryLimiter } from "@coss/ratelimit/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { PIXEL_GIF } from "../src/routes/tracking.ts";
 import {
@@ -44,7 +44,7 @@ async function sendTracked(
 describe("tracking endpoints", () => {
   test("limits public tracking database lookups by token without a trusted client IP", async () => {
     const { app, urls } = await sendTracked({ clicks: true }, HTML, {
-      rateLimiter: createRateLimiter({ store: new MemoryStore() }),
+      rateLimiter: memoryLimiter(),
     });
     let denied: Response | null = null;
     for (let i = 0; i < 150; i++) {

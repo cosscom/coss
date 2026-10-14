@@ -1,3 +1,4 @@
+import type { PlanGate, UsageGate } from "@coss/billing/gate";
 import { pool } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
 import {
@@ -42,6 +43,9 @@ export function createTestApp(
     logWriter?: LogWriter;
     versioning?: Versioning;
     riskDeps?: RiskDeps;
+    /** Enforce plans (`createPlanGate`) and Free's allowance (`createUsageGate`). Off by default. */
+    plans?: PlanGate;
+    billing?: UsageGate;
   } = {},
 ) {
   const liveProvider = new FakeEmailProvider({ log: false });
@@ -57,11 +61,13 @@ export function createTestApp(
       queue,
       trackingBaseUrl: TRACKING_BASE_URL,
       trackingDomainProvider: tracking.name,
+      billing: opts.billing,
     });
   const app = createApp({
     emailService,
-    domainDeps: opts.domainDeps ?? { identity, dns: null, tracking },
-    webhookDeps: testManagementDeps,
+    domainDeps: opts.domainDeps ?? { identity, dns: null, tracking, plans: opts.plans },
+    webhookDeps: { ...testManagementDeps, plans: opts.plans },
+    plans: opts.plans,
     riskDeps: opts.riskDeps ?? testRiskDeps(),
     rateLimiter: opts.rateLimiter,
     clientIp: opts.clientIp,

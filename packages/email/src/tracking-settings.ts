@@ -6,7 +6,13 @@
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, asc, eq, isNull, or, sql } from "drizzle-orm";
-import type { TrackingOptionsOutput, TrackingRuleInputOutput } from "./schemas.ts";
+import type {
+  TrackingOptionsOutput,
+  TrackingRuleInputOutput,
+  TrackingRuleOutput,
+  TrackingSettingsOutput,
+  UpdateTrackingRuleRequestOutput,
+} from "./schemas.ts";
 
 const { emailTrackingRule } = schema;
 
@@ -23,6 +29,26 @@ export type TrackingSettings = {
   /** Category rules, by category name. */
   categories: TrackingRuleRow[];
 };
+
+export function toTrackingRuleObject(row: TrackingRuleRow): TrackingRuleOutput {
+  return {
+    object: "tracking_rule",
+    id: row.id,
+    category: row.category,
+    opens: row.opens,
+    clicks: row.clicks,
+    created_at: row.createdAt.toISOString(),
+    updated_at: row.updatedAt.toISOString(),
+  };
+}
+
+export function toTrackingSettingsObject(settings: TrackingSettings): TrackingSettingsOutput {
+  return {
+    object: "tracking_settings",
+    default: settings.default ? toTrackingRuleObject(settings.default) : null,
+    categories: settings.categories.map(toTrackingRuleObject),
+  };
+}
 
 function inEnvironment(env: TrackingEnvironment) {
   return and(
@@ -80,6 +106,19 @@ export async function upsertTrackingRule(
   env: TrackingEnvironment,
   input: TrackingRuleInputOutput,
 ): Promise<TrackingRuleRow | null> {
+  return updateTrackingRule(env, input.category, { opens: input.opens, clicks: input.clicks });
+}
+
+/**
+ * Sets the given fields of the environment default (`category: null`) or a category's rule,
+ * creating it (fields left out off) when there is none; fields left out of an existing rule keep
+ * their value. `null` when the environment is not the organization's.
+ */
+export async function updateTrackingRule(
+  env: TrackingEnvironment,
+  category: string | null,
+  input: UpdateTrackingRuleRequestOutput,
+): Promise<TrackingRuleRow | null> {
   const [environment] = await db
     .select({ projectId: schema.environment.projectId })
     .from(schema.environment)
@@ -97,13 +136,17 @@ export async function upsertTrackingRule(
       organizationId: env.organizationId,
       projectId: environment.projectId,
       environmentId: env.environmentId,
-      category: input.category,
-      opens: input.opens,
-      clicks: input.clicks,
+      category,
+      opens: input.opens ?? false,
+      clicks: input.clicks ?? false,
     })
     .onConflictDoUpdate({
       target: [emailTrackingRule.environmentId, emailTrackingRule.category],
-      set: { opens: input.opens, clicks: input.clicks, updatedAt: new Date() },
+      set: {
+        ...(input.opens === undefined ? {} : { opens: input.opens }),
+        ...(input.clicks === undefined ? {} : { clicks: input.clicks }),
+        updatedAt: new Date(),
+      },
       // The conflicting row is in this environment, so it is the organization's too.
       setWhere: eq(emailTrackingRule.organizationId, env.organizationId),
     })
@@ -119,4 +162,23 @@ export async function deleteTrackingRule(env: TrackingEnvironment, id: string): 
     .where(and(inEnvironment(env), eq(emailTrackingRule.id, id)))
     .returning({ id: emailTrackingRule.id });
   return deleted.length > 0;
+}
+
+/** Removes the environment default (`category: null`) or a category's rule; the removed row. */
+export async function deleteTrackingRuleFor(
+  env: TrackingEnvironment,
+  category: string | null,
+): Promise<TrackingRuleRow | null> {
+  const [deleted] = await db
+    .delete(emailTrackingRule)
+    .where(
+      and(
+        inEnvironment(env),
+        category === null
+          ? isNull(emailTrackingRule.category)
+          : eq(emailTrackingRule.category, category),
+      ),
+    )
+    .returning();
+  return deleted ?? null;
 }

@@ -15,7 +15,7 @@ export const TRACKING_DOMAIN_PROVIDERS = ["fake", "cloudflare"] as const;
 export type TrackingDomainProviderName = (typeof TRACKING_DOMAIN_PROVIDERS)[number];
 
 /** The host customers CNAME their tracking domain to, unless `TRACKING_CNAME_TARGET` says otherwise. */
-export const DEFAULT_TRACKING_CNAME_TARGET = "track.coss.com";
+export const DEFAULT_TRACKING_CNAME_TARGET = "track.cosslinks.com";
 
 /** SES tenant names are `<prefix>-<organization id>` and at most 64 characters. */
 export const SES_TENANT_PREFIX_PATTERN = /^[A-Za-z0-9_-]{1,32}$/;

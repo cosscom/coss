@@ -1,0 +1,57 @@
+---
+title: ICS import & export
+description: toICS and downloadICS out, parseICS in — RFC 5545 both directions, pure, and never throwing.
+---
+
+RFC 5545 in both directions: `toICS` / `downloadICS` serialize an event out, `parseICS` brings a calendar in. Both sides are pure, neither throws on user input, and import reports every line it had to drop instead of losing data silently.
+
+## Export
+
+```tsx
+import { toICS, downloadICS } from "@/components/kloq";
+
+// in a slot or event-panel override — placed is a PlacedEvent
+const text = toICS(placed, { prodId: "acme-cal" }); // full VCALENDAR string
+downloadICS(placed);                                 // browser download, "deep-work.ics"
+```
+
+`toICS` takes a `PlacedEvent` — what every caller (the panel, the context menu) is actually holding — but reads the dates off `event.source`, the store event. A placement is clamped to the visible view; the export must not be, so a cross-midnight event exports its true end even though the grid drew it stopping at 24:00.
+
+The whole model goes out: `SUMMARY`, `DESCRIPTION`, `LOCATION`, `URL` for `meetingUrl`, `RRULE`, `TRANSP:TRANSPARENT` for `busy: false`, `ORGANIZER`, and one `ATTENDEE` line per invitee with `CN`, `ROLE` and `PARTSTAT` mapped from the attendee's status. All-day events use date-only values with the exclusive `DTEND` the spec requires — exactly how `CalEvent` already stores them. Output is CRLF-joined, text-escaped, and folded to 75 octets per line, multi-byte safe.
+
+<Callout>
+  Timed events are emitted as *floating* local time — no `Z`, no `TZID`. When
+  per-event authored zones are honoured in export, `TZID` lands here.
+</Callout>
+
+## Import
+
+`parseICS` is the inverse: hand it the text of an `.ics` file and it returns events plus a full account of anything it could not keep.
+
+```tsx
+import { parseICS, type ICSImportResult } from "@/components/kloq";
+
+const result: ICSImportResult = parseICS(fileText);
+result.events;   // CalEvent[] — ready for the store
+result.skipped;  // ICSSkip[] — every dropped component, with a reason
+result.warnings; // ICSSkip[] — kept, but approximated (today: TZID)
+```
+
+The lower layers are exported for anyone building richer tooling: `unfoldICS` (line unfolding), `parseContentLine` (name/params/value), `unescapeText`, `parseICSDateValue` and `parseICSDuration`. Import reads every property export writes, so export → import is lossless in both directions.
+
+## Copy & paste speaks ICS too
+
+The clipboard layer reuses the same format: `eventsToICS` / `eventsToText` build the payload, `looksLikeICS` sniffs one, `parseClipboardEvents` reads it back, and `rebaseEvents` re-anchors pasted events onto the target day. Copying events in kloq and pasting into any calendar app that accepts ICS — or the reverse — falls out of that.
+
+## Exports
+
+<TypeTable
+  label="export"
+  type={{
+    "toICS(event, opts?)": { type: "(PlacedEvent, ToICSOptions?) => string", description: "Full `VCALENDAR` text. `opts.prodId` sets the `PRODID` owner." },
+    "downloadICS(event, opts?)": { type: "(PlacedEvent, ToICSOptions?) => void", description: "Browser download of the same, named from the title." },
+    "parseICS(text, opts?)": { type: "(string, ICSImportOptions?) => ICSImportResult", description: "Events in, skips reported. Never throws." },
+    "unfoldICS / parseContentLine / unescapeText": { type: "functions", description: "The structural layer under parseICS." },
+    "parseICSDateValue / parseICSDuration": { type: "functions", description: "RFC 5545 date/date-time and `DURATION` values." },
+  }}
+/>

@@ -1,6 +1,6 @@
 import "server-only";
 import { llms, loader } from "fumadocs-core/source";
-import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
+import { renderBillingComponents } from "./billing-text";
 import { docs } from "./collections";
 import { openapi } from "./openapi";
 import { renderRetentionComponents } from "./retention-text";
@@ -30,7 +30,7 @@ export const source = loader(
   },
   {
     baseUrl: DOCS_ROUTE,
-    plugins: [lucideIconsPlugin(), openapi.loaderPlugin()],
+    plugins: [openapi.loaderPlugin()],
   },
 );
 
@@ -43,15 +43,16 @@ function kebabCase(value: string): string {
 
 export type DocsPage = NonNullable<ReturnType<typeof source.getPage>>;
 
+/** A page as Markdown: the "Copy Markdown" button, /llms.txt and /llms-full.txt. */
+export async function pageMarkdown(page: DocsPage): Promise<string> {
+  const heading = `# ${page.data.title} (${page.url})`;
+  if (page.type === "openapi") {
+    const text = page.data.structuredData.contents.map((item) => item.content);
+    return [heading, page.data.description, ...text].filter(Boolean).join("\n\n");
+  }
+  const body = await page.data.getText("processed");
+  return `${heading}\n\n${renderRiskComponents(renderBillingComponents(renderRetentionComponents(body)))}`;
+}
+
 /** /llms.txt and /llms-full.txt. */
-export const docsLlms = llms(source, {
-  renderPage: async (page) => {
-    const heading = `# ${page.data.title} (${page.url})`;
-    if (page.type === "openapi") {
-      const text = page.data.structuredData.contents.map((item) => item.content);
-      return [heading, page.data.description, ...text].filter(Boolean).join("\n\n");
-    }
-    const text = await page.data.getText("processed");
-    return `${heading}\n\n${renderRiskComponents(renderRetentionComponents(text))}`;
-  },
-});
+export const docsLlms = llms(source, { renderPage: pageMarkdown });

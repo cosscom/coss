@@ -3,6 +3,12 @@
  * step is the owning package's purge; emails go before their batches.
  */
 import {
+  purgeExpiredBillingNotifications,
+  purgeExpiredBillingProviderEvents,
+  purgeExpiredBillingUsage,
+  purgeExpiredInvoices,
+} from "@coss/billing";
+import {
   purgeEmptyEmailBatches,
   purgeExpiredEmails,
   purgeExpiredReputationRollups,
@@ -43,6 +49,10 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "reputation notifications", purge: purgeExpiredReputationNotifications },
   { name: "reputation events", purge: purgeExpiredReputationEvents },
   { name: "admin audit events", purge: purgeExpiredAdminAuditEvents },
+  { name: "billing usage", purge: purgeExpiredBillingUsage },
+  { name: "billing provider events", purge: purgeExpiredBillingProviderEvents },
+  { name: "billing notifications", purge: purgeExpiredBillingNotifications },
+  { name: "invoices", purge: purgeExpiredInvoices },
   {
     name: "expired auth rows",
     purge: async (opts) => Object.values(await purgeExpiredAuthRows(opts)),

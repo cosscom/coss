@@ -33,6 +33,7 @@ const nextConfig: NextConfig = {
     "@coss/signals",
     "@coss/risk",
     "@coss/observability",
+    "@coss/billing",
   ],
   // A self-contained server (.next/standalone) for the container image. Tracing starts at the
   // monorepo root so workspace packages and Bun's isolated node_modules (node_modules/.bun) are

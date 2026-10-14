@@ -1,0 +1,114 @@
+---
+title: Settings dialog
+description: The settings module — the optional preferences dialog, its KloqPreferences model, and the account helpers behind it.
+---
+
+`@/components/kloq/settings` is its own module because it is genuinely
+optional: the calendar works with no settings surface at all, and a host with
+its own preferences screen wants the `KloqPreferences` model without pulling
+in a dialog it will never render.
+
+## The dialog owns no settings
+
+`SettingsDialog` is a `value` / `onChange` pair over a plain `KloqPreferences`
+object and nothing else — no context, no localStorage, no writes into
+`<Kloq>`. That is forced by the architecture rather than chosen: "show
+weekends" and "start week on" are *props on the calendar*, so the only honest
+thing a settings surface can do is report intent upward and let the host pass
+it back down. A dialog that secretly mutated the calendar would be a second
+source of truth, and the two would drift the first time the host changed a
+prop.
+
+```tsx title="app/calendar.tsx"
+import { Kloq } from "@/components/kloq";
+import {
+  SettingsDialog,
+  DEFAULT_PREFERENCES,
+  type KloqPreferences,
+} from "@/components/kloq/settings";
+
+const [prefs, setPrefs] = useState<KloqPreferences>(DEFAULT_PREFERENCES);
+const [open, setOpen] = useState(false);
+
+<>
+  <SettingsDialog open={open} onOpenChange={setOpen}
+    value={prefs} onChange={setPrefs} />
+  <Kloq
+    weekStartsOn={prefs.weekStartsOn}
+    showWeekNumbers={prefs.showWeekNumbers}
+    showDeclinedEvents={prefs.showDeclinedEvents}
+    navigationKeys={prefs.navigationKeys}
+    locale={prefs.language || undefined}
+  />
+</>
+```
+
+<Callout>
+  Fully controlled means exactly that: a host that ignores `onChange` gets a
+  UI that visibly refuses to move, rather than one that looks like it worked
+  and didn't.
+</Callout>
+
+## The KloqPreferences model
+
+Flat and serializable on purpose: persist the whole object under one key.
+Every field maps to either a `<Kloq>` prop or a host behaviour, and nothing is
+optional — a settings screen with tri-state values renders switches that are
+neither on nor off. `DEFAULT_PREFERENCES` matches the calendar's own defaults.
+
+<TypeTable
+  type={{
+    showWeekends: { type: "boolean", description: "Show Saturday and Sunday columns." },
+    showDeclinedEvents: { type: "boolean", description: "Maps to the `showDeclinedEvents` prop." },
+    showWeekNumbers: { type: "boolean", description: "ISO week numbers in the gutter." },
+    weekStartsOn: { type: "WeekStart", description: "`0` Sunday, `1` Monday, `6` Saturday." },
+    navigationKeys: { type: "NavigationKeys", description: "`\"range\"` — ←/→ step the visible range; `\"day\"` — always one day." },
+    language: { type: "string", description: "BCP 47 tag, or `\"\"` for \"follow the system\". `LANGUAGE_OPTIONS` is the built-in list; pass your own." },
+    desktopNotifications: { type: "boolean", description: "The host may show desktop notifications at all." },
+    eventReminders: { type: "boolean", description: "Fire an alert before each event — delivery is the host's job." },
+    defaultReminderMinutes: { type: "number", description: "The default reminder offset stamped on new events." },
+    dailyAgenda: { type: "boolean", description: "A once-a-morning summary of the day." },
+  }}
+/>
+
+## SettingsDialogProps
+
+Four panes — `"general"`, `"accounts"`, `"conferencing"`, `"notifications"`
+(`SettingsSection`; `defaultSection` picks which opens first). Beyond the
+`value` / `onChange` pair, the props follow one honesty rule: a button with
+nothing behind it isn't rendered. Omit `onAddAccount` and there is no "Add
+calendar account" button — the package owns no OAuth flow, so a connect button
+that couldn't connect would be a lie.
+
+<TypeTable
+  type={{
+    "open / onOpenChange": { optional: true, type: "boolean / (open) => void", description: "Standard dialog control." },
+    value: { type: "KloqPreferences", description: "The whole preferences object, fully controlled." },
+    onChange: { type: "(next: KloqPreferences) => void", description: "The next preferences object on every change." },
+    "accounts / sources": { optional: true, type: "CalendarAccount[] / CalendarSource[]", description: "Rows to render. Omit to read the calendar-source registry." },
+    conferencing: { optional: true, type: "readonly ConferencingProvider[]", description: "Options offered; default `CONFERENCING_PROVIDERS`." },
+    languages: { optional: true, type: "readonly {id; label}[]", description: "Default `LANGUAGE_OPTIONS`." },
+    onAddAccount: { optional: true, type: "() => void", description: "Omit and the button isn't rendered." },
+    "onDisconnectAccount / onSetAccountConferencing": { optional: true, type: "(accountId, …) => void", description: "Forwarded to the account rows. Omit → the registry handles it." },
+    defaultSection: { optional: true, type: "SettingsSection", description: "Which pane opens first; default `\"general\"`." },
+  }}
+/>
+
+## Accounts as first-class
+
+Accounts are the one exception to "the dialog owns nothing" — they already
+have a registry (`registerCalendarSources`), and the account rows write
+through it unless the host passes handlers: the same controlled/uncontrolled
+split as everything else. The module re-exports the grouping's helpers so a
+host's own settings screen can build the same rows: `findAccount`,
+`defaultAccount`, `setDefaultAccount`, `disconnectAccount`, `providerLabel`,
+`conferencingLabel`, `accountDefaultCalendar`, `setAccountDefaultCalendar`,
+`resolveDefaultCalendar`, and `setAccountConferencing`.
+
+## SegmentedChoice
+
+Every "pick one of a few" control in the dialog is `SegmentedChoice` — a
+segmented control that is a real radio group: one tab stop, arrow keys move
+the choice, and assistive tech hears "radio, 2 of 3". It is exported for hosts
+building matching settings UI. For 2–5 options it is the better control:
+every choice is visible and it costs one click, not two.

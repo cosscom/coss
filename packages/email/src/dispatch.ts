@@ -13,9 +13,12 @@ export const EMAIL_DISPATCH_QUEUE = "email-dispatch";
 
 export type EmailDispatchJob = { organizationId: string; emailId: string };
 
-/** Where `send` puts emails to dispatch. Enqueuing joins the transaction that stores the email. */
+/**
+ * Where `send` puts emails to dispatch. Enqueuing joins the transaction that stores the email;
+ * `delaySeconds` holds the job back (an email held after its screening failed).
+ */
 export type EmailDispatchQueue = {
-  enqueue(tx: Transaction, job: EmailDispatchJob): Promise<void>;
+  enqueue(tx: Transaction, job: EmailDispatchJob, opts?: { delaySeconds?: number }): Promise<void>;
 };
 
 const QUEUE_OPTIONS = {
@@ -48,8 +51,12 @@ export function pgBossDispatchQueue(
   name: string = EMAIL_DISPATCH_QUEUE,
 ): EmailDispatchQueue {
   return {
-    async enqueue(tx, job) {
-      await boss.send(name, job, { ...inTransaction(tx), singletonKey: job.emailId });
+    async enqueue(tx, job, opts) {
+      await boss.send(name, job, {
+        ...inTransaction(tx),
+        singletonKey: job.emailId,
+        ...(opts?.delaySeconds ? { startAfter: opts.delaySeconds } : {}),
+      });
     },
   };
 }

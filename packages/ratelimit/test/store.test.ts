@@ -114,6 +114,19 @@ describe("valkey store", () => {
     expect((await valkey.consume([s], { cost: 1 })).allowed).toBe(true);
   });
 
+  test("times out a command itself (cluster connections carry no command timeout)", async () => {
+    // A client whose script call never answers, as a stuck cluster node would.
+    const hung = { evalsha: () => new Promise(() => {}) } as unknown as ConstructorParameters<
+      typeof ValkeyStore
+    >[0];
+    const store = new ValkeyStore(hung, { commandTimeoutMs: 50 });
+    const started = Date.now();
+    await expect(
+      store.consume([spec("hung", { limit: 1, periodMs: 1000 })], { cost: 1 }),
+    ).rejects.toThrow("Command timed out");
+    expect(Date.now() - started).toBeLessThan(1000);
+  });
+
   test("fails fast when the server is unreachable", async () => {
     const down = ValkeyStore.connect({
       url: "redis://127.0.0.1:1",

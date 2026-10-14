@@ -1,11 +1,12 @@
 import { rehypeCodeDefaultOptions } from "fumadocs-core/mdx-plugins";
 import { defineConfig } from "fumadocs-mdx/config";
 import { transformerTwoslash } from "fumadocs-twoslash";
+import { CODE_THEMES } from "./src/lib/site.ts";
 
 export default defineConfig({
   mdxOptions: {
     rehypeCodeOptions: {
-      themes: { light: "github-light", dark: "github-dark" },
+      themes: CODE_THEMES,
       // Twoslash popups can't lazy-load languages, so load the ones they render up front.
       langs: ["ts", "tsx", "js", "jsx", "json", "bash"],
       transformers: [

@@ -10,7 +10,7 @@ import { ingestProviderEvents } from "../src/events.ts";
 import type { ProviderEvent } from "../src/provider.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { getEmail, listEmailEvents } from "../src/read.ts";
-import { EmailWebhookEvent } from "../src/schemas.ts";
+import { EMAIL_EVENT_TYPES, type EmailEventType, EmailWebhookEvent } from "../src/schemas.ts";
 import { dispatchingEmailService } from "../src/testing.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
@@ -226,7 +226,15 @@ describe("webhook outbox", () => {
         eq(schema.webhookMessage.id, schema.webhookDelivery.messageId),
       )
       .where(eq(schema.webhookDelivery.endpointId, endpoint.id))
-      .orderBy(asc(schema.webhookMessage.createdAt), asc(schema.webhookMessage.id));
+      .orderBy(asc(schema.webhookMessage.createdAt));
+    // Events of one transaction share `created_at` and their order isn't defined (ids are random
+    // within a millisecond), so they compare in the catalog's order.
+    messages.sort(
+      (a, b) =>
+        a.message.createdAt.getTime() - b.message.createdAt.getTime() ||
+        EMAIL_EVENT_TYPES.indexOf(a.message.type as EmailEventType) -
+          EMAIL_EVENT_TYPES.indexOf(b.message.type as EmailEventType),
+    );
     const payloads = messages.map(({ message }) =>
       EmailWebhookEvent.parse(renderWebhookPayload(message.payload, LATEST_API_VERSION)),
     );

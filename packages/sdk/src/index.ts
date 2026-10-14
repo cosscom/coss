@@ -3,6 +3,11 @@ export { Coss, type CossOptions } from "./client.ts";
 export type { CossError, CossErrorIssue, CossErrorType, CossResult } from "./core/errors.ts";
 export type { FetchLike, RequestOptions } from "./core/http.ts";
 export type { AuditEventsResource } from "./resources/audit-events.ts";
+export type {
+  BillingCreditsResource,
+  BillingInvoicesResource,
+  BillingResource,
+} from "./resources/billing.ts";
 export type { DomainsResource } from "./resources/domains.ts";
 export type { EmailResource } from "./resources/email.ts";
 export type { LogDrainBatchesResource, LogDrainsResource } from "./resources/log-drains.ts";
@@ -15,10 +20,27 @@ export type {
   RiskUsersResource,
 } from "./resources/risk.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
+export type { TrackingResource } from "./resources/tracking.ts";
 export type { TrackingDomainsResource } from "./resources/tracking-domains.ts";
 export type { WebhookDeliveriesResource } from "./resources/webhook-deliveries.ts";
 export type { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 export type { AuditActorType, AuditEvent, ListAuditEventsParams } from "./types/audit-event.ts";
+export type {
+  Billing,
+  BillingHoldReason,
+  Credit,
+  Invoice,
+  InvoiceLine,
+  InvoiceLineKind,
+  InvoiceStatus,
+  InvoiceSummary,
+  ListCreditsParams,
+  ListInvoicesParams,
+  ListUsageParams,
+  Meter,
+  PlanKey,
+  Usage,
+} from "./types/billing.ts";
 export type {
   CreateDomainParams,
   CreateTrackingDomainParams,
@@ -108,9 +130,17 @@ export type {
   SuppressionReason,
 } from "./types/suppression.ts";
 export type {
+  DeletedTrackingRule,
+  TrackingRule,
+  TrackingSettings,
+  UpdateTrackingRuleParams,
+} from "./types/tracking.ts";
+export type {
   AccountEventType,
   AccountWebhookEvent,
   AccountWebhookEventData,
+  BillingEventType,
+  BillingWebhookEvent,
   EmailWebhookEvent,
   EmailWebhookEventData,
   RiskEventType,

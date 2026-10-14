@@ -9,9 +9,10 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
+import { requirePlanFeature } from "../middleware/plan.ts";
 import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
-import { commonErrors, errorDoc, jsonDoc } from "./docs.ts";
+import { billingErrorDoc, commonErrors, errorDoc, jsonDoc } from "./docs.ts";
 
 const AuditEventIdParams = z.object({
   id: z.string().meta({
@@ -34,11 +35,18 @@ export const listAuditEventsRoute = createRoute({
     "the last `id` as `after` to get the next page while `has_more` is true. Reading the audit " +
     "log is not itself logged.",
   security: [{ bearerAuth: [] }],
-  middleware: [requireApiKey({ audit: ["read"] }), rateLimit("api.read")],
+  middleware: [
+    requireApiKey({ audit: ["read"] }),
+    rateLimit("api.read"),
+    requirePlanFeature("auditLog"),
+  ],
   request: { query: ListAuditEventsQuery },
   responses: {
     200: jsonDoc("A page of audit events.", AuditEventList),
     ...commonErrors,
+    402: billingErrorDoc(
+      "The organization's plan doesn't include the audit log (`plan_feature_unavailable`)",
+    ),
     422: errorDoc("A query parameter failed validation (`validation_error`)."),
   },
 });
@@ -50,11 +58,18 @@ export const getAuditEventRoute = createRoute({
   tags: ["Audit log"],
   summary: "Retrieve an audit event",
   security: [{ bearerAuth: [] }],
-  middleware: [requireApiKey({ audit: ["read"] }), rateLimit("api.read")],
+  middleware: [
+    requireApiKey({ audit: ["read"] }),
+    rateLimit("api.read"),
+    requirePlanFeature("auditLog"),
+  ],
   request: { params: AuditEventIdParams },
   responses: {
     200: jsonDoc("The audit event.", AuditEvent),
     ...commonErrors,
+    402: billingErrorDoc(
+      "The organization's plan doesn't include the audit log (`plan_feature_unavailable`)",
+    ),
     404: errorDoc("No audit event with this id exists in the organization (`not_found`)."),
   },
 });

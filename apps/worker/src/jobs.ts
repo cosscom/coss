@@ -1,6 +1,22 @@
 /** The worker's jobs, wired to their dependencies. Each run returns true when it found a full batch. */
 import { type AuthEmailDeps, runDueAuthEmails } from "@coss/auth/emails";
 import {
+  type BillingNotifier,
+  type BillingProviders,
+  expirePendingUpgrades,
+  finalizeOrganizationBilling,
+  type ProviderName,
+  reconcileOpenInvoices,
+  runBillingUsageChecks,
+  runContractRenewals,
+  runDueBillingCollection,
+  runDueBillingEvents,
+  runDueBillingNotifications,
+  runDueBillingPeriods,
+  runDueBillingSync,
+  runDueCreditNoteSync,
+} from "@coss/billing";
+import {
   type DomainDeps,
   type EmailDispatchQueue,
   type EmailService,
@@ -40,6 +56,7 @@ const AUTH_EMAIL_BATCH = 20;
 const SCHEDULED_BATCH = 50;
 const DELETION_BATCH = 5;
 const RETENTION_BATCH = 1000;
+const BILLING_BATCH = 20;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck];
 
@@ -63,6 +80,14 @@ export type WorkerDeps = {
   systemOrganizationId: string | null;
   /** Only with `EMAIL_PROVIDER=ses`. */
   sesEvents?: { sqs: SqsApi; tenantPrefix: string };
+  /** Billing: closes months, pushes and collects invoices, applies provider events, alerts. */
+  billing: {
+    providers: BillingProviders;
+    defaultProvider: ProviderName;
+    dashboardUrl: string;
+    /** Billing emails (usage alerts, payment failures); `null`: held until configured. */
+    notifier: BillingNotifier | null;
+  };
   /**
    * Aborted on shutdown: ends the SQS long poll and stops long runs between items. Each loop's
    * current item (a webhook attempt, a domain check, a received SQS batch) still finishes.
@@ -128,8 +153,11 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         (await runDueOrganizationDeletions(
           { limit: DELETION_BATCH, signal: deps.signal },
           {
-            releaseProviderResources: (organizationId, assertLease) =>
-              releaseOrganizationEmailResources(organizationId, deps.domains, assertLease),
+            releaseProviderResources: async (organizationId, assertLease) => {
+              await releaseOrganizationEmailResources(organizationId, deps.domains, assertLease);
+              // The running month is invoiced (once); the invoice outlives the organization.
+              await finalizeOrganizationBilling(organizationId, { assertLease });
+            },
           },
         )) === DELETION_BATCH,
     }),
@@ -182,6 +210,91 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       },
     }),
   ];
+  const billing = deps.billing;
+  const system = deps.systemOrganizationId;
+  loops.push(
+    startLoop({
+      // Closes ended months into invoices (after the usage settle window), renews contracts,
+      // and gives up unpaid upgrades.
+      name: "billing-periods",
+      intervalMs: 60_000,
+      run: async () => {
+        const closed = await runDueBillingPeriods({ limit: BILLING_BATCH });
+        await runContractRenewals({});
+        await expirePendingUpgrades({});
+        return closed === BILLING_BATCH;
+      },
+    }),
+    startLoop({
+      // Pushes invoices to their provider and collects them; mirrors voids and credit notes.
+      name: "billing-sync",
+      intervalMs: 5000,
+      run: async () => {
+        const invoices = await runDueBillingSync(
+          { limit: BILLING_BATCH },
+          {
+            providers: billing.providers,
+            dashboardUrl: billing.dashboardUrl,
+            systemOrganizationId: system,
+          },
+        );
+        await runDueCreditNoteSync({ limit: BILLING_BATCH }, { providers: billing.providers });
+        return invoices === BILLING_BATCH;
+      },
+    }),
+    startLoop({
+      // Dunning: retries failed charges, reminds about invoices with net terms, and holds live
+      // sending once an invoice is overdue past the account's grace days.
+      name: "billing-collection",
+      intervalMs: 60_000,
+      run: async () =>
+        (await runDueBillingCollection({ limit: BILLING_BATCH, systemOrganizationId: system })) ===
+        BILLING_BATCH,
+    }),
+    startLoop({
+      // Payment provider events (Stripe webhooks) stored by the dashboard.
+      name: "billing-events",
+      intervalMs: 2000,
+      run: async () =>
+        (await runDueBillingEvents(
+          { limit: BILLING_BATCH },
+          { providers: billing.providers, systemOrganizationId: system },
+        )) === BILLING_BATCH,
+    }),
+    startLoop({
+      // Usage alerts and spend-limit holds.
+      name: "billing-usage",
+      intervalMs: 5 * 60_000,
+      run: async () => {
+        await runBillingUsageChecks({ systemOrganizationId: system });
+      },
+    }),
+    startLoop({
+      // Open invoices the provider may have settled without us hearing (a lost webhook).
+      name: "billing-reconcile",
+      intervalMs: 60 * 60_000,
+      run: async () => {
+        await reconcileOpenInvoices(
+          {},
+          { providers: billing.providers, systemOrganizationId: system },
+        );
+      },
+    }),
+  );
+  const billingNotifier = billing.notifier;
+  if (billingNotifier) {
+    loops.push(
+      startLoop({
+        name: "billing-notifications",
+        intervalMs: 5000,
+        run: async () =>
+          (await runDueBillingNotifications(
+            { limit: NOTIFICATION_BATCH },
+            { notifier: billingNotifier, dashboardUrl: billing.dashboardUrl },
+          )) === NOTIFICATION_BATCH,
+      }),
+    );
+  }
   const authEmails = deps.authEmails;
   if (authEmails) {
     loops.push(

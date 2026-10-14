@@ -1,3 +1,4 @@
+import { billingEnvShape } from "@coss/billing/env";
 import { emailEnvShape } from "@coss/email/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
@@ -34,6 +35,9 @@ export const env = createEnv({
     // Keys risk's memory; the dashboard hashes identifiers when it records feedback. Required in
     // production (src/instrumentation.ts).
     ...riskEnvShape,
+    // Payment provider of new billing accounts (`fake` or `stripe`), Checkout and the Customer
+    // Portal; the Stripe webhook route verifies signatures with STRIPE_WEBHOOK_SECRET.
+    ...billingEnvShape,
     // Server Actions encrypt closed-over variables with this key; every instance of a stage must
     // share it. Without it, each build embeds its own random key. Builds don't need it; production
     // servers refuse to start without it (src/instrumentation.ts).

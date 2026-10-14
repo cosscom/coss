@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-sesv2": "catalog:",
+    "@coss/billing": "workspace:*",
     "@coss/db": "workspace:*",
     "@coss/logs": "workspace:*",
     "@coss/reputation": "workspace:*",

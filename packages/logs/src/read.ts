@@ -128,10 +128,13 @@ export async function queryLogs(input: QueryLogsInput): Promise<LogListOutput> {
     .select()
     .from(logEntry)
     .where(where)
+    // Matches the (environment_id, occurred_at DESC NULLS LAST, id DESC NULLS LAST) index, read
+    // backwards for the tail; plain desc()/asc() would make Postgres scan the primary key of every
+    // environment's rows in the range instead.
     .orderBy(
       ...(tail
-        ? [logEntry.occurredAt, logEntry.id]
-        : [desc(logEntry.occurredAt), desc(logEntry.id)]),
+        ? [sql`${logEntry.occurredAt} asc nulls first`, sql`${logEntry.id} asc nulls first`]
+        : [sql`${logEntry.occurredAt} desc nulls last`, sql`${logEntry.id} desc nulls last`]),
     )
     .limit(limit + 1);
   return {

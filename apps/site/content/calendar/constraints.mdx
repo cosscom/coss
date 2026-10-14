@@ -1,0 +1,171 @@
+---
+title: Constraints
+description: "Refuse time on the grid: bounds, per-date rules and per-event vetoes that every gesture honours."
+---
+
+The `constraints` prop tells the grid what it must refuse: nothing before
+Monday, no lunch hour, nothing on the 2nd between 4 and 8. Refused time draws
+as a hatch, drags snap around it, drops into it spring home, and the keyboard
+says why. Events already sitting in refused time are untouched — constraints
+restrict *gestures*, not data.
+
+```tsx
+<Kloq
+  constraints={{
+    minDate: startOfToday,                    // nothing in the past
+    maxDate: endOfQuarter,                    // nothing past the horizon
+    isSlotDisabled: (slot) => overlapsBreak(slot),   // per-slot refusal
+    canDrop: (event, target) => !event.readOnly,     // per-event veto
+  }}
+/>
+```
+
+This one is live — lunch is blocked every day, Wednesday loses 4–8 PM and
+9–10 PM, and `minDate` is midnight today, so yesterday refuses everything.
+Try dragging Pairing into the hatch, resizing Standup across lunch, or
+nudging a selected event into a blocked window with the arrow keys:
+
+<ConstraintsDemo />
+
+## The four fields
+
+Every field is optional; pass any one and the grid goes active. A
+`ConstraintSlot` is a window of time a gesture wants to occupy — `start` and
+`end` as `Date`s, `end` exclusive, plus `allDay` (no relation to the
+[component slots](/kloq/docs/slots)).
+
+<TypeTable
+  type={{
+    minDate: { optional: true, type: "Date", description: "Nothing may start before this instant. All-day slots compare at day granularity." },
+    maxDate: { optional: true, type: "Date", description: "Nothing may end after this instant; an all-day slot may run to the end of its day." },
+    isSlotDisabled: { optional: true, type: "(slot: ConstraintSlot) => boolean", description: "Return true to refuse a window of time. Called with whole spans and with sampled sub-slices to paint the hatch — keep it cheap and pure." },
+    canDrop: { optional: true, type: "(event: CalEvent, target: ConstraintSlot) => boolean", description: "Whole-drop veto about the event, not the time. Called once with the full target, after the cheap rules pass — never on create." },
+  }}
+/>
+
+<Callout>
+  `isSlotDisabled` is asked about *spans*, not points — a moved 90-minute
+  event arrives as one slot. Answer with an overlap test
+  (`slot.start < windowEnd && slot.end > windowStart`), never by checking
+  where the slot starts.
+</Callout>
+
+## Blocking hours on one date
+
+Per-date rules are just the callback reading the slot's date. Blocking 4–8 PM
+and 9–10 PM on one day:
+
+```tsx
+import { toDateOnlyString, type ConstraintSlot } from "kloq";
+
+const BLOCKED: Record<string, [number, number][]> = {
+  // minutes since midnight, [start, end)
+  "2026-09-02": [[16 * 60, 20 * 60], [21 * 60, 22 * 60]],
+};
+
+function isSlotDisabled(slot: ConstraintSlot): boolean {
+  if (slot.allDay) return false;
+  const windows = BLOCKED[toDateOnlyString(slot.start)] ?? [];
+  const day = new Date(slot.start);
+  day.setHours(0, 0, 0, 0);
+  return windows.some(([from, to]) => {
+    const a = new Date(day.getTime() + from * 60_000);
+    const b = new Date(day.getTime() + to * 60_000);
+    return slot.start < b && slot.end > a;
+  });
+}
+```
+
+A weekly pattern is the same callback reading the weekday — office hours in
+four lines:
+
+```tsx
+const officeHours = (slot: ConstraintSlot) => {
+  if (slot.allDay) return false;
+  const day = slot.start.getDay();
+  if (day === 0 || day === 6) return true; // weekends
+  const startH = slot.start.getHours() + slot.start.getMinutes() / 60;
+  const endH = startH + (slot.end.getTime() - slot.start.getTime()) / 3_600_000;
+  return startH < 9 || endH > 17; // duration-based, so a span past midnight stays refused
+};
+```
+
+## Availability a week at a time
+
+For availability that lives on a server, fetch it for the visible range with
+[`onRangeChange`](/kloq/docs/controlled-state) and let the callback read state.
+The grid re-resolves whenever the `constraints` object's identity changes, so
+deriving it from that state is exactly right:
+
+```tsx
+const [busy, setBusy] = useState(new Map<string, Window[]>());
+
+<Kloq
+  onRangeChange={(start, end) => fetchBusy(start, end).then(setBusy)}
+  rangePadding={7}
+  constraints={{
+    isSlotDisabled: (slot) => {
+      if (slot.allDay) return false;
+      const windows = busy.get(toDateOnlyString(slot.start)) ?? [];
+      return windows.some((w) => slot.start < w.end && slot.end > w.start);
+    },
+  }}
+/>
+```
+
+`rangePadding` widens each fetch so a week of ‹ › steps doesn't wait on the
+network; the [range-fetching example](/kloq/docs/examples/range-fetching) shows the
+same pattern feeding events.
+
+## What is refused, exactly
+
+Every gesture that would put an event somewhere new honours the constraints:
+drag-create, move, resize, the all-day lane's move and resize, duplicate,
+paste, and the keyboard forms of each. Clicking a refused empty slot fires no
+`onSlotClick`, and double-click quick-create refuses too. During a pointer
+drag nothing needs to spring back — a refused candidate is simply never
+accepted, so the eased snap holds the block at the last allowed position.
+
+Two rules keep that from being a trap:
+
+- **The origin exemption.** A move or resize is judged only on time it *newly*
+  occupies. An event already sitting in a blocked window can be dragged out —
+  never deeper — and a shrink is always allowed.
+- **Data is exempt.** Events you pass in, ICS imports, store writes and the
+  event panel's typed edits are never blocked. If the server says an event
+  exists at 4 PM Wednesday, the calendar draws it there.
+
+The hatch is sampled at `snapMinutes`, so its edge is exactly where a drag
+stops; a screen reader gets the blocked periods as a list, and a refused
+keyboard gesture is announced once, not per keypress.
+
+## Timeline gestures
+
+[`view="timeline"`](/kloq/docs/timeline) runs through the same `KloqConstraints`
+object, unchanged — `minDate`/`maxDate`, `isSlotDisabled` and `canDrop` all
+apply, including the origin exemption. It reports its own gesture names
+rather than reusing the calendar's, in case a `canDrop` wants to branch on
+which surface asked:
+
+| Gesture | When |
+| --- | --- |
+| `"create"` | Drag-create or double-click-create on empty canvas. No origin exemption — there's no existing event to be exempt. |
+| `"lane-move"` | Dragging a bar, including across rows (a reassignment). Origin-exempt. |
+| `"lane-resize"` | Dragging either edge of a bar. Origin-exempt. |
+
+The calendar's own `"move"` and `"resize"` never fire on a timeline, and
+`"lane-move"`/`"lane-resize"` never fire on the calendar's time grid.
+
+## The pure layer
+
+The same primitives the grid uses are exported for your own surfaces —
+`createConstraints` resolves the prop shape, `slotAllowed` answers for one
+window, and `disabledBands` returns the merged refused runs a custom
+[`TimeGutter`](/kloq/docs/slots) or availability picker can draw:
+
+```tsx
+import { createConstraints, disabledBands, slotAllowed } from "kloq";
+
+const c = createConstraints({ isSlotDisabled: officeHours });
+slotAllowed(c, { start, end, allDay: false }); // boolean
+```

@@ -1,0 +1,144 @@
+---
+title: Theming
+description: Nineteen themes across three families, light and dark schemes inside every one, and a zero-flash SSR restore script.
+---
+
+Nineteen themes, each shipping light *and* dark token blocks, all driven from
+the `@/components/kloq/lib/themes` module. A theme is a set of coss token
+overrides in CSS; this module is the metadata and the apply/persist side.
+
+## How a theme works
+
+Each theme is a `[data-kloq-theme="<id>"]` block in the stylesheet that
+re-points the coss custom properties (`--background`, `--primary`, `--radius`,
+`--shadow-lg`, …) for *both* light and dark schemes — so the light/dark toggle keeps working
+inside any theme. `setTheme` stamps the attribute on `<html>`, persists to
+localStorage, and (motion permitting) wraps the swap in a ~200ms crossfade so
+the reveal reads as one deliberate transition instead of a hard repaint.
+
+```tsx
+import { THEMES, setTheme, setScheme } from "@/components/kloq/lib/themes";
+
+setTheme("midnight"); // stamps <html data-kloq-theme="midnight">, persists
+setScheme("dark");    // "light" | "dark" | "system"
+```
+
+The default theme is `"coss"` — picking it *removes* the attribute and the
+stored key rather than setting them, so an untouched install carries no state
+at all.
+
+## The three families
+
+Seven **coss** themes are authored directly against the coss token palette:
+Coss, Midnight, Paper, Forest, Ultraviolet, Terminal and Rosé. Seven
+**editor** themes are ports of well-known code-editor palettes — Dracula, Nord,
+Tokyo Night, Catppuccin, Gruvbox, Solarized and One. Each editor port uses a
+real upstream light *and* dark palette (Catppuccin Mocha / Latte, One Dark /
+One Light — no invented counterparts), mapped onto coss's semantic tokens.
+Every entry in `THEMES` carries its metadata: an `id`, a display `name`, a
+three-color `swatch` for picker chips, its `family`, the scheme it was
+originally designed in (`origin`), and an upstream `credit`.
+
+Five **saas** themes rebuild the look of well-known products from their public
+CSS — Cal.com under its own name, and Linear, Raycast, Vercel and ChatGPT as
+Graphite, Ember, Geist and Ivory. Radius, border alpha, shadow stacks and type
+were measured, not guessed. These are the ones that exercise the shadow
+tokens: every theme sets `--shadow-xs` / `--shadow-sm` / `--shadow-md` /
+`--shadow-lg` (built on `--shadow-color`), and every elevated surface —
+popovers, menus, dialogs, cards, form controls, the drag lift — reads them at
+runtime. Geist picks up `--font-geist-sans` and Cal.com picks up
+`--font-cal-sans` when the host defines them.
+
+```tsx
+import { THEMES, type KloqTheme } from "@/components/kloq/lib/themes";
+
+THEMES.map((t) => t.id);
+// "coss" | "midnight" | "paper" | "forest" | "ultraviolet" | "terminal"
+// | "rose" | "dracula" | "nord" | "tokyo-night" | "catppuccin"
+// | "gruvbox" | "solarized" | "one"
+// | "calcom" | "graphite" | "ember" | "geist" | "ivory"
+```
+
+## Light, dark, and system
+
+The scheme is a second, independent axis. `.dark` on `<html>` is the coss
+convention — a host that already drives that class can ignore kloq's scheme
+API entirely; the module only touches the class once `setScheme` is called.
+`"system"` clears the stored preference and follows the OS from then on;
+`watchSystemScheme` keeps it live across OS changes and returns an unsubscribe.
+
+```tsx
+import {
+  getScheme,      // the stored preference — may be "system"
+  resolveScheme,  // what's on screen — "system" collapsed to light/dark
+  toggleScheme,   // light ⇄ dark, resolving "system" first
+  watchSystemScheme,
+} from "@/components/kloq/lib/themes";
+
+const off = watchSystemScheme(); // re-applies on OS changes while pref is "system"
+```
+
+## Scoping a theme to one calendar
+
+`setTheme` and `setScheme` are page-level: they stamp `<html>` and persist, and
+every calendar on the page follows. To dress a single instance instead —
+two calendars in two brands, a themed embed inside a host with its own look, a
+theme picker that previews without committing — pass `theme` and `scheme` as
+props. They stamp the calendar's root and its portal container (menus, popovers
+and dialogs render at body level, so the scope has to travel with them) and
+touch nothing else: no `<html>` attribute, no localStorage.
+
+```tsx
+<Kloq theme="dracula" scheme="dark" />
+<Kloq theme="solarized" scheme="light" />
+```
+
+Omit either prop and that axis follows the page again. `scheme` pins the
+colour scheme even when the page's `.dark` disagrees — a `scheme="light"`
+calendar stays light on a dark page, `dark:` utilities included.
+
+## Zero-flash SSR restore
+
+Theme and scheme persist in localStorage, which the server cannot read — so a
+server-rendered page would flash the default theme before hydration.
+`THEME_RESTORE_SCRIPT` is a tiny inline script that restores *both axes* before
+first paint; without the scheme half, a dark preference flashes light on every
+load.
+
+```tsx title="app/layout.tsx"
+import { THEME_RESTORE_SCRIPT } from "@/components/kloq/lib/themes";
+
+// in your document <head>, before first paint:
+<script dangerouslySetInnerHTML={{ __html: THEME_RESTORE_SCRIPT }} />
+```
+
+<Callout>
+  The constant reads the default keys. Under a `storage` prefix, inline
+  `themeRestoreScript("myapp")` instead — it restores from `myapp-theme` and
+  `myapp-scheme`.
+</Callout>
+
+## The full surface
+
+<TypeTable
+  label="export"
+  type={{
+    "THEMES": { type: "KloqTheme[]", description: "All nineteen themes with id, name, swatch, family, origin and credit." },
+    "setTheme(id)": { type: "(id: string) => void", description: "Stamps `data-kloq-theme`, persists, crossfades. `\"coss\"` clears both." },
+    "getTheme()": { type: "() => string", description: "The active theme id; `\"coss\"` on the server or when unset." },
+    "setScheme(pref)": { type: "(pref: KloqScheme) => void", description: "Applies and persists `\"light\" | \"dark\" | \"system\"`." },
+    "getScheme()": { type: "() => KloqScheme", description: "The stored preference — may be `\"system\"`." },
+    "resolveScheme(pref?)": { type: "() => \"light\" | \"dark\"", description: "What's actually on screen, `\"system\"` collapsed." },
+    "toggleScheme()": { type: "() => \"light\" | \"dark\"", description: "Flip light ⇄ dark; returns what it landed on." },
+    "watchSystemScheme()": { type: "() => () => void", description: "Follow OS changes while the preference is `\"system\"`. Returns unsubscribe." },
+    "themeTransition(apply)": { type: "(apply: () => void) => void", description: "Runs your own theme or scheme change inside one crossfade; applies it straight away where view transitions are missing or motion is reduced." },
+    "THEME_RESTORE_SCRIPT": { type: "string", description: "The pre-paint inline restore script for SSR, for the default prefix." },
+    "themeRestoreScript(prefix?)": { type: "(prefix?: string) => string", description: "The same script for another `storage` prefix." },
+    "THEME_STORAGE_KEY / SCHEME_STORAGE_KEY": { type: "string", description: "The default localStorage keys: `kloq-theme` / `kloq-scheme`." },
+  }}
+/>
+
+Reduced motion is honored throughout: with `prefers-reduced-motion` set, the
+crossfade is skipped and swaps apply instantly. Storage failures (private
+windows, blocked storage) are swallowed — the theme still applies for the
+session.

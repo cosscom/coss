@@ -1,0 +1,171 @@
+---
+title: API reference
+description: Every export of the copied kloq source — the root module, themes, settings and design-mode — grouped by area.
+---
+
+Every export, grouped by area — the component and its chrome, then the pure layers underneath, then the three companion modules. Types ship alongside the values they describe.
+
+## \<Kloq\> props
+
+<PropsReference />
+
+## Component & chrome
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `Kloq` | component | The calendar. Also carries `Kloq.Toolbar` / `Kloq.Nav` / `Kloq.Reset`. Props: `KloqProps`. |
+| `KloqToolbar` / `KloqNav` / `KloqReset` | components | The chrome parts as named exports — identical to the dotted forms, and the ones to use from a server component (dotted access doesn't cross the client boundary). |
+| `useKloq()` | hook | Live view state (view, date, range, navigation) inside `<Kloq>` children. |
+| `KloqProps` / `KloqChrome` / `KloqToolbarProps` | types | The prop surfaces above. |
+
+## Configuration
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `createSettings` / `DEFAULT_CONFIG` / `DEFAULT_SETTINGS` | function + constants | Resolve a `KloqConfig` (props) into a validated `KloqSettings` (geometry + formatting). |
+| `useKloqSettings()` | hook | The resolved settings, inside slots and chrome. |
+| `EVENT_COLORS` | constant | The five palette keys and their token mappings. |
+| `springLinear` | function | The damped spring sampled into a CSS `linear()` easing — the settle/cancel curve, exported. |
+| `KloqConfig` / `KloqSettings` | types | Props in, resolved numbers out. |
+
+## Slots & store
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `DEFAULT_COMPONENTS` | constant | The original slot implementations, so an override can wrap instead of replace. |
+| `KloqComponents` + per-slot prop types | types | `EventBlockProps`, `AllDayChipProps`, `EventPanelProps`, `TimeGutterProps`, `DayHeaderProps`, `NowIndicatorProps`, `TimelineBlockProps`, `ResourceGutterProps`, `TimelineHeaderProps`, `TimelineRowProps`. |
+| `useKloqStore()` | hook | The event store, inside slots. |
+| `localStorageAdapter` / `STORAGE_KEY` / `eventsStorageKey` | adapter + constant + function | The default persistence, its default key, and the key under the current `storage` prefix. |
+| `SEED_EVENTS` / `buildSeedEvents` / `newEventId` | data + functions | The sample events and the id factory. |
+| `PersistenceAdapter` / `OnCommit` / `KloqChange` / `KloqStore` / `KloqBatchOp` | types | The store's contracts — see [Persistence](/kloq/docs/persistence) and [Optimistic sync](/kloq/docs/optimistic-sync). |
+| `isV2Event` / `migrateV1` / `readPayload` / `PAYLOAD_VERSION` / `PayloadV2` | functions + constants | The versioned localStorage payload and its migration. |
+
+## Event model & instants
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `CalEvent` / `TimedCalEvent` / `AllDayCalEvent` / `CalEventPatch` | types | The store event — a discriminated union on `allDay`. |
+| `Attendee` / `AttendeeStatus` / `EventColor` / `Instant` / `Reminder` / `ReminderMethod` | types | The field types on an event. |
+| `KloqView` / `KloqViewKind` / `ViewDescriptor` / `PlacedEvent` / `PlacedOccurrence` / `PlacementId` / `StoreId` / `WorkingHours` | types | Views, placements and their branded ids. `PlacedEvent.laneIndex` / `endLaneIndex` are the row a placement sits on — a visible column in the calendar, a lane in a timeline. `dayIndex` / `endDayIndex` are the same values under their old name, kept for one release: **@deprecated, removed next release.** |
+| `DEFAULT_EVENT_COLOR` / `asPlacementId` / `isBusy` / `continuesBefore` / `continuesAfter` | constants + functions | Color fallback, id branding, free/busy default, cross-midnight segment predicates. |
+| `instantAt` / `instantPlus` / `parseInstant` / `dateOnlyAt` / `dateOnlyAfter` / `toDateOnlyString` / `isDateOnly` / `daysBetween` / `minutesOfDate` / `wallMinutesBetween` | functions | Building and reading instants, wall-clock-correct. |
+| `formatMinutes` / `formatRange` / `minutesToPx` / `pxToMinutes` / `resolveView` | functions | Time labels and px↔minute geometry; `TimeFormatOptions` alongside. |
+| `HOUR_HEIGHT` / `SNAP_MIN` / `SNAP_FINE_MIN` / `MIN_EVENT_MIN` | constants | The default geometry numbers. |
+
+## Attendees & conflicts
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `addAttendee` / `addAttendees` / `removeAttendee` / `findAttendee` | functions | List mutations; email is the dedupe key. |
+| `setAttendeeStatus` / `setAttendeeOptional` / `toggleAttendeeOptional` / `attendeeStatus` / `RSVP_CHOICES` | functions + constant | RSVP state. |
+| `organizerOf` / `isOrganizer` / `attendeeLabel` / `initialsFor` / `isValidEmail` / `summarize` / `summaryLabel` / `AttendeeSummary` | functions + type | Reading and summarising an invite. |
+| `conflictBetween` / `isConflicting` / `findConflicts` / `conflictsFor` / `conflictClusters` / `describeConflicts` | functions | Busy-time collisions, attendee-aware; `ConflictOptions` / `ConflictPair` alongside. |
+| `eventInterval` / `intervalsOverlap` / `overlapMs` / `isBlocking` / `participantsOf` / `sharedParticipants` | functions | The interval layer under conflicts. |
+
+## Commands, quick add, search, keyboard
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `registerCommands` / `clearCommands` / `getCommands` / `subscribeCommands` / `KloqCommand` | functions + type | The open ⌘K registry — see [Command palette](/kloq/docs/command-palette). |
+| `COMMAND_GROUPS` / `DEFAULT_COMMAND_GROUP` / `groupCommands` / `matchesQuery` / `normalizeQuery` | constants + functions | The palette's grouping and ranking model. |
+| `BUILT_IN_COMMANDS` / `commandAllowed` / `BuiltInCommand` | constant + function + type | Every built-in ⌘K id (families as `:*`) and the allowlist matcher behind `commandPalette.commands`. |
+| `parseQuickAdd` / `quickAddPreview` / `highlightSegments` / `UNTITLED` / `DEFAULT_QUICK_ADD_MIN` | functions + constants | Natural-language event entry — see [Quick add](/kloq/docs/quick-add). |
+| `QUICK_ADD_KINDS` / `QUICK_ADD_KIND_ORDER` | constants | Each token kind's label, swatch and underline `mark`, and the order a legend lists them in. |
+| `QuickAddInput` / `MoveToInput` | components | The quick-add field and the "move to…" field, standalone — see [Quick add input](/kloq/docs/quick-add-input). Both take `announce` (default true) to read their preview out as it changes. |
+| `searchEvents` / `EventSearchOptions` / `EventSearchResult` | function + types | Whole-store search, as ⌘K uses it. |
+| `formatWhen` / `formatEventWhen` / `formatDayLabel` / `formatDurationShort` / `allDayDisplayEnd` | functions | The shared "when" formatters. |
+| `KEY_ACTIONS` / `resolveKeymap` / `actionForEvent` / `bindingFromEvent` / `displayKey` / `isBindableKey` | constants + functions | The remappable keyboard layer; `Keymap` / `KeyActionId` / `ResolvedKeymap` alongside. |
+| `parseMoveTarget` / `describeMove` | functions | "Move to…" in plain language; `MoveTarget` / `MoveToOptions` alongside. |
+| `selectionFrom` / `selectOnly` / `toggleSelection` / `extendSelection` / `selectAll` / `eventsInMarquee` / … | functions | The whole pure selection model (`SelectionState`) — click, ⇧-click, marquee. |
+| `writeEventsToClipboard` / `readEventsFromClipboard` / `eventsToICS` / `eventsToText` / `parseClipboardEvents` / `rebaseEvents` / `looksLikeICS` / `buildClipboardPayload` | functions | Copy/paste, speaking ICS. |
+
+## Views, navigation & layout
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `viewKind` / `isTimeGridView` / `startOfWeek` / `MIN_N_DAY_VIEW` / `MAX_N_DAY_VIEW` / `MONTH_WEEKS` / `MONTH_DAYS` / `AGENDA_DAYS` / `YEAR_MONTHS` | functions + constants | View classification and bounds. |
+| `stepAnchor` / `todayAnchor` / `rangeOfView` / `formatViewTitle` / `stepLabel` / `isoWeek` / `isoWeekYear` | functions | Range stepping and titles; `NavigationKeys` / `StepDirection` alongside. |
+| `layoutMonth` / `hiddenOn` / `compareForDay` | functions | The month grid's chip layout (`MonthChip` / `MonthLayout`). |
+| `groupAgenda` | function | The agenda grouping (`Agenda` / `AgendaDay` / `AgendaEntry`). |
+| `buildYearGrid` / `densityByDay` / `densityBucket` / `densityFill` / `describeLoad` / `loadOn` / `weekdayColumns` | functions | The year view's twelve mini-months and the heat-map density behind them. |
+| `YearView` | component | The year surface, standalone. |
+| `projectEvents` | function | Placing store events into visible columns (`Projection` / `DayBounds`). |
+| `useIsClient()` | hook | False on the server and the first client render — the SSR seam. |
+| `craftBus` / `CraftEvent` / `DragFrame` / `DragKind` | pub/sub + types | The zero-render frame stream design mode reads. |
+
+## Resource timeline
+
+`<Kloq>` takes three more props for `view="timeline"`, alongside `KLOQ_PROPS`
+above: `lanes` (`readonly Lane[]`, empty by default — nothing renders without
+rows), `laneAdapter` (`LaneAdapter`, defaults to `byResourceId()`), and
+`timelineWindow` (`TimelineWindowConfig`, see [Resource
+timeline](/kloq/docs/timeline#the-visible-span-timelinewindow) for its two modes).
+The exports underneath:
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `Lane` / `LaneAdapter` | types | The row-binding seam — see [Resources & lanes](/kloq/docs/resources). |
+| `byResourceId` | function | The default adapter: reads `event.resourceId` (or a named field) as the lane id. |
+| `resolveWindow` | function | Props in (`TimelineWindowConfig` + the anchor date), a concrete `TimelineWindow` out. |
+| `TimelineWindow` / `TimelineWindowConfig` | types | The resolved window and what a host passes for it. |
+| `KloqAxis` | type | The shared px↔minute axis shape, used both vertically (the calendar) and horizontally (the timeline). |
+| `TimelineGrid` / `TimelineGridProps` | component + type | The row-laying-out grid beneath `TimelineRow`, exported for a standalone timeline outside `<Kloq>`. `gutterWidth` sets the sticky gutter's width in px (160 by default). |
+
+<Callout type="warn">
+  Everything the timeline needs to drive its own drag engine
+  (`projectTimeline`, `layoutLane`, `maxSubRows`, `ticksOf`, `zoomWindow`,
+  `createHorizontalAxis`) is deliberately **not** exported — the seam a host
+  is meant to use is `lanes` / `laneAdapter` / `timelineWindow` plus the four
+  [slots](/kloq/docs/slots), not the layout math underneath them.
+</Callout>
+
+## Time zones, recurrence, ICS, reminders
+
+These four areas have their own pages; the exports are enumerated there. Time zones: the full pure layer from `wallClockIn` to `searchZones`, plus `MultiTimeZoneGutter` and the authored-zone helpers. Recurrence: the RRULE library, the expansion seam, the this/following/all plans, `RRuleBuilder` and `RecurrenceScopeDialog`. ICS: `toICS` / `downloadICS` out, `parseICS` and its structural layer in. Reminders: normalization, descriptions and fire-time math from `normalizeReminders` to `nextReminderAcross`, plus the `ReminderField` control — kloq computes fire times, the host delivers.
+
+## Multi-calendar & accounts
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `registerCalendarSources` / `registerCalendarAccounts` / `registerCalendarAccount` / `clearCalendarSources` | functions | A host registers whatever calendars it has connected — the component never owns provider auth. |
+| `getCalendarSources` / `getCalendarAccounts` / `subscribeCalendarSources` / `useCalendarSources` | functions + hook | Reading the registry, imperatively or reactively. |
+| `setCalendarVisible` / `toggleCalendarVisible` / `isVisible` / `visibleCalendarIds` / `isEventVisible` / `filterVisibleEvents` | functions | Visibility toggles and the filters they drive. |
+| `setDefaultCalendar` / `defaultCalendar` / `defaultCalendarId` / `newEventCalendarId` / `resolveDefaultCalendar` / `defaultAccount` / `accountDefaultCalendar` / `findAccount` / `findCalendar` | functions | Where a new event lands. |
+| `resolveEventColor` / `groupByAccount` | functions | Calendar-tinted colors and the account grouping. |
+| `CalendarList` / `CalendarField` | components | The sidebar list and the panel's calendar picker, standalone. |
+| `CalendarSource` / `CalendarAccount` / `CalendarAccountGroup` / `CalendarColor` | types | The registry's shapes. |
+
+## @/components/kloq/lib/themes
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `THEMES` / `getTheme` / `setTheme` | data + functions | Nineteen `KloqTheme`s and the persisted apply. Most of this is re-exported from the package root too. |
+| `getScheme` / `setScheme` / `toggleScheme` / `resolveScheme` / `watchSystemScheme` | functions | `"light" \| "dark" \| "system"` — and the system watcher. |
+| `themeTransition` | function | Runs a theme or scheme change inside one crossfade; applies it straight away where view transitions are missing or motion is reduced. Also exported from the package root. |
+| `THEME_RESTORE_SCRIPT` / `themeRestoreScript` | constant + function | Inline `<script>` text that restores theme + scheme before first paint — zero-flash SSR. The function takes a `storage` prefix. |
+| `THEME_STORAGE_KEY` / `SCHEME_STORAGE_KEY` | constants | The default localStorage keys. |
+| `KloqTheme` / `KloqScheme` | types | Theme metadata and the scheme union. |
+
+## @/components/kloq/settings
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `SettingsDialog` | component | The optional preferences dialog (`SettingsDialogProps`, `SettingsSection`). Stores nothing — the host owns the state. |
+| `DEFAULT_PREFERENCES` / `LANGUAGE_OPTIONS` | constants | The `KloqPreferences` model — maps onto `<Kloq>` props — and the locale menu. |
+| `KloqPreferences` / `NavigationKeys` / `WeekStart` | types | The preference shapes. |
+| `disconnectAccount` / `setAccountConferencing` / `setAccountDefaultCalendar` / `setDefaultAccount` / `conferencingLabel` / `providerLabel` / `CONFERENCING_PROVIDERS` | functions + constant | Account-level mutations and labels for the accounts section. |
+| `SegmentedChoice` | component | The segmented control the dialog's one-of-a-few choices use — a radio group with arrow-key navigation. |
+
+## @/components/kloq/design-mode
+
+| Export | Kind | Notes |
+| --- | --- | --- |
+| `KloqDesignMode` | component | The whole ⌥D surface, standalone. |
+| `DesignModeProvider` / `useDesignMode` / `DesignModeOverlay` / `DesignModeHint` | components + hook | The pieces, for custom tooling. |
+| `registerNetworkSim` / `getNetworkSim` / `subscribeNetworkSim` | functions | The Network panel's latency/failure simulator (`NetworkSimHandle`) — how the demo's FakeServer shows up in the inspector. |
+
+<Callout>
+  The source of truth is `packages/kloq/src/index.ts` — every export there
+  carries a doc comment, and the sections above follow its grouping. If a name
+  is here and not in your editor's autocomplete, update the package.
+</Callout>

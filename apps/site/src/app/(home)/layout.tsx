@@ -1,12 +1,12 @@
-import { HomeLayout } from "fumadocs-ui/layouts/home";
 import { SiteFooter } from "@/components/site-footer";
-import { baseOptions, homeLinks } from "@/lib/layout.shared";
+import { SiteShell } from "@/components/site-shell";
 
+/** The landing, pricing and legal pages: the site's header, the page, the full-width footer. */
 export default function Layout({ children }: LayoutProps<"/">) {
   return (
-    <HomeLayout {...baseOptions()} links={homeLinks}>
-      {children}
+    <SiteShell>
+      <div className="flex flex-1 flex-col">{children}</div>
       <SiteFooter />
-    </HomeLayout>
+    </SiteShell>
   );
 }

@@ -14,6 +14,7 @@
     "openapi:generate": "bun --env-file=../../.env scripts/openapi.ts"
   },
   "dependencies": {
+    "@coss/billing": "workspace:*",
     "@coss/db": "workspace:*",
     "@coss/email": "workspace:*",
     "@coss/logs": "workspace:*",

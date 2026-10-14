@@ -10,17 +10,21 @@ import type {
   SendEmailParams,
 } from "../types/email.ts";
 import { SuppressionResource } from "./suppressions.ts";
+import { TrackingResource } from "./tracking.ts";
 
 /** `coss.email`: transactional email. */
 export class EmailResource {
   readonly #http: HttpClient;
   /** The environment's suppression list. */
   readonly suppressions: SuppressionResource;
+  /** The environment's open and click tracking settings. */
+  readonly tracking: TrackingResource;
 
   /** @internal Use `new Coss().email`. */
   constructor(http: HttpClient) {
     this.#http = http;
     this.suppressions = new SuppressionResource(http);
+    this.tracking = new TrackingResource(http);
   }
 
   /**

@@ -1,0 +1,52 @@
+---
+title: ICS import and export
+description: Drop a .ics feed onto the calendar, then export what is on screen back out as a file.
+---
+
+An empty calendar and three buttons. "Import sample feed" parses a small
+team feed — two offsites, a bank holiday, a weekly sync, a product demo — and
+adds what it can, then lists what it refused and why. If none of them fall in
+the range on screen — a single day, in a narrow box — the calendar moves to
+the first one. Open or drop your own `.ics` and the same happens to it. The
+third button is named for the view you are in, "Export visible week" or
+"Export visible day", and serialises every event in that range back to a
+file; with nothing in range it says so and downloads nothing. Either way the
+result and the ICS text land under the grid, so the round trip is visible
+without opening the download.
+
+<Example name="ics-import-export" />
+
+## How it works
+
+- `parseICS(text, { color })` never throws. It returns `events` ready for the
+  store plus `skipped` (dropped, with a reason) and `warnings` (kept, but
+  approximated). The sample feed carries one of each kind on purpose: a
+  `VALARM` (reminders are not imported), a `STATUS:CANCELLED` event, an
+  `X-` vendor property, and a `DTSTART;TZID=…` that is read as local
+  wall-clock time and preserved on `timeZone`. See [ICS](/kloq/docs/ics).
+- A `UID` becomes the event `id`, so importing the same feed twice is
+  idempotent: the bar filters out ids the store already has and adds the
+  rest with one `store.batch`, which is one committed change and one undo
+  step.
+- A dropped file is read with `File.text()`; the drop zone is the whole bar,
+  and the "Open your own .ics" button is the keyboard-reachable
+  route to the same function.
+- `useKloq().viewSetting` names the button and `useKloq().view`, through
+  `rangeOfView`, is the range it exports. Export keeps every event that `expandRecurrence` places inside it
+  (a series counts if any occurrence does; the master goes out with its
+  `RRULE`), and serialises them with `eventsToICS`, which folds the
+  per-event `toICS` output into one `VCALENDAR`. For a single event,
+  `downloadICS(event)` does the download in one call.
+- The feed in `data.ts` is built from the current week. After an import the
+  bar checks the same `rangeOfView` and calls `k.goToDate` when nothing landed
+  in it. Times are floating local time; all-day events use
+  date-only values with the exclusive `DTEND` the spec — and `CalEvent` —
+  require.
+
+## Take it further
+
+Copy and paste speak the same format: `eventsToICS` / `parseClipboardEvents`
+are what <Kbd>⌘C</Kbd> and <Kbd>⌘V</Kbd> use, so events copied here paste
+into any calendar app that accepts ICS, and back. Wire `parseICS` to a URL
+fetch and you have a subscription; wire the export to `onCommit` and every
+change streams out — see [Optimistic sync](/kloq/docs/optimistic-sync).

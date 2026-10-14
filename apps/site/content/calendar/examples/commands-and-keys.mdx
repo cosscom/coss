@@ -1,0 +1,53 @@
+---
+title: Custom ⌘K commands
+description: Domain commands in the palette, Vim-style keys on the keymap, and a row that lists the effective bindings.
+---
+
+Four commands that belong to this calendar and nowhere else — book a focus
+block, jump to the next standup, toggle the working-hours shading, copy the
+week as ICS — registered into the same <Kbd>⌘K</Kbd> the built-ins live in.
+The keymap is Vim-flavoured: <Kbd>G</Kbd> for today, <Kbd>H</Kbd> and
+<Kbd>L</Kbd> for the previous and next range.
+
+Click inside the calendar, press <Kbd>⌘K</Kbd> and type "focus". Press
+<Kbd>?</Kbd> for the shortcut sheet; its "Customize shortcuts…" button opens
+the bindings row under the grid.
+
+<Example name="commands-and-keys" />
+
+## How it works
+
+- `registerCommands(...commands)` is a module-level registry: no provider, no
+  prop threading. It returns an unregister function covering exactly what the
+  call added, so `useEffect(() => registerCommands(...), deps)` registers on
+  mount and cleans up on unmount. Re-registering an `id` replaces the command
+  in place, which is why the "Shade hours" toggle keeps its slot while
+  `checked` flips. Shape and grouping are on
+  [Command palette](/kloq/docs/command-palette).
+- The commands run inside `<Kloq>` — `DomainCommands` is a child that renders
+  nothing — so `run` can reach the store through `useKloqStore()` and
+  navigation through `useKloq()`: `store.add`, `store.get("standup")`,
+  `k.goToDate`, `k.view` for the visible range.
+- "Book a focus block" checks each candidate slot with
+  `expandRecurrence(event, { start, end })`, which returns the single
+  occurrence for a non-recurring event and the expanded ones for a series, so
+  one call handles both.
+- `keymap` takes overrides exactly as a settings screen would store them:
+  `{ today: "g", "prev-period": "h", "next-period": "l" }`. The bindings row
+  reads the effective table back through `resolveKeymap(KEYMAP).byAction` and
+  renders each key with `displayKey`; the remapped ones are the brighter labels. See
+  [Keyboard](/kloq/docs/keyboard) for what is fixed and why.
+- `onCustomizeKeybinds` puts a "Customize shortcuts…" button in the
+  <Kbd>?</Kbd> sheet. kloq ships no editor of its own — the callback opens
+  whatever you build.
+- Keys are scoped: the calendar claims them only when the last pointer press
+  landed inside it. `globalShortcuts` widens <Kbd>⌘K</Kbd>, <Kbd>⌘Z</Kbd> and
+  <Kbd>⌥D</Kbd> to the whole page, which is right for an app whose screen is
+  the calendar. It is off here by default because this page already owns
+  <Kbd>⌘K</Kbd> for search; the checkbox lets you feel the difference.
+
+## Take it further
+
+Every command is just data with a `run`, so the same list can drive a menu or
+a toolbar. `getCommands` / `subscribeCommands` and the pure `groupCommands` /
+`matchesQuery` are exported for hosts building their own palette surface.

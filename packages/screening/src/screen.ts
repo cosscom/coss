@@ -1,8 +1,9 @@
 /**
  * Screens one outgoing message, the entry point for every product: decides whether it is
  * sampled, asks the classifier, records the verdict and acts on it. A classifier error records an
- * error verdict and owes the sample to the next message. Enforced screening blocks that message;
- * shadow screening and COSS's own notification organization send it.
+ * error verdict. Enforced screening blocks that message (the product holds it and retries it with
+ * `retry`, screening it again); shadow screening and COSS's own notification organization send it
+ * and owe the sample to the next message, once.
  */
 import { db, type Executor, schema } from "@coss/db";
 import {
@@ -12,7 +13,7 @@ import {
   suspendOrganization,
 } from "@coss/reputation";
 import type { ContentScreeningPolicy } from "@coss/reputation/schemas";
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
 import {
   type ClassifierVerdict,
   type ContentClassifier,
@@ -54,10 +55,18 @@ export type ScreenInput = {
   subjectId: string;
   /** Called only when the message is sampled, so unsampled messages cost nothing. */
   content: () => ScreeningContent | Promise<ScreeningContent>;
+  /**
+   * The message was held after its screening failed and is being tried again: it is screened
+   * again (it was a sample), at its earlier position, without being counted twice.
+   */
+  retry?: boolean;
 };
 
 export type ScreenOutcome = {
-  /** `block`: refuse the message after an enforced block or classifier error. */
+  /**
+   * `block`: refuse the message after an enforced block, or hold it after a classifier error
+   * (`screening.verdict` is `error`).
+   */
   action: "send" | "block";
   screening: ContentScreeningRow | null;
 };
@@ -73,8 +82,10 @@ export async function screenMessage(
   const policy = policyOf(await getReputationStanding(input.organizationId)).contentScreening;
   if (!policy.enabled) return SEND;
 
-  const { sequence, owed } = await countMessage(input.organizationId, input.product);
-  if (!owed && !shouldScreen(sequence, policy, deps.random)) return SEND;
+  const earlier = input.retry ? await earlierSample(input, now()) : null;
+  const { sequence, owed } = earlier ?? (await countMessage(input.organizationId, input.product));
+  if (!earlier && !owed && !shouldScreen(sequence, policy, deps.random)) return SEND;
+  const isSystemOrganization = input.organizationId === deps.systemOrganizationId;
 
   const started = performance.now();
   let verdict: ClassifierVerdict;
@@ -89,16 +100,23 @@ export async function screenMessage(
       `[screening] ${deps.classifier.name} failed on ${input.product} ${input.subjectId}:`,
       error instanceof Error ? `${error.name}: ${error.message}` : error,
     );
+    // Enforced screening holds this message and screens it again when it is retried, so nothing is
+    // owed. Otherwise it is sent unscreened and the sample passes to the next message, once: a
+    // sample that was itself owed (or retried) doesn't pass it on again, so an outage doesn't put
+    // every following message through a failing classifier.
+    const sentAnyway = !policy.enforce || isSystemOrganization;
     const screening = await db.transaction(async (tx) => {
-      await tx
-        .update(contentScreeningCounter)
-        .set({ owed: true })
-        .where(
-          and(
-            eq(contentScreeningCounter.organizationId, input.organizationId),
-            eq(contentScreeningCounter.product, input.product),
-          ),
-        );
+      if (sentAnyway && !owed && !earlier) {
+        await tx
+          .update(contentScreeningCounter)
+          .set({ owed: true })
+          .where(
+            and(
+              eq(contentScreeningCounter.organizationId, input.organizationId),
+              eq(contentScreeningCounter.product, input.product),
+            ),
+          );
+      }
       return insertScreening(tx, input, {
         sequence,
         classifier: deps.classifier.name,
@@ -109,12 +127,11 @@ export async function screenMessage(
         createdAt: now(),
       });
     });
-    const isSystemOrganization = input.organizationId === deps.systemOrganizationId;
-    return { action: policy.enforce && !isSystemOrganization ? "block" : "send", screening };
+    return { action: sentAnyway ? "send" : "block", screening };
   }
 
   const top = topCategory(verdict.scores);
-  const outcome = classify(top.score, policy, input.organizationId === deps.systemOrganizationId);
+  const outcome = classify(top.score, policy, isSystemOrganization);
   const createdAt = now();
   const screening = await db.transaction(async (tx) => {
     const row = await insertScreening(tx, input, {
@@ -158,6 +175,33 @@ function classify(
   if (score >= policy.blockThreshold) return isSystemOrganization ? "flagged" : "blocked";
   if (score >= policy.flagThreshold) return "flagged";
   return "clean";
+}
+
+/** How long a held message's earlier sample is looked for (held messages give up within an hour). */
+const RETRY_LOOKBACK_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * The position of a retried message's failed screening, so it is screened again where it was
+ * sampled; `null` when there is none (it is then counted as a new message).
+ */
+async function earlierSample(
+  input: ScreenInput,
+  now: Date,
+): Promise<{ sequence: number; owed: false } | null> {
+  const [row] = await db
+    .select({ sequence: contentScreening.sequence })
+    .from(contentScreening)
+    .where(
+      and(
+        eq(contentScreening.organizationId, input.organizationId),
+        gte(contentScreening.createdAt, new Date(now.getTime() - RETRY_LOOKBACK_MS)),
+        eq(contentScreening.product, input.product),
+        eq(contentScreening.subjectId, input.subjectId),
+      ),
+    )
+    .orderBy(desc(contentScreening.createdAt))
+    .limit(1);
+  return row ? { sequence: row.sequence, owed: false } : null;
 }
 
 /**

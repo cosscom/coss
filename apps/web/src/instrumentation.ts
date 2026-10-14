@@ -28,6 +28,15 @@ export async function register() {
     if (production && !process.env.SKIP_ENV_VALIDATION && !env.RISK_HASH_KEY) {
       throw new Error("RISK_HASH_KEY is required in production.");
     }
+    // Checkout and the portal need the secret key; Stripe's webhooks need the signing secret.
+    if (
+      env.BILLING_PROVIDER === "stripe" &&
+      (!env.STRIPE_SECRET_KEY || (production && !env.STRIPE_WEBHOOK_SECRET))
+    ) {
+      throw new Error(
+        "BILLING_PROVIDER=stripe requires STRIPE_SECRET_KEY (and STRIPE_WEBHOOK_SECRET in production).",
+      );
+    }
   } catch (error) {
     if (!production) throw error;
     console.error("[web] Refusing to start:", error);
@@ -35,6 +44,11 @@ export async function register() {
   }
   const { initServerMonitoring } = await import("./lib/monitoring-server");
   initServerMonitoring();
+  // Connect to Valkey now rather than on the first rate-limited request: the client never queues
+  // commands while connecting, so that request would get its buckets' outage policy (sign-in and
+  // other auth buckets deny). The limiter is a process-wide singleton, shared with route handlers.
+  const { rateLimitRuntime } = await import("./lib/rate-limit-runtime");
+  rateLimitRuntime();
 }
 
 /** Errors thrown while rendering, in route handlers, server actions and the proxy. */

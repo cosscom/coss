@@ -2,6 +2,7 @@
 
 // First: monitoring must be set up before the server starts.
 import "./instrument.ts";
+import { createPlanGate, createUsageGate, planRateLimits } from "@coss/billing";
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
 import { createEmailService } from "@coss/email";
@@ -17,11 +18,15 @@ import { createDefaultEmailRuntime } from "./runtime.ts";
 import { startServer } from "./server.ts";
 
 const publicUrl = env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`;
-const email = createDefaultEmailRuntime(env);
+// Plans: features and resource limits, Free's capped allowance, and plan rate limits.
+const plans = createPlanGate();
+const email = createDefaultEmailRuntime(env, { plans });
 // Sends only enqueue (the worker dispatches).
 const jobs = await startJobBoss();
 await ensureEmailDispatchQueue(jobs);
-const rateLimits = createRateLimitRuntime(env);
+const rateLimits = createRateLimitRuntime(env, {
+  planRules: (organizationId) => planRateLimits(organizationId),
+});
 await rateLimits.ready();
 const logWriter = createLogWriter();
 
@@ -30,16 +35,19 @@ const app = createApp({
     liveProvider: email.liveProvider,
     sandboxProvider: email.sandboxProvider,
     queue: pgBossDispatchQueue(jobs),
-    trackingBaseUrl: publicUrl,
+    trackingBaseUrl: env.TRACKING_PUBLIC_URL ?? publicUrl,
     trackingDomainProvider: email.trackingHostnames.name,
+    billing: createUsageGate(),
   }),
   domainDeps: email.domainDeps,
   webhookDeps: {
     secretsKeys: parseSecretsKeys(env.WEBHOOK_SECRETS_KEY),
     allowInsecureUrls: process.env.NODE_ENV !== "production",
+    plans,
   },
   // Velocity counters share the rate limiter's Valkey connection.
   riskDeps: createRiskDeps(env, { valkey: rateLimits.valkey }),
+  plans,
   publicUrl: env.API_PUBLIC_URL,
   rateLimiter: rateLimits.limiter,
   clientIp: rateLimits.clientIp,

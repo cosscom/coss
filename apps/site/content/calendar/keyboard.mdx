@@ -1,0 +1,91 @@
+---
+title: Keyboard
+description: The scoped keyboard layer — remappable mnemonics via the keymap prop, the ? sheet that can never lie, and what is deliberately fixed.
+---
+
+One table drives the whole keyboard layer: the dispatcher fires from it and
+the <Kbd>?</Kbd> shortcuts sheet renders from it, so a remapped key can never
+make the sheet lie. Everything is scoped to the component — a calendar dropped
+into your page claims no keys it hasn't earned.
+
+## The default mnemonics
+
+| Action | Default key | What it does |
+| --- | --- | --- |
+| `today` | `t` | Back to today. |
+| `view-day` / `view-week` / `view-month` / `view-year` / `view-agenda` | `d` / `w` / `m` / `y` / `a` | The five view letters. |
+| `view-3days` | `3` | 3-day view. |
+| `prev-period` / `next-period` | unbound | Ship unbound, for the `h`/`l` crowd to claim. |
+| `create` | `c` | New event at the next hour. |
+| `shortcuts` | `?` | The keyboard shortcuts sheet. |
+
+With an event selected, <Kbd>1</Kbd>–<Kbd>5</Kbd> always recolor it — digits
+are dual-use, checked before the keymap dispatch, so recoloring is not
+remappable-away. With nothing selected, a digit fires whatever binding claims
+it: binding a view to "3" works everywhere except mid-selection.
+
+## Remapping — the keymap prop
+
+`keymap` takes host overrides exactly as a settings screen stores them: only
+the actions the user touched, `null` meaning "unbound on purpose". A binding
+is one unmodified key, stored as its lowercased `KeyboardEvent.key` value — no
+chord syntax, because every remappable action is a mnemonic and mnemonics are
+single keys.
+
+```tsx
+import type { Keymap } from "@/components/kloq";
+
+const keymap: Keymap = {
+  today: "g",          // rebind
+  "view-agenda": null, // unbind on purpose
+  "prev-period": "h",  // bind the shipped-unbound pair
+  "next-period": "l",
+};
+
+<Kloq keymap={keymap} onCustomizeKeybinds={openKeybindEditor} />
+```
+
+An override *claims* its key: any other action whose effective key collides —
+including an untouched default — comes out unbound, because two actions on
+one key is not a tie to break at keydown time. Unknown ids and unusable keys
+are dropped rather than rejected, so a keymap saved by a newer build degrades
+instead of bricking the keyboard. `onCustomizeKeybinds` puts a "Customize
+shortcuts…" button in the <Kbd>?</Kbd> sheet; omit it and the button isn't
+rendered — the package ships no keybind editor of its own.
+
+<Callout>
+  Helpers for building an editor are exported: `KEY_ACTIONS` (the table
+  itself), `resolveKeymap`, `bindingFromEvent` for a "press a key…" field,
+  `isBindableKey`, and `displayKey` for rendering.
+</Callout>
+
+## What is deliberately not remappable
+
+The <Kbd>⌘</Kbd> conventions (<Kbd>⌘Z</Kbd> <Kbd>⌘K</Kbd> <Kbd>⌘C</Kbd>
+<Kbd>⌘X</Kbd> <Kbd>⌘V</Kbd> <Kbd>⌘A</Kbd> <Kbd>⌘D</Kbd>) mean the same thing
+in every app on the machine — a calendar that lets you point <Kbd>⌘Z</Kbd>
+somewhere else is broken in a way no preference can excuse. Arrows, the
+<Kbd>⇧</Kbd>/<Kbd>⌥</Kbd>/<Kbd>⌘</Kbd> arrow chords, <Kbd>⌫</Kbd> and
+<Kbd>Escape</Kbd> are structural: they mirror the drag engine and selection
+model, and remapping one without the others produces a keyboard that
+half-works. Those keys are also reserved — a binding may never claim them.
+
+`navigationKeys` is the one switch on the fixed layer: whether
+<Kbd>←</Kbd>/<Kbd>→</Kbd> move by the whole visible range (default) or by one
+day. <Kbd>PageUp</Kbd>/<Kbd>PageDown</Kbd> always step the range.
+
+## Who owns a keystroke
+
+A window-level listener that `preventDefault()`s arrows is fine for an app and
+hostile for a component — it would break every listbox, menu and tab list on
+the host page. So kloq stands down whenever the target sits inside anything
+that owns its own keyboard model: text fields, comboboxes, menus, grids,
+sliders, an IME composition. When nothing has focus at all — the common case
+after clicking the non-focusable grid — the calendar claims the keys only if
+the last pointer press landed inside it: a freshly-mounted calendar you've
+never touched claims nothing.
+
+`globalShortcuts` widens exactly three page-level keys — <Kbd>⌘K</Kbd>,
+<Kbd>⌘Z</Kbd>, <Kbd>⌥D</Kbd> — to fire even when focus is outside the
+calendar. Off by default: an embedded component has no business claiming
+page-wide keys. Everything else is always scoped regardless of the flag.

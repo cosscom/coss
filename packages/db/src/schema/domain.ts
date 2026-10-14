@@ -190,6 +190,10 @@ export const email = pgTable(
     sentAt: timestamp("sent_at", { withTimezone: true }),
     // When the email may be handed to the provider; set only for requests with `scheduled_at`.
     scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+    // Billing (`@coss/billing`): the recipients the send is billed for, frozen when a dispatcher
+    // claims it (suppressed ones excluded); `usage_recorded_at` marks it metered (once, when sent).
+    billableRecipients: integer("billable_recipients"),
+    usageRecordedAt: timestamp("usage_recorded_at", { withTimezone: true }),
   },
   (t) => [
     foreignKey({
@@ -206,11 +210,16 @@ export const email = pgTable(
     // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
     unique("email_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
-    // Reputation checks scan an organization's recent emails.
     index("email_organization_created_at_idx").on(t.organizationId, t.createdAt),
-    // Due-scan for scheduled sends. Not filtered on `status = 'scheduled'`: a new enum value
-    // can't be used in the migration transaction that adds it.
-    index("email_scheduled_at_idx").on(t.scheduledAt).where(sql`${t.scheduledAt} is not null`),
+    // Reputation checks scan an organization's emails by the time they were sent
+    // (`@coss/email` reputation-checks.ts `SEND_TIME`; keep the expression identical).
+    index("email_organization_send_time_idx").on(
+      t.organizationId,
+      sql`coalesce(${t.sentAt}, ${t.createdAt})`,
+    ),
+    // Due-scan for scheduled sends (`dispatchDue`, every 5 s): only rows still waiting, so the
+    // scan never walks emails already sent or immediate sends with a past time.
+    index("email_scheduled_due_idx").on(t.scheduledAt).where(sql`${t.status} = 'scheduled'`),
     // The worker's sweeps for queued emails whose dispatch was lost or interrupted.
     index("email_queued_created_at_idx").on(t.createdAt).where(sql`${t.status} = 'queued'`),
     // The worker's retention purge (oldest first, across organizations).

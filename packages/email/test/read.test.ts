@@ -80,7 +80,19 @@ describe("listEmails", () => {
     const listed = await listEmails({ organizationId: org, environmentId: tenant.development.id });
     expect(listed.map((e) => e.subject)).toEqual(["Three", "Two", "One"]);
     expect(listed.every((e) => e.sandbox)).toBe(true);
-    expect(listed[0]).toEqual(sent[2]);
+    // Exactly what the table shows: never the content, headers, recipients or attachments.
+    const newest = sent[2];
+    if (!newest) throw new Error("unreachable");
+    expect(listed[0]).toEqual({
+      id: newest.id,
+      to: newest.to,
+      subject: newest.subject,
+      status: newest.status,
+      sandbox: true,
+      tracking: newest.tracking,
+      created_at: newest.created_at,
+      scheduled_at: newest.scheduled_at,
+    });
 
     expect(
       await listEmails({ organizationId: org, environmentId: tenant.development.id, limit: 2 }),

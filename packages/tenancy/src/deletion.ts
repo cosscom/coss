@@ -15,6 +15,7 @@ import { TenancyError } from "./errors.ts";
 const {
   account,
   apikey,
+  billingUsage,
   contentScreening,
   email,
   emailBatch,
@@ -196,7 +197,7 @@ export type OrganizationTeardownDeps = {
 type Claimed = typeof organizationDeletion.$inferSelect;
 
 async function claimDue(
-  now: Date,
+  now: Date | undefined,
   attemptedIds: string[],
   scope?: { organizationIds: string[] },
 ): Promise<Claimed[]> {
@@ -208,7 +209,12 @@ async function claimDue(
         eq(organizationDeletion.status, "pending"),
         attemptedIds.length ? notInArray(organizationDeletion.id, attemptedIds) : undefined,
         isNotNull(organizationDeletion.nextAttemptAt),
-        lte(organizationDeletion.nextAttemptAt, now),
+        // Without an explicit `now`, the database's own clock: `next_attempt_at` defaults to its
+        // `now()` (microseconds), which a JS Date (milliseconds) taken in the same millisecond
+        // would see as still in the future.
+        now
+          ? lte(organizationDeletion.nextAttemptAt, now)
+          : sql`${organizationDeletion.nextAttemptAt} <= clock_timestamp()`,
         scope ? inArray(organizationDeletion.organizationId, scope.organizationIds) : undefined,
       ),
     )
@@ -449,6 +455,19 @@ async function deleteOrganizationData(
     ))
   )
     return false;
+  // Hourly usage counters (billing): no id, so batches go by row address. The final invoice was
+  // made first (`releaseProviderResources`), and invoices keep their months' totals.
+  for (;;) {
+    if (signal?.aborted) return false;
+    const deleted = await db.transaction(async (tx) => {
+      await renewLease(deletion, tx);
+      const result = await tx.execute(
+        sql`delete from ${billingUsage} where ctid in (select ctid from ${billingUsage} where ${billingUsage.organizationId} = ${organizationId} limit ${batchSize})`,
+      );
+      return result.rowCount ?? 0;
+    });
+    if (deleted < batchSize) break;
+  }
   return deleteInBatches(
     deletion,
     contentScreening,
@@ -510,7 +529,7 @@ export async function runDueOrganizationDeletions(
 ): Promise<number> {
   const attemptedIds: string[] = [];
   while (attemptedIds.length < (opts.limit ?? 5) && !opts.signal?.aborted) {
-    const [deletion] = await claimDue(opts.now ?? new Date(), attemptedIds, opts.scope);
+    const [deletion] = await claimDue(opts.now, attemptedIds, opts.scope);
     if (!deletion) break;
     attemptedIds.push(deletion.id);
     try {

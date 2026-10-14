@@ -1,0 +1,10 @@
+{
+  "extends": "@coss/tsconfig/react-library.json",
+  "compilerOptions": {
+    "types": ["node"],
+    // The library is written without it (cosscom/calendar); apps/site, which type-checks these
+    // sources through its imports, turns it off the same way.
+    "noUncheckedIndexedAccess": false
+  },
+  "include": ["src"]
+}

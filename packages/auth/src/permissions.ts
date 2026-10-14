@@ -40,6 +40,8 @@ export const orgStatements = {
   risk: ["assess", "read", "feedback"],
   // An environment's risk allow and block lists.
   riskList: ["create", "read", "delete"],
+  // Plan, invoices, payment methods and spend controls: owners manage, admins read.
+  billing: ["read", "update"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -81,6 +83,7 @@ export const orgRoles = {
     sso: ["read", "update", "require"],
     scim: ["read", "update"],
     audit: ["read"],
+    billing: ["read", "update"],
   }),
   admin: orgAc.newRole({
     ...adminAc.statements,
@@ -88,6 +91,7 @@ export const orgRoles = {
     sso: ["read", "update"],
     scim: ["read", "update"],
     audit: ["read"],
+    billing: ["read"],
   }),
   member: orgAc.newRole({ ...memberAc.statements, ...readOnlyCossAccess }),
 };

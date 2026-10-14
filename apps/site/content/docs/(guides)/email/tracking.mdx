@@ -10,7 +10,28 @@ in the dashboard and the API, and as `email.opened` and `email.clicked` webhook 
 ## Turning it on
 
 Tracking is off by default. Turn it on for an environment, or for one category of email, under
-**Tracking** in the environment's dashboard page, or for a single send with `tracking`:
+**Tracking** in the environment's dashboard page or through the API:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+// Track every email of this environment…
+await coss.email.tracking.updateDefault({ opens: true, clicks: true });
+
+// …except password resets.
+await coss.email.tracking.updateCategory("password-reset", { opens: false, clicks: false });
+
+const { data: settings } = await coss.email.tracking.get();
+console.log(settings?.default, settings?.categories);
+```
+
+Fields you leave out keep their value (a new rule starts with both off). `removeCategory` makes that
+category follow the default again, and `removeDefault` turns tracking off for emails without a
+category rule. Settings belong to the API key's environment, and changing them needs a key that can
+send email. An email keeps the settings that applied when it was sent.
+
+Or set it for a single send with `tracking`:
 
 ```ts twoslash
 import { Coss } from "coss";
@@ -53,7 +74,7 @@ const { data: domain, error } = await coss.domains.tracking.create(domainId, {
 });
 
 const record = domain?.tracking?.record;
-console.log(record?.type, record?.name, record?.value); // CNAME links.acme.com track.coss.com
+console.log(record?.type, record?.name, record?.value); // CNAME links.acme.com track.cosslinks.com
 ```
 
 Then publish the `CNAME` record at your DNS provider. COSS issues a certificate for the hostname once
