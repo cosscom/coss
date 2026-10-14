@@ -71,9 +71,9 @@ jobs:
       # Trusted publishing needs npm 11.5.1 or later.
       - run: npm install --global npm@11
       - run: bun install --frozen-lockfile
-      # The SDK (tsdown, publint, attw), published by npm itself (`changeset publish` reported
-      # success without publishing). A version already on npm is skipped, so reruns are safe; the
-      # registry is checked afterwards, so only a version that's really there passes.
+      # The SDK (tsdown, publint, attw), published by npm itself so its output is in the log. A
+      # version already on npm is skipped, so reruns are safe. A new version takes a minute or two
+      # to show up in the registry: the job waits for it, so it only passes once it's really there.
       - name: Publish coss
         working-directory: packages/sdk
         run: |

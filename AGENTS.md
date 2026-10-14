@@ -266,8 +266,8 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - **Publishing** (`.github/workflows/release.yml`): merging the "Version packages" PR publishes `coss` to npm
   from CI only — npm trusted publishing (GitHub OIDC, no npm token anywhere) with provenance, trusted for exactly
   `cosscom/coss` → `release.yml` → the `npm` environment (deployable from `main`); `npm trust list coss` shows it.
-  The publish job builds the SDK and runs `npm publish --provenance` itself (`changeset publish` reported success
-  without publishing), skipping a version already on npm and checking the registry afterwards, then tags it. Never
+  The publish job builds the SDK and runs `npm publish --provenance` itself, skipping a version already on npm,
+  waits until the registry serves the new one (a minute or two) and tags it. Never
   publish from a laptop. npm owners: baileypumfleet, peer_rich, keithwillcode (versions 0.0.1–0.0.5 are a previous
   owner's unrelated, deprecated package).
 
