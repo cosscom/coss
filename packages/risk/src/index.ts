@@ -14,6 +14,7 @@ export {
   refreshDueDatasets,
   storeDataset,
 } from "./datasets.ts";
+export { type DomainAge, type DomainAgeLookup, domainAge } from "./domain-age.ts";
 export { RiskError, type RiskErrorCode } from "./errors.ts";
 export { forgetRiskUser, type RiskFeedbackActor, recordRiskFeedback } from "./feedback.ts";
 export { type RiskHasher, type RiskHashKind, riskHasher } from "./hash.ts";
@@ -41,11 +42,30 @@ export {
   purgeExpiredRiskPersonalData,
 } from "./retention.ts";
 export {
+  createRiskRule,
+  deleteRiskRule,
+  firstMatchingRule,
+  getRiskRule,
+  listRiskRules,
+  type RiskRuleRow,
+  type RuleFacts,
+  toRiskRuleObject,
+  updateRiskRule,
+} from "./rules.ts";
+export {
+  SANDBOX_CAPTCHA_TOKENS,
   SANDBOX_DISPOSABLE_DOMAIN,
+  SANDBOX_NEW_DOMAIN,
   SANDBOX_UNDELIVERABLE_DOMAIN,
   sandboxIpSignals,
 } from "./sandbox.ts";
 export { decide, reasonMessage, type StoredReason, scoreReasons } from "./score.ts";
+export {
+  getRiskSettings,
+  type ResolvedRiskSettings,
+  resolveRiskSettings,
+  updateRiskSettings,
+} from "./settings.ts";
 export {
   MemoryVelocityStore,
   ValkeyVelocityStore,

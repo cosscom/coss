@@ -19,7 +19,7 @@ const assessment: RiskAssessment = {
       suggestion: "gmail.com",
     },
   ],
-  signals: { email: null, ip: null, velocity: { ip_1h: 1 } },
+  signals: { email: null, ip: null, velocity: { ip_1h: 1 }, captcha: null, login: null },
   user: { id: null, email: "x@gmail.con" },
   ip: "203.0.113.7",
   degraded: [],
@@ -126,6 +126,66 @@ describe("coss.risk", () => {
       ["GET", `${BASE}/list_entries?list=block`],
       ["GET", `${BASE}/list_entries/${entry.id}`],
       ["DELETE", `${BASE}/list_entries/${entry.id}`],
+    ]);
+  });
+});
+
+describe("coss.risk.settings and coss.risk.rules", () => {
+  test("settings get and update", async () => {
+    const settings = {
+      object: "risk_settings",
+      review_threshold: 0.5,
+      block_threshold: 0.9,
+      disabled_reasons: [],
+      captcha: { provider: "turnstile", required: true },
+      updated_at: "2026-10-14T12:00:00.000Z",
+    };
+    const { risk, calls } = client(json(200, settings));
+    await risk.settings.get();
+    await risk.settings.update({
+      block_threshold: 0.9,
+      captcha: { provider: "turnstile", secret: "s", required: true },
+    });
+    expect(calls.map((call) => [call.method, call.url])).toEqual([
+      ["GET", `${BASE}/settings`],
+      ["PATCH", `${BASE}/settings`],
+    ]);
+    expect(JSON.parse(calls[1]?.body ?? "")).toMatchObject({ block_threshold: 0.9 });
+  });
+
+  test("rules CRUD; create is never retried", async () => {
+    const rule = {
+      object: "risk_rule",
+      id: "rskrule_01k5f9yq8re8vb6q2wmz0tb2xd",
+      name: "No VPN logins",
+      enabled: true,
+      position: 0,
+      events: ["login"],
+      match: "all",
+      conditions: [{ field: "ip.vpn", operator: "is", value: true }],
+      action: "block",
+      created_at: "2026-10-14T12:00:00.000Z",
+      updated_at: "2026-10-14T12:00:00.000Z",
+    };
+    const failing = client(apiError(503, { type: "api_error", code: "unavailable" }));
+    const result = await failing.risk.rules.create({
+      name: "No VPN logins",
+      conditions: [{ field: "ip.vpn", operator: "is", value: true }],
+      action: "block",
+    });
+    expect(result.error?.code).toBe("unavailable");
+    expect(failing.calls).toHaveLength(1);
+
+    const { risk, calls } = client(json(200, rule));
+    await risk.rules.list();
+    await risk.rules.get(rule.id);
+    await risk.rules.update(rule.id, { enabled: false });
+    await risk.rules.delete(rule.id);
+    expect(calls.map((call) => [call.method, call.url])).toEqual([
+      ["GET", `${BASE}/rules`],
+      ["GET", `${BASE}/rules/${rule.id}`],
+      ["PATCH", `${BASE}/rules/${rule.id}`],
+      ["DELETE", `${BASE}/rules/${rule.id}`],
     ]);
   });
 });

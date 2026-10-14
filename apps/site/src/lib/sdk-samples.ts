@@ -373,6 +373,22 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   },
   "GET /v1/risk/list_entries/{id}": { method: "risk.lists.get", args: (r) => [pathId(r)] },
   "DELETE /v1/risk/list_entries/{id}": { method: "risk.lists.remove", args: (r) => [pathId(r)] },
+  "GET /v1/risk/settings": { method: "risk.settings.get", args: () => [] },
+  "PATCH /v1/risk/settings": {
+    method: "risk.settings.update",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "POST /v1/risk/rules": {
+    method: "risk.rules.create",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "GET /v1/risk/rules": { method: "risk.rules.list", args: () => [] },
+  "GET /v1/risk/rules/{id}": { method: "risk.rules.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/risk/rules/{id}": {
+    method: "risk.rules.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/risk/rules/{id}": { method: "risk.rules.delete", args: (r) => [pathId(r)] },
   "DELETE /v1/risk/users/{user_id}": {
     method: "risk.users.forget",
     args: (request) => [pathParam(request, "user_id")],

@@ -12,6 +12,7 @@ import {
   KeyRoundIcon,
   LayoutDashboardIcon,
   ListChecksIcon,
+  ListFilterIcon,
   type LucideIcon,
   MailIcon,
   MonitorSmartphoneIcon,
@@ -21,6 +22,7 @@ import {
   SettingsIcon,
   ShieldAlertIcon,
   ShieldIcon,
+  SlidersHorizontalIcon,
   TagsIcon,
   UserIcon,
   UsersIcon,
@@ -58,7 +60,9 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
     label: "Risk",
     items: [
       { label: "Assessments", path: "/risk", icon: ShieldAlertIcon },
+      { label: "Rules", path: "/risk/rules", icon: ListFilterIcon },
       { label: "Lists", path: "/risk/lists", icon: ListChecksIcon },
+      { label: "Settings", path: "/risk/settings", icon: SlidersHorizontalIcon },
     ],
   },
   {
@@ -162,6 +166,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   tracking: "Tracking",
   risk: "Risk",
   lists: "Lists",
+  rules: "Rules",
   "api-keys": "API keys",
   webhooks: "Webhooks",
   logs: "Logs",

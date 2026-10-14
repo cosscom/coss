@@ -2,12 +2,22 @@
 
 import {
   addRiskListEntry,
+  createRiskRule,
+  deleteRiskRule,
   getRiskListEntry,
   RiskError,
   recordRiskFeedback,
   removeRiskListEntry,
+  updateRiskRule,
+  updateRiskSettings,
 } from "@coss/risk";
-import { CreateRiskFeedbackRequest, CreateRiskListEntryRequest } from "@coss/risk/schemas";
+import {
+  CreateRiskFeedbackRequest,
+  CreateRiskListEntryRequest,
+  CreateRiskRuleRequest,
+  UpdateRiskRuleRequest,
+  UpdateRiskSettingsRequest,
+} from "@coss/risk/schemas";
 import { getEnvironment } from "@coss/tenancy";
 import { refresh } from "next/cache";
 import type { ActionResult } from "@/lib/action-result";
@@ -15,6 +25,7 @@ import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
 import { riskHasher } from "@/lib/risk";
 import { type OrgContext, requireOrgPermission } from "@/lib/session";
+import { webhookManagementDeps } from "@/lib/webhooks";
 
 /** The environment addressed by the form's slugs, inside the already-authorized organization. */
 async function environmentFromForm(context: OrgContext, formData: FormData) {
@@ -129,6 +140,162 @@ export async function removeRiskListEntryAction(
       environmentId: scope.environmentId,
       target: { type: "risk_list_entry", id: entry.id, label: entry.value },
       metadata: { list: entry.list, type: entry.type },
+    });
+    refresh();
+    return null;
+  });
+}
+
+/** The first validation message, prefixed with the field it is about. */
+function issueMessage(error: { issues: { path: PropertyKey[]; message: string }[] }): string {
+  const issue = error.issues[0];
+  if (!issue) return "Check the form.";
+  const path = issue.path.map(String).join(".");
+  return path ? `${path}: ${issue.message}` : issue.message;
+}
+
+/** Runs a risk operation, turning its expected errors into messages for the form. */
+async function riskCall<T>(run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    if (error instanceof RiskError) throw new ActionError(error.message);
+    throw error;
+  }
+}
+
+export async function updateRiskSettingsAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      risk: ["update"],
+    });
+    const { scope, projectId } = await environmentFromForm(context, formData);
+    const provider = formString(formData, "captchaProvider");
+    const secret = formString(formData, "captchaSecret");
+    const parsed = UpdateRiskSettingsRequest.safeParse({
+      review_threshold: Number(formString(formData, "reviewThreshold")),
+      block_threshold: Number(formString(formData, "blockThreshold")),
+      disabled_reasons: formData.getAll("disabledReasons").map(String),
+      captcha:
+        provider === "none"
+          ? null
+          : {
+              provider,
+              ...(secret ? { secret } : {}),
+              required: formData.get("captchaRequired") === "on",
+            },
+    });
+    if (!parsed.success) throw new ActionError(issueMessage(parsed.error));
+    const settings = await riskCall(() =>
+      updateRiskSettings(scope, parsed.data, webhookManagementDeps().secretsKeys),
+    );
+    if (!settings) throw new ActionError("Environment not found.");
+    await recordAudit(context.session, {
+      action: "risk_settings.updated",
+      organizationId: scope.organizationId,
+      projectId,
+      environmentId: scope.environmentId,
+      target: { type: "risk_settings", id: scope.environmentId },
+      // Never the captcha secret.
+      metadata: { captcha: settings.captcha?.provider ?? null, secret_changed: Boolean(secret) },
+    });
+    refresh();
+    return null;
+  });
+}
+
+/** The rule builder posts its rule as JSON (`rule`). */
+function ruleFromForm(formData: FormData): unknown {
+  try {
+    return JSON.parse(formString(formData, "rule"));
+  } catch {
+    throw new ActionError("The rule could not be read. Reload the page and try again.");
+  }
+}
+
+export async function saveRiskRuleAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const ruleId = formString(formData, "ruleId");
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      riskRule: [ruleId ? "update" : "create"],
+    });
+    const { scope, projectId } = await environmentFromForm(context, formData);
+    const body = ruleFromForm(formData);
+    const audit = (action: string, rule: { id: string; name: string }) =>
+      recordAudit(context.session, {
+        action,
+        organizationId: scope.organizationId,
+        projectId,
+        environmentId: scope.environmentId,
+        target: { type: "risk_rule", id: rule.id, label: rule.name },
+      });
+    if (ruleId) {
+      const parsed = UpdateRiskRuleRequest.safeParse(body);
+      if (!parsed.success) throw new ActionError(issueMessage(parsed.error));
+      // Only a rule of this environment (and so of this organization) can be changed.
+      const rule = await updateRiskRule(scope, ruleId, parsed.data);
+      if (!rule) throw new ActionError("Rule not found.");
+      await audit("risk_rule.updated", rule);
+    } else {
+      const parsed = CreateRiskRuleRequest.safeParse(body);
+      if (!parsed.success) throw new ActionError(issueMessage(parsed.error));
+      const rule = await riskCall(() => createRiskRule(scope, parsed.data));
+      if (!rule) throw new ActionError("Environment not found.");
+      await audit("risk_rule.created", rule);
+    }
+    refresh();
+    return null;
+  });
+}
+
+export async function toggleRiskRuleAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      riskRule: ["update"],
+    });
+    const { scope, projectId } = await environmentFromForm(context, formData);
+    const enabled = formString(formData, "enabled") === "true";
+    const rule = await updateRiskRule(scope, formString(formData, "ruleId"), { enabled });
+    if (!rule) throw new ActionError("Rule not found.");
+    await recordAudit(context.session, {
+      action: "risk_rule.updated",
+      organizationId: scope.organizationId,
+      projectId,
+      environmentId: scope.environmentId,
+      target: { type: "risk_rule", id: rule.id, label: rule.name },
+      metadata: { enabled },
+    });
+    refresh();
+    return null;
+  });
+}
+
+export async function deleteRiskRuleAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      riskRule: ["delete"],
+    });
+    const { scope, projectId } = await environmentFromForm(context, formData);
+    const rule = await deleteRiskRule(scope, formString(formData, "ruleId"));
+    if (!rule) throw new ActionError("Rule not found.");
+    await recordAudit(context.session, {
+      action: "risk_rule.deleted",
+      organizationId: scope.organizationId,
+      projectId,
+      environmentId: scope.environmentId,
+      target: { type: "risk_rule", id: rule.id, label: rule.name },
     });
     refresh();
     return null;

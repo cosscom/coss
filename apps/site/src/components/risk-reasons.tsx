@@ -1,28 +1,63 @@
-import { DEFAULT_THRESHOLDS, REASONS, VELOCITY_RULES } from "@coss/risk/schemas";
+import {
+  DEFAULT_THRESHOLDS,
+  REASONS,
+  RULE_FIELDS,
+  RULE_OPERATORS,
+  VELOCITY_RULES,
+} from "@coss/risk/schemas";
+import { DocsTable, DocsTd, DocsTh, DocsTr } from "./docs-table";
 
 /** Every reason an assessment can give, with its weight (from `@coss/risk/schemas`). */
 export function RiskReasonTable() {
   return (
-    <table>
+    <DocsTable>
       <thead>
-        <tr>
-          <th>Code</th>
-          <th>Weight</th>
-          <th>Meaning</th>
-        </tr>
+        <DocsTr>
+          <DocsTh>Code</DocsTh>
+          <DocsTh>Weight</DocsTh>
+          <DocsTh>Meaning</DocsTh>
+        </DocsTr>
       </thead>
       <tbody>
         {Object.entries(REASONS).map(([code, reason]) => (
-          <tr key={code} id={`reason-${code.replaceAll(".", "-")}`}>
-            <td className="whitespace-nowrap">
+          <DocsTr key={code} id={`reason-${code.replaceAll(".", "-")}`}>
+            <DocsTd className="whitespace-nowrap">
               <code>{code}</code>
-            </td>
-            <td>{reason.weight}</td>
-            <td>{reasonDescription(code, reason.description)}</td>
-          </tr>
+            </DocsTd>
+            <DocsTd>{reason.weight}</DocsTd>
+            <DocsTd>{reasonDescription(code, reason.description)}</DocsTd>
+          </DocsTr>
         ))}
       </tbody>
-    </table>
+    </DocsTable>
+  );
+}
+
+/** Every field a rule condition can test, with its operators (from `@coss/risk/schemas`). */
+export function RiskRuleFieldTable() {
+  return (
+    <DocsTable>
+      <thead>
+        <DocsTr>
+          <DocsTh>Field</DocsTh>
+          <DocsTh>Type</DocsTh>
+          <DocsTh>Operators</DocsTh>
+          <DocsTh>Meaning</DocsTh>
+        </DocsTr>
+      </thead>
+      <tbody>
+        {Object.entries(RULE_FIELDS).map(([field, definition]) => (
+          <DocsTr key={field} id={`field-${field.replaceAll(".", "-")}`}>
+            <DocsTd className="whitespace-nowrap">
+              <code>{field}</code>
+            </DocsTd>
+            <DocsTd>{definition.type}</DocsTd>
+            <DocsTd>{RULE_OPERATORS[definition.type].join(", ")}</DocsTd>
+            <DocsTd>{definition.label}</DocsTd>
+          </DocsTr>
+        ))}
+      </tbody>
+    </DocsTable>
   );
 }
 

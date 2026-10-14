@@ -270,6 +270,27 @@ describe("reencryptWebhookSecrets", () => {
     expect(decryptSecret(row?.previousSecretCiphertext ?? "", after)).toBe("whsec_previous");
   });
 
+  test("also moves risk settings' captcha secrets", async () => {
+    const tenant = await createTestTenant();
+    const scope = { organizationIds: [tenant.organization.id] };
+    await db.insert(schema.riskSettings).values({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.production.id,
+      reviewThreshold: 0.5,
+      blockThreshold: 0.85,
+      captchaProvider: "turnstile",
+      captchaSecretCiphertext: encryptSecret("0xcaptcha", secretsKeyRing([OLD_KEY])),
+    });
+    expect(
+      await reencryptWebhookSecrets({ keys: secretsKeyRing([NEW_KEY, OLD_KEY]), scope }),
+    ).toEqual({ checked: 1, reencrypted: 1, unreadable: [], conflicts: 0 });
+    const [row] = await db
+      .select({ ciphertext: schema.riskSettings.captchaSecretCiphertext })
+      .from(schema.riskSettings)
+      .where(eq(schema.riskSettings.environmentId, tenant.production.id));
+    expect(decryptSecret(row?.ciphertext ?? "", secretsKeyRing([NEW_KEY]))).toBe("0xcaptcha");
+  });
+
   test("reports secrets no listed key decrypts and leaves them alone", async () => {
     const tenant = await createTestTenant();
     const scope = { organizationIds: [tenant.organization.id] };

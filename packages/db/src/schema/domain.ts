@@ -2327,6 +2327,127 @@ export const riskListEntry = pgTable(
   ],
 );
 
+export const riskCaptchaProvider = pgEnum("risk_captcha_provider", ["turnstile", "hcaptcha"]);
+
+/**
+ * An environment's risk settings (one row, created on first change; defaults apply without one).
+ * The captcha secret is encrypted like webhook secrets (`encryptSecret`, `WEBHOOK_SECRETS_KEY`).
+ */
+export const riskSettings = pgTable(
+  "risk_settings",
+  {
+    environmentId: text("environment_id").primaryKey(),
+    organizationId: text("organization_id").notNull(),
+    reviewThreshold: real("review_threshold").notNull(),
+    blockThreshold: real("block_threshold").notNull(),
+    // Reason codes that never fire in this environment.
+    disabledReasons: text("disabled_reasons").array().notNull().default(sql`'{}'::text[]`),
+    captchaProvider: riskCaptchaProvider("captcha_provider"),
+    captchaSecretCiphertext: text("captcha_secret_ciphertext"),
+    // Assessments without a captcha token get `captcha.missing`.
+    captchaRequired: boolean("captcha_required").notNull().default(false),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "risk_settings_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    check(
+      "risk_settings_thresholds_check",
+      sql`${t.reviewThreshold} > 0 and ${t.reviewThreshold} <= ${t.blockThreshold} and ${t.blockThreshold} <= 1`,
+    ),
+    check(
+      "risk_settings_captcha_check",
+      sql`(${t.captchaProvider} is null) = (${t.captchaSecretCiphertext} is null)`,
+    ),
+  ],
+);
+
+export const riskRuleMatch = pgEnum("risk_rule_match", ["all", "any"]);
+
+/** A condition of a risk rule (`RULE_FIELDS` in `@coss/risk/schemas` documents the fields). */
+export type RiskRuleConditionRow = { field: string; operator: string; value: unknown };
+
+/**
+ * An environment's rules, evaluated after its lists and before the score thresholds: the first
+ * enabled rule (by `position`, then age) whose conditions match decides.
+ */
+export const riskRule = pgTable(
+  "risk_rule",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.riskRule)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    name: text("name").notNull(),
+    enabled: boolean("enabled").notNull().default(true),
+    position: integer("position").notNull().default(0),
+    // Events it applies to; empty = every event.
+    events: text("events").array().notNull().default(sql`'{}'::text[]`),
+    match: riskRuleMatch("match").notNull().default("all"),
+    conditions: jsonb("conditions").$type<RiskRuleConditionRow[]>().notNull(),
+    action: riskDecision("action").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "risk_rule_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    index("risk_rule_environment_position_idx").on(t.environmentId, t.position, t.createdAt),
+  ],
+);
+
+export const riskUserNetworkKind = pgEnum("risk_user_network_kind", ["country", "asn"]);
+
+/**
+ * The countries and networks (ASNs) each of the customer's users logged in from, by user hash,
+ * for "login from a new country/network". Neither value identifies anyone on its own.
+ */
+export const riskUserNetwork = pgTable(
+  "risk_user_network",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.riskUserNetwork)),
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    userHash: text("user_hash").notNull(),
+    kind: riskUserNetworkKind("kind").notNull(),
+    value: text("value").notNull(),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    foreignKey({
+      name: "risk_user_network_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("risk_user_network_value_unique").on(t.environmentId, t.userHash, t.kind, t.value),
+    index("risk_user_network_last_seen_idx").on(t.lastSeenAt),
+  ],
+);
+
+/**
+ * Platform data: when email domains were registered (RDAP), cached so assessments rarely wait for
+ * a registry. `registered_at` is null when the registry had no date or no record.
+ */
+export const riskDomainAge = pgTable("risk_domain_age", {
+  domain: text("domain").primaryKey(),
+  registeredAt: timestamp("registered_at", { withTimezone: true }),
+  // `found`, `not_found` (no record at the registry) or `unavailable` (no RDAP service, an error).
+  status: text("status").notNull(),
+  checkedAt: timestamp("checked_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 /**
  * Platform data (not tenant data): the latest copy of each public IP feed behind risk's IP
  * signals, refreshed by the worker and loaded into memory by the API. `content` is gzipped.

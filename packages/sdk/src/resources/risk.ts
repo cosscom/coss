@@ -4,7 +4,9 @@ import type { List } from "../types/email.ts";
 import type {
   AssessRiskParams,
   CreateRiskListEntryParams,
+  CreateRiskRuleParams,
   DeletedRiskListEntry,
+  DeletedRiskRule,
   ForgottenRiskUser,
   ListRiskAssessmentsParams,
   ListRiskListEntriesParams,
@@ -14,6 +16,10 @@ import type {
   RiskListEntry,
   RiskListEntryType,
   RiskListEntryValue,
+  RiskRule,
+  RiskSettings,
+  UpdateRiskRuleParams,
+  UpdateRiskSettingsParams,
 } from "../types/risk.ts";
 
 type ReadOptions = Pick<RequestOptions, "signal">;
@@ -134,6 +140,100 @@ export class RiskListsResource {
   }
 }
 
+/** `coss.risk.settings`: the environment's thresholds, disabled reasons and captcha provider. */
+export class RiskSettingsResource {
+  readonly #http: HttpClient;
+
+  /** @internal Use `new Coss().risk.settings`. */
+  constructor(http: HttpClient) {
+    this.#http = http;
+  }
+
+  get(options?: ReadOptions): Promise<CossResult<RiskSettings>> {
+    return this.#http.request<RiskSettings>({
+      method: "GET",
+      path: "/v1/risk/settings",
+      signal: options?.signal,
+    });
+  }
+
+  /** Changes the fields given. The captcha secret is write-only. */
+  update(
+    params: UpdateRiskSettingsParams,
+    options?: ReadOptions,
+  ): Promise<CossResult<RiskSettings>> {
+    return this.#http.request<RiskSettings>({
+      method: "PATCH",
+      path: "/v1/risk/settings",
+      body: params,
+      signal: options?.signal,
+    });
+  }
+}
+
+/**
+ * `coss.risk.rules`: the environment's rules. After the lists, the first enabled rule whose
+ * conditions match an event decides it.
+ */
+export class RiskRulesResource {
+  readonly #http: HttpClient;
+
+  /** @internal Use `new Coss().risk.rules`. */
+  constructor(http: HttpClient) {
+    this.#http = http;
+  }
+
+  /** Creates a rule. Not retried automatically: a retry could create it twice. */
+  create(params: CreateRiskRuleParams, options?: ReadOptions): Promise<CossResult<RiskRule>> {
+    return this.#http.request<RiskRule>({
+      method: "POST",
+      path: "/v1/risk/rules",
+      body: params,
+      retry: false,
+      signal: options?.signal,
+    });
+  }
+
+  /** Every rule, in evaluation order. */
+  list(options?: ReadOptions): Promise<CossResult<List<RiskRule>>> {
+    return this.#http.request<List<RiskRule>>({
+      method: "GET",
+      path: "/v1/risk/rules",
+      signal: options?.signal,
+    });
+  }
+
+  get(id: string, options?: ReadOptions): Promise<CossResult<RiskRule>> {
+    return this.#http.request<RiskRule>({
+      method: "GET",
+      path: `/v1/risk/rules/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+    });
+  }
+
+  /** Changes the fields given; `conditions` replaces the whole list. */
+  update(
+    id: string,
+    params: UpdateRiskRuleParams,
+    options?: ReadOptions,
+  ): Promise<CossResult<RiskRule>> {
+    return this.#http.request<RiskRule>({
+      method: "PATCH",
+      path: `/v1/risk/rules/${encodeURIComponent(id)}`,
+      body: params,
+      signal: options?.signal,
+    });
+  }
+
+  delete(id: string, options?: ReadOptions): Promise<CossResult<DeletedRiskRule>> {
+    return this.#http.request<DeletedRiskRule>({
+      method: "DELETE",
+      path: `/v1/risk/rules/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+    });
+  }
+}
+
 /** `coss.risk.users`: what COSS remembers about your users. */
 export class RiskUsersResource {
   readonly #http: HttpClient;
@@ -172,6 +272,10 @@ export class RiskResource {
   readonly lists: RiskListsResource;
   /** Forgetting deleted users. */
   readonly users: RiskUsersResource;
+  /** Thresholds, disabled reasons and the captcha provider (`get`, `update`). */
+  readonly settings: RiskSettingsResource;
+  /** Rules (`create`, `list`, `get`, `update`, `delete`). */
+  readonly rules: RiskRulesResource;
   readonly #http: HttpClient;
 
   /** @internal Use `new Coss().risk`. */
@@ -180,6 +284,8 @@ export class RiskResource {
     this.assessments = new RiskAssessmentsResource(http);
     this.lists = new RiskListsResource(http);
     this.users = new RiskUsersResource(http);
+    this.settings = new RiskSettingsResource(http);
+    this.rules = new RiskRulesResource(http);
   }
 
   /**

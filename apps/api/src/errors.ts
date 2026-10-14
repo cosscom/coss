@@ -270,6 +270,9 @@ function fromRiskError(error: RiskError): ApiError {
       });
     case "invalid_list_value":
       return invalidRequest(error.code, error.message, error.param ?? "value");
+    case "invalid_settings":
+    case "too_many_rules":
+      return invalidRequest(error.code, error.message, error.param);
     case "not_found":
       return new ApiError(404, {
         type: "not_found_error",

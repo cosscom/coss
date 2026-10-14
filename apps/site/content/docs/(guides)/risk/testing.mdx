@@ -14,10 +14,14 @@ these test inputs (documentation addresses and `.test` domains, which never belo
 | Any other `192.0.2.x`       | A home connection in the UK (no reason)             |
 | Email `…@disposable.test`   | A disposable domain (`email.disposable`)            |
 | Email `…@undeliverable.test` | A domain that can't receive mail (`email.undeliverable`) |
+| Email `…@new.test`          | A domain registered 2 days ago (`email.domain_new`) |
 | Any other `….test` domain   | A domain that receives mail (no DNS lookup)         |
+| Captcha token `test-pass`   | A token the provider accepts                         |
+| Captcha token `test-fail`   | A token the provider refuses (`captcha.failed`)      |
 
-Typos (`@gmail.con`), role accounts (`info@`), velocity, duplicates, feedback and lists work as in
-live environments.
+The captcha test tokens work without a captcha provider in the settings. Typos (`@gmail.con`), role
+accounts (`info@`), velocity, duplicates, login history, feedback, lists, rules and settings work as
+in live environments.
 
 ```ts twoslash
 import { Coss } from "coss";

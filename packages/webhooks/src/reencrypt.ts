@@ -4,7 +4,7 @@
  * organizations, and every write is scoped by the row's own id and organization.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, gt, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import {
   decryptSecret,
   encryptSecret,
@@ -12,7 +12,7 @@ import {
   type SecretsKeyRing,
 } from "./secrets.ts";
 
-const { hookEndpoint, logDrain, webhookEndpoint } = schema;
+const { hookEndpoint, logDrain, riskSettings, webhookEndpoint } = schema;
 
 /**
  * Tables of endpoints with a current and a previous (rolled) secret: COSS's own webhook endpoints
@@ -24,7 +24,7 @@ const ROLLED_SECRET_TABLES = [
 ] as const;
 
 export type ReencryptResult = {
-  /** Webhook endpoints, Hooks endpoints and log drains looked at. */
+  /** Webhook endpoints, Hooks endpoints, log drains and captcha secrets looked at. */
   checked: number;
   /** Rows rewritten (with `dryRun`: that would be). */
   reencrypted: number;
@@ -35,8 +35,8 @@ export type ReencryptResult = {
 };
 
 /**
- * Rewrites every webhook endpoint, Hooks endpoint and log drain secret not encrypted with the key
- * ring's primary key, and drops previous endpoint secrets that stopped signing. Idempotent and safe while the apps serve traffic: a row is only
+ * Rewrites every webhook endpoint, Hooks endpoint, log drain and risk captcha secret not encrypted
+ * with the key ring's primary key, and drops previous endpoint secrets that stopped signing. Idempotent and safe while the apps serve traffic: a row is only
  * updated if it still holds what was read. `scope` limits the scan to some organizations (tests).
  */
 export async function reencryptWebhookSecrets(opts: {
@@ -58,6 +58,7 @@ export async function reencryptWebhookSecrets(opts: {
     await reencryptRolledSecrets(table, { ...opts, batchSize, now }, reencrypt, result);
   }
   await reencryptLogDrainSecrets({ ...opts, batchSize }, result);
+  await reencryptCaptchaSecrets({ ...opts, batchSize }, result);
   return result;
 }
 
@@ -146,6 +147,78 @@ async function reencryptRolledSecrets(
     }
     const last = rows.at(-1);
     if (!last || rows.length < batchSize) break;
+    after = last.id;
+  }
+}
+
+/** Risk settings' captcha secrets (encrypted with the same key ring, `@coss/risk`). */
+async function reencryptCaptchaSecrets(
+  opts: {
+    keys: SecretsKeyRing;
+    dryRun?: boolean;
+    batchSize: number;
+    scope?: { organizationIds: string[] };
+  },
+  result: ReencryptResult,
+): Promise<void> {
+  const { keys } = opts;
+  let after = "";
+  for (;;) {
+    const rows = await db
+      .select({
+        id: riskSettings.environmentId,
+        organizationId: riskSettings.organizationId,
+        secretCiphertext: riskSettings.captchaSecretCiphertext,
+      })
+      .from(riskSettings)
+      .where(
+        and(
+          gt(riskSettings.environmentId, after),
+          isNotNull(riskSettings.captchaSecretCiphertext),
+          opts.scope ? inArray(riskSettings.organizationId, opts.scope.organizationIds) : undefined,
+        ),
+      )
+      .orderBy(asc(riskSettings.environmentId))
+      .limit(opts.batchSize);
+    for (const row of rows) {
+      const stored = row.secretCiphertext;
+      if (!stored) continue;
+      result.checked++;
+      if (isEncryptedWithPrimary(stored, keys)) continue;
+      let secretCiphertext: string;
+      try {
+        secretCiphertext = encryptSecret(decryptSecret(stored, keys), keys);
+      } catch (error) {
+        result.unreadable.push({
+          id: row.id,
+          organizationId: row.organizationId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        continue;
+      }
+      if (opts.dryRun) {
+        result.reencrypted++;
+        continue;
+      }
+      const [updated] = await db
+        .update(riskSettings)
+        .set({
+          captchaSecretCiphertext: secretCiphertext,
+          updatedAt: sql`${riskSettings.updatedAt}`,
+        })
+        .where(
+          and(
+            eq(riskSettings.environmentId, row.id),
+            eq(riskSettings.organizationId, row.organizationId),
+            eq(riskSettings.captchaSecretCiphertext, stored),
+          ),
+        )
+        .returning({ id: riskSettings.environmentId });
+      if (updated) result.reencrypted++;
+      else result.conflicts++;
+    }
+    const last = rows.at(-1);
+    if (!last || rows.length < opts.batchSize) break;
     after = last.id;
   }
 }

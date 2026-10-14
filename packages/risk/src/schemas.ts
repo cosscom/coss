@@ -21,11 +21,17 @@ export const RISK_LIST_ENTRY_TYPES = ["email", "domain", "ip", "asn", "country",
 export type RiskListEntryType = (typeof RISK_LIST_ENTRY_TYPES)[number];
 
 /** Signal groups that can be missing from an assessment (a lookup failed or timed out). */
-export const RISK_DEGRADED_SIGNALS = ["email_dns", "ip_data", "velocity"] as const;
+export const RISK_DEGRADED_SIGNALS = [
+  "email_dns",
+  "domain_age",
+  "ip_data",
+  "velocity",
+  "captcha",
+] as const;
 export type RiskDegradedSignal = (typeof RISK_DEGRADED_SIGNALS)[number];
 
-/** Webhook event types: `review` decisions, for a queue you work through. */
-export const RISK_EVENT_TYPES = ["risk.assessment.review"] as const;
+/** Webhook event types: `review` decisions, and their resolution, for a queue you work through. */
+export const RISK_EVENT_TYPES = ["risk.assessment.review", "risk.assessment.reviewed"] as const;
 export type RiskEventType = (typeof RISK_EVENT_TYPES)[number];
 
 // ---------------------------------------------------------------------------------------------
@@ -163,6 +169,11 @@ export const REASONS = {
     description:
       "The domain looks like a typo of a popular one; `suggestion` holds the likely domain, which you may show the user.",
   },
+  "email.domain_new": {
+    weight: 0.35,
+    description:
+      "The email domain was registered in the last 30 days (from its registry, over RDAP).",
+  },
   "ip.tor": { weight: 0.5, description: "The IP address is a Tor exit node." },
   "ip.vpn_network": {
     weight: 0.3,
@@ -239,6 +250,30 @@ export const REASONS = {
     description:
       "This IPv4 /24 or IPv6 /64 was in an assessment you reported as fraud or abuse in the last 30 days.",
   },
+  "login.new_country": {
+    weight: 0.3,
+    description:
+      "A login from a country this user never logged in from before in this environment.",
+  },
+  "login.new_network": {
+    weight: 0.15,
+    description:
+      "A login from a network (ASN) this user never logged in from before in this environment.",
+  },
+  "captcha.failed": {
+    weight: 0.6,
+    description:
+      "The captcha token was refused by the provider (expired, reused, or never solved).",
+  },
+  "captcha.missing": {
+    weight: 0.4,
+    description: "No captcha token, while your settings require one (`captcha.required`).",
+  },
+  "rule.matched": {
+    weight: 0,
+    description:
+      "One of your rules matched (`rule`, `name`): its action is the decision, unless a list decided.",
+  },
   "list.blocked": {
     weight: 0,
     description: "An entry of your block list matched (`entry`, `type`): the decision is `block`.",
@@ -253,8 +288,70 @@ export const REASONS = {
 export type RiskReasonCode = keyof typeof REASONS;
 export const RISK_REASON_CODES = Object.keys(REASONS) as [RiskReasonCode, ...RiskReasonCode[]];
 
-/** At or above: `review`; at or above `block`: `block` (unless a list decided). */
+/** At or above: `review`; at or above `block`: `block` (unless a list or a rule decided). */
 export const DEFAULT_THRESHOLDS = { review: 0.5, block: 0.85 } as const;
+
+/** Reasons that report a decision rather than a signal: they can't be turned off. */
+export const DECISION_REASON_CODES = ["list.blocked", "list.allowed", "rule.matched"] as const;
+export const DISABLEABLE_REASON_CODES = RISK_REASON_CODES.filter(
+  (code) => !(DECISION_REASON_CODES as readonly string[]).includes(code),
+) as [RiskReasonCode, ...RiskReasonCode[]];
+
+/** How long a domain counts as new (`email.domain_new`). */
+export const NEW_DOMAIN_DAYS = 30;
+
+// ---------------------------------------------------------------------------------------------
+// Rules: the fields a condition can test (evaluated by `rules.ts`).
+// ---------------------------------------------------------------------------------------------
+
+export type RuleFieldType = "boolean" | "number" | "string";
+
+export const RULE_FIELDS = {
+  "email.valid": { type: "boolean", label: "Email is valid" },
+  "email.disposable": { type: "boolean", label: "Email is disposable" },
+  "email.undeliverable": { type: "boolean", label: "Email domain can't receive mail" },
+  "email.role_account": { type: "boolean", label: "Email is a role account" },
+  "email.free_provider": { type: "boolean", label: "Email is at a free provider" },
+  "email.typo": { type: "boolean", label: "Email domain looks like a typo" },
+  "email.domain_new": { type: "boolean", label: "Email domain is new" },
+  "email.domain": { type: "string", label: "Email domain" },
+  "email.domain_age_days": { type: "number", label: "Email domain age (days)" },
+  "ip.tor": { type: "boolean", label: "IP is a Tor exit" },
+  "ip.hosting": { type: "boolean", label: "IP is a cloud or hosting network" },
+  "ip.vpn": { type: "boolean", label: "IP is a VPN network" },
+  "ip.private": { type: "boolean", label: "IP is private" },
+  "ip.country": { type: "string", label: "IP country (ISO code)" },
+  "ip.asn": { type: "string", label: "IP network (AS number)" },
+  "ip.hosting_provider": { type: "string", label: "IP hosting provider" },
+  "captcha.passed": { type: "boolean", label: "Captcha passed" },
+  "duplicate.canonical_mailbox": { type: "boolean", label: "Mailbox already has an account" },
+  "history.fraud": { type: "boolean", label: "Seen in fraud before" },
+  "login.new_country": { type: "boolean", label: "Login from a new country" },
+  "login.new_network": { type: "boolean", label: "Login from a new network" },
+  score: { type: "number", label: "Score (0-1)" },
+  "velocity.ip_1h": { type: "number", label: "Events from the IP (1 h)" },
+  "velocity.ip_24h": { type: "number", label: "Events from the IP (24 h)" },
+  "velocity.subnet_1h": { type: "number", label: "Events from the subnet (1 h)" },
+  "velocity.subnet_24h": { type: "number", label: "Events from the subnet (24 h)" },
+  "velocity.email_domain_1h": { type: "number", label: "Events with the email domain (1 h)" },
+  "velocity.email_domain_24h": { type: "number", label: "Events with the email domain (24 h)" },
+  "velocity.mailbox_1h": { type: "number", label: "Events with the mailbox (1 h)" },
+  "velocity.mailbox_24h": { type: "number", label: "Events with the mailbox (24 h)" },
+  "velocity.user_1h": { type: "number", label: "Events of the user (1 h)" },
+  "velocity.user_24h": { type: "number", label: "Events of the user (24 h)" },
+} as const satisfies Record<string, { type: RuleFieldType; label: string }>;
+
+export type RuleField = keyof typeof RULE_FIELDS;
+export const RULE_FIELD_NAMES = Object.keys(RULE_FIELDS) as [RuleField, ...RuleField[]];
+
+export const RULE_OPERATORS = {
+  boolean: ["is"],
+  number: ["eq", "neq", "gt", "gte", "lt", "lte"],
+  string: ["eq", "neq", "in", "not_in"],
+} as const satisfies Record<RuleFieldType, readonly string[]>;
+
+export const MAX_RISK_RULES = 50;
+export const MAX_RULE_CONDITIONS = 20;
 
 // ---------------------------------------------------------------------------------------------
 // Wire schemas.
@@ -311,6 +408,14 @@ export const CreateRiskAssessmentRequest = z
       .optional()
       .meta({ description: "The client's IP address (not your server's or proxy's)." }),
     user_agent: z.string().max(1024).optional().meta({ description: "The client's user agent." }),
+    captcha: z
+      .strictObject({
+        token: z.string().min(1).max(4096).meta({
+          description:
+            "The token your captcha widget (Turnstile or hCaptcha, set in the environment's risk settings) gave the browser. Verified once: don't reuse it.",
+        }),
+      })
+      .optional(),
   })
   .superRefine((value, ctx) => {
     if (value.event === "custom" && !value.event_name) {
@@ -365,6 +470,8 @@ export const RiskReason = z
       description: "`duplicate.canonical_mailbox`: the assessment that first saw the mailbox.",
     }),
     entry: z.string().optional().meta({ description: "`list.*`: the matching list entry." }),
+    rule: z.string().optional().meta({ description: "`rule.matched`: the rule's id." }),
+    name: z.string().optional().meta({ description: "`rule.matched`: the rule's name." }),
     type: RiskListEntryTypeEnum.optional().meta({ description: "`list.*`: what matched." }),
   })
   .meta({ id: "RiskReason" });
@@ -383,8 +490,32 @@ export const RiskEmailSignals = z
     role_account: z.boolean(),
     free_provider: z.boolean(),
     suggestion: z.string().nullable(),
+    domain_age_days: z.number().int().nullable().meta({
+      description:
+        "Days since the domain was registered (RDAP); `null` when unknown or not looked up (free providers, disposable domains).",
+    }),
   })
   .meta({ id: "RiskEmailSignals" });
+
+export const RiskCaptchaSignals = z
+  .object({
+    provided: z.boolean(),
+    passed: z.boolean().nullable().meta({
+      description:
+        "`null` when it couldn't be checked (no captcha configured, or the provider was unreachable).",
+    }),
+  })
+  .meta({ id: "RiskCaptchaSignals" });
+
+export const RiskLoginSignals = z
+  .object({
+    new_country: z.boolean(),
+    new_network: z.boolean(),
+  })
+  .meta({
+    id: "RiskLoginSignals",
+    description: "Logins of a user with history: whether the country or network is new for them.",
+  });
 
 export const RiskIpSignals = z
   .object({
@@ -436,6 +567,7 @@ const ASSESSMENT_EXAMPLE = {
       role_account: false,
       free_provider: false,
       suggestion: "gmail.com",
+      domain_age_days: 9,
     },
     ip: {
       version: 4,
@@ -449,6 +581,8 @@ const ASSESSMENT_EXAMPLE = {
       country: "GB",
     },
     velocity: { ip_1h: 7, ip_24h: 9, subnet_1h: 7, mailbox_24h: 1 },
+    captcha: { provided: true, passed: true },
+    login: null,
   },
   user: { id: null, email: "ada@gmail.con" },
   ip: "203.0.113.7",
@@ -476,6 +610,8 @@ export const RiskAssessment = z
       velocity: z.union([RiskVelocitySignals, z.null()]).meta({
         description: "`null` when velocity was unavailable (see `degraded`).",
       }),
+      captcha: z.union([RiskCaptchaSignals, z.null()]),
+      login: z.union([RiskLoginSignals, z.null()]),
     }),
     user: z.object({
       id: z.string().nullable(),
@@ -643,6 +779,9 @@ export const RiskWebhookEvent = z
       score: z.number(),
       reasons: z.array(RiskReason),
       user_id: z.string().nullable(),
+      outcome: z.union([RiskOutcomeEnum, z.null()]).meta({
+        description: "`risk.assessment.reviewed`: the outcome that resolved the review.",
+      }),
       occurred_at: z.iso.datetime(),
     }),
   })
@@ -650,3 +789,224 @@ export const RiskWebhookEvent = z
 export type RiskWebhookEventOutput = z.output<typeof RiskWebhookEvent>;
 /** What the outbox stores: delivery adds `api_version` when it renders the event for an endpoint. */
 export type StoredRiskWebhookEvent = Omit<RiskWebhookEventOutput, "api_version">;
+
+// ---------------------------------------------------------------------------------------------
+// Settings.
+// ---------------------------------------------------------------------------------------------
+
+export const RISK_CAPTCHA_PROVIDERS = ["turnstile", "hcaptcha"] as const;
+export type RiskCaptchaProvider = (typeof RISK_CAPTCHA_PROVIDERS)[number];
+
+const Threshold = z.number().gt(0).max(1);
+
+const SETTINGS_EXAMPLE = {
+  object: "risk_settings",
+  review_threshold: 0.5,
+  block_threshold: 0.85,
+  disabled_reasons: ["email.role_account"],
+  captcha: { provider: "turnstile", required: true },
+  updated_at: "2026-01-15T09:30:00.000Z",
+} as const;
+
+export const RiskSettings = z
+  .object({
+    object: z.literal("risk_settings"),
+    review_threshold: z.number().meta({ description: "Scores at or above it are `review`." }),
+    block_threshold: z.number().meta({ description: "Scores at or above it are `block`." }),
+    disabled_reasons: z.array(z.enum(DISABLEABLE_REASON_CODES)).meta({
+      description: "Reasons that never fire in this environment (they don't count in the score).",
+    }),
+    captcha: z
+      .union([
+        z.object({ provider: z.enum(RISK_CAPTCHA_PROVIDERS), required: z.boolean() }),
+        z.null(),
+      ])
+      .meta({
+        description: "The captcha provider assessments verify tokens with (never the secret).",
+      }),
+    updated_at: z.iso.datetime().nullable().meta({ description: "`null` while on the defaults." }),
+  })
+  .meta({ id: "RiskSettings", examples: [SETTINGS_EXAMPLE] });
+export type RiskSettingsOutput = z.output<typeof RiskSettings>;
+
+export const UpdateRiskSettingsRequest = z
+  .strictObject({
+    review_threshold: Threshold.optional(),
+    block_threshold: Threshold.optional(),
+    disabled_reasons: z.array(z.enum(DISABLEABLE_REASON_CODES)).max(100).optional(),
+    captcha: z
+      .union([
+        z.strictObject({
+          provider: z.enum(RISK_CAPTCHA_PROVIDERS),
+          secret: z.string().min(1).max(1024).optional().meta({
+            description:
+              "The provider's secret key. Required when setting a provider for the first time or changing it; stored encrypted and never returned.",
+          }),
+          required: z.boolean().optional().meta({
+            description:
+              "Assessments without a `captcha` token get `captcha.missing`. Default false.",
+          }),
+        }),
+        z.null(),
+      ])
+      .optional()
+      .meta({ description: "`null` turns captcha verification off and deletes the secret." }),
+  })
+  .meta({
+    id: "UpdateRiskSettingsRequest",
+    examples: [
+      {
+        block_threshold: 0.9,
+        captcha: { provider: "turnstile", secret: "0x4AAA…", required: true },
+      },
+    ],
+  });
+export type UpdateRiskSettingsRequestOutput = z.output<typeof UpdateRiskSettingsRequest>;
+
+// ---------------------------------------------------------------------------------------------
+// Rules.
+// ---------------------------------------------------------------------------------------------
+
+const RuleValue = z.union([
+  z.boolean(),
+  z.number(),
+  z.string().max(320),
+  z.array(z.string().max(320)).min(1).max(100),
+]);
+
+export const RiskRuleCondition = z
+  .strictObject({
+    field: z.enum(RULE_FIELD_NAMES),
+    operator: z.enum(["is", "eq", "neq", "gt", "gte", "lt", "lte", "in", "not_in"]),
+    value: RuleValue,
+  })
+  .superRefine((condition, ctx) => {
+    const { type } = RULE_FIELDS[condition.field];
+    const operators: readonly string[] = RULE_OPERATORS[type];
+    if (!operators.includes(condition.operator)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["operator"],
+        message: `${condition.field} takes ${operators.join(", ")}.`,
+      });
+      return;
+    }
+    const value = condition.value;
+    const ok =
+      type === "boolean"
+        ? typeof value === "boolean"
+        : type === "number"
+          ? typeof value === "number" && Number.isFinite(value)
+          : condition.operator === "in" || condition.operator === "not_in"
+            ? Array.isArray(value)
+            : typeof value === "string";
+    if (!ok) {
+      const expected =
+        type === "boolean"
+          ? "true or false"
+          : type === "number"
+            ? "a number"
+            : condition.operator === "in" || condition.operator === "not_in"
+              ? "a list of strings"
+              : "a string";
+      ctx.addIssue({ code: "custom", path: ["value"], message: `Expected ${expected}.` });
+    }
+  })
+  .meta({
+    id: "RiskRuleCondition",
+    description:
+      "A test of one field. A field without a value (no IP, no email…) never matches, whatever the operator.",
+  });
+export type RiskRuleConditionOutput = z.output<typeof RiskRuleCondition>;
+
+const RuleName = z.string().trim().min(1).max(100);
+
+const RULE_EXAMPLE = {
+  object: "risk_rule",
+  id: "rskrule_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  name: "Disposable email from a data center",
+  enabled: true,
+  position: 0,
+  events: ["signup"],
+  match: "all",
+  conditions: [
+    { field: "email.disposable", operator: "is", value: true },
+    { field: "ip.hosting", operator: "is", value: true },
+  ],
+  action: "block",
+  created_at: "2026-01-15T09:30:00.000Z",
+  updated_at: "2026-01-15T09:30:00.000Z",
+} as const;
+
+export const RiskRule = z
+  .object({
+    object: z.literal("risk_rule"),
+    id: z.string(),
+    name: z.string(),
+    enabled: z.boolean(),
+    position: z.number().int().meta({ description: "Rules are tried in ascending order." }),
+    events: z
+      .array(RiskEventEnum)
+      .meta({ description: "Events it applies to; empty: every event." }),
+    match: z.enum(["all", "any"]).meta({
+      description: "`all`: every condition must hold. `any`: one is enough.",
+    }),
+    conditions: z.array(RiskRuleCondition),
+    action: RiskDecisionEnum,
+    created_at: z.iso.datetime(),
+    updated_at: z.iso.datetime(),
+  })
+  .meta({ id: "RiskRule", examples: [RULE_EXAMPLE] });
+export type RiskRuleOutput = z.output<typeof RiskRule>;
+
+export const CreateRiskRuleRequest = z
+  .strictObject({
+    name: RuleName,
+    enabled: z.boolean().optional(),
+    position: z.number().int().min(0).max(10_000).optional().meta({ description: "Default 0." }),
+    events: z.array(RiskEventEnum).max(RISK_EVENTS.length).optional(),
+    match: z.enum(["all", "any"]).optional().meta({ description: "Default `all`." }),
+    conditions: z.array(RiskRuleCondition).min(1).max(MAX_RULE_CONDITIONS),
+    action: RiskDecisionEnum,
+  })
+  .meta({
+    id: "CreateRiskRuleRequest",
+    examples: [
+      {
+        name: "Disposable email from a data center",
+        events: ["signup"],
+        conditions: [
+          { field: "email.disposable", operator: "is", value: true },
+          { field: "ip.hosting", operator: "is", value: true },
+        ],
+        action: "block",
+      },
+    ],
+  });
+export type CreateRiskRuleRequestOutput = z.output<typeof CreateRiskRuleRequest>;
+
+export const UpdateRiskRuleRequest = z
+  .strictObject({
+    name: RuleName.optional(),
+    enabled: z.boolean().optional(),
+    position: z.number().int().min(0).max(10_000).optional(),
+    events: z.array(RiskEventEnum).max(RISK_EVENTS.length).optional(),
+    match: z.enum(["all", "any"]).optional(),
+    conditions: z.array(RiskRuleCondition).min(1).max(MAX_RULE_CONDITIONS).optional(),
+    action: RiskDecisionEnum.optional(),
+  })
+  .meta({ id: "UpdateRiskRuleRequest", examples: [{ enabled: false }] });
+export type UpdateRiskRuleRequestOutput = z.output<typeof UpdateRiskRuleRequest>;
+
+export const RiskRuleList = z
+  .object({ object: z.literal("list"), data: z.array(RiskRule), has_more: z.literal(false) })
+  .meta({
+    id: "RiskRuleList",
+    description: `Every rule of the environment (at most ${MAX_RISK_RULES}), in evaluation order.`,
+    examples: [{ object: "list", data: [RULE_EXAMPLE], has_more: false }],
+  });
+export type RiskRuleListOutput = z.output<typeof RiskRuleList>;
+
+export const DeletedRiskRule = z
+  .object({ object: z.literal("risk_rule"), id: z.string(), deleted: z.literal(true) })
+  .meta({ id: "DeletedRiskRule" });

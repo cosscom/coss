@@ -23,6 +23,7 @@ import { Panel, PanelBody } from "@/components/panel";
 import { RiskDecisionBadge, RiskOutcomeBadge } from "@/components/risk-badges";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
+import { ResolveButtons } from "./resolve-buttons";
 
 export const metadata: Metadata = { title: "Risk" };
 
@@ -64,6 +65,12 @@ export default async function RiskPage({
     : null;
 
   const base = `/${organization.slug}/projects/${project.slug}/${environment.slug}`;
+  const resolving = view.id === "review" && can({ risk: ["feedback"] });
+  const target = {
+    orgSlug: organization.slug,
+    projectSlug: project.slug,
+    envSlug: environment.slug,
+  };
   const riskPath = `${base}/risk`;
   const viewPath = (id: string) => (id === "all" ? riskPath : `${riskPath}?view=${id}`);
   const last = page?.data.at(-1);
@@ -137,6 +144,7 @@ export default async function RiskPage({
                 <TableHead>Decision</TableHead>
                 <TableHead>Score</TableHead>
                 <TableHead>Reasons</TableHead>
+                {resolving ? <TableHead className="w-0" /> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -172,6 +180,12 @@ export default async function RiskPage({
                   <TableCell className="max-w-80 truncate font-mono text-muted-foreground text-xs">
                     {assessment.reasons.map((reason) => reason.code).join(", ") || "—"}
                   </TableCell>
+                  {resolving ? (
+                    // Above the row's link, which covers the whole row.
+                    <TableCell className="relative z-10">
+                      <ResolveButtons {...target} assessmentId={assessment.id} />
+                    </TableCell>
+                  ) : null}
                 </TableRow>
               ))}
             </TableBody>

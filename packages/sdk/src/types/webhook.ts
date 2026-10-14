@@ -7,7 +7,7 @@ import type { BillingHoldReason, Credit, InvoiceSummary, Meter, PlanKey } from "
 import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
 import type { ReceivedEmailVerdicts } from "./received-email.ts";
 import type { ReputationCheck, ReputationStatus } from "./reputation.ts";
-import type { RiskDecision, RiskEvent, RiskReason } from "./risk.ts";
+import type { RiskDecision, RiskEvent, RiskOutcome, RiskReason } from "./risk.ts";
 
 /** What a webhook says about the email; never its content, cc or bcc. */
 export interface EmailWebhookEventData extends EmailEventData {
@@ -178,8 +178,8 @@ export type BillingWebhookEvent =
       data: BillingEventData & { credit: Credit };
     });
 
-/** Risk events: `review` decisions, for a queue you work through. */
-export type RiskEventType = "risk.assessment.review";
+/** Risk events: `review` decisions, and their resolution, for a queue you work through. */
+export type RiskEventType = "risk.assessment.review" | "risk.assessment.reviewed";
 
 export interface RiskWebhookEventData {
   assessment_id: string;
@@ -190,11 +190,13 @@ export interface RiskWebhookEventData {
   reasons: RiskReason[];
   /** Your user id, if the assessment had one. Never the email or IP address. */
   user_id: string | null;
+  /** `risk.assessment.reviewed`: the outcome that resolved the review. */
+  outcome: RiskOutcome | null;
   /** ISO 8601 timestamp. */
   occurred_at: string;
 }
 
-/** A risk assessment that needs a review. `id` equals the `webhook-id` header. */
+/** A risk review opened or resolved. `id` equals the `webhook-id` header. */
 export interface RiskWebhookEvent {
   id: string;
   object: "event";

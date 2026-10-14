@@ -4,9 +4,11 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./captcha": "./src/captcha.ts",
+    "./datasets": "./src/datasets.ts",
     "./email": "./src/email.ts",
     "./ip": "./src/ip.ts",
-    "./datasets": "./src/datasets.ts",
+    "./rdap": "./src/rdap.ts",
     "./testing": "./src/testing.ts"
   },
   "scripts": {

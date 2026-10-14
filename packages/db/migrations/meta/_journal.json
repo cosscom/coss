@@ -372,6 +372,20 @@
       "when": 1792001372407,
       "tag": "0052_hook_key_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1792011344316,
+      "tag": "0053_fancy_night_thrasher",
+      "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1792011348300,
+      "tag": "0054_risk_rules_key_permissions",
+      "breakpoints": true
     }
   ]
 }

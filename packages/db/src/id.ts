@@ -70,6 +70,8 @@ export const ID_PREFIXES = {
   riskIdentity: "rskid",
   riskReport: "rskrep",
   riskListEntry: "rskle",
+  riskRule: "rskrule",
+  riskUserNetwork: "rskun",
   billingAccount: "bacct",
   billingContract: "bcon",
   billingCreditGrant: "bcg",

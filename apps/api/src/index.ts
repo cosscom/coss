@@ -29,6 +29,7 @@ const rateLimits = createRateLimitRuntime(env, {
 });
 await rateLimits.ready();
 const logWriter = createLogWriter();
+const secretsKeys = parseSecretsKeys(env.WEBHOOK_SECRETS_KEY);
 
 const app = createApp({
   emailService: createEmailService({
@@ -42,12 +43,13 @@ const app = createApp({
   domainDeps: email.domainDeps,
   inbound: email.inbound,
   webhookDeps: {
-    secretsKeys: parseSecretsKeys(env.WEBHOOK_SECRETS_KEY),
+    secretsKeys,
     allowInsecureUrls: process.env.NODE_ENV !== "production",
     plans,
   },
-  // Velocity counters share the rate limiter's Valkey connection.
-  riskDeps: createRiskDeps(env, { valkey: rateLimits.valkey }),
+  // Velocity counters share the rate limiter's Valkey connection; captcha secrets are encrypted
+  // with the webhook key ring.
+  riskDeps: createRiskDeps(env, { valkey: rateLimits.valkey, secretsKeys }),
   plans,
   publicUrl: env.API_PUBLIC_URL,
   portalUrl: env.PORTAL_PUBLIC_URL ?? null,

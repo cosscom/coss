@@ -14,6 +14,7 @@ import { createLogRoutes } from "./logs.ts";
 import { createReceivedEmailRoutes } from "./received-emails.ts";
 import { createReputationRoutes } from "./reputation.ts";
 import { createRiskRoutes } from "./risk.ts";
+import { createRiskConfigRoutes } from "./risk-config.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
 import { createTrackingSettingsRoutes } from "./tracking-settings.ts";
 import { createWebhookEndpointRoutes } from "./webhook-endpoints.ts";
@@ -47,5 +48,6 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   v1.route("/", createHookRoutes({ ...deps.webhookDeps, portalUrl: deps.portalUrl }));
   v1.route("/", createReceivedEmailRoutes(deps.inbound));
   v1.route("/", createRiskRoutes(deps.riskDeps));
+  v1.route("/", createRiskConfigRoutes(deps.riskDeps));
   return v1;
 }

@@ -94,7 +94,7 @@ describe("assessRisk", () => {
     expect(codes(role)).toEqual(["email.undeliverable", "email.role_account"]);
     const aws = (await assess({ event: "login", user: { id: "u1" }, ip: TEST_IPS.aws })).assessment;
     expect(aws.reasons).toMatchObject([{ code: "ip.hosting_provider", provider: "aws" }]);
-    const vpn = (await assess({ event: "login", user: { id: "u1" }, ip: TEST_IPS.vpn })).assessment;
+    const vpn = (await assess({ event: "login", user: { id: "u2" }, ip: TEST_IPS.vpn })).assessment;
     expect(vpn.reasons).toMatchObject([{ code: "ip.vpn_network", provider: "m247" }]);
   });
 

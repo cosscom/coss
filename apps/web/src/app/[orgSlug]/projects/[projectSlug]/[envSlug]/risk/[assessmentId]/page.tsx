@@ -39,7 +39,7 @@ export default async function RiskAssessmentPage({
   if (!assessment) notFound();
 
   // Signals stay after the address itself is removed (90 days); without signals there was none.
-  const { email, ip, velocity } = assessment.signals;
+  const { email, ip, velocity, captcha, login } = assessment.signals;
 
   return (
     <div className="flex flex-col gap-6">
@@ -143,6 +143,9 @@ export default async function RiskAssessmentPage({
                       {email.free_provider ? " · free provider" : ""}
                     </SpecItem>
                     <SpecItem label="Did you mean">{email.suggestion ?? NONE}</SpecItem>
+                    <SpecItem label="Domain age">
+                      {email.domain_age_days === null ? NONE : `${email.domain_age_days} days`}
+                    </SpecItem>
                   </>
                 ) : null}
                 {ip ? (
@@ -157,6 +160,29 @@ export default async function RiskAssessmentPage({
                         : `Tor ${yesNo(ip.tor).toLowerCase()} · ${ip.hosting ? `${ip.hosting_kind}: ${ip.hosting_provider}` : "not hosting"}`}
                     </SpecItem>
                   </>
+                ) : null}
+                {captcha ? (
+                  <SpecItem label="Captcha">
+                    {!captcha.provided
+                      ? "no token"
+                      : captcha.passed === null
+                        ? "not checked"
+                        : captcha.passed
+                          ? "passed"
+                          : "failed"}
+                  </SpecItem>
+                ) : null}
+                {login ? (
+                  <SpecItem label="Login">
+                    {login.new_country || login.new_network
+                      ? [
+                          login.new_country ? "new country" : null,
+                          login.new_network ? "new network" : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")
+                      : "usual country and network"}
+                  </SpecItem>
                 ) : null}
                 {velocity && Object.keys(velocity).length > 0 ? (
                   <SpecItem label="Velocity" mono>

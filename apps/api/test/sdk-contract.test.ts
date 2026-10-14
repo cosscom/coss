@@ -1250,3 +1250,86 @@ describe("coss.billing against the API", () => {
     expect(invalid.error).toMatchObject({ code: "invalid_range", status: 422 });
   });
 });
+
+describe("coss.risk.settings and coss.risk.rules against the API", () => {
+  test("settings, rules and captcha round-trip; reviewed webhooks verify", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const receiver = webhookReceiver();
+    try {
+      const endpoint = await coss.webhookEndpoints.create({
+        url: receiver.url,
+        event_types: ["risk.assessment.reviewed"],
+      });
+      if (!endpoint.data) throw new Error("create failed");
+
+      const settings = await coss.risk.settings.update({
+        review_threshold: 0.4,
+        disabled_reasons: ["email.role_account"],
+        captcha: { provider: "turnstile", secret: "0xsecret", required: true },
+      });
+      expect(settings.error).toBeNull();
+      expect(settings.data).toMatchObject({
+        object: "risk_settings",
+        review_threshold: 0.4,
+        captcha: { provider: "turnstile", required: true },
+      });
+      expect(await coss.risk.settings.get()).toEqual(settings);
+
+      const rule = await coss.risk.rules.create({
+        name: "Block failed captchas from new domains",
+        match: "all",
+        conditions: [
+          { field: "captcha.passed", operator: "is", value: false },
+          { field: "email.domain_age_days", operator: "lt", value: 30 },
+        ],
+        action: "block",
+      });
+      if (!rule.data) throw new Error("rule failed");
+      expect((await coss.risk.rules.list()).data?.data).toEqual([rule.data]);
+
+      // Sandbox fixtures: a failed test token, and new.test registered 2 days ago.
+      const blocked = await coss.risk.assess({
+        event: "signup",
+        user: { email: "a@new.test" },
+        captcha: { token: "test-fail" },
+      });
+      expect(blocked.data).toMatchObject({
+        decision: "block",
+        signals: { captcha: { provided: true, passed: false }, email: { domain_age_days: 2 } },
+      });
+      expect(blocked.data?.reasons[0]).toMatchObject({ code: "rule.matched", rule: rule.data.id });
+
+      await coss.risk.rules.update(rule.data.id, { enabled: false });
+      const review = await coss.risk.assess({
+        event: "signup",
+        user: { id: "u9", email: "a@new.test" },
+      });
+      // No token while one is required, plus a new domain: 1 − 0.6 × 0.65 = 0.61 ≥ 0.4.
+      expect(review.data).toMatchObject({ decision: "review", review_status: "open" });
+      if (!review.data) throw new Error("assess failed");
+      await coss.risk.feedback(review.data.id, { outcome: "legitimate" });
+
+      await runDueWebhookDeliveries(
+        { scope: { organizationIds: [tenant.organization.id] } },
+        { secretsKeys: TEST_SECRETS_KEYS, send: testSender() },
+      );
+      const [delivery] = receiver.received;
+      if (!delivery) throw new Error("no webhook");
+      const event = await verifyWebhook(delivery.body, delivery.headers, endpoint.data.secret);
+      expect(event).toMatchObject({
+        type: "risk.assessment.reviewed",
+        data: { assessment_id: review.data.id, outcome: "legitimate", user_id: "u9" },
+      });
+
+      expect((await coss.risk.rules.delete(rule.data.id)).data).toEqual({
+        object: "risk_rule",
+        id: rule.data.id,
+        deleted: true,
+      });
+    } finally {
+      receiver.stop();
+    }
+  });
+});

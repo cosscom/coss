@@ -56,3 +56,20 @@ export function sandboxMailDomainVerdict(domain: string): MailDomainVerdict | nu
   if (!domain.endsWith(".test") && domain !== "test") return null;
   return domain === SANDBOX_UNDELIVERABLE_DOMAIN ? "undeliverable" : "deliverable";
 }
+
+/** A domain registered 2 days ago in sandbox environments (`email.domain_new`). */
+export const SANDBOX_NEW_DOMAIN = "new.test";
+
+/** Domain age of a `.test` domain in a sandbox: `new.test` is 2 days old, the rest unknown. */
+export function sandboxDomainAgeDays(domain: string): number | null {
+  return domain === SANDBOX_NEW_DOMAIN ? 2 : null;
+}
+
+/** Captcha tokens with a fixed verdict in sandbox environments (no provider needed). */
+export const SANDBOX_CAPTCHA_TOKENS = { pass: "test-pass", fail: "test-fail" } as const;
+
+export function sandboxCaptchaVerdict(token: string): boolean | null {
+  if (token === SANDBOX_CAPTCHA_TOKENS.pass) return true;
+  if (token === SANDBOX_CAPTCHA_TOKENS.fail) return false;
+  return null;
+}

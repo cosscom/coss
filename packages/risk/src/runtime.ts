@@ -3,6 +3,8 @@
  * limiter's Valkey connection for velocity; the dashboard only needs the hasher.
  */
 import { cachedMailDomainCheck } from "@coss/signals/email";
+import { rdapClient } from "@coss/signals/rdap";
+import type { SecretsKeyRing } from "@coss/webhooks";
 import type { Cluster, Redis } from "iovalkey";
 import type { RiskDeps } from "./assess.ts";
 import { createIpIntelligenceSource } from "./datasets.ts";
@@ -24,8 +26,9 @@ export function riskHasherFromEnv(env: RiskEnv, opts: { production?: boolean } =
 
 export function createRiskDeps(
   env: RiskEnv & { RATE_LIMIT_KEY_PREFIX?: string | undefined },
-  opts: { valkey: Redis | Cluster | null; production?: boolean },
+  opts: { valkey: Redis | Cluster | null; secretsKeys: SecretsKeyRing; production?: boolean },
 ): RiskDeps {
+  const rdap = rdapClient();
   return {
     hash: riskHasherFromEnv(env, opts),
     ipIntelligence: createIpIntelligenceSource(),
@@ -34,5 +37,7 @@ export function createRiskDeps(
     velocity: opts.valkey ? new ValkeyVelocityStore(opts.valkey) : new MemoryVelocityStore(),
     keyPrefix: env.RATE_LIMIT_KEY_PREFIX ?? "coss",
     checkMailDomain: cachedMailDomainCheck(),
+    domainAge: (domain) => rdap.registration(domain),
+    secretsKeys: opts.secretsKeys,
   };
 }
