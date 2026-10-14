@@ -1,6 +1,7 @@
 import "server-only";
 import { BillingError } from "@coss/billing";
 import { DomainError, EmailError } from "@coss/email";
+import { HookError } from "@coss/hooks";
 import { ReputationError } from "@coss/reputation";
 import { TenancyError } from "@coss/tenancy";
 import { isAPIError } from "better-auth/api";
@@ -42,7 +43,8 @@ function userFacingMessage(error: unknown): string {
     error instanceof DomainError ||
     error instanceof ReputationError ||
     error instanceof EmailError ||
-    error instanceof BillingError
+    error instanceof BillingError ||
+    error instanceof HookError
   ) {
     return error.message;
   }

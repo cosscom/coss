@@ -8,8 +8,11 @@ const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-/** What a bucket counts per: one API key, organization, environment, client IP or email address. */
-export type BucketScope = "key" | "org" | "environment" | "ip" | "email";
+/**
+ * What a bucket counts per: one API key (or another opaque id, like a Hooks endpoint), organization,
+ * environment, client IP, email address, or destination host of outgoing requests.
+ */
+export type BucketScope = "key" | "org" | "environment" | "ip" | "email" | "destination";
 
 export type LimitRule = {
   /** Tokens added per `periodMs`. */
@@ -288,6 +291,77 @@ export const BUCKETS = {
     limit: 30,
     periodMs: SECOND,
     burst: 100,
+    overridable: false,
+    failureMode: "deny",
+  },
+  // Hooks sends: messages per organization, deliveries (a message's fan-out) per day, and a much
+  // smaller allowance for sandbox environments (which deliver to real URLs too).
+  "hooks.messages.second": {
+    scope: "org",
+    limit: 50,
+    periodMs: SECOND,
+    burst: 200,
+    overridable: true,
+    failureMode: "deny",
+  },
+  "hooks.deliveries.day": {
+    scope: "org",
+    limit: 100_000,
+    periodMs: DAY,
+    overridable: true,
+    failureMode: "deny",
+  },
+  "hooks.sandbox_deliveries.day": {
+    scope: "environment",
+    limit: 2_000,
+    periodMs: DAY,
+    overridable: true,
+    failureMode: "deny",
+  },
+  // Hooks delivery attempts (charged by the worker; a denied attempt is rescheduled, not failed):
+  // per endpoint (its own `rate_limit_per_second` replaces this rule), per organization and
+  // destination host (subject `<org>:<host>`), and a global ceiling per destination host so no
+  // set of organizations can turn COSS into a request cannon against one site. They fail open:
+  // the send quotas above already bound what can be queued.
+  "hooks.endpoint.attempts": {
+    scope: "key",
+    limit: 20,
+    periodMs: SECOND,
+    burst: 50,
+    overridable: true,
+    failureMode: "allow",
+  },
+  "hooks.destination.attempts": {
+    scope: "destination",
+    limit: 50,
+    periodMs: SECOND,
+    burst: 100,
+    overridable: true,
+    failureMode: "allow",
+  },
+  "hooks.host.attempts": {
+    scope: "destination",
+    limit: 500,
+    periodMs: SECOND,
+    burst: 1_000,
+    overridable: false,
+    failureMode: "allow",
+  },
+  // The Hooks portal's JSON routes: per session (checked before its token, so guessing a token is
+  // slow) and per client IP.
+  "portal.session": {
+    scope: "key",
+    limit: 20,
+    periodMs: SECOND,
+    burst: 60,
+    overridable: false,
+    failureMode: "deny",
+  },
+  "portal.ip": {
+    scope: "ip",
+    limit: 50,
+    periodMs: SECOND,
+    burst: 150,
     overridable: false,
     failureMode: "deny",
   },

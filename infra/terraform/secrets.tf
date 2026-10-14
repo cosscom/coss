@@ -18,6 +18,11 @@ resource "random_password" "tracking_origin_verify" {
   special = false
 }
 
+resource "random_password" "portal_origin_verify" {
+  length  = 48
+  special = false
+}
+
 resource "aws_secretsmanager_secret" "origin_verify" {
   name        = "coss/${var.stage}/origin-verify"
   description = "X-Origin-Verify: CloudFront's custom origin header, required by every ALB rule"
@@ -36,4 +41,14 @@ resource "aws_secretsmanager_secret" "tracking_origin_verify" {
 resource "aws_secretsmanager_secret_version" "tracking_origin_verify" {
   secret_id     = aws_secretsmanager_secret.tracking_origin_verify.id
   secret_string = random_password.tracking_origin_verify.result
+}
+
+resource "aws_secretsmanager_secret" "portal_origin_verify" {
+  name        = "coss/${var.stage}/portal-origin-verify"
+  description = "X-Portal-Origin-Verify: set by Cloudflare's transform rule on the Hooks portal's zone"
+}
+
+resource "aws_secretsmanager_secret_version" "portal_origin_verify" {
+  secret_id     = aws_secretsmanager_secret.portal_origin_verify.id
+  secret_string = random_password.portal_origin_verify.result
 }

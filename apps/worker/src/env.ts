@@ -18,12 +18,28 @@ export const env = createEnv({
     TRACKING_PUBLIC_URL: z.url().optional(),
     API_PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
     ...emailWorkerEnvShape,
-    // The daily inbound limit per organization (`email.inbound.day`) is counted in Valkey.
+    // Counted in Valkey: the daily inbound limit per organization (`email.inbound.day`) and Hooks
+    // delivery attempts (per endpoint and destination host).
     VALKEY_URL: rateLimitEnvShape.VALKEY_URL,
     VALKEY_CLUSTER: rateLimitEnvShape.VALKEY_CLUSTER,
     RATE_LIMIT_KEY_PREFIX: rateLimitEnvShape.RATE_LIMIT_KEY_PREFIX,
     // AI content screening of sampled live emails before they are sent (@coss/screening).
     ...screeningEnvShape,
+    // Comma-separated loops this worker runs (`WORKER_LOOP_NAMES` in src/jobs.ts), e.g. `hooks` for
+    // tasks dedicated to Hooks deliveries; unset runs every loop.
+    WORKER_LOOPS: z
+      .string()
+      .optional()
+      .transform((value) =>
+        value
+          ? new Set(
+              value
+                .split(",")
+                .map((name) => name.trim())
+                .filter(Boolean),
+            )
+          : undefined,
+      ),
     // IPinfo Lite (ASN and country for risk assessments); without it those signals are missing.
     ...riskDatasetEnvShape,
     // Days of environment logs kept (@coss/logs); expired days are dropped hourly.

@@ -2,8 +2,10 @@
  * The public error envelope. Every non-2xx response is
  * `{ "error": { type, code, message, param?, issues?, request_id } }`, built only here.
  */
+
 import { BillingError } from "@coss/billing";
 import { DomainError, EmailError } from "@coss/email";
+import { HookError } from "@coss/hooks";
 import { RiskError } from "@coss/risk";
 import { WebhookError } from "@coss/webhooks";
 import type { Context } from "hono";
@@ -136,22 +138,33 @@ function fromHttpException(error: HTTPException): ApiError {
   });
 }
 
-function fromEmailError(error: EmailError): ApiError {
+function fromIdempotencyError(error: {
+  code: "request_in_progress" | "idempotency_key_reused";
+  message: string;
+}): ApiError {
   switch (error.code) {
     case "request_in_progress":
       // Concurrent requests keep taking over the key; the SDK retries after Retry-After.
       return new ApiError(
-        error.status,
+        409,
         { type: "idempotency_error", code: error.code, message: error.message },
         { "Retry-After": "1" },
       );
     case "idempotency_key_reused":
-      return new ApiError(error.status, {
+      return new ApiError(422, {
         type: "idempotency_error",
         code: error.code,
         message: error.message,
         param: "Idempotency-Key",
       });
+  }
+}
+
+function fromEmailError(error: EmailError): ApiError {
+  switch (error.code) {
+    case "request_in_progress":
+    case "idempotency_key_reused":
+      return fromIdempotencyError({ code: error.code, message: error.message });
     case "not_found":
       return new ApiError(error.status, {
         type: "not_found_error",
@@ -228,6 +241,7 @@ function fromWebhookError(error: WebhookError): ApiError {
       return invalidRequest(error.code, error.message, "api_version");
     case "too_many_endpoints":
     case "too_many_log_drains":
+    case "endpoint_disabled":
       return invalidRequest(error.code, error.message);
     case "not_found":
       return new ApiError(404, {
@@ -289,11 +303,29 @@ function fromBillingError(error: BillingError): ApiError {
   return invalidRequest(error.code, error.message);
 }
 
+function fromHookError(error: HookError): ApiError {
+  if (error.code === "request_in_progress" || error.code === "idempotency_key_reused") {
+    return fromIdempotencyError({ code: error.code, message: error.message });
+  }
+  if (error.status === 404) {
+    return new ApiError(404, { type: "not_found_error", code: error.code, message: error.message });
+  }
+  if (error.status === 403) {
+    return new ApiError(403, {
+      type: "permission_error",
+      code: error.code,
+      message: error.message,
+    });
+  }
+  return invalidRequest(error.code, error.message, error.param);
+}
+
 /** Maps known error classes to their envelope; `null` means unexpected (a bug or an outage). */
 export function toApiError(error: unknown): ApiError | null {
   if (error instanceof ApiError) return error;
   if (error instanceof BillingError) return fromBillingError(error);
   if (error instanceof EmailError) return fromEmailError(error);
+  if (error instanceof HookError) return fromHookError(error);
   if (error instanceof DomainError) return fromDomainError(error);
   if (error instanceof WebhookError) return fromWebhookError(error);
   if (error instanceof RiskError) return fromRiskError(error);

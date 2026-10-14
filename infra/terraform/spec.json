@@ -153,6 +153,12 @@
           "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
         },
         {
+          "name": "PORTAL_PUBLIC_URL",
+          "kind": "plain",
+          "required": false,
+          "description": "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed."
+        },
+        {
           "name": "RISK_HASH_KEY",
           "kind": "secret",
           "required": true,
@@ -317,6 +323,123 @@
           "kind": "image",
           "required": true,
           "value": "3002",
+          "description": ""
+        },
+        {
+          "name": "HOSTNAME",
+          "kind": "image",
+          "required": true,
+          "value": "0.0.0.0",
+          "description": ""
+        },
+        {
+          "name": "KEEP_ALIVE_TIMEOUT",
+          "kind": "image",
+          "required": true,
+          "value": "75000",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "portal",
+      "dockerfile": "apps/portal/Dockerfile",
+      "port": 3003,
+      "healthCheckPath": "/api/health",
+      "stopTimeout": 30,
+      "cpu": 256,
+      "memory": 512,
+      "minTasks": 2,
+      "needsInternet": false,
+      "env": [
+        {
+          "name": "DATABASE_URL",
+          "kind": "secret",
+          "required": true,
+          "value": "postgres://<user>:<password>@<rds-endpoint>:5432/coss?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem",
+          "description": "RDS Postgres over verified TLS (the images ship the RDS CA bundle at that path)."
+        },
+        {
+          "name": "DATABASE_POOL_MAX",
+          "kind": "plain",
+          "required": false,
+          "value": "10",
+          "description": "pg pool size per task. Sum over all tasks must stay below RDS max_connections."
+        },
+        {
+          "name": "WEBHOOK_SECRETS_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage; losing it makes endpoint secrets unreadable). A comma-separated list while rotating: the first encrypts, every one decrypts",
+          "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
+        },
+        {
+          "name": "VALKEY_URL",
+          "kind": "secret",
+          "required": true,
+          "description": "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web, api and worker."
+        },
+        {
+          "name": "VALKEY_CLUSTER",
+          "kind": "plain",
+          "required": true,
+          "value": "true",
+          "description": "ElastiCache Serverless uses the cluster protocol."
+        },
+        {
+          "name": "RATE_LIMIT_KEY_PREFIX",
+          "kind": "plain",
+          "required": false,
+          "value": "coss",
+          "description": "Counter namespace; must match the cache user's ACL."
+        },
+        {
+          "name": "CLIENT_IP_HEADER",
+          "kind": "plain",
+          "required": true,
+          "value": "x-forwarded-for",
+          "description": "Enables per-IP limits using the trusted proxy chain."
+        },
+        {
+          "name": "TRUSTED_PROXY_COUNT",
+          "kind": "plain",
+          "required": true,
+          "value": "2",
+          "description": "CloudFront and ALB append to X-Forwarded-For."
+        },
+        {
+          "name": "SENTRY_DSN",
+          "kind": "plain",
+          "required": false,
+          "value": "DSN of the `portal` Sentry project (Project settings → Client Keys)",
+          "description": "Unset: nothing is reported."
+        },
+        {
+          "name": "SENTRY_ENVIRONMENT",
+          "kind": "plain",
+          "required": false,
+          "value": "production (the stage's name)",
+          "description": "Sentry environment; defaults to NODE_ENV."
+        },
+        {
+          "name": "SENTRY_TRACES_SAMPLE_RATE",
+          "kind": "plain",
+          "required": false,
+          "value": "0.1",
+          "description": "Share of requests/jobs traced (0–1)."
+        },
+        {
+          "name": "NODE_ENV",
+          "kind": "image",
+          "required": true,
+          "value": "production",
+          "description": ""
+        },
+        {
+          "name": "PORT",
+          "kind": "image",
+          "required": true,
+          "value": "3003",
           "description": ""
         },
         {
@@ -502,6 +625,12 @@
           "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
         },
         {
+          "name": "PORTAL_PUBLIC_URL",
+          "kind": "plain",
+          "required": false,
+          "description": "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed."
+        },
+        {
           "name": "RISK_HASH_KEY",
           "kind": "secret",
           "required": true,
@@ -666,6 +795,12 @@
           "kind": "plain",
           "required": true,
           "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "WORKER_LOOPS",
+          "kind": "plain",
+          "required": false,
+          "description": "Unset: every loop. A second worker service (same image) with `hooks` runs only Hooks deliveries, so their volume scales apart from everything else."
         },
         {
           "name": "SES_INBOUND_QUEUE_URL",
@@ -910,6 +1045,29 @@
         },
         {
           "priority": 30,
+          "targetGroup": "portal",
+          "conditions": [
+            {
+              "Field": "host-header",
+              "HostHeaderConfig": {
+                "Values": [
+                  "portal.cosshooks.com"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Portal-Origin-Verify",
+                "Values": [
+                  "<portal-origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 40,
           "targetGroup": "site",
           "conditions": [
             {
@@ -934,7 +1092,7 @@
           ]
         },
         {
-          "priority": 40,
+          "priority": 50,
           "targetGroup": "site",
           "conditions": [
             {
@@ -959,7 +1117,7 @@
           ]
         },
         {
-          "priority": 50,
+          "priority": 60,
           "targetGroup": "site",
           "conditions": [
             {
@@ -984,7 +1142,7 @@
           ]
         },
         {
-          "priority": 60,
+          "priority": 70,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1009,7 +1167,7 @@
           ]
         },
         {
-          "priority": 70,
+          "priority": 80,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1034,7 +1192,7 @@
           ]
         },
         {
-          "priority": 80,
+          "priority": 90,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1059,7 +1217,7 @@
           ]
         },
         {
-          "priority": 90,
+          "priority": 100,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1083,7 +1241,7 @@
           ]
         },
         {
-          "priority": 100,
+          "priority": 110,
           "targetGroup": "web",
           "conditions": [
             {

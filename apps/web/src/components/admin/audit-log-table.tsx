@@ -9,8 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { HistoryIcon } from "lucide-react";
 import Link from "next/link";
 import { formatDateTime } from "@/lib/format";
+import { EmptyState } from "../empty-state";
+import { PanelBody } from "../panel";
 
 const ACTION_LABELS: Record<string, { label: string; variant: "error" | "success" | "info" }> = {
   "user.ban": { label: "Banned user", variant: "error" },
@@ -77,12 +80,22 @@ function ruleChange(meta: Record<string, unknown>): string {
   return `: ${rule(meta.previous)} → ${rule(meta.rule)}`;
 }
 
+/** Admin audit events, as the contents of a `Panel`. */
 export function AuditLogTable({ events }: { events: AdminAuditEvent[] }) {
   if (events.length === 0) {
-    return <p className="p-4 text-muted-foreground text-sm">No admin actions recorded yet.</p>;
+    return (
+      <PanelBody flush>
+        <EmptyState
+          compact
+          description="Every admin action is recorded here, with its reason."
+          icon={HistoryIcon}
+          title="No admin actions yet"
+        />
+      </PanelBody>
+    );
   }
   return (
-    <Table>
+    <Table variant="card">
       <TableHeader>
         <TableRow>
           <TableHead>When</TableHead>
@@ -98,7 +111,7 @@ export function AuditLogTable({ events }: { events: AdminAuditEvent[] }) {
           const href = targetHref(event);
           return (
             <TableRow key={event.id}>
-              <TableCell className="whitespace-nowrap text-muted-foreground">
+              <TableCell className="whitespace-nowrap font-mono text-muted-foreground text-xs">
                 {formatDateTime(event.createdAt)}
               </TableCell>
               <TableCell>

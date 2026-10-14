@@ -6,6 +6,11 @@ output "certificate_validation_records" {
   ))
 }
 
+output "portal_certificate_validation_records" {
+  description = "CNAMEs to add (DNS only) in the Hooks portal's Cloudflare zone."
+  value       = [for option in aws_acm_certificate.portal.domain_validation_options : { name = option.resource_record_name, value = option.resource_record_value }]
+}
+
 output "dashboard_distribution" {
   value = { id = aws_cloudfront_distribution.dashboard.id, domain = aws_cloudfront_distribution.dashboard.domain_name }
 }
@@ -15,7 +20,7 @@ output "api_distribution" {
 }
 
 output "alb_dns_name" {
-  description = "Target of the proxied track.coss.com record (Cloudflare for SaaS fallback origin)."
+  description = "Target of the proxied track.cosslinks.com and portal host records (Cloudflare)."
   value       = aws_lb.main.dns_name
 }
 

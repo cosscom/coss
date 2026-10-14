@@ -171,6 +171,25 @@ describe("GET /openapi.json", () => {
       "/v1/emails/{id}/events",
       "/v1/emails/{id}/links",
       "/v1/emails/{id}/reschedule",
+      "/v1/hooks/applications",
+      "/v1/hooks/applications/{application}",
+      "/v1/hooks/applications/{application}/deliveries/{delivery_id}",
+      "/v1/hooks/applications/{application}/deliveries/{delivery_id}/attempts",
+      "/v1/hooks/applications/{application}/deliveries/{delivery_id}/retry",
+      "/v1/hooks/applications/{application}/endpoints",
+      "/v1/hooks/applications/{application}/endpoints/{endpoint_id}",
+      "/v1/hooks/applications/{application}/endpoints/{endpoint_id}/deliveries",
+      "/v1/hooks/applications/{application}/endpoints/{endpoint_id}/recover",
+      "/v1/hooks/applications/{application}/endpoints/{endpoint_id}/recoveries/{recovery_id}",
+      "/v1/hooks/applications/{application}/endpoints/{endpoint_id}/roll_secret",
+      "/v1/hooks/applications/{application}/endpoints/{endpoint_id}/secret",
+      "/v1/hooks/applications/{application}/endpoints/{endpoint_id}/test",
+      "/v1/hooks/applications/{application}/messages",
+      "/v1/hooks/applications/{application}/messages/{message_id}",
+      "/v1/hooks/applications/{application}/messages/{message_id}/deliveries",
+      "/v1/hooks/applications/{application}/portal_sessions",
+      "/v1/hooks/event_types",
+      "/v1/hooks/event_types/{name}",
       "/v1/log_drains",
       "/v1/log_drains/{id}",
       "/v1/log_drains/{id}/batches",
@@ -205,6 +224,7 @@ describe("GET /openapi.json", () => {
       "/v1/webhook_endpoints/{id}/deliveries",
       "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}",
       "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry",
+      "/v1/webhook_endpoints/{id}/recover",
       "/v1/webhook_endpoints/{id}/roll_secret",
     ]);
     expect(doc.paths["/v1/emails"]?.post).toMatchObject({
@@ -305,6 +325,49 @@ describe("GET /openapi.json", () => {
       operationId: "deleteSuppression",
       security: [{ bearerAuth: [] }],
     });
+    // Hooks: every operation is named (its docs page) and authenticated.
+    const hookOperations = Object.entries(doc.paths)
+      .filter(([path]) => path.startsWith("/v1/hooks/"))
+      .flatMap(([path, methods]) =>
+        Object.entries(methods).map(([method, operation]) => {
+          const op = operation as { operationId: string; security?: unknown };
+          expect(op.security).toEqual([{ bearerAuth: [] }]);
+          return `${method} ${path} ${op.operationId}`;
+        }),
+      );
+    expect(hookOperations.sort()).toEqual(
+      [
+        "delete /v1/hooks/applications/{application} deleteHookApplication",
+        "delete /v1/hooks/applications/{application}/endpoints/{endpoint_id} deleteHookEndpoint",
+        "delete /v1/hooks/event_types/{name} archiveHookEventType",
+        "get /v1/hooks/applications listHookApplications",
+        "get /v1/hooks/applications/{application} getHookApplication",
+        "get /v1/hooks/applications/{application}/deliveries/{delivery_id} getHookDelivery",
+        "get /v1/hooks/applications/{application}/deliveries/{delivery_id}/attempts listHookDeliveryAttempts",
+        "get /v1/hooks/applications/{application}/endpoints listHookEndpoints",
+        "get /v1/hooks/applications/{application}/endpoints/{endpoint_id} getHookEndpoint",
+        "get /v1/hooks/applications/{application}/endpoints/{endpoint_id}/deliveries listHookEndpointDeliveries",
+        "get /v1/hooks/applications/{application}/endpoints/{endpoint_id}/recoveries/{recovery_id} getHookEndpointRecovery",
+        "get /v1/hooks/applications/{application}/endpoints/{endpoint_id}/secret getHookEndpointSecret",
+        "get /v1/hooks/applications/{application}/messages listHookMessages",
+        "get /v1/hooks/applications/{application}/messages/{message_id} getHookMessage",
+        "get /v1/hooks/applications/{application}/messages/{message_id}/deliveries listHookMessageDeliveries",
+        "get /v1/hooks/event_types listHookEventTypes",
+        "get /v1/hooks/event_types/{name} getHookEventType",
+        "patch /v1/hooks/applications/{application} updateHookApplication",
+        "patch /v1/hooks/applications/{application}/endpoints/{endpoint_id} updateHookEndpoint",
+        "patch /v1/hooks/event_types/{name} updateHookEventType",
+        "post /v1/hooks/applications createHookApplication",
+        "post /v1/hooks/applications/{application}/deliveries/{delivery_id}/retry retryHookDelivery",
+        "post /v1/hooks/applications/{application}/endpoints createHookEndpoint",
+        "post /v1/hooks/applications/{application}/endpoints/{endpoint_id}/recover recoverHookEndpoint",
+        "post /v1/hooks/applications/{application}/endpoints/{endpoint_id}/roll_secret rollHookEndpointSecret",
+        "post /v1/hooks/applications/{application}/endpoints/{endpoint_id}/test sendHookEndpointTest",
+        "post /v1/hooks/applications/{application}/messages sendHookMessage",
+        "post /v1/hooks/applications/{application}/portal_sessions createHookPortalSession",
+        "post /v1/hooks/event_types createHookEventType",
+      ].sort(),
+    );
     // Every mutating operation of the management endpoints is documented and authenticated.
     expect(
       Object.entries(doc.paths)
@@ -338,6 +401,7 @@ describe("GET /openapi.json", () => {
       ["patch /v1/webhook_endpoints/{id}", "updateWebhookEndpoint"],
       ["delete /v1/webhook_endpoints/{id}", "deleteWebhookEndpoint"],
       ["post /v1/webhook_endpoints/{id}/roll_secret", "rollWebhookEndpointSecret"],
+      ["post /v1/webhook_endpoints/{id}/recover", "recoverWebhookEndpoint"],
       ["get /v1/webhook_endpoints/{id}/deliveries", "listWebhookDeliveries"],
       ["get /v1/webhook_endpoints/{id}/deliveries/{delivery_id}", "getWebhookDelivery"],
       ["post /v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry", "retryWebhookDelivery"],

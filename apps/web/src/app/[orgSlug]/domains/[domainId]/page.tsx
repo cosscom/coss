@@ -10,7 +10,6 @@ import {
 } from "@coss/email";
 import { listEnvironments, listProjects } from "@coss/tenancy";
 import { Alert, AlertDescription } from "@coss/ui/components/alert";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
   TableBody,
@@ -22,14 +21,17 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CopyButton } from "@/components/copy-button";
+import type { ReactNode } from "react";
+import { CopyValue } from "@/components/copy-value";
 import {
   DomainStatusBadge,
   RecordStatusBadge,
   TrackingDomainStatusBadge,
 } from "@/components/domain-badges";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
 import { SendingPausedAlert } from "@/components/sending-paused-alert";
+import { SpecItem, SpecList } from "@/components/spec-list";
 import { planHas } from "@/lib/billing";
 import { emailRuntime } from "@/lib/email-runtime";
 import { formatDateTime } from "@/lib/format";
@@ -84,37 +86,58 @@ const TRACKING_STATUS_HELP = {
 } as const satisfies Record<TrackingDomainRow["status"], string>;
 
 /** DNS providers usually want the host relative to the zone; showing the full name is clearest. */
-function RecordRow({ record }: { record: DomainRecord }) {
-  const value = record.priority === null ? record.value : `${record.priority} ${record.value}`;
+function RecordRow({
+  record,
+  purpose,
+}: {
+  record: Pick<DomainRecord, "type" | "name" | "value" | "found" | "status"> & {
+    priority?: number | null;
+  };
+  purpose?: string;
+}) {
+  const value =
+    record.priority === null || record.priority === undefined
+      ? record.value
+      : `${record.priority} ${record.value}`;
   return (
     <TableRow>
-      <TableCell className="align-top font-mono text-xs">{record.type}</TableCell>
+      <TableCell className="align-top font-mono text-xs leading-7">{record.type}</TableCell>
       <TableCell className="min-w-0 whitespace-normal align-top leading-normal">
-        <div className="flex flex-col gap-1">
-          <code className="break-all text-xs">{record.name}</code>
-          <span className="text-muted-foreground text-xs">{PURPOSE[record.purpose]}</span>
-          <div>
-            <CopyButton label="Copy name" value={record.name} />
-          </div>
+        <div className="flex flex-col gap-0.5">
+          <CopyValue value={record.name} />
+          {purpose ? <span className="text-muted-foreground text-xs">{purpose}</span> : null}
         </div>
       </TableCell>
       <TableCell className="min-w-0 whitespace-normal align-top leading-normal">
-        <div className="flex flex-col gap-1">
-          <code className="break-all text-xs">{value}</code>
+        <div className="flex flex-col gap-0.5">
+          <CopyValue display={value} value={record.value} />
           {record.found.length > 0 ? (
-            <span className="break-all text-destructive-foreground text-xs">
+            <span className="break-all font-mono text-destructive-foreground text-xs">
               Found: {record.found.join(", ")}
             </span>
           ) : null}
-          <div>
-            <CopyButton label="Copy value" value={record.value} />
-          </div>
         </div>
       </TableCell>
-      <TableCell className="align-top">
+      <TableCell className="align-top leading-7">
         <RecordStatusBadge status={record.status} />
       </TableCell>
     </TableRow>
+  );
+}
+
+function RecordsTable({ children }: { children: ReactNode }) {
+  return (
+    <Table className="table-fixed" variant="card">
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-16">Type</TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Value</TableHead>
+          <TableHead className="w-32">Status</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>{children}</TableBody>
+    </Table>
   );
 }
 
@@ -150,123 +173,98 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Link
-          className="text-muted-foreground text-sm hover:text-foreground"
-          href={`/${organization.slug}/domains`}
-        >
-          ← Domains
-        </Link>
-        <PageHeader
-          actions={
-            <>
-              {canVerify && domain.status !== "deleting" ? (
-                <VerifyDomainButton {...target} restart={domain.status === "failed"} />
-              ) : null}
-              {/* Also while `deleting`: a deletion interrupted midway is finished by trying again. */}
-              {canDelete ? <DeleteDomainButton {...target} name={domain.name} /> : null}
-            </>
-          }
-          description={STATUS_HELP[domain.status]}
-          title={
-            <span className="flex items-center gap-3">
-              {domain.name} <DomainStatusBadge status={domain.status} />
-            </span>
-          }
-        />
-      </div>
+      <PageHeader
+        actions={
+          <>
+            {canVerify && domain.status !== "deleting" ? (
+              <VerifyDomainButton {...target} restart={domain.status === "failed"} />
+            ) : null}
+            {/* Also while `deleting`: a deletion interrupted midway is finished by trying again. */}
+            {canDelete ? <DeleteDomainButton {...target} name={domain.name} /> : null}
+          </>
+        }
+        description={STATUS_HELP[domain.status]}
+        meta={<DomainStatusBadge status={domain.status} />}
+        title={<span className="font-mono tracking-[-0.03em]">{domain.name}</span>}
+      />
 
       {tenant?.sendingStatus === "disabled" ? (
         <SendingPausedAlert cause={tenant.statusCause} />
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>DNS records</CardTitle>
-          <CardDescription>
-            Add these at your DNS provider. Last checked {formatDateTime(domain.lastCheckedAt)}.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-3 p-2">
-          {domain.provider === "fake" ? (
-            <Alert variant="info">
-              <AlertDescription>
-                This domain uses the fake email provider (local development): it verifies without
-                DNS, and these records are not checked.
-              </AlertDescription>
-            </Alert>
-          ) : null}
-          <Table className="table-fixed">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-16">Type</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead className="w-28">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {records.map((record) => (
-                <RecordRow key={`${record.type} ${record.name} ${record.value}`} record={record} />
-              ))}
-            </TableBody>
-          </Table>
-        </CardPanel>
-      </Card>
+      {domain.provider === "fake" ? (
+        <Alert variant="info">
+          <AlertDescription>
+            This domain uses the fake email provider (local development): it verifies without DNS,
+            and these records are not checked.
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
-      <TrackingDomainCard
-        canCreate={canCreate && domain.status !== "failed" && domain.status !== "deleting"}
-        planAllows={await planHas(organization.id, "trackingDomains")}
-        canDelete={canDelete}
-        canVerify={canVerify}
-        domainName={domain.name}
-        target={target}
-        tracking={tracking}
-      />
+      <Panel
+        description={`Add these at your DNS provider. Last checked ${formatDateTime(domain.lastCheckedAt)}.`}
+        title="DNS records"
+      >
+        <RecordsTable>
+          {records.map((record) => (
+            <RecordRow
+              key={`${record.type} ${record.name} ${record.value}`}
+              purpose={PURPOSE[record.purpose]}
+              record={record}
+            />
+          ))}
+        </RecordsTable>
+      </Panel>
 
-      <ReceivingDomainCard
-        available={emailRuntime().inbound !== null}
-        canCreate={canCreate && domain.status !== "failed" && domain.status !== "deleting"}
-        canDelete={canDelete}
-        canVerify={canVerify}
-        domainName={domain.name}
-        environments={environments.map(({ project, environment }) => ({
-          value: environment.id,
-          label: `${project.name} / ${environment.name}`,
-          href: `/${organization.slug}/projects/${project.slug}/${environment.slug}/received`,
-        }))}
-        receiving={receiving}
-        target={target}
-      />
-
-      <Card>
-        <CardPanel className="p-2">
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableHead className="w-40">MAIL FROM domain</TableHead>
-                <TableCell>
-                  <code>{domain.mailFromDomain}</code> ({domain.mailFromStatus.replaceAll("_", " ")}
-                  )
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableHead>Verified</TableHead>
-                <TableCell>{formatDateTime(domain.verifiedAt)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableHead>Added</TableHead>
-                <TableCell>{formatDateTime(domain.createdAt)}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardPanel>
-      </Card>
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <TrackingDomainPanel
+            canCreate={canCreate && domain.status !== "failed" && domain.status !== "deleting"}
+            canDelete={canDelete}
+            canVerify={canVerify}
+            domainName={domain.name}
+            planAllows={await planHas(organization.id, "trackingDomains")}
+            target={target}
+            tracking={tracking}
+          />
+          <ReceivingDomainPanel
+            available={emailRuntime().inbound !== null}
+            canCreate={canCreate && domain.status !== "failed" && domain.status !== "deleting"}
+            canDelete={canDelete}
+            canVerify={canVerify}
+            domainName={domain.name}
+            environments={environments.map(({ project, environment }) => ({
+              value: environment.id,
+              label: `${project.name} / ${environment.name}`,
+              href: `/${organization.slug}/projects/${project.slug}/${environment.slug}/received`,
+            }))}
+            receiving={receiving}
+            target={target}
+          />
+        </div>
+        <Panel title="Details">
+          <PanelBody flush>
+            <SpecList>
+              <SpecItem label="MAIL FROM" mono>
+                {domain.mailFromDomain}
+              </SpecItem>
+              <SpecItem label="MAIL FROM status">
+                {domain.mailFromStatus.replaceAll("_", " ")}
+              </SpecItem>
+              <SpecItem label="Verified">{formatDateTime(domain.verifiedAt)}</SpecItem>
+              <SpecItem label="Added">{formatDateTime(domain.createdAt)}</SpecItem>
+              <SpecItem label="ID" mono>
+                <span className="truncate">{domain.id}</span>
+              </SpecItem>
+            </SpecList>
+          </PanelBody>
+        </Panel>
+      </div>
     </div>
   );
 }
 
-function TrackingDomainCard(props: {
+function TrackingDomainPanel(props: {
   tracking: TrackingDomainRow | null;
   domainName: string;
   target: { orgSlug: string; domainId: string };
@@ -279,115 +277,83 @@ function TrackingDomainCard(props: {
   const { tracking, target } = props;
   if (!tracking) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Tracking domain</CardTitle>
-          <CardDescription>
+      <Panel
+        action={
+          props.canCreate && props.planAllows ? (
+            <AddTrackingDomainDialog {...target} domainName={props.domainName} />
+          ) : null
+        }
+        description={
+          <>
             Serve open and click tracking links of emails from {props.domainName} on your own
-            subdomain, such as links.{props.domainName}, instead of COSS&apos;s tracking host.
-          </CardDescription>
-        </CardHeader>
+            subdomain, such as <code className="font-mono">links.{props.domainName}</code>, instead
+            of COSS&apos;s tracking host.
+          </>
+        }
+        title="Tracking domain"
+      >
         {props.canCreate && !props.planAllows ? (
-          <CardPanel className="text-sm">
+          <PanelBody className="text-sm">
             Custom tracking domains are part of the Pro plan and above.{" "}
-            <Link className="underline" href={`/${target.orgSlug}/settings/billing/plans`}>
+            <Link
+              className="underline underline-offset-4"
+              href={`/${target.orgSlug}/settings/billing/plans`}
+            >
               Compare plans
             </Link>
-          </CardPanel>
-        ) : props.canCreate ? (
-          <CardPanel>
-            <AddTrackingDomainDialog {...target} domainName={props.domainName} />
-          </CardPanel>
+          </PanelBody>
         ) : null}
-      </Card>
+      </Panel>
     );
   }
   const record = tracking.record;
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <CardTitle className="flex items-center gap-3">
-              Tracking domain <code className="text-sm">{tracking.hostname}</code>
-              <TrackingDomainStatusBadge status={tracking.status} />
-            </CardTitle>
-            <CardDescription>
-              {TRACKING_STATUS_HELP[tracking.status]} Last checked{" "}
-              {formatDateTime(tracking.lastCheckedAt)}.
-            </CardDescription>
-          </div>
-          {tracking.status !== "deleting" ? (
-            <div className="flex gap-2">
-              {props.canVerify ? (
-                <CheckTrackingDomainButton {...target} restart={tracking.status === "failed"} />
-              ) : null}
-              {props.canDelete ? (
-                <RemoveTrackingDomainButton {...target} hostname={tracking.hostname} />
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      </CardHeader>
-      <CardPanel className="flex flex-col gap-3 p-2">
-        {tracking.providerMessage && tracking.status !== "active" ? (
+    <Panel
+      action={
+        tracking.status !== "deleting" ? (
+          <>
+            {props.canVerify ? (
+              <CheckTrackingDomainButton {...target} restart={tracking.status === "failed"} />
+            ) : null}
+            {props.canDelete ? (
+              <RemoveTrackingDomainButton {...target} hostname={tracking.hostname} />
+            ) : null}
+          </>
+        ) : null
+      }
+      description={`${TRACKING_STATUS_HELP[tracking.status]} Last checked ${formatDateTime(tracking.lastCheckedAt)}.`}
+      title={
+        <span className="flex flex-wrap items-center gap-2">
+          Tracking domain <code className="font-mono font-normal text-sm">{tracking.hostname}</code>
+          <TrackingDomainStatusBadge status={tracking.status} />
+        </span>
+      }
+    >
+      {tracking.providerMessage && tracking.status !== "active" ? (
+        <div className="px-1 pb-1">
           <Alert variant="warning">
             <AlertDescription>{tracking.providerMessage}</AlertDescription>
           </Alert>
-        ) : null}
-        {tracking.provider === "fake" ? (
+        </div>
+      ) : null}
+      {tracking.provider === "fake" ? (
+        <div className="px-1 pb-1">
           <Alert variant="info">
             <AlertDescription>
               This tracking domain uses the fake certificate provider (local development): it is
               active without DNS, but nothing serves it.
             </AlertDescription>
           </Alert>
-        ) : null}
-        <Table className="table-fixed">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-16">Type</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Value</TableHead>
-              <TableHead className="w-28">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className="align-top font-mono text-xs">{record.type}</TableCell>
-              <TableCell className="min-w-0 whitespace-normal align-top leading-normal">
-                <div className="flex flex-col gap-1">
-                  <code className="break-all text-xs">{record.name}</code>
-                  <div>
-                    <CopyButton label="Copy name" value={record.name} />
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="min-w-0 whitespace-normal align-top leading-normal">
-                <div className="flex flex-col gap-1">
-                  <code className="break-all text-xs">{record.value}</code>
-                  {record.found.length > 0 ? (
-                    <span className="break-all text-destructive-foreground text-xs">
-                      Found: {record.found.join(", ")}
-                    </span>
-                  ) : null}
-                  <div>
-                    <CopyButton label="Copy value" value={record.value} />
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="align-top">
-                <RecordStatusBadge status={record.status} />
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </CardPanel>
-    </Card>
+        </div>
+      ) : null}
+      <RecordsTable>
+        <RecordRow record={record} />
+      </RecordsTable>
+    </Panel>
   );
 }
 
-function ReceivingDomainCard(props: {
+function ReceivingDomainPanel(props: {
   receiving: ReceivingDomainRow | null;
   available: boolean;
   domainName: string;
@@ -400,118 +366,79 @@ function ReceivingDomainCard(props: {
   const { receiving, target } = props;
   if (!receiving) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Receiving</CardTitle>
-          <CardDescription>
-            Receive email at {props.domainName} or a subdomain such as inbound.{props.domainName}:
-            every message becomes a received email of an environment, with an{" "}
-            <code>email.received</code> webhook.
-          </CardDescription>
-        </CardHeader>
-        {props.canCreate && props.available && props.environments.length > 0 ? (
-          <CardPanel>
+      <Panel
+        action={
+          props.canCreate && props.available && props.environments.length > 0 ? (
             <AddReceivingDomainDialog
               {...target}
               domainName={props.domainName}
               environments={props.environments.map(({ value, label }) => ({ value, label }))}
             />
-          </CardPanel>
-        ) : null}
+          ) : null
+        }
+        description={
+          <>
+            Receive email at {props.domainName} or a subdomain such as inbound.{props.domainName}:
+            every message becomes a received email of an environment, with an{" "}
+            <code className="font-mono">email.received</code> webhook.
+          </>
+        }
+        title="Receiving"
+      >
         {!props.available ? (
-          <CardPanel>
+          <PanelBody>
             <Alert variant="info">
               <AlertDescription>This deployment does not receive email.</AlertDescription>
             </Alert>
-          </CardPanel>
+          </PanelBody>
         ) : null}
-      </Card>
+      </Panel>
     );
   }
   const record = receiving.record;
   const destination = props.environments.find((env) => env.value === receiving.environmentId);
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <CardTitle className="flex items-center gap-3">
-              Receiving <code className="text-sm">{receiving.hostname}</code>
-            </CardTitle>
-            <CardDescription>
-              Email to any address at {receiving.hostname} is received by{" "}
-              {destination ? (
-                <Link className="underline" href={destination.href}>
-                  {destination.label}
-                </Link>
-              ) : (
-                "an environment"
-              )}
-              . Last checked {formatDateTime(receiving.lastCheckedAt)}.
-            </CardDescription>
-          </div>
-          <div className="flex gap-2">
-            {props.canVerify && props.available ? <CheckReceivingDomainButton {...target} /> : null}
-            {props.canDelete ? (
-              <RemoveReceivingDomainButton {...target} hostname={receiving.hostname} />
-            ) : null}
-          </div>
-        </div>
-      </CardHeader>
-      <CardPanel className="flex flex-col gap-3 p-2">
-        {record.status === "mismatch" ? (
+    <Panel
+      action={
+        <>
+          {props.canVerify && props.available ? <CheckReceivingDomainButton {...target} /> : null}
+          {props.canDelete ? (
+            <RemoveReceivingDomainButton {...target} hostname={receiving.hostname} />
+          ) : null}
+        </>
+      }
+      description={
+        <>
+          Email to any address at {receiving.hostname} is received by{" "}
+          {destination ? (
+            <Link className="underline underline-offset-4" href={destination.href}>
+              {destination.label}
+            </Link>
+          ) : (
+            "an environment"
+          )}
+          . Last checked {formatDateTime(receiving.lastCheckedAt)}.
+        </>
+      }
+      title={
+        <span className="flex flex-wrap items-center gap-2">
+          Receiving <code className="font-mono font-normal text-sm">{receiving.hostname}</code>
+        </span>
+      }
+    >
+      {record.status === "mismatch" ? (
+        <div className="px-1 pb-1">
           <Alert variant="warning">
             <AlertDescription>
               Mail for {receiving.hostname} goes to its most preferred MX records, which don&apos;t
               all point at COSS yet.
             </AlertDescription>
           </Alert>
-        ) : null}
-        <Table className="table-fixed">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-16">Type</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Value</TableHead>
-              <TableHead className="w-28">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className="align-top font-mono text-xs">{record.type}</TableCell>
-              <TableCell className="min-w-0 whitespace-normal align-top leading-normal">
-                <div className="flex flex-col gap-1">
-                  <code className="break-all text-xs">{record.name}</code>
-                  <span className="text-muted-foreground text-xs">
-                    MX: delivers this hostname&apos;s email to COSS.
-                  </span>
-                  <div>
-                    <CopyButton label="Copy name" value={record.name} />
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="min-w-0 whitespace-normal align-top leading-normal">
-                <div className="flex flex-col gap-1">
-                  <code className="break-all text-xs">
-                    {record.priority} {record.value}
-                  </code>
-                  {record.found.length > 0 ? (
-                    <span className="break-all text-destructive-foreground text-xs">
-                      Found: {record.found.join(", ")}
-                    </span>
-                  ) : null}
-                  <div>
-                    <CopyButton label="Copy value" value={record.value} />
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="align-top">
-                <RecordStatusBadge status={record.status} />
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </CardPanel>
-    </Card>
+        </div>
+      ) : null}
+      <RecordsTable>
+        <RecordRow purpose="MX: delivers this hostname's email to COSS." record={record} />
+      </RecordsTable>
+    </Panel>
   );
 }

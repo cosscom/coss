@@ -4,10 +4,11 @@ import { SOCIAL_PROVIDER_LABELS, type SocialProvider } from "@coss/auth/constant
 import { Alert, AlertDescription } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { Panel, PanelBody } from "@/components/panel";
 import { ProviderIcon } from "@/components/social-sign-in";
+import { StatusDot } from "@/components/status-dot";
 import { connectSocialAccountAction, disconnectSocialAccountAction } from "./actions";
 
 export type ConnectedAccountRow = {
@@ -27,19 +28,17 @@ export function ConnectedAccountsCard(props: {
   disabled: boolean;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Connected accounts</CardTitle>
-        <CardDescription>
-          Sign in with these accounts too. Connecting one asks you to sign in to it; its email
-          address may differ from yours.
-        </CardDescription>
-      </CardHeader>
-      <CardPanel className="flex flex-col gap-3">
+    <Panel
+      description="Sign in with these accounts too. Connecting one asks you to sign in to it; its email address may differ from yours."
+      title="Connected accounts"
+    >
+      <PanelBody flush>
         {props.error ? (
-          <Alert variant="error">
-            <AlertDescription>{props.error}</AlertDescription>
-          </Alert>
+          <div className="border-b p-4">
+            <Alert variant="error">
+              <AlertDescription>{props.error}</AlertDescription>
+            </Alert>
+          </div>
         ) : null}
         {props.rows.map((row) => (
           <ConnectedAccount
@@ -49,8 +48,8 @@ export function ConnectedAccountsCard(props: {
             row={row}
           />
         ))}
-      </CardPanel>
-    </Card>
+      </PanelBody>
+    </Panel>
   );
 }
 
@@ -61,14 +60,18 @@ function ConnectedAccount(props: { row: ConnectedAccountRow; isLast: boolean; di
     null,
   );
   return (
-    <form action={formAction} className="flex flex-col gap-2">
+    <form action={formAction} className="flex flex-col gap-2 border-t px-5 py-3.5 first:border-t-0">
       <input name="provider" type="hidden" value={provider} />
       <div className="flex items-center gap-3">
         <span className="flex size-5 items-center justify-center [&_svg]:size-5">
           <ProviderIcon provider={provider} />
         </span>
         <span className="font-medium text-sm">{SOCIAL_PROVIDER_LABELS[provider]}</span>
-        {connected ? <Badge variant="success">Connected</Badge> : null}
+        {connected ? (
+          <Badge variant="outline">
+            <StatusDot tone="success">Connected</StatusDot>
+          </Badge>
+        ) : null}
         <div className="ms-auto">
           {connected ? (
             <Button

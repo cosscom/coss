@@ -52,6 +52,39 @@ describe("limiter", () => {
     expect((await valkeyLimiter.consume({ ...request, peek: true })).remaining).toBe(60);
   });
 
+  test("a per-call rule replaces the bucket's rule and any override, in memory and Valkey", async () => {
+    for (const limiter of [memoryLimiter(), valkeyLimiter]) {
+      const endpoint = `hep_${uniqueSuffix()}`;
+      const request = {
+        buckets: ["hooks.endpoint.attempts"] as const,
+        subject: endpoint,
+        organizationId: `org_${uniqueSuffix()}`,
+        rule: { limit: 2, periodMs: 1000 },
+      };
+      expect((await limiter.consume(request)).allowed).toBe(true);
+      expect((await limiter.consume(request)).allowed).toBe(true);
+      const denied = await limiter.consume(request);
+      expect(denied).toMatchObject({ allowed: false, limit: 2 });
+      // The bucket's own rule (burst 50) still applies without one.
+      const plain = await limiter.consume({ buckets: ["hooks.endpoint.attempts"], subject: "x" });
+      expect(plain.limit).toBe(BUCKETS["hooks.endpoint.attempts"].burst);
+    }
+    await expect(
+      memoryLimiter().consume({
+        buckets: ["hooks.destination.attempts", "hooks.host.attempts"],
+        subject: "example.com",
+        rule: { limit: 1, periodMs: 1000 },
+      }),
+    ).rejects.toThrow(/exactly one bucket/);
+    await expect(
+      memoryLimiter().consume({
+        buckets: ["hooks.endpoint.attempts"],
+        subject: "x",
+        rule: { limit: 0, periodMs: 1000 },
+      }),
+    ).rejects.toThrow(/positive integer/);
+  });
+
   test("refuses buckets with different scopes in one request", async () => {
     await expect(
       memoryLimiter().consume({ buckets: ["auth.sign_in.ip", "auth.sign_in.email"], subject: "x" }),

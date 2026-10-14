@@ -1,450 +1,368 @@
 import { API_KEY_PREFIX } from "@coss/auth/constants";
-import { type EmailListItem, inboundAddressFor, listDomains, listEmails } from "@coss/email";
+import { emailActivity, inboundAddressFor, listDomains, listEmails } from "@coss/email";
 import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
-import { getEnvironment, listEnvironmentApiKeys, listEnvironments } from "@coss/tenancy";
+import { getEnvironment, listEnvironmentApiKeys } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
-import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardHeader,
-  CardPanel,
-  CardTitle,
-} from "@coss/ui/components/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@coss/ui/components/table";
+import { cn } from "@coss/ui/lib/utils";
+import { listWebhookEndpoints } from "@coss/webhooks";
+import { ArrowRightIcon, CheckIcon, MailIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { type BarColumn, StackedBars } from "@/components/charts/stacked-bars";
+import { CodeBlock } from "@/components/code-block";
 import { CopyButton } from "@/components/copy-button";
-import { EmailStatusBadge, ModeBadge, SandboxBadge } from "@/components/email-badges";
+import { CopyValue } from "@/components/copy-value";
+import { ModeBadge } from "@/components/email-badges";
+import { EmailTable } from "@/components/email-table";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
+import { SpecItem, SpecList } from "@/components/spec-list";
+import { Stat, StatRow } from "@/components/stat-row";
 import { env } from "@/env";
 import { emailRuntime } from "@/lib/email-runtime";
-import { formatDateTime } from "@/lib/format";
-import { liveKeyRestriction } from "@/lib/live-keys";
+import { formatCompact, formatPercent } from "@/lib/format";
+import { environmentPath } from "@/lib/navigation";
 import { requireOrgMember } from "@/lib/session";
-import { CreateApiKeyDialog, CreateApiKeyUnavailable } from "./create-api-key-dialog";
-import { RevokeApiKeyButton } from "./revoke-api-key-button";
 
-export const metadata: Metadata = { title: "Environment" };
+export const metadata: Metadata = { title: "Overview" };
 
-function quickStartCurl(apiUrl: string, from: string): string {
-  return [
-    `curl -X POST ${apiUrl}/v1/emails \\`,
-    `  -H "Authorization: Bearer $COSS_API_KEY" \\`,
-    `  -H "Content-Type: application/json" \\`,
-    `  -d '{`,
-    `    "from": "Acme <${from}>",`,
-    `    "to": "delivered@example.com",`,
-    `    "subject": "Hello from COSS",`,
-    `    "html": "<p>It works!</p>"`,
-    `  }'`,
-  ].join("\n");
+/** Days in the activity chart and the stat tiles. */
+const CHART_DAYS = 14;
+
+const dayLabel = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", timeZone: "UTC" });
+
+function quickStart(apiUrl: string, from: string): { curl: string; sdk: string } {
+  return {
+    curl: [
+      `curl -X POST ${apiUrl}/v1/emails \\`,
+      `  -H "Authorization: Bearer $COSS_API_KEY" \\`,
+      `  -H "Content-Type: application/json" \\`,
+      `  -d '{`,
+      `    "from": "Acme <${from}>",`,
+      `    "to": "delivered@example.com",`,
+      `    "subject": "Hello from COSS",`,
+      `    "html": "<p>It works!</p>"`,
+      `  }'`,
+    ].join("\n"),
+    sdk: [
+      `import { Coss } from "coss";`,
+      ``,
+      `const coss = new Coss({`,
+      `  apiKey: process.env.COSS_API_KEY,`,
+      `  baseUrl: "${apiUrl}",`,
+      `});`,
+      ``,
+      `const { data, error } = await coss.email.send({`,
+      `  from: "Acme <${from}>",`,
+      `  to: "delivered@example.com",`,
+      `  subject: "Hello from COSS",`,
+      `  html: "<p>It works!</p>",`,
+      `});`,
+    ].join("\n"),
+  };
 }
 
-/** "2 opens · 1 click" for tracked emails, "—" for untracked ones. */
-function engagement({ tracking }: EmailListItem): string {
-  const parts = [
-    tracking.opens
-      ? `${tracking.open_count} ${tracking.open_count === 1 ? "open" : "opens"}`
-      : null,
-    tracking.clicks
-      ? `${tracking.click_count} ${tracking.click_count === 1 ? "click" : "clicks"}`
-      : null,
-  ].filter(Boolean);
-  return parts.length > 0 ? parts.join(" · ") : "—";
-}
-
-export default async function EnvironmentPage({
+export default async function EnvironmentOverviewPage({
   params,
 }: PageProps<"/[orgSlug]/projects/[projectSlug]/[envSlug]">) {
   const { orgSlug, projectSlug, envSlug } = await params;
-  const { session, organization, can } = await requireOrgMember(orgSlug);
+  const { organization, can } = await requireOrgMember(orgSlug);
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;
 
   const live = environment.mode === "live";
+  const scope = { organizationId: organization.id, environmentId: environment.id };
+  const now = new Date();
   const inbound = emailRuntime().inbound;
-  const [environments, keys, emails, domains, createRestriction, inboundAddress] =
-    await Promise.all([
-      listEnvironments({ organizationId: organization.id, projectId: project.id }),
-      listEnvironmentApiKeys({ organizationId: organization.id, environmentId: environment.id }),
-      listEmails({ organizationId: organization.id, environmentId: environment.id, limit: 50 }),
-      live ? listDomains({ organizationId: organization.id }) : null,
-      live ? liveKeyRestriction(session, organization.id) : null,
-      inbound && can({ email: ["read"] })
-        ? inboundAddressFor(
-            { organizationId: organization.id, environmentId: environment.id },
-            inbound.managedDomain,
-          )
-        : null,
-    ]);
+  const [activity, recent, keys, endpoints, domains, inboundAddress] = await Promise.all([
+    emailActivity({
+      ...scope,
+      since: new Date(now.getTime() - (CHART_DAYS - 1) * 86_400_000),
+      now,
+    }),
+    listEmails({ ...scope, limit: 6 }),
+    listEnvironmentApiKeys(scope),
+    can({ webhook: ["read"] }) ? listWebhookEndpoints(scope) : null,
+    live ? listDomains({ organizationId: organization.id }) : null,
+    inbound && can({ email: ["read"] }) ? inboundAddressFor(scope, inbound.managedDomain) : null,
+  ]);
   // Live keys must send from a verified domain; sandbox keys accept any address.
   const sendingDomain = domains ? domains.find((d) => d.canSend)?.name : "example.com";
-
-  const projectPath = `/${organization.slug}/projects/${project.slug}`;
-  const target = {
-    orgSlug: organization.slug,
-    projectSlug: project.slug,
-    envSlug: environment.slug,
-  };
-  const canCreateKey = can({ apiKey: ["create"] });
-  const canRevokeKey = can({ apiKey: ["delete"] });
+  const base = environmentPath(organization.slug, project.slug, environment.slug);
   const apiUrl = env.API_PUBLIC_URL;
   const from = `onboarding@${sendingDomain ?? "your-verified-domain.com"}`;
-  const curl = quickStartCurl(apiUrl, from);
-  const sdkCommand = `COSS_API_KEY=${API_KEY_PREFIX[environment.mode]}… COSS_BASE_URL=${apiUrl} COSS_FROM=${from} bun packages/sdk/examples/send-email.ts`;
+  const samples = quickStart(apiUrl, from);
+
+  const { totals } = activity;
+  const attempted = totals.sent + totals.failed;
+  const columns: BarColumn[] = activity.days.map((day) => ({
+    label: dayLabel.format(new Date(`${day.date}T00:00:00Z`)),
+    values: {
+      sent: day.sent,
+      failed: day.failed,
+      pending: day.queued + day.scheduled,
+      canceled: day.canceled,
+    },
+  }));
+
+  const steps = [
+    ...(live
+      ? [
+          {
+            label: "Verify a sending domain",
+            description: "Live emails are sent from your own domain.",
+            done: Boolean(sendingDomain),
+            href: `/${organization.slug}/domains`,
+          },
+        ]
+      : []),
+    {
+      label: "Create an API key",
+      description: `Keys for this environment start with ${API_KEY_PREFIX[environment.mode]}.`,
+      done: keys.length > 0,
+      href: `${base}/api-keys`,
+    },
+    {
+      label: "Send your first email",
+      description: "With curl or the SDK, below.",
+      done: recent.length > 0,
+      href: "#quick-start",
+    },
+    ...(endpoints
+      ? [
+          {
+            label: "Add a webhook endpoint",
+            description: "Hear about deliveries, bounces and complaints.",
+            done: endpoints.length > 0,
+            href: `${base}/webhooks`,
+          },
+        ]
+      : []),
+  ];
+  const remaining = steps.filter((step) => !step.done).length;
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Link
-          className="text-muted-foreground text-sm hover:text-foreground"
-          href={`/${organization.slug}`}
-        >
-          ← Projects
-        </Link>
-        <PageHeader
-          actions={environments.map((item) => (
-            <Button
-              key={item.id}
-              render={<Link href={`${projectPath}/${item.slug}`} />}
-              size="sm"
-              variant={item.id === environment.id ? "default" : "outline"}
-            >
-              {item.name}
-            </Button>
-          ))}
-          description={
-            environment.mode === "live"
-              ? "Production: emails are delivered through the live provider."
-              : "Development: emails are recorded but never delivered."
+      <PageHeader
+        actions={
+          <Button render={<Link href={`${base}/emails`} />} size="sm" variant="outline">
+            All emails
+            <ArrowRightIcon />
+          </Button>
+        }
+        description={
+          live
+            ? "Production: emails are delivered through the live provider."
+            : "Development: emails are recorded and run through every check, but never delivered."
+        }
+        meta={<ModeBadge mode={environment.mode} />}
+        title={`${project.name} · ${environment.name}`}
+      />
+
+      <StatRow>
+        <Stat
+          detail={`last ${CHART_DAYS} days`}
+          href={`${base}/emails?status=sent`}
+          label="Sent"
+          value={formatCompact(totals.sent)}
+        />
+        <Stat
+          detail={
+            attempted > 0 ? `${formatPercent(totals.failed / attempted)} of sends` : "no sends"
           }
-          title={
-            <span className="flex items-center gap-2">
-              {project.name} · {environment.name} <ModeBadge mode={environment.mode} />
-            </span>
+          href={`${base}/emails?status=failed`}
+          label="Failed"
+          value={formatCompact(totals.failed)}
+        />
+        <Stat
+          detail={
+            totals.trackedOpens > 0
+              ? `${formatCompact(totals.opened)} of ${formatCompact(totals.trackedOpens)} tracked`
+              : "tracking off"
+          }
+          label="Open rate"
+          value={totals.trackedOpens > 0 ? formatPercent(totals.opened / totals.trackedOpens) : "—"}
+        />
+        <Stat
+          detail={
+            totals.trackedClicks > 0
+              ? `${formatCompact(totals.clicked)} of ${formatCompact(totals.trackedClicks)} tracked`
+              : "tracking off"
+          }
+          label="Click rate"
+          value={
+            totals.trackedClicks > 0 ? formatPercent(totals.clicked / totals.trackedClicks) : "—"
           }
         />
+      </StatRow>
+
+      <Panel
+        action={
+          <span className="font-mono text-muted-foreground text-xs">
+            last {CHART_DAYS} days · UTC
+          </span>
+        }
+        title="Activity"
+      >
+        <PanelBody>
+          <StackedBars
+            columns={columns}
+            label={`Emails per day over the last ${CHART_DAYS} days, by status.`}
+            series={[
+              { key: "sent", label: "Sent", className: "bg-foreground/72" },
+              { key: "failed", label: "Failed", className: "bg-destructive" },
+              { key: "pending", label: "Queued or scheduled", className: "bg-info/64" },
+              { key: "canceled", label: "Canceled", className: "bg-muted-foreground/32" },
+            ]}
+          />
+        </PanelBody>
+      </Panel>
+
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        <Panel
+          action={
+            recent.length > 0 ? (
+              <Button render={<Link href={`${base}/emails`} />} size="sm" variant="ghost">
+                View all
+                <ArrowRightIcon />
+              </Button>
+            ) : null
+          }
+          className="lg:col-span-2"
+          description={`Emails are kept for ${formatRetentionDays(RETENTION_DAYS.emails)}.`}
+          title="Recent emails"
+        >
+          {recent.length === 0 ? (
+            <PanelBody flush>
+              <EmptyState
+                action={
+                  <Button render={<a href="#quick-start" />} size="sm" variant="outline">
+                    Quick start
+                  </Button>
+                }
+                compact
+                description="Emails sent with this environment's keys show up here."
+                icon={MailIcon}
+                title="No emails yet"
+              />
+            </PanelBody>
+          ) : (
+            <EmailTable base={base} compact emails={recent} />
+          )}
+        </Panel>
+
+        <div className="flex flex-col gap-6">
+          {remaining > 0 ? (
+            <Panel
+              action={
+                <span className="font-mono text-muted-foreground text-xs">
+                  {steps.length - remaining}/{steps.length}
+                </span>
+              }
+              title="Get started"
+            >
+              <PanelBody flush>
+                <ol className="flex flex-col">
+                  {steps.map((step, index) => (
+                    <li className="border-t first:border-t-0" key={step.label}>
+                      <Link
+                        className="group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent/40"
+                        href={step.href}
+                      >
+                        <span
+                          className={cn(
+                            "mt-px flex size-5 shrink-0 items-center justify-center rounded-full border font-mono text-[0.6875rem]",
+                            step.done
+                              ? "border-transparent bg-foreground text-background"
+                              : "text-muted-foreground",
+                          )}
+                        >
+                          {step.done ? <CheckIcon className="size-3" /> : index + 1}
+                        </span>
+                        <span className="flex min-w-0 flex-col gap-0.5">
+                          <span
+                            className={cn(
+                              "font-medium text-sm",
+                              step.done && "text-muted-foreground line-through",
+                            )}
+                          >
+                            {step.label}
+                          </span>
+                          <span className="text-muted-foreground text-xs">{step.description}</span>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              </PanelBody>
+            </Panel>
+          ) : null}
+          <Panel title="Environment">
+            <PanelBody flush>
+              <SpecList>
+                <SpecItem label="Mode">{live ? "Live" : "Sandbox"}</SpecItem>
+                <SpecItem label="Key prefix" mono>
+                  {API_KEY_PREFIX[environment.mode]}
+                </SpecItem>
+                <SpecItem label="API keys" mono>
+                  {keys.length}
+                </SpecItem>
+                {endpoints ? (
+                  <SpecItem label="Webhook endpoints" mono>
+                    {endpoints.length}
+                  </SpecItem>
+                ) : null}
+                {inboundAddress ? (
+                  <SpecItem label="Inbound address" mono>
+                    <CopyValue value={`support@${inboundAddress.domain}`} />
+                  </SpecItem>
+                ) : null}
+                <SpecItem label="Environment ID" mono>
+                  <span className="truncate">{environment.id}</span>
+                </SpecItem>
+              </SpecList>
+            </PanelBody>
+          </Panel>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>API keys</CardTitle>
-          <CardDescription>
-            Keys start with <code>{API_KEY_PREFIX[environment.mode]}</code> and only work in this
-            environment.
-          </CardDescription>
-          {canCreateKey && !createRestriction ? (
-            <CardAction>
-              <CreateApiKeyDialog environmentName={environment.name} {...target} />
-            </CardAction>
-          ) : null}
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-3 p-2">
-          {canCreateKey && createRestriction ? (
-            <div className="px-2">
-              <CreateApiKeyUnavailable reason={createRestriction} />
-            </div>
-          ) : null}
-          {keys.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">No API keys yet.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Key</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Last used</TableHead>
-                  {canRevokeKey ? <TableHead className="text-right">Actions</TableHead> : null}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {keys.map((key) => (
-                  <TableRow key={key.id}>
-                    <TableCell className="font-medium">{key.name ?? "Untitled"}</TableCell>
-                    <TableCell className="font-mono text-muted-foreground">
-                      {key.start ? `${key.start}…` : "—"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatDateTime(key.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {key.lastRequest ? formatDateTime(key.lastRequest) : "Never"}
-                    </TableCell>
-                    {canRevokeKey ? (
-                      <TableCell className="text-right">
-                        <RevokeApiKeyButton
-                          keyId={key.id}
-                          keyName={key.name ?? "Untitled"}
-                          {...target}
-                        />
-                      </TableCell>
-                    ) : null}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent emails</CardTitle>
-          <CardDescription>
-            The latest 50 emails sent with this environment's keys. Emails are kept for{" "}
-            {formatRetentionDays(RETENTION_DAYS.emails)}.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="p-2">
-          {emails.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">
-              No emails yet. Send one with the quick start below.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Created</TableHead>
-                  <TableHead>To</TableHead>
-                  <TableHead>Subject</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Engagement</TableHead>
-                  <TableHead>Mode</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {emails.map((email) => (
-                  <TableRow key={email.id}>
-                    <TableCell className="text-muted-foreground">
-                      {formatDateTime(email.created_at)}
-                    </TableCell>
-                    <TableCell className="max-w-56 truncate">{email.to.join(", ")}</TableCell>
-                    <TableCell className="max-w-72 truncate">
-                      <Link
-                        className="font-medium underline-offset-4 hover:underline"
-                        href={`${projectPath}/${environment.slug}/emails/${email.id}`}
-                      >
-                        {email.subject}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col items-start gap-1">
-                        <EmailStatusBadge status={email.status} />
-                        {email.status === "scheduled" && email.scheduled_at ? (
-                          <span className="whitespace-nowrap text-muted-foreground text-xs">
-                            {formatDateTime(email.scheduled_at)}
-                          </span>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {engagement(email)}
-                    </TableCell>
-                    <TableCell>
-                      <SandboxBadge sandbox={email.sandbox} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
-
-      {inboundAddress ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Received emails</CardTitle>
-            <CardDescription>
-              Email sent to any address at <code>{inboundAddress.domain}</code> (or at one of your
-              domains set up to receive) arrives here, with an <code>email.received</code> webhook.
-            </CardDescription>
-            <CardAction>
-              <Button
-                render={<Link href={`${projectPath}/${environment.slug}/received`} />}
-                size="sm"
-                variant="outline"
-              >
-                Open inbox
-              </Button>
-            </CardAction>
-          </CardHeader>
-          <CardPanel>
-            <div className="flex items-center gap-2">
-              <code className="break-all text-sm">support@{inboundAddress.domain}</code>
-              <CopyButton label="Copy address" value={`support@${inboundAddress.domain}`} />
-            </div>
-          </CardPanel>
-        </Card>
-      ) : null}
-
-      {can({ log: ["read"] }) ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Logs</CardTitle>
-            <CardDescription>
-              Search every API request, email event and webhook attempt of this environment, follow
-              them live, and export them.
-            </CardDescription>
-            <CardAction>
-              <Button
-                render={<Link href={`${projectPath}/${environment.slug}/logs`} />}
-                size="sm"
-                variant="outline"
-              >
-                Open logs
-              </Button>
-            </CardAction>
-          </CardHeader>
-        </Card>
-      ) : null}
-
-      {can({ logDrain: ["read"] }) ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Log drains</CardTitle>
-            <CardDescription>
-              Stream this environment's logs and audit events to your own logging stack, as signed
-              NDJSON batches.
-            </CardDescription>
-            <CardAction>
-              <Button
-                render={<Link href={`${projectPath}/${environment.slug}/log-drains`} />}
-                size="sm"
-                variant="outline"
-              >
-                Manage log drains
-              </Button>
-            </CardAction>
-          </CardHeader>
-        </Card>
-      ) : null}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Webhooks</CardTitle>
-          <CardDescription>
-            Get a signed request when emails from this environment are delivered, delayed, bounce,
-            receive complaints, or are opened and clicked, and when an email is received.
-          </CardDescription>
-          <CardAction>
-            <Button
-              render={<Link href={`${projectPath}/${environment.slug}/webhooks`} />}
-              size="sm"
-              variant="outline"
-            >
-              Manage webhooks
-            </Button>
-          </CardAction>
-        </CardHeader>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Open &amp; click tracking</CardTitle>
-          <CardDescription>
-            Record when emails are opened and links are clicked: off by default, configurable for
-            the whole environment, per category, or per send.
-          </CardDescription>
-          <CardAction>
-            <Button
-              render={<Link href={`${projectPath}/${environment.slug}/tracking`} />}
-              size="sm"
-              variant="outline"
-            >
-              Tracking settings
-            </Button>
-          </CardAction>
-        </CardHeader>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Suppressions</CardTitle>
-          <CardDescription>
-            Addresses emails from this environment skip: added automatically after permanent bounces
-            and complaints, or by you (for every email or one category).
-          </CardDescription>
-          <CardAction>
-            <Button
-              render={<Link href={`${projectPath}/${environment.slug}/suppressions`} />}
-              size="sm"
-              variant="outline"
-            >
-              Manage suppressions
-            </Button>
-          </CardAction>
-        </CardHeader>
-      </Card>
-
-      {can({ risk: ["read"] }) ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Risk</CardTitle>
-            <CardDescription>
-              Assess sign-ups, logins and other events: decisions with reasons, the review queue,
-              and your allow and block lists.
-            </CardDescription>
-            <CardAction>
-              <Button
-                render={<Link href={`${projectPath}/${environment.slug}/risk`} />}
-                size="sm"
-                variant="outline"
-              >
-                Open risk
-              </Button>
-            </CardAction>
-          </CardHeader>
-        </Card>
-      ) : null}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick start</CardTitle>
-          <CardDescription>
-            Send an email with the public API. Set <code>COSS_API_KEY</code> to a key from this
-            environment.
-            {environment.mode === "live" ? (
+      <Panel
+        action={<CopyButton label="Copy API URL" value={apiUrl} />}
+        description={
+          <>
+            Send an email with the public API. Set <code className="font-mono">COSS_API_KEY</code>{" "}
+            to a key from this environment.
+            {live ? (
               <>
                 {" "}
                 Live keys send from a{" "}
-                <Link className="underline" href={`/${organization.slug}/domains`}>
+                <Link
+                  className="underline underline-offset-4"
+                  href={`/${organization.slug}/domains`}
+                >
                   verified domain
                 </Link>
                 {sendingDomain ? "" : " (none yet)"}.
               </>
             ) : null}
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-medium text-sm">curl</span>
-              <CopyButton value={curl} />
-            </div>
-            <pre className="overflow-x-auto rounded-lg border bg-muted px-3 py-2 text-xs">
-              {curl}
-            </pre>
-          </div>
-          <div className="flex flex-col gap-2">
-            <span className="font-medium text-sm">SDK example (from the repository root)</span>
-            <pre className="overflow-x-auto rounded-lg border bg-muted px-3 py-2 text-xs">
-              {sdkCommand}
-            </pre>
-          </div>
-        </CardPanel>
-      </Card>
+          </>
+        }
+        id="quick-start"
+        title="Quick start"
+      >
+        <PanelBody className="overflow-hidden" flush>
+          <CodeBlock
+            className="rounded-none border-0 bg-transparent"
+            samples={[
+              { label: "curl", code: samples.curl },
+              { label: "TypeScript", code: samples.sdk },
+            ]}
+          />
+        </PanelBody>
+      </Panel>
     </div>
   );
 }

@@ -8,9 +8,11 @@ import path from "node:path";
 import { ZONE_ROUTES, type ZoneRoute } from "@coss/auth/slugs";
 import { billingEnvShape } from "@coss/billing/env";
 import { emailEnvShape, emailWorkerEnvShape } from "@coss/email/env";
+import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { screeningEnvShape } from "@coss/screening/env";
+import { webhookEnvShape } from "@coss/webhooks/env";
 import {
   albListenerRules,
   cossComCacheBehaviours,
@@ -35,8 +37,10 @@ function schemaKeys(envFile: string, spread: Record<string, unknown>): string[] 
     ...own,
     ...(source.includes("...email") ? Object.keys(spread) : []),
     ...(source.includes("...rateLimitEnvShape") ? Object.keys(rateLimitEnvShape) : []),
+    ...(source.includes("...hookEnvShape") ? Object.keys(hookEnvShape) : []),
     ...(source.includes("...screeningEnvShape") ? Object.keys(screeningEnvShape) : []),
     ...(source.includes("...sentryEnvShape") ? Object.keys(sentryEnvShape) : []),
+    ...(source.includes("...webhookEnvShape") ? Object.keys(webhookEnvShape) : []),
     ...(source.includes("...billingEnvShape") ? billingKeys(envFile) : []),
   ];
 }
@@ -53,6 +57,7 @@ const SCHEMAS: Record<Exclude<ServiceName, "site">, string[]> = {
   web: schemaKeys("apps/web/src/env.ts", emailEnvShape),
   api: schemaKeys("apps/api/src/env.ts", emailEnvShape),
   worker: schemaKeys("apps/worker/src/env.ts", emailWorkerEnvShape),
+  portal: schemaKeys("apps/portal/src/env.ts", {}),
 };
 
 describe("services", () => {
@@ -120,6 +125,10 @@ describe("Dockerfiles", () => {
         expect(dockerfile).toContain(`ARG NODE_VERSION=${nodeMajor}\n`);
       }
       expect(dockerfile).toContain("bun install --frozen-lockfile");
+      // DATABASE_URL verifies RDS's certificate against this bundle (sslrootcert).
+      if (service.env.some((variable) => variable.name === "DATABASE_URL")) {
+        expect(dockerfile).toContain("/etc/ssl/certs/rds-global-bundle.pem");
+      }
       expect(dockerfile).toMatch(/^USER (node|bun)$/m);
     });
   }

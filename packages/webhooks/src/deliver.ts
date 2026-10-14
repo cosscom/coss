@@ -2,28 +2,33 @@
  * Delivery of queued webhook messages (run by the worker). System-level: the scan spans
  * organizations, and every write is scoped by the delivery's own organization.
  */
-import { db, schema } from "@coss/db";
+import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
-import { appendLogEntries, type LogEntryInput } from "@coss/logs";
+import { appendLogEntries, type LogEntryInput, recordOrgAuditEvent } from "@coss/logs";
 import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
-import { and, asc, eq, inArray, isNull, lt, lte, ne, notExists, or, sql } from "drizzle-orm";
-import { signingSecrets } from "./endpoints.ts";
+import { and, asc, eq, gte, inArray, isNotNull, isNull, lt, lte, ne, or, sql } from "drizzle-orm";
+import { signingSecrets, type WebhookEndpointRow } from "./endpoints.ts";
+import {
+  type AttemptResult,
+  type DeliveryOutcome,
+  DISABLE_FAILING_ENDPOINT_AFTER_MS,
+  deliveryOutcome,
+  endpointHealth,
+  HOUR,
+  leaseUntil,
+  MINUTE,
+  organizationNotHeld,
+  runClaimed,
+  SECOND,
+  sendAttempt,
+  stillOwned,
+} from "./engine/index.ts";
+import { WebhookError } from "./errors.ts";
 import type { SecretsKeyRing } from "./secrets.ts";
 import { DEFAULT_TIMEOUT_MS, type WebhookSender } from "./sender.ts";
 import { signatureHeaders } from "./signing.ts";
 
-const {
-  organizationDeletion,
-  organizationSuspension,
-  webhookAttempt,
-  webhookDelivery,
-  webhookEndpoint,
-  webhookMessage,
-} = schema;
-
-const SECOND = 1000;
-const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
+const { webhookAttempt, webhookDelivery, webhookEndpoint, webhookMessage } = schema;
 
 /** Wait before each retry: 8 attempts over roughly 28 hours. */
 export const RETRY_DELAYS_MS = [
@@ -36,8 +41,9 @@ export const RETRY_DELAYS_MS = [
   10 * HOUR,
 ];
 export const MAX_ATTEMPTS = RETRY_DELAYS_MS.length + 1;
-const LEASE_MS = 2 * MINUTE;
-const ERROR_MAX_LENGTH = 500;
+/** The most failed deliveries one `recoverWebhookEndpoint` call requeues. */
+export const MAX_RECOVER_BATCH = 1000;
+const ENDPOINT_DISABLED_ERROR = "The endpoint is disabled.";
 
 export type WebhookDeliveryDeps = {
   /** From `WEBHOOK_SECRETS_KEY` (`parseSecretsKeys`). */
@@ -46,6 +52,8 @@ export type WebhookDeliveryDeps = {
   timeoutMs?: number;
   /** The API versions payloads are rendered in (tests inject their own). */
   versioning?: Versioning;
+  /** How long an endpoint fails before it is disabled (tests shorten it). */
+  disableAfterMs?: number;
 };
 
 /**
@@ -91,24 +99,7 @@ async function claimDue(
         lte(webhookDelivery.nextAttemptAt, now),
         or(isNull(webhookDelivery.leaseExpiresAt), lt(webhookDelivery.leaseExpiresAt, now)),
         scope ? inArray(webhookDelivery.organizationId, scope.organizationIds) : undefined,
-        notExists(
-          db
-            .select({ one: sql`1` })
-            .from(organizationSuspension)
-            .where(eq(organizationSuspension.organizationId, webhookDelivery.organizationId)),
-        ),
-        // The worker deletes them shortly; nothing more goes out to a deleted organization.
-        notExists(
-          db
-            .select({ one: sql`1` })
-            .from(organizationDeletion)
-            .where(
-              and(
-                eq(organizationDeletion.organizationId, webhookDelivery.organizationId),
-                eq(organizationDeletion.status, "pending"),
-              ),
-            ),
-        ),
+        organizationNotHeld(webhookDelivery.organizationId),
       ),
     )
     .orderBy(asc(webhookDelivery.nextAttemptAt))
@@ -116,14 +107,18 @@ async function claimDue(
     .for("update", { skipLocked: true });
   return db
     .update(webhookDelivery)
-    .set({ leaseExpiresAt: new Date(now.getTime() + LEASE_MS) })
+    .set({ leaseExpiresAt: leaseUntil(now) })
     .where(inArray(webhookDelivery.id, due))
     .returning();
 }
 
-function describeError(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.slice(0, ERROR_MAX_LENGTH) || "Request failed.";
+/** The delivery, while this worker still holds the lease it claimed it with. */
+function owned(delivery: Claimed) {
+  return and(
+    eq(webhookDelivery.id, delivery.id),
+    eq(webhookDelivery.organizationId, delivery.organizationId),
+    stillOwned(webhookDelivery, delivery.leaseExpiresAt),
+  );
 }
 
 async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps): Promise<void> {
@@ -148,10 +143,6 @@ async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps):
       ),
     )
     .limit(1);
-  const ours = and(
-    eq(webhookDelivery.id, delivery.id),
-    eq(webhookDelivery.organizationId, delivery.organizationId),
-  );
   if (!target?.endpoint.enabled) {
     await db
       .update(webhookDelivery)
@@ -159,9 +150,9 @@ async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps):
         status: "failed",
         nextAttemptAt: null,
         leaseExpiresAt: null,
-        lastError: "The endpoint is disabled.",
+        lastError: ENDPOINT_DISABLED_ERROR,
       })
-      .where(ours);
+      .where(owned(delivery));
     return;
   }
 
@@ -169,44 +160,46 @@ async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps):
   const body = JSON.stringify(
     renderWebhookPayload(target.payload, target.endpoint.apiVersion, deps.versioning),
   );
-  const headers = signatureHeaders({
-    secrets: signingSecrets(target.endpoint, deps.secretsKeys, now),
-    id: delivery.messageId,
-    timestamp: Math.floor(now.getTime() / 1000),
-    body,
-  });
-  const started = performance.now();
-  let statusCode: number | null = null;
-  let responseExcerpt: string | null = null;
-  let error: string | null = null;
-  try {
-    const response = await deps.send({
-      url: target.endpoint.url,
-      headers,
+  const result = await sendAttempt(deps.send, {
+    url: target.endpoint.url,
+    headers: signatureHeaders({
+      secrets: signingSecrets(target.endpoint, deps.secretsKeys, now),
+      id: delivery.messageId,
+      timestamp: Math.floor(now.getTime() / 1000),
       body,
-      timeoutMs: deps.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-    });
-    statusCode = response.status;
-    responseExcerpt = response.body || null;
-    if (statusCode < 200 || statusCode >= 300) error = `HTTP ${statusCode}`;
-  } catch (cause) {
-    error = describeError(cause);
-  }
-  const durationMs = Math.round(performance.now() - started);
-
-  const attempts = delivery.attemptCount + 1;
-  const succeeded = error === null;
-  const exhausted = attempts >= MAX_ATTEMPTS;
-  const retryDelay = RETRY_DELAYS_MS[attempts - 1] ?? 0;
+    }),
+    body,
+    timeoutMs: deps.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+  });
+  const outcome = deliveryOutcome({
+    attemptCount: delivery.attemptCount,
+    succeeded: result.succeeded,
+    schedule: RETRY_DELAYS_MS,
+    now,
+  });
   await db.transaction(async (tx) => {
+    // Fenced first: a worker whose lease expired (and was taken over) records nothing.
+    const [finished] = await tx
+      .update(webhookDelivery)
+      .set({
+        status: outcome.status,
+        attemptCount: outcome.attemptCount,
+        nextAttemptAt: outcome.nextAttemptAt,
+        leaseExpiresAt: null,
+        lastStatusCode: result.statusCode,
+        lastError: result.error,
+      })
+      .where(owned(delivery))
+      .returning({ id: webhookDelivery.id });
+    if (!finished) return;
     await tx.insert(webhookAttempt).values({
       organizationId: delivery.organizationId,
       deliveryId: delivery.id,
       attemptedAt: now,
-      statusCode,
-      durationMs,
-      error,
-      responseExcerpt,
+      statusCode: result.statusCode,
+      durationMs: result.durationMs,
+      error: result.error,
+      responseExcerpt: result.responseExcerpt,
     });
     await appendLogEntries(tx, [
       attemptLogEntry({
@@ -215,62 +208,112 @@ async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps):
         type: target.type,
         payload: target.payload,
         now,
-        attempt: attempts,
-        statusCode,
-        durationMs,
-        error,
-        responseExcerpt,
-        outcome: succeeded ? "succeeded" : exhausted ? "failed" : "retrying",
-        nextAttemptAt: succeeded || exhausted ? null : new Date(now.getTime() + retryDelay),
+        attempt: outcome.attemptCount,
+        result,
+        outcome,
       }),
     ]);
-    await tx
-      .update(webhookDelivery)
-      .set({
-        status: succeeded ? "succeeded" : exhausted ? "failed" : "pending",
-        attemptCount: attempts,
-        nextAttemptAt: succeeded || exhausted ? null : new Date(now.getTime() + retryDelay),
-        leaseExpiresAt: null,
-        lastStatusCode: statusCode,
-        lastError: error,
-      })
-      .where(ours);
+    await updateEndpointHealth(tx, target.endpoint, outcome, now, deps.disableAfterMs);
   });
+}
+
+/**
+ * Tracks the endpoint's failure streak after a delivery finished (writing only when it changes) and
+ * disables an endpoint that has been failing for too long.
+ */
+async function updateEndpointHealth(
+  tx: Executor,
+  endpoint: WebhookEndpointRow,
+  outcome: DeliveryOutcome,
+  now: Date,
+  disableAfterMs = DISABLE_FAILING_ENDPOINT_AFTER_MS,
+): Promise<void> {
+  const change = endpointHealth({
+    failingSince: endpoint.failingSince,
+    succeeded: outcome.status === "succeeded",
+    final: outcome.status !== "pending",
+    now,
+    disableAfterMs,
+  });
+  const ours = and(
+    eq(webhookEndpoint.id, endpoint.id),
+    eq(webhookEndpoint.organizationId, endpoint.organizationId),
+  );
+  switch (change.kind) {
+    case "none":
+      return;
+    case "recovered":
+      await tx
+        .update(webhookEndpoint)
+        .set({ failingSince: null, updatedAt: sql`${webhookEndpoint.updatedAt}` })
+        .where(and(ours, isNotNull(webhookEndpoint.failingSince)));
+      return;
+    case "failing":
+      await tx
+        .update(webhookEndpoint)
+        .set({ failingSince: change.since, updatedAt: sql`${webhookEndpoint.updatedAt}` })
+        .where(and(ours, isNull(webhookEndpoint.failingSince)));
+      return;
+    case "disable": {
+      // Re-checked here: a success may have cleared the streak since the endpoint was read.
+      const [disabled] = await tx
+        .update(webhookEndpoint)
+        .set({ enabled: false, disabledReason: "failing", disabledAt: now })
+        .where(
+          and(
+            ours,
+            eq(webhookEndpoint.enabled, true),
+            lte(webhookEndpoint.failingSince, new Date(now.getTime() - disableAfterMs)),
+          ),
+        )
+        .returning();
+      if (!disabled) return;
+      await recordOrgAuditEvent(
+        {
+          organizationId: disabled.organizationId,
+          projectId: disabled.projectId,
+          environmentId: disabled.environmentId,
+          actor: { type: "system", id: null, label: "COSS" },
+          action: "webhook_endpoint.disabled",
+          target: { type: "webhook_endpoint", id: disabled.id, label: disabled.url },
+          metadata: { reason: "failing", failing_since: change.failingSince.toISOString() },
+        },
+        tx,
+      );
+      return;
+    }
+  }
 }
 
 /** The environment log line (`webhook.attempt`) for one attempt. */
 function attemptLogEntry(input: {
   delivery: Claimed;
-  endpoint: typeof webhookEndpoint.$inferSelect;
+  endpoint: WebhookEndpointRow;
   type: string;
   payload: unknown;
   now: Date;
   attempt: number;
-  statusCode: number | null;
-  durationMs: number;
-  error: string | null;
-  responseExcerpt: string | null;
-  outcome: "succeeded" | "retrying" | "failed";
-  nextAttemptAt: Date | null;
+  result: AttemptResult;
+  outcome: DeliveryOutcome;
 }): LogEntryInput {
-  const { delivery, endpoint } = input;
+  const { delivery, endpoint, result } = input;
+  const outcome = input.outcome.status === "pending" ? "retrying" : input.outcome.status;
   // Email events name their email, so the line joins that email's timeline.
   const data = (input.payload as { data?: { email_id?: unknown } } | null)?.data;
   const emailId = typeof data?.email_id === "string" ? data.email_id : null;
-  const result = input.statusCode === null ? (input.error ?? "no response") : input.statusCode;
+  const status = result.statusCode ?? result.error ?? "no response";
   return {
     organizationId: delivery.organizationId,
     projectId: endpoint.projectId,
     environmentId: endpoint.environmentId,
     occurredAt: input.now,
     source: "webhook",
-    level:
-      input.outcome === "succeeded" ? "info" : input.outcome === "retrying" ? "warning" : "error",
+    level: outcome === "succeeded" ? "info" : outcome === "retrying" ? "warning" : "error",
     type: "webhook.attempt",
-    message: `${input.type} → ${endpoint.url} ${result}`,
-    statusCode: input.statusCode,
-    durationMs: input.durationMs,
-    errorCode: input.outcome === "succeeded" ? null : "webhook_delivery_failed",
+    message: `${input.type} → ${endpoint.url} ${status}`,
+    statusCode: result.statusCode,
+    durationMs: result.durationMs,
+    errorCode: outcome === "succeeded" ? null : "webhook_delivery_failed",
     resourceType: emailId ? "email" : "webhook_endpoint",
     resourceId: emailId ?? endpoint.id,
     searchTerms: [endpoint.id, delivery.id, delivery.messageId],
@@ -281,10 +324,10 @@ function attemptLogEntry(input: {
       message_id: delivery.messageId,
       event_type: input.type,
       attempt: input.attempt,
-      outcome: input.outcome,
-      next_attempt_at: input.nextAttemptAt?.toISOString() ?? null,
-      error: input.error,
-      response_excerpt: input.responseExcerpt,
+      outcome,
+      next_attempt_at: input.outcome.nextAttemptAt?.toISOString() ?? null,
+      error: result.error,
+      response_excerpt: result.responseExcerpt,
     },
   };
 }
@@ -298,18 +341,14 @@ export async function runDueWebhookDeliveries(
   deps: WebhookDeliveryDeps,
 ): Promise<number> {
   const now = opts.now ?? new Date();
-  const claimed = await claimDue(now, opts.limit ?? 20, opts.scope);
-  await Promise.all(
-    claimed.map((delivery) =>
-      attempt(delivery, now, deps).catch(async (error: unknown) => {
-        console.error(`[webhooks] delivery ${delivery.id} failed unexpectedly:`, error);
-        // Release the lease; the delivery is retried when it falls due again.
-        await db
-          .update(webhookDelivery)
-          .set({ leaseExpiresAt: null })
-          .where(eq(webhookDelivery.id, delivery.id));
-      }),
-    ),
+  const limit = opts.limit ?? 20;
+  const claimed = await claimDue(now, limit, opts.scope);
+  await runClaimed(
+    claimed,
+    { concurrency: limit, label: (delivery) => `[webhooks] delivery ${delivery.id}` },
+    (delivery) => attempt(delivery, now, deps),
+    // Release the lease; the delivery is retried when it falls due again.
+    (delivery) => db.update(webhookDelivery).set({ leaseExpiresAt: null }).where(owned(delivery)),
   );
   return claimed.length;
 }
@@ -355,5 +394,89 @@ export async function retryWebhookDelivery(input: {
       )
       .returning({ id: webhookDelivery.id });
     return Boolean(updated);
+  });
+}
+
+/**
+ * Queues the endpoint's deliveries that failed since `since` for one more attempt each, oldest
+ * first, at most `MAX_RECOVER_BATCH` per call (`hasMore` says to call again). Their attempts are
+ * spread over the next minute so a recovered receiver isn't hit all at once.
+ */
+export async function recoverWebhookEndpoint(input: {
+  organizationId: string;
+  id: string;
+  since: Date;
+  now?: Date;
+  limit?: number;
+}): Promise<{ requeued: number; hasMore: boolean }> {
+  const now = input.now ?? new Date();
+  const limit = Math.min(input.limit ?? MAX_RECOVER_BATCH, MAX_RECOVER_BATCH);
+  return db.transaction(async (tx) => {
+    const [endpoint] = await tx
+      .select({ enabled: webhookEndpoint.enabled })
+      .from(webhookEndpoint)
+      .where(
+        and(
+          eq(webhookEndpoint.organizationId, input.organizationId),
+          eq(webhookEndpoint.id, input.id),
+        ),
+      );
+    if (!endpoint) throw new WebhookError("not_found", "Webhook endpoint not found.");
+    if (!endpoint.enabled) {
+      throw new WebhookError(
+        "endpoint_disabled",
+        "Enable the endpoint before recovering its failed deliveries.",
+      );
+    }
+    const failed = await tx
+      .select({ id: webhookDelivery.id, messageId: webhookDelivery.messageId })
+      .from(webhookDelivery)
+      .where(
+        and(
+          eq(webhookDelivery.organizationId, input.organizationId),
+          eq(webhookDelivery.endpointId, input.id),
+          eq(webhookDelivery.status, "failed"),
+          gte(webhookDelivery.createdAt, input.since),
+        ),
+      )
+      .orderBy(asc(webhookDelivery.createdAt), asc(webhookDelivery.id))
+      .limit(limit + 1);
+    const batch = failed.slice(0, limit);
+    if (batch.length === 0) return { requeued: 0, hasMore: false };
+    // Serialize with retention on the parents (in id order, like every other locker), so a purge
+    // can't delete a delivery this call requeues.
+    await tx
+      .select({ id: webhookMessage.id })
+      .from(webhookMessage)
+      .where(
+        and(
+          eq(webhookMessage.organizationId, input.organizationId),
+          inArray(webhookMessage.id, [...new Set(batch.map((row) => row.messageId))]),
+        ),
+      )
+      .orderBy(asc(webhookMessage.id))
+      .for("update");
+    const requeued = await tx
+      .update(webhookDelivery)
+      .set({
+        status: "pending",
+        nextAttemptAt: sql`${now}::timestamptz + random() * interval '1 minute'`,
+        leaseExpiresAt: null,
+        // Each gets exactly one more attempt.
+        attemptCount: sql`least(${webhookDelivery.attemptCount}, ${MAX_ATTEMPTS - 1})`,
+      })
+      .where(
+        and(
+          eq(webhookDelivery.organizationId, input.organizationId),
+          eq(webhookDelivery.endpointId, input.id),
+          eq(webhookDelivery.status, "failed"),
+          inArray(
+            webhookDelivery.id,
+            batch.map((row) => row.id),
+          ),
+        ),
+      )
+      .returning({ id: webhookDelivery.id });
+    return { requeued: requeued.length, hasMore: failed.length > limit };
   });
 }

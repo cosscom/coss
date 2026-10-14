@@ -7,6 +7,7 @@ import {
   getProject,
   listEnvironments,
   listProjects,
+  listProjectsWithEnvironments,
   TenancyError,
 } from "../src/index.ts";
 import { createTestOrganization } from "./helpers.ts";
@@ -91,6 +92,22 @@ describe("project and environment reads are organization-scoped", () => {
     );
     expect(await getProject({ organizationId: b.organization.id, slug: "first" })).toBeNull();
     expect(await getProject({ organizationId: a.organization.id, slug: "missing" })).toBeNull();
+  });
+
+  test("listProjectsWithEnvironments", async () => {
+    const a = await createTestOrganization();
+    const b = await createTestOrganization();
+    const first = await createProject({ organizationId: a.organization.id, name: "First" });
+    const second = await createProject({ organizationId: a.organization.id, name: "Second" });
+
+    const listed = await listProjectsWithEnvironments({ organizationId: a.organization.id });
+    expect(
+      listed.map(({ project, environments }) => [project.id, environments.map((e) => e.slug)]),
+    ).toEqual([
+      [first.project.id, ["production", "development"]],
+      [second.project.id, ["production", "development"]],
+    ]);
+    expect(await listProjectsWithEnvironments({ organizationId: b.organization.id })).toEqual([]);
   });
 
   test("listEnvironments / getEnvironment / getEnvironmentById", async () => {

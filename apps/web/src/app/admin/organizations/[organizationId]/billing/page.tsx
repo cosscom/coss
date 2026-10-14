@@ -14,7 +14,6 @@ import {
   PLANS,
 } from "@coss/billing";
 import { Badge } from "@coss/ui/components/badge";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import {
@@ -34,11 +33,12 @@ import {
 } from "@coss/ui/components/table";
 import { Textarea } from "@coss/ui/components/textarea";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminActionDialog } from "@/components/admin/admin-action-dialog";
+import { AdminOrganizationTabs } from "@/components/admin/organization-tabs";
 import { InvoiceStatusBadge } from "@/components/billing/invoice-status";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody, PanelDescription, PanelHeader, PanelTitle } from "@/components/panel";
 import { defaultBillingProvider } from "@/lib/billing";
 import { centsInput, formatCents, formatDate, formatPeriodRange } from "@/lib/billing-format";
 import { requirePlatformAdmin } from "@/lib/session";
@@ -104,18 +104,22 @@ export default async function AdminOrganizationBillingPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        description={
-          <Link className="underline" href={`/admin/organizations/${organization.id}`}>
-            Back to {organization.name}
-          </Link>
-        }
-        title={`Billing · ${organization.name}`}
-      />
+      <div className="flex flex-col gap-4">
+        <PageHeader
+          meta={
+            <>
+              <code className="font-mono text-xs">/{organization.slug}</code>
+              <code className="font-mono text-xs">{organization.id}</code>
+            </>
+          }
+          title={organization.name}
+        />
+        <AdminOrganizationTabs organizationId={organization.id} />
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Panel>
+        <PanelHeader>
+          <PanelTitle className="flex items-center gap-2">
             {PLANS[state.terms.plan].name}
             {state.contract ? (
               <Badge variant="info">{state.contract.kind.replace("_", "-")}</Badge>
@@ -128,8 +132,8 @@ export default async function AdminOrganizationBillingPage({
                 hold: {hold.reason.replace("_", " ")}
               </Badge>
             ))}
-          </CardTitle>
-          <CardDescription>
+          </PanelTitle>
+          <PanelDescription>
             Provider {account?.provider ?? `${defaultBillingProvider()} (no account yet)`}
             {account?.providerCustomerId ? ` · customer ${account.providerCustomerId}` : ""}
             {account?.paymentMethod
@@ -140,9 +144,9 @@ export default async function AdminOrganizationBillingPage({
             {state.scheduled
               ? ` Changes to ${PLANS[state.scheduled.terms.plan].name} on ${formatDate(state.scheduled.at)}.`
               : ""}
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-wrap gap-2">
+          </PanelDescription>
+        </PanelHeader>
+        <PanelBody className="flex flex-row flex-wrap gap-2">
           <AdminActionDialog
             action={setHoldAction}
             description={
@@ -157,15 +161,15 @@ export default async function AdminOrganizationBillingPage({
             title={adminHold ? "Lift the billing hold?" : "Pause live sending for billing?"}
             triggerLabel={adminHold ? "Lift admin hold" : "Pause live sending"}
           />
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Billing settings</CardTitle>
-          <CardDescription>How this organization is invoiced and pays.</CardDescription>
-        </CardHeader>
-        <CardPanel>
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Billing settings</PanelTitle>
+          <PanelDescription>How this organization is invoiced and pays.</PanelDescription>
+        </PanelHeader>
+        <PanelBody>
           <AccountSettingsForm
             methods={PAYMENT_METHOD_TYPES.map((type) => ({
               value: type,
@@ -188,15 +192,15 @@ export default async function AdminOrganizationBillingPage({
               notes: account?.notes ?? "",
             }}
           />
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Contracts</CardTitle>
-          <CardDescription>No contract in effect means the Free plan.</CardDescription>
-        </CardHeader>
-        <CardPanel>
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Contracts</PanelTitle>
+          <PanelDescription>No contract in effect means the Free plan.</PanelDescription>
+        </PanelHeader>
+        <PanelBody>
           {contracts.length ? (
             <Table>
               <TableHeader>
@@ -285,20 +289,22 @@ export default async function AdminOrganizationBillingPage({
           ) : (
             <p className="text-muted-foreground text-sm">No contracts: the Free plan.</p>
           )}
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
       <div className="flex flex-col gap-2">
         <h2 className="font-heading font-semibold text-lg">New contract</h2>
         <ContractEditor currentPlan={state.terms.plan} organizationId={organization.id} />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Credits</CardTitle>
-          <CardDescription>Dollars or free units, used before anything is charged.</CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-4">
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Credits</PanelTitle>
+          <PanelDescription>
+            Dollars or free units, used before anything is charged.
+          </PanelDescription>
+        </PanelHeader>
+        <PanelBody className="flex flex-col gap-4">
           <div>
             <AdminActionDialog
               action={grantCreditAction}
@@ -430,14 +436,14 @@ export default async function AdminOrganizationBillingPage({
               </TableBody>
             </Table>
           ) : null}
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Invoices</CardTitle>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-4">
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Invoices</PanelTitle>
+        </PanelHeader>
+        <PanelBody className="flex flex-col gap-4">
           <div>
             <AdminActionDialog
               action={oneOffInvoiceAction}
@@ -626,15 +632,15 @@ export default async function AdminOrganizationBillingPage({
               ))}
             </ul>
           ) : null}
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
       {periods.length ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Closed months</CardTitle>
-          </CardHeader>
-          <CardPanel>
+        <Panel>
+          <PanelHeader>
+            <PanelTitle>Closed months</PanelTitle>
+          </PanelHeader>
+          <PanelBody>
             <ul className="flex flex-col gap-1 text-sm">
               {periods.map((period) => (
                 <li key={period.id}>
@@ -654,8 +660,8 @@ export default async function AdminOrganizationBillingPage({
                 </li>
               ))}
             </ul>
-          </CardPanel>
-        </Card>
+          </PanelBody>
+        </Panel>
       ) : null}
     </div>
   );

@@ -424,6 +424,8 @@ Cloudflare DNS (coss.com zone, DNS only)
                               └─ /origin, /origin/* ─▶ Origin UI (Vercel)    worker (Bun, no load balancer)┘   SES · SNS · SQS
   Cloudflare DNS (cosslinks.com zone, self-serve account, proxied)
   track.cosslinks.com + customer tracking domains (Cloudflare for SaaS) ──(X-Tracking-Origin-Verify)──▶ ALB /t/* ─▶ api
+  Cloudflare DNS (cosshooks.com zone, self-serve account, proxied)
+  portal.cosshooks.com (Hooks portal) ──(X-Portal-Origin-Verify)──▶ ALB ─▶ portal (Next, :3003)
 ```
 
 ### Resources (`infra/terraform`)
@@ -441,8 +443,9 @@ Cloudflare DNS (coss.com zone, DNS only)
 - **ECS on Fargate (arm64):** cluster `coss-production`, services `web`, `site`, `api`, `worker`, task definitions
   built from `spec.json` (sizes, minimum counts, `stopTimeout`, env names and kinds; plain values from
   `production.tfvars`, secrets from the stage secret), CPU target-tracking autoscaling, deployment circuit breaker
-  with rollback, ECS Exec. ECR repositories `coss/<service>` (immutable commit tags; `buildcache` is the BuildKit
-  cache). Logs in `/coss/production/<service>` (30 days).
+  with rollback, ECS Exec. ECR repositories `coss/<service>` (immutable commit tags; `buildcache-<hash>` is the
+  BuildKit cache of the dependency layers, exported only when the lockfile, a `package.json` or the Dockerfile
+  changed). Logs in `/coss/production/<service>` (30 days).
 - **ALB:** HTTPS listener with an ACM certificate (us-east-2) for `coss.com` and `api.coss.com` (CloudFront forwards
   the viewer `Host`, and validates the origin certificate against it). Default action: fixed 403. Rules exactly as
   the spec prints them (generated from `ZONE_ROUTES` in `packages/auth/src/slugs.ts`):
@@ -454,7 +457,7 @@ Cloudflare DNS (coss.com zone, DNS only)
   | 30–80 | the site's paths (`/`, `/pricing`, `/docs*`, `/legal*`, `/llms*.txt`, `/site-assets/*`, root files, `/.well-known*`; 3 per rule) + `X-Origin-Verify` | site |
   | 90 | host `coss.com` + `X-Origin-Verify` (every other path: org slugs, `/dashboard`, `/api/*`, `/_next/*`) | web |
 
-  Target groups: health checks `/api/health` (web, site) and `/health` (api), HTTP 200, no database access;
+  Target groups: health checks `/api/health` (web, site, portal) and `/health` (api), HTTP 200, no database access;
   deregistration delay 30 s. Keep the idle timeout at 60 s: the apps hold idle connections for 75 s
   (`KEEP_ALIVE_TIMEOUT`, Bun `idleTimeout`) so the ALB never reuses one they are closing.
 - **CloudFront + WAF:** two distributions, certificates from ACM in us-east-1, HTTP→HTTPS redirect, a response
@@ -504,6 +507,17 @@ Cloudflare DNS (coss.com zone, DNS only)
   **Full** (zone-wide; the zone serves nothing else): Cloudflare connects with the caller's hostname as SNI, which
   the ALB's certificate doesn't cover; the header secret is what proves a request came through Cloudflare. The
   apex redirects to coss.com. Free plan: 100 custom hostnames included, then $0.10 each per month.
+
+- **Hooks portal (`cosshooks.com`, the same self-serve Cloudflare account as `cosslinks.com`):** `apps/portal`,
+  the page customers embed for their users, runs as the `portal` service on a registrable domain of its own (never
+  under coss.com, which would make it same-site with the dashboard). `portal.cosshooks.com` is a **proxied** record
+  pointing at the ALB (`terraform output alb_dns_name`), which serves it with its own ACM certificate (an SNI
+  listener certificate; validation CNAME from `terraform output portal_certificate_validation_records`, DNS only),
+  so the zone's SSL mode is **Full (strict)**. A request header transform rule sets
+  `X-Portal-Origin-Verify: <secret>` (Secrets Manager `coss/production/portal-origin-verify`) on every request in
+  the zone; the ALB forwards `portal.cosshooks.com` with it to the portal and nothing else. A redirect rule sends
+  the apex to `https://coss.com`. `PORTAL_PUBLIC_URL=https://portal.cosshooks.com` (web, api) makes portal session
+  links point there.
 
 ### Monitoring and cost guardrails
 
@@ -558,14 +572,15 @@ wrong. AWS credentials come from the task role.
   roles, the CloudFront invalidation, read-only ALB/CloudFront reads for the routing check). The organization's SCP
   forbids IAM identity providers, so GitHub OIDC isn't available; the runners are started by a webhook (through the
   `coss-production-github` CodeConnections connection to the AWS Connector app on `cosscom`) only for jobs of the
-  workflow named `Deploy`. CodeBuild can't filter those jobs by branch (`HEAD_REF` only applies to push and pull
-  request events; `WORKFLOW_NAME` is the only workflow-job filter), and the organization's GitHub plan has no
-  branch protection or rulesets for private repositories. What stops a branch: the workflow's first job refuses
-  anything but `deploy.yml` from `main`, and the AWS jobs need the `production` environment, whose deployment
-  branch policy allows only `main`. Neither stops someone with write access from pushing a *different* workflow named
-  `Deploy` without them, whose jobs get this role, which can read every production secret (it passes the execution
-  role): keep write access to the repository tight. Closing that needs GitHub Team (a push ruleset restricting
-  `.github/workflows/**`) or an `ACTOR_ACCOUNT_ID` allow-list on the webhook.
+  workflow named `Deploy`, and only when the job's actor is on `deploy_actor_ids` (`production.tfvars`: the
+  numeric GitHub ids of the people with write access; add a new maintainer there, or their merges won't deploy).
+  The repository is public, so that allow-list is what keeps a stranger's pull request (with its own workflow
+  named `Deploy`) off this role, which can read every production secret (it passes the execution role); verified
+  by excluding an actor and dispatching (no runner started). Fork pull requests also need a maintainer's approval
+  before any workflow runs (Settings → Actions: all external contributors). CodeBuild can't filter workflow jobs
+  by branch (`HEAD_REF` only applies to push and pull request events): the workflow's first job refuses anything
+  but `deploy.yml` from `main`, and the AWS jobs need the `production` environment, whose deployment branch policy
+  allows only `main`.
 
 ### Deploy order
 
@@ -573,18 +588,26 @@ wrong. AWS credentials come from the task role.
 [one-time coordinated upgrade](#upgrading-from-v1-webhook-secret-storage) below instead of step 3's rolling
 deployment. This applies even when `WEBHOOK_SECRETS_KEY` is unchanged.
 
-The Deploy workflow does this after CI passes on main (or by hand from the Actions tab; with `image_tag` it redeploys
-an earlier commit's images, e.g. a rollback):
+The Deploy workflow does this on every push to main, building while CI runs and shipping only once it passed (or by
+hand from the Actions tab; with `image_tag` it redeploys an earlier commit's images, e.g. a rollback). When CI
+failed and a re-run passed, re-run the Deploy run's failed jobs. A commit that's no longer main's tip by the time
+its CI finishes, or its deploy job's turn comes, isn't deployed (the newer commit's deploy ships it), so production
+never goes back to an older commit unless you dispatch one:
 
-1. Build and push the four images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
+1. Build and push the five images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
    apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
-   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker), skipping images that exist.
+   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker), skipping images that exist. Base
+   images never come from Docker Hub there (CodeBuild's shared addresses exhaust its anonymous pull limit): Node from
+   ECR Public (`NODE_IMAGE`), Bun from `coss/base/bun` in our ECR (`BUN_IMAGE`), which the workflow fills from Docker
+   Hub once per Bun version. Local builds keep Docker Hub (the Dockerfiles' defaults).
 2. Run migrations as a one-off task from the new worker image (`infra/scripts/ecs-task.sh --image-tag <sha> worker --
-   bun packages/db/src/migrate.ts`; never two at once, the workflow's concurrency group). Migrations must be
+   bun packages/db/src/migrate.ts`; never two at once, the deploy job's concurrency group). Migrations must be
    backward compatible with the running code.
-3. Roll out `api` and `worker`, then `web` and `site` (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a
-   new revision of its latest task definition with the new image, and the script fails if the circuit breaker rolled
-   it back. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
+3. Roll out all five services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
+   of its latest task definition with the new image, and the script fails if the circuit breaker rolled it back. A
+   service behind the load balancer counts as deployed once its new tasks passed their health checks and the old
+   ones are draining; the worker (no health check) once its old tasks are gone and the new ones ran for 60 s
+   without a failure. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
    the worker finishes each loop's current item).
 4. Record the commit in SSM (`/coss/production/image-tag`, read by Terraform) and invalidate the spec's
    `cloudFront.invalidateAfterDeploy` paths on the coss.com distribution.

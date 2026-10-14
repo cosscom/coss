@@ -13,9 +13,11 @@
     "@coss/auth": "workspace:*",
     "@coss/billing": "workspace:*",
     "@coss/email": "workspace:*",
+    "@coss/hooks": "workspace:*",
     "@coss/observability": "workspace:*",
     "@coss/ratelimit": "workspace:*",
-    "@coss/screening": "workspace:*"
+    "@coss/screening": "workspace:*",
+    "@coss/webhooks": "workspace:*"
   },
   "devDependencies": {
     "@coss/tsconfig": "workspace:*",

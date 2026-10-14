@@ -1,12 +1,11 @@
 import { getRiskSettings } from "@coss/risk";
 import { DISABLEABLE_REASON_CODES, REASONS } from "@coss/risk/schemas";
 import { getEnvironment } from "@coss/tenancy";
-import { Card, CardPanel } from "@coss/ui/components/card";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ModeBadge } from "@/components/email-badges";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
 import { requireOrgMember } from "@/lib/session";
 import { RiskSettingsForm } from "./settings-form";
 
@@ -25,25 +24,16 @@ export default async function RiskSettingsPage({
     organizationId: organization.id,
     environmentId: environment.id,
   });
-  const riskPath = `/${organization.slug}/projects/${project.slug}/${environment.slug}/risk`;
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Link className="text-muted-foreground text-sm hover:text-foreground" href={riskPath}>
-          ← Risk
-        </Link>
-        <PageHeader
-          description="How this environment's assessments decide: score thresholds, captcha verification, and reasons you don't want."
-          title={
-            <span className="flex items-center gap-2">
-              Risk settings <ModeBadge mode={environment.mode} />
-            </span>
-          }
-        />
-      </div>
-      <Card>
-        <CardPanel>
+      <PageHeader
+        description="How this environment's assessments decide: score thresholds, captcha verification, and reasons you don't want."
+        meta={<ModeBadge mode={environment.mode} />}
+        title="Risk settings"
+      />
+      <Panel>
+        <PanelBody>
           <RiskSettingsForm
             canUpdate={can({ risk: ["update"] })}
             envSlug={environment.slug}
@@ -55,8 +45,8 @@ export default async function RiskSettingsPage({
             }))}
             settings={settings}
           />
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
     </div>
   );
 }

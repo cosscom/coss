@@ -19,6 +19,7 @@ env:
   BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else-0123456789
   BETTER_AUTH_URL: http://localhost:3000
   API_PUBLIC_URL: http://localhost:3001
+  PORTAL_PUBLIC_URL: http://localhost:3003
   API_PORT: "3001"
   EMAIL_PROVIDER: fake
   WEBHOOK_SECRETS_KEY: Y2ktb25seS13ZWJob29rLXNlY3JldHMta2V5LTMyYnk=

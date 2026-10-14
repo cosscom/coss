@@ -1,5 +1,6 @@
 import { billingEnvShape } from "@coss/billing/env";
 import { emailEnvShape } from "@coss/email/env";
+import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { riskEnvShape } from "@coss/risk/env";
@@ -32,6 +33,8 @@ export const env = createEnv({
     ...emailEnvShape,
     ...rateLimitEnvShape,
     ...webhookEnvShape,
+    // Where the Hooks portal is served ("Open portal" links).
+    ...hookEnvShape,
     // Keys risk's memory; the dashboard hashes identifiers when it records feedback. Required in
     // production (src/instrumentation.ts).
     ...riskEnvShape,

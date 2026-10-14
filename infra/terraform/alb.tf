@@ -18,12 +18,15 @@ resource "aws_lb_target_group" "service" {
   port                 = each.value.port
   deregistration_delay = 30
 
+  # A new task serves after two passing checks (~10 s instead of ~30 s: rollouts wait for it); it
+  # still takes ~30 s of failing checks to take one out (the health routes touch no database).
   health_check {
     path                = each.value.healthCheckPath
     matcher             = "200"
-    interval            = 15
+    interval            = 5
+    timeout             = 4
     healthy_threshold   = 2
-    unhealthy_threshold = 3
+    unhealthy_threshold = 6
   }
 }
 
@@ -48,6 +51,7 @@ locals {
   header_secrets = {
     "<origin-verify-secret>"          = random_password.origin_verify.result
     "<tracking-origin-verify-secret>" = random_password.tracking_origin_verify.result
+    "<portal-origin-verify-secret>"   = random_password.portal_origin_verify.result
   }
 }
 
@@ -89,4 +93,11 @@ resource "aws_lb_listener_rule" "spec" {
       }
     }
   }
+}
+
+# The Hooks portal's host, served by the same listener (SNI): Cloudflare connects with it and
+# validates this certificate (SSL mode Full (strict)).
+resource "aws_lb_listener_certificate" "portal" {
+  listener_arn    = aws_lb_listener.https.arn
+  certificate_arn = aws_acm_certificate_validation.portal.certificate_arn
 }

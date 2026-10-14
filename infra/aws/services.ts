@@ -4,7 +4,7 @@
  * infra/test checks it against the apps' env schemas, turbo.json and the Dockerfiles.
  */
 
-export type ServiceName = "web" | "site" | "api" | "worker";
+export type ServiceName = "web" | "site" | "portal" | "api" | "worker";
 
 /**
  * - `plain`: a task-definition `environment` value (`value`: the production value, or how to get it).
@@ -126,6 +126,14 @@ const email: EnvVar[] = [
   },
   ...trackingDomains,
 ];
+
+const portalPublicUrl: EnvVar = {
+  name: "PORTAL_PUBLIC_URL",
+  kind: "plain",
+  required: false,
+  description:
+    "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed.",
+};
 
 const rateLimits: EnvVar[] = [
   {
@@ -265,7 +273,7 @@ const apiPublicUrl: EnvVar = {
  * Error and performance monitoring (Sentry organization `cosscom`, see @coss/observability). Each
  * runtime has its own project; DSNs aren't secrets (browsers receive the dashboard's).
  */
-function sentry(project: "web" | "api" | "worker"): EnvVar[] {
+function sentry(project: "web" | "portal" | "api" | "worker"): EnvVar[] {
   return [
     {
       name: "SENTRY_DSN",
@@ -335,6 +343,7 @@ export const SERVICES: Service[] = [
       apiPublicUrl,
       ...email,
       webhookKey,
+      portalPublicUrl,
       riskHashKey,
       notificationsEnvironment,
       billingProvider,
@@ -444,6 +453,34 @@ export const SERVICES: Service[] = [
     ],
   },
   {
+    // The Hooks portal, on its own domain (PORTAL_HOST in routing.ts: Cloudflare → ALB).
+    name: "portal",
+    dockerfile: "apps/portal/Dockerfile",
+    port: 3003,
+    healthCheckPath: "/api/health",
+    stopTimeout: 30,
+    cpu: 256,
+    memory: 512,
+    minTasks: 2,
+    needsInternet: false,
+    env: [
+      ...db,
+      webhookKey,
+      ...rateLimits,
+      ...sentry("portal"),
+      { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
+      { name: "PORT", kind: "image", required: true, value: "3003", description: "" },
+      { name: "HOSTNAME", kind: "image", required: true, value: "0.0.0.0", description: "" },
+      {
+        name: "KEEP_ALIVE_TIMEOUT",
+        kind: "image",
+        required: true,
+        value: "75000",
+        description: "",
+      },
+    ],
+  },
+  {
     name: "api",
     dockerfile: "apps/api/Dockerfile",
     port: 3001,
@@ -469,6 +506,7 @@ export const SERVICES: Service[] = [
       ...email,
       trackingPublicUrl,
       webhookKey,
+      portalPublicUrl,
       riskHashKey,
       ...sentry("api"),
       sentryRelease,
@@ -505,12 +543,20 @@ export const SERVICES: Service[] = [
         description: "Printed by ses:bootstrap.",
       },
       {
+        name: "WORKER_LOOPS",
+        kind: "plain",
+        required: false,
+        description:
+          "Unset: every loop. A second worker service (same image) with `hooks` runs only Hooks deliveries, so their volume scales apart from everything else.",
+      },
+      {
         name: "SES_INBOUND_QUEUE_URL",
         kind: "plain",
         required: false,
         description: "Receiving: the queue of SES receipt notifications. Printed by ses:bootstrap.",
       },
-      // The daily inbound limit per organization (`email.inbound.day`) is counted in Valkey.
+      // Counted in Valkey: the daily inbound limit per organization (`email.inbound.day`) and
+      // Hooks delivery attempts.
       ...rateLimits.filter((v) =>
         ["VALKEY_URL", "VALKEY_CLUSTER", "RATE_LIMIT_KEY_PREFIX"].includes(v.name),
       ),
@@ -525,6 +571,7 @@ export const SERVICES: Service[] = [
       webhookKey,
       billingProvider,
       stripeSecretKey,
+      // Hooks delivery attempts are rate limited per endpoint and destination host.
       {
         name: "IPINFO_TOKEN",
         kind: "secret",

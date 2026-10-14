@@ -46,6 +46,8 @@ export const orgStatements = {
   riskRule: ["create", "read", "update", "delete"],
   // Plan, invoices, payment methods and spend controls: owners manage, admins read.
   billing: ["read", "update"],
+  // Hooks (webhooks as a service): applications, event types, endpoints, messages, portal.
+  hook: ["create", "read", "update", "delete", "send"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -62,6 +64,7 @@ const fullCossAccess = {
   reputation: ["read"],
   log: ["read"],
   logDrain: ["create", "read", "update", "delete"],
+  hook: ["create", "read", "update", "delete", "send"],
   risk: ["assess", "read", "feedback", "update"],
   riskList: ["create", "read", "delete"],
   riskRule: ["create", "read", "update", "delete"],
@@ -78,6 +81,7 @@ const readOnlyCossAccess = {
   reputation: ["read"],
   log: ["read"],
   logDrain: ["read"],
+  hook: ["read"],
   risk: ["read"],
   riskList: ["read"],
   riskRule: ["read"],

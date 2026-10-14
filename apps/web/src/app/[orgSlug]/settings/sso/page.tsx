@@ -9,12 +9,14 @@ import {
 } from "@coss/tenancy";
 import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CopyButton } from "@/components/copy-button";
-import { PageHeader } from "@/components/page-header";
+import { CopyValue } from "@/components/copy-value";
+import { Panel, PanelBody } from "@/components/panel";
+import { SectionHeader } from "@/components/section-header";
+import { SpecItem, SpecList } from "@/components/spec-list";
+import { StatusDot } from "@/components/status-dot";
 import { env } from "@/env";
 import { planHas } from "@/lib/billing";
 import { requireOrgMember } from "@/lib/session";
@@ -25,15 +27,9 @@ export const metadata: Metadata = { title: "Single sign-on" };
 
 function SetupValue({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1">
-      <span className="font-medium text-sm">{label}</span>
-      <div className="flex items-center gap-2">
-        <code className="min-w-0 flex-1 truncate rounded-md bg-muted px-2 py-1 font-mono text-xs">
-          {value}
-        </code>
-        <CopyButton value={value} />
-      </div>
-    </div>
+    <SpecItem label={label} stacked>
+      <CopyValue value={value} />
+    </SpecItem>
   );
 }
 
@@ -64,15 +60,16 @@ export default async function SingleSignOnPage({ params }: PageProps<"/[orgSlug]
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        description={
-          <>
-            Let members sign in through your identity provider (Okta, Microsoft Entra ID, Google
-            Workspace…).{" "}
-            <Link className="underline" href={`/${organization.slug}/settings`}>
-              Back to settings
-            </Link>
-          </>
+      <SectionHeader
+        description="Let members sign in through your identity provider (Okta, Microsoft Entra ID, Google Workspace…)."
+        meta={
+          provider ? (
+            <Badge variant="outline">
+              <StatusDot tone={provider.active ? "success" : "warning"}>
+                {provider.active ? "Active" : "Inactive"}
+              </StatusDot>
+            </Badge>
+          ) : null
         }
         title="Single sign-on"
       />
@@ -103,24 +100,16 @@ export default async function SingleSignOnPage({ params }: PageProps<"/[orgSlug]
         </Alert>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Identity provider
-            {provider ? (
-              <Badge variant={provider.active ? "success" : "warning"}>
-                {provider.active ? "Active" : "Inactive"}
-              </Badge>
-            ) : null}
-          </CardTitle>
-          <CardDescription>
-            {provider
-              ? `${type === "saml" ? "SAML 2.0" : "OpenID Connect"} · ${provider.domains.join(", ")} · ${linked.size} of ${members.length} member${members.length === 1 ? "" : "s"} signed in with SSO so far.`
-              : "Domains come from your verified email domains, so there is nothing more to verify. People with an address at those domains join this organization as members the first time they sign in."}
-          </CardDescription>
-        </CardHeader>
+      <Panel
+        description={
+          provider
+            ? `${type === "saml" ? "SAML 2.0" : "OpenID Connect"} · ${provider.domains.join(", ")} · ${linked.size} of ${members.length} member${members.length === 1 ? "" : "s"} signed in with SSO so far.`
+            : "Domains come from your verified email domains, so there is nothing more to verify. People with an address at those domains join this organization as members the first time they sign in."
+        }
+        title="Identity provider"
+      >
         {canUpdate ? (
-          <CardPanel className="flex flex-col gap-6">
+          <PanelBody className="flex flex-col gap-6">
             <SsoProviderForm
               current={
                 provider
@@ -142,52 +131,55 @@ export default async function SingleSignOnPage({ params }: PageProps<"/[orgSlug]
                 <DeleteSsoProviderButton orgSlug={organization.slug} />
               </div>
             ) : null}
-          </CardPanel>
+          </PanelBody>
         ) : null}
-      </Card>
+      </Panel>
 
       {canUpdate ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Values for your identity provider</CardTitle>
-            <CardDescription>
-              Create an application in your identity provider with these values. Use OpenID Connect
-              or SAML 2.0, whichever your provider supports best.
-            </CardDescription>
-          </CardHeader>
-          <CardPanel className="flex flex-col gap-4">
-            {type !== "saml" ? (
-              <SetupValue label="OpenID Connect redirect URI" value={urls.oidcRedirectUri} />
-            ) : null}
-            {type !== "oidc" ? (
-              <>
-                <SetupValue label="SAML ACS URL" value={urls.samlAcsUrl} />
-                <SetupValue label="SAML entity ID (audience)" value={urls.samlEntityId} />
-                {provider ? (
-                  <SetupValue label="SAML metadata URL" value={urls.samlMetadataUrl} />
-                ) : null}
-              </>
-            ) : null}
-          </CardPanel>
-        </Card>
+        <Panel
+          description="Create an application in your identity provider with these values. Use OpenID Connect or SAML 2.0, whichever your provider supports best."
+          title="Values for your identity provider"
+        >
+          <PanelBody flush>
+            <SpecList>
+              {type !== "saml" ? (
+                <SetupValue label="OpenID Connect redirect URI" value={urls.oidcRedirectUri} />
+              ) : null}
+              {type !== "oidc" ? (
+                <>
+                  <SetupValue label="SAML ACS URL" value={urls.samlAcsUrl} />
+                  <SetupValue label="SAML entity ID (audience)" value={urls.samlEntityId} />
+                  {provider ? (
+                    <SetupValue label="SAML metadata URL" value={urls.samlMetadataUrl} />
+                  ) : null}
+                </>
+              ) : null}
+            </SpecList>
+          </PanelBody>
+        </Panel>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Require SSO
-            {organization.requireSso ? <Badge variant="success">Required</Badge> : null}
-          </CardTitle>
-          <CardDescription>
+      <Panel
+        action={
+          organization.requireSso ? (
+            <Badge variant="outline">
+              <StatusDot tone="success">Required</StatusDot>
+            </Badge>
+          ) : null
+        }
+        description={
+          <>
             {organization.requireSso
               ? "Members and admins must sign in with SSO to open this organization. Owners can still use their password in an emergency."
               : "Make SSO the only way members and admins can open this organization. Owners keep password access in case the identity provider fails."}{" "}
             SSO sign-ins also satisfy the organization's two-factor requirement: your identity
             provider is responsible for multi-factor authentication.
-          </CardDescription>
-        </CardHeader>
+          </>
+        }
+        title="Require SSO"
+      >
         {canRequire ? (
-          <CardPanel className="flex flex-col gap-3">
+          <PanelBody className="flex flex-col gap-3">
             {!organization.requireSso ? (
               <ul className="list-inside list-disc text-muted-foreground text-sm">
                 <li className={provider?.active ? "line-through" : undefined}>
@@ -220,9 +212,9 @@ export default async function SingleSignOnPage({ params }: PageProps<"/[orgSlug]
               orgSlug={organization.slug}
               required={organization.requireSso}
             />
-          </CardPanel>
+          </PanelBody>
         ) : null}
-      </Card>
+      </Panel>
     </div>
   );
 }

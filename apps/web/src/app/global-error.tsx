@@ -2,7 +2,10 @@
 
 import "@coss/ui/globals.css";
 import { Button } from "@coss/ui/components/button";
+import { fontMono, fontSans } from "@coss/ui/fonts";
+import { TriangleAlertIcon } from "lucide-react";
 import { useEffect } from "react";
+import { EmptyState } from "@/components/empty-state";
 
 /**
  * Replaces the root layout when it (or anything not under a nested error boundary) throws while
@@ -24,17 +27,24 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="en">
-      <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
+    // Self-contained: the root layout (and its theme provider) didn't render, so this page stays
+    // light and loads the fonts itself.
+    <html className={`${fontSans.variable} ${fontMono.variable}`} lang="en">
+      <body className="min-h-dvh bg-sidebar font-sans text-foreground antialiased">
         <title>Something went wrong · COSS</title>
-        <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 p-6 text-center">
-          <h1 className="font-semibold text-2xl">Something went wrong</h1>
-          <p className="text-muted-foreground text-sm">
-            An unexpected error occurred. Try again, or come back in a few minutes.
-          </p>
-          <Button onClick={() => retry()} variant="outline">
-            Try again
-          </Button>
+        <main className="flex min-h-dvh p-2">
+          <div className="flex flex-1 overflow-hidden rounded-2xl border bg-background">
+            <EmptyState
+              action={
+                <Button onClick={() => retry()} variant="outline">
+                  Try again
+                </Button>
+              }
+              description="An unexpected error occurred. Try again, or come back in a few minutes."
+              icon={TriangleAlertIcon}
+              title="Something went wrong"
+            />
+          </div>
         </main>
       </body>
     </html>

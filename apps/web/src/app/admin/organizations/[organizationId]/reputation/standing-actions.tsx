@@ -2,7 +2,6 @@
 
 import type { ReputationPolicy } from "@coss/reputation/schemas";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { Checkbox } from "@coss/ui/components/checkbox";
 import {
   Dialog,
@@ -21,6 +20,7 @@ import { Label } from "@coss/ui/components/label";
 import { Textarea } from "@coss/ui/components/textarea";
 import { useActionState, useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { Panel, PanelBody, PanelDescription, PanelHeader, PanelTitle } from "@/components/panel";
 import type { ActionResult } from "@/lib/action-result";
 import {
   reinstateOrganizationAction,
@@ -139,6 +139,7 @@ export function PolicyForm(props: {
     complaintRate: Partial<ReputationPolicy["complaintRate"]>;
     countSimulatorRecipients: boolean;
     contentScreening: Partial<ReputationPolicy["contentScreening"]>;
+    hookFailureRate: Partial<ReputationPolicy["hookFailureRate"]>;
   }> | null;
 }) {
   const [state, formAction, pending] = useActionState(updatePolicyAction, null);
@@ -187,6 +188,18 @@ export function PolicyForm(props: {
       defaults.contentScreening.sampleRate,
       overrides.contentScreening?.sampleRate,
     ],
+    [
+      "hookWarning",
+      "Hooks failure warning (%)",
+      defaults.hookFailureRate.warning,
+      overrides.hookFailureRate?.warning,
+    ],
+    [
+      "hookSuspend",
+      "Hooks failure suspension (%, empty: never)",
+      defaults.hookFailureRate.suspend,
+      overrides.hookFailureRate?.suspend,
+    ],
   ] as const;
   const countFields = [
     ["windowDays", "Window (days)", defaults.windowDays, overrides.windowDays],
@@ -208,18 +221,24 @@ export function PolicyForm(props: {
       defaults.contentScreening.alwaysFirst,
       overrides.contentScreening?.alwaysFirst,
     ],
+    [
+      "hookMinimum",
+      "Hooks minimum deliveries",
+      defaults.hookFailureRate.minimumDeliveries,
+      overrides.hookFailureRate?.minimumDeliveries,
+    ],
   ] as const;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Policy</CardTitle>
-        <CardDescription>
+    <Panel>
+      <PanelHeader>
+        <PanelTitle>Policy</PanelTitle>
+        <PanelDescription>
           Overrides for this organization only. Leave a field empty to use the default (shown in
           grey). Saving re-evaluates the organization on the worker's next run.
-        </CardDescription>
-      </CardHeader>
-      <CardPanel>
+        </PanelDescription>
+      </PanelHeader>
+      <PanelBody>
         <form action={formAction} className="flex flex-col gap-4">
           <input name="organizationId" type="hidden" value={props.organizationId} />
           <div className="grid gap-4 sm:grid-cols-2">
@@ -227,10 +246,10 @@ export function PolicyForm(props: {
               <Field key={name}>
                 <FieldLabel>{label}</FieldLabel>
                 <Input
-                  defaultValue={value === undefined ? "" : percent(value)}
+                  defaultValue={value === undefined || value === null ? "" : percent(value)}
                   inputMode="decimal"
                   name={name}
-                  placeholder={percent(fallback)}
+                  placeholder={fallback === null ? "never" : percent(fallback)}
                 />
               </Field>
             ))}
@@ -281,7 +300,7 @@ export function PolicyForm(props: {
             </Button>
           </div>
         </form>
-      </CardPanel>
-    </Card>
+      </PanelBody>
+    </Panel>
   );
 }

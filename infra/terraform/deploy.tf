@@ -84,6 +84,13 @@ resource "aws_codebuild_webhook" "deploy" {
       type    = "WORKFLOW_NAME"
       pattern = "^Deploy$"
     }
+    # The repository is public: anyone can open a pull request with a workflow named "Deploy"
+    # asking for this runner, whose role deploys production. Only the people allowed to push
+    # (whose merges and dispatches run Deploy) get one.
+    filter {
+      type    = "ACTOR_ACCOUNT_ID"
+      pattern = "^(${join("|", var.deploy_actor_ids)})$"
+    }
   }
 }
 
@@ -130,7 +137,7 @@ resource "aws_iam_role_policy" "deploy_build" {
           "ecr:PutImage",
           "ecr:UploadLayerPart",
         ]
-        Resource = [for repository in aws_ecr_repository.service : repository.arn]
+        Resource = concat([for repository in aws_ecr_repository.service : repository.arn], [aws_ecr_repository.base_bun.arn])
       },
     ]
   })
@@ -160,6 +167,16 @@ resource "aws_iam_role_policy" "deploy" {
         Effect   = "Allow"
         Action   = ["ecs:RunTask"]
         Resource = "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${local.name}-worker:*"
+        Condition = {
+          ArnEquals = { "ecs:cluster" = aws_ecs_cluster.main.arn }
+        }
+      },
+      {
+        # ecs-deploy.sh: how long the worker's new tasks have been running.
+        Sid      = "ServiceTasks"
+        Effect   = "Allow"
+        Action   = ["ecs:ListTasks"]
+        Resource = "*"
         Condition = {
           ArnEquals = { "ecs:cluster" = aws_ecs_cluster.main.arn }
         }

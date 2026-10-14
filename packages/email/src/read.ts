@@ -181,15 +181,66 @@ export type EmailListItem = Pick<
 >;
 
 /** Newest first; `limit` defaults to 50 and is capped at 100. One query. */
-export async function listEmails(input: {
-  organizationId: string;
-  environmentId: string;
-  limit?: number;
-}): Promise<EmailListItem[]> {
-  const requested = Math.trunc(input.limit ?? DEFAULT_LIST_LIMIT);
-  const limit = Number.isFinite(requested)
+export type EmailListFilters = {
+  /** Only emails in these statuses. */
+  status?: EmailObjectOutput["status"][];
+  /** A case-insensitive substring of the subject or a `to` address. */
+  query?: string;
+  /** Only emails older than this one (keyset cursor: an email id of the same environment). */
+  before?: string;
+};
+
+/** `%`, `_` and `\` match themselves in an ILIKE pattern. */
+function likePattern(text: string): string {
+  return `%${text.replace(/[\\%_]/g, (char) => `\\${char}`)}%`;
+}
+
+function clampLimit(value: number | undefined): number {
+  const requested = Math.trunc(value ?? DEFAULT_LIST_LIMIT);
+  return Number.isFinite(requested)
     ? Math.min(Math.max(requested, 1), MAX_LIST_LIMIT)
     : DEFAULT_LIST_LIMIT;
+}
+
+export async function listEmails(
+  input: {
+    organizationId: string;
+    environmentId: string;
+    limit?: number;
+  } & EmailListFilters,
+): Promise<EmailListItem[]> {
+  return selectEmailList(input, clampLimit(input.limit));
+}
+
+async function selectEmailList(
+  input: { organizationId: string; environmentId: string } & EmailListFilters,
+  rowLimit: number,
+): Promise<EmailListItem[]> {
+  const conditions: SQL[] = [
+    eq(email.organizationId, input.organizationId),
+    eq(email.environmentId, input.environmentId),
+  ];
+  if (input.status && input.status.length > 0) {
+    conditions.push(inArray(email.status, input.status));
+  }
+  const query = input.query?.trim();
+  if (query) {
+    const pattern = likePattern(query);
+    conditions.push(
+      sql`(${email.subject} ilike ${pattern} or array_to_string(${email.to}, ' ') ilike ${pattern})`,
+    );
+  }
+  if (input.before !== undefined) {
+    // Keyset on the list's order; a cursor from another environment (or none) matches nothing.
+    conditions.push(
+      sql`(${email.createdAt}, ${email.id}) < (
+        select c.created_at, c.id from ${email} c
+        where c.id = ${input.before}
+          and c.organization_id = ${input.organizationId}
+          and c.environment_id = ${input.environmentId}
+      )`,
+    );
+  }
   const rows = await db
     .select({
       id: email.id,
@@ -216,15 +267,10 @@ export async function listEmails(input: {
         eq(environment.organizationId, email.organizationId),
       ),
     )
-    .where(
-      and(
-        eq(email.organizationId, input.organizationId),
-        eq(email.environmentId, input.environmentId),
-      ),
-    )
+    .where(and(...conditions))
     // As in selectEmailsWithMode: the (environment_id, created_at DESC NULLS LAST) index.
     .orderBy(sql`${email.createdAt} desc nulls last`, desc(email.id))
-    .limit(limit);
+    .limit(rowLimit);
   return rows.map((row) => ({
     id: row.id,
     to: row.to,
@@ -235,6 +281,103 @@ export async function listEmails(input: {
     created_at: row.createdAt.toISOString(),
     scheduled_at: row.scheduledAt?.toISOString() ?? null,
   }));
+}
+
+/**
+ * One page of `listEmails` and the cursor of the next (older) page, `null` on the last one: the
+ * dashboard's email list.
+ */
+export async function listEmailsPage(
+  input: { organizationId: string; environmentId: string; limit?: number } & EmailListFilters,
+): Promise<{ items: EmailListItem[]; nextCursor: string | null }> {
+  const limit = clampLimit(input.limit);
+  // One row more than the page tells whether another page follows.
+  const rows = await selectEmailList(input, limit + 1);
+  const items = rows.slice(0, limit);
+  return { items, nextCursor: rows.length > limit ? (items.at(-1)?.id ?? null) : null };
+}
+
+export type EmailActivityDay = {
+  /** The UTC day, `YYYY-MM-DD`. */
+  date: string;
+} & Record<EmailObjectOutput["status"], number>;
+
+export type EmailActivity = {
+  days: EmailActivityDay[];
+  totals: Record<EmailObjectOutput["status"], number> & {
+    /** Emails sent with open (click) tracking on, and how many of them were opened (clicked). */
+    trackedOpens: number;
+    opened: number;
+    trackedClicks: number;
+    clicked: number;
+  };
+};
+
+const EMAIL_STATUSES = ["queued", "sent", "failed", "scheduled", "canceled"] as const;
+
+/**
+ * An environment's emails per UTC day by their current status, from the day of `since` up to
+ * `now`, plus engagement totals: the dashboard's overview. Days without emails are zero.
+ */
+export async function emailActivity(input: {
+  organizationId: string;
+  environmentId: string;
+  since: Date;
+  now?: Date;
+}): Promise<EmailActivity> {
+  const now = input.now ?? new Date();
+  const start = new Date(
+    Date.UTC(input.since.getUTCFullYear(), input.since.getUTCMonth(), input.since.getUTCDate()),
+  );
+  const day = sql<string>`to_char(date_trunc('day', ${email.createdAt}, 'UTC'), 'YYYY-MM-DD')`;
+  const rows = await db
+    .select({
+      day,
+      status: email.status,
+      count: sql<number>`count(*)::int`,
+      trackedOpens: sql<number>`(count(*) filter (where ${email.trackOpens}))::int`,
+      opened: sql<number>`(count(*) filter (where ${email.openCount} > 0))::int`,
+      trackedClicks: sql<number>`(count(*) filter (where ${email.trackClicks}))::int`,
+      clicked: sql<number>`(count(*) filter (where ${email.clickCount} > 0))::int`,
+    })
+    .from(email)
+    .where(
+      and(
+        eq(email.organizationId, input.organizationId),
+        eq(email.environmentId, input.environmentId),
+        sql`${email.createdAt} >= ${start.toISOString()}`,
+        sql`${email.createdAt} < ${now.toISOString()}`,
+      ),
+    )
+    .groupBy(day, email.status);
+
+  const zero = () =>
+    Object.fromEntries(EMAIL_STATUSES.map((status) => [status, 0])) as Record<
+      EmailObjectOutput["status"],
+      number
+    >;
+  const days: EmailActivityDay[] = [];
+  for (let at = start.getTime(); at < now.getTime(); at += 86_400_000) {
+    days.push({ date: new Date(at).toISOString().slice(0, 10), ...zero() });
+  }
+  const byDate = new Map(days.map((entry) => [entry.date, entry]));
+  const totals: EmailActivity["totals"] = {
+    ...zero(),
+    trackedOpens: 0,
+    opened: 0,
+    trackedClicks: 0,
+    clicked: 0,
+  };
+  for (const row of rows) {
+    const entry = byDate.get(row.day);
+    if (entry) entry[row.status] += row.count;
+    totals[row.status] += row.count;
+    totals.trackedOpens += row.trackedOpens;
+    totals.opened += row.opened;
+    totals.trackedClicks += row.trackedClicks;
+    totals.clicked += row.clicked;
+  }
+  return { days, totals };
 }
 
 export function toEmailEventObject(row: typeof emailEvent.$inferSelect): EmailEventOutput {

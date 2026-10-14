@@ -6,7 +6,7 @@
  */
 import { SITE_ASSET_PREFIX, ZONE_ROUTES, type ZoneRoute } from "@coss/auth/slugs";
 
-export type TargetGroup = "web" | "site" | "api";
+export type TargetGroup = "web" | "site" | "portal" | "api";
 
 /**
  * CloudFront origins of the coss.com distribution: the ALB (every app in ECS), and one per zone
@@ -46,6 +46,17 @@ export const TRACKING_HOST = "track.cosslinks.com";
 /** Added to every request by a Cloudflare request header transform rule (its own secret). */
 export const TRACKING_ORIGIN_VERIFY_HEADER = "X-Tracking-Origin-Verify";
 export const TRACKING_ORIGIN_VERIFY_PLACEHOLDER = "<tracking-origin-verify-secret>";
+/**
+ * The Hooks portal (apps/portal) lives on a registrable domain of its own, `cosshooks.com` (the
+ * self-serve Cloudflare account, like cosslinks.com): under coss.com it would be same-site with the
+ * dashboard, and customers embed it in their own pages. A proxied record points at the ALB, whose
+ * certificate covers it (SSL mode Full (strict)); a request header transform rule adds the secret
+ * below, without which the ALB forwards nothing to the portal. The apex redirects to coss.com.
+ */
+export const PORTAL_HOST = "portal.cosshooks.com";
+export const PORTAL_ORIGIN_VERIFY_HEADER = "X-Portal-Origin-Verify";
+export const PORTAL_ORIGIN_VERIFY_PLACEHOLDER = "<portal-origin-verify-secret>";
+
 /** The API's open pixel and click redirect routes, the only paths custom hostnames serve. */
 export const TRACKING_PATH_PATTERN = "/t/*";
 
@@ -76,8 +87,8 @@ export type ListenerRule = {
  * The HTTPS listener's rules, in priority order. The listener's default action is a fixed 403:
  * a request without CloudFront's (or, for tracking, Cloudflare's) origin header matches no rule.
  * api.coss.com goes first, so the coss.com rules don't need a host condition; then the tracking
- * routes on any host (customer tracking domains, from Cloudflare); the dashboard (default zone)
- * is last.
+ * routes on any host (customer tracking domains, from Cloudflare) and the Hooks portal (also from
+ * Cloudflare, with its own header); the dashboard (default zone) is last.
  */
 export function albListenerRules(): ListenerRule[] {
   const verified = {
@@ -98,6 +109,19 @@ export function albListenerRules(): ListenerRule[] {
           HttpHeaderConfig: {
             HttpHeaderName: TRACKING_ORIGIN_VERIFY_HEADER,
             Values: [TRACKING_ORIGIN_VERIFY_PLACEHOLDER],
+          },
+        },
+      ],
+    },
+    {
+      targetGroup: "portal",
+      conditions: [
+        { Field: "host-header", HostHeaderConfig: { Values: [PORTAL_HOST] } },
+        {
+          Field: "http-header",
+          HttpHeaderConfig: {
+            HttpHeaderName: PORTAL_ORIGIN_VERIFY_HEADER,
+            Values: [PORTAL_ORIGIN_VERIFY_PLACEHOLDER],
           },
         },
       ],

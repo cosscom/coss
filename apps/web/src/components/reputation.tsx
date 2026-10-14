@@ -3,7 +3,6 @@ import { metricsSnapshot } from "@coss/reputation";
 import { triggerLabel } from "@coss/reputation/schemas";
 import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { Meter, MeterIndicator, MeterTrack } from "@coss/ui/components/meter";
 import {
   Table,
@@ -13,8 +12,12 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { HistoryIcon } from "lucide-react";
 import Link from "next/link";
 import { formatDateTime } from "@/lib/format";
+import { EmptyState } from "./empty-state";
+import { Panel, PanelBody } from "./panel";
+import { StatusDot } from "./status-dot";
 
 export { triggerLabel };
 
@@ -23,9 +26,17 @@ export function formatRate(rate: number | null): string {
 }
 
 export function StandingBadge({ status }: { status: ReputationStandingRow["status"] | null }) {
-  if (status === "suspended") return <Badge variant="error">suspended</Badge>;
-  if (status === "warning") return <Badge variant="warning">warning</Badge>;
-  return <Badge variant="success">good</Badge>;
+  return (
+    <Badge variant="outline">
+      {status === "suspended" ? (
+        <StatusDot tone="error">Suspended</StatusDot>
+      ) : status === "warning" ? (
+        <StatusDot tone="warning">Warning</StatusDot>
+      ) : (
+        <StatusDot tone="success">Good</StatusDot>
+      )}
+    </Badge>
+  );
 }
 
 /** Org-wide banner (layout) while the organization is warned or suspended. */
@@ -37,23 +48,21 @@ export function ReputationBanner(props: {
   if (status === "good") return null;
   const suspended = status === "suspended";
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 pt-6">
-      <Alert variant={suspended ? "error" : "warning"}>
-        <AlertTitle>
-          {suspended ? "Live sending is suspended" : "Your sending reputation needs attention"}
-        </AlertTitle>
-        <AlertDescription>
-          {suspended
-            ? `COSS suspended live sending for this organization (${triggerLabel(reason).toLowerCase()}). Sandbox keys still work. Contact support to resume sending.`
-            : reason === "content_screening"
-              ? "Content screening flagged some of your recent emails as possible spam or phishing. Emails it is confident about are blocked and suspend live sending automatically."
-              : `${triggerLabel(reason)} is approaching the level at which COSS suspends live sending automatically.`}{" "}
-          <Link className="underline" href={props.href}>
-            View reputation
-          </Link>
-        </AlertDescription>
-      </Alert>
-    </div>
+    <Alert variant={suspended ? "error" : "warning"}>
+      <AlertTitle>
+        {suspended ? "Live sending is suspended" : "Your sending reputation needs attention"}
+      </AlertTitle>
+      <AlertDescription>
+        {suspended
+          ? `COSS suspended live sending for this organization (${triggerLabel(reason).toLowerCase()}). Sandbox keys still work. Contact support to resume sending.`
+          : reason === "content_screening"
+            ? "Content screening flagged some of your recent emails as possible spam or phishing. Emails it is confident about are blocked and suspend live sending automatically."
+            : `${triggerLabel(reason)} is approaching the level at which COSS suspends live sending automatically.`}{" "}
+        <Link className="underline" href={props.href}>
+          View reputation
+        </Link>
+      </AlertDescription>
+    </Alert>
   );
 }
 
@@ -61,22 +70,24 @@ export function ReputationBanner(props: {
 export function ReputationChecks({ standing }: { standing: ReputationStandingRow | null }) {
   const snapshot = metricsSnapshot(standing?.metrics);
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Sending rates</CardTitle>
-        <CardDescription>
-          {snapshot
-            ? `Live environments, ${formatDateTime(snapshot.windowStart)} – ${formatDateTime(snapshot.windowEnd)}. Measured ${formatDateTime(standing?.lastEvaluatedAt)}.`
-            : "Not measured yet: rates are computed once live emails bounce or get complaints."}
-        </CardDescription>
-      </CardHeader>
+    <Panel
+      description={
+        snapshot
+          ? `Live environments, ${formatDateTime(snapshot.windowStart)} – ${formatDateTime(snapshot.windowEnd)}. Measured ${formatDateTime(standing?.lastEvaluatedAt)}.`
+          : "Not measured yet: rates are computed once live emails bounce or get complaints."
+      }
+      title="Sending rates"
+    >
       {snapshot && snapshot.checks.length > 0 ? (
-        <CardPanel className="flex flex-col gap-5">
+        <PanelBody flush>
           {snapshot.checks.map((check) => {
             if (check.rate === null && check.suspendThreshold === null) {
               // A verdict count (content screening), not a rate: no meter to fill.
               return (
-                <div className="flex flex-col gap-1" key={check.trigger}>
+                <div
+                  className="flex flex-col gap-1 border-t px-5 py-4 first:border-t-0"
+                  key={check.trigger}
+                >
                   <span className="font-medium text-sm">{triggerLabel(check.trigger)}</span>
                   <p className="text-muted-foreground text-xs">{check.message}</p>
                 </div>
@@ -85,44 +96,56 @@ export function ReputationChecks({ standing }: { standing: ReputationStandingRow
             const ceiling = check.suspendThreshold ?? 1;
             const percent = Math.min(100, ((check.rate ?? 0) / (ceiling || 1)) * 100);
             return (
-              <div className="flex flex-col gap-2" key={check.trigger}>
-                <div className="flex items-baseline justify-between gap-4">
+              <div
+                className="grid gap-3 border-t px-5 py-4 first:border-t-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] md:gap-8"
+                key={check.trigger}
+              >
+                <div className="flex flex-col gap-1">
                   <span className="font-medium text-sm">{triggerLabel(check.trigger)}</span>
-                  <span className="text-sm tabular-nums">
-                    {formatRate(check.rate)}{" "}
-                    <span className="text-muted-foreground">
-                      ({check.count} of {check.volume})
-                    </span>
-                  </span>
+                  <p className="text-muted-foreground text-xs">{check.message}</p>
                 </div>
-                <Meter
-                  aria-label={`${triggerLabel(check.trigger)} relative to the suspension threshold`}
-                  max={100}
-                  value={percent}
-                >
-                  <MeterTrack className="rounded-full">
-                    <MeterIndicator
-                      className={
-                        check.severity === "suspend"
-                          ? "bg-destructive"
-                          : check.severity === "warning"
-                            ? "bg-warning"
-                            : "bg-success"
-                      }
-                    />
-                  </MeterTrack>
-                </Meter>
-                <p className="text-muted-foreground text-xs">
-                  {check.message} Warning at {formatRate(check.warningThreshold)}, suspension at{" "}
-                  {formatRate(check.suspendThreshold)}
-                  {check.minimumVolume ? `, from ${check.minimumVolume} recipients` : ""}.
-                </p>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <span className="font-heading font-semibold text-2xl tabular-nums tracking-[-0.02em]">
+                      {formatRate(check.rate)}
+                    </span>
+                    <span className="font-mono text-muted-foreground text-xs tabular-nums">
+                      {check.count} of {check.volume}
+                    </span>
+                  </div>
+                  <Meter
+                    aria-label={`${triggerLabel(check.trigger)} relative to the suspension threshold`}
+                    max={100}
+                    value={percent}
+                  >
+                    <MeterTrack className="rounded-full">
+                      <MeterIndicator
+                        className={
+                          check.severity === "suspend"
+                            ? "bg-destructive"
+                            : check.severity === "warning"
+                              ? "bg-warning"
+                              : "bg-success"
+                        }
+                      />
+                    </MeterTrack>
+                  </Meter>
+                  <p className="font-mono text-muted-foreground text-xs">
+                    warn {formatRate(check.warningThreshold)} ·{" "}
+                    {check.suspendThreshold === null
+                      ? "never suspends"
+                      : `suspend ${formatRate(check.suspendThreshold)}`}
+                    {check.minimumVolume
+                      ? ` · from ${check.minimumVolume} ${check.trigger === "hook_failure_rate" ? "deliveries" : "recipients"}`
+                      : ""}
+                  </p>
+                </div>
               </div>
             );
           })}
-        </CardPanel>
+        </PanelBody>
       ) : null}
-    </Card>
+    </Panel>
   );
 }
 
@@ -143,50 +166,52 @@ export function ReputationHistory(props: {
     ? props.events
     : props.events.filter((event) => event.type !== "policy_updated");
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>History</CardTitle>
-      </CardHeader>
-      <CardPanel className="p-2">
-        {events.length === 0 ? (
-          <p className="px-4 py-3 text-muted-foreground text-sm">No changes yet.</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>When</TableHead>
-                <TableHead>Change</TableHead>
-                <TableHead>Trigger</TableHead>
-                <TableHead>By</TableHead>
-                {props.showInternal ? <TableHead>Note</TableHead> : null}
+    <Panel title="History">
+      {events.length === 0 ? (
+        <PanelBody flush>
+          <EmptyState
+            compact
+            description="Warnings, suspensions and reinstatements are listed here."
+            icon={HistoryIcon}
+            title="No changes yet"
+          />
+        </PanelBody>
+      ) : (
+        <Table variant="card">
+          <TableHeader>
+            <TableRow>
+              <TableHead>When</TableHead>
+              <TableHead>Change</TableHead>
+              <TableHead>Trigger</TableHead>
+              <TableHead>By</TableHead>
+              {props.showInternal ? <TableHead>Note</TableHead> : null}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {events.map((event) => (
+              <TableRow key={event.id}>
+                <TableCell className="text-muted-foreground">
+                  {formatDateTime(event.createdAt)}
+                </TableCell>
+                <TableCell className="font-medium">{EVENT_LABELS[event.type]}</TableCell>
+                <TableCell>{triggerLabel(event.trigger)}</TableCell>
+                <TableCell>
+                  {event.actor === "system"
+                    ? "Automatic"
+                    : props.showInternal
+                      ? (event.actorEmail ?? "Admin")
+                      : "COSS"}
+                </TableCell>
+                {props.showInternal ? (
+                  <TableCell className="max-w-xs whitespace-normal text-muted-foreground">
+                    {event.note ?? "—"}
+                  </TableCell>
+                ) : null}
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {events.map((event) => (
-                <TableRow key={event.id}>
-                  <TableCell className="text-muted-foreground">
-                    {formatDateTime(event.createdAt)}
-                  </TableCell>
-                  <TableCell className="font-medium">{EVENT_LABELS[event.type]}</TableCell>
-                  <TableCell>{triggerLabel(event.trigger)}</TableCell>
-                  <TableCell>
-                    {event.actor === "system"
-                      ? "Automatic"
-                      : props.showInternal
-                        ? (event.actorEmail ?? "Admin")
-                        : "COSS"}
-                  </TableCell>
-                  {props.showInternal ? (
-                    <TableCell className="max-w-xs whitespace-normal text-muted-foreground">
-                      {event.note ?? "—"}
-                    </TableCell>
-                  ) : null}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardPanel>
-    </Card>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </Panel>
   );
 }

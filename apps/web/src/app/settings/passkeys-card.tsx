@@ -14,14 +14,6 @@ import {
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardHeader,
-  CardPanel,
-  CardTitle,
-} from "@coss/ui/components/card";
-import {
   Dialog,
   DialogClose,
   DialogDescription,
@@ -42,9 +34,12 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { FingerprintIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
+import { EmptyState } from "@/components/empty-state";
 import { FormError } from "@/components/form-error";
+import { Panel, PanelBody } from "@/components/panel";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 
@@ -60,57 +55,56 @@ const NAME_MAX_LENGTH = 64;
 
 export function PasskeysCard(props: { passkeys: PasskeyRow[]; restriction: string | null }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Passkeys</CardTitle>
-        <CardDescription>
-          Sign in with your fingerprint, face or device PIN instead of a password. A passkey sign-in
-          doesn't ask for an authenticator code.
-        </CardDescription>
-        {props.restriction ? null : (
-          <CardAction>
-            <AddPasskeyDialog />
-          </CardAction>
-        )}
-      </CardHeader>
-      <CardPanel className="flex flex-col gap-3">
-        {props.restriction ? (
+    <Panel
+      action={props.restriction ? null : <AddPasskeyDialog />}
+      description="Sign in with your fingerprint, face or device PIN instead of a password. A passkey sign-in doesn't ask for an authenticator code."
+      title="Passkeys"
+    >
+      {props.restriction ? (
+        <PanelBody>
           <Alert variant="warning">
             <AlertDescription>{props.restriction}</AlertDescription>
           </Alert>
-        ) : null}
-        {props.passkeys.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No passkeys yet.</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Added</TableHead>
-                {props.restriction ? null : <TableHead className="text-right">Actions</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {props.passkeys.map((passkey) => (
-                <TableRow key={passkey.id}>
-                  <TableCell className="font-medium">{passkey.name}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{passkey.synced ? "synced" : "this device"}</Badge>
+        </PanelBody>
+      ) : null}
+      {props.passkeys.length === 0 ? (
+        <PanelBody flush>
+          <EmptyState
+            compact
+            description="Add one to sign in without typing your password."
+            icon={FingerprintIcon}
+            title="No passkeys yet"
+          />
+        </PanelBody>
+      ) : (
+        <Table variant="card">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Added</TableHead>
+              {props.restriction ? null : <TableHead className="w-0" />}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {props.passkeys.map((passkey) => (
+              <TableRow key={passkey.id}>
+                <TableCell className="font-medium">{passkey.name}</TableCell>
+                <TableCell>
+                  <Badge variant="outline">{passkey.synced ? "synced" : "this device"}</Badge>
+                </TableCell>
+                <TableCell className="text-muted-foreground">{passkey.createdAt}</TableCell>
+                {props.restriction ? null : (
+                  <TableCell className="text-right">
+                    <DeletePasskeyButton id={passkey.id} name={passkey.name} />
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{passkey.createdAt}</TableCell>
-                  {props.restriction ? null : (
-                    <TableCell className="text-right">
-                      <DeletePasskeyButton id={passkey.id} name={passkey.name} />
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardPanel>
-    </Card>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </Panel>
   );
 }
 

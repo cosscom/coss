@@ -23,6 +23,10 @@ curl -X POST https://api.coss.com/v1/emails \
 the same batch, with each email's current status. Batch keys and single-send keys are separate,
 so the same key can be used once for each.
 
+`POST /v1/hooks/applications/{application}/messages` ([Hooks](/docs/hooks)) works the same way:
+a replay returns the first message, and a reused key with another message body fails with
+`422 idempotency_key_reused`. Its keys are separate from email keys.
+
 Derive keys from your own data (`welcome-${userId}`) so that a retry after a crash reuses the same
 key. The [TypeScript SDK](/docs/sdk/errors#automatic-retries) sends a key on every `POST` and reuses
 it across its automatic retries.

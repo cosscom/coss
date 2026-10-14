@@ -1,8 +1,8 @@
 import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment } from "@coss/tenancy";
+import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
   TableBody,
@@ -13,19 +13,27 @@ import {
 } from "@coss/ui/components/table";
 import { versioning } from "@coss/versioning";
 import {
+  DISABLE_FAILING_ENDPOINT_AFTER_MS,
   getWebhookEndpoint,
   listWebhookDeliveries,
   previousSecretExpiresAt,
   type WebhookDeliveryLogEntry,
 } from "@coss/webhooks";
+import { SendIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
+import { SpecItem, SpecList } from "@/components/spec-list";
+import { StatusDot, type StatusTone } from "@/components/status-dot";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
+import { EndpointStatusBadge } from "../endpoint-status";
 import {
   DeleteEndpointButton,
+  RecoverDeliveriesButton,
   RetryDeliveryButton,
   RevealSecret,
   RollSecretButton,
@@ -35,11 +43,13 @@ import {
 
 export const metadata: Metadata = { title: "Webhook endpoint" };
 
+const DISABLED_AFTER_DAYS = DISABLE_FAILING_ENDPOINT_AFTER_MS / (24 * 3_600_000);
+
 const DELIVERY_STATUS = {
   pending: ["warning", "Pending"],
   succeeded: ["success", "Succeeded"],
   failed: ["error", "Failed"],
-} as const satisfies Record<WebhookDeliveryLogEntry["status"], readonly [string, string]>;
+} as const satisfies Record<WebhookDeliveryLogEntry["status"], readonly [StatusTone, string]>;
 
 function lastResult(delivery: WebhookDeliveryLogEntry): string {
   const last = delivery.attempts.at(-1);
@@ -76,161 +86,180 @@ export default async function WebhookEndpointPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Link
-          className="text-muted-foreground text-sm hover:text-foreground"
-          href={`${base}/webhooks`}
-        >
-          ← Webhooks · {project.name} · {environment.name}
-        </Link>
-        <PageHeader
-          actions={
-            <>
-              {can({ log: ["read"] }) ? (
-                <Button
-                  render={
-                    <Link
-                      href={`${base}/logs?${new URLSearchParams({ q: `source:webhook ${endpoint.id}`, range: "7d" })}`}
-                    />
-                  }
-                  size="sm"
-                  variant="outline"
-                >
-                  View logs
-                </Button>
-              ) : null}
-              {canUpdate ? <ToggleEndpointButton {...target} enabled={endpoint.enabled} /> : null}
-              {canDelete ? <DeleteEndpointButton {...target} url={endpoint.url} /> : null}
-            </>
-          }
-          description={endpoint.description ?? undefined}
-          title={<span className="break-all">{endpoint.url}</span>}
-        />
-      </div>
-
-      <Card>
-        <CardPanel className="p-2">
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableHead className="w-32">Status</TableHead>
-                <TableCell>
-                  {endpoint.enabled ? (
-                    <Badge variant="success">Enabled</Badge>
-                  ) : (
-                    <Badge variant="secondary">Disabled</Badge>
-                  )}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableHead>Events</TableHead>
-                <TableCell className="whitespace-normal font-mono text-xs">
-                  {endpoint.eventTypes.length === 0 ? "All events" : endpoint.eventTypes.join(", ")}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableHead>API version</TableHead>
-                <TableCell>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <code className="font-mono text-xs">{endpoint.apiVersion}</code>
-                    {canUpdate && endpoint.apiVersion < versioning.latest ? (
-                      <UpgradeEndpointVersionButton {...target} latest={versioning.latest} />
-                    ) : null}
-                  </div>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableHead>Created</TableHead>
-                <TableCell>{formatDateTime(endpoint.createdAt)}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardPanel>
-      </Card>
-
-      {canUpdate ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Signing secret</CardTitle>
-            <CardDescription>
-              Requests carry <code>webhook-id</code>, <code>webhook-timestamp</code> and{" "}
-              <code>webhook-signature</code> headers (Standard Webhooks). Verify them with this
-              secret before trusting a request. Rolling it replaces it with a new one; the old one
-              can keep signing for a while, so you can switch without rejecting requests.
-            </CardDescription>
-          </CardHeader>
-          <CardPanel className="flex flex-col gap-4">
-            {previousExpiresAt ? (
-              <p className="text-sm">
-                The previous secret also signs requests until{" "}
-                <span className="font-medium">{formatDateTime(previousExpiresAt)}</span>.
-              </p>
+      <PageHeader
+        actions={
+          <>
+            {can({ log: ["read"] }) ? (
+              <Button
+                render={
+                  <Link
+                    href={`${base}/logs?${new URLSearchParams({ q: `source:webhook ${endpoint.id}`, range: "7d" })}`}
+                  />
+                }
+                size="sm"
+                variant="outline"
+              >
+                View logs
+              </Button>
             ) : null}
-            <div className="flex flex-wrap items-start gap-2">
-              {/* Remounts after a roll, so a secret revealed before it isn't left on screen. */}
-              <RevealSecret {...target} key={endpoint.updatedAt.toISOString()} />
-              <RollSecretButton {...target} />
-            </div>
-          </CardPanel>
-        </Card>
+            {canUpdate && endpoint.enabled ? <RecoverDeliveriesButton {...target} /> : null}
+            {canUpdate ? <ToggleEndpointButton {...target} enabled={endpoint.enabled} /> : null}
+            {canDelete ? <DeleteEndpointButton {...target} url={endpoint.url} /> : null}
+          </>
+        }
+        description={endpoint.description ?? undefined}
+        meta={
+          <>
+            <EndpointStatusBadge endpoint={endpoint} />
+            <code className="font-mono text-xs">{endpoint.id}</code>
+          </>
+        }
+        title={<span className="break-all font-mono text-xl sm:text-2xl">{endpoint.url}</span>}
+      />
+
+      {!endpoint.enabled && endpoint.disabledReason === "failing" ? (
+        <Alert variant="error">
+          <AlertTitle>Disabled after repeated failures</AlertTitle>
+          <AlertDescription>
+            Every delivery to this endpoint failed for {DISABLED_AFTER_DAYS} days, so COSS disabled
+            it{endpoint.disabledAt ? ` on ${formatDateTime(endpoint.disabledAt)}` : ""}. Fix the
+            receiver, enable the endpoint again, then recover the deliveries it missed.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {endpoint.enabled && endpoint.failingSince ? (
+        <Alert variant="warning">
+          <AlertTitle>Failing since {formatDateTime(endpoint.failingSince)}</AlertTitle>
+          <AlertDescription>
+            Deliveries to this endpoint have been failing every attempt. If none succeeds for{" "}
+            {DISABLED_AFTER_DAYS} days, COSS disables the endpoint.
+          </AlertDescription>
+        </Alert>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent deliveries</CardTitle>
-          <CardDescription>
-            Failed deliveries are retried for about a day (8 attempts). Any 2xx response counts as
-            delivered. Deliveries are kept for{" "}
-            {formatRetentionDays(RETENTION_DAYS.webhookDeliveries)}.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="p-2">
-          {deliveries.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">No deliveries yet.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Event</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Attempts</TableHead>
-                  <TableHead>Last result</TableHead>
-                  <TableHead>Next attempt</TableHead>
-                  {canUpdate ? <TableHead className="text-right">Actions</TableHead> : null}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {deliveries.map((delivery) => {
-                  const [variant, label] = DELIVERY_STATUS[delivery.status];
-                  return (
-                    <TableRow key={delivery.id}>
-                      <TableCell>
-                        <div className="font-mono text-xs">{delivery.eventType}</div>
-                        <div className="text-muted-foreground text-xs">{delivery.messageId}</div>
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <Panel title="Details">
+          <PanelBody flush>
+            <SpecList>
+              <SpecItem label="Events" mono stacked={endpoint.eventTypes.length > 0}>
+                {endpoint.eventTypes.length === 0 ? (
+                  "All events"
+                ) : (
+                  <span className="flex flex-wrap gap-1.5">
+                    {endpoint.eventTypes.map((type) => (
+                      <Badge className="font-mono" key={type} variant="secondary">
+                        {type}
+                      </Badge>
+                    ))}
+                  </span>
+                )}
+              </SpecItem>
+              <SpecItem label="API version" mono>
+                {endpoint.apiVersion}
+                {canUpdate && endpoint.apiVersion < versioning.latest ? (
+                  <UpgradeEndpointVersionButton {...target} latest={versioning.latest} />
+                ) : null}
+              </SpecItem>
+              <SpecItem label="Created" mono>
+                {formatDateTime(endpoint.createdAt)}
+              </SpecItem>
+            </SpecList>
+          </PanelBody>
+        </Panel>
+
+        {canUpdate ? (
+          <Panel
+            description={
+              <>
+                Requests carry <code className="font-mono">webhook-id</code>,{" "}
+                <code className="font-mono">webhook-timestamp</code> and{" "}
+                <code className="font-mono">webhook-signature</code> headers (Standard Webhooks).
+                Verify them with this secret before trusting a request. Rolling it replaces it with
+                a new one; the old one can keep signing for a while, so you can switch without
+                rejecting requests.
+              </>
+            }
+            title="Signing secret"
+          >
+            <PanelBody className="flex flex-col gap-4">
+              {previousExpiresAt ? (
+                <p className="text-sm">
+                  The previous secret also signs requests until{" "}
+                  <span className="font-medium">{formatDateTime(previousExpiresAt)}</span>.
+                </p>
+              ) : null}
+              <div className="flex flex-wrap items-start gap-2">
+                {/* Remounts after a roll, so a secret revealed before it isn't left on screen. */}
+                <RevealSecret {...target} key={endpoint.updatedAt.toISOString()} />
+                <RollSecretButton {...target} />
+              </div>
+            </PanelBody>
+          </Panel>
+        ) : null}
+      </div>
+
+      <Panel
+        description={`Failed deliveries are retried for about a day (8 attempts). Any 2xx response counts as delivered. Deliveries are kept for ${formatRetentionDays(RETENTION_DAYS.webhookDeliveries)}.`}
+        title="Recent deliveries"
+      >
+        {deliveries.length === 0 ? (
+          <PanelBody flush>
+            <EmptyState
+              compact
+              description="Deliveries appear here once events of the subscribed types happen."
+              icon={SendIcon}
+              title="No deliveries yet"
+            />
+          </PanelBody>
+        ) : (
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Event</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Attempts</TableHead>
+                <TableHead>Last result</TableHead>
+                <TableHead>Next attempt</TableHead>
+                {canUpdate ? <TableHead className="w-0" /> : null}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {deliveries.map((delivery) => {
+                const [tone, label] = DELIVERY_STATUS[delivery.status];
+                return (
+                  <TableRow key={delivery.id}>
+                    <TableCell>
+                      <div className="font-mono text-xs">{delivery.eventType}</div>
+                      <div className="font-mono text-muted-foreground text-xs">
+                        {delivery.messageId}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <StatusDot pulse={delivery.status === "pending"} tone={tone}>
+                        {label}
+                      </StatusDot>
+                    </TableCell>
+                    <TableCell className="font-mono">{delivery.attemptCount}</TableCell>
+                    <TableCell className="max-w-64 whitespace-normal break-all font-mono text-muted-foreground text-xs">
+                      {lastResult(delivery)}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatDateTime(delivery.nextAttemptAt)}
+                    </TableCell>
+                    {canUpdate ? (
+                      <TableCell className="text-right">
+                        {delivery.status === "pending" ? null : (
+                          <RetryDeliveryButton {...target} deliveryId={delivery.id} />
+                        )}
                       </TableCell>
-                      <TableCell>
-                        <Badge variant={variant}>{label}</Badge>
-                      </TableCell>
-                      <TableCell>{delivery.attemptCount}</TableCell>
-                      <TableCell className="max-w-64 whitespace-normal break-all text-xs">
-                        {lastResult(delivery)}
-                      </TableCell>
-                      <TableCell>{formatDateTime(delivery.nextAttemptAt)}</TableCell>
-                      {canUpdate ? (
-                        <TableCell className="text-right">
-                          {delivery.status === "pending" ? null : (
-                            <RetryDeliveryButton {...target} deliveryId={delivery.id} />
-                          )}
-                        </TableCell>
-                      ) : null}
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
+                    ) : null}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </Panel>
     </div>
   );
 }

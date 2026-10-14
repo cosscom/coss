@@ -83,6 +83,17 @@ export const ID_PREFIXES = {
   billingCreditNote: "bcn",
   billingProviderEvent: "bpev",
   billingNotification: "bntf",
+  // Hooks (webhooks as a service).
+  hookApplication: "happ",
+  hookEventType: "hevtype",
+  hookEndpoint: "hep",
+  hookMessage: "hmsg",
+  hookDelivery: "hdel",
+  hookAttempt: "hatt",
+  hookIdempotencyKey: "hidem",
+  hookPortalSession: "hps",
+  hookPortalSettings: "hpset",
+  hookEndpointRecovery: "hrec",
 } as const;
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES];

@@ -1,7 +1,9 @@
 export { isBlockedAddress } from "./addresses.ts";
 export {
   MAX_ATTEMPTS,
+  MAX_RECOVER_BATCH,
   RETRY_DELAYS_MS,
+  recoverWebhookEndpoint,
   renderWebhookPayload,
   retryWebhookDelivery,
   runDueWebhookDeliveries,
@@ -32,6 +34,7 @@ export {
   type WebhookManagementDeps,
   type WebhookPlanLimits,
 } from "./endpoints.ts";
+export { DISABLE_FAILING_ENDPOINT_AFTER_MS } from "./engine/index.ts";
 export { WebhookError, type WebhookErrorCode } from "./errors.ts";
 export {
   LOG_DRAIN_CONTENT_TYPE,
@@ -77,9 +80,14 @@ export {
   ListWebhookDeliveriesQuery,
   type ListWebhookDeliveriesQueryOutput,
   MAX_PREVIOUS_SECRET_EXPIRES_IN,
+  RecoverWebhookEndpointRequest,
+  type RecoverWebhookEndpointRequestOutput,
+  RecoverWebhookEndpointResult,
+  type RecoverWebhookEndpointResultOutput,
   RollWebhookEndpointSecretRequest,
   type RollWebhookEndpointSecretRequestOutput,
   WEBHOOK_DELIVERY_STATUSES,
+  WEBHOOK_ENDPOINT_DISABLED_REASONS,
   WEBHOOK_URL_MAX_LENGTH,
   WebhookAttemptObject,
   type WebhookAttemptObjectOutput,
@@ -87,6 +95,7 @@ export {
   type WebhookDeliveryListOutput,
   WebhookDeliveryObject,
   type WebhookDeliveryObjectOutput,
+  type WebhookEndpointDisabledReason,
   WebhookEndpointList,
   type WebhookEndpointListOutput,
   WebhookEndpointObject,
