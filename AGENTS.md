@@ -16,6 +16,7 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
+| `apps/portal` | `@coss/portal` | The Hooks portal (:3003) on its own domain: customers' users manage one application's endpoints and see its deliveries, signed in by a session the customer's backend creates (token in the URL fragment, never a cookie). See `apps/portal/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss); `./idempotency` (`withIdempotencyKey`, `IdempotencyError`, request hashes); `./partitions` (daily range partitions: create ahead, drop expired). |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
@@ -35,10 +36,11 @@ Sentry (organization `coss`) through `@coss/observability`. Human setup docs (in
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests; nothing here calls AWS. See `infra/AGENTS.md`. |
 
-Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `db ← auth ← tenancy`, `db ← logs ← webhooks ← reputation ← screening ← email`, `reputation ← hooks`, `db ← ratelimit`; `versioning` (no deps) ← `tenancy`, `webhooks`, `email` (`schemas` examples);
+Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `portal`, `infra`; `db ← auth ← tenancy`, `db ← logs ← webhooks ← reputation ← screening ← email`, `reputation ← hooks`, `db ← ratelimit`; `versioning` (no deps) ← `tenancy`, `webhooks`, `email` (`schemas` examples);
 `retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `hooks`, `worker`, `web`, `site`;
 `api → tenancy, email, hooks, reputation, webhooks, ratelimit, versioning, logs, db`;
-`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, db, ui`; `site → ui, auth, versioning, retention` (only the client-safe `@coss/auth/slugs`, the changelog and the retention policy) +
+`web → auth, tenancy, email, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, db, ui`;
+`portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention` (only the client-safe `@coss/auth/slugs`, the changelog and the retention policy) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, hooks, ratelimit, screening` (`slugs`, `env` only);
 `worker → auth (`./emails` only), email, hooks, reputation, screening, webhooks, ratelimit, logs, tenancy, retention, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk` and `ui` depend on no workspace.
 Dev-only: `email`/`webhooks`/`hooks`/`reputation`/`screening`/`ratelimit`/`logs`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit or logs; Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
@@ -52,7 +54,7 @@ Valkey (or Redis) at `TEST_VALKEY_URL` for the ratelimit/api tests.
 
 ```sh
 bun install                 # never npm/pnpm/yarn
-bun run dev                 # web :3000 + api :3001 + site :3002 + worker (turbo TUI; agents: bunx turbo run dev --ui=stream)
+bun run dev                 # web :3000 + api :3001 + site :3002 + portal :3003 + worker (turbo TUI; agents: bunx turbo run dev --ui=stream)
 bun run lint                # biome ci .            bun run format → biome check --write .
 bun run typecheck           # tsc --noEmit per workspace (TS 7); web runs `next typegen` first; builds the SDK first
 bun run test                # migrates TEST_DATABASE_URL, then `bun test` in every workspace (uncached; SDK built first)
@@ -135,7 +137,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `TEST_DATABASE_URL` | must name a `*_test` database; swapped in by `@coss/db/testing`; `db:migrate:test` |
 | `DATABASE_POOL_MAX` | optional pg pool size (default 10) |
 | `BETTER_AUTH_SECRET` (≥ 32 chars), `BETTER_AUTH_URL` | `packages/auth/src/options.ts` (base URL, trusted origin, invitation links); `BETTER_AUTH_URL` also `apps/worker` (dashboard links in notification emails) |
-| `PORTAL_PUBLIC_URL` | api (and later web): origin of the Hooks portal (`apps/portal`, its own registrable domain); portal session links point there. Default `http://localhost:3003` outside production |
+| `PORTAL_PUBLIC_URL` | api, web ("Open portal"): origin of the Hooks portal (`apps/portal`, its own registrable domain); portal session links point there. Default `http://localhost:3003` outside production |
 | `API_PORT`, `API_PUBLIC_URL` | `apps/api` (port; OpenAPI `servers` and email tracking URLs, falls back to the request origin outside production); `API_PUBLIC_URL` also `apps/worker` (email tracking) and `apps/web` (quick-start snippets, read at runtime) |
 | `API_CORS_ORIGINS` | `apps/api`: comma-separated browser origins allowed on `/v1/*` (the docs' playground); default `https://coss.com`, locally `http://localhost:3002` |
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
@@ -287,7 +289,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 
 ## Containers and deployment (AWS)
 
-- `apps/{web,site,api,worker}/Dockerfile`, built from the repository root (`docker build -f apps/web/Dockerfile .`):
+- `apps/{web,site,portal,api,worker}/Dockerfile`, built from the repository root (`docker build -f apps/web/Dockerfile .`):
   `turbo prune --docker` (works with `bun.lock` and the isolated linker) → `bun install --frozen-lockfile` → build →
   a small non-root runtime image. Bun/Node/turbo versions are `ARG`s that `infra/test` keeps equal to `package.json`.
 - Next apps use `output: "standalone"` with `outputFileTracingRoot` at the monorepo root; the traced
@@ -297,7 +299,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - Build once, deploy to any stage: nothing stage-specific at build time (`SKIP_ENV_VALIDATION`), validation at
   startup. `next.config.ts` runs only at build/dev time and is serialized into the standalone server: decide nothing
   there from runtime env.
-- Health checks: `/api/health` (web, site; public in `proxy.ts`), `/health` (api); none touch the database.
+- Health checks: `/api/health` (web, site, portal; public in `proxy.ts`), `/health` (api); none touch the database.
 - SIGTERM: Next drains itself; the API (`src/server.ts`) stops accepting, finishes in-flight requests, closes the pg
   pool; the worker (`src/shutdown.ts`) aborts the SQS poll and long runs between items, waits for each loop's current
   run, closes the pool. Idle keep-alive timeouts (75 s) exceed the ALB's 60 s.
@@ -948,8 +950,7 @@ log drain secret rolls and custom request headers (vendor intake APIs that need 
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
 would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,
-email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys, the Hooks portal
-(`apps/portal`), and these Hooks
+email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys, a registered domain for the Hooks portal (`PORTAL_HOST` is a placeholder), and these Hooks
 features: channels, payload transformations, custom endpoint headers, sending one message to several applications,
 strict ordering, portal custom domains, per-destination rate-limit overrides, Hooks attempts in environment logs and
 log drains.

@@ -352,7 +352,7 @@ send nothing unless you set one.
 ## Deploying to AWS
 
 Everything runs on AWS; nothing is provisioned yet. The repository holds what provisioning needs: one
-Dockerfile per app (`apps/{web,site,api,worker}/Dockerfile`, built from the repository root) and a
+Dockerfile per app (`apps/{web,site,portal,api,worker}/Dockerfile`, built from the repository root) and a
 machine-readable spec in [`infra/`](./infra/AGENTS.md): `bun run --cwd infra aws:spec` prints every service's
 port, health check, stop timeout, size, task-role policy and env vars, the ALB listener rules and the
 CloudFront behaviours as JSON. This section is the runbook around it.
@@ -361,7 +361,8 @@ CloudFront behaviours as JSON. This section is the runbook around it.
 viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─┬─▶ web    (Next, :3000) ─┐
           coss.com, api.coss.com                              ├─▶ site   (Next, :3002)  ├─▶ RDS Postgres
                                                               ├─▶ api    (Bun,  :3001) ─┤   SES · SNS · SQS
-                                                              └─▶ ui     (coss ui app)  │   EventBridge
+          <portal domain> (Hooks portal)                      ├─▶ portal (Next, :3003) ─┤   EventBridge
+                                                              └─▶ ui     (coss ui app)  │   ElastiCache
                                                      worker (Bun, no load balancer) ────┘
 ```
 
@@ -370,14 +371,15 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
 - **Network:** a VPC over 2+ AZs; public subnets for the ALB and the NAT gateway, private subnets for tasks and
   RDS. Security groups: ALB inbound 443 only from the managed prefix list
   `com.amazonaws.global.cloudfront.origin-facing`; each service's tasks inbound only from the ALB on their port;
-  RDS 5432 only from the web, api and worker tasks; ElastiCache Serverless 6379 only from web and api.
+  RDS 5432 only from the web, portal, api and worker tasks; ElastiCache Serverless 6379 only from web, portal, api
+  and worker (the worker rate-limits Hooks deliveries).
 - **NAT gateway (required):** the worker delivers customer webhooks to arbitrary public URLs and ports, and
   domain verification in web, api and worker queries public DNS (1.1.1.1 / 8.8.8.8, port 53) directly. The site
   needs no egress. **Cost trap:** NAT charges per GB processed, so keep AWS traffic off it with VPC endpoints:
   interface endpoints for `sqs`, `secretsmanager`, `ecr.api`, `ecr.dkr`, `logs` (and the SES API if
   `aws ec2 describe-vpc-endpoint-services` lists one for your region), plus the free `s3` gateway endpoint (ECR
   image layers).
-- **ECS on Fargate (arm64):** one cluster, four services (`web`, `site`, `api`, `worker`), one ECR repository per
+- **ECS on Fargate (arm64):** one cluster, five services (`web`, `site`, `portal`, `api`, `worker`), one ECR repository per
   image, CloudWatch log groups (`awslogs`). Task sizes, minimum counts and `stopTimeout` (worker 120 s) are in
   `infra/aws/services.ts`.
 - **ALB:** HTTPS listener with an ACM certificate (in the stack's region) for `coss.com` and `api.coss.com`
@@ -387,11 +389,13 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
   | Priority | Conditions (all also require `X-Origin-Verify`) | Target group |
   |---|---|---|
   | 10 | host `api.coss.com` | api |
-  | 20… | the site's paths: `/`, `/docs`, `/docs/*`, `/llms.txt`, `/llms-full.txt`, `/site-assets/*`, `/icon.svg`, `/favicon.ico`, `/robots.txt`, `/sitemap.xml`, `/.well-known/*` (3 per rule) | site |
+  | 20 | `/t/*` with `X-Tracking-Origin-Verify` instead (customer tracking domains) | api |
+  | 30 | host `<portal domain>` (`PORTAL_HOST`) | portal |
+  | 40… | the site's paths: `/`, `/docs`, `/docs/*`, `/llms.txt`, `/llms-full.txt`, `/site-assets/*`, `/icon.svg`, `/favicon.ico`, `/robots.txt`, `/sitemap.xml`, `/.well-known/*` (3 per rule) | site |
   | … | `/ui`, `/ui/*` | ui (separate app) |
   | last | host `coss.com` (every other path: org slugs, `/dashboard`, `/api/auth/*`, `/_next/*`) | web |
 
-  Target groups: health checks `/api/health` (web, site) and `/health` (api), HTTP 200, no database access;
+  Target groups: health checks `/api/health` (web, site, portal) and `/health` (api), HTTP 200, no database access;
   deregistration delay 30 s. Keep the idle timeout at 60 s: the apps hold idle connections for 75 s
   (`KEEP_ALIVE_TIMEOUT`, Bun `idleTimeout`) so the ALB never reuses one they are closing.
 - **CloudFront + WAF:** two distributions with the ALB as their only origin (HTTPS only, custom header
@@ -420,6 +424,10 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
 - **SES, SNS, SQS, EventBridge:** created by `ses:bootstrap` (see [Running on Amazon SES](#running-on-amazon-ses)),
   run as a one-off task (below).
 - **Route 53:** `coss.com` and `api.coss.com` alias records to their distributions.
+- **Hooks portal domain:** register a domain of its own for the portal (not a coss.com subdomain: it must not be
+  same-site with the dashboard) and set `PORTAL_HOST` in `infra/aws/routing.ts` to it. A third distribution
+  (`/_next/static/*` cached, everything else not; same origin header), its name on the ALB certificate, DNS to the
+  distribution, and `PORTAL_PUBLIC_URL=https://<portal domain>` on the api and web services.
 - **Custom tracking domains (Cloudflare for SaaS, on the coss.com zone):** enable Cloudflare for SaaS on the zone
   and create the fallback origin `track.coss.com` as a **proxied** record pointing at the ALB's DNS name. Customer
   tracking domains CNAME to it; COSS registers each as a custom hostname (HTTP certificate validation) through the
@@ -448,9 +456,10 @@ the ALB's tracking rule). `CLOUDFLARE_API_TOKEN` (web, api, worker) is in the st
 | Service | Variables |
 |---|---|
 | web | `BETTER_AUTH_URL=https://coss.com`, `API_PUBLIC_URL=https://api.coss.com`, `TRUSTED_PROXY_HOPS=2`, `TURNSTILE_SITE_KEY` (the same widget's), `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, optional `DATABASE_POOL_MAX`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX=coss`, `CLIENT_IP_HEADER=x-forwarded-for`, `TRUSTED_PROXY_COUNT=2` |
-| api | the same minus `TRUSTED_PROXY_HOPS`, plus `API_CORS_ORIGINS=https://coss.com` |
-| worker | `API_PUBLIC_URL=https://api.coss.com`, `BETTER_AUTH_URL=https://coss.com`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL`, `SCREENING_CLASSIFIER=ai`, optional `SCREENING_MODEL`, `NOTIFICATIONS_ENVIRONMENT_ID` + `NOTIFICATIONS_FROM` (see below) |
+| api | the same minus `TRUSTED_PROXY_HOPS`, plus `API_CORS_ORIGINS=https://coss.com` (both web and api also take `PORTAL_PUBLIC_URL`) |
+| worker | `VALKEY_URL` (stage secret), `VALKEY_CLUSTER=true`, `API_PUBLIC_URL=https://api.coss.com`, `BETTER_AUTH_URL=https://coss.com`, `EMAIL_PROVIDER=ses`, `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX`, `SES_EVENTS_QUEUE_URL`, `SCREENING_CLASSIFIER=ai`, optional `SCREENING_MODEL`, `NOTIFICATIONS_ENVIRONMENT_ID` + `NOTIFICATIONS_FROM` (see below) |
 | site | none (static; everything it needs is in the image) |
+| portal | `DATABASE_URL`, `WEBHOOK_SECRETS_KEY` (stage secret), `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX=coss`, `CLIENT_IP_HEADER=x-forwarded-for`, `TRUSTED_PROXY_COUNT=2`, optional `DATABASE_POOL_MAX` |
 
 Every service but the site also takes `SENTRY_DSN` (its own project's), `SENTRY_ENVIRONMENT` and optionally
 `SENTRY_TRACES_SAMPLE_RATE` (see [Error monitoring on Sentry](#error-monitoring-on-sentry)).
@@ -480,7 +489,7 @@ deployment. This applies even when `WEBHOOK_SECRETS_KEY` is unchanged.
 2. Run migrations as a one-off task from the worker image: `bun packages/db/src/migrate.ts` (needs only
    `DATABASE_URL`; never two at once). Wait for exit code 0. Migrations must be backward compatible with the
    running code.
-3. Update `api` and `worker`, then `web` and `site`. Rolling deploys keep 100 % healthy; SIGTERM drains each task
+3. Update `api` and `worker`, then `web`, `site` and `portal`. Rolling deploys keep 100 % healthy; SIGTERM drains each task
    (Next and the API finish in-flight requests, the worker finishes each loop's current item).
 4. Invalidate `/*` on the coss.com distribution once the site is stable.
 

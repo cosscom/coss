@@ -4,7 +4,7 @@
  * infra/test checks it against the apps' env schemas, turbo.json and the Dockerfiles.
  */
 
-export type ServiceName = "web" | "site" | "api" | "worker";
+export type ServiceName = "web" | "site" | "api" | "worker" | "portal";
 
 /**
  * - `plain`: a task-definition `environment` value (`value`: the production value, or how to get it).
@@ -391,6 +391,37 @@ export const SERVICES: Service[] = [
       sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "API_PORT", kind: "image", required: true, value: "3001", description: "" },
+    ],
+  },
+  {
+    // The Hooks portal (its own domain): customers' users manage their endpoints here, signed in
+    // by a session the customer's backend creates. Reads and writes Hooks data directly.
+    name: "portal",
+    dockerfile: "apps/portal/Dockerfile",
+    port: 3003,
+    healthCheckPath: "/api/health",
+    stopTimeout: 30,
+    cpu: 256,
+    memory: 512,
+    minTasks: 2,
+    needsInternet: false,
+    env: [
+      ...db,
+      // Its per-session and per-IP limits share the API's Valkey.
+      ...rateLimits,
+      webhookKey,
+      // The dashboard's Sentry project (events are tagged `service: portal`).
+      ...sentry("web"),
+      { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
+      { name: "PORT", kind: "image", required: true, value: "3003", description: "" },
+      { name: "HOSTNAME", kind: "image", required: true, value: "0.0.0.0", description: "" },
+      {
+        name: "KEEP_ALIVE_TIMEOUT",
+        kind: "image",
+        required: true,
+        value: "75000",
+        description: "",
+      },
     ],
   },
   {

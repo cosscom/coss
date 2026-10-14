@@ -305,6 +305,24 @@ export const BUCKETS = {
     overridable: false,
     failureMode: "allow",
   },
+  // The Hooks portal's JSON routes: per session (checked before its token, so guessing a token is
+  // slow) and per client IP.
+  "portal.session": {
+    scope: "key",
+    limit: 20,
+    periodMs: SECOND,
+    burst: 60,
+    overridable: false,
+    failureMode: "deny",
+  },
+  "portal.ip": {
+    scope: "ip",
+    limit: 50,
+    periodMs: SECOND,
+    burst: 150,
+    overridable: false,
+    failureMode: "deny",
+  },
 } as const satisfies Record<string, BucketDefinition>;
 
 export type BucketName = keyof typeof BUCKETS;

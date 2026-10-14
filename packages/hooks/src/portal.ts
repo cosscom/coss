@@ -21,6 +21,7 @@ import {
 import { environmentOf } from "./shared.ts";
 
 const {
+  environment,
   hookApplication,
   hookPortalSession,
   hookPortalSettings,
@@ -81,6 +82,8 @@ export type PortalAccess = {
   application: HookApplicationRow;
   /** Mutations are refused: the session is read-only or the organization is suspended. */
   readOnly: boolean;
+  /** The application's environment is live or sandbox. */
+  mode: "live" | "sandbox";
 };
 
 /**
@@ -101,6 +104,7 @@ export async function authenticateHookPortalSession(input: {
     .select({
       session: hookPortalSession,
       application: hookApplication,
+      mode: environment.mode,
       suspended: sql<boolean>`exists (select 1 from ${organizationSuspension} where ${organizationSuspension.organizationId} = ${hookPortalSession.organizationId})`,
       deleting: sql<boolean>`exists (select 1 from ${organizationDeletion} where ${organizationDeletion.organizationId} = ${hookPortalSession.organizationId} and ${organizationDeletion.status} = 'pending')`,
     })
@@ -110,6 +114,13 @@ export async function authenticateHookPortalSession(input: {
       and(
         eq(hookApplication.id, hookPortalSession.applicationId),
         eq(hookApplication.organizationId, hookPortalSession.organizationId),
+      ),
+    )
+    .innerJoin(
+      environment,
+      and(
+        eq(environment.id, hookApplication.environmentId),
+        eq(environment.organizationId, hookApplication.organizationId),
       ),
     )
     .where(eq(hookPortalSession.id, input.id))
@@ -131,6 +142,7 @@ export async function authenticateHookPortalSession(input: {
     session: row.session,
     application: row.application,
     readOnly: row.session.readOnly || row.suspended,
+    mode: row.mode,
   };
 }
 

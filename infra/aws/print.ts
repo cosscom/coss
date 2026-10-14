@@ -10,6 +10,7 @@ import {
   NEXT_CACHE_KEY_HEADERS,
   ORIGIN_VERIFY_HEADER,
   ORIGIN_VERIFY_PLACEHOLDER,
+  PORTAL_HOST,
 } from "./routing.ts";
 import { ONE_OFF_TASKS, SERVICES } from "./services.ts";
 
@@ -45,6 +46,12 @@ const spec = {
     distributions: {
       "coss.com": { cachedBehaviours: cossComCacheBehaviours() },
       "api.coss.com": { cachedBehaviours: [] },
+      // The Hooks portal: only its hashed assets are cached (pages carry per-session headers).
+      [PORTAL_HOST]: {
+        cachedBehaviours: [
+          { pathPattern: "/_next/static/*", cache: "origin", reason: "Hashed, immutable assets." },
+        ],
+      },
     },
     invalidateAfterSiteDeploy: ["/*"],
   },

@@ -4,7 +4,7 @@
  */
 import { SITE_ASSET_PREFIX, ZONE_ROUTES, type ZoneRoute } from "@coss/auth/slugs";
 
-export type TargetGroup = "web" | "site" | "api" | "ui";
+export type TargetGroup = "web" | "site" | "api" | "ui" | "portal";
 
 /** The header CloudFront adds to every origin request; the ALB forwards nothing without it. */
 export const ORIGIN_VERIFY_HEADER = "X-Origin-Verify";
@@ -16,6 +16,12 @@ export const ALB_IDLE_TIMEOUT_SECONDS = 60;
 
 export const DASHBOARD_HOST = "coss.com";
 export const API_HOST = "api.coss.com";
+
+/**
+ * The Hooks portal's host: a registrable domain of its own (not under coss.com), so nothing it runs
+ * is same-site with the dashboard. A placeholder until the domain is registered (README.md).
+ */
+export const PORTAL_HOST = "<portal-domain>";
 
 /**
  * Custom tracking domains (Cloudflare for SaaS): customers CNAME e.g. `links.acme.com` to this
@@ -84,6 +90,11 @@ export function albListenerRules(): ListenerRule[] {
       ],
     },
   ];
+  // The portal's own domain (its own CloudFront distribution, same origin header).
+  rules.push({
+    targetGroup: "portal",
+    conditions: [{ Field: "host-header", HostHeaderConfig: { Values: [PORTAL_HOST] } }, verified],
+  });
   for (const zone of ["site", "ui"] as const) {
     const patterns = (ZONE_ROUTES as readonly ZoneRoute[])
       .filter((route) => route.zone === zone)
