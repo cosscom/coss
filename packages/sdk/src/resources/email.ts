@@ -9,6 +9,7 @@ import type {
   RescheduleEmailParams,
   SendEmailParams,
 } from "../types/email.ts";
+import { ReceivedEmailsResource } from "./received-emails.ts";
 import { SuppressionResource } from "./suppressions.ts";
 
 /** `coss.email`: transactional email. */
@@ -16,11 +17,14 @@ export class EmailResource {
   readonly #http: HttpClient;
   /** The environment's suppression list. */
   readonly suppressions: SuppressionResource;
+  /** Emails the environment received. */
+  readonly received: ReceivedEmailsResource;
 
   /** @internal Use `new Coss().email`. */
   constructor(http: HttpClient) {
     this.#http = http;
     this.suppressions = new SuppressionResource(http);
+    this.received = new ReceivedEmailsResource(http);
   }
 
   /**

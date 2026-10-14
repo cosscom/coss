@@ -19,6 +19,7 @@ export const API_KEY_VISIBLE_CHARACTERS = 14;
  */
 export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   email: ["send", "read"],
+  receivedEmail: ["delete"],
   domain: ["create", "read", "verify", "delete"],
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],

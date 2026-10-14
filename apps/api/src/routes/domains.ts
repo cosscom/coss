@@ -1,21 +1,27 @@
 import {
   checkDomain,
+  checkReceivingDomain,
   createDomain,
+  createReceivingDomain,
   createTrackingDomain,
   type DomainDeps,
   type DomainRow,
   deleteDomain,
+  deleteReceivingDomain,
   deleteTrackingDomain,
   domainObject,
   domainObjects,
   getDomain,
+  getReceivingDomain,
   listDomains,
   MAX_PENDING_DOMAINS,
   restartDomainVerification,
   verifyTrackingDomain,
 } from "@coss/email";
+import type { InboundRuntime } from "@coss/email/runtime";
 import {
   CreateDomainRequest,
+  CreateReceivingDomainRequest,
   CreateTrackingDomainRequest,
   DeletedDomain,
   DomainList,
@@ -246,7 +252,77 @@ export const deleteTrackingDomainRoute = createRoute({
   },
 });
 
-export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
+export const createReceivingDomainRoute = createRoute({
+  method: "post",
+  path: "/domains/{id}/receiving",
+  operationId: "createReceivingDomain",
+  tags: ["Domains"],
+  summary: "Receive email at a domain",
+  description:
+    "Starts receiving email at the domain itself or a subdomain (e.g. `inbound.acme.com`): email " +
+    "sent to any address at that hostname becomes a received email of the API key's environment " +
+    "(an `email.received` webhook, `GET /v1/received_emails`). Publish the MX record in " +
+    "`receiving.record`; COSS checks it in the background. Using the domain itself moves all of " +
+    "its mail to COSS. A domain has at most one receiving hostname: remove it to use another one.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ domain: ["create"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/domains/{id}/receiving"),
+  ],
+  request: {
+    params: DomainIdParams,
+    body: {
+      required: true,
+      content: { "application/json": { schema: CreateReceivingDomainRequest } },
+    },
+  },
+  responses: {
+    200: jsonDoc(
+      "The domain, with its receiving domain and the MX record to publish.",
+      DomainObject,
+    ),
+    400: errorDoc("The body is not valid JSON (`invalid_json`)."),
+    ...commonErrors,
+    404: domainNotFound,
+    413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
+    415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
+    422: errorDoc(
+      "The body failed validation (`validation_error`), the hostname is not one the domain can " +
+        "receive at (`invalid_receiving_hostname`), the domain already receives email " +
+        "(`receiving_domain_exists`), the hostname is already in use " +
+        "(`receiving_domain_taken`), or this deployment does not receive email " +
+        "(`receiving_unavailable`).",
+    ),
+  },
+});
+
+export const deleteReceivingDomainRoute = createRoute({
+  method: "delete",
+  path: "/domains/{id}/receiving",
+  operationId: "deleteReceivingDomain",
+  tags: ["Domains"],
+  summary: "Stop receiving email at a domain",
+  description:
+    "Stops receiving at the domain's receiving hostname: later mail to it is dropped (remove the " +
+    "MX record too). Emails already received stay until their retention ends.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ domain: ["delete"] }), rateLimit("api.write")],
+  request: { params: DomainIdParams },
+  responses: {
+    200: jsonDoc("The domain, without a receiving domain.", DomainObject),
+    ...commonErrors,
+    404: errorDoc(
+      "No domain with this id exists in this organization, or it does not receive email " +
+        "(`not_found`).",
+    ),
+  },
+});
+
+export function createDomainRoutes(
+  deps: DomainDeps,
+  inbound: InboundRuntime | null,
+): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
 
   /** The domain addressed by the path, inside the key's organization. */
@@ -288,12 +364,21 @@ export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
     return c.json(await domainObject(row), 200);
   });
 
-  /** Checks the domain's tracking domain along with it; its own problems show on its object. */
+  /**
+   * Checks the domain's tracking and receiving domains along with it; their own problems show on
+   * their objects.
+   */
   async function verifyTracking(organizationId: string, domainId: string): Promise<void> {
     try {
       await verifyTrackingDomain({ organizationId, domainId }, deps);
     } catch (error) {
       console.error(`[api:domains] checking the tracking domain of ${domainId} failed:`, error);
+    }
+    if (!inbound || !(await getReceivingDomain({ organizationId, domainId }))) return;
+    try {
+      await checkReceivingDomain({ organizationId, domainId }, inbound, deps.dns);
+    } catch (error) {
+      console.error(`[api:domains] checking the receiving domain of ${domainId} failed:`, error);
     }
   }
 
@@ -352,6 +437,46 @@ export function createDomainRoutes(deps: DomainDeps): OpenAPIHono<AppEnv> {
     const { organizationId } = c.var.auth;
     const row = await requireDomain(organizationId, id);
     await deleteTrackingDomain({ organizationId, domainId: row.id }, deps);
+    return c.json(await domainObject(row), 200);
+  });
+
+  router.openapi(createReceivingDomainRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { hostname } = c.req.valid("json");
+    const { organizationId, environmentId } = c.var.auth;
+    if (!inbound) {
+      throw new ApiError(422, {
+        type: "invalid_request_error",
+        code: "receiving_unavailable",
+        message: "This deployment does not receive email.",
+      });
+    }
+    const row = await requireDomain(organizationId, id);
+    // The key's environment receives: tenancy comes from the key, never from the request.
+    const created = await createReceivingDomain(
+      { organizationId, domainId: row.id, environmentId, hostname },
+      inbound,
+      deps.dns,
+    );
+    await recordApiAudit(c, {
+      action: "domain.receiving_enabled",
+      target: { type: "domain", id: row.id, label: row.name },
+      metadata: { hostname: created.hostname },
+    });
+    return c.json(await domainObject(row), 200);
+  });
+
+  router.openapi(deleteReceivingDomainRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { organizationId } = c.var.auth;
+    const row = await requireDomain(organizationId, id);
+    const removed = await deleteReceivingDomain({ organizationId, domainId: row.id });
+    await recordApiAudit(c, {
+      action: "domain.receiving_disabled",
+      target: { type: "domain", id: row.id, label: row.name },
+      environmentScoped: false,
+      metadata: { hostname: removed.hostname },
+    });
     return c.json(await domainObject(row), 200);
   });
 

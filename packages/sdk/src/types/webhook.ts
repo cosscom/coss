@@ -1,8 +1,9 @@
 /**
- * Webhook wire types (hand-written mirrors of the API's `EmailWebhookEvent` and
- * `AccountWebhookEvent`).
+ * Webhook wire types (hand-written mirrors of the API's `EmailWebhookEvent`,
+ * `ReceivedEmailWebhookEvent` and `AccountWebhookEvent`).
  */
 import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
+import type { ReceivedEmailVerdicts } from "./received-email.ts";
 import type { ReputationCheck, ReputationStatus } from "./reputation.ts";
 
 /** What a webhook says about the email; never its content, cc or bcc. */
@@ -31,6 +32,43 @@ export interface EmailWebhookEvent {
   /** ISO 8601 timestamp. */
   created_at: string;
   data: EmailWebhookEventData;
+}
+
+/** Events about received (inbound) emails. */
+export type ReceivedEmailEventType = "email.received";
+
+/** What a webhook says about a received email; never its content, headers or cc. */
+export interface ReceivedEmailWebhookEventData {
+  /** Retrieve the email (bodies, headers, attachments) with `coss.email.received.get`. */
+  received_email_id: string;
+  /** The `From` header. */
+  from: string | null;
+  /** The `To` header's addresses. */
+  to: string[];
+  /** The envelope recipients this environment received it for. */
+  recipients: string[];
+  subject: string | null;
+  message_id: string | null;
+  attachment_count: number;
+  size: number;
+  /** Whether the spam verdict is `fail`. */
+  spam: boolean;
+  verdicts: ReceivedEmailVerdicts;
+  sandbox: boolean;
+  /** ISO 8601 timestamp. */
+  received_at: string;
+}
+
+/** An email arrived. `id` equals the `webhook-id` header. */
+export interface ReceivedEmailWebhookEvent {
+  id: string;
+  object: "event";
+  type: ReceivedEmailEventType;
+  /** The API version this event is rendered in: the receiving endpoint's `api_version`. */
+  api_version: string;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  data: ReceivedEmailWebhookEventData;
 }
 
 /** Changes of the organization's reputation standing (sent to live environments only). */
@@ -65,4 +103,4 @@ export interface AccountWebhookEvent {
 }
 
 /** The JSON body of a webhook request; narrow on `type`. */
-export type WebhookEvent = EmailWebhookEvent | AccountWebhookEvent;
+export type WebhookEvent = EmailWebhookEvent | ReceivedEmailWebhookEvent | AccountWebhookEvent;

@@ -1,0 +1,106 @@
+---
+title: Receiving email
+description: Receive email at COSS's inbound address or your own domain, and read it from a webhook or the API.
+---
+
+Every environment can receive email. Each message that arrives becomes a **received email** of the
+environment: an `email.received` [webhook](/docs/webhooks) announces it, and its headers, bodies,
+attachments and raw message are in the dashboard (**Received emails** on the environment's page)
+and the API.
+
+## Addresses
+
+Each environment has its own domain under COSS's inbound domain, such as
+`k3j9x2m7qp4l.inbound.coss.com`. Email to **any** address at it (`support@…`, `orders+42@…`)
+is received, with no DNS setup:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: address } = await coss.email.received.address();
+console.log(`Send a test email to hello@${address?.domain}`);
+```
+
+To receive at your own domain, set up receiving on one of your [domains](/docs/email/domains),
+at the domain itself or a subdomain such as `inbound.acme.com`, and publish the `MX` record it
+lists. The environment of the API key that sets it up (or the one you pick in the dashboard)
+receives the email:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const domainId: string;
+// ---cut---
+const { data: domain, error } = await coss.domains.receiving.create(domainId, {
+  hostname: "inbound.acme.com",
+});
+
+const record = domain?.receiving?.record;
+console.log(record?.type, record?.priority, record?.value); // MX 10 inbound-smtp.us-east-1.amazonaws.com
+```
+
+- Pointing the domain itself (`acme.com`) at COSS moves **all** of its mail here, your team's
+  mailboxes included. Use a subdomain unless that is what you want.
+- Each domain has at most one receiving hostname. It can't be the `send.` bounce subdomain or the
+  domain's tracking domain.
+- Mail is received as soon as it reaches COSS; the MX check only shows what DNS serves.
+- Mail to an address nobody receives at is dropped without a bounce.
+
+## Handling a received email
+
+The `email.received` event says who sent what to whom, never the content. Fetch the email for its
+bodies and headers:
+
+```ts twoslash
+import { Coss, verifyWebhook } from "coss";
+const coss = new Coss();
+declare const request: Request;
+declare const secret: string;
+// ---cut---
+const event = await verifyWebhook(await request.text(), request.headers, secret);
+if (event.type === "email.received" && !event.data.spam) {
+  const id = event.data.received_email_id;
+  const { data: email } = await coss.email.received.get(id);
+  console.log(email?.from, email?.subject, email?.text);
+
+  for (const attachment of email?.attachments ?? []) {
+    const { data: bytes } = await coss.email.received.getAttachment(id, attachment.id);
+    console.log(attachment.filename, bytes?.byteLength);
+  }
+}
+```
+
+- `recipients` are the envelope recipients your environment received the message for, Bcc'd
+  addresses included. When one message is sent to several environments or organizations, each
+  gets its own received email and only ever sees its own recipients.
+- `text` and `html` are cut at 2 MB each, and headers at 64 KB (`truncated` says so).
+  `coss.email.received.getRaw()` returns the whole message as received (`message/rfc822`).
+- HTML comes from whoever sent the email: sanitize it before showing it to anyone. Attachments
+  are served as `application/octet-stream` whatever they claim to be.
+- To reply in the same thread, send with the `In-Reply-To` and `References` headers set to the
+  received email's `message_id`.
+
+## Spam, viruses and authentication
+
+Every message is scanned on arrival. `verdicts` holds the results of the spam and virus scans and
+of the SPF, DKIM and DMARC checks: `pass`, `fail`, `gray` (could not decide) or
+`processing_failed`.
+
+- Spam (`spam: true`) and messages that fail authentication are still received: decide what to do
+  with them in your handler.
+- A message with a **virus** is `blocked`: only its envelope, sender, subject and verdicts are kept,
+  its content is never stored, and no webhook is sent.
+
+In a sandbox environment, **Send a test email** on the **Received emails** page receives a message
+without sending one. Put `[coss-test:spam]`, `[coss-test:virus]`, `[coss-test:spf-fail]`,
+`[coss-test:dkim-fail]` or `[coss-test:dmarc-fail]` in its subject to try each verdict.
+
+## Limits and retention
+
+- An organization receives up to 10,000 emails a day across its environments. Mail over the limit
+  is dropped and counted on the **Received emails** page; contact support to raise it.
+- Messages can be up to 40 MB.
+- Received emails are kept for <RetentionPeriod of="received_emails" />, then deleted with their
+  content (see [data retention](/docs/data-retention)). `coss.email.received.delete()` deletes one
+  right away.

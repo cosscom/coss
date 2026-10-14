@@ -6,8 +6,10 @@ import { expect, test } from "bun:test";
 import type { z } from "zod";
 import {
   CreateDomainRequest,
+  CreateReceivingDomainRequest,
   CreateSuppressionRequest,
   DeletedDomain,
+  DeletedReceivedEmail,
   DeletedSuppression,
   DomainList,
   DomainObject,
@@ -23,6 +25,14 @@ import {
   EmailTracking,
   EmailWebhookEvent,
   ImportSuppressionsRequest,
+  InboundAddressObject,
+  ReceivedEmailAttachmentObject,
+  ReceivedEmailList,
+  ReceivedEmailObject,
+  ReceivedEmailSummary,
+  ReceivedEmailVerdicts,
+  ReceivedEmailWebhookEvent,
+  ReceivingDomainObject,
   SendEmailBatchRequest,
   SendEmailRequest,
   Suppression,
@@ -56,6 +66,16 @@ const SCHEMAS: Record<string, z.ZodType> = {
   DeletedSuppression,
   ImportSuppressionsRequest,
   SuppressionImport,
+  ReceivedEmail: ReceivedEmailObject,
+  ReceivedEmailSummary,
+  ReceivedEmailAttachment: ReceivedEmailAttachmentObject,
+  ReceivedEmailVerdicts,
+  ReceivedEmailList,
+  DeletedReceivedEmail,
+  InboundAddress: InboundAddressObject,
+  ReceivingDomain: ReceivingDomainObject,
+  CreateReceivingDomainRequest,
+  ReceivedEmailWebhookEvent,
 };
 
 for (const [name, schema] of Object.entries(SCHEMAS)) {

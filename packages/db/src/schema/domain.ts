@@ -641,6 +641,223 @@ export const trackingDomain = pgTable(
   ],
 );
 
+/** Result of checking the MX a receiving domain needs (same statuses as `DomainRecord`). */
+export type ReceivingDomainRecord = {
+  type: "MX";
+  name: string;
+  value: string;
+  priority: number;
+  status: DomainRecord["status"];
+  found: string[];
+};
+
+/**
+ * A hostname of a sending domain that receives email (the domain itself or a subdomain, with an MX
+ * to the provider's inbound host), delivered to one environment of the organization. At most one
+ * per domain; hostnames are unique across organizations. The MX check is only shown to the
+ * customer: mail is accepted whenever the provider receives it for a routed hostname.
+ */
+export const receivingDomain = pgTable(
+  "receiving_domain",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.receivingDomain)),
+    organizationId: text("organization_id").notNull(),
+    domainId: text("domain_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    // Lower-case ASCII (punycode), no trailing dot; the domain's name or a subdomain of it.
+    hostname: text("hostname").notNull(),
+    record: jsonb("record").$type<ReceivingDomainRecord>().notNull(),
+    lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
+    nextCheckAt: timestamp("next_check_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "receiving_domain_domain_fk",
+      columns: [t.domainId, t.organizationId],
+      foreignColumns: [domain.id, domain.organizationId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "receiving_domain_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("receiving_domain_domain_unique").on(t.domainId),
+    unique("receiving_domain_hostname_unique").on(t.hostname),
+    index("receiving_domain_environment_idx").on(t.environmentId),
+    index("receiving_domain_next_check_at_idx")
+      .on(t.nextCheckAt)
+      .where(sql`${t.nextCheckAt} is not null`),
+  ],
+);
+
+/**
+ * An environment's address space under COSS's managed inbound domain:
+ * `<anything>@<label>.<INBOUND_MANAGED_DOMAIN>`. Created on first read; the label never changes.
+ */
+export const environmentInboundAddress = pgTable(
+  "environment_inbound_address",
+  {
+    environmentId: text("environment_id").primaryKey(),
+    organizationId: text("organization_id").notNull(),
+    label: text("label").notNull().unique("environment_inbound_address_label_unique"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "environment_inbound_address_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+  ],
+);
+
+export const receivedEmailStatus = pgEnum("received_email_status", ["received", "blocked"]);
+
+/** One header line of a received email, in message order (names keep their case). */
+export type ReceivedEmailHeader = { name: string; value: string };
+
+/**
+ * An email received for one environment. A message addressed to several environments (or
+ * organizations) becomes one row each, holding only that environment's envelope recipients.
+ * The raw message and attachment bytes live in the inbound content store (`raw_key`,
+ * `content_key`); `blocked` rows (a virus verdict) keep no content.
+ */
+export const receivedEmail = pgTable(
+  "received_email",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.receivedEmail)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    status: receivedEmailStatus("status").notNull(),
+    blockedReason: text("blocked_reason"),
+    provider: text("provider").notNull(),
+    providerMessageId: text("provider_message_id").notNull(),
+    // Envelope: MAIL FROM (empty for bounces) and this environment's RCPT TO addresses.
+    mailFrom: text("mail_from").notNull(),
+    recipients: text("recipients").array().notNull(),
+    // Parsed headers (addresses as `Name <address>` or bare addresses).
+    from: text("from"),
+    to: text("to").array().notNull().default(sql`'{}'::text[]`),
+    cc: text("cc").array().notNull().default(sql`'{}'::text[]`),
+    replyTo: text("reply_to").array().notNull().default(sql`'{}'::text[]`),
+    subject: text("subject"),
+    messageId: text("message_id"),
+    inReplyTo: text("in_reply_to"),
+    references: text("references").array().notNull().default(sql`'{}'::text[]`),
+    // The Date header, when it parses.
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    headers: jsonb("headers").$type<ReceivedEmailHeader[]>().notNull().default([]),
+    text: text("text"),
+    html: text("html"),
+    // True when `text`, `html` or `headers` were cut to their stored limits (the raw message is whole).
+    truncated: boolean("truncated").notNull().default(false),
+    // Provider verdicts: pass | fail | gray | processing_failed (null when not checked).
+    spamVerdict: text("spam_verdict"),
+    virusVerdict: text("virus_verdict"),
+    spfVerdict: text("spf_verdict"),
+    dkimVerdict: text("dkim_verdict"),
+    dmarcVerdict: text("dmarc_verdict"),
+    // The sender domain's DMARC policy when DMARC failed: none | quarantine | reject.
+    dmarcPolicy: text("dmarc_policy"),
+    // Size of the raw message in bytes.
+    size: integer("size").notNull(),
+    rawKey: text("raw_key"),
+    receivedAt: timestamp("received_at", { withTimezone: true }).notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "received_email_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    // A provider notification delivered twice (SQS is at-least-once) records the email once.
+    unique("received_email_provider_message_unique").on(
+      t.environmentId,
+      t.provider,
+      t.providerMessageId,
+    ),
+    // Lists page newest first by id (UUIDv7 ids are time-ordered).
+    index("received_email_environment_id_idx").on(t.environmentId, t.id.desc()),
+    // The worker's retention purge and organization deletion.
+    index("received_email_created_at_idx").on(t.createdAt),
+    index("received_email_organization_idx").on(t.organizationId),
+    unique("received_email_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
+/** Attachment metadata of a received email; the bytes are in the content store (`content_key`). */
+export const receivedEmailAttachment = pgTable(
+  "received_email_attachment",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.receivedEmailAttachment)),
+    organizationId: text("organization_id").notNull(),
+    receivedEmailId: text("received_email_id").notNull(),
+    position: integer("position").notNull(),
+    filename: text("filename"),
+    contentType: text("content_type").notNull(),
+    contentId: text("content_id"),
+    // `attachment` or `inline`.
+    disposition: text("disposition").notNull(),
+    size: integer("size").notNull(),
+    sha256: text("sha256").notNull(),
+    contentKey: text("content_key").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "received_email_attachment_email_fk",
+      columns: [t.receivedEmailId, t.organizationId],
+      foreignColumns: [receivedEmail.id, receivedEmail.organizationId],
+    }).onDelete("cascade"),
+    unique("received_email_attachment_position_unique").on(t.receivedEmailId, t.position),
+  ],
+);
+
+/**
+ * The fake provider's inbound content store (development and tests: S3 in production). No FK:
+ * content is written before its row, and cleaned up like S3 objects (explicit deletes, a
+ * lifecycle-like retention step, organization deletion).
+ */
+export const inboundFakeObject = pgTable(
+  "inbound_fake_object",
+  {
+    key: text("key").primaryKey(),
+    organizationId: text("organization_id").notNull(),
+    contentType: text("content_type").notNull(),
+    content: bytea("content").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("inbound_fake_object_organization_idx").on(t.organizationId),
+    index("inbound_fake_object_created_at_idx").on(t.createdAt),
+  ],
+);
+
+/** Received messages dropped because an organization went over its daily inbound limit. */
+export const inboundDropCounter = pgTable(
+  "inbound_drop_counter",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    // UTC day.
+    day: text("day").notNull(),
+    count: integer("count").notNull().default(0),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ name: "inbound_drop_counter_pk", columns: [t.organizationId, t.day] })],
+);
+
 /** A customer URL that receives signed event notifications for one environment. */
 export const webhookEndpoint = pgTable(
   "webhook_endpoint",

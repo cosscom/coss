@@ -88,3 +88,47 @@ describe("cossPolicies", () => {
     });
   });
 });
+
+describe("cossPolicies with receiving", () => {
+  const inbound = cossPolicies({
+    region: "us-east-2",
+    account: "123456789012",
+    name: "coss",
+    tenantPrefix: "coss",
+    queueArn: "arn:aws:sqs:us-east-2:123456789012:coss-events",
+    inbound: {
+      bucket: "coss-inbound-123456789012",
+      queueArn: "arn:aws:sqs:us-east-2:123456789012:coss-inbound",
+    },
+  });
+  const s3 = (app: keyof typeof inbound) =>
+    inbound[app].Statement.filter((statement) =>
+      statement.Action.some((action) => action.startsWith("s3:")),
+    );
+
+  test("the api and dashboard only read and delete received email content", () => {
+    for (const app of ["api", "dashboard"] as const) {
+      expect(s3(app)).toEqual([
+        expect.objectContaining({
+          Action: ["s3:GetObject", "s3:DeleteObject"],
+          Resource: ["arn:aws:s3:::coss-inbound-123456789012/orgs/*"],
+        }),
+      ]);
+    }
+  });
+
+  test("only the worker reads landed messages, writes content and lists organizations", () => {
+    const resources = s3("worker").flatMap((statement) => statement.Resource);
+    expect(resources).toEqual([
+      "arn:aws:s3:::coss-inbound-123456789012/landing/*",
+      "arn:aws:s3:::coss-inbound-123456789012/orgs/*",
+      "arn:aws:s3:::coss-inbound-123456789012",
+    ]);
+    const list = s3("worker").find((statement) => statement.Action.includes("s3:ListBucket"));
+    expect(list?.Condition).toEqual({ StringLike: { "s3:prefix": "orgs/*" } });
+    expect(
+      inbound.worker.Statement.find((statement) => statement.Sid === "ConsumeReceiptNotifications")
+        ?.Resource,
+    ).toEqual(["arn:aws:sqs:us-east-2:123456789012:coss-inbound"]);
+  });
+});

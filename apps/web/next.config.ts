@@ -6,7 +6,11 @@ import { DASHBOARD_PATH } from "@coss/auth/slugs";
 import { sentryBuildOptions } from "@coss/observability/build";
 import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
-import { securityHeaders } from "./src/lib/security-headers.ts";
+import {
+  RECEIVED_CONTENT_CSP,
+  RECEIVED_CONTENT_PATHS,
+  securityHeaders,
+} from "./src/lib/security-headers.ts";
 
 // Read when `next build`/`next dev` loads this file: the standalone server reuses the serialized
 // result and never runs it again, so nothing stage-specific may be decided here.
@@ -45,7 +49,14 @@ const nextConfig: NextConfig = {
   // `next build` doesn't check the same project again. Image builds keep the check.
   typescript: { ignoreBuildErrors: process.env.SKIP_BUILD_TYPECHECK === "1" },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders({ dev }) }];
+    return [
+      { source: "/:path*", headers: securityHeaders({ dev }) },
+      // Later rules win for the same header: received emails' files never run in our origin.
+      ...RECEIVED_CONTENT_PATHS.map((source) => ({
+        source,
+        headers: [{ key: "Content-Security-Policy", value: RECEIVED_CONTENT_CSP }],
+      })),
+    ];
   },
   async redirects() {
     // In production `/` is the site's landing page. Locally, the dashboard's port opens the dashboard.

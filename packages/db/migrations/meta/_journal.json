@@ -295,6 +295,20 @@
       "when": 1791757715257,
       "tag": "0041_unknown_kitty_pryde",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1791994182953,
+      "tag": "0042_bumpy_leopardon",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1791994190836,
+      "tag": "0043_received_email_key_permissions",
+      "breakpoints": true
     }
   ]
 }

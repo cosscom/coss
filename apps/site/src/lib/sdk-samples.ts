@@ -114,6 +114,32 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "domains.tracking.delete",
     args: (r) => [pathId(r)],
   },
+  "POST /v1/domains/{id}/receiving": {
+    method: "domains.receiving.create",
+    args: (request) => [pathId(request), tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "DELETE /v1/domains/{id}/receiving": {
+    method: "domains.receiving.delete",
+    args: (r) => [pathId(r)],
+  },
+  "GET /v1/received_emails": {
+    method: "email.received.list",
+    args: (request) => [queryParams(request)],
+  },
+  "GET /v1/received_emails/address": { method: "email.received.address", args: () => [] },
+  "GET /v1/received_emails/{id}": { method: "email.received.get", args: (r) => [pathId(r)] },
+  "GET /v1/received_emails/{id}/raw": {
+    method: "email.received.getRaw",
+    args: (r) => [pathId(r)],
+  },
+  "GET /v1/received_emails/{id}/attachments/{attachment_id}": {
+    method: "email.received.getAttachment",
+    args: (request) => [pathId(request), pathParam(request, "attachment_id")],
+  },
+  "DELETE /v1/received_emails/{id}": {
+    method: "email.received.delete",
+    args: (r) => [pathId(r)],
+  },
   "POST /v1/webhook_endpoints": {
     method: "webhookEndpoints.create",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],

@@ -20,6 +20,8 @@ export const orgStatements = {
   environment: ["create", "read", "update", "delete"],
   apiKey: ["create", "read", "update", "delete"],
   email: ["send", "read"],
+  // Received emails: reading them is `email:read`; deleting one (its content too) is owners/admins.
+  receivedEmail: ["delete"],
   domain: ["create", "read", "verify", "delete"],
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],
@@ -44,6 +46,7 @@ const fullCossAccess = {
   environment: ["create", "read", "update", "delete"],
   apiKey: ["create", "read", "update", "delete"],
   email: ["send", "read"],
+  receivedEmail: ["delete"],
   domain: ["create", "read", "verify", "delete"],
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],

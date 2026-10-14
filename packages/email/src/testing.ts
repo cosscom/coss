@@ -17,6 +17,7 @@ import type { DomainRow } from "./domains.ts";
 import type { EmailProvider } from "./provider.ts";
 import { createEmailService, type EmailService, type EmailServiceOptions } from "./service.ts";
 import type { SesApi } from "./ses/api.ts";
+import type { S3Api } from "./ses/inbound.ts";
 
 export type MemoryDispatchQueue = EmailDispatchQueue & {
   /** Every enqueued job, oldest first (including jobs of rolled-back transactions). */
@@ -391,4 +392,91 @@ export class FakeCloudflareApi {
   activate(hostname: string): void {
     this.set(hostname, { status: "active", ssl: { status: "active" } });
   }
+}
+
+/** An in-memory S3 for tests: objects by bucket and key; `calls` records every operation. */
+export class FakeS3Api implements S3Api {
+  readonly objects = new Map<string, { content: Uint8Array; contentType: string }>();
+  readonly calls: string[] = [];
+
+  private id(bucket: string, key: string): string {
+    return `${bucket}/${key}`;
+  }
+
+  async getObject(bucket: string, key: string): Promise<Uint8Array | null> {
+    this.calls.push(`get ${key}`);
+    return this.objects.get(this.id(bucket, key))?.content ?? null;
+  }
+
+  async putObject(bucket: string, key: string, content: Uint8Array, contentType: string) {
+    this.calls.push(`put ${key}`);
+    this.objects.set(this.id(bucket, key), { content, contentType });
+  }
+
+  async deleteObject(bucket: string, key: string): Promise<void> {
+    this.calls.push(`delete ${key}`);
+    this.objects.delete(this.id(bucket, key));
+  }
+
+  async deleteObjects(bucket: string, keys: readonly string[]): Promise<void> {
+    this.calls.push(`deleteMany ${keys.length}`);
+    for (const key of keys) this.objects.delete(this.id(bucket, key));
+  }
+
+  async listKeys(
+    bucket: string,
+    prefix: string,
+    continuationToken?: string,
+  ): Promise<{ keys: string[]; next: string | null }> {
+    const all = [...this.objects.keys()]
+      .filter((id) => id.startsWith(`${bucket}/${prefix}`))
+      .map((id) => id.slice(bucket.length + 1))
+      .sort();
+    const start = continuationToken ? Number(continuationToken) : 0;
+    const keys = all.slice(start, start + 2);
+    return { keys, next: start + 2 < all.length ? String(start + 2) : null };
+  }
+}
+
+/** An SES receipt notification (the SQS body, raw SNS delivery) for an S3-action receipt rule. */
+export function sesReceiptNotification(input: {
+  messageId: string;
+  source: string;
+  recipients: string[];
+  bucketName: string;
+  objectKey: string;
+  verdicts?: Partial<Record<"spam" | "virus" | "spf" | "dkim" | "dmarc", string>>;
+  dmarcPolicy?: string;
+}): string {
+  const verdict = (name: "spam" | "virus" | "spf" | "dkim" | "dmarc") => ({
+    status: input.verdicts?.[name] ?? "PASS",
+  });
+  return JSON.stringify({
+    notificationType: "Received",
+    mail: {
+      timestamp: "2026-10-12T10:00:00.000Z",
+      source: input.source,
+      messageId: input.messageId,
+      destination: ["header-to@example.com"],
+      headersTruncated: false,
+    },
+    receipt: {
+      timestamp: "2026-10-12T10:00:00.000Z",
+      processingTimeMillis: 420,
+      recipients: input.recipients,
+      spamVerdict: verdict("spam"),
+      virusVerdict: verdict("virus"),
+      spfVerdict: verdict("spf"),
+      dkimVerdict: verdict("dkim"),
+      dmarcVerdict: verdict("dmarc"),
+      ...(input.dmarcPolicy ? { dmarcPolicy: input.dmarcPolicy } : {}),
+      action: {
+        type: "S3",
+        topicArn: "arn:aws:sns:us-east-1:123456789012:coss-ses-inbound",
+        bucketName: input.bucketName,
+        objectKeyPrefix: "landing/",
+        objectKey: input.objectKey,
+      },
+    },
+  });
 }

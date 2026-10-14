@@ -1,5 +1,6 @@
 import { emailWorkerEnvShape } from "@coss/email/env";
 import { sentryEnvShape } from "@coss/observability/env";
+import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { screeningEnvShape } from "@coss/screening/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-core";
@@ -13,6 +14,10 @@ export const env = createEnv({
     API_PUBLIC_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
     API_PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
     ...emailWorkerEnvShape,
+    // The daily inbound limit per organization (`email.inbound.day`) is counted in Valkey.
+    VALKEY_URL: rateLimitEnvShape.VALKEY_URL,
+    VALKEY_CLUSTER: rateLimitEnvShape.VALKEY_CLUSTER,
+    RATE_LIMIT_KEY_PREFIX: rateLimitEnvShape.RATE_LIMIT_KEY_PREFIX,
     // AI content screening of sampled live emails before they are sent (@coss/screening).
     ...screeningEnvShape,
     // Days of environment logs kept (@coss/logs); expired days are dropped hourly.

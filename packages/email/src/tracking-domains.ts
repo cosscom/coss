@@ -9,6 +9,7 @@ import { db, schema } from "@coss/db";
 import { and, asc, eq, inArray, isNotNull, isNull, lte, ne, notInArray } from "drizzle-orm";
 import { checkTrackingRecord } from "./dns.ts";
 import {
+  assertOwnsHostname,
   type DomainDeps,
   type DomainRow,
   domainSuffixes,
@@ -19,6 +20,7 @@ import {
   VERIFICATION_WINDOW_MS,
 } from "./domains.ts";
 import { DomainError } from "./errors.ts";
+import { listReceivingDomains, toReceivingDomainObject } from "./receiving-domains.ts";
 import {
   type DomainObjectOutput,
   parseEmailAddress,
@@ -133,18 +135,24 @@ export async function listTrackingDomains(input: {
   return new Map(rows.map((row) => [row.domainId, row]));
 }
 
-/** The wire representation of an organization's domains, with their tracking domains. */
+/** The wire representation of an organization's domains, with their tracking and receiving domains. */
 export async function domainObjects(
   organizationId: string,
   rows: DomainRow[],
 ): Promise<DomainObjectOutput[]> {
-  const tracking = await listTrackingDomains({
-    organizationId,
-    domainIds: rows.map((row) => row.id),
-  });
+  const domainIds = rows.map((row) => row.id);
+  const [tracking, receiving] = await Promise.all([
+    listTrackingDomains({ organizationId, domainIds }),
+    listReceivingDomains({ organizationId, domainIds }),
+  ]);
   return rows.map((row) => {
     const tracked = tracking.get(row.id);
-    return toDomainObject(row, tracked ? toTrackingDomainObject(tracked) : null);
+    const received = receiving.get(row.id);
+    return toDomainObject(
+      row,
+      tracked ? toTrackingDomainObject(tracked) : null,
+      received ? toReceivingDomainObject(received) : null,
+    );
   });
 }
 
@@ -175,24 +183,6 @@ async function takenError(organizationId: string, hostname: string): Promise<Dom
       ? `${hostname} is already the tracking domain of another of your domains.`
       : `${hostname} is already in use by another account.`,
   );
-}
-
-/**
- * The most specific domain across organizations decides who owns a hostname, as it does for
- * senders: a tracking domain can't sit under another organization's (more specific) domain.
- */
-async function assertOwnsHostname(parent: DomainRow, hostname: string): Promise<void> {
-  const candidates = await db
-    .select({ id: domain.id, name: domain.name })
-    .from(domain)
-    .where(and(inArray(domain.name, domainSuffixes(hostname)), ne(domain.status, "failed")));
-  const match = candidates.sort((a, b) => b.name.length - a.name.length)[0];
-  if (match && match.id !== parent.id) {
-    throw new DomainError(
-      "invalid_tracking_hostname",
-      `${hostname} belongs to the domain ${match.name}; set its tracking domain up there instead.`,
-    );
-  }
 }
 
 /**

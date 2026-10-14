@@ -1,7 +1,11 @@
 import { expect, test } from "bun:test";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { clientIpFromForwardedFor } from "../src/lib/client-ip";
 import {
   contentSecurityPolicy,
+  RECEIVED_CONTENT_CSP,
+  RECEIVED_CONTENT_PATHS,
   securityHeaders,
   TURNSTILE_ORIGIN,
 } from "../src/lib/security-headers";
@@ -52,4 +56,17 @@ test("client IP: the entry the trusted proxies appended, never a client-supplied
   expect(clientIpFromForwardedFor("evil, 130.176.1.2", 2)).toBeNull();
   expect(clientIpFromForwardedFor(null, 2)).toBeNull();
   expect(clientIpFromForwardedFor("203.0.113.7", 0)).toBeNull();
+});
+
+test("received emails' download routes are the paths their sandboxing CSP covers", () => {
+  const routes = RECEIVED_CONTENT_PATHS.map((source) =>
+    join(
+      import.meta.dir,
+      "../src/app",
+      source.replace(/:(\w+)/g, (_, name: string) => `[${name}]`),
+      "route.ts",
+    ),
+  );
+  for (const route of routes) expect(existsSync(route)).toBe(true);
+  expect(RECEIVED_CONTENT_CSP).toStartWith("sandbox;");
 });

@@ -45,6 +45,10 @@ export type DomainErrorCode =
   | "invalid_tracking_hostname"
   | "tracking_domain_exists"
   | "tracking_domain_taken"
+  | "invalid_receiving_hostname"
+  | "receiving_domain_exists"
+  | "receiving_domain_taken"
+  | "receiving_unavailable"
   | "not_found"
   | "domain_in_use_by_sso"
   | "provider_error";

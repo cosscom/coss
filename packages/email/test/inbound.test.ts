@@ -1,0 +1,429 @@
+import { describe, expect, test } from "bun:test";
+import { db, schema } from "@coss/db";
+import { uniqueSuffix } from "@coss/db/testing";
+import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
+import { LATEST_API_VERSION } from "@coss/versioning";
+import { createWebhookEndpoint, renderWebhookPayload } from "@coss/webhooks";
+import { testManagementDeps } from "@coss/webhooks/testing";
+import { and, eq } from "drizzle-orm";
+import {
+  fakeVerdicts,
+  type InboundMessage,
+  NO_VERDICTS,
+  receiveEmail,
+  receiveFakeEmail,
+} from "../src/inbound.ts";
+import { inboundAddressFor } from "../src/inbound-address.ts";
+import { buildTestMessage, scrubEnvelopeHeaders } from "../src/inbound-mime.ts";
+import { FakeInboundStore } from "../src/inbound-store.ts";
+import {
+  deleteReceivedEmail,
+  getReceivedEmail,
+  getReceivedEmailAttachment,
+  getReceivedEmailRaw,
+  inboundDropCount,
+  listReceivedEmails,
+} from "../src/received-emails.ts";
+import { createReceivingDomain } from "../src/receiving-domains.ts";
+import { ReceivedEmailWebhookEvent } from "../src/schemas.ts";
+import { createVerifiedDomain } from "../src/testing.ts";
+
+const MANAGED = "inbound.coss.test";
+const MX = "inbound-smtp.us-east-1.amazonaws.com";
+const store = new FakeInboundStore();
+const deps = { store, managedDomain: MANAGED };
+
+async function managedAddress(tenant: TestTenant, env = tenant.production, local = "support") {
+  const { domain } = await inboundAddressFor(
+    { organizationId: tenant.organization.id, environmentId: env.id },
+    MANAGED,
+  );
+  return `${local}@${domain}`;
+}
+
+function message(overrides: Partial<InboundMessage> & { rawBytes?: Uint8Array } = {}) {
+  const raw =
+    overrides.rawBytes ??
+    buildTestMessage({
+      from: "Jane <jane@example.com>",
+      to: ["support@example.com"],
+      subject: "Hello there",
+      text: "Plain body",
+      html: "<p>HTML body</p>",
+      attachments: [
+        { filename: "a.txt", contentType: "text/plain", content: new TextEncoder().encode("abc") },
+      ],
+    });
+  return {
+    provider: "fake",
+    providerMessageId: `msg-${uniqueSuffix()}`,
+    mailFrom: "jane@example.com",
+    recipients: [],
+    raw: async () => raw,
+    verdicts: { ...NO_VERDICTS, spam: "pass", virus: "pass" },
+    receivedAt: new Date(),
+    ...overrides,
+  } satisfies InboundMessage;
+}
+
+async function rowsFor(environmentId: string) {
+  return db
+    .select()
+    .from(schema.receivedEmail)
+    .where(eq(schema.receivedEmail.environmentId, environmentId));
+}
+
+describe("receiveEmail", () => {
+  test("delivers mail for a managed address with its content, attachments and verdicts", async () => {
+    const tenant = await createTestTenant();
+    const to = await managedAddress(tenant);
+    const outcomes = await receiveEmail(message({ recipients: [to.toUpperCase()] }), deps);
+    expect(outcomes).toHaveLength(1);
+    expect(outcomes[0]).toMatchObject({ kind: "received", environmentId: tenant.production.id });
+    const id = outcomes[0]?.kind === "received" ? outcomes[0].receivedEmailId : "";
+    const scope = { organizationId: tenant.organization.id, environmentId: tenant.production.id };
+
+    const received = await getReceivedEmail({ ...scope, id });
+    expect(received).toMatchObject({
+      object: "received_email",
+      status: "received",
+      from: "Jane <jane@example.com>",
+      recipients: [to],
+      subject: "Hello there",
+      text: "Plain body",
+      html: "<p>HTML body</p>",
+      spam: false,
+      sandbox: false,
+      verdicts: { spam: "pass", virus: "pass", spf: null },
+    });
+    expect(received?.attachments).toEqual([
+      expect.objectContaining({ filename: "a.txt", content_type: "text/plain", size: 3 }),
+    ]);
+    const attachmentId = received?.attachments[0]?.id ?? "";
+    const attachment = await getReceivedEmailAttachment({ ...scope, id, attachmentId }, store);
+    expect(new TextDecoder().decode(attachment?.content)).toBe("abc");
+    const raw = await getReceivedEmailRaw({ ...scope, id }, store);
+    expect(new TextDecoder().decode(raw?.content)).toContain("Subject: Hello there");
+
+    // Other environments and organizations see nothing.
+    const other = await createTestTenant();
+    expect(
+      await getReceivedEmail({
+        organizationId: other.organization.id,
+        environmentId: other.production.id,
+        id,
+      }),
+    ).toBeNull();
+    expect(
+      await getReceivedEmail({ ...scope, environmentId: tenant.development.id, id }),
+    ).toBeNull();
+  });
+
+  test("routes a receiving domain's hostname to its environment", async () => {
+    const tenant = await createTestTenant();
+    const parent = await createVerifiedDomain(tenant.organization.id);
+    await createReceivingDomain(
+      {
+        organizationId: tenant.organization.id,
+        domainId: parent.id,
+        environmentId: tenant.development.id,
+        hostname: `in.${parent.name}`,
+      },
+      { mxHost: MX, managedDomain: MANAGED },
+      null,
+    );
+    const outcomes = await receiveEmail(
+      message({
+        recipients: [`help@in.${parent.name}`, `nobody@${parent.name}`, "x@unrelated.example"],
+      }),
+      deps,
+    );
+    expect(outcomes).toEqual([
+      expect.objectContaining({
+        kind: "received",
+        environmentId: tenant.development.id,
+        recipients: [`help@in.${parent.name}`],
+      }),
+    ]);
+    const [row] = await rowsFor(tenant.development.id);
+    expect(row?.recipients).toEqual([`help@in.${parent.name}`]);
+  });
+
+  test("drops recipients that route nowhere, and domains that are no longer verified", async () => {
+    const tenant = await createTestTenant();
+    const parent = await createVerifiedDomain(tenant.organization.id);
+    await createReceivingDomain(
+      {
+        organizationId: tenant.organization.id,
+        domainId: parent.id,
+        environmentId: tenant.production.id,
+        hostname: parent.name,
+      },
+      { mxHost: MX, managedDomain: MANAGED },
+      null,
+    );
+    expect(await receiveEmail(message({ recipients: [`a@nolabel.${MANAGED}`] }), deps)).toEqual([]);
+    await db.update(schema.domain).set({ status: "failed" }).where(eq(schema.domain.id, parent.id));
+    expect(await receiveEmail(message({ recipients: [`a@${parent.name}`] }), deps)).toEqual([]);
+  });
+
+  test("a more specific domain of another organization takes the hostname over", async () => {
+    const tenant = await createTestTenant();
+    const parent = await createVerifiedDomain(tenant.organization.id);
+    await createReceivingDomain(
+      {
+        organizationId: tenant.organization.id,
+        domainId: parent.id,
+        environmentId: tenant.production.id,
+        hostname: `in.${parent.name}`,
+      },
+      { mxHost: MX, managedDomain: MANAGED },
+      null,
+    );
+    const other = await createTestTenant();
+    await createVerifiedDomain(other.organization.id, { name: `in.${parent.name}` });
+    expect(await receiveEmail(message({ recipients: [`a@in.${parent.name}`] }), deps)).toEqual([]);
+  });
+
+  test("splits one message across environments without leaking recipients", async () => {
+    const first = await createTestTenant();
+    const second = await createTestTenant();
+    const a = await managedAddress(first);
+    const b = await managedAddress(second, second.production, "bcc-me");
+    const raw = new TextEncoder().encode(
+      [
+        `Received: from mx.example.com by inbound-smtp.us-east-1.amazonaws.com with SMTP id abc for ${b};`,
+        " Mon, 12 Oct 2026 10:00:00 +0000",
+        "X-SES-RECEIPT: AEFBQUFBQUFBQUFH",
+        "From: jane@example.com",
+        `To: ${a}`,
+        "Subject: Split",
+        "",
+        "Body",
+        "",
+      ].join("\r\n"),
+    );
+    const outcomes = await receiveEmail(message({ recipients: [a, b], rawBytes: raw }), deps);
+    expect(outcomes.map((outcome) => outcome.recipients)).toEqual([[a], [b]]);
+
+    const [firstRow] = await rowsFor(first.production.id);
+    expect(firstRow?.recipients).toEqual([a]);
+    expect(JSON.stringify(firstRow?.headers)).not.toContain(b);
+    expect(JSON.stringify(firstRow?.headers)).not.toContain("X-SES-RECEIPT");
+    const firstRaw = await store.get(firstRow?.rawKey ?? "");
+    expect(new TextDecoder().decode(firstRaw ?? new Uint8Array())).not.toContain(b);
+    // The recipient's own copy keeps its clause; the body is untouched.
+    const [secondRow] = await rowsFor(second.production.id);
+    const secondRaw = new TextDecoder().decode(
+      (await store.get(secondRow?.rawKey ?? "")) ?? new Uint8Array(),
+    );
+    expect(secondRaw).toContain(`for ${b};`);
+    expect(secondRaw).toEndWith("\r\n\r\nBody\r\n");
+  });
+
+  test("a repeated notification records the message once", async () => {
+    const tenant = await createTestTenant();
+    const to = await managedAddress(tenant);
+    const once = message({ recipients: [to] });
+    const first = await receiveEmail(once, deps);
+    const second = await receiveEmail(once, deps);
+    expect(second).toEqual([
+      expect.objectContaining({
+        kind: "duplicate",
+        receivedEmailId: first[0]?.kind === "received" ? first[0].receivedEmailId : "",
+      }),
+    ]);
+    expect(await rowsFor(tenant.production.id)).toHaveLength(1);
+    const lines = await db
+      .select()
+      .from(schema.logEntry)
+      .where(
+        and(
+          eq(schema.logEntry.environmentId, tenant.production.id),
+          eq(schema.logEntry.type, "email.received"),
+        ),
+      );
+    expect(lines).toHaveLength(1);
+  });
+
+  test("a virus verdict blocks the message: no content, no webhook", async () => {
+    const tenant = await createTestTenant();
+    const { endpoint } = await createWebhookEndpoint(
+      {
+        organizationId: tenant.organization.id,
+        environmentId: tenant.production.id,
+        url: "https://example.com/hook",
+        eventTypes: [],
+        apiVersion: LATEST_API_VERSION,
+        userId: null,
+      },
+      testManagementDeps,
+    );
+    const to = await managedAddress(tenant);
+    const [outcome] = await receiveEmail(
+      message({ recipients: [to], verdicts: { ...NO_VERDICTS, virus: "fail" } }),
+      deps,
+    );
+    expect(outcome?.kind).toBe("blocked");
+    const [row] = await rowsFor(tenant.production.id);
+    expect(row).toMatchObject({
+      status: "blocked",
+      blockedReason: "virus",
+      rawKey: null,
+      text: null,
+    });
+    const attachments = await db
+      .select()
+      .from(schema.receivedEmailAttachment)
+      .where(eq(schema.receivedEmailAttachment.receivedEmailId, row?.id ?? ""));
+    expect(attachments).toEqual([]);
+    const deliveries = await db
+      .select()
+      .from(schema.webhookDelivery)
+      .where(eq(schema.webhookDelivery.endpointId, endpoint.id));
+    expect(deliveries).toEqual([]);
+  });
+
+  test("queues an email.received webhook with metadata only", async () => {
+    const tenant = await createTestTenant();
+    const { endpoint } = await createWebhookEndpoint(
+      {
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        url: "https://example.com/hook",
+        eventTypes: ["email.received"],
+        apiVersion: LATEST_API_VERSION,
+        userId: null,
+      },
+      testManagementDeps,
+    );
+    const to = await managedAddress(tenant, tenant.development);
+    const raw = buildTestMessage({
+      from: "jane@example.com",
+      to: [to],
+      cc: ["copied@example.com"],
+      subject: "Secret plans [coss-test:spam]",
+      text: "The body text",
+    });
+    const [outcome] = await receiveFakeEmail(
+      {
+        raw,
+        mailFrom: "jane@example.com",
+        recipients: [to],
+        subject: "Secret plans [coss-test:spam]",
+      },
+      deps,
+    );
+    const [delivery] = await db
+      .select({ payload: schema.webhookMessage.payload })
+      .from(schema.webhookDelivery)
+      .innerJoin(
+        schema.webhookMessage,
+        eq(schema.webhookMessage.id, schema.webhookDelivery.messageId),
+      )
+      .where(eq(schema.webhookDelivery.endpointId, endpoint.id));
+    const event = ReceivedEmailWebhookEvent.parse(
+      renderWebhookPayload(delivery?.payload ?? {}, LATEST_API_VERSION),
+    );
+    expect(event).toMatchObject({
+      type: "email.received",
+      data: {
+        received_email_id: outcome?.kind === "received" ? outcome.receivedEmailId : "",
+        recipients: [to],
+        spam: true,
+        sandbox: true,
+        attachment_count: 0,
+      },
+    });
+    expect(JSON.stringify(event)).not.toContain("The body text");
+    expect(JSON.stringify(event)).not.toContain("copied@example.com");
+  });
+
+  test("over the daily limit, messages are dropped and counted", async () => {
+    const tenant = await createTestTenant();
+    const to = await managedAddress(tenant);
+    const now = new Date();
+    const outcomes = await receiveEmail(message({ recipients: [to], receivedAt: now }), {
+      ...deps,
+      quota: { consume: async () => false },
+    });
+    expect(outcomes).toEqual([expect.objectContaining({ kind: "over_limit" })]);
+    expect(await rowsFor(tenant.production.id)).toEqual([]);
+    expect(await inboundDropCount(tenant.organization.id, now.toISOString().slice(0, 10))).toBe(1);
+  });
+
+  test("organizations being deleted receive nothing; suspended ones still do", async () => {
+    const deleting = await createTestTenant();
+    const toDeleting = await managedAddress(deleting);
+    await db.insert(schema.organizationDeletion).values({
+      organizationId: deleting.organization.id,
+      organizationName: deleting.organization.name,
+      organizationSlug: deleting.organization.slug,
+      requestedByEmail: "owner@example.com",
+      // Never claimed by a deletion run.
+      nextAttemptAt: null,
+    });
+    expect(await receiveEmail(message({ recipients: [toDeleting] }), deps)).toEqual([]);
+
+    const suspended = await createTestTenant();
+    const toSuspended = await managedAddress(suspended);
+    await db.insert(schema.organizationSuspension).values({
+      organizationId: suspended.organization.id,
+      reason: "test",
+    });
+    expect(await receiveEmail(message({ recipients: [toSuspended] }), deps)).toHaveLength(1);
+  });
+});
+
+describe("received emails", () => {
+  test("list newest first with an id cursor, and delete removes the content", async () => {
+    const tenant = await createTestTenant();
+    const to = await managedAddress(tenant);
+    for (let i = 0; i < 3; i++) await receiveEmail(message({ recipients: [to] }), deps);
+    const scope = { organizationId: tenant.organization.id, environmentId: tenant.production.id };
+    const first = await listReceivedEmails({ ...scope, limit: 2 });
+    expect(first.data).toHaveLength(2);
+    expect(first.hasMore).toBe(true);
+    const second = await listReceivedEmails({ ...scope, limit: 2, after: first.data[1]?.id });
+    expect(second.data).toHaveLength(1);
+    expect(second.hasMore).toBe(false);
+    expect([...first.data, ...second.data].map((e) => e.id)).toEqual(
+      [...first.data, ...second.data]
+        .map((e) => e.id)
+        .sort()
+        .reverse(),
+    );
+
+    const target = second.data[0]?.id ?? "";
+    const [row] = await db
+      .select()
+      .from(schema.receivedEmail)
+      .where(eq(schema.receivedEmail.id, target));
+    expect(await store.get(row?.rawKey ?? "")).not.toBeNull();
+    expect(
+      await deleteReceivedEmail(
+        { ...scope, environmentId: tenant.development.id, id: target },
+        store,
+      ),
+    ).toBe(false);
+    expect(await deleteReceivedEmail({ ...scope, id: target }, store)).toBe(true);
+    expect(await store.get(row?.rawKey ?? "")).toBeNull();
+    expect(await getReceivedEmail({ ...scope, id: target })).toBeNull();
+  });
+});
+
+describe("MIME helpers", () => {
+  test("fake verdicts come from subject markers", () => {
+    expect(fakeVerdicts("hi")).toMatchObject({ spam: "pass", virus: "pass" });
+    expect(fakeVerdicts("[coss-test:virus] [coss-test:dmarc-fail]")).toMatchObject({
+      virus: "fail",
+      dmarc: "fail",
+      dmarcPolicy: "reject",
+    });
+  });
+
+  test("scrubbing leaves a message without provider headers byte-identical", () => {
+    const raw = buildTestMessage({ from: "a@example.com", to: ["b@example.com"], subject: "x" });
+    expect(scrubEnvelopeHeaders(raw, ["b@example.com"])).toBe(raw);
+  });
+});

@@ -1,7 +1,7 @@
 /**
  * Background worker: dispatches queued emails, delivers webhooks, re-checks domains, recovers
  * lost or interrupted sends, sends account and reputation emails and (with `EMAIL_PROVIDER=ses`)
- * ingests SES delivery events. Safe to run several instances.
+ * ingests SES delivery events and received emails. Safe to run several instances.
  */
 // First: monitoring reports failures while starting, too.
 import "./instrument.ts";
@@ -15,12 +15,15 @@ import {
   workEmailDispatchQueue,
 } from "@coss/email/dispatch";
 import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
+import { createS3Api } from "@coss/email/ses";
+import { createRateLimitRuntime } from "@coss/ratelimit";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
 import { screenMessage } from "@coss/screening";
 import { createClassifier } from "@coss/screening/runtime";
 import { createWebhookSender, parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
 import { env } from "./env.ts";
+import { inboundQuota, type SesInboundDeps } from "./inbound.ts";
 import { startJobs } from "./jobs.ts";
 import { monitoredDispatch } from "./monitoring.ts";
 import { createShutdown } from "./shutdown.ts";
@@ -40,6 +43,32 @@ if (config.provider === "ses") {
   sesEvents = {
     sqs: createSqsApi(config.ses.region, env.SES_EVENTS_QUEUE_URL),
     tenantPrefix: config.ses.tenantPrefix,
+  };
+}
+// Receiving: the daily inbound limit per organization, and (SES) the receipt notification queue.
+const rateLimits = createRateLimitRuntime({
+  VALKEY_URL: env.VALKEY_URL,
+  VALKEY_CLUSTER: env.VALKEY_CLUSTER,
+  RATE_LIMIT_KEY_PREFIX: env.RATE_LIMIT_KEY_PREFIX,
+  TRUSTED_PROXY_COUNT: 1,
+});
+await rateLimits.ready();
+let sesInbound: SesInboundDeps | undefined;
+if (config.provider === "ses" && email.inbound && config.inbound?.bucket) {
+  if (!env.SES_INBOUND_QUEUE_URL) {
+    throw new Error(
+      "Receiving with EMAIL_PROVIDER=ses requires SES_INBOUND_QUEUE_URL (see `bun run ses:bootstrap`).",
+    );
+  }
+  sesInbound = {
+    sqs: createSqsApi(config.ses.region, env.SES_INBOUND_QUEUE_URL, "ses-inbound"),
+    s3: createS3Api(config.ses.region),
+    bucket: config.inbound.bucket,
+    inbound: {
+      store: email.inbound.store,
+      managedDomain: email.inbound.managedDomain,
+      quota: inboundQuota(rateLimits.limiter),
+    },
   };
 }
 if (!env.NOTIFICATIONS_ENVIRONMENT_ID !== !env.NOTIFICATIONS_FROM) {
@@ -97,6 +126,8 @@ const loops = startJobs({
   systemOrganizationId,
   dispatchQueue,
   sesEvents,
+  inbound: email.inbound,
+  sesInbound,
   signal: controller.signal,
   domains: email.domainDeps,
   email: emailService,
@@ -124,7 +155,7 @@ const shutdown = createShutdown({
     { name: "email-dispatch", stop: () => jobs.stop({ graceful: true, timeout: 30_000 }) },
   ],
   close: async () => {
-    await closeDb();
+    await Promise.all([closeDb(), rateLimits.limiter.close()]);
     await Sentry.close(2_000);
   },
 });

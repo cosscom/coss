@@ -6,11 +6,13 @@ import {
   type EmailService,
   emailReputationChecks,
   recheckDueDomains,
+  recheckDueReceivingDomains,
   recheckDueTrackingDomains,
   releaseOrganizationEmailResources,
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
+import type { InboundRuntime } from "@coss/email/runtime";
 import { dropExpiredLogPartitions, ensureLogPartitions } from "@coss/logs";
 import {
   type ReputationNotificationDeps,
@@ -24,6 +26,7 @@ import {
   runDueWebhookDeliveries,
   type WebhookDeliveryDeps,
 } from "@coss/webhooks";
+import { pollSesInbound, type SesInboundDeps } from "./inbound.ts";
 import type { Loop } from "./loop.ts";
 import { startLoop } from "./loop.ts";
 import { runRetention } from "./retention.ts";
@@ -60,6 +63,10 @@ export type WorkerDeps = {
   systemOrganizationId: string | null;
   /** Only with `EMAIL_PROVIDER=ses`. */
   sesEvents?: { sqs: SqsApi; tenantPrefix: string };
+  /** Receiving (`EmailRuntime.inbound`): receiving domain checks and content deletion. */
+  inbound?: InboundRuntime | null;
+  /** Only with `EMAIL_PROVIDER=ses` and receiving set up (`SES_INBOUND_QUEUE_URL`). */
+  sesInbound?: SesInboundDeps;
   /**
    * Aborted on shutdown: ends the SQS long poll and stops long runs between items. Each loop's
    * current item (a webhook attempt, a domain check, a received SQS batch) still finishes.
@@ -86,12 +93,15 @@ export function startJobs(deps: WorkerDeps): Loop[] {
     startLoop({
       name: "domains",
       intervalMs: 30_000,
-      // Sending domains, then their custom tracking domains.
+      // Sending domains, then their custom tracking and receiving domains.
       run: async () => {
         const opts = { limit: DOMAIN_BATCH, signal: deps.signal };
         const domains = await recheckDueDomains(opts, deps.domains);
         const tracking = await recheckDueTrackingDomains(opts, deps.domains);
-        return domains === DOMAIN_BATCH || tracking === DOMAIN_BATCH;
+        const receiving = deps.inbound
+          ? await recheckDueReceivingDomains(opts, deps.inbound, deps.domains.dns)
+          : 0;
+        return domains === DOMAIN_BATCH || tracking === DOMAIN_BATCH || receiving === DOMAIN_BATCH;
       },
     }),
     startLoop({
@@ -126,7 +136,11 @@ export function startJobs(deps: WorkerDeps): Loop[] {
           { limit: DELETION_BATCH, signal: deps.signal },
           {
             releaseProviderResources: (organizationId, assertLease) =>
-              releaseOrganizationEmailResources(organizationId, deps.domains, assertLease),
+              releaseOrganizationEmailResources(
+                organizationId,
+                { ...deps.domains, inboundStore: deps.inbound?.store ?? null },
+                assertLease,
+              ),
           },
         )) === DELETION_BATCH,
     }),
@@ -197,6 +211,24 @@ export function startJobs(deps: WorkerDeps): Loop[] {
             await pollSesEvents(ses.sqs, { tenantPrefix: ses.tenantPrefix, signal: deps.signal });
           } catch (error) {
             // Shutting down aborts the long poll; that's not a failure.
+            if (!deps.signal.aborted) throw error;
+          }
+        },
+      }),
+    );
+  }
+  const sesInbound = deps.sesInbound;
+  if (sesInbound) {
+    loops.push(
+      startLoop({
+        name: "ses-inbound",
+        // Each receive long-polls for up to 20 seconds, so poll again right away.
+        intervalMs: 0,
+        run: async () => {
+          if (deps.signal.aborted) return;
+          try {
+            await pollSesInbound(sesInbound, { signal: deps.signal });
+          } catch (error) {
             if (!deps.signal.aborted) throw error;
           }
         },

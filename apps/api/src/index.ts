@@ -33,6 +33,7 @@ const app = createApp({
     trackingDomainProvider: email.trackingHostnames.name,
   }),
   domainDeps: email.domainDeps,
+  inbound: email.inbound,
   webhookDeps: {
     secretsKeys: parseSecretsKeys(env.WEBHOOK_SECRETS_KEY),
     allowInsecureUrls: process.env.NODE_ENV !== "production",

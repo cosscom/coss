@@ -1,6 +1,6 @@
 /** The DNS records a sending domain needs, and checks of what DNS actually serves. */
 import { Resolver } from "node:dns/promises";
-import type { DomainRecord, TrackingDomainRecord } from "@coss/db/schema";
+import type { DomainRecord, ReceivingDomainRecord, TrackingDomainRecord } from "@coss/db/schema";
 
 /** The subset of `node:dns/promises` `Resolver` the checks use (fakeable in tests). */
 export type DnsResolver = {
@@ -141,4 +141,29 @@ export async function checkTrackingRecord(
   return found.includes(normalizeHost(record.value))
     ? { ...record, status: "verified", found: [] }
     : { ...record, status: "mismatch", found: found.slice(0, 5) };
+}
+
+/**
+ * Checks a receiving domain's MX: mail goes to the most preferred (lowest priority) exchanges, so
+ * every one of those must be the provider's inbound host. Without a resolver it stays `not_checked`.
+ */
+export async function checkReceivingRecord(
+  record: ReceivingDomainRecord,
+  dns: DnsResolver | null,
+): Promise<ReceivingDomainRecord> {
+  if (!dns) return { ...record, status: "not_checked", found: [] };
+  const answers = await lookup(() => dns.resolveMx(record.name));
+  if (answers === null) return { ...record, status: "not_checked", found: [] };
+  if (answers.length === 0) return { ...record, status: "missing", found: [] };
+  const preferred = Math.min(...answers.map((mx) => mx.priority));
+  const verified = answers
+    .filter((mx) => mx.priority === preferred)
+    .every((mx) => normalizeHost(mx.exchange) === normalizeHost(record.value));
+  return verified
+    ? { ...record, status: "verified", found: [] }
+    : {
+        ...record,
+        status: "mismatch",
+        found: answers.slice(0, 5).map((mx) => `${mx.priority} ${normalizeHost(mx.exchange)}`),
+      };
 }

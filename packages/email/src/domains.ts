@@ -21,11 +21,13 @@ import {
 } from "drizzle-orm";
 import { checkRecords, type DnsResolver, expectedRecords } from "./dns.ts";
 import { DomainError, EmailError } from "./errors.ts";
+import type { InboundContentStore } from "./inbound-store.ts";
 import { type IdentityProvider, IdentityTakenError, type ProviderTenant } from "./provider.ts";
 import {
   DOMAIN_NAME_MAX_LENGTH,
   type DomainObjectOutput,
   parseEmailAddress,
+  type ReceivingDomainObjectOutput,
   type TrackingDomainObjectOutput,
 } from "./schemas.ts";
 import type { TrackingHostnameProvider } from "./tracking-hostnames.ts";
@@ -88,12 +90,14 @@ export function domainRecords(row: DomainRow): DomainRecord[] {
 }
 
 /**
- * The domain's public wire representation, including the records to publish. `tracking` is its
- * tracking domain's (`domainObjects` in `tracking-domains.ts` loads both).
+ * The domain's public wire representation, including the records to publish. `tracking` and
+ * `receiving` are its tracking and receiving domains' (`domainObjects` in `tracking-domains.ts`
+ * loads all three).
  */
 export function toDomainObject(
   row: DomainRow,
   tracking: TrackingDomainObjectOutput | null = null,
+  receiving: ReceivingDomainObjectOutput | null = null,
 ): DomainObjectOutput {
   return {
     object: "domain",
@@ -110,6 +114,7 @@ export function toDomainObject(
     verified_at: row.verifiedAt?.toISOString() ?? null,
     failed_at: row.failedAt?.toISOString() ?? null,
     tracking,
+    receiving,
   };
 }
 
@@ -493,13 +498,17 @@ export async function deleteDomain(
 
 /**
  * Organization deletion (worker, `OrganizationTeardownDeps.releaseProviderResources`): stops the
- * organization's sends, removes its domains' provider identities and the domains, then its tenant.
+ * organization's sends, deletes its received emails' content, removes its domains' provider
+ * identities and the domains, then its tenant.
  * Idempotent; a failure leaves the rest for the retry. `failed` domains have no identity of
  * theirs (the name may be another organization's by now), so only their rows go.
  */
 export async function releaseOrganizationEmailResources(
   organizationId: string,
-  deps: Pick<DomainDeps, "identity" | "tracking">,
+  deps: Pick<DomainDeps, "identity" | "tracking"> & {
+    /** Received emails' content store (`EmailRuntime.inbound`); its rows go with the data. */
+    inboundStore?: InboundContentStore | null;
+  },
   assertLease: () => Promise<void> = async () => {},
 ): Promise<void> {
   await assertLease();
@@ -508,6 +517,11 @@ export async function releaseOrganizationEmailResources(
     .update(domain)
     .set({ status: "deleting", canSend: false })
     .where(and(eq(domain.organizationId, organizationId), ne(domain.status, "failed")));
+  if (deps.inboundStore) {
+    // Nothing more is received for an organization being deleted (`routeRecipients`).
+    await assertLease();
+    await deps.inboundStore.deleteOrganization(organizationId);
+  }
   const tenantRow = await getEmailTenant(organizationId);
   const tenant = tenantRow ? tenantOf(tenantRow) : { tenantName: "", tenantArn: null };
   const rows = await db
@@ -593,6 +607,29 @@ export async function recheckDueDomains(
 export function domainSuffixes(name: string): string[] {
   const labels = name.split(".");
   return labels.slice(0, -1).map((_, index) => labels.slice(index).join("."));
+}
+
+/**
+ * The most specific domain across organizations decides who owns a hostname, as it does for
+ * senders: a tracking or receiving domain can't sit under another organization's (more specific)
+ * domain.
+ */
+export async function assertOwnsHostname(
+  parent: DomainRow,
+  hostname: string,
+  feature: "tracking" | "receiving" = "tracking",
+): Promise<void> {
+  const candidates = await db
+    .select({ id: domain.id, name: domain.name })
+    .from(domain)
+    .where(and(inArray(domain.name, domainSuffixes(hostname)), ne(domain.status, "failed")));
+  const match = candidates.sort((a, b) => b.name.length - a.name.length)[0];
+  if (match && match.id !== parent.id) {
+    throw new DomainError(
+      feature === "tracking" ? "invalid_tracking_hostname" : "invalid_receiving_hostname",
+      `${hostname} belongs to the domain ${match.name}; set its ${feature} domain up there instead.`,
+    );
+  }
 }
 
 /**

@@ -19,6 +19,8 @@ export type PolicyContext = {
   name: string;
   tenantPrefix: string;
   queueArn: string;
+  /** Receiving (`--managed-domain`): the inbound bucket and the receipt notification queue. */
+  inbound?: { bucket: string; queueArn: string };
 };
 
 export type PolicyDocument = {
@@ -28,7 +30,7 @@ export type PolicyDocument = {
     Effect: "Allow";
     Action: string[];
     Resource: string[];
-    Condition?: Record<string, Record<string, string>>;
+    Condition?: Record<string, Record<string, string | string[]>>;
   }[];
 };
 
@@ -43,6 +45,20 @@ export function cossPolicies(
   const tagsNewIdentities = {
     StringEquals: { [`aws:RequestTag/${MANAGED_TAG}`]: ctx.tenantPrefix },
   };
+
+  // Received emails' content lives under `orgs/`; SES writes raw messages under `landing/`,
+  // which only the worker reads (and deletes once recorded).
+  const bucket = ctx.inbound ? `arn:aws:s3:::${ctx.inbound.bucket}` : null;
+  const contentReads = bucket
+    ? [
+        {
+          Sid: "ReadAndDeleteReceivedEmailContent",
+          Effect: "Allow" as const,
+          Action: ["s3:GetObject", "s3:DeleteObject"],
+          Resource: [`${bucket}/orgs/*`],
+        },
+      ]
+    : [];
 
   return {
     api: {
@@ -60,6 +76,7 @@ export function cossPolicies(
           Action: ["ses:SendEmail"],
           Resource: [configurationSet],
         },
+        ...contentReads,
       ],
     },
     dashboard: {
@@ -97,6 +114,7 @@ export function cossPolicies(
           Resource: [identities],
           Condition: managed,
         },
+        ...contentReads,
       ],
     },
     worker: {
@@ -146,6 +164,36 @@ export function cossPolicies(
           Action: ["ses:GetTenant", "ses:DeleteTenant"],
           Resource: [tenants],
         },
+        ...(ctx.inbound && bucket
+          ? [
+              {
+                Sid: "ConsumeReceiptNotifications",
+                Effect: "Allow" as const,
+                Action: ["sqs:ReceiveMessage", "sqs:DeleteMessage"],
+                Resource: [ctx.inbound.queueArn],
+              },
+              {
+                Sid: "ReadAndDeleteLandedMessages",
+                Effect: "Allow" as const,
+                Action: ["s3:GetObject", "s3:DeleteObject"],
+                Resource: [`${bucket}/landing/*`],
+              },
+              {
+                Sid: "StoreReceivedEmailContent",
+                Effect: "Allow" as const,
+                Action: ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+                Resource: [`${bucket}/orgs/*`],
+              },
+              {
+                // Organization deletion lists an organization's objects to delete them.
+                Sid: "ListReceivedEmailContent",
+                Effect: "Allow" as const,
+                Action: ["s3:ListBucket"],
+                Resource: [bucket],
+                Condition: { StringLike: { "s3:prefix": "orgs/*" } },
+              },
+            ]
+          : []),
       ],
     },
   };
