@@ -4,16 +4,42 @@ import { Tabs, TabsList, TabsTab } from "@coss/ui/components/tabs";
 import { cn } from "@coss/ui/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { activeNavItem, type NavItem } from "@/lib/navigation";
+import {
+  ACCOUNT_NAV,
+  ADMIN_NAV,
+  activeNavItem,
+  type NavItem,
+  ORGANIZATION_SETTINGS_NAV,
+} from "@/lib/navigation";
 
-/** Route tabs under a page header (an area's sub-pages), underlined like coss ui's tabs. */
-export function SubNav(props: { base: string; items: NavItem[]; className?: string }) {
+/** Navigation lists by name: server components can't pass `NavItem`s (icons are functions). */
+const NAVS = {
+  account: ACCOUNT_NAV,
+  admin: ADMIN_NAV,
+  organizationSettings: ORGANIZATION_SETTINGS_NAV,
+} as const satisfies Record<string, NavItem[]>;
+
+/**
+ * Route tabs under a page header (an area's sub-pages), underlined like coss ui's tabs. Name the
+ * list with `nav` (from server components; `paths` keeps only those items, e.g. the ones the
+ * member may see) or pass `items` from client components.
+ */
+export function SubNav(
+  props: { base: string; className?: string } & (
+    | { nav: keyof typeof NAVS; paths?: string[] }
+    | { items: NavItem[] }
+  ),
+) {
   const pathname = usePathname();
-  const active = activeNavItem(pathname, props.base, props.items);
+  const items =
+    "items" in props
+      ? props.items
+      : NAVS[props.nav].filter((item) => !props.paths || props.paths.includes(item.path));
+  const active = activeNavItem(pathname, props.base, items);
   return (
     <Tabs className={cn("-mx-1 overflow-x-auto", props.className)} value={active?.path ?? null}>
       <TabsList variant="underline">
-        {props.items.map((item) => (
+        {items.map((item) => (
           <TabsTab
             key={item.path}
             nativeButton={false}

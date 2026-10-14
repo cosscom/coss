@@ -14,6 +14,7 @@ import {
 } from "@coss/ui/components/dialog";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
+import { PlusIcon } from "lucide-react";
 import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
 import { addDomainAction } from "./actions";
@@ -21,7 +22,10 @@ import { addDomainAction } from "./actions";
 export function AddDomainDialog({ orgSlug }: { orgSlug: string }) {
   return (
     <Dialog>
-      <DialogTrigger render={<Button size="sm" />}>Add domain</DialogTrigger>
+      <DialogTrigger render={<Button size="sm" />}>
+        <PlusIcon />
+        Add domain
+      </DialogTrigger>
       <DialogPopup>
         <AddDomainForm orgSlug={orgSlug} />
       </DialogPopup>

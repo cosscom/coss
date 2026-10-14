@@ -18,10 +18,15 @@ type Line = Pick<DraftLine, "kind" | "description" | "amountCents"> & {
 };
 
 /** An invoice's (or a preview's) lines with their total. */
-export function InvoiceLinesTable(props: { lines: readonly Line[]; totalLabel?: string }) {
+export function InvoiceLinesTable(props: {
+  lines: readonly Line[];
+  totalLabel?: string;
+  /** `card` inside a `Panel`. */
+  variant?: "default" | "card";
+}) {
   const total = props.lines.reduce((sum, line) => sum + line.amountCents, 0n);
   return (
-    <Table>
+    <Table variant={props.variant}>
       <TableHeader>
         <TableRow>
           <TableHead>Description</TableHead>
@@ -41,7 +46,7 @@ export function InvoiceLinesTable(props: { lines: readonly Line[]; totalLabel?: 
               <TableCell className="text-muted-foreground">
                 {start && end ? formatPeriodRange(start, end) : "—"}
               </TableCell>
-              <TableCell className="text-right tabular-nums">
+              <TableCell className="text-right font-mono text-xs tabular-nums">
                 {formatCents(line.amountCents)}
               </TableCell>
             </TableRow>
@@ -53,7 +58,7 @@ export function InvoiceLinesTable(props: { lines: readonly Line[]; totalLabel?: 
           <TableCell className="font-medium" colSpan={2}>
             {props.totalLabel ?? "Total"}
           </TableCell>
-          <TableCell className="text-right font-medium tabular-nums">
+          <TableCell className="text-right font-medium font-mono text-xs tabular-nums">
             {formatCents(total)}
           </TableCell>
         </TableRow>

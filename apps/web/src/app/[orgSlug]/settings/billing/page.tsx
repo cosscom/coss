@@ -20,7 +20,6 @@ import { listEnvironments, listProjects } from "@coss/tenancy";
 import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { Progress } from "@coss/ui/components/progress";
 import {
   Table,
@@ -30,12 +29,17 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { CreditCardIcon, GaugeIcon, ReceiptIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { stringParam } from "@/components/admin/list-controls";
 import { InvoiceStatusBadge } from "@/components/billing/invoice-status";
-import { PageHeader } from "@/components/page-header";
+import { StackedBars } from "@/components/charts/stacked-bars";
+import { EmptyState } from "@/components/empty-state";
+import { Panel, PanelBody } from "@/components/panel";
+import { SectionHeader } from "@/components/section-header";
+import { Stat, StatRow } from "@/components/stat-row";
 import { env } from "@/env";
 import { recordAudit } from "@/lib/audit";
 import { billingRuntime, systemOrganizationId } from "@/lib/billing";
@@ -187,7 +191,6 @@ export default async function BillingPage({
     meters.set(line.meter, row);
   }
   const dailyEmail = byDay.filter((row) => row.meter === "email.recipients");
-  const dailyMax = Math.max(1, ...dailyEmail.map((row) => row.quantity));
   const activeGrants = grants.filter(
     (grant) =>
       !grant.voidedAt && grant.remaining > 0n && (!grant.expiresAt || grant.expiresAt > now),
@@ -195,7 +198,7 @@ export default async function BillingPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
+      <SectionHeader
         actions={
           <Button
             render={<Link href={`/${organization.slug}/settings/billing/plans`} />}
@@ -205,14 +208,7 @@ export default async function BillingPage({
             Compare plans
           </Button>
         }
-        description={
-          <>
-            Your plan, usage and invoices.{" "}
-            <Link className="underline" href={`/${organization.slug}/settings`}>
-              Back to settings
-            </Link>
-          </>
-        }
+        description="Your plan, usage, invoices, payment method and spend controls."
         title="Billing"
       />
 
@@ -242,75 +238,102 @@ export default async function BillingPage({
         </Alert>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {plan.name} plan
-            {contract && contract.kind !== "self_serve" ? (
-              <Badge variant="info">Contract</Badge>
-            ) : null}
-          </CardTitle>
-          <CardDescription>
-            {state.terms.fee
-              ? `${formatCents(state.terms.fee.amountCents)} per ${state.terms.fee.interval}${state.terms.feeCredit.spendable ? ", all of it spendable on usage" : ""}.`
-              : plan.description}{" "}
-            This billing period: {formatPeriodRange(period.start, period.end)}.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-3 text-sm">
-          {contract?.termEnd ? (
-            <p className="text-muted-foreground">
-              Committed term until {formatDate(contract.termEnd)}
-              {contract.autoRenew ? ", renewing automatically" : ""}.
-            </p>
-          ) : null}
-          {state.scheduled ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <p>
-                Changes to the {PLANS[state.scheduled.terms.plan].name} plan on{" "}
-                {formatDate(state.scheduled.at)}.
-              </p>
-              {canManage &&
-              selfServe &&
-              (!state.scheduled.contract || state.scheduled.contract.kind === "self_serve") ? (
-                <CancelScheduledChangeButton label="Keep my plan" orgSlug={organization.slug} />
-              ) : null}
-            </div>
-          ) : null}
-          {pending ? (
-            <p>
-              The upgrade to {PLANS[pending.terms.plan].name} is waiting for its payment
-              {pendingInvoice?.hostedUrl ? (
-                <>
-                  {" "}
-                  (
-                  <a
-                    className="underline"
-                    href={pendingInvoice.hostedUrl}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    pay the invoice
-                  </a>
-                  )
-                </>
-              ) : null}
-              .
-            </p>
-          ) : null}
-          {selfServe ? null : (
-            <p className="text-muted-foreground">
-              Your plan is managed by your contract. Contact your account manager to change it.
-            </p>
-          )}
-        </CardPanel>
-      </Card>
+      <StatRow>
+        <Stat
+          detail={contract && contract.kind !== "self_serve" ? "contract" : "self-serve"}
+          label="Plan"
+          value={plan.name}
+        />
+        <Stat
+          detail={
+            estimate.totals.creditCents > 0n
+              ? `${formatCents(estimate.totals.creditCents)} paid by credit`
+              : "live usage so far"
+          }
+          label="Usage this month"
+          value={formatCents(estimate.usageCents)}
+        />
+        <Stat
+          detail={state.terms.fee ? "plus next month's fee" : "at the end of the month"}
+          label="To pay"
+          value={formatCents(estimate.totals.totalCents)}
+        />
+        <Stat
+          detail={`${Math.max(0, Math.ceil((period.end.getTime() - now.getTime()) / 86_400_000))} days left`}
+          label="Billing period"
+          value={<span className="text-xl">{formatPeriodRange(period.start, period.end)}</span>}
+        />
+      </StatRow>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Usage this month</CardTitle>
-          <CardDescription>
-            Live usage only (sandbox is free). Estimated so far:{" "}
+      <Panel
+        action={
+          contract && contract.kind !== "self_serve" ? (
+            <Badge variant="outline">Contract</Badge>
+          ) : null
+        }
+        description={
+          state.terms.fee
+            ? `${formatCents(state.terms.fee.amountCents)} per ${state.terms.fee.interval}${state.terms.feeCredit.spendable ? ", all of it spendable on usage" : ""}.`
+            : plan.description
+        }
+        title={`${plan.name} plan`}
+      >
+        {contract?.termEnd || state.scheduled || pending || !selfServe ? (
+          <PanelBody className="flex flex-col gap-3 text-sm">
+            {contract?.termEnd ? (
+              <p className="text-muted-foreground">
+                Committed term until {formatDate(contract.termEnd)}
+                {contract.autoRenew ? ", renewing automatically" : ""}.
+              </p>
+            ) : null}
+            {state.scheduled ? (
+              <div className="flex flex-wrap items-center gap-3">
+                <p>
+                  Changes to the {PLANS[state.scheduled.terms.plan].name} plan on{" "}
+                  {formatDate(state.scheduled.at)}.
+                </p>
+                {canManage &&
+                selfServe &&
+                (!state.scheduled.contract || state.scheduled.contract.kind === "self_serve") ? (
+                  <CancelScheduledChangeButton label="Keep my plan" orgSlug={organization.slug} />
+                ) : null}
+              </div>
+            ) : null}
+            {pending ? (
+              <p>
+                The upgrade to {PLANS[pending.terms.plan].name} is waiting for its payment
+                {pendingInvoice?.hostedUrl ? (
+                  <>
+                    {" "}
+                    (
+                    <a
+                      className="underline"
+                      href={pendingInvoice.hostedUrl}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      pay the invoice
+                    </a>
+                    )
+                  </>
+                ) : null}
+                .
+              </p>
+            ) : null}
+            {selfServe ? null : (
+              <p className="text-muted-foreground">
+                Your plan is managed by your contract. Contact your account manager to change it.
+              </p>
+            )}
+          </PanelBody>
+        ) : null}
+      </Panel>
+
+      <Panel
+        description={
+          <>
+            Live usage only (sandbox is free), {formatPeriodRange(period.start, period.end)}.
+            Estimated so far:{" "}
             <span className="font-medium text-foreground">{formatCents(estimate.usageCents)}</span>{" "}
             of usage
             {estimate.totals.creditCents > 0n
@@ -318,250 +341,258 @@ export default async function BillingPage({
               : ""}
             ; {formatCents(estimate.totals.totalCents)} to pay at the end of the month
             {state.terms.fee ? " (plus next month's fee)" : ""}.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-6">
-          {capped.map(([meter, cap], index) => {
-            const used = Math.min(reserved[index] ?? 0, cap);
-            return (
-              <div className="flex flex-col gap-1" key={meter}>
-                <div className="flex justify-between text-sm">
-                  <span>
-                    {METERS[meter].label} {METERS[meter].units} included
-                  </span>
-                  <span className="tabular-nums">
-                    {used.toLocaleString("en-US")} / {cap.toLocaleString("en-US")}
-                  </span>
+          </>
+        }
+        title="Usage this month"
+      >
+        {capped.length > 0 || dailyEmail.length > 0 ? (
+          <PanelBody className="flex flex-col gap-6">
+            {capped.map(([meter, cap], index) => {
+              const used = Math.min(reserved[index] ?? 0, cap);
+              return (
+                <div className="flex flex-col gap-1.5" key={meter}>
+                  <div className="flex justify-between gap-4 text-sm">
+                    <span>
+                      {METERS[meter].label} {METERS[meter].units} included
+                    </span>
+                    <span className="font-mono text-xs tabular-nums">
+                      {used.toLocaleString("en-US")} / {cap.toLocaleString("en-US")}
+                    </span>
+                  </div>
+                  <Progress max={cap} value={used} />
                 </div>
-                <Progress max={cap} value={used} />
-              </div>
-            );
-          })}
-          {meters.size ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead className="text-right">Usage</TableHead>
-                  <TableHead className="text-right">Included</TableHead>
-                  <TableHead className="text-right">Charge</TableHead>
+              );
+            })}
+            {dailyEmail.length ? (
+              <StackedBars
+                columns={dailyEmail.map((row) => ({
+                  label: formatDate(row.day),
+                  values: { recipients: row.quantity },
+                }))}
+                label="Email recipients per day this month"
+                series={[
+                  { key: "recipients", label: "Email recipients", className: "bg-foreground/72" },
+                ]}
+              />
+            ) : null}
+          </PanelBody>
+        ) : null}
+        {meters.size ? (
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Product</TableHead>
+                <TableHead className="text-right">Usage</TableHead>
+                <TableHead className="text-right">Included</TableHead>
+                <TableHead className="text-right">Charge</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...meters].map(([meter, row]) => (
+                <TableRow key={meter}>
+                  <TableCell className="font-medium">{METERS[meter].label}</TableCell>
+                  <TableCell className="text-right font-mono text-xs tabular-nums">
+                    {row.quantity.toLocaleString("en-US")} {METERS[meter].units}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs tabular-nums">
+                    {row.covered ? row.covered.toLocaleString("en-US") : "—"}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs tabular-nums">
+                    {formatCents(row.cents)}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {[...meters].map(([meter, row]) => (
-                  <TableRow key={meter}>
-                    <TableCell>{METERS[meter].label}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {row.quantity.toLocaleString("en-US")} {METERS[meter].units}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {row.covered ? row.covered.toLocaleString("en-US") : "—"}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatCents(row.cents)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <p className="text-muted-foreground text-sm">No usage yet this month.</p>
-          )}
-          {dailyEmail.length ? (
-            <div className="flex flex-col gap-2">
-              <p className="font-medium text-sm">Email recipients per day</p>
-              <div
-                className="flex h-24 items-end gap-1"
-                role="img"
-                aria-label="Email recipients per day"
-              >
-                {dailyEmail.map((row) => (
-                  <div
-                    className="flex-1 rounded-t-sm bg-primary/70"
-                    key={row.day.toISOString()}
-                    style={{ height: `${Math.max(2, (row.quantity / dailyMax) * 100)}%` }}
-                    title={`${formatDate(row.day)}: ${row.quantity.toLocaleString("en-US")}`}
-                  />
-                ))}
-              </div>
-            </div>
-          ) : null}
-          {byEnvironment.length ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Environment</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead className="text-right">Usage</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {byEnvironment.map((row) => (
-                  <TableRow key={`${row.environmentId}:${row.meter}`}>
-                    <TableCell>{labels.get(row.environmentId) ?? "Deleted environment"}</TableCell>
-                    <TableCell>{METERS[row.meter]?.label ?? row.meter}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatQuantity(row.quantity)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : null}
-        </CardPanel>
-      </Card>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <PanelBody flush>
+            <EmptyState
+              compact
+              description="Live emails and other metered usage show up here as they happen."
+              icon={GaugeIcon}
+              title="No usage yet this month"
+            />
+          </PanelBody>
+        )}
+      </Panel>
 
-      {activeGrants.length ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Credits</CardTitle>
-            <CardDescription>Applied to usage before anything is charged.</CardDescription>
-          </CardHeader>
-          <CardPanel>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Credit</TableHead>
-                  <TableHead className="text-right">Remaining</TableHead>
-                  <TableHead>Expires</TableHead>
+      {byEnvironment.length ? (
+        <Panel title="Usage by environment">
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Environment</TableHead>
+                <TableHead>Product</TableHead>
+                <TableHead className="text-right">Usage</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {byEnvironment.map((row) => (
+                <TableRow key={`${row.environmentId}:${row.meter}`}>
+                  <TableCell>{labels.get(row.environmentId) ?? "Deleted environment"}</TableCell>
+                  <TableCell>{METERS[row.meter]?.label ?? row.meter}</TableCell>
+                  <TableCell className="text-right font-mono text-xs tabular-nums">
+                    {formatQuantity(row.quantity)}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {activeGrants.map((grant) => (
-                  <TableRow key={grant.id}>
-                    <TableCell>{grant.description}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {grant.kind === "amount"
-                        ? `${formatCents(grant.remaining)} of ${formatCents(grant.amount)}`
-                        : `${grant.remaining.toLocaleString("en-US")} ${grant.meter && grant.meter in METERS ? METERS[grant.meter as MeterKey].units : "units"}`}
-                    </TableCell>
-                    <TableCell>{grant.expiresAt ? formatDate(grant.expiresAt) : "Never"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardPanel>
-        </Card>
+              ))}
+            </TableBody>
+          </Table>
+        </Panel>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment method</CardTitle>
-          <CardDescription>
-            {provider === "manual"
+      {activeGrants.length ? (
+        <Panel description="Applied to usage before anything is charged." title="Credits">
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Credit</TableHead>
+                <TableHead className="text-right">Remaining</TableHead>
+                <TableHead className="text-right">Expires</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {activeGrants.map((grant) => (
+                <TableRow key={grant.id}>
+                  <TableCell>{grant.description}</TableCell>
+                  <TableCell className="text-right font-mono text-xs tabular-nums">
+                    {grant.kind === "amount"
+                      ? `${formatCents(grant.remaining)} of ${formatCents(grant.amount)}`
+                      : `${grant.remaining.toLocaleString("en-US")} ${grant.meter && grant.meter in METERS ? METERS[grant.meter as MeterKey].units : "units"}`}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {grant.expiresAt ? formatDate(grant.expiresAt) : "Never"}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Panel>
+      ) : null}
+
+      <Panel title="Invoices">
+        {invoices.length ? (
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Invoice</TableHead>
+                <TableHead>Period</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Due</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {invoices.map((invoice) => (
+                <TableRow key={invoice.id}>
+                  <TableCell>
+                    <Link
+                      className="font-medium font-mono text-[0.8125rem] underline-offset-4 before:absolute before:inset-0 hover:underline"
+                      href={`/${organization.slug}/settings/billing/invoices/${invoice.id}`}
+                    >
+                      {invoice.number}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{formatPeriodRange(invoice.periodStart, invoice.periodEnd)}</TableCell>
+                  <TableCell>
+                    <InvoiceStatusBadge
+                      overdue={Boolean(invoice.dueAt && invoice.dueAt < now)}
+                      paymentState={invoice.paymentState}
+                      status={invoice.status}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs tabular-nums">
+                    {formatCents(invoice.totalCents)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {invoice.status === "open" ? formatDate(invoice.dueAt) : "—"}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <PanelBody flush>
+            <EmptyState
+              compact
+              description="Each month's invoice appears here once the month closes."
+              icon={ReceiptIcon}
+              title="No invoices yet"
+            />
+          </PanelBody>
+        )}
+      </Panel>
+
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <Panel
+          description={
+            provider === "manual"
               ? `Invoiced directly${account?.collectionMethod === "send_invoice" ? `, due ${account.netTermsDays} days after issue` : ""}. Contact billing to change how you pay.`
               : account?.collectionMethod === "send_invoice"
                 ? `Invoices are emailed and due ${account.netTermsDays} days after issue.`
-                : "Invoices are charged to your default payment method."}
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-3 text-sm">
-          {account?.paymentMethod ? (
-            <p>
-              {PAYMENT_METHOD_LABELS[account.paymentMethod.type as PaymentMethodType] ??
-                account.paymentMethod.type}
-              {account.paymentMethod.brand ? ` (${account.paymentMethod.brand})` : ""}
-              {account.paymentMethod.last4 ? ` ending ${account.paymentMethod.last4}` : ""}
-              {account.paymentMethod.expMonth && account.paymentMethod.expYear
-                ? `, expires ${account.paymentMethod.expMonth}/${account.paymentMethod.expYear}`
-                : ""}
-            </p>
-          ) : provider === "manual" ? null : (
-            <p className="text-muted-foreground">No payment method yet.</p>
-          )}
-          {account && !paymentMethodCompliant(account) ? (
-            <Alert variant="warning">
-              <AlertDescription>
-                Your contract requires paying by{" "}
-                {account.requiredPaymentMethods
-                  .map((type) => PAYMENT_METHOD_LABELS[type as PaymentMethodType] ?? type)
-                  .join(" or ")}
-                . Replace your payment method.
-              </AlertDescription>
-            </Alert>
-          ) : null}
-          {canManage && provider !== "manual" ? (
-            <PaymentMethodButtons
-              hasMethod={Boolean(account?.paymentMethod)}
-              orgSlug={organization.slug}
-              portal={provider === "stripe"}
-            />
-          ) : null}
-        </CardPanel>
-      </Card>
+                : "Invoices are charged to your default payment method."
+          }
+          title="Payment method"
+        >
+          <PanelBody className="flex flex-col gap-3 text-sm">
+            {account?.paymentMethod ? (
+              <p className="flex items-center gap-2">
+                <CreditCardIcon className="size-4 text-muted-foreground" />
+                <span>
+                  {PAYMENT_METHOD_LABELS[account.paymentMethod.type as PaymentMethodType] ??
+                    account.paymentMethod.type}
+                  {account.paymentMethod.brand ? ` (${account.paymentMethod.brand})` : ""}
+                  {account.paymentMethod.last4 ? (
+                    <span className="font-mono"> ···· {account.paymentMethod.last4}</span>
+                  ) : null}
+                  {account.paymentMethod.expMonth && account.paymentMethod.expYear
+                    ? `, expires ${account.paymentMethod.expMonth}/${account.paymentMethod.expYear}`
+                    : ""}
+                </span>
+              </p>
+            ) : provider === "manual" ? null : (
+              <p className="text-muted-foreground">No payment method yet.</p>
+            )}
+            {account && !paymentMethodCompliant(account) ? (
+              <Alert variant="warning">
+                <AlertDescription>
+                  Your contract requires paying by{" "}
+                  {account.requiredPaymentMethods
+                    .map((type) => PAYMENT_METHOD_LABELS[type as PaymentMethodType] ?? type)
+                    .join(" or ")}
+                  . Replace your payment method.
+                </AlertDescription>
+              </Alert>
+            ) : null}
+            {canManage && provider !== "manual" ? (
+              <PaymentMethodButtons
+                hasMethod={Boolean(account?.paymentMethod)}
+                orgSlug={organization.slug}
+                portal={provider === "stripe"}
+              />
+            ) : null}
+          </PanelBody>
+        </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Invoices</CardTitle>
-        </CardHeader>
-        <CardPanel>
-          {invoices.length ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Invoice</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead>Due</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {invoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell>
-                      <Link
-                        className="underline"
-                        href={`/${organization.slug}/settings/billing/invoices/${invoice.id}`}
-                      >
-                        {invoice.number}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      {formatPeriodRange(invoice.periodStart, invoice.periodEnd)}
-                    </TableCell>
-                    <TableCell>
-                      <InvoiceStatusBadge
-                        overdue={Boolean(invoice.dueAt && invoice.dueAt < now)}
-                        paymentState={invoice.paymentState}
-                        status={invoice.status}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatCents(invoice.totalCents)}
-                    </TableCell>
-                    <TableCell>
-                      {invoice.status === "open" ? formatDate(invoice.dueAt) : "—"}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <p className="text-muted-foreground text-sm">No invoices yet.</p>
-          )}
-        </CardPanel>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Spend controls</CardTitle>
-          <CardDescription>
-            {canManage
+        <Panel
+          description={
+            canManage
               ? "Limits and alerts for usage beyond your plan."
-              : "Only owners can change these."}
-          </CardDescription>
-        </CardHeader>
-        <CardPanel>
-          <SpendControlsForm
-            alertThresholds={(account?.alertThresholds ?? [80, 100]).join(", ")}
-            billingEmail={account?.billingEmail ?? ""}
-            disabled={!canManage}
-            orgSlug={organization.slug}
-            spendLimit={centsInput(account?.spendLimitCents)}
-          />
-        </CardPanel>
-      </Card>
+              : "Only owners can change these."
+          }
+          title="Spend controls"
+        >
+          <PanelBody>
+            <SpendControlsForm
+              alertThresholds={(account?.alertThresholds ?? [80, 100]).join(", ")}
+              billingEmail={account?.billingEmail ?? ""}
+              disabled={!canManage}
+              orgSlug={organization.slug}
+              spendLimit={centsInput(account?.spendLimitCents)}
+            />
+          </PanelBody>
+        </Panel>
+      </div>
     </div>
   );
 }

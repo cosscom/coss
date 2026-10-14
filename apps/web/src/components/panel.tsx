@@ -28,27 +28,64 @@ export function Panel(props: {
   return (
     <CardFrame className={cn("w-full min-w-0 scroll-mt-20", props.className)} id={props.id}>
       {header ? (
-        <CardFrameHeader className="px-5 py-3.5">
-          {props.title ? (
-            <CardFrameTitle className="font-heading text-[0.9375rem] tracking-[-0.01em]">
-              {props.title}
-            </CardFrameTitle>
-          ) : null}
-          {props.description ? (
-            <CardFrameDescription className="max-w-2xl">{props.description}</CardFrameDescription>
-          ) : null}
-          {props.action ? (
-            <CardFrameAction className="flex items-center gap-2">{props.action}</CardFrameAction>
-          ) : null}
-        </CardFrameHeader>
+        <PanelHeader>
+          {props.title ? <PanelTitle>{props.title}</PanelTitle> : null}
+          {props.description ? <PanelDescription>{props.description}</PanelDescription> : null}
+          {props.action ? <PanelAction>{props.action}</PanelAction> : null}
+        </PanelHeader>
       ) : null}
       {props.children}
-      {props.footer ? (
-        <CardFrameFooter className="px-5 py-3 text-muted-foreground text-sm">
-          {props.footer}
-        </CardFrameFooter>
-      ) : null}
+      {props.footer ? <PanelFooter>{props.footer}</PanelFooter> : null}
     </CardFrame>
+  );
+}
+
+type SlotProps = { className?: string; children?: ReactNode };
+
+/**
+ * The parts of a `Panel`'s header, for headers the props can't express (a title with badges
+ * beside a wrapping action row): `<Panel><PanelHeader><PanelTitle>…`. Same slots as coss ui's
+ * `CardHeader`/`CardTitle`/`CardDescription`/`CardAction`.
+ */
+export function PanelHeader(props: SlotProps) {
+  return (
+    <CardFrameHeader className={cn("px-5 py-3.5", props.className)}>
+      {props.children}
+    </CardFrameHeader>
+  );
+}
+
+export function PanelTitle(props: SlotProps) {
+  return (
+    <CardFrameTitle
+      className={cn("font-heading text-[0.9375rem] tracking-[-0.01em]", props.className)}
+    >
+      {props.children}
+    </CardFrameTitle>
+  );
+}
+
+export function PanelDescription(props: SlotProps) {
+  return (
+    <CardFrameDescription className={cn("max-w-2xl", props.className)}>
+      {props.children}
+    </CardFrameDescription>
+  );
+}
+
+export function PanelAction(props: SlotProps) {
+  return (
+    <CardFrameAction className={cn("flex items-center gap-2", props.className)}>
+      {props.children}
+    </CardFrameAction>
+  );
+}
+
+export function PanelFooter(props: SlotProps) {
+  return (
+    <CardFrameFooter className={cn("px-5 py-3 text-muted-foreground text-sm", props.className)}>
+      {props.children}
+    </CardFrameFooter>
   );
 }
 

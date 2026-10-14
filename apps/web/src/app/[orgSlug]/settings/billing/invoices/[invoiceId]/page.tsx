@@ -1,13 +1,14 @@
 import { getInvoice, listPayments } from "@coss/billing";
 import { isId } from "@coss/db/id";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { InvoiceLinesTable } from "@/components/billing/invoice-lines";
 import { InvoiceStatusBadge } from "@/components/billing/invoice-status";
-import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
+import { SectionHeader } from "@/components/section-header";
+import { SpecItem, SpecList } from "@/components/spec-list";
 import { formatCents, formatDate, formatPeriodRange } from "@/lib/billing-format";
 import { requireOrgMember } from "@/lib/session";
 
@@ -27,17 +28,16 @@ export default async function InvoicePage({
 
   return (
     <div className="flex flex-col gap-6 print:gap-4">
-      <PageHeader
+      <SectionHeader
         actions={
           <div className="flex gap-2 print:hidden">
-            {invoice.hostedUrl && invoice.status === "open" && invoice.provider !== "manual" ? (
-              <Button
-                render={<a href={invoice.hostedUrl} rel="noreferrer" target="_blank" />}
-                size="sm"
-              >
-                Pay invoice
-              </Button>
-            ) : null}
+            <Button
+              render={<Link href={`/${organization.slug}/settings/billing`} />}
+              size="sm"
+              variant="ghost"
+            >
+              Back to billing
+            </Button>
             {invoice.pdfUrl ? (
               <Button
                 render={<a href={invoice.pdfUrl} rel="noreferrer" target="_blank" />}
@@ -47,88 +47,93 @@ export default async function InvoicePage({
                 Download PDF
               </Button>
             ) : null}
+            {invoice.hostedUrl && invoice.status === "open" && invoice.provider !== "manual" ? (
+              <Button
+                render={<a href={invoice.hostedUrl} rel="noreferrer" target="_blank" />}
+                size="sm"
+              >
+                Pay invoice
+              </Button>
+            ) : null}
           </div>
         }
-        description={
-          <span className="print:hidden">
-            <Link className="underline" href={`/${organization.slug}/settings/billing`}>
-              Back to billing
-            </Link>
-          </span>
+        description={`${invoice.organizationName} · billing period ${formatPeriodRange(invoice.periodStart, invoice.periodEnd)}.`}
+        meta={
+          <InvoiceStatusBadge
+            overdue={overdue}
+            paymentState={invoice.paymentState}
+            status={invoice.status}
+          />
         }
         title={
-          <span className="flex items-center gap-3">
-            Invoice {invoice.number}
-            <InvoiceStatusBadge
-              overdue={overdue}
-              paymentState={invoice.paymentState}
-              status={invoice.status}
-            />
-          </span>
+          <>
+            Invoice <span className="font-mono">{invoice.number}</span>
+          </>
         }
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{invoice.organizationName}</CardTitle>
-          <CardDescription>
-            Billing period {formatPeriodRange(invoice.periodStart, invoice.periodEnd)}. Issued{" "}
-            {formatDate(invoice.finalizedAt)}
-            {invoice.status === "open" ? `, due ${formatDate(invoice.dueAt)}` : ""}
-            {invoice.paidAt ? `, paid ${formatDate(invoice.paidAt)}` : ""}.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="flex flex-col gap-4">
-          <InvoiceLinesTable lines={invoice.lines} />
-          <dl className="ms-auto grid w-full max-w-xs grid-cols-2 gap-1 text-sm">
-            {invoice.taxCents > 0n ? (
-              <>
-                <dt className="text-muted-foreground">Tax</dt>
-                <dd className="text-right tabular-nums">{formatCents(invoice.taxCents)}</dd>
-              </>
-            ) : null}
-            <dt className="text-muted-foreground">Total</dt>
-            <dd className="text-right tabular-nums">{formatCents(invoice.totalCents)}</dd>
-            <dt className="text-muted-foreground">Paid</dt>
-            <dd className="text-right tabular-nums">{formatCents(invoice.amountPaidCents)}</dd>
-            <dt className="font-medium">Amount due</dt>
-            <dd className="text-right font-medium tabular-nums">
-              {formatCents(invoice.amountDueCents)}
-            </dd>
-          </dl>
-          {invoice.memo ? <p className="text-muted-foreground text-sm">{invoice.memo}</p> : null}
-        </CardPanel>
-      </Card>
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        <Panel className="lg:col-span-2" title="Lines">
+          <InvoiceLinesTable lines={invoice.lines} variant="card" />
+          {invoice.memo ? (
+            <p className="px-5 py-3 text-muted-foreground text-sm">{invoice.memo}</p>
+          ) : null}
+        </Panel>
+        <Panel title="Summary">
+          <PanelBody flush>
+            <SpecList>
+              <SpecItem label="Issued">{formatDate(invoice.finalizedAt)}</SpecItem>
+              {invoice.status === "open" ? (
+                <SpecItem label="Due">{formatDate(invoice.dueAt)}</SpecItem>
+              ) : null}
+              {invoice.paidAt ? (
+                <SpecItem label="Paid on">{formatDate(invoice.paidAt)}</SpecItem>
+              ) : null}
+              {invoice.taxCents > 0n ? (
+                <SpecItem label="Tax" mono>
+                  {formatCents(invoice.taxCents)}
+                </SpecItem>
+              ) : null}
+              <SpecItem label="Total" mono>
+                {formatCents(invoice.totalCents)}
+              </SpecItem>
+              <SpecItem label="Paid" mono>
+                {formatCents(invoice.amountPaidCents)}
+              </SpecItem>
+              <SpecItem
+                label={<span className="font-medium text-foreground">Amount due</span>}
+                mono
+              >
+                <span className="font-medium">{formatCents(invoice.amountDueCents)}</span>
+              </SpecItem>
+            </SpecList>
+          </PanelBody>
+        </Panel>
+      </div>
 
       {payments.length ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Payments</CardTitle>
-          </CardHeader>
-          <CardPanel>
-            <ul className="flex flex-col gap-1 text-sm">
+        <Panel title="Payments">
+          <PanelBody flush>
+            <SpecList>
               {payments.map((payment) => (
-                <li key={payment.id}>
-                  {formatDate(payment.receivedAt)}: {formatCents(payment.amountCents)} by{" "}
-                  {payment.method.replaceAll("_", " ")}
-                  {payment.reference ? ` (${payment.reference})` : ""}
-                </li>
+                <SpecItem
+                  key={payment.id}
+                  label={`${formatDate(payment.receivedAt)} · ${payment.method.replaceAll("_", " ")}${payment.reference ? ` (${payment.reference})` : ""}`}
+                  mono
+                >
+                  {formatCents(payment.amountCents)}
+                </SpecItem>
               ))}
-            </ul>
-          </CardPanel>
-        </Card>
+            </SpecList>
+          </PanelBody>
+        </Panel>
       ) : null}
 
       {invoice.provider === "manual" && invoice.status === "open" ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>How to pay</CardTitle>
-            <CardDescription>
-              Pay by bank transfer and include invoice number {invoice.number} as the reference.
-              Your account manager has our bank details; contact billing if you need them again.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <Panel
+          description={`Pay by bank transfer and include invoice number ${invoice.number} as the reference. Your account manager has our bank details; contact billing if you need them again.`}
+          title="How to pay"
+        />
       ) : null}
     </div>
   );

@@ -1,74 +1,119 @@
-import { listProjects } from "@coss/tenancy";
-import { Card, CardPanel } from "@coss/ui/components/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@coss/ui/components/table";
+import { listProjectsWithEnvironments, PROJECT_NAME_MAX_LENGTH } from "@coss/tenancy";
+import { ArrowUpRightIcon, FolderIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
+import { StatusDot } from "@/components/status-dot";
 import { formatDateTime } from "@/lib/format";
+import { environmentPath } from "@/lib/navigation";
 import { requireOrgMember } from "@/lib/session";
-import { CreateProjectForm } from "./create-project-form";
+import { CreateProjectDialog } from "./create-project-form";
 
 export const metadata: Metadata = { title: "Projects" };
 
 export default async function ProjectsPage({ params }: PageProps<"/[orgSlug]">) {
   const { orgSlug } = await params;
   const { organization, can } = await requireOrgMember(orgSlug);
-  const projects = await listProjects({ organizationId: organization.id });
+  const projects = await listProjectsWithEnvironments({ organizationId: organization.id });
   const canCreate = can({ project: ["create"] });
+  const createDialog = canCreate ? (
+    <CreateProjectDialog maxLength={PROJECT_NAME_MAX_LENGTH} orgSlug={organization.slug} />
+  ) : null;
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        description="Each project has a production (live) and a development (sandbox) environment."
+        actions={createDialog}
+        description="Each project has a production (live) and a development (sandbox) environment, each with its own API keys, emails, logs and webhooks."
         title="Projects"
       />
-      {canCreate ? <CreateProjectForm orgSlug={organization.slug} /> : null}
-      <Card>
-        <CardPanel className="p-2">
-          {projects.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">
-              No projects yet.{canCreate ? " Create one to get API keys." : ""}
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead>Created</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {projects.map((project) => (
-                  <TableRow key={project.id}>
-                    <TableCell>
-                      <Link
-                        className="font-medium underline-offset-4 hover:underline"
-                        href={`/${organization.slug}/projects/${project.slug}/development`}
-                      >
-                        {project.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-mono text-muted-foreground">
-                      {project.slug}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatDateTime(project.createdAt)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
+      {projects.length === 0 ? (
+        <Panel>
+          <PanelBody flush>
+            <EmptyState
+              action={createDialog}
+              description={
+                canCreate
+                  ? "Create a project to get API keys and start sending."
+                  : "An owner or admin can create the first project."
+              }
+              icon={FolderIcon}
+              title="No projects yet"
+            />
+          </PanelBody>
+        </Panel>
+      ) : (
+        // Ruled tiles: hairlines between cells, like coss.com's catalog.
+        // Each tile draws its right and bottom rules; the container clips the outer ones.
+        <div className="overflow-hidden rounded-2xl border bg-card shadow-xs/5">
+          <div className="-me-px -mb-px grid md:grid-cols-2 xl:grid-cols-3">
+            {projects.map(({ project, environments }) => {
+              const first = environments[0];
+              return (
+                <article
+                  className="group relative flex flex-col border-e border-b"
+                  key={project.id}
+                >
+                  <div className="flex items-start gap-3 px-5 pt-5 pb-4">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-background shadow-xs/5">
+                      <FolderIcon className="size-4 text-muted-foreground" strokeWidth={1.75} />
+                    </span>
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <h2 className="truncate font-heading font-semibold text-lg tracking-[-0.01em]">
+                        {first ? (
+                          <Link
+                            className="after:absolute after:inset-0 focus-visible:outline-none"
+                            href={environmentPath(organization.slug, project.slug, first.slug)}
+                          >
+                            {project.name}
+                          </Link>
+                        ) : (
+                          project.name
+                        )}
+                      </h2>
+                      <span className="truncate font-mono text-muted-foreground text-xs">
+                        {project.slug}
+                      </span>
+                    </div>
+                    <ArrowUpRightIcon className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                  </div>
+                  <ul className="relative z-10 mt-auto flex flex-col border-t">
+                    {environments.map((env) => (
+                      <li className="border-t first:border-t-0" key={env.id}>
+                        <Link
+                          className="flex items-center justify-between gap-3 px-5 py-2.5 text-sm transition-colors hover:bg-accent/40"
+                          href={environmentPath(organization.slug, project.slug, env.slug)}
+                        >
+                          <StatusDot tone={env.mode === "live" ? "success" : "info"}>
+                            {env.name}
+                          </StatusDot>
+                          <span className="font-mono text-muted-foreground text-xs">
+                            {env.mode === "live" ? "live" : "sandbox"}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="relative z-10 border-t px-5 py-2.5 text-muted-foreground text-xs">
+                    Created {formatDateTime(project.createdAt)}
+                  </div>
+                </article>
+              );
+            })}
+            {canCreate ? (
+              <div className="drafting-grid flex min-h-48 items-center justify-center border-e border-b p-5">
+                <CreateProjectDialog
+                  maxLength={PROJECT_NAME_MAX_LENGTH}
+                  orgSlug={organization.slug}
+                  variant="outline"
+                />
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

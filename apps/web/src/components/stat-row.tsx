@@ -24,6 +24,7 @@ export function Stat(props: {
   /** A mono line under the value: a rate, a comparison. */
   detail?: ReactNode;
   href?: string;
+  className?: string;
 }) {
   const body = (
     <>
@@ -39,7 +40,7 @@ export function Stat(props: {
       ) : null}
     </>
   );
-  const className = "flex min-w-0 flex-col gap-1.5 bg-card px-5 py-4";
+  const className = cn("flex min-w-0 flex-col gap-1.5 bg-card px-5 py-4", props.className);
   return props.href ? (
     <Link className={cn(className, "transition-colors hover:bg-accent/40")} href={props.href}>
       {body}

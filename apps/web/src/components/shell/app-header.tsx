@@ -62,7 +62,12 @@ export function AppHeader(props: { names: Record<string, string>; command: Comma
             );
             return (
               <Fragment key={crumb.href}>
-                {index > 0 ? <BreadcrumbSeparator className={hidden} /> : null}
+                {index > 0 ? (
+                  // The separator before the first visible crumb goes with the hidden ones.
+                  <BreadcrumbSeparator
+                    className={index <= crumbs.length - 2 ? "max-md:hidden" : undefined}
+                  />
+                ) : null}
                 <BreadcrumbItem className={cn("min-w-0", hidden)}>
                   {last ? (
                     <BreadcrumbPage className="font-medium">{label}</BreadcrumbPage>

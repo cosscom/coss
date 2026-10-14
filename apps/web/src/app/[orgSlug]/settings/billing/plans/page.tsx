@@ -16,7 +16,6 @@ import {
 } from "@coss/billing";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
   TableBody,
@@ -25,10 +24,15 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { cn } from "@coss/ui/lib/utils";
+import { CheckIcon, MinusIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
+import { SectionHeader } from "@/components/section-header";
+import { SpecItem, SpecList } from "@/components/spec-list";
+import { StatusDot } from "@/components/status-dot";
 import { formatDate, formatMeterRates } from "@/lib/billing-format";
 import { requireOrgMember } from "@/lib/session";
 import { DowngradeButton, UpgradeButton } from "../billing-forms";
@@ -62,15 +66,17 @@ export default async function PlansPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        description={
-          <>
-            Every plan's monthly fee is credit you can spend on any product's usage.{" "}
-            <Link className="underline" href={`/${organization.slug}/settings/billing`}>
-              Back to billing
-            </Link>
-          </>
+      <SectionHeader
+        actions={
+          <Button
+            render={<Link href={`/${organization.slug}/settings/billing`} />}
+            size="sm"
+            variant="outline"
+          >
+            Back to billing
+          </Button>
         }
+        description="Every plan's monthly fee is credit you can spend on any product's usage."
         title="Plans"
       />
 
@@ -82,133 +88,137 @@ export default async function PlansPage({
         </p>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Ruled tiles, like coss.com's pricing: hairlines between the plans. */}
+      <div className="grid gap-px overflow-hidden rounded-2xl border bg-border shadow-xs/5 sm:grid-cols-2 lg:grid-cols-4">
         {PLAN_KEYS.map((key) => {
           const plan = PLANS[key];
           const isCurrent = key === current.key;
           const higher = plan.rank > current.rank;
           return (
-            <Card key={key}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {plan.name}
-                  {isCurrent ? <Badge variant="success">Current</Badge> : null}
-                </CardTitle>
-                <CardDescription>{plan.description}</CardDescription>
-              </CardHeader>
-              <CardPanel className="flex flex-col gap-4">
-                <p className="font-heading font-semibold text-2xl">{price(plan)}</p>
-                <ul className="flex flex-col gap-1 text-sm">
-                  {plan.highlights.map((highlight) => (
-                    <li key={highlight}>{highlight}</li>
-                  ))}
-                </ul>
-                {!canManage || !selfServe || isCurrent ? null : !plan.selfServe ? (
-                  <Button
-                    render={<a href={`mailto:${SALES_EMAIL}?subject=COSS%20Enterprise`} />}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Contact sales
-                  </Button>
-                ) : higher ? (
-                  <UpgradeButton
-                    label={`Upgrade to ${plan.name}`}
-                    orgSlug={organization.slug}
-                    plan={key}
-                  />
-                ) : (
-                  <DowngradeButton
-                    description={`You keep ${current.name} until ${formatDate(changesOn)}, then move to ${plan.name}. ${key === "free" ? "Free stops at 3,000 emails a month." : ""}`}
-                    label={key === "free" ? "Cancel plan" : `Switch to ${plan.name}`}
-                    orgSlug={organization.slug}
-                    plan={key}
-                    title={key === "free" ? `Cancel ${current.name}?` : `Switch to ${plan.name}?`}
-                  />
-                )}
-              </CardPanel>
-            </Card>
+            <div
+              className={cn("flex flex-col gap-5 bg-card p-5", isCurrent && "bg-accent/40")}
+              key={key}
+            >
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-heading font-semibold text-lg tracking-[-0.01em]">
+                    {plan.name}
+                  </h3>
+                  {isCurrent ? (
+                    <Badge variant="outline">
+                      <StatusDot tone="success">Current</StatusDot>
+                    </Badge>
+                  ) : null}
+                </div>
+                <p className="text-muted-foreground text-sm">{plan.description}</p>
+              </div>
+              <p className="font-heading font-semibold text-3xl tabular-nums tracking-[-0.02em]">
+                {price(plan)}
+              </p>
+              <ul className="flex flex-1 flex-col gap-2 text-sm">
+                {plan.highlights.map((highlight) => (
+                  <li className="flex items-start gap-2" key={highlight}>
+                    <CheckIcon className="mt-0.5 size-3.5 shrink-0" />
+                    {highlight}
+                  </li>
+                ))}
+              </ul>
+              {!canManage || !selfServe || isCurrent ? null : !plan.selfServe ? (
+                <Button
+                  render={<a href={`mailto:${SALES_EMAIL}?subject=COSS%20Enterprise`} />}
+                  size="sm"
+                  variant="outline"
+                >
+                  Contact sales
+                </Button>
+              ) : higher ? (
+                <UpgradeButton
+                  label={`Upgrade to ${plan.name}`}
+                  orgSlug={organization.slug}
+                  plan={key}
+                />
+              ) : (
+                <DowngradeButton
+                  description={`You keep ${current.name} until ${formatDate(changesOn)}, then move to ${plan.name}. ${key === "free" ? "Free stops at 3,000 emails a month." : ""}`}
+                  label={key === "free" ? "Cancel plan" : `Switch to ${plan.name}`}
+                  orgSlug={organization.slug}
+                  plan={key}
+                  title={key === "free" ? `Cancel ${current.name}?` : `Switch to ${plan.name}?`}
+                />
+              )}
+            </div>
           );
         })}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>What each plan includes</CardTitle>
-        </CardHeader>
-        <CardPanel>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead />
-                {PLAN_KEYS.map((key) => (
-                  <TableHead key={key}>{PLANS[key].name}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {LIMIT_KEYS.map((limit) => (
-                <TableRow key={limit}>
-                  <TableCell>{LIMIT_LABELS[limit]}</TableCell>
-                  {PLAN_KEYS.map((key) => {
-                    const value = PLANS[key].entitlements.limits[limit];
-                    return (
-                      <TableCell key={key}>
-                        {value === null ? "Unlimited" : value.toLocaleString("en-US")}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
+      <Panel title="What each plan includes">
+        <Table variant="card">
+          <TableHeader>
+            <TableRow>
+              <TableHead />
+              {PLAN_KEYS.map((key) => (
+                <TableHead key={key}>{PLANS[key].name}</TableHead>
               ))}
-              {FEATURE_KEYS.map((feature) => (
-                <TableRow key={feature}>
-                  <TableCell>{FEATURE_LABELS[feature]}</TableCell>
-                  {PLAN_KEYS.map((key) => (
-                    <TableCell key={key}>
-                      {PLANS[key].entitlements.features[feature] ? "Yes" : "—"}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {LIMIT_KEYS.map((limit) => (
+              <TableRow key={limit}>
+                <TableCell>{LIMIT_LABELS[limit]}</TableCell>
+                {PLAN_KEYS.map((key) => {
+                  const value = PLANS[key].entitlements.limits[limit];
+                  return (
+                    <TableCell className="font-mono text-xs" key={key}>
+                      {value === null ? "Unlimited" : value.toLocaleString("en-US")}
                     </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-              <TableRow>
-                <TableCell>Recipients per second</TableCell>
+                  );
+                })}
+              </TableRow>
+            ))}
+            {FEATURE_KEYS.map((feature) => (
+              <TableRow key={feature}>
+                <TableCell>{FEATURE_LABELS[feature]}</TableCell>
                 {PLAN_KEYS.map((key) => (
                   <TableCell key={key}>
-                    {PLANS[key].entitlements.rateLimits["email.recipients.second"].limit}
-                    {PLANS[key].selfServe ? "" : "+"}
+                    {PLANS[key].entitlements.features[feature] ? (
+                      <CheckIcon aria-label="Yes" className="size-4" />
+                    ) : (
+                      <MinusIcon aria-label="No" className="size-4 text-muted-foreground" />
+                    )}
                   </TableCell>
                 ))}
               </TableRow>
-            </TableBody>
-          </Table>
-        </CardPanel>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Usage prices</CardTitle>
-          <CardDescription>
-            Billed monthly beyond your plan's credit. Volume tiers apply to each month's usage.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel>
-          <Table>
-            <TableBody>
-              {METER_KEYS.map((meter) => (
-                <TableRow key={meter}>
-                  <TableCell className="font-medium">{METERS[meter].label}</TableCell>
-                  <TableCell>
-                    {formatMeterRates(meter, rates[meter]).join("; ")}
-                    {METERS[meter].requires === "commitment"
-                      ? " (committed volume, Enterprise contracts only)"
-                      : ""}
-                  </TableCell>
-                </TableRow>
+            ))}
+            <TableRow>
+              <TableCell>Recipients per second</TableCell>
+              {PLAN_KEYS.map((key) => (
+                <TableCell className="font-mono text-xs" key={key}>
+                  {PLANS[key].entitlements.rateLimits["email.recipients.second"].limit}
+                  {PLANS[key].selfServe ? "" : "+"}
+                </TableCell>
               ))}
-            </TableBody>
-          </Table>
-        </CardPanel>
-      </Card>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </Panel>
+
+      <Panel
+        description="Billed monthly beyond your plan's credit. Volume tiers apply to each month's usage."
+        title="Usage prices"
+      >
+        <PanelBody flush>
+          <SpecList>
+            {METER_KEYS.map((meter) => (
+              <SpecItem key={meter} label={METERS[meter].label} mono>
+                {formatMeterRates(meter, rates[meter]).join("; ")}
+                {METERS[meter].requires === "commitment"
+                  ? " (committed volume, Enterprise contracts only)"
+                  : ""}
+              </SpecItem>
+            ))}
+          </SpecList>
+        </PanelBody>
+      </Panel>
     </div>
   );
 }
