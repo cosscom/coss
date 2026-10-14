@@ -71,8 +71,23 @@ jobs:
       # Trusted publishing needs npm 11.5.1 or later.
       - run: npm install --global npm@11
       - run: bun install --frozen-lockfile
-      # Builds the SDK (tsdown, publint, attw), then publishes every package whose version isn't on
-      # npm yet (only `coss`; everything else is private) and pushes its tag. A version already on
-      # npm is skipped, so reruns are safe.
-      - run: bun run release
-      - run: git push --tags
+      # The SDK (tsdown, publint, attw), published by npm itself (`changeset publish` reported
+      # success without publishing). A version already on npm is skipped, so reruns are safe; the
+      # registry is checked afterwards, so only a version that's really there passes.
+      - name: Publish coss
+        working-directory: packages/sdk
+        run: |
+          version="$(jq -r .version package.json)"
+          if npm view "coss@$version" version >/dev/null 2>&1; then
+            echo "coss@$version is already on npm."
+            exit 0
+          fi
+          bun run build
+          npm publish --provenance --access public
+          for _ in $(seq 30); do
+            npm view "coss@$version" version >/dev/null 2>&1 && break
+            sleep 5
+          done
+          npm view "coss@$version" version dist.attestations.provenance.predicateType
+          git tag "coss@$version"
+          git push origin "coss@$version"
