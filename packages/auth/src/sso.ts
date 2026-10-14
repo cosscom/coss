@@ -11,7 +11,10 @@ import type { SSOUserResolution, SSOUserResolutionInput } from "@better-auth/sso
 import { db } from "@coss/db";
 import { ID_PREFIXES } from "@coss/db/id";
 import * as schema from "@coss/db/schema";
+import { emailDomainOf } from "@coss/signals/email";
 import { and, eq, inArray, ne } from "drizzle-orm";
+
+export { emailDomainOf };
 
 type Executor = Pick<typeof db, "select">;
 
@@ -43,19 +46,6 @@ export function parseSsoDomains(value: string): string[] {
         .filter(Boolean),
     ),
   ];
-}
-
-/** The domain part of an address, lower-cased (`null` when it has none). */
-export function emailDomainOf(email: string): string | null {
-  const at = email.lastIndexOf("@");
-  const domain =
-    at < 0
-      ? ""
-      : email
-          .slice(at + 1)
-          .trim()
-          .toLowerCase();
-  return domain || null;
 }
 
 /** Every suffix of `name` that is a valid domain (`a.b.c` → `a.b.c`, `b.c`). */

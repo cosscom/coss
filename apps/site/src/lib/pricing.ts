@@ -13,7 +13,6 @@ import {
 } from "@coss/billing/catalog";
 import { chargeRange } from "@coss/billing/engine";
 import { formatUnitPrice, nanosToCents } from "@coss/billing/money";
-import { PRODUCTS } from "./site";
 
 const EMAIL: MeterKey = "email.recipients";
 
@@ -110,8 +109,6 @@ export function suggestedPlan(estimates: readonly MonthEstimate[]): PlanKey {
 export type RateTable = {
   meter: MeterKey;
   product: string;
-  /** Whether the product can be used yet. */
-  available: boolean;
   /** e.g. "per 1,000 recipients". */
   per: string;
   /** e.g. "United States" for a dimension's own rate. */
@@ -148,7 +145,6 @@ export function rateTables(): RateTable[] {
     const definition = METERS[meter];
     const rates = card.rates[meter];
     if (!rates) return [];
-    const product = PRODUCTS.find((entry) => entry.key === definition.product);
     const per =
       definition.displayPer === 1
         ? `per ${definition.unit}`
@@ -158,7 +154,6 @@ export function rateTables(): RateTable[] {
     const base = {
       meter,
       product: definition.label,
-      available: product?.available ?? false,
       per,
       note,
     };

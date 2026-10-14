@@ -21,6 +21,7 @@ import { ApiChangelog } from "./api-changelog";
 import { PlanTable, UsageRates } from "./billing";
 import { DocsTable, DocsTd, DocsTh, DocsTr } from "./docs-table";
 import { RetentionPeriod, RetentionTable } from "./retention";
+import { RiskReasonTable, RiskThreshold } from "./risk-reasons";
 
 type CalloutType = "info" | "warn" | "warning" | "error" | "success" | "idea" | "tip";
 
@@ -130,6 +131,8 @@ export function getMDXComponents(components?: MDXComponents) {
     PlanTable,
     RetentionPeriod,
     RetentionTable,
+    RiskReasonTable,
+    RiskThreshold,
     Step,
     Steps,
     Tab,

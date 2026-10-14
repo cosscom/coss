@@ -1,7 +1,7 @@
 ---
 title: Data Processing Addendum
 description: How Cal.com processes personal data on your behalf as your processor, incorporated into the Terms of Service.
-lastUpdated: 2026-10-11
+lastUpdated: 2026-10-14
 ---
 
 This Data Processing Addendum ("**DPA**") forms part of, and is incorporated by reference into, the
@@ -230,14 +230,17 @@ Protection Laws require otherwise.
   (or subprocessor). Activities: providing the Services. Contact: [privacy@cal.com](mailto:privacy@cal.com).
 
 **Categories of data subjects.** Recipients of Customer's messages (including to, cc, bcc and reply-to addresses);
-senders named in Customer's messages; any other individuals whose personal data Customer includes in messages,
-attachments, tags, metadata, suppression lists or webhook configuration.
+senders named in Customer's messages; users of Customer's own services whose events Customer submits for risk
+assessment; any other individuals whose personal data Customer includes in messages, attachments, tags, metadata,
+suppression lists, risk lists or webhook configuration.
 
 **Categories of personal data.** Email addresses and display names; the content of messages and attachments, as
 determined solely by Customer; message headers, tags, categories and other metadata Customer provides; delivery,
 bounce, complaint and suppression events, including information returned by recipient mail servers; and, where
 Customer enables tracking, the time of opens and clicks, the clicked link and the user agent of the request (not the
-IP address).
+IP address); and, for risk assessments, the email addresses, IP addresses, user agents and user identifiers Customer
+submits, data derived from them (domain and network characteristics, country, counts of recent events) and keyed
+hashes of them.
 
 **Special categories of data.** None intended. Customer will not submit special categories of data unless agreed in
 writing (see [section 3.2](#3-customers-obligations)).
@@ -246,12 +249,15 @@ writing (see [section 3.2](#3-customers-obligations)).
 
 **Nature and purpose of the processing.** Receiving, storing, screening, transmitting and delivering messages on
 Customer's instructions; recording and reporting delivery events; maintaining suppression lists; measuring open and
-click tracking where enabled; sending webhook events to endpoints Customer configures; protecting the Services and data
-subjects from spam, phishing, malware and fraud; and providing support.
+click tracking where enabled; assessing the fraud and abuse risk of events Customer submits and remembering, as keyed
+hashes, identifiers seen in Customer's environments; sending webhook events to endpoints Customer configures;
+protecting the Services and data subjects from spam, phishing, malware and fraud; and providing support.
 
 **Duration and retention.** For the term of the Agreement and until deletion under [section 10](#10-deletion-and-return).
 Attachment contents are deleted once a message is sent, canceled or fails. Messages and delivery events are kept while
-Customer's account is active, unless Customer asks for earlier deletion.
+Customer's account is active, unless Customer asks for earlier deletion. Risk assessments are kept for 1 year, their
+email addresses, IP addresses and user agents for 90 days, and keyed hashes until a year after they were last seen;
+Customer can delete a user's data at any time through the API.
 
 **Transfers to Subprocessors.** As listed in [Annex 3](#annex-3-subprocessors), for the purposes and duration stated
 there.
@@ -276,7 +282,8 @@ real messages.
 the user agent but not the IP address. Content screening sends only a bounded extract of a message (sender, subject,
 up to 8,000 characters of text and link hosts and paths without query strings), never recipients or attachments, to a
 provider that retains nothing; screening verdicts never store message content. Rate limiting keys store email
-addresses only as hashes.
+addresses only as hashes. Risk assessments keep email addresses, IP addresses and user agents for 90 days, remember
+identifiers across assessments only as keyed hashes, and look IP addresses up in locally hosted data.
 
 **Network and application security.** Outbound webhook requests are restricted to public addresses, with protections
 against server-side request forgery. Rate limits protect authentication and the API from abuse. Customer-supplied HTML

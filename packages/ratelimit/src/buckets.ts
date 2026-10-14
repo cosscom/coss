@@ -53,6 +53,17 @@ export const BUCKETS = {
     overridable: true,
     failureMode: "deny",
   },
+  // Risk assessments (`POST /v1/risk/assessments`) sit in customers' sign-up and login paths, so
+  // they get far more room than other writes. Denies on a store outage like every write (the
+  // authentication buckets before it deny then anyway); integrations are told to fail open.
+  "risk.assess": {
+    scope: "key",
+    limit: 100,
+    periodMs: SECOND,
+    burst: 200,
+    overridable: true,
+    failureMode: "deny",
+  },
   // Database-backed API key verification. These run before the key lookup, so a valid or
   // attacker-chosen key cannot turn the database pool into the first line of rate limiting.
   "api.authentication.key": {

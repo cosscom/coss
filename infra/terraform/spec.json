@@ -153,6 +153,13 @@
           "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
         },
         {
+          "name": "RISK_HASH_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage; changing it resets what risk remembers)",
+          "description": "Keys the hashes behind risk's velocity, duplicate detection and fraud memory. Same value for web and api."
+        },
+        {
           "name": "NOTIFICATIONS_ENVIRONMENT_ID",
           "kind": "plain",
           "required": false,
@@ -467,6 +474,13 @@
           "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
         },
         {
+          "name": "RISK_HASH_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage; changing it resets what risk remembers)",
+          "description": "Keys the hashes behind risk's velocity, duplicate detection and fraud memory. Same value for web and api."
+        },
+        {
           "name": "SENTRY_DSN",
           "kind": "plain",
           "required": false,
@@ -698,6 +712,12 @@
           "required": true,
           "value": "A restricted Stripe key (customers, invoices, Checkout, Customer Portal, credit notes)",
           "description": "Stripe API key: the dashboard opens Checkout and the portal, the worker invoices."
+        },
+        {
+          "name": "IPINFO_TOKEN",
+          "kind": "secret",
+          "required": false,
+          "description": "IPinfo Lite download token (free account): ASN and country signals for risk assessments. Unset: those signals are missing."
         },
         {
           "name": "BETTER_AUTH_URL",

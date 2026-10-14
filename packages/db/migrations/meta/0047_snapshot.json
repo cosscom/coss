@@ -1,6 +1,6 @@
 {
-  "id": "55ef5d30-0645-400c-92eb-246fb45edee5",
-  "prevId": "45bd5516-cd94-4867-bf79-a6287745efff",
+  "id": "6aa41a53-481e-4585-8971-9b28792fd902",
+  "prevId": "4df2159a-70ca-48bf-8503-dc312ac559e7",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -7284,204 +7284,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.environment_inbound_address": {
-      "name": "environment_inbound_address",
-      "schema": "",
-      "columns": {
-        "environment_id": {
-          "name": "environment_id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "label": {
-          "name": "label",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "environment_inbound_address_environment_fk": {
-          "name": "environment_inbound_address_environment_fk",
-          "tableFrom": "environment_inbound_address",
-          "columnsFrom": [
-            "environment_id",
-            "organization_id"
-          ],
-          "tableTo": "environment",
-          "columnsTo": [
-            "id",
-            "organization_id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "environment_inbound_address_label_unique": {
-          "name": "environment_inbound_address_label_unique",
-          "columns": [
-            "label"
-          ],
-          "nullsNotDistinct": false
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.inbound_drop_counter": {
-      "name": "inbound_drop_counter",
-      "schema": "",
-      "columns": {
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "day": {
-          "name": "day",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "count": {
-          "name": "count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "inbound_drop_counter_organization_id_organization_id_fk": {
-          "name": "inbound_drop_counter_organization_id_organization_id_fk",
-          "tableFrom": "inbound_drop_counter",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "tableTo": "organization",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {
-        "inbound_drop_counter_pk": {
-          "name": "inbound_drop_counter_pk",
-          "columns": [
-            "organization_id",
-            "day"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.inbound_fake_object": {
-      "name": "inbound_fake_object",
-      "schema": "",
-      "columns": {
-        "key": {
-          "name": "key",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content_type": {
-          "name": "content_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "bytea",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "inbound_fake_object_organization_idx": {
-          "name": "inbound_fake_object_organization_idx",
-          "columns": [
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        },
-        "inbound_fake_object_created_at_idx": {
-          "name": "inbound_fake_object_created_at_idx",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.log_drain": {
       "name": "log_drain",
       "schema": "",
@@ -8981,575 +8783,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.received_email": {
-      "name": "received_email",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "environment_id": {
-          "name": "environment_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "received_email_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "blocked_reason": {
-          "name": "blocked_reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "provider": {
-          "name": "provider",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "provider_message_id": {
-          "name": "provider_message_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "mail_from": {
-          "name": "mail_from",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "recipients": {
-          "name": "recipients",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "from": {
-          "name": "from",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "to": {
-          "name": "to",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::text[]"
-        },
-        "cc": {
-          "name": "cc",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::text[]"
-        },
-        "reply_to": {
-          "name": "reply_to",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::text[]"
-        },
-        "subject": {
-          "name": "subject",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "message_id": {
-          "name": "message_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "in_reply_to": {
-          "name": "in_reply_to",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "references": {
-          "name": "references",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::text[]"
-        },
-        "sent_at": {
-          "name": "sent_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "headers": {
-          "name": "headers",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
-        },
-        "text": {
-          "name": "text",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "html": {
-          "name": "html",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "truncated": {
-          "name": "truncated",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "spam_verdict": {
-          "name": "spam_verdict",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "virus_verdict": {
-          "name": "virus_verdict",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "spf_verdict": {
-          "name": "spf_verdict",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "dkim_verdict": {
-          "name": "dkim_verdict",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "dmarc_verdict": {
-          "name": "dmarc_verdict",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "dmarc_policy": {
-          "name": "dmarc_policy",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "size": {
-          "name": "size",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "raw_key": {
-          "name": "raw_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "received_at": {
-          "name": "received_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "received_email_environment_id_idx": {
-          "name": "received_email_environment_id_idx",
-          "columns": [
-            {
-              "expression": "environment_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "id",
-              "isExpression": false,
-              "asc": false,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        },
-        "received_email_created_at_idx": {
-          "name": "received_email_created_at_idx",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        },
-        "received_email_organization_idx": {
-          "name": "received_email_organization_idx",
-          "columns": [
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        }
-      },
-      "foreignKeys": {
-        "received_email_environment_fk": {
-          "name": "received_email_environment_fk",
-          "tableFrom": "received_email",
-          "columnsFrom": [
-            "environment_id",
-            "organization_id"
-          ],
-          "tableTo": "environment",
-          "columnsTo": [
-            "id",
-            "organization_id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "received_email_provider_message_unique": {
-          "name": "received_email_provider_message_unique",
-          "columns": [
-            "environment_id",
-            "provider",
-            "provider_message_id"
-          ],
-          "nullsNotDistinct": false
-        },
-        "received_email_id_organization_unique": {
-          "name": "received_email_id_organization_unique",
-          "columns": [
-            "id",
-            "organization_id"
-          ],
-          "nullsNotDistinct": false
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.received_email_attachment": {
-      "name": "received_email_attachment",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "received_email_id": {
-          "name": "received_email_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "position": {
-          "name": "position",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "filename": {
-          "name": "filename",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "content_type": {
-          "name": "content_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content_id": {
-          "name": "content_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "disposition": {
-          "name": "disposition",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "size": {
-          "name": "size",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sha256": {
-          "name": "sha256",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content_key": {
-          "name": "content_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "received_email_attachment_email_fk": {
-          "name": "received_email_attachment_email_fk",
-          "tableFrom": "received_email_attachment",
-          "columnsFrom": [
-            "received_email_id",
-            "organization_id"
-          ],
-          "tableTo": "received_email",
-          "columnsTo": [
-            "id",
-            "organization_id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "received_email_attachment_position_unique": {
-          "name": "received_email_attachment_position_unique",
-          "columns": [
-            "received_email_id",
-            "position"
-          ],
-          "nullsNotDistinct": false
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.receiving_domain": {
-      "name": "receiving_domain",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "domain_id": {
-          "name": "domain_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "environment_id": {
-          "name": "environment_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "hostname": {
-          "name": "hostname",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "record": {
-          "name": "record",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "last_checked_at": {
-          "name": "last_checked_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "next_check_at": {
-          "name": "next_check_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "receiving_domain_environment_idx": {
-          "name": "receiving_domain_environment_idx",
-          "columns": [
-            {
-              "expression": "environment_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        },
-        "receiving_domain_next_check_at_idx": {
-          "name": "receiving_domain_next_check_at_idx",
-          "columns": [
-            {
-              "expression": "next_check_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "where": "\"receiving_domain\".\"next_check_at\" is not null",
-          "concurrently": false
-        }
-      },
-      "foreignKeys": {
-        "receiving_domain_domain_fk": {
-          "name": "receiving_domain_domain_fk",
-          "tableFrom": "receiving_domain",
-          "columnsFrom": [
-            "domain_id",
-            "organization_id"
-          ],
-          "tableTo": "domain",
-          "columnsTo": [
-            "id",
-            "organization_id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        },
-        "receiving_domain_environment_fk": {
-          "name": "receiving_domain_environment_fk",
-          "tableFrom": "receiving_domain",
-          "columnsFrom": [
-            "environment_id",
-            "organization_id"
-          ],
-          "tableTo": "environment",
-          "columnsTo": [
-            "id",
-            "organization_id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "receiving_domain_domain_unique": {
-          "name": "receiving_domain_domain_unique",
-          "columns": [
-            "domain_id"
-          ],
-          "nullsNotDistinct": false
-        },
-        "receiving_domain_hostname_unique": {
-          "name": "receiving_domain_hostname_unique",
-          "columns": [
-            "hostname"
-          ],
-          "nullsNotDistinct": false
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.reputation_event": {
       "name": "reputation_event",
       "schema": "",
@@ -9954,6 +9187,916 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.risk_assessment": {
+      "name": "risk_assessment",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "name": "risk_assessment_sequence_seq",
+            "increment": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "startWith": "1",
+            "cache": "1",
+            "cycle": false,
+            "schema": "public",
+            "type": "always"
+          }
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "environment_id": {
+          "name": "environment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event": {
+          "name": "event",
+          "type": "risk_event",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_name": {
+          "name": "event_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip": {
+          "name": "ip",
+          "type": "inet",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_hash": {
+          "name": "email_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip_hash": {
+          "name": "ip_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subnet_hash": {
+          "name": "subnet_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "decision": {
+          "name": "decision",
+          "type": "risk_decision",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reasons": {
+          "name": "reasons",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "signals": {
+          "name": "signals",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "degraded": {
+          "name": "degraded",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "risk_outcome",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "outcome_at": {
+          "name": "outcome_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_status": {
+          "name": "review_status",
+          "type": "risk_review_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "request_hash": {
+          "name": "request_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "personal_data_purged_at": {
+          "name": "personal_data_purged_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "risk_assessment_environment_sequence_idx": {
+          "name": "risk_assessment_environment_sequence_idx",
+          "columns": [
+            {
+              "expression": "environment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            },
+            {
+              "expression": "sequence",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "risk_assessment_environment_user_idx": {
+          "name": "risk_assessment_environment_user_idx",
+          "columns": [
+            {
+              "expression": "environment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "where": "\"risk_assessment\".\"user_id\" is not null",
+          "concurrently": false
+        },
+        "risk_assessment_open_review_idx": {
+          "name": "risk_assessment_open_review_idx",
+          "columns": [
+            {
+              "expression": "environment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            },
+            {
+              "expression": "sequence",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "where": "\"risk_assessment\".\"review_status\" = 'open'",
+          "concurrently": false
+        },
+        "risk_assessment_created_at_idx": {
+          "name": "risk_assessment_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "risk_assessment_personal_data_idx": {
+          "name": "risk_assessment_personal_data_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "where": "\"risk_assessment\".\"personal_data_purged_at\" is null",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "risk_assessment_environment_fk": {
+          "name": "risk_assessment_environment_fk",
+          "tableFrom": "risk_assessment",
+          "columnsFrom": [
+            "environment_id",
+            "organization_id"
+          ],
+          "tableTo": "environment",
+          "columnsTo": [
+            "id",
+            "organization_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "risk_assessment_id_organization_unique": {
+          "name": "risk_assessment_id_organization_unique",
+          "columns": [
+            "id",
+            "organization_id"
+          ],
+          "nullsNotDistinct": false
+        },
+        "risk_assessment_environment_idempotency_key_unique": {
+          "name": "risk_assessment_environment_idempotency_key_unique",
+          "columns": [
+            "environment_id",
+            "idempotency_key"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.risk_dataset": {
+      "name": "risk_dataset",
+      "schema": "",
+      "columns": {
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entries": {
+          "name": "entries",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "checked_at": {
+          "name": "checked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.risk_feedback": {
+      "name": "risk_feedback",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assessment_id": {
+          "name": "assessment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "risk_outcome",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "risk_feedback_source",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "risk_feedback_assessment_idx": {
+          "name": "risk_feedback_assessment_idx",
+          "columns": [
+            {
+              "expression": "assessment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "risk_feedback_assessment_fk": {
+          "name": "risk_feedback_assessment_fk",
+          "tableFrom": "risk_feedback",
+          "columnsFrom": [
+            "assessment_id",
+            "organization_id"
+          ],
+          "tableTo": "risk_assessment",
+          "columnsTo": [
+            "id",
+            "organization_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.risk_identity": {
+      "name": "risk_identity",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "environment_id": {
+          "name": "environment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "risk_identity_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value_hash": {
+          "name": "value_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assessment_id": {
+          "name": "assessment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "first_seen_at": {
+          "name": "first_seen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "risk_identity_environment_user_idx": {
+          "name": "risk_identity_environment_user_idx",
+          "columns": [
+            {
+              "expression": "environment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "where": "\"risk_identity\".\"user_id\" is not null",
+          "concurrently": false
+        },
+        "risk_identity_last_seen_idx": {
+          "name": "risk_identity_last_seen_idx",
+          "columns": [
+            {
+              "expression": "last_seen_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "risk_identity_environment_fk": {
+          "name": "risk_identity_environment_fk",
+          "tableFrom": "risk_identity",
+          "columnsFrom": [
+            "environment_id",
+            "organization_id"
+          ],
+          "tableTo": "environment",
+          "columnsTo": [
+            "id",
+            "organization_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "risk_identity_value_user_unique": {
+          "name": "risk_identity_value_user_unique",
+          "columns": [
+            "environment_id",
+            "kind",
+            "value_hash",
+            "user_id"
+          ],
+          "nullsNotDistinct": true
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.risk_list_entry": {
+      "name": "risk_list_entry",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "name": "risk_list_entry_sequence_seq",
+            "increment": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "startWith": "1",
+            "cache": "1",
+            "cycle": false,
+            "schema": "public",
+            "type": "always"
+          }
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "environment_id": {
+          "name": "environment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "list": {
+          "name": "list",
+          "type": "risk_list",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "risk_list_entry_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "network": {
+          "name": "network",
+          "type": "cidr",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "risk_list_entry_environment_sequence_idx": {
+          "name": "risk_list_entry_environment_sequence_idx",
+          "columns": [
+            {
+              "expression": "environment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            },
+            {
+              "expression": "sequence",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "risk_list_entry_network_idx": {
+          "name": "risk_list_entry_network_idx",
+          "columns": [
+            {
+              "expression": "network",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "inet_ops"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "gist",
+          "where": "\"risk_list_entry\".\"network\" is not null",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "risk_list_entry_environment_fk": {
+          "name": "risk_list_entry_environment_fk",
+          "tableFrom": "risk_list_entry",
+          "columnsFrom": [
+            "environment_id",
+            "organization_id"
+          ],
+          "tableTo": "environment",
+          "columnsTo": [
+            "id",
+            "organization_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "risk_list_entry_value_unique": {
+          "name": "risk_list_entry_value_unique",
+          "columns": [
+            "environment_id",
+            "list",
+            "type",
+            "value"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.risk_report": {
+      "name": "risk_report",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "environment_id": {
+          "name": "environment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "risk_report_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value_hash": {
+          "name": "value_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assessment_id": {
+          "name": "assessment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reported_at": {
+          "name": "reported_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "risk_report_assessment_idx": {
+          "name": "risk_report_assessment_idx",
+          "columns": [
+            {
+              "expression": "environment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "assessment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "risk_report_reported_at_idx": {
+          "name": "risk_report_reported_at_idx",
+          "columns": [
+            {
+              "expression": "reported_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "risk_report_environment_fk": {
+          "name": "risk_report_environment_fk",
+          "tableFrom": "risk_report",
+          "columnsFrom": [
+            "environment_id",
+            "organization_id"
+          ],
+          "tableTo": "environment",
+          "columnsTo": [
+            "id",
+            "organization_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "risk_report_value_unique": {
+          "name": "risk_report_value_unique",
+          "columns": [
+            "environment_id",
+            "kind",
+            "value_hash",
+            "assessment_id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -11054,6 +11197,7 @@
         "api",
         "email",
         "webhook",
+        "risk",
         "audit"
       ]
     },
@@ -11072,7 +11216,8 @@
       "values": [
         "api",
         "email",
-        "webhook"
+        "webhook",
+        "risk"
       ]
     },
     "public.mail_from_status": {
@@ -11100,14 +11245,6 @@
       "values": [
         "pending",
         "completed"
-      ]
-    },
-    "public.received_email_status": {
-      "name": "received_email_status",
-      "schema": "public",
-      "values": [
-        "received",
-        "blocked"
       ]
     },
     "public.reputation_actor": {
@@ -11146,6 +11283,88 @@
         "good",
         "warning",
         "suspended"
+      ]
+    },
+    "public.risk_decision": {
+      "name": "risk_decision",
+      "schema": "public",
+      "values": [
+        "allow",
+        "review",
+        "block"
+      ]
+    },
+    "public.risk_event": {
+      "name": "risk_event",
+      "schema": "public",
+      "values": [
+        "signup",
+        "login",
+        "message",
+        "checkout",
+        "custom"
+      ]
+    },
+    "public.risk_feedback_source": {
+      "name": "risk_feedback_source",
+      "schema": "public",
+      "values": [
+        "api",
+        "dashboard"
+      ]
+    },
+    "public.risk_identity_kind": {
+      "name": "risk_identity_kind",
+      "schema": "public",
+      "values": [
+        "mailbox"
+      ]
+    },
+    "public.risk_list": {
+      "name": "risk_list",
+      "schema": "public",
+      "values": [
+        "allow",
+        "block"
+      ]
+    },
+    "public.risk_list_entry_type": {
+      "name": "risk_list_entry_type",
+      "schema": "public",
+      "values": [
+        "email",
+        "domain",
+        "ip",
+        "asn",
+        "country",
+        "user"
+      ]
+    },
+    "public.risk_outcome": {
+      "name": "risk_outcome",
+      "schema": "public",
+      "values": [
+        "legitimate",
+        "fraud",
+        "abuse"
+      ]
+    },
+    "public.risk_report_kind": {
+      "name": "risk_report_kind",
+      "schema": "public",
+      "values": [
+        "mailbox",
+        "ip",
+        "subnet",
+        "user"
+      ]
+    },
+    "public.risk_review_status": {
+      "name": "risk_review_status",
+      "schema": "public",
+      "values": [
+        "open",
+        "resolved"
       ]
     },
     "public.tenant_sending_status": {

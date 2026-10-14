@@ -30,6 +30,10 @@ const {
   orgAuditEvent,
   member,
   organization,
+  riskAssessment,
+  riskIdentity,
+  riskListEntry,
+  riskReport,
   organizationDeletion,
   organizationSuspension,
   receivedEmail,
@@ -436,6 +440,15 @@ async function deleteOrganizationData(
           eq(emailSuppression.organizationId, organizationId),
         ),
       ],
+      // Risk assessments (their feedback cascades) and what the environment remembers.
+      ...[riskAssessment, riskIdentity, riskReport, riskListEntry].map(
+        (table) =>
+          [
+            table,
+            table.id,
+            and(eq(table.environmentId, environmentId), eq(table.organizationId, organizationId)),
+          ] as [PgTable, PgColumn, SQL | undefined],
+      ),
     ];
     for (const [table, id, where] of steps) {
       if (!(await deleteInBatches(deletion, table, id, where, batchSize, signal))) return false;

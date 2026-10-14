@@ -5,6 +5,7 @@ export const SOURCE_LABELS: Record<LogDrainSource, { label: string; description:
   api: { label: "API requests", description: "Requests made with this environment's API keys." },
   email: { label: "Email events", description: "Sent, delivered, bounced, opened, clicked…" },
   webhook: { label: "Webhook attempts", description: "Every delivery attempt to your endpoints." },
+  risk: { label: "Risk assessments", description: "Every assessment and the feedback on it." },
   audit: {
     label: "Audit events",
     description: "Changes to this environment: keys, endpoints, drains, suppressions…",

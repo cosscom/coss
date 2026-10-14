@@ -2,6 +2,7 @@ import { billingEnvShape } from "@coss/billing/env";
 import { emailWorkerEnvShape } from "@coss/email/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
+import { riskDatasetEnvShape } from "@coss/risk/env";
 import { screeningEnvShape } from "@coss/screening/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-core";
@@ -23,6 +24,8 @@ export const env = createEnv({
     RATE_LIMIT_KEY_PREFIX: rateLimitEnvShape.RATE_LIMIT_KEY_PREFIX,
     // AI content screening of sampled live emails before they are sent (@coss/screening).
     ...screeningEnvShape,
+    // IPinfo Lite (ASN and country for risk assessments); without it those signals are missing.
+    ...riskDatasetEnvShape,
     // Days of environment logs kept (@coss/logs); expired days are dropped hourly.
     LOG_RETENTION_DAYS: z.coerce.number().int().min(1).max(31).default(30),
     // Reputation notification emails (warnings, suspensions) to organization owners and admins,

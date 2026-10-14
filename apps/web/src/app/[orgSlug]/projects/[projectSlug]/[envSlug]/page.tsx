@@ -388,6 +388,27 @@ export default async function EnvironmentPage({
         </CardHeader>
       </Card>
 
+      {can({ risk: ["read"] }) ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Risk</CardTitle>
+            <CardDescription>
+              Assess sign-ups, logins and other events: decisions with reasons, the review queue,
+              and your allow and block lists.
+            </CardDescription>
+            <CardAction>
+              <Button
+                render={<Link href={`${projectPath}/${environment.slug}/risk`} />}
+                size="sm"
+                variant="outline"
+              >
+                Open risk
+              </Button>
+            </CardAction>
+          </CardHeader>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>Quick start</CardTitle>

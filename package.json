@@ -89,7 +89,7 @@
     "valkey:bootstrap": "bun run --cwd packages/ratelimit valkey:bootstrap",
     "ratelimit:set": "bun run --cwd packages/ratelimit ratelimit:set",
     "auth:generate": "bun run --cwd packages/auth auth:generate && biome check --write packages/db/src/schema/auth.ts",
-    "auth:update-disposable": "bun run --cwd packages/auth auth:update-disposable",
+    "signals:update-disposable": "bun run --cwd packages/signals signals:update-disposable",
     "openapi:generate": "bun run --cwd apps/api openapi:generate",
     "changeset": "changeset",
     "version-packages": "changeset version && bun packages/sdk/scripts/sync-version.ts && bun install --lockfile-only && biome check --write packages/sdk/package.json packages/sdk/src/version.ts"

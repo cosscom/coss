@@ -15,31 +15,25 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { recordApiAudit } from "../audit.ts";
 import { limitBody, SEND_BODY_LIMIT_BYTES } from "../body-limit.ts";
-import { ApiError, notFound } from "../errors.ts";
+import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
-import { validationHook } from "../validation.ts";
 import { billingErrorDoc, commonErrors, errorDoc, requestIdHeader } from "./docs.ts";
+import {
+  IDEMPOTENCY_KEY_MAX_LENGTH,
+  idempotencyHeaders,
+  idempotencyHook,
+  idempotentReplayedHeader,
+} from "./idempotency.ts";
 
-export const IDEMPOTENCY_KEY_MAX_LENGTH = 256;
+export { IDEMPOTENCY_KEY_MAX_LENGTH };
 
-// Header keys are matched case-insensitively by the validator; this spelling is what docs show.
-const SendEmailHeaders = z.object({
-  "Idempotency-Key": z
-    .string()
-    .min(1)
-    .max(IDEMPOTENCY_KEY_MAX_LENGTH)
-    .optional()
-    .meta({
-      description:
-        "Makes retries safe: a repeated request with the same key and body returns the original " +
-        "email (with its current status) instead of sending again, for 24 hours. " +
-        `1-${IDEMPOTENCY_KEY_MAX_LENGTH} characters.`,
-      examples: ["welcome-user-123"],
-    }),
-});
+const SendEmailHeaders = idempotencyHeaders(
+  "Makes retries safe: a repeated request with the same key and body returns the original " +
+    "email (with its current status) instead of sending again, for 24 hours.",
+);
 
 const EmailIdParams = z.object({
   id: z.string().meta({
@@ -88,11 +82,7 @@ export const sendEmailRoute = createRoute({
         "its current status.",
       headers: {
         "X-Request-Id": requestIdHeader,
-        "Idempotent-Replayed": {
-          description:
-            "`true` when this response replays an earlier request with the same `Idempotency-Key`.",
-          schema: { type: "string", enum: ["true"] },
-        },
+        "Idempotent-Replayed": idempotentReplayedHeader,
       },
       content: { "application/json": { schema: EmailObject } },
     },
@@ -163,11 +153,7 @@ export const sendEmailBatchRoute = createRoute({
         "original batch with the emails' current statuses.",
       headers: {
         "X-Request-Id": requestIdHeader,
-        "Idempotent-Replayed": {
-          description:
-            "`true` when this response replays an earlier request with the same `Idempotency-Key`.",
-          schema: { type: "string", enum: ["true"] },
-        },
+        "Idempotent-Replayed": idempotentReplayedHeader,
       },
       content: { "application/json": { schema: EmailBatchObject } },
     },
@@ -368,15 +354,6 @@ function sendQuota(
       };
 }
 
-function invalidIdempotencyKey(): ApiError {
-  return new ApiError(400, {
-    type: "invalid_request_error",
-    code: "invalid_idempotency_key",
-    message: `The Idempotency-Key header must be 1-${IDEMPOTENCY_KEY_MAX_LENGTH} characters.`,
-    param: "Idempotency-Key",
-  });
-}
-
 export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
 
@@ -428,8 +405,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     },
     // Replaces the default hook for this route: a bad Idempotency-Key is a 400, not a 422.
     (result) => {
-      if (!result.success && result.target === "header") throw invalidIdempotencyKey();
-      validationHook(result);
+      idempotencyHook(result);
     },
   );
 
@@ -478,8 +454,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       return c.json(batch, 202);
     },
     (result) => {
-      if (!result.success && result.target === "header") throw invalidIdempotencyKey();
-      validationHook(result);
+      idempotencyHook(result);
     },
   );
 

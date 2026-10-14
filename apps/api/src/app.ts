@@ -8,6 +8,7 @@ import {
   MemoryStore,
   type RateLimiter,
 } from "@coss/ratelimit";
+import type { RiskDeps } from "@coss/risk";
 import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
@@ -42,6 +43,12 @@ export type CreateAppOptions = {
    * would silently make the endpoints it creates undeliverable.
    */
   webhookDeps: WebhookManagementDeps;
+  /**
+   * Risk assessments: the identifier hasher (`RISK_HASH_KEY`), IP datasets, velocity counters and
+   * DNS. Required for the same reason: a throwaway hash key would silently reset what each
+   * environment remembers.
+   */
+  riskDeps: RiskDeps;
   /**
    * Public origin advertised in the OpenAPI document (`API_PUBLIC_URL`).
    */
@@ -150,7 +157,13 @@ export function createApp(opts: CreateAppOptions) {
 
   app.route(
     "/v1",
-    createV1Router({ emailService, domainDeps, webhookDeps: opts.webhookDeps, inbound }),
+    createV1Router({
+      emailService,
+      domainDeps,
+      webhookDeps: opts.webhookDeps,
+      riskDeps: opts.riskDeps,
+      inbound,
+    }),
   );
 
   app.openAPIRegistry.registerComponent("securitySchemes", "bearerAuth", {
@@ -216,6 +229,12 @@ export function openApiDocumentConfig(serverUrl: string) {
       {
         name: "Audit log",
         description: "Changes to the organization, by members, API keys and COSS support.",
+      },
+      {
+        name: "Risk",
+        description:
+          "Assess sign-ups, logins and other events: a decision with reasons, from signals and " +
+          "what the environment remembers.",
       },
     ],
   };

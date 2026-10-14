@@ -1,0 +1,25 @@
+{
+  "name": "@coss/signals",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./email": "./src/email.ts",
+    "./ip": "./src/ip.ts",
+    "./datasets": "./src/datasets.ts",
+    "./testing": "./src/testing.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "signals:update-disposable": "bun scripts/update-disposable-domains.ts"
+  },
+  "dependencies": {
+    "mmdb-lib": "3.0.3"
+  },
+  "devDependencies": {
+    "@coss/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}
