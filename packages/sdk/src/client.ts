@@ -6,6 +6,7 @@ import { EmailResource } from "./resources/email.ts";
 import { LogDrainsResource } from "./resources/log-drains.ts";
 import { LogsResource } from "./resources/logs.ts";
 import { ReputationResource } from "./resources/reputation.ts";
+import { RiskResource } from "./resources/risk.ts";
 import { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 
 export interface CossOptions {
@@ -84,6 +85,8 @@ export class Coss {
   readonly logDrains: LogDrainsResource;
   /** The organization's audit log: changes by members, API keys and COSS support (`coss.auditEvents.list()`). */
   readonly auditEvents: AuditEventsResource;
+  /** Risk assessments of sign-ups, logins and other events (`coss.risk.assess()`). */
+  readonly risk: RiskResource;
 
   /**
    * Throws only for programmer errors: no API key, or running in a browser without
@@ -125,5 +128,6 @@ export class Coss {
     this.logs = new LogsResource(http);
     this.logDrains = new LogDrainsResource(http);
     this.auditEvents = new AuditEventsResource(http);
+    this.risk = new RiskResource(http);
   }
 }

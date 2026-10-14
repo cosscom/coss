@@ -20,6 +20,7 @@
     "@coss/observability": "workspace:*",
     "@coss/ratelimit": "workspace:*",
     "@coss/reputation": "workspace:*",
+    "@coss/risk": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/versioning": "workspace:*",
     "@coss/webhooks": "workspace:*",

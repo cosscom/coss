@@ -5,7 +5,7 @@
  */
 import { z } from "zod";
 
-export const LOG_SOURCES = ["api", "email", "webhook"] as const;
+export const LOG_SOURCES = ["api", "email", "webhook", "risk"] as const;
 export type LogSource = (typeof LOG_SOURCES)[number];
 
 /** What a log drain can forward: every log source, plus the environment's audit events. */
@@ -25,7 +25,8 @@ export const DEFAULT_LOG_RANGE_MS = 60 * 60 * 1000;
 export const LogSourceEnum = z.enum(LOG_SOURCES).meta({
   id: "LogSource",
   description:
-    "`api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt.",
+    "`api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt. " +
+    "`risk`: a risk assessment or its feedback.",
 });
 
 export const LogLevelEnum = z.enum(LOG_LEVELS).meta({

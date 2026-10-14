@@ -28,6 +28,12 @@ export const RETENTION_DAYS = {
   adminAuditLog: 730,
   /** Sessions, verification tokens and invitations, counted from their expiry. */
   expiredAuth: 7,
+  /** Risk assessments with their reasons, signals and feedback. */
+  riskAssessments: 365,
+  /** The email address, IP address and user agent on a risk assessment (removed before the rest). */
+  riskPersonalData: 90,
+  /** What an environment remembers (hashed mailboxes and reported identifiers), since last seen. */
+  riskMemory: 365,
 } as const satisfies Record<string, number>;
 
 export type RetentionPeriod =
@@ -103,6 +109,27 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { days: RETENTION_DAYS.reputationHistory, after: "creation" },
   },
   {
+    id: "risk_assessments",
+    label: "Risk assessments",
+    description:
+      "Decisions, scores, reasons, signals (ASN, country, counts) and the feedback you sent. Your user id stays until you ask COSS to forget the user.",
+    period: { days: RETENTION_DAYS.riskAssessments, after: "creation" },
+  },
+  {
+    id: "risk_personal_data",
+    label: "Risk assessment personal data",
+    description:
+      "The email address, IP address and user agent you sent with an assessment. Only keyed hashes remain afterwards.",
+    period: { days: RETENTION_DAYS.riskPersonalData, after: "creation" },
+  },
+  {
+    id: "risk_memory",
+    label: "Risk memory",
+    description:
+      "Keyed hashes of mailboxes that have an account, and of identifiers you reported as fraud or abuse (IP addresses count for 30 days), counted from when they were last seen.",
+    period: { days: RETENTION_DAYS.riskMemory, after: "creation" },
+  },
+  {
     id: "admin_audit_log",
     label: "Admin audit log",
     description: "Actions COSS staff take on organizations and users.",
@@ -126,7 +153,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "account",
     label: "Account and configuration",
     description:
-      "Users, organizations, projects, environments, API keys, domains, webhook endpoints, log drains and settings. Items you delete (a key, a domain, an endpoint, a drain) are removed right away.",
+      "Users, organizations, projects, environments, API keys, domains, webhook endpoints, log drains, risk allow and block lists, and settings. Items you delete (a key, a domain, an endpoint, a drain) are removed right away.",
     period: { until: "closed" },
   },
 ];

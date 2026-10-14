@@ -11,6 +11,11 @@ import {
   purgeExpiredReputationEvents,
   purgeExpiredReputationNotifications,
 } from "@coss/reputation";
+import {
+  purgeExpiredRiskAssessments,
+  purgeExpiredRiskMemory,
+  purgeExpiredRiskPersonalData,
+} from "@coss/risk";
 import { purgeExpiredScreenings } from "@coss/screening";
 import { purgeExpiredAdminAuditEvents, purgeExpiredAuthRows } from "@coss/tenancy/retention";
 import { purgeExpiredLogDrainBatches, purgeExpiredWebhookMessages } from "@coss/webhooks";
@@ -31,6 +36,10 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "webhook messages", purge: purgeExpiredWebhookMessages },
   { name: "log drain batches and backlog", purge: purgeExpiredLogDrainBatches },
   { name: "content screenings", purge: purgeExpiredScreenings },
+  // Personal data first: it goes long before the assessment itself.
+  { name: "risk personal data", purge: purgeExpiredRiskPersonalData },
+  { name: "risk memory", purge: purgeExpiredRiskMemory },
+  { name: "risk assessments", purge: purgeExpiredRiskAssessments },
   { name: "reputation notifications", purge: purgeExpiredReputationNotifications },
   { name: "reputation events", purge: purgeExpiredReputationEvents },
   { name: "admin audit events", purge: purgeExpiredAdminAuditEvents },

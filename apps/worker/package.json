@@ -25,6 +25,7 @@
     "@coss/observability": "workspace:*",
     "@coss/reputation": "workspace:*",
     "@coss/retention": "workspace:*",
+    "@coss/risk": "workspace:*",
     "@coss/screening": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/webhooks": "workspace:*",

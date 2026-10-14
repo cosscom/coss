@@ -295,6 +295,20 @@
       "when": 1791757715257,
       "tag": "0041_unknown_kitty_pryde",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1791995731479,
+      "tag": "0042_chemical_silver_centurion",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1791995743511,
+      "tag": "0043_risk_key_permissions",
+      "breakpoints": true
     }
   ]
 }

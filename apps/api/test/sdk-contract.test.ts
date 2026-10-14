@@ -927,3 +927,76 @@ describe("coss.logDrains against the API", () => {
     }
   });
 });
+
+describe("coss.risk against the API", () => {
+  test("assess, feedback, read, lists and forget round-trip; review webhooks verify", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const receiver = webhookReceiver();
+    try {
+      const endpoint = await coss.webhookEndpoints.create({
+        url: receiver.url,
+        event_types: ["risk.assessment.review"],
+      });
+      if (!endpoint.data) throw new Error("create failed");
+
+      const listed = await coss.risk.lists.add("block", { country: "gb", note: "Test" });
+      expect(listed.data).toMatchObject({ list: "block", type: "country", value: "GB" });
+
+      // Sandbox fixtures: 192.0.2.9 is a clean GB home connection, 192.0.2.1 a Tor exit.
+      const blocked = await coss.risk.assess({
+        event: "login",
+        user: { id: "u1" },
+        ip: "192.0.2.9",
+      });
+      expect(blocked.data).toMatchObject({
+        object: "risk_assessment",
+        decision: "block",
+        reasons: [{ code: "list.blocked", type: "country", entry: listed.data?.id }],
+      });
+      if (!listed.data) throw new Error("add failed");
+      expect((await coss.risk.lists.remove(listed.data.id)).data?.deleted).toBe(true);
+
+      const review = await coss.risk.assess({
+        event: "signup",
+        user: { id: "u2", email: "x@disposable.test" },
+        ip: "192.0.2.9",
+        user_agent: "Mozilla/5.0",
+      });
+      expect(review.error).toBeNull();
+      expect(review.data).toMatchObject({ decision: "review", review_status: "open" });
+      if (!review.data) throw new Error("assess failed");
+
+      await runDueWebhookDeliveries(
+        { scope: { organizationIds: [tenant.organization.id] } },
+        { secretsKeys: TEST_SECRETS_KEYS, send: testSender() },
+      );
+      const [delivery] = receiver.received;
+      if (!delivery) throw new Error("no webhook");
+      const event = await verifyWebhook(delivery.body, delivery.headers, endpoint.data.secret);
+      expect(event).toMatchObject({
+        type: "risk.assessment.review",
+        data: { assessment_id: review.data.id, decision: "review", user_id: "u2" },
+      });
+
+      const queue = await coss.risk.assessments.list({ review_status: "open" });
+      expect(queue.data?.data.map((a) => a.id)).toEqual([review.data.id]);
+      const resolved = await coss.risk.feedback(review.data.id, { outcome: "abuse" });
+      expect(resolved.data).toMatchObject({ outcome: "abuse", review_status: "resolved" });
+      expect((await coss.risk.assessments.get(review.data.id)).data).toEqual(resolved.data);
+
+      const forgotten = await coss.risk.users.forget("u2");
+      expect(forgotten).toEqual({
+        data: { object: "risk_user", id: "u2", deleted: true },
+        error: null,
+      });
+      expect((await coss.risk.assessments.get(review.data.id)).data?.user).toEqual({
+        id: null,
+        email: null,
+      });
+    } finally {
+      receiver.stop();
+    }
+  });
+});

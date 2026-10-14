@@ -164,7 +164,7 @@ resets) are printed to the dashboard's server console in development.
 | `bun run build` | Build dashboard + site (standalone servers) + SDK |
 | `bun run db:generate` / `db:migrate` / `db:studio` | Drizzle migrations |
 | `bun run auth:generate` | Regenerate Better Auth tables after changing auth plugins (then `db:generate` + `db:migrate`) |
-| `bun run auth:update-disposable` | Refresh the list of disposable email domains refused at sign-up |
+| `bun run signals:update-disposable` | Refresh the list of disposable email domains (refused at sign-up, flagged by risk assessments) |
 | `bun run ses:bootstrap` | Create/update the shared AWS resources for `EMAIL_PROVIDER=ses` (see below) |
 | `bun run valkey:bootstrap` | Create/update the ElastiCache Serverless for Valkey cache for rate limits (see below) |
 | `bun run ratelimit:set --org <slug> [--bucket … --limit … \| --reset]` | Show or change an organization's rate limits |
@@ -434,9 +434,10 @@ viewer ─▶ CloudFront + WAF ──(HTTPS, X-Origin-Verify)──▶ ALB ─�
 ### Secrets and environment
 
 One Secrets Manager secret per stage (JSON), injected through each task definition's `secrets`:
-`VALKEY_URL` (from `valkey:bootstrap`), `DATABASE_URL`, `BETTER_AUTH_SECRET`, `AI_GATEWAY_API_KEY` (worker), `WEBHOOK_SECRETS_KEY` and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (generate the
-last three with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable, see
-[Rotating `WEBHOOK_SECRETS_KEY`](#rotating-webhook_secrets_key) to change it),
+`VALKEY_URL` (from `valkey:bootstrap`), `DATABASE_URL`, `BETTER_AUTH_SECRET`, `AI_GATEWAY_API_KEY` (worker), `WEBHOOK_SECRETS_KEY`, `RISK_HASH_KEY` (web and api) and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (generate the
+last four with `openssl rand -base64 32`; losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable, see
+[Rotating `WEBHOOK_SECRETS_KEY`](#rotating-webhook_secrets_key) to change it; changing `RISK_HASH_KEY` resets what risk
+assessments remember), `IPINFO_TOKEN` (worker, optional: a free IPinfo account's token for risk's ASN and country data),
 `TURNSTILE_SECRET_KEY` (web; from a Cloudflare Turnstile widget, managed mode, whose hostnames include the
 dashboard's). The origin
 header value is a separate secret, used only by CloudFront and the ALB rules (rotate it by adding the new value to the

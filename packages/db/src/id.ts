@@ -62,6 +62,11 @@ export const ID_PREFIXES = {
   logDrainAttempt: "drainatt",
   adminAuditEvent: "audit",
   organizationDeletion: "orgdel",
+  riskAssessment: "rsk",
+  riskFeedback: "rskfb",
+  riskIdentity: "rskid",
+  riskReport: "rskrep",
+  riskListEntry: "rskle",
 } as const;
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES];

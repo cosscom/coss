@@ -12,6 +12,8 @@ export { type RateLimitEnv, rateLimitEnvShape } from "./env.ts";
 export type RateLimitRuntime = {
   limiter: RateLimiter;
   clientIp: ClientIpResolver;
+  /** The shared Valkey connection (`null` without `VALKEY_URL`), for other counters (risk velocity). */
+  valkey: ValkeyStore["client"] | null;
   /** Waits (up to 5 s) for Valkey, so the first requests are counted. Never throws. */
   ready(): Promise<void>;
 };
@@ -22,10 +24,12 @@ export function createRateLimitRuntime(
 ): RateLimitRuntime {
   const production = opts.production ?? process.env.NODE_ENV === "production";
   let store: RateLimitStore;
+  let valkeyClient: ValkeyStore["client"] | null = null;
   let ready = async () => {};
   if (env.VALKEY_URL) {
     const valkey = ValkeyStore.connect({ url: env.VALKEY_URL, cluster: env.VALKEY_CLUSTER });
     store = valkey;
+    valkeyClient = valkey.client;
     ready = () =>
       valkey.ready().catch((error: unknown) => {
         console.warn(
@@ -49,6 +53,7 @@ export function createRateLimitRuntime(
       header: env.CLIENT_IP_HEADER,
       trustedProxyCount: env.TRUSTED_PROXY_COUNT,
     }),
+    valkey: valkeyClient,
     ready,
   };
 }

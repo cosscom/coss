@@ -1,0 +1,98 @@
+---
+title: Risk assessments
+description: Ask COSS whether a sign-up, login or other event looks like abuse, and why.
+---
+
+Call `coss.risk.assess()` from your server at the moments abuse happens (a sign-up, a login, a
+message, a checkout) and act on the decision it returns:
+
+- `allow`: go ahead.
+- `review`: suspicious. Let it through with limits (no free credits, email verification first) or
+  hold it for a person. Reviews show up in the dashboard's **Risk** page and fire a
+  [`risk.assessment.review` webhook](/docs/webhooks#events).
+- `block`: refuse it.
+
+Every assessment comes with a `score` (0-1) and the `reasons` behind it, so you can see and explain
+every decision. COSS combines:
+
+- **Email signals**: syntax, disposable domains, domains that can't receive mail, role accounts
+  (`info@`), free providers and typos (`gmail.con`).
+- **IP signals**: Tor exit nodes, cloud and hosting networks, networks used by VPNs, private
+  addresses, the network (ASN) and country.
+- **What this environment has seen**: how often the same IP address, subnet, email domain, mailbox
+  or user came by in the last hour and day; whether the mailbox already has an account (dots and
+  `+tags` folded at Gmail and similar); and identifiers you reported as fraud.
+- **Your [allow and block lists](/docs/risk/lists-and-feedback#lists)**.
+
+## Assessing a sign-up
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const form: { email: string };
+declare const request: { ip: string; userAgent: string };
+declare function createAccount(email: string): Promise<{ id: string }>;
+// ---cut---
+const { data: assessment, error } = await coss.risk.assess({
+  event: "signup",
+  user: { email: form.email },
+  ip: request.ip,
+  user_agent: request.userAgent,
+});
+
+// Fail open: an outage on our side must never lock your users out.
+if (error) console.error(error);
+
+if (assessment?.decision === "block") {
+  throw new Error("We couldn't create your account.");
+}
+
+const typo = assessment?.reasons.find((reason) => reason.code === "email.typo");
+if (typo) {
+  // The one reason worth showing the user: "Did you mean ada@gmail.com?"
+  console.log(typo.suggestion);
+}
+
+const account = await createAccount(form.email);
+```
+
+Pass the client's IP address and user agent as your server received them, not your load balancer's
+(an `ip.private` reason means it got the proxy's). Don't show reasons to the person being assessed,
+apart from a typo suggestion: they tell an attacker what to change.
+
+Once the account exists, pass its id with later events (`user: { id }`). Sign-ups that carry a user
+id are what duplicate detection compares: a second account for the same mailbox gets
+`duplicate.canonical_mailbox` with the first user's id. If you can choose the id before the account
+is created, pass it with the sign-up itself.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const session: { userId: string; ip: string; userAgent: string };
+// ---cut---
+const { data } = await coss.risk.assess({
+  event: "login",
+  user: { id: session.userId },
+  ip: session.ip,
+  user_agent: session.userAgent,
+});
+```
+
+Other events are `message`, `checkout` and `custom` (with an `event_name` such as `invite_sent`).
+Velocity is counted per event, so a burst of invitations doesn't count as sign-ups.
+
+## Retries and failures
+
+The SDK retries network errors and server errors with the same `Idempotency-Key`, and a retried
+assessment returns the first result without counting the event again. Assessments are limited to
+100 per second per API key (bursts of 200).
+
+When a signal is unavailable (a slow DNS lookup, missing IP data), the assessment is made without it
+and the group is listed in `degraded`; it never fails because of it.
+
+## What is stored
+
+Assessments keep the email address, IP address and user agent for
+<RetentionPeriod of="risk_personal_data" />, then only keyed hashes of them; decisions, reasons and
+signals stay for <RetentionPeriod of="risk_assessments" />. When you delete one of your users, call
+`coss.risk.users.forget(userId)` (see [Forgetting users](/docs/risk/lists-and-feedback#forgetting-users)).

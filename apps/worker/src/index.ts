@@ -111,6 +111,7 @@ const loops = startJobs({
     send: createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" }),
   },
   logRetentionDays: env.LOG_RETENTION_DAYS,
+  ipinfoToken: env.IPINFO_TOKEN ?? null,
 });
 console.info(
   `[worker] started (email-dispatch, ${loops.map((loop) => loop.name).join(", ")}; ` +

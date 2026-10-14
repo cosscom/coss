@@ -1,6 +1,7 @@
 import { emailEnvShape } from "@coss/email/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
+import { riskEnvShape } from "@coss/risk/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
@@ -36,6 +37,11 @@ export const env = createEnv({
     ...webhookEnvShape,
     ...emailEnvShape,
     ...rateLimitEnvShape,
+    // Keys what risk assessments remember (velocity, duplicates, fraud reports).
+    RISK_HASH_KEY:
+      process.env.NODE_ENV === "production"
+        ? riskEnvShape.RISK_HASH_KEY.unwrap()
+        : riskEnvShape.RISK_HASH_KEY,
     // Error and performance monitoring; read by src/instrument.ts before this schema runs.
     ...sentryEnvShape,
     // The image's commit (Dockerfile build argument), Sentry's release.

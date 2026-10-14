@@ -4,6 +4,7 @@ import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
 import { docs } from "./collections";
 import { openapi } from "./openapi";
 import { renderRetentionComponents } from "./retention-text";
+import { renderRiskComponents } from "./risk-text";
 import { DOCS_ROUTE } from "./site";
 
 /**
@@ -50,6 +51,7 @@ export const docsLlms = llms(source, {
       const text = page.data.structuredData.contents.map((item) => item.content);
       return [heading, page.data.description, ...text].filter(Boolean).join("\n\n");
     }
-    return `${heading}\n\n${renderRetentionComponents(await page.data.getText("processed"))}`;
+    const text = await page.data.getText("processed");
+    return `${heading}\n\n${renderRiskComponents(renderRetentionComponents(text))}`;
   },
 });

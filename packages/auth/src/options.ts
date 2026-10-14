@@ -12,6 +12,7 @@ import { sso } from "@better-auth/sso";
 import { db, type Executor } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import * as schema from "@coss/db/schema";
+import { cachedMailDomainCheck, canonicalEmail, isDisposableDomain } from "@coss/signals/email";
 import type { BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware, getSessionFromCtx, signUpEmail } from "better-auth/api";
@@ -23,13 +24,7 @@ import {
   API_KEY_PERMISSIONS,
   API_KEY_VISIBLE_CHARACTERS,
 } from "./constants.ts";
-import {
-  cachedMailDomainCheck,
-  canonicalEmail,
-  DISPOSABLE_EMAIL,
-  isDisposableDomain,
-  signUpEmailRejection,
-} from "./email-guard.ts";
+import { DISPOSABLE_EMAIL, signUpEmailRejection } from "./email-guard.ts";
 import { enqueueAuthEmail, RESET_PASSWORD_LINK_TTL_S, VERIFICATION_LINK_TTL_S } from "./emails.ts";
 import { cancelStaleInvitations, inviterStillAllowed } from "./invitations.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";

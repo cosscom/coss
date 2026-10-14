@@ -24,6 +24,10 @@ export async function register() {
     if (production && !process.env.SKIP_ENV_VALIDATION && !env.TURNSTILE_SECRET_KEY) {
       throw new Error("TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY are required in production.");
     }
+    // Must match the API's, or feedback from the dashboard would teach a different memory.
+    if (production && !process.env.SKIP_ENV_VALIDATION && !env.RISK_HASH_KEY) {
+      throw new Error("RISK_HASH_KEY is required in production.");
+    }
   } catch (error) {
     if (!production) throw error;
     console.error("[web] Refusing to start:", error);

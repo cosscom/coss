@@ -3,6 +3,7 @@
  * `{ "error": { type, code, message, param?, issues?, request_id } }`, built only here.
  */
 import { DomainError, EmailError } from "@coss/email";
+import { RiskError } from "@coss/risk";
 import { WebhookError } from "@coss/webhooks";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -228,12 +229,40 @@ function fromWebhookError(error: WebhookError): ApiError {
   }
 }
 
+function fromRiskError(error: RiskError): ApiError {
+  switch (error.code) {
+    case "request_in_progress":
+      // Concurrent requests keep taking over the key; the SDK retries after Retry-After.
+      return new ApiError(
+        409,
+        { type: "idempotency_error", code: error.code, message: error.message },
+        { "Retry-After": "1" },
+      );
+    case "idempotency_key_reused":
+      return new ApiError(422, {
+        type: "idempotency_error",
+        code: error.code,
+        message: error.message,
+        param: "Idempotency-Key",
+      });
+    case "invalid_list_value":
+      return invalidRequest(error.code, error.message, error.param ?? "value");
+    case "not_found":
+      return new ApiError(404, {
+        type: "not_found_error",
+        code: error.code,
+        message: error.message,
+      });
+  }
+}
+
 /** Maps known error classes to their envelope; `null` means unexpected (a bug or an outage). */
 export function toApiError(error: unknown): ApiError | null {
   if (error instanceof ApiError) return error;
   if (error instanceof EmailError) return fromEmailError(error);
   if (error instanceof DomainError) return fromDomainError(error);
   if (error instanceof WebhookError) return fromWebhookError(error);
+  if (error instanceof RiskError) return fromRiskError(error);
   // A 5xx exception is a server fault: left to the caller to log and answer with a generic 500.
   if (error instanceof HTTPException && error.status < 500) return fromHttpException(error);
   return null;

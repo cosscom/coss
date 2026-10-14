@@ -35,6 +35,11 @@ export const orgStatements = {
   logDrain: ["create", "read", "update", "delete"],
   // The organization's audit log: owners and admins.
   audit: ["read"],
+  // Risk assessments: run them (API keys), read them, and report outcomes (feedback, review
+  // resolutions, forgetting a user).
+  risk: ["assess", "read", "feedback"],
+  // An environment's risk allow and block lists.
+  riskList: ["create", "read", "delete"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -50,6 +55,8 @@ const fullCossAccess = {
   reputation: ["read"],
   log: ["read"],
   logDrain: ["create", "read", "update", "delete"],
+  risk: ["assess", "read", "feedback"],
+  riskList: ["create", "read", "delete"],
 } as const;
 
 const readOnlyCossAccess = {
@@ -63,6 +70,8 @@ const readOnlyCossAccess = {
   reputation: ["read"],
   log: ["read"],
   logDrain: ["read"],
+  risk: ["read"],
+  riskList: ["read"],
 } as const;
 
 export const orgRoles = {

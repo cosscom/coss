@@ -1,0 +1,33 @@
+---
+title: Testing
+description: Exercise every decision from a sandbox environment.
+---
+
+Sandbox (`coss_test_…`) keys assess like live ones, with their own counters, memory and lists, and
+these test inputs (documentation addresses and `.test` domains, which never belong to real users):
+
+| Input                       | Behaves as                                          |
+| --------------------------- | --------------------------------------------------- |
+| IP `192.0.2.1`              | A Tor exit node in Germany (`ip.tor`)               |
+| IP `192.0.2.2`              | An AWS server in the US (`ip.hosting_provider`)     |
+| IP `192.0.2.3`              | A VPN network in Romania (`ip.vpn_network`)         |
+| Any other `192.0.2.x`       | A home connection in the UK (no reason)             |
+| Email `…@disposable.test`   | A disposable domain (`email.disposable`)            |
+| Email `…@undeliverable.test` | A domain that can't receive mail (`email.undeliverable`) |
+| Any other `….test` domain   | A domain that receives mail (no DNS lookup)         |
+
+Typos (`@gmail.con`), role accounts (`info@`), velocity, duplicates, feedback and lists work as in
+live environments.
+
+```ts twoslash
+import { Coss } from "coss";
+// A sandbox key: coss_test_…
+const coss = new Coss();
+// ---cut---
+const { data } = await coss.risk.assess({
+  event: "signup",
+  user: { email: "x@disposable.test" },
+  ip: "192.0.2.1",
+});
+// data?.decision === "block": a disposable address over Tor
+```

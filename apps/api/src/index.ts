@@ -8,6 +8,7 @@ import { createEmailService } from "@coss/email";
 import { ensureEmailDispatchQueue, pgBossDispatchQueue } from "@coss/email/dispatch";
 import { createLogWriter } from "@coss/logs";
 import { createRateLimitRuntime } from "@coss/ratelimit";
+import { createRiskDeps } from "@coss/risk/runtime";
 import { parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
 import { createApp } from "./app.ts";
@@ -37,6 +38,8 @@ const app = createApp({
     secretsKeys: parseSecretsKeys(env.WEBHOOK_SECRETS_KEY),
     allowInsecureUrls: process.env.NODE_ENV !== "production",
   },
+  // Velocity counters share the rate limiter's Valkey connection.
+  riskDeps: createRiskDeps(env, { valkey: rateLimits.valkey }),
   publicUrl: env.API_PUBLIC_URL,
   rateLimiter: rateLimits.limiter,
   clientIp: rateLimits.clientIp,

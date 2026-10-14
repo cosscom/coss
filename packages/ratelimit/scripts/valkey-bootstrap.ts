@@ -84,7 +84,7 @@ const appUserId = `${name}-ratelimit`;
 const defaultUserId = `${name}-default`;
 const userGroupId = `${name}-ratelimit`;
 // Only the rate limiter's own keys and the commands it (and the cluster client) needs.
-const APP_ACCESS = `on ~${keyPrefix}:* -@all +get +set +del +pttl +eval +evalsha +ping +info +time +cluster|slots +cluster|shards +cluster|info +client|setname +hello`;
+const APP_ACCESS = `on ~${keyPrefix}:* -@all +get +set +del +pttl +hincrby +hgetall +hdel +pexpire +eval +evalsha +ping +info +time +cluster|slots +cluster|shards +cluster|info +client|setname +hello`;
 
 const elasticache = new ElastiCacheClient({ region });
 

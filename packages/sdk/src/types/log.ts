@@ -1,7 +1,10 @@
 /** Log wire types (hand-written mirrors of the API's schemas). */
 
-/** `api`: a request to the API. `email`: an email event. `webhook`: a webhook delivery attempt. */
-export type LogSource = "api" | "email" | "webhook";
+/**
+ * `api`: a request to the API. `email`: an email event. `webhook`: a webhook delivery attempt.
+ * `risk`: a risk assessment or its feedback.
+ */
+export type LogSource = "api" | "email" | "webhook" | "risk";
 
 /**
  * `error`: 5xx responses, bounces, complaints, failures. `warning`: 4xx responses, delays,

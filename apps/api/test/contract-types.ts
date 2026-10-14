@@ -46,6 +46,20 @@ import type {
   ReputationCheckObject,
   ReputationObject,
 } from "@coss/reputation/schemas";
+import type {
+  CreateRiskAssessmentRequest,
+  CreateRiskFeedbackRequest,
+  CreateRiskListEntryRequest,
+  DeletedRiskListEntry,
+  ForgottenRiskUser,
+  ListRiskAssessmentsQuery,
+  ListRiskListEntriesQuery,
+  RiskAssessment,
+  RiskAssessmentList,
+  RiskListEntry,
+  RiskListEntryList,
+  RiskWebhookEvent,
+} from "@coss/risk/schemas";
 import type { ApiVersion } from "@coss/versioning";
 import type {
   CreateLogDrainRequest,
@@ -69,11 +83,13 @@ import type {
   WebhookEndpointWithSecret,
 } from "@coss/webhooks/schemas";
 import type {
+  AssessRiskParams,
   CheckSuppressionParams,
   CossErrorIssue,
   CossErrorType,
   CreateDomainParams,
   CreateLogDrainParams,
+  CreateRiskListEntryParams,
   CreateSuppressionParams,
   CreateTrackingDomainParams,
   CreateWebhookEndpointParams,
@@ -85,6 +101,8 @@ import type {
   ListAuditEventsParams,
   ListLogDrainBatchesParams,
   ListLogsParams,
+  ListRiskAssessmentsParams,
+  ListRiskListEntriesParams,
   ListSuppressionsParams,
   ListWebhookDeliveriesParams,
   LogDrain,
@@ -93,12 +111,14 @@ import type {
   LogDrainLine,
   LogDrainSource,
   RescheduleEmailParams,
+  RiskFeedbackParams,
   RollWebhookEndpointSecretParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
   ApiVersion as SdkApiVersion,
   AuditEvent as SdkAuditEvent,
   DeletedDomain as SdkDeletedDomain,
   DeletedLogDrain as SdkDeletedLogDrain,
+  DeletedRiskListEntry as SdkDeletedRiskListEntry,
   DeletedSuppression as SdkDeletedSuppression,
   DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
   Domain as SdkDomain,
@@ -109,10 +129,14 @@ import type {
   EmailTracking as SdkEmailTracking,
   EmailWebhookEvent as SdkEmailWebhookEvent,
   WebhookEndpointWithSecret as SdkEndpointWithSecret,
+  ForgottenRiskUser as SdkForgottenRiskUser,
   Log as SdkLog,
   LogDrainWithSecret as SdkLogDrainWithSecret,
   Reputation as SdkReputation,
   ReputationCheck as SdkReputationCheck,
+  RiskAssessment as SdkRiskAssessment,
+  RiskListEntry as SdkRiskListEntry,
+  RiskWebhookEvent as SdkRiskWebhookEvent,
   Suppression as SdkSuppression,
   SuppressionCheck as SdkSuppressionCheck,
   SuppressionImport as SdkSuppressionImport,
@@ -237,9 +261,15 @@ export type Contract = [
   Assert<
     MutuallyAssignable<z.output<typeof AccountWebhookEvent>["data"], SdkAccountWebhookEvent["data"]>
   >,
+  Assert<MutuallyAssignable<z.output<typeof RiskWebhookEvent>, SdkRiskWebhookEvent>>,
+  Assert<
+    MutuallyAssignable<z.output<typeof RiskWebhookEvent>["data"], SdkRiskWebhookEvent["data"]>
+  >,
   Assert<
     MutuallyAssignable<
-      z.output<typeof EmailWebhookEvent> | z.output<typeof AccountWebhookEvent>,
+      | z.output<typeof EmailWebhookEvent>
+      | z.output<typeof AccountWebhookEvent>
+      | z.output<typeof RiskWebhookEvent>,
       WebhookEvent
     >
   >,
@@ -288,6 +318,43 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof LogDrainBatchList>, List<LogDrainBatch>>>,
   Assert<MutuallyAssignable<ApiLogDrainSource, LogDrainSource>>,
   Assert<MutuallyAssignable<z.output<typeof LogEntry> | z.output<typeof AuditEvent>, LogDrainLine>>,
+  // Risk: assessments, feedback, list entries (the SDK's `lists.add` builds the wire body).
+  Assert<MutuallyAssignable<z.input<typeof CreateRiskAssessmentRequest>, AssessRiskParams>>,
+  Assert<
+    MutuallyAssignable<
+      NonNullable<z.input<typeof CreateRiskAssessmentRequest>["user"]>,
+      NonNullable<AssessRiskParams["user"]>
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof RiskAssessment>, SdkRiskAssessment>>,
+  Assert<
+    MutuallyAssignable<
+      z.output<typeof RiskAssessment>["reasons"][number],
+      SdkRiskAssessment["reasons"][number]
+    >
+  >,
+  Assert<
+    MutuallyAssignable<z.output<typeof RiskAssessment>["signals"], SdkRiskAssessment["signals"]>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof RiskAssessmentList>, List<SdkRiskAssessment>>>,
+  Assert<
+    MutuallyAssignable<
+      Omit<z.input<typeof ListRiskAssessmentsQuery>, "limit"> & { limit?: number },
+      ListRiskAssessmentsParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.input<typeof CreateRiskFeedbackRequest>, RiskFeedbackParams>>,
+  Assert<MutuallyAssignable<z.input<typeof CreateRiskListEntryRequest>, CreateRiskListEntryParams>>,
+  Assert<MutuallyAssignable<z.output<typeof RiskListEntry>, SdkRiskListEntry>>,
+  Assert<MutuallyAssignable<z.output<typeof RiskListEntryList>, List<SdkRiskListEntry>>>,
+  Assert<
+    MutuallyAssignable<
+      Omit<z.input<typeof ListRiskListEntriesQuery>, "limit"> & { limit?: number },
+      ListRiskListEntriesParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof DeletedRiskListEntry>, SdkDeletedRiskListEntry>>,
+  Assert<MutuallyAssignable<z.output<typeof ForgottenRiskUser>, SdkForgottenRiskUser>>,
   // Errors: every API error type is one the SDK knows, and issues have the same shape.
   Assert<ApiError["type"] extends CossErrorType ? true : false>,
   Assert<MutuallyAssignable<NonNullable<ApiError["issues"]>[number], CossErrorIssue>>,

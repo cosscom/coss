@@ -30,6 +30,8 @@ const nextConfig: NextConfig = {
     "@coss/screening",
     "@coss/versioning",
     "@coss/retention",
+    "@coss/signals",
+    "@coss/risk",
     "@coss/observability",
   ],
   // A self-contained server (.next/standalone) for the container image. Tracing starts at the

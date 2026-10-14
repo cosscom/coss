@@ -1,6 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
+import {
+  IDEMPOTENCY_KEY_TTL_MS,
+  type IdempotencyErrors,
+  isReplayOf,
+  withIdempotencyKey,
+} from "@coss/db/idempotency";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
 import { and, asc, eq, inArray, isNull, lte, notExists } from "drizzle-orm";
 import {
@@ -110,11 +116,17 @@ const DISPATCH_DUE_LIMIT = 50;
 // At most five attachment payloads (up to 25 MB each) in memory at once.
 const DISPATCH_DUE_CONCURRENCY = 5;
 
-/** An idempotency key can be reused for a different request once its email is this old. */
-export const IDEMPOTENCY_KEY_TTL_MS = 24 * 60 * 60 * 1000;
+export { IDEMPOTENCY_KEY_TTL_MS };
 
-/** Each retry means another request changed the key's owner under us; this never loops in practice. */
-const MAX_IDEMPOTENCY_ATTEMPTS = 5;
+const IDEMPOTENCY_ERRORS: IdempotencyErrors = {
+  inProgress: () =>
+    new EmailError("request_in_progress", "This idempotency key is busy. Retry shortly."),
+  reused: () =>
+    new EmailError(
+      "idempotency_key_reused",
+      "This idempotency key was already used with a different request body.",
+    ),
+};
 const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
 const {
@@ -812,6 +824,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const { row, replayed } = await withIdempotencyKey({
       requestHash,
       retentionMs,
+      errors: IDEMPOTENCY_ERRORS,
       insert: insertEmail,
       existing: async () => {
         const [existing] = await db
@@ -904,6 +917,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
 
     const { row, replayed } = await withIdempotencyKey({
       requestHash,
+      errors: IDEMPOTENCY_ERRORS,
       insert: insertBatch,
       existing: async () => {
         const [existing] = await db
@@ -980,61 +994,6 @@ function sameBatchKey(environment: SendEnvironment, idempotencyKey: string) {
     eq(emailBatch.environmentId, environment.environmentId),
     eq(emailBatch.idempotencyKey, idempotencyKey),
   );
-}
-
-function isReplayOf(
-  existing: { createdAt: Date; requestHash: string | null },
-  requestHash: string | null,
-  retentionMs = IDEMPOTENCY_KEY_TTL_MS,
-): boolean {
-  return (
-    existing.requestHash === requestHash && Date.now() - existing.createdAt.getTime() <= retentionMs
-  );
-}
-
-/**
- * Inserts under an idempotency key, or replays the row that already holds it. The unique
- * (environment_id, idempotency_key) index arbitrates races: exactly one request inserts, every
- * other one waits for its commit, sees `DO NOTHING` (`insert` returns nothing) and replays the
- * winner's row, whatever its status (a queued email is replayed as queued).
- */
-async function withIdempotencyKey<Row extends { createdAt: Date; requestHash: string | null }>(op: {
-  requestHash: string;
-  retentionMs?: number;
-  insert: (tx: Transaction) => Promise<Row | undefined>;
-  existing: () => Promise<Row | undefined>;
-  /** Compare-and-set the key off an expired row. */
-  release: (tx: Transaction, existing: Row) => Promise<unknown>;
-}): Promise<{ row: Row; replayed: boolean }> {
-  let inserted = await db.transaction((tx) => op.insert(tx));
-  for (let attempt = 1; !inserted; attempt++) {
-    if (attempt > MAX_IDEMPOTENCY_ATTEMPTS) {
-      throw new EmailError("request_in_progress", "This idempotency key is busy. Retry shortly.");
-    }
-    const existing = await op.existing();
-    if (!existing) {
-      // Its owner expired and released the key between our insert and select.
-      inserted = await db.transaction((tx) => op.insert(tx));
-      continue;
-    }
-    if (Date.now() - existing.createdAt.getTime() > (op.retentionMs ?? IDEMPOTENCY_KEY_TTL_MS)) {
-      // Expired: move the key to a new row atomically. The compare-and-set on the old row makes
-      // concurrent requests with the same expired key queue up behind each other.
-      inserted = await db.transaction(async (tx) => {
-        await op.release(tx, existing);
-        return op.insert(tx);
-      });
-      continue;
-    }
-    if (existing.requestHash !== op.requestHash) {
-      throw new EmailError(
-        "idempotency_key_reused",
-        "This idempotency key was already used with a different request body.",
-      );
-    }
-    return { row: existing, replayed: true };
-  }
-  return { row: inserted, replayed: false };
 }
 
 /** A batch with its emails in request order. */
