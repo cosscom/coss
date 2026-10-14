@@ -1,5 +1,5 @@
 /**
- * The Calendar UI kit's registry (/calendar/r/*.json) serves a committed payload: the library's
+ * The Calendar UI's registry (/calendar/r/*.json) serves a committed payload: the library's
  * source inlined by scripts/build-calendar-registry.mjs. It must be rebuilt after a change to
  * packages/kloq/src or the add-on blocks, or the registry ships old code.
  */

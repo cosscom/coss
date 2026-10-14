@@ -4,7 +4,7 @@ import { calendarPageMarkdown } from "@/lib/calendar-docs";
 
 export const revalidate = false;
 
-/** The Calendar UI kit's llms-full.txt: the whole manual inlined. */
+/** The Calendar UI's llms-full.txt: the whole manual inlined. */
 export async function GET() {
   const parts = [`# ${CALENDAR.name} (coss calendar) — the complete documentation`, ""];
   for (const section of docsSections()) {

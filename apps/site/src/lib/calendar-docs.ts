@@ -4,7 +4,7 @@ import { CALENDAR } from "./calendar";
 import { calendar } from "./collections";
 
 /**
- * The Calendar UI kit's docs (content/calendar) at /calendar/docs. Their own source, so they stay
+ * The Calendar UI's docs (content/calendar) at /calendar/docs. Their own source, so they stay
  * out of coss's docs sidebar, search (/calendar/docs/search.json is theirs) and /llms.txt.
  */
 export const calendarSource = loader({

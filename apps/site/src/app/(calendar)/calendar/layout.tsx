@@ -5,7 +5,7 @@ const RESTORE_THEME =
   'try{var t=localStorage.getItem("kloq-theme");if(t)document.documentElement.setAttribute("data-kloq-theme",t)}catch(e){}';
 
 /**
- * The Calendar UI kit's pages (landing page, demo, tools, comparisons and docs). The page keeps
+ * The Calendar UI's pages (landing page, demo, tools, comparisons and docs). The page keeps
  * the site's tokens; coss calendar's own (its brand colour) are defined page-wide in src/styles/calendar.css.
  * The header and page frame are each route group's `SiteShell`.
  */

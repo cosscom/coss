@@ -4,7 +4,7 @@ import { CALENDAR, CALENDAR_LINKS } from "@/lib/calendar";
 import { calendarSource } from "@/lib/calendar-docs";
 
 // The landing page, the demo, the tools and the comparisons in the site's shell, with the
-// Calendar UI kit's header links; the ⌘K menu searches its docs.
+// Calendar UI's header links; the ⌘K menu searches its docs.
 export default function Layout({ children }: LayoutProps<"/calendar">) {
   return (
     <SiteShell

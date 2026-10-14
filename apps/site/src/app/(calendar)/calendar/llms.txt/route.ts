@@ -4,7 +4,7 @@ import { abs } from "@/lib/calendar/site";
 
 export const revalidate = false;
 
-/** The Calendar UI kit's llms.txt: the map of its docs (coss.com/calendar's, under /calendar). */
+/** The Calendar UI's llms.txt: the map of its docs (coss.com/calendar's, under /calendar). */
 export function GET() {
   const lines = [
     `# ${CALENDAR.name} (coss calendar)`,

@@ -1,4 +1,4 @@
-/** The Calendar UI kit's public shadcn registry: `/calendar/r/{name}.json` (coss.com/calendar's `/r/`). */
+/** The Calendar UI's public shadcn registry: `/calendar/r/{name}.json` (coss.com/calendar's `/r/`). */
 
 import registry from "@/lib/calendar/registry/generated.json";
 import { CORE_ITEM_URL, REGISTRY_ITEMS } from "@/lib/calendar/registry/manifest";

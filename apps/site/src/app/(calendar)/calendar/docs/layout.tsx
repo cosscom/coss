@@ -4,7 +4,7 @@ import { CALENDAR, CALENDAR_LINKS } from "@/lib/calendar";
 import { calendarSource } from "@/lib/calendar-docs";
 
 export default function Layout({ children }: LayoutProps<"/calendar/docs">) {
-  // The same docs layout as /docs, over the Calendar UI kit's tree (its `---Sections---` are the
+  // The same docs layout as /docs, over the Calendar UI's tree (its `---Sections---` are the
   // sidebar groups) and its own search index (/calendar/docs/search.json).
   const tree = calendarSource.getPageTree();
   return (

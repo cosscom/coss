@@ -19,7 +19,7 @@ async function PlaygroundEntry(props: Omit<ComponentProps<typeof Playground>, "p
 }
 
 /**
- * Components available in every Calendar UI kit docs page without an import: the site's (coss
+ * Components available in every Calendar UI docs page without an import: the site's (coss
  * ui's typography, callouts and cards, Fumadocs' code blocks), with coss.com/calendar's own pieces in
  * front — the live examples with their source, the playground, the props reference, the demos
  * and the docs home.

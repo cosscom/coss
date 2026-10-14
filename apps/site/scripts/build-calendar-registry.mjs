@@ -1,5 +1,5 @@
 /**
- * Build the Calendar UI kit's shadcn registry payloads (kloq.dev's `scripts/build-registry.mjs`):
+ * Build the Calendar UI's shadcn registry payloads (kloq.dev's `scripts/build-registry.mjs`):
  * inline each catalog item's source into `src/lib/calendar/registry/generated.json`, which the
  * `/calendar/r/[name]` route imports.
  *

@@ -5,7 +5,7 @@
 @import "fumadocs-ui/css/preset.css";
 @import "fumadocs-openapi/css/preset.css";
 @import "fumadocs-twoslash/twoslash.css";
-/* The Calendar UI kit (kloq, packages/kloq): its tokens (scoped to [data-kloq-root], i.e. the
+/* The Calendar UI (kloq, packages/kloq): its tokens (scoped to [data-kloq-root], i.e. the
    calendars themselves), the calendar's surfaces, its themes and design mode; then its pages' styles. */
 @import "../../../../packages/kloq/src/styles/kloq.css";
 @import "../styles/calendar.css";

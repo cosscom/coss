@@ -1,18 +1,18 @@
 import { type NavItem, SITE_URL } from "./site.ts";
 
 /**
- * The Calendar UI kit (coss calendar, the `cosscom/calendar` repository) at coss.com/calendar: its landing
+ * The Calendar UI (coss calendar, the `cosscom/calendar` repository) at coss.com/calendar: its landing
  * page, live demo, tools, comparisons, docs and shadcn registry, moved here from coss.com/calendar (where
  * the app was built to be served below `/calendar`). The library itself is the `kloq` workspace
  * package (packages/kloq).
  */
 export const CALENDAR = {
-  name: "Calendar UI kit",
+  name: "Calendar UI",
   /** The library's name, as the docs and the registry call it. */
   library: "kloq",
   path: "/calendar",
   url: `${SITE_URL}/calendar`,
-  title: "Calendar UI kit - a React calendar obsessed with micro-perfection",
+  title: "Calendar UI - a React calendar obsessed with micro-perfection",
   description:
     "A React calendar obsessed with micro-perfection: hand-tuned drag physics, a design mode that annotates its own craft, and a command palette that reaches everything. One component, on coss ui.",
   githubRepo: "cosscom/calendar",
@@ -26,7 +26,7 @@ export const CALENDAR = {
 } as const;
 
 /**
- * Header links of the Calendar UI kit's pages: the demo (its own page without the site's header,
+ * Header links of the Calendar UI's pages: the demo (its own page without the site's header,
  * so it opens in a new tab), the docs, the tools and the comparisons.
  */
 export const CALENDAR_LINKS: readonly NavItem[] = [

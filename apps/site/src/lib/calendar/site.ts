@@ -1,7 +1,7 @@
 import { SITE_URL } from "../site.ts";
 
 /**
- * URL helpers of the Calendar UI kit's pages (coss.com/calendar's `lib/site.ts`): every path is written in
+ * URL helpers of the Calendar UI's pages (coss.com/calendar's `lib/site.ts`): every path is written in
  * full (`/calendar/docs/theming`), so there is no base path to add any more.
  */
 
