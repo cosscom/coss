@@ -1,102 +1,485 @@
+import { PLANS } from "@coss/billing/catalog";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@coss/ui/components/card";
+import {
+  ArrowRightIcon,
+  BookOpenTextIcon,
+  CheckIcon,
+  ChevronRightIcon,
+  ClipboardCopyIcon,
+  FlaskConicalIcon,
+  MinusIcon,
+} from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { SampleCalendar } from "@/components/calendar/landing/sample-calendar";
+import { CopyPrompt } from "@/components/home/copy-prompt";
+import { PartDrawing } from "@/components/home/part-drawing";
+import { PRODUCTS } from "@/components/home/parts";
+import { PlatformAssembly } from "@/components/home/platform-assembly";
+import { VendorDrawing } from "@/components/home/vendor-drawing";
 import { ShipyardHarbour } from "@/components/shipyard/harbour";
+import { SignUpButton } from "@/components/sign-up-button";
 import { CALENDAR } from "@/lib/calendar";
 import { SHIPYARD } from "@/lib/shipyard";
-import { PRODUCTS, SITE_DESCRIPTION } from "@/lib/site";
 
-// Placeholder landing page.
-const SNIPPET = `import { Coss } from "coss";
-
-const coss = new Coss({ apiKey: process.env.COSS_API_KEY });
-
-await coss.email.send({
-  from: "Acme <hello@acme.com>",
-  to: "user@example.com",
-  subject: "Welcome",
-  html: "<p>Hi there</p>",
-});`;
+const FREE_EMAILS = (PLANS.free.includedUnits["email.recipients"] ?? 0).toLocaleString("en-US");
 
 export default function HomePage() {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-16 px-4 py-16 sm:py-24">
-      <section className="flex flex-col items-start gap-6">
-        <h1 className="max-w-2xl font-semibold text-4xl tracking-tight sm:text-5xl">
-          Every communication primitive. One API key.
-        </h1>
-        <p className="max-w-xl text-lg text-muted-foreground">{SITE_DESCRIPTION}</p>
-        <div className="flex flex-wrap gap-3">
-          <Button render={<Link href="/docs/quickstart" />} size="lg">
-            Get started
-          </Button>
-          <Button render={<Link href="/docs/api-reference" />} size="lg" variant="outline">
-            API reference
-          </Button>
-        </div>
-      </section>
-
-      <pre className="overflow-x-auto rounded-xl border bg-card p-4 font-mono text-sm">
-        <code>{SNIPPET}</code>
-      </pre>
-
-      <section className="grid gap-4 sm:grid-cols-2">
-        {PRODUCTS.map((product) => (
-          <Card key={product.name}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {product.name}
-                {!product.available && <Badge variant="outline">Soon</Badge>}
-              </CardTitle>
-              <CardDescription>{product.description}</CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
-      </section>
-
-      <section className="relative overflow-hidden rounded-2xl border bg-card">
-        <ShipyardHarbour className="h-56 sm:h-80" />
-        <div className="-mt-12 relative flex flex-col items-start gap-4 p-6 sm:-mt-16 sm:p-8">
-          <h2 className="flex items-center gap-2 font-heading font-semibold text-2xl">
-            {SHIPYARD.name}
-            <Badge variant="info">New</Badge>
-          </h2>
-          <p className="max-w-2xl text-muted-foreground">
-            {SHIPYARD.description} Open source, from the team behind coss.com.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Button render={<Link href={SHIPYARD.path} />}>About Shipyard</Button>
-            <Button render={<Link href={SHIPYARD.docs} />} variant="outline">
-              Shipyard docs
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* kloq: a live, seeded calendar. */}
-      <section className="grid gap-8 overflow-hidden rounded-2xl border bg-card lg:grid-cols-[minmax(0,26rem)_1fr]">
-        <div className="flex flex-col items-start gap-4 p-6 sm:p-8">
-          <h2 className="flex items-center gap-2 font-heading font-semibold text-2xl">
-            {CALENDAR.name}
-            <Badge variant="info">New</Badge>
-          </h2>
-          <p className="text-muted-foreground">{CALENDAR.description}</p>
-          <div className="flex flex-wrap gap-3">
-            <Button render={<Link href={CALENDAR.path} />}>About kloq</Button>
-            <Button render={<Link href={CALENDAR.docs} />} variant="outline">
-              Calendar docs
-            </Button>
-            <Button render={<Link href={CALENDAR.demo} />} variant="ghost">
-              Live demo
-            </Button>
-          </div>
-        </div>
-        <div className="min-w-0 p-4 pt-0 lg:p-6 lg:ps-0">
-          <SampleCalendar className="h-96 lg:h-104" />
-        </div>
-      </section>
+    // One ruled sheet between the shell's rails (the `container` width plus the rails' 12px offset).
+    <main className="mx-auto w-full max-w-[1440px] flex-1">
+      <Hero />
+      <Catalog />
+      <OneVendor />
+      <Agents />
+      <Tolerances />
+      <MoreFromCoss />
+      <Close />
     </main>
+  );
+}
+
+function Hero() {
+  return (
+    <section aria-labelledby="hero-title" className="grid grid-cols-1 border-b lg:grid-cols-12">
+      <div className="flex flex-col gap-8 px-4 pt-12 pb-10 sm:px-8 sm:pt-16 lg:col-span-12 lg:grid lg:grid-cols-12 lg:items-end lg:gap-10 lg:pb-12">
+        <h1
+          className="text-balance font-semibold text-[clamp(2.75rem,6.5vw,5.25rem)] leading-[0.92] tracking-[-0.035em] lg:col-span-8"
+          id="hero-title"
+        >
+          The foundation the world's apps are built on.
+        </h1>
+        <div className="flex flex-col gap-6 lg:col-span-4 lg:pb-2">
+          <p className="max-w-md text-lg text-muted-foreground leading-snug">
+            Email, SMS, video and scheduling, behind one SDK and one API key. Give your coding agent
+            one prompt and every part is wired in, so you ship the product only you can build.
+          </p>
+          <div className="flex flex-wrap gap-2.5">
+            <SignUpButton />
+            <Button className="px-4" render={<Link href="/docs/quickstart" />} variant="outline">
+              Quickstart
+            </Button>
+          </div>
+        </div>
+      </div>
+      <div className="drafting-grid flex items-center justify-center overflow-hidden border-t px-4 py-12 lg:col-span-12">
+        <PlatformAssembly className="w-full max-w-7xl text-foreground" />
+      </div>
+    </section>
+  );
+}
+
+function SectionHead({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+  return (
+    <div className="grid gap-4 px-4 pt-16 pb-10 sm:px-8 sm:pt-24 lg:grid-cols-12 lg:gap-10">
+      <h2 className="font-semibold text-4xl tracking-[-0.03em] sm:text-5xl lg:col-span-5" id={id}>
+        {title}
+      </h2>
+      <div className="max-w-xl text-lg text-muted-foreground leading-snug lg:col-span-6 lg:col-start-7 lg:pt-2">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Catalog() {
+  return (
+    <section aria-labelledby="catalog-title" className="scroll-mt-14 border-b" id="catalog">
+      <SectionHead id="catalog-title" title="Catalog">
+        Every product runs on the same key, the same SDK and the same platform, so the next one you
+        add needs no new setup.
+      </SectionHead>
+
+      <div className="grid grid-cols-1 border-t md:grid-cols-2">
+        {PRODUCTS.map((product, index) => (
+          <article
+            aria-labelledby={`part-${product.id}`}
+            className="flex scroll-mt-20 flex-col border-b md:odd:border-r md:[&:nth-last-child(-n+2)]:border-b-0"
+            id={product.id}
+            key={product.id}
+          >
+            <div className="drafting-grid relative flex h-56 items-center justify-center border-b">
+              <PartDrawing className="w-44" product={product} />
+              <span className="absolute top-4 left-4 font-mono text-muted-foreground text-xs sm:left-8">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+            </div>
+            <div className="flex flex-1 flex-col gap-4 px-4 py-8 sm:px-8">
+              <div className="flex flex-wrap items-baseline gap-3">
+                <h3 className="font-semibold text-3xl tracking-[-0.02em]" id={`part-${product.id}`}>
+                  {product.name}
+                </h3>
+                <code className="font-mono text-muted-foreground text-sm">{product.call}</code>
+              </div>
+              <p className="max-w-md text-lg leading-snug">{product.summary}</p>
+              <ul className="flex flex-col gap-2 text-muted-foreground text-sm">
+                {product.features.map((feature) => (
+                  <li className="flex items-center gap-2.5" key={feature}>
+                    <CheckIcon aria-hidden className="size-3.5 text-foreground" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const COMPARISON: [string, string][] = [
+  ["Four accounts and four sets of keys", "One account, one key per environment"],
+  ["Four SDKs to learn and keep updated", "One SDK for every product"],
+  ["Four webhook formats to verify", "One webhook format and signature"],
+  ["Four dashboards to search when something breaks", "One log across every product"],
+  ["Four invoices", "One bill"],
+  ["Start over for every new channel", "The next product is already set up"],
+];
+
+/** Why one platform matters to a customer: the same four channels, from four vendors or from one. */
+function OneVendor() {
+  return (
+    <section aria-labelledby="one-vendor-title" className="border-b">
+      <SectionHead id="one-vendor-title" title="One vendor, not four">
+        Every channel you add usually means another account, another SDK, another dashboard and
+        another invoice. With COSS, the next one is already set up.
+      </SectionHead>
+      <div className="grid grid-cols-1 border-t md:grid-cols-2">
+        {(["apart", "together"] as const).map((side) => {
+          const together = side === "together";
+          return (
+            <div
+              className={
+                together ? "flex flex-col" : "flex flex-col border-b md:border-r md:border-b-0"
+              }
+              key={side}
+            >
+              <div className="flex items-baseline justify-between gap-4 border-b px-4 py-5 sm:px-8">
+                <h3
+                  className={
+                    together
+                      ? "font-semibold text-2xl tracking-[-0.02em]"
+                      : "font-semibold text-2xl text-muted-foreground tracking-[-0.02em]"
+                  }
+                >
+                  {together ? "With COSS" : "Four vendors"}
+                </h3>
+                <span className="font-mono text-muted-foreground text-xs">
+                  {together ? "1 integration" : "4 integrations"}
+                </span>
+              </div>
+              <div className="drafting-grid flex items-center justify-center border-b px-6 py-8">
+                <VendorDrawing
+                  className={
+                    together
+                      ? "w-full max-w-md text-foreground"
+                      : "w-full max-w-md text-muted-foreground"
+                  }
+                  together={together}
+                />
+              </div>
+              <ul className="flex flex-col px-4 py-4 sm:px-8">
+                {COMPARISON.map(([apart, joined]) => (
+                  <li
+                    className="flex items-center gap-3 border-b py-3.5 last:border-b-0"
+                    key={apart}
+                  >
+                    {together ? (
+                      <CheckIcon aria-hidden className="size-4 shrink-0" />
+                    ) : (
+                      <MinusIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
+                    )}
+                    <span className={together ? undefined : "text-muted-foreground"}>
+                      {together ? joined : apart}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+const STEPS = [
+  {
+    icon: ClipboardCopyIcon,
+    title: "Copy one prompt",
+    body: "One line for Claude Code, Cursor or Codex. It points your agent at the manual and tells it how to test.",
+  },
+  {
+    icon: BookOpenTextIcon,
+    title: "Your agent reads the manual",
+    body: "/llms.txt indexes every docs page in plain text. The API reference and the SDK's types come from one OpenAPI document.",
+  },
+  {
+    icon: FlaskConicalIcon,
+    title: "It tests with a sandbox key",
+    body: "coss_test_ keys record every email and event and deliver nothing, so the agent can run its code for real.",
+  },
+];
+
+const INTERFACES: [string, string, string | null][] = [
+  ["/llms.txt", "An index of every docs page, in plain text.", "/llms.txt"],
+  ["/llms-full.txt", "The whole manual in one file.", "/llms-full.txt"],
+  [
+    "OpenAPI 3.1",
+    "The source of the API reference, its samples and playground.",
+    "/docs/api-reference",
+  ],
+  [
+    "{ data, error }",
+    "No thrown API errors: every failure is a value with a type and a code.",
+    "/docs/sdk/errors",
+  ],
+  [
+    "Idempotency-Key",
+    "Sent with every POST and reused across retries, so a retried send never sends twice.",
+    "/docs/api-reference/idempotency",
+  ],
+  [
+    "Coss-Version",
+    "Dated versions: what works today keeps working until you upgrade.",
+    "/docs/api-reference/versioning",
+  ],
+];
+
+const SESSION: { kind: "you" | "tool" | "out" | "done"; text: string }[] = [
+  {
+    kind: "you",
+    text: "Add COSS to this project: read https://coss.com/llms.txt, install the `coss` package…",
+  },
+  { kind: "tool", text: "Fetch  coss.com/llms.txt" },
+  { kind: "tool", text: "Fetch  coss.com/docs/email/sending" },
+  { kind: "tool", text: "Fetch  coss.com/docs/webhooks" },
+  { kind: "tool", text: "Bash   npm install coss" },
+  { kind: "tool", text: "Write  src/lib/coss.ts" },
+  { kind: "tool", text: "Write  src/app/api/webhooks/coss/route.ts" },
+  { kind: "tool", text: "Bash   npx tsx scripts/send-test.ts" },
+  { kind: "out", text: "email_01k7c8m4q2f3e9v6t5r1n0p8yz  queued" },
+  {
+    kind: "done",
+    text: "Email and signed delivery webhooks are in. The test send was recorded with your sandbox key; nothing was delivered.",
+  },
+];
+
+function Agents() {
+  return (
+    <section aria-labelledby="agents-title" className="scroll-mt-14 border-b" id="agents">
+      <SectionHead id="agents-title" title="Assembly takes one prompt">
+        COSS is written for the agent doing the work as much as for you: plain-text docs, typed
+        results, and keys that can't send by accident.
+      </SectionHead>
+
+      <div className="border-t px-4 py-8 sm:px-8">
+        <CopyPrompt />
+      </div>
+
+      <ol className="grid border-t md:grid-cols-3">
+        {STEPS.map((step, index) => (
+          <li
+            className="flex flex-col gap-3 border-b px-4 py-8 last:border-b-0 sm:px-8 md:border-r md:border-b-0 md:last:border-r-0"
+            key={step.title}
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex size-7 items-center justify-center rounded-full border font-mono text-xs">
+                {index + 1}
+              </span>
+              <step.icon aria-hidden className="size-4.5 text-muted-foreground" strokeWidth={1.5} />
+            </div>
+            <h3 className="font-semibold text-xl tracking-[-0.01em]">{step.title}</h3>
+            <p className="text-muted-foreground leading-snug">{step.body}</p>
+          </li>
+        ))}
+      </ol>
+
+      <div className="grid grid-cols-1 border-t lg:grid-cols-12">
+        <figure className="flex min-w-0 flex-col gap-3 border-b px-4 py-10 sm:px-8 lg:col-span-7 lg:border-r lg:border-b-0">
+          <div className="overflow-hidden rounded-xl border bg-background">
+            <div className="flex items-center gap-1.5 border-b px-3.5 py-2.5">
+              <span className="size-2.5 rounded-full border" />
+              <span className="size-2.5 rounded-full border" />
+              <span className="size-2.5 rounded-full border" />
+              <span className="ml-2 font-mono text-muted-foreground text-xs">agent session</span>
+            </div>
+            <ol className="flex flex-col gap-1.5 overflow-x-auto px-4 py-4 font-mono text-[0.8125rem] leading-relaxed">
+              {SESSION.map((line) => (
+                <li
+                  className={
+                    line.kind === "you"
+                      ? "mb-2 text-foreground"
+                      : line.kind === "tool"
+                        ? "whitespace-pre text-muted-foreground"
+                        : line.kind === "out"
+                          ? "whitespace-pre pl-4 text-muted-foreground/80"
+                          : "mt-2 text-foreground"
+                  }
+                  key={line.text}
+                >
+                  <span
+                    aria-hidden
+                    className="mr-2 inline-flex w-3.5 translate-y-0.5 text-foreground"
+                  >
+                    {line.kind === "you" || line.kind === "tool" ? (
+                      <ChevronRightIcon
+                        className={line.kind === "tool" ? "size-3.5 opacity-40" : "size-3.5"}
+                      />
+                    ) : line.kind === "done" ? (
+                      <CheckIcon className="size-3.5" />
+                    ) : null}
+                  </span>
+                  {line.text}
+                </li>
+              ))}
+            </ol>
+          </div>
+          <figcaption className="text-muted-foreground text-sm">
+            An illustrative session. What your agent does depends on your project.
+          </figcaption>
+        </figure>
+        <div className="px-4 py-10 sm:px-8 lg:col-span-5">
+          <h3 className="font-semibold text-2xl tracking-[-0.02em]">Interfaces for agents</h3>
+          <ul className="mt-6 flex flex-col">
+            {INTERFACES.map(([name, description, href]) => (
+              <li className="border-t py-3.5 last:border-b" key={name}>
+                {href ? (
+                  <Link className="group flex flex-col gap-1" href={href}>
+                    <code className="font-mono text-sm group-hover:underline">{name}</code>
+                    <span className="text-muted-foreground text-sm">{description}</span>
+                  </Link>
+                ) : (
+                  <span className="flex flex-col gap-1">
+                    <code className="font-mono text-sm">{name}</code>
+                    <span className="text-muted-foreground text-sm">{description}</span>
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const TOLERANCES: [string, string][] = [
+  ["Batch send", "100 emails, all or nothing"],
+  ["Scheduling window", "30 days ahead"],
+  ["Attachments", "20 per email, 25 MB combined"],
+  ["SDK retries", "2, honoring Retry-After"],
+  ["SDK timeout", "30 s per attempt"],
+  ["SDK runtimes", "Node, Bun, Deno, Workers"],
+  ["SDK dependencies", "0"],
+  ["Webhook signatures", "Standard Webhooks"],
+  ["Webhook timeout", "10 s per attempt"],
+  ["Log search", "31 days per query"],
+  ["Suppression import", "1,000 entries per request"],
+  ["Send body limit", "40 MB"],
+];
+
+function Tolerances() {
+  return (
+    <section aria-labelledby="tolerances-title" className="border-b">
+      <SectionHead id="tolerances-title" title="Tolerances">
+        The numbers your code can rely on. The docs list every limit in context.
+      </SectionHead>
+      <dl className="grid gap-x-16 border-t px-4 py-10 sm:px-8 md:grid-cols-2">
+        {TOLERANCES.map(([label, value]) => (
+          <div className="flex items-baseline gap-3 border-b py-3.5" key={label}>
+            <dt>{label}</dt>
+            <span aria-hidden className="leader" />
+            <dd className="text-right font-mono text-sm">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+/** coss.com's other products: Shipyard and kloq, each with its own pages. */
+function MoreFromCoss() {
+  return (
+    <section aria-labelledby="more-title" className="border-b">
+      <SectionHead id="more-title" title="Also from coss.com">
+        More from the team behind coss.com, each with its own pages here.
+      </SectionHead>
+      <div className="grid grid-cols-1 border-t lg:grid-cols-2">
+        <article
+          aria-labelledby="more-shipyard"
+          className="flex min-w-0 flex-col border-b lg:border-r lg:border-b-0"
+        >
+          <ShipyardHarbour className="h-56 border-b sm:h-72" />
+          <div className="flex flex-col items-start gap-4 px-4 py-8 sm:px-8">
+            <h3
+              className="flex items-center gap-2.5 font-semibold text-2xl tracking-tight"
+              id="more-shipyard"
+            >
+              {SHIPYARD.name}
+              <Badge variant="outline">New</Badge>
+            </h3>
+            <p className="max-w-lg text-muted-foreground">{SHIPYARD.description}</p>
+            <div className="flex flex-wrap gap-2.5">
+              <Button render={<Link href={SHIPYARD.path} />} variant="outline">
+                About Shipyard
+              </Button>
+              <Button render={<Link href={SHIPYARD.docs} />} variant="ghost">
+                Docs
+              </Button>
+            </div>
+          </div>
+        </article>
+        <article aria-labelledby="more-kloq" className="flex min-w-0 flex-col">
+          <div className="h-56 overflow-hidden border-b p-4 sm:h-72">
+            <SampleCalendar className="h-full" />
+          </div>
+          <div className="flex flex-col items-start gap-4 px-4 py-8 sm:px-8">
+            <h3
+              className="flex items-center gap-2.5 font-semibold text-2xl tracking-tight"
+              id="more-kloq"
+            >
+              {CALENDAR.name}
+              <Badge variant="outline">New</Badge>
+            </h3>
+            <p className="max-w-lg text-muted-foreground">{CALENDAR.description}</p>
+            <div className="flex flex-wrap gap-2.5">
+              <Button render={<Link href={CALENDAR.path} />} variant="outline">
+                About kloq
+              </Button>
+              <Button render={<Link href={CALENDAR.demo} />} variant="ghost">
+                Live demo
+              </Button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function Close() {
+  return (
+    <section aria-labelledby="close-title" className="drafting-grid px-4 py-20 sm:px-8 sm:py-28">
+      <div className="flex flex-col items-start gap-8">
+        <h2
+          className="max-w-4xl text-balance font-semibold text-[clamp(2.5rem,6vw,4.75rem)] leading-[0.95] tracking-[-0.035em]"
+          id="close-title"
+        >
+          Fit your first part before your coffee cools.
+        </h2>
+        <p className="max-w-xl text-lg text-muted-foreground">
+          Start free with {FREE_EMAILS} emails a month. Sandbox keys are never billed.
+        </p>
+        <div className="flex flex-wrap gap-2.5">
+          <SignUpButton size="lg" />
+          <Button className="px-5" render={<Link href="/docs" />} size="lg" variant="outline">
+            Read the docs
+          </Button>
+        </div>
+      </div>
+    </section>
   );
 }

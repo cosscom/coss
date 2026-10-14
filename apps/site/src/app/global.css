@@ -48,3 +48,44 @@
     border-color: --alpha(var(--border) / 64%);
   }
 }
+
+/* The landing page's catalog drawings (src/components/home): the faces of its isometric parts. */
+:root {
+  --iso-top: var(--background);
+  --iso-left: color-mix(in srgb, var(--foreground) 5%, var(--background));
+  --iso-right: color-mix(in srgb, var(--foreground) 12%, var(--background));
+}
+
+/* The drafting grid behind catalog drawings. */
+.drafting-grid {
+  background-image: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--foreground) 16%, transparent) 1px,
+    transparent 1.2px
+  );
+  background-size: 1.5rem 1.5rem;
+  background-position: center;
+}
+
+/* Spec rows: a dotted leader between the label and its value. */
+.leader {
+  flex: 1;
+  min-width: 1.5rem;
+  border-bottom: 1px dotted color-mix(in srgb, var(--foreground) 32%, transparent);
+  translate: 0 -0.3em;
+}
+
+/* The landing page's one moment: the email block drops into its socket. */
+@media (prefers-reduced-motion: no-preference) {
+  .assembly-seat {
+    animation: assembly-seat 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+  }
+}
+@keyframes assembly-seat {
+  from {
+    translate: 0 -84px;
+  }
+  to {
+    translate: 0 0;
+  }
+}

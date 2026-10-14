@@ -8,12 +8,7 @@ export default function Layout({ children }: LayoutProps<"/kloq/docs">) {
   // sidebar groups) and its own search index (/kloq/docs/search.json).
   const tree = calendarSource.getPageTree();
   return (
-    <SiteShell
-      github={{ repo: CALENDAR.githubRepo, href: CALENDAR.github }}
-      items={CALENDAR_LINKS}
-      searchApi={CALENDAR.searchApi}
-      tree={tree}
-    >
+    <SiteShell items={CALENDAR_LINKS} searchApi={CALENDAR.searchApi} tree={tree}>
       <DocsLayoutFrame tree={tree}>{children}</DocsLayoutFrame>
     </SiteShell>
   );

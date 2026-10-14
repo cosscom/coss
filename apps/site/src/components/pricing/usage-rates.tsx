@@ -1,4 +1,3 @@
-import { Badge } from "@coss/ui/components/badge";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { rateTables } from "@/lib/pricing";
 
@@ -9,10 +8,7 @@ export function UsageRateCards() {
       {rateTables().map((table) => (
         <Card key={`${table.meter}:${table.scope ?? ""}`}>
           <CardHeader>
-            <CardTitle className="flex flex-wrap items-center gap-2">
-              {table.product}
-              {!table.available && <Badge variant="outline">Soon</Badge>}
-            </CardTitle>
+            <CardTitle>{table.product}</CardTitle>
             <CardDescription>
               {table.scope ? `${table.scope}, ${table.per}` : table.per}
             </CardDescription>
