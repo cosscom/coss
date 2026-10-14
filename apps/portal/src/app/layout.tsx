@@ -1,4 +1,5 @@
 import "./globals.css";
+import { fontMono, fontSans } from "@coss/ui/fonts";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,7 +11,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      className={`${fontSans.variable} ${fontMono.variable}`}
+      lang="en"
+      suppressHydrationWarning
+    >
       <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
         {children}
       </body>
