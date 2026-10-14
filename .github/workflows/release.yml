@@ -1,8 +1,10 @@
 name: Release
 
-# Keeps a "Version packages" PR open while changesets are pending on main. Merging it bumps the SDK's
-# version and CHANGELOG. Nothing is published: the `coss` npm name belongs to a third party
-# (packages/sdk/README.md), so there is no publish-script and the SDK refuses `npm publish`.
+# Keeps a "Version packages" PR open while changesets are pending on main; merging it bumps the SDK's
+# version and CHANGELOG, and the push that merge makes publishes `coss` to npm. Publishing uses npm
+# trusted publishing (GitHub's OIDC token, no npm token stored anywhere) with provenance, and only
+# from this file, in the `npm` environment (deployable from main only): `npm trust list coss` shows
+# the relationship (README, "Releasing the SDK").
 
 on:
   push:
@@ -13,13 +15,18 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   version:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      # true when no changeset is pending: main holds a version that may not be on npm yet.
+      release: ${{ steps.changesets.outputs.hasChangesets == 'false' }}
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
@@ -30,7 +37,8 @@ jobs:
         with:
           node-version: 24
       - run: bun install --frozen-lockfile
-      - uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+      - id: changesets
+        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
         with:
           # Also syncs packages/sdk/src/version.ts and bun.lock with the bumped version.
           version-script: bun run version-packages
@@ -40,3 +48,31 @@ jobs:
           # fine-grained token with contents + pull-requests write fixes that; it falls back to the
           # default token (the PR then needs CI started by hand, e.g. by pushing to it).
           github-token: ${{ secrets.RELEASE_TOKEN || github.token }}
+
+  publish:
+    needs: version
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # npm trusts this workflow only in this environment, whose deployment branch policy allows main.
+    environment: npm
+    permissions:
+      contents: write # the release's git tag
+      id-token: write # npm trusted publishing (and provenance)
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm 11.5.1 or later.
+      - run: npm install --global npm@11
+      - run: bun install --frozen-lockfile
+      # Builds the SDK (tsdown, publint, attw), then publishes every package whose version isn't on
+      # npm yet (only `coss`; everything else is private) and pushes its tag. A version already on
+      # npm is skipped, so reruns are safe.
+      - run: bun run release
+      - run: git push --tags

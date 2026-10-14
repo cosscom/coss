@@ -2,9 +2,13 @@
 
 The official TypeScript SDK for COSS: one API key for email, and soon SMS, video, scheduling and more.
 
-> **Not published yet.** The `coss` name on npm currently belongs to a third party, so
-> `npm install coss` does **not** install this SDK. Inside this monorepo, depend on it with
-> `"coss": "workspace:*"`, or build a tarball with `bun run build && bun pm pack`.
+```sh
+npm install coss
+```
+
+Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
+[provenance](https://docs.npmjs.com/generating-provenance-statements). Versions 0.0.1–0.0.5 of the npm package
+are an earlier, unrelated package by a previous owner (deprecated).
 
 - Zero dependencies, ESM-only, fully typed.
 - `coss.email`, `coss.domains`, `coss.webhookEndpoints` and `coss.reputation` behind one API key.

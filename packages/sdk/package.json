@@ -3,6 +3,13 @@
   "version": "0.1.0",
   "description": "The official TypeScript SDK for COSS: email, SMS, video, scheduling and more behind one API key.",
   "license": "MIT",
+  "homepage": "https://coss.com/docs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cosscom/coss.git",
+    "directory": "packages/sdk"
+  },
+  "bugs": "https://github.com/cosscom/coss/issues",
   "type": "module",
   "sideEffects": false,
   "engines": {
@@ -21,8 +28,7 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
-    "test": "bun test",
-    "prepublishOnly": "echo 'coss is not published: the npm name belongs to a third party (see README).' && exit 1"
+    "test": "bun test"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "0.18.5",
@@ -30,5 +36,9 @@
     "publint": "0.3.25",
     "tsdown": "0.23.0",
     "typescript": "7.0.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

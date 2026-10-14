@@ -78,7 +78,7 @@ bun run signals:update-disposable  # refresh the vendored disposable-domain list
 bun run openapi:generate    # rewrite apps/api/openapi.json after changing API routes (a test fails when stale)
 bun run changeset           # describe an SDK change (CI requires one when packages/sdk/src changes; --empty if none)
 bun run version-packages    # apply changesets: bump the SDK's package.json, src/version.ts, CHANGELOG.md, bun.lock
-                            #   (CI's Release workflow opens a "Version packages" PR doing this; nothing is published)
+                            #   (CI's Release workflow opens a "Version packages" PR doing this; merging it publishes to npm)
 bun run db:seed             # idempotent demo data; mints a new development (coss_test_) key on every run
 bun run admin:create --email you@example.com   # promote an existing user to platform admin (also how the
                                                #   first admin is bootstrapped in production)
@@ -257,8 +257,12 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - Releases: Changesets 3 (`.changeset/`, SDK only — every other workspace is private and never versioned).
   `bun run version-packages` also rewrites `src/version.ts` (`scripts/sync-version.ts`) and refreshes `bun.lock`
   (it records workspace versions; CI installs with `--frozen-lockfile`).
-- **Never publish**: the `coss` npm name is currently owned by a third party (see `packages/sdk/README.md`). The
-  Release workflow has no publish step and `prepublishOnly` fails on purpose.
+- **Publishing** (`.github/workflows/release.yml`): merging the "Version packages" PR publishes `coss` to npm
+  from CI only — npm trusted publishing (GitHub OIDC, no npm token anywhere) with provenance, trusted for exactly
+  `cosscom/coss` → `release.yml` → the `npm` environment (deployable from `main`); `npm trust list coss` shows it.
+  `bun run release` builds the SDK, then `changeset publish` (`npm publish`) skips versions already on npm. Never
+  publish from a laptop. npm owners: baileypumfleet, peer_rich, keithwillcode (versions 0.0.1–0.0.5 are a previous
+  owner's unrelated, deprecated package).
 
 ## Dashboard (`apps/web`)
 
@@ -1178,7 +1182,7 @@ classification, rate limiting as a service), learning from feedback, a paid VPN/
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
-would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,
+would drop an org's SSO provider or last owner), email change,
 email/SMS two-factor codes, sign-in providers other than Google and GitHub, "trust this device" for 2FA, renaming passkeys, self-serve add-ons (none is named yet), an automatic direct-debit policy (only per-account
 required payment methods), multi-currency, metering for SMS/video/scheduling (their meters
 and rates exist; the products don't), and
