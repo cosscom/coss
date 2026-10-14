@@ -30,6 +30,7 @@ import {
 } from "@/components/domain-badges";
 import { PageHeader } from "@/components/page-header";
 import { SendingPausedAlert } from "@/components/sending-paused-alert";
+import { planHas } from "@/lib/billing";
 import { emailRuntime } from "@/lib/email-runtime";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
@@ -215,6 +216,7 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
 
       <TrackingDomainCard
         canCreate={canCreate && domain.status !== "failed" && domain.status !== "deleting"}
+        planAllows={await planHas(organization.id, "trackingDomains")}
         canDelete={canDelete}
         canVerify={canVerify}
         domainName={domain.name}
@@ -269,6 +271,8 @@ function TrackingDomainCard(props: {
   domainName: string;
   target: { orgSlug: string; domainId: string };
   canCreate: boolean;
+  /** The plan includes custom tracking domains (one set up earlier keeps working regardless). */
+  planAllows: boolean;
   canVerify: boolean;
   canDelete: boolean;
 }) {
@@ -283,7 +287,14 @@ function TrackingDomainCard(props: {
             subdomain, such as links.{props.domainName}, instead of COSS&apos;s tracking host.
           </CardDescription>
         </CardHeader>
-        {props.canCreate ? (
+        {props.canCreate && !props.planAllows ? (
+          <CardPanel className="text-sm">
+            Custom tracking domains are part of the Pro plan and above.{" "}
+            <Link className="underline" href={`/${target.orgSlug}/settings/billing/plans`}>
+              Compare plans
+            </Link>
+          </CardPanel>
+        ) : props.canCreate ? (
           <CardPanel>
             <AddTrackingDomainDialog {...target} domainName={props.domainName} />
           </CardPanel>

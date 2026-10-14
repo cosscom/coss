@@ -168,6 +168,39 @@ describe("factor management while impersonating", () => {
     // Listing is still allowed.
     expect(await auth.api.listPasskeys({ headers })).toEqual([]);
   });
+
+  test("an impersonating admin can't change the account or its sessions", async () => {
+    const admin = await createTestUser();
+    await promoteToAdmin(admin.email);
+    const target = await createTestUser();
+    const { headers: adminHeaders } = await signIn(admin);
+    const impersonation = await auth.api.impersonateUser({
+      headers: adminHeaders,
+      body: { userId: target.id },
+      returnHeaders: true,
+    });
+    const headers = cookiesOf(impersonation.headers);
+
+    await expect(
+      auth.api.updateUser({ headers, body: { name: "Changed by support" } }),
+    ).rejects.toMatchObject({ status: "FORBIDDEN" });
+    await expect(
+      auth.api.changePassword({
+        headers,
+        body: { currentPassword: target.password, newPassword: "a-new-password-123" },
+      }),
+    ).rejects.toMatchObject({ status: "FORBIDDEN" });
+    await expect(auth.api.revokeOtherSessions({ headers })).rejects.toMatchObject({
+      status: "FORBIDDEN",
+    });
+    const [row] = await db
+      .select({ name: schema.user.name })
+      .from(schema.user)
+      .where(eq(schema.user.id, target.id));
+    expect(row?.name).not.toBe("Changed by support");
+    // The settings page still renders its (read-only) session list.
+    expect(Array.isArray(await auth.api.listSessions({ headers }))).toBe(true);
+  });
 });
 
 describe("organization two-factor requirement", () => {

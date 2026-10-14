@@ -2,6 +2,21 @@
  * Compile-time contract between the API's zod schemas and the SDK's hand-written wire types.
  * Checked by `tsc --noEmit` (never executed): a mismatch is a type error in this file.
  */
+
+import type {
+  BillingObject,
+  BillingWebhookEvent,
+  CreditList,
+  CreditObject,
+  InvoiceList,
+  InvoiceObject,
+  InvoiceSummary,
+  ListCreditsQuery,
+  ListInvoicesQuery,
+  UsageList,
+  UsageObject,
+  UsageQuery,
+} from "@coss/billing/wire";
 import type {
   CheckSuppressionQuery,
   CreateDomainRequest,
@@ -11,6 +26,7 @@ import type {
   DeletedDomain,
   DeletedReceivedEmail,
   DeletedSuppression,
+  DeletedTrackingRule,
   DomainList,
   DomainObject,
   DomainRecordObject,
@@ -40,6 +56,9 @@ import type {
   SuppressionImport,
   SuppressionList,
   TrackingDomainObject,
+  TrackingRule,
+  TrackingSettings,
+  UpdateTrackingRuleRequest,
 } from "@coss/email/schemas";
 import type {
   LogDrainSource as ApiLogDrainSource,
@@ -93,10 +112,13 @@ import type {
   ImportSuppressionsParams,
   List,
   ListAuditEventsParams,
+  ListCreditsParams,
+  ListInvoicesParams,
   ListLogDrainBatchesParams,
   ListLogsParams,
   ListReceivedEmailsParams,
   ListSuppressionsParams,
+  ListUsageParams,
   ListWebhookDeliveriesParams,
   LogDrain,
   LogDrainAttempt,
@@ -108,10 +130,14 @@ import type {
   AccountWebhookEvent as SdkAccountWebhookEvent,
   ApiVersion as SdkApiVersion,
   AuditEvent as SdkAuditEvent,
+  Billing as SdkBilling,
+  BillingWebhookEvent as SdkBillingWebhookEvent,
+  Credit as SdkCredit,
   DeletedDomain as SdkDeletedDomain,
   DeletedLogDrain as SdkDeletedLogDrain,
   DeletedReceivedEmail as SdkDeletedReceivedEmail,
   DeletedSuppression as SdkDeletedSuppression,
+  DeletedTrackingRule as SdkDeletedTrackingRule,
   DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
   Domain as SdkDomain,
   DomainRecord as SdkDomainRecord,
@@ -122,6 +148,9 @@ import type {
   EmailWebhookEvent as SdkEmailWebhookEvent,
   WebhookEndpointWithSecret as SdkEndpointWithSecret,
   InboundAddress as SdkInboundAddress,
+  Invoice as SdkInvoice,
+  InvoiceSummary as SdkInvoiceSummary,
+  List as SdkList,
   Log as SdkLog,
   LogDrainWithSecret as SdkLogDrainWithSecret,
   ReceivedEmail as SdkReceivedEmail,
@@ -134,11 +163,15 @@ import type {
   SuppressionCheck as SdkSuppressionCheck,
   SuppressionImport as SdkSuppressionImport,
   TrackingDomain as SdkTrackingDomain,
+  TrackingRule as SdkTrackingRule,
+  TrackingSettings as SdkTrackingSettings,
+  Usage as SdkUsage,
   WebhookAttempt as SdkWebhookAttempt,
   WebhookDelivery as SdkWebhookDelivery,
   SendEmailParams,
   TrackingOptions,
   UpdateLogDrainParams,
+  UpdateTrackingRuleParams,
   UpdateWebhookEndpointParams,
   WebhookEndpoint,
   WebhookEvent,
@@ -267,7 +300,8 @@ export type Contract = [
     MutuallyAssignable<
       | z.output<typeof EmailWebhookEvent>
       | z.output<typeof ReceivedEmailWebhookEvent>
-      | z.output<typeof AccountWebhookEvent>,
+      | z.output<typeof AccountWebhookEvent>
+      | z.output<typeof BillingWebhookEvent>,
       WebhookEvent
     >
   >,
@@ -288,6 +322,29 @@ export type Contract = [
   Assert<
     MutuallyAssignable<z.input<typeof CreateReceivingDomainRequest>, CreateReceivingDomainParams>
   >,
+  // Billing: responses, queries (the SDK sends `limit` as a number) and webhook events.
+  Assert<MutuallyAssignable<z.output<typeof BillingObject>, SdkBilling>>,
+  Assert<MutuallyAssignable<z.output<typeof UsageObject>, SdkUsage>>,
+  Assert<MutuallyAssignable<z.output<typeof UsageList>, SdkList<SdkUsage> & { has_more: false }>>,
+  Assert<MutuallyAssignable<z.input<typeof UsageQuery>, ListUsageParams>>,
+  Assert<MutuallyAssignable<z.output<typeof InvoiceSummary>, SdkInvoiceSummary>>,
+  Assert<MutuallyAssignable<z.output<typeof InvoiceObject>, SdkInvoice>>,
+  Assert<MutuallyAssignable<z.output<typeof InvoiceList>, SdkList<SdkInvoiceSummary>>>,
+  Assert<
+    MutuallyAssignable<
+      Omit<z.input<typeof ListInvoicesQuery>, "limit"> & { limit?: number },
+      ListInvoicesParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof CreditObject>, SdkCredit>>,
+  Assert<MutuallyAssignable<z.output<typeof CreditList>, SdkList<SdkCredit>>>,
+  Assert<
+    MutuallyAssignable<
+      Omit<z.input<typeof ListCreditsQuery>, "limit"> & { limit?: number },
+      ListCreditsParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof BillingWebhookEvent>, SdkBillingWebhookEvent>>,
   // Reputation.
   Assert<MutuallyAssignable<z.output<typeof ReputationObject>, SdkReputation>>,
   Assert<MutuallyAssignable<z.output<typeof ReputationCheckObject>, SdkReputationCheck>>,
@@ -307,6 +364,11 @@ export type Contract = [
   Assert<MutuallyAssignable<z.input<typeof ImportSuppressionsRequest>, ImportSuppressionsParams>>,
   Assert<MutuallyAssignable<z.output<typeof SuppressionImport>, SdkSuppressionImport>>,
   Assert<MutuallyAssignable<z.input<typeof ExportSuppressionsQuery>, ExportSuppressionsParams>>,
+  // Tracking settings.
+  Assert<MutuallyAssignable<z.input<typeof UpdateTrackingRuleRequest>, UpdateTrackingRuleParams>>,
+  Assert<MutuallyAssignable<z.output<typeof TrackingRule>, SdkTrackingRule>>,
+  Assert<MutuallyAssignable<z.output<typeof TrackingSettings>, SdkTrackingSettings>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedTrackingRule>, SdkDeletedTrackingRule>>,
   // Logs: responses, and the query's parameter names (the SDK also accepts arrays and Dates).
   Assert<MutuallyAssignable<z.output<typeof LogEntry>, SdkLog>>,
   Assert<MutuallyAssignable<z.output<typeof LogList>, List<SdkLog>>>,

@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
+import type { UsageGate } from "@coss/billing/gate";
+import { billingHoldExists } from "@coss/billing/metering";
 import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
-import { and, asc, eq, inArray, isNull, lte, notExists } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lte, not, notExists } from "drizzle-orm";
 import {
   insertAttachments,
   loadOutboundAttachments,
@@ -13,11 +15,12 @@ import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
-import type {
-  EmailProvider,
-  OutboundAttachment,
-  OutboundEmail,
-  ProviderEvent,
+import {
+  type EmailProvider,
+  type OutboundAttachment,
+  type OutboundEmail,
+  type ProviderEvent,
+  UncertainSendError,
 } from "./provider.ts";
 import { type EmailRow, selectEmailsWithMode, toEmailObjects } from "./read.ts";
 import { canonicalJson, hashSendBatchRequest, hashSendRequest } from "./request-hash.ts";
@@ -33,6 +36,7 @@ import { newTrackingToken } from "./tracking.ts";
 import { trackingBaseUrlFor } from "./tracking-domains.ts";
 import { instrumentHtml } from "./tracking-html.ts";
 import { resolveTracking } from "./tracking-settings.ts";
+import { billableRecipientsSql, freezeBillableRecipients, recordEmailUsage } from "./usage.ts";
 
 /** The authenticated environment a send happens in (from `authenticateApiKey`). */
 export type SendEnvironment = {
@@ -127,9 +131,13 @@ const {
   organizationSuspension,
 } = schema;
 
-/** Scheduled sends wait while the organization is suspended, and never go once it is being deleted. */
+/**
+ * Scheduled sends wait while the organization is suspended or on a billing hold, and never go
+ * once it is being deleted.
+ */
 function organizationActive() {
   return and(
+    not(billingHoldExists(email.organizationId)),
     notExists(
       db
         .select({ id: organizationSuspension.organizationId })
@@ -292,6 +300,11 @@ export type EmailServiceOptions = {
   screen?: (input: ScreenInput) => Promise<ScreenOutcome>;
   /** Organizations whose mail must survive an unexpected screening-system failure. */
   screeningFailureAllowlist?: ReadonlySet<string>;
+  /**
+   * Hard usage caps (`@coss/billing`: Free's included emails), reserved in the transaction that
+   * accepts a live send. Unset: nothing is capped (tests, scripts).
+   */
+  billing?: UsageGate;
 };
 
 const CONTENT_REJECTED = {
@@ -303,6 +316,9 @@ const SCREENING_UNAVAILABLE = {
   code: "content_screening_unavailable",
   message: "The email was held because content screening was unavailable.",
 };
+
+/** A held email is dispatched (and screened) again this long after its screening failed. */
+export const SCREENING_RETRY_DELAY_S = 60;
 
 export function createEmailService(opts: EmailServiceOptions): EmailService {
   const trackingBaseUrl = opts.trackingBaseUrl?.replace(/\/+$/, "");
@@ -322,7 +338,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     // with a provider: the worker's stale-claim sweep resolves it.
     const [claimed] = await db
       .update(email)
-      .set({ provider: provider.name })
+      .set({ provider: provider.name, billableRecipients: billableRecipientsSql(row) })
       .where(
         and(
           eq(email.id, row.id),
@@ -350,6 +366,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         product: "email",
         subjectId: row.id,
         content: () => emailScreeningContent(row),
+        retry: row.errorCode === SCREENING_UNAVAILABLE.code,
       });
       if (outcome.action !== "block") return null;
       return outcome.screening?.verdict === "error" ? SCREENING_UNAVAILABLE : CONTENT_REJECTED;
@@ -357,6 +374,40 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       console.error(`[email] content screening failed for ${row.id}:`, error);
       return opts.screeningFailureAllowlist?.has(row.organizationId) ? null : SCREENING_UNAVAILABLE;
     }
+  }
+
+  /**
+   * Gives back the claim on an email whose screening couldn't run (the classifier is down): it is
+   * dispatched and screened again in `SCREENING_RETRY_DELAY_S`, and keeps being held until the
+   * unclaimed sweep fails it (`content_screening_unavailable`, `UNCLAIMED_FAIL_MS` after it was
+   * due). The error code marks it as held, so its retry is screened again (`retry`).
+   */
+  async function holdForScreening(row: EmailRow, provider: EmailProvider): Promise<void> {
+    await db.transaction(async (tx) => {
+      const [held] = await tx
+        .update(email)
+        .set({
+          provider: null,
+          errorCode: SCREENING_UNAVAILABLE.code,
+          errorMessage: SCREENING_UNAVAILABLE.message,
+        })
+        .where(
+          and(
+            eq(email.id, row.id),
+            eq(email.organizationId, row.organizationId),
+            eq(email.status, "queued"),
+            eq(email.provider, provider.name),
+          ),
+        )
+        .returning({ id: email.id });
+      if (held) {
+        await opts.queue.enqueue(
+          tx,
+          { organizationId: row.organizationId, emailId: row.id },
+          { delaySeconds: SCREENING_RETRY_DELAY_S },
+        );
+      }
+    });
   }
 
   /** Sends an email this process claimed for `provider` and records the outcome. */
@@ -368,6 +419,10 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const hasRecipients = message.to.length + message.cc.length + message.bcc.length > 0;
     const screeningError =
       attachments !== null && hasRecipients ? await screeningFailure(row, sandbox) : null;
+    if (screeningError === SCREENING_UNAVAILABLE) {
+      await holdForScreening(row, provider);
+      return;
+    }
     if (attachments === null) {
       // Content is only purged once an email leaves `queued`, so this means a bug elsewhere:
       // never send the email without the attachments it was requested with.
@@ -409,9 +464,18 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           provider: provider.name,
           providerMessageId: result.providerMessageId,
           sentAt: new Date(),
+          // A held email that got through on a retry.
+          errorCode: null,
+          errorMessage: null,
         };
         events = result.events ?? [];
       } catch (error) {
+        if (error instanceof UncertainSendError) {
+          // The provider may be delivering it: never fail it here, and never send it again. It
+          // stays claimed; the provider's `Send` event or the stale-claim sweep settles it.
+          console.error(`[email] provider "${provider.name}" may have sent ${row.id}:`, error);
+          return;
+        }
         console.error(`[email] provider "${provider.name}" failed to send ${row.id}:`, error);
         outcome = {
           status: "failed",
@@ -442,6 +506,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       await purgeSendContent(tx, row);
       // A failure only counts if it is the recorded outcome; provider events are facts either way.
       if (!updated && outcome.status === "failed") return;
+      // Billed once, whichever path got the email to `sent` first (a `Send` event that beat this
+      // update meters it itself; a `Reject` that beat it means it was never sent).
+      if (updated && outcome.status === "sent" && !sandbox) await recordEmailUsage(tx, row);
       for (const event of events) await recordProviderEvent(tx, event);
     });
   }
@@ -472,6 +539,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         });
       } catch (error) {
         if (!(error instanceof EmailError)) throw error;
+        // Held, not failed: it goes once the hold is lifted (like a suspension).
+        if (error.code === "billing_hold") return;
         await db.transaction(async (tx) => {
           const [failed] = await tx
             .update(email)
@@ -522,6 +591,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       for (const [address, entry] of suppressed) {
         await recordProviderEvent(tx, suppressedEvent(claimedRow, address, entry));
       }
+      await freezeBillableRecipients(tx, claimedRow);
       return claimedRow;
     });
     if (claimed) await complete(claimed, provider, sandbox);
@@ -721,7 +791,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       typeof email.$inferInsert,
       "idempotencyKey" | "requestHash" | "batchId" | "batchIndex"
     >,
-  ): Promise<EmailRow | undefined> {
+  ): Promise<{ row: EmailRow; billable: number } | undefined> {
     const tracked = prepared.values.trackOpens || prepared.values.trackClicks;
     const [row] = await tx
       .insert(email)
@@ -732,7 +802,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       })
       .onConflictDoNothing({ target: [email.environmentId, email.idempotencyKey] })
       .returning();
-    if (!row) return row;
+    if (!row) return undefined;
     const recipients = recipientRows(row);
     const suppressed = await suppressedRecipients(
       tx,
@@ -759,7 +829,17 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     if (!prepared.scheduled) {
       await opts.queue.enqueue(tx, { organizationId: row.organizationId, emailId: row.id });
     }
-    return row;
+    return { row, billable: recipients.length - suppressed.size };
+  }
+
+  /** Reserves capped usage (Free's allowance) as the transaction's last statement. */
+  async function reserveUsage(tx: Transaction, environment: SendEnvironment, recipients: number) {
+    if (environment.mode !== "live" || !opts.billing) return;
+    await opts.billing.reserve(tx, {
+      organizationId: environment.organizationId,
+      meter: "email.recipients",
+      quantity: recipients,
+    });
   }
 
   async function send(
@@ -795,8 +875,15 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       }
     }
 
-    const insertEmail = (tx: Transaction) =>
-      insertPrepared(tx, environment, prepared, { idempotencyKey, requestHash });
+    const insertEmail = async (tx: Transaction) => {
+      const inserted = await insertPrepared(tx, environment, prepared, {
+        idempotencyKey,
+        requestHash,
+      });
+      if (!inserted) return undefined;
+      await reserveUsage(tx, environment, inserted.billable);
+      return inserted.row;
+    };
     const stored = async (row: EmailRow, replayed: boolean) => {
       const [object] = await toEmailObjects(environment.organizationId, [{ email: row, sandbox }]);
       if (!object) throw new Error("Email serialization produced no object.");
@@ -889,10 +976,17 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         .onConflictDoNothing({ target: [emailBatch.environmentId, emailBatch.idempotencyKey] })
         .returning();
       if (!batch) return batch;
+      let billable = 0;
       for (const [batchIndex, item] of prepared.entries()) {
-        const row = await insertPrepared(tx, environment, item, { batchId: batch.id, batchIndex });
-        if (!row) throw new Error("Batch email insert returned no row.");
+        const inserted = await insertPrepared(tx, environment, item, {
+          batchId: batch.id,
+          batchIndex,
+        });
+        if (!inserted) throw new Error("Batch email insert returned no row.");
+        billable += inserted.billable;
       }
+      // One reservation for the whole batch: it is accepted or refused as a whole.
+      await reserveUsage(tx, environment, billable);
       return batch;
     };
 

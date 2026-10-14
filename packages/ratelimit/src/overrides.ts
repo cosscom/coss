@@ -15,6 +15,35 @@ export type OverrideSource = (organizationId: string) => Promise<OverrideRules>;
 
 export const noOverrides: OverrideSource = async () => ({});
 
+/** An organization's plan rules (`@coss/billing`'s `planRateLimits`), keyed by bucket name. */
+export type PlanRuleSource = (
+  organizationId: string,
+) => Promise<Partial<Record<string, LimitRule>>>;
+
+/**
+ * The plan layer: an organization's plan sets its (overridable) buckets' rules, and an admin
+ * override still wins. Without plan rules (or when they fail to load), the defaults apply.
+ */
+export function withPlanRules(
+  planRules: PlanRuleSource,
+  load: OverrideSource = listRateLimitOverrides,
+): OverrideSource {
+  return async (organizationId) => {
+    const [plan, overrides] = await Promise.all([
+      planRules(organizationId).catch((error: unknown) => {
+        console.warn("[ratelimit] Loading plan rate limits failed; using defaults:", error);
+        return {};
+      }),
+      load(organizationId),
+    ]);
+    const rules: OverrideRules = {};
+    for (const [bucket, rule] of Object.entries(plan)) {
+      if (rule && isOverridableBucket(bucket)) rules[bucket] = rule;
+    }
+    return { ...rules, ...overrides };
+  };
+}
+
 export async function listRateLimitOverrides(organizationId: string): Promise<OverrideRules> {
   const rows = await db
     .select()

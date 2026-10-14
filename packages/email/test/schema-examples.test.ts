@@ -11,6 +11,7 @@ import {
   DeletedDomain,
   DeletedReceivedEmail,
   DeletedSuppression,
+  DeletedTrackingRule,
   DomainList,
   DomainObject,
   DomainRecordObject,
@@ -39,6 +40,9 @@ import {
   SuppressionCheck,
   SuppressionImport,
   SuppressionList,
+  TrackingRule,
+  TrackingSettings,
+  UpdateTrackingRuleRequest,
 } from "../src/schemas.ts";
 
 const SCHEMAS: Record<string, z.ZodType> = {
@@ -66,6 +70,10 @@ const SCHEMAS: Record<string, z.ZodType> = {
   DeletedSuppression,
   ImportSuppressionsRequest,
   SuppressionImport,
+  TrackingRule,
+  TrackingSettings,
+  UpdateTrackingRuleRequest,
+  DeletedTrackingRule,
   ReceivedEmail: ReceivedEmailObject,
   ReceivedEmailSummary,
   ReceivedEmailAttachment: ReceivedEmailAttachmentObject,

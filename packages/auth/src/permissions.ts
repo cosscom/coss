@@ -37,6 +37,8 @@ export const orgStatements = {
   logDrain: ["create", "read", "update", "delete"],
   // The organization's audit log: owners and admins.
   audit: ["read"],
+  // Plan, invoices, payment methods and spend controls: owners manage, admins read.
+  billing: ["read", "update"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -75,6 +77,7 @@ export const orgRoles = {
     sso: ["read", "update", "require"],
     scim: ["read", "update"],
     audit: ["read"],
+    billing: ["read", "update"],
   }),
   admin: orgAc.newRole({
     ...adminAc.statements,
@@ -82,6 +85,7 @@ export const orgRoles = {
     sso: ["read", "update"],
     scim: ["read", "update"],
     audit: ["read"],
+    billing: ["read"],
   }),
   member: orgAc.newRole({ ...memberAc.statements, ...readOnlyCossAccess }),
 };

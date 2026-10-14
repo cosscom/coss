@@ -83,7 +83,7 @@ const trackingDomains: EnvVar[] = [
     name: "TRACKING_CNAME_TARGET",
     kind: "plain",
     required: false,
-    value: "track.coss.com",
+    value: "track.cosslinks.com",
     description: "The zone's fallback origin, which customers CNAME their tracking domain to.",
   },
 ];
@@ -112,15 +112,16 @@ const email: EnvVar[] = [
   {
     name: "INBOUND_MANAGED_DOMAIN",
     kind: "plain",
-    required: true,
+    required: false,
     value: "inbound.coss.com",
     description:
-      "Receiving: each environment's `<label>.<domain>` addresses (ses:bootstrap --managed-domain).",
+      "Receiving: each environment's `<label>.<domain>` addresses (ses:bootstrap --managed-domain). " +
+      "Set with SES_INBOUND_BUCKET, or neither (receiving off).",
   },
   {
     name: "SES_INBOUND_BUCKET",
     kind: "plain",
-    required: true,
+    required: false,
     description: "Receiving: the bucket received emails are stored in. Printed by ses:bootstrap.",
   },
   ...trackingDomains,
@@ -188,6 +189,23 @@ const screening: EnvVar[] = [
   },
 ];
 
+const billingProvider: EnvVar = {
+  name: "BILLING_PROVIDER",
+  kind: "plain",
+  required: true,
+  value: "stripe",
+  description:
+    "Payment provider of new billing accounts (fake|stripe); admins can move one to manual.",
+};
+
+const stripeSecretKey: EnvVar = {
+  name: "STRIPE_SECRET_KEY",
+  kind: "secret",
+  required: true,
+  value: "A restricted Stripe key (customers, invoices, Checkout, Customer Portal, credit notes)",
+  description: "Stripe API key: the dashboard opens Checkout and the portal, the worker invoices.",
+};
+
 const webhookKey: EnvVar = {
   name: "WEBHOOK_SECRETS_KEY",
   kind: "secret",
@@ -216,6 +234,16 @@ const auth: EnvVar[] = [
   },
 ];
 
+const trackingPublicUrl: EnvVar = {
+  name: "TRACKING_PUBLIC_URL",
+  kind: "plain",
+  required: false,
+  value: "https://track.cosslinks.com",
+  description:
+    "Origin of the open/click tracking links in emails (defaults to API_PUBLIC_URL): its own " +
+    "domain, so abuse flagged by URL blocklists never lands on coss.com (infra/aws/routing.ts).",
+};
+
 const apiPublicUrl: EnvVar = {
   name: "API_PUBLIC_URL",
   kind: "plain",
@@ -225,7 +253,7 @@ const apiPublicUrl: EnvVar = {
 };
 
 /**
- * Error and performance monitoring (Sentry organization `coss`, see @coss/observability). Each
+ * Error and performance monitoring (Sentry organization `cosscom`, see @coss/observability). Each
  * runtime has its own project; DSNs aren't secrets (browsers receive the dashboard's).
  */
 function sentry(project: "web" | "api" | "worker"): EnvVar[] {
@@ -299,6 +327,16 @@ export const SERVICES: Service[] = [
       ...email,
       webhookKey,
       notificationsEnvironment,
+      billingProvider,
+      stripeSecretKey,
+      {
+        name: "STRIPE_WEBHOOK_SECRET",
+        kind: "secret",
+        required: true,
+        value:
+          "The signing secret of the Stripe webhook endpoint https://coss.com/api/billing/webhook",
+        description: "Verifies Stripe webhook signatures (the dashboard's billing webhook route).",
+      },
       {
         name: "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY",
         kind: "secret",
@@ -389,6 +427,7 @@ export const SERVICES: Service[] = [
         description: "Browser origins allowed on /v1/* (the docs' playground).",
       },
       ...email,
+      trackingPublicUrl,
       webhookKey,
       ...sentry("api"),
       sentryRelease,
@@ -410,6 +449,7 @@ export const SERVICES: Service[] = [
       ...db,
       ...email,
       apiPublicUrl,
+      trackingPublicUrl,
       {
         name: "API_PORT",
         kind: "plain",
@@ -426,7 +466,7 @@ export const SERVICES: Service[] = [
       {
         name: "SES_INBOUND_QUEUE_URL",
         kind: "plain",
-        required: true,
+        required: false,
         description: "Receiving: the queue of SES receipt notifications. Printed by ses:bootstrap.",
       },
       // The daily inbound limit per organization (`email.inbound.day`) is counted in Valkey.
@@ -442,6 +482,8 @@ export const SERVICES: Service[] = [
       },
       ...screening,
       webhookKey,
+      billingProvider,
+      stripeSecretKey,
       {
         name: "BETTER_AUTH_URL",
         kind: "plain",

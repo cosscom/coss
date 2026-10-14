@@ -1,3 +1,4 @@
+import type { PlanGate } from "@coss/billing/gate";
 import type { DomainDeps, EmailService } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
 import { type LogWriter, noopLogWriter } from "@coss/logs";
@@ -47,6 +48,8 @@ export type CreateAppOptions = {
   publicUrl?: string;
   /** Defaults to in-memory counters (one per app), which only suit tests and a single process. */
   rateLimiter?: RateLimiter;
+  /** Plan features and limits (`createPlanGate` from `@coss/billing`). Defaults to none (no limits). */
+  plans?: PlanGate;
   /** The caller's address for per-IP limits (`CLIENT_IP_HEADER`). Defaults to none. */
   clientIp?: ClientIpResolver;
 
@@ -97,6 +100,7 @@ export function createApp(opts: CreateAppOptions) {
   app.use(requestLog(opts.logWriter ?? noopLogWriter));
   app.use(async (c, next) => {
     c.set("rateLimiter", rateLimiter);
+    c.set("plans", opts.plans ?? null);
     c.set("clientIp", clientIp(c.req.raw.headers));
     c.set("versioning", versioning);
     await next();
@@ -195,6 +199,10 @@ export function openApiDocumentConfig(serverUrl: string) {
       {
         name: "Suppressions",
         description: "Addresses that sends skip, added by bounces, complaints or you.",
+      },
+      {
+        name: "Tracking",
+        description: "Which emails of the environment have their opens and clicks tracked.",
       },
       { name: "Domains", description: "The organization's verified sending domains." },
       {

@@ -103,6 +103,26 @@ export default async function OrganizationSettingsPage({
         ) : null}
       </Card>
 
+      {can({ billing: ["read"] }) ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Billing</CardTitle>
+            <CardDescription>
+              Your plan, usage this month, invoices, payment method and spend controls.
+            </CardDescription>
+          </CardHeader>
+          <CardPanel>
+            <Button
+              render={<Link href={`/${organization.slug}/settings/billing`} />}
+              size="sm"
+              variant="outline"
+            >
+              Open billing
+            </Button>
+          </CardPanel>
+        </Card>
+      ) : null}
+
       {canReadSso ? (
         <Card>
           <CardHeader>

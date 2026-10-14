@@ -1,0 +1,117 @@
+---
+title: Resources & lanes
+description: The row-binding seam for the timeline — laneOf, assign, byResourceId, and why a row is whatever the host says it is.
+---
+
+Nothing about an event is a resource. `CalEvent` gains no `resourceId` field,
+no `roomId`, nothing — the [timeline](/kloq/docs/timeline) doesn't know what a row
+*means*, only that you can name one and, given an event, say which one it's
+on. That seam is the `LaneAdapter`.
+
+```ts
+interface LaneAdapter {
+  /** Which lane(s) this event occupies. An empty result hides it. */
+  laneOf(event: CalEvent): string | readonly string[];
+  /** The patch that moves `event` onto `laneId` — the inverse a drop needs. */
+  assign(event: CalEvent, laneId: string): CalEventPatch;
+}
+```
+
+Two functions, and they're exact inverses of each other: `laneOf` reads
+where an event lives, `assign` returns the patch that would put it somewhere
+else. When you drag a bar from one row to another, the timeline doesn't move
+pixels and hope — it calls `adapter.assign(event, newLaneId)` and commits
+whatever comes back through the same store write every other drag uses.
+
+## `byResourceId`: the common case in one line
+
+Most of the time a lane id already lives in a field on the event — a room
+booking's `resourceId`, a shift's `staffId`. `byResourceId()` is that reader,
+built:
+
+```ts
+function byResourceId(field: string = "resourceId"): LaneAdapter;
+```
+
+```tsx
+import { Kloq, byResourceId, type CalEvent, type Lane } from "kloq";
+
+type Booking = CalEvent & { resourceId: string };
+
+const rooms: Lane[] = [
+  { id: "sunroom", label: "Sunroom", sublabel: "2nd floor · 8 seats" },
+  { id: "boardroom", label: "Boardroom", sublabel: "3rd floor · 14 seats" },
+];
+
+<Kloq view="timeline" lanes={rooms} laneAdapter={byResourceId()} />
+```
+
+Omit `laneAdapter` entirely and this is exactly what you get —
+`byResourceId()` reading `event.resourceId` is the default. Pass a field
+name for anything else: `byResourceId("staffId")`, `byResourceId("truckId")`.
+An event whose field is missing, empty, or names a lane you didn't list in
+`lanes` doesn't error — `laneOf` returns `[]` for the first case and the
+timeline simply doesn't draw the event for either, the same "unlisted is
+invisible" rule the calendar's own column bucketing has always had.
+
+## A row is whatever you say it is
+
+`byResourceId` covers the field-on-the-event shape, but nothing requires a
+lane to correspond to a *resource* at all. `laneOf` can compute anything, and
+`assign` just needs to be its inverse. Here rows are triage status instead of
+a person or room — an event doesn't carry a "which lane" field, it carries a
+`status`, and the lane list happens to be exactly the values that field can
+take:
+
+```tsx
+import { Kloq, type CalEvent, type CalEventPatch, type Lane, type LaneAdapter } from "kloq";
+
+type Ticket = CalEvent & { status: "triage" | "in-progress" | "review" | "done" };
+
+const STATUS_LANES: Lane[] = [
+  { id: "triage", label: "Triage" },
+  { id: "in-progress", label: "In progress" },
+  { id: "review", label: "Review" },
+  { id: "done", label: "Done", height: 200 }, // done tends to pile up
+];
+
+const byStatus: LaneAdapter = {
+  laneOf: (event) => (event as Ticket).status,
+  assign: (_event, laneId) => ({ status: laneId }) as CalEventPatch,
+};
+
+<Kloq view="timeline" lanes={STATUS_LANES} laneAdapter={byStatus} />
+```
+
+Drag a ticket from "Triage" into "Review" and the drop calls
+`byStatus.assign(ticket, "review")`, which returns `{ status: "review" }` —
+committed the same way a room-booking drag commits `{ resourceId: "boardroom" }`.
+Nothing else about the timeline changes: same drag engine, same overflow cap,
+same constraints. The lane list is the one place a "board" idea and a
+"resource" idea genuinely differ, and it's a plain array either way.
+
+## `laneIndexOf`: resolving an id to a position
+
+Hosts never call this — it's internal to the timeline's projection, not an
+export (a custom `ResourceGutter` or [`TimelineRow`](/kloq/docs/slots) gets its
+lane and bars handed in as props) — but its rule decides what renders:
+
+```ts
+function laneIndexOf(adapter: LaneAdapter, lanes: readonly Lane[], event: CalEvent): number;
+```
+
+It runs `laneOf`, then finds that id's position in `lanes` — `-1` if the
+event has no lane, or names one you didn't list. An array result from
+`laneOf` (an event that could sit in more than one lane) collapses to its
+first entry that IS in your list; drawing one event across several rows at
+once is a non-goal.
+
+## Why `parentId` exists but does nothing
+
+`Lane` carries a `parentId` field today, reserved for grouping rows under a
+parent — "Front of house" containing Ada and Ben, say. It's on the type so a
+host adopting the timeline now doesn't need a breaking change later, but v1
+ignores it: every lane in `lanes` renders as one flat row, in the order you
+pass them, regardless of `parentId`. See [what's not
+here](/kloq/docs/timeline#what-is-not-here) for the rest of what the timeline
+doesn't attempt yet.

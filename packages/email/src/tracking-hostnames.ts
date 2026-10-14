@@ -27,7 +27,7 @@ export class TrackingHostnameTakenError extends Error {
 
 export interface TrackingHostnameProvider {
   readonly name: TrackingHostnameProviderName;
-  /** The host customers point their tracking CNAME at (e.g. `track.coss.com`). */
+  /** The host customers point their tracking CNAME at (e.g. `track.cosslinks.com`). */
   readonly cnameTarget: string;
   /** Registers the hostname; throws `TrackingHostnameTakenError` when it already exists. */
   create(hostname: string): Promise<{ id: string; state: TrackingHostnameState }>;

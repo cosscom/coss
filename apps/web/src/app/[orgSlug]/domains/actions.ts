@@ -18,11 +18,13 @@ import {
 import { getEnvironmentById } from "@coss/tenancy";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
+import { env } from "@/env";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
 import { emailRuntime } from "@/lib/email-runtime";
-import { type OrgContext, requireOrgPermission } from "@/lib/session";
+import { isPlatformAdmin, type OrgContext, requireOrgPermission } from "@/lib/session";
+import { isSystemOrganization } from "@/lib/system-organization";
 
 /** A manual "Verify now" waits at least this long after the previous check. */
 const MANUAL_CHECK_INTERVAL_MS = 10_000;
@@ -51,6 +53,12 @@ export async function addDomainAction(
         organizationId: context.organization.id,
         name: formString(formData, "name"),
         userId: context.session.user.id,
+        // COSS's own organization sends from coss.com, which no one else may claim: platform admins
+        // may add reserved domains there only (anywhere until it is configured, to bootstrap it).
+        allowReserved:
+          isPlatformAdmin(context.session) &&
+          (!env.NOTIFICATIONS_ENVIRONMENT_ID ||
+            (await isSystemOrganization(context.organization.id))),
       },
       emailRuntime().domainDeps,
     );
@@ -115,14 +123,17 @@ export async function addTrackingDomainAction(
       domain: ["create"],
     });
     const domain = await domainFromForm(context, formData);
+    const hostname = formString(formData, "hostname");
     await createTrackingDomain(
-      {
-        organizationId: domain.organizationId,
-        domainId: domain.id,
-        hostname: formString(formData, "hostname"),
-      },
+      { organizationId: domain.organizationId, domainId: domain.id, hostname },
       emailRuntime().domainDeps,
     );
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "tracking_domain.created",
+      target: { type: "domain", id: domain.id, label: domain.name },
+      metadata: { hostname },
+    });
     refresh();
     return null;
   });
@@ -165,6 +176,11 @@ export async function removeTrackingDomainAction(
       { organizationId: domain.organizationId, domainId: domain.id },
       emailRuntime().domainDeps,
     );
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "tracking_domain.deleted",
+      target: { type: "domain", id: domain.id, label: domain.name },
+    });
     refresh();
     return null;
   });

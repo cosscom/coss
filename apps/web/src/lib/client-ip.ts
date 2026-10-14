@@ -15,6 +15,17 @@ export function clientIpFromForwardedFor(header: string | null, hops: number): s
   return candidate && isIpAddress(candidate) ? candidate : null;
 }
 
+/**
+ * The client address for audit events: `src/proxy.ts` leaves exactly the one address the proxies
+ * vouch for in `X-Forwarded-For` (or `unknown`), so anything else (a request it didn't see) is
+ * none. `null` without trusted proxies.
+ */
+export function auditClientIp(forwarded: string | null, trustedProxyHops: number): string | null {
+  if (trustedProxyHops < 1 || !forwarded) return null;
+  const value = forwarded.trim();
+  return isIpAddress(value) ? value : null;
+}
+
 function isIpAddress(value: string): boolean {
   if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(value)) {
     return value.split(".").every((octet) => Number(octet) <= 255);

@@ -30,6 +30,9 @@ FROM bun AS runtime
 # The commit: Sentry's release. Not stage-specific.
 ARG SENTRY_RELEASE=""
 # Postgres TLS: DATABASE_URL=…?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem
+# The directory first: ADD would create missing parents with the file's mode (644), and Node
+# exits when /etc/ssl exists but can't be read (its OpenSSL config is looked up there).
+RUN mkdir -p /etc/ssl/certs
 ADD --chmod=644 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
 ENV NODE_ENV=production NO_COLOR=1 SENTRY_RELEASE=${SENTRY_RELEASE} API_PORT=3001
 # Root-owned and read-only for the app. No .env exists here (.dockerignore), so Bun's automatic

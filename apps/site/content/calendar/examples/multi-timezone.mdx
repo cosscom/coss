@@ -1,0 +1,52 @@
+---
+title: Multiple time zones
+description: Draw the grid in any zone, add London / New York / Tokyo gutter columns, and keep each event's authored zone.
+---
+
+Three days of a team spread over four cities, drawn on London's clock to
+start. The standup was agreed as 9:00 in Tokyo, the retro as 16:00 in Sydney,
+the release sync as 7:30 in New York — and each lands at the right hour on
+whatever clock you draw the grid in: scroll up to 1 AM for the standup, then
+switch the display zone to Tokyo and it sits at 9. Toggle the gutter columns,
+or press the zone labels in the gutter corner.
+
+<Example name="multi-timezone" />
+
+## How it works
+
+`displayTimeZone` redraws the whole calendar in another zone — headers,
+gutter, now-line and all. The events never change: their instants are
+absolute, only the wall clock you read them against does. `"Local"` in the
+picker passes `undefined`, which means the browser's own zone. A column that
+matches the display zone is filtered out of `timeZones`, since it would only
+repeat the main axis. See
+[time zones](/kloq/docs/time-zones#displaytimezone--travel-to-time-zone).
+
+`timeZones={["Europe/London", "America/New_York", "Asia/Tokyo"]}` adds a
+gutter column per zone, left of the main one and in that order. Setting it
+swaps the built-in `TimeGutter` for the multi-zone one; the checkboxes just
+filter the list.
+
+Each meeting is authored in its own zone: `instantAt(view, col, minutes,
+timeZone)` reads `minutes` on that zone's clock and returns an
+offset-qualified instant, and the event carries the same id in its
+`timeZone` field. That field is provenance, not placement — `start` and
+`end` decide where a block sits. When it differs from the display zone, the
+panel and the block's accessible name add the event's own clock:
+`"9:00 AM – 9:30 AM GMT+9 · Tokyo"`.
+
+`onTimeZonesClick` fires when the zone labels in the gutter corner are
+pressed. The component ships no picker; here it opens the select above the
+calendar, which is exactly the host-owns-the-picker split described on the
+[time zones](/kloq/docs/time-zones#ontimezonesclick--the-host-owns-the-picker)
+page.
+
+The readout on the right is `zoneOffsetLabel(new Date(), zone)`. The
+browser's zone is only knowable on the client, so it waits for `useIsClient()`
+before rendering.
+
+## Take it further
+
+Replace the five-zone select with a search over `listAllZones()` /
+`searchZones(query)`, or give a column a custom heading with the object form:
+`{ timeZone: "Asia/Tokyo", label: "TOK" }`.

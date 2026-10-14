@@ -1,0 +1,190 @@
+---
+title: Slots
+description: Ten swappable visual pieces with typed contracts. The engine, grid math and craft-bus stay fixed; overrides plug into them.
+---
+
+Every visual piece of the calendar can be swapped via `components`. The
+engine, grid math, and craft-bus stay fixed; overrides plug into them through
+typed contracts — honor a contract and a custom component inherits the full
+interaction model for free.
+
+## The six calendar slots
+
+| Slot | Type | Notes |
+| --- | --- | --- |
+| `EventBlock` | `EventBlockProps` | A timed event on the grid — the thing you drag, resize and select. |
+| `AllDayChip` | `AllDayChipProps` | A multi-day chip in the all-day lane, with horizontal resize. |
+| `EventPanel` | `EventPanelProps` | The editor anchored beside the selected block; follows it per-frame. |
+| `TimeGutter` | `TimeGutterProps` | The hour axis. Receives the engine's px↔time mapping. |
+| `DayHeader` | `DayHeaderProps` | One column header: date, short name, today marker. |
+| `NowIndicator` | `NowIndicatorProps` | The now-line, drawn in the display zone's clock. |
+
+## The four timeline slots
+
+[`view="timeline"`](/kloq/docs/timeline) draws with its own four slots rather than
+reusing the six above — a lane isn't a day column, and its axis runs
+horizontally.
+
+| Slot | Type | Notes |
+| --- | --- | --- |
+| `TimelineBlock` | `TimelineBlockProps` | One bar — the timeline's `EventBlock`. Same engine contract, mirrored exactly. `multi` is true while the bar is part of a selection of several. |
+| `ResourceGutter` | `ResourceGutterProps` | The sticky row label beside a `TimelineRow` — name, sublabel, no engine hooks. |
+| `TimelineHeader` | `TimelineHeaderProps` | The two-tier tick strip above the rows — no engine hooks. |
+| `TimelineRow` | `TimelineRowProps` | One lane's strip of canvas: its bars, working-hours tint and overflow control. The grid draws the ticks behind it. |
+
+```tsx
+import { Kloq, DEFAULT_COMPONENTS, type TimeGutterProps } from "@/components/kloq";
+
+function MyGutter(props: TimeGutterProps) {
+  return <DEFAULT_COMPONENTS.TimeGutter {...props} />; // wrap, tweak, or replace
+}
+
+<Kloq components={{ TimeGutter: MyGutter }} />
+```
+
+`DEFAULT_COMPONENTS` exports the originals, so an override can *wrap* instead
+of replace — render the default inside your component, add what you need
+around it, and forward the props untouched.
+
+## The engine contract
+
+The drag engine writes transforms straight to DOM nodes and never re-derives
+geometry from React — which is why the interactive slots carry imperative
+obligations. A custom `EventBlock` must: spread `data-cal-event={event.id}` on
+its root, register that root via `registerNode(id, node)`, forward pointerdown
+via `onPointerDown(e, event)`, keep a `[data-slot="event-time"]` text node for
+live label updates mid-drag, and mark its resize zones with
+`data-resize-edge="start" | "end"`. A custom `AllDayChip` is the horizontal
+twin: `data-lane-edge="left" | "right"` for resize, plus the same registration
+and forwarding.
+
+`TimelineBlock` carries the identical contract — `data-cal-event={id}`,
+`registerNode`, pointerdown forwarding, a `[data-slot="event-time"]` node, and
+`data-resize-edge="start" | "end"` zones — because the timeline reuses the
+same drag engine primitives, just against a horizontal axis. `TimelineRow` has
+its own, unrelated obligation: the drag engine reads its horizontal origin
+straight off the row's root (`use-timeline-drag.ts`'s `trackRef`), so an
+override must keep that root as the outermost positioned element or every bar
+in the row will drag from the wrong x. Keep `data-slot="timeline-row"` and
+`data-lane={lane.id}` on that root too — double-click-to-create resolves the
+clicked lane through them and silently dies without them. `ResourceGutter` and `TimelineHeader`
+carry no engine hooks at all — pure presentation, safe to replace outright,
+with one sizing rule: render `ResourceGutter` at the `width` it is handed.
+The header spacer, now-line and drag frame are positioned by that width, not
+by measuring the DOM, so a wider gutter shears them off the rows. Two more
+things a custom pair has to keep: the gutter stays `sticky left-0 z-50
+shrink-0`, or it scrolls away with the canvas and bars slide over it; and
+`ResourceGutter` and `TimelineRow` each draw their own bottom border. The
+tick lines are the grid's, behind the rows.
+
+<Callout type="warn">
+  Skip the contract and the physics break — the weld, the snap magnetism, the
+  settle springs all address the registered node. Honor it and they all just
+  work on whatever you render.
+</Callout>
+
+## A worked example: custom EventBlock
+
+```tsx title="my-event-block.tsx"
+import {
+  continuesAfter,
+  continuesBefore,
+  type EventBlockProps,
+} from "@/components/kloq";
+
+export function MyEventBlock({
+  event,
+  layout,
+  selected,
+  registerNode,
+  onPointerDown,
+}: EventBlockProps) {
+  // a cross-midnight event renders one block per day; square off cut edges
+  const cutTop = continuesBefore(event);
+  const cutBottom = continuesAfter(event);
+
+  return (
+    <div
+      data-cal-event={event.id}
+      ref={(node) => registerNode(event.id, node)}
+      onPointerDown={(e) => onPointerDown(e, event)}
+      className={selected ? "my-block my-block--selected" : "my-block"}
+      style={{
+        // square off the cut edge of a cross-midnight segment
+        borderTopLeftRadius: cutTop ? 0 : undefined,
+        borderTopRightRadius: cutTop ? 0 : undefined,
+        borderBottomLeftRadius: cutBottom ? 0 : undefined,
+        borderBottomRightRadius: cutBottom ? 0 : undefined,
+      }}
+    >
+      <div data-resize-edge="start" className="my-resize-zone-top" />
+      <span className="my-title">{event.title || "Untitled"}</span>
+      <span data-slot="event-time" />
+      <div data-resize-edge="end" className="my-resize-zone-bottom" />
+    </div>
+  );
+}
+```
+
+The block receives a `PlacedEvent`, not a raw `CalEvent`: the stored event
+projected into the current view's column/minute space. `dayIndex` is a
+*visible column*, not a weekday — which is why the props include
+`dayNamesShort` per visible column, so an accessible name announces the right
+day in a Sunday-start week or an n-day view. `continuesBefore` /
+`continuesAfter` are the segment predicates for cross-midnight events, which
+draw as one block per day.
+
+## A real gutter: two zones on one axis
+
+`TimeGutterProps` hands in `minutesToPx` — *the* px↔time mapping, already
+accounting for a clipped day range (with `dayStartHour: 7`,
+`minutesToPx(7 * 60)` is 0). Labels must be positioned with it, never a
+re-derived scale, so a custom gutter cannot drift from the engine's math. The
+coss.com/kloq demo ships a two-column local + UTC gutter built exactly this way:
+
+```tsx title="dual-tz-gutter.tsx"
+import type { TimeGutterProps } from "@/components/kloq";
+
+export function DualTZGutter({
+  minutesToPx,
+  startHour,
+  endHour,
+  height,
+}: TimeGutterProps) {
+  const offset = Math.round(new Date().getTimezoneOffset() / 60);
+  const hours: number[] = [];
+  for (let h = Math.max(1, startHour); h < endHour; h++) hours.push(h);
+
+  return (
+    <div aria-hidden className="relative w-24 shrink-0" style={{ height }}>
+      {hours.map((hour) => (
+        <span
+          key={hour}
+          className="absolute inset-x-0 flex -translate-y-1/2 justify-between px-2 text-[11px]"
+          style={{ top: minutesToPx(hour * 60) }}
+        >
+          <span>{fmtHour(hour + offset)}</span>
+          <span>{fmtHour(hour)}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+```
+
+The props also carry `formatHour` — a label formatter honoring the calendar's
+`locale` / `hour12` — and `day`, the display-zone date this axis represents. A
+second-zone gutter cannot be correct without the date: whether London reads
+GMT or BST depends on it, and the answer changes mid-week twice a year.
+
+## The event panel slot
+
+`EventPanelProps` receives the selected placement as a `PlacedOccurrence` —
+the one surface that must tell an *instance* from an event. `event.id` is the
+placement key, `event.source.id` is what the store is keyed by, and
+`event.occurrence` says which instance of a series this is; a custom slot
+typed with plain `PlacedEvent` still fits. The panel also gets `getAnchor`
+(the block's live DOM node, so the panel can follow it per-frame during
+drags), `isNew` (true right after drag-create — focus and select the title),
+and an `onCancel` distinct from `onClose`: Escape abandons a just-created
+event entirely rather than confirming it.

@@ -35,7 +35,7 @@ import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
-import { commonErrors, errorDoc, jsonDoc } from "./docs.ts";
+import { billingErrorDoc, commonErrors, errorDoc, jsonDoc } from "./docs.ts";
 
 /** A manual verify waits at least this long after the previous check (as the dashboard does). */
 export const MANUAL_CHECK_INTERVAL_MS = 10_000;
@@ -79,6 +79,7 @@ export const createDomainRoute = createRoute({
     200: jsonDoc("The domain, with the DNS records to publish.", DomainObject),
     400: errorDoc("The body is not valid JSON (`invalid_json`)."),
     ...commonErrors,
+    402: billingErrorDoc("The organization's plan allows no more domains (`plan_limit_reached`)"),
     413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
     415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
     422: errorDoc(
@@ -212,6 +213,9 @@ export const createTrackingDomainRoute = createRoute({
     200: jsonDoc("The domain, with its tracking domain and the CNAME to publish.", DomainObject),
     400: errorDoc("The body is not valid JSON (`invalid_json`)."),
     ...commonErrors,
+    402: billingErrorDoc(
+      "The organization's plan doesn't include custom tracking domains (`plan_feature_unavailable`)",
+    ),
     404: domainNotFound,
     413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
     415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
@@ -429,6 +433,12 @@ export function createDomainRoutes(
     const { organizationId } = c.var.auth;
     const row = await requireDomain(organizationId, id);
     await createTrackingDomain({ organizationId, domainId: row.id, hostname }, deps);
+    await recordApiAudit(c, {
+      action: "tracking_domain.created",
+      target: { type: "domain", id: row.id, label: row.name },
+      environmentScoped: false,
+      metadata: { hostname },
+    });
     return c.json(await domainObject(row), 200);
   });
 
@@ -437,6 +447,11 @@ export function createDomainRoutes(
     const { organizationId } = c.var.auth;
     const row = await requireDomain(organizationId, id);
     await deleteTrackingDomain({ organizationId, domainId: row.id }, deps);
+    await recordApiAudit(c, {
+      action: "tracking_domain.deleted",
+      target: { type: "domain", id: row.id, label: row.name },
+      environmentScoped: false,
+    });
     return c.json(await domainObject(row), 200);
   });
 

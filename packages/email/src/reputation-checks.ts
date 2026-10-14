@@ -4,9 +4,11 @@
  * provider was handed (suppressed, failed, canceled and still-queued recipients don't count), and
  * mailbox-simulator addresses are left out unless the policy says otherwise.
  *
- * Closed hours are counted once and kept in `email_reputation_rollup` (by the hour the emails were
- * created); `recordProviderEvent` bumps an hour's revision when an event changes its counts, and
- * the next evaluation recounts just that hour. Only the open edges of the window are counted live.
+ * Emails count by the hour they were sent (`SEND_TIME`), so a send scheduled weeks ahead counts
+ * in the window it goes out in. Closed hours are counted once and kept in
+ * `email_reputation_rollup`; `recordProviderEvent` bumps an hour's revision when an event changes
+ * its counts, and the next evaluation recounts just that hour. Only the open edges of the window
+ * are counted live.
  */
 import { db, type Executor, schema } from "@coss/db";
 import { type CheckContext, type ReputationCheck, rateResult } from "@coss/reputation";
@@ -32,6 +34,12 @@ type SliceCounts = SendingCounts & {
   simulatorComplaints: number;
 };
 
+/**
+ * When an email counts for reputation: when it was sent (a scheduled send can go out up to 30
+ * days after it was created), else when it was created. `email_organization_send_time_idx`.
+ */
+const SEND_TIME = sql<Date | string>`coalesce(${email.sentAt}, ${email.createdAt})`;
+
 const floorHour = (ms: number) => Math.floor(ms / HOUR) * HOUR;
 const ceilHour = (ms: number) => Math.ceil(ms / HOUR) * HOUR;
 
@@ -56,8 +64,8 @@ function add(total: SliceCounts, counts: SliceCounts) {
 }
 
 /**
- * Counts of the organization's live emails created in `[from, to)` (`[from, to]` with
- * `inclusive`), keyed by the start of their UTC hour.
+ * Counts of the organization's live emails sent in `[from, to)` (`[from, to]` with `inclusive`),
+ * keyed by the start of their UTC hour.
  */
 export async function countSlices(
   organizationId: string,
@@ -85,7 +93,7 @@ export async function countSlices(
     complaints: string;
   }>(sql`
     select
-      date_trunc('hour', ${email.createdAt}, 'UTC') as hour,
+      date_trunc('hour', ${SEND_TIME}, 'UTC') as hour,
       ${emailRecipient.address} like ${`%@${SIMULATOR_DOMAIN}`} as simulator,
       count(*) as recipients,
       count(*) filter (where ${bounced}) as bounces,
@@ -98,8 +106,8 @@ export async function countSlices(
       on ${environment.id} = ${email.environmentId}
       and ${environment.organizationId} = ${email.organizationId}
     where ${email.organizationId} = ${organizationId}
-      and ${email.createdAt} >= ${from.toISOString()}::timestamptz
-      and ${email.createdAt} ${upper} ${to.toISOString()}::timestamptz
+      and ${SEND_TIME} >= ${from.toISOString()}::timestamptz
+      and ${SEND_TIME} ${upper} ${to.toISOString()}::timestamptz
       and ${environment.mode} = 'live'
       and ${emailRecipient.status} not in ('queued', 'suppressed', 'failed', 'canceled')
     group by 1, 2
@@ -220,7 +228,7 @@ async function countRolledUp(organizationId: string, from: number, to: number) {
   return total;
 }
 
-/** Recipient counts of the organization's live emails created in `[windowStart, now]`. */
+/** Recipient counts of the organization's live emails sent in `[windowStart, now]`. */
 export async function sendingCounts(context: CheckContext): Promise<SendingCounts> {
   const { organizationId, windowStart, now, policy } = context;
   const start = windowStart.getTime();
@@ -248,17 +256,24 @@ export async function sendingCounts(context: CheckContext): Promise<SendingCount
 
 /**
  * Called in the transaction of an event that changed the counts of a live email (a recipient's
- * status, a permanent bounce, a complaint): invalidates the rollup of the email's hour. Hours that
- * closed only recently are still counted live, and are left alone (no hot row while a just-closed
- * hour's delivery events arrive).
+ * status, a permanent bounce, a complaint): invalidates the rollup of the email's hour (its send
+ * time, read here so an email that became `sent` in this transaction lands in the right hour).
+ * Hours that closed only recently are still counted live, and are left alone (no hot row while a
+ * just-closed hour's delivery events arrive).
  */
 export async function invalidateReputationRollup(
   tx: Executor,
   organizationId: string,
-  emailCreatedAt: Date,
+  emailId: string,
   now: Date = new Date(),
 ): Promise<void> {
-  const bucket = floorHour(emailCreatedAt.getTime());
+  const [row] = await tx
+    .select({ at: SEND_TIME })
+    .from(email)
+    .where(and(eq(email.id, emailId), eq(email.organizationId, organizationId)))
+    .limit(1);
+  if (!row) return;
+  const bucket = floorHour(new Date(row.at).getTime());
   if (bucket + HOUR > now.getTime() - ROLLUP_INVALIDATE_AFTER_MS) return;
   if (bucket < now.getTime() - ROLLUP_RETENTION_MS) return;
   await tx

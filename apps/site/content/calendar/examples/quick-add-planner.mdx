@@ -1,0 +1,57 @@
+---
+title: Natural-language event entry
+description: Type "lunch with Sam tomorrow 1pm" into a box above the grid; the parser underlines what it understood and the event lands.
+---
+
+A time-blocking planner: one line of text above the grid. As you type, the
+parser claims the phrases it understands — a day, a time or range, a
+duration, a place, an email — and the box marks each one in place, every kind
+with its own underline style and tint. A phrase that was read and then
+overruled is struck through instead. The row underneath reads the draft back:
+title, resolved when, and every claimed span with its kind. Enter commits it
+to the calendar and moves the view to that day.
+
+Try the four phrases, or write your own.
+
+<Example name="quick-add-planner" />
+
+## How it works
+
+- `parseQuickAdd(text, now, { defaultDurationMin })` runs on every keystroke,
+  in a `useMemo` keyed on the text. `now` is an argument, not something the
+  parser reads, so the parse is deterministic; the planner passes a fresh
+  `new Date()` each time so "tomorrow" is always tomorrow. The grammar is on
+  [Quick add](/kloq/docs/quick-add).
+- `highlightSegments(text, result.tokens, result.ignored)` interleaves the
+  input with its tokens; a segment from `result.ignored` carries
+  `ignored: true`, and each kind's look comes from `QUICK_ADD_KINDS[kind].mark`. Concatenating the segments reproduces the input exactly, so the
+  planner draws them in a transparent-text mirror laid over the `Input` — the
+  underline sits under the characters that were understood. The mirror takes
+  its box, padding and type from the input's computed style, so it follows
+  whatever the primitive renders, and copies its `scrollLeft` so it stays
+  aligned once a sentence is wider than the box.
+- `quickAddPreview(result, now)` folds the result into one line: a title that
+  is never blank, a formatted when, and chips for location and attendees.
+- The planner is a child of `<Kloq>`, which is what lets it call
+  `useKloqStore()` and `useKloq()`. On Enter it builds a `CalEvent` the same
+  way the built-in <Kbd>⌘K</Kbd> quick add does — `formatInstant` for timed
+  events, `toDateOnlyString` with an exclusive end for all-day ones (the
+  parser's all-day `end` is inclusive) — then `store.add(event)` and
+  `k.goToDate(start)`. The event shapes are on [Events](/kloq/docs/events).
+- A time with no day resolves to today, or tomorrow if that time has passed;
+  a day with no time is an all-day event. A range is authoritative: in "retro
+  thursday 2-3pm for 45 mins" the length is struck through and kept out of the
+  title. A bare number needs `at`, `from` or a meridiem before it counts as a
+  time, so "sprint 2 to 4" stays a title; once it counts, 1–6 read as
+  afternoon and 7–11 as morning unless a cue such as "dinner" says evening.
+  "in 10 minutes" is an offset from now, adjacent lengths add up ("for 1 hour
+  30 mins"), and `in <place>` is a location only for room-like forms — "in
+  room 4" is one, "lunch in Soho" keeps Soho in the title.
+
+## Take it further
+
+kloq exports the same field it uses inside <Kbd>⌘K</Kbd> as `QuickAddInput`,
+if you would rather not draw the mirror yourself. With a controlled `events`
+array the commit becomes `onEventsChange([...events, event])` and the parser
+result can be sent to a server before it lands — see
+[Controlled state](/kloq/docs/controlled-state).

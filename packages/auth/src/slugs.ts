@@ -8,7 +8,7 @@
  * coss.com is served by several apps (Next.js multi-zones). The dashboard (apps/web) is the default
  * zone: it serves every path not listed in `ZONE_ROUTES`, including org slugs and `/api/auth/*`.
  */
-export type Zone = "dashboard" | "site" | "ui";
+export type Zone = "dashboard" | "site" | "ui" | "origin";
 
 /**
  * A path served by an app other than the dashboard. `prefix` routes match the path itself and
@@ -33,9 +33,13 @@ export const SITE_ASSET_PREFIX = "/site-assets";
  * entry here (unless an existing prefix covers it) + the route in apps/site.
  */
 export const ZONE_ROUTES = [
-  // apps/site: landing page, docs (incl. their search at /docs/search.json), legal pages, LLM
-  // text files.
+  // apps/site: landing page, pricing, Shipyard's landing page (and its assets), kloq
+  // kit's pages (landing page, demo, tools, comparisons, docs and its shadcn registry), docs (incl.
+  // their search at /docs/search.json), legal pages, LLM text files.
   { zone: "site", path: "/", prefix: false },
+  { zone: "site", path: "/pricing", prefix: false },
+  { zone: "site", path: "/shipyard", prefix: true },
+  { zone: "site", path: "/kloq", prefix: true },
   { zone: "site", path: "/docs", prefix: true },
   { zone: "site", path: "/legal", prefix: true },
   { zone: "site", path: "/llms.txt", prefix: false },
@@ -47,8 +51,9 @@ export const ZONE_ROUTES = [
   { zone: "site", path: "/robots.txt", prefix: false },
   { zone: "site", path: "/sitemap.xml", prefix: false },
   { zone: "site", path: "/.well-known", prefix: true },
-  // The coss ui app (separate repository).
+  // The coss ui repository's apps, deployed outside AWS (Vercel): coss ui and Origin UI.
   { zone: "ui", path: "/ui", prefix: true },
+  { zone: "origin", path: "/origin", prefix: true },
 ] as const satisfies readonly ZoneRoute[];
 
 /** Which app serves `pathname` on coss.com. */
@@ -112,8 +117,8 @@ const FUTURE_SITE_SEGMENTS = [
   "push",
   "notifications",
   "scheduling",
-  "calendar",
   "booking",
+  "calendar",
   "bookings",
   "meetings",
   "whatsapp",

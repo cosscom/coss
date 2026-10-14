@@ -1,0 +1,123 @@
+---
+title: Toolbar & chrome
+description: Kloq.Toolbar, Kloq.Nav, Kloq.Reset and useKloq() — the app bar as opt-in composable parts.
+---
+
+`<Kloq>` renders no app bar of its own — the chrome is opt-in parts you
+compose as children. It used to render its own header, wordmark and all; that
+made it an app, not a component. Now naming the product is the host's
+business.
+
+## The parts
+
+```tsx
+<div className="h-dvh">
+  <Kloq>
+    <Kloq.Toolbar>
+      <h1>My calendar</h1>
+      <div className="flex items-center gap-2">
+        <Kloq.Nav />
+        <Kloq.Reset />
+      </div>
+    </Kloq.Toolbar>
+  </Kloq>
+</div>
+```
+
+<Callout>
+  Use the dotted forms in `"use client"` files. A server component can't read
+  `Kloq.Toolbar` off the client export (it arrives as `undefined` and the
+  build fails), so there use the named exports `KloqToolbar` / `KloqNav` /
+  `KloqReset` — identical components.
+</Callout>
+
+| Part | Type | Notes |
+| --- | --- | --- |
+| `Kloq.Toolbar` | `KloqToolbarProps` | A bordered app-bar row above the surface. Pure layout — holds no state. With no children it renders the built-in arrangement: nav left, Reset right, no wordmark. |
+| `Kloq.Nav` | `{ className? }` | ‹ › Today, the range title (with its month/year picker), and the view switcher. |
+| `Kloq.Reset` | `{ className? }` | Restore the sample events — through the store, so it hits `onCommit` and persistence like any other change. In a phone-width box it is the icon alone. |
+
+The same components are importable by name — `KloqToolbar`, `KloqNav`,
+`KloqReset` — the statics are a convenience. The toolbar's responsiveness is
+`flex-wrap`: below ~640px the nav and your controls stack instead of the view
+switcher being squeezed to nothing.
+
+## Why children, not siblings
+
+The parts read `useKloq()` — the same view, anchor date and store the grid is
+using — so they have to be inside the provider. Rendering them as children of
+`<Kloq>` buys three things a sibling layout would have to re-solve: the
+keyboard layer's ownership test sees a click on Today as landing inside the
+calendar, so `t` / `←` / `→` keep working; design mode's scope and
+hover-inspect cover the toolbar; and a host never has to prop-drill `view` /
+`onViewChange` to reproduce the built-in bar.
+
+<Callout>
+  A host that genuinely wants the bar somewhere else on the page can still
+  build one from the public `view` / `onViewChange` / `date` / `onDateChange`
+  props — that is what they are for.
+</Callout>
+
+## useKloq()
+
+The calendar's live view state and navigation actions, as one object —
+`KloqChrome`. Only valid inside `<Kloq>`: outside it there is no calendar to
+describe, and it throws rather than returning a plausible-looking default that
+would hide the mistake until a button silently did nothing.
+
+<TypeTable
+  type={{
+    view: { type: "ViewDescriptor", description: "The resolved EFFECTIVE view: columns, dates, today's index — after any responsive collapse." },
+    viewSetting: { type: "KloqView", description: "The effective view *setting* (`\"week\"`, `3`, …), not the shape." },
+    collapsed: { optional: true, type: "boolean", description: "True while the box is overriding the view (three days or a day)." },
+    narrow: { optional: true, type: "boolean", description: "True below the narrow breakpoint — the nav uses a short title and Reset drops to its icon. Unset until the box has been measured." },
+    ready: { optional: true, type: "boolean", description: "False on the server and during hydration when the calendar has no `date` / `defaultDate` and `locale` to render from; `date` and `view` are placeholders until it turns true." },
+    timeline: { optional: true, type: "boolean", description: "True when the host passed `lanes`, so a Timeline view exists to switch to." },
+    fits: { optional: true, type: "(view: KloqView) => boolean", description: "Whether a view fits the box at its current width; the switcher disables the ones that don't." },
+    date: { type: "Date", description: "The anchor date the view is resolved around." },
+    atToday: { type: "boolean", description: "True when today is inside the visible range." },
+    lastStep: { type: "StepDirection | null", description: "Direction of the last range step, for directional animation." },
+    "step(dir)": { type: "(dir) => void", description: "Step the range by one of the current view's units." },
+    "goToday()": { type: "() => void", description: "Move the range back onto today." },
+    "switchView(view)": { type: "(view: KloqView) => void", description: "Request a view change — reports through `onViewChange`." },
+    "jumpToDay(date)": { type: "(date: Date) => void", description: "Move the anchor and switch to the day view." },
+    "goToDate(date)": { type: "(date: Date) => void", description: "Move the anchor, leaving the view alone." },
+    "reset()": { type: "() => void", description: "Restore the sample events." },
+    "openCommand() / openShortcuts()": { type: "() => void", description: "Open ⌘K / the ? shortcuts overlay." },
+    keymap: { optional: true, type: "Keymap", description: "The host's keymap overrides, so chrome that advertises a key shows the real binding." },
+  }}
+/>
+
+## Composing your own bar
+
+```tsx title="my-toolbar.tsx"
+import { Kloq, useKloq } from "@/components/kloq";
+
+function SaveIndicator() {
+  const k = useKloq();
+  return (
+    <span className="text-xs text-muted-foreground">
+      {k.atToday ? "Today" : k.date.toLocaleDateString()}
+    </span>
+  );
+}
+
+<Kloq>
+  <Kloq.Toolbar>
+    <MyLogo />
+    <div className="flex items-center gap-2">
+      <SaveIndicator />
+      <Kloq.Nav />
+      <MyAccountMenu />
+    </div>
+  </Kloq.Toolbar>
+</Kloq>
+```
+
+Anything inside the toolbar can call `useKloq()` — your components and the
+built-ins read the same context, so a custom Today button is
+`onClick={k.goToday}` and nothing more. Note the distinction the shape
+encodes: `view` is what is *drawn*, `viewSetting` is the setting behind it,
+and `collapsed` says a narrow box is overriding what the host asked for —
+chrome that steps the range or highlights the active view should read the
+effective one, or ‹ › would step by a week while showing a day.

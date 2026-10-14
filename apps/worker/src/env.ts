@@ -1,3 +1,4 @@
+import { billingEnvShape } from "@coss/billing/env";
 import { emailWorkerEnvShape } from "@coss/email/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
@@ -12,6 +13,8 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
     // The public API serves the tracking URLs embedded by the dispatch worker.
     API_PUBLIC_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
+    // Origin of the tracking links, when they shouldn't use API_PUBLIC_URL (production's own domain).
+    TRACKING_PUBLIC_URL: z.url().optional(),
     API_PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
     ...emailWorkerEnvShape,
     // The daily inbound limit per organization (`email.inbound.day`) is counted in Valkey.
@@ -31,6 +34,8 @@ export const env = createEnv({
     BETTER_AUTH_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
     // Decrypts webhook signing secrets (same value as the dashboard's and the API's).
     ...webhookEnvShape,
+    // Billing (@coss/billing): the payment provider new accounts use, and Stripe's API key.
+    ...billingEnvShape,
     // Error monitoring; read by src/instrument.ts before this schema runs.
     ...sentryEnvShape,
     // The image's commit (Dockerfile build argument), Sentry's release.

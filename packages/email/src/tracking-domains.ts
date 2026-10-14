@@ -243,6 +243,7 @@ export async function createTrackingDomain(
   input: { organizationId: string; domainId: string; hostname: string },
   deps: DomainDeps,
 ): Promise<TrackingDomainRow> {
+  await deps.plans?.requireFeature(input.organizationId, "trackingDomains");
   const parent = await requireDomain({ organizationId: input.organizationId, id: input.domainId });
   if (parent.status === "failed" || parent.status === "deleting") {
     throw new DomainError(
@@ -296,6 +297,7 @@ export async function restartTrackingDomain(
 ): Promise<TrackingDomainRow> {
   let row = await requireTrackingDomain(input);
   if (row.status !== "failed") return row;
+  await deps.plans?.requireFeature(input.organizationId, "trackingDomains");
   if (row.providerHostnameId) {
     row = await checkTrackingDomain(input, deps);
     if (row.providerHostnameId || row.status !== "failed") return row;

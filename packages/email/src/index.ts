@@ -91,6 +91,7 @@ export {
   type ProviderEvent,
   type ProviderTenant,
   type SendResult,
+  UncertainSendError,
 } from "./provider.ts";
 export {
   FakeEmailProvider,
@@ -102,6 +103,7 @@ export {
 export { FakeIdentityProvider } from "./providers/fake-identity.ts";
 export { FakeTrackingHostnameProvider } from "./providers/fake-tracking-hostnames.ts";
 export {
+  type EmailListItem,
   type EmailRecipientRow,
   type EmailRow,
   getEmail,
@@ -357,11 +359,15 @@ export {
 } from "./tracking-html.ts";
 export {
   deleteTrackingRule,
+  deleteTrackingRuleFor,
   getTrackingSettings,
   type ResolvedTracking,
   resolveTracking,
   type TrackingEnvironment,
   type TrackingRuleRow,
   type TrackingSettings,
+  toTrackingRuleObject,
+  toTrackingSettingsObject,
+  updateTrackingRule,
   upsertTrackingRule,
 } from "./tracking-settings.ts";

@@ -2,6 +2,9 @@
  * Sending domains: organization-owned identities with Easy DKIM and a custom MAIL FROM
  * subdomain, verified by the provider and re-checked by the worker.
  */
+
+import type { PlanGate } from "@coss/billing/gate";
+import { isOnBillingHold } from "@coss/billing/metering";
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { isSuspended } from "@coss/reputation";
@@ -43,6 +46,8 @@ export type DomainDeps = {
   dns: DnsResolver | null;
   /** Serves custom tracking hostnames (`tracking-domains.ts`). */
   tracking: TrackingHostnameProvider;
+  /** The organization's plan (domains, tracking domains); unset: nothing is limited (tests). */
+  plans?: PlanGate;
 };
 
 /** Subdomain used as the envelope sender (bounces and complaints come back to it). */
@@ -56,8 +61,15 @@ const RESERVED_SUFFIXES = ["amazonses.com", "amazonaws.com", "coss.com", "coss.d
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 
-/** Lower-cased, trailing-dot-free domain name, or a `DomainError` explaining why it is invalid. */
-export function normalizeDomainName(input: string): string {
+/**
+ * Lower-cased, trailing-dot-free domain name, or a `DomainError` explaining why it is invalid.
+ * `allowReserved` admits COSS's and AWS's own domains (`RESERVED_SUFFIXES`): only for platform
+ * admins setting up COSS's own organization (its sending domain is coss.com).
+ */
+export function normalizeDomainName(
+  input: string,
+  options: { allowReserved?: boolean } = {},
+): string {
   const name = input.trim().toLowerCase().replace(/\.$/, "");
   const labels = name.split(".");
   const invalid = (message: string) => new DomainError("invalid_domain", message);
@@ -75,7 +87,10 @@ export function normalizeDomainName(input: string): string {
     );
   }
   if (/^\d+$/.test(labels.at(-1) ?? "")) throw invalid("IP addresses can't be used as domains.");
-  if (RESERVED_SUFFIXES.some((suffix) => name === suffix || name.endsWith(`.${suffix}`))) {
+  if (
+    !options.allowReserved &&
+    RESERVED_SUFFIXES.some((suffix) => name === suffix || name.endsWith(`.${suffix}`))
+  ) {
     throw invalid("This domain can't be used.");
   }
   if (labels[0] === MAIL_FROM_SUBDOMAIN) {
@@ -284,11 +299,24 @@ async function assertPendingCapacity(organizationId: string): Promise<void> {
 
 /** Claims the name for the organization and creates its provider identity. */
 export async function createDomain(
-  input: { organizationId: string; name: string; userId: string | null },
+  input: {
+    organizationId: string;
+    name: string;
+    userId: string | null;
+    /** Platform admins only (the dashboard checks): see `normalizeDomainName`. */
+    allowReserved?: boolean;
+  },
   deps: DomainDeps,
 ): Promise<DomainRow> {
-  const name = normalizeDomainName(input.name);
+  const name = normalizeDomainName(input.name, { allowReserved: input.allowReserved });
   await assertPendingCapacity(input.organizationId);
+  if (deps.plans) {
+    const [existing] = await db
+      .select({ value: count() })
+      .from(domain)
+      .where(and(eq(domain.organizationId, input.organizationId), ne(domain.status, "failed")));
+    await deps.plans.requireCapacity(input.organizationId, "domains", existing?.value ?? 0);
+  }
   let claimed: DomainRow | undefined;
   try {
     [claimed] = await db
@@ -650,6 +678,14 @@ export async function authorizeLiveSender(input: {
       "account_suspended",
       "Live sending is suspended for this organization because of its sending reputation " +
         "(high bounce or complaint rates). Sandbox keys still work. Contact support to resume.",
+    );
+  }
+  // A billing hold is not a suspension: paying (or the next period) lifts it.
+  if (await isOnBillingHold(input.organizationId)) {
+    throw new EmailError(
+      "billing_hold",
+      "Live sending is paused for this organization: an invoice is overdue or its spend limit " +
+        "was reached. Sandbox keys still work. See the organization's billing settings.",
     );
   }
   const address = parseEmailAddress(input.from).address.toLowerCase();

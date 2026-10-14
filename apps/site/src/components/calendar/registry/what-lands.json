@@ -1,0 +1,51 @@
+{
+  "files": 195,
+  "lines": 40601,
+  "dirs": [
+    {
+      "path": "calendar/",
+      "files": 64,
+      "lines": 17360
+    },
+    {
+      "path": "lib/",
+      "files": 70,
+      "lines": 11956
+    },
+    {
+      "path": "timeline/",
+      "files": 12,
+      "lines": 3587
+    },
+    {
+      "path": "ui/",
+      "files": 29,
+      "lines": 3455
+    },
+    {
+      "path": "design-mode/",
+      "files": 15,
+      "lines": 1967
+    },
+    {
+      "path": "styles/",
+      "files": 2,
+      "lines": 1682
+    },
+    {
+      "path": "index.ts",
+      "files": 1,
+      "lines": 540
+    },
+    {
+      "path": "settings.ts",
+      "files": 1,
+      "lines": 32
+    },
+    {
+      "path": "LICENSE",
+      "files": 1,
+      "lines": 22
+    }
+  ]
+}

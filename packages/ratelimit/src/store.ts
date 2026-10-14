@@ -83,7 +83,7 @@ export type ValkeyConnectionOptions = {
   url: string;
   /** ElastiCache Serverless only speaks the cluster protocol. */
   cluster?: boolean;
-  /** Per-command timeout: a slow cache must not slow every API request. */
+  /** Per-command timeout (default 100 ms): a slow cache must not slow every API request. */
   commandTimeoutMs?: number;
   /** Logs connection errors (at most one line per 10 s). */
   onError?: (error: Error) => void;
@@ -94,9 +94,11 @@ type ValkeyClient = Redis | Cluster;
 /** Buckets in Valkey (standalone or cluster), evaluated atomically by `GCRA_SCRIPT`. */
 export class ValkeyStore implements RateLimitStore {
   readonly client: ValkeyClient;
+  readonly #commandTimeoutMs: number;
 
-  constructor(client: ValkeyClient) {
+  constructor(client: ValkeyClient, opts: { commandTimeoutMs?: number } = {}) {
     this.client = client;
+    this.#commandTimeoutMs = opts.commandTimeoutMs ?? DEFAULT_COMMAND_TIMEOUT_MS;
   }
 
   /**
@@ -121,7 +123,7 @@ export class ValkeyStore implements RateLimitStore {
   }
 
   static connect(opts: ValkeyConnectionOptions): ValkeyStore {
-    return new ValkeyStore(createValkeyClient(opts));
+    return new ValkeyStore(createValkeyClient(opts), { commandTimeoutMs: opts.commandTimeoutMs });
   }
 
   async consume(specs: readonly LimitSpec[], options: ConsumeOptions): Promise<ConsumeResult> {
@@ -135,14 +137,16 @@ export class ValkeyStore implements RateLimitStore {
       String(options.idempotency?.ttlMs ?? 0),
       ...specs.flatMap((spec) => [String(spec.intervalMs), String(spec.burst)]),
     ];
-    let reply: unknown;
-    try {
-      reply = await this.client.evalsha(SCRIPT_SHA, keys.length, ...keys, ...args);
-    } catch (error) {
-      // First call on a node (or after a restart/failover): the script is not cached yet.
-      if (!(error instanceof Error) || !error.message.startsWith("NOSCRIPT")) throw error;
-      reply = await this.client.eval(GCRA_SCRIPT, keys.length, ...keys, ...args);
-    }
+    const run = async () => {
+      try {
+        return await this.client.evalsha(SCRIPT_SHA, keys.length, ...keys, ...args);
+      } catch (error) {
+        // First call on a node (or after a restart/failover): the script is not cached yet.
+        if (!(error instanceof Error) || !error.message.startsWith("NOSCRIPT")) throw error;
+        return await this.client.eval(GCRA_SCRIPT, keys.length, ...keys, ...args);
+      }
+    };
+    const reply = await withTimeout(run(), this.#commandTimeoutMs);
     return parseScriptReply(reply, specs.length);
   }
 
@@ -153,6 +157,17 @@ export class ValkeyStore implements RateLimitStore {
       this.client.disconnect();
     }
   }
+}
+
+/** A slow cache must not slow every API request: the limiter applies the bucket's policy instead. */
+const DEFAULT_COMMAND_TIMEOUT_MS = 100;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const expired = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error("Command timed out")), ms);
+  });
+  return Promise.race([promise, expired]).finally(() => clearTimeout(timer));
 }
 
 function throttled(log: (error: Error) => void, intervalMs: number): (error: Error) => void {
@@ -177,14 +192,20 @@ export function createValkeyClient(opts: ValkeyConnectionOptions): ValkeyClient 
     username,
     password,
     tls,
-    commandTimeout: opts.commandTimeoutMs ?? 100,
-    connectTimeout: 2000,
+    // A booting dashboard task (0.5 vCPU) takes over 2 s for its first TLS connection; commands
+    // fail fast meanwhile (no offline queue), so a longer connect only delays readiness.
+    connectTimeout: 5000,
     // Fail fast instead of queueing while disconnected; the limiter applies each bucket's policy.
     maxRetriesPerRequest: 0,
   };
   const onError = throttled(
     opts.onError ??
-      ((error) => console.warn(`[ratelimit] Valkey connection error: ${error.message}`)),
+      ((error) => {
+        // A cluster's "Failed to refresh slots cache" wraps the node error that explains it.
+        const cause = (error as Error & { lastNodeError?: unknown }).lastNodeError;
+        const detail = cause instanceof Error ? ` (${cause.name}: ${cause.message})` : "";
+        console.warn(`[ratelimit] Valkey connection error: ${error.message}${detail}`);
+      }),
     10_000,
   );
 
@@ -193,7 +214,11 @@ export function createValkeyClient(opts: ValkeyConnectionOptions): ValkeyClient 
       // ElastiCache's TLS certificates name the hostnames, not the IPs they resolve to.
       dnsLookup: (address, callback) => callback(null, address),
       enableOfflineQueue: false,
-      slotsRefreshTimeout: 2000,
+      // The first slots fetch runs on that slow first connection too.
+      slotsRefreshTimeout: 5000,
+      // No `commandTimeout` here: the cluster's slots fetch runs on a fresh copy of these options
+      // and queues CLUSTER SLOTS while it connects, so 100 ms failed it on every booting task.
+      // `ValkeyStore` times its own commands instead.
       redisOptions: common,
     });
     cluster.on("error", onError);
@@ -204,6 +229,7 @@ export function createValkeyClient(opts: ValkeyConnectionOptions): ValkeyClient 
     port: Number(url.port || 6379),
     db: url.pathname.length > 1 ? Number(url.pathname.slice(1)) : 0,
     enableOfflineQueue: false,
+    commandTimeout: opts.commandTimeoutMs ?? DEFAULT_COMMAND_TIMEOUT_MS,
     ...common,
   });
   client.on("error", onError);

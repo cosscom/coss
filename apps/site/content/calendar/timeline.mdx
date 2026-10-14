@@ -1,0 +1,218 @@
+---
+title: Resource timeline
+description: Rooms, staff or machines as rows along a horizontal time axis — drag to book, drag across rows to reassign, drag an edge to resize.
+---
+
+`view="timeline"` turns the grid ninety degrees: time runs left to right
+instead of top to bottom, and the rows are whatever you name them — rooms,
+staff, trucks, machines — instead of days. It is the seventh view shape, and
+the odd one out: it doesn't draw the all-day lane, it isn't part of the
+[responsive collapse](/kloq/docs/views#the-responsive-collapse) (there's no
+narrower n-day span to fall back to, so a timeline just scrolls), and it
+keeps its own visible-span model instead of `view.days`.
+
+## Rows: the `lanes` prop
+
+```tsx
+<Kloq view="timeline" lanes={lanes} />
+```
+
+`lanes` is empty by default — nothing renders without it. Passing it also adds
+a Timeline entry to the stock view switcher (and sets `useKloq().timeline` for
+your own). Each one is a
+[`Lane`](/kloq/docs/resources):
+
+```ts
+interface Lane {
+  id: string;
+  label: string;
+  sublabel?: string; // an optional second line, e.g. "2nd floor · 8 seats"
+  height?: number;   // px; see "Row height and the overflow cap" below
+  parentId?: string; // reserved for grouping — ignored in v1
+  data?: unknown;    // handed back to a custom ResourceGutter untouched
+}
+```
+
+`parentId` is on the type today but does nothing yet — see
+[what's not here](#what-is-not-here). How an event maps onto a lane is a
+separate question, covered in [Resources & lanes](/kloq/docs/resources).
+
+## The visible span: `timelineWindow`
+
+A timeline has no "week" or "day off" the anchor — how much time it shows,
+and how finely, is its own prop:
+
+```ts
+interface TimelineWindowConfig {
+  start?: Date;
+  end?: Date;
+  slotMinutes?: number;   // the snap and tick unit. Default 30.
+  pxPerSlot?: number;     // px per slot, before zoom. Default 40.
+  startOffsetMinutes?: number; // derived mode only. Default 480 (8:00 AM).
+  spanMinutes?: number;        // derived mode only. Default 600 (10 hours).
+}
+```
+
+There are two modes, and which one you're in changes how navigation behaves:
+
+- **Derived (the default)** — omit both `start` and `end`. The window is
+  computed off the calendar's own anchor date: `start` is the anchor's local
+  midnight plus `startOffsetMinutes`, `end` is `start` plus `spanMinutes`.
+  This is what makes ‹ › and "Today" move the window with zero extra wiring —
+  `stepAnchor` moves the anchor, the anchor derives the window.
+- **Controlled** — pass both `start` and `end`. They're honoured exactly,
+  and `resolveWindow` never recomputes them from the anchor again. The
+  toolbar's ‹ › still moves the calendar's *anchor date* (nothing stops
+  that), but the visible span no longer follows it — moving the window
+  becomes your job, typically by deriving a new `start`/`end` in your own
+  `onDateChange` and passing it back in as new props.
+
+`start`/`end` are all-or-nothing: pass only one and the window derives off
+the anchor as if you'd passed neither, the same fallback rule
+`slotMinutes`/`pxPerSlot` each get independently.
+
+A worked room-booking config — a bookable working day, half-hour slots:
+
+```tsx
+<Kloq
+  view="timeline"
+  lanes={rooms}
+  timelineWindow={{
+    startOffsetMinutes: 8 * 60, // 8:00 AM
+    spanMinutes: 10 * 60,       // 8:00 AM – 6:00 PM
+    slotMinutes: 30,
+  }}
+/>
+```
+
+And a roster pinned to a fixed span — controlled, because a shift roster is
+about *dates*, not the calendar's current anchor. Day-sized slots turn it
+into a fortnight planner:
+
+```tsx
+<Kloq
+  view="timeline"
+  lanes={staff}
+  timelineWindow={{
+    start: periodStart,
+    end: periodEnd, // any pair of Dates — 14 days here
+    slotMinutes: 1440, // one slot per day
+    pxPerSlot: 96,
+  }}
+/>
+```
+
+See the [full example](/kloq/docs/examples/room-booking) for the first shape end
+to end; [Shift scheduler](/kloq/docs/examples/shift-roster) is the controlled
+shape too, pinning the current calendar week with hour slots.
+
+<Callout type="warn">
+  `ticksOf` positions ticks and derives their labels off the *local* clock,
+  so a window that spans a daylight-saving transition computes against a 23-
+  or 25-hour day. Transitions land in the small hours, so a window inside
+  the working day never sees one; a full-day, week or longer window does,
+  twice a year — expect the ticks after the boundary to drift by the shifted
+  hour.
+</Callout>
+
+## Try it
+
+<Example name="room-booking" />
+
+## Gestures
+
+Every gesture from the calendar's own drag engine exists here, remapped onto
+lane + minute instead of day + minute:
+
+- **Drag to create** — drag on empty canvas to draw a new booking, snapped to
+  `slotMinutes`.
+- **Drag to move** — grab a bar and drag it. Drag across rows and the drop
+  reassigns it: the engine calls your [`LaneAdapter`](/kloq/docs/resources)'s
+  `assign(event, newLaneId)` for you, the same inverse `laneOf` describes.
+- **Resize** — drag either edge to change the start or end independently.
+- **Double-click** — creates a default-duration booking at the clicked lane
+  and time, same as the calendar's double-click quick-create.
+
+[Constraints](/kloq/docs/constraints) apply unchanged: `minDate`/`maxDate`,
+`isSlotDisabled` and `canDrop` all run against timeline gestures exactly as
+they do against the calendar's, including the **origin exemption** — a
+booking already sitting across refused time can still be dragged, so long as
+the drag doesn't newly occupy *more* refused time. See
+[Constraints](/kloq/docs/constraints#what-is-refused-exactly) for what "newly
+occupies" means, and its [timeline gesture names](/kloq/docs/constraints#timeline-gestures)
+if you're writing a `canDrop` that branches on which surface asked.
+
+A booking that crosses midnight is drawn as a single continuous bar — the
+timeline has no day columns to slice it against, unlike the calendar's own
+cross-midnight segmentation. An all-day booking is a bar labelled "All day",
+and one marked `busy: false` draws hatched, as it does in the calendar.
+Conflicts are judged per lane: two bookings clash only when they share a row.
+
+The header and the rows share one scroll container, so the tick strip stays
+pinned to the top and the resource gutter to the left while the canvas
+scrolls. The gutter is 160px wide, and 112px once the timeline's own box is
+narrower than 480px.
+
+## Keyboard
+
+The same keys as the calendar, remapped onto lanes:
+
+- **Arrows** walk the bars — `←` / `→` along a lane, `↑` / `↓` to the lane
+  above or below. With nothing selected, an up or down arrow starts at the
+  first bar. Hold
+  `⇧` to extend the selection.
+- **`⌥` + arrows** move the bar: one slot earlier or later, or onto the
+  neighbouring lane (the same reassignment a cross-row drag makes).
+- **`⌥⇧` + `←` / `→`** resize the end; **`⌥⇧⌘`** resizes the start.
+- **`1`–`5`** recolour the selection, and the create key (`c` unless the
+  [keymap](/kloq/docs/keyboard) rebinds it) books a default-length slot on the
+  current lane.
+- **`Enter`**, **`Escape`**, **`Delete`** and **`⌘A` / `⌘C` / `⌘X` / `⌘D`** act
+  on any bar in the window, on any of its days.
+
+## Zoom
+
+Zoom is the calendar's existing control (the same ladder `hourHeight` scales
+through, `useKloqSettings().zoom`) — it scales `pxPerSlot`, never
+`slotMinutes` or the span the window covers. Zooming in makes 8:00–18:00 wider
+on screen; it never shows you more or less of the day.
+
+## Row height and the overflow cap
+
+`Lane.height` is more than a row's pixel height — it's also the cap on how
+many overlapping bookings that row draws before the rest collapse into a
+"+N more" popover, the same treatment the calendar's all-day lane uses for
+an over-full day. The cap is `height ÷ bar height`, floored, with a floor of
+one row. The default row height caps at **3** overlapping bookings; a room
+or shift that's routinely double- or
+triple-booked wants a taller `Lane.height`, not a different prop — there is
+deliberately no separate "max overlaps" knob.
+
+```tsx
+{ id: "boardroom", label: "Boardroom", height: 132 } // taller row, higher cap: height ÷ bar height, floored
+```
+
+## Slots
+
+Four new [component slots](/kloq/docs/slots#the-six-calendar-slots) join the six the
+calendar already has: `TimelineBlock`, `ResourceGutter`, `TimelineHeader`,
+`TimelineRow`. Their contracts are on the [Slots](/kloq/docs/slots) page.
+
+## What is not here
+
+This ships the surface, not a project-management tool:
+
+- **No virtualization.** Every lane and every bar renders. It hasn't been
+  exercised past a modest row count, and a long resource list is likely to
+  perform poorly — plan around it rather than assuming it scales the way a
+  virtualized grid would.
+- **No resource grouping or trees.** `Lane.parentId` exists on the type for
+  forward compatibility and does nothing today; lanes render as one flat
+  list in the order you pass them.
+- **No dependency arrows, critical path, or baselines.** This is a booking
+  grid, not a Gantt chart.
+- **Three keyboard gaps.** `⌥`+arrow moves or reassigns the lead bar only,
+  not the whole selection; all-day and read-only bars don't move from the
+  keyboard; and `⌘V` pastes at the lead bar's time (the window's first day
+  when there is none) on the copied bookings' own lanes, not on the lane the
+  lead sits on.

@@ -1,0 +1,84 @@
+---
+title: Design mode
+description: "⌥D: a calendar-aware inspector, live spring tuning with slow motion, geometry overlays, and a contrast-scoring theme picker."
+---
+
+Press `⌥D` and the calendar opens its own design tool: a calendar-aware inspector, live spring tuning with slow motion, overlays for the grid's hidden geometry, and a theme picker that scores its own contrast. It ships on by default because it *is* the product pitch — and turns off with one prop.
+
+## The prop
+
+```tsx
+<Kloq designMode />                  // default: on, with the hint bar
+<Kloq designMode={{ hint: false }} />  // on, but no ⌥D hint bar
+<Kloq designMode={false} />            // off entirely
+```
+
+The hint is a slim footer bar in the calendar's own layout — it never sits on top of the grid — and it steps aside while an event sheet is open.
+
+The toggle follows the same keyboard-scope rules as everything else: `⌥D` fires when the calendar owns the keyboard, or page-wide with `globalShortcuts`.
+
+## The panel
+
+A single draggable panel, opened inside the calendar it belongs to — drop it on any corner (or press its "move to the next corner" button), collapse it to a strip, open only the sections you need. It starts with Inspect open and the rest closed. Position and open sections persist per browser under `<prefix>-design-panel`, and not at all under `storage={false}`. Everything in it writes to the DOM directly; nothing re-renders the calendar per frame.
+
+| Section | Type | Notes |
+| --- | --- | --- |
+| Inspect | hover | An event shows its store record, column and overlap slot, painted background, ink, and WCAG contrast; a grid cell shows the pointer time and the slot it snaps to. ⌥-click freezes the readout. |
+| Motion | live | Velocity sparkline and frame count for the last gesture, playback at ½ / ¼ / ⅒ speed, a reduced-motion simulator, and stiffness / damping / duration sliders for the drag, resize and keyboard springs — applied to the next gesture. |
+| Overlays | toggles | 8pt grid, snap lines at the configured step, resize hit areas, page dim, and a host-width slider to walk the responsive breakpoints. |
+| Theme | picker | Named themes, the resolved core tokens as hex, and the contrast of every event colour against the current theme. |
+| Network | sim | Appears when the host registers a network sim — latency and failure knobs for the optimistic seam. |
+
+## Tuning motion from code
+
+The sliders drive a small registry the whole engine reads from, and it is exported — set a house spring once and every settle, cancel and nudge follows it:
+
+```tsx
+import { setMotion, getMotion, resetMotion, subscribeMotion } from "kloq";
+
+setMotion({ drag: { stiffness: 500, damping: 34, ms: 280 } });
+setMotion({ scale: 4 });            // quarter speed, every animation
+setMotion({ reducedMotion: true }); // as if the OS asked for it
+resetMotion();
+```
+
+## The craft bus
+
+Every drag publishes to `craftBus` at rAF cadence with zero React involvement — the inspector reads it imperatively, and so can you:
+
+```tsx
+import { craftBus, type CraftEvent } from "@/components/kloq";
+
+const off = craftBus.subscribe((e: CraftEvent) => {
+  if (e.type === "drag:frame") {
+    // e.frame: kind, id, velocity (px/s, smoothed),
+    // rect, startMin/endMin (snapped), dayIndex, pointer
+  }
+  if (e.type === "drag:end") console.log("cancelled:", e.cancelled);
+});
+```
+
+Events are `drag:start`, `drag:frame`, `drag:end` (with `cancelled`), and `design-mode`; `craftBus.frame` holds the last published frame, `null` when idle. `DragKind` is `"create" | "move" | "resize-start" | "resize-end"`. Subscribers should write to refs or the DOM — never `setState` per frame.
+
+<Callout>
+  The settle and cancel animations run through WAAPI with a damped spring
+  sampled into a CSS `linear()` easing — `springLinear(stiffness?, damping?, samples?)`
+  is exported, so the exact curves the engine uses are yours too.
+</Callout>
+
+## The network panel
+
+Design mode stays generic: an app that runs a simulated (or real) network can register a handle and the inspector grows a Network section — latency and failure-rate controls, in-flight count, last result. Nothing renders when no sim is registered.
+
+```tsx
+import { registerNetworkSim, type NetworkSimHandle } from "@/components/kloq/design-mode";
+
+registerNetworkSim(myHandle); // once at mount
+registerNetworkSim(null);     // teardown
+```
+
+The handle exposes `getLatency`/`setLatency`, `getFailureRate`/`setFailureRate`, `getInFlight`, `getLastResult`, a `subscribe`, and optional `getEnabled`/`setEnabled` so design mode can switch the sim itself — register once, let the inspector drive.
+
+## The design-mode module
+
+The full surface is importable on its own for custom tooling: `DesignModeProvider` / `useDesignMode`, `DesignModeOverlay`, `DesignModeHint`, `KloqDesignMode`, and the network-sim registry. You only need it for building surfaces of your own — `⌥D` inside `<Kloq>` works with no imports at all.

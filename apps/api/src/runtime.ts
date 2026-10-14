@@ -1,3 +1,4 @@
+import type { PlanGate } from "@coss/billing/gate";
 import {
   createEmailRuntime,
   type EmailEnv,
@@ -11,6 +12,7 @@ import {
  */
 export function createDefaultEmailRuntime(
   env: EmailEnv = { EMAIL_PROVIDER: "fake" },
+  extras: { plans?: PlanGate } = {},
 ): EmailRuntime {
-  return createEmailRuntime(emailRuntimeConfig(env));
+  return createEmailRuntime(emailRuntimeConfig(env), extras);
 }

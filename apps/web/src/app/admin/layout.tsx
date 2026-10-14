@@ -34,6 +34,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             <Button render={<Link href="/admin/reputation" />} size="sm" variant="ghost">
               Reputation
             </Button>
+            <Button render={<Link href="/admin/billing" />} size="sm" variant="ghost">
+              Billing
+            </Button>
           </nav>
           <div className="ms-auto flex items-center gap-2">
             <Button render={<Link href={DASHBOARD_PATH} />} size="sm" variant="ghost">

@@ -221,6 +221,9 @@ export async function rollWebhookSecretAction(
         webhookManagementDeps(),
       ),
     );
+    await endpointAudit(context, endpoint, "webhook_endpoint.secret_rolled", {
+      previous_secret_expires_in: option.seconds,
+    });
     refresh();
     return { secret };
   });

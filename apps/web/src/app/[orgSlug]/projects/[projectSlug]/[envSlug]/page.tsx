@@ -1,5 +1,5 @@
 import { API_KEY_PREFIX } from "@coss/auth/constants";
-import { type EmailObjectOutput, inboundAddressFor, listDomains, listEmails } from "@coss/email";
+import { type EmailListItem, inboundAddressFor, listDomains, listEmails } from "@coss/email";
 import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment, listEnvironmentApiKeys, listEnvironments } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
@@ -50,7 +50,7 @@ function quickStartCurl(apiUrl: string, from: string): string {
 }
 
 /** "2 opens · 1 click" for tracked emails, "—" for untracked ones. */
-function engagement({ tracking }: EmailObjectOutput): string {
+function engagement({ tracking }: EmailListItem): string {
   const parts = [
     tracking.opens
       ? `${tracking.open_count} ${tracking.open_count === 1 ? "open" : "opens"}`
@@ -71,23 +71,24 @@ export default async function EnvironmentPage({
   if (!found) notFound();
   const { project, environment } = found;
 
+  const live = environment.mode === "live";
   const inbound = emailRuntime().inbound;
-  const [environments, keys, emails, inboundAddress] = await Promise.all([
-    listEnvironments({ organizationId: organization.id, projectId: project.id }),
-    listEnvironmentApiKeys({ organizationId: organization.id, environmentId: environment.id }),
-    listEmails({ organizationId: organization.id, environmentId: environment.id, limit: 50 }),
-    inbound && can({ email: ["read"] })
-      ? inboundAddressFor(
-          { organizationId: organization.id, environmentId: environment.id },
-          inbound.managedDomain,
-        )
-      : null,
-  ]);
+  const [environments, keys, emails, domains, createRestriction, inboundAddress] =
+    await Promise.all([
+      listEnvironments({ organizationId: organization.id, projectId: project.id }),
+      listEnvironmentApiKeys({ organizationId: organization.id, environmentId: environment.id }),
+      listEmails({ organizationId: organization.id, environmentId: environment.id, limit: 50 }),
+      live ? listDomains({ organizationId: organization.id }) : null,
+      live ? liveKeyRestriction(session, organization.id) : null,
+      inbound && can({ email: ["read"] })
+        ? inboundAddressFor(
+            { organizationId: organization.id, environmentId: environment.id },
+            inbound.managedDomain,
+          )
+        : null,
+    ]);
   // Live keys must send from a verified domain; sandbox keys accept any address.
-  const sendingDomain =
-    environment.mode === "live"
-      ? (await listDomains({ organizationId: organization.id })).find((d) => d.canSend)?.name
-      : "example.com";
+  const sendingDomain = domains ? domains.find((d) => d.canSend)?.name : "example.com";
 
   const projectPath = `/${organization.slug}/projects/${project.slug}`;
   const target = {
@@ -97,8 +98,6 @@ export default async function EnvironmentPage({
   };
   const canCreateKey = can({ apiKey: ["create"] });
   const canRevokeKey = can({ apiKey: ["delete"] });
-  const createRestriction =
-    environment.mode === "live" ? await liveKeyRestriction(session, organization.id) : null;
   const apiUrl = env.API_PUBLIC_URL;
   const from = `onboarding@${sendingDomain ?? "your-verified-domain.com"}`;
   const curl = quickStartCurl(apiUrl, from);

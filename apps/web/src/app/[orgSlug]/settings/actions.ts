@@ -1,6 +1,7 @@
 "use server";
 
 import { DASHBOARD_PATH, validateOrgName, validateOrgSlug } from "@coss/auth/slugs";
+import { unpaidInvoiceCount } from "@coss/billing";
 import {
   requestOrganizationDeletion,
   setOrganizationApiVersion,
@@ -106,6 +107,12 @@ export async function deleteOrganizationAction(
     }
     if (formString(formData, "confirm") !== organization.slug) {
       throw new ActionError(`Type ${organization.slug} to confirm.`);
+    }
+    // Tenancy can't see billing: check here, before anything is revoked.
+    if ((await unpaidInvoiceCount(organization.id)) > 0) {
+      throw new ActionError(
+        "Pay or settle your open invoices first (Settings → Billing). Contact support if you need help.",
+      );
     }
     await requestOrganizationDeletion({
       organizationId: organization.id,

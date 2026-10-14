@@ -186,6 +186,18 @@ export async function setOrganizationTwoFactorRequired(input: {
     .where(eq(organization.id, input.organizationId));
 }
 
+/** The user's organizations, by name (the org switcher; one query, unlike Better Auth's list). */
+export async function listUserOrganizations(input: {
+  userId: string;
+}): Promise<{ name: string; slug: string }[]> {
+  return db
+    .select({ name: organization.name, slug: organization.slug })
+    .from(member)
+    .innerJoin(organization, eq(organization.id, member.organizationId))
+    .where(eq(member.userId, input.userId))
+    .orderBy(asc(organization.name));
+}
+
 /** The user's organizations that require two-factor authentication, by name. */
 export async function listOrganizationsRequiringTwoFactor(input: {
   userId: string;

@@ -12,7 +12,8 @@
     "./emails": "./src/emails.ts",
     "./sso": "./src/sso.ts",
     "./scim": "./src/scim.ts",
-    "./audit": "./src/audit.ts"
+    "./audit": "./src/audit.ts",
+    "./limits": "./src/limits.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -4,7 +4,7 @@
 import { type ClientIpResolver, clientIpResolver } from "./client-ip.ts";
 import type { RateLimitEnv } from "./env.ts";
 import { createRateLimiter, type RateLimiter } from "./limiter.ts";
-import { cachedOverrides } from "./overrides.ts";
+import { cachedOverrides, type PlanRuleSource, withPlanRules } from "./overrides.ts";
 import { MemoryStore, type RateLimitStore, ValkeyStore } from "./store.ts";
 
 export { type RateLimitEnv, rateLimitEnvShape } from "./env.ts";
@@ -18,7 +18,11 @@ export type RateLimitRuntime = {
 
 export function createRateLimitRuntime(
   env: RateLimitEnv,
-  opts: { production?: boolean } = {},
+  opts: {
+    production?: boolean;
+    /** The organizations' plan rules (the apps pass `@coss/billing`'s `planRateLimits`). */
+    planRules?: PlanRuleSource;
+  } = {},
 ): RateLimitRuntime {
   const production = opts.production ?? process.env.NODE_ENV === "production";
   let store: RateLimitStore;
@@ -43,7 +47,7 @@ export function createRateLimitRuntime(
     limiter: createRateLimiter({
       store,
       prefix: env.RATE_LIMIT_KEY_PREFIX,
-      overrides: cachedOverrides(),
+      overrides: cachedOverrides(opts.planRules ? { load: withPlanRules(opts.planRules) } : {}),
     }),
     clientIp: clientIpResolver({
       header: env.CLIENT_IP_HEADER,

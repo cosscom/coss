@@ -7,7 +7,7 @@ import { clientIpFromForwardedFor } from "@/lib/client-ip";
 /**
  * Reachable without a session cookie. /accept-invitation and /sso render their own signed-out state;
  * /api/health is the load balancer's health check; /api/monitoring relays browser errors to Sentry
- * (signed-out pages and the site report too).
+ * (signed-out pages and the site report too); /api/billing/webhook takes Stripe's (signed) events.
  */
 const PUBLIC_PATH_PREFIXES = [
   "/sign-in",
@@ -18,6 +18,7 @@ const PUBLIC_PATH_PREFIXES = [
   "/api/auth",
   "/api/health",
   "/api/monitoring",
+  "/api/billing/webhook",
   "/accept-invitation",
 ];
 
@@ -58,6 +59,8 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Skip Next internals, the favicon and any path with a file extension (static assets).
-  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|.*\\..*).*)"],
+  // Skip Next internals and the two root files `next dev` proxies to the site. Paths with dots go
+  // through like any other: the dashboard has no public/ folder, and their X-Forwarded-For must be
+  // replaced too (rate limits, sessions and audit events read it).
+  matcher: ["/((?!_next/static/|_next/image|favicon\\.ico$|icon\\.svg$).*)"],
 };
