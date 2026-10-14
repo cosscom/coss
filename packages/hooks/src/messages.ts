@@ -269,6 +269,15 @@ export async function sendHookMessage(input: {
   const { row, replayed } = await withIdempotencyKey<KeyedMessage>({
     requestHash: hash,
     now: () => now.getTime(),
+    errors: {
+      inProgress: () =>
+        new HookError("request_in_progress", "This idempotency key is busy. Retry shortly."),
+      reused: () =>
+        new HookError(
+          "idempotency_key_reused",
+          "This idempotency key was already used with a different request body.",
+        ),
+    },
     insert: async (tx) => {
       const [claimed] = await tx
         .insert(hookIdempotencyKey)

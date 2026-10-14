@@ -8,9 +8,10 @@ import type * as PageTree from "fumadocs-core/page-tree";
 import Link, { type LinkProps } from "next/link";
 import { type ReactNode, useState } from "react";
 import { allGroups } from "@/lib/docs-tree";
+import { PRODUCT_COLUMNS } from "@/lib/nav";
 import type { NavItem } from "@/lib/site";
 
-/** The site's sections and every docs page, in a drawer (below `lg`, where the sidebar is hidden). */
+/** The site's sections, every product and every docs page, in a drawer (below `lg`, where the header's menus are hidden). */
 export function MobileNav({
   tree,
   items,
@@ -58,6 +59,30 @@ export function MobileNav({
                 ),
               )}
             </div>
+          </div>
+          <div className="flex flex-col gap-8">
+            {PRODUCT_COLUMNS.map((column) => (
+              <div className="flex flex-col gap-3" key={column.title}>
+                <div className="font-medium text-sm">{column.title}</div>
+                <div className="flex flex-col gap-0.5">
+                  {column.links.map((link) =>
+                    link.zone ? (
+                      <a
+                        className="flex items-center gap-2 py-1.5 text-muted-foreground"
+                        href={link.href}
+                        key={link.label}
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <MobileLink href={link.href} key={link.label} onOpenChange={setOpen}>
+                        {link.label}
+                      </MobileLink>
+                    ),
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
           <div className="flex flex-col gap-8">
             {allGroups(tree).map((group) => (

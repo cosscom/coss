@@ -4,9 +4,9 @@
  */
 
 import { BillingError } from "@coss/billing";
-import { IdempotencyError, type IdempotencyErrorCode } from "@coss/db/idempotency";
 import { DomainError, EmailError } from "@coss/email";
 import { HookError } from "@coss/hooks";
+import { RiskError } from "@coss/risk";
 import { WebhookError } from "@coss/webhooks";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -138,7 +138,10 @@ function fromHttpException(error: HTTPException): ApiError {
   });
 }
 
-function fromIdempotencyError(error: { code: IdempotencyErrorCode; message: string }): ApiError {
+function fromIdempotencyError(error: {
+  code: "request_in_progress" | "idempotency_key_reused";
+  message: string;
+}): ApiError {
   switch (error.code) {
     case "request_in_progress":
       // Concurrent requests keep taking over the key; the SDK retries after Retry-After.
@@ -244,6 +247,33 @@ function fromWebhookError(error: WebhookError): ApiError {
   }
 }
 
+function fromRiskError(error: RiskError): ApiError {
+  switch (error.code) {
+    case "request_in_progress":
+      // Concurrent requests keep taking over the key; the SDK retries after Retry-After.
+      return new ApiError(
+        409,
+        { type: "idempotency_error", code: error.code, message: error.message },
+        { "Retry-After": "1" },
+      );
+    case "idempotency_key_reused":
+      return new ApiError(422, {
+        type: "idempotency_error",
+        code: error.code,
+        message: error.message,
+        param: "Idempotency-Key",
+      });
+    case "invalid_list_value":
+      return invalidRequest(error.code, error.message, error.param ?? "value");
+    case "not_found":
+      return new ApiError(404, {
+        type: "not_found_error",
+        code: error.code,
+        message: error.message,
+      });
+  }
+}
+
 function fromBillingError(error: BillingError): ApiError {
   // The plan or the account's billing stands in the way: 402, never retried by the SDK.
   if (error.status === 402) {
@@ -266,6 +296,9 @@ function fromBillingError(error: BillingError): ApiError {
 }
 
 function fromHookError(error: HookError): ApiError {
+  if (error.code === "request_in_progress" || error.code === "idempotency_key_reused") {
+    return fromIdempotencyError({ code: error.code, message: error.message });
+  }
   if (error.status === 404) {
     return new ApiError(404, { type: "not_found_error", code: error.code, message: error.message });
   }
@@ -284,10 +317,10 @@ export function toApiError(error: unknown): ApiError | null {
   if (error instanceof ApiError) return error;
   if (error instanceof BillingError) return fromBillingError(error);
   if (error instanceof EmailError) return fromEmailError(error);
-  if (error instanceof IdempotencyError) return fromIdempotencyError(error);
   if (error instanceof HookError) return fromHookError(error);
   if (error instanceof DomainError) return fromDomainError(error);
   if (error instanceof WebhookError) return fromWebhookError(error);
+  if (error instanceof RiskError) return fromRiskError(error);
   // A 5xx exception is a server fault: left to the caller to log and answer with a generic 500.
   if (error instanceof HTTPException && error.status < 500) return fromHttpException(error);
   return null;

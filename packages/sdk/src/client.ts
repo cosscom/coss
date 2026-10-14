@@ -8,6 +8,7 @@ import { HooksResource } from "./resources/hooks.ts";
 import { LogDrainsResource } from "./resources/log-drains.ts";
 import { LogsResource } from "./resources/logs.ts";
 import { ReputationResource } from "./resources/reputation.ts";
+import { RiskResource } from "./resources/risk.ts";
 import { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 
 export interface CossOptions {
@@ -88,6 +89,8 @@ export class Coss {
   readonly auditEvents: AuditEventsResource;
   /** Hooks, webhooks as a service: `coss.hooks.messages.send()` delivers to your users' endpoints. */
   readonly hooks: HooksResource;
+  /** Risk assessments of sign-ups, logins and other events (`coss.risk.assess()`). */
+  readonly risk: RiskResource;
   /** The organization's plan, usage, invoices and credits (`coss.billing.get()`). */
   readonly billing: BillingResource;
 
@@ -132,6 +135,7 @@ export class Coss {
     this.logDrains = new LogDrainsResource(http);
     this.auditEvents = new AuditEventsResource(http);
     this.hooks = new HooksResource(http);
+    this.risk = new RiskResource(http);
     this.billing = new BillingResource(http);
   }
 }

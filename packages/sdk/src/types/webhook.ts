@@ -1,10 +1,12 @@
 /**
  * Webhook wire types (hand-written mirrors of the API's `EmailWebhookEvent`,
- * `AccountWebhookEvent`, `BillingWebhookEvent` and `HookEndpointWebhookEvent`).
+ * `AccountWebhookEvent`, `BillingWebhookEvent`, `RiskWebhookEvent` and
+ * `HookEndpointWebhookEvent`).
  */
 import type { BillingHoldReason, Credit, InvoiceSummary, Meter, PlanKey } from "./billing.ts";
 import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
 import type { ReputationCheck, ReputationStatus } from "./reputation.ts";
+import type { RiskDecision, RiskEvent, RiskReason } from "./risk.ts";
 
 /** What a webhook says about the email; never its content, cc or bcc. */
 export interface EmailWebhookEventData extends EmailEventData {
@@ -138,6 +140,34 @@ export type BillingWebhookEvent =
       data: BillingEventData & { credit: Credit };
     });
 
+/** Risk events: `review` decisions, for a queue you work through. */
+export type RiskEventType = "risk.assessment.review";
+
+export interface RiskWebhookEventData {
+  assessment_id: string;
+  event: RiskEvent;
+  event_name: string | null;
+  decision: RiskDecision;
+  score: number;
+  reasons: RiskReason[];
+  /** Your user id, if the assessment had one. Never the email or IP address. */
+  user_id: string | null;
+  /** ISO 8601 timestamp. */
+  occurred_at: string;
+}
+
+/** A risk assessment that needs a review. `id` equals the `webhook-id` header. */
+export interface RiskWebhookEvent {
+  id: string;
+  object: "event";
+  type: RiskEventType;
+  /** The API version this event is rendered in: the receiving endpoint's `api_version`. */
+  api_version: string;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  data: RiskWebhookEventData;
+}
+
 /** Events about Hooks: an endpoint of one of your applications was disabled for failing. */
 export type HookOperationalEventType = "hook_endpoint.disabled";
 
@@ -170,4 +200,5 @@ export type WebhookEvent =
   | EmailWebhookEvent
   | AccountWebhookEvent
   | BillingWebhookEvent
+  | RiskWebhookEvent
   | HookEndpointWebhookEvent;

@@ -1,0 +1,35 @@
+---
+title: Reasons and scores
+description: Every reason an assessment can give, and how they become a decision.
+---
+
+Each reason that fires adds its weight to the score: `score = 1 − Π(1 − weight)`, so independent
+signals reinforce each other and the score never goes down when a reason is added. With the default
+thresholds, a score of <RiskThreshold of="review" /> or more is `review` and{" "}
+<RiskThreshold of="block" /> or more is `block`. For example, a disposable address alone (0.7) is
+`review`; a disposable address over Tor (`1 − 0.3 × 0.5 = 0.85`) is `block`.
+
+[Lists](/docs/risk/lists-and-feedback#lists) decide before the score: an allow-list match is always
+`allow` (the other reasons are still reported), a block-list match is always `block`.
+
+Reasons come most significant first. Each has a `code`, a `message` for developers, and the details
+named below (`value`, `suggestion`, `provider`, `previous_user`…).
+
+<RiskReasonTable />
+
+## Signals
+
+Besides the reasons, `signals` reports what COSS found, whether or not it fired a reason:
+
+- `signals.email`: the domain, `valid`, `disposable`, `deliverability` (`deliverable`,
+  `undeliverable` or `unknown`), `role_account`, `free_provider` and `suggestion`.
+- `signals.ip`: `version`, `private`, `tor`, `hosting` with `hosting_provider` and `hosting_kind`
+  (`cloud`, `hosting` or `vpn`), `asn`, `as_name` and `country`.
+- `signals.velocity`: counts of the same event in this environment, this one included, keyed
+  `<dimension>_<window>`: `ip_1h`, `subnet_24h`, `mailbox_24h`, `email_domain_1h`, `user_1h`…
+  Email domains of free providers are not counted.
+
+IP data comes from public sources: the Tor Project's exit list, the address ranges AWS, Google
+Cloud, Oracle Cloud and DigitalOcean publish, a list of hosting networks COSS maintains, and
+[IPinfo Lite](https://ipinfo.io/lite) (ASN and country, CC BY-SA 4.0). They are refreshed every 30
+minutes (Tor) to daily.

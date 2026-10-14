@@ -1,5 +1,5 @@
 -- Custom SQL migration file, put your code below! --
--- drizzle-kit can't declare partitioning: 0046 created the Hooks message, delivery and attempt
+-- drizzle-kit can't declare partitioning: 0048 created the Hooks message, delivery and attempt
 -- tables from the schema (which keeps the snapshot in sync); recreate them, still empty, identically
 -- but partitioned by UTC day of the message's creation. There is no default partition: expired days
 -- are detached concurrently (Postgres refuses that while a default partition exists) and dropped by

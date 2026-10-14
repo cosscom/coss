@@ -146,6 +146,7 @@ const loops = startJobs({
     onFinished: (finished) => recordHookDeliveryOutcomes(finished),
   },
   logRetentionDays: env.LOG_RETENTION_DAYS,
+  ipinfoToken: env.IPINFO_TOKEN ?? null,
   billing: {
     providers: billing.providers,
     defaultProvider: billing.defaultProvider,

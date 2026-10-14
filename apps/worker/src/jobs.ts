@@ -42,6 +42,7 @@ import {
   runDueReputationNotifications,
 } from "@coss/reputation";
 import { RETENTION_DAYS } from "@coss/retention";
+import { refreshDueDatasets } from "@coss/risk";
 import { contentScreeningCheck } from "@coss/screening";
 import { runDueOrganizationDeletions } from "@coss/tenancy/deletion";
 import {
@@ -85,6 +86,8 @@ export type WorkerDeps = {
   hooks: HookDeliveryDeps;
   /** How long environment logs are kept (`LOG_RETENTION_DAYS`). */
   logRetentionDays: number;
+  /** Downloads IPinfo Lite for risk's ASN and country signals (`IPINFO_TOKEN`); `null`: skipped. */
+  ipinfoToken: string | null;
   /** Sends account emails (verification, password resets, invitations); `null`: held. */
   authEmails: AuthEmailDeps | null;
   /** Emails owners and admins about warnings and suspensions; `null`: held until configured. */
@@ -129,6 +132,7 @@ export const WORKER_LOOP_NAMES = [
   "unclaimed",
   "retention",
   "partitions",
+  "risk-datasets",
   "billing-periods",
   "billing-sync",
   "billing-collection",
@@ -245,6 +249,25 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       name: "retention",
       intervalMs: 10 * 60_000,
       run: () => runRetention({ limit: RETENTION_BATCH, signal: deps.signal }),
+    }),
+    start({
+      // Risk's IP datasets (Tor exits, cloud ranges, IPinfo Lite), each on its own schedule; the
+      // API reloads changed ones. A failed download keeps the stored copy.
+      name: "risk-datasets",
+      intervalMs: 10 * 60_000,
+      run: async () => {
+        const results = await refreshDueDatasets({ ipinfoToken: deps.ipinfoToken ?? undefined });
+        for (const result of results) {
+          if (result.status === "updated")
+            console.info(`[worker:risk-datasets] updated ${result.name}`);
+          if (result.status === "failed") {
+            console.error(
+              `[worker:risk-datasets] ${result.name}:`,
+              new Error(result.error ?? "refresh failed"),
+            );
+          }
+        }
+      },
     }),
     start({
       // Partitioned tables (environment logs, Hooks messages): a week of daily partitions ahead,

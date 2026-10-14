@@ -5,8 +5,9 @@ import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
 import {
   IDEMPOTENCY_KEY_TTL_MS,
-  IdempotencyError,
-  withIdempotencyKey as withSharedIdempotencyKey,
+  type IdempotencyErrors,
+  isReplayOf,
+  withIdempotencyKey,
 } from "@coss/db/idempotency";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
 import { and, asc, eq, inArray, isNull, lte, not, notExists } from "drizzle-orm";
@@ -119,9 +120,17 @@ const DISPATCH_DUE_LIMIT = 50;
 // At most five attachment payloads (up to 25 MB each) in memory at once.
 const DISPATCH_DUE_CONCURRENCY = 5;
 
-/** An idempotency key can be reused for a different request once its email is this old. */
 export { IDEMPOTENCY_KEY_TTL_MS };
 
+const IDEMPOTENCY_ERRORS: IdempotencyErrors = {
+  inProgress: () =>
+    new EmailError("request_in_progress", "This idempotency key is busy. Retry shortly."),
+  reused: () =>
+    new EmailError(
+      "idempotency_key_reused",
+      "This idempotency key was already used with a different request body.",
+    ),
+};
 const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
 const {
@@ -902,6 +911,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const { row, replayed } = await withIdempotencyKey({
       requestHash,
       retentionMs,
+      errors: IDEMPOTENCY_ERRORS,
       insert: insertEmail,
       existing: async () => {
         const [existing] = await db
@@ -1001,6 +1011,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
 
     const { row, replayed } = await withIdempotencyKey({
       requestHash,
+      errors: IDEMPOTENCY_ERRORS,
       insert: insertBatch,
       existing: async () => {
         const [existing] = await db
@@ -1077,26 +1088,6 @@ function sameBatchKey(environment: SendEnvironment, idempotencyKey: string) {
     eq(emailBatch.environmentId, environment.environmentId),
     eq(emailBatch.idempotencyKey, idempotencyKey),
   );
-}
-
-function isReplayOf(
-  existing: { createdAt: Date; requestHash: string | null },
-  requestHash: string | null,
-  retentionMs = IDEMPOTENCY_KEY_TTL_MS,
-): boolean {
-  return (
-    existing.requestHash === requestHash && Date.now() - existing.createdAt.getTime() <= retentionMs
-  );
-}
-
-/** `withIdempotencyKey`, failing with this package's own error class (its codes are the same). */
-function withIdempotencyKey<Row extends { createdAt: Date; requestHash: string | null }>(
-  op: Parameters<typeof withSharedIdempotencyKey<Row>>[0],
-): Promise<{ row: Row; replayed: boolean }> {
-  return withSharedIdempotencyKey(op).catch((error: unknown) => {
-    if (error instanceof IdempotencyError) throw new EmailError(error.code, error.message);
-    throw error;
-  });
 }
 
 /** A batch with its emails in request order. */

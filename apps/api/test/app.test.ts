@@ -196,6 +196,12 @@ describe("GET /openapi.json", () => {
       "/v1/logs",
       "/v1/logs/{id}",
       "/v1/reputation",
+      "/v1/risk/assessments",
+      "/v1/risk/assessments/{id}",
+      "/v1/risk/assessments/{id}/feedback",
+      "/v1/risk/list_entries",
+      "/v1/risk/list_entries/{id}",
+      "/v1/risk/users/{user_id}",
       "/v1/suppressions",
       "/v1/suppressions/check",
       "/v1/suppressions/export",
@@ -358,6 +364,7 @@ describe("GET /openapi.json", () => {
             String(route).includes("domains") ||
             String(route).includes("webhook") ||
             String(route).includes("log_drains") ||
+            String(route).includes("/risk/") ||
             String(route).includes("tracking_settings"),
         ),
     ).toEqual([
@@ -390,6 +397,15 @@ describe("GET /openapi.json", () => {
       ["delete /v1/log_drains/{id}", "deleteLogDrain"],
       ["get /v1/log_drains/{id}/batches", "listLogDrainBatches"],
       ["get /v1/log_drains/{id}/batches/{batch_id}", "getLogDrainBatch"],
+      ["post /v1/risk/assessments", "createRiskAssessment"],
+      ["get /v1/risk/assessments", "listRiskAssessments"],
+      ["get /v1/risk/assessments/{id}", "getRiskAssessment"],
+      ["post /v1/risk/assessments/{id}/feedback", "createRiskFeedback"],
+      ["post /v1/risk/list_entries", "createRiskListEntry"],
+      ["get /v1/risk/list_entries", "listRiskListEntries"],
+      ["get /v1/risk/list_entries/{id}", "getRiskListEntry"],
+      ["delete /v1/risk/list_entries/{id}", "deleteRiskListEntry"],
+      ["delete /v1/risk/users/{user_id}", "forgetRiskUser"],
     ]);
     expect(doc.components.securitySchemes.bearerAuth).toMatchObject({
       type: "http",
@@ -415,6 +431,14 @@ describe("GET /openapi.json", () => {
         "LogList",
         "AuditEvent",
         "AuditEventList",
+        "CreateRiskAssessmentRequest",
+        "RiskAssessment",
+        "RiskAssessmentList",
+        "RiskReason",
+        "CreateRiskFeedbackRequest",
+        "CreateRiskListEntryRequest",
+        "RiskListEntry",
+        "RiskListEntryList",
         "ImportSuppressionsRequest",
         "SuppressionImport",
         "CreateDomainRequest",

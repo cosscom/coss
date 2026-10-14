@@ -1,8 +1,8 @@
 import { cn } from "@coss/ui/lib/utils";
 import type * as PageTree from "fumadocs-core/page-tree";
 import type { ReactNode } from "react";
+import { SITE_SHELL_ID } from "@/lib/nav";
 import type { NavItem } from "@/lib/site";
-import type { GitHubRepo } from "./github-link";
 import { SiteHeader } from "./site-header";
 
 /**
@@ -14,7 +14,6 @@ export function SiteShell({
   items,
   tree,
   searchApi,
-  github,
   className,
   children,
 }: {
@@ -22,13 +21,12 @@ export function SiteShell({
   /** The docs the menus list and the ⌘K menu searches (coss's docs unless given). */
   tree?: PageTree.Root;
   searchApi?: string;
-  /** The repository of the GitHub link and its stars (coss's unless given). */
-  github?: GitHubRepo;
   className?: string;
   children: ReactNode;
 }) {
   return (
     <div
+      id={SITE_SHELL_ID}
       className={cn(
         "relative isolate flex min-h-svh flex-col overflow-clip [--header-height:4rem]",
         className,
@@ -42,7 +40,7 @@ export function SiteShell({
         aria-hidden="true"
         className="container pointer-events-none fixed inset-x-0 top-0 z-45 h-(--header-height) before:absolute before:top-[calc(var(--header-height)-4.5px)] before:-left-[11.5px] before:z-1 before:-ml-1 before:size-2 before:rounded-[2px] before:border before:border-border before:bg-popover before:bg-clip-padding before:shadow-xs/5 after:absolute after:top-[calc(var(--header-height)-4.5px)] after:-right-[11.5px] after:z-1 after:-mr-1 after:size-2 after:rounded-[2px] after:border after:border-border after:bg-background after:bg-clip-padding after:shadow-xs/5 dark:after:bg-clip-border dark:before:bg-clip-border"
       />
-      <SiteHeader github={github} items={items} searchApi={searchApi} tree={tree} />
+      <SiteHeader items={items} searchApi={searchApi} tree={tree} />
       {children}
     </div>
   );

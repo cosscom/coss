@@ -22,6 +22,12 @@ export type {
 export type { LogDrainBatchesResource, LogDrainsResource } from "./resources/log-drains.ts";
 export type { LogsResource } from "./resources/logs.ts";
 export type { ReputationResource } from "./resources/reputation.ts";
+export type {
+  RiskAssessmentsResource,
+  RiskListsResource,
+  RiskResource,
+  RiskUsersResource,
+} from "./resources/risk.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
 export type { TrackingResource } from "./resources/tracking.ts";
 export type { TrackingDomainsResource } from "./resources/tracking-domains.ts";
@@ -129,6 +135,28 @@ export type {
   ReputationStatus,
 } from "./types/reputation.ts";
 export type {
+  AssessRiskParams,
+  CreateRiskListEntryParams,
+  DeletedRiskListEntry,
+  ForgottenRiskUser,
+  ListRiskAssessmentsParams,
+  ListRiskListEntriesParams,
+  RiskAssessment,
+  RiskDecision,
+  RiskDegradedSignal,
+  RiskEmailSignals,
+  RiskEvent,
+  RiskFeedbackParams,
+  RiskIpSignals,
+  RiskList,
+  RiskListEntry,
+  RiskListEntryType,
+  RiskListEntryValue,
+  RiskOutcome,
+  RiskReason,
+  RiskReasonCode,
+} from "./types/risk.ts";
+export type {
   CheckSuppressionParams,
   CreateSuppressionParams,
   DeletedSuppression,
@@ -158,6 +186,9 @@ export type {
   HookEndpointWebhookEvent,
   HookEndpointWebhookEventData,
   HookOperationalEventType,
+  RiskEventType,
+  RiskWebhookEvent,
+  RiskWebhookEventData,
   WebhookEvent,
 } from "./types/webhook.ts";
 export type {

@@ -4,6 +4,7 @@ import { renderBillingComponents } from "./billing-text";
 import { docs } from "./collections";
 import { openapi } from "./openapi";
 import { renderRetentionComponents } from "./retention-text";
+import { renderRiskComponents } from "./risk-text";
 import { DOCS_ROUTE } from "./site";
 
 /**
@@ -50,7 +51,7 @@ export async function pageMarkdown(page: DocsPage): Promise<string> {
     return [heading, page.data.description, ...text].filter(Boolean).join("\n\n");
   }
   const body = await page.data.getText("processed");
-  return `${heading}\n\n${renderBillingComponents(renderRetentionComponents(body))}`;
+  return `${heading}\n\n${renderRiskComponents(renderBillingComponents(renderRetentionComponents(body)))}`;
 }
 
 /** /llms.txt and /llms-full.txt. */

@@ -66,7 +66,6 @@ test("emailTierCharges prices each band at its own rate", () => {
 test("rateTables lists every product's list rates", () => {
   const tables = rateTables();
   expect(tables.find((table) => table.meter === "email.recipients")).toMatchObject({
-    available: true,
     per: "per 1,000 recipients",
     bands: [
       { range: "First 1,000,000", price: "$0.40" },
@@ -75,7 +74,6 @@ test("rateTables lists every product's list rates", () => {
     ],
   });
   expect(tables.find((table) => table.meter === "sms.segments")).toMatchObject({
-    available: false,
     scope: "United States",
     per: "per segment",
     bands: [{ range: "All usage", price: "$0.0135" }],

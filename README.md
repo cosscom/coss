@@ -165,7 +165,7 @@ resets) are printed to the dashboard's server console in development.
 | `bun run build` | Build dashboard + site (standalone servers) + SDK |
 | `bun run db:generate` / `db:migrate` / `db:studio` | Drizzle migrations |
 | `bun run auth:generate` | Regenerate Better Auth tables after changing auth plugins (then `db:generate` + `db:migrate`) |
-| `bun run auth:update-disposable` | Refresh the list of disposable email domains refused at sign-up |
+| `bun run signals:update-disposable` | Refresh the list of disposable email domains (refused at sign-up, flagged by risk assessments) |
 | `bun run ses:bootstrap` | Create/update the shared AWS resources for `EMAIL_PROVIDER=ses` (see below) |
 | `bun run valkey:bootstrap` | Create/update the ElastiCache Serverless for Valkey cache for rate limits (see below) |
 | `bun run ratelimit:set --org <slug> [--bucket … --limit … \| --reset]` | Show or change an organization's rate limits |
@@ -503,7 +503,9 @@ Cloudflare DNS (coss.com zone, DNS only)
 One Secrets Manager secret per stage, `coss/production` (JSON), injected through each task definition's `secrets`
 (one key per `secret` variable of `infra/aws/services.ts`): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `VALKEY_URL`,
 `WEBHOOK_SECRETS_KEY`, `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`, `TURNSTILE_SECRET_KEY`, `CLOUDFLARE_API_TOKEN`,
-`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AI_GATEWAY_API_KEY`. Terraform creates only the container; values are
+`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AI_GATEWAY_API_KEY`, `RISK_HASH_KEY` (changing it resets what
+risk assessments remember) and `IPINFO_TOKEN` (optional: a free IPinfo account's token for risk's ASN and country
+data). Terraform creates only the container; values are
 written with `infra/terraform/scripts/put-secret.sh NAME --generate | --clipboard | --stdin`, which never prints them
 (losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable, see
 [Rotating `WEBHOOK_SECRETS_KEY`](#rotating-webhook_secrets_key) to change it). Tasks read secrets when they start:

@@ -248,6 +248,15 @@ const webhookKey: EnvVar = {
   description: "Encrypts webhook signing secrets. Same value for web, api and worker.",
 };
 
+const riskHashKey: EnvVar = {
+  name: "RISK_HASH_KEY",
+  kind: "secret",
+  required: true,
+  value: "openssl rand -base64 32 (one per stage; changing it resets what risk remembers)",
+  description:
+    "Keys the hashes behind risk's velocity, duplicate detection and fraud memory. Same value for web and api.",
+};
+
 const auth: EnvVar[] = [
   {
     name: "BETTER_AUTH_SECRET",
@@ -359,6 +368,7 @@ export const SERVICES: Service[] = [
       ...email,
       webhookKey,
       portalPublicUrl,
+      riskHashKey,
       notificationsEnvironment,
       billingProvider,
       stripeSecretKey,
@@ -463,6 +473,7 @@ export const SERVICES: Service[] = [
       trackingPublicUrl,
       webhookKey,
       portalPublicUrl,
+      riskHashKey,
       ...sentry("api"),
       sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
@@ -517,6 +528,13 @@ export const SERVICES: Service[] = [
       stripeSecretKey,
       // Hooks delivery attempts are rate limited per endpoint and destination host.
       ...workerRateLimits,
+      {
+        name: "IPINFO_TOKEN",
+        kind: "secret",
+        required: false,
+        description:
+          "IPinfo Lite download token (free account): ASN and country signals for risk assessments. Unset: those signals are missing.",
+      },
       {
         name: "BETTER_AUTH_URL",
         kind: "plain",

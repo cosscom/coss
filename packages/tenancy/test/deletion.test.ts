@@ -115,6 +115,34 @@ async function seedOrganizationData(tenant: TestTenant) {
     verdict: "clean",
     latencyMs: 1,
   });
+  const [assessment] = await db
+    .insert(schema.riskAssessment)
+    .values({ ...scope, event: "signup", decision: "review", score: 0.5, emailHash: "h" })
+    .returning({ id: schema.riskAssessment.id });
+  await db.insert(schema.riskFeedback).values({
+    organizationId,
+    assessmentId: assessment?.id ?? "",
+    outcome: "fraud",
+    source: "api",
+  });
+  await db.insert(schema.riskIdentity).values({
+    organizationId,
+    environmentId: environment.id,
+    kind: "mailbox",
+    valueHash: "h",
+    userId: "u1",
+    assessmentId: assessment?.id ?? "",
+  });
+  await db.insert(schema.riskReport).values({
+    organizationId,
+    environmentId: environment.id,
+    kind: "mailbox",
+    valueHash: "h",
+    assessmentId: assessment?.id ?? "",
+  });
+  await db
+    .insert(schema.riskListEntry)
+    .values({ ...scope, list: "block", type: "user", value: "u1" });
   await db.insert(schema.domain).values({
     organizationId,
     name: `d-${uniqueSuffix()}.test`,
@@ -271,6 +299,11 @@ describe("runDueOrganizationDeletions", () => {
       schema.domain,
       schema.logEntry,
       schema.orgAuditEvent,
+      schema.riskAssessment,
+      schema.riskFeedback,
+      schema.riskIdentity,
+      schema.riskReport,
+      schema.riskListEntry,
     ]) {
       const rows = await db
         .select({ id: table.id })

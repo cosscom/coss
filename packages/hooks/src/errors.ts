@@ -3,12 +3,14 @@ export type HookErrorCode =
   | "application_not_found"
   | "endpoint_disabled"
   | "event_type_exists"
+  | "idempotency_key_reused"
   | "invalid_event_type"
   | "invalid_origin"
   | "invalid_secret"
   | "invalid_url"
   | "not_found"
   | "payload_too_large"
+  | "request_in_progress"
   | "too_many_applications"
   | "too_many_endpoints"
   | "too_many_event_types"
@@ -20,12 +22,14 @@ const STATUS: Record<HookErrorCode, number> = {
   application_not_found: 404,
   endpoint_disabled: 422,
   event_type_exists: 422,
+  idempotency_key_reused: 422,
   invalid_event_type: 422,
   invalid_origin: 422,
   invalid_secret: 422,
   invalid_url: 422,
   not_found: 404,
   payload_too_large: 422,
+  request_in_progress: 409,
   too_many_applications: 422,
   too_many_endpoints: 422,
   too_many_event_types: 422,

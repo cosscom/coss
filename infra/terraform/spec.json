@@ -146,6 +146,13 @@
           "description": "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed."
         },
         {
+          "name": "RISK_HASH_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage; changing it resets what risk remembers)",
+          "description": "Keys the hashes behind risk's velocity, duplicate detection and fraud memory. Same value for web and api."
+        },
+        {
           "name": "NOTIFICATIONS_ENVIRONMENT_ID",
           "kind": "plain",
           "required": false,
@@ -453,6 +460,13 @@
           "description": "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed."
         },
         {
+          "name": "RISK_HASH_KEY",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage; changing it resets what risk remembers)",
+          "description": "Keys the hashes behind risk's velocity, duplicate detection and fraud memory. Same value for web and api."
+        },
+        {
           "name": "SENTRY_DSN",
           "kind": "plain",
           "required": false,
@@ -681,6 +695,12 @@
           "kind": "plain",
           "required": false,
           "description": "Unused by the worker (it serves no requests)."
+        },
+        {
+          "name": "IPINFO_TOKEN",
+          "kind": "secret",
+          "required": false,
+          "description": "IPinfo Lite download token (free account): ASN and country signals for risk assessments. Unset: those signals are missing."
         },
         {
           "name": "BETTER_AUTH_URL",

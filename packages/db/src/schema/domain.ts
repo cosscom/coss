@@ -3,9 +3,11 @@ import {
   bigint,
   boolean,
   check,
+  cidr,
   customType,
   foreignKey,
   index,
+  inet,
   integer,
   json,
   jsonb,
@@ -1132,7 +1134,7 @@ export const scimGroupRole = pgTable(
   (t) => [unique("scim_group_role_organization_group_unique").on(t.organizationId, t.groupName)],
 );
 
-export const logSource = pgEnum("log_source", ["api", "email", "webhook"]);
+export const logSource = pgEnum("log_source", ["api", "email", "webhook", "risk"]);
 export type LogSource = (typeof logSource.enumValues)[number];
 
 export const logLevel = pgEnum("log_level", ["info", "warning", "error"]);
@@ -1250,7 +1252,13 @@ export const orgAuditEvent = pgTable(
 );
 
 /** What a log drain forwards: the environment log's sources, plus the environment's audit events. */
-export const logDrainSource = pgEnum("log_drain_source", ["api", "email", "webhook", "audit"]);
+export const logDrainSource = pgEnum("log_drain_source", [
+  "api",
+  "email",
+  "webhook",
+  "risk",
+  "audit",
+]);
 export type LogDrainSource = (typeof logDrainSource.enumValues)[number];
 
 /**
@@ -1748,7 +1756,7 @@ export const hookEndpointRecovery = pgTable(
 
 /*
  * Messages, deliveries and attempts are partitioned by UTC day of the message's creation (migration
- * 0047), without a default partition, so whole days are dropped together after retention. Nothing
+ * 0049), without a default partition, so whole days are dropped together after retention. Nothing
  * holds an FK into them, and they hold none at all: deleting an application or endpoint must never
  * cascade into millions of rows, and dropping a partition that references `environment` would take
  * an ACCESS EXCLUSIVE lock on it (organization deletion deletes them explicitly); ids carry the message's timestamp, so an id alone finds its
@@ -1878,3 +1886,241 @@ export const hookDeliveryRollup = pgTable(
     index("hook_delivery_rollup_hour_idx").on(t.hour),
   ],
 );
+
+// ---------------------------------------------------------------------------------------------
+// Risk (`@coss/risk`): assessments of customers' sign-ups, logins… and what each environment
+// remembers about them. Identifiers in memory tables are HMACs (`RISK_HASH_KEY`), never raw.
+
+export const riskEvent = pgEnum("risk_event", ["signup", "login", "message", "checkout", "custom"]);
+export const riskDecision = pgEnum("risk_decision", ["allow", "review", "block"]);
+export const riskOutcome = pgEnum("risk_outcome", ["legitimate", "fraud", "abuse"]);
+export const riskReviewStatus = pgEnum("risk_review_status", ["open", "resolved"]);
+export const riskFeedbackSource = pgEnum("risk_feedback_source", ["api", "dashboard"]);
+export const riskIdentityKind = pgEnum("risk_identity_kind", ["mailbox"]);
+export const riskReportKind = pgEnum("risk_report_kind", ["mailbox", "ip", "subnet", "user"]);
+export const riskList = pgEnum("risk_list", ["allow", "block"]);
+export const riskListEntryType = pgEnum("risk_list_entry_type", [
+  "email",
+  "domain",
+  "ip",
+  "asn",
+  "country",
+  "user",
+]);
+
+/** A reason in an assessment (`REASONS` in `@coss/risk/schemas` documents the codes). */
+export type RiskReasonRow = { code: string } & Record<string, unknown>;
+
+/**
+ * One `POST /v1/risk/assessments`. `email`, `ip` and `user_agent` are personal data, cleared after
+ * `RETENTION_DAYS.riskPersonalData` (`personal_data_purged_at`); the hashes stay so feedback can
+ * still teach the environment's memory. `signals` holds only non-identifying values.
+ */
+export const riskAssessment = pgTable(
+  "risk_assessment",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.riskAssessment)),
+    sequence: bigint("sequence", { mode: "number" }).generatedAlwaysAsIdentity(),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    event: riskEvent("event").notNull(),
+    // The customer's name for a `custom` event.
+    eventName: text("event_name"),
+    // The customer's id for their user (not personal data on its own; cleared by "forget user").
+    userId: text("user_id"),
+    email: text("email"),
+    ip: inet("ip"),
+    userAgent: text("user_agent"),
+    emailHash: text("email_hash"),
+    ipHash: text("ip_hash"),
+    subnetHash: text("subnet_hash"),
+    decision: riskDecision("decision").notNull(),
+    score: real("score").notNull(),
+    reasons: jsonb("reasons").$type<RiskReasonRow[]>().notNull().default([]),
+    signals: jsonb("signals").$type<Record<string, unknown>>().notNull().default({}),
+    // Signal groups that were unavailable (`velocity`, `ip`, `email_dns`).
+    degraded: text("degraded").array().notNull().default(sql`'{}'::text[]`),
+    outcome: riskOutcome("outcome"),
+    outcomeAt: timestamp("outcome_at", { withTimezone: true }),
+    // Set for `review` decisions; resolved by feedback.
+    reviewStatus: riskReviewStatus("review_status"),
+    idempotencyKey: text("idempotency_key"),
+    requestHash: text("request_hash"),
+    personalDataPurgedAt: timestamp("personal_data_purged_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "risk_assessment_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("risk_assessment_id_organization_unique").on(t.id, t.organizationId),
+    // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
+    unique("risk_assessment_environment_idempotency_key_unique").on(
+      t.environmentId,
+      t.idempotencyKey,
+    ),
+    index("risk_assessment_environment_sequence_idx").on(
+      t.environmentId,
+      t.createdAt.desc(),
+      t.sequence.desc(),
+    ),
+    index("risk_assessment_environment_user_idx")
+      .on(t.environmentId, t.userId)
+      .where(sql`${t.userId} is not null`),
+    index("risk_assessment_open_review_idx")
+      .on(t.environmentId, t.createdAt.desc(), t.sequence.desc())
+      .where(sql`${t.reviewStatus} = 'open'`),
+    // The worker's retention purges (oldest first, across organizations).
+    index("risk_assessment_created_at_idx").on(t.createdAt),
+    index("risk_assessment_personal_data_idx")
+      .on(t.createdAt)
+      .where(sql`${t.personalDataPurgedAt} is null`),
+  ],
+);
+
+/** Every outcome reported for an assessment (API or dashboard); the latest is on the assessment. */
+export const riskFeedback = pgTable(
+  "risk_feedback",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.riskFeedback)),
+    organizationId: text("organization_id").notNull(),
+    assessmentId: text("assessment_id").notNull(),
+    outcome: riskOutcome("outcome").notNull(),
+    source: riskFeedbackSource("source").notNull(),
+    // The API key id or the dashboard user id.
+    actorId: text("actor_id"),
+    note: text("note"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "risk_feedback_assessment_fk",
+      columns: [t.assessmentId, t.organizationId],
+      foreignColumns: [riskAssessment.id, riskAssessment.organizationId],
+    }).onDelete("cascade"),
+    index("risk_feedback_assessment_idx").on(t.assessmentId, t.createdAt),
+  ],
+);
+
+/**
+ * Which of the customer's users hold a mailbox (`canonicalEmail`), for "this mailbox already has
+ * an account". `user_id` is null when the sign-up was assessed before the user had an id.
+ */
+export const riskIdentity = pgTable(
+  "risk_identity",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.riskIdentity)),
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    kind: riskIdentityKind("kind").notNull(),
+    valueHash: text("value_hash").notNull(),
+    userId: text("user_id"),
+    // The first assessment that saw it. No FK: memory outlives assessments.
+    assessmentId: text("assessment_id").notNull(),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    foreignKey({
+      name: "risk_identity_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("risk_identity_value_user_unique")
+      .on(t.environmentId, t.kind, t.valueHash, t.userId)
+      .nullsNotDistinct(),
+    index("risk_identity_environment_user_idx")
+      .on(t.environmentId, t.userId)
+      .where(sql`${t.userId} is not null`),
+    index("risk_identity_last_seen_idx").on(t.lastSeenAt),
+  ],
+);
+
+/** Identifiers of assessments reported as fraud or abuse: "seen in fraud before" on later ones. */
+export const riskReport = pgTable(
+  "risk_report",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.riskReport)),
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    kind: riskReportKind("kind").notNull(),
+    valueHash: text("value_hash").notNull(),
+    // Independent evidence per assessment. No FK: memory outlives assessments.
+    assessmentId: text("assessment_id").notNull(),
+    reportedAt: timestamp("reported_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    foreignKey({
+      name: "risk_report_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("risk_report_value_unique").on(t.environmentId, t.kind, t.valueHash, t.assessmentId),
+    index("risk_report_assessment_idx").on(t.environmentId, t.assessmentId),
+    index("risk_report_reported_at_idx").on(t.reportedAt),
+  ],
+);
+
+/** An environment's allow and block lists. `value` is normalized; `network` is set for IPs. */
+export const riskListEntry = pgTable(
+  "risk_list_entry",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.riskListEntry)),
+    sequence: bigint("sequence", { mode: "number" }).generatedAlwaysAsIdentity(),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    list: riskList("list").notNull(),
+    type: riskListEntryType("type").notNull(),
+    value: text("value").notNull(),
+    network: cidr("network"),
+    note: text("note"),
+    // The entry stops matching at this time (kept until deleted).
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "risk_list_entry_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("risk_list_entry_value_unique").on(t.environmentId, t.list, t.type, t.value),
+    index("risk_list_entry_environment_sequence_idx").on(
+      t.environmentId,
+      t.createdAt.desc(),
+      t.sequence.desc(),
+    ),
+    index("risk_list_entry_network_idx")
+      .using("gist", t.network.op("inet_ops"))
+      .where(sql`${t.network} is not null`),
+  ],
+);
+
+/**
+ * Platform data (not tenant data): the latest copy of each public IP feed behind risk's IP
+ * signals, refreshed by the worker and loaded into memory by the API. `content` is gzipped.
+ */
+export const riskDataset = pgTable("risk_dataset", {
+  name: text("name").primaryKey(),
+  sha256: text("sha256").notNull(),
+  // Ranges or addresses in it (for the shrink guard and the admin view).
+  entries: integer("entries").notNull(),
+  content: bytea("content").notNull(),
+  // When the content last changed, and when the feed was last fetched successfully.
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  checkedAt: timestamp("checked_at", { withTimezone: true }).notNull().defaultNow(),
+});

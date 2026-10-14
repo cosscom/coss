@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
     "@coss/auth",
     "@coss/versioning",
     "@coss/retention",
+    "@coss/risk",
     "@coss/billing",
     "@coss/observability",
     "kloq",

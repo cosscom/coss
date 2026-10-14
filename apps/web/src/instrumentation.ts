@@ -24,6 +24,10 @@ export async function register() {
     if (production && !process.env.SKIP_ENV_VALIDATION && !env.TURNSTILE_SECRET_KEY) {
       throw new Error("TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY are required in production.");
     }
+    // Must match the API's, or feedback from the dashboard would teach a different memory.
+    if (production && !process.env.SKIP_ENV_VALIDATION && !env.RISK_HASH_KEY) {
+      throw new Error("RISK_HASH_KEY is required in production.");
+    }
     // Checkout and the portal need the secret key; Stripe's webhooks need the signing secret.
     if (
       env.BILLING_PROVIDER === "stripe" &&
