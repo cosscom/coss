@@ -8,6 +8,9 @@ export function SearchForm(props: {
   action: string;
   query: string;
   placeholder: string;
+  /** The query parameter (default `q`) and input type (default `search`). */
+  name?: string;
+  type?: "search" | "email";
   /** Other filters to keep, as hidden fields (empty values are left out). */
   keep?: Record<string, string | undefined>;
   className?: string;
@@ -24,9 +27,9 @@ export function SearchForm(props: {
         <InputGroupInput
           aria-label="Search"
           defaultValue={props.query}
-          name="q"
+          name={props.name ?? "q"}
           placeholder={props.placeholder}
-          type="search"
+          type={props.type ?? "search"}
         />
       </InputGroup>
       <Button type="submit" variant="outline">

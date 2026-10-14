@@ -1,7 +1,6 @@
 import { logFacets, logHistogram, queryLogs } from "@coss/logs";
 import { listEnvironmentApiKeys } from "@coss/tenancy";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ModeBadge } from "@/components/email-badges";
 import { LogExplorer } from "@/components/logs/log-explorer";
 import { PageHeader } from "@/components/page-header";
@@ -31,21 +30,13 @@ export default async function LogsPage({
   const selected = typeof search.log === "string" ? search.log : null;
 
   return (
-    // Wider than the dashboard's column: log lines need the room.
-    <div className="relative left-1/2 flex w-[min(100vw-3rem,96rem)] -translate-x-1/2 flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Link className="text-muted-foreground text-sm hover:text-foreground" href={envPath}>
-          ← {project.name} · {environment.name}
-        </Link>
-        <PageHeader
-          description="Every API request made with this environment's keys, every email event and every webhook delivery attempt. Kept for 30 days."
-          title={
-            <span className="flex items-center gap-2">
-              Logs <ModeBadge mode={environment.mode} />
-            </span>
-          }
-        />
-      </div>
+    // `data-page-width="full"` lifts the shell's column cap: log lines need the room.
+    <div className="flex flex-col gap-6" data-page-width="full">
+      <PageHeader
+        description="Every API request made with this environment's keys, every email event and every webhook delivery attempt. Kept for 30 days."
+        meta={<ModeBadge mode={environment.mode} />}
+        title="Logs"
+      />
       <LogExplorer
         apiKeyNames={apiKeyNames}
         envPath={envPath}

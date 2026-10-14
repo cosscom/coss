@@ -1,14 +1,6 @@
 import { getTrackingSettings } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
 import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardHeader,
-  CardPanel,
-  CardTitle,
-} from "@coss/ui/components/card";
-import {
   Table,
   TableBody,
   TableCell,
@@ -16,11 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { TagIcon } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ModeBadge, TrackingBadge } from "@/components/email-badges";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import {
@@ -45,7 +39,6 @@ export default async function TrackingPage({
     organizationId: organization.id,
     environmentId: environment.id,
   });
-  const base = `/${organization.slug}/projects/${project.slug}/${environment.slug}`;
   const target = {
     orgSlug: organization.slug,
     projectSlug: project.slug,
@@ -53,151 +46,155 @@ export default async function TrackingPage({
   };
   const canEdit = can({ environment: ["update"] });
 
+  const code = "font-mono text-[0.8125rem]";
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Link className="text-muted-foreground text-sm hover:text-foreground" href={base}>
-          ← {project.name} · {environment.name}
-        </Link>
-        <PageHeader
-          description={
-            <>
-              COSS can add an invisible image to HTML emails to record opens, and send links through
-              a redirect to record clicks. Each email&apos;s settings are fixed when it is sent: its
-              own <code>tracking</code> option wins, then the rule for its category, then this
-              environment&apos;s default.
-            </>
-          }
-          title={
-            <span className="flex items-center gap-2">
-              Open &amp; click tracking <ModeBadge mode={environment.mode} />
-            </span>
-          }
-        />
-      </div>
+      <PageHeader
+        description={
+          <>
+            COSS can add an invisible image to HTML emails to record opens, and send links through a
+            redirect to record clicks. Each email&apos;s settings are fixed when it is sent: its own{" "}
+            <code className={code}>tracking</code> option wins, then the rule for its category, then
+            this environment&apos;s default.
+          </>
+        }
+        meta={<ModeBadge mode={environment.mode} />}
+        title="Open & click tracking"
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Environment default</CardTitle>
-          <CardDescription>
-            Applies to emails without a category rule.{" "}
-            {settings.default
-              ? `Last changed ${formatDateTime(settings.default.updatedAt)}.`
-              : "Not set: tracking is off."}
-          </CardDescription>
-          {canEdit && settings.default ? (
-            <CardAction>
-              <DeleteTrackingRuleButton {...target} category={null} ruleId={settings.default.id} />
-            </CardAction>
-          ) : null}
-        </CardHeader>
-        <CardPanel>
-          <DefaultTrackingForm
-            {...target}
-            canEdit={canEdit}
-            clicks={settings.default?.clicks ?? false}
-            key={settings.default?.updatedAt.toISOString() ?? "unset"}
-            opens={settings.default?.opens ?? false}
-          />
-        </CardPanel>
-      </Card>
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        <div className="flex min-w-0 flex-col gap-6 lg:col-span-2">
+          <Panel
+            action={
+              canEdit && settings.default ? (
+                <DeleteTrackingRuleButton
+                  {...target}
+                  category={null}
+                  ruleId={settings.default.id}
+                />
+              ) : null
+            }
+            description={
+              <>
+                Applies to emails without a category rule.{" "}
+                {settings.default
+                  ? `Last changed ${formatDateTime(settings.default.updatedAt)}.`
+                  : "Not set: tracking is off."}
+              </>
+            }
+            title="Environment default"
+          >
+            <PanelBody>
+              <DefaultTrackingForm
+                {...target}
+                canEdit={canEdit}
+                clicks={settings.default?.clicks ?? false}
+                key={settings.default?.updatedAt.toISOString() ?? "unset"}
+                opens={settings.default?.opens ?? false}
+              />
+            </PanelBody>
+          </Panel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Category rules</CardTitle>
-          <CardDescription>
-            Override the default for emails sent with a <code>category</code>, e.g. track{" "}
-            <code>marketing</code> but never <code>password-reset</code>.
-          </CardDescription>
-          {canEdit ? (
-            <CardAction>
-              <CategoryRuleDialog {...target} trigger="add" />
-            </CardAction>
-          ) : null}
-        </CardHeader>
-        <CardPanel className="p-2">
-          {settings.categories.length === 0 ? (
-            <p className="p-4 text-muted-foreground text-sm">No category rules.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Opens</TableHead>
-                  <TableHead>Clicks</TableHead>
-                  <TableHead>Updated</TableHead>
-                  {canEdit ? <TableHead className="w-0" /> : null}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {settings.categories.map((rule) => (
-                  <TableRow key={rule.id}>
-                    <TableCell className="font-mono">{rule.category}</TableCell>
-                    <TableCell>
-                      <TrackingBadge on={rule.opens} />
-                    </TableCell>
-                    <TableCell>
-                      <TrackingBadge on={rule.clicks} />
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatDateTime(rule.updatedAt)}
-                    </TableCell>
-                    {canEdit ? (
-                      <TableCell>
-                        <span className="flex gap-2">
-                          <CategoryRuleDialog
-                            {...target}
-                            category={rule.category ?? ""}
-                            clicks={rule.clicks}
-                            opens={rule.opens}
-                            trigger="edit"
-                          />
-                          <DeleteTrackingRuleButton
-                            {...target}
-                            category={rule.category}
-                            ruleId={rule.id}
-                          />
-                        </span>
-                      </TableCell>
-                    ) : null}
+          <Panel
+            action={canEdit ? <CategoryRuleDialog {...target} trigger="add" /> : null}
+            description={
+              <>
+                Override the default for emails sent with a <code className={code}>category</code>,
+                e.g. track <code className={code}>marketing</code> but never{" "}
+                <code className={code}>password-reset</code>.
+              </>
+            }
+            title="Category rules"
+          >
+            {settings.categories.length === 0 ? (
+              <PanelBody flush>
+                <EmptyState
+                  compact
+                  description="Every category follows the environment default."
+                  icon={TagIcon}
+                  title="No category rules"
+                />
+              </PanelBody>
+            ) : (
+              <Table variant="card">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Opens</TableHead>
+                    <TableHead>Clicks</TableHead>
+                    <TableHead>Updated</TableHead>
+                    {canEdit ? <TableHead className="w-0" /> : null}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardPanel>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {settings.categories.map((rule) => (
+                    <TableRow key={rule.id}>
+                      <TableCell className="font-medium font-mono">{rule.category}</TableCell>
+                      <TableCell>
+                        <TrackingBadge on={rule.opens} />
+                      </TableCell>
+                      <TableCell>
+                        <TrackingBadge on={rule.clicks} />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatDateTime(rule.updatedAt)}
+                      </TableCell>
+                      {canEdit ? (
+                        <TableCell>
+                          <span className="flex justify-end gap-2">
+                            <CategoryRuleDialog
+                              {...target}
+                              category={rule.category ?? ""}
+                              clicks={rule.clicks}
+                              opens={rule.opens}
+                              trigger="edit"
+                            />
+                            <DeleteTrackingRuleButton
+                              {...target}
+                              category={rule.category}
+                              ruleId={rule.id}
+                            />
+                          </span>
+                        </TableCell>
+                      ) : null}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </Panel>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Good to know</CardTitle>
-        </CardHeader>
-        <CardPanel>
-          <ul className="list-disc space-y-1 pl-5 text-muted-foreground text-sm">
-            <li>Only HTML bodies are tracked; plain-text parts are sent unchanged.</li>
-            <li>
-              Add <code>data-coss-no-track</code> to a link to keep it as is. <code>mailto:</code>,{" "}
-              <code>tel:</code> and merge-tag links are never rewritten.
-            </li>
-            <li>
-              Opens and clicks are attributed to a recipient only when the email had a single one.
-            </li>
-            <li>
-              Links point at the default tracking host unless the sender&apos;s domain has an active
-              custom tracking domain (such as <code>links.acme.com</code>), set up on its page under
-              Domains.
-            </li>
-            <li>
-              Some mail clients preload images (inflating opens) and security scanners follow links
-              (inflating clicks). Use the counts as signals, not exact numbers.
-            </li>
-            <li>
-              Tracking pixels and rewritten links can affect deliverability and may need consent
-              under privacy laws in some regions.
-            </li>
-          </ul>
-        </CardPanel>
-      </Card>
+        <Panel title="Good to know">
+          <PanelBody>
+            <ul className="flex flex-col gap-2.5 text-muted-foreground text-sm [&>li]:relative [&>li]:ps-4 [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:content-['–']">
+              <li>Only HTML bodies are tracked; plain-text parts are sent unchanged.</li>
+              <li>
+                Add <code className={code}>data-coss-no-track</code> to a link to keep it as is.{" "}
+                <code className={code}>mailto:</code>, <code className={code}>tel:</code> and
+                merge-tag links are never rewritten.
+              </li>
+              <li>
+                Opens and clicks are attributed to a recipient only when the email had a single one.
+              </li>
+              <li>
+                Links point at the default tracking host unless the sender&apos;s domain has an
+                active custom tracking domain (such as <code className={code}>links.acme.com</code>
+                ), set up on its page under Domains.
+              </li>
+              <li>
+                Some mail clients preload images (inflating opens) and security scanners follow
+                links (inflating clicks). Use the counts as signals, not exact numbers.
+              </li>
+              <li>
+                Tracking pixels and rewritten links can affect deliverability and may need consent
+                under privacy laws in some regions.
+              </li>
+            </ul>
+          </PanelBody>
+        </Panel>
+      </div>
     </div>
   );
 }

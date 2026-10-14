@@ -2,7 +2,6 @@ import { type EmailEventOutput, getEmail, listEmailEvents, listEmailLinks } from
 import { getEnvironment } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
   TableBody,
@@ -11,10 +10,11 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { ActivityIcon, ScrollTextIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { ReactNode } from "react";
+import { CopyButton } from "@/components/copy-button";
 import {
   EmailEventBadge,
   EmailStatusBadge,
@@ -22,10 +22,15 @@ import {
   SandboxBadge,
   TrackingBadge,
 } from "@/components/email-badges";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
+import { SpecItem, SpecList } from "@/components/spec-list";
 import { formatBytes, formatDateTime } from "@/lib/format";
+import { environmentPath } from "@/lib/navigation";
 import { requireOrgMember } from "@/lib/session";
 import { CancelEmailButton } from "./cancel-email-button";
+import { type EmailTab, EmailTabs } from "./email-tabs";
 import { RescheduleEmailDialog } from "./reschedule-email-dialog";
 
 export const metadata: Metadata = { title: "Email" };
@@ -86,307 +91,387 @@ export default async function EmailPage({
   if (!email) notFound();
   const links = email.tracking.clicks ? trackedLinks : null;
   const { tracking } = email;
+  const base = environmentPath(organization.slug, project.slug, environment.slug);
+  const eventList = events?.events ?? [];
 
-  const rows: [string, ReactNode][] = [
-    ["ID", <code key="id">{email.id}</code>],
-    ["Status", <EmailStatusBadge key="status" status={email.status} />],
-    ["Mode", <SandboxBadge key="mode" sandbox={email.sandbox} />],
-    ...(email.batch_id
-      ? ([["Batch", <code key="batch">{email.batch_id}</code>]] as [string, ReactNode][])
+  const content =
+    email.html !== null || email.text !== null ? (
+      <>
+        {email.html !== null ? (
+          <Panel title="HTML">
+            <PanelBody className="p-2">
+              <iframe
+                className="h-[600px] w-full rounded-lg border bg-white"
+                referrerPolicy="no-referrer"
+                sandbox=""
+                srcDoc={PREVIEW_HEAD + email.html}
+                title="Email preview"
+              />
+            </PanelBody>
+          </Panel>
+        ) : null}
+        {email.text !== null ? (
+          <Panel title="Text">
+            <PanelBody>
+              <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-[0.8125rem] leading-relaxed">
+                {email.text}
+              </pre>
+            </PanelBody>
+          </Panel>
+        ) : null}
+      </>
+    ) : (
+      <Panel>
+        <PanelBody flush>
+          <EmptyState
+            compact
+            description="The content of internal emails is discarded once they leave the queue."
+            icon={ScrollTextIcon}
+            title="No content stored"
+          />
+        </PanelBody>
+      </Panel>
+    );
+
+  const timeline = (
+    <Panel description="Everything that happened to this email, oldest first." title="Events">
+      {eventList.length > 0 ? (
+        <PanelBody>
+          <ol className="relative flex flex-col gap-5 before:absolute before:top-2 before:bottom-2 before:left-[5px] before:w-px before:bg-border">
+            {eventList.map((event) => {
+              const detail = eventDetail(event);
+              return (
+                <li className="relative flex gap-4 ps-6" key={event.id}>
+                  <span
+                    aria-hidden
+                    className="absolute top-1.5 left-0 size-[11px] rounded-full border-2 border-background bg-muted-foreground/48 ring-1 ring-border"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <EmailEventBadge type={event.type} />
+                      <span className="break-all text-sm">
+                        {event.recipient ?? "All recipients"}
+                      </span>
+                      <span className="ms-auto whitespace-nowrap font-mono text-muted-foreground text-xs">
+                        {formatDateTime(event.occurred_at)}
+                      </span>
+                    </div>
+                    {detail ? (
+                      <p className="break-all text-muted-foreground text-sm">{detail}</p>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </PanelBody>
+      ) : (
+        <PanelBody flush>
+          <EmptyState
+            compact
+            description="Events appear as the provider reports them."
+            icon={ActivityIcon}
+            title="No events yet"
+          />
+        </PanelBody>
+      )}
+    </Panel>
+  );
+
+  const recipients = (
+    <Panel description="Delivery status of each distinct address." title="Recipients">
+      <Table variant="card">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Address</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Last event</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {email.recipients.map((recipient) => (
+            <TableRow key={recipient.address}>
+              <TableCell className="break-all font-medium">{recipient.address}</TableCell>
+              <TableCell className="text-muted-foreground">{recipient.type}</TableCell>
+              <TableCell>
+                <RecipientStatusBadge status={recipient.status} />
+              </TableCell>
+              <TableCell className="text-right text-muted-foreground">
+                {formatDateTime(recipient.last_event_at)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Panel>
+  );
+
+  const engagement = (
+    <>
+      <Panel
+        description="Opens and clicks, if tracking was on when the email was sent. Opens can be inflated by mail clients that preload images, clicks by link scanners."
+        title="Engagement"
+      >
+        <Table variant="card">
+          <TableHeader>
+            <TableRow>
+              <TableHead />
+              <TableHead>Tracking</TableHead>
+              <TableHead>Count</TableHead>
+              <TableHead>First</TableHead>
+              <TableHead>Last</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell className="font-medium">Opens</TableCell>
+              <TableCell>
+                <TrackingBadge on={tracking.opens} />
+              </TableCell>
+              <TableCell className="font-mono">
+                {tracking.opens ? tracking.open_count : "—"}
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {formatDateTime(tracking.first_opened_at)}
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {formatDateTime(tracking.last_opened_at)}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-medium">Clicks</TableCell>
+              <TableCell>
+                <TrackingBadge on={tracking.clicks} />
+              </TableCell>
+              <TableCell className="font-mono">
+                {tracking.clicks ? tracking.click_count : "—"}
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {formatDateTime(tracking.first_clicked_at)}
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {formatDateTime(tracking.last_clicked_at)}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </Panel>
+      {links && links.links.length > 0 ? (
+        <Panel title="Links">
+          <Table variant="card">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Link</TableHead>
+                <TableHead>Clicks</TableHead>
+                <TableHead className="text-right">Last click</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {links.links.map((link) => (
+                <TableRow key={link.id}>
+                  <TableCell className="max-w-120 whitespace-normal break-all font-mono text-xs">
+                    {link.url}
+                  </TableCell>
+                  <TableCell className="font-mono">{link.click_count}</TableCell>
+                  <TableCell className="text-right text-muted-foreground">
+                    {formatDateTime(link.last_clicked_at)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Panel>
+      ) : null}
+    </>
+  );
+
+  const attachments =
+    email.attachments.length > 0 ? (
+      <Panel
+        description="Only metadata is kept: COSS discards the content once the email is sent."
+        title="Attachments"
+      >
+        <Table variant="card">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Filename</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead className="text-right">Size</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {email.attachments.map((attachment) => (
+              <TableRow key={attachment.id}>
+                <TableCell className="break-all font-medium">
+                  <span className="flex flex-wrap items-center gap-2">
+                    {attachment.filename}
+                    {attachment.content_id !== null ? (
+                      <Badge variant="outline">inline · cid:{attachment.content_id}</Badge>
+                    ) : null}
+                  </span>
+                </TableCell>
+                <TableCell className="break-all font-mono text-muted-foreground text-xs">
+                  {attachment.content_type}
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-right font-mono text-xs">
+                  {formatBytes(attachment.size)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Panel>
+    ) : null;
+
+  const tabs: EmailTab[] = [
+    { value: "content", label: "Content", content },
+    {
+      value: "events",
+      label: (
+        <>
+          Events <span className="font-mono text-muted-foreground text-xs">{eventList.length}</span>
+        </>
+      ),
+      content: timeline,
+    },
+    {
+      value: "recipients",
+      label: (
+        <>
+          Recipients{" "}
+          <span className="font-mono text-muted-foreground text-xs">{email.recipients.length}</span>
+        </>
+      ),
+      content: recipients,
+    },
+    { value: "engagement", label: "Engagement", content: engagement },
+    ...(attachments
+      ? [
+          {
+            value: "attachments",
+            label: (
+              <>
+                Attachments{" "}
+                <span className="font-mono text-muted-foreground text-xs">
+                  {email.attachments.length}
+                </span>
+              </>
+            ),
+            content: attachments,
+          },
+        ]
       : []),
-    ["From", email.from],
-    ["To", list(email.to)],
-    ["Cc", list(email.cc)],
-    ["Bcc", list(email.bcc)],
-    ["Reply-To", list(email.reply_to)],
-    ["Created", formatDateTime(email.created_at)],
-    ...(email.scheduled_at
-      ? ([["Scheduled for", formatDateTime(email.scheduled_at)]] as [string, ReactNode][])
-      : []),
-    ["Sent", formatDateTime(email.sent_at)],
-    ["Category", email.category ?? "—"],
-    [
-      "Tags",
-      email.tags.length > 0 ? email.tags.map((t) => `${t.name}=${t.value}`).join(", ") : "—",
-    ],
-    [
-      "Headers",
-      Object.keys(email.headers).length > 0
-        ? Object.entries(email.headers)
-            .map(([name, value]) => `${name}: ${value}`)
-            .join("\n")
-        : "—",
-    ],
   ];
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Link
-          className="text-muted-foreground text-sm hover:text-foreground"
-          href={`/${organization.slug}/projects/${project.slug}/${environment.slug}`}
-        >
-          ← {project.name} · {environment.name}
-        </Link>
-        <PageHeader
-          actions={
-            <>
-              {can({ log: ["read"] }) ? (
-                <Button
-                  render={
-                    <Link
-                      href={`/${organization.slug}/projects/${project.slug}/${environment.slug}/logs?${new URLSearchParams({ q: `resource:${email.id}`, range: "30d" })}`}
-                    />
-                  }
-                  size="sm"
-                  variant="outline"
-                >
-                  View logs
-                </Button>
-              ) : null}
-              {email.status === "scheduled" && can({ email: ["send"] }) ? (
-                <div className="flex gap-2">
-                  {email.scheduled_at ? (
-                    <RescheduleEmailDialog
-                      emailId={email.id}
-                      envSlug={environment.slug}
-                      orgSlug={organization.slug}
-                      projectSlug={project.slug}
-                      scheduledAt={email.scheduled_at}
-                    />
-                  ) : null}
-                  <CancelEmailButton
+      <PageHeader
+        actions={
+          <>
+            {can({ log: ["read"] }) ? (
+              <Button
+                render={
+                  <Link
+                    href={`${base}/logs?${new URLSearchParams({ q: `resource:${email.id}`, range: "30d" })}`}
+                  />
+                }
+                size="sm"
+                variant="outline"
+              >
+                View logs
+              </Button>
+            ) : null}
+            {email.status === "scheduled" && can({ email: ["send"] }) ? (
+              <div className="flex gap-2">
+                {email.scheduled_at ? (
+                  <RescheduleEmailDialog
                     emailId={email.id}
                     envSlug={environment.slug}
                     orgSlug={organization.slug}
                     projectSlug={project.slug}
+                    scheduledAt={email.scheduled_at}
                   />
-                </div>
-              ) : null}
-            </>
-          }
-          title={email.subject}
-        />
+                ) : null}
+                <CancelEmailButton
+                  emailId={email.id}
+                  envSlug={environment.slug}
+                  orgSlug={organization.slug}
+                  projectSlug={project.slug}
+                />
+              </div>
+            ) : null}
+          </>
+        }
+        meta={
+          <>
+            <EmailStatusBadge status={email.status} />
+            <SandboxBadge sandbox={email.sandbox} />
+            <code className="font-mono text-xs">{email.id}</code>
+          </>
+        }
+        title={email.subject}
+      />
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="min-w-0 lg:order-2">
+          <Panel action={<CopyButton label="Copy ID" value={email.id} />} title="Envelope">
+            <PanelBody flush>
+              <SpecList>
+                <SpecItem label="From">{email.from}</SpecItem>
+                <SpecItem label="To">{list(email.to)}</SpecItem>
+                {email.cc.length > 0 ? <SpecItem label="Cc">{list(email.cc)}</SpecItem> : null}
+                {email.bcc.length > 0 ? <SpecItem label="Bcc">{list(email.bcc)}</SpecItem> : null}
+                {email.reply_to.length > 0 ? (
+                  <SpecItem label="Reply-To">{list(email.reply_to)}</SpecItem>
+                ) : null}
+                <SpecItem label="Created" mono>
+                  {formatDateTime(email.created_at)}
+                </SpecItem>
+                {email.scheduled_at ? (
+                  <SpecItem label="Scheduled for" mono>
+                    {formatDateTime(email.scheduled_at)}
+                  </SpecItem>
+                ) : null}
+                <SpecItem label="Sent" mono>
+                  {formatDateTime(email.sent_at)}
+                </SpecItem>
+                <SpecItem label="Category" mono>
+                  {email.category ?? "—"}
+                </SpecItem>
+                {email.batch_id ? (
+                  <SpecItem label="Batch" mono>
+                    {email.batch_id}
+                  </SpecItem>
+                ) : null}
+                {email.tags.length > 0 ? (
+                  <SpecItem label="Tags" mono stacked>
+                    <span className="flex flex-wrap gap-1.5">
+                      {email.tags.map((tag) => (
+                        <Badge className="font-mono" key={tag.name} variant="secondary">
+                          {tag.name}={tag.value}
+                        </Badge>
+                      ))}
+                    </span>
+                  </SpecItem>
+                ) : null}
+                {Object.keys(email.headers).length > 0 ? (
+                  <SpecItem label="Headers" mono stacked>
+                    <pre className="whitespace-pre-wrap break-all">
+                      {Object.entries(email.headers)
+                        .map(([name, value]) => `${name}: ${value}`)
+                        .join("\n")}
+                    </pre>
+                  </SpecItem>
+                ) : null}
+              </SpecList>
+            </PanelBody>
+          </Panel>
+        </div>
+        <div className="min-w-0 lg:order-1">
+          <EmailTabs tabs={tabs} />
+        </div>
       </div>
-
-      <Card>
-        <CardPanel className="p-2">
-          <Table>
-            <TableBody>
-              {rows.map(([label, value]) => (
-                <TableRow key={label}>
-                  <TableHead className="w-32 align-top">{label}</TableHead>
-                  <TableCell className="whitespace-pre-wrap break-all">{value}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardPanel>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recipients</CardTitle>
-          <CardDescription>Delivery status of each distinct address.</CardDescription>
-        </CardHeader>
-        <CardPanel className="p-2">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Address</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last event</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {email.recipients.map((recipient) => (
-                <TableRow key={recipient.address}>
-                  <TableCell className="break-all">{recipient.address}</TableCell>
-                  <TableCell>{recipient.type}</TableCell>
-                  <TableCell>
-                    <RecipientStatusBadge status={recipient.status} />
-                  </TableCell>
-                  <TableCell>{formatDateTime(recipient.last_event_at)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardPanel>
-      </Card>
-
-      {email.attachments.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Attachments</CardTitle>
-            <CardDescription>
-              Only metadata is kept: COSS discards the content once the email is sent.
-            </CardDescription>
-          </CardHeader>
-          <CardPanel className="p-2">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Filename</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Size</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {email.attachments.map((attachment) => (
-                  <TableRow key={attachment.id}>
-                    <TableCell className="break-all">
-                      <span className="flex flex-wrap items-center gap-2">
-                        {attachment.filename}
-                        {attachment.content_id !== null ? (
-                          <Badge variant="outline">inline · cid:{attachment.content_id}</Badge>
-                        ) : null}
-                      </span>
-                    </TableCell>
-                    <TableCell className="break-all">{attachment.content_type}</TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {formatBytes(attachment.size)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardPanel>
-        </Card>
-      ) : null}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Engagement</CardTitle>
-          <CardDescription>
-            Opens and clicks, if tracking was on when the email was sent. Opens can be inflated by
-            mail clients that preload images, clicks by link scanners.
-          </CardDescription>
-        </CardHeader>
-        <CardPanel className="p-2">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead />
-                <TableHead>Tracking</TableHead>
-                <TableHead>Count</TableHead>
-                <TableHead>First</TableHead>
-                <TableHead>Last</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableHead>Opens</TableHead>
-                <TableCell>
-                  <TrackingBadge on={tracking.opens} />
-                </TableCell>
-                <TableCell>{tracking.opens ? tracking.open_count : "—"}</TableCell>
-                <TableCell>{formatDateTime(tracking.first_opened_at)}</TableCell>
-                <TableCell>{formatDateTime(tracking.last_opened_at)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableHead>Clicks</TableHead>
-                <TableCell>
-                  <TrackingBadge on={tracking.clicks} />
-                </TableCell>
-                <TableCell>{tracking.clicks ? tracking.click_count : "—"}</TableCell>
-                <TableCell>{formatDateTime(tracking.first_clicked_at)}</TableCell>
-                <TableCell>{formatDateTime(tracking.last_clicked_at)}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-          {links && links.links.length > 0 ? (
-            <Table className="mt-4">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Link</TableHead>
-                  <TableHead>Clicks</TableHead>
-                  <TableHead>Last click</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {links.links.map((link) => (
-                  <TableRow key={link.id}>
-                    <TableCell className="max-w-120 whitespace-normal break-all">
-                      {link.url}
-                    </TableCell>
-                    <TableCell>{link.click_count}</TableCell>
-                    <TableCell>{formatDateTime(link.last_clicked_at)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : null}
-        </CardPanel>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Events</CardTitle>
-        </CardHeader>
-        <CardPanel className="p-2">
-          {events && events.events.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Event</TableHead>
-                  <TableHead>Recipient</TableHead>
-                  <TableHead>Details</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {events.events.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell className="whitespace-nowrap">
-                      {formatDateTime(event.occurred_at)}
-                    </TableCell>
-                    <TableCell>
-                      <EmailEventBadge type={event.type} />
-                    </TableCell>
-                    <TableCell className="break-all">{event.recipient ?? "All"}</TableCell>
-                    <TableCell className="whitespace-normal break-all text-muted-foreground">
-                      {eventDetail(event)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <p className="p-4 text-muted-foreground text-sm">No events yet.</p>
-          )}
-        </CardPanel>
-      </Card>
-
-      {email.html !== null ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>HTML</CardTitle>
-          </CardHeader>
-          <CardPanel>
-            <iframe
-              className="h-[600px] w-full rounded-lg border bg-white"
-              referrerPolicy="no-referrer"
-              sandbox=""
-              srcDoc={PREVIEW_HEAD + email.html}
-              title="Email preview"
-            />
-          </CardPanel>
-        </Card>
-      ) : null}
-
-      {email.text !== null ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Text</CardTitle>
-          </CardHeader>
-          <CardPanel>
-            <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg border bg-muted px-3 py-2 text-sm">
-              {email.text}
-            </pre>
-          </CardPanel>
-        </Card>
-      ) : null}
     </div>
   );
 }
