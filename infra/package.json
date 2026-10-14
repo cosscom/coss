@@ -16,7 +16,8 @@
     "@coss/hooks": "workspace:*",
     "@coss/observability": "workspace:*",
     "@coss/ratelimit": "workspace:*",
-    "@coss/screening": "workspace:*"
+    "@coss/screening": "workspace:*",
+    "@coss/webhooks": "workspace:*"
   },
   "devDependencies": {
     "@coss/tsconfig": "workspace:*",

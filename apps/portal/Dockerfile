@@ -8,10 +8,13 @@
 
 # Keep in step with package.json (`packageManager`, `devDependencies.turbo`); infra/test checks.
 ARG BUN_VERSION=1.4.2
+# Base images: Docker Hub by default; deploys pass mirrors (Docker Hub limits anonymous pulls).
+ARG BUN_IMAGE=oven/bun
 ARG NODE_VERSION=24
+ARG NODE_IMAGE=node
 ARG TURBO_VERSION=2.11.7
 
-FROM oven/bun:${BUN_VERSION}-slim AS bun
+FROM ${BUN_IMAGE}:${BUN_VERSION}-slim AS bun
 
 # A partial monorepo with only the workspaces @coss/portal needs, and their slice of bun.lock.
 FROM bun AS prune
@@ -22,7 +25,7 @@ COPY . .
 RUN bunx turbo@${TURBO_VERSION} prune @coss/portal --docker --out-dir /pruned
 
 # Next builds on Node; Bun installs. The install layer is reused until a manifest or the lockfile changes.
-FROM node:${NODE_VERSION}-slim AS build
+FROM ${NODE_IMAGE}:${NODE_VERSION}-slim AS build
 COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 ENV TURBO_TELEMETRY_DISABLED=1 NEXT_TELEMETRY_DISABLED=1
 WORKDIR /repo
@@ -39,7 +42,7 @@ RUN --mount=type=secret,id=sentry_auth_token,required=false \
 
 # Only the traced server (.next/standalone keeps Bun's isolated node_modules as relative symlinks)
 # and the static assets. No package manager, no sources.
-FROM node:${NODE_VERSION}-slim AS runtime
+FROM ${NODE_IMAGE}:${NODE_VERSION}-slim AS runtime
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     HOSTNAME=0.0.0.0 \

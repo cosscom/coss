@@ -4,7 +4,7 @@
  * infra/test checks it against the apps' env schemas, turbo.json and the Dockerfiles.
  */
 
-export type ServiceName = "web" | "site" | "api" | "worker";
+export type ServiceName = "web" | "site" | "portal" | "api" | "worker";
 
 /**
  * - `plain`: a task-definition `environment` value (`value`: the production value, or how to get it).
@@ -273,7 +273,7 @@ const apiPublicUrl: EnvVar = {
  * Error and performance monitoring (Sentry organization `cosscom`, see @coss/observability). Each
  * runtime has its own project; DSNs aren't secrets (browsers receive the dashboard's).
  */
-function sentry(project: "web" | "api" | "worker"): EnvVar[] {
+function sentry(project: "web" | "portal" | "api" | "worker"): EnvVar[] {
   return [
     {
       name: "SENTRY_DSN",
@@ -442,6 +442,34 @@ export const SERVICES: Service[] = [
     env: [
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "PORT", kind: "image", required: true, value: "3002", description: "" },
+      { name: "HOSTNAME", kind: "image", required: true, value: "0.0.0.0", description: "" },
+      {
+        name: "KEEP_ALIVE_TIMEOUT",
+        kind: "image",
+        required: true,
+        value: "75000",
+        description: "",
+      },
+    ],
+  },
+  {
+    // The Hooks portal, on its own domain (PORTAL_HOST in routing.ts: Cloudflare → ALB).
+    name: "portal",
+    dockerfile: "apps/portal/Dockerfile",
+    port: 3003,
+    healthCheckPath: "/api/health",
+    stopTimeout: 30,
+    cpu: 256,
+    memory: 512,
+    minTasks: 2,
+    needsInternet: false,
+    env: [
+      ...db,
+      webhookKey,
+      ...rateLimits,
+      ...sentry("portal"),
+      { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
+      { name: "PORT", kind: "image", required: true, value: "3003", description: "" },
       { name: "HOSTNAME", kind: "image", required: true, value: "0.0.0.0", description: "" },
       {
         name: "KEEP_ALIVE_TIMEOUT",

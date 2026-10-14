@@ -424,6 +424,8 @@ Cloudflare DNS (coss.com zone, DNS only)
                               └─ /origin, /origin/* ─▶ Origin UI (Vercel)    worker (Bun, no load balancer)┘   SES · SNS · SQS
   Cloudflare DNS (cosslinks.com zone, self-serve account, proxied)
   track.cosslinks.com + customer tracking domains (Cloudflare for SaaS) ──(X-Tracking-Origin-Verify)──▶ ALB /t/* ─▶ api
+  Cloudflare DNS (cosshooks.com zone, self-serve account, proxied)
+  portal.cosshooks.com (Hooks portal) ──(X-Portal-Origin-Verify)──▶ ALB ─▶ portal (Next, :3003)
 ```
 
 ### Resources (`infra/terraform`)
@@ -506,13 +508,16 @@ Cloudflare DNS (coss.com zone, DNS only)
   the ALB's certificate doesn't cover; the header secret is what proves a request came through Cloudflare. The
   apex redirects to coss.com. Free plan: 100 custom hostnames included, then $0.10 each per month.
 
-- **Hooks portal (not deployed yet):** `apps/portal` (with its Dockerfile) serves the portal customers embed for
-  their users. It must run on a registrable domain of its own (never under coss.com, which would make it same-site
-  with the dashboard). To ship it: register the domain; add a `portal` service to `infra/aws/services.ts` (port
-  3003, `/api/health`; `DATABASE_URL`, `WEBHOOK_SECRETS_KEY`, the Valkey variables, Sentry), an ALB host rule for the
-  domain, a CloudFront distribution (`/_next/static/*` cached) and the deploy workflow's matrix; let its tasks reach
-  RDS and Valkey; then set `PORTAL_PUBLIC_URL=https://<portal domain>` for web and api (until then creating a portal
-  session answers 503 `portal_unavailable`).
+- **Hooks portal (`cosshooks.com`, the same self-serve Cloudflare account as `cosslinks.com`):** `apps/portal`,
+  the page customers embed for their users, runs as the `portal` service on a registrable domain of its own (never
+  under coss.com, which would make it same-site with the dashboard). `portal.cosshooks.com` is a **proxied** record
+  pointing at the ALB (`terraform output alb_dns_name`), which serves it with its own ACM certificate (an SNI
+  listener certificate; validation CNAME from `terraform output portal_certificate_validation_records`, DNS only),
+  so the zone's SSL mode is **Full (strict)**. A request header transform rule sets
+  `X-Portal-Origin-Verify: <secret>` (Secrets Manager `coss/production/portal-origin-verify`) on every request in
+  the zone; the ALB forwards `portal.cosshooks.com` with it to the portal and nothing else. A redirect rule sends
+  the apex to `https://coss.com`. `PORTAL_PUBLIC_URL=https://portal.cosshooks.com` (web, api) makes portal session
+  links point there.
 
 ### Monitoring and cost guardrails
 
@@ -588,7 +593,7 @@ failed and a re-run passed, re-run the Deploy run's failed jobs. A commit that's
 its CI finishes, or its deploy job's turn comes, isn't deployed (the newer commit's deploy ships it), so production
 never goes back to an older commit unless you dispatch one:
 
-1. Build and push the four images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
+1. Build and push the five images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
    apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
    for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker), skipping images that exist. Base
    images never come from Docker Hub there (CodeBuild's shared addresses exhaust its anonymous pull limit): Node from
@@ -597,7 +602,7 @@ never goes back to an older commit unless you dispatch one:
 2. Run migrations as a one-off task from the new worker image (`infra/scripts/ecs-task.sh --image-tag <sha> worker --
    bun packages/db/src/migrate.ts`; never two at once, the deploy job's concurrency group). Migrations must be
    backward compatible with the running code.
-3. Roll out all four services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
+3. Roll out all five services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
    of its latest task definition with the new image, and the script fails if the circuit breaker rolled it back. A
    service behind the load balancer counts as deployed once its new tasks passed their health checks and the old
    ones are draining; the worker (no health check) once its old tasks are gone and the new ones ran for 60 s

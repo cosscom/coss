@@ -4,7 +4,7 @@ The page a COSS customer's users open (or the customer embeds in an iframe) to m
 application's endpoints, pick event types, read the message and delivery log, retry, recover and
 send tests — so customers never build that UI. Next.js 16 (:3003 locally), standalone image
 (`Dockerfile`), its own ECS service on **its own registrable domain** (`PORTAL_HOST` in
-`infra/aws/routing.ts`, a placeholder until it is registered): never serve it under coss.com,
+`infra/aws/routing.ts`: `portal.cosshooks.com`, Cloudflare → ALB): never serve it under coss.com,
 which would make it same-site with the dashboard.
 
 ## Auth (no cookies, ever)

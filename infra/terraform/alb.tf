@@ -51,6 +51,7 @@ locals {
   header_secrets = {
     "<origin-verify-secret>"          = random_password.origin_verify.result
     "<tracking-origin-verify-secret>" = random_password.tracking_origin_verify.result
+    "<portal-origin-verify-secret>"   = random_password.portal_origin_verify.result
   }
 }
 
@@ -92,4 +93,11 @@ resource "aws_lb_listener_rule" "spec" {
       }
     }
   }
+}
+
+# The Hooks portal's host, served by the same listener (SNI): Cloudflare connects with it and
+# validates this certificate (SSL mode Full (strict)).
+resource "aws_lb_listener_certificate" "portal" {
+  listener_arn    = aws_lb_listener.https.arn
+  certificate_arn = aws_acm_certificate_validation.portal.certificate_arn
 }

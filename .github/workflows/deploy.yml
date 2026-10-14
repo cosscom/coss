@@ -1,7 +1,7 @@
 name: Deploy
 
-# Production deploys (README, "Deploying to AWS"): builds the four images while CI runs, then, once
-# CI passed, migrates, rolls out all four services at once and invalidates the coss.com CDN. Jobs
+# Production deploys (README, "Deploying to AWS"): builds the five images while CI runs, then, once
+# CI passed, migrates, rolls out all five services at once and invalidates the coss.com CDN. Jobs
 # that touch AWS run on CodeBuild-hosted runners whose role holds the credentials
 # (infra/terraform/deploy.tf); nothing AWS-related is stored in GitHub. Runs on every push to main;
 # run it by hand to redeploy (e.g. after a Terraform environment change) or, with `image_tag`, to
@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        service: [web, site, api, worker]
+        service: [web, site, portal, api, worker]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -100,7 +100,7 @@ jobs:
               || aws ecr describe-images --repository-name coss/base/bun --image-ids "imageTag=$bun_version-slim" >/dev/null
           fi
           case "$SERVICE" in
-            web | site) release_arg="NEXT_DEPLOYMENT_ID=$TAG" ;;
+            web | site | portal) release_arg="NEXT_DEPLOYMENT_ID=$TAG" ;;
             *) release_arg="SENTRY_RELEASE=$TAG" ;;
           esac
           # Only the dependency layers are reusable (the build layer depends on the commit), so the
@@ -206,7 +206,7 @@ jobs:
       # bought no compatibility, only time.
       - name: Roll out
         if: steps.latest.outputs.deploy == 'true'
-        run: infra/scripts/ecs-deploy.sh "$TAG" api worker web site
+        run: infra/scripts/ecs-deploy.sh "$TAG" api worker web site portal
       - name: Record the deployed commit
         if: steps.latest.outputs.deploy == 'true'
         run: aws ssm put-parameter --name "/coss/$STAGE/image-tag" --value "$TAG" --overwrite >/dev/null

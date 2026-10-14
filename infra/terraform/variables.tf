@@ -30,6 +30,11 @@ variable "api_host" {
   description = "api.coss.com (API_HOST in infra/aws/routing.ts)."
 }
 
+variable "portal_host" {
+  type        = string
+  description = "The Hooks portal's host (PORTAL_HOST in infra/aws/routing.ts)."
+}
+
 variable "external_origin_hosts" {
   type        = map(string)
   description = "Production hostname of each external zone (spec.json cloudFront.origins other than alb): the coss ui repository's Vercel projects."

@@ -8,6 +8,7 @@ availability_zones = ["us-east-2a", "us-east-2b"]
 vpc_cidr           = "10.40.0.0/16"
 dashboard_host     = "coss.com"
 api_host           = "api.coss.com"
+portal_host        = "portal.cosshooks.com"
 external_origin_hosts = {
   ui     = "coss-com-ui.vercel.app"
   origin = "coss-com-origin.vercel.app"
@@ -27,6 +28,7 @@ db_password_version = 1
 autoscaling = {
   web    = { max = 6, cpu_target = 60 }
   site   = { max = 4, cpu_target = 60 }
+  portal = { max = 4, cpu_target = 60 }
   api    = { max = 6, cpu_target = 60 }
   worker = { max = 2, cpu_target = 70 }
 }
@@ -45,6 +47,7 @@ plain_env = {
     API_PUBLIC_URL           = "https://api.coss.com"
     TRUSTED_PROXY_HOPS       = "2"
     TURNSTILE_SITE_KEY       = "0x4AAAAAAFU8QY0DX4ZJGoSK"
+    PORTAL_PUBLIC_URL        = "https://portal.cosshooks.com"
     GOOGLE_CLIENT_ID         = "204721091156-k33omqkstijuaari06eidtlefif81p9m.apps.googleusercontent.com"
     GITHUB_CLIENT_ID         = "Ov23liYEf7MwkA26M9Ul"
     EMAIL_PROVIDER           = "ses"
@@ -67,10 +70,19 @@ plain_env = {
     SENTRY_TRACES_SAMPLE_RATE    = "0.1"
   }
   site = {}
+  portal = {
+    DATABASE_POOL_MAX     = "5"
+    VALKEY_CLUSTER        = "true"
+    RATE_LIMIT_KEY_PREFIX = "coss"
+    CLIENT_IP_HEADER      = "x-forwarded-for"
+    TRUSTED_PROXY_COUNT   = "2"
+    SENTRY_ENVIRONMENT    = "production"
+  }
   api = {
     BETTER_AUTH_URL           = "https://coss.com"
     API_PUBLIC_URL            = "https://api.coss.com"
     TRACKING_PUBLIC_URL       = "https://track.cosslinks.com"
+    PORTAL_PUBLIC_URL         = "https://portal.cosshooks.com"
     API_CORS_ORIGINS          = "https://coss.com"
     EMAIL_PROVIDER            = "ses"
     AWS_REGION                = "us-east-2"
@@ -89,14 +101,14 @@ plain_env = {
     SENTRY_TRACES_SAMPLE_RATE = "0.1"
   }
   worker = {
-    BETTER_AUTH_URL          = "https://coss.com"
-    API_PUBLIC_URL           = "https://api.coss.com"
-    TRACKING_PUBLIC_URL      = "https://track.cosslinks.com"
-    EMAIL_PROVIDER           = "ses"
-    AWS_REGION               = "us-east-2"
-    SES_CONFIGURATION_SET    = "coss"
-    SES_TENANT_PREFIX        = "coss"
-    SES_EVENTS_QUEUE_URL     = "https://sqs.us-east-2.amazonaws.com/294417174674/coss-events"
+    BETTER_AUTH_URL       = "https://coss.com"
+    API_PUBLIC_URL        = "https://api.coss.com"
+    TRACKING_PUBLIC_URL   = "https://track.cosslinks.com"
+    EMAIL_PROVIDER        = "ses"
+    AWS_REGION            = "us-east-2"
+    SES_CONFIGURATION_SET = "coss"
+    SES_TENANT_PREFIX     = "coss"
+    SES_EVENTS_QUEUE_URL  = "https://sqs.us-east-2.amazonaws.com/294417174674/coss-events"
     # The daily inbound limit per organization is counted in Valkey (VALKEY_URL is in the secret).
     VALKEY_CLUSTER           = "true"
     RATE_LIMIT_KEY_PREFIX    = "coss"

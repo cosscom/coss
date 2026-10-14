@@ -20,7 +20,7 @@ mailboxes, fraud reports, allow/block lists) become `allow`/`review`/`block` wit
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page, Shipyard's landing page and docs at `/shipyard`, kloq's pages at `/kloq` (landing page, demo, tools, comparisons, docs, shadcn registry) + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
-| `apps/portal` | `@coss/portal` | The Hooks portal (:3003) on its own domain: customers' users manage one application's endpoints and see its deliveries, signed in by a session the customer's backend creates (token in the URL fragment, never a cookie). See `apps/portal/AGENTS.md`. |
+| `apps/portal` | `@coss/portal` | The Hooks portal (:3003) on its own domain (production: `portal.cosshooks.com`, Cloudflare → ALB, `PORTAL_HOST` in `infra/aws/routing.ts`): customers' users manage one application's endpoints and see its deliveries, signed in by a session the customer's backend creates (token in the URL fragment, never a cookie). See `apps/portal/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events and received emails from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss); `./idempotency` (`withIdempotencyKey`, request hashes); `./partitions` (daily range partitions: create ahead, drop expired). |
 | `packages/signals` | `@coss/signals` | Stateless abuse signals shared by COSS's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
@@ -1181,8 +1181,7 @@ org logos, user account deletion (before adding it: `sso_provider.user_id` and `
 would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,
 email/SMS two-factor codes, sign-in providers other than Google and GitHub, "trust this device" for 2FA, renaming passkeys, self-serve add-ons (none is named yet), an automatic direct-debit policy (only per-account
 required payment methods), multi-currency, metering for SMS/video/scheduling (their meters
-and rates exist; the products don't), the Hooks portal's deployment (it needs a registered domain: `apps/portal`
-exists, the production spec doesn't list it yet), and
+and rates exist; the products don't), and
 these Hooks features: channels, payload transformations, custom endpoint headers, sending one message to several
 applications, strict ordering, portal custom domains, per-destination rate-limit overrides, Hooks attempts in
 environment logs and log drains.
