@@ -3,9 +3,12 @@ import {
   domainRecords,
   getDomain,
   getEmailTenant,
+  getReceivingDomain,
   getTrackingDomain,
+  type ReceivingDomainRow,
   type TrackingDomainRow,
 } from "@coss/email";
+import { listEnvironments, listProjects } from "@coss/tenancy";
 import { Alert, AlertDescription } from "@coss/ui/components/alert";
 import {
   Table,
@@ -30,9 +33,16 @@ import { Panel, PanelBody } from "@/components/panel";
 import { SendingPausedAlert } from "@/components/sending-paused-alert";
 import { SpecItem, SpecList } from "@/components/spec-list";
 import { planHas } from "@/lib/billing";
+import { emailRuntime } from "@/lib/email-runtime";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { DeleteDomainButton, VerifyDomainButton } from "./domain-actions";
+import {
+  AddReceivingDomainDialog,
+  CheckReceivingDomainButton,
+  type EnvironmentOption,
+  RemoveReceivingDomainButton,
+} from "./receiving-domain-actions";
 import {
   AddTrackingDomainDialog,
   CheckTrackingDomainButton,
@@ -140,10 +150,21 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
     getEmailTenant(organization.id),
   ]);
   if (!domain) notFound();
-  const tracking = await getTrackingDomain({
-    organizationId: organization.id,
-    domainId: domain.id,
-  });
+  const [tracking, receiving, projects] = await Promise.all([
+    getTrackingDomain({ organizationId: organization.id, domainId: domain.id }),
+    getReceivingDomain({ organizationId: organization.id, domainId: domain.id }),
+    listProjects({ organizationId: organization.id }),
+  ]);
+  // Where received emails can go: every environment of the organization ("Project / Environment").
+  const environments = (
+    await Promise.all(
+      projects.map(async (project) =>
+        (
+          await listEnvironments({ organizationId: organization.id, projectId: project.id })
+        ).map((environment) => ({ project, environment })),
+      ),
+    )
+  ).flat();
   const records = domainRecords(domain);
   const canCreate = can({ domain: ["create"] });
   const canVerify = can({ domain: ["verify"] });
@@ -196,7 +217,7 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
       </Panel>
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="flex flex-col gap-6 lg:col-span-2">
           <TrackingDomainPanel
             canCreate={canCreate && domain.status !== "failed" && domain.status !== "deleting"}
             canDelete={canDelete}
@@ -205,6 +226,20 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
             planAllows={await planHas(organization.id, "trackingDomains")}
             target={target}
             tracking={tracking}
+          />
+          <ReceivingDomainPanel
+            available={emailRuntime().inbound !== null}
+            canCreate={canCreate && domain.status !== "failed" && domain.status !== "deleting"}
+            canDelete={canDelete}
+            canVerify={canVerify}
+            domainName={domain.name}
+            environments={environments.map(({ project, environment }) => ({
+              value: environment.id,
+              label: `${project.name} / ${environment.name}`,
+              href: `/${organization.slug}/projects/${project.slug}/${environment.slug}/received`,
+            }))}
+            receiving={receiving}
+            target={target}
           />
         </div>
         <Panel title="Details">
@@ -313,6 +348,96 @@ function TrackingDomainPanel(props: {
       ) : null}
       <RecordsTable>
         <RecordRow record={record} />
+      </RecordsTable>
+    </Panel>
+  );
+}
+
+function ReceivingDomainPanel(props: {
+  receiving: ReceivingDomainRow | null;
+  available: boolean;
+  domainName: string;
+  environments: (EnvironmentOption & { href: string })[];
+  target: { orgSlug: string; domainId: string };
+  canCreate: boolean;
+  canVerify: boolean;
+  canDelete: boolean;
+}) {
+  const { receiving, target } = props;
+  if (!receiving) {
+    return (
+      <Panel
+        action={
+          props.canCreate && props.available && props.environments.length > 0 ? (
+            <AddReceivingDomainDialog
+              {...target}
+              domainName={props.domainName}
+              environments={props.environments.map(({ value, label }) => ({ value, label }))}
+            />
+          ) : null
+        }
+        description={
+          <>
+            Receive email at {props.domainName} or a subdomain such as inbound.{props.domainName}:
+            every message becomes a received email of an environment, with an{" "}
+            <code className="font-mono">email.received</code> webhook.
+          </>
+        }
+        title="Receiving"
+      >
+        {!props.available ? (
+          <PanelBody>
+            <Alert variant="info">
+              <AlertDescription>This deployment does not receive email.</AlertDescription>
+            </Alert>
+          </PanelBody>
+        ) : null}
+      </Panel>
+    );
+  }
+  const record = receiving.record;
+  const destination = props.environments.find((env) => env.value === receiving.environmentId);
+  return (
+    <Panel
+      action={
+        <>
+          {props.canVerify && props.available ? <CheckReceivingDomainButton {...target} /> : null}
+          {props.canDelete ? (
+            <RemoveReceivingDomainButton {...target} hostname={receiving.hostname} />
+          ) : null}
+        </>
+      }
+      description={
+        <>
+          Email to any address at {receiving.hostname} is received by{" "}
+          {destination ? (
+            <Link className="underline underline-offset-4" href={destination.href}>
+              {destination.label}
+            </Link>
+          ) : (
+            "an environment"
+          )}
+          . Last checked {formatDateTime(receiving.lastCheckedAt)}.
+        </>
+      }
+      title={
+        <span className="flex flex-wrap items-center gap-2">
+          Receiving <code className="font-mono font-normal text-sm">{receiving.hostname}</code>
+        </span>
+      }
+    >
+      {record.status === "mismatch" ? (
+        <div className="px-1 pb-1">
+          <Alert variant="warning">
+            <AlertDescription>
+              Mail for {receiving.hostname} goes to its most preferred MX records, which don&apos;t
+              all point at COSS yet.
+            </AlertDescription>
+          </Alert>
+        </div>
+      ) : null}
+      <RecordsTable>
+        <RecordRow purpose="MX: delivers this hostname's email to COSS." record={record} />
       </RecordsTable>
     </Panel>
   );

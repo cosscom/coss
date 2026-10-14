@@ -122,3 +122,34 @@ export function ModeBadge({ mode }: { mode: EnvironmentMode }) {
 export function TrackingBadge({ on }: { on: boolean }) {
   return on ? <Badge variant="success">On</Badge> : <Badge variant="outline">Off</Badge>;
 }
+
+/** A received email's status: `blocked` carried a virus. */
+export function ReceivedStatusBadge({ status }: { status: "received" | "blocked" }) {
+  return status === "received" ? (
+    <StatusDot tone="success">Received</StatusDot>
+  ) : (
+    <StatusDot tone="error">Blocked</StatusDot>
+  );
+}
+
+const VERDICT_VARIANT = {
+  pass: "success",
+  fail: "error",
+  gray: "warning",
+  processing_failed: "secondary",
+} as const;
+
+/** One receiving verdict (`spam`, `spf`, …): `pass`, `fail`, `gray`, or not checked. */
+export function VerdictBadge({
+  label,
+  verdict,
+}: {
+  label: string;
+  verdict: keyof typeof VERDICT_VARIANT | null;
+}) {
+  return (
+    <Badge variant={verdict ? VERDICT_VARIANT[verdict] : "outline"}>
+      {label}: {verdict ? verdict.replaceAll("_", " ") : "not checked"}
+    </Badge>
+  );
+}

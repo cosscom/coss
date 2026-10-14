@@ -10,9 +10,8 @@ import {
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/page-header";
 import { Panel } from "@/components/panel";
-import { auth } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
-import { authHeaders, requireSession } from "@/lib/session";
+import { listOwnSessions, requireSession } from "@/lib/session";
 import { describeUserAgent } from "@/lib/user-agent";
 import { RevokeOtherSessionsButton, RevokeSessionButton } from "../session-buttons";
 
@@ -22,7 +21,7 @@ export const metadata: Metadata = { title: "Sessions" };
 export default async function AccountSessionsPage() {
   const session = await requireSession();
   const impersonating = Boolean(session.session.impersonatedBy);
-  const sessions = (await auth.api.listSessions({ headers: await authHeaders() }))
+  const sessions = (await listOwnSessions(session.user.id))
     // Only what the page shows: session tokens never leave the server.
     .map(({ id, userAgent, ipAddress, createdAt, expiresAt, ssoProviderId }) => ({
       id,

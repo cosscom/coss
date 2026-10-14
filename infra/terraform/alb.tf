@@ -18,12 +18,15 @@ resource "aws_lb_target_group" "service" {
   port                 = each.value.port
   deregistration_delay = 30
 
+  # A new task serves after two passing checks (~10 s instead of ~30 s: rollouts wait for it); it
+  # still takes ~30 s of failing checks to take one out (the health routes touch no database).
   health_check {
     path                = each.value.healthCheckPath
     matcher             = "200"
-    interval            = 15
+    interval            = 5
+    timeout             = 4
     healthy_threshold   = 2
-    unhealthy_threshold = 3
+    unhealthy_threshold = 6
   }
 }
 

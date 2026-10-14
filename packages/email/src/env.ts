@@ -35,13 +35,22 @@ export const emailEnvShape = {
   CLOUDFLARE_ZONE_ID: z.string().optional(),
   // The zone's fallback origin, which customers point their tracking CNAME at.
   TRACKING_CNAME_TARGET: z.string().optional(),
+  // Receiving: COSS's managed inbound domain (`<label>.<domain>` addresses per environment;
+  // default `inbound.coss.test` with the fake provider) and, with SES, the bucket received
+  // messages are stored in (both printed by `bun run ses:bootstrap`; unset → no receiving).
+  INBOUND_MANAGED_DOMAIN: z.string().optional(),
+  SES_INBOUND_BUCKET: z.string().optional(),
 };
 
-/** Only the worker consumes delivery events. */
+/** Only the worker consumes delivery events and receipt notifications. */
 export const emailWorkerEnvShape = {
   ...emailEnvShape,
   SES_EVENTS_QUEUE_URL: z.url().optional(),
+  SES_INBOUND_QUEUE_URL: z.url().optional(),
 };
+
+/** The managed inbound domain used with the fake provider when none is configured. */
+export const DEFAULT_FAKE_INBOUND_DOMAIN = "inbound.coss.test";
 
 export type EmailEnv = {
   EMAIL_PROVIDER: EmailProviderName;
@@ -52,4 +61,6 @@ export type EmailEnv = {
   CLOUDFLARE_API_TOKEN?: string | undefined;
   CLOUDFLARE_ZONE_ID?: string | undefined;
   TRACKING_CNAME_TARGET?: string | undefined;
+  INBOUND_MANAGED_DOMAIN?: string | undefined;
+  SES_INBOUND_BUCKET?: string | undefined;
 };

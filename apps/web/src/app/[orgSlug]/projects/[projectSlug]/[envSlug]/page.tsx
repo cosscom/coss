@@ -1,5 +1,5 @@
 import { API_KEY_PREFIX } from "@coss/auth/constants";
-import { emailActivity, listDomains, listEmails } from "@coss/email";
+import { emailActivity, inboundAddressFor, listDomains, listEmails } from "@coss/email";
 import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment, listEnvironmentApiKeys } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { type BarColumn, StackedBars } from "@/components/charts/stacked-bars";
 import { CodeBlock } from "@/components/code-block";
 import { CopyButton } from "@/components/copy-button";
+import { CopyValue } from "@/components/copy-value";
 import { ModeBadge } from "@/components/email-badges";
 import { EmailTable } from "@/components/email-table";
 import { EmptyState } from "@/components/empty-state";
@@ -20,6 +21,7 @@ import { Panel, PanelBody } from "@/components/panel";
 import { SpecItem, SpecList } from "@/components/spec-list";
 import { Stat, StatRow } from "@/components/stat-row";
 import { env } from "@/env";
+import { emailRuntime } from "@/lib/email-runtime";
 import { formatCompact, formatPercent } from "@/lib/format";
 import { environmentPath } from "@/lib/navigation";
 import { requireOrgMember } from "@/lib/session";
@@ -74,7 +76,8 @@ export default async function EnvironmentOverviewPage({
   const live = environment.mode === "live";
   const scope = { organizationId: organization.id, environmentId: environment.id };
   const now = new Date();
-  const [activity, recent, keys, endpoints, domains] = await Promise.all([
+  const inbound = emailRuntime().inbound;
+  const [activity, recent, keys, endpoints, domains, inboundAddress] = await Promise.all([
     emailActivity({
       ...scope,
       since: new Date(now.getTime() - (CHART_DAYS - 1) * 86_400_000),
@@ -84,6 +87,7 @@ export default async function EnvironmentOverviewPage({
     listEnvironmentApiKeys(scope),
     can({ webhook: ["read"] }) ? listWebhookEndpoints(scope) : null,
     live ? listDomains({ organizationId: organization.id }) : null,
+    inbound && can({ email: ["read"] }) ? inboundAddressFor(scope, inbound.managedDomain) : null,
   ]);
   // Live keys must send from a verified domain; sandbox keys accept any address.
   const sendingDomain = domains ? domains.find((d) => d.canSend)?.name : "example.com";
@@ -309,6 +313,11 @@ export default async function EnvironmentOverviewPage({
                 {endpoints ? (
                   <SpecItem label="Webhook endpoints" mono>
                     {endpoints.length}
+                  </SpecItem>
+                ) : null}
+                {inboundAddress ? (
+                  <SpecItem label="Inbound address" mono>
+                    <CopyValue value={`support@${inboundAddress.domain}`} />
                   </SpecItem>
                 ) : null}
                 <SpecItem label="Environment ID" mono>

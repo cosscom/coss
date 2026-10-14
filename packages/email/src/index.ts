@@ -2,6 +2,7 @@ export type { EmailAttachmentMetadata } from "./attachments.ts";
 // Runtime dispatch code (pg-boss) lives in `@coss/email/dispatch`, which the dashboard never loads.
 export type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 export {
+  checkReceivingRecord,
   checkRecords,
   type DnsResolver,
   expectedRecords,
@@ -10,6 +11,7 @@ export {
 } from "./dns.ts";
 export {
   applyTenantStatus,
+  assertOwnsHostname,
   authorizeLiveSender,
   checkDomain,
   createDomain,
@@ -45,6 +47,36 @@ export {
   ingestProviderEvents,
   recordProviderEvent,
 } from "./events.ts";
+export {
+  fakeVerdicts,
+  type InboundDeps,
+  type InboundMessage,
+  type InboundQuota,
+  type InboundVerdicts,
+  NO_VERDICTS,
+  type ReceiveOutcome,
+  receiveEmail,
+  receiveFakeEmail,
+  routeRecipients,
+  type VerdictStatus,
+} from "./inbound.ts";
+export { inboundAddressFor, managedLabelOf } from "./inbound-address.ts";
+export {
+  buildTestMessage,
+  type ParsedInboundMessage,
+  parseInboundMessage,
+  RECEIVED_BODY_MAX_LENGTH,
+  RECEIVED_HEADERS_MAX_LENGTH,
+  scrubEnvelopeHeaders,
+  type TestMessageAttachment,
+} from "./inbound-mime.ts";
+export {
+  FakeInboundStore,
+  type InboundContentStore,
+  type InboundObject,
+  organizationPrefix,
+  receivedEmailPrefix,
+} from "./inbound-store.ts";
 export { emailNotifier, type Notice, type Notifier, notificationEnvironment } from "./notifier.ts";
 export {
   type DomainIdentity,
@@ -88,6 +120,32 @@ export {
   toEmailObject,
 } from "./read.ts";
 export {
+  deleteReceivedEmail,
+  getReceivedEmail,
+  getReceivedEmailAttachment,
+  getReceivedEmailRaw,
+  getReceivedEmailRow,
+  inboundDropCount,
+  listReceivedEmails,
+  type ReceivedEmailAttachmentRow,
+  type ReceivedEmailRow,
+  toReceivedEmailObject,
+  toReceivedEmailSummary,
+} from "./received-emails.ts";
+export {
+  checkReceivingDomain,
+  createReceivingDomain,
+  deleteReceivingDomain,
+  getReceivingDomain,
+  listEnvironmentReceivingDomains,
+  listReceivingDomains,
+  normalizeReceivingHostname,
+  type ReceivingConfig,
+  type ReceivingDomainRow,
+  recheckDueReceivingDomains,
+  toReceivingDomainObject,
+} from "./receiving-domains.ts";
+export {
   emailReputationChecks,
   type SendingCounts,
   sendingCounts,
@@ -95,21 +153,30 @@ export {
 export {
   purgeEmptyEmailBatches,
   purgeExpiredEmails,
+  purgeExpiredFakeInboundObjects,
+  purgeExpiredInboundDropCounters,
+  purgeExpiredReceivedEmails,
   purgeExpiredReputationRollups,
 } from "./retention.ts";
 export {
   ALL_CATEGORIES,
+  ATTACHMENT_DISPOSITIONS,
   CheckSuppressionQuery,
   type CheckSuppressionQueryOutput,
   CreateDomainRequest,
   type CreateDomainRequestInput,
+  CreateReceivingDomainRequest,
+  type CreateReceivingDomainRequestInput,
   CreateSuppressionRequest,
   type CreateSuppressionRequestInput,
   type CreateSuppressionRequestOutput,
   CreateTrackingDomainRequest,
   type CreateTrackingDomainRequestInput,
+  DEFAULT_RECEIVED_EMAIL_LIST_LIMIT,
   DeletedDomain,
   type DeletedDomainOutput,
+  DeletedReceivedEmail,
+  type DeletedReceivedEmailOutput,
   DeletedSuppression,
   type DeletedSuppressionOutput,
   DOMAIN_NAME_MAX_LENGTH,
@@ -155,7 +222,11 @@ export {
   ImportSuppressionsRequest,
   type ImportSuppressionsRequestInput,
   type ImportSuppressionsRequestOutput,
+  InboundAddressObject,
+  type InboundAddressObjectOutput,
   isReservedHeader,
+  ListReceivedEmailsQuery,
+  type ListReceivedEmailsQueryOutput,
   ListSuppressionsQuery,
   type ListSuppressionsQueryOutput,
   MAIL_FROM_STATUSES,
@@ -163,13 +234,29 @@ export {
   MAX_ATTACHMENTS_BYTES,
   MAX_BATCH_EMAILS,
   MAX_HEADERS,
+  MAX_RECEIVED_EMAIL_LIST_LIMIT,
   MAX_RECIPIENTS,
   MAX_SCHEDULE_AHEAD_MS,
   MAX_SUPPRESSION_IMPORT_ENTRIES,
   MAX_TAGS,
   type ParsedEmailAddress,
   parseEmailAddress,
+  RECEIVED_EMAIL_BLOCKED_REASONS,
+  RECEIVED_EMAIL_EVENT_TYPES,
+  RECEIVED_EMAIL_STATUSES,
   RESERVED_HEADERS,
+  ReceivedEmailAttachmentObject,
+  ReceivedEmailList,
+  type ReceivedEmailListOutput,
+  ReceivedEmailObject,
+  type ReceivedEmailObjectOutput,
+  ReceivedEmailSummary,
+  type ReceivedEmailSummaryOutput,
+  ReceivedEmailVerdicts,
+  ReceivedEmailWebhookEvent,
+  type ReceivedEmailWebhookEventOutput,
+  ReceivingDomainObject,
+  type ReceivingDomainObjectOutput,
   RescheduleEmailRequest,
   type RescheduleEmailRequestInput,
   type RescheduleEmailRequestOutput,
@@ -198,6 +285,7 @@ export {
   type TrackingOptionsOutput,
   TrackingRuleInput,
   type TrackingRuleInputOutput,
+  VERDICT_STATUSES,
   WEBHOOK_EVENT_TYPES,
 } from "./schemas.ts";
 export { emailScreeningContent, htmlTextAndLinks } from "./screening.ts";

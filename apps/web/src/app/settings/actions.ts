@@ -1,11 +1,14 @@
 "use server";
 
+import { isSocialProvider, type SocialProvider } from "@coss/auth/constants";
 import { refresh } from "next/cache";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, ForbiddenError, formString, runAction } from "@/lib/actions";
 import { auth, type Session } from "@/lib/auth";
-import { requireSession } from "@/lib/session";
+import { listOwnSessions, requireSession } from "@/lib/session";
+import { enabledSocialProviders } from "@/lib/social";
 
 const USER_NAME_MAX_LENGTH = 64;
 
@@ -99,11 +102,10 @@ export async function revokeSessionAction(
     if (sessionId === session.session.id) {
       throw new ActionError("Use “Sign out” to end this session.");
     }
-    const requestHeaders = await headers();
-    const sessions = await auth.api.listSessions({ headers: requestHeaders });
+    const sessions = await listOwnSessions(session.user.id);
     const target = sessions.find((row) => row.id === sessionId);
     if (!target) throw new ActionError("This session has already ended.");
-    await auth.api.revokeSession({ headers: requestHeaders, body: { token: target.token } });
+    await auth.api.revokeSession({ headers: await headers(), body: { token: target.token } });
     refresh();
     return null;
   });
@@ -116,6 +118,98 @@ export async function revokeOtherSessionsAction(
   return runAction(async () => {
     await requireAccountOwner();
     await auth.api.revokeOtherSessions({ headers: await headers() });
+    refresh();
+    return null;
+  });
+}
+
+/**
+ * Adding a way to sign in (a provider, a password) needs a recent sign-in, as Better Auth's
+ * `freshSessionMiddleware` does for unlinking: a stolen session cookie must not become a way in
+ * that outlives the session.
+ */
+async function requireFreshAccountOwner(): Promise<Session> {
+  const session = await requireAccountOwner();
+  const { freshAge } = (await auth.$context).sessionConfig;
+  if (Date.now() - new Date(session.session.createdAt).getTime() > freshAge * 1000) {
+    throw new ActionError("For your security, sign out and sign in again, then retry.");
+  }
+  return session;
+}
+
+function socialProviderField(formData: FormData): SocialProvider {
+  const provider = formString(formData, "provider");
+  if (!isSocialProvider(provider)) throw new ActionError("Unknown sign-in provider.");
+  return provider;
+}
+
+/**
+ * Sends the browser to Google or GitHub to connect that account; Better Auth's callback links it
+ * and returns to /settings/security (`?error=` on failure). The account may use another address.
+ */
+export async function connectSocialAccountAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireFreshAccountOwner();
+    const provider = socialProviderField(formData);
+    if (!enabledSocialProviders().includes(provider)) {
+      throw new ActionError("This sign-in provider isn't available.");
+    }
+    const { url } = await auth.api.linkSocialAccount({
+      headers: await headers(),
+      body: {
+        provider,
+        callbackURL: "/settings/security",
+        errorCallbackURL: "/settings/security",
+        disableRedirect: true,
+      },
+    });
+    redirect(url);
+  });
+}
+
+/** Better Auth refuses to remove the account's last way to sign in (passkeys aside). */
+export async function disconnectSocialAccountAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireAccountOwner();
+    const provider = socialProviderField(formData);
+    const requestHeaders = await headers();
+    const accounts = await auth.api.listUserAccounts({ headers: requestHeaders });
+    const account = accounts.find((row) => row.providerId === provider);
+    if (!account) throw new ActionError("This account is no longer connected.");
+    // The row id; Better Auth only unlinks the session user's own accounts.
+    await auth.api.unlinkAccount({ headers: requestHeaders, body: { accountId: account.id } });
+    refresh();
+    return null;
+  });
+}
+
+/**
+ * A first password for an account created with Google or GitHub (it also lets the user turn
+ * on an authenticator app, which Better Auth confirms with the password).
+ */
+export async function setPasswordAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireFreshAccountOwner();
+    // Passwords are not trimmed: `formString` would change what the user typed.
+    const field = (name: string) => {
+      const value = formData.get(name);
+      return typeof value === "string" ? value : "";
+    };
+    const newPassword = field("newPassword");
+    if (newPassword.length < 8) throw new ActionError("Use at least 8 characters.");
+    if (newPassword !== field("confirmPassword")) {
+      throw new ActionError("The passwords don't match.");
+    }
+    await auth.api.setPassword({ headers: await headers(), body: { newPassword } });
     refresh();
     return null;
   });

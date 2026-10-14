@@ -12,6 +12,8 @@ export type { DomainsResource } from "./resources/domains.ts";
 export type { EmailResource } from "./resources/email.ts";
 export type { LogDrainBatchesResource, LogDrainsResource } from "./resources/log-drains.ts";
 export type { LogsResource } from "./resources/logs.ts";
+export type { ReceivedEmailsResource } from "./resources/received-emails.ts";
+export type { ReceivingDomainsResource } from "./resources/receiving-domains.ts";
 export type { ReputationResource } from "./resources/reputation.ts";
 export type {
   RiskAssessmentsResource,
@@ -43,6 +45,7 @@ export type {
 } from "./types/billing.ts";
 export type {
   CreateDomainParams,
+  CreateReceivingDomainParams,
   CreateTrackingDomainParams,
   DeletedDomain,
   Domain,
@@ -51,6 +54,8 @@ export type {
   DomainRecordStatus,
   DomainStatus,
   MailFromStatus,
+  ReceivingDomain,
+  ReceivingDomainRecord,
   TrackingDomain,
   TrackingDomainRecord,
   TrackingDomainStatus,
@@ -88,6 +93,17 @@ export type {
   LogDrainWithSecret,
   UpdateLogDrainParams,
 } from "./types/log-drain.ts";
+export type {
+  DeletedReceivedEmail,
+  InboundAddress,
+  ListReceivedEmailsParams,
+  ReceivedEmail,
+  ReceivedEmailAttachment,
+  ReceivedEmailStatus,
+  ReceivedEmailSummary,
+  ReceivedEmailVerdicts,
+  VerdictStatus,
+} from "./types/received-email.ts";
 export type {
   Reputation,
   ReputationCheck,
@@ -143,6 +159,9 @@ export type {
   BillingWebhookEvent,
   EmailWebhookEvent,
   EmailWebhookEventData,
+  ReceivedEmailEventType,
+  ReceivedEmailWebhookEvent,
+  ReceivedEmailWebhookEventData,
   RiskEventType,
   RiskWebhookEvent,
   RiskWebhookEventData,

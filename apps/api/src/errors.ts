@@ -202,7 +202,12 @@ function fromDomainError(error: DomainError): ApiError {
       return invalidRequest(error.code, error.message);
     case "invalid_tracking_hostname":
     case "tracking_domain_taken":
+    case "invalid_receiving_hostname":
+    case "receiving_domain_taken":
       return invalidRequest(error.code, error.message, "hostname");
+    case "receiving_domain_exists":
+    case "receiving_unavailable":
+      return invalidRequest(error.code, error.message);
     case "not_found":
       return new ApiError(404, {
         type: "not_found_error",

@@ -1,14 +1,13 @@
 name: Deploy
 
-# Production deploys (README, "Deploying to AWS"): builds the four images, migrates, then rolls out
-# api + worker, then web + site, and invalidates the coss.com CDN. Jobs that touch AWS run on
-# CodeBuild-hosted runners whose role holds the credentials (infra/terraform/deploy.tf); nothing
-# AWS-related is stored in GitHub. Runs after CI passes on main; run it by hand to redeploy (e.g.
-# after a Terraform environment change) or, with `image_tag`, to roll back to an earlier commit.
+# Production deploys (README, "Deploying to AWS"): builds the four images while CI runs, then, once
+# CI passed, migrates, rolls out all four services at once and invalidates the coss.com CDN. Jobs
+# that touch AWS run on CodeBuild-hosted runners whose role holds the credentials
+# (infra/terraform/deploy.tf); nothing AWS-related is stored in GitHub. Runs on every push to main;
+# run it by hand to redeploy (e.g. after a Terraform environment change) or, with `image_tag`, to
+# roll back to an earlier commit. If CI fails and a re-run passes, re-run this run's failed jobs.
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  push:
     branches: [main]
   workflow_dispatch:
     inputs:
@@ -16,10 +15,6 @@ on:
         description: Commit whose images to deploy (already built, e.g. a rollback). Empty builds this run's commit.
         required: false
         default: ""
-
-concurrency:
-  group: deploy-production
-  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -31,17 +26,12 @@ env:
 
 jobs:
   prepare:
-    # Only CI runs of pushes to main (a pull request from a fork's `main` branch would match too).
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
       build: ${{ steps.tag.outputs.build }}
     steps:
-      # This file, from main, only (workflow_run always runs on the default branch; a dispatch picks a
-      # ref). The jobs on the CodeBuild runner also need the `production` environment, which only
+      # This file, from main, only (a dispatch picks a ref). The jobs on the CodeBuild runner also need the `production` environment, which only
       # allows main. Neither stops a different workflow named "Deploy" (README, "Deploying to AWS").
       - name: Refuse anything but main
         env:
@@ -55,7 +45,7 @@ jobs:
       - id: tag
         env:
           INPUT_TAG: ${{ inputs.image_tag }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          HEAD_SHA: ${{ github.sha }}
         run: |
           if [ -n "$INPUT_TAG" ]; then
             echo "tag=$INPUT_TAG" >> "$GITHUB_OUTPUT"
@@ -79,6 +69,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.prepare.outputs.tag }}
+      # Builds start with CI instead of after it; nothing ships until the `ci` job below passes.
       - name: Build and push ${{ matrix.service }}
         env:
           SERVICE: ${{ matrix.service }}
@@ -96,21 +87,63 @@ jobs:
             web | site) release_arg="NEXT_DEPLOYMENT_ID=$TAG" ;;
             *) release_arg="SENTRY_RELEASE=$TAG" ;;
           esac
+          # Only the dependency layers are reusable (the build layer depends on the commit), so the
+          # layer cache is keyed by what they're built from and exported only when that changes:
+          # exporting it took longer than the build itself.
+          deps="$({ cat bun.lock "apps/$SERVICE/Dockerfile"; git ls-files -z '*package.json' | xargs -0 cat; } | sha256sum | cut -c1-16)"
+          cache="$image:buildcache-$deps"
+          cache_to=()
+          if ! aws ecr describe-images --repository-name "coss/$SERVICE" --image-ids "imageTag=buildcache-$deps" >/dev/null 2>&1; then
+            cache_to=(--cache-to "type=registry,ref=$cache,mode=max,image-manifest=true,oci-mediatypes=true,ignore-error=true")
+          fi
           docker buildx create --use --driver docker-container >/dev/null
           docker buildx build . \
             --file "apps/$SERVICE/Dockerfile" \
             --platform linux/arm64 \
             --build-arg "$release_arg" \
             --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN \
-            --cache-from "type=registry,ref=$image:buildcache" \
-            --cache-to "type=registry,ref=$image:buildcache,mode=max,image-manifest=true,oci-mediatypes=true" \
+            --cache-from "type=registry,ref=$cache" \
+            "${cache_to[@]}" \
             --provenance=false \
             --tag "$image:$TAG" \
             --push
 
+  # Waits for this commit's CI run (pushes only: a dispatch deploys what it's given).
+  ci:
+    needs: prepare
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+    steps:
+      - name: Wait for CI to pass
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+        run: |
+          while :; do
+            run="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$SHA&event=push&per_page=1" \
+              --jq '.workflow_runs[0] // empty | "\(.status) \(.conclusion) \(.html_url)"')"
+            read -r status conclusion url <<<"$run"
+            if [ "${status:-}" = completed ]; then
+              [ "$conclusion" = success ] && { echo "CI passed: $url"; exit 0; }
+              echo "CI $conclusion: $url — re-run it, then re-run this run's failed jobs." >&2
+              exit 1
+            fi
+            sleep 10
+          done
+
   deploy:
-    needs: [prepare, build]
-    if: always() && needs.prepare.result == 'success' && (needs.build.result == 'success' || needs.build.result == 'skipped')
+    needs: [prepare, build, ci]
+    if: >-
+      always() && needs.prepare.result == 'success' &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped') &&
+      (needs.ci.result == 'success' || needs.ci.result == 'skipped')
+    # Never two migrations or rollouts at once (builds may overlap).
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
     environment: production
     runs-on: codebuild-coss-production-deploy-${{ github.run_id }}-${{ github.run_attempt }}
     timeout-minutes: 60
@@ -119,13 +152,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       # Migrations must be backward compatible with the running code; never two at once (the
-      # concurrency group above).
+      # job's concurrency group).
       - name: Migrate
         run: infra/scripts/ecs-task.sh --image-tag "$TAG" worker -- bun packages/db/src/migrate.ts
-      - name: Roll out api and worker
-        run: infra/scripts/ecs-deploy.sh "$TAG" api worker
-      - name: Roll out web and site
-        run: infra/scripts/ecs-deploy.sh "$TAG" web site
+      # All at once: every rollout keeps old and new tasks side by side anyway, so ordering them
+      # bought no compatibility, only time.
+      - name: Roll out
+        run: infra/scripts/ecs-deploy.sh "$TAG" api worker web site
       - name: Record the deployed commit
         run: aws ssm put-parameter --name "/coss/$STAGE/image-tag" --value "$TAG" --overwrite >/dev/null
       # Docs pages are cached for a year at the edge. Only our apps' cached paths, never the hashed

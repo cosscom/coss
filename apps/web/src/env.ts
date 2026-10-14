@@ -50,6 +50,13 @@ export const env = createEnv({
     // widget. The secret key is read by @coss/auth (`captcha` plugin).
     TURNSTILE_SITE_KEY: z.string().optional(),
     TURNSTILE_SECRET_KEY: z.string().optional(),
+    // Sign-in with Google / GitHub (OAuth clients whose callback is
+    // `${BETTER_AUTH_URL}/api/auth/callback/<provider>`). Read by @coss/auth; each provider is on
+    // when both of its values are set (src/instrumentation.ts refuses half of a pair).
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    GITHUB_CLIENT_ID: z.string().optional(),
+    GITHUB_CLIENT_SECRET: z.string().optional(),
     // Error and performance monitoring of the dashboard's server and, through /api/monitoring,
     // of browsers on both zones (dashboard and site).
     ...sentryEnvShape,

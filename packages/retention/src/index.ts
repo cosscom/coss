@@ -10,6 +10,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const RETENTION_DAYS = {
   /** Emails with their recipients, events, links and attachment metadata (not queued or scheduled). */
   emails: 45,
+  /** Received emails with their headers, bodies, raw message and attachments. */
+  receivedEmails: 30,
   /** Webhook messages with their deliveries and attempts (once none is pending). */
   webhookDeliveries: 30,
   /** Log drain batches with their lines and attempt logs (once finished). */
@@ -70,6 +72,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     description:
       "The bytes of attachments; only their name, type, size and checksum stay with the email.",
     period: { until: "sent" },
+  },
+  {
+    id: "received_emails",
+    label: "Received emails",
+    description:
+      "Emails sent to your receiving addresses: the raw message, headers, bodies, attachments and spam and authentication verdicts. You can also delete one right away.",
+    period: { days: RETENTION_DAYS.receivedEmails, after: "creation" },
   },
   {
     id: "idempotency_keys",

@@ -4,10 +4,20 @@
  */
 import type { ApiVersion } from "../api-version.ts";
 import type { EmailEventType } from "./email.ts";
-import type { AccountEventType, BillingEventType, RiskEventType } from "./webhook.ts";
+import type {
+  AccountEventType,
+  BillingEventType,
+  ReceivedEmailEventType,
+  RiskEventType,
+} from "./webhook.ts";
 
 /** Every event type an endpoint can subscribe to. */
-export type WebhookEventType = EmailEventType | AccountEventType | BillingEventType | RiskEventType;
+export type WebhookEventType =
+  | EmailEventType
+  | ReceivedEmailEventType
+  | AccountEventType
+  | BillingEventType
+  | RiskEventType;
 
 /** A URL of the API key's environment that receives signed event notifications. */
 export interface WebhookEndpoint {

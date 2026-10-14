@@ -1,5 +1,6 @@
 "use client";
 
+import { SOCIAL_PROVIDER_LABELS, type SocialProvider } from "@coss/auth/constants";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
@@ -9,6 +10,7 @@ import { BuildingIcon, KeyRoundIcon } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { SocialSignInButtons } from "@/components/social-sign-in";
 import { type Turnstile, useTurnstile } from "@/components/turnstile";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
@@ -17,15 +19,36 @@ import { nextQuery } from "@/lib/safe-redirect";
 /** Codes that end the two-factor challenge: the user has to enter their password again. */
 const CHALLENGE_OVER = new Set(["INVALID_TWO_FACTOR_COOKIE", "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE"]);
 
+export type SignInStep = "credentials" | "two-factor";
+
 export function SignInForm({
   next,
   turnstileSiteKey,
+  providers,
+  initialStep,
+  initialError,
 }: {
   next: string;
   turnstileSiteKey: string | null;
+  /** Social sign-in providers configured for this deployment. */
+  providers: SocialProvider[];
+  /** `two-factor` when a Google or GitHub sign-in left a challenge cookie (`?step=`). */
+  initialStep: SignInStep;
+  /** A failed Google or GitHub sign-in, from `?error=` (`socialErrorMessage`). */
+  initialError: string | null;
 }) {
-  const [step, setStep] = useState<"credentials" | "two-factor">("credentials");
-  const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<SignInStep>(initialStep);
+  const [error, setError] = useState<string | null>(initialError);
+
+  // Shown once: a reload shouldn't repeat an old error or reopen a finished challenge.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("error") && !url.searchParams.has("step")) return;
+    url.searchParams.delete("error");
+    url.searchParams.delete("error_description");
+    url.searchParams.delete("step");
+    window.history.replaceState(null, "", url);
+  }, []);
 
   // A full page load, so server components see the new session cookie. Stable, so the passkey
   // autofill request below isn't restarted on every render.
@@ -35,6 +58,7 @@ export function SignInForm({
     <CredentialsStep
       error={error}
       next={next}
+      providers={providers}
       turnstileSiteKey={turnstileSiteKey}
       onError={setError}
       onSignedIn={finish}
@@ -57,13 +81,14 @@ export function SignInForm({
 function CredentialsStep(props: {
   next: string;
   turnstileSiteKey: string | null;
+  providers: SocialProvider[];
   error: string | null;
   onError: (message: string | null) => void;
   onSignedIn: () => void;
   onTwoFactor: () => void;
 }) {
   const { onError, onSignedIn } = props;
-  const [pending, setPending] = useState<"password" | "passkey" | null>(null);
+  const [pending, setPending] = useState<"password" | "passkey" | "social" | null>(null);
   // Only the password form: passkey sign-ins need no token.
   const turnstile: Turnstile = useTurnstile(props.turnstileSiteKey, "sign-in");
 
@@ -124,7 +149,11 @@ function CredentialsStep(props: {
     <Card>
       <CardHeader>
         <CardTitle>Sign in to COSS</CardTitle>
-        <CardDescription>Use your email and password, a passkey or single sign-on.</CardDescription>
+        <CardDescription>
+          Use your email and password
+          {props.providers.map((provider) => `, ${SOCIAL_PROVIDER_LABELS[provider]}`).join("")}, a
+          passkey or single sign-on.
+        </CardDescription>
       </CardHeader>
       <CardPanel className="flex flex-col gap-4">
         {/* method="post": a submit before hydration must never put credentials in the URL. */}
@@ -160,6 +189,17 @@ function CredentialsStep(props: {
           or
           <Separator className="flex-1" />
         </div>
+        <SocialSignInButtons
+          disabled={pending !== null && pending !== "social"}
+          errorPath={`/sign-in${query}`}
+          next={props.next}
+          onError={(message) => {
+            onError(message);
+            if (message) setPending(null);
+          }}
+          onStart={() => setPending("social")}
+          providers={props.providers}
+        />
         <Button
           disabled={pending !== null}
           loading={pending === "passkey"}
