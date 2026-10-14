@@ -1059,7 +1059,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   belongs in `releaseProviderResources`. Admin audit events are kept (no FKs).
 - **Risk** (`packages/risk`, tables `risk_assessment` (ids `rsk_`), `risk_feedback` (`rskfb_`), `risk_identity`
   (`rskid_`), `risk_report` (`rskrep_`), `risk_list_entry` (`rskle_`), `risk_rule` (`rskrule_`), `risk_settings`
-  (one row per environment), `risk_user_network` (`rskun_`), `risk_limit_bucket` (`rsklb_`), platform tables
+  (one row per environment), `risk_user_network` (`rskun_`), `risk_limit_bucket` (`rsklb_`), `risk_assessment_preparation`, platform tables
   `risk_dataset` and `risk_domain_age`):
   `assessRisk` collects every signal in parallel and **fails open per signal** (DNS 800 ms, RDAP domain age 1 s —
   a slower lookup keeps running and fills `risk_domain_age` —, captcha siteverify 2 s, Valkey's 100 ms command
@@ -1091,7 +1091,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   **Content** (`content: { text }` on assessments, `POST /v1/risk/content/classify`): scored per category
   (`CONTENT_CATEGORIES`) by the `text` kind of `@coss/screening`'s classifier at request time (3 s; sandbox
   environments read the markers in `sandboxContentScores`), **outside** the assessment's transaction and after a
-  replay pre-check. A database preparation claim deduplicates concurrent retries before charging,
+  replay pre-check. With an `Idempotency-Key`, a preparation claim (`risk_assessment_preparation`) deduplicates concurrent retries before charging,
   caches only scores for transaction retries, and holds no connection during classification. A crashed
   preparation fails open after 30 seconds without another charge; preparation rows are purged after 48 hours. COSS never decides from scores:
   `content.*` reasons fire only at the environment's `content_thresholds`, and rules test `content.*` fields. The

@@ -67,7 +67,8 @@ export async function purgeExpiredRiskAssessments(opts: PurgeOptions = {}): Prom
 /**
  * Deletes mailbox identities and users' login networks not seen within `riskMemory`, network
  * reports once they stop counting (30 days), other reports after `riskMemory`, and cached domain
- * ages nobody looked up for 90 days. Returns [identities, reports, networks, domain ages].
+ * ages nobody looked up for 90 days, and assessment preparations after 48 hours. Returns
+ * [identities, reports, networks, domain ages, preparations].
  */
 export async function purgeExpiredRiskMemory(opts: PurgeOptions = {}): Promise<number[]> {
   const now = opts.now ?? new Date();
@@ -94,14 +95,15 @@ export async function purgeExpiredRiskMemory(opts: PurgeOptions = {}): Promise<n
     .where(stalePreparation)
     .orderBy(asc(preparation.createdAt))
     .limit(opts.limit ?? 1000);
-  await db
+  const preparations = await db
     .delete(preparation)
     .where(
       and(
         stalePreparation,
         sql`(${preparation.environmentId}, ${preparation.idempotencyKey}) in (${expiredPreparations})`,
       ),
-    );
+    )
+    .returning({ key: preparation.idempotencyKey });
   const cutoff = retentionCutoff(RETENTION_DAYS.riskMemory, now);
   const staleIdentity = and(
     lt(riskIdentity.lastSeenAt, cutoff),
@@ -167,5 +169,5 @@ export async function purgeExpiredRiskMemory(opts: PurgeOptions = {}): Promise<n
         .returning({ domain: riskDomainAge.domain })
     ).length;
   }
-  return [identities.length, reports.length, networks.length, domainAges];
+  return [identities.length, reports.length, networks.length, domainAges, preparations.length];
 }

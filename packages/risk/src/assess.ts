@@ -151,7 +151,8 @@ export async function assessRisk(
   // requests cannot exhaust the pool.
   const [ipSignals, content] = await Promise.all([
     ipSignalsFor(deps, params.ip ? normalizeIp(params.ip) : null, environment.mode === "sandbox"),
-    idempotencyKey
+    // Only paid work needs a claim: assessments without content stay one transaction.
+    idempotencyKey && params.content?.text
       ? prepareIdempotentContent(deps, input, idempotencyKey, hash as string)
       : assessmentContentScores(deps, environment, params.content?.text),
   ]);

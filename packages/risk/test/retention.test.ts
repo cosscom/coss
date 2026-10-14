@@ -27,9 +27,10 @@ describe("risk retention", () => {
       })),
     );
     const rows = () => db.select().from(table).where(eq(table.environmentId, live.environmentId));
-    await purgeExpiredRiskMemory({ now, limit: 1, scope: { organizationIds: [organizationId] } });
+    const scope = { organizationIds: [organizationId] };
+    expect((await purgeExpiredRiskMemory({ now, limit: 1, scope }))[4]).toBe(1);
     expect(await rows()).toHaveLength(2);
-    await purgeExpiredRiskMemory({ now, limit: 1, scope: { organizationIds: [organizationId] } });
+    expect((await purgeExpiredRiskMemory({ now, limit: 1, scope }))[4]).toBe(1);
     expect(await rows()).toMatchObject([{ idempotencyKey: "fresh" }]);
   });
 
@@ -67,8 +68,8 @@ describe("risk retention", () => {
 
     // ip + subnet reports go after 30 days; mailbox + user reports and the identity after a year.
     // [identities, reports, login networks (country + ASN), domain ages (not scoped)].
-    expect(await purgeExpiredRiskMemory({ now: at(31), scope })).toEqual([0, 2, 0, 0]);
-    expect(await purgeExpiredRiskMemory({ now: at(366), scope })).toEqual([1, 2, 2, 0]);
+    expect(await purgeExpiredRiskMemory({ now: at(31), scope })).toEqual([0, 2, 0, 0, 0]);
+    expect(await purgeExpiredRiskMemory({ now: at(366), scope })).toEqual([1, 2, 2, 0, 0]);
 
     expect(await purgeExpiredRiskAssessments({ now: at(364), scope })).toBe(0);
     expect(await purgeExpiredRiskAssessments({ now: at(366), scope })).toBe(1);
