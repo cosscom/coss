@@ -1,4 +1,5 @@
 export type WebhookErrorCode =
+  | "endpoint_disabled"
   | "invalid_api_version"
   | "invalid_url"
   | "not_found"

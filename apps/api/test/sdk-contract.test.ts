@@ -706,6 +706,38 @@ describe("coss.webhookEndpoints.deliveries against the API", () => {
   });
 });
 
+describe("coss.webhookEndpoints.recover against the API", () => {
+  test("requeues failed deliveries and reports a disabled endpoint", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const created = await coss.webhookEndpoints.create({ url: "https://example.com/hook" });
+    if (!created.data) throw new Error("create failed");
+
+    const recovered = await coss.webhookEndpoints.recover(created.data.id, {
+      since: new Date(Date.now() - 60_000),
+    });
+    expect(recovered).toEqual({
+      data: {
+        object: "webhook_endpoint_recovery",
+        endpoint_id: created.data.id,
+        requeued: 0,
+        has_more: false,
+      },
+      error: null,
+    });
+
+    const disabled = await coss.webhookEndpoints.update(created.data.id, { enabled: false });
+    expect(disabled.data).toMatchObject({
+      enabled: false,
+      disabled_reason: "manual",
+      failing_since: null,
+    });
+    const refused = await coss.webhookEndpoints.recover(created.data.id, { since: new Date() });
+    expect(refused.error).toMatchObject({ status: 422, code: "endpoint_disabled" });
+  });
+});
+
 describe("coss.webhookEndpoints.rollSecret against the API", () => {
   test("deliveries verify with the old and the new secret until the old one expires", async () => {
     const tenant = await createTestTenant();

@@ -1906,6 +1906,33 @@
             "type": "boolean",
             "description": "A disabled endpoint receives nothing until it is enabled again."
           },
+          "disabled_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "manual",
+              "failing",
+              null
+            ],
+            "description": "`manual`: someone disabled it. `failing`: its deliveries failed every attempt for five days, so COSS disabled it. `null` while enabled."
+          },
+          "disabled_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "failing_since": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the endpoint's current run of failed deliveries began (a delivery that failed every attempt); cleared by the next successful delivery. An endpoint failing for five days is disabled. `null` while healthy."
+          },
           "previous_secret_expires_at": {
             "type": [
               "string",
@@ -1938,6 +1965,9 @@
           "event_types",
           "api_version",
           "enabled",
+          "disabled_reason",
+          "disabled_at",
+          "failing_since",
           "previous_secret_expires_at",
           "created_at",
           "updated_at",
@@ -1955,6 +1985,9 @@
             ],
             "api_version": "2026-10-10",
             "enabled": true,
+            "disabled_reason": null,
+            "disabled_at": null,
+            "failing_since": null,
             "previous_secret_expires_at": null,
             "created_at": "2026-01-15T09:30:00.000Z",
             "updated_at": "2026-01-15T09:30:00.000Z",
@@ -2070,6 +2103,9 @@
                 ],
                 "api_version": "2026-10-10",
                 "enabled": true,
+                "disabled_reason": null,
+                "disabled_at": null,
+                "failing_since": null,
                 "previous_secret_expires_at": null,
                 "created_at": "2026-01-15T09:30:00.000Z",
                 "updated_at": "2026-01-15T09:30:00.000Z"
@@ -2124,6 +2160,33 @@
             "type": "boolean",
             "description": "A disabled endpoint receives nothing until it is enabled again."
           },
+          "disabled_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "manual",
+              "failing",
+              null
+            ],
+            "description": "`manual`: someone disabled it. `failing`: its deliveries failed every attempt for five days, so COSS disabled it. `null` while enabled."
+          },
+          "disabled_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "failing_since": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the endpoint's current run of failed deliveries began (a delivery that failed every attempt); cleared by the next successful delivery. An endpoint failing for five days is disabled. `null` while healthy."
+          },
           "previous_secret_expires_at": {
             "type": [
               "string",
@@ -2149,6 +2212,9 @@
           "event_types",
           "api_version",
           "enabled",
+          "disabled_reason",
+          "disabled_at",
+          "failing_since",
           "previous_secret_expires_at",
           "created_at",
           "updated_at"
@@ -2165,6 +2231,9 @@
             ],
             "api_version": "2026-10-10",
             "enabled": true,
+            "disabled_reason": null,
+            "disabled_at": null,
+            "failing_since": null,
             "previous_secret_expires_at": null,
             "created_at": "2026-01-15T09:30:00.000Z",
             "updated_at": "2026-01-15T09:30:00.000Z"
@@ -2281,6 +2350,67 @@
             "object": "webhook_endpoint",
             "id": "whep_01k7c8m4q2f3e9v6t5r1n0p8yz",
             "deleted": true
+          }
+        ]
+      },
+      "WebhookEndpointRecovery": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "webhook_endpoint_recovery"
+            ]
+          },
+          "endpoint_id": {
+            "type": "string",
+            "examples": [
+              "whep_01k7c8m4q2f3e9v6t5r1n0p8yz"
+            ]
+          },
+          "requeued": {
+            "type": "integer",
+            "description": "How many failed deliveries were queued for one more attempt. Their attempts are spread over the next minute."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "At most 1,000 are requeued per call; `true` means call again with the same `since`."
+          }
+        },
+        "required": [
+          "object",
+          "endpoint_id",
+          "requeued",
+          "has_more"
+        ],
+        "examples": [
+          {
+            "object": "webhook_endpoint_recovery",
+            "endpoint_id": "whep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "requeued": 12,
+            "has_more": false
+          }
+        ]
+      },
+      "RecoverWebhookEndpointRequest": {
+        "type": "object",
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Requeue the endpoint's deliveries that failed and were created at or after this time (ISO 8601). Deliveries are kept for 30 days.",
+            "examples": [
+              "2026-01-15T09:00:00.000Z"
+            ]
+          }
+        },
+        "required": [
+          "since"
+        ],
+        "additionalProperties": false,
+        "examples": [
+          {
+            "since": "2026-01-15T09:00:00.000Z"
           }
         ]
       },
@@ -9011,6 +9141,297 @@
           },
           "422": {
             "description": "The body failed validation (`validation_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/webhook_endpoints/{id}/recover": {
+      "post": {
+        "operationId": "recoverWebhookEndpoint",
+        "tags": [
+          "Webhook endpoints"
+        ],
+        "summary": "Recover failed deliveries",
+        "description": "Queues the endpoint's deliveries that `failed` since `since` for one more attempt each, oldest first, spread over the next minute, e.g. after fixing a receiver that was down. At most 1000 per call: while `has_more` is `true`, call again with the same `since`. The endpoint must be enabled.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The webhook endpoint's id.",
+              "examples": [
+                "whep_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The webhook endpoint's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoverWebhookEndpointRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "How many deliveries were queued.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointRecovery"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No webhook endpoint with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The request body is larger than 5 MB (`payload_too_large`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body is not sent as `application/json` (`unsupported_media_type`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The body failed validation (`validation_error`), or the endpoint is disabled (`endpoint_disabled`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

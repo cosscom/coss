@@ -1,5 +1,6 @@
 import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment } from "@coss/tenancy";
+import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
@@ -13,6 +14,7 @@ import {
 } from "@coss/ui/components/table";
 import { versioning } from "@coss/versioning";
 import {
+  DISABLE_FAILING_ENDPOINT_AFTER_MS,
   getWebhookEndpoint,
   listWebhookDeliveries,
   previousSecretExpiresAt,
@@ -24,8 +26,10 @@ import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
+import { EndpointStatusBadge } from "../endpoint-status";
 import {
   DeleteEndpointButton,
+  RecoverDeliveriesButton,
   RetryDeliveryButton,
   RevealSecret,
   RollSecretButton,
@@ -34,6 +38,8 @@ import {
 } from "./endpoint-actions";
 
 export const metadata: Metadata = { title: "Webhook endpoint" };
+
+const DISABLED_AFTER_DAYS = DISABLE_FAILING_ENDPOINT_AFTER_MS / (24 * 3_600_000);
 
 const DELIVERY_STATUS = {
   pending: ["warning", "Pending"],
@@ -99,6 +105,7 @@ export default async function WebhookEndpointPage({
                   View logs
                 </Button>
               ) : null}
+              {canUpdate && endpoint.enabled ? <RecoverDeliveriesButton {...target} /> : null}
               {canUpdate ? <ToggleEndpointButton {...target} enabled={endpoint.enabled} /> : null}
               {canDelete ? <DeleteEndpointButton {...target} url={endpoint.url} /> : null}
             </>
@@ -108,6 +115,26 @@ export default async function WebhookEndpointPage({
         />
       </div>
 
+      {!endpoint.enabled && endpoint.disabledReason === "failing" ? (
+        <Alert variant="error">
+          <AlertTitle>Disabled after repeated failures</AlertTitle>
+          <AlertDescription>
+            Every delivery to this endpoint failed for {DISABLED_AFTER_DAYS} days, so COSS disabled
+            it{endpoint.disabledAt ? ` on ${formatDateTime(endpoint.disabledAt)}` : ""}. Fix the
+            receiver, enable the endpoint again, then recover the deliveries it missed.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {endpoint.enabled && endpoint.failingSince ? (
+        <Alert variant="warning">
+          <AlertTitle>Failing since {formatDateTime(endpoint.failingSince)}</AlertTitle>
+          <AlertDescription>
+            Deliveries to this endpoint have been failing every attempt. If none succeeds for{" "}
+            {DISABLED_AFTER_DAYS} days, COSS disables the endpoint.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       <Card>
         <CardPanel className="p-2">
           <Table>
@@ -115,11 +142,7 @@ export default async function WebhookEndpointPage({
               <TableRow>
                 <TableHead className="w-32">Status</TableHead>
                 <TableCell>
-                  {endpoint.enabled ? (
-                    <Badge variant="success">Enabled</Badge>
-                  ) : (
-                    <Badge variant="secondary">Disabled</Badge>
-                  )}
+                  <EndpointStatusBadge endpoint={endpoint} />
                 </TableCell>
               </TableRow>
               <TableRow>

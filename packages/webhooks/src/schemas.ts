@@ -15,6 +15,8 @@ export const DESCRIPTION_MAX_LENGTH = 256;
 /** How long, in seconds, a rolled secret keeps signing next to the new one: a day by default, at most a week. */
 export const DEFAULT_PREVIOUS_SECRET_EXPIRES_IN = 24 * 60 * 60;
 export const MAX_PREVIOUS_SECRET_EXPIRES_IN = 7 * 24 * 60 * 60;
+export const WEBHOOK_ENDPOINT_DISABLED_REASONS = ["manual", "failing"] as const;
+export type WebhookEndpointDisabledReason = (typeof WEBHOOK_ENDPOINT_DISABLED_REASONS)[number];
 
 const EVENT_TYPES_DESCRIPTION =
   "Event types delivered to this endpoint. An empty array means every event type, including " +
@@ -33,6 +35,9 @@ const ENDPOINT_EXAMPLE = {
   event_types: ["email.delivered", "email.bounced"],
   api_version: LATEST_API_VERSION,
   enabled: true,
+  disabled_reason: null,
+  disabled_at: null,
+  failing_since: null,
   previous_secret_expires_at: null,
   created_at: "2026-01-15T09:30:00.000Z",
   updated_at: "2026-01-15T09:30:00.000Z",
@@ -51,6 +56,24 @@ export const WebhookEndpointObject = z
     enabled: z
       .boolean()
       .meta({ description: "A disabled endpoint receives nothing until it is enabled again." }),
+    disabled_reason: z
+      .enum(WEBHOOK_ENDPOINT_DISABLED_REASONS)
+      .nullable()
+      .meta({
+        description:
+          "`manual`: someone disabled it. `failing`: its deliveries failed every attempt for five " +
+          "days, so COSS disabled it. `null` while enabled.",
+      }),
+    disabled_at: z.iso.datetime().nullable(),
+    failing_since: z.iso
+      .datetime()
+      .nullable()
+      .meta({
+        description:
+          "When the endpoint's current run of failed deliveries began (a delivery that failed every " +
+          "attempt); cleared by the next successful delivery. An endpoint failing for five days is " +
+          "disabled. `null` while healthy.",
+      }),
     previous_secret_expires_at: z.iso
       .datetime()
       .nullable()
@@ -105,6 +128,53 @@ export const RollWebhookEndpointSecretRequest = z
 export type RollWebhookEndpointSecretRequestOutput = z.output<
   typeof RollWebhookEndpointSecretRequest
 >;
+
+export const RecoverWebhookEndpointRequest = z
+  .strictObject({
+    since: z.iso.datetime({ offset: true }).meta({
+      description:
+        "Requeue the endpoint's deliveries that failed and were created at or after this time " +
+        "(ISO 8601). Deliveries are kept for 30 days.",
+      examples: ["2026-01-15T09:00:00.000Z"],
+    }),
+  })
+  .meta({
+    id: "RecoverWebhookEndpointRequest",
+    examples: [{ since: "2026-01-15T09:00:00.000Z" }],
+  });
+
+export type RecoverWebhookEndpointRequestOutput = z.output<typeof RecoverWebhookEndpointRequest>;
+
+export const RecoverWebhookEndpointResult = z
+  .object({
+    object: z.literal("webhook_endpoint_recovery"),
+    endpoint_id: z.string().meta({ examples: [ENDPOINT_ID_EXAMPLE] }),
+    requeued: z
+      .number()
+      .int()
+      .meta({
+        description:
+          "How many failed deliveries were queued for one more attempt. Their attempts are spread " +
+          "over the next minute.",
+      }),
+    has_more: z.boolean().meta({
+      description:
+        "At most 1,000 are requeued per call; `true` means call again with the same `since`.",
+    }),
+  })
+  .meta({
+    id: "WebhookEndpointRecovery",
+    examples: [
+      {
+        object: "webhook_endpoint_recovery",
+        endpoint_id: ENDPOINT_ID_EXAMPLE,
+        requeued: 12,
+        has_more: false,
+      },
+    ],
+  });
+
+export type RecoverWebhookEndpointResultOutput = z.output<typeof RecoverWebhookEndpointResult>;
 
 export const WebhookEndpointList = z
   .object({

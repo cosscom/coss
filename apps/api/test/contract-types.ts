@@ -59,6 +59,8 @@ import type {
   LogDrainList,
   LogDrainObject,
   LogDrainWithSecret,
+  RecoverWebhookEndpointRequest,
+  RecoverWebhookEndpointResult,
   RollWebhookEndpointSecretRequest,
   UpdateLogDrainRequest,
   WebhookAttemptObject,
@@ -92,6 +94,7 @@ import type {
   LogDrainBatch,
   LogDrainLine,
   LogDrainSource,
+  RecoverWebhookEndpointParams,
   RescheduleEmailParams,
   RollWebhookEndpointSecretParams,
   AccountWebhookEvent as SdkAccountWebhookEvent,
@@ -124,6 +127,7 @@ import type {
   UpdateLogDrainParams,
   UpdateWebhookEndpointParams,
   WebhookEndpoint,
+  WebhookEndpointRecovery,
   WebhookEvent,
 } from "coss";
 import type { z } from "zod";
@@ -213,6 +217,16 @@ export type Contract = [
       z.input<typeof RollWebhookEndpointSecretRequest>,
       RollWebhookEndpointSecretParams
     >
+  >,
+  // The SDK also accepts a `Date` for `since` and sends it as an ISO string.
+  Assert<
+    MutuallyAssignable<
+      z.input<typeof RecoverWebhookEndpointRequest>,
+      Omit<RecoverWebhookEndpointParams, "since"> & { since: string }
+    >
+  >,
+  Assert<
+    MutuallyAssignable<z.output<typeof RecoverWebhookEndpointResult>, WebhookEndpointRecovery>
   >,
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointObject>, WebhookEndpoint>>,
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointWithSecret>, SdkEndpointWithSecret>>,

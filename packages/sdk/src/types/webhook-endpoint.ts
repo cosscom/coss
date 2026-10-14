@@ -9,6 +9,9 @@ import type { AccountEventType } from "./webhook.ts";
 /** Every event type an endpoint can subscribe to. */
 export type WebhookEventType = EmailEventType | AccountEventType;
 
+/** Why an endpoint is disabled. */
+export type WebhookEndpointDisabledReason = "manual" | "failing";
+
 /** A URL of the API key's environment that receives signed event notifications. */
 export interface WebhookEndpoint {
   object: "webhook_endpoint";
@@ -24,6 +27,18 @@ export interface WebhookEndpoint {
   api_version: string;
   /** A disabled endpoint receives nothing until it is enabled again. */
   enabled: boolean;
+  /**
+   * `manual`: someone disabled it. `failing`: its deliveries failed every attempt for five days,
+   * so COSS disabled it. `null` while enabled.
+   */
+  disabled_reason: WebhookEndpointDisabledReason | null;
+  /** When it was disabled (ISO 8601); `null` while enabled. */
+  disabled_at: string | null;
+  /**
+   * When the endpoint's current run of failed deliveries began (ISO 8601); cleared by the next
+   * successful delivery. An endpoint failing for five days is disabled. `null` while healthy.
+   */
+  failing_since: string | null;
   /**
    * After a secret roll, deliveries are also signed with the previous secret until this time
    * (ISO 8601). `null` when only the current secret signs.
@@ -76,6 +91,25 @@ export interface RollWebhookEndpointSecretParams {
    * it immediately, e.g. after a leak.
    */
   previous_secret_expires_in?: number;
+}
+
+/** Body of `POST /v1/webhook_endpoints/{id}/recover`. */
+export interface RecoverWebhookEndpointParams {
+  /**
+   * Requeue the deliveries that failed and were created at or after this time (ISO 8601 string or
+   * `Date`). Deliveries are kept for 30 days.
+   */
+  since: string | Date;
+}
+
+/** Returned by `webhookEndpoints.recover`. */
+export interface WebhookEndpointRecovery {
+  object: "webhook_endpoint_recovery";
+  endpoint_id: string;
+  /** How many failed deliveries were queued for one more attempt (spread over the next minute). */
+  requeued: number;
+  /** At most 1,000 are requeued per call; `true` means call again with the same `since`. */
+  has_more: boolean;
 }
 
 /** Returned by `webhookEndpoints.delete`. */

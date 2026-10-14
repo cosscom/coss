@@ -1,6 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
+import {
+  IDEMPOTENCY_KEY_TTL_MS,
+  IdempotencyError,
+  withIdempotencyKey as withSharedIdempotencyKey,
+} from "@coss/db/idempotency";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
 import { and, asc, eq, inArray, isNull, lte, notExists } from "drizzle-orm";
 import {
@@ -111,10 +116,8 @@ const DISPATCH_DUE_LIMIT = 50;
 const DISPATCH_DUE_CONCURRENCY = 5;
 
 /** An idempotency key can be reused for a different request once its email is this old. */
-export const IDEMPOTENCY_KEY_TTL_MS = 24 * 60 * 60 * 1000;
+export { IDEMPOTENCY_KEY_TTL_MS };
 
-/** Each retry means another request changed the key's owner under us; this never loops in practice. */
-const MAX_IDEMPOTENCY_ATTEMPTS = 5;
 const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
 const {
@@ -992,49 +995,14 @@ function isReplayOf(
   );
 }
 
-/**
- * Inserts under an idempotency key, or replays the row that already holds it. The unique
- * (environment_id, idempotency_key) index arbitrates races: exactly one request inserts, every
- * other one waits for its commit, sees `DO NOTHING` (`insert` returns nothing) and replays the
- * winner's row, whatever its status (a queued email is replayed as queued).
- */
-async function withIdempotencyKey<Row extends { createdAt: Date; requestHash: string | null }>(op: {
-  requestHash: string;
-  retentionMs?: number;
-  insert: (tx: Transaction) => Promise<Row | undefined>;
-  existing: () => Promise<Row | undefined>;
-  /** Compare-and-set the key off an expired row. */
-  release: (tx: Transaction, existing: Row) => Promise<unknown>;
-}): Promise<{ row: Row; replayed: boolean }> {
-  let inserted = await db.transaction((tx) => op.insert(tx));
-  for (let attempt = 1; !inserted; attempt++) {
-    if (attempt > MAX_IDEMPOTENCY_ATTEMPTS) {
-      throw new EmailError("request_in_progress", "This idempotency key is busy. Retry shortly.");
-    }
-    const existing = await op.existing();
-    if (!existing) {
-      // Its owner expired and released the key between our insert and select.
-      inserted = await db.transaction((tx) => op.insert(tx));
-      continue;
-    }
-    if (Date.now() - existing.createdAt.getTime() > (op.retentionMs ?? IDEMPOTENCY_KEY_TTL_MS)) {
-      // Expired: move the key to a new row atomically. The compare-and-set on the old row makes
-      // concurrent requests with the same expired key queue up behind each other.
-      inserted = await db.transaction(async (tx) => {
-        await op.release(tx, existing);
-        return op.insert(tx);
-      });
-      continue;
-    }
-    if (existing.requestHash !== op.requestHash) {
-      throw new EmailError(
-        "idempotency_key_reused",
-        "This idempotency key was already used with a different request body.",
-      );
-    }
-    return { row: existing, replayed: true };
-  }
-  return { row: inserted, replayed: false };
+/** `withIdempotencyKey`, failing with this package's own error class (its codes are the same). */
+function withIdempotencyKey<Row extends { createdAt: Date; requestHash: string | null }>(
+  op: Parameters<typeof withSharedIdempotencyKey<Row>>[0],
+): Promise<{ row: Row; replayed: boolean }> {
+  return withSharedIdempotencyKey(op).catch((error: unknown) => {
+    if (error instanceof IdempotencyError) throw new EmailError(error.code, error.message);
+    throw error;
+  });
 }
 
 /** A batch with its emails in request order. */

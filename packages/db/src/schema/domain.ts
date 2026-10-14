@@ -663,6 +663,12 @@ export const webhookEndpoint = pgTable(
     previousSecretCiphertext: text("previous_secret_ciphertext"),
     previousSecretExpiresAt: timestamp("previous_secret_expires_at", { withTimezone: true }),
     enabled: boolean("enabled").notNull().default(true),
+    // Why it is off (`manual` or `failing`) and since when; null while enabled.
+    disabledReason: text("disabled_reason"),
+    disabledAt: timestamp("disabled_at", { withTimezone: true }),
+    // Set by the first delivery that failed every attempt, cleared by any success. An endpoint
+    // failing for long enough is disabled (`failing`).
+    failingSince: timestamp("failing_since", { withTimezone: true }),
     createdByUserId: text("created_by_user_id").references(() => user.id, {
       onDelete: "set null",
     }),
@@ -680,6 +686,10 @@ export const webhookEndpoint = pgTable(
     check(
       "webhook_endpoint_previous_secret_check",
       sql`(${t.previousSecretCiphertext} is null) = (${t.previousSecretExpiresAt} is null)`,
+    ),
+    check(
+      "webhook_endpoint_disabled_check",
+      sql`${t.enabled} = (${t.disabledReason} is null) and (${t.disabledReason} is null) = (${t.disabledAt} is null)`,
     ),
   ],
 );

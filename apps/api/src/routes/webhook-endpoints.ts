@@ -7,7 +7,9 @@ import {
   listWebhookEndpoints,
   MAX_ATTEMPTS,
   MAX_ENDPOINTS_PER_ENVIRONMENT,
+  MAX_RECOVER_BATCH,
   pageWebhookDeliveries,
+  recoverWebhookEndpoint,
   retryWebhookDelivery,
   rollWebhookEndpointSecret,
   toWebhookDeliveryObject,
@@ -19,6 +21,8 @@ import {
 import {
   DeletedWebhookEndpoint,
   ListWebhookDeliveriesQuery,
+  RecoverWebhookEndpointRequest,
+  RecoverWebhookEndpointResult,
   RollWebhookEndpointSecretRequest,
   WebhookDeliveryList,
   WebhookDeliveryObject,
@@ -289,6 +293,42 @@ export const retryWebhookDeliveryRoute = createRoute({
   },
 });
 
+export const recoverWebhookEndpointRoute = createRoute({
+  method: "post",
+  path: "/webhook_endpoints/{id}/recover",
+  operationId: "recoverWebhookEndpoint",
+  tags: ["Webhook endpoints"],
+  summary: "Recover failed deliveries",
+  description:
+    "Queues the endpoint's deliveries that `failed` since `since` for one more attempt each, " +
+    "oldest first, spread over the next minute, e.g. after fixing a receiver that was down. At " +
+    `most ${MAX_RECOVER_BATCH} per call: while \`has_more\` is \`true\`, call again with the same ` +
+    "`since`. The endpoint must be enabled.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ webhook: ["update"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/webhook_endpoints/{id}/recover"),
+  ],
+  request: {
+    params: EndpointIdParams,
+    body: {
+      required: true,
+      content: { "application/json": { schema: RecoverWebhookEndpointRequest } },
+    },
+  },
+  responses: {
+    200: jsonDoc("How many deliveries were queued.", RecoverWebhookEndpointResult),
+    ...bodyErrors,
+    ...commonErrors,
+    404: endpointNotFound,
+    422: errorDoc(
+      "The body failed validation (`validation_error`), or the endpoint is disabled " +
+        "(`endpoint_disabled`).",
+    ),
+  },
+});
+
 const DELIVERY_NOT_FOUND_MESSAGE = "This webhook endpoint has no delivery with this id.";
 
 export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAPIHono<AppEnv> {
@@ -392,6 +432,30 @@ export function createWebhookEndpointRoutes(deps: WebhookManagementDeps): OpenAP
       target: { type: "webhook_endpoint", id: row.id, label: row.url },
     });
     return c.json({ object: "webhook_endpoint" as const, id: row.id, deleted: true as const }, 200);
+  });
+
+  router.openapi(recoverWebhookEndpointRoute, async (c) => {
+    const endpoint = await requireEndpoint(c.var.auth, c.req.valid("param").id);
+    const { since } = c.req.valid("json");
+    const result = await recoverWebhookEndpoint({
+      organizationId: endpoint.organizationId,
+      id: endpoint.id,
+      since: new Date(since),
+    });
+    await recordApiAudit(c, {
+      action: "webhook_endpoint.recovered",
+      target: { type: "webhook_endpoint", id: endpoint.id, label: endpoint.url },
+      metadata: { since, requeued: result.requeued },
+    });
+    return c.json(
+      {
+        object: "webhook_endpoint_recovery" as const,
+        endpoint_id: endpoint.id,
+        requeued: result.requeued,
+        has_more: result.hasMore,
+      },
+      200,
+    );
   });
 
   router.openapi(listWebhookDeliveriesRoute, async (c) => {

@@ -5,7 +5,7 @@ import { RETENTION_DAYS } from "@coss/retention";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { eq, inArray, sql } from "drizzle-orm";
-import { retryWebhookDelivery } from "../src/deliver.ts";
+import { recoverWebhookEndpoint, retryWebhookDelivery } from "../src/deliver.ts";
 import { createWebhookEndpoint } from "../src/endpoints.ts";
 import { enqueueWebhookMessage } from "../src/outbox.ts";
 import { purgeExpiredWebhookMessages } from "../src/retention.ts";
@@ -14,8 +14,13 @@ import { testManagementDeps } from "../src/testing.ts";
 const { webhookAttempt, webhookDelivery, webhookMessage } = schema;
 
 describe("purgeExpiredWebhookMessages", () => {
-  for (const purgeWins of [false, true]) {
-    test(`serializes a manual retry with retention when ${purgeWins ? "purge" : "retry"} wins`, async () => {
+  for (const [operation, purgeWins] of [
+    ["retry", false],
+    ["retry", true],
+    ["recover", false],
+    ["recover", true],
+  ] as const) {
+    test(`serializes a manual ${operation} with retention when ${purgeWins ? "purge" : operation} wins`, async () => {
       const tenant = await createTestTenant();
       const organizationId = tenant.organization.id;
       const scope = { organizationIds: [organizationId] };
@@ -53,10 +58,18 @@ describe("purgeExpiredWebhookMessages", () => {
 
       const blocker = await pool.connect();
       let retry: Promise<boolean> | undefined;
+      const requeue = () =>
+        operation === "retry"
+          ? retryWebhookDelivery({ organizationId, endpointId: endpoint.id, id: delivery.id })
+          : recoverWebhookEndpoint({
+              organizationId,
+              id: endpoint.id,
+              since: new Date(Date.now() - 3_600_000),
+            }).then((result) => result.requeued === 1);
       try {
         await blocker.query("BEGIN");
         await blocker.query("SELECT id FROM webhook_message WHERE id = $1 FOR UPDATE", [messageId]);
-        retry = retryWebhookDelivery({ organizationId, endpointId: endpoint.id, id: delivery.id });
+        retry = requeue();
         // Wait for the real retry to block on the parent, rather than relying on a sleep to
         // guess when it has started. Holding only the parent must also stop child updates.
         let waiting = false;
