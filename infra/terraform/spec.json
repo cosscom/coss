@@ -827,8 +827,8 @@
               "PathPatternConfig": {
                 "Values": [
                   "/shipyard/*",
-                  "/docs",
-                  "/docs/*"
+                  "/calendar",
+                  "/calendar/*"
                 ]
               }
             },
@@ -851,9 +851,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
-                  "/legal",
-                  "/legal/*",
-                  "/llms.txt"
+                  "/docs",
+                  "/docs/*",
+                  "/legal"
                 ]
               }
             },
@@ -876,9 +876,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
-                  "/llms-full.txt",
-                  "/site-assets",
-                  "/site-assets/*"
+                  "/legal/*",
+                  "/llms.txt",
+                  "/llms-full.txt"
                 ]
               }
             },
@@ -901,9 +901,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
-                  "/icon.svg",
-                  "/favicon.ico",
-                  "/robots.txt"
+                  "/site-assets",
+                  "/site-assets/*",
+                  "/icon.svg"
                 ]
               }
             },
@@ -926,7 +926,31 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
-                  "/sitemap.xml",
+                  "/favicon.ico",
+                  "/robots.txt",
+                  "/sitemap.xml"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 90,
+          "targetGroup": "site",
+          "conditions": [
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
                   "/.well-known",
                   "/.well-known/*"
                 ]
@@ -944,7 +968,7 @@
           ]
         },
         {
-          "priority": 90,
+          "priority": 100,
           "targetGroup": "web",
           "conditions": [
             {
@@ -1035,6 +1059,18 @@
             "origin": "alb",
             "cache": "origin",
             "reason": "site zone (/shipyard)"
+          },
+          {
+            "pathPattern": "/calendar",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/calendar)"
+          },
+          {
+            "pathPattern": "/calendar/*",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/calendar)"
           },
           {
             "pathPattern": "/docs",
@@ -1148,6 +1184,8 @@
       "/pricing",
       "/shipyard",
       "/shipyard/*",
+      "/calendar",
+      "/calendar/*",
       "/docs",
       "/docs/*",
       "/legal",

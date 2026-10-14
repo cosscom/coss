@@ -2,7 +2,9 @@ import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@coss/ui/components/card";
 import Link from "next/link";
+import { SampleCalendar } from "@/components/calendar/landing/sample-calendar";
 import { ShipyardHarbour } from "@/components/shipyard/harbour";
+import { CALENDAR } from "@/lib/calendar";
 import { SHIPYARD } from "@/lib/shipyard";
 import { PRODUCTS, SITE_DESCRIPTION } from "@/lib/site";
 
@@ -70,6 +72,29 @@ export default function HomePage() {
               Shipyard docs
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* The Calendar UI kit: a live, seeded calendar. */}
+      <section className="grid gap-8 overflow-hidden rounded-2xl border bg-card lg:grid-cols-[minmax(0,26rem)_1fr]">
+        <div className="flex flex-col items-start gap-4 p-6 sm:p-8">
+          <h2 className="flex items-center gap-2 font-heading font-semibold text-2xl">
+            {CALENDAR.name}
+            <Badge variant="info">New</Badge>
+          </h2>
+          <p className="text-muted-foreground">{CALENDAR.description}</p>
+          <div className="flex flex-wrap gap-3">
+            <Button render={<Link href={CALENDAR.path} />}>About the Calendar UI kit</Button>
+            <Button render={<Link href={CALENDAR.docs} />} variant="outline">
+              Calendar docs
+            </Button>
+            <Button render={<Link href={CALENDAR.demo} />} variant="ghost">
+              Live demo
+            </Button>
+          </div>
+        </div>
+        <div className="min-w-0 p-4 pt-0 lg:p-6 lg:ps-0">
+          <SampleCalendar className="h-96 lg:h-104" />
         </div>
       </section>
     </main>

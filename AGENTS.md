@@ -16,7 +16,7 @@ Sentry (organization `cosscom`) through `@coss/observability`. Human setup docs 
 |---|---|---|
 | `apps/web` | `@coss/web` | Next.js 16 dashboard (:3000). Hosts Better Auth at `/api/auth/*`. |
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
-| `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page, Shipyard's landing page and docs at `/shipyard` + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
+| `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page, Shipyard's landing page and docs at `/shipyard`, the Calendar UI kit's pages at `/calendar` (landing page, demo, tools, comparisons, docs, shadcn registry) + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
@@ -33,6 +33,7 @@ Sentry (organization `cosscom`) through `@coss/observability`. Human setup docs 
 | `packages/retention` | `@coss/retention` | The data retention policy: `RETENTION_POLICY` (published by the docs and the dashboard) and `RETENTION_DAYS` (enforced by each package's purge, run by the worker). Zero deps, client-safe. |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens), `globals.css` (the dashboard's stylesheet) and `./fonts` (`next/font/local`: Cal Sans as `fontSans`/`fontHeading` and, upright only, `fontCalSans`; Paper Mono as `fontMono`). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. |
+| `packages/kloq` | `kloq` | The Calendar UI kit's library (kloq, the `cosscom/calendar` repository's `packages/kloq/src`, tests left out): the `<Kloq>` calendar, its themes, settings dialog, design mode and stylesheet. Vendored (excluded from Biome, `noUncheckedIndexedAccess` off); also what `/calendar/r/kloq.json` serves as source. Used only by `apps/site`. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests, and the production Terraform + deploy scripts that apply it. See `infra/AGENTS.md`. |
 
@@ -43,7 +44,7 @@ billing enqueues `billing.*` events through it — and email imports only `./met
 `api → tenancy, email, reputation, webhooks, ratelimit, versioning, logs, billing, db`;
 `web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, db, ui`; `site → ui, auth, versioning, retention, billing` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy and `@coss/billing/{catalog,money,engine}`) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening, billing` (`slugs`, `env` only);
-`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk` and `ui` depend on no workspace.
+`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui` and `kloq` depend on no workspace (`site → kloq`).
 Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`).
@@ -405,6 +406,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - `apps/api/openapi.json` (`bun run openapi:generate`; excluded from Biome).
 - `infra/terraform/spec.json` (`bun run --cwd infra aws:spec:write`; excluded from Biome).
 - `packages/sdk/package.json` `exports`/`main`/`module`/`types` (rewritten by the SDK build — commit the result).
+- `packages/kloq/src`: the Calendar UI kit's library, vendored from `cosscom/calendar` (excluded from Biome); and
+  `apps/site/src/lib/calendar/registry/generated.json` + `apps/site/src/components/calendar/registry/what-lands.json`
+  (`bun run --cwd apps/site calendar:registry` after changing the library or the registry's blocks; a test fails when stale).
 - `packages/ui/src/{components,hooks,lib}`: vendored from the `@coss` registry and excluded from Biome; re-adding a
   component overwrites local edits.
 - `bun.lock` (only via `bun install`; CI uses `--frozen-lockfile`).

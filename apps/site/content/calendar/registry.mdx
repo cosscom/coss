@@ -1,0 +1,50 @@
+---
+title: The registry
+description: "The calendar and its add-on blocks, delivered as MIT-licensed source by the shadcn CLI."
+---
+
+The npm package is the compiled build. The registry delivers every item
+through the shadcn CLI as source files copied into
+your project — the calendar itself, and the add-on blocks built around it.
+You can edit the code from the moment it lands. The source is MIT licensed;
+the license is included in the installed calendar files.
+
+## Point the CLI at coss calendar
+
+Add the public registry to `components.json` once, then install items by name
+with the `@kloq` namespace.
+
+<RegistryConfig />
+
+```bash title="terminal"
+npx shadcn@latest add @kloq/kloq       # the calendar
+npx shadcn@latest add @kloq/calendar   # blocks built on it
+```
+
+## The catalog
+
+| Item | Type | Notes |
+| --- | --- | --- |
+| `@kloq/kloq` | component | The calendar itself — the full MIT-licensed source (drag engine, views, themes, ⌘K, design mode) copied into your repo. |
+| `@kloq/calendar` | block | A full-page coss calendar calendar with the stock toolbar — the quick start as a drop-in block. |
+| `@kloq/timeline` | block | A full-page resource timeline — rooms as lanes, `byResourceId()` as the adapter, drag to book, drag across rows to reassign. See [Resource timeline](/calendar/docs/timeline). |
+| `@kloq/utc-gutter` | component | A two-column time axis (UTC + local) for the TimeGutter slot — the slot contract in its simplest useful form. |
+| `@kloq/zone-gutter` | component | A time axis with extra columns for any IANA zones, DST-correct against the represented day. |
+
+`@kloq/kloq` is the whole library — the drag engine, every view, themes, the
+⌘K palette, design mode — landing under `components/kloq/`. The other items
+declare it as a registry dependency, so the CLI pulls the calendar in
+automatically the first time you install any block.
+
+<Callout>
+  The machine-readable index at <code><RegistryIndexUrl /></code> lists
+  names, descriptions, and file paths. Every item payload is public too.
+</Callout>
+
+## Why source, not a dependency
+
+A calendar this opinionated is *meant* to be edited — the package puts a
+wall between you and the springs. Source in your repo means a custom slot is
+just another file, a theme tweak is a CSS edit, and nothing updates under you
+unless you re-run the CLI on purpose. The trade is honest: you take
+control, and that control is the feature.

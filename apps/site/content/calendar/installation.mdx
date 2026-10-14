@@ -1,0 +1,86 @@
+---
+title: Installation
+description: Two ways in — the npm package, or the source registry that lands the whole calendar in your repo.
+---
+
+coss calendar ships two ways. **npm** gives you the compiled, typed build.
+The **source registry** copies the whole calendar — engine, views, themes,
+design mode — into your repo as MIT-licensed source you can edit,
+through one shadcn CLI command.
+Same component, same API; the difference is whether the code lives in
+`node_modules` or in your tree.
+
+## npm — the compiled build
+
+```bash title="terminal"
+npm install kloq
+```
+
+`react` ≥ 19 and Tailwind CSS v4 are assumed. Import the stylesheet once, in
+your root layout — CSS imported inside a page or component only reaches that
+route:
+
+```tsx title="app/layout.tsx"
+import "kloq/styles.css";
+```
+
+| Import | Notes |
+| --- | --- |
+| `kloq` | The `<Kloq>` component, chrome parts, types, store helpers, the command registry, quick add, ICS. |
+| `kloq/themes` | The theme system: `setTheme` / `setScheme`, and the pre-paint restore script for zero-flash SSR. |
+| `kloq/settings` | The optional preferences dialog and its `KloqPreferences` model. |
+| `kloq/design-mode` | The ⌥D design-mode surface, importable on its own. |
+| `kloq/styles.css` | The single stylesheet. Import once. |
+
+## Registry — edit the source
+
+The registry delivers the same calendar as source files under
+`components/kloq/`, so a custom slot is just another file and a spring tweak
+is a line you can edit. The MIT License is included in the registry payload.
+Point the CLI at the public registry once:
+
+<RegistryConfig />
+
+```bash title="terminal"
+npx shadcn@latest add @kloq/kloq
+```
+
+The CLI lands the library under `components/kloq/` and installs its five npm
+dependencies (`@base-ui/react`, `class-variance-authority`, `clsx`,
+`lucide-react`, `tailwind-merge`). Import paths change from `kloq/...` to
+`@/components/kloq/...`:
+
+```tsx title="app/layout.tsx"
+import "@/components/kloq/styles/kloq.css";
+```
+
+| Import | Type | Notes |
+| --- | --- | --- |
+| `@/components/kloq` | component + API | Everything the `kloq` npm entry exports. |
+| `@/components/kloq/lib/themes` | theme system | `kloq/themes`. |
+| `@/components/kloq/settings` | settings dialog | `kloq/settings`. |
+| `@/components/kloq/design-mode` | inspector | `kloq/design-mode`. |
+| `@/components/kloq/styles/kloq.css` | stylesheet | `kloq/styles.css`. |
+
+<Callout>
+  The stylesheet is scoped: every token lives on `[data-kloq-root]` — the
+  calendar and the container its menus render into — and it never writes to
+  `:root`, `html`, `body` or `*`. To give your whole page coss calendar's look instead,
+  put `data-kloq-root` on `<body>` and import `styles/tokens.css` for the
+  page-level resets.
+</Callout>
+
+## Light and dark
+
+coss calendar follows a `dark` class on `<html>` — the coss / shadcn convention — and
+leaves that class alone unless you call `setScheme`. If your app runs no
+scheme convention at all (no `dark` or `light` class on `<html>`), the
+calendar follows the OS on its own, scoped to itself, so it never paints
+white on a dark page.
+
+## Requirements
+
+React 19+, Tailwind CSS v4, a browser with pointer events and WAAPI (every
+evergreen browser), and a container with a real height — `<Kloq>` is
+`h-full` and renders into whatever box you give it. There is no window-level
+layout: two calendars on one page work fine.

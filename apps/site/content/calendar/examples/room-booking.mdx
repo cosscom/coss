@@ -1,0 +1,57 @@
+---
+title: Room booking
+description: Four meeting rooms as timeline lanes — drag to book, drag across rooms to reassign, drag an edge to resize.
+---
+
+Four rooms, one working day, 7 AM to 7 PM. Each booking is a bar on its
+room's row; drag on empty canvas to book a new one, drag an existing bar onto
+a different room to move the meeting there, drag either edge to change how
+long it runs. The boardroom's row is taller than the others — it books solid
+often enough that it earns a fourth overlap slot before bookings collapse into
+"+N more". With a bar focused, the arrow keys walk the row and change rows,
+<Kbd>⌥</Kbd> with an arrow moves the booking or reassigns it, and <Kbd>C</Kbd>
+creates one. <Kbd>⌥D</Kbd> opens design mode: hover a bar for its lane and the
+slot it snaps to.
+
+<Example name="room-booking" />
+
+## How it works
+
+- `view="timeline"` with `lanes={ROOMS}` — four [`Lane`](/calendar/docs/resources)
+  objects, one per room. `laneAdapter={ROOM_ADAPTER}` — `byResourceId()` — reads each booking's
+  plain `resourceId` field to place it; that's also the [default](/calendar/docs/resources#byresourceid-the-common-case-in-one-line),
+  so this example passes it explicitly only to name it.
+- `timelineWindow={OPENING_HOURS}` — `{ startOffsetMinutes: 7 * 60,
+  spanMinutes: 12 * 60 }`, a module constant so the object is the same on
+  every render — is **derived** mode — no `start`/`end` — so the toolbar's ‹ › and "Today" move
+  the window the same way they'd move any other view's range
+  ([Resource timeline](/calendar/docs/timeline#the-visible-span-timelinewindow)).
+- Dragging a bar from the Studio row onto the Boardroom row doesn't just move
+  it sideways — the drop calls `byResourceId()`'s `assign(event, "boardroom")`,
+  which returns `{ resourceId: "boardroom" }`, committed like any other
+  change ([Resources & lanes](/calendar/docs/resources)).
+- The Boardroom's `height: 132` raises its overlap cap from 3 to 4 — the cap
+  is height ÷ bar height, floored, so the exact numbers move with `density`
+  (this example's comfortable default: 28px bars, 96px rows). It's the one
+  lever for "this room double-books a lot," rather
+  than a separate max-overlaps prop
+  ([the overflow cap](/calendar/docs/timeline#row-height-and-the-overflow-cap)).
+- `events` / `onEventsChange` keep the bookings in React state
+  ([Controlled state](/calendar/docs/controlled-state)); no `constraints` here, but
+  every one of `minDate`/`maxDate`/`isSlotDisabled`/`canDrop` would apply to
+  these drags exactly as they do on the calendar's own grid
+  ([Constraints](/calendar/docs/constraints#timeline-gestures)).
+
+## Take it further
+
+- Add `constraints` to refuse double-booking a room outright:
+  `isSlotDisabled` reading the room's own existing bookings, the same
+  overlap check the [booking page](/calendar/docs/examples/booking-page) runs against
+  a host's busy time.
+- Swap `byResourceId()` for a hand-rolled `LaneAdapter` that groups by floor
+  instead of by room — the [custom adapter](/calendar/docs/resources#a-row-is-whatever-you-say-it-is)
+  worked example does exactly this for triage status.
+- Pin `timelineWindow`'s `start`/`end` to a specific business day instead of
+  deriving off the anchor, the way [Shift scheduler](/calendar/docs/examples/shift-roster)
+  pins the current week — trading next/prev navigation for an exact,
+  server-driven window.

@@ -1,0 +1,49 @@
+---
+title: Optimistic server sync
+description: Every change is committed to a fake server with latency and a reject switch; a rejection springs the block back to where it was.
+---
+
+Drag an event. It lands at once, pulses while the commit is on the wire, and
+settles when the server answers. Now flip **Reject writes** and drag again: the
+server refuses, the block springs back, and the log underneath records the
+`KloqChange` that was sent and what came of it. The latency slider is the
+round-trip; at 2000 ms you can move three things before the first one lands.
+
+<Example name="server-sync" />
+
+## How it works
+
+- `onCommit` is the seam. coss calendar calls it with every committed change — a drag,
+  a resize, a create, a delete, a paste — *after* applying it. Return a promise
+  and the change stands if it resolves; reject and the store reverts, FLIPping
+  the affected blocks back with the cancel spring. That is the whole protocol:
+  the example's `onCommit` just returns `server.commit(change)`.
+  See [Optimistic sync](/calendar/docs/optimistic-sync).
+- `FakeServer` in `data.ts` stands in for your API. `commit` waits `latency`
+  milliseconds, then throws when the switch is on. It also keeps a small state
+  object — in-flight count, last four results — that the strip reads through
+  `useSyncExternalStore`, so nothing here is React-specific on the server side.
+- The pulse is one attribute. Every block renders `data-cal-event="<id>"`;
+  `markSyncing` sets `data-syncing` on the blocks named by the change while
+  the promise is pending, and coss calendar's stylesheet animates that selector. The ids
+  come straight off the change: `event.id` for an `add`, `id` for an `update`,
+  the union for a `batch`. A `remove` has no block left to mark.
+- The store is uncontrolled — `defaultEvents` seeds it, `persistence={false}`
+  keeps it in memory — so undo, redo and the revert all live inside kloq. The
+  same `onCommit` works unchanged on a controlled `events` array; there the
+  revert arrives as a call to `onEventsChange` with the previous array.
+  See [Controlled state](/calendar/docs/controlled-state).
+- One wrinkle worth knowing: coss calendar ignores the promise of a `reset` (there is
+  nothing to revert to), so the fake server never rejects one. Reset from the
+  toolbar and the log shows `reset ok` even with the switch on.
+
+## Take it further
+
+- Swap `server.commit` for a route handler: `fetch("/api/events", { method:
+  "POST", body: JSON.stringify(change) })` and `throw` when `!res.ok`. The
+  `update` variant carries both `patch` and `prev`, so a PATCH request and an
+  `If-Match` header are both a field read away.
+- A `batch` is one change and one request. Apply `changes` in order inside a
+  transaction and the paste either lands whole or springs back whole.
+- Tell the user. The revert is visible, but a toast on the catch — before
+  re-throwing — says *why*; the [demo](/calendar/demo) does exactly that.

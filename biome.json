@@ -1,6 +1,11 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "defaultBranch": "main" },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
+  },
   "files": {
     "includes": [
       "**",
@@ -12,12 +17,46 @@
       "!!infra/terraform/spec.json",
       "!!packages/ui/src/components",
       "!!packages/ui/src/hooks",
-      "!!packages/ui/src/lib"
+      "!!packages/ui/src/lib",
+      "!!packages/kloq/src",
+      "!!apps/site/src/lib/calendar/registry/generated.json",
+      "!!apps/site/src/components/calendar/registry/what-lands.json"
     ]
   },
-  "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
-  "javascript": { "formatter": { "quoteStyle": "double", "trailingCommas": "all" } },
-  "linter": { "enabled": true, "rules": { "preset": "recommended" } },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
-  "css": { "parser": { "tailwindDirectives": true } }
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "trailingCommas": "all"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended"
+    },
+    "includes": [
+      "**",
+      "!apps/site/src/components/calendar/**",
+      "!apps/site/src/lib/calendar/**",
+      "!apps/site/scripts/build-calendar-registry.mjs"
+    ]
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  }
 }

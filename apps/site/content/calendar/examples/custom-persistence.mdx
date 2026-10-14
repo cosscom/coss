@@ -1,0 +1,54 @@
+---
+title: Custom persistence adapter
+description: Uncontrolled events saved through your own adapter — sessionStorage with a versioned payload and a per-tenant namespace, plus a tenant switcher.
+---
+
+Two tenants, two calendars. Move something for **acme**, switch to
+**globex**, switch back: the move is still there, and globex never saw it.
+Reload the tab and both survive; close the tab and both are gone — that is
+sessionStorage's contract, and exactly what a docs page should leave behind.
+**Clear this tenant** wipes one copy and restarts it from its seeds.
+
+<Example name="custom-persistence" />
+
+## How it works
+
+- `persistence={adapter}` hands the uncontrolled store a `PersistenceAdapter`:
+  `load` runs once after mount and returns the stored events or `null` for
+  "nothing stored, keep the seeds"; `save` receives the full array on every
+  committed change, never mid-drag; `clear` is what Reset calls. The contract
+  is on the [Persistence](/calendar/docs/persistence) page.
+- The payload is versioned, and coss calendar checks it. `save` writes
+  `{ v: PAYLOAD_VERSION, events }` — the same envelope the built-in
+  `localStorageAdapter` uses — and `load` reads it back through
+  `readPayload`, which validates every event and returns `null` for a version
+  it does not know, a corrupt copy, or a non-empty payload that validates to
+  nothing. A newer build's data, or a hand-edited key, can never blank the
+  calendar.
+- Tenancy is two keys. `sessionAdapter("acme")` closes over
+  `kloq-example:acme:events`, and `storage="tenant-acme"` gives coss calendar's own
+  preference keys — theme, scheme, density, zoom — the same namespace
+  (`tenant-acme-density` and so on). Both are per-tenant, so a switch is a
+  different calendar in every respect.
+- Switching remounts. `<Kloq key={tenant}>` throws the internal store away and
+  builds a new one from that tenant's `defaultEvents`, then `load` swaps in
+  the stored copy before first paint. The clear button does the same with a
+  `generation` counter after calling `adapter.clear()`, so the calendar comes
+  back on its seeds instead of saving an empty array.
+- Why sessionStorage: it is scoped to the tab and evaporates with it, so an
+  example can persist for real without leaving anything in a visitor's
+  browser. For an app, `localStorageAdapter("myapp:calendar")` is the same
+  adapter over the durable store.
+
+## Take it further
+
+- Over the network: `load: () => fetch(url).then((r) => r.json()).then((p) =>
+  readPayload(p)?.events ?? null)` and `save: (events) => fetch(url, { method:
+  "PUT", body: JSON.stringify({ v: PAYLOAD_VERSION, events }) })`. `load` may
+  return a promise; the seeds render until it resolves.
+- IndexedDB: the same two functions over `get(key)` / `set(key, payload)` from
+  a helper like `idb-keyval`. Keep the envelope — the version lives in the
+  data, not the key.
+- Per change instead of full array: pair the adapter with
+  [`onCommit`](/calendar/docs/optimistic-sync) and send each `KloqChange` to your API
+  while the adapter keeps a local copy for instant loads.

@@ -1,0 +1,50 @@
+---
+title: Calendar in an app layout
+description: The calendar as one route of a product — sidebar nav, a header built from useKloq(), and a container that gives it a real height.
+---
+
+A mock product: a sidebar with four routes, "Calendar" active, and the
+calendar filling the rest. The header is the product's — its title, ‹ ›
+Today, a view switcher, Share and an avatar — but every control in it reads
+the calendar it sits inside. Step the range and the heading changes.
+
+<Example name="app-shell" />
+
+## How it works
+
+The shell is a flex row with a real height: `flex h-136`. The sidebar is a
+fixed `w-44` that only appears once the frame is wide enough (`hidden
+@2xl:flex` — a container query, so it follows the box, not the window), and
+the calendar's cell is `min-w-0 flex-1`, so the row, not its content, decides
+its size. `<Kloq>` — which is `h-full` and never reaches for the window —
+fills it. That is the whole of
+"[the container is the contract](/calendar/docs/quick-start#the-container-is-the-contract)":
+give the component a box with a height and it renders into it.
+
+`<Kloq>` renders no app bar of its own. `Header` is passed as `children`, so
+it lands above the surface inside the calendar's provider, and it calls
+`useKloq()` for everything it shows: `Nav` (in `parts.tsx`) reads `view`
+for the title via `formatViewTitle` and `step` / `goToday` / `atToday` for
+the range controls; the segmented control reads `viewSetting` and calls
+`switchView`. `Kloq.Toolbar` is only the
+bordered row. See [toolbar & chrome](/calendar/docs/chrome).
+
+The calendar measures its own cell, not the window. At full width the cell
+is about 730px: the stock
+[responsive collapse](/calendar/docs/views#the-responsive-collapse) leaves three days
+alone there and turns a seven-column week into three. Narrow the frame until
+the sidebar drops away and the cell falls under 640px, where the collapse
+shows a single day. The switcher disables what does not fit with
+`k.fits(view)`, the same call the built-in switcher makes. For an app column
+that is narrower by design, `responsive={{ breakpoint }}` moves that tier.
+
+Nothing in the sidebar knows about the calendar. It is plain markup outside
+`<Kloq>`, which is where product chrome that does not need calendar state
+belongs.
+
+## Take it further
+
+Move `view` and `date` into your router and pass them as controlled props —
+[View and date in the URL](/calendar/docs/examples/url-state) does exactly that — and
+the header keeps working unchanged, because `useKloq()` reports the effective
+state either way.

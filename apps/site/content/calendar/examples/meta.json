@@ -1,0 +1,22 @@
+{
+  "title": "Examples",
+  "pages": [
+    "booking-page",
+    "team-schedule",
+    "room-booking",
+    "shift-roster",
+    "conference-agenda",
+    "app-shell",
+    "server-sync",
+    "range-fetching",
+    "url-state",
+    "custom-persistence",
+    "ics-import-export",
+    "custom-event-block",
+    "multi-timezone",
+    "linked-calendars",
+    "recurring-events",
+    "commands-and-keys",
+    "quick-add-planner"
+  ]
+}

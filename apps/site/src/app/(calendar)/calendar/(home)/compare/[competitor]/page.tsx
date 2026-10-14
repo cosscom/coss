@@ -1,0 +1,43 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { ComparePage } from "@/components/calendar/compare/compare-page";
+import { JsonLd } from "@/components/calendar/seo/json-ld";
+import { COMPETITORS, competitorBySlug } from "@/lib/calendar/compare";
+import { abs, canonical } from "@/lib/calendar/site";
+import { compareSchema } from "@/lib/calendar/structured-data";
+
+export default async function Page(props: PageProps<"/calendar/compare/[competitor]">) {
+  const { competitor } = await props.params;
+  const data = competitorBySlug(competitor);
+  if (!data) notFound();
+
+  return (
+    <>
+      <JsonLd data={compareSchema(data)} />
+      <ComparePage competitor={data} />
+    </>
+  );
+}
+
+export function generateStaticParams() {
+  return COMPETITORS.map((c) => ({ competitor: c.slug }));
+}
+
+export async function generateMetadata(
+  props: PageProps<"/calendar/compare/[competitor]">,
+): Promise<Metadata> {
+  const { competitor } = await props.params;
+  const data = competitorBySlug(competitor);
+  if (!data) notFound();
+
+  const title = `kloq vs ${data.name} — an honest ${data.query}`;
+  const description = data.verdict;
+  const url = `/calendar/compare/${data.slug}`;
+  return {
+    title: { absolute: title },
+    description,
+    alternates: canonical(url),
+    openGraph: { type: "article", title, description, url: abs(url) },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}

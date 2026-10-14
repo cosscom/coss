@@ -1,0 +1,49 @@
+---
+title: Custom event rendering
+description: A deploy pipeline drawn with its own EventBlock — status stripe, progress bar, mono duration — with the engine contract honoured so drags and resizes still work.
+---
+
+Three days of deploys, each one a `CalEvent` rendered by `DeployBlock`
+instead of the stock block: a status stripe, an icon per state, a live
+progress bar on the running one, and a mono duration. Grab a block and move
+it, take an edge and resize it, press `Enter` on a focused one — the physics
+are the engine's, the pixels are yours.
+
+<Example name="custom-event-block" />
+
+## How it works
+
+`components={{ EventBlock: DeployBlock }}` swaps one of the six
+[slots](/calendar/docs/slots). Everything else — the gutter, the day headers, the
+panel, the now-line — stays on `DEFAULT_COMPONENTS`.
+
+The block receives `EventBlockProps`: a `PlacedEvent` already projected into
+the view's column and minute space, the overlap `layout`, `selected`, the
+roving `tabIndex`, and the three engine hooks. It honours the
+[engine contract](/calendar/docs/slots#the-engine-contract) in five lines: the root
+carries `data-cal-event={event.id}`, registers itself with
+`registerNode(event.id, node)`, forwards `onPointerDown(e, event)`, keeps a
+`[data-slot="event-time"]` span the engine rewrites mid-drag, and marks its
+resize zones with `data-resize-edge="start"` and `"end"`. The drag engine
+addresses the registered node directly, so a custom block gets the weld, the
+snap and the settle spring without knowing they exist.
+
+Geometry comes from `useKloqSettings()` — `minutesToPx` for the top edge,
+`durationToPx` for the height — so the block cannot drift from the grid it
+sits on. Column width is `100 / dayCount / layout.cols`, the same slice the
+stock block draws.
+
+`continuesBefore` / `continuesAfter` say whether this placement is a cut of a
+cross-midnight event. A cut edge is squared off and gets no resize zone,
+because it is not the event's edge.
+
+The deploy status lives beside the events, not on them: `data.ts` keeps a
+`Map` keyed by store id and the block joins on `event.source.id`. `CalEvent`
+has no free-form field, and that is on purpose — domain data belongs in your
+store, the calendar only needs `start`, `end` and a `color`.
+
+## Take it further
+
+Read `event.selection` to render an "n of m" badge when several blocks are
+selected, or swap `AllDayChip` the same way — it is the horizontal twin, with
+`data-lane-edge="left" | "right"` instead of `data-resize-edge`.
