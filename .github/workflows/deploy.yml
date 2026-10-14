@@ -126,7 +126,8 @@ jobs:
             --tag "$image:$TAG" \
             --push
 
-  # Waits for this commit's CI run (pushes only: a dispatch deploys what it's given).
+  # Waits for this commit's CI run (pushes only: a dispatch deploys what it's given). A commit
+  # that's no longer main's tip isn't deployed (CI cancels its run): the newer one ships it all.
   ci:
     needs: prepare
     if: github.event_name == 'push'
@@ -134,8 +135,12 @@ jobs:
     timeout-minutes: 30
     permissions:
       actions: read
+      contents: read
+    outputs:
+      deploy: ${{ steps.wait.outputs.deploy }}
     steps:
       - name: Wait for CI to pass
+        id: wait
         env:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ github.sha }}
@@ -145,7 +150,16 @@ jobs:
               --jq '.workflow_runs[0] // empty | "\(.status) \(.conclusion) \(.html_url)"')"
             read -r status conclusion url <<<"$run"
             if [ "${status:-}" = completed ]; then
-              [ "$conclusion" = success ] && { echo "CI passed: $url"; exit 0; }
+              if [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)" != "$SHA" ]; then
+                echo "::notice::Superseded by a newer commit on main, which deploys instead (CI $conclusion)."
+                echo "deploy=false" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              if [ "$conclusion" = success ]; then
+                echo "CI passed: $url"
+                echo "deploy=true" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
               echo "CI $conclusion: $url — re-run it, then re-run this run's failed jobs." >&2
               exit 1
             fi
@@ -157,7 +171,7 @@ jobs:
     if: >-
       always() && needs.prepare.result == 'success' &&
       (needs.build.result == 'success' || needs.build.result == 'skipped') &&
-      (needs.ci.result == 'success' || needs.ci.result == 'skipped')
+      (needs.ci.result == 'skipped' || (needs.ci.result == 'success' && needs.ci.outputs.deploy == 'true'))
     # Never two migrations or rollouts at once (builds may overlap).
     concurrency:
       group: deploy-production
@@ -169,19 +183,37 @@ jobs:
       TAG: ${{ needs.prepare.outputs.tag }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # This job may have waited for another deploy: never roll production back to an older
+      # commit because their turns came out of order (a dispatch deploys what it's given).
+      - name: Check this is still main's latest commit
+        id: latest
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          main="$(git ls-remote origin refs/heads/main | cut -f1)"
+          if [ "$EVENT" = push ] && [ "$main" != "$TAG" ]; then
+            echo "::notice::main moved on to $main, whose deploy ships this commit too. Skipping."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          fi
       # Migrations must be backward compatible with the running code; never two at once (the
       # job's concurrency group).
       - name: Migrate
+        if: steps.latest.outputs.deploy == 'true'
         run: infra/scripts/ecs-task.sh --image-tag "$TAG" worker -- bun packages/db/src/migrate.ts
       # All at once: every rollout keeps old and new tasks side by side anyway, so ordering them
       # bought no compatibility, only time.
       - name: Roll out
+        if: steps.latest.outputs.deploy == 'true'
         run: infra/scripts/ecs-deploy.sh "$TAG" api worker web site
       - name: Record the deployed commit
+        if: steps.latest.outputs.deploy == 'true'
         run: aws ssm put-parameter --name "/coss/$STAGE/image-tag" --value "$TAG" --overwrite >/dev/null
       # Docs pages are cached for a year at the edge. Only our apps' cached paths, never the hashed
       # assets: tabs opened before this deploy still load their old chunks from the cache.
       - name: Invalidate the coss.com CDN
+        if: steps.latest.outputs.deploy == 'true'
         env:
           DISTRIBUTION_ID: ${{ vars.DASHBOARD_DISTRIBUTION_ID }}
         run: |
@@ -190,6 +222,7 @@ jobs:
       # Last, so the code ships either way: routing (ALB rules, CloudFront behaviours) only changes
       # with `terraform apply`, and a route that was never applied fails this job until it is.
       - name: Check routing against the spec
+        if: steps.latest.outputs.deploy == 'true'
         env:
           DISTRIBUTION_ID: ${{ vars.DASHBOARD_DISTRIBUTION_ID }}
         run: infra/scripts/check-routing.sh

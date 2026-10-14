@@ -584,7 +584,9 @@ deployment. This applies even when `WEBHOOK_SECRETS_KEY` is unchanged.
 
 The Deploy workflow does this on every push to main, building while CI runs and shipping only once it passed (or by
 hand from the Actions tab; with `image_tag` it redeploys an earlier commit's images, e.g. a rollback). When CI
-failed and a re-run passed, re-run the Deploy run's failed jobs:
+failed and a re-run passed, re-run the Deploy run's failed jobs. A commit that's no longer main's tip by the time
+its CI finishes, or its deploy job's turn comes, isn't deployed (the newer commit's deploy ships it), so production
+never goes back to an older commit unless you dispatch one:
 
 1. Build and push the four images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
    apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
