@@ -6,7 +6,7 @@
  * MX check (the worker re-checks it like domains) only shows the customer what DNS serves.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, inArray, isNotNull, lte, ne } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, lte } from "drizzle-orm";
 import { checkReceivingRecord, type DnsResolver } from "./dns.ts";
 import {
   assertOwnsHostname,
@@ -16,9 +16,10 @@ import {
   requireDomain,
 } from "./domains.ts";
 import { DomainError } from "./errors.ts";
+import { claimEmailHostname } from "./hostname-claim.ts";
 import type { ReceivingDomainObjectOutput } from "./schemas.ts";
 
-const { environment, receivingDomain, trackingDomain } = schema;
+const { environment, receivingDomain } = schema;
 
 export type ReceivingDomainRow = typeof receivingDomain.$inferSelect;
 export type ReceivingDomainRecord = ReceivingDomainRow["record"];
@@ -215,32 +216,22 @@ export async function createReceivingDomain(
     );
   }
   await assertOwnsHostname(parent, hostname, "receiving");
-  // A CNAME (the tracking domain's record) can't share its name with an MX.
-  const [tracked] = await db
-    .select({ id: trackingDomain.id })
-    .from(trackingDomain)
-    .where(and(eq(trackingDomain.hostname, hostname), ne(trackingDomain.status, "failed")))
-    .limit(1);
-  if (tracked) {
-    throw new DomainError(
-      "invalid_receiving_hostname",
-      `${hostname} is a tracking domain; receive email at another hostname.`,
-    );
-  }
   const now = new Date();
   let created: ReceivingDomainRow | undefined;
   try {
-    [created] = await db
-      .insert(receivingDomain)
-      .values({
-        organizationId: parent.organizationId,
-        domainId: parent.id,
-        environmentId: input.environmentId,
-        hostname,
-        record: expectedRecord(hostname, config.mxHost),
-        nextCheckAt: new Date(now.getTime() + MINUTE),
-      })
-      .returning();
+    [created] = await claimEmailHostname(hostname, "receiving", (tx) =>
+      tx
+        .insert(receivingDomain)
+        .values({
+          organizationId: parent.organizationId,
+          domainId: parent.id,
+          environmentId: input.environmentId,
+          hostname,
+          record: expectedRecord(hostname, config.mxHost),
+          nextCheckAt: new Date(now.getTime() + MINUTE),
+        })
+        .returning(),
+    );
   } catch (error) {
     if (!isUniqueViolation(error)) throw error;
     if (await getReceivingDomain(input)) {

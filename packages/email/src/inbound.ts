@@ -79,7 +79,7 @@ export type InboundMessage = {
 /** Each organization's daily inbound limit (the worker wires `email.inbound.day`). */
 export type InboundQuota = {
   /** Charges one received email to the organization; `false` when it is over its limit. */
-  consume(organizationId: string): Promise<boolean>;
+  consume(organizationId: string, messageKey: string): Promise<boolean>;
 };
 
 export type InboundDeps = {
@@ -299,7 +299,13 @@ export async function receiveEmail(
       });
       continue;
     }
-    if (deps.quota && !(await deps.quota.consume(route.organizationId))) {
+    if (
+      deps.quota &&
+      !(await deps.quota.consume(
+        route.organizationId,
+        JSON.stringify([route.environmentId, message.provider, message.providerMessageId]),
+      ))
+    ) {
       await countDrop(route.organizationId, message.receivedAt);
       outcomes.push({
         kind: "over_limit",

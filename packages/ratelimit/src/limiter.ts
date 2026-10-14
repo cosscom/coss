@@ -19,6 +19,8 @@ export type RateLimitRequest = {
   organizationId?: string | undefined;
   /** Tokens to take (e.g. recipients). Defaults to 1. */
   cost?: number;
+  /** Reuse an allowed charge across retries. Only for positive charges; do not refund these. */
+  idempotency?: { key: string; ttlMs: number };
   /** Only report whether the request would be allowed. */
   peek?: boolean;
 };
@@ -115,7 +117,20 @@ export function createRateLimiter(opts: RateLimiterOptions): RateLimiter {
         const cost = request.cost ?? 1;
         const result = await opts.store.consume(
           resolved.map((entry) => entry.spec),
-          { cost, peek: request.peek },
+          {
+            cost,
+            peek: request.peek,
+            ...(request.idempotency
+              ? {
+                  idempotency: {
+                    key: `${resolved[0]?.spec.key}:replay:${createHash("sha256")
+                      .update(JSON.stringify([request.buckets, cost, request.idempotency.key]))
+                      .digest("hex")}`,
+                    ttlMs: request.idempotency.ttlMs,
+                  },
+                }
+              : {}),
+          },
         );
         // Denied: the bucket with the longest wait (`null`, never fits, wins). Allowed: the
         // bucket with the fewest tokens left.

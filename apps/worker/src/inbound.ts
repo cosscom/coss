@@ -21,11 +21,13 @@ export type SesInboundDeps = {
 /** The daily per-organization limit (`email.inbound.day`), charged once per environment. */
 export function inboundQuota(limiter: RateLimiter): InboundQuota {
   return {
-    async consume(organizationId) {
+    async consume(organizationId, messageKey) {
       const decision = await limiter.consume({
         buckets: ["email.inbound.day"],
         subject: organizationId,
         organizationId,
+        // Outlive the source queue and DLQ: retries reuse admission even after a worker crash.
+        idempotency: { key: messageKey, ttlMs: 21 * 24 * 60 * 60 * 1000 },
       });
       return decision.allowed;
     },

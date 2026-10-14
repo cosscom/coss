@@ -30,6 +30,70 @@ function fakeQueue(bodies: string[]) {
 }
 
 describe("pollSesInbound", () => {
+  test("a failed store write retries at the quota boundary without losing the landing object", async () => {
+    const tenant = await createTestTenant();
+    const { domain } = await inboundAddressFor(
+      { organizationId: tenant.organization.id, environmentId: tenant.production.id },
+      MANAGED,
+    );
+    const s3 = new FakeS3Api();
+    const messageId = `retry-${uniqueSuffix()}`;
+    const objectKey = `landing/${messageId}`;
+    await s3.putObject(
+      BUCKET,
+      objectKey,
+      buildTestMessage({
+        from: "sender@example.com",
+        to: [`hello@${domain}`],
+        subject: "retry",
+      }),
+      "message/rfc822",
+    );
+    const body = sesReceiptNotification({
+      messageId,
+      source: "sender@example.com",
+      recipients: [`hello@${domain}`],
+      bucketName: BUCKET,
+      objectKey,
+    });
+    const store = new S3InboundStore(s3, BUCKET);
+    const put = store.put.bind(store);
+    store.put = async () => {
+      throw new Error("temporary storage failure");
+    };
+    const limiter = memoryLimiter({
+      overrides: async () => ({
+        "email.inbound.day": { limit: 1, periodMs: 24 * 60 * 60 * 1000 },
+      }),
+    });
+    const first = fakeQueue([body]);
+    await pollSesInbound({
+      sqs: first.sqs,
+      s3,
+      bucket: BUCKET,
+      inbound: { store, managedDomain: MANAGED, quota: inboundQuota(limiter) },
+    });
+    expect(first.deleted).toEqual([]);
+    expect(s3.objects.has(`${BUCKET}/${objectKey}`)).toBe(true);
+    store.put = put;
+    // A fresh adapter shares the admission record, as another worker would.
+    const retry = fakeQueue([body]);
+    await pollSesInbound({
+      sqs: retry.sqs,
+      s3,
+      bucket: BUCKET,
+      inbound: { store, managedDomain: MANAGED, quota: inboundQuota(limiter) },
+    });
+    expect(retry.deleted).toEqual(["m0"]);
+    const rows = await db
+      .select()
+      .from(schema.receivedEmail)
+      .where(eq(schema.receivedEmail.environmentId, tenant.production.id));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.subject).toBe("retry");
+    expect(s3.objects.has(`${BUCKET}/${objectKey}`)).toBe(false);
+  });
+
   test("records a receipt, deletes its landing object, and keeps what failed", async () => {
     const tenant = await createTestTenant();
     const { domain } = await inboundAddressFor(
@@ -107,7 +171,8 @@ describe("inboundQuota", () => {
         }),
       }),
     );
-    expect(await quota.consume(tenant.organization.id)).toBe(true);
-    expect(await quota.consume(tenant.organization.id)).toBe(false);
+    expect(await quota.consume(tenant.organization.id, "message-1")).toBe(true);
+    expect(await quota.consume(tenant.organization.id, "message-1")).toBe(true);
+    expect(await quota.consume(tenant.organization.id, "message-2")).toBe(false);
   });
 });

@@ -2,6 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { eq } from "drizzle-orm";
+import { FakeIdentityProvider } from "../src/providers/fake-identity.ts";
+import { FakeTrackingHostnameProvider } from "../src/providers/fake-tracking-hostnames.ts";
 import {
   checkReceivingDomain,
   createReceivingDomain,
@@ -9,7 +11,11 @@ import {
   recheckDueReceivingDomains,
 } from "../src/receiving-domains.ts";
 import { createVerifiedDomain, fakeDnsResolver } from "../src/testing.ts";
-import { domainObjects } from "../src/tracking-domains.ts";
+import {
+  createTrackingDomain,
+  domainObjects,
+  restartTrackingDomain,
+} from "../src/tracking-domains.ts";
 
 const MX = "inbound-smtp.us-east-1.amazonaws.com";
 const config = { mxHost: MX, managedDomain: "inbound.coss.test" };
@@ -95,6 +101,52 @@ describe("createReceivingDomain", () => {
         null,
       ),
     ).rejects.toMatchObject({ code: "invalid_receiving_hostname" });
+  });
+});
+
+describe("receiving and tracking hostname exclusion", () => {
+  const trackingDeps = () => ({
+    identity: new FakeIdentityProvider(),
+    dns: null,
+    tracking: new FakeTrackingHostnameProvider({ cnameTarget: "track.coss.test" }),
+  });
+
+  test("tracking cannot claim an existing receiving hostname", async () => {
+    const { parent, input } = await setup();
+    const target = { ...input, hostname: `in.${parent.name}` };
+    await createReceivingDomain(target, config, null);
+    await expect(createTrackingDomain(target, trackingDeps())).rejects.toMatchObject({
+      code: "invalid_tracking_hostname",
+    });
+  });
+
+  test("failed tracking cannot restart after receiving claims its hostname", async () => {
+    const { parent, input } = await setup();
+    const target = { ...input, hostname: `in.${parent.name}` };
+    const deps = trackingDeps();
+    const tracked = await createTrackingDomain(target, deps);
+    await db
+      .update(schema.trackingDomain)
+      .set({ status: "failed", providerHostnameId: null })
+      .where(eq(schema.trackingDomain.id, tracked.id));
+    await createReceivingDomain(target, config, null);
+    await expect(restartTrackingDomain(target, deps)).rejects.toMatchObject({
+      code: "invalid_tracking_hostname",
+    });
+  });
+
+  test("concurrent MX and CNAME claims have exactly one winner", async () => {
+    const { parent, input } = await setup();
+    const target = { ...input, hostname: `in.${parent.name}` };
+    const results = await Promise.allSettled([
+      createReceivingDomain(target, config, null),
+      createTrackingDomain(target, trackingDeps()),
+    ]);
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    const rejected = results.find((result) => result.status === "rejected");
+    expect(rejected?.status === "rejected" ? rejected.reason.code : null).toMatch(
+      /^invalid_(tracking|receiving)_hostname$/,
+    );
   });
 });
 

@@ -20,6 +20,7 @@ import {
   VERIFICATION_WINDOW_MS,
 } from "./domains.ts";
 import { DomainError } from "./errors.ts";
+import { claimEmailHostname } from "./hostname-claim.ts";
 import { listReceivingDomains, toReceivingDomainObject } from "./receiving-domains.ts";
 import {
   type DomainObjectOutput,
@@ -260,18 +261,20 @@ export async function createTrackingDomain(
   const now = new Date();
   let claimed: TrackingDomainRow | undefined;
   try {
-    [claimed] = await db
-      .insert(trackingDomain)
-      .values({
-        organizationId: parent.organizationId,
-        domainId: parent.id,
-        hostname,
-        provider: deps.tracking.name,
-        record: expectedRecord(hostname, deps.tracking.cnameTarget),
-        verificationStartedAt: now,
-        nextCheckAt: trackingNextCheckAt({ status: "pending", verificationStartedAt: now }, now),
-      })
-      .returning();
+    [claimed] = await claimEmailHostname(hostname, "tracking", (tx) =>
+      tx
+        .insert(trackingDomain)
+        .values({
+          organizationId: parent.organizationId,
+          domainId: parent.id,
+          hostname,
+          provider: deps.tracking.name,
+          record: expectedRecord(hostname, deps.tracking.cnameTarget),
+          verificationStartedAt: now,
+          nextCheckAt: trackingNextCheckAt({ status: "pending", verificationStartedAt: now }, now),
+        })
+        .returning(),
+    );
   } catch (error) {
     if (!isUniqueViolation(error)) throw error;
     if (await getTrackingDomain(input)) {
@@ -300,28 +303,30 @@ export async function restartTrackingDomain(
   const now = new Date();
   let claimed: TrackingDomainRow | undefined;
   try {
-    [claimed] = await db
-      .update(trackingDomain)
-      .set({
-        status: "pending",
-        provider: deps.tracking.name,
-        providerHostnameId: null,
-        providerMessage: null,
-        record: expectedRecord(row.hostname, deps.tracking.cnameTarget),
-        verificationStartedAt: now,
-        nextCheckAt: trackingNextCheckAt({ status: "pending", verificationStartedAt: now }, now),
-        activatedAt: null,
-        failedAt: null,
-      })
-      .where(
-        and(
-          eq(trackingDomain.id, row.id),
-          eq(trackingDomain.organizationId, row.organizationId),
-          eq(trackingDomain.status, "failed"),
-          isNull(trackingDomain.providerHostnameId),
-        ),
-      )
-      .returning();
+    [claimed] = await claimEmailHostname(row.hostname, "tracking", (tx) =>
+      tx
+        .update(trackingDomain)
+        .set({
+          status: "pending",
+          provider: deps.tracking.name,
+          providerHostnameId: null,
+          providerMessage: null,
+          record: expectedRecord(row.hostname, deps.tracking.cnameTarget),
+          verificationStartedAt: now,
+          nextCheckAt: trackingNextCheckAt({ status: "pending", verificationStartedAt: now }, now),
+          activatedAt: null,
+          failedAt: null,
+        })
+        .where(
+          and(
+            eq(trackingDomain.id, row.id),
+            eq(trackingDomain.organizationId, row.organizationId),
+            eq(trackingDomain.status, "failed"),
+            isNull(trackingDomain.providerHostnameId),
+          ),
+        )
+        .returning(),
+    );
   } catch (error) {
     if (isUniqueViolation(error)) throw await takenError(input.organizationId, row.hostname);
     throw error;
