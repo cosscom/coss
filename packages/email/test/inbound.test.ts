@@ -14,7 +14,12 @@ import {
   receiveFakeEmail,
 } from "../src/inbound.ts";
 import { inboundAddressFor } from "../src/inbound-address.ts";
-import { buildTestMessage, scrubEnvelopeHeaders } from "../src/inbound-mime.ts";
+import {
+  buildTestMessage,
+  parseInboundMessage,
+  RECEIVED_BODY_MAX_LENGTH,
+  scrubEnvelopeHeaders,
+} from "../src/inbound-mime.ts";
 import { FakeInboundStore } from "../src/inbound-store.ts";
 import {
   deleteReceivedEmail,
@@ -159,6 +164,31 @@ describe("receiveEmail", () => {
       .where(eq(schema.receivedEmailAttachment.receivedEmailId, row?.id ?? ""));
     expect(attachments[0]?.filename).toBe("a.txt");
     expect(await store.get(attachments[0]?.contentKey ?? "")).toEqual(new Uint8Array([0, 1, 0]));
+  });
+
+  test("truncates Unicode headers safely and stores the original raw message", async () => {
+    const tenant = await createTestTenant();
+    const to = await managedAddress(tenant);
+    const crossing = `${"a".repeat(8191)}😀`;
+    const fitting = `${"b".repeat(8190)}😀`;
+    const raw = buildTestMessage({
+      from: "sender@example.com",
+      to: [to],
+      subject: "Unicode headers",
+      headers: { "X-Crossing": crossing, "X-Fitting": fitting, "X-Short": "😀" },
+    });
+    const outcomes = await receiveEmail(message({ recipients: [to], rawBytes: raw }), deps);
+    expect(outcomes[0]?.kind).toBe("received");
+    const [row] = await rowsFor(tenant.production.id);
+    expect(row?.truncated).toBe(true);
+    expect(row?.headers).toEqual(
+      expect.arrayContaining([
+        { name: "X-Crossing", value: "a".repeat(8191) },
+        { name: "X-Fitting", value: fitting },
+        { name: "X-Short", value: "😀" },
+      ]),
+    );
+    expect(await store.get(row?.rawKey ?? "")).toEqual(raw);
   });
 
   test("routes a receiving domain's hostname to its environment", async () => {
@@ -455,6 +485,23 @@ describe("received emails", () => {
 });
 
 describe("MIME helpers", () => {
+  test("body limits preserve complete Unicode characters", async () => {
+    const text = `${"a".repeat(RECEIVED_BODY_MAX_LENGTH - 1)}😀`;
+    const html = `${"b".repeat(RECEIVED_BODY_MAX_LENGTH - 2)}😀tail`;
+    const parsed = await parseInboundMessage(
+      buildTestMessage({
+        from: "a@example.com",
+        to: ["b@example.com"],
+        subject: "bodies",
+        text,
+        html,
+      }),
+    );
+    expect(parsed.truncated).toBe(true);
+    expect(parsed.text).toBe("a".repeat(RECEIVED_BODY_MAX_LENGTH - 1));
+    expect(parsed.html).toBe(`${"b".repeat(RECEIVED_BODY_MAX_LENGTH - 2)}😀`);
+  });
+
   test("fake verdicts come from subject markers", () => {
     expect(fakeVerdicts("hi")).toMatchObject({ spam: "pass", virus: "pass" });
     expect(fakeVerdicts("[coss-test:virus] [coss-test:dmarc-fail]")).toMatchObject({

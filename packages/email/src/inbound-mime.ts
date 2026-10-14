@@ -73,11 +73,19 @@ function formatAddresses(addresses: readonly Address[] | Address | undefined): s
   );
 }
 
+/** Keep the UTF-16 limit without splitting a Unicode surrogate pair. */
+function truncate(value: string, max: number): string {
+  const last = value.charCodeAt(max - 1);
+  const next = value.charCodeAt(max);
+  const splitsPair = last >= 0xd800 && last <= 0xdbff && next >= 0xdc00 && next <= 0xdfff;
+  return value.slice(0, splitsPair ? max - 1 : max);
+}
+
 function cut(value: string | undefined, max: number): { value: string | null; cut: boolean } {
   if (value === undefined) return { value: null, cut: false };
   value = databaseText(value);
   if (value.length <= max) return { value, cut: false };
-  return { value: value.slice(0, max), cut: true };
+  return { value: truncate(value, max), cut: true };
 }
 
 function bytesOf(content: ArrayBuffer | Uint8Array | string): Uint8Array {
@@ -128,7 +136,7 @@ export async function parseInboundMessage(raw: Uint8Array): Promise<ParsedInboun
   for (const header of email.headers) {
     const cleanValue = databaseText(header.value);
     const name = databaseText(header.originalKey);
-    const value = cleanValue.slice(0, HEADER_VALUE_MAX_LENGTH);
+    const value = truncate(cleanValue, HEADER_VALUE_MAX_LENGTH);
     if (value.length < cleanValue.length) truncated = true;
     headerLength += name.length + value.length;
     if (headerLength > RECEIVED_HEADERS_MAX_LENGTH) {
