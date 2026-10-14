@@ -1,5 +1,4 @@
 import { listOrganizationsForAdmin } from "@coss/tenancy/admin";
-import { Card, CardPanel } from "@coss/ui/components/card";
 import {
   Table,
   TableBody,
@@ -8,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import { BuildingIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -19,7 +19,9 @@ import {
   stringParam,
 } from "@/components/admin/list-controls";
 import { OrganizationStatusBadge } from "@/components/admin/status-badges";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody } from "@/components/panel";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
 
@@ -46,7 +48,7 @@ export default async function AdminOrganizationsPage({
   });
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
       <PageHeader description="Every organization on the platform." title="Organizations" />
       <ListFilters
         path="/admin/organizations"
@@ -55,9 +57,33 @@ export default async function AdminOrganizationsPage({
         status={status}
         statuses={STATUSES}
       />
-      <Card>
-        <CardPanel className="p-2">
-          <Table>
+      <Panel
+        footer={
+          <Pager
+            hrefFor={(target) =>
+              listHref("/admin/organizations", {
+                q: query,
+                status: status === "all" ? undefined : status,
+                page: target,
+              })
+            }
+            page={page}
+            shown={organizations.length}
+            total={total}
+          />
+        }
+      >
+        {organizations.length === 0 ? (
+          <PanelBody flush>
+            <EmptyState
+              compact
+              description="No organization matches these filters."
+              icon={BuildingIcon}
+              title="No organizations found"
+            />
+          </PanelBody>
+        ) : (
+          <Table variant="card">
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
@@ -78,7 +104,9 @@ export default async function AdminOrganizationsPage({
                       {organization.name}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{organization.slug}</TableCell>
+                  <TableCell className="font-mono text-muted-foreground text-xs">
+                    {organization.slug}
+                  </TableCell>
                   <TableCell className="tabular-nums">{organization.memberCount}</TableCell>
                   <TableCell>
                     <OrganizationStatusBadge
@@ -93,20 +121,8 @@ export default async function AdminOrganizationsPage({
               ))}
             </TableBody>
           </Table>
-        </CardPanel>
-      </Card>
-      <Pager
-        hrefFor={(target) =>
-          listHref("/admin/organizations", {
-            q: query,
-            status: status === "all" ? undefined : status,
-            page: target,
-          })
-        }
-        page={page}
-        shown={organizations.length}
-        total={total}
-      />
-    </>
+        )}
+      </Panel>
+    </div>
   );
 }

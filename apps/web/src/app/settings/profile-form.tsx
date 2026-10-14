@@ -14,7 +14,8 @@ export function ProfileForm(props: { name: string; disabled: boolean }) {
     <form action={formAction} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end gap-3">
         <Field className="min-w-64 flex-1">
-          <FieldLabel>Name</FieldLabel>
+          {/* The settings row names the field. */}
+          <FieldLabel className="sr-only">Name</FieldLabel>
           <Input
             autoComplete="name"
             defaultValue={props.name}

@@ -1,7 +1,12 @@
 import { Badge } from "@coss/ui/components/badge";
+import { StatusDot } from "../status-dot";
 
 export function UserStatusBadge({ banned }: { banned: boolean }) {
-  return banned ? <Badge variant="error">banned</Badge> : <Badge variant="success">active</Badge>;
+  return banned ? (
+    <StatusDot tone="error">Banned</StatusDot>
+  ) : (
+    <StatusDot tone="success">Active</StatusDot>
+  );
 }
 
 export function PlatformRoleBadge({ role }: { role: string | null }) {
@@ -10,10 +15,10 @@ export function PlatformRoleBadge({ role }: { role: string | null }) {
 }
 
 export function OrganizationStatusBadge(props: { suspended: boolean; deleting?: boolean }) {
-  if (props.deleting) return <Badge variant="error">deleting</Badge>;
+  if (props.deleting) return <StatusDot tone="error">Deleting</StatusDot>;
   return props.suspended ? (
-    <Badge variant="error">suspended</Badge>
+    <StatusDot tone="error">Suspended</StatusDot>
   ) : (
-    <Badge variant="success">active</Badge>
+    <StatusDot tone="success">Active</StatusDot>
   );
 }

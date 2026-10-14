@@ -558,7 +558,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     `disableOrganizationScim` (audited `organization.disable_scim`).
   - **2FA enforcement:** `organization.requireTwoFactor` (additional field, `input: false`; written only by
     `setOrganizationTwoFactorRequired` from org settings, which needs `organization:update` and an actor with 2FA).
-    `requireOrgMember` redirects members without `user.twoFactorEnabled` to `/settings` — passkeys don't satisfy it
+    `requireOrgMember` redirects members without `user.twoFactorEnabled` to `/settings/security` — passkeys don't satisfy it
     (the password still works without a code). API keys are unaffected. Admin recovery: `resetUserTwoFactor` (audited).
   - `packages/auth` must not import `next/*` or `"server-only"` (the `auth` CLI loads `src/auth.ts` on Node).
     `nextCookies()` is appended last, only in `apps/web/src/lib/auth.ts`.

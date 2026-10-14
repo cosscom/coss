@@ -64,7 +64,7 @@ export async function requireSession(): Promise<Session> {
  * Resolves the organization from the URL slug and the signed-in user's membership in it.
  * Non-members get a 404 so org slugs can't be probed. Never uses the session's active org.
  * Members are sent to /sso when the organization requires SSO and the session didn't come from
- * its provider (owners keep break-glass access), and to /settings when it requires two-factor
+ * its provider (owners keep break-glass access), and to /settings/security when it requires two-factor
  * authentication they haven't set up (an SSO session from its provider counts instead). This
  * guards every org page, layout and server action.
  */

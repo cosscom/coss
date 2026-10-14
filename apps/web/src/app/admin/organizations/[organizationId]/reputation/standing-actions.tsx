@@ -2,7 +2,6 @@
 
 import type { ReputationPolicy } from "@coss/reputation/schemas";
 import { Button } from "@coss/ui/components/button";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { Checkbox } from "@coss/ui/components/checkbox";
 import {
   Dialog,
@@ -21,6 +20,7 @@ import { Label } from "@coss/ui/components/label";
 import { Textarea } from "@coss/ui/components/textarea";
 import { useActionState, useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { Panel, PanelBody, PanelDescription, PanelHeader, PanelTitle } from "@/components/panel";
 import type { ActionResult } from "@/lib/action-result";
 import {
   reinstateOrganizationAction,
@@ -211,15 +211,15 @@ export function PolicyForm(props: {
   ] as const;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Policy</CardTitle>
-        <CardDescription>
+    <Panel>
+      <PanelHeader>
+        <PanelTitle>Policy</PanelTitle>
+        <PanelDescription>
           Overrides for this organization only. Leave a field empty to use the default (shown in
           grey). Saving re-evaluates the organization on the worker's next run.
-        </CardDescription>
-      </CardHeader>
-      <CardPanel>
+        </PanelDescription>
+      </PanelHeader>
+      <PanelBody>
         <form action={formAction} className="flex flex-col gap-4">
           <input name="organizationId" type="hidden" value={props.organizationId} />
           <div className="grid gap-4 sm:grid-cols-2">
@@ -281,7 +281,7 @@ export function PolicyForm(props: {
             </Button>
           </div>
         </form>
-      </CardPanel>
-    </Card>
+      </PanelBody>
+    </Panel>
   );
 }

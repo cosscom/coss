@@ -1,6 +1,8 @@
 import { Button } from "@coss/ui/components/button";
-import { Input } from "@coss/ui/components/input";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
+import { FilterLinks } from "../filter-links";
+import { SearchForm } from "../search-form";
 
 export const ADMIN_PAGE_SIZE = 50;
 
@@ -38,43 +40,29 @@ export function ListFilters(props: {
   statuses: { value: string; label: string }[];
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <form action={props.path} className="flex min-w-72 flex-1 gap-2">
-        {props.status !== "all" ? <input name="status" type="hidden" value={props.status} /> : null}
-        <Input
-          aria-label="Search"
-          defaultValue={props.query}
-          name="q"
-          placeholder={props.placeholder}
-          type="search"
-        />
-        <Button type="submit" variant="outline">
-          Search
-        </Button>
-      </form>
-      <div className="flex gap-1">
-        {props.statuses.map((option) => (
-          <Button
-            key={option.value}
-            render={
-              <Link
-                href={listHref(props.path, {
-                  q: props.query,
-                  status: option.value === "all" ? undefined : option.value,
-                })}
-              />
-            }
-            size="sm"
-            variant={props.status === option.value ? "secondary" : "ghost"}
-          >
-            {option.label}
-          </Button>
-        ))}
-      </div>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <FilterLinks
+        options={props.statuses.map((option) => ({
+          value: option.value,
+          label: option.label,
+          href: listHref(props.path, {
+            q: props.query,
+            status: option.value === "all" ? undefined : option.value,
+          }),
+        }))}
+        value={props.status}
+      />
+      <SearchForm
+        action={props.path}
+        keep={{ status: props.status === "all" ? undefined : props.status }}
+        placeholder={props.placeholder}
+        query={props.query}
+      />
     </div>
   );
 }
 
+/** Numbered pages (`?page=`) of an admin list: the range shown and previous / next. */
 export function Pager(props: {
   page: number;
   total: number;
@@ -85,7 +73,7 @@ export function Pager(props: {
   const first = (props.page - 1) * ADMIN_PAGE_SIZE;
   return (
     <div className="flex items-center justify-between gap-4 text-muted-foreground text-sm">
-      <span>
+      <span className="font-mono text-xs tabular-nums">
         {props.total === 0 ? "No results" : `${first + 1}–${first + props.shown} of ${props.total}`}
       </span>
       <div className="flex gap-2">
@@ -95,6 +83,7 @@ export function Pager(props: {
           size="sm"
           variant="outline"
         >
+          <ChevronLeftIcon />
           Previous
         </Button>
         <Button
@@ -104,6 +93,7 @@ export function Pager(props: {
           variant="outline"
         >
           Next
+          <ChevronRightIcon />
         </Button>
       </div>
     </div>

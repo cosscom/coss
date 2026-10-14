@@ -66,18 +66,18 @@ describe("orgAccess", () => {
 
   test("SSO from the organization's provider satisfies its two-factor requirement", () => {
     const twoFactor = membership({ requireTwoFactor: true });
-    expect(orgAccess(twoFactor, session())).toEqual({ kind: "redirect", to: "/settings" });
+    expect(orgAccess(twoFactor, session())).toEqual({ kind: "redirect", to: "/settings/security" });
     expect(orgAccess(twoFactor, session({ twoFactor: true })).kind).toBe("allowed");
     expect(orgAccess(twoFactor, session({ ssoProviderId: "sso_acme" })).kind).toBe("allowed");
     expect(orgAccess(twoFactor, session({ ssoProviderId: "sso_other" }))).toEqual({
       kind: "redirect",
-      to: "/settings",
+      to: "/settings/security",
     });
   });
 
   test("break-glass owners still need two-factor when it is required", () => {
     const both = membership({ requireSso: true, requireTwoFactor: true, role: "owner" });
-    expect(orgAccess(both, session())).toEqual({ kind: "redirect", to: "/settings" });
+    expect(orgAccess(both, session())).toEqual({ kind: "redirect", to: "/settings/security" });
     expect(orgAccess(both, session({ twoFactor: true })).kind).toBe("allowed");
   });
 

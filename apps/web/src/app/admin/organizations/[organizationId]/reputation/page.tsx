@@ -6,8 +6,8 @@ import {
 } from "@coss/reputation";
 import { listScreenings } from "@coss/screening";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdminOrganizationTabs } from "@/components/admin/organization-tabs";
 import { PageHeader } from "@/components/page-header";
 import {
   ReputationChecks,
@@ -40,13 +40,7 @@ export default async function AdminOrganizationPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <Link
-          className="text-muted-foreground text-sm hover:text-foreground"
-          href="/admin/organizations"
-        >
-          ← Organizations
-        </Link>
+      <div className="flex flex-col gap-4">
         <PageHeader
           actions={
             standing?.status === "suspended" ? (
@@ -59,13 +53,17 @@ export default async function AdminOrganizationPage({
               <SuspendButton organizationId={organization.organizationId} />
             )
           }
-          description={`${organization.slug} · ${organization.organizationId} · created ${formatDateTime(organization.createdAt)}`}
-          title={
-            <span className="flex items-center gap-3">
-              {organization.name} <StandingBadge status={standing?.status ?? "good"} />
-            </span>
+          description={`created ${formatDateTime(organization.createdAt)}`}
+          meta={
+            <>
+              <StandingBadge status={standing?.status ?? "good"} />
+              <code className="font-mono text-xs">/{organization.slug}</code>
+              <code className="font-mono text-xs">{organization.organizationId}</code>
+            </>
           }
+          title={organization.name}
         />
+        <AdminOrganizationTabs organizationId={organization.organizationId} />
         {standing && standing.status !== "good" ? (
           <p className="text-muted-foreground text-sm">
             {triggerLabel(standing.reason)} since {formatDateTime(standing.statusChangedAt)}.

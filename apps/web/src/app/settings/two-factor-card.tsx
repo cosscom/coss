@@ -4,14 +4,6 @@ import { Alert, AlertDescription } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardHeader,
-  CardPanel,
-  CardTitle,
-} from "@coss/ui/components/card";
-import {
   Dialog,
   DialogClose,
   DialogDescription,
@@ -28,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
+import { Panel, PanelBody } from "@/components/panel";
 import { QrCode } from "@/components/qr-code";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
@@ -42,41 +35,37 @@ type Props = {
 
 export function TwoFactorCard({ enabled, requiredBy, restriction }: Props) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <Panel
+      action={
+        restriction ? null : enabled ? (
+          <>
+            <BackupCodesDialog />
+            <DisableDialog requiredBy={requiredBy} />
+          </>
+        ) : (
+          <SetupDialog />
+        )
+      }
+      description="Ask for a 6-digit code from an app like 1Password, Google Authenticator or Authy whenever you sign in with your password."
+      title={
+        <span className="flex items-center gap-2">
           Authenticator app
           {enabled ? (
             <Badge variant="success">Enabled</Badge>
           ) : (
             <Badge variant="outline">Off</Badge>
           )}
-        </CardTitle>
-        <CardDescription>
-          Ask for a 6-digit code from an app like 1Password, Google Authenticator or Authy whenever
-          you sign in with your password.
-        </CardDescription>
-        {restriction ? null : (
-          <CardAction className="flex gap-2">
-            {enabled ? (
-              <>
-                <BackupCodesDialog />
-                <DisableDialog requiredBy={requiredBy} />
-              </>
-            ) : (
-              <SetupDialog />
-            )}
-          </CardAction>
-        )}
-      </CardHeader>
+        </span>
+      }
+    >
       {restriction ? (
-        <CardPanel>
+        <PanelBody>
           <Alert variant="warning">
             <AlertDescription>{restriction}</AlertDescription>
           </Alert>
-        </CardPanel>
+        </PanelBody>
       ) : null}
-    </Card>
+    </Panel>
   );
 }
 

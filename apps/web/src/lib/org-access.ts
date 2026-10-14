@@ -48,7 +48,7 @@ export function orgAccess(membership: OrgAccessMembership, session: OrgAccessSes
     !viaSso &&
     (!session.user.twoFactorEnabled || session.session.ssoProviderId)
   ) {
-    return { kind: "redirect", to: "/settings" };
+    return { kind: "redirect", to: "/settings/security" };
   }
   return { kind: "allowed", viaSso, breakGlass };
 }

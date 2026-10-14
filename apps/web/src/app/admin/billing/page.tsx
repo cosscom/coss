@@ -6,7 +6,6 @@ import {
   providerEventBacklog,
 } from "@coss/billing";
 import { Badge } from "@coss/ui/components/badge";
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
   Table,
   TableBody,
@@ -19,6 +18,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { InvoiceStatusBadge } from "@/components/billing/invoice-status";
 import { PageHeader } from "@/components/page-header";
+import { Panel, PanelBody, PanelDescription, PanelHeader, PanelTitle } from "@/components/panel";
 import { formatCents, formatDate } from "@/lib/billing-format";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
@@ -50,12 +50,12 @@ export default async function AdminBillingPage() {
         title="Billing"
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Invoices needing attention</CardTitle>
-          <CardDescription>Overdue, failing to collect or sync, or disputed.</CardDescription>
-        </CardHeader>
-        <CardPanel>
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Invoices needing attention</PanelTitle>
+          <PanelDescription>Overdue, failing to collect or sync, or disputed.</PanelDescription>
+        </PanelHeader>
+        <PanelBody>
           {invoices.length ? (
             <Table>
               <TableHeader>
@@ -99,15 +99,15 @@ export default async function AdminBillingPage() {
           ) : (
             <p className="text-muted-foreground text-sm">Nothing needs attention.</p>
           )}
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Accounts past due</CardTitle>
-          </CardHeader>
-          <CardPanel>
+        <Panel>
+          <PanelHeader>
+            <PanelTitle>Accounts past due</PanelTitle>
+          </PanelHeader>
+          <PanelBody>
             {standing.length ? (
               <ul className="flex flex-col gap-1 text-sm">
                 {standing.map((account) => (
@@ -123,14 +123,14 @@ export default async function AdminBillingPage() {
             ) : (
               <p className="text-muted-foreground text-sm">None.</p>
             )}
-          </CardPanel>
-        </Card>
+          </PanelBody>
+        </Panel>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Billing holds</CardTitle>
-          </CardHeader>
-          <CardPanel>
+        <Panel>
+          <PanelHeader>
+            <PanelTitle>Billing holds</PanelTitle>
+          </PanelHeader>
+          <PanelBody>
             {holds.length ? (
               <ul className="flex flex-col gap-1 text-sm">
                 {holds.map((hold) => (
@@ -146,14 +146,14 @@ export default async function AdminBillingPage() {
             ) : (
               <p className="text-muted-foreground text-sm">None.</p>
             )}
-          </CardPanel>
-        </Card>
+          </PanelBody>
+        </Panel>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Upgrades waiting for payment</CardTitle>
-          </CardHeader>
-          <CardPanel>
+        <Panel>
+          <PanelHeader>
+            <PanelTitle>Upgrades waiting for payment</PanelTitle>
+          </PanelHeader>
+          <PanelBody>
             {pending.length ? (
               <ul className="flex flex-col gap-1 text-sm">
                 {pending.map((contract) => (
@@ -167,14 +167,14 @@ export default async function AdminBillingPage() {
             ) : (
               <p className="text-muted-foreground text-sm">None.</p>
             )}
-          </CardPanel>
-        </Card>
+          </PanelBody>
+        </Panel>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Terms ending within 60 days</CardTitle>
-          </CardHeader>
-          <CardPanel>
+        <Panel>
+          <PanelHeader>
+            <PanelTitle>Terms ending within 60 days</PanelTitle>
+          </PanelHeader>
+          <PanelBody>
             {ending.length ? (
               <ul className="flex flex-col gap-1 text-sm">
                 {ending.map((contract) => (
@@ -190,16 +190,16 @@ export default async function AdminBillingPage() {
             ) : (
               <p className="text-muted-foreground text-sm">None.</p>
             )}
-          </CardPanel>
-        </Card>
+          </PanelBody>
+        </Panel>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment provider events</CardTitle>
-          <CardDescription>Received but not yet applied, or failed.</CardDescription>
-        </CardHeader>
-        <CardPanel>
+      <Panel>
+        <PanelHeader>
+          <PanelTitle>Payment provider events</PanelTitle>
+          <PanelDescription>Received but not yet applied, or failed.</PanelDescription>
+        </PanelHeader>
+        <PanelBody>
           {events.length ? (
             <ul className="flex flex-col gap-1 text-sm">
               {events.map((event) => (
@@ -213,8 +213,8 @@ export default async function AdminBillingPage() {
           ) : (
             <p className="text-muted-foreground text-sm">All caught up.</p>
           )}
-        </CardPanel>
-      </Card>
+        </PanelBody>
+      </Panel>
     </div>
   );
 }
