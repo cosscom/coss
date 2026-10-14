@@ -60,7 +60,7 @@ how a source calendar's color tints everything nobody colored by hand;
     meetingUrl: { optional: true, type: "string", description: "Video-call link; rendered as a Join affordance." },
     attendees: { optional: true, type: "Attendee[]", description: "Invitees in insertion order; `email` is the dedupe key. Helpers: `addAttendee`, `removeAttendee`, `summarize`, `initialsFor`." },
     organizer: { optional: true, type: "string", description: "RFC 5545 `ORGANIZER` as a bare address — its own field, never inferred from the attendee list." },
-    reminders: { optional: true, type: "Reminder[]", description: "Alerts as offsets from the start. coss calendar stores them; delivery is the host's job." },
+    reminders: { optional: true, type: "Reminder[]", description: "Alerts as offsets from the start. kloq stores them; delivery is the host's job." },
     busy: { optional: true, type: "boolean", description: "Free/busy. Absent means busy — `isBusy` encodes that default." },
     readOnly: { optional: true, type: "boolean", description: "The event can't be edited, moved, resized or deleted from the UI." },
     calendarId: { optional: true, type: "string", description: "The source calendar the event belongs to." },

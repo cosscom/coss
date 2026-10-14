@@ -32,7 +32,7 @@ nudging a selected event into a blocked window with the arrow keys:
 Every field is optional; pass any one and the grid goes active. A
 `ConstraintSlot` is a window of time a gesture wants to occupy — `start` and
 `end` as `Date`s, `end` exclusive, plus `allDay` (no relation to the
-[component slots](/calendar/docs/slots)).
+[component slots](/kloq/docs/slots)).
 
 <TypeTable
   type={{
@@ -93,7 +93,7 @@ const officeHours = (slot: ConstraintSlot) => {
 ## Availability a week at a time
 
 For availability that lives on a server, fetch it for the visible range with
-[`onRangeChange`](/calendar/docs/controlled-state) and let the callback read state.
+[`onRangeChange`](/kloq/docs/controlled-state) and let the callback read state.
 The grid re-resolves whenever the `constraints` object's identity changes, so
 deriving it from that state is exactly right:
 
@@ -114,7 +114,7 @@ const [busy, setBusy] = useState(new Map<string, Window[]>());
 ```
 
 `rangePadding` widens each fetch so a week of ‹ › steps doesn't wait on the
-network; the [range-fetching example](/calendar/docs/examples/range-fetching) shows the
+network; the [range-fetching example](/kloq/docs/examples/range-fetching) shows the
 same pattern feeding events.
 
 ## What is refused, exactly
@@ -141,7 +141,7 @@ keyboard gesture is announced once, not per keypress.
 
 ## Timeline gestures
 
-[`view="timeline"`](/calendar/docs/timeline) runs through the same `KloqConstraints`
+[`view="timeline"`](/kloq/docs/timeline) runs through the same `KloqConstraints`
 object, unchanged — `minDate`/`maxDate`, `isSlotDisabled` and `canDrop` all
 apply, including the origin exemption. It reports its own gesture names
 rather than reusing the calendar's, in case a `canDrop` wants to branch on
@@ -161,7 +161,7 @@ The calendar's own `"move"` and `"resize"` never fire on a timeline, and
 The same primitives the grid uses are exported for your own surfaces —
 `createConstraints` resolves the prop shape, `slotAllowed` answers for one
 window, and `disabledBands` returns the merged refused runs a custom
-[`TimeGutter`](/calendar/docs/slots) or availability picker can draw:
+[`TimeGutter`](/kloq/docs/slots) or availability picker can draw:
 
 ```tsx
 import { createConstraints, disabledBands, slotAllowed } from "kloq";

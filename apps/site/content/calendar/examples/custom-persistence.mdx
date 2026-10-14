@@ -17,8 +17,8 @@ sessionStorage's contract, and exactly what a docs page should leave behind.
   `load` runs once after mount and returns the stored events or `null` for
   "nothing stored, keep the seeds"; `save` receives the full array on every
   committed change, never mid-drag; `clear` is what Reset calls. The contract
-  is on the [Persistence](/calendar/docs/persistence) page.
-- The payload is versioned, and coss calendar checks it. `save` writes
+  is on the [Persistence](/kloq/docs/persistence) page.
+- The payload is versioned, and kloq checks it. `save` writes
   `{ v: PAYLOAD_VERSION, events }` — the same envelope the built-in
   `localStorageAdapter` uses — and `load` reads it back through
   `readPayload`, which validates every event and returns `null` for a version
@@ -26,7 +26,7 @@ sessionStorage's contract, and exactly what a docs page should leave behind.
   nothing. A newer build's data, or a hand-edited key, can never blank the
   calendar.
 - Tenancy is two keys. `sessionAdapter("acme")` closes over
-  `kloq-example:acme:events`, and `storage="tenant-acme"` gives coss calendar's own
+  `kloq-example:acme:events`, and `storage="tenant-acme"` gives kloq's own
   preference keys — theme, scheme, density, zoom — the same namespace
   (`tenant-acme-density` and so on). Both are per-tenant, so a switch is a
   different calendar in every respect.
@@ -50,5 +50,5 @@ sessionStorage's contract, and exactly what a docs page should leave behind.
   a helper like `idb-keyval`. Keep the envelope — the version lives in the
   data, not the key.
 - Per change instead of full array: pair the adapter with
-  [`onCommit`](/calendar/docs/optimistic-sync) and send each `KloqChange` to your API
+  [`onCommit`](/kloq/docs/optimistic-sync) and send each `KloqChange` to your API
   while the adapter keeps a local copy for instant loads.

@@ -43,7 +43,7 @@ export function NotFoundContent({
         </div>
       </GridFragment>
       <div className="flex flex-wrap items-center justify-center gap-3">
-        {actions ?? <Button render={<Link href="/calendar" />}>Back to today</Button>}
+        {actions ?? <Button render={<Link href="/kloq" />}>Back to today</Button>}
       </div>
     </div>
   );

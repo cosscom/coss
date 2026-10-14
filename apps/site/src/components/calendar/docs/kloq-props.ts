@@ -119,7 +119,7 @@ export const KLOQ_PROPS: KloqPropDef[] = [
     name: "storage",
     type: "StorageSetting",
     description:
-      "Everything coss calendar keeps in `localStorage`. `false` keeps it in memory; a string namespaces the keys.",
+      "Everything kloq keeps in `localStorage`. `false` keeps it in memory; a string namespaces the keys.",
     default: '"kloq"',
     group: "State",
   },
@@ -499,7 +499,7 @@ export function propsNamed(names: readonly string[] | undefined): KloqPropDef[] 
   const byName = new Map(KLOQ_PROPS.map((p) => [p.name, p]));
   return names.flatMap((n) => {
     const p = byName.get(n);
-    if (!p) throw new Error(`Unknown coss calendar prop "${n}"`);
+    if (!p) throw new Error(`Unknown kloq prop "${n}"`);
     return p.knob ? [p] : [];
   });
 }

@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * coss calendar starter — a full-page calendar with the stock toolbar.
+ * kloq starter — a full-page calendar with the stock toolbar.
  *
- * Uncontrolled: coss calendar owns view, date and events, and persists them to
+ * Uncontrolled: kloq owns view, date and events, and persists them to
  * localStorage. Delete the wrapper div's height at your peril — <Kloq> is
  * h-full and renders into whatever box you give it.
  */

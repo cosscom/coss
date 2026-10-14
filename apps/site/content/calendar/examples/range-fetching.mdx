@@ -18,7 +18,7 @@ still there, because it was written through to the server.
 - `events` and `onEventsChange` make the calendar controlled: it draws exactly
   the array it is given and reports every committed change as a full next
   array. There are no seeds, no built-in persistence and no store of its own.
-  See [Controlled state](/calendar/docs/controlled-state).
+  See [Controlled state](/kloq/docs/controlled-state).
 - `onRangeChange(start, end)` is the read signal. It fires once on mount and
   then on every view or date change, with the visible range as `[start, end)`.
   `rangePadding={7}` widens what it reports by a week on each side, so the
@@ -36,14 +36,14 @@ still there, because it was written through to the server.
   vanished is a delete, everything else is an upsert.
 - The status line is host code. `requests` records each range with a `count`
   that stays `null` while the promise is pending; the live dot reads that.
-  Nothing in coss calendar knows a request happened.
+  Nothing in kloq knows a request happened.
 
 ## Take it further
 
 - Replace `fetchRange` with a route handler that takes `?from=&to=` and
   returns `CalEvent[]`; the merge stays. Pass the two dates through
   `toDateOnlyString` if the server thinks in days.
-- Use [`onCommit`](/calendar/docs/optimistic-sync) as the write path instead of the
+- Use [`onCommit`](/kloq/docs/optimistic-sync) as the write path instead of the
   diff. It hands you each change with its type, so a drag is a PATCH and a
   paste is one batched POST — and a rejection springs the block back.
 - Evict. `mergeById` never forgets; a long session in day view accumulates.

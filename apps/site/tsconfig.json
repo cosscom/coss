@@ -3,7 +3,7 @@
   "compilerOptions": {
     // Bun types are for the bun:test files in test/.
     "types": ["node", "bun"],
-    // The Calendar UI kit (packages/kloq and src/components/calendar, from cosscom/calendar) is
+    // kloq (packages/kloq and src/components/calendar, from cosscom/calendar) is
     // written without it, and its sources are type-checked through this app's imports.
     "noUncheckedIndexedAccess": false,
     "paths": {

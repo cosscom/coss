@@ -51,7 +51,7 @@ const STEPS: {
         source registry.
       </>
     ),
-    href: "/calendar/docs/installation",
+    href: "/kloq/docs/installation",
     cta: "Installation",
   },
   {
@@ -62,7 +62,7 @@ const STEPS: {
     note: (
       <>In the root layout — CSS imported inside a page or component only reaches that route.</>
     ),
-    href: "/calendar/docs/installation#light-and-dark",
+    href: "/kloq/docs/installation#light-and-dark",
     cta: "Light and dark",
   },
   {
@@ -76,7 +76,7 @@ const STEPS: {
         everyone makes first.
       </>
     ),
-    href: "/calendar/docs/quick-start",
+    href: "/kloq/docs/quick-start",
     cta: "Quick start",
   },
 ];
@@ -151,16 +151,16 @@ export async function DocsHome() {
     <div className="@container not-prose divide-y">
       <section className="pb-12 sm:pb-16">
         <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
-          <Button size="lg" render={<Link href="/calendar/docs/quick-start" />}>
+          <Button size="lg" render={<Link href="/kloq/docs/quick-start" />}>
             Quick start
           </Button>
-          <Button size="lg" variant="outline" render={<Link href="/calendar/docs/examples" />}>
+          <Button size="lg" variant="outline" render={<Link href="/kloq/docs/examples" />}>
             Examples
           </Button>
           <Button
             size="lg"
             variant="ghost"
-            render={<Link href="/calendar/docs/playground" />}
+            render={<Link href="/kloq/docs/playground" />}
             className="max-sm:col-span-2"
           >
             Playground
@@ -240,7 +240,7 @@ export async function DocsHome() {
               <ul className="grid gap-x-6 gap-y-2 @xl:grid-cols-2 @xl:gap-y-3 @5xl:grid-cols-3">
                 {g.pages.map((p) => (
                   <li key={p.url} className="min-w-0">
-                    {p.url === "/calendar/docs" ? (
+                    {p.url === "/kloq/docs" ? (
                       <span className="flex items-baseline gap-2 text-sm">
                         <span className="text-muted-foreground">{p.name}</span>
                         <span className="font-mono text-xs text-brand-foreground">
@@ -273,7 +273,7 @@ export async function DocsHome() {
           <h2 className="font-heading text-2xl font-semibold tracking-tight">
             The real component, with its source beside it.
           </h2>
-          <Link href="/calendar/docs/examples" className={cn(TEXT_LINK, "text-sm")}>
+          <Link href="/kloq/docs/examples" className={cn(TEXT_LINK, "text-sm")}>
             All {EXAMPLES.length} examples →
           </Link>
         </div>
@@ -281,7 +281,7 @@ export async function DocsHome() {
           {featured.map((e) => (
             <li key={e.slug}>
               <Card
-                href={`/calendar/docs/examples/${e.slug}`}
+                href={`/kloq/docs/examples/${e.slug}`}
                 title={e.title}
                 description={e.description}
               >

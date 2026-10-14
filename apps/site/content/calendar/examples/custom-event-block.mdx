@@ -14,13 +14,13 @@ are the engine's, the pixels are yours.
 ## How it works
 
 `components={{ EventBlock: DeployBlock }}` swaps one of the six
-[slots](/calendar/docs/slots). Everything else — the gutter, the day headers, the
+[slots](/kloq/docs/slots). Everything else — the gutter, the day headers, the
 panel, the now-line — stays on `DEFAULT_COMPONENTS`.
 
 The block receives `EventBlockProps`: a `PlacedEvent` already projected into
 the view's column and minute space, the overlap `layout`, `selected`, the
 roving `tabIndex`, and the three engine hooks. It honours the
-[engine contract](/calendar/docs/slots#the-engine-contract) in five lines: the root
+[engine contract](/kloq/docs/slots#the-engine-contract) in five lines: the root
 carries `data-cal-event={event.id}`, registers itself with
 `registerNode(event.id, node)`, forwards `onPointerDown(e, event)`, keeps a
 `[data-slot="event-time"]` span the engine rewrites mid-drag, and marks its

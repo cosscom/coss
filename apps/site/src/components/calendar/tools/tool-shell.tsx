@@ -17,7 +17,7 @@ export function ToolShell({ tool, children }: { tool: Tool; children: ReactNode 
         <PageHero
           size="sm"
           eyebrow={[
-            <Link key="tools" href="/calendar/tools" className="rounded-xs hover:text-foreground">
+            <Link key="tools" href="/kloq/tools" className="rounded-xs hover:text-foreground">
               tools
             </Link>,
             <span key="free" className="text-foreground">
@@ -36,13 +36,13 @@ export function ToolShell({ tool, children }: { tool: Tool; children: ReactNode 
             <SectionHead
               label="where this comes from"
               title="It is one function out of a calendar."
-              lede={`This page runs ${tool.built} — the same code that ships in coss calendar, not a re-implementation. Every interaction in the calendar is built to this standard, which is the whole pitch.`}
+              lede={`This page runs ${tool.built} — the same code that ships in kloq, not a re-implementation. Every interaction in the calendar is built to this standard, which is the whole pitch.`}
             />
           </Reveal>
           <Reveal delay={80}>
             <div className="mt-10 flex flex-wrap gap-3">
               <Button render={<Link href={tool.docs} />}>Read the docs</Button>
-              <Button variant="outline" render={<Link href="/calendar/demo" />}>
+              <Button variant="outline" render={<Link href="/kloq/demo" />}>
                 Try the calendar
               </Button>
               <InstallCta variant="ghost" />
@@ -76,7 +76,7 @@ export function ToolLinks({
       {tools.map((tool) => (
         <li key={tool.slug} className="flex bg-card sm:last:odd:col-span-2">
           <Link
-            href={`/calendar/tools/${tool.slug}`}
+            href={`/kloq/tools/${tool.slug}`}
             className="group flex flex-1 flex-col gap-2 p-6 -outline-offset-2 transition-colors hover:bg-accent"
           >
             {children ? (

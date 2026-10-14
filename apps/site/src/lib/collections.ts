@@ -50,7 +50,7 @@ export const shipyard = defineDocs({
 });
 
 /**
- * The Calendar UI kit's docs at /calendar/docs (src/lib/calendar-docs.ts), moved from the
+ * kloq's docs at /kloq/docs (src/lib/calendar-docs.ts), moved from the
  * `cosscom/calendar` repository's `content/docs`. Their own collection, out of coss's docs sidebar,
  * search and /llms.txt; the global options are replaced per collection, so Shiki's themes are set
  * here again (no Twoslash: the examples are rendered live, not type-checked).

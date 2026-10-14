@@ -21,7 +21,7 @@ Try the four phrases, or write your own.
   in a `useMemo` keyed on the text. `now` is an argument, not something the
   parser reads, so the parse is deterministic; the planner passes a fresh
   `new Date()` each time so "tomorrow" is always tomorrow. The grammar is on
-  [Quick add](/calendar/docs/quick-add).
+  [Quick add](/kloq/docs/quick-add).
 - `highlightSegments(text, result.tokens, result.ignored)` interleaves the
   input with its tokens; a segment from `result.ignored` carries
   `ignored: true`, and each kind's look comes from `QUICK_ADD_KINDS[kind].mark`. Concatenating the segments reproduces the input exactly, so the
@@ -37,7 +37,7 @@ Try the four phrases, or write your own.
   way the built-in <Kbd>⌘K</Kbd> quick add does — `formatInstant` for timed
   events, `toDateOnlyString` with an exclusive end for all-day ones (the
   parser's all-day `end` is inclusive) — then `store.add(event)` and
-  `k.goToDate(start)`. The event shapes are on [Events](/calendar/docs/events).
+  `k.goToDate(start)`. The event shapes are on [Events](/kloq/docs/events).
 - A time with no day resolves to today, or tomorrow if that time has passed;
   a day with no time is an all-day event. A range is authoritative: in "retro
   thursday 2-3pm for 45 mins" the length is struck through and kept out of the
@@ -50,8 +50,8 @@ Try the four phrases, or write your own.
 
 ## Take it further
 
-coss calendar exports the same field it uses inside <Kbd>⌘K</Kbd> as `QuickAddInput`,
+kloq exports the same field it uses inside <Kbd>⌘K</Kbd> as `QuickAddInput`,
 if you would rather not draw the mirror yourself. With a controlled `events`
 array the commit becomes `onEventsChange([...events, event])` and the parser
 result can be sent to a server before it lands — see
-[Controlled state](/calendar/docs/controlled-state).
+[Controlled state](/kloq/docs/controlled-state).

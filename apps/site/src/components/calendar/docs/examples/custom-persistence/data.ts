@@ -21,7 +21,7 @@ export interface TenantAdapter extends PersistenceAdapter {
 }
 
 /**
- * sessionStorage, one key per tenant. The payload is coss calendar's own versioned envelope
+ * sessionStorage, one key per tenant. The payload is kloq's own versioned envelope
  * (`{ v: 2, events }`), so `readPayload` does the checking: an unknown version or a
  * corrupt copy reads as null — "nothing stored" — and the seeds stay.
  */

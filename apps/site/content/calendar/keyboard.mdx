@@ -78,7 +78,7 @@ day. <Kbd>PageUp</Kbd>/<Kbd>PageDown</Kbd> always step the range.
 
 A window-level listener that `preventDefault()`s arrows is fine for an app and
 hostile for a component — it would break every listbox, menu and tab list on
-the host page. So coss calendar stands down whenever the target sits inside anything
+the host page. So kloq stands down whenever the target sits inside anything
 that owns its own keyboard model: text fields, comboboxes, menus, grids,
 sliders, an IME composition. When nothing has focus at all — the common case
 after clicking the non-focusable grid — the calendar claims the keys only if

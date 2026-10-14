@@ -21,7 +21,7 @@ interaction model for free.
 
 ## The four timeline slots
 
-[`view="timeline"`](/calendar/docs/timeline) draws with its own four slots rather than
+[`view="timeline"`](/kloq/docs/timeline) draws with its own four slots rather than
 reusing the six above — a lane isn't a day column, and its axis runs
 horizontally.
 
@@ -140,7 +140,7 @@ draw as one block per day.
 accounting for a clipped day range (with `dayStartHour: 7`,
 `minutesToPx(7 * 60)` is 0). Labels must be positioned with it, never a
 re-derived scale, so a custom gutter cannot drift from the engine's math. The
-coss.com/calendar demo ships a two-column local + UTC gutter built exactly this way:
+coss.com/kloq demo ships a two-column local + UTC gutter built exactly this way:
 
 ```tsx title="dual-tz-gutter.tsx"
 import type { TimeGutterProps } from "@/components/kloq";

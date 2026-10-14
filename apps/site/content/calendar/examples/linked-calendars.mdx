@@ -14,7 +14,7 @@ right moves on the left.
 
 Both instances get the same `date` and the same `onDateChange`, so either one
 navigating updates the other — the standard
-[controlled pattern](/calendar/docs/controlled-state#view-and-date), applied twice.
+[controlled pattern](/kloq/docs/controlled-state#view-and-date), applied twice.
 `view` is controlled as well, pinned to `"month"` on the left and `"day"` on
 the right.
 
@@ -29,7 +29,7 @@ the internal store off, so a drag on the right commits through
 `onEventsChange` into the one array both instances render from.
 
 `responsive={false}` on both. The views are pinned, so there is nothing for
-the [responsive collapse](/calendar/docs/views#the-responsive-collapse) to request;
+the [responsive collapse](/kloq/docs/views#the-responsive-collapse) to request;
 turning it off keeps `onViewChange` quiet. The month still draws its compact
 dot form below 640px — that is a density choice tied to the box width, not a
 view change, and it is what makes a 320px month legible.
@@ -37,10 +37,10 @@ view change, and it is what makes a 320px month legible.
 The strip above each calendar is one component, `Nav` from `parts.tsx`,
 rendered twice. It calls `useKloq()` and gets the state of whichever instance it sits inside — `step`,
 `goToday`, `atToday` and the resolved `view` for `formatViewTitle`. See
-[toolbar & chrome](/calendar/docs/chrome#usekloq).
+[toolbar & chrome](/kloq/docs/chrome#usekloq).
 
 ## Take it further
 
 Add `onViewChange` to the right-hand instance and let it switch between
 `"day"` and `3`; the month still only ever reports the date. Or mirror the
-shared date into the URL, as in [View and date in the URL](/calendar/docs/examples/url-state).
+shared date into the URL, as in [View and date in the URL](/kloq/docs/examples/url-state).

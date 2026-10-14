@@ -36,7 +36,7 @@ const RAW: { id: string; label: string; note: string; panes: RawPane[] }[] = [
     panes: [
       {
         title: "components.json",
-        code: `{ "registries": { "@kloq": "${abs("/calendar/r/registry.json").replace(/registry\.json$/, "{name}.json")}" } }`,
+        code: `{ "registries": { "@kloq": "${abs("/kloq/r/registry.json").replace(/registry\.json$/, "{name}.json")}" } }`,
         lang: "json",
       },
       { title: "terminal", code: "npx shadcn@latest add @kloq/kloq", lang: "bash", command: true },

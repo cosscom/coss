@@ -16,7 +16,7 @@ into a hatch: the snap holds it out.
 - The host's busy time is a `BusyCalendar` — windows keyed by ISO date,
   `"2026-09-02": [["12:00", "13:00"]]` — the shape an availability endpoint
   returns. `hostConstraints` folds it into one
-  [`constraints`](/calendar/docs/constraints) object: `minDate` blocks the past, and
+  [`constraints`](/kloq/docs/constraints) object: `minDate` blocks the past, and
   `isSlotDisabled` refuses those windows, anything outside 9–17, and every
   confirmed booking. The grid hatches the refused time and refuses create,
   move, resize and slot clicks into it — no placeholder "Busy" events
@@ -29,26 +29,26 @@ into a hatch: the snap holds it out.
   `slotAllowed` — the same pure helpers the grid runs — because a click near
   the end of the day proposes an end the clicked slot alone can't vouch for.
 - `dayStartHour={9}` / `dayEndHour={18}` clip the grid; `workingHours` tints
-  the bookable band inside it ([Settings](/calendar/docs/settings)). `snapMinutes={30}`
+  the bookable band inside it ([Settings](/kloq/docs/settings)). `snapMinutes={30}`
   and `minEventMinutes={30}` make every drag land on a half-hour.
 - `events` / `onEventsChange` keep the array in React state
-  ([Controlled state](/calendar/docs/controlled-state)): confirmed bookings are
+  ([Controlled state](/kloq/docs/controlled-state)): confirmed bookings are
   `readOnly` events, and whatever else the grid hands back — a drag-create, a
   moved draft — folds into the one green `draft`.
 - `components={{ EventPanel: () => null }}` swaps the built-in editor for
-  nothing; the confirm card beside the grid is the panel ([Slots](/calendar/docs/slots)).
+  nothing; the confirm card beside the grid is the panel ([Slots](/kloq/docs/slots)).
   The card is a `Form` of `Field`s, so a missing name or a malformed address
   is answered inline, under the input.
   `view={3}` with `responsive={false}` keeps three columns at every width,
-  and the nav strip (`Nav` in `parts.tsx`) is built on `useKloq()` ([Toolbar & chrome](/calendar/docs/chrome)).
+  and the nav strip (`Nav` in `parts.tsx`) is built on `useKloq()` ([Toolbar & chrome](/kloq/docs/chrome)).
 
 ## Take it further
 
 - Feed `isSlotDisabled` from a fetch keyed on `onRangeChange`, so paging to
   next week loads that week's busy windows — the pattern is on the
-  [constraints page](/calendar/docs/constraints).
+  [constraints page](/kloq/docs/constraints).
 - Draw the grid in the host's zone with `displayTimeZone="Europe/London"`
   and add the visitor's as a gutter column with `timeZones`
-  ([Time zones](/calendar/docs/time-zones)).
+  ([Time zones](/kloq/docs/time-zones)).
 - On confirm, `POST` the booking and hand the visitor a `.ics` with
-  `downloadICS(booking)` ([ICS](/calendar/docs/ics)).
+  `downloadICS(booking)` ([ICS](/kloq/docs/ics)).

@@ -449,10 +449,10 @@ export function RRuleBuilder() {
                 ))}
           </div>
           <Note>
-            The presets coss calendar&rsquo;s own recurrence menu offers, from{" "}
-            <code>presetsFor()</code>; picking one sets the controls. Already have a rule?{" "}
+            The presets kloq&rsquo;s own recurrence menu offers, from <code>presetsFor()</code>;
+            picking one sets the controls. Already have a rule?{" "}
             <Link
-              href="/calendar/tools/rrule"
+              href="/kloq/tools/rrule"
               className="rounded-xs text-foreground underline underline-offset-4"
             >
               Explain it instead

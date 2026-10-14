@@ -227,7 +227,7 @@ function Grid({
 }
 
 /**
- * `phone` shows below `sm`, `narrow` while the box itself is under coss calendar's 900px collapse,
+ * `phone` shows below `sm`, `narrow` while the box itself is under kloq's 900px collapse,
  * `wide` above it. Pass the same view to all three for a calendar that never collapses.
  */
 export function CalendarFrame({

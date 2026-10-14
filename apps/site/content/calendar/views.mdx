@@ -23,7 +23,7 @@ rather than teleporting.
 | `"month"` | month cells | Always 6 rows of 7 — a stable height beats a jumping one. Neighbouring-month days render dimmed. |
 | `"agenda"` | list | A 30-day rolling list from the anchor date. |
 | `"year"` | heat map | Twelve mini-month grids for the anchor's calendar year. |
-| `"timeline"` | resource rows | Rooms, staff or machines as rows along a horizontal time axis. See [Resource timeline](/calendar/docs/timeline). |
+| `"timeline"` | resource rows | Rooms, staff or machines as rows along a horizontal time axis. See [Resource timeline](/kloq/docs/timeline). |
 
 Only the time-grid shapes — day, n-day, week — draw the scrollable hour grid
 and its all-day lane. Month and agenda are selection-and-navigation surfaces;
@@ -37,14 +37,14 @@ next section.
 resize, all constraint-aware — but nothing else about its layout. Rows are
 lanes you supply via `lanes`, not days; there's no all-day lane, because
 there's no day column for an all-day event to sit above; and its own visible
-span is set by [`timelineWindow`](/calendar/docs/timeline#the-visible-span-timelinewindow),
+span is set by [`timelineWindow`](/kloq/docs/timeline#the-visible-span-timelinewindow),
 which can be tied to the anchor date the way every other view's range is, or
 pinned independently of it. It's also the one view the [responsive
 collapse](#the-responsive-collapse) leaves alone — there's no narrower n-day
 span to fall back to, so a timeline just scrolls instead of collapsing.
 Passing `lanes` is also what puts it in the stock view switcher, as "Timeline".
 Reach for it when the axis your host cares about is a resource, not a day —
-see [Resource timeline](/calendar/docs/timeline) and [Resources & lanes](/calendar/docs/resources).
+see [Resource timeline](/kloq/docs/timeline) and [Resources & lanes](/kloq/docs/resources).
 
 ## What ‹ › step by
 
@@ -53,7 +53,7 @@ A step moves by the view's own unit: a day in day view, n days in an n-day view
 month view, 30 days in agenda, a year in year view, and a day in timeline
 (one step of the anchor, regardless of how many hours or days
 `timelineWindow` derives around it — see [Resource
-timeline](/calendar/docs/timeline#the-visible-span-timelinewindow) for what that
+timeline](/kloq/docs/timeline#the-visible-span-timelinewindow) for what that
 anchor drives and what a controlled `timelineWindow` opts out of). Adding 30 days to a month
 view would drift off the 1st within a year — so a month anchor is normalised to
 the 1st, and a year anchor to 1 January, where stepping cannot overflow. All of
