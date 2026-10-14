@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
+import { appendLogEntries } from "@coss/logs";
 import { eq } from "drizzle-orm";
 import { forgetRiskUser, recordRiskFeedback } from "../src/feedback.ts";
 import { getRiskAssessment, listRiskAssessments } from "../src/read.ts";
@@ -29,7 +30,43 @@ describe("forgetRiskUser", () => {
       previous_user: "u1",
     });
 
+    await db.insert(schema.logDrain).values({
+      organizationId: live.organizationId,
+      projectId: live.projectId,
+      environmentId: live.environmentId,
+      url: "https://example.com/logs",
+      secretCiphertext: "unused",
+      sources: ["risk"],
+    });
+    // Simulate the log format retained from before user IDs stopped being logged.
+    await appendLogEntries(db, [
+      {
+        ...live,
+        occurredAt: new Date(),
+        source: "risk",
+        level: "info",
+        type: "risk.assessment",
+        message: "login assessed",
+        resourceId: own.id,
+        attributes: { user_id: "u1", decision: "allow" },
+        searchTerms: ["u1"],
+      },
+    ]);
     expect(await forgetRiskUser(deps.hash, live, "u1")).toBe(1);
+
+    const logs = await db
+      .select()
+      .from(schema.logEntry)
+      .where(eq(schema.logEntry.environmentId, live.environmentId));
+    expect(
+      logs.some((log) => log.attributes.user_id === "u1" || log.searchText.includes("u1")),
+    ).toBe(false);
+    const drainRecords = await db
+      .select()
+      .from(schema.logDrainRecord)
+      .where(eq(schema.logDrainRecord.organizationId, live.organizationId));
+    expect(drainRecords).toHaveLength(1);
+    expect(JSON.stringify(drainRecords[0]?.line)).not.toContain("u1");
 
     const forgotten = await getRiskAssessment(live, own.id);
     expect(forgotten).toMatchObject({
@@ -84,4 +121,27 @@ describe("listRiskAssessments", () => {
     expect((await listRiskAssessments(live, { after: "nope" })).data).toEqual([]);
     expect(await getRiskAssessment(sandbox, a.id)).toBeNull();
   });
+});
+
+test("correcting one assessment preserves independent fraud evidence", async () => {
+  const { assess, deps, live } = await setup();
+  const params = {
+    event: "login" as const,
+    user: { id: "same", email: "same@acme.io" },
+    ip: TEST_IPS.residential,
+  };
+  const a = (await assess(params)).assessment;
+  const b = (await assess(params)).assessment;
+  const feedback = (id: string, outcome: "fraud" | "legitimate") =>
+    recordRiskFeedback(deps.hash, live, id, { outcome }, { source: "api", actorId: null });
+  await Promise.all([feedback(a.id, "fraud"), feedback(b.id, "fraud")]);
+  await feedback(b.id, "legitimate");
+  const codes = (await assess(params)).assessment.reasons.map((r) => r.code);
+  expect(codes).toContain("history.fraud_user");
+  expect(codes).toContain("history.fraud_mailbox");
+  expect(codes).toContain("history.fraud_ip");
+  await feedback(a.id, "legitimate");
+  expect(
+    (await assess(params)).assessment.reasons.some((r) => r.code.startsWith("history.fraud")),
+  ).toBe(false);
 });

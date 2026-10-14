@@ -3,6 +3,7 @@ import { db, schema } from "@coss/db";
 import { createWebhookEndpoint } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
 import { and, eq } from "drizzle-orm";
+import { createIpIntelligenceSource } from "../src/datasets.ts";
 import { recordRiskFeedback } from "../src/feedback.ts";
 import { addRiskListEntry } from "../src/lists.ts";
 import { CreateRiskAssessmentRequest } from "../src/schemas.ts";
@@ -472,6 +473,31 @@ describe("review webhooks", () => {
 });
 
 describe("idempotency", () => {
+  test("concurrent retries count once, including replacement of an expired key", async () => {
+    const { assess } = await setup({ ipIntelligence: createIpIntelligenceSource() });
+    const params = {
+      event: "login" as const,
+      user: { id: "concurrent" },
+      ip: TEST_IPS.residential,
+    };
+    const run = () =>
+      Promise.all(Array.from({ length: 15 }, () => assess(params, { idempotencyKey: "race" })));
+    const first = await run();
+    expect(new Set(first.map((r) => r.assessment.id)).size).toBe(1);
+    expect(first.filter((r) => !r.replayed)).toHaveLength(1);
+    expect((await assess(params)).assessment.signals.velocity).toMatchObject({ user_1h: 2 });
+    const original = first[0];
+    if (!original) throw new Error("No assessment returned");
+    await db
+      .update(schema.riskAssessment)
+      .set({ createdAt: new Date(Date.now() - 25 * 60 * 60_000) })
+      .where(eq(schema.riskAssessment.id, original.assessment.id));
+    const replacement = await run();
+    expect(new Set(replacement.map((r) => r.assessment.id)).size).toBe(1);
+    expect(replacement.filter((r) => !r.replayed)).toHaveLength(1);
+    expect((await assess(params)).assessment.signals.velocity).toMatchObject({ user_1h: 4 });
+  });
+
   test("a retry replays without counting the event again; another body is refused", async () => {
     const { assess } = await setup();
     const params = { event: "login" as const, user: { id: "u1" }, ip: TEST_IPS.residential };

@@ -816,8 +816,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   user agent live only on `risk_assessment` and are purged after `RETENTION_DAYS.riskPersonalData`; `signals` and
   `reasons` must never hold identifiers (messages are rendered on read, `reasonMessage`; the email domain comes from
   the `email` column). Webhook payloads and log lines carry no email or IP. Retries never count twice: `assessRisk`
-  replays an `Idempotency-Key` before collecting (`withIdempotencyKey` from `@coss/db/idempotency`, shared with email
-  sends). `forgetRiskUser` (`DELETE /v1/risk/users/{id}`) must keep removing everything that identifies a user,
+  serializes an `Idempotency-Key` with a transaction advisory lock and replays before stateful collection.
+  `forgetRiskUser` (`DELETE /v1/risk/users/{id}`) must keep removing everything that identifies a user,
   including `previous_user` in other assessments' reasons. IP data: the worker's `risk-datasets` loop downloads Tor,
   cloud ranges and IPinfo Lite into `risk_dataset` (never replacing a good copy with a smaller or invalid one); API
   processes reload changed ones every 5 minutes. Sandbox environments use the fixtures in `src/sandbox.ts`

@@ -6,14 +6,9 @@
  * Every signal is best-effort: a slow DNS lookup, missing IP data or an unreachable Valkey make
  * the assessment go without it (listed in `degraded`) rather than fail.
  */
-import { db, schema, type Transaction } from "@coss/db";
+import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
-import {
-  IDEMPOTENCY_KEY_TTL_MS,
-  isReplayOf,
-  requestHash,
-  withIdempotencyKey,
-} from "@coss/db/idempotency";
+import { IDEMPOTENCY_KEY_TTL_MS, isReplayOf, requestHash } from "@coss/db/idempotency";
 import { appendLogEntries } from "@coss/logs";
 import { analyzeEmail, type EmailAnalysis, type MailDomainVerdict } from "@coss/signals/email";
 import { type IpSignals, isBlockedAddress, normalizeIp, subnetOf } from "@coss/signals/ip";
@@ -85,7 +80,7 @@ export type AssessRiskInput = {
 
 type Hashes = Partial<Record<RiskHashKind, string>>;
 
-/** Everything learned before the transaction (which adds duplicates and the decision). */
+/** Collected signals, before adding mailbox duplicates and the decision. */
 type Collected = {
   signals: StoredSignals;
   reasons: StoredReason[];
@@ -113,60 +108,51 @@ export async function assessRisk(
   const idempotencyKey = input.idempotencyKey || null;
   const hash = idempotencyKey ? requestHash(params) : null;
 
-  // A retry must not count the event again: replay before collecting anything.
-  if (idempotencyKey) {
-    const existing = await findByKey(environment, idempotencyKey);
-    if (existing && isReplayOf(existing, hash)) {
-      return { assessment: toRiskAssessmentObject(existing), replayed: true };
-    }
-    const fresh = existing && Date.now() - existing.createdAt.getTime() <= IDEMPOTENCY_KEY_TTL_MS;
-    if (fresh) throw IDEMPOTENCY_ERRORS.reused();
-  }
-
-  const collected = await collectSignals(deps, environment, params);
-  const insert = (tx: Transaction) =>
-    insertAssessment(tx, deps, input, collected, { idempotencyKey, requestHash: hash });
-
-  if (!idempotencyKey || !hash) {
-    const row = await db.transaction(insert);
-    if (!row) throw new Error("Risk assessment insert returned no row.");
-    return { assessment: toRiskAssessmentObject(row), replayed: false };
-  }
-  const { row, replayed } = await withIdempotencyKey({
-    requestHash: hash,
-    errors: IDEMPOTENCY_ERRORS,
-    insert,
-    existing: async () => (await findByKey(environment, idempotencyKey)) ?? undefined,
-    release: (tx, existing) =>
-      tx
-        .update(riskAssessment)
-        .set({ idempotencyKey: null })
+  // The dataset source can need its own database connection on first load. Resolve it before
+  // occupying a transaction connection, so concurrent requests cannot exhaust the pool.
+  const ipSignals = await ipSignalsFor(
+    deps,
+    params.ip ? normalizeIp(params.ip) : null,
+    environment.mode === "sandbox",
+  );
+  return db.transaction(async (tx) => {
+    if (idempotencyKey) {
+      // Hold the key across collection and commit, including expired-key replacement.
+      const lock = `risk:idempotency:${environment.environmentId}:${idempotencyKey}`;
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${lock}, 0))`);
+      const [existing] = await tx
+        .select()
+        .from(riskAssessment)
         .where(
           and(
-            eq(riskAssessment.id, existing.id),
+            eq(riskAssessment.environmentId, environment.environmentId),
+            eq(riskAssessment.organizationId, environment.organizationId),
             eq(riskAssessment.idempotencyKey, idempotencyKey),
           ),
-        ),
+        )
+        .limit(1);
+      if (existing && isReplayOf(existing, hash)) {
+        return { assessment: toRiskAssessmentObject(existing), replayed: true };
+      }
+      if (existing) {
+        if (Date.now() - existing.createdAt.getTime() <= IDEMPOTENCY_KEY_TTL_MS) {
+          throw IDEMPOTENCY_ERRORS.reused();
+        }
+        await tx
+          .update(riskAssessment)
+          .set({ idempotencyKey: null })
+          .where(eq(riskAssessment.id, existing.id));
+      }
+    }
+    // Use this connection for reads too: waiting retries may occupy the rest of the pool.
+    const collected = await collectSignals(tx, deps, environment, params, ipSignals);
+    const row = await insertAssessment(tx, deps, input, collected, {
+      idempotencyKey,
+      requestHash: hash,
+    });
+    if (!row) throw IDEMPOTENCY_ERRORS.inProgress();
+    return { assessment: toRiskAssessmentObject(row), replayed: false };
   });
-  return { assessment: toRiskAssessmentObject(row), replayed };
-}
-
-async function findByKey(
-  environment: RiskAssessEnvironment,
-  idempotencyKey: string,
-): Promise<RiskAssessmentRow | null> {
-  const [row] = await db
-    .select()
-    .from(riskAssessment)
-    .where(
-      and(
-        eq(riskAssessment.organizationId, environment.organizationId),
-        eq(riskAssessment.environmentId, environment.environmentId),
-        eq(riskAssessment.idempotencyKey, idempotencyKey),
-      ),
-    )
-    .limit(1);
-  return row ?? null;
 }
 
 /** Resolves to `fallback` when `promise` takes longer than `ms` (the promise keeps running). */
@@ -181,9 +167,11 @@ function within<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
 }
 
 async function collectSignals(
+  executor: Executor,
   deps: RiskDeps,
   environment: RiskAssessEnvironment,
   params: CreateRiskAssessmentRequestOutput,
+  resolvedIpSignals: Awaited<ReturnType<typeof ipSignalsFor>>,
 ): Promise<Collected> {
   const sandbox = environment.mode === "sandbox";
   const env = environment.environmentId;
@@ -205,9 +193,9 @@ async function collectSignals(
 
   const [deliverability, ipSignals, velocity, listMatches, reports] = await Promise.all([
     emailDeliverability(deps, email, sandbox),
-    ipSignalsFor(deps, ip, sandbox),
+    resolvedIpSignals,
     countVelocity(deps, environment, params, email, ip, hashes),
-    matchListEntries(db, environment, {
+    matchListEntries(executor, environment, {
       mailbox: email?.valid ? email.canonical : null,
       domain: email?.valid ? email.domain : null,
       ip,
@@ -215,7 +203,7 @@ async function collectSignals(
       country: null,
       userId,
     }),
-    reportedHashes(environment, hashes),
+    reportedHashes(executor, environment, hashes),
   ]);
 
   // Email.
@@ -272,7 +260,10 @@ async function collectSignals(
   // Lists can also match on the IP's network and country, known only now.
   const networkMatches =
     ipObject && (ipObject.asn || ipObject.country)
-      ? await matchListEntries(db, environment, { asn: ipObject.asn, country: ipObject.country })
+      ? await matchListEntries(executor, environment, {
+          asn: ipObject.asn,
+          country: ipObject.country,
+        })
       : [];
   for (const match of dedupeMatches([...listMatches, ...networkMatches])) {
     reasons.push({
@@ -403,6 +394,7 @@ async function countVelocity(
 
 /** Which of the hashes were reported as fraud or abuse (networks only for 30 days). */
 async function reportedHashes(
+  executor: Executor,
   environment: RiskAssessEnvironment,
   hashes: Hashes,
 ): Promise<Set<string>> {
@@ -421,7 +413,7 @@ async function reportedHashes(
     );
   }
   if (pairs.length === 0) return new Set();
-  const rows = await db
+  const rows = await executor
     .select({ kind: riskReport.kind })
     .from(riskReport)
     .where(
@@ -556,9 +548,8 @@ async function insertAssessment(
         decision,
         score,
         reasons: sorted.map((reason) => reason.code),
-        ...(userId ? { user_id: userId } : {}),
       },
-      searchTerms: [decision, ...sorted.map((reason) => reason.code), ...(userId ? [userId] : [])],
+      searchTerms: [decision, ...sorted.map((reason) => reason.code)],
     },
   ]);
 

@@ -1659,7 +1659,7 @@ export const riskReport = pgTable(
     environmentId: text("environment_id").notNull(),
     kind: riskReportKind("kind").notNull(),
     valueHash: text("value_hash").notNull(),
-    // The latest report. No FK: memory outlives assessments.
+    // Independent evidence per assessment. No FK: memory outlives assessments.
     assessmentId: text("assessment_id").notNull(),
     reportedAt: timestamp("reported_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -1669,7 +1669,7 @@ export const riskReport = pgTable(
       columns: [t.environmentId, t.organizationId],
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
-    unique("risk_report_value_unique").on(t.environmentId, t.kind, t.valueHash),
+    unique("risk_report_value_unique").on(t.environmentId, t.kind, t.valueHash, t.assessmentId),
     index("risk_report_assessment_idx").on(t.environmentId, t.assessmentId),
     index("risk_report_reported_at_idx").on(t.reportedAt),
   ],

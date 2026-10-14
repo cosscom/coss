@@ -4,7 +4,7 @@
  * account is gone: drop what identifies them).
  */
 import { db, schema } from "@coss/db";
-import { appendLogEntries } from "@coss/logs";
+import { appendLogEntries, lineByteSize, logSearchText } from "@coss/logs";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { RiskHasher } from "./hash.ts";
 import { inRiskEnvironment, type RiskEnvironmentScope, toRiskAssessmentObject } from "./read.ts";
@@ -91,8 +91,13 @@ export async function recordRiskFeedback(
           })),
         )
         .onConflictDoUpdate({
-          target: [riskReport.environmentId, riskReport.kind, riskReport.valueHash],
-          set: { assessmentId: current.id, reportedAt: now },
+          target: [
+            riskReport.environmentId,
+            riskReport.kind,
+            riskReport.valueHash,
+            riskReport.assessmentId,
+          ],
+          set: { reportedAt: now },
         });
     }
 
@@ -170,6 +175,64 @@ export async function forgetRiskUser(
           personalDataPurgedAt: new Date(),
         })
         .where(and(inRiskEnvironment(scope), inArray(riskAssessment.id, ids)));
+    }
+    // Older assessment logs included user_id and a search copy. Match the attribute directly
+    // so repeated forgetting also cleans logs whose assessments have already been purged.
+    const { logEntry, logDrainRecord } = schema;
+    const logs = await tx
+      .select()
+      .from(logEntry)
+      .where(
+        and(
+          eq(logEntry.organizationId, scope.organizationId),
+          eq(logEntry.environmentId, scope.environmentId),
+          eq(logEntry.source, "risk"),
+          sql`${logEntry.attributes}->>'user_id' = ${userId}`,
+        ),
+      )
+      .for("update");
+    for (const log of logs) {
+      const { user_id: _userId, ...attributes } = log.attributes;
+      await tx
+        .update(logEntry)
+        .set({
+          attributes,
+          searchText: logSearchText({
+            ...log,
+            searchTerms: [
+              attributes.decision,
+              ...(Array.isArray(attributes.reasons) ? attributes.reasons : []),
+            ].filter((value): value is string => typeof value === "string"),
+          }),
+        })
+        .where(and(eq(logEntry.id, log.id), eq(logEntry.occurredAt, log.occurredAt)));
+    }
+    const records = await tx
+      .select()
+      .from(logDrainRecord)
+      .where(
+        and(
+          eq(logDrainRecord.organizationId, scope.organizationId),
+          eq(logDrainRecord.source, "risk"),
+          sql`${logDrainRecord.line}::jsonb #>> '{attributes,user_id}' = ${userId}`,
+          inArray(
+            logDrainRecord.drainId,
+            tx
+              .select({ id: schema.logDrain.id })
+              .from(schema.logDrain)
+              .where(eq(schema.logDrain.environmentId, scope.environmentId)),
+          ),
+        ),
+      )
+      .for("update");
+    for (const record of records) {
+      const attributes = { ...(record.line.attributes as Record<string, unknown>) };
+      delete attributes.user_id;
+      const line = { ...record.line, attributes };
+      await tx
+        .update(logDrainRecord)
+        .set({ line, byteSize: lineByteSize(line) })
+        .where(eq(logDrainRecord.id, record.id));
     }
     // Duplicates that pointed at this user.
     await tx
