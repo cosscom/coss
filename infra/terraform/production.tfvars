@@ -76,12 +76,14 @@ plain_env = {
   }
   site = {}
   portal = {
-    DATABASE_POOL_MAX     = "5"
-    VALKEY_CLUSTER        = "true"
-    RATE_LIMIT_KEY_PREFIX = "coss"
-    CLIENT_IP_HEADER      = "x-forwarded-for"
-    TRUSTED_PROXY_COUNT   = "2"
-    SENTRY_ENVIRONMENT    = "production"
+    DATABASE_POOL_MAX         = "5"
+    VALKEY_CLUSTER            = "true"
+    RATE_LIMIT_KEY_PREFIX     = "coss"
+    CLIENT_IP_HEADER          = "x-forwarded-for"
+    TRUSTED_PROXY_COUNT       = "2"
+    SENTRY_DSN                = "https://78ffa7bb2114cbbb0d319651b055388e@o4512237982711808.ingest.de.sentry.io/4512256724238416"
+    SENTRY_ENVIRONMENT        = "production"
+    SENTRY_TRACES_SAMPLE_RATE = "0.1"
   }
   api = {
     BETTER_AUTH_URL           = "https://coss.com"
