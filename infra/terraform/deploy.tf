@@ -130,7 +130,7 @@ resource "aws_iam_role_policy" "deploy_build" {
           "ecr:PutImage",
           "ecr:UploadLayerPart",
         ]
-        Resource = [for repository in aws_ecr_repository.service : repository.arn]
+        Resource = concat([for repository in aws_ecr_repository.service : repository.arn], [aws_ecr_repository.base_bun.arn])
       },
     ]
   })

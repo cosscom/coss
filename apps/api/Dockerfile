@@ -7,9 +7,11 @@
 
 # Keep in step with package.json (`packageManager`, `devDependencies.turbo`); infra/test checks.
 ARG BUN_VERSION=1.4.2
+# Base images: Docker Hub by default; deploys pass mirrors (Docker Hub limits anonymous pulls).
+ARG BUN_IMAGE=oven/bun
 ARG TURBO_VERSION=2.11.7
 
-FROM oven/bun:${BUN_VERSION}-slim AS bun
+FROM ${BUN_IMAGE}:${BUN_VERSION}-slim AS bun
 
 # The workspaces @coss/api needs at runtime (--production drops dev-only ones, like the SDK used by
 # contract tests), and their slice of bun.lock.
