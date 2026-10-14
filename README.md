@@ -523,7 +523,8 @@ Cloudflare DNS (coss.com zone, DNS only)
 
 One Secrets Manager secret per stage, `coss/production` (JSON), injected through each task definition's `secrets`
 (one key per `secret` variable of `infra/aws/services.ts`): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `VALKEY_URL`,
-`WEBHOOK_SECRETS_KEY`, `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`, `TURNSTILE_SECRET_KEY`, `CLOUDFLARE_API_TOKEN`,
+`WEBHOOK_SECRETS_KEY`, `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`, `TURNSTILE_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`,
+`GITHUB_CLIENT_SECRET`, `CLOUDFLARE_API_TOKEN`,
 `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AI_GATEWAY_API_KEY`, `RISK_HASH_KEY` (changing it resets what
 risk assessments remember) and `IPINFO_TOKEN` (optional: a free IPinfo account's token for risk's ASN and country
 data). Terraform creates only the container; values are

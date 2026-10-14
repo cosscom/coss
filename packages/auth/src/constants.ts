@@ -33,3 +33,16 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   // The organization's plan, usage, invoices and credits (read only; changes need the dashboard).
   billing: ["read"],
 };
+
+/** Social sign-in providers COSS supports (each enabled only when its client id + secret are set). */
+export const SOCIAL_PROVIDERS = ["google", "github"] as const;
+export type SocialProvider = (typeof SOCIAL_PROVIDERS)[number];
+
+export const SOCIAL_PROVIDER_LABELS: Record<SocialProvider, string> = {
+  google: "Google",
+  github: "GitHub",
+};
+
+export function isSocialProvider(value: unknown): value is SocialProvider {
+  return (SOCIAL_PROVIDERS as readonly unknown[]).includes(value);
+}

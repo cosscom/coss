@@ -1,12 +1,15 @@
 "use client";
 
+import type { SocialProvider } from "@coss/auth/constants";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
+import { Separator } from "@coss/ui/components/separator";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { SocialSignInButtons } from "@/components/social-sign-in";
 import { useTurnstile } from "@/components/turnstile";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
@@ -15,12 +18,18 @@ import { nextQuery } from "@/lib/safe-redirect";
 export function SignUpForm({
   next,
   turnstileSiteKey,
+  providers,
+  initialError,
 }: {
   next: string;
   turnstileSiteKey: string | null;
+  /** Social sign-in providers configured for this deployment. */
+  providers: SocialProvider[];
+  /** A failed Google or GitHub sign-up, from `?error=` (`socialErrorMessage`). */
+  initialError: string | null;
 }) {
   const turnstile = useTurnstile(turnstileSiteKey, "sign-up");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError);
   const [pending, setPending] = useState(false);
   const [createdEmail, setCreatedEmail] = useState<string | null>(null);
 
@@ -73,7 +82,7 @@ export function SignUpForm({
         <CardTitle>Create your COSS account</CardTitle>
         <CardDescription>Verify your email before creating your organization.</CardDescription>
       </CardHeader>
-      <CardPanel>
+      <CardPanel className="flex flex-col gap-4">
         {/* method="post": a submit before hydration must never put credentials in the URL. */}
         <form className="flex flex-col gap-4" method="post" onSubmit={onSubmit}>
           <Field>
@@ -101,25 +110,41 @@ export function SignUpForm({
           <Button disabled={!turnstile.ready} loading={pending} type="submit">
             Create account
           </Button>
-          {/* Plain links: /legal is the site's (another zone; next.config.ts redirects in dev). */}
-          <p className="text-center text-muted-foreground text-xs">
-            By creating an account, you agree to the{" "}
-            <a className="text-foreground underline" href="/legal/terms">
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a className="text-foreground underline" href="/legal/privacy">
-              Privacy Policy
-            </a>
-            .
-          </p>
-          <p className="text-center text-muted-foreground text-sm">
-            Already have an account?{" "}
-            <Link className="text-foreground underline" href={`/sign-in${query}`}>
-              Sign in
-            </Link>
-          </p>
         </form>
+        {providers.length > 0 ? (
+          <>
+            <div className="flex items-center gap-3 text-muted-foreground text-xs">
+              <Separator className="flex-1" />
+              or
+              <Separator className="flex-1" />
+            </div>
+            <SocialSignInButtons
+              disabled={pending}
+              errorPath={`/sign-up${query}`}
+              next={next}
+              onError={setError}
+              providers={providers}
+            />
+          </>
+        ) : null}
+        {/* Plain links: /legal is the site's (another zone; next.config.ts redirects in dev). */}
+        <p className="text-center text-muted-foreground text-xs">
+          By creating an account, you agree to the{" "}
+          <a className="text-foreground underline" href="/legal/terms">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a className="text-foreground underline" href="/legal/privacy">
+            Privacy Policy
+          </a>
+          .
+        </p>
+        <p className="text-center text-muted-foreground text-sm">
+          Already have an account?{" "}
+          <Link className="text-foreground underline" href={`/sign-in${query}`}>
+            Sign in
+          </Link>
+        </p>
       </CardPanel>
     </Card>
   );

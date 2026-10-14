@@ -1,0 +1,102 @@
+"use client";
+
+import { SOCIAL_PROVIDER_LABELS, type SocialProvider } from "@coss/auth/constants";
+import { Alert, AlertDescription } from "@coss/ui/components/alert";
+import { Badge } from "@coss/ui/components/badge";
+import { Button } from "@coss/ui/components/button";
+import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
+import { useActionState } from "react";
+import { FormError } from "@/components/form-error";
+import { ProviderIcon } from "@/components/social-sign-in";
+import { connectSocialAccountAction, disconnectSocialAccountAction } from "./actions";
+
+export type ConnectedAccountRow = {
+  provider: SocialProvider;
+  connected: boolean;
+  /** Configured for this deployment (a connected one that no longer is can still be removed). */
+  available: boolean;
+};
+
+/** Google and GitHub accounts that sign in to this COSS account. */
+export function ConnectedAccountsCard(props: {
+  rows: ConnectedAccountRow[];
+  /** The only way to sign in left (no password, one provider): Better Auth keeps it. */
+  lastSignInMethod: SocialProvider | null;
+  /** A failed connection, from `?error=` (`socialErrorMessage`). */
+  error: string | null;
+  disabled: boolean;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Connected accounts</CardTitle>
+        <CardDescription>
+          Sign in with these accounts too. Connecting one asks you to sign in to it; its email
+          address may differ from yours.
+        </CardDescription>
+      </CardHeader>
+      <CardPanel className="flex flex-col gap-3">
+        {props.error ? (
+          <Alert variant="error">
+            <AlertDescription>{props.error}</AlertDescription>
+          </Alert>
+        ) : null}
+        {props.rows.map((row) => (
+          <ConnectedAccount
+            disabled={props.disabled}
+            isLast={props.lastSignInMethod === row.provider}
+            key={row.provider}
+            row={row}
+          />
+        ))}
+      </CardPanel>
+    </Card>
+  );
+}
+
+function ConnectedAccount(props: { row: ConnectedAccountRow; isLast: boolean; disabled: boolean }) {
+  const { provider, connected, available } = props.row;
+  const [state, formAction, pending] = useActionState(
+    connected ? disconnectSocialAccountAction : connectSocialAccountAction,
+    null,
+  );
+  return (
+    <form action={formAction} className="flex flex-col gap-2">
+      <input name="provider" type="hidden" value={provider} />
+      <div className="flex items-center gap-3">
+        <span className="flex size-5 items-center justify-center [&_svg]:size-5">
+          <ProviderIcon provider={provider} />
+        </span>
+        <span className="font-medium text-sm">{SOCIAL_PROVIDER_LABELS[provider]}</span>
+        {connected ? <Badge variant="success">Connected</Badge> : null}
+        <div className="ms-auto">
+          {connected ? (
+            <Button
+              disabled={props.disabled || props.isLast}
+              loading={pending}
+              size="sm"
+              title={
+                props.isLast ? "Set a password first: it's your only way to sign in." : undefined
+              }
+              type="submit"
+              variant="outline"
+            >
+              Disconnect
+            </Button>
+          ) : (
+            <Button
+              disabled={props.disabled || !available}
+              loading={pending}
+              size="sm"
+              type="submit"
+              variant="outline"
+            >
+              Connect
+            </Button>
+          )}
+        </div>
+      </div>
+      <FormError message={state?.ok ? null : state?.error} />
+    </form>
+  );
+}

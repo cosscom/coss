@@ -376,6 +376,36 @@ export const SERVICES: Service[] = [
         value: "the same widget's secret key",
         description: "Better Auth's captcha plugin verifies tokens with it (siteverify).",
       },
+      {
+        name: "GOOGLE_CLIENT_ID",
+        kind: "plain",
+        required: false,
+        value:
+          "the Google OAuth client's id (redirect URI https://coss.com/api/auth/callback/google)",
+        description: "Sign-in with Google, with GOOGLE_CLIENT_SECRET (both or neither).",
+      },
+      {
+        name: "GOOGLE_CLIENT_SECRET",
+        kind: "secret",
+        required: false,
+        value: "the same OAuth client's secret",
+        description: "Sign-in with Google (token exchange).",
+      },
+      {
+        name: "GITHUB_CLIENT_ID",
+        kind: "plain",
+        required: false,
+        value:
+          "the GitHub OAuth app's client id (callback https://coss.com/api/auth/callback/github)",
+        description: "Sign-in with GitHub, with GITHUB_CLIENT_SECRET (both or neither).",
+      },
+      {
+        name: "GITHUB_CLIENT_SECRET",
+        kind: "secret",
+        required: false,
+        value: "the same OAuth app's client secret",
+        description: "Sign-in with GitHub (token exchange).",
+      },
       ...sentry("web"),
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "PORT", kind: "image", required: true, value: "3000", description: "" },

@@ -11,6 +11,7 @@
     "./constants": "./src/constants.ts",
     "./emails": "./src/emails.ts",
     "./sso": "./src/sso.ts",
+    "./social": "./src/social.ts",
     "./scim": "./src/scim.ts",
     "./audit": "./src/audit.ts",
     "./limits": "./src/limits.ts"

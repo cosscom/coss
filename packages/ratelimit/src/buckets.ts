@@ -216,6 +216,15 @@ export const BUCKETS = {
     overridable: false,
     failureMode: "deny",
   },
+  // Starting a Google or GitHub sign-in (each one stores state and redirects to the provider).
+  // Their callbacks are GETs, which the dashboard doesn't limit.
+  "auth.social.ip": {
+    scope: "ip",
+    limit: 20,
+    periodMs: MINUTE,
+    overridable: false,
+    failureMode: "deny",
+  },
   // SCIM (directory sync) requests, every method. Identity providers send every customer's
   // traffic from a few shared addresses, so the per-IP bucket is wide; each directory token gets
   // its own (keyed by the token's public credential id).

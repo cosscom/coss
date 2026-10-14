@@ -46,6 +46,18 @@ export async function authHeaders(): Promise<Headers> {
 }
 
 /** The current session (deduplicated per request), or `null` when signed out. */
+/**
+ * The user's own unexpired sessions (tokens included: never send them to the browser). Better
+ * Auth's `listSessions` endpoint needs a fresh session (signed in within a day), which would
+ * break account settings for everyone else.
+ */
+export async function listOwnSessions(userId: string) {
+  const context = await auth.$context;
+  const sessions = await context.internalAdapter.listSessions(userId, { onlyActiveSessions: true });
+  const now = new Date();
+  return sessions.filter((session) => session.expiresAt > now) as Session["session"][];
+}
+
 export const getSession = cache(async (): Promise<Session | null> => {
   const session = await auth.api.getSession({ headers: await authHeaders() });
   // Errors reported while serving this request name the user by id only (never the email).
