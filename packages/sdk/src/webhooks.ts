@@ -102,16 +102,19 @@ async function verifySignature(
  * ```ts
  * const event = await verifyWebhook(await request.text(), request.headers, process.env.COSS_WEBHOOK_SECRET);
  * ```
+ *
+ * The same check verifies messages your own users receive from COSS Hooks (`coss.hooks`): pass
+ * the endpoint's secret and name your payload type, e.g. `verifyWebhook<InvoicePaid>(…)`.
  */
-export async function verifyWebhook(
+export async function verifyWebhook<T = WebhookEvent>(
   payload: string,
   headers: WebhookHeaders,
   secret: string,
   options: VerifyWebhookOptions = {},
-): Promise<WebhookEvent> {
+): Promise<T> {
   await verifySignature(payload, headers, secret, options);
   try {
-    return JSON.parse(payload) as WebhookEvent;
+    return JSON.parse(payload) as T;
   } catch {
     throw new WebhookVerificationError("The webhook body is not valid JSON.");
   }

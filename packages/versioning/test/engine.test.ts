@@ -120,6 +120,32 @@ describe("downgrade", () => {
     expect(threeVersions.downgrade(null, "2026-01-01")).toBeNull();
   });
 
+  test("never renders customer data in opaque fields (a Hooks payload is not a resource)", () => {
+    const widget = { object: "widget", caption: "x" };
+    const message = {
+      object: "hook_message",
+      id: "hmsg_1",
+      payload: { nested: widget, list: [widget] },
+      echo: widget,
+    };
+    expect(threeVersions.downgrade({ object: "list", data: [message] }, "2026-01-01")).toEqual({
+      object: "list",
+      data: [
+        {
+          object: "hook_message",
+          id: "hmsg_1",
+          payload: { nested: widget, list: [widget] },
+          echo: { object: "widget", name: "x" },
+        },
+      ],
+    });
+    const application = {
+      object: "hook_application",
+      metadata: { object: "widget", caption: "x" },
+    };
+    expect(threeVersions.downgrade(application, "2026-01-01")).toEqual(application);
+  });
+
   test("eventDataTransform only touches events of its type prefix", () => {
     const testing = testVersioning();
     const email = {

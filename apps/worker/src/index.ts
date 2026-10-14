@@ -15,12 +15,14 @@ import {
   workEmailDispatchQueue,
 } from "@coss/email/dispatch";
 import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
+import { createRateLimitRuntime } from "@coss/ratelimit";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
 import { screenMessage } from "@coss/screening";
 import { createClassifier } from "@coss/screening/runtime";
 import { createWebhookSender, parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
 import { env } from "./env.ts";
+import { hookThrottle } from "./hooks-throttle.ts";
 import { startJobs } from "./jobs.ts";
 import { monitoredDispatch } from "./monitoring.ts";
 import { createShutdown } from "./shutdown.ts";
@@ -93,6 +95,13 @@ if (systemEnvironment && env.NOTIFICATIONS_FROM) {
   notifier = null;
 }
 
+// Hooks delivery attempts are rate limited per endpoint and destination host (Valkey, shared).
+const rateLimits = createRateLimitRuntime(env);
+await rateLimits.ready();
+const secretsKeys = parseSecretsKeys(env.WEBHOOK_SECRETS_KEY);
+// The dashboard accepts local endpoints outside production; let them be reached there too.
+const send = createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" });
+
 const loops = startJobs({
   systemOrganizationId,
   dispatchQueue,
@@ -105,11 +114,8 @@ const loops = startJobs({
     notifier,
     dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
   },
-  webhooks: {
-    secretsKeys: parseSecretsKeys(env.WEBHOOK_SECRETS_KEY),
-    // The dashboard accepts local endpoints outside production; let them be reached there too.
-    send: createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" }),
-  },
+  webhooks: { secretsKeys, send },
+  hooks: { secretsKeys, send, throttle: hookThrottle(rateLimits.limiter) },
   logRetentionDays: env.LOG_RETENTION_DAYS,
 });
 console.info(
@@ -124,7 +130,7 @@ const shutdown = createShutdown({
     { name: "email-dispatch", stop: () => jobs.stop({ graceful: true, timeout: 30_000 }) },
   ],
   close: async () => {
-    await closeDb();
+    await Promise.all([closeDb(), rateLimits.limiter.close()]);
     await Sentry.close(2_000);
   },
 });

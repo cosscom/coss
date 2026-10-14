@@ -4,6 +4,7 @@
  */
 import { IdempotencyError, type IdempotencyErrorCode } from "@coss/db/idempotency";
 import { DomainError, EmailError } from "@coss/email";
+import { HookError } from "@coss/hooks";
 import { WebhookError } from "@coss/webhooks";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -238,11 +239,26 @@ function fromWebhookError(error: WebhookError): ApiError {
   }
 }
 
+function fromHookError(error: HookError): ApiError {
+  if (error.status === 404) {
+    return new ApiError(404, { type: "not_found_error", code: error.code, message: error.message });
+  }
+  if (error.status === 403) {
+    return new ApiError(403, {
+      type: "permission_error",
+      code: error.code,
+      message: error.message,
+    });
+  }
+  return invalidRequest(error.code, error.message, error.param);
+}
+
 /** Maps known error classes to their envelope; `null` means unexpected (a bug or an outage). */
 export function toApiError(error: unknown): ApiError | null {
   if (error instanceof ApiError) return error;
   if (error instanceof EmailError) return fromEmailError(error);
   if (error instanceof IdempotencyError) return fromIdempotencyError(error);
+  if (error instanceof HookError) return fromHookError(error);
   if (error instanceof DomainError) return fromDomainError(error);
   if (error instanceof WebhookError) return fromWebhookError(error);
   // A 5xx exception is a server fault: left to the caller to log and answer with a generic 500.

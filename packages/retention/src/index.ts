@@ -28,6 +28,16 @@ export const RETENTION_DAYS = {
   adminAuditLog: 730,
   /** Sessions, verification tokens and invitations, counted from their expiry. */
   expiredAuth: 7,
+  /**
+   * Hooks messages with their deliveries and attempts: whole days are dropped (by message day),
+   * including deliveries still held for a suspended organization and messages of deleted
+   * applications.
+   */
+  hookMessages: 30,
+  /** Hooks portal sessions, counted from their expiry. */
+  hookPortalSessions: 1,
+  /** Finished Hooks endpoint recoveries. */
+  hookRecoveries: 7,
 } as const satisfies Record<string, number>;
 
 export type RetentionPeriod =
@@ -69,6 +79,20 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     description:
       "Event payloads, delivery statuses and attempt logs (including response excerpts). Deliveries still being retried are kept until they finish.",
     period: { days: RETENTION_DAYS.webhookDeliveries, after: "creation" },
+  },
+  {
+    id: "hook_messages",
+    label: "Hooks messages",
+    description:
+      "Messages you send to your applications (payloads), their deliveries and attempt logs (including response excerpts). Deleting an application stops access to its messages at once; they are deleted with the rest of their day.",
+    period: { days: RETENTION_DAYS.hookMessages, after: "creation" },
+  },
+  {
+    id: "hook_portal_sessions",
+    label: "Hooks portal sessions",
+    description:
+      "Sign-ins to the portal you create for your applications' users (never the token itself).",
+    period: { days: RETENTION_DAYS.hookPortalSessions, after: "expiry" },
   },
   {
     id: "log_drain_batches",
@@ -126,7 +150,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "account",
     label: "Account and configuration",
     description:
-      "Users, organizations, projects, environments, API keys, domains, webhook endpoints, log drains and settings. Items you delete (a key, a domain, an endpoint, a drain) are removed right away.",
+      "Users, organizations, projects, environments, API keys, domains, webhook endpoints, log drains, Hooks applications, event types and endpoints, and settings. Items you delete (a key, a domain, an endpoint, a drain, an application) are removed right away.",
     period: { until: "closed" },
   },
 ];

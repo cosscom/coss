@@ -39,6 +39,8 @@ export type CreateAppOptions = {
    * Public origin advertised in the OpenAPI document (`API_PUBLIC_URL`).
    */
   publicUrl?: string;
+  /** Where Hooks portal session links point (`PORTAL_PUBLIC_URL`). Defaults to the local portal. */
+  portalUrl?: string;
   /** Defaults to in-memory counters (one per app), which only suit tests and a single process. */
   rateLimiter?: RateLimiter;
   /** The caller's address for per-IP limits (`CLIENT_IP_HEADER`). Defaults to none. */
@@ -132,7 +134,15 @@ export function createApp(opts: CreateAppOptions) {
   // Public and unauthenticated (fetched by mail clients); not part of the OpenAPI document.
   app.route("/t", createTrackingRoutes());
 
-  app.route("/v1", createV1Router({ emailService, domainDeps, webhookDeps: opts.webhookDeps }));
+  app.route(
+    "/v1",
+    createV1Router({
+      emailService,
+      domainDeps,
+      webhookDeps: opts.webhookDeps,
+      portalUrl: opts.portalUrl ?? "http://localhost:3003",
+    }),
+  );
 
   app.openAPIRegistry.registerComponent("securitySchemes", "bearerAuth", {
     type: "http",
@@ -185,6 +195,29 @@ export function openApiDocumentConfig(serverUrl: string) {
       {
         name: "Webhook endpoints",
         description: "URLs that receive the environment's delivery events, signed.",
+      },
+      {
+        name: "Hooks applications",
+        description:
+          "Hooks (webhooks as a service): your customers, each with their own endpoints and portal.",
+      },
+      {
+        name: "Hooks event types",
+        description: "The catalog of messages you send, which your customers subscribe from.",
+      },
+      {
+        name: "Hooks endpoints",
+        description:
+          "Your customers' URLs that receive their messages, each signed with its own secret.",
+      },
+      {
+        name: "Hooks messages",
+        description:
+          "Send a message once; COSS delivers it to every subscribed endpoint, with retries.",
+      },
+      {
+        name: "Hooks portal",
+        description: "A ready-made page for your customers to manage their endpoints.",
       },
       {
         name: "Logs",

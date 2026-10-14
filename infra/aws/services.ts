@@ -112,13 +112,22 @@ const email: EnvVar[] = [
   ...trackingDomains,
 ];
 
+const portalPublicUrl: EnvVar = {
+  name: "PORTAL_PUBLIC_URL",
+  kind: "plain",
+  required: true,
+  value: "https://portal.example",
+  description:
+    "Origin of the Hooks portal (its own registrable domain); portal session links point there.",
+};
+
 const rateLimits: EnvVar[] = [
   {
     name: "VALKEY_URL",
     kind: "secret",
     required: true,
     description:
-      "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web and api.",
+      "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web, api and the worker (Hooks delivery limits).",
   },
   {
     name: "VALKEY_CLUSTER",
@@ -376,6 +385,7 @@ export const SERVICES: Service[] = [
       },
       ...email,
       webhookKey,
+      portalPublicUrl,
       ...sentry("api"),
       sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
@@ -418,6 +428,8 @@ export const SERVICES: Service[] = [
       },
       ...screening,
       webhookKey,
+      // Hooks delivery attempts are rate limited per endpoint and destination host.
+      ...rateLimits,
       {
         name: "BETTER_AUTH_URL",
         kind: "plain",

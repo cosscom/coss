@@ -17,6 +17,7 @@
       "dependencies": {
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
+        "@coss/hooks": "workspace:*",
         "@coss/logs": "workspace:*",
         "@coss/observability": "workspace:*",
         "@coss/ratelimit": "workspace:*",
@@ -132,8 +133,10 @@
         "@coss/auth": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
+        "@coss/hooks": "workspace:*",
         "@coss/logs": "workspace:*",
         "@coss/observability": "workspace:*",
+        "@coss/ratelimit": "workspace:*",
         "@coss/reputation": "workspace:*",
         "@coss/retention": "workspace:*",
         "@coss/screening": "workspace:*",
@@ -158,6 +161,7 @@
       "dependencies": {
         "@coss/auth": "workspace:*",
         "@coss/email": "workspace:*",
+        "@coss/hooks": "workspace:*",
         "@coss/observability": "workspace:*",
         "@coss/ratelimit": "workspace:*",
         "@coss/screening": "workspace:*",
@@ -219,6 +223,25 @@
         "drizzle-orm": "catalog:",
         "parse5": "8.0.1",
         "pg-boss": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@coss/tenancy": "workspace:*",
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/hooks": {
+      "name": "@coss/hooks",
+      "version": "0.0.0",
+      "dependencies": {
+        "@coss/db": "workspace:*",
+        "@coss/logs": "workspace:*",
+        "@coss/reputation": "workspace:*",
+        "@coss/retention": "workspace:*",
+        "@coss/webhooks": "workspace:*",
+        "drizzle-orm": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -694,6 +717,8 @@
     "@coss/db": ["@coss/db@workspace:packages/db"],
 
     "@coss/email": ["@coss/email@workspace:packages/email"],
+
+    "@coss/hooks": ["@coss/hooks@workspace:packages/hooks"],
 
     "@coss/infra": ["@coss/infra@workspace:infra"],
 

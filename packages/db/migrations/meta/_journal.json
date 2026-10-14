@@ -302,6 +302,27 @@
       "when": 1791994823282,
       "tag": "0042_petite_stingray",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1791995603586,
+      "tag": "0043_late_scorpion",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1791995618571,
+      "tag": "0044_hooks_partitioning",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1791995629012,
+      "tag": "0045_hook_key_permissions",
+      "breakpoints": true
     }
   ]
 }

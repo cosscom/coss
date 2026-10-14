@@ -25,6 +25,147 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.sendBatch",
     args: (request) => [tsValue(batchEmails(request.body)), requestOptions(request)],
   },
+  // Hooks.
+  "POST /v1/hooks/event_types": {
+    method: "hooks.eventTypes.create",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/hooks/event_types": {
+    method: "hooks.eventTypes.list",
+    args: (request) => [queryParams(request)],
+  },
+  "GET /v1/hooks/event_types/{name}": {
+    method: "hooks.eventTypes.get",
+    args: (request) => [pathParam(request, "name")],
+  },
+  "PATCH /v1/hooks/event_types/{name}": {
+    method: "hooks.eventTypes.update",
+    args: (request) => [pathParam(request, "name"), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/hooks/event_types/{name}": {
+    method: "hooks.eventTypes.archive",
+    args: (request) => [pathParam(request, "name")],
+  },
+  "POST /v1/hooks/applications": {
+    method: "hooks.applications.create",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/hooks/applications": {
+    method: "hooks.applications.list",
+    args: (request) => [queryParams(request)],
+  },
+  "GET /v1/hooks/applications/{application}": {
+    method: "hooks.applications.get",
+    args: (request) => [application(request)],
+  },
+  "PATCH /v1/hooks/applications/{application}": {
+    method: "hooks.applications.update",
+    args: (request) => [application(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/hooks/applications/{application}": {
+    method: "hooks.applications.delete",
+    args: (request) => [application(request)],
+  },
+  "POST /v1/hooks/applications/{application}/endpoints": {
+    method: "hooks.endpoints.create",
+    args: (request) => [application(request), tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/hooks/applications/{application}/endpoints": {
+    method: "hooks.endpoints.list",
+    args: (request) => [application(request)],
+  },
+  "GET /v1/hooks/applications/{application}/endpoints/{endpoint_id}": {
+    method: "hooks.endpoints.get",
+    args: (request) => [application(request), pathParam(request, "endpoint_id")],
+  },
+  "PATCH /v1/hooks/applications/{application}/endpoints/{endpoint_id}": {
+    method: "hooks.endpoints.update",
+    args: (request) => [
+      application(request),
+      pathParam(request, "endpoint_id"),
+      tsValue(request.body ?? {}),
+    ],
+  },
+  "DELETE /v1/hooks/applications/{application}/endpoints/{endpoint_id}": {
+    method: "hooks.endpoints.delete",
+    args: (request) => [application(request), pathParam(request, "endpoint_id")],
+  },
+  "GET /v1/hooks/applications/{application}/endpoints/{endpoint_id}/secret": {
+    method: "hooks.endpoints.getSecret",
+    args: (request) => [application(request), pathParam(request, "endpoint_id")],
+  },
+  "POST /v1/hooks/applications/{application}/endpoints/{endpoint_id}/roll_secret": {
+    method: "hooks.endpoints.rollSecret",
+    args: (request) => [
+      application(request),
+      pathParam(request, "endpoint_id"),
+      tsValue(request.body ?? {}),
+    ],
+  },
+  "POST /v1/hooks/applications/{application}/endpoints/{endpoint_id}/recover": {
+    method: "hooks.endpoints.recover",
+    args: (request) => [
+      application(request),
+      pathParam(request, "endpoint_id"),
+      tsValue(request.body ?? {}),
+    ],
+  },
+  "GET /v1/hooks/applications/{application}/endpoints/{endpoint_id}/recoveries/{recovery_id}": {
+    method: "hooks.endpoints.getRecovery",
+    args: (request) => [
+      application(request),
+      pathParam(request, "endpoint_id"),
+      pathParam(request, "recovery_id"),
+    ],
+  },
+  "POST /v1/hooks/applications/{application}/endpoints/{endpoint_id}/test": {
+    method: "hooks.endpoints.sendTest",
+    args: (request) => [
+      application(request),
+      pathParam(request, "endpoint_id"),
+      tsValue(request.body ?? {}),
+    ],
+  },
+  "GET /v1/hooks/applications/{application}/endpoints/{endpoint_id}/deliveries": {
+    method: "hooks.endpoints.listDeliveries",
+    args: (request) => [
+      application(request),
+      pathParam(request, "endpoint_id"),
+      queryParams(request),
+    ],
+  },
+  "POST /v1/hooks/applications/{application}/messages": {
+    method: "hooks.messages.send",
+    args: (request) => [withApplication(request), requestOptions(request)],
+  },
+  "GET /v1/hooks/applications/{application}/messages": {
+    method: "hooks.messages.list",
+    args: (request) => [application(request), queryParams(request)],
+  },
+  "GET /v1/hooks/applications/{application}/messages/{message_id}": {
+    method: "hooks.messages.get",
+    args: (request) => [application(request), pathParam(request, "message_id")],
+  },
+  "GET /v1/hooks/applications/{application}/messages/{message_id}/deliveries": {
+    method: "hooks.messages.listDeliveries",
+    args: (request) => [application(request), pathParam(request, "message_id")],
+  },
+  "GET /v1/hooks/applications/{application}/deliveries/{delivery_id}": {
+    method: "hooks.deliveries.get",
+    args: (request) => [application(request), pathParam(request, "delivery_id")],
+  },
+  "GET /v1/hooks/applications/{application}/deliveries/{delivery_id}/attempts": {
+    method: "hooks.deliveries.listAttempts",
+    args: (request) => [application(request), pathParam(request, "delivery_id")],
+  },
+  "POST /v1/hooks/applications/{application}/deliveries/{delivery_id}/retry": {
+    method: "hooks.deliveries.retry",
+    args: (request) => [application(request), pathParam(request, "delivery_id")],
+  },
+  "POST /v1/hooks/applications/{application}/portal_sessions": {
+    method: "hooks.portal.createSession",
+    args: (request) => [withApplication(request), requestOptions(request)],
+  },
   "GET /v1/reputation": { method: "reputation.get", args: () => [] },
   "GET /v1/logs": { method: "logs.list", args: (request) => [queryParams(request)] },
   "GET /v1/logs/{id}": { method: "logs.get", args: (request) => [pathId(request)] },
@@ -193,6 +334,16 @@ function pathParam(request: SampleRequest, name: string): string {
   return tsValue(request.path[name]?.value ?? "");
 }
 
+function application(request: SampleRequest): string {
+  return pathParam(request, "application");
+}
+
+/** Hooks methods that take `{ application, ...body }` in one params object. */
+function withApplication(request: SampleRequest): string {
+  const body = request.body !== null && typeof request.body === "object" ? request.body : {};
+  return tsValue({ application: request.path.application?.value ?? "", ...body });
+}
+
 /**
  * The example's query parameters as one params object, or nothing when there are none. They
  * arrive encoded as strings; integers (`limit`) become numbers again, as the SDK types them.
@@ -201,7 +352,11 @@ function queryParams(request: SampleRequest): string | undefined {
   const entries = Object.entries(request.query)
     .map(([name, param]) => {
       const values = (param?.values ?? []).map((value) =>
-        /^\d+$/.test(value) ? Number(value) : value,
+        /^\d+$/.test(value)
+          ? Number(value)
+          : value === "true" || value === "false"
+            ? value === "true"
+            : value,
       );
       return [name, values.length > 1 ? values : values[0]] as const;
     })

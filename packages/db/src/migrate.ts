@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import pg from "pg";
 import { PgBoss } from "pg-boss";
+import { aheadPartitionsSql, HOOK_PARTITIONS } from "./partition-specs.ts";
 
 const useTestDatabase = process.argv.includes("--test");
 const url = useTestDatabase ? process.env.TEST_DATABASE_URL : process.env.DATABASE_URL;
@@ -15,6 +16,11 @@ try {
   await migrate(drizzle({ client: pool }), {
     migrationsFolder: fileURLToPath(new URL("../migrations", import.meta.url)),
   });
+  // Tables without a default partition reject rows outside their days: make sure this week's
+  // exist even before a worker runs (local and test databases).
+  for (const spec of HOOK_PARTITIONS) {
+    for (const statement of aheadPartitionsSql(spec, new Date())) await pool.query(statement);
+  }
   // pg-boss installs or upgrades its own schema (`pgboss`) on start; app processes only check it.
   const boss = new PgBoss({ connectionString: url, max: 1, supervise: false, schedule: false });
   boss.on("error", (error) => console.error("[jobs] pg-boss error:", error));

@@ -38,6 +38,7 @@ const app = createApp({
     allowInsecureUrls: process.env.NODE_ENV !== "production",
   },
   publicUrl: env.API_PUBLIC_URL,
+  portalUrl: env.PORTAL_PUBLIC_URL,
   rateLimiter: rateLimits.limiter,
   clientIp: rateLimits.clientIp,
 

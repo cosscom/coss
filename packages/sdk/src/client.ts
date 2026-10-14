@@ -3,6 +3,7 @@ import { type FetchLike, HttpClient } from "./core/http.ts";
 import { AuditEventsResource } from "./resources/audit-events.ts";
 import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
+import { HooksResource } from "./resources/hooks.ts";
 import { LogDrainsResource } from "./resources/log-drains.ts";
 import { LogsResource } from "./resources/logs.ts";
 import { ReputationResource } from "./resources/reputation.ts";
@@ -84,6 +85,8 @@ export class Coss {
   readonly logDrains: LogDrainsResource;
   /** The organization's audit log: changes by members, API keys and COSS support (`coss.auditEvents.list()`). */
   readonly auditEvents: AuditEventsResource;
+  /** Hooks, webhooks as a service: `coss.hooks.messages.send()` delivers to your users' endpoints. */
+  readonly hooks: HooksResource;
 
   /**
    * Throws only for programmer errors: no API key, or running in a browser without
@@ -125,5 +128,6 @@ export class Coss {
     this.logs = new LogsResource(http);
     this.logDrains = new LogDrainsResource(http);
     this.auditEvents = new AuditEventsResource(http);
+    this.hooks = new HooksResource(http);
   }
 }

@@ -1,5 +1,6 @@
 /** The worker's jobs, wired to their dependencies. Each run returns true when it found a full batch. */
 import { type AuthEmailDeps, runDueAuthEmails } from "@coss/auth/emails";
+import { dropExpiredPartitions, ensurePartitions, HOOK_PARTITIONS } from "@coss/db/partitions";
 import {
   type DomainDeps,
   type EmailDispatchQueue,
@@ -11,12 +12,19 @@ import {
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
+import {
+  type HookDeliveryDeps,
+  parkHeldHookDeliveries,
+  runDueHookDeliveries,
+  runDueHookRecoveries,
+} from "@coss/hooks";
 import { dropExpiredLogPartitions, ensureLogPartitions } from "@coss/logs";
 import {
   type ReputationNotificationDeps,
   runDueReputationEvaluations,
   runDueReputationNotifications,
 } from "@coss/reputation";
+import { RETENTION_DAYS } from "@coss/retention";
 import { contentScreeningCheck } from "@coss/screening";
 import { runDueOrganizationDeletions } from "@coss/tenancy/deletion";
 import {
@@ -30,6 +38,10 @@ import { runRetention } from "./retention.ts";
 import { pollSesEvents, type SqsApi } from "./sqs.ts";
 
 const WEBHOOK_BATCH = 20;
+const HOOK_BATCH = 200;
+const HOOK_CONCURRENCY = 100;
+const HOOK_PARK_BATCH = 5000;
+const HOOK_RECOVERY_BATCH = 1000;
 const LOG_DRAIN_BATCH = 10;
 const DOMAIN_BATCH = 25;
 const SWEEP_BATCH = 100;
@@ -50,6 +62,8 @@ export type WorkerDeps = {
   email: Pick<EmailService, "dispatchDue">;
   /** Also delivers log drain batches (same signing keys and sender). */
   webhooks: WebhookDeliveryDeps;
+  /** Delivers Hooks messages (same signing keys and sender, plus the delivery rate limits). */
+  hooks: HookDeliveryDeps;
   /** How long environment logs are kept (`LOG_RETENTION_DAYS`). */
   logRetentionDays: number;
   /** Sends account emails (verification, password resets, invitations); `null`: held. */
@@ -74,6 +88,27 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       intervalMs: 1000,
       run: async () =>
         (await runDueWebhookDeliveries({ limit: WEBHOOK_BATCH }, deps.webhooks)) === WEBHOOK_BATCH,
+    }),
+    startLoop({
+      // Hooks: customers' messages to their users' endpoints. Busy whenever a batch is full.
+      name: "hooks",
+      intervalMs: 500,
+      run: async () =>
+        (await runDueHookDeliveries(
+          { limit: HOOK_BATCH, concurrency: HOOK_CONCURRENCY },
+          deps.hooks,
+        )) === HOOK_BATCH,
+    }),
+    startLoop({
+      // Puts off held organizations' deliveries (so they never block the queue's head) and
+      // requeues the failed deliveries of endpoint recoveries, in batches.
+      name: "hooks-maintenance",
+      intervalMs: 10_000,
+      run: async () => {
+        const parked = await parkHeldHookDeliveries({ limit: HOOK_PARK_BATCH });
+        const recovered = await runDueHookRecoveries({ limit: HOOK_RECOVERY_BATCH });
+        return parked === HOOK_PARK_BATCH || recovered === HOOK_RECOVERY_BATCH;
+      },
     }),
     startLoop({
       // Environment logs streamed to log drains, in NDJSON batches.
@@ -146,15 +181,23 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       run: () => runRetention({ limit: RETENTION_BATCH, signal: deps.signal }),
     }),
     startLoop({
-      // Log retention: a week of daily partitions ahead, expired days dropped whole.
-      name: "logs",
+      // Partitioned tables (environment logs, Hooks messages): a week of daily partitions ahead,
+      // expired days dropped whole.
+      name: "partitions",
       intervalMs: 60 * 60_000,
       run: async () => {
         const created = await ensureLogPartitions();
         const dropped = await dropExpiredLogPartitions({ retentionDays: deps.logRetentionDays });
+        // Children first, so a delivery never outlives its message.
+        for (const spec of HOOK_PARTITIONS) {
+          created.push(...(await ensurePartitions(spec)));
+          dropped.push(
+            ...(await dropExpiredPartitions(spec, { retentionDays: RETENTION_DAYS.hookMessages })),
+          );
+        }
         if (created.length > 0 || dropped.length > 0) {
           console.info(
-            `[worker:logs] created ${created.length}, dropped ${dropped.length} log partitions`,
+            `[worker:partitions] created ${created.length}, dropped ${dropped.length} partitions`,
           );
         }
       },

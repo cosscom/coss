@@ -1,4 +1,5 @@
 import { emailEnvShape } from "@coss/email/env";
+import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
@@ -35,6 +36,8 @@ export const env = createEnv({
     // Encrypts webhook endpoint signing secrets; must be the same value the worker uses.
     ...webhookEnvShape,
     ...emailEnvShape,
+    // Where Hooks portal session links point.
+    ...hookEnvShape,
     ...rateLimitEnvShape,
     // Error and performance monitoring; read by src/instrument.ts before this schema runs.
     ...sentryEnvShape,

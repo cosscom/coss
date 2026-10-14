@@ -12,17 +12,17 @@
  */
 import { sql } from "drizzle-orm";
 import { db, pool } from "./client.ts";
+import type { PartitionedTable } from "./partition-specs.ts";
+
+export {
+  aheadPartitionsSql,
+  HOOK_PARTITIONS,
+  LOG_ENTRY_PARTITIONS,
+  type PartitionedTable,
+} from "./partition-specs.ts";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const IDENTIFIER = /^[a-z_][a-z0-9_]{0,40}$/;
-
-export type PartitionedTable = {
-  table: string;
-  /** The `timestamptz` partition key. */
-  column: string;
-  /** Whether `<table>_default` exists. */
-  defaultPartition: boolean;
-};
 
 export type Partition = { name: string; day: Date };
 
