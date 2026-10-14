@@ -49,7 +49,7 @@ function keepsRequestBody(path: string): boolean {
 }
 
 function keepsResponseBody(path: string, status: number): boolean {
-  if (STATELESS_LOOKUPS.includes(path)) return false;
+  if (CONTENT_REQUESTS.includes(path)) return false;
   if (status >= 400) return true;
   return !CONTENT_RESPONSES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }

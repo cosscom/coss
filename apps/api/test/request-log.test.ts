@@ -82,7 +82,7 @@ describe("response log byte limit", () => {
   });
 });
 
-for (const path of ["/v1/risk/email/check", "/v1/risk/ip/check"]) {
+for (const path of ["/v1/risk/email/check", "/v1/risk/ip/check", "/v1/risk/content/classify"]) {
   for (const status of [200, 422, 500]) {
     test(`${path} omits both bodies at status ${status}`, async () => {
       const { app, writer } = loggedApp(() => Response.json({}));
@@ -90,6 +90,7 @@ for (const path of ["/v1/risk/email/check", "/v1/risk/ip/check"]) {
         email: "private@example.com",
         canonical: "private@example.com",
         ip: "203.0.113.9",
+        scores: { spam: 0.99 },
       };
       app.post(path, async (c) => {
         await c.req.json();

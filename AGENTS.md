@@ -1095,7 +1095,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   caches only scores for transaction retries, and holds no connection during classification. A crashed
   preparation fails open after 30 seconds without another charge; preparation rows are purged after 48 hours. COSS never decides from scores:
   `content.*` reasons fire only at the environment's `content_thresholds`, and rules test `content.*` fields. The
-  text is never stored or logged — the classify route keeps no request body (`CONTENT_REQUESTS` in
+  text is never stored or logged — the classify route keeps neither request nor response bodies (`CONTENT_REQUESTS` in
   `request-log.ts`) and `redactBody` keeps only string lengths inside `content` objects. Live classifications
   charge the organization's `risk.classify`/`risk.classify.day` buckets (`chargeClassification`): over them, classify
   is a 429 and assessments go on without content (`degraded: ["content"]`). The building blocks
