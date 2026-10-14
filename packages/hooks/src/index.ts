@@ -86,6 +86,7 @@ export {
 export {
   getHookEndpointRecovery,
   type HookEndpointRecoveryRow,
+  latestHookEndpointRecovery,
   RECOVERY_BATCH,
   recoverHookEndpoint,
   runDueHookRecoveries,

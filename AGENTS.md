@@ -726,7 +726,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   in `@coss/webhooks/schemas`, part of `WEBHOOK_EVENT_TYPES`), in the same transaction. Live outcomes are counted per
   org and hour into `hook_delivery_rollup` (once per claimed batch, `recordHookDeliveryOutcomes`, the worker's
   `onFinished`; sandbox never counts) for the `hook_failure_rate` check (`hookFailureRateCheck`), which only warns by
-  default (`ReputationPolicy.hookFailureRate.suspend: null`; admins can set one per org).
+  default (`ReputationPolicy.hookFailureRate.suspend: null`; admins can set one per org). Dashboard:
+  `[envSlug]/hooks/*` (applications, endpoints, messages, event types, portal settings; `hook:*` permissions);
+  "Open portal" mints a session for the signed-in member (`createHookPortalSession({ userId })`).
 - **Platform admin** (`/admin`, `@coss/tenancy/admin`): every admin page calls `requirePlatformAdmin()` itself — Next
   renders layouts and pages in parallel, so the layout's check alone would still stream the page's data to non-admins
   (verified). Actions use `requirePlatformAdminAction()` and record an `admin_audit_event` (append-only; no FKs; the
@@ -946,7 +948,7 @@ log drain secret rolls and custom request headers (vendor intake APIs that need 
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
 would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,
-email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys, the Hooks dashboard pages and portal
+email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys, the Hooks portal
 (`apps/portal`), and these Hooks
 features: channels, payload transformations, custom endpoint headers, sending one message to several applications,
 strict ordering, portal custom domains, per-destination rate-limit overrides, Hooks attempts in environment logs and

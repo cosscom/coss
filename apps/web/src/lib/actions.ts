@@ -1,5 +1,7 @@
 import "server-only";
+import { IdempotencyError } from "@coss/db/idempotency";
 import { DomainError, EmailError } from "@coss/email";
+import { HookError } from "@coss/hooks";
 import { ReputationError } from "@coss/reputation";
 import { TenancyError } from "@coss/tenancy";
 import { isAPIError } from "better-auth/api";
@@ -40,7 +42,9 @@ function userFacingMessage(error: unknown): string {
     error instanceof TenancyError ||
     error instanceof DomainError ||
     error instanceof ReputationError ||
-    error instanceof EmailError
+    error instanceof EmailError ||
+    error instanceof HookError ||
+    error instanceof IdempotencyError
   ) {
     return error.message;
   }

@@ -293,6 +293,7 @@ export const SERVICES: Service[] = [
       apiPublicUrl,
       ...email,
       webhookKey,
+      portalPublicUrl,
       notificationsEnvironment,
       {
         name: "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY",

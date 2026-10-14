@@ -1,4 +1,5 @@
 import { emailEnvShape } from "@coss/email/env";
+import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
@@ -30,6 +31,8 @@ export const env = createEnv({
     ...emailEnvShape,
     ...rateLimitEnvShape,
     ...webhookEnvShape,
+    // Where the Hooks portal is served ("Open portal" links).
+    ...hookEnvShape,
     // Server Actions encrypt closed-over variables with this key; every instance of a stage must
     // share it. Without it, each build embeds its own random key. Builds don't need it; production
     // servers refuse to start without it (src/instrumentation.ts).

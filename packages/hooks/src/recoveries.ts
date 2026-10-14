@@ -6,7 +6,7 @@
 import { db, schema } from "@coss/db";
 import { ID_PREFIXES, isId } from "@coss/db/id";
 import { leaseUntil } from "@coss/webhooks/engine";
-import { and, asc, eq, gte, isNull, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNull, lt, or, sql } from "drizzle-orm";
 import { HOOK_MAX_ATTEMPTS } from "./deliveries.ts";
 import type { HookEndpointRow } from "./endpoints.ts";
 import { HookError } from "./errors.ts";
@@ -79,6 +79,25 @@ export async function getHookEndpointRecovery(input: {
         eq(hookEndpointRecovery.id, input.id),
       ),
     )
+    .limit(1);
+  return row ?? null;
+}
+
+/** The endpoint's most recent recovery, if any (the dashboard shows its progress). */
+export async function latestHookEndpointRecovery(input: {
+  organizationId: string;
+  endpointId: string;
+}): Promise<HookEndpointRecoveryRow | null> {
+  const [row] = await db
+    .select()
+    .from(hookEndpointRecovery)
+    .where(
+      and(
+        eq(hookEndpointRecovery.organizationId, input.organizationId),
+        eq(hookEndpointRecovery.endpointId, input.endpointId),
+      ),
+    )
+    .orderBy(desc(hookEndpointRecovery.createdAt))
     .limit(1);
   return row ?? null;
 }
