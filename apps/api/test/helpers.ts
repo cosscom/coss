@@ -13,6 +13,8 @@ import type { SendEmailRequestInput } from "@coss/email/schemas";
 import { createVerifiedDomain, memoryDispatchQueue } from "@coss/email/testing";
 import type { LogEntryInput, LogWriter } from "@coss/logs";
 import type { ClientIpResolver, RateLimiter } from "@coss/ratelimit";
+import type { RiskDeps } from "@coss/risk";
+import { testRiskDeps } from "@coss/risk/testing";
 import type { ApiKeyContext } from "@coss/tenancy";
 import { LATEST_API_VERSION, type Versioning } from "@coss/versioning";
 import { decryptSecret } from "@coss/webhooks";
@@ -40,6 +42,7 @@ export function createTestApp(
     corsOrigins?: readonly string[];
     logWriter?: LogWriter;
     versioning?: Versioning;
+    riskDeps?: RiskDeps;
     /** Enforce plans (`createPlanGate`) and Free's allowance (`createUsageGate`). Off by default. */
     plans?: PlanGate;
     billing?: UsageGate;
@@ -65,6 +68,7 @@ export function createTestApp(
     domainDeps: opts.domainDeps ?? { identity, dns: null, tracking, plans: opts.plans },
     webhookDeps: { ...testManagementDeps, plans: opts.plans },
     plans: opts.plans,
+    riskDeps: opts.riskDeps ?? testRiskDeps(),
     rateLimiter: opts.rateLimiter,
     clientIp: opts.clientIp,
 

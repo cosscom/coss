@@ -1,0 +1,94 @@
+---
+title: Lists, feedback and reviews
+description: Teach COSS about your users, and work through the review queue.
+---
+
+## Lists
+
+Each environment has an allow list and a block list. An entry matches on one of:
+
+| Type      | Matches                                                                 |
+| --------- | ----------------------------------------------------------------------- |
+| `email`   | The mailbox, with dots and `+tags` folded at Gmail and similar providers |
+| `domain`  | The email domain and its subdomains                                      |
+| `ip`      | An address or a CIDR range (at most a /8, or a /16 for IPv6)              |
+| `asn`     | A network, e.g. `AS64500`                                               |
+| `country` | An ISO 3166-1 alpha-2 code, e.g. `DE`                                   |
+| `user`    | Your user id                                                            |
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.risk.lists.add("block", { domain: "evil.example", note: "Card testing" });
+await coss.risk.lists.add("allow", { email: "qa+signup@acme.com" });
+await coss.risk.lists.add("block", {
+  ip: "203.0.113.0/24",
+  expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+});
+```
+
+Adding an entry that exists returns it unchanged. An entry with `expires_at` stops matching then (it
+stays listed until you remove it). The dashboard's **Risk → Allow & block lists** page manages the
+same lists.
+
+## Feedback
+
+Tell COSS what an assessed user turned out to be. `fraud` and `abuse` make later assessments in the
+environment flag the same mailbox (`history.fraud_mailbox`), user (`history.fraud_user`), IP address
+(`history.fraud_ip`) and subnet (`history.fraud_subnet`); IP addresses and subnets count for 30
+days. `legitimate` takes back what that assessment reported.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const assessmentId: string;
+// ---cut---
+await coss.risk.feedback(assessmentId, { outcome: "fraud", note: "Chargeback" });
+```
+
+## Reviews
+
+`review` decisions stay open until you send feedback for them. Find them in the dashboard (**Risk →
+Review queue**, where each assessment has Legitimate, Abuse and Fraud buttons), with
+`coss.risk.assessments.list({ review_status: "open" })`, or as they happen with a webhook endpoint
+subscribed to `risk.assessment.review`. Its payload has the assessment's id, event, decision, score,
+reasons and your user id, never the email or IP address:
+
+```json
+{
+  "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  "object": "event",
+  "type": "risk.assessment.review",
+  "api_version": "2026-10-10",
+  "created_at": "2026-10-14T12:00:00.000Z",
+  "data": {
+    "assessment_id": "rsk_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    "event": "signup",
+    "event_name": null,
+    "decision": "review",
+    "score": 0.7,
+    "reasons": [
+      {
+        "code": "email.disposable",
+        "message": "The email domain belongs to a disposable-mail service."
+      }
+    ],
+    "user_id": "u_42",
+    "occurred_at": "2026-10-14T12:00:00.000Z"
+  }
+}
+```
+
+## Forgetting users
+
+When you delete one of your users, ask COSS to forget them: their mailbox, their fraud reports and
+the user id, email address, IP address and user agent on their assessments are deleted. Decisions and
+reasons stay, without anything that identifies the user.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.risk.users.forget("u_42");
+```

@@ -8,7 +8,9 @@ drive per-recipient status and signed customer webhooks. A sample of live messag
 (`@coss/screening`) before it is sent. Plans, contracts, metered usage, credits and invoices are `@coss/billing`
 (COSS rates usage itself; Stripe, behind a provider interface, only collects). Rate limits (per API key, per-org send quotas, dashboard
 auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/ratelimit`. Errors and traces go to
-Sentry (organization `cosscom`) through `@coss/observability`. Human setup docs (incl. running on SES): [README.md](./README.md).
+Sentry (organization `cosscom`) through `@coss/observability`. COSS Risk (`@coss/risk`, `coss.risk.assess()`) assesses customers' sign-ups, logins and other
+events: email/IP signals (`@coss/signals`) plus what each environment remembers (velocity in Valkey, duplicate
+mailboxes, fraud reports, allow/block lists) become `allow`/`review`/`block` with reasons. Human setup docs (incl. running on SES): [README.md](./README.md).
 
 ## Layout
 
@@ -19,13 +21,15 @@ Sentry (organization `cosscom`) through `@coss/observability`. Human setup docs 
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page, Shipyard's landing page and docs at `/shipyard`, kloq's pages at `/kloq` (landing page, demo, tools, comparisons, docs, shadcn registry) + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss). |
-| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
+| `packages/signals` | `@coss/signals` | Stateless abuse signals shared by COSS's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
+| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption; log drains (management, signed NDJSON batch delivery, retention); `./schemas`, `./env` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
 | `packages/screening` | `@coss/screening` | Product-agnostic AI content screening: sampling per org + product, the `ContentClassifier` interface (Vercel AI SDK `experimental_decide` adapter under `./ai`, `fakeClassifier` in `./testing`), verdict history, the `content_screening` reputation check; `./env` (zod only), `./runtime`. |
+| `packages/risk` | `@coss/risk` | Risk assessments: `assessRisk` (signals under a time budget, scoring, decision, one transaction with the log line, mailbox identity and `risk.assessment.review` webhook), velocity (`VELOCITY_SCRIPT` in Valkey or memory), lists, feedback + fraud memory, forgetting users, IP datasets (`refreshDueDatasets` in the worker, `createIpIntelligenceSource` in the API), sandbox fixtures, purges; `./schemas` (zod only: wire schemas, `REASONS`, `VELOCITY_RULES`, `RISK_EVENT_TYPES`), `./env` (zod only), `./runtime`, `./datasets`, `./testing`. |
 | `packages/billing` | `@coss/billing` | Plans and billing: the price catalog (`./catalog`: meters, list rates, plans, entitlements, add-ons) and contract terms (`./schemas`), both client-safe; the pure rating engine (`./engine`); accounts, contracts (self-serve and sales), hourly metered usage (`./metering`, the only module products import), credit grants and their ledger, month closes, invoices, payments, credit notes, dunning and holds, usage alerts, plan enforcement (`PlanGate`/`UsageGate` types in `./gate`), providers (fake, manual, Stripe under `./stripe`), the public API's read models and `billing.*` webhook events (wire schemas in `./wire`, client-safe); `./env` (zod only), `./runtime`, `./testing`. `scripts/seed.ts`, `scripts/close-period.ts`. |
 | `packages/observability` | `@coss/observability` | Sentry setup shared by every app: env shape (`./env`, zod only), `sentryConfig`/`sentryOptions`, PII scrubbing (`scrubEvent`), the browser init (`./browser`), the dashboard's envelope tunnel (`./tunnel`) and `withSentryConfig` options (`./build`). Takes each app's SDK; depends on no framework SDK and no workspace. |
 | `packages/logs` | `@coss/logs` | Environment logs and the org audit log: the day-partitioned `log_entry` table (API requests, email events, webhook attempts), the buffered fail-open request writer, queries (keyset pages, histogram, facets, related lines, CSV/NDJSON export), partition retention, `org_audit_event`, the log drain outbox (`log_drain_record`, written by `appendLogEntries`/`recordOrgAuditEvent`); `./schemas` + `./query` (search syntax; zod only), `./testing`. |
@@ -37,15 +41,16 @@ Sentry (organization `cosscom`) through `@coss/observability`. Human setup docs 
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests, and the production Terraform + deploy scripts that apply it. See `infra/AGENTS.md`. |
 
-Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `db ← auth ← tenancy`, `db ← logs ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`, `webhooks ← billing ← email` (packages take
+Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `infra`; `signals` (no workspace deps) ← `auth`, `webhooks`, `risk`; `db ← auth ← tenancy`,
+`db ← logs ← webhooks ← risk` (`risk` also `→ signals, ratelimit, retention`; `email` imports only `@coss/risk/schemas`, for `WEBHOOK_EVENT_TYPES`), `db ← logs ← webhooks ← reputation ← screening ← email`, `db ← ratelimit`, `webhooks ← billing ← email` (packages take
 `billing`'s plan checks injected — `PlanGate`, `UsageGate`, and in webhooks the structural `WebhookPlanLimits`, since
 billing enqueues `billing.*` events through it — and email imports only `./metering`, `./gate` and `./wire`); `versioning` (no deps) ← `tenancy`, `webhooks`, `email`, `billing` (`schemas`/`wire` examples);
 `retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `billing`, `worker`, `web`, `site`;
-`api → tenancy, email, reputation, webhooks, ratelimit, versioning, logs, billing, db`;
-`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, db, ui`; `site → ui, auth, versioning, retention, billing` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy and `@coss/billing/{catalog,money,engine}`) +
+`api → tenancy, email, reputation, webhooks, ratelimit, versioning, logs, billing, risk, db`;
+`web → auth, tenancy, email, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, ratelimit, screening, billing` (`slugs`, `env` only);
-`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui` and `kloq` depend on no workspace (`site → kloq`).
-Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
+`worker → auth (`./emails` only), email, reputation, screening, webhooks, ratelimit, logs, risk, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui` and `kloq` depend on no workspace (`site → kloq`).
+Dev-only: `email`/`webhooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`risk`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
 `api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`).
 
@@ -66,7 +71,7 @@ bun run db:migrate          # apply migrations + install/upgrade the pg-boss sch
                             #   (db:migrate:test → TEST_DATABASE_URL); db:studio
 bun run auth:generate       # regenerate packages/db/src/schema/auth.ts after changing Better Auth plugins/options,
                             #   then bun run db:generate && bun run db:migrate
-bun run auth:update-disposable  # refresh the vendored disposable-domain list (review the diff before committing)
+bun run signals:update-disposable  # refresh the vendored disposable-domain list (review the diff before committing)
 bun run openapi:generate    # rewrite apps/api/openapi.json after changing API routes (a test fails when stale)
 bun run changeset           # describe an SDK change (CI requires one when packages/sdk/src changes; --empty if none)
 bun run version-packages    # apply changesets: bump the SDK's package.json, src/version.ts, CHANGELOG.md, bun.lock
@@ -154,6 +159,8 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `RATE_LIMIT_KEY_PREFIX` | api + web: namespaces Valkey keys (default `coss`) |
 | `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → public unauthenticated limits use an aggregate fallback subject instead of a per-IP subject |
 | `TEST_VALKEY_URL` | ratelimit + api tests (keys under a random prefix, never flushed) |
+| `RISK_HASH_KEY` | api + web: 32-byte base64 key of every HMAC risk remembers identifiers by (velocity keys, mailbox identities, fraud reports); required in production, a fixed development key otherwise. Changing it resets that memory |
+| `IPINFO_TOKEN` | worker: downloads IPinfo Lite (ASN + country, CC BY-SA 4.0) for risk's IP signals; unset → Tor and cloud ranges only |
 | `WEBHOOK_SECRETS_KEY` | api + web + worker: comma-separated 32-byte base64 keys, newest first (the first encrypts, all decrypt); encrypts endpoint signing secrets (losing it makes them unreadable). Shape in `@coss/webhooks/env` |
 | `LOG_RETENTION_DAYS` | worker: days of environment logs kept (1-31, default 30); whole expired day partitions are dropped hourly |
 | `BILLING_PROVIDER`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | web + worker: the payment provider of new billing accounts (`fake` default, or `stripe`, which needs the key); the webhook secret only the dashboard (`/api/billing/webhook`). Shape in `@coss/billing/env` |
@@ -315,7 +322,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 
 ## Tests
 
-- `bun:test`. DB-backed suites (`apps/api`, `apps/worker`, `packages/billing`, `packages/email`, `packages/reputation`, `packages/screening`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
+- `bun:test`. DB-backed suites (`apps/api`, `apps/worker`, `packages/billing`, `packages/email`, `packages/reputation`, `packages/risk`, `packages/screening`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
   `bunfig.toml` → `@coss/db/testing`, which throws unless `TEST_DATABASE_URL` names a `*_test` database, then points
   `DATABASE_URL` at it. Other suites are DB-free; before adding DB tests elsewhere copy `packages/email/bunfig.toml` +
   `test/setup.ts`, or the tests hit the dev database.
@@ -335,7 +342,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 `createTestContract(orgId, terms, { effectiveFrom })`, `recordTestUsage({ …, at })`, `testBillingProviders()` (a
 `FakeBillingProvider` with `willCollect(...)`/`fail(op)`), `FakeStripeApi` (`fetch` for `StripeBillingProvider`);
 month closes, dunning and usage checks take `now` and `scope`; `createTestApp({ plans, billing })`, `screenMessage(…, { random })`
-  for deterministic sampling, `Experimental_DecisionMockModelV4` (`ai/test`) for the AI SDK adapter; `dispatchingEmailService({ screen })`. Worker-style scans take `scope: { organizationIds }`
+  for deterministic sampling, `Experimental_DecisionMockModelV4` (`ai/test`) for the AI SDK adapter; `dispatchingEmailService({ screen })`. Risk: `testRiskDeps(overrides)` (fixed IP data for `TEST_IPS`, fake DNS via `fakeMailDomains`, in-memory velocity) from `@coss/risk/testing`, `buildTestMmdb` from `@coss/signals/testing`; `createTestApp({ riskDeps })`. Worker-style scans take `scope: { organizationIds }`
   and `now` — always pass `scope` in tests (the test DB is shared and never truncated). Session-bound Better Auth calls: sign in with
   `auth.api.signInEmail({ returnHeaders: true })` and forward the cookie (`packages/tenancy/test/hardening.test.ts`).
 
@@ -412,8 +419,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - `packages/ui/src/{components,hooks,lib}`: vendored from the `@coss` registry and excluded from Biome; re-adding a
   component overwrites local edits.
 - `bun.lock` (only via `bun install`; CI uses `--frozen-lockfile`).
-- `packages/auth/src/disposable-domains.generated.ts` (`bun run auth:update-disposable`; local exceptions go in
-  `ALLOWED_DOMAINS` / `EXTRA_DISPOSABLE_DOMAINS` in `email-guard.ts`).
+- `packages/signals/src/disposable-domains.generated.ts` (`bun run signals:update-disposable`; local exceptions go in
+  `ALLOWED_DOMAINS` / `EXTRA_DISPOSABLE_DOMAINS` in `packages/signals/src/email.ts`).
 - The `<!-- BEGIN:*-agent-rules -->` blocks at the end of this file and in `apps/{web,site}/AGENTS.md` are rewritten by `turbo`
   and `next dev`: never edit inside them, keep project text above them, and commit tool changes to them.
 - Agent docs: `AGENTS.md` files are the source of truth; each `CLAUDE.md` contains only `@AGENTS.md`. A new nested
@@ -567,8 +574,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
-- **Client-safe modules** never import `@coss/db`: `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch}` and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
+- **Client-safe modules** never import `@coss/db`: `@coss/risk/{schemas,env}`, `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
+  `@coss/email/env`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch}`, `@coss/risk/{runtime,datasets}`, `@coss/signals/*` and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -768,6 +775,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   enforces them: `purgeExpiredEmails`/`purgeEmptyEmailBatches`/`purgeExpiredReputationRollups` (`@coss/email`),
   `purgeExpiredWebhookMessages` (`@coss/webhooks`), `purgeExpiredScreenings` (`@coss/screening`),
   `purgeExpiredReputationNotifications`/`purgeExpiredReputationEvents` (`@coss/reputation`),
+  `purgeExpiredRiskPersonalData`/`purgeExpiredRiskMemory`/`purgeExpiredRiskAssessments` (`@coss/risk`),
   `purgeExpiredAuthRows`/`purgeExpiredAdminAuditEvents` (`@coss/tenancy/retention`). The worker's `retention` loop
   (`apps/worker/src/retention.ts`, every 10 min, 1,000 rows per step, back-to-back while a step fills its batch) runs
   them in order (emails before their batches). Purges are system-level `DELETE … WHERE id IN (oldest batch)` with
@@ -917,6 +925,27 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   (cascading the rest) and marks the row `completed` in one transaction. A new table with a lot of rows per
   organization belongs in `deleteOrganizationData`; anything held outside Postgres (a new provider resource)
   belongs in `releaseProviderResources`. Admin audit events are kept (no FKs).
+- **Risk** (`packages/risk`, tables `risk_assessment` (ids `rsk_`), `risk_feedback` (`rskfb_`), `risk_identity`
+  (`rskid_`), `risk_report` (`rskrep_`), `risk_list_entry` (`rskle_`), platform table `risk_dataset`): `assessRisk`
+  collects every signal in parallel and **fails open per signal** (DNS 800 ms, Valkey's 100 ms command timeout,
+  missing datasets → listed in `degraded`, never an error). Order of decision: allow list, block list, then the
+  score (`1 − Π(1 − weight)` over `REASONS`; thresholds `DEFAULT_THRESHOLDS`) — change weights only with the golden
+  cases in `packages/risk/test/score.test.ts`. Memory is **HMAC-only** (`riskHasher`, `RISK_HASH_KEY`, separated by
+  environment and kind): velocity keys `<prefix>:risk:v:<event>:<dimension>:{<hash>}` (one key per call, so
+  cluster-safe; private IPs never counted), mailbox identities (only rows with a user id count as accounts;
+  serialized per mailbox by `pg_advisory_xact_lock` in the insert transaction; `block` decisions never claim the
+  mailbox), fraud reports from feedback (IP/subnet ones count 30 days, `NETWORK_REPORT_TTL_MS`). Raw email, IP and
+  user agent live only on `risk_assessment` and are purged after `RETENTION_DAYS.riskPersonalData`; `signals` and
+  `reasons` must never hold identifiers (messages are rendered on read, `reasonMessage`; the email domain comes from
+  the `email` column). Webhook payloads and log lines carry no email or IP. Retries never count twice: `assessRisk`
+  serializes an `Idempotency-Key` with a transaction advisory lock and replays before stateful collection.
+  `forgetRiskUser` (`DELETE /v1/risk/users/{id}`) must keep removing everything that identifies a user,
+  including `previous_user` in other assessments' reasons. IP data: the worker's `risk-datasets` loop downloads Tor,
+  cloud ranges and IPinfo Lite into `risk_dataset` (never replacing a good copy with a smaller or invalid one); API
+  processes reload changed ones every 5 minutes. Sandbox environments use the fixtures in `src/sandbox.ts`
+  (`192.0.2.x`, `@disposable.test`, `@undeliverable.test`), documented in `/docs/risk/testing`. Credit IPinfo where
+  its data is shown (CC BY-SA). Permissions: `risk` (`assess`, `read`, `feedback`) and `riskList` (backfilled by
+  `0047`); members read.
 - **Monitoring** (Sentry, `@coss/observability`): api and worker import `src/instrument.ts` first in `src/index.ts`
   (`@sentry/bun`; Bun has no runtime module hooks, so Hono gets `honoMiddleware(app)` in `createApp` — route names
   only, errors come from `onError`'s `console.error` — and pg/AWS calls aren't traced). The dashboard initializes
@@ -1019,7 +1048,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   and suspensions (not recoveries or reinstatements), and only once the worker's `NOTIFICATIONS_*` variables point
   at a verified sender of COSS's own organization.
 
-**Not built yet** (don't assume these exist; delete a line when it ships): the real landing page,
+**Not built yet** (don't assume these exist; delete a line when it ships): risk rules (a structured rule builder),
+per-environment risk settings (thresholds, reason weights), captcha and content signals and RDAP domain age in
+assessments, "new country/network for this user" memory, the risk building-block endpoints (email/IP lookups, content
+classification, rate limiting as a service), learning from feedback, a paid VPN/proxy data provider, the real landing page,
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which

@@ -2,6 +2,7 @@ import { billingEnvShape } from "@coss/billing/env";
 import { emailEnvShape } from "@coss/email/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
+import { riskEnvShape } from "@coss/risk/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
@@ -31,6 +32,9 @@ export const env = createEnv({
     ...emailEnvShape,
     ...rateLimitEnvShape,
     ...webhookEnvShape,
+    // Keys risk's memory; the dashboard hashes identifiers when it records feedback. Required in
+    // production (src/instrumentation.ts).
+    ...riskEnvShape,
     // Payment provider of new billing accounts (`fake` or `stripe`), Checkout and the Customer
     // Portal; the Stripe webhook route verifies signatures with STRIPE_WEBHOOK_SECRET.
     ...billingEnvShape,

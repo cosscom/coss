@@ -179,6 +179,33 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
       requestOptions(request),
     ],
   },
+  "POST /v1/risk/assessments": {
+    method: "risk.assess",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/risk/assessments": {
+    method: "risk.assessments.list",
+    args: (request) => [queryParams(request)],
+  },
+  "GET /v1/risk/assessments/{id}": { method: "risk.assessments.get", args: (r) => [pathId(r)] },
+  "POST /v1/risk/assessments/{id}/feedback": {
+    method: "risk.feedback",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "POST /v1/risk/list_entries": {
+    method: "risk.lists.add",
+    args: (request) => listEntryArgs(request.body),
+  },
+  "GET /v1/risk/list_entries": {
+    method: "risk.lists.list",
+    args: (request) => [queryParams(request)],
+  },
+  "GET /v1/risk/list_entries/{id}": { method: "risk.lists.get", args: (r) => [pathId(r)] },
+  "DELETE /v1/risk/list_entries/{id}": { method: "risk.lists.remove", args: (r) => [pathId(r)] },
+  "DELETE /v1/risk/users/{user_id}": {
+    method: "risk.users.forget",
+    args: (request) => [pathParam(request, "user_id")],
+  },
 };
 
 const routes = Object.entries(SDK_SAMPLES).map(([key, sample]) => {
@@ -240,6 +267,13 @@ function queryParams(request: SampleRequest): string | undefined {
 function batchEmails(body: unknown): unknown[] {
   const emails = body !== null && typeof body === "object" && "emails" in body ? body.emails : [];
   return Array.isArray(emails) ? emails : [];
+}
+
+/** `lists.add` takes the list, then `{ <type>: value, note? }` (not the wire body). */
+function listEntryArgs(body: unknown): string[] {
+  const entry = (body ?? {}) as { list?: string; type?: string; value?: string; note?: string };
+  const { list = "block", type = "domain", value = "", note } = entry;
+  return [tsValue(list), tsValue({ [type]: value, note })];
 }
 
 function requestOptions(request: SampleRequest): string | undefined {
