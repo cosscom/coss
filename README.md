@@ -441,8 +441,9 @@ Cloudflare DNS (coss.com zone, DNS only)
 - **ECS on Fargate (arm64):** cluster `coss-production`, services `web`, `site`, `api`, `worker`, task definitions
   built from `spec.json` (sizes, minimum counts, `stopTimeout`, env names and kinds; plain values from
   `production.tfvars`, secrets from the stage secret), CPU target-tracking autoscaling, deployment circuit breaker
-  with rollback, ECS Exec. ECR repositories `coss/<service>` (immutable commit tags; `buildcache` is the BuildKit
-  cache). Logs in `/coss/production/<service>` (30 days).
+  with rollback, ECS Exec. ECR repositories `coss/<service>` (immutable commit tags; `buildcache-<hash>` is the
+  BuildKit cache of the dependency layers, exported only when the lockfile, a `package.json` or the Dockerfile
+  changed). Logs in `/coss/production/<service>` (30 days).
 - **ALB:** HTTPS listener with an ACM certificate (us-east-2) for `coss.com` and `api.coss.com` (CloudFront forwards
   the viewer `Host`, and validates the origin certificate against it). Default action: fixed 403. Rules exactly as
   the spec prints them (generated from `ZONE_ROUTES` in `packages/auth/src/slugs.ts`):
@@ -573,18 +574,20 @@ wrong. AWS credentials come from the task role.
 [one-time coordinated upgrade](#upgrading-from-v1-webhook-secret-storage) below instead of step 3's rolling
 deployment. This applies even when `WEBHOOK_SECRETS_KEY` is unchanged.
 
-The Deploy workflow does this after CI passes on main (or by hand from the Actions tab; with `image_tag` it redeploys
-an earlier commit's images, e.g. a rollback):
+The Deploy workflow does this on every push to main, building while CI runs and shipping only once it passed (or by
+hand from the Actions tab; with `image_tag` it redeploys an earlier commit's images, e.g. a rollback). When CI
+failed and a re-run passed, re-run the Deploy run's failed jobs:
 
 1. Build and push the four images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
    apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
    for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker), skipping images that exist.
 2. Run migrations as a one-off task from the new worker image (`infra/scripts/ecs-task.sh --image-tag <sha> worker --
-   bun packages/db/src/migrate.ts`; never two at once, the workflow's concurrency group). Migrations must be
+   bun packages/db/src/migrate.ts`; never two at once, the deploy job's concurrency group). Migrations must be
    backward compatible with the running code.
-3. Roll out `api` and `worker`, then `web` and `site` (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a
-   new revision of its latest task definition with the new image, and the script fails if the circuit breaker rolled
-   it back. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
+3. Roll out all four services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
+   of its latest task definition with the new image, and the script fails if the circuit breaker rolled it back. A
+   service behind the load balancer counts as deployed once its new tasks passed their health checks and the old
+   ones are draining; the worker (no health check) once its old tasks are gone. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
    the worker finishes each loop's current item).
 4. Record the commit in SSM (`/coss/production/image-tag`, read by Terraform) and invalidate the spec's
    `cloudFront.invalidateAfterDeploy` paths on the coss.com distribution.
