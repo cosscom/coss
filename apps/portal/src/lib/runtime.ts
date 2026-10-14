@@ -4,16 +4,18 @@ import { parseSecretsKeys } from "@coss/webhooks";
 import { env } from "@/env";
 import type { PortalApiDeps } from "./portal-api";
 
-let rateLimits: RateLimitRuntime | undefined;
+// On globalThis: instrumentation and the route handlers are separate bundles, each with its own
+// copy of this module, and they must share one limiter (and Valkey connection) per process.
+const globalForRateLimit = globalThis as unknown as { __cossPortalRateLimit?: RateLimitRuntime };
 
 /**
  * The process's limiter and its Valkey connection. `register()` creates it at startup: the client
- * never queues commands while connecting, so the first request would otherwise get the buckets'
+ * never queues commands while connecting, so the first requests would otherwise get the buckets'
  * outage policy (the portal's deny).
  */
 export function rateLimitRuntime(): RateLimitRuntime {
-  rateLimits ??= createRateLimitRuntime(env);
-  return rateLimits;
+  globalForRateLimit.__cossPortalRateLimit ??= createRateLimitRuntime(env);
+  return globalForRateLimit.__cossPortalRateLimit;
 }
 
 /** The portal API's dependencies, built once per process. */
