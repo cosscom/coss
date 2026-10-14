@@ -2,6 +2,7 @@ import type { CossResult } from "../core/errors.ts";
 import type { HttpClient, RequestOptions } from "../core/http.ts";
 import type { CreateDomainParams, DeletedDomain, Domain } from "../types/domain.ts";
 import type { List } from "../types/email.ts";
+import { ReceivingDomainsResource } from "./receiving-domains.ts";
 import { TrackingDomainsResource } from "./tracking-domains.ts";
 
 type ReadOptions = Pick<RequestOptions, "signal">;
@@ -14,11 +15,14 @@ export class DomainsResource {
   readonly #http: HttpClient;
   /** Each domain's custom tracking domain: add and remove it. */
   readonly tracking: TrackingDomainsResource;
+  /** Each domain's receiving hostname: start and stop receiving email at it. */
+  readonly receiving: ReceivingDomainsResource;
 
   /** @internal Use `new Coss().domains`. */
   constructor(http: HttpClient) {
     this.#http = http;
     this.tracking = new TrackingDomainsResource(http);
+    this.receiving = new ReceivingDomainsResource(http);
   }
 
   /**

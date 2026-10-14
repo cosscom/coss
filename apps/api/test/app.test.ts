@@ -161,6 +161,7 @@ describe("GET /openapi.json", () => {
       "/v1/billing/usage",
       "/v1/domains",
       "/v1/domains/{id}",
+      "/v1/domains/{id}/receiving",
       "/v1/domains/{id}/tracking",
       "/v1/domains/{id}/verify",
       "/v1/emails",
@@ -195,6 +196,11 @@ describe("GET /openapi.json", () => {
       "/v1/log_drains/{id}/batches/{batch_id}",
       "/v1/logs",
       "/v1/logs/{id}",
+      "/v1/received_emails",
+      "/v1/received_emails/address",
+      "/v1/received_emails/{id}",
+      "/v1/received_emails/{id}/attachments/{attachment_id}",
+      "/v1/received_emails/{id}/raw",
       "/v1/reputation",
       "/v1/risk/assessments",
       "/v1/risk/assessments/{id}",
@@ -266,6 +272,15 @@ describe("GET /openapi.json", () => {
     expect(doc.paths["/v1/reputation"]?.get).toMatchObject({
       operationId: "getReputation",
       security: [{ bearerAuth: [] }],
+    });
+    expect(doc.paths["/v1/received_emails"]?.get).toMatchObject({
+      operationId: "listReceivedEmails",
+      tags: ["Receiving"],
+      security: [{ bearerAuth: [] }],
+    });
+    expect(doc.paths["/v1/received_emails/{id}/raw"]?.get).toMatchObject({
+      operationId: "getReceivedEmailRaw",
+      responses: { 200: { content: { "message/rfc822": {} } } },
     });
     expect(doc.paths["/v1/emails/{id}/cancel"]?.post).toMatchObject({
       operationId: "cancelEmail",
@@ -375,6 +390,8 @@ describe("GET /openapi.json", () => {
       ["post /v1/domains/{id}/verify", "verifyDomain"],
       ["post /v1/domains/{id}/tracking", "createTrackingDomain"],
       ["delete /v1/domains/{id}/tracking", "deleteTrackingDomain"],
+      ["post /v1/domains/{id}/receiving", "createReceivingDomain"],
+      ["delete /v1/domains/{id}/receiving", "deleteReceivingDomain"],
       ["post /v1/webhook_endpoints", "createWebhookEndpoint"],
       ["get /v1/webhook_endpoints", "listWebhookEndpoints"],
       ["get /v1/webhook_endpoints/{id}", "getWebhookEndpoint"],

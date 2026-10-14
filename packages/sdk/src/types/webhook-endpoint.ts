@@ -8,12 +8,14 @@ import type {
   AccountEventType,
   BillingEventType,
   HookOperationalEventType,
+  ReceivedEmailEventType,
   RiskEventType,
 } from "./webhook.ts";
 
 /** Every event type an endpoint can subscribe to. */
 export type WebhookEventType =
   | EmailEventType
+  | ReceivedEmailEventType
   | AccountEventType
   | BillingEventType
   | RiskEventType

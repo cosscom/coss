@@ -109,6 +109,21 @@ const email: EnvVar[] = [
     required: true,
     description: "Printed by ses:bootstrap.",
   },
+  {
+    name: "INBOUND_MANAGED_DOMAIN",
+    kind: "plain",
+    required: false,
+    value: "inbound.coss.com",
+    description:
+      "Receiving: each environment's `<label>.<domain>` addresses (ses:bootstrap --managed-domain). " +
+      "Set with SES_INBOUND_BUCKET, or neither (receiving off).",
+  },
+  {
+    name: "SES_INBOUND_BUCKET",
+    kind: "plain",
+    required: false,
+    description: "Receiving: the bucket received emails are stored in. Printed by ses:bootstrap.",
+  },
   ...trackingDomains,
 ];
 
@@ -120,52 +135,13 @@ const portalPublicUrl: EnvVar = {
     "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed.",
 };
 
-/**
- * The worker's Hooks delivery limits. Optional: the cache's security group admits only web and api
- * today (terraform/network.tf), so the worker counts in memory per task until it is opened to the
- * worker and VALKEY_URL is declared for it as a secret.
- */
-const workerRateLimits: EnvVar[] = [
-  {
-    name: "VALKEY_URL",
-    kind: "plain",
-    required: false,
-    description:
-      "Not set yet (see above). Once the worker can reach the cache, make this a `secret` like web's and api's.",
-  },
-  {
-    name: "VALKEY_CLUSTER",
-    kind: "plain",
-    required: false,
-    description: "`true` with VALKEY_URL (ElastiCache Serverless).",
-  },
-  {
-    name: "RATE_LIMIT_KEY_PREFIX",
-    kind: "plain",
-    required: false,
-    description: "Counter namespace, as web's and api's.",
-  },
-  {
-    name: "CLIENT_IP_HEADER",
-    kind: "plain",
-    required: false,
-    description: "Unused by the worker (it serves no requests).",
-  },
-  {
-    name: "TRUSTED_PROXY_COUNT",
-    kind: "plain",
-    required: false,
-    description: "Unused by the worker (it serves no requests).",
-  },
-];
-
 const rateLimits: EnvVar[] = [
   {
     name: "VALKEY_URL",
     kind: "secret",
     required: true,
     description:
-      "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web and api.",
+      "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web, api and worker.",
   },
   {
     name: "VALKEY_CLUSTER",
@@ -516,6 +492,17 @@ export const SERVICES: Service[] = [
           "Unset: every loop. A second worker service (same image) with `hooks` runs only Hooks deliveries, so their volume scales apart from everything else.",
       },
       {
+        name: "SES_INBOUND_QUEUE_URL",
+        kind: "plain",
+        required: false,
+        description: "Receiving: the queue of SES receipt notifications. Printed by ses:bootstrap.",
+      },
+      // Counted in Valkey: the daily inbound limit per organization (`email.inbound.day`) and
+      // Hooks delivery attempts.
+      ...rateLimits.filter((v) =>
+        ["VALKEY_URL", "VALKEY_CLUSTER", "RATE_LIMIT_KEY_PREFIX"].includes(v.name),
+      ),
+      {
         name: "LOG_RETENTION_DAYS",
         kind: "plain",
         required: false,
@@ -527,7 +514,6 @@ export const SERVICES: Service[] = [
       billingProvider,
       stripeSecretKey,
       // Hooks delivery attempts are rate limited per endpoint and destination host.
-      ...workerRateLimits,
       {
         name: "IPINFO_TOKEN",
         kind: "secret",
@@ -575,10 +561,12 @@ export const ONE_OFF_TASKS = [
       "coss",
       "--tenant-prefix",
       "coss",
+      "--managed-domain",
+      "inbound.coss.com",
     ],
     when:
       "Once per stage after the first migrate, and after upgrades that change it. Needs DATABASE_URL, " +
-      "AWS_REGION and a task role allowed to manage SES, SNS, SQS, EventBridge, IAM and CloudWatch.",
+      "AWS_REGION and a task role allowed to manage SES, SNS, SQS, EventBridge, S3, IAM and CloudWatch.",
   },
   {
     name: "create-admin",

@@ -18,6 +18,11 @@ export const env = createEnv({
     TRACKING_PUBLIC_URL: z.url().optional(),
     API_PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
     ...emailWorkerEnvShape,
+    // Counted in Valkey: the daily inbound limit per organization (`email.inbound.day`) and Hooks
+    // delivery attempts (per endpoint and destination host).
+    VALKEY_URL: rateLimitEnvShape.VALKEY_URL,
+    VALKEY_CLUSTER: rateLimitEnvShape.VALKEY_CLUSTER,
+    RATE_LIMIT_KEY_PREFIX: rateLimitEnvShape.RATE_LIMIT_KEY_PREFIX,
     // AI content screening of sampled live emails before they are sent (@coss/screening).
     ...screeningEnvShape,
     // Comma-separated loops this worker runs (`WORKER_LOOP_NAMES` in src/jobs.ts), e.g. `hooks` for
@@ -48,9 +53,6 @@ export const env = createEnv({
     BETTER_AUTH_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
     // Decrypts webhook signing secrets (same value as the dashboard's and the API's).
     ...webhookEnvShape,
-    // Rate limits of Hooks delivery attempts (per endpoint and destination host), shared with the
-    // API and the dashboard through Valkey. Required in production.
-    ...rateLimitEnvShape,
     // Billing (@coss/billing): the payment provider new accounts use, and Stripe's API key.
     ...billingEnvShape,
     // Error monitoring; read by src/instrument.ts before this schema runs.

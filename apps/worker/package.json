@@ -16,6 +16,8 @@
     "@aws-sdk/client-cloudwatch": "catalog:",
     "@aws-sdk/client-eventbridge": "catalog:",
     "@aws-sdk/client-iam": "catalog:",
+    "@aws-sdk/client-s3": "catalog:",
+    "@aws-sdk/client-ses": "catalog:",
     "@aws-sdk/client-sesv2": "catalog:",
     "@aws-sdk/client-sns": "catalog:",
     "@aws-sdk/client-sqs": "catalog:",

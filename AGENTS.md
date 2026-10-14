@@ -4,7 +4,8 @@ COSS is a unified developer platform: one API key + one SDK (`coss.email.send()`
 scheduling…). This repo holds the dashboard, the public API, shared packages and the public SDK.
 Email delivery goes through the provider interface in `packages/email/src/provider.ts` (Amazon SES v2 with one SES
 tenant per organization, or the fake provider); sandbox environments always use the fake provider. Delivery events
-drive per-recipient status and signed customer webhooks. A sample of live messages is screened by an AI decision model
+drive per-recipient status and signed customer webhooks. Environments also receive email (an SES receipt rule → S3 +
+SQS → the worker; see "Receiving email" below). A sample of live messages is screened by an AI decision model
 (`@coss/screening`) before it is sent. Plans, contracts, metered usage, credits and invoices are `@coss/billing`
 (COSS rates usage itself; Stripe, behind a provider interface, only collects). Rate limits (per API key, per-org send quotas, dashboard
 auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/ratelimit`. Errors and traces go to
@@ -20,12 +21,12 @@ mailboxes, fraud reports, allow/block lists) become `allow`/`review`/`block` wit
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page, Shipyard's landing page and docs at `/shipyard`, kloq's pages at `/kloq` (landing page, demo, tools, comparisons, docs, shadcn registry) + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/portal` | `@coss/portal` | The Hooks portal (:3003) on its own domain: customers' users manage one application's endpoints and see its deliveries, signed in by a session the customer's backend creates (token in the URL fragment, never a cookie). See `apps/portal/AGENTS.md`. |
-| `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
+| `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events and received emails from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss); `./idempotency` (`withIdempotencyKey`, request hashes); `./partitions` (daily range partitions: create ahead, drop expired). |
 | `packages/signals` | `@coss/signals` | Stateless abuse signals shared by COSS's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). |
-| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
+| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), receiving (received emails, receiving domains, managed inbound addresses, the content store), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption, endpoint auto-disable and recovery; log drains (management, signed NDJSON batch delivery, retention); `./engine` (the delivery engine shared by every product: holds, lease fencing, retry outcomes, the HTTP attempt, endpoint health, a bounded runner); `./schemas`, `./env` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
@@ -160,8 +161,10 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `TRACKING_DOMAIN_PROVIDER`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`, `TRACKING_CNAME_TARGET` | api, web, worker: custom tracking domains (`fake` default, or `cloudflare`: Cloudflare for SaaS custom hostnames on the cosslinks.com zone, which needs the token and zone id); customers CNAME to `TRACKING_CNAME_TARGET` (default `track.cosslinks.com`); shape in `@coss/email/env` |
 | `TRACKING_PUBLIC_URL` | api + worker: origin of the open/click tracking links in emails (default `API_PUBLIC_URL`); production `https://track.cosslinks.com`, a domain of its own so senders' abuse never lands on coss.com |
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
+| `INBOUND_MANAGED_DOMAIN`, `SES_INBOUND_BUCKET` | api, web, worker: receiving. The managed inbound domain (`<label>.<domain>` addresses per environment; default `inbound.coss.test` with the fake provider) and, with SES, the bucket received content lives in (both or neither with SES; unset → receiving off). Printed by `ses:bootstrap --managed-domain` |
+| `SES_INBOUND_QUEUE_URL` | worker with SES receiving: the SQS queue of receipt notifications |
 | `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | web reads the id only to refuse admin suspensions of COSS's own organization (`isSystemOrganization`, `apps/web/src/lib/system-organization.ts`); worker: account emails (verification, password reset, invitation) and reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
-| `VALKEY_URL`, `VALKEY_CLUSTER` | api + web + worker (Hooks delivery limits): rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
+| `VALKEY_URL`, `VALKEY_CLUSTER` | api + web + worker (the daily inbound limit, Hooks delivery limits): rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
 | `RATE_LIMIT_KEY_PREFIX` | api + web: namespaces Valkey keys (default `coss`) |
 | `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → public unauthenticated limits use an aggregate fallback subject instead of a per-IP subject |
 | `TEST_VALKEY_URL` | ratelimit + api tests (keys under a random prefix, never flushed) |
@@ -340,7 +343,9 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   dispatches them), `dispatchingEmailService()` (send + dispatch in one call, for tests about what happens after dispatch),
   `FakeEmailProvider({ log: false, fail })`, `gatedProvider()` for races, `createVerifiedDomain(orgId)` (live sends need
   one), `FakeSesApi`, `fakeDnsResolver()`, `FakeCloudflareApi` (a `fetch` for `CloudflareTrackingHostnameProvider`)
-  from `@coss/email/testing`, `FakeTrackingHostnameProvider({ state })` from `@coss/email`. Real pg-boss tests use their own queue name
+  from `@coss/email/testing`, `FakeTrackingHostnameProvider({ state })` from `@coss/email`. Receiving:
+  `receiveFakeEmail()` + `buildTestMessage()` + `FakeInboundStore` from `@coss/email`, `FakeS3Api` and
+  `sesReceiptNotification()` from `@coss/email/testing`; `createTestApp()` returns its `inbound` runtime. Real pg-boss tests use their own queue name
   (`packages/email/test/dispatch.test.ts`). Rate limits: `memoryLimiter({ overrides })`,
   `testValkeyLimiter()` from `@coss/ratelimit/testing`; `createTestApp({ rateLimiter, clientIp })` (defaults to an
   in-memory limiter per app); tighten limits for a test org with `setRateLimitOverride`. Webhooks: `webhookReceiver()` (local server),
@@ -456,7 +461,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
     `environment_api_key`; metadata is client-writable),
-    `defaultPermissions: API_KEY_PERMISSIONS` (every product: email, domain, webhook, suppression, reputation, billing `read` — backfilled by `0043`, hook — backfilled by `0050`), prefixes
+    `defaultPermissions: API_KEY_PERMISSIONS` (every product: email, domain, webhook, suppression, reputation, billing `read` — backfilled by `0043`, hook — backfilled by `0052`), prefixes
     `coss_live_` / `coss_test_` by environment mode (`API_KEY_PREFIX`), key format `/^coss_(live|test)_[A-Za-z]{64}$/`.
   - Keys are created only by `createEnvironmentApiKey` (server-side, no headers) and authenticated only by
     `authenticateApiKey`; keys without an `environment_api_key` binding fail closed. `authenticateApiKey` never calls
@@ -581,8 +586,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
   `recordOpen`/`recordClick` (from the email's tracking token), `trackingBaseUrlFor` (dispatch; reads domain names
-  across orgs like `authorizeLiveSender`), `reencryptWebhookSecrets` (operator script), `authenticateHookPortalSession` (from the session), and the worker scans `runDueWebhookDeliveries`, `runDueLogDrainDeliveries`, `runDueHookDeliveries`, `parkHeldHookDeliveries`, `runDueHookRecoveries`, the Hooks purges, `recheckDueDomains`,
-  `recheckDueTrackingDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `runDueOrganizationDeletions`, `EmailService.dispatchDue`
+  across orgs like `authorizeLiveSender`), `receiveEmail`/`routeRecipients` (receiving; from the envelope recipients), `reencryptWebhookSecrets` (operator script), `authenticateHookPortalSession` (from the session), and the worker scans `runDueWebhookDeliveries`, `runDueLogDrainDeliveries`, `runDueHookDeliveries`, `parkHeldHookDeliveries`, `runDueHookRecoveries`, the Hooks purges, `recheckDueDomains`,
+  `recheckDueTrackingDomains`, `recheckDueReceivingDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `runDueOrganizationDeletions`, `EmailService.dispatchDue`
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
@@ -628,6 +633,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `FLUSH*`/`KEYS` (tests use random prefixes). Valkey time (`TIME`) is the clock, not the app's. API key buckets run
   after `requireApiKey` (a bad key spends no route bucket); key and aggregate-IP authentication buckets run before
   every database lookup, and `api.auth_failure` adds a client-IP penalty for bad keys. Send quotas are charged before `emailService.send` and refunded on replays and thrown errors.
+  The worker charges `email.inbound.day` (per org, one per environment a message reaches) and **fails open** on
+  purpose: a Valkey outage must never lose customer mail.
   Client IPs come only from `clientIpResolver` (`CLIENT_IP_HEADER`, rightmost-trusted `x-forwarded-for` entry) —
   never trust a raw header. Emails are hashed into keys. Better Auth's built-in limiter stays off
   (`rateLimit: { enabled: false }`): `apps/web/src/lib/auth-rate-limit.ts` wraps the `/api/auth` POST handler. The
@@ -784,7 +791,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - **Data retention** (`@coss/retention`): `RETENTION_DAYS` / `RETENTION_POLICY` are the only source of retention
   periods — the docs page (`/docs/data-retention`, `<RetentionTable />`/`<RetentionPeriod of>` MDX components, also
   rendered into `/llms*.txt`) and the dashboard's settings card render them, and each owning package's purge
-  enforces them: `purgeExpiredEmails`/`purgeEmptyEmailBatches`/`purgeExpiredReputationRollups` (`@coss/email`),
+  enforces them: `purgeExpiredEmails`/`purgeEmptyEmailBatches`/`purgeExpiredReputationRollups`/
+  `purgeExpiredReceivedEmails`/`purgeExpiredFakeInboundObjects`/`purgeExpiredInboundDropCounters` (`@coss/email`;
+  received content in S3 expires by the bucket's lifecycle rule, retention + 1 day),
   `purgeExpiredWebhookMessages` (`@coss/webhooks`), `purgeExpiredScreenings` (`@coss/screening`),
   `purgeExpiredReputationNotifications`/`purgeExpiredReputationEvents` (`@coss/reputation`),
   `purgeExpiredRiskPersonalData`/`purgeExpiredRiskMemory`/`purgeExpiredRiskAssessments` (`@coss/risk`),
@@ -801,6 +810,34 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   Email retention must exceed the reputation window (≤ 30 days) and rollup recounts (31 days) — a test checks it. A
   new table either gets a catalog entry + purge or is covered by an existing "while your account exists" rule; changing
   a period changes the published policy, so treat it like a terms change.
+- **Receiving email** (`packages/email/src/{inbound,inbound-mime,inbound-store,inbound-address,received-emails,receiving-domains}.ts`,
+  `ses/inbound.ts`; tables `received_email` (ids `rcvd_`), `received_email_attachment` (`rcvdatt_`),
+  `receiving_domain` (`rdom_`), `environment_inbound_address`, `inbound_drop_counter`, `inbound_fake_object`):
+  SES has one catch-all receipt rule (`ses:bootstrap --managed-domain`: spam/virus scan, S3 action to `landing/` +
+  SNS → the `<name>-inbound` queue), so it accepts mail for every verified domain of the account and the worker
+  routes (`receiveEmail`, the `ses-inbound` loop). Route by the **envelope** recipients (`receipt.recipients`, never
+  `mail.destination`): `<label>.<INBOUND_MANAGED_DOMAIN>` → its environment; a `receiving_domain.hostname` (exact
+  match) → its environment while the parent domain is `verified`/`temporary_failure` **and still the most specific
+  non-failed domain** across orgs (re-checked on every message). Unroutable recipients are dropped silently (no
+  backscatter); organizations pending deletion receive nothing; suspended ones still receive (webhooks held). One
+  row per environment with **only its recipients** — copies of a shared message drop SES's `X-SES-RECEIPT`/
+  `X-SES-DKIM-SIGNATURE` headers and other environments' `Received: … for <addr>` clauses (`scrubEnvelopeHeaders`),
+  so Bcc'd addresses never leak across tenants. Content goes to the `InboundContentStore` first
+  (`orgs/<org>/<env>/<id>/raw.eml`, `…/att/<attachment id>`), then the row, attachments, a log line (source `email`,
+  type `email.received`) and the `email.received` webhook in one transaction; `(environment, provider, provider
+  message id)` is unique, so redelivered notifications record once (written content is deleted again). A virus
+  verdict stores a `blocked` row (envelope, sender, subject, verdicts; no content, no webhook); spam and auth
+  failures are stored and flagged. The `email.received` payload is metadata only (no bodies, headers or cc).
+  `received_email.text`/`html` are cut at 2 MB and headers at 64 KB (`truncated`); the raw message is whole. The
+  dashboard previews received HTML with `INBOUND_PREVIEW_HEAD` (`img-src data:` only — no remote images, they are
+  tracking pixels) and serves raw/attachment downloads as `attachment` + `nosniff` + `CSP: sandbox`; the API
+  serves attachments as `application/octet-stream`. Reads need `email:read`; deleting (`DELETE
+  /v1/received_emails/{id}`, content too) `receivedEmail:delete` (owners, admins, every key; backfilled by `0049`).
+  Receiving domains: one per domain, the domain or a subdomain, never its `send.` MAIL FROM subdomain, its tracking
+  hostname or the managed domain; API `POST`/`DELETE /v1/domains/{id}/receiving` (the key's environment receives),
+  `Domain.receiving`. The managed domain's SES identity is tagged `coss_inbound`, never `coss_managed` (the apps'
+  IAM policies may delete those). The dashboard's **Send a test email** (`receiveFakeEmail`) is for sandbox
+  environments, or any while the dashboard runs the fake provider, and only to the environment's own addresses.
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout for COSS's own webhooks and log drains, 15 s for Hooks; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -836,7 +873,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   with customer-defined types, kept apart from COSS's own `webhook_*` tables (which render through `@coss/versioning`)
   on the shared delivery engine. Every function takes `organizationId` (+ the environment or application); the API
   addresses applications by id **or** `uid` (`requireHookApplication`). `hook_message`/`hook_delivery`/`hook_attempt`
-  are partitioned by UTC day of the **message** (migrations 0048/0049) with **no default partition** (expired days
+  are partitioned by UTC day of the **message** (migrations 0050/0051) with **no default partition** (expired days
   are detached `CONCURRENTLY`; `migrate.ts`, the test preload and the worker keep days ahead): nothing has an FK into
   them, they have none to applications or endpoints (deleting one must never cascade into millions of rows; a
   delivery to a missing endpoint fails at its attempt) and none to `environment` either (dropping a partition that
@@ -903,7 +940,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   Requests are logged only when attributable (a valid key; refusals for permissions/suspension included via
   `attemptedAuth`); `/health`, `/openapi.json`, `/t/*`, preflights and `GET /v1/logs*` are not. Bodies are kept only
   through `redactBody` (secret-named keys, base64 `content` replaced, strings cut at 2 KB, 16 KB overall) and headers
-  through the allow-lists in `redact.ts` — never `Authorization`, cookies or attachment bytes. Reads are scoped by
+  through the allow-lists in `redact.ts` — never `Authorization`, cookies or attachment bytes. Successful
+  `/v1/received_emails*` responses keep no body at all (`CONTENT_RESPONSES` in `request-log.ts`): third-party mail
+  must not be copied into logs and drains, where it would outlive deleting the email. Reads are scoped by
   organization + environment and always bounded in time (partition pruning; the API allows ≤ 31 days). Facet counts
   ignore their own filter. Retention: the worker's `logs` loop keeps 7 days of partitions ahead and drops expired ones
   (`LOG_RETENTION_DAYS`); the default partition catches the rest. Search syntax lives in `@coss/logs/query`
@@ -978,8 +1017,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   worker's `organization-deletions` loop (`runDueOrganizationDeletions`, leased, 1 → 60 min backoff, never gives up)
   claims one request at a time, heartbeats during provider cleanup and renews under a claim row lock for every
   data batch (attempt-count ownership checks fence out stale workers). It repeats the revocation, calls `releaseProviderResources` (`releaseOrganizationEmailResources`: domains to
-  `deleting`, tracking hostnames, identities, domain rows, then the SES tenant via `DeleteTenant`, prefix-checked), deletes bulky data
-  (including SCIM directory records, environment logs, log drain records/batches and the org audit log) in batches of `DELETION_BATCH_SIZE` along indexed columns, then deletes the organization row
+  `deleting`, the received emails' content store (`orgs/<org>/` in S3), tracking hostnames, identities, domain rows, then the SES tenant via `DeleteTenant`, prefix-checked), deletes bulky data
+  (including SCIM directory records, environment logs, received emails, log drain records/batches and the org audit log) in batches of `DELETION_BATCH_SIZE` along indexed columns, then deletes the organization row
   (cascading the rest) and marks the row `completed` in one transaction. A new table with a lot of rows per
   organization belongs in `deleteOrganizationData`; anything held outside Postgres (a new provider resource)
   belongs in `releaseProviderResources`. Admin audit events are kept (no FKs).
@@ -1093,6 +1132,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   are org-owned) — suspend the organization. Suspension does not pause the SES tenant itself;
   already-queued immediate sends finish, while scheduled sends wait for the suspension to be lifted.
 
+- Receiving is SES-region bound (SES receiving regions only) and accepts any mail for a verified domain of the
+  account, then drops what doesn't route (no SMTP-time rejection, no bounces). Over an organization's daily inbound
+  limit mail is dropped and only counted. Received `cid:` inline images don't render in the dashboard preview.
+  Content written for a message whose row never committed (a crash in between) stays until the lifecycle rule.
 - Account emails go to unverified addresses by design (sign-up verification, invitations) from COSS's own
   organization, so bounces from made-up sign-up addresses count against that organization's reputation like any
   customer's — but the worker never suspends it on its own (`systemOrganizationId`: the guard only warns it and a
@@ -1117,7 +1160,7 @@ would drop an org's SSO provider or last owner), email change, npm publishing of
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys, self-serve add-ons (none is named yet), an automatic direct-debit policy (only per-account
 required payment methods), multi-currency, metering for SMS/video/scheduling (their meters
 and rates exist; the products don't), the Hooks portal's deployment (it needs a registered domain: `apps/portal`
-exists, the production spec doesn't list it yet), worker access to Valkey (Hooks delivery limits count per task), and
+exists, the production spec doesn't list it yet), and
 these Hooks features: channels, payload transformations, custom endpoint headers, sending one message to several
 applications, strict ordering, portal custom domains, per-destination rate-limit overrides, Hooks attempts in
 environment logs and log drains.

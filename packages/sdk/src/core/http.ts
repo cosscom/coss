@@ -38,8 +38,11 @@ export interface ApiRequest {
   query?: Record<string, string | number | undefined>;
   /** Serialized as JSON. */
   body?: unknown;
-  /** `text` returns the raw body of a successful response (e.g. CSV) instead of parsing JSON. */
-  responseType?: "json" | "text";
+  /**
+   * `text` returns the raw body of a successful response (e.g. CSV) instead of parsing JSON;
+   * `bytes` returns it as a `Uint8Array` (a received email's raw message, an attachment).
+   */
+  responseType?: "json" | "text" | "bytes";
   idempotencyKey?: string;
   signal?: AbortSignal;
 }
@@ -136,7 +139,10 @@ export class HttpClient {
     const search = query.toString();
     if (search) url += `?${search}`;
     const headers: Record<string, string> = {
-      Accept: request.responseType === "text" ? "*/*" : "application/json",
+      Accept:
+        request.responseType === "text" || request.responseType === "bytes"
+          ? "*/*"
+          : "application/json",
       Authorization: `Bearer ${this.#apiKey}`,
       "User-Agent": `coss-typescript/${VERSION}`,
       "Coss-Version": this.#apiVersion,
@@ -183,10 +189,17 @@ export class HttpClient {
 
     let response: Response;
     let text: string;
+    let bytes: Uint8Array | null = null;
     try {
       response = await this.#fetch(url, { ...init, signal });
       // Read the body inside the try: the timeout and the caller's signal cover it too.
-      text = await response.text();
+      if (responseType === "bytes") {
+        bytes = new Uint8Array(await response.arrayBuffer());
+        // Only an error's body (the JSON envelope) is read as text.
+        text = response.ok ? "" : new TextDecoder().decode(bytes);
+      } else {
+        text = await response.text();
+      }
     } catch (cause) {
       // Check the caller first: an abort is final, while timeouts and network errors are retried.
       if (callerSignal?.aborted) {
@@ -213,6 +226,9 @@ export class HttpClient {
     }
     if (responseType === "text") {
       return { result: { data: text as T, error: null }, retry: false, retryAfterMs: null };
+    }
+    if (responseType === "bytes") {
+      return { result: { data: bytes as T, error: null }, retry: false, retryAfterMs: null };
     }
     try {
       return {

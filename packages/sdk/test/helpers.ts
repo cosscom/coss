@@ -134,6 +134,7 @@ export const sampleDomain: Domain = {
   verified_at: null,
   failed_at: null,
   tracking: null,
+  receiving: null,
 };
 
 export const sampleEndpoint: WebhookEndpoint = {

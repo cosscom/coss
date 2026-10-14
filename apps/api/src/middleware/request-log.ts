@@ -30,6 +30,18 @@ function skipped(method: string, path: string): boolean {
   );
 }
 
+/**
+ * Responses carrying customer content the log must not copy: received emails (bodies, headers,
+ * attachments of third-party mail). Logged lines would outlive deleting the email, and every
+ * member reads the environment's log and its drains. Error envelopes are still kept.
+ */
+const CONTENT_RESPONSES = ["/v1/received_emails"];
+
+function keepsResponseBody(path: string, status: number): boolean {
+  if (status >= 400) return true;
+  return !CONTENT_RESPONSES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
 type ErrorEnvelope = { error?: { type?: unknown; code?: unknown } };
 
 /** The resource a request is about: the returned object, else the id in the path. */
@@ -116,7 +128,11 @@ export function requestLog(writer: LogWriter) {
     const requestText = c.req.bodyCache.text as Promise<string> | undefined;
     const length = Number(response.headers.get("content-length") ?? Number.NaN);
     const responseCopy =
-      isJson(response.headers) && !(length > MAX_LOGGED_RESPONSE_BYTES) ? response.clone() : null;
+      isJson(response.headers) &&
+      !(length > MAX_LOGGED_RESPONSE_BYTES) &&
+      keepsResponseBody(path, status)
+        ? response.clone()
+        : null;
     const requestHeaders = loggedRequestHeaders(c.req.raw.headers);
     const responseHeaders = loggedResponseHeaders(response.headers);
     const { requestId, clientIp } = c.var;

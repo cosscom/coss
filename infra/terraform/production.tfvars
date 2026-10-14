@@ -95,6 +95,9 @@ plain_env = {
     SES_CONFIGURATION_SET    = "coss"
     SES_TENANT_PREFIX        = "coss"
     SES_EVENTS_QUEUE_URL     = "https://sqs.us-east-2.amazonaws.com/294417174674/coss-events"
+    # The daily inbound limit per organization is counted in Valkey (VALKEY_URL is in the secret).
+    VALKEY_CLUSTER           = "true"
+    RATE_LIMIT_KEY_PREFIX    = "coss"
     TRACKING_DOMAIN_PROVIDER = "cloudflare"
     CLOUDFLARE_ZONE_ID       = "2e3adbb52b68d57dfa5d71a0b7cfa3cc"
     TRACKING_CNAME_TARGET    = "track.cosslinks.com"

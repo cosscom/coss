@@ -17,7 +17,7 @@ export interface SqsApi {
 
 export const RECEIVE_BATCH = 10;
 
-export function createSqsApi(region: string, queueUrl: string): SqsApi {
+export function createSqsApi(region: string, queueUrl: string, label = "ses-events"): SqsApi {
   const client = new SQSClient({ region });
   return {
     async receive(signal) {
@@ -44,7 +44,7 @@ export function createSqsApi(region: string, queueUrl: string): SqsApi {
         }),
       );
       for (const failure of Failed) {
-        console.error(`[worker:ses-events] could not delete ${failure.Id}: ${failure.Message}`);
+        console.error(`[worker:${label}] could not delete ${failure.Id}: ${failure.Message}`);
       }
     },
   };

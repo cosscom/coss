@@ -25,6 +25,7 @@ const {
   hookDelivery,
   hookMessage,
   hookPortalSession,
+  inboundFakeObject,
   invitation,
   logEntry,
   logDrain,
@@ -39,6 +40,7 @@ const {
   riskReport,
   organizationDeletion,
   organizationSuspension,
+  receivedEmail,
   scimConnectionBinding,
   scimGroup,
   scimIdentityTombstone,
@@ -361,8 +363,8 @@ async function deletePartitionedInBatches(
 
 /**
  * Deletes the organization's bulky data (emails with their recipients, events, attachments and
- * links; webhook messages with their deliveries; Hooks messages, deliveries and attempts;
- * suppressions; screenings) in batches, one
+ * links; received emails; webhook messages with their deliveries; Hooks messages, deliveries and
+ * attempts; suppressions; screenings) in batches, one
  * environment at a time, along indexed columns. Everything else is small and goes with the
  * organization row. Returns false when `signal` aborted first.
  */
@@ -430,6 +432,14 @@ async function deleteOrganizationData(
         email,
         email.id,
         and(eq(email.environmentId, environmentId), eq(email.organizationId, organizationId)),
+      ],
+      [
+        receivedEmail,
+        receivedEmail.id,
+        and(
+          eq(receivedEmail.environmentId, environmentId),
+          eq(receivedEmail.organizationId, organizationId),
+        ),
       ],
       [
         emailBatch,
@@ -529,6 +539,18 @@ async function deleteOrganizationData(
       orgAuditEvent,
       orgAuditEvent.id,
       eq(orgAuditEvent.organizationId, organizationId),
+      batchSize,
+      signal,
+    ))
+  )
+    return false;
+  // The fake provider's received email content (S3 content goes in `releaseProviderResources`).
+  if (
+    !(await deleteInBatches(
+      deletion,
+      inboundFakeObject,
+      inboundFakeObject.key,
+      eq(inboundFakeObject.organizationId, organizationId),
       batchSize,
       signal,
     ))

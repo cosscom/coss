@@ -78,6 +78,31 @@ export interface TrackingDomain {
   failed_at: string | null;
 }
 
+/** The MX record a receiving domain needs, with the result of the last check. */
+export interface ReceivingDomainRecord {
+  type: "MX";
+  /** The fully qualified record name to create. */
+  name: string;
+  /** The mail exchange the record must point at. */
+  value: string;
+  priority: number;
+  /** `verified` once the most preferred MX records point at COSS. */
+  status: DomainRecordStatus;
+  /** What DNS returned when it did not match. */
+  found: string[];
+}
+
+/** A domain's receiving hostname: email to any address at it is received by `environment_id`. */
+export interface ReceivingDomain {
+  /** The domain itself or a subdomain of it (e.g. `inbound.acme.com`). */
+  hostname: string;
+  environment_id: string;
+  record: ReceivingDomainRecord;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  last_checked_at: string | null;
+}
+
 /** A sending domain of the organization. */
 export interface Domain {
   object: "domain";
@@ -100,6 +125,8 @@ export interface Domain {
   failed_at: string | null;
   /** The custom tracking domain, or `null` when none is set up. */
   tracking: TrackingDomain | null;
+  /** The receiving hostname, or `null` when the domain doesn't receive email. */
+  receiving: ReceivingDomain | null;
 }
 
 /** Body of `POST /v1/domains`. */
@@ -121,5 +148,11 @@ export interface DeletedDomain {
 /** Body of `POST /v1/domains/{id}/tracking`. */
 export interface CreateTrackingDomainParams {
   /** A subdomain of the domain to serve tracking links from (`"links.acme.com"`). */
+  hostname: string;
+}
+
+/** Body of `POST /v1/domains/{id}/receiving`. */
+export interface CreateReceivingDomainParams {
+  /** The domain itself or a subdomain of it (`"inbound.acme.com"`). */
   hostname: string;
 }

@@ -4,6 +4,17 @@
  *   SES configuration set ──events──▶ SNS topic ──raw──▶ SQS queue (+ dead-letter queue) ◀── worker
  *   EventBridge rule (tenant sending status) ─────────────▶ same queue
  *
+ * and, with `--managed-domain` (receiving):
+ *
+ *   SES receipt rule set (catch-all, spam/virus scan) ──S3 action──▶ bucket `landing/`
+ *        └──notification──▶ SNS topic ──raw──▶ SQS inbound queue (+ dead-letter queue) ◀── worker
+ *
+ * The worker copies each received message to `orgs/<org>/…` and deletes the landing object; the
+ * bucket's lifecycle rule expires both (received email retention + 1 day, landing after 21 days).
+ * An account/region has one *active* receipt rule set: a different active one is only replaced
+ * with `--replace-active-rule-set`. The managed domain's SES identity is printed with the DNS
+ * records to publish (DKIM, and MX for the domain and `*.` its subdomains).
+ *
  * plus least-privilege IAM policies for the api, dashboard and worker (`<name>-api`, …, under the
  * `/coss/` path) and, with `--alert-email`, CloudWatch alarms on the queues sent to that address.
  * Tenants, domain identities and their associations are created by the app at runtime. COSS keeps
@@ -12,8 +23,9 @@
  * On upgrades, pause sends/domain changes and drain events before running (see README).
  *
  *   AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss] [--alert-email ops@…]
+ *     [--managed-domain inbound.coss.com [--replace-active-rule-set]]
  *
- * Needs credentials allowed to manage SES, SNS, SQS and EventBridge (the default AWS credential
+ * Needs credentials allowed to manage SES, SNS, SQS, EventBridge and S3 (the default AWS credential
  * chain: env vars, profile or role). Prints the env vars the apps need. Use one AWS account (or at
  * least one region) per deployment stage: SES identities are account-wide.
  */
@@ -35,9 +47,28 @@ import {
   ListPolicyVersionsCommand,
 } from "@aws-sdk/client-iam";
 import {
+  CreateBucketCommand,
+  PutBucketEncryptionCommand,
+  PutBucketLifecycleConfigurationCommand,
+  PutBucketPolicyCommand,
+  PutPublicAccessBlockCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import {
+  CreateReceiptRuleCommand,
+  CreateReceiptRuleSetCommand,
+  DescribeActiveReceiptRuleSetCommand,
+  type ReceiptRule,
+  SESClient,
+  SetActiveReceiptRuleSetCommand,
+  UpdateReceiptRuleCommand,
+} from "@aws-sdk/client-ses";
+import {
   CreateConfigurationSetCommand,
   CreateConfigurationSetEventDestinationCommand,
+  CreateEmailIdentityCommand,
   type EventDestinationDefinition,
+  GetEmailIdentityCommand,
   PutConfigurationSetReputationOptionsCommand,
   SESv2Client,
   UpdateConfigurationSetEventDestinationCommand,
@@ -57,6 +88,9 @@ import {
 } from "@aws-sdk/client-sqs";
 import { closeDb } from "@coss/db";
 import { SES_TENANT_PREFIX_PATTERN } from "@coss/email/env";
+import { sesInboundMxHost } from "@coss/email/runtime";
+import { LANDING_PREFIX } from "@coss/email/ses";
+import { RETENTION_DAYS } from "@coss/retention";
 import { cossPolicies, type PolicyDocument } from "./ses-policies.ts";
 import { migrateSesSuppressions } from "./ses-suppression-migration.ts";
 
@@ -77,6 +111,8 @@ const { values } = parseArgs({
     name: { type: "string", default: process.env.SES_CONFIGURATION_SET ?? "coss" },
     "tenant-prefix": { type: "string", default: process.env.SES_TENANT_PREFIX ?? "coss" },
     "alert-email": { type: "string" },
+    "managed-domain": { type: "string" },
+    "replace-active-rule-set": { type: "boolean", default: false },
   },
 });
 const region = process.env.AWS_REGION;
@@ -88,7 +124,17 @@ if (!SES_TENANT_PREFIX_PATTERN.test(tenantPrefix)) {
   throw new Error(`Invalid --tenant-prefix "${tenantPrefix}" (1-32 of A-Z a-z 0-9 _ -).`);
 }
 
+const managedDomain = values["managed-domain"]?.trim().toLowerCase().replace(/\.$/, "");
+if (
+  managedDomain !== undefined &&
+  !/^(?!-)[a-z0-9-]{1,63}(\.(?!-)[a-z0-9-]{1,63})+$/.test(managedDomain)
+) {
+  throw new Error(`Invalid --managed-domain "${managedDomain}".`);
+}
+
 const ses = new SESv2Client({ region });
+const sesClassic = new SESClient({ region });
+const s3 = new S3Client({ region });
 const sns = new SNSClient({ region });
 const sqs = new SQSClient({ region });
 const events = new EventBridgeClient({ region });
@@ -278,6 +324,245 @@ try {
 }
 step(`SES configuration set ${name} → ${EVENT_TYPES.join(", ")}`);
 
+// 5b. Receiving: bucket → topic → queues → receipt rule set (only with --managed-domain).
+const INBOUND_RULE = "catch-all";
+const inbound = managedDomain ? await ensureReceiving(managedDomain, region) : null;
+
+async function ensureReceiving(domain: string, region: string) {
+  // S3 bucket names are global, lower-case and without underscores.
+  const bucket = `${name.toLowerCase().replaceAll("_", "-")}-inbound-${account}`;
+  const ruleSet = `${name}-inbound`;
+  const ruleArn = `arn:aws:ses:${region}:${account}:receipt-rule-set/${ruleSet}:receipt-rule/${INBOUND_RULE}`;
+  try {
+    await s3.send(
+      new CreateBucketCommand({
+        Bucket: bucket,
+        ...(region === "us-east-1"
+          ? {}
+          : { CreateBucketConfiguration: { LocationConstraint: region as never } }),
+      }),
+    );
+  } catch (error) {
+    if (!isNamed(error, "BucketAlreadyOwnedByYou")) throw error;
+  }
+  await s3.send(
+    new PutPublicAccessBlockCommand({
+      Bucket: bucket,
+      PublicAccessBlockConfiguration: {
+        BlockPublicAcls: true,
+        IgnorePublicAcls: true,
+        BlockPublicPolicy: true,
+        RestrictPublicBuckets: true,
+      },
+    }),
+  );
+  await s3.send(
+    new PutBucketEncryptionCommand({
+      Bucket: bucket,
+      ServerSideEncryptionConfiguration: {
+        Rules: [{ ApplyServerSideEncryptionByDefault: { SSEAlgorithm: "AES256" } }],
+      },
+    }),
+  );
+  await s3.send(
+    new PutBucketPolicyCommand({
+      Bucket: bucket,
+      Policy: JSON.stringify({
+        Version: "2012-10-17",
+        Statement: [
+          {
+            Sid: "SesWritesReceivedMessages",
+            Effect: "Allow",
+            Principal: { Service: "ses.amazonaws.com" },
+            Action: "s3:PutObject",
+            Resource: `arn:aws:s3:::${bucket}/${LANDING_PREFIX}*`,
+            Condition: {
+              StringEquals: { "AWS:SourceAccount": account },
+              ArnLike: { "AWS:SourceArn": ruleArn },
+            },
+          },
+          {
+            Sid: "TlsOnly",
+            Effect: "Deny",
+            Principal: "*",
+            Action: "s3:*",
+            Resource: [`arn:aws:s3:::${bucket}`, `arn:aws:s3:::${bucket}/*`],
+            Condition: { Bool: { "aws:SecureTransport": "false" } },
+          },
+        ],
+      }),
+    }),
+  );
+  // Landing objects outlive the dead-letter queue (14 days), so a redriven notification still
+  // finds its message; content outlives its row by a day (the worker's retention purge).
+  await s3.send(
+    new PutBucketLifecycleConfigurationCommand({
+      Bucket: bucket,
+      LifecycleConfiguration: {
+        Rules: [
+          {
+            ID: "expire-landing",
+            Status: "Enabled",
+            Filter: { Prefix: LANDING_PREFIX },
+            Expiration: { Days: 21 },
+          },
+          {
+            ID: "expire-received-emails",
+            Status: "Enabled",
+            Filter: { Prefix: "orgs/" },
+            Expiration: { Days: RETENTION_DAYS.receivedEmails + 1 },
+          },
+        ],
+      },
+    }),
+  );
+  step(
+    `S3 bucket ${bucket} (private, encrypted, lifecycle ${RETENTION_DAYS.receivedEmails + 1} days)`,
+  );
+
+  const { TopicArn: inboundTopicArn } = await sns.send(
+    new CreateTopicCommand({ Name: `${name}-ses-inbound` }),
+  );
+  if (!inboundTopicArn) throw new Error("CreateTopic returned no ARN.");
+  await sns.send(
+    new SetTopicAttributesCommand({
+      TopicArn: inboundTopicArn,
+      AttributeName: "Policy",
+      AttributeValue: JSON.stringify({
+        Version: "2012-10-17",
+        Statement: [
+          {
+            Sid: "SesPublishesReceipts",
+            Effect: "Allow",
+            Principal: { Service: "ses.amazonaws.com" },
+            Action: "sns:Publish",
+            Resource: inboundTopicArn,
+            Condition: {
+              StringEquals: { "AWS:SourceAccount": account },
+              ArnLike: { "AWS:SourceArn": ruleArn },
+            },
+          },
+        ],
+      }),
+    }),
+  );
+  const inboundDlq = await ensureQueue(`${name}-inbound-dlq`);
+  const inboundQueue = await ensureQueue(`${name}-inbound`);
+  await sqs.send(
+    new SetQueueAttributesCommand({
+      QueueUrl: inboundDlq.url,
+      Attributes: {
+        MessageRetentionPeriod: String(14 * DAY_SECONDS),
+        SqsManagedSseEnabled: "true",
+      },
+    }),
+  );
+  await sqs.send(
+    new SetQueueAttributesCommand({
+      QueueUrl: inboundQueue.url,
+      Attributes: {
+        MessageRetentionPeriod: String(4 * DAY_SECONDS),
+        // A message can be 40 MB: parsing and storing it takes longer than an event.
+        VisibilityTimeout: "300",
+        ReceiveMessageWaitTimeSeconds: "20",
+        SqsManagedSseEnabled: "true",
+        RedrivePolicy: JSON.stringify({ deadLetterTargetArn: inboundDlq.arn, maxReceiveCount: 5 }),
+        Policy: JSON.stringify({
+          Version: "2012-10-17",
+          Statement: [
+            {
+              Sid: "SnsDeliversReceipts",
+              Effect: "Allow",
+              Principal: { Service: "sns.amazonaws.com" },
+              Action: "sqs:SendMessage",
+              Resource: inboundQueue.arn,
+              Condition: { ArnEquals: { "aws:SourceArn": inboundTopicArn } },
+            },
+          ],
+        }),
+      },
+    }),
+  );
+  await sns.send(
+    new SubscribeCommand({
+      TopicArn: inboundTopicArn,
+      Protocol: "sqs",
+      Endpoint: inboundQueue.arn,
+      Attributes: { RawMessageDelivery: "true" },
+      ReturnSubscriptionArn: true,
+    }),
+  );
+  step(`SQS inbound queue ${inboundQueue.url} (dead letters: ${inboundDlq.url})`);
+
+  // One catch-all rule: SES receives for every verified domain of the account, and the worker
+  // routes by envelope recipient (unrouted mail is dropped there, never bounced).
+  try {
+    await sesClassic.send(new CreateReceiptRuleSetCommand({ RuleSetName: ruleSet }));
+  } catch (error) {
+    if (!isNamed(error, "AlreadyExistsException", "AlreadyExists")) throw error;
+  }
+  const rule: ReceiptRule = {
+    Name: INBOUND_RULE,
+    Enabled: true,
+    ScanEnabled: true,
+    TlsPolicy: "Optional",
+    Actions: [
+      {
+        S3Action: {
+          BucketName: bucket,
+          ObjectKeyPrefix: LANDING_PREFIX,
+          TopicArn: inboundTopicArn,
+        },
+      },
+    ],
+  };
+  try {
+    await sesClassic.send(new CreateReceiptRuleCommand({ RuleSetName: ruleSet, Rule: rule }));
+  } catch (error) {
+    if (!isNamed(error, "AlreadyExistsException", "AlreadyExists")) throw error;
+    await sesClassic.send(new UpdateReceiptRuleCommand({ RuleSetName: ruleSet, Rule: rule }));
+  }
+  const active = (await sesClassic.send(new DescribeActiveReceiptRuleSetCommand({}))).Metadata
+    ?.Name;
+  if (active && active !== ruleSet && !values["replace-active-rule-set"]) {
+    throw new Error(
+      `The active receipt rule set of ${region} is "${active}", not "${ruleSet}". Only one can be ` +
+        "active: rerun with --replace-active-rule-set to switch (mail its rules handle stops).",
+    );
+  }
+  if (active !== ruleSet) {
+    await sesClassic.send(new SetActiveReceiptRuleSetCommand({ RuleSetName: ruleSet }));
+  }
+  step(
+    `SES receipt rule set ${ruleSet} (active, rule ${INBOUND_RULE}: scan, S3 ${LANDING_PREFIX})`,
+  );
+
+  // The managed domain is COSS's own identity: tagged so the apps' policies can't delete it.
+  let dkimTokens: string[] = [];
+  try {
+    const created = await ses.send(
+      new CreateEmailIdentityCommand({
+        EmailIdentity: domain,
+        Tags: [{ Key: "coss_inbound", Value: name }],
+      }),
+    );
+    dkimTokens = created.DkimAttributes?.Tokens ?? [];
+  } catch (error) {
+    if (!isNamed(error, "AlreadyExistsException")) throw error;
+    const existing = await ses.send(new GetEmailIdentityCommand({ EmailIdentity: domain }));
+    dkimTokens = existing.DkimAttributes?.Tokens ?? [];
+  }
+  step(`SES identity ${domain} (managed inbound domain)`);
+  return {
+    bucket,
+    queueUrl: inboundQueue.url,
+    queueArn: inboundQueue.arn,
+    domain,
+    dkimTokens,
+    mxHost: sesInboundMxHost(region),
+  };
+}
+
 // 6. Commit historical protection to COSS before disabling any SES lists.
 let tenantsUpdated: number;
 try {
@@ -330,7 +615,14 @@ async function ensurePolicy(policyName: string, document: PolicyDocument): Promi
   );
   return `${arn} (updated)`;
 }
-const policies = cossPolicies({ region, account, name, tenantPrefix, queueArn: queue.arn });
+const policies = cossPolicies({
+  region,
+  account,
+  name,
+  tenantPrefix,
+  queueArn: queue.arn,
+  ...(inbound ? { inbound: { bucket: inbound.bucket, queueArn: inbound.queueArn } } : {}),
+});
 for (const [app, document] of Object.entries(policies)) {
   step(`IAM policy for the ${app}: ${await ensurePolicy(`${name}-${app}`, document)}`);
 }
@@ -391,6 +683,36 @@ if (alertEmail) {
     ComparisonOperator: "GreaterThanThreshold",
   });
   step(`Alarms ${name}-events-dead-letters, ${name}-events-backlog → ${alertEmail}`);
+  if (inbound) {
+    await alarm({
+      AlarmName: `${name}-inbound-dead-letters`,
+      AlarmDescription:
+        "COSS: received emails failed to be recorded 5 times and were dead-lettered (their raw " +
+        `messages stay in landing/ for 21 days). Inspect ${name}-inbound-dlq, fix the cause, then ` +
+        `redrive the messages to ${name}-inbound.`,
+      MetricName: "ApproximateNumberOfMessagesVisible",
+      Dimensions: [{ Name: "QueueName", Value: `${name}-inbound-dlq` }],
+      Statistic: "Maximum",
+      Period: 300,
+      EvaluationPeriods: 1,
+      Threshold: 0,
+      ComparisonOperator: "GreaterThanThreshold",
+    });
+    await alarm({
+      AlarmName: `${name}-inbound-backlog`,
+      AlarmDescription:
+        `COSS: the oldest receipt in ${name}-inbound is over 15 minutes old; the worker is not ` +
+        "consuming it. Received emails and their webhooks are delayed.",
+      MetricName: "ApproximateAgeOfOldestMessage",
+      Dimensions: [{ Name: "QueueName", Value: `${name}-inbound` }],
+      Statistic: "Maximum",
+      Period: 300,
+      EvaluationPeriods: 2,
+      Threshold: 900,
+      ComparisonOperator: "GreaterThanThreshold",
+    });
+    step(`Alarms ${name}-inbound-dead-letters, ${name}-inbound-backlog → ${alertEmail}`);
+  }
 }
 
 console.info(
@@ -403,6 +725,21 @@ console.info(
     `SES_CONFIGURATION_SET=${name}`,
     `SES_TENANT_PREFIX=${tenantPrefix}`,
     `SES_EVENTS_QUEUE_URL=${queue.url}`,
+    ...(inbound
+      ? [
+          `INBOUND_MANAGED_DOMAIN=${inbound.domain}`,
+          `SES_INBOUND_BUCKET=${inbound.bucket}`,
+          `SES_INBOUND_QUEUE_URL=${inbound.queueUrl}   (worker only)`,
+          "",
+          `Publish these records for ${inbound.domain} (Cloudflare holds the coss.com zone):`,
+          ...inbound.dkimTokens.map(
+            (token) =>
+              `  CNAME ${token}._domainkey.${inbound.domain} → ${token}.dkim.amazonses.com`,
+          ),
+          `  MX 10 ${inbound.domain} → ${inbound.mxHost}`,
+          `  MX 10 *.${inbound.domain} → ${inbound.mxHost}`,
+        ]
+      : []),
     "",
     `Attach the IAM policies under ${POLICY_PATH}: ${name}-api, ${name}-dashboard, ${name}-worker.`,
     alertEmail

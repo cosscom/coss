@@ -8,6 +8,7 @@ import { createCreditGrant, runDueBillingPeriods } from "@coss/billing";
 import { createTestContract, recordTestUsage } from "@coss/billing/testing";
 import { db } from "@coss/db";
 import { newId } from "@coss/db/id";
+import { buildTestMessage, receiveFakeEmail } from "@coss/email";
 import { createVerifiedDomain, trackingUrls } from "@coss/email/testing";
 import { createLogWriter } from "@coss/logs";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
@@ -630,6 +631,76 @@ describe("coss.domains.tracking against the API", () => {
 
     const removed = await coss.domains.tracking.delete(domain.id);
     expect(removed.data).toMatchObject({ id: domain.id, tracking: null });
+  });
+});
+
+describe("coss.email.received against the API", () => {
+  test("a received email is listed, read, downloaded and deleted through the SDK", async () => {
+    const tenant = await createTestTenant();
+    const { app, inbound } = createTestApp();
+    if (!inbound) throw new Error("no inbound runtime");
+    const coss = clientFor(app, tenant.liveKey);
+    const address = await coss.email.received.address();
+    expect(address.error).toBeNull();
+    const to = `orders@${address.data?.domain}`;
+    const raw = buildTestMessage({
+      from: "jane@example.com",
+      to: [to],
+      subject: "Order 42",
+      text: "Where is it?",
+      attachments: [
+        {
+          filename: "a.bin",
+          contentType: "application/octet-stream",
+          content: new Uint8Array([0, 255, 7]),
+        },
+      ],
+    });
+    await receiveFakeEmail(
+      { raw, mailFrom: "jane@example.com", recipients: [to], subject: "Order 42" },
+      inbound,
+    );
+
+    const list = await coss.email.received.list({ limit: 10 });
+    expect(list.error).toBeNull();
+    const id = list.data?.data[0]?.id ?? "";
+    const email = await coss.email.received.get(id);
+    expect(email.data).toMatchObject({
+      subject: "Order 42",
+      text: "Where is it?",
+      recipients: [to],
+    });
+    const attachmentId = email.data?.attachments[0]?.id ?? "";
+    expect((await coss.email.received.getAttachment(id, attachmentId)).data).toEqual(
+      new Uint8Array([0, 255, 7]),
+    );
+    const message = await coss.email.received.getRaw(id);
+    expect(new TextDecoder().decode(message.data ?? new Uint8Array())).toContain(
+      "Subject: Order 42",
+    );
+
+    expect((await coss.email.received.delete(id)).data).toEqual({
+      object: "received_email",
+      id,
+      deleted: true,
+    });
+    expect((await coss.email.received.getRaw(id)).error).toMatchObject({
+      type: "not_found_error",
+      status: 404,
+    });
+  });
+
+  test("receiving domains are created for the key's environment", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const domain = await createVerifiedDomain(tenant.organization.id);
+    const created = await coss.domains.receiving.create(domain.id, { hostname: domain.name });
+    expect(created.data?.receiving).toMatchObject({
+      hostname: domain.name,
+      environment_id: tenant.development.id,
+    });
+    expect((await coss.domains.receiving.delete(domain.id)).data?.receiving).toBeNull();
   });
 });
 

@@ -1,7 +1,7 @@
 /**
  * Background worker: dispatches queued emails, delivers webhooks, re-checks domains, recovers
  * lost or interrupted sends, sends account and reputation emails and (with `EMAIL_PROVIDER=ses`)
- * ingests SES delivery events. Safe to run several instances.
+ * ingests SES delivery events and received emails. Safe to run several instances.
  */
 // First: monitoring reports failures while starting, too.
 import "./instrument.ts";
@@ -17,6 +17,7 @@ import {
   workEmailDispatchQueue,
 } from "@coss/email/dispatch";
 import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
+import { createS3Api } from "@coss/email/ses";
 import { recordHookDeliveryOutcomes } from "@coss/hooks";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
@@ -26,6 +27,7 @@ import { createWebhookSender, parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
 import { env } from "./env.ts";
 import { hookThrottle } from "./hooks-throttle.ts";
+import { inboundQuota, type SesInboundDeps } from "./inbound.ts";
 import { startJobs, WORKER_LOOP_NAMES } from "./jobs.ts";
 import { monitoredDispatch } from "./monitoring.ts";
 import { createShutdown } from "./shutdown.ts";
@@ -55,6 +57,33 @@ if (config.provider === "ses") {
   sesEvents = {
     sqs: createSqsApi(config.ses.region, env.SES_EVENTS_QUEUE_URL),
     tenantPrefix: config.ses.tenantPrefix,
+  };
+}
+// Rate limits counted in Valkey: receiving's daily inbound limit per organization, and Hooks
+// delivery attempts per endpoint and destination host. Then (SES) the receipt notification queue.
+const rateLimits = createRateLimitRuntime({
+  VALKEY_URL: env.VALKEY_URL,
+  VALKEY_CLUSTER: env.VALKEY_CLUSTER,
+  RATE_LIMIT_KEY_PREFIX: env.RATE_LIMIT_KEY_PREFIX,
+  TRUSTED_PROXY_COUNT: 1,
+});
+await rateLimits.ready();
+let sesInbound: SesInboundDeps | undefined;
+if (config.provider === "ses" && email.inbound && config.inbound?.bucket) {
+  if (!env.SES_INBOUND_QUEUE_URL) {
+    throw new Error(
+      "Receiving with EMAIL_PROVIDER=ses requires SES_INBOUND_QUEUE_URL (see `bun run ses:bootstrap`).",
+    );
+  }
+  sesInbound = {
+    sqs: createSqsApi(config.ses.region, env.SES_INBOUND_QUEUE_URL, "ses-inbound"),
+    s3: createS3Api(config.ses.region),
+    bucket: config.inbound.bucket,
+    inbound: {
+      store: email.inbound.store,
+      managedDomain: email.inbound.managedDomain,
+      quota: inboundQuota(rateLimits.limiter),
+    },
   };
 }
 if (!env.NOTIFICATIONS_ENVIRONMENT_ID !== !env.NOTIFICATIONS_FROM) {
@@ -114,13 +143,6 @@ if (systemEnvironment && env.NOTIFICATIONS_FROM) {
   billingNotifier = null;
 }
 
-// Hooks delivery attempts are rate limited per endpoint and destination host: in Valkey (shared by
-// every worker) when the worker can reach it, else per task in memory.
-const rateLimits = createRateLimitRuntime(env, { production: false });
-if (!env.VALKEY_URL && process.env.NODE_ENV === "production") {
-  console.warn("[worker] VALKEY_URL is unset: Hooks delivery rate limits are counted per task.");
-}
-await rateLimits.ready();
 const secretsKeys = parseSecretsKeys(env.WEBHOOK_SECRETS_KEY);
 // The dashboard accepts local endpoints outside production; let them be reached there too.
 const send = createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" });
@@ -129,6 +151,8 @@ const loops = startJobs({
   systemOrganizationId,
   dispatchQueue,
   sesEvents,
+  inbound: email.inbound,
+  sesInbound,
   signal: controller.signal,
   domains: email.domainDeps,
   email: emailService,

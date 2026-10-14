@@ -1,4 +1,5 @@
 import type { DomainDeps, EmailService } from "@coss/email";
+import type { InboundRuntime } from "@coss/email/runtime";
 import type { RiskDeps } from "@coss/risk";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
@@ -10,6 +11,7 @@ import { createEmailRoutes } from "./emails.ts";
 import { createHookRoutes } from "./hooks/index.ts";
 import { createLogDrainRoutes } from "./log-drains.ts";
 import { createLogRoutes } from "./logs.ts";
+import { createReceivedEmailRoutes } from "./received-emails.ts";
 import { createReputationRoutes } from "./reputation.ts";
 import { createRiskRoutes } from "./risk.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
@@ -22,6 +24,8 @@ export type V1Dependencies = {
   webhookDeps: WebhookManagementDeps;
   /** Where portal session links point (`PORTAL_PUBLIC_URL`); `null`: the portal isn't deployed. */
   portalUrl: string | null;
+  /** Receiving (`EmailRuntime.inbound`); `null` when the deployment doesn't receive email. */
+  inbound: InboundRuntime | null;
   riskDeps: RiskDeps;
 };
 
@@ -29,7 +33,7 @@ export type V1Dependencies = {
 export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   const v1 = new OpenAPIHono<AppEnv>();
   v1.route("/", createEmailRoutes(deps.emailService));
-  v1.route("/", createDomainRoutes(deps.domainDeps));
+  v1.route("/", createDomainRoutes(deps.domainDeps, deps.inbound));
   v1.route("/", createWebhookEndpointRoutes(deps.webhookDeps));
   v1.route("/", createSuppressionRoutes());
   v1.route("/", createTrackingSettingsRoutes());
@@ -41,6 +45,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   v1.route("/", createLogDrainRoutes(deps.webhookDeps));
   // Hooks endpoint secrets use the same key ring too.
   v1.route("/", createHookRoutes({ ...deps.webhookDeps, portalUrl: deps.portalUrl }));
+  v1.route("/", createReceivedEmailRoutes(deps.inbound));
   v1.route("/", createRiskRoutes(deps.riskDeps));
   return v1;
 }

@@ -7,8 +7,10 @@ import {
   type EmailService,
   FakeEmailProvider,
   FakeIdentityProvider,
+  FakeInboundStore,
   FakeTrackingHostnameProvider,
 } from "@coss/email";
+import type { InboundRuntime } from "@coss/email/runtime";
 import type { SendEmailRequestInput } from "@coss/email/schemas";
 import { createVerifiedDomain, memoryDispatchQueue } from "@coss/email/testing";
 import type { LogEntryInput, LogWriter } from "@coss/logs";
@@ -27,6 +29,9 @@ export const REQUEST_ID = /^req_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
 /** Origin of the tracking URLs `createTestApp` puts into emails (`app.request` ignores it). */
 export const TRACKING_BASE_URL = "http://api.test";
 
+/** The managed inbound domain of `createTestApp`'s receiving. */
+export const TEST_INBOUND_DOMAIN = "inbound.coss.test";
+
 /**
  * An app whose live and sandbox providers are separate, silent fakes. Sends only enqueue (in
  * memory): `dispatch()` runs the queued jobs, as the worker would. Domains verify without DNS and
@@ -42,6 +47,8 @@ export function createTestApp(
     corsOrigins?: readonly string[];
     logWriter?: LogWriter;
     versioning?: Versioning;
+    /** Defaults to the fake provider's receiving (managed domain `inbound.coss.test`). */
+    inbound?: InboundRuntime | null;
     riskDeps?: RiskDeps;
     /** Enforce plans (`createPlanGate`) and Free's allowance (`createUsageGate`). Off by default. */
     plans?: PlanGate;
@@ -53,6 +60,14 @@ export function createTestApp(
   const identity = new FakeIdentityProvider();
   const tracking = new FakeTrackingHostnameProvider({ cnameTarget: "track.coss.test" });
   const queue = memoryDispatchQueue();
+  const inbound =
+    opts.inbound === undefined
+      ? {
+          store: new FakeInboundStore(),
+          managedDomain: TEST_INBOUND_DOMAIN,
+          mxHost: "inbound-smtp.us-east-1.amazonaws.com",
+        }
+      : opts.inbound;
   const emailService =
     opts.emailService ??
     createEmailService({
@@ -66,6 +81,7 @@ export function createTestApp(
   const app = createApp({
     emailService,
     domainDeps: opts.domainDeps ?? { identity, dns: null, tracking, plans: opts.plans },
+    inbound,
     webhookDeps: { ...testManagementDeps, plans: opts.plans },
     plans: opts.plans,
     riskDeps: opts.riskDeps ?? testRiskDeps(),
@@ -77,7 +93,7 @@ export function createTestApp(
     versioning: opts.versioning,
   });
   const dispatch = () => queue.drain(emailService);
-  return { app, liveProvider, sandboxProvider, identity, tracking, queue, dispatch };
+  return { app, liveProvider, sandboxProvider, identity, tracking, queue, dispatch, inbound };
 }
 
 export type TestApp = ReturnType<typeof createTestApp>["app"];
