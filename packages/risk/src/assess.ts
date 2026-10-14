@@ -18,7 +18,7 @@ import { type CaptchaVerdict, verifyCaptcha } from "@coss/signals/captcha";
 import { analyzeEmail, type EmailAnalysis, type MailDomainVerdict } from "@coss/signals/email";
 import { isBlockedAddress, normalizeIp, subnetOf } from "@coss/signals/ip";
 import { enqueueWebhookMessage, type SecretsKeyRing } from "@coss/webhooks";
-import { and, eq, gte, isNotNull, ne, or, type SQL, sql } from "drizzle-orm";
+import { and, eq, gte, isNotNull, lt, ne, or, type SQL, sql } from "drizzle-orm";
 import type { IpIntelligenceSource } from "./datasets.ts";
 import type { DomainAgeLookup } from "./domain-age.ts";
 import { RiskError } from "./errors.ts";
@@ -141,6 +141,9 @@ export async function assessRisk(
     if (existing && isReplayOf(existing, hash)) {
       return { assessment: toRiskAssessmentObject(existing), replayed: true };
     }
+    if (existing && Date.now() - existing.createdAt.getTime() <= IDEMPOTENCY_KEY_TTL_MS) {
+      throw IDEMPOTENCY_ERRORS.reused();
+    }
   }
 
   // The dataset source can need its own database connection on first load, and classification
@@ -148,7 +151,9 @@ export async function assessRisk(
   // requests cannot exhaust the pool.
   const [ipSignals, content] = await Promise.all([
     ipSignalsFor(deps, params.ip ? normalizeIp(params.ip) : null, environment.mode === "sandbox"),
-    assessmentContentScores(deps, environment, params.content?.text),
+    idempotencyKey
+      ? prepareIdempotentContent(deps, input, idempotencyKey, hash as string)
+      : assessmentContentScores(deps, environment, params.content?.text),
   ]);
   return db.transaction(async (tx) => {
     if (idempotencyKey) {
@@ -185,6 +190,63 @@ export async function assessRisk(
     if (!row) throw IDEMPOTENCY_ERRORS.inProgress();
     return { assessment: toRiskAssessmentObject(row), replayed: false };
   });
+}
+
+/** Reserve paid work in a short statement, without holding a connection during the model call.
+ * Keep its result across failed assessment transactions too. A crashed preparer fails open after
+ * 30 seconds; it is never replaced with another paid call during the key's 24-hour lifetime.
+ */
+async function prepareIdempotentContent(
+  deps: RiskDeps,
+  input: AssessRiskInput,
+  key: string,
+  hash: string,
+): Promise<{ scores: ContentScores | null; degraded: boolean }> {
+  const table = schema.riskAssessmentPreparation;
+  const identity = and(
+    eq(table.environmentId, input.environment.environmentId),
+    eq(table.idempotencyKey, key),
+  );
+  const createdAt = new Date();
+  const [claimed] = await db
+    .insert(table)
+    .values({
+      environmentId: input.environment.environmentId,
+      idempotencyKey: key,
+      requestHash: hash,
+      createdAt,
+    })
+    .onConflictDoUpdate({
+      target: [table.environmentId, table.idempotencyKey],
+      set: { requestHash: hash, createdAt, content: null },
+      setWhere: lt(table.createdAt, new Date(Date.now() - IDEMPOTENCY_KEY_TTL_MS)),
+    })
+    .returning();
+  if (claimed) {
+    const content = await assessmentContentScores(
+      deps,
+      input.environment,
+      input.params.content?.text,
+    );
+    await db
+      .update(table)
+      .set({ content })
+      .where(and(identity, eq(table.createdAt, createdAt)));
+    return content;
+  }
+  // Wait without occupying a pool connection; long-running requests answer the normal busy error.
+  const deadline = Date.now() + 4000;
+  do {
+    const [prepared] = await db.select().from(table).where(identity);
+    if (!prepared) throw IDEMPOTENCY_ERRORS.inProgress();
+    if (prepared.requestHash !== hash) throw IDEMPOTENCY_ERRORS.reused();
+    if (prepared.content) return prepared.content;
+    if (Date.now() - prepared.createdAt.getTime() > 30_000) {
+      return { scores: null, degraded: Boolean(input.params.content?.text) };
+    }
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  } while (Date.now() < deadline);
+  throw IDEMPOTENCY_ERRORS.inProgress();
 }
 
 async function assessmentByKey(

@@ -14,6 +14,25 @@ import { setup } from "./helpers.ts";
 const DAY = 24 * 60 * 60 * 1000;
 
 describe("risk retention", () => {
+  test("purges old preparation records in bounded batches", async () => {
+    const { live, organizationId } = await setup();
+    const table = schema.riskAssessmentPreparation;
+    const now = new Date();
+    await db.insert(table).values(
+      ["old-1", "old-2", "fresh"].map((key) => ({
+        environmentId: live.environmentId,
+        idempotencyKey: key,
+        requestHash: "fingerprint",
+        createdAt: key === "fresh" ? now : new Date(now.getTime() - 3 * DAY),
+      })),
+    );
+    const rows = () => db.select().from(table).where(eq(table.environmentId, live.environmentId));
+    await purgeExpiredRiskMemory({ now, limit: 1, scope: { organizationIds: [organizationId] } });
+    expect(await rows()).toHaveLength(2);
+    await purgeExpiredRiskMemory({ now, limit: 1, scope: { organizationIds: [organizationId] } });
+    expect(await rows()).toMatchObject([{ idempotencyKey: "fresh" }]);
+  });
+
   test("personal data after 90 days, network reports after 30, the rest after a year", async () => {
     const { assess, live, deps, organizationId } = await setup();
     const scope = { organizationIds: [organizationId] };

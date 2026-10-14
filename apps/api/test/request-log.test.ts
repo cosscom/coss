@@ -81,3 +81,30 @@ describe("response log byte limit", () => {
     expect(await response.json()).toEqual({ value: "a".repeat(LIMIT) });
   });
 });
+
+for (const path of ["/v1/risk/email/check", "/v1/risk/ip/check"]) {
+  for (const status of [200, 422, 500]) {
+    test(`${path} omits both bodies at status ${status}`, async () => {
+      const { app, writer } = loggedApp(() => Response.json({}));
+      const body = {
+        email: "private@example.com",
+        canonical: "private@example.com",
+        ip: "203.0.113.9",
+      };
+      app.post(path, async (c) => {
+        await c.req.json();
+        return Response.json(body, { status });
+      });
+      const response = await app.request(path, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      expect(await response.json()).toEqual(body);
+      const [line] = await waitForLogLines(writer, 1);
+      expect(line?.attributes?.request).not.toHaveProperty("body");
+      expect(line?.attributes?.response).not.toHaveProperty("body");
+      expect(line?.statusCode).toBe(status);
+    });
+  }
+}

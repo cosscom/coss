@@ -2506,3 +2506,24 @@ export const riskDataset = pgTable("risk_dataset", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   checkedAt: timestamp("checked_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Idempotent assessment preparation: fingerprints and scores only, never customer content. */
+export const riskAssessmentPreparation = pgTable(
+  "risk_assessment_preparation",
+  {
+    environmentId: text("environment_id")
+      .notNull()
+      .references(() => environment.id, { onDelete: "cascade" }),
+    idempotencyKey: text("idempotency_key").notNull(),
+    requestHash: text("request_hash").notNull(),
+    createdAt: createdAt(),
+    content: jsonb("content").$type<{
+      scores: Record<"spam" | "phishing" | "malware" | "fraud", number> | null;
+      degraded: boolean;
+    }>(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.environmentId, t.idempotencyKey] }),
+    index("risk_assessment_preparation_created_idx").on(t.createdAt),
+  ],
+);

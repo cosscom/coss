@@ -38,16 +38,18 @@ function skipped(method: string, path: string): boolean {
 const CONTENT_RESPONSES = ["/v1/received_emails"];
 
 /**
- * Requests carrying content the log must not copy: text sent for classification, which COSS
- * promises to keep nowhere (assessments' `content` is redacted by `redactBody`).
+ * Stateless lookup identifiers and classification text must not enter request logs. Lookup
+ * responses (including errors) are omitted too; assessments' `content` is redacted by `redactBody`.
  */
-const CONTENT_REQUESTS = ["/v1/risk/content/classify"];
+const STATELESS_LOOKUPS = ["/v1/risk/email/check", "/v1/risk/ip/check"];
+const CONTENT_REQUESTS = ["/v1/risk/content/classify", ...STATELESS_LOOKUPS];
 
 function keepsRequestBody(path: string): boolean {
   return !CONTENT_REQUESTS.includes(path);
 }
 
 function keepsResponseBody(path: string, status: number): boolean {
+  if (STATELESS_LOOKUPS.includes(path)) return false;
   if (status >= 400) return true;
   return !CONTENT_RESPONSES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }

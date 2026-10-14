@@ -1091,7 +1091,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   **Content** (`content: { text }` on assessments, `POST /v1/risk/content/classify`): scored per category
   (`CONTENT_CATEGORIES`) by the `text` kind of `@coss/screening`'s classifier at request time (3 s; sandbox
   environments read the markers in `sandboxContentScores`), **outside** the assessment's transaction and after a
-  replay pre-check, so neither a held connection nor a retry pays for it. COSS never decides from scores:
+  replay pre-check. A database preparation claim deduplicates concurrent retries before charging,
+  caches only scores for transaction retries, and holds no connection during classification. A crashed
+  preparation fails open after 30 seconds without another charge; preparation rows are purged after 48 hours. COSS never decides from scores:
   `content.*` reasons fire only at the environment's `content_thresholds`, and rules test `content.*` fields. The
   text is never stored or logged — the classify route keeps no request body (`CONTENT_REQUESTS` in
   `request-log.ts`) and `redactBody` keeps only string lengths inside `content` objects. Live classifications

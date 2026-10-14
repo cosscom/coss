@@ -393,6 +393,13 @@
       "when": 1792013792781,
       "tag": "0055_warm_starbolt",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1792022073891,
+      "tag": "0056_crazy_sumo",
+      "breakpoints": true
     }
   ]
 }

@@ -1,8 +1,11 @@
 import { afterAll, describe, expect, test } from "bun:test";
+import { db, schema } from "@coss/db";
+import { requestHash } from "@coss/db/idempotency";
 import { MemoryStore, type RateLimitStore } from "@coss/ratelimit";
 import { testPrefix, testValkeyStore } from "@coss/ratelimit/testing";
 import { fakeClassifier } from "@coss/screening/testing";
 import { TEST_SECRETS_KEYS } from "@coss/webhooks/testing";
+import { eq } from "drizzle-orm";
 import {
   checkRiskLimit,
   createRiskLimitBucket,
@@ -260,6 +263,95 @@ describe("content in assessments", () => {
     // Sandbox classifications cost nothing.
     await spent.assess({ event: "message", content: { text: "hi" } }, { env: spent.sandbox });
     expect(charged).toHaveLength(1);
+  });
+
+  test("concurrent content retries charge and classify once", async () => {
+    const classifier = fakeClassifier({ delayMs: 100 });
+    let charges = 0;
+    const { assess } = await setup({
+      classifier,
+      chargeClassification: async () => {
+        charges++;
+        return true;
+      },
+    });
+    const params = { event: "message", content: { text: "[coss-test:spam]" } } as const;
+    const results = await Promise.all(
+      Array.from({ length: 15 }, () => assess(params, { idempotencyKey: "content-race" })),
+    );
+    expect(charges).toBe(1);
+    expect(classifier.calls).toHaveLength(1);
+    expect(new Set(results.map((r) => r.assessment.id)).size).toBe(1);
+    expect(results.filter((r) => !r.replayed)).toHaveLength(1);
+    await expect(
+      assess({ ...params, content: { text: "different" } }, { idempotencyKey: "content-race" }),
+    ).rejects.toMatchObject({ code: "idempotency_key_reused" });
+    expect(charges).toBe(1);
+  });
+
+  test("a rolled-back assessment reuses its paid scores", async () => {
+    const classifier = fakeClassifier();
+    let charges = 0;
+    const { assess, deps } = await setup({
+      classifier,
+      chargeClassification: async () => {
+        charges++;
+        return true;
+      },
+    });
+    const hash = deps.hash;
+    deps.hash = () => {
+      throw new Error("collection failed");
+    };
+    const params = { event: "message", user: { id: "user" }, content: { text: "hello" } } as const;
+    await expect(assess(params, { idempotencyKey: "rollback" })).rejects.toThrow(
+      "collection failed",
+    );
+    deps.hash = hash;
+    const retry = await assess(params, { idempotencyKey: "rollback" });
+    expect(retry.replayed).toBe(false);
+    expect(charges).toBe(1);
+    expect(classifier.calls).toHaveLength(1);
+  });
+
+  test("abandoned preparation fails open without paying again, and expired keys can be reused", async () => {
+    const classifier = fakeClassifier();
+    let charges = 0;
+    const { assess, live } = await setup({
+      classifier,
+      chargeClassification: async () => {
+        charges++;
+        return true;
+      },
+    });
+    const params = { event: "message", content: { text: "hello" } } as const;
+    await db.insert(schema.riskAssessmentPreparation).values({
+      environmentId: live.environmentId,
+      idempotencyKey: "abandoned",
+      requestHash: requestHash(params),
+      createdAt: new Date(Date.now() - 31_000),
+    });
+    const first = await assess(params, { idempotencyKey: "abandoned" });
+    expect(first.assessment.degraded).toContain("content");
+    expect(charges).toBe(0);
+    expect(classifier.calls).toHaveLength(0);
+    const expired = new Date(Date.now() - 25 * 60 * 60_000);
+    await db
+      .update(schema.riskAssessment)
+      .set({ createdAt: expired })
+      .where(eq(schema.riskAssessment.id, first.assessment.id));
+    await db
+      .update(schema.riskAssessmentPreparation)
+      .set({ createdAt: expired })
+      .where(eq(schema.riskAssessmentPreparation.environmentId, live.environmentId));
+    const second = await assess(
+      { ...params, content: { text: "new content" } },
+      { idempotencyKey: "abandoned" },
+    );
+    expect(second.replayed).toBe(false);
+    expect(second.assessment.id).not.toBe(first.assessment.id);
+    expect(charges).toBe(1);
+    expect(classifier.calls).toHaveLength(1);
   });
 
   test("a replay is answered without classifying again", async () => {

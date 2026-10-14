@@ -5,7 +5,7 @@
  */
 import { db, schema } from "@coss/db";
 import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
-import { and, asc, inArray, isNull, lt, or, type SQL } from "drizzle-orm";
+import { and, asc, inArray, isNull, lt, or, type SQL, sql } from "drizzle-orm";
 import { NETWORK_REPORT_TTL_MS } from "./assess.ts";
 
 const { riskAssessment, riskDomainAge, riskIdentity, riskReport, riskUserNetwork } = schema;
@@ -71,6 +71,37 @@ export async function purgeExpiredRiskAssessments(opts: PurgeOptions = {}): Prom
  */
 export async function purgeExpiredRiskMemory(opts: PurgeOptions = {}): Promise<number[]> {
   const now = opts.now ?? new Date();
+  // Preparation fingerprints and scores have no purpose beyond idempotency's lifetime.
+  const preparation = schema.riskAssessmentPreparation;
+  const stalePreparation = and(
+    lt(preparation.createdAt, new Date(now.getTime() - 48 * 60 * 60_000)),
+    opts.scope
+      ? inArray(
+          preparation.environmentId,
+          db
+            .select({ id: schema.environment.id })
+            .from(schema.environment)
+            .where(inArray(schema.environment.organizationId, opts.scope.organizationIds)),
+        )
+      : undefined,
+  );
+  const expiredPreparations = db
+    .select({
+      environmentId: preparation.environmentId,
+      idempotencyKey: preparation.idempotencyKey,
+    })
+    .from(preparation)
+    .where(stalePreparation)
+    .orderBy(asc(preparation.createdAt))
+    .limit(opts.limit ?? 1000);
+  await db
+    .delete(preparation)
+    .where(
+      and(
+        stalePreparation,
+        sql`(${preparation.environmentId}, ${preparation.idempotencyKey}) in (${expiredPreparations})`,
+      ),
+    );
   const cutoff = retentionCutoff(RETENTION_DAYS.riskMemory, now);
   const staleIdentity = and(
     lt(riskIdentity.lastSeenAt, cutoff),
