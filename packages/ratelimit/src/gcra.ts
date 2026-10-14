@@ -32,6 +32,8 @@ export type ConsumeResult = { allowed: boolean; limits: LimitState[] };
 export type ConsumeOptions = {
   /** Tokens to take. Negative refunds (never below a full bucket); refunds are always allowed. */
   cost: number;
+  /** Cache an allowed decision atomically with its charge; key shares the buckets’ hash tag. */
+  idempotency?: { key: string; ttlMs: number };
   /** Report what would happen without writing anything. */
   peek?: boolean;
 };
@@ -60,8 +62,8 @@ export function gcraStep(
 }
 
 /**
- * The Valkey implementation. KEYS: one per bucket. ARGV: cost, peek (0/1), then interval and burst
- * per key. Time comes from the server, so API instances with skewed clocks agree. Returns
+ * The Valkey implementation. KEYS: buckets, then optional replay key. ARGV: cost, peek (0/1),
+ * bucket count, replay TTL (0 disables), then interval and burst per bucket. Time comes from the server, so API instances with skewed clocks agree. Returns
  * `allowed, (remaining, reset_ms, retry_after_ms)…` with retry_after_ms -1 for "never fits".
  */
 export const GCRA_SCRIPT = `
@@ -69,12 +71,20 @@ local t = redis.call('TIME')
 local now = tonumber(t[1]) * 1000 + tonumber(t[2]) / 1000
 local cost = tonumber(ARGV[1])
 local peek = ARGV[2] == '1'
+local count = tonumber(ARGV[3])
+local ttl = tonumber(ARGV[4])
+local replay_key = ttl > 0 and KEYS[count + 1] or nil
+if replay_key and not peek then
+  local saved = redis.call('GET', replay_key)
+  if saved then return cjson.decode(saved) end
+end
 local allowed = 1
 local out = {}
 local writes = {}
-for i, key in ipairs(KEYS) do
-  local interval = tonumber(ARGV[1 + i * 2])
-  local burst = tonumber(ARGV[2 + i * 2])
+for i = 1, count do
+  local key = KEYS[i]
+  local interval = tonumber(ARGV[3 + i * 2])
+  local burst = tonumber(ARGV[4 + i * 2])
   local tolerance = interval * burst
   local tat = tonumber(redis.call('GET', key)) or now
   if tat < now then tat = now end
@@ -109,6 +119,9 @@ if allowed == 1 and not peek then
   end
 end
 table.insert(out, 1, allowed)
+if replay_key and allowed == 1 and not peek then
+  redis.call('SET', replay_key, cjson.encode(out), 'PX', ttl)
+end
 return out
 `;
 

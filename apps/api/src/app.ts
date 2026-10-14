@@ -1,5 +1,6 @@
 import type { PlanGate } from "@coss/billing/gate";
 import type { DomainDeps, EmailService } from "@coss/email";
+import type { InboundRuntime } from "@coss/email/runtime";
 import { type LogWriter, noopLogWriter } from "@coss/logs";
 import {
   type ClientIpResolver,
@@ -32,6 +33,11 @@ export type CreateAppOptions = {
   emailService: EmailService;
   /** Identity provider and DNS resolver for domain management. Defaults to the fake provider. */
   domainDeps?: DomainDeps;
+  /**
+   * Receiving (`EmailRuntime.inbound`): the content store and managed domain. Defaults to the
+   * fake provider's; `null` turns the receiving endpoints off (`receiving_unavailable`).
+   */
+  inbound?: InboundRuntime | null;
   /**
    * Encrypts webhook endpoint signing secrets (`WEBHOOK_SECRETS_KEY`). Required: a throwaway key
    * would silently make the endpoints it creates undeliverable.
@@ -78,8 +84,14 @@ const CORS_EXPOSE_HEADERS = ["X-Request-Id", "Idempotent-Replayed", "Retry-After
  */
 export function createApp(opts: CreateAppOptions) {
   const { emailService } = opts;
-  // Cheap (in-memory fakes), and only used when no domain dependencies were injected.
-  const domainDeps = opts.domainDeps ?? createDefaultEmailRuntime().domainDeps;
+  // Cheap (in-memory fakes), and only used when no domain or inbound dependencies were injected.
+  const defaults =
+    opts.domainDeps === undefined || opts.inbound === undefined
+      ? createDefaultEmailRuntime()
+      : null;
+  const domainDeps = opts.domainDeps ?? defaults?.domainDeps;
+  const inbound = opts.inbound === undefined ? (defaults?.inbound ?? null) : opts.inbound;
+  if (!domainDeps) throw new Error("createApp: no domain dependencies.");
   const rateLimiter = opts.rateLimiter ?? createRateLimiter({ store: new MemoryStore() });
   const clientIp = opts.clientIp ?? (() => null);
   const versioning = opts.versioning ?? apiVersioning;
@@ -150,6 +162,7 @@ export function createApp(opts: CreateAppOptions) {
       domainDeps,
       webhookDeps: opts.webhookDeps,
       riskDeps: opts.riskDeps,
+      inbound,
     }),
   );
 

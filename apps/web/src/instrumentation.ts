@@ -28,6 +28,14 @@ export async function register() {
     if (production && !process.env.SKIP_ENV_VALIDATION && !env.RISK_HASH_KEY) {
       throw new Error("RISK_HASH_KEY is required in production.");
     }
+    for (const [id, secret] of [
+      ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+      ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"],
+    ] as const) {
+      if (Boolean(env[id]) !== Boolean(env[secret])) {
+        throw new Error(`Set both ${id} and ${secret}, or neither.`);
+      }
+    }
     // Checkout and the portal need the secret key; Stripe's webhooks need the signing secret.
     if (
       env.BILLING_PROVIDER === "stripe" &&

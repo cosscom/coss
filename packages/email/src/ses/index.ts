@@ -8,6 +8,15 @@ export {
   tenantNameFor,
 } from "./api.ts";
 export { MANAGED_TAG, SesIdentityProvider } from "./identity.ts";
+export {
+  createS3Api,
+  LANDING_PREFIX,
+  type ParsedSesReceipt,
+  parseSesReceipt,
+  type S3Api,
+  S3InboundStore,
+  type SesReceipt,
+} from "./inbound.ts";
 export { encodeAddress, encodeWords } from "./mime.ts";
 export {
   type ParsedSesMessage,

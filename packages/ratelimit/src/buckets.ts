@@ -106,6 +106,17 @@ export const BUCKETS = {
     overridable: true,
     failureMode: "deny",
   },
+  // Received emails accepted per organization (the worker charges one per environment a message
+  // is delivered to). Over the limit, messages are dropped and counted. Fails open: a store outage
+  // must never lose a customer's mail.
+  "email.inbound.day": {
+    scope: "org",
+    limit: 10_000,
+    periodMs: DAY,
+    burst: 10_000,
+    overridable: true,
+    failureMode: "allow",
+  },
   // Invitations sent (and resent) per organization: each one emails an address the org chose.
   "dashboard.invitations": {
     scope: "org",
@@ -199,6 +210,15 @@ export const BUCKETS = {
   // SSO: starting a sign-in (each one stores state and redirects to the IdP) and SAML responses
   // posted back by the IdP. OIDC callbacks are GETs, which the dashboard doesn't limit.
   "auth.sso.ip": {
+    scope: "ip",
+    limit: 20,
+    periodMs: MINUTE,
+    overridable: false,
+    failureMode: "deny",
+  },
+  // Starting a Google or GitHub sign-in (each one stores state and redirects to the provider).
+  // Their callbacks are GETs, which the dashboard doesn't limit.
+  "auth.social.ip": {
     scope: "ip",
     limit: 20,
     periodMs: MINUTE,

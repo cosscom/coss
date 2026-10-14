@@ -21,6 +21,7 @@ export interface RateLimitStore {
  * own, so never use it with more than one instance. `now` is injectable for tests.
  */
 export class MemoryStore implements RateLimitStore {
+  readonly #replays = new Map<string, { expiresAt: number; result: ConsumeResult }>();
   readonly #tats = new Map<string, number>();
   readonly #now: () => number;
 
@@ -30,6 +31,11 @@ export class MemoryStore implements RateLimitStore {
 
   async consume(specs: readonly LimitSpec[], options: ConsumeOptions): Promise<ConsumeResult> {
     const now = this.#now();
+    const replay = options.peek ? undefined : options.idempotency;
+    if (replay) {
+      const saved = this.#replays.get(replay.key);
+      if (saved && saved.expiresAt > now) return saved.result;
+    }
     const steps = specs.map((spec) => {
       const stored = this.#tats.get(spec.key);
       return gcraStep(
@@ -52,11 +58,21 @@ export class MemoryStore implements RateLimitStore {
     if (this.#tats.size > 10_000) {
       for (const [key, tat] of this.#tats) if (tat <= now) this.#tats.delete(key);
     }
-    return { allowed, limits: steps.map((step) => step.state) };
+    const result = { allowed, limits: steps.map((step) => step.state) };
+    if (replay && allowed) {
+      this.#replays.set(replay.key, { expiresAt: now + replay.ttlMs, result });
+    }
+    if (this.#replays.size > 10_000) {
+      for (const [key, saved] of this.#replays) {
+        if (saved.expiresAt <= now) this.#replays.delete(key);
+      }
+    }
+    return result;
   }
 
   async close(): Promise<void> {
     this.#tats.clear();
+    this.#replays.clear();
   }
 }
 
@@ -113,9 +129,12 @@ export class ValkeyStore implements RateLimitStore {
   async consume(specs: readonly LimitSpec[], options: ConsumeOptions): Promise<ConsumeResult> {
     if (specs.length === 0) return { allowed: true, limits: [] };
     const keys = specs.map((spec) => spec.key);
+    if (options.idempotency) keys.push(options.idempotency.key);
     const args = [
       String(options.cost),
       options.peek ? "1" : "0",
+      String(specs.length),
+      String(options.idempotency?.ttlMs ?? 0),
       ...specs.flatMap((spec) => [String(spec.intervalMs), String(spec.burst)]),
     ];
     const run = async () => {

@@ -94,6 +94,13 @@ resource "aws_iam_role_policy" "bootstrap" {
         Resource = "*"
       },
       {
+        # Receiving (`--managed-domain`): the inbound bucket `<name>-inbound-<account>`.
+        Sid      = "InboundBucket"
+        Effect   = "Allow"
+        Action   = ["s3:*"]
+        Resource = ["arn:aws:s3:::coss-inbound-${var.account_id}", "arn:aws:s3:::coss-inbound-${var.account_id}/*"]
+      },
+      {
         Sid    = "AppPolicies"
         Effect = "Allow"
         Action = [

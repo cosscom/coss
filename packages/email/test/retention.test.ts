@@ -3,10 +3,16 @@ import { db, schema } from "@coss/db";
 import { RETENTION_DAYS } from "@coss/retention";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { eq, inArray, sql } from "drizzle-orm";
+import { receiveFakeEmail } from "../src/inbound.ts";
+import { inboundAddressFor } from "../src/inbound-address.ts";
+import { buildTestMessage } from "../src/inbound-mime.ts";
+import { FakeInboundStore } from "../src/inbound-store.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import {
   purgeEmptyEmailBatches,
   purgeExpiredEmails,
+  purgeExpiredFakeInboundObjects,
+  purgeExpiredReceivedEmails,
   purgeExpiredReputationRollups,
 } from "../src/retention.ts";
 import { dispatchingEmailService } from "../src/testing.ts";
@@ -129,5 +135,54 @@ describe("purgeExpiredReputationRollups", () => {
       .from(schema.emailReputationRollup)
       .where(eq(schema.emailReputationRollup.organizationId, organizationId));
     expect(left).toEqual([{ bucketStart: hour(RETENTION_DAYS.reputationRollups - 1) }]);
+  });
+});
+
+describe("received email retention", () => {
+  test("purges received emails and fake content past their cutoffs", async () => {
+    const tenant = await createTestTenant();
+    const store = new FakeInboundStore();
+    const { domain } = await inboundAddressFor(
+      { organizationId: tenant.organization.id, environmentId: tenant.production.id },
+      "inbound.coss.test",
+    );
+    const receive = async () => {
+      const raw = buildTestMessage({ from: "a@example.com", to: [`x@${domain}`], subject: "Hi" });
+      const [outcome] = await receiveFakeEmail(
+        { raw, mailFrom: "a@example.com", recipients: [`x@${domain}`], subject: "Hi" },
+        { store, managedDomain: "inbound.coss.test" },
+      );
+      if (outcome?.kind !== "received") throw new Error("not received");
+      return outcome.receivedEmailId;
+    };
+    const old = await receive();
+    const fresh = await receive();
+    await db
+      .update(schema.receivedEmail)
+      .set({
+        createdAt: sql`now() - make_interval(days => ${RETENTION_DAYS.receivedEmails + 1})`,
+      })
+      .where(eq(schema.receivedEmail.id, old));
+    expect(await purgeExpiredReceivedEmails({ scope: scopeOf(tenant) })).toBe(1);
+    const left = await db
+      .select({ id: schema.receivedEmail.id })
+      .from(schema.receivedEmail)
+      .where(inArray(schema.receivedEmail.id, [old, fresh]));
+    expect(left.map((row) => row.id)).toEqual([fresh]);
+
+    // Content outlives its row by a day, like the S3 lifecycle rule.
+    const prefix = `orgs/${tenant.organization.id}/`;
+    await db
+      .update(schema.inboundFakeObject)
+      .set({
+        createdAt: sql`now() - make_interval(days => ${RETENTION_DAYS.receivedEmails + 2})`,
+      })
+      .where(sql`${schema.inboundFakeObject.key} like ${`${prefix}%${old}%`}`);
+    expect(await purgeExpiredFakeInboundObjects({ scope: scopeOf(tenant) })).toBe(1);
+    const objects = await db
+      .select({ key: schema.inboundFakeObject.key })
+      .from(schema.inboundFakeObject)
+      .where(eq(schema.inboundFakeObject.organizationId, tenant.organization.id));
+    expect(objects.map((row) => row.key)).toEqual([expect.stringContaining(fresh)]);
   });
 });

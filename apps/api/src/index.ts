@@ -41,6 +41,7 @@ const app = createApp({
     billing: createUsageGate(),
   }),
   domainDeps: email.domainDeps,
+  inbound: email.inbound,
   webhookDeps: {
     secretsKeys,
     allowInsecureUrls: process.env.NODE_ENV !== "production",

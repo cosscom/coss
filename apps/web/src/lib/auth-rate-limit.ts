@@ -24,6 +24,7 @@ export const AUTH_RATE_LIMITS: Readonly<Record<string, AuthLimits>> = {
   "/two-factor/verify-backup-code": { ip: "auth.two_factor.ip" },
   "/passkey/verify-authentication": { ip: "auth.passkey.ip" },
   "/sign-in/sso": { ip: "auth.sso.ip" },
+  "/sign-in/social": { ip: "auth.social.ip" },
   "/organization/create": { ip: "auth.org_create.ip" },
 };
 

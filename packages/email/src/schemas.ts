@@ -650,13 +650,19 @@ export const ENGAGEMENT_EVENT_TYPES = [
 
 export type EmailEventType = (typeof EMAIL_EVENT_TYPES)[number];
 
+/** Events about received (inbound) emails. Not `email_event` rows: they have their own table. */
+export const RECEIVED_EMAIL_EVENT_TYPES = ["email.received"] as const;
+
+export type ReceivedEmailEventType = (typeof RECEIVED_EMAIL_EVENT_TYPES)[number];
+
 /**
- * Every type a webhook endpoint can subscribe to: email events, the organization's reputation
- * changes (`account.*`) and billing events (`billing.*`), both delivered to live environments
- * only, and risk reviews (`risk.*`).
+ * Every type a webhook endpoint can subscribe to: email events, received emails, the
+ * organization's reputation changes (`account.*`) and billing events (`billing.*`), both
+ * delivered to live environments only, and risk reviews (`risk.*`).
  */
 export const WEBHOOK_EVENT_TYPES = [
   ...EMAIL_EVENT_TYPES,
+  ...RECEIVED_EMAIL_EVENT_TYPES,
   ...ACCOUNT_EVENT_TYPES,
   ...BILLING_EVENT_TYPES,
   ...RISK_EVENT_TYPES,
@@ -1162,6 +1168,7 @@ const DOMAIN_EXAMPLE = {
   verified_at: "2026-01-15T09:42:10.000Z",
   failed_at: null,
   tracking: TRACKING_DOMAIN_EXAMPLE,
+  receiving: null,
 } as const;
 
 export const DomainRecordObject = z
@@ -1232,6 +1239,64 @@ export const TrackingDomainObject = z
 
 export type TrackingDomainObjectOutput = z.output<typeof TrackingDomainObject>;
 
+const RECEIVING_DOMAIN_EXAMPLE = {
+  hostname: "inbound.acme.com",
+  environment_id: "env_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  record: {
+    type: "MX",
+    name: "inbound.acme.com",
+    value: "inbound-smtp.us-east-1.amazonaws.com",
+    priority: 10,
+    status: "verified",
+    found: [],
+  },
+  created_at: "2026-01-15T09:45:00.000Z",
+  last_checked_at: "2026-01-15T09:52:00.000Z",
+} as const;
+
+export const ReceivingDomainObject = z
+  .object({
+    hostname: z.string().meta({
+      description: "The hostname that receives email: the domain itself or a subdomain of it.",
+      examples: ["inbound.acme.com"],
+    }),
+    environment_id: z.string().meta({
+      description: "The environment its received emails are delivered to.",
+      examples: ["env_01k7c8m4q2f3e9v6t5r1n0p8yz"],
+    }),
+    record: z
+      .object({
+        type: z.literal("MX"),
+        name: z.string().meta({ description: "The fully qualified record name to create." }),
+        value: z.string().meta({ description: "The mail exchange the record must point at." }),
+        priority: z.number().int(),
+        status: z.enum(DOMAIN_RECORD_STATUSES).meta({
+          description:
+            "What the last DNS check saw: `verified` once the most preferred MX records point " +
+            "at COSS. `not_checked` means DNS has not been consulted yet.",
+        }),
+        found: z
+          .array(z.string())
+          .meta({ description: "What DNS returned when it did not match." }),
+      })
+      .meta({
+        description:
+          "The MX record to publish, with the result of the last check. Mail for the hostname " +
+          "is received as soon as it reaches COSS; the check only shows what DNS serves.",
+      }),
+    created_at: z.iso.datetime(),
+    last_checked_at: z.iso.datetime().nullable(),
+  })
+  .meta({
+    id: "ReceivingDomain",
+    description:
+      "A domain's receiving hostname: email sent to any address at it becomes a received email " +
+      "of its environment.",
+    examples: [RECEIVING_DOMAIN_EXAMPLE],
+  });
+
+export type ReceivingDomainObjectOutput = z.output<typeof ReceivingDomainObject>;
+
 export const DomainObject = z
   .object({
     object: z.literal("domain"),
@@ -1261,6 +1326,8 @@ export const DomainObject = z
     // The custom tracking domain (`null` when none is set up). A union, not `.nullable()`, and no
     // `.meta()`: the OpenAPI generator would drop the `null` or inline the `TrackingDomain` schema.
     tracking: z.union([TrackingDomainObject, z.null()]),
+    // The receiving hostname (`null` when the domain doesn't receive email). A union, like `tracking`.
+    receiving: z.union([ReceivingDomainObject, z.null()]),
   })
   .meta({ id: "Domain", examples: [DOMAIN_EXAMPLE] });
 
@@ -1670,3 +1737,310 @@ export const ExportSuppressionsQuery = z.strictObject({
 });
 
 export type ExportSuppressionsQueryOutput = z.output<typeof ExportSuppressionsQuery>;
+
+export const RECEIVED_EMAIL_STATUSES = ["received", "blocked"] as const;
+export const RECEIVED_EMAIL_BLOCKED_REASONS = ["virus"] as const;
+export const VERDICT_STATUSES = ["pass", "fail", "gray", "processing_failed"] as const;
+export const ATTACHMENT_DISPOSITIONS = ["attachment", "inline"] as const;
+export const DEFAULT_RECEIVED_EMAIL_LIST_LIMIT = 20;
+export const MAX_RECEIVED_EMAIL_LIST_LIMIT = 100;
+
+const RECEIVED_EMAIL_ID_EXAMPLE = "rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const RECEIVED_ATTACHMENT_EXAMPLE = {
+  id: "rcvdatt_01k7c8m4r0c2b8w9y3d5f6g7h8",
+  filename: "invoice.pdf",
+  content_type: "application/pdf",
+  content_id: null,
+  disposition: "attachment",
+  size: 48213,
+} as const;
+const VERDICTS_EXAMPLE = {
+  spam: "pass",
+  virus: "pass",
+  spf: "pass",
+  dkim: "pass",
+  dmarc: "pass",
+  dmarc_policy: null,
+} as const;
+const RECEIVED_EMAIL_SUMMARY_EXAMPLE = {
+  object: "received_email",
+  id: RECEIVED_EMAIL_ID_EXAMPLE,
+  status: "received",
+  blocked_reason: null,
+  mail_from: "jane@example.com",
+  recipients: ["support@inbound.acme.com"],
+  from: "Jane Doe <jane@example.com>",
+  to: ["support@inbound.acme.com"],
+  cc: [],
+  subject: "Re: Your order",
+  message_id: "<CAF3k2m9qp4ld8sv@mail.example.com>",
+  attachments: [RECEIVED_ATTACHMENT_EXAMPLE],
+  size: 61432,
+  spam: false,
+  verdicts: VERDICTS_EXAMPLE,
+  sandbox: false,
+  received_at: "2026-10-10T12:00:00.000Z",
+} as const;
+const RECEIVED_EMAIL_EXAMPLE = {
+  ...RECEIVED_EMAIL_SUMMARY_EXAMPLE,
+  reply_to: [],
+  in_reply_to: "<x7f3k2m9qp4ld8sv@acme.com>",
+  references: ["<x7f3k2m9qp4ld8sv@acme.com>"],
+  sent_at: "2026-10-10T11:59:58.000Z",
+  headers: [
+    { name: "From", value: "Jane Doe <jane@example.com>" },
+    { name: "To", value: "support@inbound.acme.com" },
+    { name: "Subject", value: "Re: Your order" },
+  ],
+  text: "Hi, the order arrived damaged.",
+  html: "<p>Hi, the order arrived damaged.</p>",
+  truncated: false,
+} as const;
+
+export const ReceivedEmailAttachmentObject = z
+  .object({
+    id: z.string(),
+    filename: z.string().nullable().meta({ description: "`null` when the part named none." }),
+    content_type: z.string(),
+    content_id: z
+      .string()
+      .nullable()
+      .meta({ description: "Set for parts the HTML references (`cid:` URLs)." }),
+    disposition: z.enum(ATTACHMENT_DISPOSITIONS),
+    size: z.number().int().meta({ description: "Size in bytes." }),
+  })
+  .meta({ id: "ReceivedEmailAttachment", examples: [RECEIVED_ATTACHMENT_EXAMPLE] });
+
+const Verdict = z.union([z.enum(VERDICT_STATUSES), z.null()]);
+
+export const ReceivedEmailVerdicts = z
+  .object({
+    spam: Verdict,
+    virus: Verdict,
+    spf: Verdict,
+    dkim: Verdict,
+    dmarc: Verdict,
+    dmarc_policy: z.string().nullable().meta({
+      description:
+        "The sender domain's DMARC policy (`none`, `quarantine` or `reject`) when DMARC failed.",
+    }),
+  })
+  .meta({
+    id: "ReceivedEmailVerdicts",
+    description:
+      "What the receiving server concluded: `pass`, `fail`, `gray` (could not decide) or " +
+      "`processing_failed`; `null` when the check did not run.",
+    examples: [VERDICTS_EXAMPLE],
+  });
+
+const receivedEmailSummaryShape = {
+  object: z.literal("received_email"),
+  id: z.string().meta({ examples: [RECEIVED_EMAIL_ID_EXAMPLE] }),
+  status: z.enum(RECEIVED_EMAIL_STATUSES).meta({
+    description:
+      "`received`, or `blocked` when the message carried a virus: then only its envelope and " +
+      "verdicts are kept, never its content.",
+  }),
+  blocked_reason: z.union([z.enum(RECEIVED_EMAIL_BLOCKED_REASONS), z.null()]),
+  mail_from: z.string().meta({
+    description: "The envelope sender (`MAIL FROM`); empty for bounces.",
+  }),
+  recipients: z.array(z.string()).meta({
+    description:
+      "The envelope recipients this environment received the message for (Bcc'd addresses " +
+      "included, other organizations' never).",
+  }),
+  from: z.string().nullable().meta({ description: "The `From` header." }),
+  to: z.array(z.string()).meta({ description: "The `To` header's addresses." }),
+  cc: z.array(z.string()).meta({ description: "The `Cc` header's addresses." }),
+  subject: z.string().nullable(),
+  message_id: z.string().nullable().meta({ description: "The `Message-ID` header." }),
+  attachments: z.array(ReceivedEmailAttachmentObject),
+  size: z.number().int().meta({ description: "Size of the raw message in bytes." }),
+  spam: z.boolean().meta({ description: "Whether the spam verdict is `fail`." }),
+  verdicts: ReceivedEmailVerdicts,
+  sandbox: z.boolean().meta({ description: "Whether it was received by a sandbox environment." }),
+  received_at: z.iso.datetime(),
+};
+
+export const ReceivedEmailSummary = z
+  .object(receivedEmailSummaryShape)
+  .meta({ id: "ReceivedEmailSummary", examples: [RECEIVED_EMAIL_SUMMARY_EXAMPLE] });
+
+export type ReceivedEmailSummaryOutput = z.output<typeof ReceivedEmailSummary>;
+
+export const ReceivedEmailObject = z
+  .object({
+    ...receivedEmailSummaryShape,
+    reply_to: z.array(z.string()),
+    in_reply_to: z.string().nullable(),
+    references: z
+      .array(z.string())
+      .meta({ description: "Message ids of the `References` header." }),
+    sent_at: z.iso.datetime().nullable().meta({ description: "The `Date` header, when valid." }),
+    headers: z
+      .array(z.object({ name: z.string(), value: z.string() }))
+      .meta({ description: "Every header in message order (duplicates included)." }),
+    text: z.string().nullable(),
+    html: z.string().nullable(),
+    truncated: z.boolean().meta({
+      description:
+        "Whether `text`, `html` or `headers` were shortened (2 MB per body, 64 KB of headers). " +
+        "The raw message always has all of it.",
+    }),
+  })
+  .meta({ id: "ReceivedEmail", examples: [RECEIVED_EMAIL_EXAMPLE] });
+
+export type ReceivedEmailObjectOutput = z.output<typeof ReceivedEmailObject>;
+
+export const ReceivedEmailList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(ReceivedEmailSummary),
+    has_more: z.boolean(),
+  })
+  .meta({
+    id: "ReceivedEmailList",
+    examples: [{ object: "list", data: [RECEIVED_EMAIL_SUMMARY_EXAMPLE], has_more: false }],
+  });
+
+export type ReceivedEmailListOutput = z.output<typeof ReceivedEmailList>;
+
+export const ListReceivedEmailsQuery = z
+  .strictObject({
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_RECEIVED_EMAIL_LIST_LIMIT)
+      .optional()
+      .meta({
+        description: `1-${MAX_RECEIVED_EMAIL_LIST_LIMIT}, default ${DEFAULT_RECEIVED_EMAIL_LIST_LIMIT}.`,
+      }),
+    after: z
+      .string()
+      .max(64)
+      .optional()
+      .meta({ description: "Cursor: the `id` of the last email of the previous page." }),
+  })
+  .meta({ description: "Received emails are returned newest first." });
+
+export type ListReceivedEmailsQueryOutput = z.output<typeof ListReceivedEmailsQuery>;
+
+export const DeletedReceivedEmail = z
+  .object({
+    object: z.literal("received_email"),
+    id: z.string(),
+    deleted: z.literal(true),
+  })
+  .meta({
+    id: "DeletedReceivedEmail",
+    examples: [{ object: "received_email", id: RECEIVED_EMAIL_ID_EXAMPLE, deleted: true }],
+  });
+
+export type DeletedReceivedEmailOutput = z.output<typeof DeletedReceivedEmail>;
+
+export const InboundAddressObject = z
+  .object({
+    object: z.literal("inbound_address"),
+    environment_id: z.string(),
+    domain: z.string().meta({
+      description:
+        "Email sent to any address at this domain is received by the environment, with no DNS " +
+        "setup. It never changes.",
+    }),
+  })
+  .meta({
+    id: "InboundAddress",
+    examples: [
+      {
+        object: "inbound_address",
+        environment_id: "env_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        domain: "k3j9x2m7qp4l.inbound.coss.com",
+      },
+    ],
+  });
+
+export type InboundAddressObjectOutput = z.output<typeof InboundAddressObject>;
+
+export const CreateReceivingDomainRequest = z
+  .strictObject({
+    hostname: z
+      .string()
+      .min(1, "Enter a hostname, like inbound.acme.com.")
+      .max(DOMAIN_NAME_MAX_LENGTH, `Hostnames can be at most ${DOMAIN_NAME_MAX_LENGTH} characters.`)
+      .meta({
+        description:
+          "The domain itself or a subdomain of it, without a scheme or path. Point its MX at " +
+          "COSS with the record the response lists. Using the domain itself moves all of its " +
+          "mail to COSS, so a subdomain is usually the better choice.",
+        examples: ["inbound.acme.com"],
+      }),
+  })
+  .meta({ id: "CreateReceivingDomainRequest", examples: [{ hostname: "inbound.acme.com" }] });
+
+export type CreateReceivingDomainRequestInput = z.input<typeof CreateReceivingDomainRequest>;
+
+/**
+ * Body of an `email.received` webhook request: who sent what to whom, never the content, the
+ * headers or the Cc addresses (read those with the received email's id).
+ */
+export const ReceivedEmailWebhookEvent = z
+  .object({
+    id: z.string().meta({
+      description: "The event id, and the `webhook-id` header.",
+      examples: ["evt_01k7c8m4r0c2b8w9y3d5f6g7h9"],
+    }),
+    object: z.literal("event"),
+    type: z.enum(RECEIVED_EMAIL_EVENT_TYPES),
+    api_version: z.string().meta({
+      description:
+        "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+      examples: [LATEST_API_VERSION],
+    }),
+    created_at: z.iso.datetime(),
+    data: z.object({
+      received_email_id: z.string(),
+      from: z.string().nullable(),
+      to: z.array(z.string()),
+      recipients: z.array(z.string()),
+      subject: z.string().nullable(),
+      message_id: z.string().nullable(),
+      attachment_count: z.number().int(),
+      size: z.number().int(),
+      spam: z.boolean(),
+      verdicts: ReceivedEmailVerdicts,
+      sandbox: z.boolean(),
+      received_at: z.iso.datetime(),
+    }),
+  })
+  .meta({
+    id: "ReceivedEmailWebhookEvent",
+    examples: [
+      {
+        id: "evt_01k7c8m4r0c2b8w9y3d5f6g7h9",
+        object: "event",
+        type: "email.received",
+        api_version: LATEST_API_VERSION,
+        created_at: "2026-10-10T12:00:01.000Z",
+        data: {
+          received_email_id: RECEIVED_EMAIL_ID_EXAMPLE,
+          from: RECEIVED_EMAIL_SUMMARY_EXAMPLE.from,
+          to: RECEIVED_EMAIL_SUMMARY_EXAMPLE.to,
+          recipients: RECEIVED_EMAIL_SUMMARY_EXAMPLE.recipients,
+          subject: RECEIVED_EMAIL_SUMMARY_EXAMPLE.subject,
+          message_id: RECEIVED_EMAIL_SUMMARY_EXAMPLE.message_id,
+          attachment_count: 1,
+          size: RECEIVED_EMAIL_SUMMARY_EXAMPLE.size,
+          spam: false,
+          verdicts: VERDICTS_EXAMPLE,
+          sandbox: false,
+          received_at: RECEIVED_EMAIL_SUMMARY_EXAMPLE.received_at,
+        },
+      },
+    ],
+  });
+
+export type ReceivedEmailWebhookEventOutput = z.output<typeof ReceivedEmailWebhookEvent>;
+/** What the outbox stores: delivery adds `api_version` when it renders the event for an endpoint. */
+export type StoredReceivedEmailWebhookEvent = Omit<ReceivedEmailWebhookEventOutput, "api_version">;

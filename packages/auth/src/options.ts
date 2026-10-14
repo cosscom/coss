@@ -38,6 +38,12 @@ import {
 } from "./scim.ts";
 import { serializedEndpoint } from "./serialized-endpoint.ts";
 import { validateOrgName, validateOrgSlug } from "./slugs.ts";
+import {
+  isSocialCallbackPath,
+  socialProvidersFromEnv,
+  socialTwoFactor,
+  withoutProviderTokens,
+} from "./social.ts";
 import { emailDomainOf, resolveSsoUser, ssoProviderIdOfPath } from "./sso.ts";
 
 /** Better Auth model name -> TypeID prefix. */
@@ -228,6 +234,21 @@ async function assertMailboxAvailable(email: string, executor: Executor): Promis
   }
 }
 
+/**
+ * A new account from a Google or GitHub sign-in: the address must be one the provider verified
+ * (it becomes the account's verified address), and passes the `/sign-up/email` guard.
+ */
+async function assertSocialSignUpAllowed(user: { email: string; emailVerified?: boolean }) {
+  if (!user.emailVerified) {
+    throw new APIError("FORBIDDEN", {
+      code: "SOCIAL_EMAIL_NOT_VERIFIED",
+      message: "Verify your email address with that provider first.",
+    });
+  }
+  await assertSignUpEmailAllowed(user.email);
+  await assertMailboxAvailable(user.email, db);
+}
+
 /** Origin of the dashboard, which hosts /api/auth (also the WebAuthn origin and RP ID). */
 const dashboardUrl = process.env.BETTER_AUTH_URL ? new URL(process.env.BETTER_AUTH_URL) : undefined;
 
@@ -256,6 +277,26 @@ export const authOptions = {
   // Off: it counts per process and trusts any x-forwarded-for. The dashboard limits the credential
   // endpoints itself, in Valkey (apps/web/src/lib/auth-rate-limit.ts).
   rateLimit: { enabled: false },
+  // OAuth callback failures that happen before the sign-in's own error URL is known (an expired
+  // or forged state) land on the dashboard's sign-in page, not Better Auth's bare error page.
+  onAPIError: { errorURL: dashboardUrl ? `${dashboardUrl.origin}/sign-in` : undefined },
+  // Google and GitHub, when configured (`./social.ts`). Callbacks: /api/auth/callback/<provider>.
+  socialProviders: socialProvidersFromEnv(),
+  account: {
+    accountLinking: {
+      enabled: true,
+      // Signing in with an address that already has an account links the provider to it only
+      // when the provider verified the address and so did the account (Better Auth's default,
+      // spelled out): an unverified password account may have been registered by someone else
+      // ahead of the address's owner, who would then share it.
+      requireLocalEmailVerified: true,
+      // Never overwrite the profile the user chose with the provider's.
+      updateUserInfoOnLink: false,
+      // Connecting a provider from account settings (signed in) may use another address,
+      // common with GitHub; it then signs in to this account. Implicit linking always matches.
+      allowDifferentEmails: true,
+    },
+  },
   emailAndPassword: {
     enabled: true,
     // Prove mailbox ownership before creating a session or tenant resources. The response still
@@ -375,6 +416,10 @@ export const authOptions = {
           if (ssoProviderIdOfPath(ctx?.path, ctx?.params)) {
             return { data: { ...data, emailVerified: true } };
           }
+          if (isSocialCallbackPath(ctx?.path)) {
+            await assertSocialSignUpAllowed(user);
+            return { data };
+          }
           const scimOrganizationId = scimOrganizationIdOf(ctx);
           if (scimOrganizationId) {
             await assertScimEmail(scimOrganizationId, user.email);
@@ -396,6 +441,10 @@ export const authOptions = {
           };
         },
       },
+    },
+    account: {
+      create: { before: async (account) => withoutProviderTokens(account) },
+      update: { before: async (account) => withoutProviderTokens(account) },
     },
     session: {
       create: {
@@ -498,6 +547,8 @@ export const authOptions = {
       // fresh session. Sign-in challenges lock the account for 15 min after 10 failed codes.
       issuer: "COSS",
     }),
+    // The same challenge after Google and GitHub sign-ins.
+    socialTwoFactor(),
     passkey({
       rpName: "COSS",
       rpID: dashboardUrl?.hostname,

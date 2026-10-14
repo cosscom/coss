@@ -38,9 +38,11 @@ type Props = {
   requiredBy: string[];
   /** Why factors can't be changed in this session (impersonation), or `null`. */
   restriction: string | null;
+  /** The account has no password yet (Google or GitHub only): enabling confirms with it. */
+  needsPassword: boolean;
 };
 
-export function TwoFactorCard({ enabled, requiredBy, restriction }: Props) {
+export function TwoFactorCard({ enabled, requiredBy, restriction, needsPassword }: Props) {
   return (
     <Card>
       <CardHeader>
@@ -54,7 +56,7 @@ export function TwoFactorCard({ enabled, requiredBy, restriction }: Props) {
         </CardTitle>
         <CardDescription>
           Ask for a 6-digit code from an app like 1Password, Google Authenticator or Authy whenever
-          you sign in with your password.
+          you sign in with your password or a connected account.
         </CardDescription>
         {restriction ? null : (
           <CardAction className="flex gap-2">
@@ -63,7 +65,7 @@ export function TwoFactorCard({ enabled, requiredBy, restriction }: Props) {
                 <BackupCodesDialog />
                 <DisableDialog requiredBy={requiredBy} />
               </>
-            ) : (
+            ) : needsPassword ? null : (
               <SetupDialog />
             )}
           </CardAction>
@@ -74,6 +76,12 @@ export function TwoFactorCard({ enabled, requiredBy, restriction }: Props) {
           <Alert variant="warning">
             <AlertDescription>{restriction}</AlertDescription>
           </Alert>
+        </CardPanel>
+      ) : !enabled && needsPassword ? (
+        <CardPanel>
+          <p className="text-muted-foreground text-sm">
+            Set a password first: turning on an authenticator app asks for it.
+          </p>
         </CardPanel>
       ) : null}
     </Card>
