@@ -26,7 +26,7 @@ jobs:
       pull-requests: write
     outputs:
       # true when no changeset is pending: main holds a version that may not be on npm yet.
-      release: ${{ steps.changesets.outputs.hasChangesets == 'false' }}
+      release: ${{ steps.changesets.outputs.has-changesets == 'false' }}
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
