@@ -48,3 +48,16 @@ export function securityHeaders({ dev }: { dev: boolean }): { key: string; value
     { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
   ];
 }
+
+/**
+ * Received emails' raw messages and attachments: third-party files served from the dashboard's
+ * origin. Always downloads (the route handlers set `attachment` + `nosniff`); this policy also
+ * sandboxes them should a browser render one anyway. Config-level headers replace a route's own,
+ * so it is applied in `next.config.ts`, after the default policy.
+ */
+export const RECEIVED_CONTENT_PATHS = [
+  "/:orgSlug/projects/:projectSlug/:envSlug/received/:receivedId/raw",
+  "/:orgSlug/projects/:projectSlug/:envSlug/received/:receivedId/attachments/:attachmentId",
+];
+
+export const RECEIVED_CONTENT_CSP = "sandbox; default-src 'none'";

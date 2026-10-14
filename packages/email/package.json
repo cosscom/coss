@@ -17,6 +17,7 @@
     "test": "bun --env-file=../../.env test"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "catalog:",
     "@aws-sdk/client-sesv2": "catalog:",
     "@coss/billing": "workspace:*",
     "@coss/db": "workspace:*",
@@ -30,6 +31,7 @@
     "drizzle-orm": "catalog:",
     "parse5": "8.0.1",
     "pg-boss": "catalog:",
+    "postal-mime": "4.0.6",
     "zod": "catalog:"
   },
   "devDependencies": {

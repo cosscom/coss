@@ -20,9 +20,11 @@ import type {
 import type {
   CheckSuppressionQuery,
   CreateDomainRequest,
+  CreateReceivingDomainRequest,
   CreateSuppressionRequest,
   CreateTrackingDomainRequest,
   DeletedDomain,
+  DeletedReceivedEmail,
   DeletedSuppression,
   DeletedTrackingRule,
   DomainList,
@@ -38,7 +40,14 @@ import type {
   EmailWebhookEvent,
   ExportSuppressionsQuery,
   ImportSuppressionsRequest,
+  InboundAddressObject,
+  ListReceivedEmailsQuery,
   ListSuppressionsQuery,
+  ReceivedEmailList,
+  ReceivedEmailObject,
+  ReceivedEmailSummary,
+  ReceivedEmailWebhookEvent,
+  ReceivingDomainObject,
   RescheduleEmailRequest,
   SendEmailBatchRequest,
   SendEmailRequest,
@@ -108,6 +117,7 @@ import type {
   CossErrorType,
   CreateDomainParams,
   CreateLogDrainParams,
+  CreateReceivingDomainParams,
   CreateRiskListEntryParams,
   CreateSuppressionParams,
   CreateTrackingDomainParams,
@@ -122,6 +132,7 @@ import type {
   ListInvoicesParams,
   ListLogDrainBatchesParams,
   ListLogsParams,
+  ListReceivedEmailsParams,
   ListRiskAssessmentsParams,
   ListRiskListEntriesParams,
   ListSuppressionsParams,
@@ -143,6 +154,7 @@ import type {
   Credit as SdkCredit,
   DeletedDomain as SdkDeletedDomain,
   DeletedLogDrain as SdkDeletedLogDrain,
+  DeletedReceivedEmail as SdkDeletedReceivedEmail,
   DeletedRiskListEntry as SdkDeletedRiskListEntry,
   DeletedSuppression as SdkDeletedSuppression,
   DeletedTrackingRule as SdkDeletedTrackingRule,
@@ -156,11 +168,16 @@ import type {
   EmailWebhookEvent as SdkEmailWebhookEvent,
   WebhookEndpointWithSecret as SdkEndpointWithSecret,
   ForgottenRiskUser as SdkForgottenRiskUser,
+  InboundAddress as SdkInboundAddress,
   Invoice as SdkInvoice,
   InvoiceSummary as SdkInvoiceSummary,
   List as SdkList,
   Log as SdkLog,
   LogDrainWithSecret as SdkLogDrainWithSecret,
+  ReceivedEmail as SdkReceivedEmail,
+  ReceivedEmailSummary as SdkReceivedEmailSummary,
+  ReceivedEmailWebhookEvent as SdkReceivedEmailWebhookEvent,
+  ReceivingDomain as SdkReceivingDomain,
   Reputation as SdkReputation,
   ReputationCheck as SdkReputationCheck,
   RiskAssessment as SdkRiskAssessment,
@@ -299,13 +316,40 @@ export type Contract = [
     MutuallyAssignable<z.output<typeof RiskWebhookEvent>["data"], SdkRiskWebhookEvent["data"]>
   >,
   Assert<
+    MutuallyAssignable<z.output<typeof ReceivedEmailWebhookEvent>, SdkReceivedEmailWebhookEvent>
+  >,
+  Assert<
+    MutuallyAssignable<
+      z.output<typeof ReceivedEmailWebhookEvent>["data"],
+      SdkReceivedEmailWebhookEvent["data"]
+    >
+  >,
+  Assert<
     MutuallyAssignable<
       | z.output<typeof EmailWebhookEvent>
+      | z.output<typeof ReceivedEmailWebhookEvent>
       | z.output<typeof AccountWebhookEvent>
       | z.output<typeof BillingWebhookEvent>
       | z.output<typeof RiskWebhookEvent>,
       WebhookEvent
     >
+  >,
+  // Receiving: received emails (the SDK sends `limit` as a number), the inbound address and
+  // receiving domains.
+  Assert<MutuallyAssignable<z.output<typeof ReceivedEmailSummary>, SdkReceivedEmailSummary>>,
+  Assert<MutuallyAssignable<z.output<typeof ReceivedEmailObject>, SdkReceivedEmail>>,
+  Assert<MutuallyAssignable<z.output<typeof ReceivedEmailList>, List<SdkReceivedEmailSummary>>>,
+  Assert<
+    MutuallyAssignable<
+      Omit<z.input<typeof ListReceivedEmailsQuery>, "limit"> & { limit?: number },
+      ListReceivedEmailsParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof DeletedReceivedEmail>, SdkDeletedReceivedEmail>>,
+  Assert<MutuallyAssignable<z.output<typeof InboundAddressObject>, SdkInboundAddress>>,
+  Assert<MutuallyAssignable<z.output<typeof ReceivingDomainObject>, SdkReceivingDomain>>,
+  Assert<
+    MutuallyAssignable<z.input<typeof CreateReceivingDomainRequest>, CreateReceivingDomainParams>
   >,
   // Billing: responses, queries (the SDK sends `limit` as a number) and webhook events.
   Assert<MutuallyAssignable<z.output<typeof BillingObject>, SdkBilling>>,

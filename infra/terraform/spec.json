@@ -44,7 +44,7 @@
           "name": "VALKEY_URL",
           "kind": "secret",
           "required": true,
-          "description": "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web and api."
+          "description": "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web, api and worker."
         },
         {
           "name": "VALKEY_CLUSTER",
@@ -105,6 +105,19 @@
           "kind": "plain",
           "required": true,
           "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "INBOUND_MANAGED_DOMAIN",
+          "kind": "plain",
+          "required": false,
+          "value": "inbound.coss.com",
+          "description": "Receiving: each environment's `<label>.<domain>` addresses (ses:bootstrap --managed-domain). Set with SES_INBOUND_BUCKET, or neither (receiving off)."
+        },
+        {
+          "name": "SES_INBOUND_BUCKET",
+          "kind": "plain",
+          "required": false,
+          "description": "Receiving: the bucket received emails are stored in. Printed by ses:bootstrap."
         },
         {
           "name": "TRACKING_DOMAIN_PROVIDER",
@@ -338,7 +351,7 @@
           "name": "VALKEY_URL",
           "kind": "secret",
           "required": true,
-          "description": "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web and api."
+          "description": "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web, api and worker."
         },
         {
           "name": "VALKEY_CLUSTER",
@@ -406,6 +419,19 @@
           "kind": "plain",
           "required": true,
           "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "INBOUND_MANAGED_DOMAIN",
+          "kind": "plain",
+          "required": false,
+          "value": "inbound.coss.com",
+          "description": "Receiving: each environment's `<label>.<domain>` addresses (ses:bootstrap --managed-domain). Set with SES_INBOUND_BUCKET, or neither (receiving off)."
+        },
+        {
+          "name": "SES_INBOUND_BUCKET",
+          "kind": "plain",
+          "required": false,
+          "description": "Receiving: the bucket received emails are stored in. Printed by ses:bootstrap."
         },
         {
           "name": "TRACKING_DOMAIN_PROVIDER",
@@ -548,6 +574,19 @@
           "description": "Printed by ses:bootstrap."
         },
         {
+          "name": "INBOUND_MANAGED_DOMAIN",
+          "kind": "plain",
+          "required": false,
+          "value": "inbound.coss.com",
+          "description": "Receiving: each environment's `<label>.<domain>` addresses (ses:bootstrap --managed-domain). Set with SES_INBOUND_BUCKET, or neither (receiving off)."
+        },
+        {
+          "name": "SES_INBOUND_BUCKET",
+          "kind": "plain",
+          "required": false,
+          "description": "Receiving: the bucket received emails are stored in. Printed by ses:bootstrap."
+        },
+        {
           "name": "TRACKING_DOMAIN_PROVIDER",
           "kind": "plain",
           "required": true,
@@ -599,6 +638,32 @@
           "kind": "plain",
           "required": true,
           "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "SES_INBOUND_QUEUE_URL",
+          "kind": "plain",
+          "required": false,
+          "description": "Receiving: the queue of SES receipt notifications. Printed by ses:bootstrap."
+        },
+        {
+          "name": "VALKEY_URL",
+          "kind": "secret",
+          "required": true,
+          "description": "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web, api and worker."
+        },
+        {
+          "name": "VALKEY_CLUSTER",
+          "kind": "plain",
+          "required": true,
+          "value": "true",
+          "description": "ElastiCache Serverless uses the cluster protocol."
+        },
+        {
+          "name": "RATE_LIMIT_KEY_PREFIX",
+          "kind": "plain",
+          "required": false,
+          "value": "coss",
+          "description": "Counter namespace; must match the cache user's ACL."
         },
         {
           "name": "LOG_RETENTION_DAYS",
@@ -732,9 +797,11 @@
         "--name",
         "coss",
         "--tenant-prefix",
-        "coss"
+        "coss",
+        "--managed-domain",
+        "inbound.coss.com"
       ],
-      "when": "Once per stage after the first migrate, and after upgrades that change it. Needs DATABASE_URL, AWS_REGION and a task role allowed to manage SES, SNS, SQS, EventBridge, IAM and CloudWatch."
+      "when": "Once per stage after the first migrate, and after upgrades that change it. Needs DATABASE_URL, AWS_REGION and a task role allowed to manage SES, SNS, SQS, EventBridge, S3, IAM and CloudWatch."
     },
     {
       "name": "create-admin",

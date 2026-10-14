@@ -109,6 +109,21 @@ const email: EnvVar[] = [
     required: true,
     description: "Printed by ses:bootstrap.",
   },
+  {
+    name: "INBOUND_MANAGED_DOMAIN",
+    kind: "plain",
+    required: false,
+    value: "inbound.coss.com",
+    description:
+      "Receiving: each environment's `<label>.<domain>` addresses (ses:bootstrap --managed-domain). " +
+      "Set with SES_INBOUND_BUCKET, or neither (receiving off).",
+  },
+  {
+    name: "SES_INBOUND_BUCKET",
+    kind: "plain",
+    required: false,
+    description: "Receiving: the bucket received emails are stored in. Printed by ses:bootstrap.",
+  },
   ...trackingDomains,
 ];
 
@@ -118,7 +133,7 @@ const rateLimits: EnvVar[] = [
     kind: "secret",
     required: true,
     description:
-      "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web and api.",
+      "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web, api and worker.",
   },
   {
     name: "VALKEY_CLUSTER",
@@ -460,6 +475,16 @@ export const SERVICES: Service[] = [
         description: "Printed by ses:bootstrap.",
       },
       {
+        name: "SES_INBOUND_QUEUE_URL",
+        kind: "plain",
+        required: false,
+        description: "Receiving: the queue of SES receipt notifications. Printed by ses:bootstrap.",
+      },
+      // The daily inbound limit per organization (`email.inbound.day`) is counted in Valkey.
+      ...rateLimits.filter((v) =>
+        ["VALKEY_URL", "VALKEY_CLUSTER", "RATE_LIMIT_KEY_PREFIX"].includes(v.name),
+      ),
+      {
         name: "LOG_RETENTION_DAYS",
         kind: "plain",
         required: false,
@@ -517,10 +542,12 @@ export const ONE_OFF_TASKS = [
       "coss",
       "--tenant-prefix",
       "coss",
+      "--managed-domain",
+      "inbound.coss.com",
     ],
     when:
       "Once per stage after the first migrate, and after upgrades that change it. Needs DATABASE_URL, " +
-      "AWS_REGION and a task role allowed to manage SES, SNS, SQS, EventBridge, IAM and CloudWatch.",
+      "AWS_REGION and a task role allowed to manage SES, SNS, SQS, EventBridge, S3, IAM and CloudWatch.",
   },
   {
     name: "create-admin",

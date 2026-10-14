@@ -33,6 +33,32 @@ function spec(name: string, rule: { limit: number; periodMs: number; burst?: num
 }
 
 describe.each(harnesses)("%s store", (_name, make) => {
+  test("concurrent retries reuse admission without spending another token", async () => {
+    const { store } = make();
+    const s = spec("replay", { limit: 2, periodMs: 60_000 });
+    const options = { cost: 1, idempotency: { key: `${s.key}:receipt`, ttlMs: 60_000 } };
+    const results = await Promise.all(
+      Array.from({ length: 10 }, () => store.consume([s], options)),
+    );
+    expect(results.every((result) => result.allowed)).toBe(true);
+    expect((await store.consume([s], { cost: 1 })).allowed).toBe(true);
+    expect((await store.consume([s], { cost: 1 })).allowed).toBe(false);
+    expect((await store.consume([s], options)).allowed).toBe(true);
+  });
+
+  test("peek does not reserve admission and replay records expire", async () => {
+    const { store, advance } = make();
+    const s = spec("replay-expiry", { limit: 1, periodMs: 60_000 });
+    const options = { cost: 1, idempotency: { key: `${s.key}:receipt`, ttlMs: 80 } };
+    await store.consume([s], { ...options, peek: true });
+    await store.consume([s], { cost: 1 });
+    expect((await store.consume([s], options)).allowed).toBe(false);
+    await store.consume([s], { cost: -1 });
+    expect((await store.consume([s], options)).allowed).toBe(true);
+    await advance(120);
+    expect((await store.consume([s], options)).allowed).toBe(false);
+  });
+
   test("allows the burst, then denies with a retry-after", async () => {
     const { store } = make();
     const s = spec("burst", { limit: 3, periodMs: 60_000 });

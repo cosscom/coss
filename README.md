@@ -294,6 +294,35 @@ are left alone. Sending can't be limited by tag (SES authorizes sends against th
 and worker policies allow `ses:SendEmail` on any identity but only with the COSS configuration set (another set,
 or none, is denied); COSS always sends with the organization's tenant, which SES only allows for identities associated with it.
 
+### Receiving email on SES
+
+Environments receive email at their own `<label>.<INBOUND_MANAGED_DOMAIN>` addresses and at customers' receiving
+domains. On SES this is one **receipt rule set** per account and region, with a single catch-all rule: it
+scans each message for spam and viruses, writes it to the inbound bucket under `landing/` and notifies an SNS
+topic, whose SQS queue the worker consumes. The worker routes each message by its envelope recipients, stores a
+copy per receiving environment under `orgs/…`, then deletes the landing object. Mail for anything that doesn't
+route is dropped.
+
+1. Pick a region where SES receives email, and the managed domain (production: `inbound.coss.com`).
+2. Run bootstrap with `--managed-domain inbound.coss.com`. It also creates the bucket `<name>-inbound-<account>`
+   (private, SSE-S3, TLS only; lifecycle: `landing/` 21 days, `orgs/` received email retention + 1 day), the topic
+   `<name>-ses-inbound`, the queues `<name>-inbound` (+ `-dlq`), the rule set `<name>-inbound` (made active), the
+   managed domain's SES identity (tagged `coss_inbound=<name>`) and, with `--alert-email`, the alarms
+   `<name>-inbound-dead-letters` and `<name>-inbound-backlog`. An account/region has only one *active* rule set:
+   if another one is active, bootstrap stops unless you pass `--replace-active-rule-set` (mail its rules handle
+   stops being handled).
+3. Publish the records it prints in the coss.com zone on Cloudflare: the managed domain's three DKIM `CNAME`s and
+   `MX 10 inbound-smtp.<region>.amazonaws.com` for both `inbound.coss.com` and `*.inbound.coss.com`.
+4. Set `INBOUND_MANAGED_DOMAIN` and `SES_INBOUND_BUCKET` for the API, dashboard and worker, and
+   `SES_INBOUND_QUEUE_URL` (plus `VALKEY_URL`, for the daily inbound limit) for the worker. Rerun bootstrap first on
+   upgrades: the updated `<name>-*` policies grant the S3 and SQS access.
+
+Before relying on it in a new account, check against a live account (and note the results here): that a verified
+parent domain receives for its subdomains (`in.acme.com` on `acme.com`'s identity) and one identity covers the
+managed domain's wildcard; that identities associated with SES tenants still receive; that
+`receipt.action.objectKey` includes the `landing/` prefix; and what SES's own `Received:` header names (copies
+drop `for <address>` clauses naming other environments' recipients).
+
 ## Content screening on Vercel AI Gateway
 
 1. Create an AI Gateway API key in the Vercel team that will pay for screening. Requests ask for zero data
@@ -314,14 +343,14 @@ refused in production. Every bucket declares its outage policy: read-only API tr
 is unreachable, while authentication, writes, sends, quotas and public-ingress abuse controls are denied.
 A warning is logged in either case.
 
-1. The cache lives in a VPC: the API and dashboard must run in it, and its security group must allow inbound
+1. The cache lives in a VPC: the API, dashboard and worker must run in it, and its security group must allow inbound
    TCP 6379 from them.
 2. With admin credentials, create it (idempotent; it takes a few minutes the first time):
    `AWS_REGION=eu-west-1 bun run valkey:bootstrap --subnet-ids subnet-a,subnet-b --security-group-ids sg-… [--name coss] [--max-ecpu 5000] [--max-storage-gb 1]`
    It creates a password user limited to the `<prefix>:*` keys and the commands the limiter uses, a disabled
    `default` user, a user group and the serverless cache (Valkey 8, TLS).
-3. Set what it prints (`VALKEY_URL=rediss://…`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX`) for the API
-   and dashboard. The password is only printed when the user is created; `--rotate-password` makes a new one
+3. Set what it prints (`VALKEY_URL=rediss://…`, `VALKEY_CLUSTER=true`, `RATE_LIMIT_KEY_PREFIX`) for the API,
+   dashboard and worker (which counts the daily inbound limit). The password is only printed when the user is created; `--rotate-password` makes a new one
    (running processes apply each bucket's outage policy until they get it).
 4. Set `CLIENT_IP_HEADER` (e.g. `x-forwarded-for`) and `TRUSTED_PROXY_COUNT` (how many of your proxies append
    to it) to match your load balancers. Without them, public unauthenticated entry points use an aggregate
@@ -403,7 +432,8 @@ Cloudflare DNS (coss.com zone, DNS only)
   private subnets for tasks, RDS and Valkey. Security groups: the ALB takes 443 only from the managed prefix list
   `com.amazonaws.global.cloudfront.origin-facing` (its own group: the list weighs ~55 rules) and from Cloudflare's
   IPv4 ranges (tracking domains); each service's tasks only from the ALB on their port; RDS 5432 only from web, api
-  and worker; Valkey 6379 only from web and api.
+  and worker; Valkey 6379 only from web, api and worker
+  (the daily inbound limit).
 - **NAT gateways (required):** the worker delivers customer webhooks to arbitrary public URLs and ports, and domain
   verification in web, api and worker queries public DNS (1.1.1.1 / 8.8.8.8, port 53) directly. AWS traffic stays
   off them through VPC endpoints: interface endpoints for `sqs`, `secretsmanager`, `ecr.api`, `ecr.dkr`, `logs` and
@@ -506,7 +536,9 @@ redeploy after changing one. The two origin header values are separate secrets (
 
 Plain values live in `infra/terraform/production.tfvars` (`plain_env`, per service); the plan fails when a required
 plain variable of the spec has no value or tfvars sets one the spec doesn't declare. `SENTRY_*` DSNs come from the
-`cosscom` Sentry organization (EU region). The site needs nothing: everything it needs is in the image.
+`cosscom` Sentry organization (EU region). Receiving adds `INBOUND_MANAGED_DOMAIN=inbound.coss.com` and
+`SES_INBOUND_BUCKET` (web, api, worker) and `SES_INBOUND_QUEUE_URL` (worker), printed by
+`ses:bootstrap --managed-domain`. The site needs nothing: everything it needs is in the image.
 
 Images are built once and promoted: builds set `SKIP_ENV_VALIDATION` and bake in nothing stage-specific (only the
 commit: `NEXT_DEPLOYMENT_ID`, `SENTRY_RELEASE`). Each server validates its environment at startup and exits if it is
@@ -518,7 +550,8 @@ wrong. AWS credentials come from the task role.
 - **Task roles:** web → `coss-dashboard`, api → `coss-api`, worker → `coss-worker`: the policies `ses:bootstrap`
   creates under `/coss/` (defined in [`apps/worker/scripts/ses-policies.ts`](./apps/worker/scripts/ses-policies.ts)),
   plus ECS Exec. The site gets no permissions. The `ses-bootstrap` one-off task runs with
-  `coss-production-ses-bootstrap` (SES, SNS, SQS, EventBridge, CloudWatch alarms, IAM policies under `/coss/`).
+  `coss-production-ses-bootstrap` (SES, SNS, SQS, EventBridge, S3 (the inbound bucket), CloudWatch alarms, IAM
+  policies under `/coss/`).
 - **Deploys** (`coss-production-deploy`): the role of the CodeBuild project whose runners execute the Deploy
   workflow's AWS jobs (ECR push, task definitions, service updates, the migrate task, `iam:PassRole` on the task
   roles, the CloudFront invalidation, read-only ALB/CloudFront reads for the routing check). The organization's SCP

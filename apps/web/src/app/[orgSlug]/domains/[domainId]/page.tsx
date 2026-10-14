@@ -3,9 +3,12 @@ import {
   domainRecords,
   getDomain,
   getEmailTenant,
+  getReceivingDomain,
   getTrackingDomain,
+  type ReceivingDomainRow,
   type TrackingDomainRow,
 } from "@coss/email";
+import { listEnvironments, listProjects } from "@coss/tenancy";
 import { Alert, AlertDescription } from "@coss/ui/components/alert";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import {
@@ -28,9 +31,16 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { SendingPausedAlert } from "@/components/sending-paused-alert";
 import { planHas } from "@/lib/billing";
+import { emailRuntime } from "@/lib/email-runtime";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { DeleteDomainButton, VerifyDomainButton } from "./domain-actions";
+import {
+  AddReceivingDomainDialog,
+  CheckReceivingDomainButton,
+  type EnvironmentOption,
+  RemoveReceivingDomainButton,
+} from "./receiving-domain-actions";
 import {
   AddTrackingDomainDialog,
   CheckTrackingDomainButton,
@@ -117,10 +127,21 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
     getEmailTenant(organization.id),
   ]);
   if (!domain) notFound();
-  const tracking = await getTrackingDomain({
-    organizationId: organization.id,
-    domainId: domain.id,
-  });
+  const [tracking, receiving, projects] = await Promise.all([
+    getTrackingDomain({ organizationId: organization.id, domainId: domain.id }),
+    getReceivingDomain({ organizationId: organization.id, domainId: domain.id }),
+    listProjects({ organizationId: organization.id }),
+  ]);
+  // Where received emails can go: every environment of the organization ("Project / Environment").
+  const environments = (
+    await Promise.all(
+      projects.map(async (project) =>
+        (
+          await listEnvironments({ organizationId: organization.id, projectId: project.id })
+        ).map((environment) => ({ project, environment })),
+      ),
+    )
+  ).flat();
   const records = domainRecords(domain);
   const canCreate = can({ domain: ["create"] });
   const canVerify = can({ domain: ["verify"] });
@@ -201,6 +222,21 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
         domainName={domain.name}
         target={target}
         tracking={tracking}
+      />
+
+      <ReceivingDomainCard
+        available={emailRuntime().inbound !== null}
+        canCreate={canCreate && domain.status !== "failed" && domain.status !== "deleting"}
+        canDelete={canDelete}
+        canVerify={canVerify}
+        domainName={domain.name}
+        environments={environments.map(({ project, environment }) => ({
+          value: environment.id,
+          label: `${project.name} / ${environment.name}`,
+          href: `/${organization.slug}/projects/${project.slug}/${environment.slug}/received`,
+        }))}
+        receiving={receiving}
+        target={target}
       />
 
       <Card>
@@ -330,6 +366,135 @@ function TrackingDomainCard(props: {
               <TableCell className="min-w-0 whitespace-normal align-top leading-normal">
                 <div className="flex flex-col gap-1">
                   <code className="break-all text-xs">{record.value}</code>
+                  {record.found.length > 0 ? (
+                    <span className="break-all text-destructive-foreground text-xs">
+                      Found: {record.found.join(", ")}
+                    </span>
+                  ) : null}
+                  <div>
+                    <CopyButton label="Copy value" value={record.value} />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="align-top">
+                <RecordStatusBadge status={record.status} />
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardPanel>
+    </Card>
+  );
+}
+
+function ReceivingDomainCard(props: {
+  receiving: ReceivingDomainRow | null;
+  available: boolean;
+  domainName: string;
+  environments: (EnvironmentOption & { href: string })[];
+  target: { orgSlug: string; domainId: string };
+  canCreate: boolean;
+  canVerify: boolean;
+  canDelete: boolean;
+}) {
+  const { receiving, target } = props;
+  if (!receiving) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Receiving</CardTitle>
+          <CardDescription>
+            Receive email at {props.domainName} or a subdomain such as inbound.{props.domainName}:
+            every message becomes a received email of an environment, with an{" "}
+            <code>email.received</code> webhook.
+          </CardDescription>
+        </CardHeader>
+        {props.canCreate && props.available && props.environments.length > 0 ? (
+          <CardPanel>
+            <AddReceivingDomainDialog
+              {...target}
+              domainName={props.domainName}
+              environments={props.environments.map(({ value, label }) => ({ value, label }))}
+            />
+          </CardPanel>
+        ) : null}
+        {!props.available ? (
+          <CardPanel>
+            <Alert variant="info">
+              <AlertDescription>This deployment does not receive email.</AlertDescription>
+            </Alert>
+          </CardPanel>
+        ) : null}
+      </Card>
+    );
+  }
+  const record = receiving.record;
+  const destination = props.environments.find((env) => env.value === receiving.environmentId);
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="flex items-center gap-3">
+              Receiving <code className="text-sm">{receiving.hostname}</code>
+            </CardTitle>
+            <CardDescription>
+              Email to any address at {receiving.hostname} is received by{" "}
+              {destination ? (
+                <Link className="underline" href={destination.href}>
+                  {destination.label}
+                </Link>
+              ) : (
+                "an environment"
+              )}
+              . Last checked {formatDateTime(receiving.lastCheckedAt)}.
+            </CardDescription>
+          </div>
+          <div className="flex gap-2">
+            {props.canVerify && props.available ? <CheckReceivingDomainButton {...target} /> : null}
+            {props.canDelete ? (
+              <RemoveReceivingDomainButton {...target} hostname={receiving.hostname} />
+            ) : null}
+          </div>
+        </div>
+      </CardHeader>
+      <CardPanel className="flex flex-col gap-3 p-2">
+        {record.status === "mismatch" ? (
+          <Alert variant="warning">
+            <AlertDescription>
+              Mail for {receiving.hostname} goes to its most preferred MX records, which don&apos;t
+              all point at COSS yet.
+            </AlertDescription>
+          </Alert>
+        ) : null}
+        <Table className="table-fixed">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-16">Type</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Value</TableHead>
+              <TableHead className="w-28">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell className="align-top font-mono text-xs">{record.type}</TableCell>
+              <TableCell className="min-w-0 whitespace-normal align-top leading-normal">
+                <div className="flex flex-col gap-1">
+                  <code className="break-all text-xs">{record.name}</code>
+                  <span className="text-muted-foreground text-xs">
+                    MX: delivers this hostname&apos;s email to COSS.
+                  </span>
+                  <div>
+                    <CopyButton label="Copy name" value={record.name} />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="min-w-0 whitespace-normal align-top leading-normal">
+                <div className="flex flex-col gap-1">
+                  <code className="break-all text-xs">
+                    {record.priority} {record.value}
+                  </code>
                   {record.found.length > 0 ? (
                     <span className="break-all text-destructive-foreground text-xs">
                       Found: {record.found.join(", ")}

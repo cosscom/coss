@@ -33,6 +33,13 @@ After deletion:
 Attachment content is discarded much earlier: as soon as the email is sent, fails or is
 canceled. Only each attachment's name, type, size and checksum stay with the email.
 
+## Received emails
+
+A [received email](/docs/email/receiving) is deleted <RetentionPeriod of="received_emails" />
+after it arrived, with its raw message, headers, bodies and attachments. Delete one sooner with
+`coss.email.received.delete()` or from its dashboard page: its content goes right away. Messages
+blocked for a virus never have their content stored.
+
 ## Webhook deliveries
 
 Every event sent to your [webhook endpoints](/docs/webhooks), with its delivery status and the

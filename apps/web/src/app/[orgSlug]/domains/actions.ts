@@ -2,15 +2,20 @@
 
 import {
   checkDomain,
+  checkReceivingDomain,
   createDomain,
+  createReceivingDomain,
   createTrackingDomain,
   deleteDomain,
+  deleteReceivingDomain,
   deleteTrackingDomain,
   getDomain,
+  getReceivingDomain,
   getTrackingDomain,
   restartDomainVerification,
   verifyTrackingDomain,
 } from "@coss/email";
+import { getEnvironmentById } from "@coss/tenancy";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { env } from "@/env";
@@ -89,13 +94,20 @@ export async function verifyDomainAction(
       }
       await checkDomain({ organizationId: domain.organizationId, id: domain.id }, deps);
     }
-    // Its tracking domain shows its own problems on its card.
+    // Its tracking and receiving domains show their own problems on their cards.
     await verifyTrackingDomain(
       { organizationId: domain.organizationId, domainId: domain.id },
       deps,
     ).catch((error: unknown) => {
       console.error(`[web:domains] checking the tracking domain of ${domain.id} failed:`, error);
     });
+    const inbound = emailRuntime().inbound;
+    const target = { organizationId: domain.organizationId, domainId: domain.id };
+    if (inbound && (await getReceivingDomain(target))) {
+      await checkReceivingDomain(target, inbound, deps.dns).catch((error: unknown) => {
+        console.error(`[web:domains] checking the receiving domain of ${domain.id} failed:`, error);
+      });
+    }
     refresh();
     return null;
   });
@@ -168,6 +180,98 @@ export async function removeTrackingDomainAction(
       organizationId: context.organization.id,
       action: "tracking_domain.deleted",
       target: { type: "domain", id: domain.id, label: domain.name },
+    });
+    refresh();
+    return null;
+  });
+}
+
+/** Starts receiving email at a hostname of the domain, for one of the organization's environments. */
+export async function addReceivingDomainAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      domain: ["create"],
+    });
+    const domain = await domainFromForm(context, formData);
+    const inbound = emailRuntime().inbound;
+    if (!inbound) throw new ActionError("This deployment does not receive email.");
+    const environment = await getEnvironmentById({
+      organizationId: context.organization.id,
+      environmentId: formString(formData, "environmentId"),
+    });
+    if (!environment) throw new ActionError("Choose an environment to receive the emails.");
+    const created = await createReceivingDomain(
+      {
+        organizationId: domain.organizationId,
+        domainId: domain.id,
+        environmentId: environment.id,
+        hostname: formString(formData, "hostname"),
+      },
+      inbound,
+      emailRuntime().dns,
+    );
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      projectId: environment.projectId,
+      environmentId: environment.id,
+      action: "domain.receiving_enabled",
+      target: { type: "domain", id: domain.id, label: domain.name },
+      metadata: { hostname: created.hostname },
+    });
+    refresh();
+    return null;
+  });
+}
+
+/** Checks the receiving domain's MX record now. */
+export async function checkReceivingDomainAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      domain: ["verify"],
+    });
+    const domain = await domainFromForm(context, formData);
+    const inbound = emailRuntime().inbound;
+    if (!inbound) throw new ActionError("This deployment does not receive email.");
+    const target = { organizationId: domain.organizationId, domainId: domain.id };
+    const receiving = await getReceivingDomain(target);
+    if (!receiving) throw new ActionError("This domain doesn't receive email.");
+    const since = receiving.lastCheckedAt
+      ? Date.now() - receiving.lastCheckedAt.getTime()
+      : Infinity;
+    if (since < MANUAL_CHECK_INTERVAL_MS) {
+      throw new ActionError("This MX record was just checked. Try again in a few seconds.");
+    }
+    await checkReceivingDomain(target, inbound, emailRuntime().dns);
+    refresh();
+    return null;
+  });
+}
+
+/** Stops receiving at the domain's hostname; emails already received are kept. */
+export async function removeReceivingDomainAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      domain: ["delete"],
+    });
+    const domain = await domainFromForm(context, formData);
+    const removed = await deleteReceivingDomain({
+      organizationId: domain.organizationId,
+      domainId: domain.id,
+    });
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "domain.receiving_disabled",
+      target: { type: "domain", id: domain.id, label: domain.name },
+      metadata: { hostname: removed.hostname },
     });
     refresh();
     return null;

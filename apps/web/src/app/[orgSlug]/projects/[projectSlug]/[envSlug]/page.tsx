@@ -1,5 +1,5 @@
 import { API_KEY_PREFIX } from "@coss/auth/constants";
-import { type EmailListItem, listDomains, listEmails } from "@coss/email";
+import { type EmailListItem, inboundAddressFor, listDomains, listEmails } from "@coss/email";
 import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment, listEnvironmentApiKeys, listEnvironments } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
@@ -26,6 +26,7 @@ import { CopyButton } from "@/components/copy-button";
 import { EmailStatusBadge, ModeBadge, SandboxBadge } from "@/components/email-badges";
 import { PageHeader } from "@/components/page-header";
 import { env } from "@/env";
+import { emailRuntime } from "@/lib/email-runtime";
 import { formatDateTime } from "@/lib/format";
 import { liveKeyRestriction } from "@/lib/live-keys";
 import { requireOrgMember } from "@/lib/session";
@@ -71,13 +72,21 @@ export default async function EnvironmentPage({
   const { project, environment } = found;
 
   const live = environment.mode === "live";
-  const [environments, keys, emails, domains, createRestriction] = await Promise.all([
-    listEnvironments({ organizationId: organization.id, projectId: project.id }),
-    listEnvironmentApiKeys({ organizationId: organization.id, environmentId: environment.id }),
-    listEmails({ organizationId: organization.id, environmentId: environment.id, limit: 50 }),
-    live ? listDomains({ organizationId: organization.id }) : null,
-    live ? liveKeyRestriction(session, organization.id) : null,
-  ]);
+  const inbound = emailRuntime().inbound;
+  const [environments, keys, emails, domains, createRestriction, inboundAddress] =
+    await Promise.all([
+      listEnvironments({ organizationId: organization.id, projectId: project.id }),
+      listEnvironmentApiKeys({ organizationId: organization.id, environmentId: environment.id }),
+      listEmails({ organizationId: organization.id, environmentId: environment.id, limit: 50 }),
+      live ? listDomains({ organizationId: organization.id }) : null,
+      live ? liveKeyRestriction(session, organization.id) : null,
+      inbound && can({ email: ["read"] })
+        ? inboundAddressFor(
+            { organizationId: organization.id, environmentId: environment.id },
+            inbound.managedDomain,
+          )
+        : null,
+    ]);
   // Live keys must send from a verified domain; sandbox keys accept any address.
   const sendingDomain = domains ? domains.find((d) => d.canSend)?.name : "example.com";
 
@@ -253,6 +262,33 @@ export default async function EnvironmentPage({
         </CardPanel>
       </Card>
 
+      {inboundAddress ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Received emails</CardTitle>
+            <CardDescription>
+              Email sent to any address at <code>{inboundAddress.domain}</code> (or at one of your
+              domains set up to receive) arrives here, with an <code>email.received</code> webhook.
+            </CardDescription>
+            <CardAction>
+              <Button
+                render={<Link href={`${projectPath}/${environment.slug}/received`} />}
+                size="sm"
+                variant="outline"
+              >
+                Open inbox
+              </Button>
+            </CardAction>
+          </CardHeader>
+          <CardPanel>
+            <div className="flex items-center gap-2">
+              <code className="break-all text-sm">support@{inboundAddress.domain}</code>
+              <CopyButton label="Copy address" value={`support@${inboundAddress.domain}`} />
+            </div>
+          </CardPanel>
+        </Card>
+      ) : null}
+
       {can({ log: ["read"] }) ? (
         <Card>
           <CardHeader>
@@ -300,7 +336,7 @@ export default async function EnvironmentPage({
           <CardTitle>Webhooks</CardTitle>
           <CardDescription>
             Get a signed request when emails from this environment are delivered, delayed, bounce,
-            receive complaints, or are opened and clicked.
+            receive complaints, or are opened and clicked, and when an email is received.
           </CardDescription>
           <CardAction>
             <Button

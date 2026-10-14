@@ -106,6 +106,17 @@ export const BUCKETS = {
     overridable: true,
     failureMode: "deny",
   },
+  // Received emails accepted per organization (the worker charges one per environment a message
+  // is delivered to). Over the limit, messages are dropped and counted. Fails open: a store outage
+  // must never lose a customer's mail.
+  "email.inbound.day": {
+    scope: "org",
+    limit: 10_000,
+    periodMs: DAY,
+    burst: 10_000,
+    overridable: true,
+    failureMode: "allow",
+  },
   // Invitations sent (and resent) per organization: each one emails an address the org chose.
   "dashboard.invitations": {
     scope: "org",

@@ -9,6 +9,7 @@ import type {
   RescheduleEmailParams,
   SendEmailParams,
 } from "../types/email.ts";
+import { ReceivedEmailsResource } from "./received-emails.ts";
 import { SuppressionResource } from "./suppressions.ts";
 import { TrackingResource } from "./tracking.ts";
 
@@ -19,12 +20,15 @@ export class EmailResource {
   readonly suppressions: SuppressionResource;
   /** The environment's open and click tracking settings. */
   readonly tracking: TrackingResource;
+  /** Emails the environment received. */
+  readonly received: ReceivedEmailsResource;
 
   /** @internal Use `new Coss().email`. */
   constructor(http: HttpClient) {
     this.#http = http;
     this.suppressions = new SuppressionResource(http);
     this.tracking = new TrackingResource(http);
+    this.received = new ReceivedEmailsResource(http);
   }
 
   /**
