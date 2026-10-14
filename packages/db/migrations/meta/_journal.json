@@ -351,6 +351,27 @@
       "when": 1792000695783,
       "tag": "0049_received_email_key_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1792001370926,
+      "tag": "0050_zippy_nebula",
+      "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1792001371702,
+      "tag": "0051_hooks_partitioning",
+      "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1792001372407,
+      "tag": "0052_hook_key_permissions",
+      "breakpoints": true
     }
   ]
 }

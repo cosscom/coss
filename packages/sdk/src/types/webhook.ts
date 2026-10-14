@@ -1,6 +1,7 @@
 /**
  * Webhook wire types (hand-written mirrors of the API's `EmailWebhookEvent`,
- * `ReceivedEmailWebhookEvent`, `AccountWebhookEvent`, `BillingWebhookEvent` and `RiskWebhookEvent`).
+ * `ReceivedEmailWebhookEvent`, `AccountWebhookEvent`, `BillingWebhookEvent`, `RiskWebhookEvent`
+ * and `HookEndpointWebhookEvent`).
  */
 import type { BillingHoldReason, Credit, InvoiceSummary, Meter, PlanKey } from "./billing.ts";
 import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
@@ -205,10 +206,38 @@ export interface RiskWebhookEvent {
   data: RiskWebhookEventData;
 }
 
+/** Events about Hooks: an endpoint of one of your applications was disabled for failing. */
+export type HookOperationalEventType = "hook_endpoint.disabled";
+
+export interface HookEndpointWebhookEventData {
+  application_id: string;
+  /** Your uid for the application, when it has one. */
+  application_uid: string | null;
+  endpoint_id: string;
+  url: string;
+  /** ISO 8601 timestamp: when its deliveries started failing every attempt. */
+  failing_since: string;
+  /** ISO 8601 timestamp. */
+  occurred_at: string;
+}
+
+/** A Hooks endpoint of one of your applications was disabled. `id` equals the `webhook-id` header. */
+export interface HookEndpointWebhookEvent {
+  id: string;
+  object: "event";
+  type: HookOperationalEventType;
+  /** The API version this event is rendered in: the receiving endpoint's `api_version`. */
+  api_version: string;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  data: HookEndpointWebhookEventData;
+}
+
 /** The JSON body of a webhook request; narrow on `type`. */
 export type WebhookEvent =
   | EmailWebhookEvent
   | ReceivedEmailWebhookEvent
   | AccountWebhookEvent
   | BillingWebhookEvent
-  | RiskWebhookEvent;
+  | RiskWebhookEvent
+  | HookEndpointWebhookEvent;

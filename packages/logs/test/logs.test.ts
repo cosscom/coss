@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { db, pool } from "@coss/db";
+import { dropExpiredPartitions, ensurePartitions, listPartitions } from "@coss/db/partitions";
 import { uniqueSuffix } from "@coss/db/testing";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { sql } from "drizzle-orm";
@@ -325,6 +326,44 @@ describe("partitions", () => {
       ]);
     } finally {
       await db.execute(sql.raw(`drop table if exists "${table}" cascade`));
+    }
+  });
+});
+
+describe("partitions without a default partition", () => {
+  test("detach expired days concurrently, and finish a detach that was cut short", async () => {
+    const table = `scratch_t${uniqueSuffix()}`.replaceAll(/[^a-z0-9_]/g, "").slice(0, 30);
+    await db.execute(
+      sql.raw(
+        `create table "${table}" (id text not null, made_at timestamptz not null, primary key (made_at, id)) partition by range (made_at)`,
+      ),
+    );
+    const spec = { table, column: "made_at", defaultPartition: false };
+    try {
+      const now = new Date("2026-05-10T12:00:00Z");
+      expect(await ensurePartitions(spec, { now, aheadDays: 3 })).toHaveLength(5);
+      await pool.query(`insert into "${table}" values ('a', '2026-05-09T10:00:00Z')`);
+      // Outside every partition: refused, there is no default partition to catch it.
+      await expect(
+        pool.query(`insert into "${table}" values ('b', '2026-06-01T10:00:00Z')`),
+      ).rejects.toThrow();
+
+      // A detach interrupted after it detached but before it dropped the table.
+      await pool.query(`alter table "${table}" detach partition "${table}_p20260510"`);
+
+      const later = new Date("2026-05-12T03:00:00Z");
+      const dropped = await dropExpiredPartitions(spec, { now: later, retentionDays: 1 });
+      expect(dropped.sort()).toEqual([`${table}_p20260509`, `${table}_p20260510`]);
+      expect((await listPartitions(table)).map((p) => p.name)).toEqual([
+        `${table}_p20260511`,
+        `${table}_p20260512`,
+        `${table}_p20260513`,
+      ]);
+      const leftover = await pool.query("select to_regclass($1) as found", [`${table}_p20260510`]);
+      expect(leftover.rows[0].found).toBeNull();
+    } finally {
+      await db.execute(sql.raw(`drop table if exists "${table}" cascade`));
+      await db.execute(sql.raw(`drop table if exists "${table}_p20260510"`));
     }
   });
 });

@@ -8,6 +8,7 @@ import path from "node:path";
 import { ZONE_ROUTES, type ZoneRoute } from "@coss/auth/slugs";
 import { billingEnvShape } from "@coss/billing/env";
 import { emailEnvShape, emailWorkerEnvShape } from "@coss/email/env";
+import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { screeningEnvShape } from "@coss/screening/env";
@@ -35,6 +36,7 @@ function schemaKeys(envFile: string, spread: Record<string, unknown>): string[] 
     ...own,
     ...(source.includes("...email") ? Object.keys(spread) : []),
     ...(source.includes("...rateLimitEnvShape") ? Object.keys(rateLimitEnvShape) : []),
+    ...(source.includes("...hookEnvShape") ? Object.keys(hookEnvShape) : []),
     ...(source.includes("...screeningEnvShape") ? Object.keys(screeningEnvShape) : []),
     ...(source.includes("...sentryEnvShape") ? Object.keys(sentryEnvShape) : []),
     ...(source.includes("...billingEnvShape") ? billingKeys(envFile) : []),

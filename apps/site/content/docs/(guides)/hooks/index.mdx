@@ -1,0 +1,92 @@
+---
+title: Hooks
+description: Webhooks as a service. Send a message once; COSS delivers it to every endpoint your customers registered.
+icon: Webhook
+---
+
+Hooks lets your product send webhooks to **your** customers without building the machinery:
+you send a message to one of your customers once, and COSS delivers it to every URL they
+registered, signed, retried with backoff for about a day, and logged. A ready-made
+[portal](/docs/hooks/portal) lets your customers add endpoints, pick event types, see every
+delivery and retry them, without you building any UI.
+
+Not to be confused with [webhooks](/docs/webhooks), which tell **you** about your own emails.
+
+| Concept         | What it is                                                                                     |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| Application     | One of your customers (or users). Address it by its `id` or your own `uid` for it.              |
+| Event type      | A kind of message you send, e.g. `invoice.paid`: the catalog your customers subscribe from.    |
+| Endpoint        | A customer's URL that receives their application's messages, with its own signing secret.      |
+| Message         | One event you send to one application; its JSON `payload` is the request body.                 |
+| Delivery        | One message sent to one endpoint, with every HTTP attempt.                                     |
+
+Everything belongs to the API key's [environment](/docs/environments): sandbox (`coss_test_…`)
+keys deliver to real URLs too, under much lower limits.
+
+## Quickstart
+
+Register the event types you send (once), then create an application for each customer:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.hooks.eventTypes.create({
+  name: "invoice.paid",
+  description: "An invoice was paid in full.",
+  examples: [{ invoice_id: "in_1042", amount: 4200 }],
+});
+
+await coss.hooks.applications.create({
+  name: "Acme Corp",
+  uid: "customer_8812", // your own id for this customer
+});
+```
+
+Your customer adds their endpoints in the [portal](/docs/hooks/portal), or you add them for them:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: endpoint } = await coss.hooks.endpoints.create("customer_8812", {
+  url: "https://acme.example/webhooks",
+  filter_types: ["invoice.paid"], // omit for every type
+});
+// endpoint.secret is how Acme verifies requests: show it to them, or let them read it in the portal.
+```
+
+Then send messages whenever something happens:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data, error } = await coss.hooks.messages.send({
+  application: "customer_8812",
+  event_type: "invoice.paid",
+  payload: { invoice_id: "in_1042", amount: 4200, currency: "usd" },
+});
+```
+
+The send returns `202` right away; COSS delivers the payload to each of the application's enabled
+endpoints subscribed to `invoice.paid`, usually within a second. Follow it with
+`coss.hooks.messages.listDeliveries()`, or in the dashboard under **Hooks**.
+
+The SDK sends an `Idempotency-Key` with every send and reuses it when it retries, so a retried send
+is delivered once. Pass your own (`{ idempotencyKey: "invoice-1042-paid" }`) to make your own
+retries safe too (see [idempotency](/docs/api-reference/idempotency)).
+
+## Event types
+
+Messages can use any `event_type` (1–64 letters, digits and `. _ -`), registered or not, but
+endpoints only subscribe to registered ones, and the portal shows your customers each type's
+description, JSON Schema and examples. Archiving a type hides it from the portal and new
+subscriptions; endpoints that already subscribed keep receiving it.
+
+## Payloads
+
+A payload is any JSON object up to 256 KB. COSS parses it and serializes it again, so keys keep
+their order but whitespace doesn't, and numbers beyond 2^53 lose precision: send large integers
+(and amounts you can't round) as strings. Messages, deliveries and attempts are kept for
+<RetentionPeriod of="hook_messages" />.

@@ -120,6 +120,11 @@ export async function updatePolicyAction(
         alwaysFirst: integerField(formData, "screeningFirst"),
         sampleRate: percentField(formData, "screeningSample"),
       },
+      hookFailureRate: {
+        warning: percentField(formData, "hookWarning"),
+        suspend: percentField(formData, "hookSuspend"),
+        minimumDeliveries: integerField(formData, "hookMinimum"),
+      },
     };
     await updateReputationPolicy({
       organizationId,
@@ -140,7 +145,12 @@ function withoutEmpty(overrides: ReputationPolicyOverrides): ReputationPolicyOve
     windowDays: overrides.windowDays,
     countSimulatorRecipients: overrides.countSimulatorRecipients,
   });
-  for (const key of ["bounceRate", "complaintRate", "contentScreening"] as const) {
+  for (const key of [
+    "bounceRate",
+    "complaintRate",
+    "contentScreening",
+    "hookFailureRate",
+  ] as const) {
     const group = clean(overrides[key] ?? {});
     if (Object.keys(group).length > 0) result[key] = group;
   }

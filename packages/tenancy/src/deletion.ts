@@ -21,6 +21,10 @@ const {
   emailBatch,
   emailSuppression,
   environment,
+  hookAttempt,
+  hookDelivery,
+  hookMessage,
+  hookPortalSession,
   inboundFakeObject,
   invitation,
   logEntry,
@@ -72,6 +76,10 @@ export async function revokeOrganizationAccess(
     .delete(scimManagedCredential)
     .where(inArray(scimManagedCredential.connectionRecordId, connections));
   await executor.delete(apikey).where(eq(apikey.referenceId, organizationId));
+  // Hooks portal sessions are signed in without any member or key behind them.
+  await executor
+    .delete(hookPortalSession)
+    .where(eq(hookPortalSession.organizationId, organizationId));
   const providers = await executor
     .delete(ssoProvider)
     .where(eq(ssoProvider.organizationId, organizationId))
@@ -330,8 +338,33 @@ async function deleteInBatches(
 }
 
 /**
+ * `deleteInBatches` for a partitioned table, whose rows are keyed by `(partition column, id)`:
+ * deleting by both lets each batch touch only the partitions its rows are in.
+ */
+async function deletePartitionedInBatches(
+  deletion: Claimed,
+  table: PgTable,
+  partition: PgColumn,
+  id: PgColumn,
+  where: SQL | undefined,
+  batchSize: number,
+  signal: AbortSignal | undefined,
+): Promise<boolean> {
+  for (;;) {
+    if (signal?.aborted) return false;
+    const deleted = await db.transaction(async (tx) => {
+      await renewLease(deletion, tx);
+      const batch = tx.select({ partition, id }).from(table).where(where).limit(batchSize);
+      return tx.delete(table).where(sql`(${partition}, ${id}) in (${batch})`).returning({ id });
+    });
+    if (deleted.length < batchSize) return true;
+  }
+}
+
+/**
  * Deletes the organization's bulky data (emails with their recipients, events, attachments and
- * links; received emails; webhook messages with their deliveries; suppressions; screenings) in batches, one
+ * links; received emails; webhook messages with their deliveries; Hooks messages, deliveries and
+ * attempts; suppressions; screenings) in batches, one
  * environment at a time, along indexed columns. Everything else is small and goes with the
  * organization row. Returns false when `signal` aborted first.
  */
@@ -452,6 +485,52 @@ async function deleteOrganizationData(
     ];
     for (const [table, id, where] of steps) {
       if (!(await deleteInBatches(deletion, table, id, where, batchSize, signal))) return false;
+    }
+    // Hooks messages, deliveries and attempts: partitioned, with no FK between them (attempts and
+    // deliveries none to the environment either), so each goes explicitly, children first. The
+    // small Hooks tables go with the environment.
+    const hookSteps: [PgTable, PgColumn, PgColumn, SQL | undefined][] = [
+      [
+        hookAttempt,
+        hookAttempt.messageCreatedAt,
+        hookAttempt.id,
+        and(
+          eq(hookAttempt.environmentId, environmentId),
+          eq(hookAttempt.organizationId, organizationId),
+        ),
+      ],
+      [
+        hookDelivery,
+        hookDelivery.messageCreatedAt,
+        hookDelivery.id,
+        and(
+          eq(hookDelivery.environmentId, environmentId),
+          eq(hookDelivery.organizationId, organizationId),
+        ),
+      ],
+      [
+        hookMessage,
+        hookMessage.createdAt,
+        hookMessage.id,
+        and(
+          eq(hookMessage.environmentId, environmentId),
+          eq(hookMessage.organizationId, organizationId),
+        ),
+      ],
+    ];
+    for (const [table, partition, id, where] of hookSteps) {
+      if (
+        !(await deletePartitionedInBatches(
+          deletion,
+          table,
+          partition,
+          id,
+          where,
+          batchSize,
+          signal,
+        ))
+      )
+        return false;
     }
   }
   if (

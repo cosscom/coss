@@ -6,6 +6,7 @@ import { expect, test } from "bun:test";
 import type { z } from "zod";
 import {
   DeletedWebhookEndpoint,
+  HookEndpointWebhookEvent,
   RollWebhookEndpointSecretRequest,
   WebhookAttemptObject,
   WebhookDeliveryList,
@@ -24,6 +25,7 @@ const { CreateWebhookEndpointRequest, UpdateWebhookEndpointRequest } = webhookEn
 ]);
 
 const SCHEMAS: Record<string, z.ZodType> = {
+  HookEndpointWebhookEvent,
   WebhookEndpoint: WebhookEndpointObject,
   WebhookEndpointWithSecret,
   WebhookEndpointList,

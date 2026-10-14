@@ -12,12 +12,21 @@ import {
   type SecretsKeyRing,
 } from "./secrets.ts";
 
-const { logDrain, webhookEndpoint } = schema;
+const { hookEndpoint, logDrain, webhookEndpoint } = schema;
+
+/**
+ * Tables of endpoints with a current and a previous (rolled) secret: COSS's own webhook endpoints
+ * and Hooks endpoints. Their secret columns are identical, so one loop covers both.
+ */
+const ROLLED_SECRET_TABLES = [
+  webhookEndpoint,
+  hookEndpoint as unknown as typeof webhookEndpoint,
+] as const;
 
 export type ReencryptResult = {
-  /** Endpoints and log drains looked at. */
+  /** Webhook endpoints, Hooks endpoints and log drains looked at. */
   checked: number;
-  /** Endpoints and log drains rewritten (with `dryRun`: that would be). */
+  /** Rows rewritten (with `dryRun`: that would be). */
   reencrypted: number;
   /** Rows with a secret no listed key decrypts: nothing can be delivered to them until it is back. */
   unreadable: { id: string; organizationId: string; error: string }[];
@@ -26,8 +35,8 @@ export type ReencryptResult = {
 };
 
 /**
- * Rewrites every endpoint and log drain secret not encrypted with the key ring's primary key, and
- * drops previous endpoint secrets that stopped signing. Idempotent and safe while the apps serve traffic: a row is only
+ * Rewrites every webhook endpoint, Hooks endpoint and log drain secret not encrypted with the key
+ * ring's primary key, and drops previous endpoint secrets that stopped signing. Idempotent and safe while the apps serve traffic: a row is only
  * updated if it still holds what was read. `scope` limits the scan to some organizations (tests).
  */
 export async function reencryptWebhookSecrets(opts: {
@@ -45,26 +54,45 @@ export async function reencryptWebhookSecrets(opts: {
     isEncryptedWithPrimary(stored, keys)
       ? stored
       : encryptSecret(decryptSecret(stored, keys), keys);
+  for (const table of ROLLED_SECRET_TABLES) {
+    await reencryptRolledSecrets(table, { ...opts, batchSize, now }, reencrypt, result);
+  }
+  await reencryptLogDrainSecrets({ ...opts, batchSize }, result);
+  return result;
+}
+
+/** One endpoint table's current and previous secrets. */
+async function reencryptRolledSecrets(
+  table: typeof webhookEndpoint,
+  opts: {
+    keys: SecretsKeyRing;
+    dryRun?: boolean;
+    batchSize: number;
+    now: Date;
+    scope?: { organizationIds: string[] };
+  },
+  reencrypt: (stored: string) => string,
+  result: ReencryptResult,
+): Promise<void> {
+  const { keys, batchSize, now } = opts;
   let after = "";
   for (;;) {
     const rows = await db
       .select({
-        id: webhookEndpoint.id,
-        organizationId: webhookEndpoint.organizationId,
-        secretCiphertext: webhookEndpoint.secretCiphertext,
-        previousSecretCiphertext: webhookEndpoint.previousSecretCiphertext,
-        previousSecretExpiresAt: webhookEndpoint.previousSecretExpiresAt,
+        id: table.id,
+        organizationId: table.organizationId,
+        secretCiphertext: table.secretCiphertext,
+        previousSecretCiphertext: table.previousSecretCiphertext,
+        previousSecretExpiresAt: table.previousSecretExpiresAt,
       })
-      .from(webhookEndpoint)
+      .from(table)
       .where(
         and(
-          gt(webhookEndpoint.id, after),
-          opts.scope
-            ? inArray(webhookEndpoint.organizationId, opts.scope.organizationIds)
-            : undefined,
+          gt(table.id, after),
+          opts.scope ? inArray(table.organizationId, opts.scope.organizationIds) : undefined,
         ),
       )
-      .orderBy(asc(webhookEndpoint.id))
+      .orderBy(asc(table.id))
       .limit(batchSize);
     for (const row of rows) {
       result.checked++;
@@ -95,24 +123,24 @@ export async function reencryptWebhookSecrets(opts: {
         continue;
       }
       const [updated] = await db
-        .update(webhookEndpoint)
+        .update(table)
         .set({
           ...next,
           previousSecretExpiresAt: previous === null ? null : row.previousSecretExpiresAt,
           // The customer changed nothing.
-          updatedAt: sql`${webhookEndpoint.updatedAt}`,
+          updatedAt: sql`${table.updatedAt}`,
         })
         .where(
           and(
-            eq(webhookEndpoint.id, row.id),
-            eq(webhookEndpoint.organizationId, row.organizationId),
-            eq(webhookEndpoint.secretCiphertext, row.secretCiphertext),
+            eq(table.id, row.id),
+            eq(table.organizationId, row.organizationId),
+            eq(table.secretCiphertext, row.secretCiphertext),
             row.previousSecretCiphertext === null
-              ? isNull(webhookEndpoint.previousSecretCiphertext)
-              : eq(webhookEndpoint.previousSecretCiphertext, row.previousSecretCiphertext),
+              ? isNull(table.previousSecretCiphertext)
+              : eq(table.previousSecretCiphertext, row.previousSecretCiphertext),
           ),
         )
-        .returning({ id: webhookEndpoint.id });
+        .returning({ id: table.id });
       if (updated) result.reencrypted++;
       else result.conflicts++;
     }
@@ -120,8 +148,6 @@ export async function reencryptWebhookSecrets(opts: {
     if (!last || rows.length < batchSize) break;
     after = last.id;
   }
-  await reencryptLogDrainSecrets({ ...opts, batchSize }, result);
-  return result;
 }
 
 /** Log drains have one secret each (no rolls). */

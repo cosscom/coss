@@ -120,12 +120,26 @@ export function createVersioning(registry: VersionRegistry): Versioning {
   };
 }
 
+/**
+ * Customer data inside wire objects, keyed by the object's `object` type: never rendered, because it
+ * may hold `object` fields of its own (a Hooks payload like `{ "object": "email" }` is not an email).
+ */
+export const OPAQUE_FIELDS: Readonly<Record<string, readonly string[]>> = {
+  hook_message: ["payload"],
+  hook_event_type: ["schema", "examples"],
+  hook_application: ["metadata"],
+  hook_endpoint: ["metadata"],
+};
+
 /** Post-order copy: children are rendered first, then the node's own transform (if its `object` has one). */
 function walk(value: unknown, transforms: Partial<Record<string, ObjectTransform>>): unknown {
   if (Array.isArray(value)) return value.map((item) => walk(item, transforms));
   if (!isPlainObject(value)) return value;
+  const opaque = typeof value.object === "string" ? OPAQUE_FIELDS[value.object] : undefined;
   const copy: JsonObject = {};
-  for (const [key, child] of Object.entries(value)) copy[key] = walk(child, transforms);
+  for (const [key, child] of Object.entries(value)) {
+    copy[key] = opaque?.includes(key) ? child : walk(child, transforms);
+  }
   const transform = typeof copy.object === "string" ? transforms[copy.object] : undefined;
   return transform ? transform(copy) : copy;
 }

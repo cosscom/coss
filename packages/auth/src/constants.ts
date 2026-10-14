@@ -32,6 +32,7 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   riskList: ["create", "read", "delete"],
   // The organization's plan, usage, invoices and credits (read only; changes need the dashboard).
   billing: ["read"],
+  hook: ["create", "read", "update", "delete", "send"],
 };
 
 /** Social sign-in providers COSS supports (each enabled only when its client id + secret are set). */

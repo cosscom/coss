@@ -1,0 +1,56 @@
+---
+title: Delivery, retries and limits
+description: How COSS retries, disables failing endpoints, recovers missed messages, and what it limits.
+---
+
+## Retries
+
+A delivery that fails (no 2xx response, a timeout, a network error) is retried after about
+5 seconds, 5 minutes, 30 minutes, 2 hours, 5 hours, 10 hours and 10 hours: 8 attempts over roughly
+a day, each a little earlier at random so that many failed deliveries don't retry at once. Then it
+is `failed`. Retry one by hand with `coss.hooks.deliveries.retry()`, or from the portal or dashboard.
+
+## Failing endpoints are disabled
+
+When an endpoint's deliveries keep failing every attempt for 5 days, COSS disables it. Its
+`disabled_reason` is `failing`, and your own [webhook endpoints](/docs/webhooks) subscribed to
+`hook_endpoint.disabled` are told, so you can let your customer know. Enabling it again (in the
+portal, the dashboard or with `coss.hooks.endpoints.update()`) clears its record.
+
+## Recover what an endpoint missed
+
+After an outage, requeue every delivery that failed since a time, once each, oldest first:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const endpointId: string;
+// ---cut---
+const { data: recovery } = await coss.hooks.endpoints.recover("customer_8812", endpointId, {
+  since: new Date(Date.now() - 6 * 60 * 60 * 1000),
+});
+// recovery.status is "pending" while COSS requeues them in the background.
+```
+
+## Limits
+
+| Limit                                   | Live                          | Sandbox            |
+| --------------------------------------- | ----------------------------- | ------------------ |
+| Messages per second (organization)      | 50, bursts of 200             | —                  |
+| Deliveries per day (fan-out)            | 100,000 per organization      | 2,000 per environment |
+| Applications per environment            | 100,000                       | 100                |
+| Endpoints per application               | 50                            | 5                  |
+| Event types per environment             | 1,000                         | 1,000              |
+| Payload size                            | 256 KB                        | 256 KB             |
+| Requests per endpoint                   | 20 per second (or the endpoint's `rate_limit_per_second`) | same |
+
+A send that goes over a quota fails with `429 quota_exceeded` (a replay of an earlier send still
+answers). Deliveries over an endpoint's or a destination host's rate wait instead of failing.
+Contact support for higher limits.
+
+## Reputation
+
+COSS watches the share of live deliveries that fail for good. A very high rate warns your
+organization (see [reputation](/docs/api-reference/reputation/get-reputation)): usually it means
+endpoints that no longer exist, which you should disable or delete. Sending is never suspended
+for it by default.

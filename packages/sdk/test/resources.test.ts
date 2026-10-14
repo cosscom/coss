@@ -1,6 +1,6 @@
 /** The domain and webhook endpoint resources: request shape, and how results come back. */
 import { describe, expect, test } from "bun:test";
-import { Coss, type WebhookDelivery } from "../src/index.ts";
+import { Coss, type WebhookDelivery, type WebhookEndpointRecovery } from "../src/index.ts";
 import { apiError, json, mockFetch, sampleDomain, sampleEndpoint } from "./helpers.ts";
 
 const API_KEY = "coss_test_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl";
@@ -198,6 +198,31 @@ describe("coss.webhookEndpoints", () => {
     const result = await coss.webhookEndpoints.rollSecret(sampleEndpoint.id);
     expect(result).toEqual({ data: rolled, error: null });
     expect(calls[1]?.body).toBe("{}");
+  });
+
+  test("recover posts since as an ISO string and is retried with one idempotency key", async () => {
+    const recovery: WebhookEndpointRecovery = {
+      object: "webhook_endpoint_recovery",
+      endpoint_id: sampleEndpoint.id,
+      requeued: 3,
+      has_more: false,
+    };
+    const { coss, calls } = client(json(503, {}), json(200, recovery));
+
+    const result = await coss.webhookEndpoints.recover(sampleEndpoint.id, {
+      since: new Date("2026-10-09T12:00:00.000Z"),
+    });
+
+    expect(result).toEqual({ data: recovery, error: null });
+    expect(calls).toHaveLength(2);
+    expect(calls[0]).toMatchObject({
+      method: "POST",
+      url: `https://api.test/v1/webhook_endpoints/${sampleEndpoint.id}/recover`,
+    });
+    expect(JSON.parse(calls[0]?.body ?? "null")).toEqual({ since: "2026-10-09T12:00:00.000Z" });
+    expect(calls[1]?.headers.get("idempotency-key")).toBe(
+      calls[0]?.headers.get("idempotency-key") ?? "missing",
+    );
   });
 
   test("list, get and delete hit the documented routes", async () => {

@@ -331,6 +331,27 @@ export default async function EnvironmentPage({
         </Card>
       ) : null}
 
+      {can({ hook: ["read"] }) ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Hooks</CardTitle>
+            <CardDescription>
+              Webhooks as a service: send a message to one of your customers once, and COSS delivers
+              it, signed and retried, to every endpoint they registered, with a portal for them.
+            </CardDescription>
+            <CardAction>
+              <Button
+                render={<Link href={`${projectPath}/${environment.slug}/hooks`} />}
+                size="sm"
+                variant="outline"
+              >
+                Manage Hooks
+              </Button>
+            </CardAction>
+          </CardHeader>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>Webhooks</CardTitle>

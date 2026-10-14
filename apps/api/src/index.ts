@@ -50,6 +50,7 @@ const app = createApp({
   riskDeps: createRiskDeps(env, { valkey: rateLimits.valkey }),
   plans,
   publicUrl: env.API_PUBLIC_URL,
+  portalUrl: env.PORTAL_PUBLIC_URL ?? null,
   rateLimiter: rateLimits.limiter,
   clientIp: rateLimits.clientIp,
 

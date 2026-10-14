@@ -139,6 +139,7 @@ export function PolicyForm(props: {
     complaintRate: Partial<ReputationPolicy["complaintRate"]>;
     countSimulatorRecipients: boolean;
     contentScreening: Partial<ReputationPolicy["contentScreening"]>;
+    hookFailureRate: Partial<ReputationPolicy["hookFailureRate"]>;
   }> | null;
 }) {
   const [state, formAction, pending] = useActionState(updatePolicyAction, null);
@@ -187,6 +188,18 @@ export function PolicyForm(props: {
       defaults.contentScreening.sampleRate,
       overrides.contentScreening?.sampleRate,
     ],
+    [
+      "hookWarning",
+      "Hooks failure warning (%)",
+      defaults.hookFailureRate.warning,
+      overrides.hookFailureRate?.warning,
+    ],
+    [
+      "hookSuspend",
+      "Hooks failure suspension (%, empty: never)",
+      defaults.hookFailureRate.suspend,
+      overrides.hookFailureRate?.suspend,
+    ],
   ] as const;
   const countFields = [
     ["windowDays", "Window (days)", defaults.windowDays, overrides.windowDays],
@@ -208,6 +221,12 @@ export function PolicyForm(props: {
       defaults.contentScreening.alwaysFirst,
       overrides.contentScreening?.alwaysFirst,
     ],
+    [
+      "hookMinimum",
+      "Hooks minimum deliveries",
+      defaults.hookFailureRate.minimumDeliveries,
+      overrides.hookFailureRate?.minimumDeliveries,
+    ],
   ] as const;
 
   return (
@@ -227,10 +246,10 @@ export function PolicyForm(props: {
               <Field key={name}>
                 <FieldLabel>{label}</FieldLabel>
                 <Input
-                  defaultValue={value === undefined ? "" : percent(value)}
+                  defaultValue={value === undefined || value === null ? "" : percent(value)}
                   inputMode="decimal"
                   name={name}
-                  placeholder={percent(fallback)}
+                  placeholder={fallback === null ? "never" : percent(fallback)}
                 />
               </Field>
             ))}

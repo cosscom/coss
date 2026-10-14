@@ -891,6 +891,12 @@ export const webhookEndpoint = pgTable(
     previousSecretCiphertext: text("previous_secret_ciphertext"),
     previousSecretExpiresAt: timestamp("previous_secret_expires_at", { withTimezone: true }),
     enabled: boolean("enabled").notNull().default(true),
+    // Why it is off (`manual` or `failing`) and since when; null while enabled.
+    disabledReason: text("disabled_reason"),
+    disabledAt: timestamp("disabled_at", { withTimezone: true }),
+    // Set by the first delivery that failed every attempt, cleared by any success. An endpoint
+    // failing for long enough is disabled (`failing`).
+    failingSince: timestamp("failing_since", { withTimezone: true }),
     createdByUserId: text("created_by_user_id").references(() => user.id, {
       onDelete: "set null",
     }),
@@ -909,6 +915,9 @@ export const webhookEndpoint = pgTable(
       "webhook_endpoint_previous_secret_check",
       sql`(${t.previousSecretCiphertext} is null) = (${t.previousSecretExpiresAt} is null)`,
     ),
+    // No CHECK tying `enabled` to `disabled_reason`/`disabled_at` (unlike `hook_endpoint`): the
+    // code running while a deploy migrates sets `enabled` alone. Readers treat a reasonless
+    // disabled endpoint as disabled by hand.
   ],
 );
 
@@ -1713,6 +1722,385 @@ export const organizationDeletion = pgTable(
     index("organization_deletion_next_attempt_idx")
       .on(t.nextAttemptAt)
       .where(sql`${t.nextAttemptAt} IS NOT NULL`),
+  ],
+);
+
+// Hooks: webhooks as a service. A customer's application (one per their end user) has endpoints;
+// messages the customer sends are fanned out to them as deliveries and attempted by the worker.
+
+/** One of a customer's end users, who registers endpoints. Addressed by its id or the customer's `uid`. */
+export const hookApplication = pgTable(
+  "hook_application",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.hookApplication)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    // The customer's own id for it (e.g. their user id), unique per environment.
+    uid: text("uid"),
+    name: text("name").notNull(),
+    metadata: jsonb("metadata").$type<Record<string, string>>().notNull().default({}),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "hook_application_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("hook_application_environment_uid_unique").on(t.environmentId, t.uid),
+    unique("hook_application_id_organization_unique").on(t.id, t.organizationId),
+    index("hook_application_environment_created_at_idx").on(
+      t.environmentId,
+      t.createdAt.desc(),
+      t.id.desc(),
+    ),
+  ],
+);
+
+/** A type of message the customer sends (e.g. `invoice.paid`): the catalog end users subscribe from. */
+export const hookEventType = pgTable(
+  "hook_event_type",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.hookEventType)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    // A JSON Schema of the payload, shown to end users (not enforced).
+    schema: jsonb("schema").$type<Record<string, unknown>>(),
+    // Example payloads; the first is what "send test" sends.
+    examples: jsonb("examples").$type<unknown[]>().notNull().default([]),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "hook_event_type_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("hook_event_type_environment_name_unique").on(t.environmentId, t.name),
+  ],
+);
+
+/** An end user's URL that receives an application's messages, signed with its own secret. */
+export const hookEndpoint = pgTable(
+  "hook_endpoint",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.hookEndpoint)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    applicationId: text("application_id").notNull(),
+    url: text("url").notNull(),
+    description: text("description"),
+    // Event types delivered; empty means every type.
+    filterTypes: text("filter_types").array().notNull().default(sql`'{}'::text[]`),
+    // The `whsec_…` signing secret, encrypted with WEBHOOK_SECRETS_KEY.
+    secretCiphertext: text("secret_ciphertext").notNull(),
+    previousSecretCiphertext: text("previous_secret_ciphertext"),
+    previousSecretExpiresAt: timestamp("previous_secret_expires_at", { withTimezone: true }),
+    // At most this many attempts per second (null: no limit of its own).
+    rateLimitPerSecond: integer("rate_limit_per_second"),
+    enabled: boolean("enabled").notNull().default(true),
+    disabledReason: text("disabled_reason"),
+    disabledAt: timestamp("disabled_at", { withTimezone: true }),
+    failingSince: timestamp("failing_since", { withTimezone: true }),
+    metadata: jsonb("metadata").$type<Record<string, string>>().notNull().default({}),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "hook_endpoint_application_fk",
+      columns: [t.applicationId, t.organizationId],
+      foreignColumns: [hookApplication.id, hookApplication.organizationId],
+    }).onDelete("cascade"),
+    index("hook_endpoint_application_idx").on(t.applicationId),
+    unique("hook_endpoint_id_organization_unique").on(t.id, t.organizationId),
+    check(
+      "hook_endpoint_previous_secret_check",
+      sql`(${t.previousSecretCiphertext} is null) = (${t.previousSecretExpiresAt} is null)`,
+    ),
+    check(
+      "hook_endpoint_disabled_check",
+      sql`${t.enabled} = (${t.disabledReason} is null) and (${t.disabledReason} is null) = (${t.disabledAt} is null)`,
+    ),
+    check(
+      "hook_endpoint_rate_limit_check",
+      sql`${t.rateLimitPerSecond} is null or ${t.rateLimitPerSecond} > 0`,
+    ),
+  ],
+);
+
+/**
+ * The `Idempotency-Key` of a message send. Partitioned tables can't hold a unique key without
+ * their partition column, so keys live here (kept a day) and point at their message.
+ */
+export const hookIdempotencyKey = pgTable(
+  "hook_idempotency_key",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.hookIdempotencyKey)),
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    key: text("key").notNull(),
+    requestHash: text("request_hash").notNull(),
+    messageId: text("message_id").notNull(),
+    messageCreatedAt: timestamp("message_created_at", { withTimezone: true }).notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "hook_idempotency_key_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("hook_idempotency_key_environment_key_unique").on(t.environmentId, t.key),
+    index("hook_idempotency_key_created_at_idx").on(t.createdAt),
+  ],
+);
+
+/** A short-lived portal sign-in for one application. Only the token's sha256 is stored. */
+export const hookPortalSession = pgTable(
+  "hook_portal_session",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.hookPortalSession)),
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    applicationId: text("application_id").notNull(),
+    tokenHash: text("token_hash").notNull().unique("hook_portal_session_token_hash_unique"),
+    readOnly: boolean("read_only").notNull().default(false),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    // Who minted it: an API key (no FK: Better Auth hard-deletes keys) or a dashboard user.
+    apiKeyId: text("api_key_id"),
+    createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "hook_portal_session_application_fk",
+      columns: [t.applicationId, t.organizationId],
+      foreignColumns: [hookApplication.id, hookApplication.organizationId],
+    }).onDelete("cascade"),
+    index("hook_portal_session_expires_at_idx").on(t.expiresAt),
+    index("hook_portal_session_organization_idx").on(t.organizationId),
+  ],
+);
+
+/** How an environment's portal looks and which sites may embed it. */
+export const hookPortalSettings = pgTable(
+  "hook_portal_settings",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.hookPortalSettings)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id")
+      .notNull()
+      .unique("hook_portal_settings_environment_unique"),
+    // Origins allowed to frame the portal (`frame-ancestors`); empty: it can't be embedded.
+    allowedOrigins: text("allowed_origins").array().notNull().default(sql`'{}'::text[]`),
+    displayName: text("display_name"),
+    // `#rrggbb`.
+    accentColor: text("accent_color"),
+    // `light`, `dark` or `system`.
+    theme: text("theme").notNull().default("system"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "hook_portal_settings_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+  ],
+);
+
+export const hookRecoveryStatus = pgEnum("hook_recovery_status", ["pending", "completed"]);
+
+/** "Recover failed deliveries since T" for one endpoint, worked through by the worker in batches. */
+export const hookEndpointRecovery = pgTable(
+  "hook_endpoint_recovery",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.hookEndpointRecovery)),
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    endpointId: text("endpoint_id").notNull(),
+    since: timestamp("since", { withTimezone: true }).notNull(),
+    // Deliveries of messages created from `since` until here (the request time).
+    until: timestamp("until", { withTimezone: true }).notNull(),
+    status: hookRecoveryStatus("status").notNull().default("pending"),
+    // The last delivery requeued: the next batch continues after it.
+    cursorCreatedAt: timestamp("cursor_created_at", { withTimezone: true }),
+    cursorId: text("cursor_id"),
+    requeued: integer("requeued").notNull().default(0),
+    leaseExpiresAt: timestamp("lease_expires_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "hook_endpoint_recovery_endpoint_fk",
+      columns: [t.endpointId, t.organizationId],
+      foreignColumns: [hookEndpoint.id, hookEndpoint.organizationId],
+    }).onDelete("cascade"),
+    index("hook_endpoint_recovery_pending_idx").on(t.createdAt).where(sql`${t.status} = 'pending'`),
+    index("hook_endpoint_recovery_endpoint_idx").on(t.endpointId),
+  ],
+);
+
+/*
+ * Messages, deliveries and attempts are partitioned by UTC day of the message's creation (migration
+ * 0051), without a default partition, so whole days are dropped together after retention. Nothing
+ * holds an FK into them, and they hold none at all: deleting an application or endpoint must never
+ * cascade into millions of rows, and dropping a partition that references `environment` would take
+ * an ACCESS EXCLUSIVE lock on it (organization deletion deletes them explicitly); ids carry the message's timestamp, so an id alone finds its
+ * partition (`idTimestamp`). Created-at values and ids are always bound from the same JS millisecond.
+ */
+
+/** A message the customer sent to one application. */
+export const hookMessage = pgTable(
+  "hook_message",
+  {
+    id: text("id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    applicationId: text("application_id").notNull(),
+    eventType: text("event_type").notNull(),
+    // `json`, not `jsonb`: delivered with the customer's key order.
+    payload: json("payload").$type<unknown>().notNull(),
+    payloadBytes: integer("payload_bytes").notNull(),
+    // A test send: delivered only to this endpoint.
+    onlyEndpointId: text("only_endpoint_id"),
+  },
+  (t) => [
+    primaryKey({ name: "hook_message_pkey", columns: [t.createdAt, t.id] }),
+    index("hook_message_application_created_at_idx").on(
+      t.applicationId,
+      t.createdAt.desc(),
+      t.id.desc(),
+    ),
+    index("hook_message_environment_created_at_idx").on(
+      t.environmentId,
+      t.createdAt.desc(),
+      t.id.desc(),
+    ),
+  ],
+);
+
+export const hookDeliveryStatus = pgEnum("hook_delivery_status", [
+  "pending",
+  "succeeded",
+  "failed",
+]);
+
+/** One message sent to one endpoint, retried with backoff until it succeeds or gives up. */
+export const hookDelivery = pgTable(
+  "hook_delivery",
+  {
+    id: text("id").notNull(),
+    messageCreatedAt: timestamp("message_created_at", { withTimezone: true }).notNull(),
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    applicationId: text("application_id").notNull(),
+    messageId: text("message_id").notNull(),
+    endpointId: text("endpoint_id").notNull(),
+    status: hookDeliveryStatus("status").notNull().default("pending"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }),
+    leaseExpiresAt: timestamp("lease_expires_at", { withTimezone: true }),
+    lastStatusCode: integer("last_status_code"),
+    lastError: text("last_error"),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    primaryKey({ name: "hook_delivery_pkey", columns: [t.messageCreatedAt, t.id] }),
+    unique("hook_delivery_message_endpoint_unique").on(
+      t.messageCreatedAt,
+      t.messageId,
+      t.endpointId,
+    ),
+    index("hook_delivery_due_idx").on(t.nextAttemptAt).where(sql`${t.status} = 'pending'`),
+    index("hook_delivery_endpoint_idx").on(t.endpointId, t.messageCreatedAt.desc(), t.id.desc()),
+    index("hook_delivery_environment_idx").on(
+      t.environmentId,
+      t.messageCreatedAt.desc(),
+      t.id.desc(),
+    ),
+  ],
+);
+
+/** One HTTP request of a delivery. */
+export const hookAttempt = pgTable(
+  "hook_attempt",
+  {
+    id: text("id").notNull(),
+    messageCreatedAt: timestamp("message_created_at", { withTimezone: true }).notNull(),
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    applicationId: text("application_id").notNull(),
+    deliveryId: text("delivery_id").notNull(),
+    endpointId: text("endpoint_id").notNull(),
+    attemptedAt: timestamp("attempted_at", { withTimezone: true }).notNull(),
+    statusCode: integer("status_code"),
+    durationMs: integer("duration_ms").notNull(),
+    error: text("error"),
+    responseExcerpt: text("response_excerpt"),
+  },
+  (t) => [
+    primaryKey({ name: "hook_attempt_pkey", columns: [t.messageCreatedAt, t.id] }),
+    index("hook_attempt_delivery_idx").on(t.deliveryId, t.attemptedAt),
+    index("hook_attempt_environment_idx").on(
+      t.environmentId,
+      t.messageCreatedAt.desc(),
+      t.id.desc(),
+    ),
+  ],
+);
+
+/**
+ * Finished Hooks deliveries of live environments per organization and hour (the hour they
+ * finished): what the `hook_failure_rate` reputation check measures. Counted by the delivery worker
+ * once per claimed batch (best effort).
+ */
+export const hookDeliveryRollup = pgTable(
+  "hook_delivery_rollup",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    hour: timestamp("hour", { withTimezone: true }).notNull(),
+    succeeded: integer("succeeded").notNull().default(0),
+    failed: integer("failed").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ name: "hook_delivery_rollup_pkey", columns: [t.organizationId, t.hour] }),
+    index("hook_delivery_rollup_hour_idx").on(t.hour),
   ],
 );
 

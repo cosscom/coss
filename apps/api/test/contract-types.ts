@@ -93,6 +93,7 @@ import type {
   CreateLogDrainRequest,
   DeletedLogDrain,
   DeletedWebhookEndpoint,
+  HookEndpointWebhookEvent,
   ListLogDrainBatchesQuery,
   ListWebhookDeliveriesQuery,
   LogDrainAttemptObject,
@@ -101,6 +102,8 @@ import type {
   LogDrainList,
   LogDrainObject,
   LogDrainWithSecret,
+  RecoverWebhookEndpointRequest,
+  RecoverWebhookEndpointResult,
   RollWebhookEndpointSecretRequest,
   UpdateLogDrainRequest,
   WebhookAttemptObject,
@@ -143,6 +146,7 @@ import type {
   LogDrainBatch,
   LogDrainLine,
   LogDrainSource,
+  RecoverWebhookEndpointParams,
   RescheduleEmailParams,
   RiskFeedbackParams,
   RollWebhookEndpointSecretParams,
@@ -168,6 +172,7 @@ import type {
   EmailWebhookEvent as SdkEmailWebhookEvent,
   WebhookEndpointWithSecret as SdkEndpointWithSecret,
   ForgottenRiskUser as SdkForgottenRiskUser,
+  HookEndpointWebhookEvent as SdkHookEndpointWebhookEvent,
   InboundAddress as SdkInboundAddress,
   Invoice as SdkInvoice,
   InvoiceSummary as SdkInvoiceSummary,
@@ -198,6 +203,7 @@ import type {
   UpdateTrackingRuleParams,
   UpdateWebhookEndpointParams,
   WebhookEndpoint,
+  WebhookEndpointRecovery,
   WebhookEvent,
 } from "coss";
 import type { z } from "zod";
@@ -288,6 +294,16 @@ export type Contract = [
       RollWebhookEndpointSecretParams
     >
   >,
+  // The SDK also accepts a `Date` for `since` and sends it as an ISO string.
+  Assert<
+    MutuallyAssignable<
+      z.input<typeof RecoverWebhookEndpointRequest>,
+      Omit<RecoverWebhookEndpointParams, "since"> & { since: string }
+    >
+  >,
+  Assert<
+    MutuallyAssignable<z.output<typeof RecoverWebhookEndpointResult>, WebhookEndpointRecovery>
+  >,
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointObject>, WebhookEndpoint>>,
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointWithSecret>, SdkEndpointWithSecret>>,
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointList>, List<WebhookEndpoint>>>,
@@ -316,6 +332,9 @@ export type Contract = [
     MutuallyAssignable<z.output<typeof RiskWebhookEvent>["data"], SdkRiskWebhookEvent["data"]>
   >,
   Assert<
+    MutuallyAssignable<z.output<typeof HookEndpointWebhookEvent>, SdkHookEndpointWebhookEvent>
+  >,
+  Assert<
     MutuallyAssignable<z.output<typeof ReceivedEmailWebhookEvent>, SdkReceivedEmailWebhookEvent>
   >,
   Assert<
@@ -329,6 +348,7 @@ export type Contract = [
       | z.output<typeof EmailWebhookEvent>
       | z.output<typeof ReceivedEmailWebhookEvent>
       | z.output<typeof AccountWebhookEvent>
+      | z.output<typeof HookEndpointWebhookEvent>
       | z.output<typeof BillingWebhookEvent>
       | z.output<typeof RiskWebhookEvent>,
       WebhookEvent

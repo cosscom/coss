@@ -329,3 +329,75 @@ describe("POST /v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry", () =>
     expect(otherEnvironment.status).toBe(404);
   });
 });
+
+describe("POST /v1/webhook_endpoints/{id}/recover", () => {
+  function recover(app: TestApp, key: string, endpointId: string, body: unknown) {
+    return apiRequest(app, "POST", `/v1/webhook_endpoints/${endpointId}/recover`, { key, body });
+  }
+
+  /** A delivery that failed every attempt. */
+  async function exhausted(tenant: TestTenant) {
+    await enqueue(tenant);
+    let now = new Date();
+    for (let attempt = 0; attempt < 8; attempt++) {
+      await deliver(tenant, { status: 503, body: "" }, now);
+      now = new Date(now.getTime() + 11 * 3_600_000);
+    }
+  }
+
+  test("queues failed deliveries since a time for one more attempt", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const endpoint = await createEndpoint(app, tenant.sandboxKey);
+    await exhausted(tenant);
+    const [failed] = (await listDeliveries(app, tenant.sandboxKey, endpoint.id)).data;
+    expect(failed?.status).toBe("failed");
+
+    const res = await recover(app, tenant.sandboxKey, endpoint.id, {
+      since: new Date(Date.now() - 3_600_000).toISOString(),
+    });
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      object: "webhook_endpoint_recovery",
+      endpoint_id: endpoint.id,
+      requeued: 1,
+      has_more: false,
+    });
+    const [requeued] = (await listDeliveries(app, tenant.sandboxKey, endpoint.id)).data;
+    expect(requeued?.status).toBe("pending");
+  });
+
+  test("validates since, needs webhook:update, and refuses a disabled endpoint", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const endpoint = await createEndpoint(app, tenant.sandboxKey);
+
+    const invalid = await recover(app, tenant.sandboxKey, endpoint.id, { since: "yesterday" });
+    expect(invalid.status).toBe(422);
+    expect(await errorOf(invalid)).toMatchObject({ code: "validation_error", param: "since" });
+
+    const otherEnvironment = await recover(app, tenant.liveKey, endpoint.id, {
+      since: new Date().toISOString(),
+    });
+    expect(otherEnvironment.status).toBe(404);
+
+    await apiRequest(app, "PATCH", `/v1/webhook_endpoints/${endpoint.id}`, {
+      key: tenant.sandboxKey,
+      body: { enabled: false },
+    });
+    const disabled = await recover(app, tenant.sandboxKey, endpoint.id, {
+      since: new Date().toISOString(),
+    });
+    expect(disabled.status).toBe(422);
+    expect(await errorOf(disabled)).toMatchObject({ code: "endpoint_disabled" });
+
+    await setKeyPermissions(await apiKeyIdForEnvironment(tenant.development.id), {
+      webhook: ["read"],
+    });
+    const forbidden = await recover(app, tenant.sandboxKey, endpoint.id, {
+      since: new Date().toISOString(),
+    });
+    expect(forbidden.status).toBe(403);
+  });
+});

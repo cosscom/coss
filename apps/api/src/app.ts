@@ -53,6 +53,11 @@ export type CreateAppOptions = {
    * Public origin advertised in the OpenAPI document (`API_PUBLIC_URL`).
    */
   publicUrl?: string;
+  /**
+   * Where Hooks portal session links point (`PORTAL_PUBLIC_URL`). Defaults to the local portal;
+   * `null` (not deployed) makes creating a portal session fail with 503.
+   */
+  portalUrl?: string | null;
   /** Defaults to in-memory counters (one per app), which only suit tests and a single process. */
   rateLimiter?: RateLimiter;
   /** Plan features and limits (`createPlanGate` from `@coss/billing`). Defaults to none (no limits). */
@@ -161,6 +166,7 @@ export function createApp(opts: CreateAppOptions) {
       emailService,
       domainDeps,
       webhookDeps: opts.webhookDeps,
+      portalUrl: opts.portalUrl === undefined ? "http://localhost:3003" : opts.portalUrl,
       riskDeps: opts.riskDeps,
       inbound,
     }),
@@ -221,6 +227,29 @@ export function openApiDocumentConfig(serverUrl: string) {
       {
         name: "Webhook endpoints",
         description: "URLs that receive the environment's delivery events, signed.",
+      },
+      {
+        name: "Hooks applications",
+        description:
+          "Hooks (webhooks as a service): your customers, each with their own endpoints and portal.",
+      },
+      {
+        name: "Hooks event types",
+        description: "The catalog of messages you send, which your customers subscribe from.",
+      },
+      {
+        name: "Hooks endpoints",
+        description:
+          "Your customers' URLs that receive their messages, each signed with its own secret.",
+      },
+      {
+        name: "Hooks messages",
+        description:
+          "Send a message once; COSS delivers it to every subscribed endpoint, with retries.",
+      },
+      {
+        name: "Hooks portal",
+        description: "A ready-made page for your customers to manage their endpoints.",
       },
       {
         name: "Logs",

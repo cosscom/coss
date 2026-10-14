@@ -8,6 +8,7 @@ export {
   eventDataTransform,
   type JsonObject,
   type ObjectTransform,
+  OPAQUE_FIELDS,
   omitKeys,
   type RequestKey,
   type RequestTransform,

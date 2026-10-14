@@ -10,6 +10,15 @@ export type {
 } from "./resources/billing.ts";
 export type { DomainsResource } from "./resources/domains.ts";
 export type { EmailResource } from "./resources/email.ts";
+export type {
+  HookApplicationsResource,
+  HookDeliveriesResource,
+  HookEndpointsResource,
+  HookEventTypesResource,
+  HookMessagesResource,
+  HookPortalResource,
+  HooksResource,
+} from "./resources/hooks.ts";
 export type { LogDrainBatchesResource, LogDrainsResource } from "./resources/log-drains.ts";
 export type { LogsResource } from "./resources/logs.ts";
 export type { ReceivedEmailsResource } from "./resources/received-emails.ts";
@@ -79,6 +88,37 @@ export type {
   SendEmailParams,
   TrackingOptions,
 } from "./types/email.ts";
+export type {
+  CreateHookApplicationParams,
+  CreateHookEndpointParams,
+  CreateHookEventTypeParams,
+  CreateHookPortalSessionParams,
+  DeletedHookApplication,
+  DeletedHookEndpoint,
+  HookApplication,
+  HookAttempt,
+  HookDelivery,
+  HookDeliveryStatus,
+  HookEndpoint,
+  HookEndpointDisabledReason,
+  HookEndpointRecovery,
+  HookEndpointSecret,
+  HookEndpointWithSecret,
+  HookEventType,
+  HookMessage,
+  HookPortalSession,
+  ListHookApplicationsParams,
+  ListHookDeliveriesParams,
+  ListHookEventTypesParams,
+  ListHookMessagesParams,
+  RecoverHookEndpointParams,
+  RollHookEndpointSecretParams,
+  SendHookMessageParams,
+  SendHookTestParams,
+  UpdateHookApplicationParams,
+  UpdateHookEndpointParams,
+  UpdateHookEventTypeParams,
+} from "./types/hooks.ts";
 export type { ListLogsParams, Log, LogLevel, LogSource } from "./types/log.ts";
 export type {
   CreateLogDrainParams,
@@ -159,6 +199,9 @@ export type {
   BillingWebhookEvent,
   EmailWebhookEvent,
   EmailWebhookEventData,
+  HookEndpointWebhookEvent,
+  HookEndpointWebhookEventData,
+  HookOperationalEventType,
   ReceivedEmailEventType,
   ReceivedEmailWebhookEvent,
   ReceivedEmailWebhookEventData,
@@ -171,12 +214,15 @@ export type {
   CreateWebhookEndpointParams,
   DeletedWebhookEndpoint,
   ListWebhookDeliveriesParams,
+  RecoverWebhookEndpointParams,
   RollWebhookEndpointSecretParams,
   UpdateWebhookEndpointParams,
   WebhookAttempt,
   WebhookDelivery,
   WebhookDeliveryStatus,
   WebhookEndpoint,
+  WebhookEndpointDisabledReason,
+  WebhookEndpointRecovery,
   WebhookEndpointWithSecret,
   WebhookEventType,
 } from "./types/webhook-endpoint.ts";

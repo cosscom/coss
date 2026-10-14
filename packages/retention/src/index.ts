@@ -44,6 +44,16 @@ export const RETENTION_DAYS = {
   billingProviderEvents: 30,
   /** Settled billing notification emails (usage alerts, payment reminders). */
   billingNotifications: 90,
+  /**
+   * Hooks messages with their deliveries and attempts: whole days are dropped (by message day),
+   * including deliveries still held for a suspended organization and messages of deleted
+   * applications.
+   */
+  hookMessages: 30,
+  /** Hooks portal sessions, counted from their expiry. */
+  hookPortalSessions: 1,
+  /** Finished Hooks endpoint recoveries. */
+  hookRecoveries: 7,
 } as const satisfies Record<string, number>;
 
 export type RetentionPeriod =
@@ -94,6 +104,20 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { days: RETENTION_DAYS.webhookDeliveries, after: "creation" },
   },
   {
+    id: "hook_messages",
+    label: "Hooks messages",
+    description:
+      "Messages you send to your applications (payloads), their deliveries and attempt logs (including response excerpts). Deleting an application stops access to its messages at once; they are deleted with the rest of their day.",
+    period: { days: RETENTION_DAYS.hookMessages, after: "creation" },
+  },
+  {
+    id: "hook_portal_sessions",
+    label: "Hooks portal sessions",
+    description:
+      "Sign-ins to the portal you create for your applications' users (never the token itself).",
+    period: { days: RETENTION_DAYS.hookPortalSessions, after: "expiry" },
+  },
+  {
     id: "log_drain_batches",
     label: "Log drain batches",
     description: `The lines sent to your log drains and their delivery attempts (including response excerpts). Lines that could not be sent within ${RETENTION_DAYS.logDrainBacklog} days are dropped.`,
@@ -109,7 +133,8 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
   {
     id: "reputation_statistics",
     label: "Reputation statistics",
-    description: "Hourly bounce and complaint counts behind your account standing.",
+    description:
+      "Hourly bounce, complaint and Hooks delivery failure counts behind your account standing.",
     period: { days: RETENTION_DAYS.reputationRollups, after: "creation" },
   },
   {
@@ -196,7 +221,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "account",
     label: "Account and configuration",
     description:
-      "Users, organizations, projects, environments, API keys, domains, webhook endpoints, log drains, risk allow and block lists, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, an endpoint, a drain) are removed right away.",
+      "Users, organizations, projects, environments, API keys, domains, webhook endpoints, log drains, Hooks applications, event types and endpoints, risk allow and block lists, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, an endpoint, a drain, an application) are removed right away.",
     period: { until: "closed" },
   },
 ];

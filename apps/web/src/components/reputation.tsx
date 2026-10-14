@@ -113,9 +113,14 @@ export function ReputationChecks({ standing }: { standing: ReputationStandingRow
                   </MeterTrack>
                 </Meter>
                 <p className="text-muted-foreground text-xs">
-                  {check.message} Warning at {formatRate(check.warningThreshold)}, suspension at{" "}
-                  {formatRate(check.suspendThreshold)}
-                  {check.minimumVolume ? `, from ${check.minimumVolume} recipients` : ""}.
+                  {check.message} Warning at {formatRate(check.warningThreshold)},{" "}
+                  {check.suspendThreshold === null
+                    ? "never suspends"
+                    : `suspension at ${formatRate(check.suspendThreshold)}`}
+                  {check.minimumVolume
+                    ? `, from ${check.minimumVolume} ${check.trigger === "hook_failure_rate" ? "deliveries" : "recipients"}`
+                    : ""}
+                  .
                 </p>
               </div>
             );

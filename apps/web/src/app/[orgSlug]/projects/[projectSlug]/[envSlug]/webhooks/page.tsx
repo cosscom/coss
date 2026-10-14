@@ -1,6 +1,5 @@
 import { WEBHOOK_EVENT_TYPES } from "@coss/email/schemas";
 import { getEnvironment } from "@coss/tenancy";
-import { Badge } from "@coss/ui/components/badge";
 import { Card, CardPanel } from "@coss/ui/components/card";
 import {
   Table,
@@ -19,6 +18,7 @@ import { PageHeader } from "@/components/page-header";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { CreateEndpointDialog } from "./create-endpoint-dialog";
+import { EndpointStatusBadge } from "./endpoint-status";
 
 export const metadata: Metadata = { title: "Webhooks" };
 
@@ -98,11 +98,7 @@ export default async function WebhooksPage({
                       {endpoint.eventTypes.length === 0 ? "All" : endpoint.eventTypes.length}
                     </TableCell>
                     <TableCell>
-                      {endpoint.enabled ? (
-                        <Badge variant="success">Enabled</Badge>
-                      ) : (
-                        <Badge variant="secondary">Disabled</Badge>
-                      )}
+                      <EndpointStatusBadge endpoint={endpoint} />
                     </TableCell>
                     <TableCell>{formatDateTime(endpoint.createdAt)}</TableCell>
                   </TableRow>

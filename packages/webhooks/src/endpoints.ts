@@ -12,6 +12,7 @@ import {
   MAX_DELIVERY_LIST_LIMIT,
   MAX_PREVIOUS_SECRET_EXPIRES_IN,
   type WebhookDeliveryObjectOutput,
+  type WebhookEndpointDisabledReason,
   type WebhookEndpointObjectOutput,
 } from "./schemas.ts";
 import { decryptSecret, encryptSecret, type SecretsKeyRing } from "./secrets.ts";
@@ -62,6 +63,12 @@ export function toWebhookEndpointObject(row: WebhookEndpointRow): WebhookEndpoin
     event_types: row.eventTypes,
     api_version: row.apiVersion,
     enabled: row.enabled,
+    // Code from before these columns switched endpoints off without a reason: by hand.
+    disabled_reason: row.enabled
+      ? null
+      : ((row.disabledReason as WebhookEndpointDisabledReason | null) ?? "manual"),
+    disabled_at: row.disabledAt?.toISOString() ?? null,
+    failing_since: row.failingSince?.toISOString() ?? null,
     previous_secret_expires_at: previousSecretExpiresAt(row)?.toISOString() ?? null,
     created_at: row.createdAt.toISOString(),
     updated_at: row.updatedAt.toISOString(),
@@ -194,6 +201,25 @@ export async function getWebhookEndpoint(input: {
 }
 
 /**
+ * Switching an endpoint on clears why it was off and its failure streak; switching it off by hand
+ * records `manual` (an endpoint already off keeps its reason and time).
+ */
+function enabledChanges(enabled: boolean) {
+  return enabled
+    ? {
+        enabled: true,
+        disabledReason: null,
+        disabledAt: null,
+        failingSince: sql<Date | null>`case when ${webhookEndpoint.enabled} then ${webhookEndpoint.failingSince} end`,
+      }
+    : {
+        enabled: false,
+        disabledReason: sql<string>`case when ${webhookEndpoint.enabled} then 'manual' else ${webhookEndpoint.disabledReason} end`,
+        disabledAt: sql<Date>`case when ${webhookEndpoint.enabled} then now() else ${webhookEndpoint.disabledAt} end`,
+      };
+}
+
+/**
  * Changes an endpoint's URL, description, subscribed event types, API version or enabled flag. Fields left
  * `undefined` keep their current value; `description: null` clears it. The signing secret never
  * changes here (see `rollWebhookEndpointSecret`), so existing receivers keep verifying deliveries.
@@ -217,7 +243,7 @@ export async function updateWebhookEndpoint(
     }),
     ...(input.eventTypes !== undefined && { eventTypes: [...new Set(input.eventTypes)].sort() }),
     ...(input.apiVersion !== undefined && { apiVersion: checkedApiVersion(input.apiVersion) }),
-    ...(input.enabled !== undefined && { enabled: input.enabled }),
+    ...(input.enabled !== undefined && enabledChanges(input.enabled)),
   };
   const scope = and(
     eq(webhookEndpoint.organizationId, input.organizationId),

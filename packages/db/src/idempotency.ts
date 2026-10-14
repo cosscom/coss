@@ -58,12 +58,15 @@ export async function withIdempotencyKey<
 >(op: {
   requestHash: string;
   retentionMs?: number;
+  /** The clock, for tests. */
+  now?: () => number;
   insert: (tx: Transaction) => Promise<Row | undefined>;
   existing: () => Promise<Row | undefined>;
   /** Compare-and-set the key off an expired row. */
   release: (tx: Transaction, existing: Row) => Promise<unknown>;
   errors: IdempotencyErrors;
 }): Promise<{ row: Row; replayed: boolean }> {
+  const now = op.now ?? Date.now;
   let inserted = await db.transaction((tx) => op.insert(tx));
   for (let attempt = 1; !inserted; attempt++) {
     if (attempt > MAX_IDEMPOTENCY_ATTEMPTS) throw op.errors.inProgress();
@@ -73,7 +76,7 @@ export async function withIdempotencyKey<
       inserted = await db.transaction((tx) => op.insert(tx));
       continue;
     }
-    if (Date.now() - existing.createdAt.getTime() > (op.retentionMs ?? IDEMPOTENCY_KEY_TTL_MS)) {
+    if (now() - existing.createdAt.getTime() > (op.retentionMs ?? IDEMPOTENCY_KEY_TTL_MS)) {
       // Expired: move the key to a new row atomically. The compare-and-set on the old row makes
       // concurrent requests with the same expired key queue up behind each other.
       inserted = await db.transaction(async (tx) => {
