@@ -485,6 +485,31 @@ describe("received emails", () => {
 });
 
 describe("MIME helpers", () => {
+  test.each([
+    ["application/😀", "application/octet-stream"],
+    ["application/x\u0001test", "application/octet-stream"],
+    ["application/x\0test", "application/octet-stream"],
+    ["application/not a token", "application/octet-stream"],
+    ["application/", "application/octet-stream"],
+    [`application/${"x".repeat(128)}`, "application/octet-stream"],
+    ["Application/PDF", "application/pdf"],
+    ["application/vnd.example+json", "application/vnd.example+json"],
+    ["text/plain; charset=utf-8", "text/plain"],
+  ])("normalizes attachment type %s for content storage", async (contentType, expected) => {
+    const content = new Uint8Array([0, 1, 255]);
+    const parsed = await parseInboundMessage(
+      buildTestMessage({
+        from: "a@example.com",
+        to: ["b@example.com"],
+        subject: "types",
+        attachments: [{ filename: "file.bin", contentType, content }],
+      }),
+    );
+    expect(parsed.attachments).toHaveLength(1);
+    expect(parsed.attachments[0]?.contentType).toBe(expected);
+    expect(parsed.attachments[0]?.content).toEqual(content);
+  });
+
   test("body limits preserve complete Unicode characters", async () => {
     const text = `${"a".repeat(RECEIVED_BODY_MAX_LENGTH - 1)}😀`;
     const html = `${"b".repeat(RECEIVED_BODY_MAX_LENGTH - 2)}😀tail`;

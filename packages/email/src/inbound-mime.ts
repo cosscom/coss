@@ -47,6 +47,14 @@ function databaseText(value: string): string {
   return value.replaceAll("\0", "");
 }
 
+// Postal-mime preserves malformed media types. S3 sends this value as an HTTP header,
+// so accept only bounded ASCII type/subtype tokens; preserve the original in raw.eml.
+const CONTENT_TYPE = /^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,127}\/[!#$%&'*+.^_`|~0-9A-Za-z-]{1,127}$/;
+
+function attachmentContentType(value: string): string {
+  return CONTENT_TYPE.test(value) ? value.toLowerCase() : "application/octet-stream";
+}
+
 const QUOTE_NEEDED = /["<>,;:@()[\]\\]/;
 
 function formatMailbox(name: string, address: string): string {
@@ -167,7 +175,7 @@ export async function parseInboundMessage(raw: Uint8Array): Promise<ParsedInboun
       const content = bytesOf(attachment.content);
       return {
         filename: attachment.filename === null ? null : databaseText(attachment.filename),
-        contentType: databaseText(attachment.mimeType) || "application/octet-stream",
+        contentType: attachmentContentType(attachment.mimeType),
         contentId: attachment.contentId
           ? databaseText(attachment.contentId).replace(/^<|>$/g, "") || null
           : null,

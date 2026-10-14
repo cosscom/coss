@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { buildTestMessage, parseInboundMessage } from "../src/inbound-mime.ts";
 import { parseSesReceipt, S3InboundStore } from "../src/ses/inbound.ts";
 import { FakeS3Api, sesReceiptNotification } from "../src/testing.ts";
 
@@ -56,6 +58,52 @@ describe("parseSesReceipt", () => {
 });
 
 describe("S3InboundStore", () => {
+  test("a malformed attachment media type can be sent through the real S3 HTTP client", async () => {
+    const contentTypes: (string | null)[] = [];
+    const server = Bun.serve({
+      hostname: "127.0.0.1",
+      port: 0,
+      async fetch(request) {
+        contentTypes.push(request.headers.get("content-type"));
+        await request.arrayBuffer();
+        return new Response(null, { status: 200 });
+      },
+    });
+    const client = new S3Client({
+      region: "us-east-1",
+      endpoint: server.url.href,
+      forcePathStyle: true,
+      credentials: { accessKeyId: "test", secretAccessKey: "test" },
+      maxAttempts: 1,
+    });
+    try {
+      const parsed = await parseInboundMessage(
+        buildTestMessage({
+          from: "a@example.com",
+          to: ["b@example.com"],
+          subject: "type",
+          attachments: [
+            { filename: "test.bin", contentType: "application/😀", content: new Uint8Array([1]) },
+          ],
+        }),
+      );
+      const attachment = parsed.attachments[0];
+      expect(attachment).toBeDefined();
+      await client.send(
+        new PutObjectCommand({
+          Bucket: "test",
+          Key: "attachment",
+          Body: attachment?.content,
+          ContentType: attachment?.contentType,
+        }),
+      );
+      expect(contentTypes).toEqual(["application/octet-stream"]);
+    } finally {
+      client.destroy();
+      await server.stop(true);
+    }
+  });
+
   test("puts, gets, deletes and removes a whole organization page by page", async () => {
     const s3 = new FakeS3Api();
     const store = new S3InboundStore(s3, "bucket");
