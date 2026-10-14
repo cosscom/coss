@@ -256,6 +256,13 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   the org is suspended). Read data straight
   from `@coss/tenancy` / `@coss/email` (the dashboard never calls the public API). Server code uses `auth` from
   `@/lib/auth`; client code uses `authClient` from `@/lib/auth-client`.
+- Layout follows coss.com's docs (`apps/site/DESIGN.md`: grayscale, Cal Sans/Paper Mono, hue only for status):
+  `AppShell` (`src/components/shell/`) is the sidebar + framed page with breadcrumbs and ⌘K, used by the
+  `[orgSlug]`, `/settings` and `/admin` layouts. `src/lib/navigation.ts` is the one list of pages the sidebar,
+  breadcrumbs, ⌘K and settings tabs read — add a page there. Its items carry icon components, so server components
+  pass an area name (`SubNav nav=…`, `AreaSidebar area=…`), never the lists. Pages compose `PageHeader`, `Panel`
+  (`<Table variant="card">` or `PanelBody` inside), `EmptyState`, `SpecList`, `StatRow`, `StatusDot`; no back
+  links (breadcrumbs). `data-page-width="full"` on a page lifts the shell's `max-w-6xl`.
 - Mutations live in a colocated `actions.ts` (`"use server"`): `(prev: ActionResult<T> | null, formData) => runAction(…)`
   (`src/lib/actions.ts`). Start with `requireOrgPermission(formString(formData, "orgSlug"), {…})`, re-check that target
   ids belong to that org (`getKeyBinding`, `getOrganizationMember`, `getPendingInvitation`, `getDomain`,
