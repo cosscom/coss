@@ -1,5 +1,14 @@
 # coss
 
+## 0.2.0
+
+### Minor Changes
+
+- a9040a1: Add the `hook_endpoint.disabled` webhook event (`HookEndpointWebhookEvent`), sent to your webhook endpoints when a Hooks endpoint of one of your applications is disabled for failing. `verifyWebhook` takes a payload type for verifying Hooks deliveries: `verifyWebhook<MyPayload>(…)`.
+- a4dedda: Add `coss.hooks`, webhooks as a service: applications, event types, endpoints, messages (`coss.hooks.messages.send()`), deliveries and attempts, endpoint recovery, and portal sessions (`coss.hooks.portal.createSession()`).
+- 0f8d9ca: Add `coss.risk.rules` (create, list, get, update, delete) and `coss.risk.settings` (get, update: thresholds, disabled reasons, captcha provider), the `captcha` assessment parameter, the `domain_age_days`, `captcha` and `login` signals, new reason codes (`email.domain_new`, `login.new_country`, `login.new_network`, `captcha.failed`, `captcha.missing`, `rule.matched`) and the `risk.assessment.reviewed` webhook event.
+- a51deae: Webhook endpoints that fail every delivery for five days are now disabled automatically: `WebhookEndpoint` gains `disabled_reason`, `disabled_at` and `failing_since`. Add `coss.webhookEndpoints.recover()` to requeue an endpoint's failed deliveries since a time.
+
 ## 0.1.0
 
 ### Minor Changes
