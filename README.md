@@ -587,7 +587,8 @@ failed and a re-run passed, re-run the Deploy run's failed jobs:
 3. Roll out all four services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
    of its latest task definition with the new image, and the script fails if the circuit breaker rolled it back. A
    service behind the load balancer counts as deployed once its new tasks passed their health checks and the old
-   ones are draining; the worker (no health check) once its old tasks are gone. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
+   ones are draining; the worker (no health check) once its old tasks are gone and the new ones ran for 60 s
+   without a failure. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
    the worker finishes each loop's current item).
 4. Record the commit in SSM (`/coss/production/image-tag`, read by Terraform) and invalidate the spec's
    `cloudFront.invalidateAfterDeploy` paths on the coss.com distribution.
