@@ -92,6 +92,12 @@ export {
   toHookEndpointRecoveryObject,
 } from "./recoveries.ts";
 export {
+  HOOK_FAILURE_TRIGGER,
+  hookFailureRateCheck,
+  purgeExpiredHookDeliveryRollups,
+  recordHookDeliveryOutcomes,
+} from "./reputation.ts";
+export {
   purgeExpiredHookIdempotencyKeys,
   purgeExpiredHookPortalSessions,
   purgeFinishedHookRecoveries,

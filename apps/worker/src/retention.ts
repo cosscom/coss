@@ -8,6 +8,7 @@ import {
   purgeExpiredReputationRollups,
 } from "@coss/email";
 import {
+  purgeExpiredHookDeliveryRollups,
   purgeExpiredHookIdempotencyKeys,
   purgeExpiredHookPortalSessions,
   purgeFinishedHookRecoveries,
@@ -39,6 +40,7 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "hook idempotency keys", purge: purgeExpiredHookIdempotencyKeys },
   { name: "hook portal sessions", purge: purgeExpiredHookPortalSessions },
   { name: "hook recoveries", purge: purgeFinishedHookRecoveries },
+  { name: "hook delivery rollups", purge: purgeExpiredHookDeliveryRollups },
   { name: "content screenings", purge: purgeExpiredScreenings },
   { name: "reputation notifications", purge: purgeExpiredReputationNotifications },
   { name: "reputation events", purge: purgeExpiredReputationEvents },

@@ -110,7 +110,8 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
   {
     id: "reputation_statistics",
     label: "Reputation statistics",
-    description: "Hourly bounce and complaint counts behind your account standing.",
+    description:
+      "Hourly bounce, complaint and Hooks delivery failure counts behind your account standing.",
     period: { days: RETENTION_DAYS.reputationRollups, after: "creation" },
   },
   {

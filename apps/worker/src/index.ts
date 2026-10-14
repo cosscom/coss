@@ -15,6 +15,7 @@ import {
   workEmailDispatchQueue,
 } from "@coss/email/dispatch";
 import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
+import { recordHookDeliveryOutcomes } from "@coss/hooks";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
 import { screenMessage } from "@coss/screening";
@@ -115,7 +116,13 @@ const loops = startJobs({
     dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
   },
   webhooks: { secretsKeys, send },
-  hooks: { secretsKeys, send, throttle: hookThrottle(rateLimits.limiter) },
+  hooks: {
+    secretsKeys,
+    send,
+    throttle: hookThrottle(rateLimits.limiter),
+    // Live delivery outcomes feed the `hook_failure_rate` reputation check.
+    onFinished: (finished) => recordHookDeliveryOutcomes(finished),
+  },
   logRetentionDays: env.LOG_RETENTION_DAYS,
 });
 console.info(

@@ -14,6 +14,7 @@ import {
 } from "@coss/email";
 import {
   type HookDeliveryDeps,
+  hookFailureRateCheck,
   parkHeldHookDeliveries,
   runDueHookDeliveries,
   runDueHookRecoveries,
@@ -52,7 +53,8 @@ const SCHEDULED_BATCH = 50;
 const DELETION_BATCH = 5;
 const RETENTION_BATCH = 1000;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
-const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck];
+// Hooks delivery failures warn by default (their policy has no suspension threshold).
+const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck, hookFailureRateCheck];
 
 export type WorkerDeps = {
   /** Emails are dispatched by pg-boss workers; this loop only re-enqueues lost jobs. */

@@ -125,6 +125,9 @@ export type {
   AccountWebhookEventData,
   EmailWebhookEvent,
   EmailWebhookEventData,
+  HookEndpointWebhookEvent,
+  HookEndpointWebhookEventData,
+  HookOperationalEventType,
   WebhookEvent,
 } from "./types/webhook.ts";
 export type {

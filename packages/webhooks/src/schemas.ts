@@ -16,6 +16,13 @@ export const DESCRIPTION_MAX_LENGTH = 256;
 export const DEFAULT_PREVIOUS_SECRET_EXPIRES_IN = 24 * 60 * 60;
 export const MAX_PREVIOUS_SECRET_EXPIRES_IN = 7 * 24 * 60 * 60;
 export const WEBHOOK_ENDPOINT_DISABLED_REASONS = ["manual", "failing"] as const;
+
+/**
+ * Webhook events about Hooks (sent to the customer's own webhook endpoints): an endpoint of one of
+ * their applications was disabled because it kept failing.
+ */
+export const HOOK_OPERATIONAL_EVENT_TYPES = ["hook_endpoint.disabled"] as const;
+export type HookOperationalEventType = (typeof HOOK_OPERATIONAL_EVENT_TYPES)[number];
 export type WebhookEndpointDisabledReason = (typeof WEBHOOK_ENDPOINT_DISABLED_REASONS)[number];
 
 const EVENT_TYPES_DESCRIPTION =
@@ -398,3 +405,49 @@ export const ListWebhookDeliveriesQuery = z.strictObject({
 });
 
 export type ListWebhookDeliveriesQueryOutput = z.output<typeof ListWebhookDeliveriesQuery>;
+
+export const HookEndpointWebhookEvent = z
+  .object({
+    id: z.string().meta({
+      description: "The event id, also sent as the `webhook-id` header.",
+      examples: ["evt_01k7c8m4q2f3e9v6t5r1n0p8yz"],
+    }),
+    object: z.literal("event"),
+    type: z.enum(HOOK_OPERATIONAL_EVENT_TYPES),
+    api_version: z.string().meta({
+      description:
+        "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+    }),
+    created_at: z.iso.datetime(),
+    data: z.object({
+      application_id: z.string(),
+      application_uid: z.string().nullable(),
+      endpoint_id: z.string(),
+      url: z.string(),
+      failing_since: z.iso.datetime(),
+      occurred_at: z.iso.datetime(),
+    }),
+  })
+  .meta({
+    id: "HookEndpointWebhookEvent",
+    examples: [
+      {
+        id: "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        object: "event",
+        type: "hook_endpoint.disabled",
+        api_version: LATEST_API_VERSION,
+        created_at: "2026-01-20T09:30:00.000Z",
+        data: {
+          application_id: "happ_01k7c8m4q2f3e9v6t5r1n0p8yz",
+          application_uid: "customer_8812",
+          endpoint_id: "hep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+          url: "https://example.com/webhooks",
+          failing_since: "2026-01-15T09:30:00.000Z",
+          occurred_at: "2026-01-20T09:30:00.000Z",
+        },
+      },
+    ],
+  });
+export type HookEndpointWebhookEventOutput = z.output<typeof HookEndpointWebhookEvent>;
+/** What the outbox stores: delivery adds `api_version` when it renders the event for an endpoint. */
+export type StoredHookEndpointWebhookEvent = Omit<HookEndpointWebhookEventOutput, "api_version">;

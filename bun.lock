@@ -247,6 +247,7 @@
       "devDependencies": {
         "@coss/tenancy": "workspace:*",
         "@coss/tsconfig": "workspace:*",
+        "@coss/versioning": "workspace:*",
         "@types/bun": "catalog:",
         "typescript": "catalog:",
       },

@@ -1853,3 +1853,24 @@ export const hookAttempt = pgTable(
     ),
   ],
 );
+
+/**
+ * Finished Hooks deliveries of live environments per organization and hour (the hour they
+ * finished): what the `hook_failure_rate` reputation check measures. Counted by the delivery worker
+ * once per claimed batch (best effort).
+ */
+export const hookDeliveryRollup = pgTable(
+  "hook_delivery_rollup",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    hour: timestamp("hour", { withTimezone: true }).notNull(),
+    succeeded: integer("succeeded").notNull().default(0),
+    failed: integer("failed").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ name: "hook_delivery_rollup_pkey", columns: [t.organizationId, t.hour] }),
+    index("hook_delivery_rollup_hour_idx").on(t.hour),
+  ],
+);

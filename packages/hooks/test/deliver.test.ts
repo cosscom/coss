@@ -2,9 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
 import { createTestTenant, createTestUser } from "@coss/tenancy/testing";
-import { signPayload, type WebhookSender } from "@coss/webhooks";
+import { LATEST_API_VERSION } from "@coss/versioning";
+import { createWebhookEndpoint, signPayload, type WebhookSender } from "@coss/webhooks";
 import { LEASE_MS } from "@coss/webhooks/engine";
-import { webhookReceiver } from "@coss/webhooks/testing";
+import { testManagementDeps, webhookReceiver } from "@coss/webhooks/testing";
 import { and, eq } from "drizzle-orm";
 import { createHookApplication, deleteHookApplication } from "../src/applications.ts";
 import {
@@ -136,16 +137,21 @@ describe("runDueHookDeliveries", () => {
     ).toMatchObject({ status: "succeeded", attemptCount: HOOK_MAX_ATTEMPTS });
   });
 
-  test("disables an endpoint that keeps failing, and tells the caller", async () => {
-    const { tenant, endpoint, send, scope } = await setup();
-    const disabled: string[] = [];
-    const deps = testHookDeliveryDeps({
-      send: down,
-      disableAfterMs: 1,
-      onEndpointDisabled: async (_tx, row) => {
-        disabled.push(row.id);
+  test("disables an endpoint that keeps failing, and tells the customer by webhook", async () => {
+    const { tenant, application, endpoint, send, scope } = await setup();
+    // The customer's own webhook endpoint (COSS events), subscribed to Hooks' operational events.
+    await createWebhookEndpoint(
+      {
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        url: "https://customer.example/coss",
+        eventTypes: ["hook_endpoint.disabled"],
+        apiVersion: LATEST_API_VERSION,
+        userId: tenant.owner.id,
       },
-    });
+      testManagementDeps,
+    );
+    const deps = testHookDeliveryDeps({ send: down, disableAfterMs: 1 });
     const giveUp = async (start: Date) => {
       await send();
       let now = new Date(Math.max(start.getTime(), Date.now()));
@@ -163,7 +169,20 @@ describe("runDueHookDeliveries", () => {
       enabled: false,
       disabledReason: "failing",
     });
-    expect(disabled).toEqual([endpoint.id]);
+    const [event] = await db
+      .select()
+      .from(schema.webhookMessage)
+      .where(
+        and(
+          eq(schema.webhookMessage.organizationId, tenant.organization.id),
+          eq(schema.webhookMessage.type, "hook_endpoint.disabled"),
+        ),
+      );
+    expect(event?.payload).toMatchObject({
+      object: "event",
+      type: "hook_endpoint.disabled",
+      data: { application_id: application.id, endpoint_id: endpoint.id, url: endpoint.url },
+    });
     const audit = await db
       .select()
       .from(schema.orgAuditEvent)

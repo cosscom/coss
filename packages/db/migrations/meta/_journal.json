@@ -323,6 +323,13 @@
       "when": 1791995629012,
       "tag": "0045_hook_key_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1791997347876,
+      "tag": "0046_hard_havok",
+      "breakpoints": true
     }
   ]
 }

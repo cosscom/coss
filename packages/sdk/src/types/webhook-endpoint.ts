@@ -4,10 +4,10 @@
  */
 import type { ApiVersion } from "../api-version.ts";
 import type { EmailEventType } from "./email.ts";
-import type { AccountEventType } from "./webhook.ts";
+import type { AccountEventType, HookOperationalEventType } from "./webhook.ts";
 
 /** Every event type an endpoint can subscribe to. */
-export type WebhookEventType = EmailEventType | AccountEventType;
+export type WebhookEventType = EmailEventType | AccountEventType | HookOperationalEventType;
 
 /** Why an endpoint is disabled. */
 export type WebhookEndpointDisabledReason = "manual" | "failing";

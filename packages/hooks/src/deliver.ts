@@ -5,7 +5,7 @@
 import { db, type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { recordOrgAuditEvent } from "@coss/logs";
-import { signatureHeaders, type WebhookSender } from "@coss/webhooks";
+import { enqueueWebhookMessage, signatureHeaders, type WebhookSender } from "@coss/webhooks";
 import {
   type AttemptResult,
   type DeliveryOutcome,
@@ -20,13 +20,14 @@ import {
   sendAttempt,
   stillOwned,
 } from "@coss/webhooks/engine";
+import type { StoredHookEndpointWebhookEvent } from "@coss/webhooks/schemas";
 import { and, eq, inArray, isNotNull, isNull, lte, sql } from "drizzle-orm";
 import type { HookDeliveryRow } from "./deliveries.ts";
 import { type HookEndpointRow, hookSigningSecrets } from "./endpoints.ts";
 import { type HookMessageRow, hookMessagesByIds } from "./messages.ts";
 import type { HookManagementDeps } from "./shared.ts";
 
-const { hookAttempt, hookDelivery, hookEndpoint } = schema;
+const { hookApplication, hookAttempt, hookDelivery, hookEndpoint } = schema;
 
 /** Wait before each retry: 8 attempts over roughly 28 hours (shortened by up to 10% of jitter). */
 export const HOOK_RETRY_DELAYS_MS = [
@@ -74,10 +75,8 @@ export type HookDeliveryDeps = Pick<HookManagementDeps, "secretsKeys"> & {
   random?: () => number;
   /** How long an endpoint fails before it is disabled (tests shorten it). */
   disableAfterMs?: number;
-  /** Called once per run with the deliveries that finished (e.g. for reputation counts). */
+  /** Called once per run with the deliveries that finished (the worker: reputation counts). */
   onFinished?: (finished: FinishedHookDelivery[]) => Promise<void>;
-  /** Called in the transaction that disables an endpoint for failing (e.g. to notify the customer). */
-  onEndpointDisabled?: (tx: Executor, endpoint: HookEndpointRow) => Promise<void>;
 };
 
 /** Raw rows (from `db.execute`) carry timestamps as Postgres text. */
@@ -385,10 +384,54 @@ async function updateEndpointHealth(
         },
         tx,
       );
-      await deps.onEndpointDisabled?.(tx, disabled);
+      await announceEndpointDisabled(tx, disabled, change.failingSince, now);
       return;
     }
   }
+}
+
+/**
+ * Tells the customer, through their own webhook endpoints (`hook_endpoint.disabled`), that one of
+ * their applications' endpoints was disabled; in the transaction that disabled it.
+ */
+async function announceEndpointDisabled(
+  tx: Executor,
+  endpoint: HookEndpointRow,
+  failingSince: Date,
+  now: Date,
+): Promise<void> {
+  const [application] = await tx
+    .select({ uid: hookApplication.uid })
+    .from(hookApplication)
+    .where(
+      and(
+        eq(hookApplication.id, endpoint.applicationId),
+        eq(hookApplication.organizationId, endpoint.organizationId),
+      ),
+    );
+  const id = newId(ID_PREFIXES.webhookEvent);
+  const payload: StoredHookEndpointWebhookEvent = {
+    id,
+    object: "event",
+    type: "hook_endpoint.disabled",
+    created_at: now.toISOString(),
+    data: {
+      application_id: endpoint.applicationId,
+      application_uid: application?.uid ?? null,
+      endpoint_id: endpoint.id,
+      url: endpoint.url,
+      failing_since: failingSince.toISOString(),
+      occurred_at: now.toISOString(),
+    },
+  };
+  await enqueueWebhookMessage(tx, {
+    id,
+    organizationId: endpoint.organizationId,
+    environmentId: endpoint.environmentId,
+    type: payload.type,
+    payload,
+    now,
+  });
 }
 
 /**

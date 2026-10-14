@@ -27,6 +27,7 @@ export const TRIGGER_LABELS: Readonly<Record<string, string>> = {
   bounce_rate: "Bounce rate",
   complaint_rate: "Complaint rate",
   content_screening: "Content screening",
+  hook_failure_rate: "Hooks delivery failures",
   manual: "COSS review",
   policy: "Policy",
   evaluation: "Evaluation",
@@ -83,6 +84,24 @@ export const ContentScreeningPolicy = z
   });
 export type ContentScreeningPolicy = z.output<typeof ContentScreeningPolicy>;
 
+/**
+ * Hooks deliveries that failed every attempt / finished deliveries. Endpoints belong to the
+ * customer's users, so a high rate is usually their users' problem, not abuse: by default it only
+ * warns (`suspend: null`); endpoint auto-disable is what stops the requests.
+ */
+export const HookFailureThreshold = z
+  .strictObject({
+    warning: Rate,
+    /** `null`: never suspends. */
+    suspend: Rate.nullable(),
+    /** Below this many finished deliveries in the window the rate is reported but never acted on. */
+    minimumDeliveries: z.int().min(1),
+  })
+  .refine((value) => value.suspend === null || value.warning <= value.suspend, {
+    message: "The warning threshold can't be above the suspension threshold.",
+  });
+export type HookFailureThreshold = z.output<typeof HookFailureThreshold>;
+
 export const ReputationPolicy = z.strictObject({
   /** Rolling window the rates are measured over (never before the last reinstatement). */
   windowDays: z.int().min(1).max(30),
@@ -93,6 +112,7 @@ export const ReputationPolicy = z.strictObject({
   /** Count mailbox-simulator recipients (testing only: SES itself never counts them). */
   countSimulatorRecipients: z.boolean(),
   contentScreening: ContentScreeningPolicy,
+  hookFailureRate: HookFailureThreshold,
 });
 export type ReputationPolicy = z.output<typeof ReputationPolicy>;
 
@@ -114,6 +134,7 @@ export const DEFAULT_REPUTATION_POLICY: ReputationPolicy = {
     milestones: [25, 50, 100, 250, 500, 1000],
     sampleRate: 0.02,
   },
+  hookFailureRate: { warning: 0.5, suspend: null, minimumDeliveries: 5000 },
 };
 
 export const ReputationPolicyOverrides = z.strictObject({
@@ -144,6 +165,13 @@ export const ReputationPolicyOverrides = z.strictObject({
       sampleRate: Probability.optional(),
     })
     .optional(),
+  hookFailureRate: z
+    .strictObject({
+      warning: Rate.optional(),
+      suspend: Rate.nullable().optional(),
+      minimumDeliveries: z.int().min(1).optional(),
+    })
+    .optional(),
 });
 export type ReputationPolicyOverrides = z.output<typeof ReputationPolicyOverrides>;
 
@@ -160,6 +188,7 @@ export function effectivePolicy(overrides: unknown): ReputationPolicy {
       ...DEFAULT_REPUTATION_POLICY.contentScreening,
       ...parsed.contentScreening,
     },
+    hookFailureRate: { ...DEFAULT_REPUTATION_POLICY.hookFailureRate, ...parsed.hookFailureRate },
   });
 }
 

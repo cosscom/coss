@@ -2055,10 +2055,11 @@
                 "account.reputation_warning",
                 "account.reputation_recovered",
                 "account.suspended",
-                "account.reinstated"
+                "account.reinstated",
+                "hook_endpoint.disabled"
               ]
             },
-            "maxItems": 16,
+            "maxItems": 17,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -2300,10 +2301,11 @@
                 "account.reputation_warning",
                 "account.reputation_recovered",
                 "account.suspended",
-                "account.reinstated"
+                "account.reinstated",
+                "hook_endpoint.disabled"
               ]
             },
-            "maxItems": 16,
+            "maxItems": 17,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {

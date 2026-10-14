@@ -721,6 +721,12 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   are normalized JSON (parsed and re-serialized), and `OPAQUE_FIELDS` keeps versioning out of payloads, schemas,
   examples and metadata. Portal sessions: only the token's sha256 is stored; the URL is `<PORTAL_PUBLIC_URL>/s/<id>#<token>`
   — never put a token in a path, query or cookie. `reencryptWebhookSecrets` must also cover `hook_endpoint` secrets.
+  Abuse: an endpoint failing for 5 days is disabled (`endpointHealth`), which records a `hook_endpoint.disabled` audit
+  event and sends the customer's own webhook endpoints a `hook_endpoint.disabled` event (`HOOK_OPERATIONAL_EVENT_TYPES`
+  in `@coss/webhooks/schemas`, part of `WEBHOOK_EVENT_TYPES`), in the same transaction. Live outcomes are counted per
+  org and hour into `hook_delivery_rollup` (once per claimed batch, `recordHookDeliveryOutcomes`, the worker's
+  `onFinished`; sandbox never counts) for the `hook_failure_rate` check (`hookFailureRateCheck`), which only warns by
+  default (`ReputationPolicy.hookFailureRate.suspend: null`; admins can set one per org).
 - **Platform admin** (`/admin`, `@coss/tenancy/admin`): every admin page calls `requirePlatformAdmin()` itself — Next
   renders layouts and pages in parallel, so the layout's check alone would still stream the page's data to non-admins
   (verified). Actions use `requirePlatformAdminAction()` and record an `admin_audit_event` (append-only; no FKs; the
@@ -941,7 +947,7 @@ IdP-initiated SAML and SAML single logout, more than one SSO provider per organi
 org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
 would drop an org's SSO provider or last owner), email change, npm publishing of the SDK,
 email/SMS two-factor codes, "trust this device" for 2FA, renaming passkeys, the Hooks dashboard pages and portal
-(`apps/portal`), Hooks reputation checks and operational webhooks (`hook_endpoint.disabled`), and these Hooks
+(`apps/portal`), and these Hooks
 features: channels, payload transformations, custom endpoint headers, sending one message to several applications,
 strict ordering, portal custom domains, per-destination rate-limit overrides, Hooks attempts in environment logs and
 log drains.

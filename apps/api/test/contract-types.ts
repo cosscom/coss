@@ -51,6 +51,7 @@ import type {
   CreateLogDrainRequest,
   DeletedLogDrain,
   DeletedWebhookEndpoint,
+  HookEndpointWebhookEvent,
   ListLogDrainBatchesQuery,
   ListWebhookDeliveriesQuery,
   LogDrainAttemptObject,
@@ -112,6 +113,7 @@ import type {
   EmailTracking as SdkEmailTracking,
   EmailWebhookEvent as SdkEmailWebhookEvent,
   WebhookEndpointWithSecret as SdkEndpointWithSecret,
+  HookEndpointWebhookEvent as SdkHookEndpointWebhookEvent,
   Log as SdkLog,
   LogDrainWithSecret as SdkLogDrainWithSecret,
   Reputation as SdkReputation,
@@ -252,8 +254,13 @@ export type Contract = [
     MutuallyAssignable<z.output<typeof AccountWebhookEvent>["data"], SdkAccountWebhookEvent["data"]>
   >,
   Assert<
+    MutuallyAssignable<z.output<typeof HookEndpointWebhookEvent>, SdkHookEndpointWebhookEvent>
+  >,
+  Assert<
     MutuallyAssignable<
-      z.output<typeof EmailWebhookEvent> | z.output<typeof AccountWebhookEvent>,
+      | z.output<typeof EmailWebhookEvent>
+      | z.output<typeof AccountWebhookEvent>
+      | z.output<typeof HookEndpointWebhookEvent>,
       WebhookEvent
     >
   >,
