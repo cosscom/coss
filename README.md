@@ -557,8 +557,8 @@ Cloudflare DNS (coss.com zone, DNS only)
   `terraform output smtp_certificate_validation_records`, DNS only), passes its ARN as `SMTP_TLS_CERTIFICATE_ARN`,
   and the task role may only `acm:ExportCertificate` it; the relay exports it at start and every 12 hours (ACM
   renews it) with `SMTP_TLS_PASSPHRASE` (stage secret, any random value). `smtp.coss.com` is a **DNS-only** CNAME to
-  `terraform output nlb_dns_name` (Cloudflare can't proxy SMTP). Once it resolves, set
-  `SMTP_PUBLIC_HOST=smtp.coss.com` for web in `production.tfvars` so environment pages show the settings. No SES
+  `terraform output nlb_dns_name` (Cloudflare can't proxy SMTP). `SMTP_PUBLIC_HOST=smtp.coss.com` (web) shows the
+  settings on environment pages; leave it unset on a stage whose relay isn't reachable yet. No SES
   permissions: the relay only stores and enqueues, the worker sends.
 - **Hooks portal (`cosshooks.com`, the same self-serve Cloudflare account as `cosslinks.com`):** `apps/portal`,
   the page customers embed for their users, runs as the `portal` service on a registrable domain of its own (never
