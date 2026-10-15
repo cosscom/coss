@@ -51,7 +51,8 @@ An email gets them when unsubscribe is on for it and:
 - it has a single recipient across `to`, `cc` and `bcc`: one message goes to every recipient, so the
   link could not tell who asked. Send one email per recipient, for example with
   [`sendBatch`](/docs/email/sending#sending-in-batches), which makes each entry its own email;
-- it has no `List-Unsubscribe` or `List-Unsubscribe-Post` header of your own. Yours win.
+- it has no `List-Unsubscribe` or `List-Unsubscribe-Post` header of your own (yours win), and at
+  most 13 custom `headers`, so the two COSS adds stay within the limit of 15.
 
 A send that asks for `tracking: { unsubscribe: true }` but breaks one of these rules is refused with
 a `validation_error` on `tracking.unsubscribe`. Emails that only get it from a rule are sent without

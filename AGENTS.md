@@ -741,7 +741,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - **One-click unsubscribe** (RFC 8058, `packages/email/src/unsubscribe.ts`, `email.unsubscribe`,
   `email_tracking_rule.unsubscribe`): a third field of the tracking rules (send's `tracking.unsubscribe`, then the
   category's rule, then the default, then off), snapshotted at send and true only for an email with a `category`, a
-  single distinct recipient and no customer `list-unsubscribe`/`list-unsubscribe-post` header (an explicit
+  single distinct recipient, no customer `list-unsubscribe`/`list-unsubscribe-post` header and at most
+  `MAX_HEADERS_WITH_UNSUBSCRIBE` (13) custom headers, so SES's 15 still fit (an explicit
   `tracking.unsubscribe: true` breaking one of those is a 422; a rule just doesn't apply). It reuses the email's
   `tracking_token` (minted when opens, clicks or unsubscribe is on). `instrument` adds `List-Unsubscribe:
   <base/t/u/token>` + `List-Unsubscribe-Post` to the provider's copy only (base as for links, custom tracking domain

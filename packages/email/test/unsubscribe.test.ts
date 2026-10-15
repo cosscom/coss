@@ -95,6 +95,15 @@ describe("adding the headers", () => {
         .unsubscribe,
     ).toBe(true);
 
+    // The two headers must fit the provider's limit of 15.
+    const headers = (count: number) =>
+      Object.fromEntries(Array.from({ length: count }, (_, i) => [`x-h${i}`, "v"]));
+    const crowded = await send(tenant, { headers: headers(14) });
+    expect(crowded.email.tracking.unsubscribe).toBe(false);
+    expect(Object.keys(crowded.headers)).toHaveLength(14);
+    const fits = await send(tenant, { headers: headers(13) });
+    expect(Object.keys(fits.headers)).toHaveLength(15);
+
     const own = await send(tenant, { headers: { "List-Unsubscribe": "<mailto:u@acme.com>" } });
     expect(own.email.tracking.unsubscribe).toBe(false);
     expect(own.headers).toEqual({ "list-unsubscribe": "<mailto:u@acme.com>" });
@@ -127,6 +136,15 @@ describe("adding the headers", () => {
     expect(issues({ ...base, headers: { "List-Unsubscribe-Post": ONE_CLICK } })[0]?.[0]).toBe(
       "tracking.unsubscribe",
     );
+    const headers = Object.fromEntries(
+      Array.from({ length: 14 }, (_, i) => [`x-h${i}`, "v"] as const),
+    );
+    expect(issues({ ...base, headers })).toEqual([
+      [
+        "tracking.unsubscribe",
+        "One-click unsubscribe adds 2 headers: send at most 13 of your own.",
+      ],
+    ]);
     // Absent stays absent, so request hashes from before the field existed stay valid.
     expect(SendEmailRequest.parse({ ...base, tracking: { opens: true } }).tracking).toEqual({
       opens: true,

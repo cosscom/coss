@@ -295,8 +295,8 @@ export const TrackingOptions = z
         description:
           "Add one-click unsubscribe headers (`List-Unsubscribe` and `List-Unsubscribe-Post`, " +
           "RFC 8058). An unsubscribe suppresses the recipient for this email's category and " +
-          "records `email.unsubscribed`. Needs a `category`, a single recipient and no " +
-          "`List-Unsubscribe` header of your own.",
+          "records `email.unsubscribed`. Needs a `category`, a single recipient, no " +
+          "`List-Unsubscribe` header of your own and at most 13 custom headers.",
       }),
   })
   .meta({
@@ -308,6 +308,12 @@ export const TrackingOptions = z
 
 /** Header names whose presence means the customer handles unsubscribes themselves. */
 export const LIST_UNSUBSCRIBE_HEADERS = ["list-unsubscribe", "list-unsubscribe-post"] as const;
+
+/**
+ * Custom headers an email can have and still get COSS's two unsubscribe headers: providers take
+ * at most `MAX_HEADERS` in all (SES's limit for a simple message).
+ */
+export const MAX_HEADERS_WITH_UNSUBSCRIBE = MAX_HEADERS - LIST_UNSUBSCRIBE_HEADERS.length;
 
 export type TrackingOptionsOutput = z.output<typeof TrackingOptions>;
 
@@ -512,6 +518,15 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
         code: "custom",
         path,
         message: "One-click unsubscribe can't be combined with your own List-Unsubscribe headers.",
+      });
+    }
+    if (headerNames.length > MAX_HEADERS_WITH_UNSUBSCRIBE) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message:
+          `One-click unsubscribe adds ${LIST_UNSUBSCRIBE_HEADERS.length} headers: send at most ` +
+          `${MAX_HEADERS_WITH_UNSUBSCRIBE} of your own.`,
       });
     }
   }

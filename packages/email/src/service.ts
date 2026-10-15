@@ -41,6 +41,7 @@ import {
   type EmailBatchObjectOutput,
   type EmailObjectOutput,
   LIST_UNSUBSCRIBE_HEADERS,
+  MAX_HEADERS_WITH_UNSUBSCRIBE,
   parseEmailAddress,
   type SendEmailRequestOutput,
   uniqueRecipientCount,
@@ -783,13 +784,15 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     }
     const tracking = await resolving;
     // The unsubscribe is scoped to the category and names one recipient (one provider message
-    // goes to every recipient), and the customer's own List-Unsubscribe headers win. An explicit
-    // `tracking.unsubscribe` that can't be honored was already refused by validation.
+    // goes to every recipient), the customer's own List-Unsubscribe headers win, and the two
+    // headers must still fit the provider's header limit. An explicit `tracking.unsubscribe` that
+    // can't be honored was already refused by validation.
     const unsubscribe =
       tracking.unsubscribe &&
       params.category !== undefined &&
       uniqueRecipientCount(params) === 1 &&
-      !LIST_UNSUBSCRIBE_HEADERS.some((name) => name in params.headers);
+      !LIST_UNSUBSCRIBE_HEADERS.some((name) => name in params.headers) &&
+      Object.keys(params.headers).length <= MAX_HEADERS_WITH_UNSUBSCRIBE;
     if ((tracking.opens || tracking.clicks || unsubscribe) && !trackingBaseUrl) {
       throw new Error("Tracking requires the email service's trackingBaseUrl.");
     }
