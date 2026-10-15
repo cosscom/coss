@@ -1,5 +1,5 @@
 import { getReputationStanding } from "@coss/reputation";
-import { listProjectsWithEnvironments, listUserOrganizations } from "@coss/tenancy";
+import { listUserOrganizations } from "@coss/tenancy";
 import { BillingBanner } from "@/components/billing/billing-banner";
 import { ReputationBanner } from "@/components/reputation";
 import { AppShell } from "@/components/shell/app-shell";
@@ -10,6 +10,7 @@ import { SuspendedAlert } from "@/components/suspended-alert";
 import { avatarUrl } from "@/lib/avatars";
 import { billingBannerState } from "@/lib/billing";
 import { environmentPath } from "@/lib/navigation";
+import { listProjectsWithDefaultEnvironment } from "@/lib/projects";
 import { isPlatformAdmin, requireOrgMember } from "@/lib/session";
 
 export default async function OrganizationLayout({ children, params }: LayoutProps<"/[orgSlug]">) {
@@ -18,16 +19,19 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
     await requireOrgMember(orgSlug);
   const [organizations, projectRows, standing, billing] = await Promise.all([
     listUserOrganizations({ userId: session.user.id }),
-    listProjectsWithEnvironments({ organizationId: organization.id }),
+    listProjectsWithDefaultEnvironment(organization.id),
     getReputationStanding(organization.id),
     can({ billing: ["read"] }) ? billingBannerState(organization.id) : null,
   ]);
   const base = `/${organization.slug}`;
-  const projects: ShellProject[] = projectRows.map(({ project, environments }) => ({
-    name: project.name,
-    slug: project.slug,
-    environments: environments.map((env) => ({ name: env.name, slug: env.slug, mode: env.mode })),
-  }));
+  const projects: ShellProject[] = projectRows.map(
+    ({ project, environments, defaultEnvironment }) => ({
+      name: project.name,
+      slug: project.slug,
+      environments: environments.map((env) => ({ name: env.name, slug: env.slug, mode: env.mode })),
+      defaultEnvironment: defaultEnvironment?.slug,
+    }),
+  );
   const orgs = organizations.map((org) => ({ name: org.name, slug: org.slug }));
   const current = { name: organization.name, slug: organization.slug };
   const user = {

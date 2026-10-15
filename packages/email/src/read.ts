@@ -468,6 +468,30 @@ export type EmailActivity = {
 const EMAIL_STATUSES = ["queued", "sent", "failed", "scheduled", "canceled"] as const;
 
 /**
+ * Which of `environmentIds` (of one organization) have at least one sent email still kept:
+ * emails are purged after their retention period, so an environment that went quiet for longer
+ * stops counting. One index probe per environment. The dashboard opens a project on its live
+ * environment once that has sent something.
+ */
+export async function environmentsWithSentEmail(input: {
+  organizationId: string;
+  environmentIds: string[];
+}): Promise<Set<string>> {
+  if (input.environmentIds.length === 0) return new Set();
+  const rows = await db
+    .select({ id: environment.id })
+    .from(environment)
+    .where(
+      and(
+        eq(environment.organizationId, input.organizationId),
+        inArray(environment.id, input.environmentIds),
+        sql`exists (select 1 from ${email} where ${email.environmentId} = ${environment.id} and ${email.organizationId} = ${input.organizationId} and ${email.status} = 'sent')`,
+      ),
+    );
+  return new Set(rows.map((row) => row.id));
+}
+
+/**
  * An environment's emails per UTC day by their current status, from the day of `since` up to
  * `now`, plus engagement totals: the dashboard's overview. Days without emails are zero.
  */

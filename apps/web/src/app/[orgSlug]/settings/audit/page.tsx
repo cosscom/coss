@@ -2,22 +2,14 @@ import { listOrgAuditActions, listOrgAuditEvents } from "@coss/logs";
 import type { OrgAuditEventOutput } from "@coss/logs/schemas";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@coss/ui/components/table";
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@coss/ui/components/table";
 import { DownloadIcon, HistoryIcon, XIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CursorPager } from "@/components/cursor-pager";
 import { EmptyState } from "@/components/empty-state";
 import { FilterLinks } from "@/components/filter-links";
-import { Panel, PanelBody } from "@/components/panel";
-import { SectionHeader } from "@/components/section-header";
+import { SettingsPage, SettingsSection, SettingsTable } from "@/components/settings";
 import { formatDateTime } from "@/lib/format";
 import { auditFiltersFrom, auditLabels, requireAuditAccess } from "./audit-data";
 
@@ -82,10 +74,13 @@ export default async function AuditLogPage({
   };
   const resources = [...new Set(actions.map((name) => `${name.split(".")[0]}.`))];
 
+  const filtered = Boolean(action || actor || before);
+
   return (
-    <div className="flex flex-col gap-6">
-      <SectionHeader
-        actions={
+    // A log is data, not settings: it takes the page's width.
+    <SettingsPage className="max-w-none">
+      <SettingsSection
+        action={
           <Button
             render={<a download href={query({}).replace(path, `${path}/export`)} />}
             size="sm"
@@ -95,62 +90,48 @@ export default async function AuditLogPage({
             Export CSV
           </Button>
         }
-        description="Who changed what in this organization: members in the dashboard, API keys, and COSS support. Newest first; entries can't be edited or deleted."
-        title="Audit log"
-      />
-
-      {resources.length > 0 || actor ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <FilterLinks
-            options={[
-              { value: "", label: "Everything", href: query({ action: undefined }) },
-              ...resources.map((resource) => ({
-                value: resource,
-                label: describeAction(resource.slice(0, -1)),
-                href: query({ action: resource }),
-              })),
-            ]}
-            value={action ?? ""}
-          />
-          {actor ? (
-            <Button
-              render={<Link href={query({ actor: undefined })} />}
-              size="sm"
-              variant="outline"
-            >
-              Any actor
-              <XIcon />
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
-
-      <Panel
-        footer={
-          before || nextBefore ? (
-            <CursorPager
-              newestHref={before ? query({}) : undefined}
-              olderHref={nextBefore ? query({ before: nextBefore }) : undefined}
-              summary={`${events.length} ${events.length === 1 ? "event" : "events"}`}
-            />
-          ) : null
-        }
+        description="Who changed what: members in the dashboard, API keys and COSS support. Newest first; entries can't be edited or deleted."
       >
+        {resources.length > 0 || actor ? (
+          <div className="flex flex-wrap items-center gap-2 border-t px-5 py-3">
+            <FilterLinks
+              options={[
+                { value: "", label: "Everything", href: query({ action: undefined }) },
+                ...resources.map((resource) => ({
+                  value: resource,
+                  label: describeAction(resource.slice(0, -1)),
+                  href: query({ action: resource }),
+                })),
+              ]}
+              value={action ?? ""}
+            />
+            {actor ? (
+              <Button
+                render={<Link href={query({ actor: undefined })} />}
+                size="sm"
+                variant="ghost"
+              >
+                Any actor
+                <XIcon />
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
         {events.length === 0 ? (
-          <PanelBody flush>
+          <div className="border-t">
             <EmptyState
               compact
               description={
-                action || actor || before
+                filtered
                   ? "No event matches these filters."
                   : "Changes to API keys, members, domains, webhooks and settings show up here."
               }
               icon={HistoryIcon}
-              title={action || actor || before ? "No matching events" : "Nothing recorded yet"}
+              title={filtered ? "No matching events" : "Nothing recorded yet"}
             />
-          </PanelBody>
+          </div>
         ) : (
-          <Table variant="card">
+          <SettingsTable>
             <TableHeader>
               <TableRow>
                 <TableHead>When</TableHead>
@@ -173,11 +154,11 @@ export default async function AuditLogPage({
                 const detail = details(event);
                 return (
                   <TableRow key={event.id}>
-                    <TableCell className="whitespace-nowrap align-top text-muted-foreground">
+                    <TableCell className="whitespace-nowrap py-3 align-top text-muted-foreground">
                       {formatDateTime(event.created_at)}
                     </TableCell>
-                    <TableCell className="align-top">
-                      <div className="flex flex-col gap-0.5">
+                    <TableCell className="py-3 align-top">
+                      <div className="flex flex-col gap-1">
                         {event.actor_id ? (
                           <Link
                             className="hover:underline"
@@ -188,7 +169,7 @@ export default async function AuditLogPage({
                         ) : (
                           <span className="flex items-center gap-2">
                             {actorLabel}
-                            <Badge variant="info">COSS</Badge>
+                            <Badge variant="outline">COSS</Badge>
                           </span>
                         )}
                         {event.metadata.impersonated_by ? (
@@ -203,23 +184,25 @@ export default async function AuditLogPage({
                         ) : null}
                       </div>
                     </TableCell>
-                    <TableCell className="align-top">
-                      <div className="flex flex-col gap-0.5">
+                    <TableCell className="py-3 align-top">
+                      <div className="flex flex-col gap-1">
                         <span className="font-medium">{describeAction(event.action)}</span>
-                        <code className="text-muted-foreground text-xs">{event.action}</code>
+                        <code className="font-mono text-muted-foreground text-xs">
+                          {event.action}
+                        </code>
                         {detail ? (
-                          <span className="max-w-80 whitespace-normal text-muted-foreground text-xs">
+                          <span className="max-w-80 whitespace-normal text-muted-foreground text-xs leading-normal">
                             {detail}
                           </span>
                         ) : null}
                       </div>
                     </TableCell>
-                    <TableCell className="max-w-64 align-top">
+                    <TableCell className="max-w-64 py-3 align-top">
                       {event.target_label || event.target_id ? (
-                        <div className="flex flex-col gap-0.5">
+                        <div className="flex flex-col gap-1">
                           <span className="truncate">{event.target_label ?? event.target_id}</span>
                           {event.target_label && event.target_id ? (
-                            <code className="truncate text-muted-foreground text-xs">
+                            <code className="truncate font-mono text-muted-foreground text-xs">
                               {event.target_id}
                             </code>
                           ) : null}
@@ -228,7 +211,7 @@ export default async function AuditLogPage({
                         <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="align-top text-muted-foreground">
+                    <TableCell className="py-3 align-top text-muted-foreground">
                       {event.environment_id
                         ? (environmentNames[event.environment_id] ?? event.environment_id)
                         : "Organization"}
@@ -237,29 +220,40 @@ export default async function AuditLogPage({
                 );
               })}
             </TableBody>
-          </Table>
+          </SettingsTable>
         )}
-      </Panel>
-    </div>
+        {before || nextBefore ? (
+          <div className="border-t bg-muted/40 px-5 py-2.5">
+            <CursorPager
+              newestHref={before ? query({}) : undefined}
+              olderHref={nextBefore ? query({ before: nextBefore }) : undefined}
+              summary={`${events.length} ${events.length === 1 ? "event" : "events"}`}
+            />
+          </div>
+        ) : null}
+      </SettingsSection>
+    </SettingsPage>
   );
 }
 
 /** Plans without the audit log: it keeps recording, so upgrading shows the history too. */
 function AuditLogUpsell(props: { orgSlug: string }) {
   return (
-    <Panel>
-      <PanelBody flush>
-        <EmptyState
-          action={
-            <Button render={<Link href={`/${props.orgSlug}/settings/billing/plans`} />} size="sm">
-              Compare plans
-            </Button>
-          }
-          description="See who changed API keys, members, domains, webhooks and settings, from the dashboard or the API. Changes are already being recorded: upgrade to see them."
-          icon={HistoryIcon}
-          title="The audit log is part of the Pro plan"
-        />
-      </PanelBody>
-    </Panel>
+    <SettingsPage>
+      <SettingsSection>
+        <div className="border-t">
+          <EmptyState
+            action={
+              <Button render={<Link href={`/${props.orgSlug}/settings/billing/plans`} />} size="sm">
+                Compare plans
+              </Button>
+            }
+            description="See who changed API keys, members, domains, webhooks and settings, from the dashboard or the API. Changes are already being recorded: upgrade to see them."
+            icon={HistoryIcon}
+            title="The audit log is part of the Pro plan"
+          />
+        </div>
+      </SettingsSection>
+    </SettingsPage>
   );
 }
