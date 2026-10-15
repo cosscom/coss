@@ -113,6 +113,7 @@ export {
   emailFailure,
   environmentsWithSentEmail,
   getEmail,
+  getEmailBatch,
   listEmailEvents,
   listEmailLinks,
   listEmailSummariesPage,
