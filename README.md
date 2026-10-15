@@ -666,7 +666,7 @@ can verify their address or create a live key; afterwards, ask for a new verific
 They are ordinary live emails of that organization: its dashboard shows their delivery, and its suppressions and
 reputation guard apply. Account emails keep no body once sent (their links are secrets).
 
-Push notifications to the iOS app need an APNs key: in the Apple Developer account that owns `com.coss.app`, create a
+Push notifications to the iOS app need an APNs key: in the Apple Developer account that owns `com.coss.ios`, create a
 key with "Apple Push Notifications service (APNs)" under Certificates, Identifiers & Profiles → Keys, then store the
 `.p8` file's contents with `put-secret.sh APNS_PRIVATE_KEY --clipboard`, remove `APNS_PRIVATE_KEY` from
 `unset_secrets`, set the worker's `APNS_KEY_ID` (the key's id) and `APNS_TEAM_ID` in `production.tfvars`, apply, and
