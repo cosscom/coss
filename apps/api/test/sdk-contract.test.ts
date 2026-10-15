@@ -151,6 +151,102 @@ describe("coss SDK against the API", () => {
     ]);
   });
 
+  test("list finds emails by recipient and status, pages, and reports failures", async () => {
+    const tenant = await createTestTenant();
+    const { app, dispatch } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    const delivered = await coss.email.send({
+      from: "hello@acme.com",
+      to: "Ada@Example.com",
+      cc: ["copy@example.com"],
+      subject: "Welcome",
+      html: "<p>Hi</p>",
+      category: "onboarding",
+    });
+    const bounced = await coss.email.send({
+      from: "hello@acme.com",
+      to: ["ada@example.com", "bounce@simulator.amazonses.com"],
+      subject: "Second",
+      text: "Hi",
+    });
+    await coss.email.suppressions.add({ address: "gone@example.com" });
+    const suppressed = await coss.email.send({
+      from: "hello@acme.com",
+      to: "gone@example.com",
+      subject: "Nobody",
+      text: "Hi",
+    });
+    if (!delivered.data || !bounced.data || !suppressed.data) throw new Error("send failed");
+    await dispatch();
+
+    const byRecipient = await coss.email.list({ to: "ADA@example.com" });
+    expect(byRecipient.error).toBeNull();
+    expect(byRecipient.data?.data.map((e) => e.id)).toEqual([bounced.data.id, delivered.data.id]);
+    expect(byRecipient.data?.has_more).toBe(false);
+    const summary = byRecipient.data?.data[1];
+    expect(summary).toMatchObject({
+      object: "email",
+      subject: "Welcome",
+      category: "onboarding",
+      status: "sent",
+      failure: null,
+      recipients: [
+        { address: "ada@example.com", type: "to", status: "delivered" },
+        { address: "copy@example.com", type: "cc", status: "delivered" },
+      ],
+    });
+    // No content in lists.
+    expect(summary && "html" in summary).toBe(false);
+    expect((await coss.email.list({ to: "copy@example.com" })).data?.data.map((e) => e.id)).toEqual(
+      [delivered.data.id],
+    );
+
+    const bounces = await coss.email.list({ recipient_status: ["bounced"] });
+    expect(bounces.data?.data.map((e) => e.id)).toEqual([bounced.data.id]);
+    // With `to`, the status is that recipient's.
+    expect(
+      (await coss.email.list({ to: "ada@example.com", recipient_status: ["bounced"] })).data?.data,
+    ).toEqual([]);
+
+    const failed = await coss.email.list({ status: ["failed"] });
+    expect(failed.data?.data).toHaveLength(1);
+    expect(failed.data?.data[0]).toMatchObject({
+      id: suppressed.data.id,
+      failure: {
+        code: "all_recipients_suppressed",
+        message: "Every recipient is on the suppression list.",
+      },
+      recipients: [{ address: "gone@example.com", status: "suppressed" }],
+    });
+    expect((await coss.email.get(suppressed.data.id)).data?.failure).toEqual(
+      failed.data?.data[0]?.failure ?? null,
+    );
+
+    const first = await coss.email.list({ limit: 2 });
+    expect(first.data?.data.map((e) => e.id)).toEqual([suppressed.data.id, bounced.data.id]);
+    expect(first.data?.has_more).toBe(true);
+    const second = await coss.email.list({ limit: 2, after: bounced.data.id });
+    expect(second.data).toEqual({
+      object: "list",
+      data: [expect.objectContaining({ id: delivered.data.id })],
+      has_more: false,
+    });
+    expect(
+      (await coss.email.list({ created_after: new Date(Date.now() + 60_000) })).data?.data,
+    ).toEqual([]);
+    expect((await coss.email.list({ q: "welc" })).data?.data.map((e) => e.id)).toEqual([
+      delivered.data.id,
+    ]);
+
+    // Emails of the other environment are not listed.
+    const live = clientFor(app, tenant.liveKey);
+    expect((await live.email.list({ to: "ada@example.com" })).data?.data).toEqual([]);
+
+    const invalid = await coss.email.list({ status: ["lost" as "sent"] });
+    expect(invalid.error).toMatchObject({ type: "invalid_request_error", param: "status" });
+  });
+
   test("tracking: send, hit the pixel and a link, then read engagement back", async () => {
     const tenant = await createTestTenant();
     const { app, sandboxProvider, dispatch } = createTestApp();

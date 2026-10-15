@@ -10,6 +10,7 @@ import {
   Globe02Icon,
   LicenseIcon,
   Mail01Icon,
+  McpServerIcon,
   Message01Icon,
   Robot01Icon,
   RocketIcon,
@@ -213,6 +214,12 @@ export const DEVELOPER_COLUMNS: readonly MenuColumn[] = [
         description: "One prompt that sets COSS up.",
         icon: Robot01Icon,
         href: "/#agents",
+      },
+      {
+        label: "MCP server",
+        description: "Let your coding agent check delivery.",
+        icon: McpServerIcon,
+        href: `${DOCS_ROUTE}/mcp`,
       },
       {
         label: "llms.txt",
