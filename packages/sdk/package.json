@@ -31,10 +31,22 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
     "test": "bun test"
   },
+  "peerDependencies": {
+    "@react-email/render": "^1.0.0 || ^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@react-email/render": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@arethetypeswrong/core": "0.18.5",
+    "@react-email/render": "2.1.0",
     "@types/bun": "1.4.2",
+    "@types/react": "19.3.0",
     "publint": "0.3.25",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },

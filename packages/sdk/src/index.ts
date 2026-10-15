@@ -90,6 +90,7 @@ export type {
   EmailTracking,
   List,
   ListEmailsParams,
+  ReactEmailElement,
   RescheduleEmailParams,
   SendEmailParams,
   TrackingOptions,
