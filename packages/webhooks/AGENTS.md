@@ -1,0 +1,54 @@
+# packages/webhooks — webhooks, the delivery engine, log drains
+
+Read together with the root `AGENTS.md` (conventions, tenancy rule, tests). Paths are from the
+repository root.
+
+- **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
+  to the checked address; no redirects; 10 s timeout for COSS's own webhooks and log drains, 15 s for Hooks; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
+  for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
+  `WEBHOOK_SECRETS_KEY`, a key ring (`parseSecretsKeys`): stored as `v2:<key id>:<iv>:<ciphertext>:<tag>` (the
+  `v2:<key id>` prefix is the AAD; ids are derived from the keys), encrypted with the first key, decrypted with the
+  one named. Keyless `v1:` rows from before are still read by trying every key until `webhooks:reencrypt` rewrites
+  them. Every write of a secret column goes through `encryptSecret`, and `reencryptWebhookSecrets` must cover every
+  encrypted column (today the webhook and Hooks endpoints' `secret_ciphertext` and `previous_secret_ciphertext`, `log_drain.secret_ciphertext` and `risk_settings.captcha_secret_ciphertext`). Rotation runbook: README.md,
+  "Rotating `WEBHOOK_SECRETS_KEY`". The initial upgrade from v1-only readers must use README.md's
+  "Upgrading from v1 webhook secret storage" coordinated cutover, not a rolling deployment.
+- **Delivery engine** (`@coss/webhooks/engine`): webhook deliveries, log drain batches (and future products) share
+  `organizationNotHeld` (suspended or deleting orgs are held), `deliveryOutcome` (retry schedules; jitter only with
+  an injected `random`), `sendAttempt`, `endpointHealth` and `runClaimed`; each product keeps its own tables and SQL.
+  A claimed row's `lease_expires_at` is its fencing token: always bind it from a JS `Date` (`leaseUntil`), finish
+  with a `stillOwned` update **first**, and write attempt rows, log lines and health changes only when that update
+  matched, so a worker whose lease was taken over records nothing.
+- **Endpoint health** (`webhook_endpoint.failing_since`, `disabled_reason` `manual`|`failing`, `disabled_at`; no
+  CHECK ties them to `enabled`, since code running during a deploy's migration sets `enabled` alone, so a disabled
+  endpoint without a reason reads as `manual`): a delivery that failed every attempt starts a streak, any success ends it
+  (both written only when they change), and one failing for good 5 days into a streak
+  (`DISABLE_FAILING_ENDPOINT_AFTER_MS`) disables the endpoint with a system `webhook_endpoint.disabled` audit event.
+  Enabling it clears the streak. `recoverWebhookEndpoint` (`POST /v1/webhook_endpoints/{id}/recover`,
+  `webhook:update`) requeues failed deliveries since a time, ≤ 1,000 per call, locking their parent messages first
+  (in id order) like `retryWebhookDelivery`, so retention can't purge what it requeued.
+- **Secret rolls** (`rollWebhookEndpointSecret`, `POST /v1/webhook_endpoints/{id}/roll_secret`, the dashboard's
+  **Roll secret**, `webhook:update`): one UPDATE moves the current secret to `previous_secret_ciphertext` with
+  `previous_secret_expires_at` (default a day, at most a week, `0` = none; both columns or neither, a CHECK) and
+  stores a new one. Until then deliveries carry both signatures in `webhook-signature` (`signingSecrets`, checked at
+  each attempt), which `verifyWebhook` already accepts. A second roll drops the older previous secret, so rolls are
+  not idempotent and the SDK never retries them. The new secret is returned only in that response; reads expose
+  `previous_secret_expires_at`, never a secret.
+- **Log drains** (`log_drain` (ids `drain_`), `log_drain_record` (`drainrec_`), `log_drain_batch` (`drainbat_`),
+  `log_drain_attempt` (`drainatt_`); management and delivery in `@coss/webhooks`, the outbox in `@coss/logs`): an
+  environment's log lines (exactly the `GET /v1/logs` objects) and its environment-scoped audit events
+  (`{ object: "audit_event", … }`; org-wide events never reach drains), filtered by `sources`. `appendLogEntries` and
+  `recordOrgAuditEvent` select the environment's enabled drains under `FOR KEY SHARE` in the transaction that
+  writes the line and its records (a savepoint inside the caller's); management and exhaustion take `FOR UPDATE`
+  before changing eligibility — so every `log_entry` write path queues drain records without racing disable/delete;
+  record ids ascend in write order and order delivery. The worker's `log-drains` loop (`runDueLogDrainDeliveries`,
+  system-level) forms one open batch per drain at a time (partial unique index; the drain is locked `FOR NO KEY UPDATE
+  SKIP LOCKED` so it never blocks lines being queued), ≤ 500 lines / 1 MB (`takeBatch`), and posts it through
+  `createWebhookSender` as `application/x-ndjson`, Standard Webhooks-signed with `webhook-id` = the batch id (stable
+  across retries). Retries back off over ~a day (`LOG_DRAIN_RETRY_DELAYS_MS`); an exhausted batch disables the drain
+  (`disabled_reason = 'failing'`), drops its backlog and records a system `log_drain.disabled` audit event. Disabling
+  by hand also drops the backlog; nothing is queued for a disabled drain. Suspended organizations' drains are held.
+  Drain deliveries are never written to `log_entry` (that would feed itself). Retention (`purgeExpiredLogDrainBatches`):
+  finished batches after `RETENTION_DAYS.logDrainBatches`, unbatched lines after `logDrainBacklog`. Lines are not
+  versioned (like `GET /v1/logs`). Permissions: `logDrain` (members read; API keys all, backfilled by `0040`); revealing a
+  secret needs `logDrain:update`.
