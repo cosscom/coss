@@ -35,6 +35,7 @@ export {
   toDomainObject,
   VERIFICATION_WINDOW_MS,
 } from "./domains.ts";
+export { EMAIL_CSV_COLUMNS, emailCsvRow, emailsCsvStream } from "./email-csv.ts";
 export {
   DomainError,
   type DomainErrorCode,
@@ -105,11 +106,13 @@ export { FakeTrackingHostnameProvider } from "./providers/fake-tracking-hostname
 export {
   type EmailActivity,
   type EmailActivityDay,
+  type EmailExportItem,
   type EmailListFilters,
   type EmailListItem,
   type EmailRecipientRow,
   type EmailRow,
   emailActivity,
+  exportEmailPages,
   getEmail,
   listEmailEvents,
   listEmailLinks,

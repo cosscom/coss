@@ -186,13 +186,29 @@ export type EmailListFilters = {
   status?: EmailObjectOutput["status"][];
   /** A case-insensitive substring of the subject or a `to` address. */
   query?: string;
+  /** Only emails with this address among their recipients (to, cc or bcc); case-insensitive. */
+  recipient?: string;
+  /** Only emails with a tag of this name, and of this value when one is given. */
+  tag?: { name: string; value?: string };
+  /** Only emails sent with this category. */
+  category?: string;
+  /** Only emails sent from this domain or one of its subdomains; case-insensitive. */
+  senderDomain?: string;
+  /** Only emails created at or after this time. */
+  createdFrom?: Date;
+  /** Only emails created before this time. */
+  createdUntil?: Date;
   /** Only emails older than this one (keyset cursor: an email id of the same environment). */
   before?: string;
 };
 
-/** `%`, `_` and `\` match themselves in an ILIKE pattern. */
+/** `%`, `_` and `\` match themselves in a LIKE pattern. */
+function escapeLike(text: string): string {
+  return text.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
 function likePattern(text: string): string {
-  return `%${text.replace(/[\\%_]/g, (char) => `\\${char}`)}%`;
+  return `%${escapeLike(text)}%`;
 }
 
 function clampLimit(value: number | undefined): number {
@@ -212,10 +228,15 @@ export async function listEmails(
   return selectEmailList(input, clampLimit(input.limit));
 }
 
-async function selectEmailList(
+/**
+ * The domain of a stored `from` (`hello@acme.com` or `Acme <hello@acme.com>`): what follows the
+ * last `@`, without the closing `>`. A display name can hold an `@`, the address always ends it.
+ */
+const senderDomainSql = sql<string>`lower(substring(${email.from} from '@([^@<>[:space:]]+)>?[[:space:]]*$'))`;
+
+function emailListConditions(
   input: { organizationId: string; environmentId: string } & EmailListFilters,
-  rowLimit: number,
-): Promise<EmailListItem[]> {
+): SQL[] {
   const conditions: SQL[] = [
     eq(email.organizationId, input.organizationId),
     eq(email.environmentId, input.environmentId),
@@ -230,6 +251,41 @@ async function selectEmailList(
       sql`(${email.subject} ilike ${pattern} or array_to_string(${email.to}, ' ') ilike ${pattern})`,
     );
   }
+  const recipient = input.recipient?.trim().toLowerCase();
+  if (recipient) {
+    // Recipient rows hold bare, lower-cased addresses; probed by the (email_id, address) index.
+    conditions.push(
+      sql`exists (
+        select 1 from ${emailRecipient} r
+        where r.email_id = ${email.id}
+          and r.organization_id = ${email.organizationId}
+          and r.address = ${recipient}
+      )`,
+    );
+  }
+  if (input.tag) {
+    // jsonb containment: an object with only `name` matches a tag of that name with any value.
+    const tag =
+      input.tag.value === undefined
+        ? { name: input.tag.name }
+        : { name: input.tag.name, value: input.tag.value };
+    conditions.push(sql`${email.tags} @> ${JSON.stringify([tag])}::jsonb`);
+  }
+  if (input.category !== undefined) {
+    conditions.push(eq(email.category, input.category));
+  }
+  const senderDomain = input.senderDomain?.trim().toLowerCase().replace(/^@/, "");
+  if (senderDomain) {
+    conditions.push(
+      sql`(${senderDomainSql} = ${senderDomain} or ${senderDomainSql} like ${`%.${escapeLike(senderDomain)}`})`,
+    );
+  }
+  if (input.createdFrom) {
+    conditions.push(sql`${email.createdAt} >= ${input.createdFrom.toISOString()}`);
+  }
+  if (input.createdUntil) {
+    conditions.push(sql`${email.createdAt} < ${input.createdUntil.toISOString()}`);
+  }
   if (input.before !== undefined) {
     // Keyset on the list's order; a cursor from another environment (or none) matches nothing.
     conditions.push(
@@ -241,6 +297,14 @@ async function selectEmailList(
       )`,
     );
   }
+  return conditions;
+}
+
+async function selectEmailList(
+  input: { organizationId: string; environmentId: string } & EmailListFilters,
+  rowLimit: number,
+): Promise<EmailListItem[]> {
+  const conditions = emailListConditions(input);
   const rows = await db
     .select({
       id: email.id,
@@ -295,6 +359,97 @@ export async function listEmailsPage(
   const rows = await selectEmailList(input, limit + 1);
   const items = rows.slice(0, limit);
   return { items, nextCursor: rows.length > limit ? (items.at(-1)?.id ?? null) : null };
+}
+
+/** An email as exported to CSV: the wire object without content, headers or attachments. */
+export type EmailExportItem = Pick<
+  EmailObjectOutput,
+  | "id"
+  | "created_at"
+  | "status"
+  | "from"
+  | "to"
+  | "cc"
+  | "bcc"
+  | "reply_to"
+  | "subject"
+  | "category"
+  | "tags"
+  | "recipients"
+  | "tracking"
+  | "scheduled_at"
+  | "sent_at"
+  | "batch_id"
+>;
+
+const EXPORT_PAGE_SIZE = 500;
+
+/** Every email `listEmails` matches (ignoring `before`), newest first, a page at a time. */
+export async function* exportEmailPages(
+  input: { organizationId: string; environmentId: string } & EmailListFilters,
+): AsyncGenerator<EmailExportItem[]> {
+  let before: string | undefined;
+  for (;;) {
+    const rows = await db
+      .select({
+        id: email.id,
+        createdAt: email.createdAt,
+        status: email.status,
+        from: email.from,
+        to: email.to,
+        cc: email.cc,
+        bcc: email.bcc,
+        replyTo: email.replyTo,
+        subject: email.subject,
+        category: email.category,
+        tags: email.tags,
+        trackOpens: email.trackOpens,
+        trackClicks: email.trackClicks,
+        openCount: email.openCount,
+        firstOpenedAt: email.firstOpenedAt,
+        lastOpenedAt: email.lastOpenedAt,
+        clickCount: email.clickCount,
+        firstClickedAt: email.firstClickedAt,
+        lastClickedAt: email.lastClickedAt,
+        scheduledAt: email.scheduledAt,
+        sentAt: email.sentAt,
+        batchId: email.batchId,
+      })
+      .from(email)
+      .where(and(...emailListConditions({ ...input, before })))
+      .orderBy(sql`${email.createdAt} desc nulls last`, desc(email.id))
+      .limit(EXPORT_PAGE_SIZE);
+    if (rows.length === 0) return;
+    const recipients = await recipientsByEmail(
+      input.organizationId,
+      rows.map((row) => row.id),
+    );
+    yield rows.map((row) => ({
+      id: row.id,
+      created_at: row.createdAt.toISOString(),
+      status: row.status,
+      from: row.from,
+      to: row.to,
+      cc: row.cc,
+      bcc: row.bcc,
+      reply_to: row.replyTo,
+      subject: row.subject,
+      category: row.category,
+      tags: row.tags,
+      recipients: (recipients.get(row.id) ?? []).map((recipient) => ({
+        address: recipient.address,
+        type: recipient.kind,
+        status: recipient.status,
+        last_event_at: recipient.lastEventAt?.toISOString() ?? null,
+      })),
+      tracking: trackingObject(row),
+      scheduled_at: row.scheduledAt?.toISOString() ?? null,
+      sent_at: row.sentAt?.toISOString() ?? null,
+      batch_id: row.batchId,
+    }));
+    if (rows.length < EXPORT_PAGE_SIZE) return;
+    before = rows.at(-1)?.id;
+  }
 }
 
 export type EmailActivityDay = {

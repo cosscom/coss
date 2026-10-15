@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
+import { db, schema } from "@coss/db";
 import { newId } from "@coss/db/id";
 import { createTestTenant } from "@coss/tenancy/testing";
+import { and, eq } from "drizzle-orm";
+import { EMAIL_CSV_COLUMNS, emailsCsvStream } from "../src/email-csv.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import {
   type EmailListFilters,
@@ -153,6 +156,67 @@ describe("listEmails filters and listEmailsPage", () => {
     expect(await list({ status: [] })).toHaveLength(4);
   });
 
+  test("filters by recipient, tag, category, sender domain and creation time", async () => {
+    const tenant = await createTestTenant();
+    const environment = sendEnvironment(tenant.development);
+    const send = async (overrides: Parameters<typeof params>[0]) =>
+      (await service.send({ environment, apiKeyId: null, params: params(overrides) })).email;
+    await send({
+      subject: "A",
+      from: "hello@acme.com",
+      to: "ann@example.com",
+      tags: [{ name: "template", value: "welcome" }],
+      category: "onboarding",
+    });
+    await send({
+      subject: "B",
+      from: '"Support @ Acme" <help@mail.ACME.com>',
+      to: "bob@example.com",
+      cc: "Ann@Example.com",
+      tags: [{ name: "template", value: "digest" }],
+      category: "marketing",
+    });
+    const old = await send({ subject: "C", from: "hi@notacme.com", bcc: "ann@example.com" });
+    await db
+      .update(schema.email)
+      .set({ createdAt: new Date("2026-01-10T12:00:00Z") })
+      .where(
+        and(eq(schema.email.id, old.id), eq(schema.email.organizationId, tenant.organization.id)),
+      );
+
+    const list = async (filters: EmailListFilters) =>
+      (
+        await listEmails({
+          organizationId: tenant.organization.id,
+          environmentId: tenant.development.id,
+          ...filters,
+        })
+      ).map((e) => e.subject);
+
+    // Recipients: to, cc and bcc, exact and case-insensitive.
+    expect(await list({ recipient: " ANN@example.com " })).toEqual(["B", "A", "C"]);
+    expect(await list({ recipient: "ann@example" })).toEqual([]);
+    expect(await list({ tag: { name: "template" } })).toEqual(["B", "A"]);
+    expect(await list({ tag: { name: "template", value: "welcome" } })).toEqual(["A"]);
+    expect(await list({ tag: { name: "template", value: "nope" } })).toEqual([]);
+    expect(await list({ category: "marketing" })).toEqual(["B"]);
+    expect(await list({ category: "%" })).toEqual([]);
+    // The domain and its subdomains, never a domain that merely ends the same way.
+    expect(await list({ senderDomain: "Acme.com" })).toEqual(["B", "A"]);
+    expect(await list({ senderDomain: "@mail.acme.com" })).toEqual(["B"]);
+    expect(await list({ senderDomain: "cme.com" })).toEqual([]);
+    expect(await list({ senderDomain: "notacme.com" })).toEqual(["C"]);
+    expect(
+      await list({
+        createdFrom: new Date("2026-01-10T00:00:00Z"),
+        createdUntil: new Date("2026-01-11T00:00:00Z"),
+      }),
+    ).toEqual(["C"]);
+    expect(await list({ createdUntil: new Date("2026-01-10T12:00:00Z") })).toEqual([]);
+    expect(await list({ createdFrom: new Date("2026-01-11T00:00:00Z") })).toEqual(["B", "A"]);
+    expect(await list({ recipient: "ann@example.com", category: "onboarding" })).toEqual(["A"]);
+  });
+
   test("pages newest first with an email id as the cursor", async () => {
     const tenant = await createTestTenant();
     const other = await createTestTenant();
@@ -179,6 +243,42 @@ describe("listEmails filters and listEmailsPage", () => {
       params: params(),
     });
     expect((await listEmailsPage({ ...scope, before: foreign.email.id })).items).toEqual([]);
+  });
+});
+
+describe("emailsCsvStream", () => {
+  test("exports every matching email across pages, guarding formula cells", async () => {
+    const tenant = await createTestTenant();
+    const environment = sendEnvironment(tenant.development);
+    await service.send({
+      environment,
+      apiKeyId: null,
+      params: params({
+        subject: "=HYPERLINK(1)",
+        to: ['"Doe, Jane" <jane@example.com>', "joe@example.com"],
+        tags: [{ name: "template", value: "welcome" }],
+        category: "onboarding",
+      }),
+    });
+    await service.send({ environment, apiKeyId: null, params: params({ subject: "Other" }) });
+    const scope = { organizationId: tenant.organization.id, environmentId: tenant.development.id };
+
+    const csv = await new Response(emailsCsvStream({ ...scope, category: "onboarding" })).text();
+    const [header, row, end] = csv.split("\r\n");
+    expect(header).toBe(EMAIL_CSV_COLUMNS.join(","));
+    expect(end).toBe("");
+    expect(row).toContain(`"""Doe, Jane"" <jane@example.com>; joe@example.com"`);
+    expect(row).toContain(",'=HYPERLINK(1),onboarding,template:welcome,");
+    expect(row).toContain("jane@example.com (delivered); joe@example.com (delivered)");
+    expect(row).not.toContain("Hello!");
+
+    const all = await new Response(emailsCsvStream(scope)).text();
+    expect(all.split("\r\n")).toHaveLength(4);
+    // A page cursor never narrows an export.
+    const cursor = (await listEmails({ ...scope, limit: 1 }))[0]?.id;
+    expect(
+      (await new Response(emailsCsvStream({ ...scope, before: cursor })).text()).split("\r\n"),
+    ).toHaveLength(4);
   });
 });
 
