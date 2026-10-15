@@ -52,6 +52,7 @@ plain_env = {
   web = {
     BETTER_AUTH_URL          = "https://coss.com"
     API_PUBLIC_URL           = "https://api.coss.com"
+    SMTP_PUBLIC_HOST         = "smtp.coss.com"
     TRUSTED_PROXY_HOPS       = "2"
     TURNSTILE_SITE_KEY       = "0x4AAAAAAFU8QY0DX4ZJGoSK"
     PORTAL_PUBLIC_URL        = "https://portal.cosshooks.com"
