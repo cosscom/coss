@@ -261,6 +261,34 @@ describe("IP privacy data", () => {
     expect(codes(unknown.assessment)).toContain("ip.hosting_provider");
   });
 
+  test("dataset failures retain independent privacy signals and reasons", async () => {
+    const { assess, live } = await setup({
+      ipIntelligence: {
+        current: async () => {
+          throw new Error("datasets unavailable");
+        },
+      },
+      ipPrivacy: fakeIpPrivacy({ [TEST_IPS.vpn]: { vpn: true, proxy: true, relay: true } }),
+    });
+    await createRiskRule(
+      live,
+      CreateRiskRuleRequest.parse({
+        name: "Review VPNs",
+        conditions: [{ field: "ip.vpn", operator: "is", value: true }],
+        action: "review",
+      }),
+    );
+    const { assessment } = await assess({ event: "signup", ip: TEST_IPS.vpn });
+    expect(assessment.decision).toBe("review");
+    expect(assessment.degraded).toContain("ip_data");
+    expect(assessment.degraded).not.toContain("ip_privacy");
+    expect(assessment.signals.ip?.privacy).toMatchObject({ vpn: true, proxy: true, relay: true });
+    expect(codes(assessment)).toEqual(expect.arrayContaining(["ip.vpn", "ip.proxy", "ip.relay"]));
+    const privateIp = await assess({ event: "signup", ip: "10.0.0.1" });
+    expect(privateIp.assessment.signals.ip?.private).toBe(true);
+    expect(codes(privateIp.assessment)).toContain("ip.private");
+  });
+
   test("without a provider the network guess stays; a failing one is degraded", async () => {
     const plain = await setup();
     const guess = await plain.assess({ event: "signup", ip: TEST_IPS.vpn });

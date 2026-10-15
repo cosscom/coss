@@ -8,7 +8,12 @@ import { db, type Executor } from "@coss/db";
 import type { ContentClassifier } from "@coss/screening/classifier";
 import { MAX_TEXT_CHARS, prepareLinks, prepareText, urlsInText } from "@coss/screening/text";
 import { analyzeEmail, type EmailAnalysis, type MailDomainVerdict } from "@coss/signals/email";
-import { type IpSignals, isBlockedAddress, normalizeIp } from "@coss/signals/ip";
+import {
+  createIpIntelligence,
+  type IpSignals,
+  isBlockedAddress,
+  normalizeIp,
+} from "@coss/signals/ip";
 import type { RiskDeps } from "./assess.ts";
 import { domainAge } from "./domain-age.ts";
 import { RiskError } from "./errors.ts";
@@ -105,7 +110,8 @@ export async function ipSignalsFor(
     const { tor, cloud, asn } = intelligence.available;
     return { signals: intelligence.lookup(ip), degraded: !(tor && cloud && asn) };
   } catch {
-    return { signals: null, degraded: true };
+    // Local address facts survive a dataset outage, as do independent privacy results.
+    return { signals: createIpIntelligence({}).lookup(ip), degraded: true };
   }
 }
 

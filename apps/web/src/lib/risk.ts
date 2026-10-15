@@ -1,12 +1,12 @@
 import "server-only";
-import { DEVICE_TOKEN_HEADER, type SignUpRiskAssessor } from "@coss/auth/risk";
+import type { SignUpRiskAssessor } from "@coss/auth/risk";
 import { db } from "@coss/db";
 import { assessRisk, type RiskAssessEnvironment, type RiskDeps, type RiskHasher } from "@coss/risk";
 import { createRiskDeps, riskHasherFromEnv } from "@coss/risk/runtime";
-import { CreateRiskAssessmentRequest } from "@coss/risk/schemas";
 import { parseSecretsKeys } from "@coss/webhooks";
 import { env } from "@/env";
 import { rateLimitRuntime } from "./rate-limit";
+import { signUpRiskParams } from "./signup-risk-params";
 
 let hasher: RiskHasher | undefined;
 
@@ -59,19 +59,7 @@ export const assessSignUp: SignUpRiskAssessor = async ({ email, headers }) => {
     secretsKeys: parseSecretsKeys(env.WEBHOOK_SECRETS_KEY),
   });
   const ip = headers ? runtime.clientIp(headers) : null;
-  const userAgent = headers?.get("user-agent")?.slice(0, 1024) || undefined;
-  const deviceToken = headers?.get(DEVICE_TOKEN_HEADER) || undefined;
-  // Validated like the API's body: a malformed address or token is dropped, not an error.
-  const parsed = CreateRiskAssessmentRequest.safeParse({
-    event: "signup",
-    user: { email },
-    ip: ip ?? undefined,
-    user_agent: userAgent,
-    device: deviceToken ? { token: deviceToken } : undefined,
-  });
-  const params = parsed.success
-    ? parsed.data
-    : CreateRiskAssessmentRequest.parse({ event: "signup", user: { email: email.slice(0, 320) } });
+  const params = signUpRiskParams(email, ip, headers);
   const { assessment } = await assessRisk(deps, { environment, params });
   return { decision: assessment.decision, assessmentId: assessment.id };
 };

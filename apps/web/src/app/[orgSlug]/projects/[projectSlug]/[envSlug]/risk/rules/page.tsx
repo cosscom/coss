@@ -154,7 +154,7 @@ export default async function RiskRulesPage({
   );
 }
 
-/** How often the rule decided, and how often feedback said it was right. */
+/** How often the rule decided, and the fraud rate among labeled matches. */
 function RuleOutcomes({
   outcome,
 }: {
@@ -171,7 +171,7 @@ function RuleOutcomes({
       <span className="text-muted-foreground text-xs">
         {outcome.precision === null
           ? "no feedback yet"
-          : `${Math.round(outcome.precision * 100)}% right · ${outcome.fraud} fraud, ${outcome.legitimate} legitimate`}
+          : `${Math.round(outcome.precision * 100)}% fraud rate · ${outcome.fraud} fraud, ${outcome.legitimate} legitimate`}
       </span>
     </span>
   );
