@@ -256,6 +256,10 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   automatic retries because the API does not deduplicate it, even with an `Idempotency-Key`.
 - Must run unchanged on Node, Bun, Deno and Workers: no `node:*`, no `Bun.*`, only guarded `globalThis.process`
   access, zero runtime deps. `isolatedDeclarations` is on (exported functions need explicit types).
+- React Email (`src/react.ts`): a send's `react` is rendered into `html`/`text` by `@react-email/render`, an
+  **optional peer** loaded with a literal `import()` inside try/catch (bundlers include it when installed, only
+  warn when not) — never make it a dependency or import React types (`ReactEmailElement` is structural). `react`
+  is SDK-only: `contract-types.ts` compares `Omit<SendEmailParams, "react">` with the API's schema.
 - Error types are listed in three places: `ERROR_TYPES` (`apps/api/src/errors.ts`) and `CossErrorType` +
   `API_ERROR_TYPES` (`packages/sdk/src/core/errors.ts`).
 - The api contract tests import the SDK's built `dist`: turbo builds it first, but outside turbo run

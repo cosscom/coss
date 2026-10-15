@@ -87,6 +87,7 @@ export type {
   EmailTag,
   EmailTracking,
   List,
+  ReactEmailElement,
   RescheduleEmailParams,
   SendEmailParams,
   TrackingOptions,
