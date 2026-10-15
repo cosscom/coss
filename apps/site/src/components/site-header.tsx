@@ -61,7 +61,9 @@ export function SiteHeader({
           <div className={`${CELL} px-3 max-md:hidden`}>
             <CommandMenu navItems={items} searchApi={searchApi} tree={tree} />
           </div>
-          <div className={`${CELL} ps-3 max-md:border-s-0`}>
+          {/* No hairline on the right: the cell ends at the page rail (24px of padding, plus 12px once
+              the rails are on screen), so its left padding matches that to centre the links. */}
+          <div className={`${CELL} ps-3 max-md:border-s-0 md:ps-6 min-[90rem]:ps-9`}>
             <AccountLinks />
           </div>
         </div>
