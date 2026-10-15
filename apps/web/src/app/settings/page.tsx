@@ -1,9 +1,9 @@
 import { Badge } from "@coss/ui/components/badge";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CopyValue } from "@/components/copy-value";
 import { PageHeader } from "@/components/page-header";
-import { Panel, PanelBody, PanelRow } from "@/components/panel";
-import { SpecItem, SpecList } from "@/components/spec-list";
+import { SettingsPage, SettingsRow, SettingsSection } from "@/components/settings";
 import { UserAvatar } from "@/components/user-avatar";
 import { avatarSource, avatarUrl } from "@/lib/avatars";
 import { formatDateTime } from "@/lib/format";
@@ -29,18 +29,37 @@ export default async function AccountProfilePage() {
     <div className="flex flex-col gap-6">
       <PageHeader description="Your profile and the address you sign in with." title="Profile" />
 
-      <Panel>
-        <PanelBody flush>
-          <PanelRow description="Shown to the other members of your organizations." label="Name">
-            <div className="w-full max-w-md">
-              <ProfileForm disabled={impersonating} name={user.name} />
-            </div>
-          </PanelRow>
-          <PanelRow
+      <SettingsPage>
+        <SettingsSection>
+          <SettingsRow
             description={
-              source
-                ? PICTURE_SOURCES[source]
-                : "Verify your email address to use its Gravatar, or connect Google or GitHub."
+              <>
+                {source
+                  ? PICTURE_SOURCES[source]
+                  : "Verify your email address to use its Gravatar, or connect Google or GitHub."}
+                {source === "gravatar" ? (
+                  <>
+                    {" "}
+                    No picture?{" "}
+                    <a
+                      className="text-foreground underline underline-offset-4"
+                      href="https://gravatar.com"
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      Set one on Gravatar
+                    </a>{" "}
+                    or connect Google or GitHub under{" "}
+                    <Link
+                      className="text-foreground underline underline-offset-4"
+                      href="/settings/security"
+                    >
+                      Security
+                    </Link>
+                    .
+                  </>
+                ) : null}
+              </>
             }
             label="Picture"
           >
@@ -48,60 +67,43 @@ export default async function AccountProfilePage() {
               className="size-12 border"
               user={{ name: user.name, email: user.email, image: avatarUrl(user) }}
             />
-            {source === "gravatar" ? (
-              <p className="text-muted-foreground text-sm">
-                No picture?{" "}
-                <a
-                  className="underline underline-offset-4"
-                  href="https://gravatar.com"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  Set one on Gravatar
-                </a>{" "}
-                or connect Google or GitHub under{" "}
-                <Link className="underline underline-offset-4" href="/settings/security">
-                  Security
-                </Link>
-                .
-              </p>
-            ) : null}
-          </PanelRow>
-          <PanelRow
+          </SettingsRow>
+          <SettingsRow
             description={
               user.emailVerified
                 ? "You sign in with this address."
                 : "Verify it to accept invitations and create live API keys."
             }
             label={
-              <span className="flex items-center gap-2">
+              <>
                 Email
                 {user.emailVerified ? (
                   <Badge variant="success">Verified</Badge>
                 ) : (
                   <Badge variant="warning">Unverified</Badge>
                 )}
-              </span>
+              </>
             }
           >
-            <span className="font-mono text-sm">{user.email}</span>
+            <span className="min-w-0 font-mono text-[0.8125rem] [overflow-wrap:anywhere]">
+              {user.email}
+            </span>
             {user.emailVerified ? null : <SendVerificationEmailButton disabled={impersonating} />}
-          </PanelRow>
-        </PanelBody>
-      </Panel>
+          </SettingsRow>
+          <ProfileForm disabled={impersonating} name={user.name} />
+        </SettingsSection>
 
-      <Panel title="Account">
-        <PanelBody flush>
-          <SpecList>
-            <SpecItem label="User ID" mono>
-              {user.id}
-            </SpecItem>
-            <SpecItem label="Created" mono>
+        <SettingsSection title="Account">
+          <SettingsRow description="Include it when you contact support." label="User ID">
+            <CopyValue value={user.id} />
+          </SettingsRow>
+          <SettingsRow label="Created">
+            <span className="font-mono text-[0.8125rem] text-muted-foreground">
               {formatDateTime(user.createdAt)}
-            </SpecItem>
-          </SpecList>
-        </PanelBody>
-      </Panel>
+            </span>
+          </SettingsRow>
+        </SettingsSection>
+      </SettingsPage>
     </div>
   );
 }

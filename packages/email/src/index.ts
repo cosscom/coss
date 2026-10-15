@@ -111,6 +111,7 @@ export {
   type EmailRow,
   emailActivity,
   emailFailure,
+  environmentsWithSentEmail,
   getEmail,
   listEmailEvents,
   listEmailLinks,

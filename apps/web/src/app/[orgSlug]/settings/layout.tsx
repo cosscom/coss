@@ -21,7 +21,7 @@ export default async function OrganizationSettingsLayout({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4">
-        <PageHeader description={`Manage ${organization.name}.`} title="Settings" />
+        <PageHeader title="Settings" />
         <SubNav
           base={`/${organization.slug}/settings`}
           className="border-b"

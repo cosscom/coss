@@ -21,7 +21,7 @@ export function LeaveOrganizationButton(props: { orgSlug: string; orgName: strin
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger render={<Button variant="destructive-outline" />}>
+      <AlertDialogTrigger render={<Button size="sm" variant="destructive-outline" />}>
         Leave organization
       </AlertDialogTrigger>
       <AlertDialogPopup>
