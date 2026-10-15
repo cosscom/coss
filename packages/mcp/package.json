@@ -24,7 +24,7 @@
     "node": ">=22"
   },
   "bin": {
-    "coss-mcp": "./dist/cli.js"
+    "coss-mcp": "dist/cli.js"
   },
   "files": [
     "dist"
