@@ -11,6 +11,7 @@ import { environmentPath } from "@/lib/navigation";
 import { listProjectsWithDefaultEnvironment } from "@/lib/projects";
 import { requireOrgMember } from "@/lib/session";
 import { CreateProjectDialog } from "./create-project-form";
+import { RenameProjectDialog } from "./rename-project-form";
 
 export const metadata: Metadata = { title: "Projects" };
 
@@ -19,6 +20,7 @@ export default async function ProjectsPage({ params }: PageProps<"/[orgSlug]">) 
   const { organization, can } = await requireOrgMember(orgSlug);
   const projects = await listProjectsWithDefaultEnvironment(organization.id);
   const canCreate = can({ project: ["create"] });
+  const canRename = can({ project: ["update"] });
   const createDialog = canCreate ? (
     <CreateProjectDialog maxLength={PROJECT_NAME_MAX_LENGTH} orgSlug={organization.slug} />
   ) : null;
@@ -77,7 +79,18 @@ export default async function ProjectsPage({ params }: PageProps<"/[orgSlug]">) 
                         {project.slug}
                       </span>
                     </div>
-                    <ArrowUpRightIcon className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                    {canRename ? (
+                      // Above the title link's overlay, so it gets the click.
+                      <div className="relative z-10 -me-1.5 -mt-1">
+                        <RenameProjectDialog
+                          maxLength={PROJECT_NAME_MAX_LENGTH}
+                          orgSlug={organization.slug}
+                          project={{ id: project.id, name: project.name, slug: project.slug }}
+                        />
+                      </div>
+                    ) : (
+                      <ArrowUpRightIcon className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                    )}
                   </div>
                   <ul className="relative z-10 mt-auto flex flex-col border-t">
                     {environments.map((env) => (
