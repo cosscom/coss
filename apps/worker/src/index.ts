@@ -19,6 +19,8 @@ import {
 import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
 import { createS3Api } from "@coss/email/ses";
 import { recordHookDeliveryOutcomes } from "@coss/hooks";
+import { logPushSender, type PushSender } from "@coss/push";
+import { type ApnsSender, createApnsSender } from "@coss/push/apns";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
 import { screenMessage } from "@coss/screening";
@@ -143,6 +145,26 @@ if (systemEnvironment && env.NOTIFICATIONS_FROM) {
   billingNotifier = null;
 }
 
+// Push notifications to the iOS app: printed in development without APNs, held in production.
+const apnsCredentials = [env.APNS_KEY_ID, env.APNS_TEAM_ID, env.APNS_PRIVATE_KEY];
+if (apnsCredentials.some(Boolean) && !apnsCredentials.every(Boolean)) {
+  throw new Error("Set APNS_KEY_ID, APNS_TEAM_ID and APNS_PRIVATE_KEY together, or none of them.");
+}
+let apns: ApnsSender | null = null;
+let pushSender: PushSender | null = logPushSender;
+if (env.APNS_KEY_ID && env.APNS_TEAM_ID && env.APNS_PRIVATE_KEY) {
+  apns = createApnsSender({
+    keyId: env.APNS_KEY_ID,
+    teamId: env.APNS_TEAM_ID,
+    privateKey: env.APNS_PRIVATE_KEY,
+    topic: env.APNS_TOPIC,
+  });
+  pushSender = apns;
+} else if (process.env.NODE_ENV === "production") {
+  console.warn("[worker] APNS_* is unset: push notifications to the iOS app are held.");
+  pushSender = null;
+}
+
 const secretsKeys = parseSecretsKeys(env.WEBHOOK_SECRETS_KEY);
 // The dashboard accepts local endpoints outside production; let them be reached there too.
 const send = createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" });
@@ -161,6 +183,7 @@ const loops = startJobs({
     notifier,
     dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
   },
+  push: pushSender && { sender: pushSender },
   webhooks: { secretsKeys, send },
   hooks: {
     secretsKeys,
@@ -191,6 +214,7 @@ const shutdown = createShutdown({
     { name: "email-dispatch", stop: () => jobs.stop({ graceful: true, timeout: 30_000 }) },
   ],
   close: async () => {
+    apns?.close();
     await Promise.all([closeDb(), rateLimits.limiter.close()]);
     await Sentry.close(2_000);
   },

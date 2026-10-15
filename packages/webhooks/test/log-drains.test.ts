@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { db, type Executor, schema } from "@coss/db";
 import { appendLogEntries, type LogEntryInput, recordOrgAuditEvent } from "@coss/logs";
+import { listPushNotifications } from "@coss/push";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
 import { requestOrganizationDeletion, runDueOrganizationDeletions } from "@coss/tenancy/deletion";
 import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy/testing";
@@ -325,6 +326,10 @@ test("sibling drains can exhaust concurrently while recording their audit events
       ),
     );
   expect(audits).toHaveLength(2);
+  const pushes = await listPushNotifications(tenant.organization.id);
+  expect(pushes.map((row) => [row.kind, row.subjectId]).sort()).toEqual(
+    [first, second].map(({ drain }) => ["log_drain_disabled", drain.id]).sort(),
+  );
 });
 
 test("organization deletion stops queued drains and retries and removes their backlog", async () => {

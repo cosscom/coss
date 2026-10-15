@@ -171,6 +171,17 @@
             ],
             "description": "Whether the email was handed to the delivery provider. `scheduled` emails wait for `scheduled_at`; `canceled` ones were canceled before that. Per-recipient delivery is in `recipients`."
           },
+          "failure": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmailFailure"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the email failed; `null` unless `status` is `failed`."
+          },
           "recipients": {
             "type": "array",
             "items": {
@@ -233,6 +244,7 @@
           "tags",
           "category",
           "status",
+          "failure",
           "recipients",
           "attachments",
           "sandbox",
@@ -265,6 +277,7 @@
             ],
             "category": "onboarding",
             "status": "sent",
+            "failure": null,
             "recipients": [
               {
                 "address": "user@example.com",
@@ -289,6 +302,31 @@
             "sent_at": "2026-10-10T12:00:01.000Z",
             "scheduled_at": null,
             "batch_id": null
+          }
+        ]
+      },
+      "EmailFailure": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Why the email failed, e.g. `all_recipients_suppressed`, `domain_not_verified`, `content_rejected`, `attachments_unavailable`, `dispatch_failed` or `provider_error`.",
+            "examples": [
+              "all_recipients_suppressed"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "examples": [
+          {
+            "code": "all_recipients_suppressed",
+            "message": "Every recipient is on the suppression list."
           }
         ]
       },
@@ -780,6 +818,7 @@
                 "tags": [],
                 "category": "digest",
                 "status": "queued",
+                "failure": null,
                 "recipients": [
                   {
                     "address": "ada@example.com",
@@ -845,6 +884,283 @@
                 "category": "digest"
               }
             ]
+          }
+        ]
+      },
+      "EmailSummaryList": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmailSummary"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "object",
+          "data",
+          "has_more"
+        ],
+        "examples": [
+          {
+            "object": "list",
+            "data": [
+              {
+                "object": "email",
+                "id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "from": "Acme <onboarding@acme.com>",
+                "to": [
+                  "user@example.com"
+                ],
+                "cc": [],
+                "bcc": [],
+                "reply_to": [],
+                "subject": "Welcome to Acme",
+                "tags": [
+                  {
+                    "name": "template",
+                    "value": "welcome"
+                  }
+                ],
+                "category": "onboarding",
+                "status": "sent",
+                "failure": null,
+                "recipients": [
+                  {
+                    "address": "user@example.com",
+                    "type": "to",
+                    "status": "delivered",
+                    "last_event_at": "2026-10-10T12:00:02.000Z"
+                  }
+                ],
+                "sandbox": false,
+                "tracking": {
+                  "opens": false,
+                  "clicks": false,
+                  "open_count": 0,
+                  "first_opened_at": null,
+                  "last_opened_at": null,
+                  "click_count": 0,
+                  "first_clicked_at": null,
+                  "last_clicked_at": null
+                },
+                "created_at": "2026-10-10T12:00:00.000Z",
+                "sent_at": "2026-10-10T12:00:01.000Z",
+                "scheduled_at": null,
+                "batch_id": null
+              }
+            ],
+            "has_more": false
+          }
+        ]
+      },
+      "EmailSummary": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "email"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "examples": [
+              "email_01k7c8m4q2f3e9v6t5r1n0p8yz"
+            ]
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "bcc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reply_to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subject": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ]
+            }
+          },
+          "category": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "sent",
+              "failed",
+              "scheduled",
+              "canceled"
+            ],
+            "description": "Whether the email was handed to the delivery provider. `scheduled` emails wait for `scheduled_at`; `canceled` ones were canceled before that. Per-recipient delivery is in `recipients`."
+          },
+          "failure": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmailFailure"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the email failed; `null` unless `status` is `failed`."
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmailRecipient"
+            }
+          },
+          "sandbox": {
+            "type": "boolean",
+            "description": "True when sent from a sandbox environment (never delivered)."
+          },
+          "tracking": {
+            "$ref": "#/components/schemas/EmailTracking"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sent_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "scheduled_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the email was scheduled to be sent; `null` if it was not."
+          },
+          "batch_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The batch that sent the email; `null` if it was sent on its own."
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "from",
+          "to",
+          "cc",
+          "bcc",
+          "reply_to",
+          "subject",
+          "tags",
+          "category",
+          "status",
+          "failure",
+          "recipients",
+          "sandbox",
+          "tracking",
+          "created_at",
+          "sent_at",
+          "scheduled_at",
+          "batch_id"
+        ],
+        "description": "An email without its content. Retrieve the email for `html`, `text`, `headers` and `attachments`.",
+        "examples": [
+          {
+            "object": "email",
+            "id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "from": "Acme <onboarding@acme.com>",
+            "to": [
+              "user@example.com"
+            ],
+            "cc": [],
+            "bcc": [],
+            "reply_to": [],
+            "subject": "Welcome to Acme",
+            "tags": [
+              {
+                "name": "template",
+                "value": "welcome"
+              }
+            ],
+            "category": "onboarding",
+            "status": "sent",
+            "failure": null,
+            "recipients": [
+              {
+                "address": "user@example.com",
+                "type": "to",
+                "status": "delivered",
+                "last_event_at": "2026-10-10T12:00:02.000Z"
+              }
+            ],
+            "sandbox": false,
+            "tracking": {
+              "opens": false,
+              "clicks": false,
+              "open_count": 0,
+              "first_opened_at": null,
+              "last_opened_at": null,
+              "click_count": 0,
+              "first_clicked_at": null,
+              "last_clicked_at": null
+            },
+            "created_at": "2026-10-10T12:00:00.000Z",
+            "sent_at": "2026-10-10T12:00:01.000Z",
+            "scheduled_at": null,
+            "batch_id": null
           }
         ]
       },
@@ -12171,6 +12487,322 @@
               },
               "Retry-After": {
                 "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listEmails",
+        "tags": [
+          "Emails"
+        ],
+        "summary": "List emails",
+        "description": "Emails sent from the API key's environment, newest first, without their content (retrieve an email for `html`, `text`, `headers` and `attachments`). Filter by recipient (`to`), by the email's or a recipient's status, by category, batch or creation time. Pass the last `id` as `after` to get the next page while `has_more` is true.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 320,
+              "description": "Only emails with this recipient (in `to`, `cc` or `bcc`; the bare address, any case).",
+              "examples": [
+                "user@example.com"
+              ]
+            },
+            "required": false,
+            "description": "Only emails with this recipient (in `to`, `cc` or `bcc`; the bare address, any case).",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only emails with a recipient in one of these statuses, comma-separated: `bounced,complained`. With `to`, that recipient's status."
+            },
+            "required": false,
+            "description": "Only emails with a recipient in one of these statuses, comma-separated: `bounced,complained`. With `to`, that recipient's status.",
+            "name": "recipient_status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only emails in these statuses, comma-separated: `failed`."
+            },
+            "required": false,
+            "description": "Only emails in these statuses, comma-separated: `failed`.",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 256,
+              "description": "Free text, matched against the subject and the `to` addresses."
+            },
+            "required": false,
+            "description": "Free text, matched against the subject and the `to` addresses.",
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,256}$",
+              "description": "Only emails of this category."
+            },
+            "required": false,
+            "description": "Only emails of this category.",
+            "name": "category",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "Only the emails of this batch."
+            },
+            "required": false,
+            "description": "Only the emails of this batch.",
+            "name": "batch_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Only emails created at or after this time."
+            },
+            "required": false,
+            "description": "Only emails created at or after this time.",
+            "name": "created_after",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Only emails created before this time."
+            },
+            "required": false,
+            "description": "Only emails created before this time.",
+            "name": "created_before",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "1-100, default 20."
+            },
+            "required": false,
+            "description": "1-100, default 20.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "Cursor: the `id` of the last email of the previous page."
+            },
+            "required": false,
+            "description": "Cursor: the `id` of the last email of the previous page.",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of emails.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailSummaryList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter failed validation (`validation_error`, see `issues`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
                 "schema": {
                   "type": "integer"
                 }

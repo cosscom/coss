@@ -1,14 +1,18 @@
 import type { CossResult } from "../core/errors.ts";
 import type { HttpClient, RequestOptions } from "../core/http.ts";
+import { renderReactEmail, type SendEmailBody } from "../react.ts";
 import type {
   Email,
   EmailBatch,
   EmailEvent,
   EmailLink,
+  EmailSummary,
   List,
+  ListEmailsParams,
   RescheduleEmailParams,
   SendEmailParams,
 } from "../types/email.ts";
+import { listQuery } from "./list-query.ts";
 import { ReceivedEmailsResource } from "./received-emails.ts";
 import { SuppressionResource } from "./suppressions.ts";
 import { TrackingResource } from "./tracking.ts";
@@ -35,13 +39,16 @@ export class EmailResource {
    * Sends an email. It is returned `queued` and handed to the delivery provider moments later:
    * `get` it or listen for the `email.sent` / `email.failed` webhooks for the outcome. Safe to
    * retry: the request always carries an `Idempotency-Key` (yours, or a generated one reused
-   * across automatic retries), so the API never sends it twice.
+   * across automatic retries), so the API never sends it twice. A `react` component is rendered
+   * once, before the first attempt.
    */
-  send(params: SendEmailParams, options?: RequestOptions): Promise<CossResult<Email>> {
+  async send(params: SendEmailParams, options?: RequestOptions): Promise<CossResult<Email>> {
+    const { body, error } = await renderReactEmail(params, "react");
+    if (error) return { data: null, error };
     return this.#http.request<Email>({
       method: "POST",
       path: "/v1/emails",
-      body: params,
+      body,
       idempotencyKey: options?.idempotencyKey,
       signal: options?.signal,
     });
@@ -53,11 +60,22 @@ export class EmailResource {
    * recipients count against the send quota together. Safe to retry: one `Idempotency-Key` covers
    * the whole batch. Larger lists need several calls, each with its own key.
    */
-  sendBatch(emails: SendEmailParams[], options?: RequestOptions): Promise<CossResult<EmailBatch>> {
+  async sendBatch(
+    emails: SendEmailParams[],
+    options?: RequestOptions,
+  ): Promise<CossResult<EmailBatch>> {
+    const rendered = await Promise.all(
+      emails.map((email, index) => renderReactEmail(email, `emails.${index}.react`)),
+    );
+    const bodies: SendEmailBody[] = [];
+    for (const { body, error } of rendered) {
+      if (error) return { data: null, error };
+      bodies.push(body);
+    }
     return this.#http.request<EmailBatch>({
       method: "POST",
       path: "/v1/emails/batch",
-      body: { emails },
+      body: { emails: bodies },
       idempotencyKey: options?.idempotencyKey,
       signal: options?.signal,
     });
@@ -68,6 +86,23 @@ export class EmailResource {
     return this.#http.request<Email>({
       method: "GET",
       path: `/v1/emails/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Lists emails sent from the same environment as the API key, newest first and without their
+   * content (`get` one for `html`, `text`, `headers` and `attachments`). Pass the last `id` as
+   * `after` while `has_more` is true.
+   */
+  list(
+    params: ListEmailsParams = {},
+    options?: Pick<RequestOptions, "signal">,
+  ): Promise<CossResult<List<EmailSummary>>> {
+    return this.#http.request<List<EmailSummary>>({
+      method: "GET",
+      path: "/v1/emails",
+      query: listQuery(params),
       signal: options?.signal,
     });
   }

@@ -17,9 +17,9 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { PlusIcon } from "lucide-react";
-import { useActionState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { createApiKeyAction } from "./actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
@@ -40,7 +40,9 @@ export function CreateApiKeyDialog(props: Target & { environmentName: string }) 
 }
 
 function CreateApiKeyForm(props: Target & { environmentName: string }) {
-  const [state, formAction, pending] = useActionState(createApiKeyAction, null);
+  const [state, formAction, pending] = useActionToast(createApiKeyAction, {
+    success: (data) => `API key “${data.name}” created`,
+  });
 
   if (state?.ok) {
     return (

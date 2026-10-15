@@ -15,6 +15,9 @@
 **/next-env.d.ts
 apps/site/.source
 apps/site/.twoslash
+apps/mobile/.expo
+apps/mobile/ios
+apps/mobile/android
 out
 .DS_Store
 .vscode

@@ -3,7 +3,8 @@ import { ScrollArea } from "@coss/ui/components/scroll-area";
 import { SidebarProvider } from "@coss/ui/components/sidebar";
 import type * as PageTree from "fumadocs-core/page-tree";
 import type { TOCItemType } from "fumadocs-core/toc";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { DOCS_SIDEBAR_WIDTH } from "@/lib/nav";
 import { DocsCopyPage } from "./docs-copy-page";
 import { DocsSidebar } from "./docs-sidebar";
 import { DocsTableOfContents } from "./docs-toc";
@@ -16,7 +17,10 @@ import { DocsFooter } from "./site-footer";
 export function DocsLayoutFrame({ tree, children }: { tree: PageTree.Root; children: ReactNode }) {
   return (
     <main className="flex flex-1 flex-col">
-      <SidebarProvider className="container min-h-min flex-1 items-start px-0 [--sidebar-width:220px] [--top-spacing:0] lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] lg:[--sidebar-width:240px] lg:[--top-spacing:calc(var(--spacing)*4)]">
+      <SidebarProvider
+        className="container min-h-min flex-1 items-start px-0 [--top-spacing:0] lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] lg:[--top-spacing:calc(var(--spacing)*4)]"
+        style={{ "--sidebar-width": DOCS_SIDEBAR_WIDTH } as CSSProperties}
+      >
         <DocsSidebar tree={tree} />
         {/* min-w-0: a flex item, or code blocks would widen it to their longest line. */}
         <div className="h-full w-full min-w-0">{children}</div>

@@ -46,6 +46,7 @@ beforeAll(() => {
         login: `octo${identity.id}`,
         name: "Octo",
         email: null,
+        avatar_url: `https://avatars.githubusercontent.com/u/${identity.id}?v=4`,
       });
     }
     if (url === "https://api.github.com/user/emails") {
@@ -118,6 +119,7 @@ describe("sign-in with GitHub", () => {
 
     const user = await userByEmail(email);
     expect(user?.canonicalEmail).toBe(email);
+    expect(user?.image).toBe(`https://avatars.githubusercontent.com/u/${identity.id}?v=4`);
     const [account] = await githubAccountsOf(session?.user.id ?? "");
     expect(account?.accessToken).toBeNull();
     expect(account?.refreshToken).toBeNull();
@@ -166,6 +168,19 @@ describe("sign-in with GitHub", () => {
     expect(location.pathname).toBe("/acme");
     expect(session?.user.id).toBe(user.id);
     expect(await githubAccountsOf(user.id)).toHaveLength(1);
+    // The account's picture becomes the user's, who had none.
+    expect((await userByEmail(user.email))?.image).toBe(
+      `https://avatars.githubusercontent.com/u/${identity.id}?v=4`,
+    );
+  });
+
+  test("linking keeps a picture the user already has", async () => {
+    const user = await createTestUser();
+    const picture = "https://lh3.googleusercontent.com/a/existing=s96-c";
+    await db.update(schema.user).set({ image: picture }).where(eq(schema.user.id, user.id));
+    const { session } = await signInWithGitHub(githubIdentity(user.email));
+    expect(session?.user.id).toBe(user.id);
+    expect((await userByEmail(user.email))?.image).toBe(picture);
   });
 
   test("never links to an unverified account (someone else may have registered it)", async () => {
@@ -202,6 +217,9 @@ describe("sign-in with GitHub", () => {
     );
     expect(new URL(callback.headers.get("location") ?? "", BASE_URL).pathname).toBe("/settings");
     expect(await githubAccountsOf(user.id)).toHaveLength(1);
+    expect((await userByEmail(user.email))?.image).toBe(
+      `https://avatars.githubusercontent.com/u/${other.id}?v=4`,
+    );
 
     const { session } = await signInWithGitHub(other);
     expect(session?.user.id).toBe(user.id);

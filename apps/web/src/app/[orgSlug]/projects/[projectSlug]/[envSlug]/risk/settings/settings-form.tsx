@@ -17,8 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { updateRiskSettingsAction } from "../actions";
 
 const PROVIDERS = [
@@ -36,7 +37,9 @@ export function RiskSettingsForm(props: {
   reasons: { code: RiskReasonCode; description: string }[];
   canUpdate: boolean;
 }) {
-  const [state, formAction, pending] = useActionState(updateRiskSettingsAction, null);
+  const [state, formAction, pending] = useActionToast(updateRiskSettingsAction, {
+    success: "Risk settings saved",
+  });
   const [provider, setProvider] = useState(props.settings.captcha?.provider ?? "none");
   // Controlled: the page re-renders with the saved settings, which must not reset what's checked.
   const [disabled, setDisabled] = useState(() => new Set<string>(props.settings.disabled_reasons));
@@ -192,7 +195,6 @@ export function RiskSettingsForm(props: {
       </fieldset>
 
       {state && !state.ok ? <FormError message={state.error} /> : null}
-      {state?.ok ? <p className="text-sm text-success-foreground">Settings saved.</p> : null}
       {props.canUpdate ? (
         <div>
           <Button loading={pending} type="submit">

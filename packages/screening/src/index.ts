@@ -9,7 +9,12 @@ export {
   type ScreeningProduct,
   topCategory,
 } from "./classifier.ts";
-export { listScreenings } from "./read.ts";
+export {
+  type AdminScreeningRow,
+  countScreeningsForAdmin,
+  listScreenings,
+  listScreeningsForAdmin,
+} from "./read.ts";
 export { purgeExpiredScreenings } from "./retention.ts";
 export { shouldScreen } from "./sampling.ts";
 export {

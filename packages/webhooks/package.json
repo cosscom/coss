@@ -17,6 +17,7 @@
   "dependencies": {
     "@coss/db": "workspace:*",
     "@coss/logs": "workspace:*",
+    "@coss/push": "workspace:*",
     "@coss/retention": "workspace:*",
     "@coss/signals": "workspace:*",
     "@coss/versioning": "workspace:*",

@@ -1,0 +1,1 @@
+CREATE INDEX "email_recipient_organization_address_idx" ON "email_recipient" USING btree ("organization_id","address");

@@ -37,10 +37,12 @@ import type {
   EmailLinkList,
   EmailObject,
   EmailRecipient,
+  EmailSummaryList,
   EmailWebhookEvent,
   ExportSuppressionsQuery,
   ImportSuppressionsRequest,
   InboundAddressObject,
+  ListEmailsQuery,
   ListReceivedEmailsQuery,
   ListSuppressionsQuery,
   ReceivedEmailList,
@@ -152,11 +154,13 @@ import type {
   CreateWebhookEndpointParams,
   Email,
   EmailBatch,
+  EmailSummary,
   ExportSuppressionsParams,
   ImportSuppressionsParams,
   List,
   ListAuditEventsParams,
   ListCreditsParams,
+  ListEmailsParams,
   ListInvoicesParams,
   ListLogDrainBatchesParams,
   ListLogsParams,
@@ -266,6 +270,8 @@ type MutuallyAssignable<A, B> = [A] extends [B]
 type Assert<T extends true> = T;
 
 type SendInput = z.input<typeof SendEmailRequest>;
+// `react` never reaches the API: the SDK renders it into `html`/`text` first.
+type SendEmailBody = Omit<SendEmailParams, "react">;
 type EmailOutput = z.output<typeof EmailObject>;
 type ApiError = ErrorEnvelopeBody["error"];
 
@@ -273,15 +279,15 @@ export type Contract = [
   // API versions: the SDK knows exactly the API's versions.
   Assert<MutuallyAssignable<ApiVersion, SdkApiVersion>>,
   // Request: anything the SDK accepts is what the API validates, and vice versa.
-  Assert<MutuallyAssignable<SendInput, SendEmailParams>>,
-  Assert<Equals<keyof SendInput, keyof SendEmailParams>>,
-  Assert<MutuallyAssignable<SendInput["to"], SendEmailParams["to"]>>,
+  Assert<MutuallyAssignable<SendInput, SendEmailBody>>,
+  Assert<Equals<keyof SendInput, keyof SendEmailBody>>,
+  Assert<MutuallyAssignable<SendInput["to"], SendEmailBody["to"]>>,
   Assert<MutuallyAssignable<NonNullable<SendInput["tracking"]>, TrackingOptions>>,
-  Assert<MutuallyAssignable<NonNullable<SendInput["tags"]>, NonNullable<SendEmailParams["tags"]>>>,
+  Assert<MutuallyAssignable<NonNullable<SendInput["tags"]>, NonNullable<SendEmailBody["tags"]>>>,
   Assert<
     MutuallyAssignable<
       NonNullable<SendInput["attachments"]>[number],
-      NonNullable<SendEmailParams["attachments"]>[number]
+      NonNullable<SendEmailBody["attachments"]>[number]
     >
   >,
   // Response: what the API returns is exactly the SDK's `Email`.
@@ -289,6 +295,9 @@ export type Contract = [
   Assert<MutuallyAssignable<EmailOutput["status"], Email["status"]>>,
   Assert<MutuallyAssignable<EmailOutput["tags"], Email["tags"]>>,
   Assert<MutuallyAssignable<EmailOutput["attachments"][number], Email["attachments"][number]>>,
+  Assert<MutuallyAssignable<EmailOutput["failure"], Email["failure"]>>,
+  Assert<MutuallyAssignable<z.output<typeof EmailSummaryList>, List<EmailSummary>>>,
+  Assert<Equals<keyof z.input<typeof ListEmailsQuery>, keyof ListEmailsParams>>,
   Assert<MutuallyAssignable<z.output<typeof EmailRecipient>, SdkEmailRecipient>>,
   Assert<
     MutuallyAssignable<z.output<typeof EmailRecipient>["status"], SdkEmailRecipient["status"]>
@@ -302,7 +311,7 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof EmailLinkList>, List<SdkEmailLink>>>,
   // Batch sends: `sendBatch(emails)` posts `{ emails }` and returns the batch.
   Assert<
-    MutuallyAssignable<z.input<typeof SendEmailBatchRequest>["emails"][number], SendEmailParams>
+    MutuallyAssignable<z.input<typeof SendEmailBatchRequest>["emails"][number], SendEmailBody>
   >,
   Assert<Equals<keyof z.input<typeof SendEmailBatchRequest>, "emails">>,
   Assert<MutuallyAssignable<z.output<typeof EmailBatchObject>, EmailBatch>>,

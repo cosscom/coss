@@ -10,7 +10,7 @@ Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
 [provenance](https://docs.npmjs.com/generating-provenance-statements). Versions 0.0.1–0.0.5 of the npm package
 are an earlier, unrelated package by a previous owner (deprecated).
 
-- Zero dependencies, ESM-only, fully typed.
+- Zero dependencies (React Email support is an optional peer), ESM-only, fully typed.
 - `coss.email`, `coss.domains`, `coss.webhookEndpoints` and `coss.reputation` behind one API key.
 - Every method returns `{ data, error }`. API and network failures are returned, never thrown.
 - Retries transient failures automatically, and sends are idempotent.
@@ -98,6 +98,35 @@ import { API_VERSION } from "coss";
 
 await coss.webhookEndpoints.update("whep_01k…", { api_version: API_VERSION });
 ```
+
+## React Email
+
+Pass a [React Email](https://react.email) component as `react` instead of `html`. The SDK renders it
+with `@react-email/render`, an optional peer dependency you install yourself (with `react` and
+`react-dom`, which your components need anyway):
+
+```sh
+npm install @react-email/render
+```
+
+```tsx
+import { WelcomeEmail } from "./emails/welcome";
+
+await coss.email.send({
+  from: "Acme <hello@acme.com>",
+  to: "ada@example.com",
+  subject: "Welcome to Acme",
+  react: <WelcomeEmail name="Ada" />,
+});
+```
+
+The component becomes `html`, and `text` too unless you pass your own. Rendering happens once, before
+the first attempt, so retries resend the same body. `sendBatch` renders each email's `react` the same way.
+Nothing throws: `react` together with `html` returns `validation_error`, a missing
+`@react-email/render` returns `react_renderer_missing`, and a component that throws returns
+`react_render_failed`, all `invalid_request_error`s with `param` naming the email (`react`,
+`emails.3.react`) and no request made. The SDK itself still has no dependencies: the renderer is imported
+only by a send that has `react`.
 
 ## Attachments
 

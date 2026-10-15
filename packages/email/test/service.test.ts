@@ -146,7 +146,12 @@ describe("send", () => {
       params: params(),
     });
 
-    expect(email).toMatchObject({ status: "failed", sent_at: null });
+    // The provider's own text stays internal: the wire shows the `email.failed` event's message.
+    expect(email).toMatchObject({
+      status: "failed",
+      sent_at: null,
+      failure: { code: "provider_error", message: "The email provider did not accept the email." },
+    });
     expect(await loadRow(email.id)).toMatchObject({
       status: "failed",
       provider: "fake",

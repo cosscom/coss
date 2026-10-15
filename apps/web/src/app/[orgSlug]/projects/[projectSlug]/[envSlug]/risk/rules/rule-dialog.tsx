@@ -32,8 +32,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { saveRiskRuleAction } from "../actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
@@ -91,8 +92,9 @@ function blankCondition(field: RuleField = "email.disposable"): Draft {
 }
 
 export function RuleDialog(props: Target & { rule?: RiskRuleOutput; trigger: "create" | "edit" }) {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger
         render={
           <Button
@@ -105,14 +107,16 @@ export function RuleDialog(props: Target & { rule?: RiskRuleOutput; trigger: "cr
       </DialogTrigger>
       <DialogPopup className="max-w-2xl">
         {/* The popup unmounts when closed, which also resets the form. */}
-        <RuleForm {...props} />
+        <RuleForm {...props} onDone={() => setOpen(false)} />
       </DialogPopup>
     </Dialog>
   );
 }
 
-function RuleForm(props: Target & { rule?: RiskRuleOutput }) {
-  const [state, formAction, pending] = useActionState(saveRiskRuleAction, null);
+function RuleForm(props: Target & { rule?: RiskRuleOutput; onDone: () => void }) {
+  const [state, formAction, pending] = useActionToast(saveRiskRuleAction, {
+    success: props.rule ? "Rule saved" : "Rule created",
+  });
   const [name, setName] = useState(props.rule?.name ?? "");
   const [action, setAction] = useState<string>(props.rule?.action ?? "block");
   const [match, setMatch] = useState<string>(props.rule?.match ?? "all");
@@ -121,10 +125,10 @@ function RuleForm(props: Target & { rule?: RiskRuleOutput }) {
   const [conditions, setConditions] = useState<Draft[]>(
     props.rule ? props.rule.conditions.map(toDraft) : [blankCondition()],
   );
-  const [closed, setClosed] = useState(false);
+  const { onDone } = props;
   useEffect(() => {
-    if (state?.ok) setClosed(true);
-  }, [state]);
+    if (state?.ok) onDone();
+  }, [state, onDone]);
 
   const update = (index: number, change: Partial<Draft>) =>
     setConditions((current) =>
@@ -134,20 +138,6 @@ function RuleForm(props: Target & { rule?: RiskRuleOutput }) {
         return change.field ? blankCondition(change.field) : { ...condition, ...change };
       }),
     );
-
-  if (closed) {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>{props.rule ? "Rule saved" : "Rule created"}</DialogTitle>
-          <DialogDescription>Assessments use it from now on.</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose render={<Button />}>Done</DialogClose>
-        </DialogFooter>
-      </>
-    );
-  }
 
   const rule = {
     name,
