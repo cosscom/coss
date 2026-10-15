@@ -160,10 +160,7 @@ describe("listEmailsForAdmin", () => {
     expect(await ids({ mode: "sandbox" })).toEqual([sandbox.id]);
     expect(await ids({ organizationId: coss.organization.id })).toEqual([cossLive.id]);
     expect(await ids({ status: "failed" })).toEqual([]);
-    expect(await ids({ from: live[0].from.split("@")[1] ?? "" })).toEqual([
-      live[1].id,
-      live[0].id,
-    ]);
+    expect(await ids({ from: live[0].from.split("@")[1] ?? "" })).toEqual([live[1].id, live[0].id]);
     expect(await ids({ from: "100%_" })).toEqual([]);
     expect(await ids({ before: "nope" })).toEqual([]);
   });
