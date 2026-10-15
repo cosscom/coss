@@ -13,13 +13,7 @@ export function RevokeSessionButton(props: { sessionId: string; disabled: boolea
       {state && !state.ok ? (
         <span className="text-destructive-foreground text-xs">{state.error}</span>
       ) : null}
-      <Button
-        disabled={props.disabled}
-        loading={pending}
-        size="xs"
-        type="submit"
-        variant="destructive-outline"
-      >
+      <Button disabled={props.disabled} loading={pending} size="sm" type="submit" variant="outline">
         Sign out
       </Button>
     </form>

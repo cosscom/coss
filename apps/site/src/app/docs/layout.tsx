@@ -7,7 +7,7 @@ export default function Layout({ children }: LayoutProps<"/docs">) {
   // Reference, the top-level folders with `"root": true` in their meta.json).
   const tree = source.getPageTree();
   return (
-    <SiteShell tree={tree}>
+    <SiteShell docsSidebar tree={tree}>
       <DocsLayoutFrame tree={tree}>{children}</DocsLayoutFrame>
     </SiteShell>
   );

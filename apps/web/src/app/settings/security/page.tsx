@@ -3,7 +3,7 @@ import { isSocialProvider, SOCIAL_PROVIDERS } from "@coss/auth/constants";
 import { listOrganizationsRequiringTwoFactor } from "@coss/tenancy";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/page-header";
-import { Panel, PanelBody } from "@/components/panel";
+import { SettingsPage, SettingsSection } from "@/components/settings";
 import { auth } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { authHeaders, requireSession } from "@/lib/session";
@@ -66,40 +66,40 @@ export default async function AccountSecurityPage({
         title="Security"
       />
 
-      <Panel
-        description={
-          hasPassword
-            ? "Changing it signs out every other session. Forgot it? Sign out and use “Forgot password”."
-            : "You sign in with a connected account. Set a password to also sign in with your email address."
-        }
-        title="Password"
-      >
-        <PanelBody>
+      <SettingsPage>
+        <SettingsSection
+          description={
+            hasPassword
+              ? "Forgot it? Sign out and use “Forgot password”."
+              : "You sign in with a connected account. Set a password to also sign in with your email address."
+          }
+          title="Password"
+        >
           {hasPassword ? (
             <PasswordForm disabled={impersonating} />
           ) : (
             <SetPasswordForm disabled={impersonating} />
           )}
-        </PanelBody>
-      </Panel>
+        </SettingsSection>
 
-      {connectedAccounts.length > 0 ? (
-        <ConnectedAccountsCard
-          disabled={impersonating}
-          error={socialErrorMessage(typeof error === "string" ? error : null)}
-          lastSignInMethod={lastSignInMethod}
-          rows={connectedAccounts}
+        {connectedAccounts.length > 0 ? (
+          <ConnectedAccountsCard
+            disabled={impersonating}
+            error={socialErrorMessage(typeof error === "string" ? error : null)}
+            lastSignInMethod={lastSignInMethod}
+            rows={connectedAccounts}
+          />
+        ) : null}
+
+        <TwoFactorCard
+          enabled={Boolean(session.user.twoFactorEnabled)}
+          needsPassword={!hasPassword}
+          requiredBy={requiredBy.map((org) => org.name)}
+          restriction={factorRestriction}
         />
-      ) : null}
 
-      <TwoFactorCard
-        enabled={Boolean(session.user.twoFactorEnabled)}
-        needsPassword={!hasPassword}
-        requiredBy={requiredBy.map((org) => org.name)}
-        restriction={factorRestriction}
-      />
-
-      <PasskeysCard passkeys={passkeyRows} restriction={factorRestriction} />
+        <PasskeysCard passkeys={passkeyRows} restriction={factorRestriction} />
+      </SettingsPage>
     </div>
   );
 }

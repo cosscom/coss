@@ -1,15 +1,7 @@
 import { Badge } from "@coss/ui/components/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@coss/ui/components/table";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/page-header";
-import { Panel } from "@/components/panel";
+import { SettingsFooter, SettingsPage, SettingsRow, SettingsSection } from "@/components/settings";
 import { formatDateTime } from "@/lib/format";
 import { listOwnSessions, requireSession } from "@/lib/session";
 import { describeUserAgent } from "@/lib/user-agent";
@@ -38,51 +30,46 @@ export default async function AccountSessionsPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        actions={otherSessions > 0 ? <RevokeOtherSessionsButton disabled={impersonating} /> : null}
         description="Browsers where you're signed in. Sign out of any you don't recognize."
         title="Sessions"
       />
 
-      <Panel>
-        <Table variant="card">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Device</TableHead>
-              <TableHead>IP address</TableHead>
-              <TableHead>Signed in</TableHead>
-              <TableHead>Expires</TableHead>
-              <TableHead className="w-0" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sessions.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell className="font-medium">
-                  <span className="flex items-center gap-2">
-                    {row.device}
-                    {row.current ? <Badge variant="outline">This browser</Badge> : null}
-                    {row.sso ? <Badge variant="outline">SSO</Badge> : null}
+      <SettingsPage>
+        <SettingsSection>
+          {sessions.map((row) => (
+            <SettingsRow
+              description={
+                <>
+                  <span className="block">
+                    <span className="font-mono text-xs">{row.ipAddress || "Unknown address"}</span>
+                    {" · "}Signed in {formatDateTime(row.createdAt)}
                   </span>
-                </TableCell>
-                <TableCell className="font-mono text-muted-foreground text-xs">
-                  {row.ipAddress || "—"}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {formatDateTime(row.createdAt)}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {formatDateTime(row.expiresAt)}
-                </TableCell>
-                <TableCell className="text-right">
-                  {row.current ? null : (
-                    <RevokeSessionButton disabled={impersonating} sessionId={row.id} />
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Panel>
+                  <span className="block">Expires {formatDateTime(row.expiresAt)}</span>
+                </>
+              }
+              key={row.id}
+              label={
+                <>
+                  {row.device}
+                  {row.current ? <Badge variant="outline">This browser</Badge> : null}
+                  {row.sso ? <Badge variant="outline">SSO</Badge> : null}
+                </>
+              }
+            >
+              {row.current ? null : (
+                <RevokeSessionButton disabled={impersonating} sessionId={row.id} />
+              )}
+            </SettingsRow>
+          ))}
+          {otherSessions > 0 ? (
+            <SettingsFooter
+              hint={`${otherSessions} other ${otherSessions === 1 ? "session" : "sessions"}`}
+            >
+              <RevokeOtherSessionsButton disabled={impersonating} />
+            </SettingsFooter>
+          ) : null}
+        </SettingsSection>
+      </SettingsPage>
     </div>
   );
 }

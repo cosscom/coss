@@ -1,9 +1,18 @@
-import { type EmailService, getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
 import {
+  type EmailService,
+  getEmail,
+  listEmailEvents,
+  listEmailLinks,
+  listEmailSummariesPage,
+} from "@coss/email";
+import {
+  DEFAULT_EMAIL_LIST_LIMIT,
   EmailBatchObject,
   EmailEventList,
   EmailLinkList,
   EmailObject,
+  EmailSummaryList,
+  ListEmailsQuery,
   MAX_BATCH_EMAILS,
   RescheduleEmailRequest,
   SendEmailBatchRequest,
@@ -20,7 +29,7 @@ import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
-import { billingErrorDoc, commonErrors, errorDoc, requestIdHeader } from "./docs.ts";
+import { billingErrorDoc, commonErrors, errorDoc, jsonDoc, requestIdHeader } from "./docs.ts";
 import {
   IDEMPOTENCY_KEY_MAX_LENGTH,
   idempotencyHeaders,
@@ -211,6 +220,27 @@ export const getEmailRoute = createRoute({
     },
     ...commonErrors,
     404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
+  },
+});
+
+export const listEmailsRoute = createRoute({
+  method: "get",
+  path: "/emails",
+  operationId: "listEmails",
+  tags: ["Emails"],
+  summary: "List emails",
+  description:
+    "Emails sent from the API key's environment, newest first, without their content " +
+    "(retrieve an email for `html`, `text`, `headers` and `attachments`). Filter by recipient " +
+    "(`to`), by the email's or a recipient's status, by category, batch or creation time. Pass " +
+    "the last `id` as `after` to get the next page while `has_more` is true.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ email: ["read"] }), rateLimit("api.read")],
+  request: { query: ListEmailsQuery },
+  responses: {
+    200: jsonDoc("A page of emails.", EmailSummaryList),
+    ...commonErrors,
+    422: errorDoc("A query parameter failed validation (`validation_error`, see `issues`)."),
   },
 });
 
@@ -465,6 +495,26 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     const email = await getEmail({ organizationId, environmentId, id });
     if (!email) throw notFound("No email with this id exists in this API key's environment.");
     return c.json(email, 200);
+  });
+
+  router.openapi(listEmailsRoute, async (c) => {
+    const query = c.req.valid("query");
+    const { organizationId, environmentId } = c.var.auth;
+    const page = await listEmailSummariesPage({
+      organizationId,
+      environmentId,
+      limit: query.limit ?? DEFAULT_EMAIL_LIST_LIMIT,
+      recipient: query.to,
+      recipientStatus: query.recipient_status,
+      status: query.status,
+      query: query.q,
+      category: query.category,
+      batchId: query.batch_id,
+      createdAfter: query.created_after ? new Date(query.created_after) : undefined,
+      createdBefore: query.created_before ? new Date(query.created_before) : undefined,
+      before: query.after,
+    });
+    return c.json({ object: "list" as const, data: page.data, has_more: page.hasMore }, 200);
   });
 
   router.openapi(cancelEmailRoute, async (c) => {
