@@ -201,10 +201,12 @@ export default async function EnvironmentOverviewPage({
 
       <Panel
         action={
-          <span className="font-mono text-muted-foreground text-xs">
-            last {CHART_DAYS} days · UTC
-          </span>
+          <Button render={<Link href={`${base}/metrics`} />} size="sm" variant="ghost">
+            Metrics
+            <ArrowRightIcon />
+          </Button>
         }
+        description={`Emails per day over the last ${CHART_DAYS} days (UTC), by status.`}
         title="Activity"
       >
         <PanelBody>

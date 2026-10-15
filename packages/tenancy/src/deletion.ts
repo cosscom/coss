@@ -19,6 +19,7 @@ const {
   contentScreening,
   email,
   emailBatch,
+  emailMetric,
   emailSuppression,
   environment,
   hookAttempt,
@@ -338,6 +339,27 @@ async function deleteInBatches(
   }
 }
 
+/** `deleteInBatches` for a table without an id (hourly counters): batches go by row address. */
+async function deleteByRowAddress(
+  deletion: Claimed,
+  table: PgTable,
+  where: SQL | undefined,
+  batchSize: number,
+  signal: AbortSignal | undefined,
+): Promise<boolean> {
+  for (;;) {
+    if (signal?.aborted) return false;
+    const deleted = await db.transaction(async (tx) => {
+      await renewLease(deletion, tx);
+      const result = await tx.execute(
+        sql`delete from ${table} where ctid in (select ctid from ${table} where ${where} limit ${batchSize})`,
+      );
+      return result.rowCount ?? 0;
+    });
+    if (deleted < batchSize) return true;
+  }
+}
+
 /**
  * `deleteInBatches` for a partitioned table, whose rows are keyed by `(partition column, id)`:
  * deleting by both lets each batch touch only the partitions its rows are in.
@@ -487,6 +509,20 @@ async function deleteOrganizationData(
     for (const [table, id, where] of steps) {
       if (!(await deleteInBatches(deletion, table, id, where, batchSize, signal))) return false;
     }
+    // Hourly sending metrics, by the environment (the leading key column).
+    if (
+      !(await deleteByRowAddress(
+        deletion,
+        emailMetric,
+        and(
+          eq(emailMetric.environmentId, environmentId),
+          eq(emailMetric.organizationId, organizationId),
+        ),
+        batchSize,
+        signal,
+      ))
+    )
+      return false;
     // Hooks messages, deliveries and attempts: partitioned, with no FK between them (attempts and
     // deliveries none to the environment either), so each goes explicitly, children first. The
     // small Hooks tables go with the environment.
@@ -557,19 +593,18 @@ async function deleteOrganizationData(
     ))
   )
     return false;
-  // Hourly usage counters (billing): no id, so batches go by row address. The final invoice was
-  // made first (`releaseProviderResources`), and invoices keep their months' totals.
-  for (;;) {
-    if (signal?.aborted) return false;
-    const deleted = await db.transaction(async (tx) => {
-      await renewLease(deletion, tx);
-      const result = await tx.execute(
-        sql`delete from ${billingUsage} where ctid in (select ctid from ${billingUsage} where ${billingUsage.organizationId} = ${organizationId} limit ${batchSize})`,
-      );
-      return result.rowCount ?? 0;
-    });
-    if (deleted < batchSize) break;
-  }
+  // Hourly usage counters (billing). The final invoice was made first
+  // (`releaseProviderResources`), and invoices keep their months' totals.
+  if (
+    !(await deleteByRowAddress(
+      deletion,
+      billingUsage,
+      eq(billingUsage.organizationId, organizationId),
+      batchSize,
+      signal,
+    ))
+  )
+    return false;
   return deleteInBatches(
     deletion,
     contentScreening,

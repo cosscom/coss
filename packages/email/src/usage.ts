@@ -1,7 +1,11 @@
-/** Email metering: a live email is billed once, for its recipients, when it becomes `sent`. */
+/**
+ * Email metering: an email is counted once, for its recipients, when it becomes `sent` (sending
+ * metrics for every email, billed usage for live ones).
+ */
 import { recordUsage } from "@coss/billing/metering";
 import { type Executor, schema } from "@coss/db";
-import { and, count, eq, isNull, ne, type SQL, sql } from "drizzle-orm";
+import { and, eq, isNull, ne, type SQL, sql } from "drizzle-orm";
+import { countEmailMetric } from "./metrics.ts";
 
 const { email, emailRecipient } = schema;
 
@@ -24,12 +28,14 @@ export async function freezeBillableRecipients(
 }
 
 /**
- * Meters a live email that just became `sent`, in that transaction. Every path to `sent` calls
- * it; the compare-and-set on `usage_recorded_at` makes it once-only.
+ * Counts an email that just became `sent`, in that transaction: its `sent` metric (every mode)
+ * and, for live emails, its billed usage. Every path to `sent` calls it; the compare-and-set on
+ * `usage_recorded_at` makes it once-only.
  */
-export async function recordEmailUsage(
+export async function recordEmailSent(
   tx: Executor,
   target: { id: string; organizationId: string },
+  mode: "live" | "sandbox",
 ): Promise<void> {
   const [row] = await tx
     .update(email)
@@ -41,27 +47,38 @@ export async function recordEmailUsage(
         isNull(email.usageRecordedAt),
       ),
     )
-    .returning({ environmentId: email.environmentId, billable: email.billableRecipients });
+    .returning({
+      environmentId: email.environmentId,
+      billable: email.billableRecipients,
+      sentAt: email.sentAt,
+      from: email.from,
+      category: email.category,
+      tags: email.tags,
+    });
   if (!row) return;
-  let quantity = row.billable;
-  if (quantity === null) {
-    // Claimed before billable counts were frozen at claim time.
-    const [counted] = await tx
-      .select({ n: count() })
-      .from(emailRecipient)
-      .where(
-        and(
-          eq(emailRecipient.organizationId, target.organizationId),
-          eq(emailRecipient.emailId, target.id),
-          ne(emailRecipient.status, "suppressed"),
-        ),
-      );
-    quantity = counted?.n ?? 0;
-  }
+  // The recipients handed to the provider (suppressed ones were left out).
+  const recipients = await tx
+    .select({ address: emailRecipient.address })
+    .from(emailRecipient)
+    .where(
+      and(
+        eq(emailRecipient.organizationId, target.organizationId),
+        eq(emailRecipient.emailId, target.id),
+        ne(emailRecipient.status, "suppressed"),
+      ),
+    );
+  await countEmailMetric(tx, {
+    email: { ...row, organizationId: target.organizationId },
+    metric: "sent",
+    addresses: recipients.map((recipient) => recipient.address),
+    at: row.sentAt ?? new Date(),
+  });
+  if (mode !== "live") return;
   await recordUsage(tx, {
     organizationId: target.organizationId,
     environmentId: row.environmentId,
     meter: "email.recipients",
-    quantity,
+    // Claimed before billable counts were frozen at claim time: the same count.
+    quantity: row.billable ?? recipients.length,
   });
 }

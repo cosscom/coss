@@ -13,6 +13,7 @@ import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { purgeSendContent } from "./attachments.ts";
 import { emailEventLogEntries } from "./event-logs.ts";
+import { countEmailMetric } from "./metrics.ts";
 import type { ProviderEvent } from "./provider.ts";
 import { invalidateReputationRollup } from "./reputation-checks.ts";
 import {
@@ -22,7 +23,7 @@ import {
   type StoredEmailWebhookEvent,
 } from "./schemas.ts";
 import { autoSuppress } from "./suppressions.ts";
-import { recordEmailUsage } from "./usage.ts";
+import { recordEmailSent } from "./usage.ts";
 
 const { email, emailEvent, emailRecipient, environment } = schema;
 
@@ -216,7 +217,7 @@ export async function recordProviderEvent(
       .returning({ id: email.id });
     if (sent || repaired) {
       await purgeSendContent(tx, target);
-      if (target.mode === "live") await recordEmailUsage(tx, target);
+      await recordEmailSent(tx, target, target.mode);
     }
   }
 
@@ -264,8 +265,16 @@ export async function recordProviderEvent(
           inArray(emailRecipient.status, below),
         ),
       )
-      .returning({ id: emailRecipient.id });
+      .returning({ address: emailRecipient.address });
     if (moved.length > 0) recipientsChanged = true;
+    if (status === "delivered" || status === "bounced" || status === "complained") {
+      await countEmailMetric(tx, {
+        email: target,
+        metric: status,
+        addresses: moved.map((row) => row.address),
+        at: event.occurredAt,
+      });
+    }
   }
 
   // Permanent bounces and complaints suppress the address for every email of the environment.

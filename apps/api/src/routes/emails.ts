@@ -1,10 +1,21 @@
-import { type EmailService, getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
+import {
+  type EmailService,
+  emailMetrics,
+  emailMetricsRange,
+  getEmail,
+  listEmailEvents,
+  listEmailLinks,
+} from "@coss/email";
 import {
   EmailBatchObject,
   EmailEventList,
   EmailLinkList,
+  EmailMetrics,
+  EmailMetricsQuery,
   EmailObject,
   MAX_BATCH_EMAILS,
+  MAX_HOURLY_METRICS_RANGE_DAYS,
+  MAX_METRICS_RANGE_DAYS,
   RescheduleEmailRequest,
   SendEmailBatchRequest,
   SendEmailRequest,
@@ -15,12 +26,12 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { recordApiAudit } from "../audit.ts";
 import { limitBody, SEND_BODY_LIMIT_BYTES } from "../body-limit.ts";
-import { notFound } from "../errors.ts";
+import { ApiError, notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
-import { billingErrorDoc, commonErrors, errorDoc, requestIdHeader } from "./docs.ts";
+import { billingErrorDoc, commonErrors, errorDoc, jsonDoc, requestIdHeader } from "./docs.ts";
 import {
   IDEMPOTENCY_KEY_MAX_LENGTH,
   idempotencyHeaders,
@@ -189,6 +200,32 @@ export const sendEmailBatchRoute = createRoute({
         "verified domain of the organization (`domain_not_verified`, live keys only; `param` " +
         "names the email), or the `Idempotency-Key` was already used with a different body " +
         "(`idempotency_key_reused`).",
+    ),
+  },
+});
+
+export const getEmailMetricsRoute = createRoute({
+  method: "get",
+  path: "/emails/metrics",
+  operationId: "getEmailMetrics",
+  tags: ["Emails"],
+  summary: "Retrieve sending metrics",
+  description:
+    "Counts of the API key's environment over time, in UTC hour or day buckets: recipients " +
+    "sent, delivered, bounced and complained, and emails opened and clicked (each email once, " +
+    "at its first open or click). Optionally split by category, tag, sending domain or mailbox " +
+    `provider, and filtered by any of them. Kept ${MAX_METRICS_RANGE_DAYS} days, beyond the emails ` +
+    "themselves.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ email: ["read"] }), rateLimit("api.read")],
+  request: { query: EmailMetricsQuery },
+  responses: {
+    200: jsonDoc("The environment's sending metrics.", EmailMetrics),
+    ...commonErrors,
+    422: errorDoc(
+      "A query parameter failed validation (`validation_error`), or the range is empty or " +
+        `longer than ${MAX_METRICS_RANGE_DAYS} days (${MAX_HOURLY_METRICS_RANGE_DAYS} by hour) ` +
+        "(`invalid_range`).",
     ),
   },
 });
@@ -457,6 +494,41 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       idempotencyHook(result);
     },
   );
+
+  // Registered before `/emails/{id}`, which would otherwise match it.
+  router.openapi(getEmailMetricsRoute, async (c) => {
+    const query = c.req.valid("query");
+    const granularity = query.granularity ?? "day";
+    const range = emailMetricsRange({
+      from: query.from ? new Date(query.from) : undefined,
+      to: query.to ? new Date(query.to) : undefined,
+      granularity,
+    });
+    if (!range) {
+      throw new ApiError(422, {
+        type: "invalid_request_error",
+        code: "invalid_range",
+        message:
+          `\`from\` must be before \`to\`, and the range at most ${MAX_METRICS_RANGE_DAYS} days ` +
+          `long (${MAX_HOURLY_METRICS_RANGE_DAYS} by hour).`,
+        param: "to",
+      });
+    }
+    const { organizationId, environmentId } = c.var.auth;
+    const metrics = await emailMetrics({
+      organizationId,
+      environmentId,
+      ...range,
+      granularity,
+      groupBy: query.group_by,
+      category: query.category,
+      domain: query.domain,
+      mailboxProvider: query.mailbox_provider,
+      tag: query.tag,
+      limit: query.limit,
+    });
+    return c.json(metrics, 200);
+  });
 
   router.openapi(getEmailRoute, async (c) => {
     const { id } = c.req.valid("param");

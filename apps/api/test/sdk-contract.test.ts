@@ -557,6 +557,46 @@ describe("coss.domains against the API", () => {
   });
 });
 
+describe("coss.email.metrics against the API", () => {
+  test("reads the environment's metrics, grouped and filtered", async () => {
+    const tenant = await createTestTenant();
+    const { app, dispatch } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const sent = await coss.email.send({
+      from: "Acme <hello@acme.com>",
+      to: ["ann@gmail.com", "bob@hotmail.com"],
+      subject: "Welcome",
+      text: "Hello!",
+      category: "welcome",
+    });
+    expect(sent.error).toBeNull();
+    await dispatch();
+
+    const metrics = await coss.email.metrics({
+      granularity: "hour",
+      group_by: "mailbox_provider",
+      category: ["welcome"],
+    });
+    expect(metrics.error).toBeNull();
+    expect(metrics.data).toMatchObject({
+      object: "email_metrics",
+      granularity: "hour",
+      group_by: "mailbox_provider",
+      totals: { sent: 2, delivered: 2, bounced: 0, complained: 0, opened: 0, clicked: 0 },
+      has_more: false,
+    });
+    expect(metrics.data?.series.map((series) => series.group)).toEqual(["gmail", "outlook"]);
+    expect(metrics.data?.series[0]?.buckets).toHaveLength(24);
+
+    const refused = await coss.email.metrics({
+      from: "2026-10-02T00:00:00Z",
+      to: "2026-10-01T00:00:00Z",
+    });
+    expect(refused.data).toBeNull();
+    expect(refused.error).toMatchObject({ type: "invalid_request_error", code: "invalid_range" });
+  });
+});
+
 describe("coss.email.tracking against the API", () => {
   test("update, read and remove the default and category rules; sends follow them", async () => {
     const tenant = await createTestTenant();

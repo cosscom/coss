@@ -7,7 +7,7 @@ import { and, asc, eq, inArray, isNotNull, isNull, lt, sql } from "drizzle-orm";
 import { purgeSendContent } from "./attachments.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
-import { recordEmailUsage } from "./usage.ts";
+import { recordEmailSent } from "./usage.ts";
 
 const { email, emailEvent, environment } = schema;
 
@@ -186,7 +186,7 @@ export async function sweepStaleClaims(opts: {
           .returning({ id: email.id });
         if (updated) {
           await purgeSendContent(tx, candidate);
-          if (candidate.mode === "live") await recordEmailUsage(tx, candidate);
+          await recordEmailSent(tx, candidate, candidate.mode);
         }
         return Boolean(updated);
       }

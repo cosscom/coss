@@ -848,6 +848,293 @@
           }
         ]
       },
+      "EmailMetrics": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "email_metrics"
+            ]
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "granularity": {
+            "type": "string",
+            "enum": [
+              "hour",
+              "day"
+            ]
+          },
+          "group_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "category",
+                  "tag",
+                  "domain",
+                  "mailbox_provider"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "sent": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Recipients the email was sent to (suppressed ones excluded)."
+              },
+              "delivered": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Recipients whose mailbox provider accepted it."
+              },
+              "bounced": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Recipients it bounced for (permanent or transient)."
+              },
+              "complained": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Recipients who marked it as spam."
+              },
+              "opened": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Emails opened for the first time (open tracking on)."
+              },
+              "clicked": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Emails with a first link click (click tracking on)."
+              }
+            },
+            "required": [
+              "sent",
+              "delivered",
+              "bounced",
+              "complained",
+              "opened",
+              "clicked"
+            ],
+            "description": "Everything in the range that matches the filters."
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmailMetricsSeries"
+            },
+            "description": "One series without `group_by`; else one per group, largest first. Tag groups can overlap, so they need not add up to `totals`."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more groups than `limit` had activity."
+          }
+        },
+        "required": [
+          "object",
+          "start",
+          "end",
+          "granularity",
+          "group_by",
+          "totals",
+          "series",
+          "has_more"
+        ],
+        "examples": [
+          {
+            "object": "email_metrics",
+            "start": "2026-10-12T00:00:00.000Z",
+            "end": "2026-10-14T00:00:00.000Z",
+            "granularity": "day",
+            "group_by": "mailbox_provider",
+            "totals": {
+              "sent": 1200,
+              "delivered": 1180,
+              "bounced": 14,
+              "complained": 1,
+              "opened": 540,
+              "clicked": 96
+            },
+            "series": [
+              {
+                "group": "gmail",
+                "totals": {
+                  "sent": 1200,
+                  "delivered": 1180,
+                  "bounced": 14,
+                  "complained": 1,
+                  "opened": 540,
+                  "clicked": 96
+                },
+                "buckets": [
+                  {
+                    "start": "2026-10-12T00:00:00.000Z",
+                    "end": "2026-10-13T00:00:00.000Z",
+                    "sent": 700,
+                    "delivered": 690,
+                    "bounced": 8,
+                    "complained": 1,
+                    "opened": 320,
+                    "clicked": 50
+                  },
+                  {
+                    "start": "2026-10-13T00:00:00.000Z",
+                    "end": "2026-10-14T00:00:00.000Z",
+                    "sent": 500,
+                    "delivered": 490,
+                    "bounced": 6,
+                    "complained": 0,
+                    "opened": 220,
+                    "clicked": 46
+                  }
+                ]
+              }
+            ],
+            "has_more": false
+          }
+        ]
+      },
+      "EmailMetricsSeries": {
+        "type": "object",
+        "properties": {
+          "group": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The category, tag (`name:value`), domain or mailbox provider; `null` without `group_by`, and for emails without a category or opens and clicks without a provider."
+          },
+          "totals": {
+            "$ref": "#/components/schemas/EmailMetricCounts"
+          },
+          "buckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmailMetricsBucket"
+            },
+            "description": "Every bucket of the range, oldest first."
+          }
+        },
+        "required": [
+          "group",
+          "totals",
+          "buckets"
+        ]
+      },
+      "EmailMetricCounts": {
+        "type": "object",
+        "properties": {
+          "sent": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Recipients the email was sent to (suppressed ones excluded)."
+          },
+          "delivered": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Recipients whose mailbox provider accepted it."
+          },
+          "bounced": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Recipients it bounced for (permanent or transient)."
+          },
+          "complained": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Recipients who marked it as spam."
+          },
+          "opened": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Emails opened for the first time (open tracking on)."
+          },
+          "clicked": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Emails with a first link click (click tracking on)."
+          }
+        },
+        "required": [
+          "sent",
+          "delivered",
+          "bounced",
+          "complained",
+          "opened",
+          "clicked"
+        ]
+      },
+      "EmailMetricsBucket": {
+        "type": "object",
+        "properties": {
+          "sent": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Recipients the email was sent to (suppressed ones excluded)."
+          },
+          "delivered": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Recipients whose mailbox provider accepted it."
+          },
+          "bounced": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Recipients it bounced for (permanent or transient)."
+          },
+          "complained": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Recipients who marked it as spam."
+          },
+          "opened": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Emails opened for the first time (open tracking on)."
+          },
+          "clicked": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Emails with a first link click (click tracking on)."
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "sent",
+          "delivered",
+          "bounced",
+          "complained",
+          "opened",
+          "clicked",
+          "start",
+          "end"
+        ]
+      },
       "RescheduleEmailRequest": {
         "type": "object",
         "properties": {
@@ -12500,6 +12787,315 @@
               },
               "Retry-After": {
                 "description": "Seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/emails/metrics": {
+      "get": {
+        "operationId": "getEmailMetrics",
+        "tags": [
+          "Emails"
+        ],
+        "summary": "Retrieve sending metrics",
+        "description": "Counts of the API key's environment over time, in UTC hour or day buckets: recipients sent, delivered, bounced and complained, and emails opened and clicked (each email once, at its first open or click). Optionally split by category, tag, sending domain or mailbox provider, and filtered by any of them. Kept 400 days, beyond the emails themselves.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Start (inclusive), rounded down to its bucket. Defaults to the 7 days (24 hours by hour) ending with the current one."
+            },
+            "required": false,
+            "description": "Start (inclusive), rounded down to its bucket. Defaults to the 7 days (24 hours by hour) ending with the current one.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "End (exclusive), rounded up to its bucket. Defaults to now. At most 400 days after `from` (7 by hour)."
+            },
+            "required": false,
+            "description": "End (exclusive), rounded up to its bucket. Defaults to now. At most 400 days after `from` (7 by hour).",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "hour",
+                "day"
+              ],
+              "description": "Bucket size (UTC). Defaults to `day`."
+            },
+            "required": false,
+            "description": "Bucket size (UTC). Defaults to `day`.",
+            "name": "granularity",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "category",
+                "tag",
+                "domain",
+                "mailbox_provider"
+              ],
+              "description": "Split the counts into one series per category, tag (`name:value`), sending domain or mailbox provider. An email with several tags counts under each of them."
+            },
+            "required": false,
+            "description": "Split the counts into one series per category, tag (`name:value`), sending domain or mailbox provider. An email with several tags counts under each of them.",
+            "name": "group_by",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only emails with one of these categories (comma-separated)."
+            },
+            "required": false,
+            "description": "Only emails with one of these categories (comma-separated).",
+            "name": "category",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only emails with this tag, as `name:value` (e.g. `campaign:spring`)."
+            },
+            "required": false,
+            "description": "Only emails with this tag, as `name:value` (e.g. `campaign:spring`).",
+            "name": "tag",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only emails sent from one of these domains (comma-separated)."
+            },
+            "required": false,
+            "description": "Only emails sent from one of these domains (comma-separated).",
+            "name": "domain",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Only recipients at one of these mailbox providers (comma-separated). Opens and clicks of emails with several recipients belong to no provider, so they are left out."
+            },
+            "required": false,
+            "description": "Only recipients at one of these mailbox providers (comma-separated). Opens and clicks of emails with several recipients belong to no provider, so they are left out.",
+            "name": "mailbox_provider",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25,
+              "description": "With `group_by`: the largest groups (by `sent`) to return, 1-25, default 10."
+            },
+            "required": false,
+            "description": "With `group_by`: the largest groups (by `sent`) to return, 1-25, default 10.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The environment's sending metrics.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailMetrics"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter failed validation (`validation_error`), or the range is empty or longer than 400 days (7 by hour) (`invalid_range`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
                 "schema": {
                   "type": "integer"
                 }

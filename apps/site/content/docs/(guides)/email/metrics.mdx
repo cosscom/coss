@@ -1,0 +1,71 @@
+---
+title: Sending metrics
+description: See how your email performs over time, by category, tag, sending domain and mailbox provider.
+---
+
+COSS counts what happens to every email an environment sends, hour by hour: how many recipients it
+was sent to, delivered to, bounced for and complained about it, and how many emails were opened and
+clicked. The counts are under **Metrics** in the environment's dashboard page and in the API.
+
+## What is counted
+
+| Metric | Counts | When |
+|---|---|---|
+| `sent` | Recipients | The email is handed to the mailbox providers. Suppressed recipients are left out. |
+| `delivered` | Recipients | A recipient's mailbox provider accepts it. |
+| `bounced` | Recipients | It bounces for a recipient, permanently or after delivery attempts ran out. |
+| `complained` | Recipients | A recipient marks it as spam. |
+| `opened` | Emails | It is opened for the first time ([open tracking](/docs/email/tracking) on). |
+| `clicked` | Emails | A link in it is clicked for the first time ([click tracking](/docs/email/tracking) on). |
+
+Each recipient counts at most once per metric, and each email at most once as opened and once as
+clicked, in the hour it happened (UTC). A useful set of rates:
+
+- **Delivery rate**: `delivered / sent`. **Bounce rate**: `bounced / sent`.
+- **Complaint rate**: `complained / delivered`.
+- **Open rate** and **click rate**: `opened / delivered` and `clicked / delivered`. These mix
+  emails and recipients, so they are exact for emails with one recipient each.
+
+Sandbox environments are counted too (from the simulated events), separately from live ones.
+Metrics are kept for <RetentionPeriod of="email_metrics" />, long after the emails themselves.
+
+## Breakdowns
+
+Every count can be split by one of these, and filtered by any of them:
+
+- **Category**: the send's `category` (`null` for emails without one).
+- **Tag**: each `name:value` tag of the send. An email with several tags counts under each, so tag
+  groups can add up to more than the total.
+- **Domain**: the domain of the `from` address.
+- **Mailbox provider**: the recipient's provider, from the address's domain: `gmail`, `outlook`
+  (Outlook.com, Hotmail, Live, MSN), `yahoo` (also AOL), `icloud`, `proton`, `gmx` (also WEB.DE),
+  `yandex`, `zoho`, `fastmail`, `mail_ru` or `other`. Company domains hosted by Google Workspace or
+  Microsoft 365 are `other`. Opens and clicks of emails with several recipients can't be tied to
+  one, so they belong to no provider (`null`).
+
+## In the API
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data, error } = await coss.email.metrics({
+  from: "2026-10-01T00:00:00Z",
+  granularity: "day",
+  group_by: "mailbox_provider",
+  category: "welcome",
+});
+
+for (const series of data?.series ?? []) {
+  const { sent, delivered } = series.totals;
+  console.log(series.group, sent > 0 ? delivered / sent : null);
+}
+```
+
+- `granularity` is `day` (up to 400 days) or `hour` (up to 7 days). `from` and `to` are rounded out
+  to whole buckets; without them you get the last 7 days, or the last 24 hours by hour.
+- `series` has every bucket of the range, zero-filled. With `group_by`, it holds the largest groups
+  by `sent` (`limit`, 10 by default, at most 25) and `has_more` says whether there were others;
+  `totals` always covers everything that matches the filters.
+- Filter with `category`, `domain` and `mailbox_provider` (several values each) and `tag`
+  (`name:value`).

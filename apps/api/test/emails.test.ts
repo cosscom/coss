@@ -453,6 +453,92 @@ describe("GET /v1/emails/{id}", () => {
   });
 });
 
+describe("GET /v1/emails/metrics", () => {
+  type Metrics = {
+    totals: Record<string, number>;
+    series: { group: string | null; totals: Record<string, number>; buckets: unknown[] }[];
+    granularity: string;
+    group_by: string | null;
+    has_more: boolean;
+  };
+
+  test("counts the key's environment, by any dimension (not swallowed by /emails/{id})", async () => {
+    const tenant = await createTestTenant();
+    const { app, dispatch } = createTestApp();
+    await sendEmail(
+      app,
+      tenant.sandboxKey,
+      emailBody({
+        to: ["ann@gmail.com", "bob@outlook.com"],
+        category: "welcome",
+        tags: [{ name: "campaign", value: "spring" }],
+      }),
+    );
+    await dispatch();
+
+    const res = await apiRequest(app, "GET", "/v1/emails/metrics", { key: tenant.sandboxKey });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Metrics;
+    expect(body).toMatchObject({
+      object: "email_metrics",
+      granularity: "day",
+      group_by: null,
+      totals: { sent: 2, delivered: 2, bounced: 0, complained: 0, opened: 0, clicked: 0 },
+      has_more: false,
+    });
+    expect(body.series).toHaveLength(1);
+    expect(body.series[0]?.buckets).toHaveLength(7);
+
+    const grouped = (await (
+      await apiRequest(
+        app,
+        "GET",
+        "/v1/emails/metrics?group_by=mailbox_provider&tag=campaign:spring&granularity=hour",
+        { key: tenant.sandboxKey },
+      )
+    ).json()) as Metrics;
+    expect(grouped.series.map((s) => [s.group, s.totals.sent])).toEqual([
+      ["gmail", 1],
+      ["outlook", 1],
+    ]);
+    expect(grouped.series[0]?.buckets).toHaveLength(24);
+
+    // The live environment of the same project has its own metrics.
+    const live = (await (
+      await apiRequest(app, "GET", "/v1/emails/metrics", { key: tenant.liveKey })
+    ).json()) as Metrics;
+    expect(live.totals.sent).toBe(0);
+  });
+
+  test("refuses empty, long and malformed ranges and filters", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const get = (query: string) =>
+      apiRequest(app, "GET", `/v1/emails/metrics?${query}`, { key: tenant.sandboxKey });
+
+    const empty = await get("from=2026-10-02T00:00:00Z&to=2026-10-01T00:00:00Z");
+    expect(empty.status).toBe(422);
+    expect(await errorOf(empty)).toMatchObject({ code: "invalid_range", param: "to" });
+    const long = await get("granularity=hour&from=2026-10-01T00:00:00Z&to=2026-10-09T00:00:00Z");
+    expect((await errorOf(long)).code).toBe("invalid_range");
+    for (const query of ["group_by=nope", "tag=campaign", "mailbox_provider=aol", "limit=26"]) {
+      const res = await get(query);
+      expect(res.status).toBe(422);
+      expect((await errorOf(res)).code).toBe("validation_error");
+    }
+  });
+
+  test("needs email:read", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    await setKeyPermissions(await apiKeyIdForEnvironment(tenant.development.id), {
+      email: ["send"],
+    });
+    const res = await apiRequest(app, "GET", "/v1/emails/metrics", { key: tenant.sandboxKey });
+    expect(res.status).toBe(403);
+  });
+});
+
 const inAnHour = () => new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
 describe("scheduled sends", () => {
