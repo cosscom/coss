@@ -9,6 +9,7 @@ import { avatarSource, avatarUrl } from "@/lib/avatars";
 import { formatDateTime } from "@/lib/format";
 import { requireSession } from "@/lib/session";
 import { ProfileForm, SendVerificationEmailButton } from "./profile-form";
+import { ThemePicker } from "./theme-picker";
 
 export const metadata: Metadata = { title: "Account settings" };
 
@@ -18,7 +19,7 @@ const PICTURE_SOURCES = {
   gravatar: "From Gravatar, for your email address.",
 } as const;
 
-/** The signed-in user's profile and email address. */
+/** The signed-in user's profile, email address and appearance. */
 export default async function AccountProfilePage() {
   const session = await requireSession();
   const impersonating = Boolean(session.session.impersonatedBy);
@@ -91,6 +92,12 @@ export default async function AccountProfilePage() {
             {user.emailVerified ? null : <SendVerificationEmailButton disabled={impersonating} />}
           </SettingsRow>
           <ProfileForm disabled={impersonating} name={user.name} />
+        </SettingsSection>
+
+        <SettingsSection title="Appearance">
+          <SettingsRow description="Applies to the dashboard in this browser." label="Theme">
+            <ThemePicker />
+          </SettingsRow>
         </SettingsSection>
 
         <SettingsSection title="Account">

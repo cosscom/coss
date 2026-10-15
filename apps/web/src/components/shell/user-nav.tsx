@@ -7,8 +7,6 @@ import {
   MenuItem,
   MenuLinkItem,
   MenuPopup,
-  MenuRadioGroup,
-  MenuRadioItem,
   MenuSeparator,
   MenuTrigger,
 } from "@coss/ui/components/menu";
@@ -21,21 +19,18 @@ import {
 import { ChevronsUpDownIcon, LogOutIcon, SettingsIcon, ShieldIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import { UserAvatar } from "@/components/user-avatar";
 import { postAuth } from "@/lib/auth-post";
-import { THEME_OPTIONS } from "./theme-options";
 
 /** `image` is `avatarUrl(session.user)` (`@/lib/avatars`). */
 export type ShellUser = { name: string; email: string; image: string | null; isAdmin: boolean };
 
 /**
- * The signed-in user at the foot of the sidebar: account settings, the admin console (platform
- * admins), the theme and sign out.
+ * The signed-in user at the foot of the sidebar: account settings (where the theme is chosen), the
+ * admin console (platform admins) and sign out.
  */
 export function UserNav({ user }: { user: ShellUser }) {
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
   const { isMobile } = useSidebar();
 
   return (
@@ -76,17 +71,6 @@ export function UserNav({ user }: { user: ShellUser }) {
                   Admin console
                 </MenuLinkItem>
               ) : null}
-            </MenuGroup>
-            <MenuSeparator />
-            <MenuGroup>
-              <MenuGroupLabel>Theme</MenuGroupLabel>
-              <MenuRadioGroup onValueChange={(value) => setTheme(value as string)} value={theme}>
-                {THEME_OPTIONS.map((option) => (
-                  <MenuRadioItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuRadioItem>
-                ))}
-              </MenuRadioGroup>
             </MenuGroup>
             <MenuSeparator />
             <MenuItem
