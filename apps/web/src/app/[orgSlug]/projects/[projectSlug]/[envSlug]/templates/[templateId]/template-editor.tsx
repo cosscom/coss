@@ -46,12 +46,12 @@ export type EditorContent = {
 
 type FieldDraft = { name: string; type: TemplateScalarType; required: boolean };
 
-/** A variable as edited: the default as typed. */
+/** A variable as edited: the default as typed (`null`: none). */
 type VariableDraft = {
   name: string;
   type: TemplateVariableType;
   required: boolean;
-  default: string;
+  default: string | null;
   description: string;
   fields: FieldDraft[];
 };
@@ -69,7 +69,7 @@ function toVariableDraft(variable: TemplateVariable): VariableDraft {
     name: variable.name,
     type: variable.type,
     required: variable.required,
-    default: variable.default === undefined ? "" : String(variable.default),
+    default: variable.default === undefined ? null : String(variable.default),
     description: variable.description ?? "",
     fields: variable.fields ?? [],
   };
@@ -78,7 +78,7 @@ function toVariableDraft(variable: TemplateVariable): VariableDraft {
 /** The wire declaration (and what checking and previews use). */
 function fromVariableDraft(draft: VariableDraft): TemplateVariable {
   const defaultValue =
-    draft.type === "list" || draft.default === ""
+    draft.type === "list" || draft.default === null
       ? undefined
       : draft.type === "number"
         ? Number(draft.default)
@@ -452,7 +452,7 @@ export function TemplateEditor(props: {
                       onValueChange={(value) =>
                         updateVariable(index, {
                           type: value as TemplateVariableType,
-                          default: "",
+                          default: null,
                           fields:
                             value === "list" && variable.fields.length === 0
                               ? [{ name: "name", type: "string", required: true }]
@@ -477,10 +477,20 @@ export function TemplateEditor(props: {
                     <Field className="w-36">
                       <FieldLabel>Default</FieldLabel>
                       <Input
-                        onChange={(event) => updateVariable(index, { default: event.target.value })}
-                        placeholder={variable.type === "boolean" ? "true / false" : "none"}
+                        // Clearing the field removes the default. An empty string default (set over
+                        // the API) is kept as is until it's edited.
+                        onChange={(event) =>
+                          updateVariable(index, { default: event.target.value || null })
+                        }
+                        placeholder={
+                          variable.default === ""
+                            ? "empty string"
+                            : variable.type === "boolean"
+                              ? "true / false"
+                              : "none"
+                        }
                         readOnly={readOnly}
-                        value={variable.default}
+                        value={variable.default ?? ""}
                       />
                     </Field>
                   ) : null}
@@ -530,7 +540,7 @@ export function TemplateEditor(props: {
                         name: "",
                         type: "string",
                         required: true,
-                        default: "",
+                        default: null,
                         description: "",
                         fields: [],
                       },

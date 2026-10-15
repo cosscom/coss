@@ -23,7 +23,7 @@ function parse(source: string): TemplateNode[] {
 }
 
 function render(source: string, values: TemplateValues, field: TemplateField = "text"): string {
-  return renderTemplate(parse(source), values, { field });
+  return renderTemplate(parse(source), values, { field, variables: [] });
 }
 
 const VARIABLES: TemplateVariable[] = [
@@ -195,6 +195,31 @@ describe("renderTemplate", () => {
     expect(render("{{#each items}}x{{else}}empty{{/each}}", { items: [] })).toBe("empty");
   });
 
+  test("a declared item field shadows the top-level variable even when an item leaves it out", () => {
+    const variables: TemplateVariable[] = [
+      { name: "discount", type: "boolean", required: false },
+      {
+        name: "items",
+        type: "list",
+        required: false,
+        fields: [
+          { name: "name", type: "string", required: true },
+          { name: "discount", type: "boolean", required: false },
+        ],
+      },
+    ];
+    const source =
+      "{{#each items}}{{name}}{{#if discount}}%{{/if}};{{/each}}{{#if discount}}!{{/if}}";
+    const validated = validateTemplateVariables(variables, {
+      discount: true,
+      items: [{ name: "a" }, { name: "b", discount: true }],
+    });
+    if (!validated.ok) throw new Error("invalid variables");
+    expect(renderTemplate(parse(source), validated.values, { field: "text", variables })).toBe(
+      "a;b%;!",
+    );
+  });
+
   test("stops rendering once the output passes the limit, so loops can't amplify", () => {
     const items = Array.from({ length: 1000 }, () => ({ name: "x".repeat(100) }));
     expect(() =>
@@ -203,6 +228,7 @@ describe("renderTemplate", () => {
         { items },
         {
           field: "html",
+          variables: [],
           maxLength: 1_000_000,
         },
       ),
@@ -213,9 +239,9 @@ describe("renderTemplate", () => {
     const items = Array.from({ length: 1000 }, () => ({}));
     const nested = `${"{{#each items}}".repeat(10)}${"{{/each}}".repeat(10)}`;
     const started = performance.now();
-    expect(() => renderTemplate(parse(nested), { items }, { field: "text" })).toThrow(
-      "Rendering text takes too many steps",
-    );
+    expect(() =>
+      renderTemplate(parse(nested), { items }, { field: "text", variables: [] }),
+    ).toThrow("Rendering text takes too many steps");
     expect(performance.now() - started).toBeLessThan(1_000);
     // Ordinary loops stay well inside it.
     expect(render("{{#each items}}{{#if x}}y{{/if}}{{/each}}", { items })).toBe("");
@@ -325,9 +351,10 @@ describe("contents", () => {
       renderTemplateContent(
         { subject: "Hi {{n}}", html: "<p>{{n}}</p>", text: null },
         { n: "<Ada>" },
+        [],
       ),
     ).toEqual({ subject: "Hi <Ada>", html: "<p>&lt;Ada&gt;</p>", text: null });
-    expect(() => renderTemplateContent({ subject: "{{", html: null, text: "x" }, {})).toThrow(
+    expect(() => renderTemplateContent({ subject: "{{", html: null, text: "x" }, {}, [])).toThrow(
       "subject (line 1, column 1): Unclosed {{ tag: expected }}.",
     );
   });

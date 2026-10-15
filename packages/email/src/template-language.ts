@@ -393,13 +393,26 @@ function display(value: TemplateValue | undefined): string {
 /**
  * Renders a parsed template. `{{name}}` is HTML-escaped when rendering `html`. Missing values render
  * as nothing; throws `TemplateRenderError` once the output passes `maxLength` or the work passes
- * `maxSteps`.
+ * `maxSteps`. Inside `{{#each list}}`, a declared field of the list's items shadows the top-level
+ * variable of that name even when an item leaves it out (as `checkTemplate` resolves it); a list
+ * that isn't declared (a draft's preview) resolves by the item's own keys.
  */
 export function renderTemplate(
   nodes: TemplateNode[],
   values: TemplateValues,
-  opts: { field: TemplateField; maxLength?: number; maxSteps?: number },
+  opts: {
+    field: TemplateField;
+    variables: readonly TemplateVariable[];
+    maxLength?: number;
+    maxSteps?: number;
+  },
 ): string {
+  const itemFields = new Map<string, ReadonlySet<string>>();
+  for (const variable of opts.variables) {
+    if (variable.type === "list") {
+      itemFields.set(variable.name, new Set((variable.fields ?? []).map((field) => field.name)));
+    }
+  }
   const maxLength = opts.maxLength ?? MAX_RENDERED_LENGTH;
   const maxSteps = opts.maxSteps ?? MAX_RENDER_STEPS;
   let steps = 0;
@@ -424,11 +437,14 @@ export function renderTemplate(
     }
     parts.push(value);
   };
-  const lookup = (name: string, item: TemplateListItem | null): TemplateValue | undefined => {
-    if (item && Object.hasOwn(item, name)) return item[name];
+  type Scope = { item: TemplateListItem; fields: ReadonlySet<string> | undefined } | null;
+  const lookup = (name: string, scope: Scope): TemplateValue | undefined => {
+    if (scope && (scope.fields ? scope.fields.has(name) : Object.hasOwn(scope.item, name))) {
+      return Object.hasOwn(scope.item, name) ? scope.item[name] : undefined;
+    }
     return Object.hasOwn(values, name) ? values[name] : undefined;
   };
-  const visit = (list: TemplateNode[], item: TemplateListItem | null) => {
+  const visit = (list: TemplateNode[], item: Scope) => {
     for (const node of list) {
       step();
       switch (node.kind) {
@@ -446,9 +462,10 @@ export function renderTemplate(
         case "each": {
           const value = lookup(node.name, item);
           if (Array.isArray(value) && value.length > 0) {
+            const fields = itemFields.get(node.name);
             for (const entry of value) {
               step();
-              visit(node.body, entry);
+              visit(node.body, { item: entry, fields });
             }
           } else {
             visit(node.otherwise, item);
@@ -625,6 +642,7 @@ export type RenderedTemplate = { subject: string; html: string | null; text: str
 export function renderTemplateContent(
   content: Omit<TemplateContentSource, "locale">,
   values: TemplateValues,
+  variables: readonly TemplateVariable[],
   opts: { maxLength?: number } = {},
 ): RenderedTemplate {
   const render = (field: TemplateField, source: string) => {
@@ -633,7 +651,7 @@ export function renderTemplateContent(
       const { message, line, column } = parsed.problem;
       throw new TemplateRenderError(`${field} (line ${line}, column ${column}): ${message}`);
     }
-    return renderTemplate(parsed.nodes, values, { field, maxLength: opts.maxLength });
+    return renderTemplate(parsed.nodes, values, { field, variables, maxLength: opts.maxLength });
   };
   return {
     subject: render("subject", content.subject),

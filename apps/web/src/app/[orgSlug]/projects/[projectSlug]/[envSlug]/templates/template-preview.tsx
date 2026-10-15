@@ -19,14 +19,19 @@ export type PreviewContent = { subject: string; html: string | null; text: strin
 
 type Rendered = { ok: true; value: string } | { ok: false; message: string };
 
-function renderField(field: TemplateField, source: string, values: TemplateValues): Rendered {
+function renderField(
+  field: TemplateField,
+  source: string,
+  values: TemplateValues,
+  variables: readonly TemplateVariable[],
+): Rendered {
   const parsed = parseTemplate(source);
   if (!parsed.ok) {
     const { message, line, column } = parsed.problem;
     return { ok: false, message: `Line ${line}, column ${column}: ${message}` };
   }
   try {
-    return { ok: true, value: renderTemplate(parsed.nodes, values, { field }) };
+    return { ok: true, value: renderTemplate(parsed.nodes, values, { field, variables }) };
   } catch (error) {
     if (error instanceof TemplateRenderError) return { ok: false, message: error.message };
     throw error;
@@ -59,16 +64,19 @@ export function TemplatePreview(props: {
         };
   }, [props.variables, sample]);
 
+  const variables = props.variables;
   const rendered = useMemo(
     () =>
       content
         ? {
-            subject: renderField("subject", content.subject, values),
-            html: content.html === null ? null : renderField("html", content.html, values),
-            text: content.text === null ? null : renderField("text", content.text, values),
+            subject: renderField("subject", content.subject, values, variables),
+            html:
+              content.html === null ? null : renderField("html", content.html, values, variables),
+            text:
+              content.text === null ? null : renderField("text", content.text, values, variables),
           }
         : null,
-    [content, values],
+    [content, values, variables],
   );
 
   if (!rendered) {

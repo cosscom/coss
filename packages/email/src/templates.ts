@@ -734,10 +734,8 @@ export async function renderTemplateForSend(
   const content = version.contents.find((candidate) => candidate.locale === locale);
   if (!content) throw new Error(`Email template ${version.templateId} has no "${locale}" content.`);
 
-  const validated = validateTemplateVariables(
-    version.variables as TemplateVariable[],
-    request.variables,
-  );
+  const variables = version.variables as TemplateVariable[];
+  const validated = validateTemplateVariables(variables, request.variables);
   if (!validated.ok) {
     const issues = validated.issues.map((issue) => ({
       path: param(["variables", ...issue.path].join(".")),
@@ -753,7 +751,7 @@ export async function renderTemplateForSend(
 
   let rendered: ReturnType<typeof renderTemplateContent>;
   try {
-    rendered = renderTemplateContent(content, validated.values);
+    rendered = renderTemplateContent(content, validated.values, variables);
   } catch (error) {
     if (error instanceof TemplateRenderError) {
       throw new EmailError("template_render_failed", error.message, {
