@@ -88,6 +88,9 @@ export function EmailFilterBar(props: {
   const chips = activeChips(params);
   const detailCount = EMAIL_DETAIL_FILTERS.filter((key) => params[key]).length;
   const cleared = Object.fromEntries(EMAIL_DETAIL_FILTERS.map((key) => [key, ""]));
+  // The inputs are uncontrolled: a new key remounts them when the URL's filters change (Reset,
+  // a removed chip), so Apply never brings back a filter that was just cleared.
+  const formKey = listHref("", emailFilterQuery(params));
 
   return (
     <div className="flex flex-col gap-3">
@@ -122,6 +125,7 @@ export function EmailFilterBar(props: {
               <PopoverTitle className="mb-3 text-sm">Filter emails</PopoverTitle>
               <form
                 action={path}
+                key={formKey}
                 className="flex flex-col gap-3"
                 onSubmit={(event) => {
                   // Disabled fields aren't submitted: keeps `?tag=&category=…` out of the URL.
