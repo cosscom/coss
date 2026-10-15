@@ -643,11 +643,14 @@ wrong. AWS credentials come from the task role.
 [one-time coordinated upgrade](#upgrading-from-v1-webhook-secret-storage) below instead of step 3's rolling
 deployment. This applies even when `WEBHOOK_SECRETS_KEY` is unchanged.
 
-The Deploy workflow does this on every push to main, building while CI runs and shipping only once it passed (or by
-hand from the Actions tab; with `image_tag` it redeploys an earlier commit's images, e.g. a rollback). When CI
-failed and a re-run passed, re-run the Deploy run's failed jobs. A commit that's no longer main's tip by the time
-its CI finishes, or its deploy job's turn comes, isn't deployed (the newer commit's deploy ships it), so production
-never goes back to an older commit unless you dispatch one:
+The Deploy workflow does this for pushes to main in batches: its `gate` job (on GitHub's runners, which cost
+nothing here, unlike CodeBuild's minutes) waits until the push's CI passed and then until main has had no newer
+push for 20 minutes or production's last deploy is an hour old, so the first push after a quiet spell ships right
+after CI and a busy stretch ships about hourly. A push that's superseded while it waits isn't built (the newer
+push's run ships it). Run it by hand from the Actions tab (`gh workflow run deploy.yml`) to ship main at once; with
+`image_tag` it redeploys an earlier commit's images, e.g. a rollback. When CI failed and a re-run passed, re-run
+the Deploy run's failed jobs. A deploy job whose commit production already includes (a newer deploy went first)
+skips, so production never goes back to an older commit unless you dispatch one:
 
 1. Build and push the six images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
    apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
