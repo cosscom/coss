@@ -210,6 +210,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `TURBO_TOKEN`, `TURBO_TEAM`, `TURBO_REMOTE_CACHE_SIGNATURE_KEY` | turbo itself (Vercel Remote Cache, team `cal`): locally `turbo login` stores the token and `~/.config/coss/turbo.env` (sourced by the shell profile) sets the other two; in CI `secrets.TURBO_TOKEN`, `vars.TURBO_TEAM`, `secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY`. Never in `.env` (turbo doesn't read it) |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | `apps/web`: Server Actions key shared by every dashboard task of a stage (base64, 16/24/32 bytes); read at runtime, required in production |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | `apps/web` (read by `packages/auth/src/social.ts`): sign-in with Google / GitHub, each on when both of its values are set (`src/instrumentation.ts` refuses half a pair). Callbacks `${BETTER_AUTH_URL}/api/auth/callback/{google,github}`. Production: ids plain (tfvars), secrets in the stage secret — put the secrets there **before** the `terraform apply` that adds them, or web tasks can't start |
+| `DEPLOY_GITHUB_APP_ID`, `DEPLOY_GITHUB_APP_PRIVATE_KEY` | `apps/web`: the admin console's Deploys page (`src/lib/deploys.ts`), through the COSS Deploy GitHub App (Actions read/write, Contents read on `cosscom/coss`; README, "Deploying from the admin console"). Both or neither (`src/instrumentation.ts`); unset → the page explains the setup. The key may be one line with `\n` escapes. The app's bot is on `deploy_actor_ids` |
 | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | `apps/web`: Cloudflare Turnstile (both or neither; required in production, checked in `src/instrumentation.ts`). Pages pass the site key to the auth forms; `packages/auth/src/options.ts` adds the `captcha` plugin when the secret is set |
 | `TRUSTED_PROXY_HOPS` | `apps/web`: proxies that append to `X-Forwarded-For` (CloudFront → ALB: `2`; default `0`). `src/proxy.ts` replaces the header with the one client address they vouch for, which Better Auth then uses (it ignores multi-value headers) |
 | `NEXT_DEPLOYMENT_ID` | Next builds (`apps/web`, `apps/site`): the commit, passed by the Dockerfiles; build id + version-skew protection |
@@ -610,6 +611,11 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   **Take down** (`takeDownOrganizationAction`, from `planOrganizationTakedown`) suspends the organization,
   revokes its keys and permanently bans members without another active organization (platform admins, the
   actor and already-banned users are kept), each step audited on its own, so it can be re-run.
+  **Deploys** (`/admin/deploys`, `src/lib/deploys.ts`; pure parts in `deploy-runs.ts`) reads GitHub only through
+  the COSS Deploy app's installation token (Actions write, Contents read — never widen it): "Deploy now"
+  dispatches `deploy.yml` for main and cancels push runs still before their deploy job; "Redeploy" dispatches
+  `image_tag` for a commit a recent run deployed (re-checked server-side). It parses the runs' job names (`gate`,
+  `build (…)`, `deploy`, its `Roll out` step) and the `run-name` of `image_tag` dispatches: change them together.
 - **Organization suspension** (`organization_suspension`, presence = suspended; reason is admin-internal): enforced in
   `authenticateApiKey` (`suspended` → 403 `organization_suspended`, only for otherwise-valid keys),
   `createEnvironmentApiKey`, webhook `claimDue` (held, not failed), the Better Auth org hooks

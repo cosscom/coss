@@ -470,6 +470,22 @@ export const SERVICES: Service[] = [
         value: "the same OAuth app's client secret",
         description: "Sign-in with GitHub (token exchange).",
       },
+      {
+        name: "DEPLOY_GITHUB_APP_ID",
+        kind: "plain",
+        required: false,
+        value: 'the COSS Deploy GitHub App\'s id (README, "Deploying from the admin console")',
+        description:
+          "The admin console's deploys page, with DEPLOY_GITHUB_APP_PRIVATE_KEY (both or neither).",
+      },
+      {
+        name: "DEPLOY_GITHUB_APP_PRIVATE_KEY",
+        kind: "secret",
+        required: false,
+        value: "the same app's private key (PEM)",
+        description:
+          "Signs the app's tokens: read main's commits and the Deploy workflow's runs, dispatch it.",
+      },
       ...sentry("web"),
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "PORT", kind: "image", required: true, value: "3000", description: "" },

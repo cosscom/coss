@@ -15,6 +15,9 @@ on:
         description: Commit whose images to deploy (already built, e.g. a rollback). Empty builds this run's commit.
         required: false
         default: ""
+# A redeploy of an earlier commit names it (the admin console's deploys page reads it back:
+# apps/web/src/lib/deploy-runs.ts). Anything else keeps GitHub's default name.
+run-name: ${{ inputs.image_tag && format('Deploy {0}', inputs.image_tag) || '' }}
 
 permissions:
   contents: read
