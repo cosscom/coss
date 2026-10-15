@@ -20,7 +20,7 @@ describe("htmlToText", () => {
     expect(
       htmlToText(
         '<p><a href="https://acme.com/orders/1?x=1&amp;y=2">Track your order</a></p>' +
-          '<p>Visit <a href="https://www.acme.com/">acme.com</a> or <a href="https://acme.com/docs">https://acme.com/docs</a>.</p>' +
+          '<p>Visit <a href="https://ACME.com">acme.com</a> or <a href="https://acme.com/docs">https://acme.com/docs</a>.</p>' +
           '<p><a href="mailto:help@acme.com">help@acme.com</a>, <a href="mailto:help@acme.com?subject=Hi">email us</a></p>' +
           '<p><a href="#top">Top</a> <a href="tel:+15550100">Call</a> <a href="/relative">Relative</a></p>' +
           '<p>Logo: <a href="https://acme.com/home"><img src="logo.png" alt=""></a></p>',
@@ -42,7 +42,10 @@ describe("htmlToText", () => {
           '<p><a href="https://acme.com/">Visit https://acme.com</a></p>' +
           '<p><a href="https://evil.example/acme.com">acme.com</a></p>' +
           '<p><a href="mailto:help@acme.com">sales@acme.com</a></p>' +
-          '<p><a href="https://ACME.com/Docs/">https://www.acme.com/Docs</a></p>',
+          '<p><a href="https://www.acme.com/">acme.com</a></p>' +
+          '<p><a href="http://acme.com/">https://acme.com/</a></p>' +
+          '<p><a href="https://acme.com/download/">https://acme.com/download</a></p>' +
+          '<p><a href="https://acme.com/Docs">HTTPS://Acme.com/Docs</a></p>',
       ),
     ).toBe(
       "https://acme.com/docs [https://acme.com]\n\n" +
@@ -50,7 +53,10 @@ describe("htmlToText", () => {
         "Visit https://acme.com [https://acme.com/]\n\n" +
         "acme.com [https://evil.example/acme.com]\n\n" +
         "sales@acme.com [help@acme.com]\n\n" +
-        "https://www.acme.com/Docs",
+        "acme.com [https://www.acme.com/]\n\n" +
+        "https://acme.com/ [http://acme.com/]\n\n" +
+        "https://acme.com/download [https://acme.com/download/]\n\n" +
+        "HTTPS://Acme.com/Docs",
     );
   });
 

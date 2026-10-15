@@ -110,29 +110,22 @@ function linkTarget(href: string | undefined): string | null {
   return null;
 }
 
-/** `https://www.acme.com/a/` as `acme.com/a`: only the host is case-insensitive. */
-function destination(value: string): string | null {
-  let url: URL;
-  try {
-    url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
-  } catch {
-    return null;
-  }
-  const credentials = url.username || url.password ? `${url.username}:${url.password}@` : "";
-  const host = url.host.replace(/^www\./, "");
-  return `${credentials}${host}${url.pathname.replace(/\/$/, "")}${url.search}${url.hash}`;
-}
-
 /**
- * Labels that already are the link's destination (`acme.com` for `https://acme.com/`). Anything
- * less certain shows the target: a plain-text reader must never lose where a link goes.
+ * Labels that already are the link's destination: the same URL once parsed (host case and an
+ * empty path don't matter), or its host and path without the target's scheme (`acme.com` for
+ * `https://acme.com/`). Anything else shows the target: `www.`, another scheme or a trailing slash
+ * can name a different resource, and a plain-text reader must never lose where a link goes.
  */
 function labelShowsTarget(label: string, target: string): boolean {
   if (!/^https?:\/\//i.test(target)) return label.toLowerCase() === target.toLowerCase();
-  if (/^[a-z][a-z\d+.-]*:/i.test(label) && !/^https?:\/\//i.test(label)) return false;
   if (/\s/.test(label)) return false;
-  const shown = destination(label);
-  return shown !== null && shown === destination(target);
+  try {
+    const expected = new URL(target);
+    const scheme = /^[a-z][a-z\d+.-]*:/i.test(label) ? "" : `${expected.protocol}//`;
+    return new URL(`${scheme}${label}`).href === expected.href;
+  } catch {
+    return false;
+  }
 }
 
 type Prefix = { first: string; rest: string; used: boolean };
