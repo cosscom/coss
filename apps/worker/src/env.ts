@@ -49,6 +49,17 @@ export const env = createEnv({
     // verified domains. Unset: printed in development, held (not sent) in production.
     NOTIFICATIONS_ENVIRONMENT_ID: z.string().startsWith("env_").optional(),
     NOTIFICATIONS_FROM: z.string().optional(),
+    // Push notifications to the iOS app through APNs, with a token-based (`.p8`) key of the Apple
+    // Developer team that owns the app. All three or none; unset: printed in development, held
+    // in production. The key may use `\n` for its line breaks.
+    APNS_KEY_ID: z.string().optional(),
+    APNS_TEAM_ID: z.string().optional(),
+    APNS_PRIVATE_KEY: z
+      .string()
+      .optional()
+      .transform((value) => value?.replaceAll("\\n", "\n")),
+    // The app's bundle id.
+    APNS_TOPIC: z.string().default("com.coss.app"),
     // The dashboard's origin, for links in notification emails.
     BETTER_AUTH_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
     // Decrypts webhook signing secrets (same value as the dashboard's and the API's).

@@ -1,4 +1,5 @@
 import "server-only";
+import { orgAccess, SIGN_IN_PATH } from "@coss/auth/org-access";
 import { type OrgPermissions, orgRoleCan } from "@coss/auth/permissions";
 import { getMembership, type Membership } from "@coss/tenancy";
 import type { AdminActor } from "@coss/tenancy/admin";
@@ -8,7 +9,7 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { ActionError, ForbiddenError } from "./actions";
 import { auth, type Session } from "./auth";
-import { orgAccess, SIGN_IN_PATH } from "./org-access";
+import { memberCan } from "./member-can";
 
 export type OrgContext = Membership & {
   session: Session;
@@ -22,17 +23,6 @@ export type OrgContext = Membership & {
   /** An owner signed in without SSO while the organization requires it (break-glass access). */
   ssoBreakGlass: boolean;
 };
-
-/**
- * A suspended organization keeps read access only, and its billing: paying an invoice or fixing
- * the payment method must stay possible while it is suspended.
- */
-function allowedWhileSuspended(permissions: OrgPermissions): boolean {
-  return Object.entries(permissions).every(
-    ([resource, actions]) =>
-      resource === "billing" || (actions as string[]).every((action) => action === "read"),
-  );
-}
 
 /**
  * Request headers for session-bound Better Auth calls made while rendering. The Cookie header comes
@@ -87,9 +77,7 @@ export const requireOrgMember = cache(async (orgSlug: string): Promise<OrgContex
   setTag("organization_id", membership.organization.id);
   const access = orgAccess(membership, session);
   if (access.kind === "redirect") redirect(access.to);
-  const can = (permissions: OrgPermissions) =>
-    orgRoleCan(membership.member.role, permissions) &&
-    (!membership.suspended || allowedWhileSuspended(permissions));
+  const can = memberCan(membership);
   return { session, ...membership, can, viaSso: access.viaSso, ssoBreakGlass: access.breakGlass };
 });
 

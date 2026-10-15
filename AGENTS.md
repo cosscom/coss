@@ -29,10 +29,11 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page, Shipyard's landing page and docs at `/shipyard`, kloq's pages at `/kloq` (landing page, demo, tools, comparisons, docs, shadcn registry) + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/portal` | `@coss/portal` | The Hooks portal (:3003) on its own domain (production: `portal.cosshooks.com`, Cloudflare → ALB, `PORTAL_HOST` in `infra/aws/routing.ts`): customers' users manage one application's endpoints and see its deliveries, signed in by a session the customer's backend creates (token in the URL fragment, never a cookie). See `apps/portal/AGENTS.md`. |
+| `apps/mobile` | `@coss/mobile` | Expo (SDK 57) iOS companion app mirroring the dashboard's pages (organization: projects, reputation, domains, members, billing, audit log; environment: emails, received, suppressions, tracking, risk with rules and lists, Hooks, API keys, webhooks, logs, log drains), mostly read-only, signed in through the dashboard (browser hand-off + PKCE) and using its `/api/mobile/v1/*`, with push notifications (APNs) for alerts. Not deployed by `infra`. See `apps/mobile/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events and received emails from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss); `./idempotency` (`withIdempotencyKey`, request hashes); `./partitions` (daily range partitions: create ahead, drop expired). |
 | `packages/signals` | `@coss/signals` | Stateless abuse signals shared by COSS's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
-| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./social`: Google/GitHub sign-in (server-only); `./risk`: the injected sign-up risk assessor (COSS Risk on COSS's own sign-ups); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
+| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./social`: Google/GitHub sign-in (server-only); `./risk`: the injected sign-up risk assessor (COSS Risk on COSS's own sign-ups); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox; `./mobile`: the iOS app's sign-in (PKCE codes, bearer sessions; server-only). |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), receiving (received emails, receiving domains, managed inbound addresses, the content store), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./admin` (the admin console's cross-org reads), `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
@@ -45,6 +46,8 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/observability` | `@coss/observability` | Sentry setup shared by every app: env shape (`./env`, zod only), `sentryConfig`/`sentryOptions`, PII scrubbing (`scrubEvent`), the browser init (`./browser`), the dashboard's envelope tunnel (`./tunnel`) and `withSentryConfig` options (`./build`). Takes each app's SDK; depends on no framework SDK and no workspace. |
 | `packages/logs` | `@coss/logs` | Environment logs and the org audit log: the day-partitioned `log_entry` table (API requests, email events, webhook attempts), the buffered fail-open request writer, queries (keyset pages, histogram, facets, related lines, CSV/NDJSON export), partition retention, `org_audit_event`, the log drain outbox (`log_drain_record`, written by `appendLogEntries`/`recordOrgAuditEvent`); `./schemas` + `./query` (search syntax; zod only), `./testing`. |
 | `packages/versioning` | `@coss/versioning` | Dated public API versions (`Coss-Version`): `API_VERSIONS`, the `VERSION_CHANGES` registry and the engine that renders latest-shape responses/webhook payloads in older versions and upgrades older request bodies. Zero deps, client-safe; `./testing` (`testVersioning()`). |
+| `packages/push` | `@coss/push` | Push notifications to the iOS app: devices (one per app session), the outbox products enqueue into (`enqueuePush`, in the deciding transaction), recipients (role + `orgAccess`) and content resolved at send time, the worker's send loop; `./apns` (APNs over `node:http2`, ES256 provider tokens), `./schemas` (zod only: categories, kinds, registration), `./testing` (`FakePushSender`, `createTestPushDevice`). |
+| `packages/companion` | `@coss/companion` | Wire types of the dashboard's iOS app API (`/api/mobile/v1/*`): plain TypeScript types, zero deps, client-safe. |
 | `packages/retention` | `@coss/retention` | The data retention policy: `RETENTION_POLICY` (published by the docs and the dashboard) and `RETENTION_DAYS` (enforced by each package's purge, run by the worker). Zero deps, client-safe. |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens), `globals.css` (the dashboard's stylesheet) and `./fonts` (`next/font/local`: Cal Sans as `fontSans`/`fontHeading` and, upright only, `fontCalSans`; Paper Mono as `fontMono`). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. `coss/device` is its browser-only entry (risk's device tokens). |
@@ -54,16 +57,16 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests, and the production Terraform + deploy scripts that apply it. See `infra/AGENTS.md`. |
 
 Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `portal`, `infra`; `signals` (no workspace deps) ← `auth`, `webhooks`, `risk`; `db ← auth ← tenancy`,
-`db ← logs ← webhooks ← risk` (`risk` also `→ signals, ratelimit, retention, screening` — only screening's DB-free `./classifier`, `./text`, `./runtime`, `./testing`; `email` imports only `@coss/risk/schemas`, for `WEBHOOK_EVENT_TYPES`), `db ← logs ← webhooks ← reputation ← screening ← email`, `reputation ← hooks`, `db ← ratelimit`, `webhooks ← billing ← email` (packages take
+`db ← logs ← webhooks ← risk` (`risk` also `→ signals, ratelimit, retention, screening` — only screening's DB-free `./classifier`, `./text`, `./runtime`, `./testing`; `email` imports only `@coss/risk/schemas`, for `WEBHOOK_EVENT_TYPES`), `db ← logs ← webhooks ← reputation ← screening ← email`, `reputation ← hooks`, `db ← ratelimit`, `db ← push ← webhooks, hooks, reputation, billing, risk, worker, web` (`push` also `→ retention` and only `@coss/auth/{permissions,org-access}`), `webhooks ← billing ← email` (packages take
 `billing`'s plan checks injected — `PlanGate`, `UsageGate`, and in webhooks the structural `WebhookPlanLimits`, since
 billing enqueues `billing.*` events through it — and email imports only `./metering`, `./gate` and `./wire`); `versioning` (no deps) ← `tenancy`, `webhooks`, `email`, `billing` (`schemas`/`wire` examples);
-`retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `hooks`, `billing`, `worker`, `web`, `site`;
+`retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `hooks`, `billing`, `push`, `worker`, `web`, `site`, `mobile`;
 `api → tenancy, email, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, screening (`./env` only), db`;
-`web → auth, tenancy, email, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, db, ui`; `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
+`web → auth, tenancy, email, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, push, companion, db, ui`; `mobile → companion` (types only; a dev dependency), `retention` (bundled by Metro: keep it dependency-free); `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, hooks, ratelimit, screening, billing` (`slugs`, `env` only);
-`worker → auth (`./emails` only), email, hooks, reputation, screening, webhooks, ratelimit, logs, risk, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui` and `kloq` depend on no workspace (`site → kloq`); `mcp` depends only on the published `coss` (a semver
+`worker → auth (`./emails` only), email, hooks, reputation, screening, webhooks, ratelimit, logs, risk, push, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui`, `kloq` and `companion` depend on no workspace (`site → kloq`); `mcp` depends only on the published `coss` (a semver
 range, not `workspace:`).
-Dev-only: `email`/`webhooks`/`hooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`risk`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
+Dev-only: `email`/`webhooks`/`hooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`risk`/`push`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
 `api`/`worker`/`site → coss` and `api → coss-mcp` (SDK and MCP contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`). `web → coss` is a runtime dependency: the sign-up form sends
 `coss/device`'s token (turbo builds the SDK before the dashboard's `dev`/`build` too).
@@ -76,6 +79,7 @@ Valkey (or Redis) at `TEST_VALKEY_URL` for the ratelimit/api tests.
 ```sh
 bun install                 # never npm/pnpm/yarn
 bun run dev                 # web :3000 + api :3001 + site :3002 + portal :3003 + worker (turbo TUI; agents: bunx turbo run dev --ui=stream)
+bun run --cwd apps/mobile ios  # the iOS app on the Simulator (Xcode; needs `bun run dev` for the dashboard)
 bun run lint                # biome ci .            bun run format → biome check --write .
 bun run typecheck           # tsc --noEmit per workspace (TS 7); web runs `next typegen` first; builds the SDK first
 bun run test                # migrates TEST_DATABASE_URL, then `bun test` in every workspace (uncached; SDK built first)
@@ -176,6 +180,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
 | `INBOUND_MANAGED_DOMAIN`, `SES_INBOUND_BUCKET` | api, web, worker: receiving. The managed inbound domain (`<label>.<domain>` addresses per environment; default `inbound.coss.test` with the fake provider) and, with SES, the bucket received content lives in (both or neither with SES; unset → receiving off). Printed by `ses:bootstrap --managed-domain` |
 | `SES_INBOUND_QUEUE_URL` | worker with SES receiving: the SQS queue of receipt notifications |
+| `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_PRIVATE_KEY`, `APNS_TOPIC` | worker: push notifications to the iOS app through APNs with a token-based `.p8` key (its id, the Apple Developer team, the PEM contents — `\n` line breaks accepted — and the bundle id, default `com.coss.app`). The first three together or none; unset → printed in development, held in production |
 | `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | web reads the id only to refuse admin suspensions of COSS's own organization (`isSystemOrganization`, `apps/web/src/lib/system-organization.ts`); worker: account emails (verification, password reset, invitation) and reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
 | `VALKEY_URL`, `VALKEY_CLUSTER` | api + web + worker (the daily inbound limit, Hooks delivery limits): rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
 | `RATE_LIMIT_KEY_PREFIX` | api + web: namespaces Valkey keys (default `coss`) |
@@ -384,7 +389,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 
 ## Tests
 
-- `bun:test`. DB-backed suites (`apps/api`, `apps/worker`, `packages/billing`, `packages/email`, `packages/hooks`, `packages/reputation`, `packages/risk`, `packages/screening`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
+- `bun:test`. DB-backed suites (`apps/api`, `apps/worker`, `packages/billing`, `packages/email`, `packages/hooks`, `packages/push`, `packages/reputation`, `packages/risk`, `packages/screening`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
   `bunfig.toml` → `@coss/db/testing`, which throws unless `TEST_DATABASE_URL` names a `*_test` database, then points
   `DATABASE_URL` at it. Other suites are DB-free; before adding DB tests elsewhere copy `packages/email/bunfig.toml` +
   `test/setup.ts`, or the tests hit the dev database.
@@ -662,8 +667,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
-- **Client-safe modules** never import `@coss/db`: `@coss/risk/{schemas,env}`, `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants}`, `@coss/email/schemas`,
-  `@coss/email/env`, `@coss/hooks/{schemas,env}`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch}`, `@coss/risk/{runtime,datasets}`, `@coss/signals/*` and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
+- **Client-safe modules** never import `@coss/db`: `@coss/risk/{schemas,env}`, `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants,org-access}`, `@coss/push/schemas`, `@coss/email/schemas`,
+  `@coss/email/env`, `@coss/hooks/{schemas,env}`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`, `@coss/companion`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch}`, `@coss/risk/{runtime,datasets}`, `@coss/signals/*`, `@coss/push` (root, `./apns`) and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
   modules start with `import "server-only"`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -875,6 +880,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `purgeExpiredWebhookMessages` (`@coss/webhooks`), `purgeExpiredScreenings` (`@coss/screening`),
   `purgeExpiredReputationNotifications`/`purgeExpiredReputationEvents` (`@coss/reputation`),
   `purgeExpiredRiskPersonalData`/`purgeExpiredRiskMemory`/`purgeExpiredRiskAssessments` (`@coss/risk`),
+  `purgeExpiredPushNotifications` (`@coss/push`),
   `purgeExpiredAuthRows`/`purgeExpiredAdminAuditEvents` (`@coss/tenancy/retention`). The worker's `retention` loop
   (`apps/worker/src/retention.ts`, every 10 min, 1,000 rows per step, back-to-back while a step fills its batch) runs
   them in order (emails before their batches). Purges are system-level `DELETE … WHERE id IN (oldest batch)` with
@@ -1187,6 +1193,51 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   (tokens in paths) go in `SECRET_PATH_SEGMENTS` (`packages/observability/src/scrub.ts`). Tags: `request_id`,
   `organization_id`, `environment_id`, `api_key_id` (API), user id + `organization_id` (dashboard), `loop`,
   `email_id` (worker); never emails or content. No session replay (it would record customer data).
+- **iOS app sign-in** (`@coss/auth/mobile`, `apps/web/src/app/app/authorize`, `apps/web/src/lib/mobile-api.ts`): the app
+  opens `/app/authorize?code_challenge&state` in an ephemeral browser sheet; the signed-in user approves (refused while
+  impersonating or unverified) and gets a 60-second one-time code bound to the PKCE S256 challenge, stored hashed in
+  Better Auth's `verification` table (`mobile-auth:` identifiers) and consumed by one `DELETE … RETURNING`. `POST
+  /api/mobile/v1/auth/token` (`mobile.token.ip`) opens an ordinary Better Auth session (listed and revocable in
+  `/settings/sessions`, ended by password resets; it copies the approving session's `ssoProviderId`) and returns a
+  mobile-only credential, `cm1.<session token>.<HMAC over "coss-mobile-session:" + token>` — never Better Auth's
+  signed cookie value, which a browser could replay to use the whole dashboard. Better Auth's `bearer` plugin stays
+  off — it would expose every web session token in a `set-auth-token` header —, so the credential works only on
+  `/api/mobile/*` (public in `proxy.ts`): `requireMobileSession` verifies it, signs the session cookie server-side
+  and reads it with the base `@coss/auth` instance (the
+  dashboard's `nextCookies()` would set cookies on the app's responses); request cookies never authenticate there.
+  `createSession` outside an endpoint skips Better Auth's ban check, so the exchange checks bans itself.
+  `requireMobileOrgMember` applies `getMembership` + `orgAccess` + `memberCan` like `requireOrgMember`, as JSON:
+  404 for non-members, 403 `sso_required`/`two_factor_required` with the dashboard page to fix it, and a `mobile.api`
+  bucket per user. Responses are `@coss/companion` types built from the public objects (webhook rows only through
+  `toWebhookEndpointObject`, never secrets); reputation history leaves out policy changes, admin identities and
+  notes (like the customer page), sent/received email detail never includes the HTML body, and Hooks endpoints
+  and log drains never include secrets. The app's only changes (POST: retry a webhook delivery, recover an
+  endpoint's failed deliveries, enable or disable an endpoint, cancel or reschedule a scheduled email,
+  report a risk outcome, also from the review queue) repeat the dashboard action's
+  checks (`requireMobileWrite`: role, then suspension; the environment owns the endpoint) and record the same audit
+  event with `recordAudit`; a new one must too.
+- **Push notifications** (`packages/push`, tables `push_device` (ids `pushdev_`) and `push_notification` (`pushntf_`)):
+  the app registers its raw APNs token on its own session (`PUT/PATCH/DELETE /api/mobile/v1/push`, `GET` reads it;
+  categories `reputation`, `billing`, `endpoints`, `risk_reviews` per device). A device row has `session_id` → `session`
+  **ON DELETE CASCADE**: signing out, revoking the session, password resets, bans and the expired-session purge end
+  its pushes — never key devices by user alone. A token is unique (`push_device_token_idx`): registering it takes an
+  advisory lock on it and removes its other rows (a re-signed-in or handed-over phone). The app's sign-out also
+  unregisters from APNs and, offline, keeps the credential to revoke on a later start. Products call `enqueuePush(tx, …)` in the transaction that decided the event — reputation
+  warnings/suspensions (`applyTransition`), failed payments and holds (`enqueueBillingNotification`, `PUSHED`, so
+  once per `dedupe_key`), endpoints, Hooks endpoints and log drains disabled for failing, and risk reviews in
+  **live** environments (`collapse_key` `risk_review:<env id>`: a pending row absorbs later ones, and the worker sends
+  at most one per environment every `PUSH_THROTTLE_MS`). The worker's `push-notifications` loop
+  (`runDuePushNotifications`, system-level; lease, backoff, `failed` after 8 attempts) fences every write with the
+  claimed `attempt_count`, renews the lease after each device and stops once it lost it; events that coalesced into a
+  notification after its claim (`count` grew) get a follow-up notification when it settles. It resolves **at send time**:
+  the subject must still be in that state (else `skipped`/`resolved`; older than an hour: `too_old`), the paths use
+  current slugs, and the recipients (`pushTargets`) are unexpired, unimpersonated app sessions of unbanned members
+  whose role can act on it (`AUDIENCE`) and whom `orgAccess` (`@coss/auth/org-access`, shared with the dashboard)
+  lets in — the app would refuse to show anything else. `delivered_device_ids` keeps a retry from sending twice;
+  APNs' `Unregistered`/`BadDeviceToken` deletes the device. The text passes through Apple: organization, project and
+  environment names and counts only — never free-form text (descriptions, application names), addresses, URLs,
+  scores or notes. The payload's `body.path` (what expo-notifications calls `data`) is a
+  dashboard path that is also the app's route; the app opens only paths in its allow-list (`push-route.ts`).
 - **Live keys** (`coss_live_`) require a verified email and can't be created while impersonating or reputation-suspended (`liveKeyRestriction`,
   `apps/web/src/lib/live-keys.ts`, enforced in the action and mirrored in the UI).
 - **Email preview iframe** (`…/emails/[emailId]/page.tsx`): `sandbox=""`, `referrerPolicy="no-referrer"`, CSP
@@ -1278,6 +1329,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   at a verified sender of COSS's own organization.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page,
+Universal Link sign-in callbacks, EAS builds and an Android app, push notifications for other events (or per organization),
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, uploading a profile picture, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which

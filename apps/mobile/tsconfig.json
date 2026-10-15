@@ -1,0 +1,10 @@
+{
+  "extends": "@coss/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["DOM", "ESNext"],
+    "jsx": "react-jsx",
+    "customConditions": ["react-native"],
+    "types": ["bun"]
+  },
+  "include": ["src", "test"]
+}

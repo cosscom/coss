@@ -15,7 +15,9 @@
     "./scim": "./src/scim.ts",
     "./audit": "./src/audit.ts",
     "./limits": "./src/limits.ts",
-    "./risk": "./src/risk.ts"
+    "./risk": "./src/risk.ts",
+    "./mobile": "./src/mobile.ts",
+    "./org-access": "./src/org-access.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

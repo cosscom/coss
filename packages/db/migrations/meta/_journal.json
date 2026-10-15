@@ -421,6 +421,13 @@
       "when": 1792082811703,
       "tag": "0059_right_penance",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1792083759633,
+      "tag": "0060_famous_tana_nile",
+      "breakpoints": true
     }
   ]
 }
