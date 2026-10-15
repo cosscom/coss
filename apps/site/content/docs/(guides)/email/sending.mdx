@@ -80,7 +80,9 @@ Sandbox keys accept any `from`.
 ## Content
 
 `subject` is required. Provide `html`, `text`, or both: sending both lets mail clients pick, and
-improves deliverability.
+improves deliverability. When you send only `html`, COSS adds a plain-text part generated from it
+(links are followed by their URL in brackets, images by their alt text, hidden preheaders are left
+out). The email keeps what you sent: its `text` stays `null`. Send your own `text` to control it.
 
 ### React Email
 

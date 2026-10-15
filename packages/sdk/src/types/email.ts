@@ -171,6 +171,7 @@ export interface SendEmailParams {
   subject: string;
   /** At least one of `html`, `text` or `react` is required. */
   html?: string;
+  /** Without it, an `html` email goes out with a text part generated from the HTML. */
   text?: string;
   /**
    * A [React Email](https://react.email) component, rendered by the SDK into `html` and, unless you

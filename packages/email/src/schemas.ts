@@ -326,7 +326,10 @@ const SendEmailRequestFields = z.strictObject({
       message: "Subject must not contain invisible formatting characters.",
     }),
   html: z.string().optional().meta({ description: "HTML body. Provide `html`, `text`, or both." }),
-  text: z.string().optional().meta({ description: "Plain-text body." }),
+  text: z.string().optional().meta({
+    description:
+      "Plain-text body. Without it, an `html` email goes out with a text part generated from the HTML.",
+  }),
   headers: z
     // zod skips `__proto__` keys (prototype-pollution guard), which would silently drop such a
     // header; reject it explicitly while the raw object is still visible.
