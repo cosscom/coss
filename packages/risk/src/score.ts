@@ -29,9 +29,19 @@ export type StoredReason = {
   name?: string;
 };
 
-export function scoreReasons(reasons: readonly StoredReason[]): number {
+/** An environment's own weights (`reason_weights`), replacing the catalog's for those codes. */
+export type ReasonWeights = Partial<Record<RiskReasonCode, number>>;
+
+export function reasonWeight(code: RiskReasonCode, weights: ReasonWeights = {}): number {
+  return weights[code] ?? REASONS[code].weight;
+}
+
+export function scoreReasons(
+  reasons: readonly StoredReason[],
+  weights: ReasonWeights = {},
+): number {
   let clean = 1;
-  for (const reason of reasons) clean *= 1 - REASONS[reason.code].weight;
+  for (const reason of reasons) clean *= 1 - reasonWeight(reason.code, weights);
   return Math.round((1 - clean) * 1000) / 1000;
 }
 
@@ -53,13 +63,16 @@ export function decide(
 }
 
 /** Decisions first (lists, then rules), then by weight (most significant first), then by code. */
-export function sortReasons(reasons: readonly StoredReason[]): StoredReason[] {
+export function sortReasons(
+  reasons: readonly StoredReason[],
+  weights: ReasonWeights = {},
+): StoredReason[] {
   const rank = (reason: StoredReason) =>
     reason.code.startsWith("list.")
       ? 3
       : reason.code === "rule.matched"
         ? 2
-        : REASONS[reason.code].weight;
+        : reasonWeight(reason.code, weights);
   return [...reasons].sort((a, b) => rank(b) - rank(a) || a.code.localeCompare(b.code));
 }
 
@@ -74,6 +87,10 @@ const VELOCITY_SUBJECT: Record<string, string> = {
   "velocity.signups_per_subnet_1h": "sign-ups from this subnet",
   "velocity.signups_per_email_domain_1h": "sign-ups with this email domain",
   "velocity.signups_per_mailbox_24h": "sign-up attempts for this mailbox",
+  "velocity.signups_per_device_24h": "sign-ups from this browser",
+  "velocity.checkouts_per_ip_1h": "checkouts from this IP address",
+  "velocity.checkouts_per_user_1h": "checkouts by this user",
+  "velocity.checkouts_per_card_24h": "checkouts with this card",
   "velocity.logins_per_ip_1h": "logins from this IP address",
   "velocity.logins_per_user_1h": "logins to this user",
   "velocity.events_per_ip_1h": "events from this IP address",
@@ -101,12 +118,38 @@ export function reasonMessage(reason: StoredReason): string {
       return `The IP address belongs to a VPN or proxy network (${reason.provider ?? "unknown"}).`;
     case "ip.hosting_provider":
       return `The IP address belongs to a hosting provider (${reason.provider ?? "unknown"}).`;
+    case "ip.vpn":
+      return reason.provider
+        ? `The IP address is a VPN exit (${reason.provider}).`
+        : "The IP address is a VPN exit.";
+    case "ip.proxy":
+      return "The IP address is a proxy.";
+    case "ip.relay":
+      return "The IP address is a privacy relay (like iCloud Private Relay).";
     case "ip.private":
       return "The IP address is private or reserved: pass the client's address, not your proxy's.";
     case "duplicate.canonical_mailbox":
       return reason.previous_user
         ? `This mailbox already belongs to user ${reason.previous_user}.`
         : "This mailbox was already used to sign up.";
+    case "duplicate.device":
+      return reason.previous_user
+        ? `This browser already signed up user ${reason.previous_user}.`
+        : "This browser already signed up another account.";
+    case "history.fraud_card":
+      return "This card was reported as fraud or abuse before.";
+    case "history.fraud_device":
+      return "This browser was reported as fraud or abuse before.";
+    case "checkout.card_country_mismatch":
+      return "The card was issued in another country than the IP address is in.";
+    case "checkout.billing_country_mismatch":
+      return "The billing address is in another country than the card was issued in.";
+    case "checkout.prepaid_card":
+      return "The card is prepaid.";
+    case "device.automation":
+      return "The browser is automated (WebDriver or headless).";
+    case "device.invalid":
+      return "The device token is malformed or too old.";
     case "history.fraud_mailbox":
       return "This mailbox was reported as fraud or abuse before.";
     case "history.fraud_user":

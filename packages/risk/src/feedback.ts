@@ -22,8 +22,8 @@ const { riskAssessment, riskFeedback, riskIdentity, riskReport, riskUserNetwork 
 export type RiskFeedbackActor = { source: "api" | "dashboard"; actorId: string | null };
 
 /**
- * Records an outcome: `fraud`/`abuse` remember the assessment's mailbox, user, IP and subnet (as
- * hashes) so later assessments flag them; `legitimate` takes back what this assessment reported.
+ * Records an outcome: `fraud`/`abuse` remember the assessment's mailbox, user, card, device, IP
+ * and subnet (as hashes) so later assessments flag them; `legitimate` takes back what this assessment reported.
  * Repeating the latest outcome changes nothing. `null` when there is no such assessment.
  */
 export async function recordRiskFeedback(
@@ -67,6 +67,8 @@ export async function recordRiskFeedback(
       { kind: "mailbox" as const, valueHash: current.emailHash },
       { kind: "ip" as const, valueHash: current.ipHash },
       { kind: "subnet" as const, valueHash: current.subnetHash },
+      { kind: "card" as const, valueHash: current.cardHash },
+      { kind: "device" as const, valueHash: current.deviceHash },
       {
         kind: "user" as const,
         valueHash: current.userId ? hash(current.environmentId, "user", current.userId) : null,
@@ -217,6 +219,8 @@ export async function forgetRiskUser(
           emailHash: null,
           ipHash: null,
           subnetHash: null,
+          cardHash: null,
+          deviceHash: null,
           personalDataPurgedAt: new Date(),
         })
         .where(and(inRiskEnvironment(scope), inArray(riskAssessment.id, ids)));

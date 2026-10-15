@@ -1,7 +1,8 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["src/index.ts"],
+  // `coss/device` runs in browsers only; everything else is `coss`.
+  entry: ["src/index.ts", "src/device.ts"],
   format: "esm",
   // No Node built-ins or shims: the output must run unchanged on Node, Bun, Deno and Workers.
   platform: "neutral",

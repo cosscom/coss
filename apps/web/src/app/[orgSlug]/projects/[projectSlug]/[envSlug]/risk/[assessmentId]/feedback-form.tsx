@@ -30,8 +30,8 @@ export function RiskFeedbackForm(props: {
         <FieldLabel>Note</FieldLabel>
         <Input maxLength={500} name="note" placeholder="Optional, for your team" />
         <FieldDescription>
-          Fraud and abuse make later assessments flag this mailbox, user, IP address and subnet;
-          legitimate takes that back.
+          Fraud and abuse make later assessments flag this mailbox, user, card, browser, IP address
+          and subnet; legitimate takes that back.
         </FieldDescription>
       </Field>
       {state && !state.ok ? <FormError message={state.error} /> : null}

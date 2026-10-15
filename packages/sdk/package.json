@@ -23,6 +23,7 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
+    "./device": "./dist/device.js",
     "./package.json": "./package.json"
   },
   "scripts": {

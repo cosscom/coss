@@ -13,6 +13,8 @@ const SECRET_KEYS: ReadonlySet<string> = new Set([
   "key",
   "privatekey",
   "signingsecret",
+  // Payment cards' fingerprints (risk checkouts): an identifier COSS keeps only as a keyed hash.
+  "fingerprint",
 ]);
 /**
  * Keys holding content: a string (base64 attachments) is replaced by its size, and so is every

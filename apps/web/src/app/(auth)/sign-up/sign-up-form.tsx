@@ -1,11 +1,12 @@
 "use client";
 
-import type { SocialProvider } from "@coss/auth/constants";
+import { DEVICE_TOKEN_HEADER, type SocialProvider } from "@coss/auth/constants";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { Separator } from "@coss/ui/components/separator";
+import { collectDevice } from "coss/device";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { FormError } from "@/components/form-error";
@@ -45,7 +46,8 @@ export function SignUpForm({
       email,
       password: String(form.get("password") ?? ""),
       callbackURL: next,
-      fetchOptions: { headers: turnstile.headers },
+      // COSS Risk recognizes the browser across sign-ups (`coss/device`, our own SDK).
+      fetchOptions: { headers: { ...turnstile.headers, [DEVICE_TOKEN_HEADER]: collectDevice() } },
     });
     turnstile.reset();
     if (error) {

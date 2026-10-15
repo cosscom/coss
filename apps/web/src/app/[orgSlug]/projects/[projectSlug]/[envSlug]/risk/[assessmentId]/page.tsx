@@ -40,7 +40,7 @@ export default async function RiskAssessmentPage({
   if (!assessment) notFound();
 
   // Signals stay after the address itself is removed (90 days); without signals there was none.
-  const { email, ip, velocity, captcha, login, content } = assessment.signals;
+  const { email, ip, velocity, captcha, login, content, checkout, device } = assessment.signals;
 
   return (
     <div className="flex flex-col gap-6">
@@ -160,7 +160,53 @@ export default async function RiskAssessmentPage({
                         ? "private address"
                         : `Tor ${yesNo(ip.tor).toLowerCase()} · ${ip.hosting ? `${ip.hosting_kind}: ${ip.hosting_provider}` : "not hosting"}`}
                     </SpecItem>
+                    {ip.privacy ? (
+                      <SpecItem label="VPN, proxy, relay">
+                        {ip.privacy.vpn || ip.privacy.proxy || ip.privacy.relay
+                          ? [
+                              ip.privacy.vpn ? "VPN" : null,
+                              ip.privacy.proxy ? "proxy" : null,
+                              ip.privacy.relay ? "privacy relay" : null,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ") + (ip.privacy.service ? ` (${ip.privacy.service})` : "")
+                          : "none"}
+                      </SpecItem>
+                    ) : null}
                   </>
+                ) : null}
+                {checkout ? (
+                  <>
+                    <SpecItem label="Amount" mono>
+                      {checkout.amount.toLocaleString()} {checkout.currency} (minor units)
+                    </SpecItem>
+                    <SpecItem label="Card">
+                      {[
+                        checkout.card_country ? `issued in ${checkout.card_country}` : null,
+                        checkout.card_funding,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ") || NONE}
+                    </SpecItem>
+                    <SpecItem label="Billing, shipping">
+                      {checkout.billing_country ?? NONE} · {checkout.shipping_country ?? NONE}
+                    </SpecItem>
+                  </>
+                ) : null}
+                {device ? (
+                  <SpecItem label="Device">
+                    {device.valid
+                      ? [
+                          device.automation ? "automated" : null,
+                          device.timezone,
+                          device.language,
+                          device.platform,
+                          device.screen,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")
+                      : "invalid token"}
+                  </SpecItem>
                 ) : null}
                 {captcha ? (
                   <SpecItem label="Captcha">

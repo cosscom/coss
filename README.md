@@ -542,8 +542,9 @@ One Secrets Manager secret per stage, `coss/production` (JSON), injected through
 `WEBHOOK_SECRETS_KEY`, `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`, `TURNSTILE_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`,
 `GITHUB_CLIENT_SECRET`, `CLOUDFLARE_API_TOKEN`,
 `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AI_GATEWAY_API_KEY`, `RISK_HASH_KEY` (changing it resets what
-risk assessments remember) and `IPINFO_TOKEN` (optional: a free IPinfo account's token for risk's ASN and country
-data). Terraform creates only the container; values are
+risk assessments remember), `IPINFO_TOKEN` (optional: a free IPinfo account's token for risk's ASN and country
+data) and `IPINFO_PRIVACY_TOKEN` (optional, with `RISK_IP_PRIVACY=ipinfo`: a paid IPinfo plan's token for VPN and
+proxy data per address; IPinfo must be a listed subprocessor first). Terraform creates only the container; values are
 written with `infra/terraform/scripts/put-secret.sh NAME --generate | --clipboard | --stdin`, which never prints them
 (losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable, see
 [Rotating `WEBHOOK_SECRETS_KEY`](#rotating-webhook_secrets_key) to change it). Tasks read secrets when they start:

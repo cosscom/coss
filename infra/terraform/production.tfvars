@@ -70,6 +70,8 @@ plain_env = {
     BILLING_PROVIDER         = "stripe"
     # COSS's own organization (`coss`, project `notifications`, live): never suspended by admins.
     NOTIFICATIONS_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
+    # COSS Risk assesses COSS's own sign-ups in that same environment (dogfooding).
+    RISK_SIGNUP_ENVIRONMENT_ID   = "env_01m4s0af5zent8fzxwmtkergw5"
     SENTRY_DSN                   = "https://4ff9a884d5223a8df7cb0a12b373cee5@o4512237982711808.ingest.de.sentry.io/4512245153333328"
     SENTRY_ENVIRONMENT           = "production"
     SENTRY_TRACES_SAMPLE_RATE    = "0.1"

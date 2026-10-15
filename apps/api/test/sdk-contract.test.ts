@@ -31,6 +31,7 @@ import {
   verifyWebhook,
   WebhookVerificationError,
 } from "coss";
+import { collectDevice } from "coss/device";
 import {
   createTestApp,
   domainFrom,
@@ -1394,5 +1395,84 @@ describe("coss.risk building blocks and rate limits against the API", () => {
     });
     const missing = await coss.risk.limit({ bucket: "password_reset", key: "k" });
     expect(missing.error).toMatchObject({ type: "not_found_error", param: "bucket" });
+  });
+});
+
+describe("coss.risk checkouts, devices and calibration against the API", () => {
+  test("a device token from coss/device, checkout fields, privacy data, calibration and weights", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const codes = (result: { data: { reasons: { code: string }[] } | null }) =>
+      result.data?.reasons.map((reason) => reason.code) ?? [];
+
+    // The browser's token, as the SDK makes it, read by the API.
+    const first = await coss.risk.assess({
+      event: "signup",
+      user: { id: "d1" },
+      device: { token: collectDevice({ storage: "memory" }) },
+    });
+    expect(first.error).toBeNull();
+    expect(first.data?.signals.device).toMatchObject({ valid: true, automation: false });
+    const second = await coss.risk.assess({
+      event: "signup",
+      user: { id: "d2" },
+      device: { token: collectDevice({ storage: "memory" }) },
+    });
+    expect(second.data?.reasons).toContainEqual(
+      expect.objectContaining({ code: "duplicate.device", previous_user: "d1" }),
+    );
+
+    // Sandbox: 192.0.2.9 is a home connection in GB, 192.0.2.3 a VPN exit.
+    const checkout = await coss.risk.assess({
+      event: "checkout",
+      ip: "192.0.2.9",
+      checkout: {
+        amount: 1999,
+        currency: "USD",
+        card: { fingerprint: "fp_test", country: "US", funding: "prepaid" },
+        billing_country: "US",
+      },
+    });
+    expect(checkout.data?.signals.checkout).toEqual({
+      amount: 1999,
+      currency: "USD",
+      card_country: "US",
+      card_funding: "prepaid",
+      billing_country: "US",
+      shipping_country: null,
+    });
+    expect(codes(checkout)).toEqual(
+      expect.arrayContaining(["checkout.card_country_mismatch", "checkout.prepaid_card"]),
+    );
+    const misplaced = await coss.risk.assess({
+      event: "signup",
+      checkout: { amount: 1, currency: "USD" },
+    });
+    expect(misplaced.error).toMatchObject({ code: "validation_error" });
+
+    const vpn = await coss.risk.assess({ event: "login", user: { id: "d1" }, ip: "192.0.2.3" });
+    expect(codes(vpn)).toContain("ip.vpn");
+    expect(vpn.data?.signals.ip?.privacy).toMatchObject({ vpn: true });
+    expect((await coss.risk.checkIp("192.0.2.4")).data?.privacy).toMatchObject({ proxy: true });
+
+    if (!checkout.data) throw new Error("assess failed");
+    await coss.risk.feedback(checkout.data.id, { outcome: "fraud" });
+    const calibration = await coss.risk.calibration();
+    expect(calibration.error).toBeNull();
+    expect(calibration.data).toMatchObject({ object: "risk_calibration", labeled: 1 });
+    expect(calibration.data?.reasons).toContainEqual(
+      expect.objectContaining({ code: "checkout.prepaid_card", fired: 1, fraud: 1, precision: 1 }),
+    );
+
+    const settings = await coss.risk.settings.update({
+      reason_weights: { "checkout.prepaid_card": 0.6 },
+    });
+    expect(settings.data?.reason_weights).toEqual({ "checkout.prepaid_card": 0.6 });
+    const again = await coss.risk.assess({
+      event: "checkout",
+      checkout: { amount: 1, currency: "USD", card: { funding: "prepaid" } },
+    });
+    expect(again.data?.score).toBe(0.6);
   });
 });

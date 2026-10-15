@@ -1,0 +1,60 @@
+---
+title: Calibration
+description: Learn from your feedback which reasons and rules are right for your traffic.
+---
+
+Every reason has a default weight: how strongly it suggests fraud across COSS's customers. Your
+traffic isn't average. Hosting providers may be your customers' office VPNs; prepaid cards may be
+how your users pay. [Feedback](/docs/risk/lists-and-feedback) tells COSS which assessments were
+right, and calibration turns it into numbers:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data } = await coss.risk.calibration();
+// data?.reasons: [{ code: "ip.hosting_provider", fired: 96, fraud: 4, legitimate: 38,
+//                   precision: 0.095, default_weight: 0.25, weight: 0.25, suggested_weight: 0.16 }, …]
+// data?.rules:   [{ rule: "rskrule_…", name: "…", matched: 31, fraud: 12, legitimate: 1, precision: 0.923 }]
+```
+
+Over the last 90 days, for every reason that fired and every rule:
+
+- `fraud` and `legitimate` count the assessments with that outcome (`abuse` counts as fraud).
+- `precision` is `fraud / (fraud + legitimate)`: how often it was right when you told COSS.
+- `suggested_weight` is the weight that supports: the precision, pulled toward the default while
+  there is little feedback (the default counts as 10 assessments), and nothing below 20 assessments
+  with feedback.
+
+## Applying weights
+
+Nothing changes until you say so. Apply suggestions on the dashboard's **Risk → Calibration** page,
+or set weights yourself:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data } = await coss.risk.calibration();
+const reason_weights = Object.fromEntries(
+  (data?.reasons ?? [])
+    .filter((reason) => reason.suggested_weight !== null)
+    .map((reason) => [reason.code, reason.suggested_weight]),
+);
+await coss.risk.settings.update({ reason_weights });
+
+// Back to the default:
+await coss.risk.settings.update({ reason_weights: { "ip.hosting_provider": null } });
+```
+
+Weights go from 0 (the reason never counts, though rules still see it) to 0.99. Lists and
+`rule.matched` decide rather than weigh, so they have none. A lower weight lowers scores, so
+fewer assessments reach your [thresholds](/docs/risk/settings); check those after a big change.
+
+## Reading it well
+
+- **Feedback is a sample, not a census.** You probably send it mostly for reviews, blocks and
+  chargebacks, so reasons behind those look more precise than they are. Feedback on a random
+  sample of allowed events (`legitimate` for most) corrects that.
+- **A rule with low precision** blocks or reviews people you'd have let in: narrow its conditions.
+- **Recalibrate after big changes** (a new product, an attack): old feedback describes old traffic.

@@ -8,14 +8,16 @@ import { db, type Executor } from "@coss/db";
 import type { ContentClassifier } from "@coss/screening/classifier";
 import { MAX_TEXT_CHARS, prepareLinks, prepareText, urlsInText } from "@coss/screening/text";
 import { analyzeEmail, type EmailAnalysis, type MailDomainVerdict } from "@coss/signals/email";
-import { type IpSignals, normalizeIp } from "@coss/signals/ip";
+import { type IpSignals, isBlockedAddress, normalizeIp } from "@coss/signals/ip";
 import type { RiskDeps } from "./assess.ts";
 import { domainAge } from "./domain-age.ts";
 import { RiskError } from "./errors.ts";
+import type { IpPrivacy } from "./privacy.ts";
 import {
   SANDBOX_DISPOSABLE_DOMAIN,
   sandboxContentScores,
   sandboxDomainAgeDays,
+  sandboxIpPrivacy,
   sandboxIpSignals,
   sandboxMailDomainVerdict,
 } from "./sandbox.ts";
@@ -29,6 +31,7 @@ import {
 
 const DEFAULT_DNS_TIMEOUT_MS = 800;
 const DEFAULT_DOMAIN_AGE_TIMEOUT_MS = 1000;
+const DEFAULT_IP_PRIVACY_TIMEOUT_MS = 500;
 /** Classification asks a model: at most this long, then the caller goes without it. */
 export const DEFAULT_CLASSIFY_TIMEOUT_MS = 3000;
 
@@ -106,6 +109,28 @@ export async function ipSignalsFor(
   }
 }
 
+/**
+ * VPN, proxy and relay data for a public address: `null` without a provider (not degraded), or
+ * when the provider failed or took longer than its budget (degraded). Sandbox environments only
+ * get the fixtures: the provider is paid per lookup, and sandbox keys are free.
+ */
+export async function ipPrivacyFor(
+  deps: RiskDeps,
+  ip: string | null,
+  sandbox: boolean,
+): Promise<{ privacy: IpPrivacy | null; degraded: boolean }> {
+  if (!ip) return { privacy: null, degraded: false };
+  if (sandbox) return { privacy: sandboxIpPrivacy(ip), degraded: false };
+  if (!deps.ipPrivacy || isBlockedAddress(ip)) return { privacy: null, degraded: false };
+  const timeoutMs = deps.ipPrivacyTimeoutMs ?? DEFAULT_IP_PRIVACY_TIMEOUT_MS;
+  try {
+    return { privacy: await deps.ipPrivacy(ip, AbortSignal.timeout(timeoutMs)), degraded: false };
+  } catch (error) {
+    console.warn("[risk] IP privacy lookup failed:", error instanceof Error ? error.name : "error");
+    return { privacy: null, degraded: true };
+  }
+}
+
 /** `POST /v1/risk/email/check`. */
 export async function checkEmail(
   deps: RiskDeps,
@@ -144,7 +169,14 @@ export async function checkIp(
   address: string,
 ): Promise<RiskIpCheckOutput> {
   const ip = normalizeIp(address) ?? address;
-  const { signals, degraded } = await ipSignalsFor(deps, ip, environment.mode === "sandbox");
+  const sandbox = environment.mode === "sandbox";
+  const [{ signals, degraded }, privacy] = await Promise.all([
+    ipSignalsFor(deps, ip, sandbox),
+    ipPrivacyFor(deps, ip, sandbox),
+  ]);
+  const missing: RiskIpCheckOutput["degraded"] = [];
+  if (degraded) missing.push("ip_data");
+  if (privacy.degraded) missing.push("ip_privacy");
   return {
     object: "risk_ip_check",
     ip,
@@ -157,7 +189,8 @@ export async function checkIp(
     asn: signals?.asn ?? null,
     as_name: signals?.as_name ?? null,
     country: signals?.country ?? null,
-    degraded: degraded ? ["ip_data"] : [],
+    privacy: privacy.privacy,
+    degraded: missing,
   };
 }
 

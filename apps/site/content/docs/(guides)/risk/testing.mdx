@@ -10,7 +10,9 @@ these test inputs (documentation addresses and `.test` domains, which never belo
 | --------------------------- | --------------------------------------------------- |
 | IP `192.0.2.1`              | A Tor exit node in Germany (`ip.tor`)               |
 | IP `192.0.2.2`              | An AWS server in the US (`ip.hosting_provider`)     |
-| IP `192.0.2.3`              | A VPN network in Romania (`ip.vpn_network`)         |
+| IP `192.0.2.3`              | A VPN exit in Romania (`ip.vpn`, `privacy.vpn`)     |
+| IP `192.0.2.4`              | A proxy in the UK (`ip.proxy`)                      |
+| IP `192.0.2.5`              | iCloud Private Relay in the UK (`ip.relay`)         |
 | Any other `192.0.2.x`       | A home connection in the UK (no reason)             |
 | Email `…@disposable.test`   | A disposable domain (`email.disposable`)            |
 | Email `…@undeliverable.test` | A domain that can't receive mail (`email.undeliverable`) |
@@ -21,9 +23,13 @@ these test inputs (documentation addresses and `.test` domains, which never belo
 | Content with `[coss-test:phishing]` | Scores 0.99 in that category (any of `spam`, `phishing`, `malware`, `fraud`) |
 | Content with `[coss-test:spam:0.4]` | Scores exactly 0.4 in that category |
 | Any other content           | Scores 0.01 in every category (no model call)        |
+| Device token `test-device:<name>` | An ordinary browser whose id is `<name>` (the same name again: `duplicate.device`) |
+| Device token `test-device-automated` | An automated browser (`device.automation`) |
 
-The captcha test tokens work without a captcha provider in the settings, and content markers
-without any model; sandbox classifications don't count against the organization's limit.
+The captcha test tokens work without a captcha provider in the settings, content markers
+without any model, and the `192.0.2.x` addresses always have VPN, proxy and relay data (`privacy`; other addresses
+have none in sandboxes);
+real tokens from [`coss/device`](/docs/risk/devices) work too; sandbox classifications don't count against the organization's limit.
 [Email and IP checks](/docs/risk/lookups) see the same test addresses. Typos (`@gmail.con`), role
 accounts (`info@`), velocity, duplicates, login history, feedback, lists, rules and settings work as
 in live environments.

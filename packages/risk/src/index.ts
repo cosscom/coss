@@ -6,6 +6,11 @@ export {
   type RiskDeps,
 } from "./assess.ts";
 export {
+  getRiskCalibration,
+  PRIOR_STRENGTH,
+  suggestedWeight,
+} from "./calibration.ts";
+export {
   createIpIntelligenceSource,
   DATASET_NAMES,
   type DatasetName,
@@ -14,6 +19,11 @@ export {
   refreshDueDatasets,
   storeDataset,
 } from "./datasets.ts";
+export {
+  DEVICE_TOKEN_PREFIX,
+  type DeviceReading,
+  readDeviceToken,
+} from "./device.ts";
 export { type DomainAge, type DomainAgeLookup, domainAge } from "./domain-age.ts";
 export { RiskError, type RiskErrorCode } from "./errors.ts";
 export { forgetRiskUser, type RiskFeedbackActor, recordRiskFeedback } from "./feedback.ts";
@@ -45,6 +55,7 @@ export {
   DEFAULT_CLASSIFY_TIMEOUT_MS,
   type LookupEnvironment,
 } from "./lookups.ts";
+export { type IpPrivacy, type IpPrivacyLookup, ipinfoPrivacyLookup } from "./privacy.ts";
 export {
   getRiskAssessment,
   getRiskAssessmentRow,
@@ -71,13 +82,22 @@ export {
 } from "./rules.ts";
 export {
   SANDBOX_CAPTCHA_TOKENS,
+  SANDBOX_DEVICE_TOKENS,
   SANDBOX_DISPOSABLE_DOMAIN,
   SANDBOX_NEW_DOMAIN,
   SANDBOX_UNDELIVERABLE_DOMAIN,
   sandboxContentScores,
+  sandboxIpPrivacy,
   sandboxIpSignals,
 } from "./sandbox.ts";
-export { decide, reasonMessage, type StoredReason, scoreReasons } from "./score.ts";
+export {
+  decide,
+  type ReasonWeights,
+  reasonMessage,
+  reasonWeight,
+  type StoredReason,
+  scoreReasons,
+} from "./score.ts";
 export {
   getRiskSettings,
   type ResolvedRiskSettings,

@@ -2113,8 +2113,15 @@ export const riskDecision = pgEnum("risk_decision", ["allow", "review", "block"]
 export const riskOutcome = pgEnum("risk_outcome", ["legitimate", "fraud", "abuse"]);
 export const riskReviewStatus = pgEnum("risk_review_status", ["open", "resolved"]);
 export const riskFeedbackSource = pgEnum("risk_feedback_source", ["api", "dashboard"]);
-export const riskIdentityKind = pgEnum("risk_identity_kind", ["mailbox"]);
-export const riskReportKind = pgEnum("risk_report_kind", ["mailbox", "ip", "subnet", "user"]);
+export const riskIdentityKind = pgEnum("risk_identity_kind", ["mailbox", "device"]);
+export const riskReportKind = pgEnum("risk_report_kind", [
+  "mailbox",
+  "ip",
+  "subnet",
+  "user",
+  "card",
+  "device",
+]);
 export const riskList = pgEnum("risk_list", ["allow", "block"]);
 export const riskListEntryType = pgEnum("risk_list_entry_type", [
   "email",
@@ -2154,6 +2161,9 @@ export const riskAssessment = pgTable(
     emailHash: text("email_hash"),
     ipHash: text("ip_hash"),
     subnetHash: text("subnet_hash"),
+    // Keyed hashes of the payment card's fingerprint (checkouts) and the browser's device id.
+    cardHash: text("card_hash"),
+    deviceHash: text("device_hash"),
     decision: riskDecision("decision").notNull(),
     score: real("score").notNull(),
     reasons: jsonb("reasons").$type<RiskReasonRow[]>().notNull().default([]),
@@ -2349,6 +2359,11 @@ export const riskSettings = pgTable(
     // Per content category (`spam`, `phishing`, …), the score at which `content.<category>` fires.
     // Categories without one never fire: the customer decides what their content scores mean.
     contentThresholds: jsonb("content_thresholds")
+      .$type<Partial<Record<string, number>>>()
+      .notNull()
+      .default({}),
+    // Reason weights the customer chose (often from calibration), replacing `REASONS`' defaults.
+    reasonWeights: jsonb("reason_weights")
       .$type<Partial<Record<string, number>>>()
       .notNull()
       .default({}),

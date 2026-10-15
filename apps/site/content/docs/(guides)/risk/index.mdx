@@ -18,17 +18,23 @@ every decision. COSS combines:
 - **Email signals**: syntax, disposable domains, domains that can't receive mail, role accounts
   (`info@`), free providers, typos (`gmail.con`) and domains registered in the last 30 days.
 - **IP signals**: Tor exit nodes, cloud and hosting networks, networks used by VPNs, private
-  addresses, the network (ASN) and country.
+  addresses, the network (ASN) and country; VPN exits, proxies and privacy relays by address where
+  COSS has that data.
+- **The browser**: [`coss/device`](/docs/risk/devices) recognizes it across accounts and spots
+  automated ones.
+- **Payments**: the card and billing country of a [checkout](/docs/risk/checkout), and cards
+  reported before.
 - **Your captcha**: the token of your Turnstile or hCaptcha widget, verified with the provider
   ([settings](/docs/risk/settings#captcha)).
 - **Content**: what the user wrote (a bio, a message), scored for spam, phishing, malware and fraud
   by an AI model ([content classification](/docs/risk/content)).
-- **What this environment has seen**: how often the same IP address, subnet, email domain, mailbox
-  or user came by in the last hour and day; whether the mailbox already has an account (dots and
-  `+tags` folded at Gmail and similar); the countries and networks each user logged in from; and
-  identifiers you reported as fraud.
+- **What this environment has seen**: how often the same IP address, subnet, email domain, mailbox,
+  user, card or browser came by in the last hour and day; whether the mailbox or browser already has
+  an account (dots and `+tags` folded at Gmail and similar); the countries and networks each user
+  logged in from; and identifiers you reported as fraud.
 - **Your [allow and block lists](/docs/risk/lists-and-feedback#lists)** and
-  **[rules](/docs/risk/rules)**, and your [settings](/docs/risk/settings).
+  **[rules](/docs/risk/rules)**, and your [settings](/docs/risk/settings), including reason weights
+  [calibrated](/docs/risk/calibration) from your feedback.
 
 ## Assessing a sign-up
 
@@ -84,7 +90,8 @@ const { data } = await coss.risk.assess({
 });
 ```
 
-Other events are `message`, `checkout` and `custom` (with an `event_name` such as `invite_sent`).
+Other events are `message`, [`checkout`](/docs/risk/checkout) and `custom` (with an `event_name`
+such as `invite_sent`).
 Velocity is counted per event, so a burst of invitations doesn't count as sign-ups.
 
 ## Retries and failures

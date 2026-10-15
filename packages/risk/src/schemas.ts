@@ -28,6 +28,7 @@ export const RISK_DEGRADED_SIGNALS = [
   "velocity",
   "captcha",
   "content",
+  "ip_privacy",
 ] as const;
 export type RiskDegradedSignal = (typeof RISK_DEGRADED_SIGNALS)[number];
 
@@ -55,11 +56,19 @@ export const VELOCITY_WINDOWS = ["1h", "24h"] as const;
 export type VelocityWindow = (typeof VELOCITY_WINDOWS)[number];
 
 /** What velocity is counted per (always per environment and event). */
-export const VELOCITY_DIMENSIONS = ["ip", "subnet", "email_domain", "mailbox", "user"] as const;
+export const VELOCITY_DIMENSIONS = [
+  "ip",
+  "subnet",
+  "email_domain",
+  "mailbox",
+  "user",
+  "card",
+  "device",
+] as const;
 export type VelocityDimension = (typeof VELOCITY_DIMENSIONS)[number];
 
-/** Which events a velocity rule watches: `other` is message, checkout and custom events. */
-type VelocityEventGroup = "signup" | "login" | "other";
+/** Which events a velocity rule watches: `other` is message and custom events. */
+type VelocityEventGroup = "signup" | "login" | "checkout" | "other";
 
 export type VelocityRule = {
   code: string;
@@ -107,6 +116,13 @@ export const VELOCITY_RULES: readonly VelocityRule[] = [
     threshold: 3,
   },
   {
+    code: "velocity.signups_per_device_24h",
+    events: "signup",
+    dimension: "device",
+    window: "24h",
+    threshold: 3,
+  },
+  {
     code: "velocity.logins_per_ip_1h",
     events: "login",
     dimension: "ip",
@@ -118,6 +134,27 @@ export const VELOCITY_RULES: readonly VelocityRule[] = [
     events: "login",
     dimension: "user",
     window: "1h",
+    threshold: 10,
+  },
+  {
+    code: "velocity.checkouts_per_ip_1h",
+    events: "checkout",
+    dimension: "ip",
+    window: "1h",
+    threshold: 10,
+  },
+  {
+    code: "velocity.checkouts_per_user_1h",
+    events: "checkout",
+    dimension: "user",
+    window: "1h",
+    threshold: 10,
+  },
+  {
+    code: "velocity.checkouts_per_card_24h",
+    events: "checkout",
+    dimension: "card",
+    window: "24h",
     threshold: 10,
   },
   {
@@ -143,7 +180,7 @@ export function velocityDimensionsFor(event: RiskEvent): VelocityDimension[] {
 }
 
 export function velocityGroup(event: RiskEvent): VelocityEventGroup {
-  return event === "signup" || event === "login" ? event : "other";
+  return event === "signup" || event === "login" || event === "checkout" ? event : "other";
 }
 
 export type ReasonDefinition = {
@@ -197,6 +234,21 @@ export const REASONS = {
     description:
       "The IP address belongs to a cloud or hosting provider (`provider`): usually a script or a proxy, rarely a person.",
   },
+  "ip.vpn": {
+    weight: 0.35,
+    description:
+      "The IP address is a commercial VPN's exit, according to the IP privacy data provider (`provider`: the VPN service, when known).",
+  },
+  "ip.proxy": {
+    weight: 0.45,
+    description:
+      "The IP address is an open or commercial proxy (residential proxies included), according to the IP privacy data provider.",
+  },
+  "ip.relay": {
+    weight: 0.05,
+    description:
+      "The IP address is a privacy relay's (iCloud Private Relay and similar): usually an ordinary person who turned on their device's privacy feature.",
+  },
   "ip.private": {
     weight: 0,
     description:
@@ -223,6 +275,23 @@ export const REASONS = {
     description:
       "Repeated sign-up attempts for the same mailbox (dots and `+tags` folded) in the last 24 hours (`value`).",
   },
+  "velocity.signups_per_device_24h": {
+    weight: 0.4,
+    description: "Many sign-ups from this browser (its device id) in the last 24 hours (`value`).",
+  },
+  "velocity.checkouts_per_ip_1h": {
+    weight: 0.35,
+    description:
+      "Many checkouts from this IP address in the last hour (`value`): the shape of card testing.",
+  },
+  "velocity.checkouts_per_user_1h": {
+    weight: 0.3,
+    description: "Many checkouts by this user in the last hour (`value`).",
+  },
+  "velocity.checkouts_per_card_24h": {
+    weight: 0.25,
+    description: "Many checkouts with this card in the last 24 hours (`value`).",
+  },
   "velocity.logins_per_ip_1h": {
     weight: 0.3,
     description: "Many logins from this IP address in the last hour (`value`).",
@@ -244,6 +313,11 @@ export const REASONS = {
     description:
       "Another sign-up in this environment already used the same mailbox, with dots and `+tags` folded (`previous_user`, `previous_assessment`).",
   },
+  "duplicate.device": {
+    weight: 0.4,
+    description:
+      "This browser (its device id) already signed up another account in this environment (`previous_user`, `previous_assessment`).",
+  },
   "history.fraud_mailbox": {
     weight: 0.7,
     description: "This mailbox was in an assessment you reported as fraud or abuse.",
@@ -261,6 +335,39 @@ export const REASONS = {
     weight: 0.2,
     description:
       "This IPv4 /24 or IPv6 /64 was in an assessment you reported as fraud or abuse in the last 30 days.",
+  },
+  "history.fraud_card": {
+    weight: 0.8,
+    description: "This payment card was in an assessment you reported as fraud or abuse.",
+  },
+  "history.fraud_device": {
+    weight: 0.7,
+    description:
+      "This browser (its device id) was in an assessment you reported as fraud or abuse.",
+  },
+  "checkout.card_country_mismatch": {
+    weight: 0.3,
+    description:
+      "The card was issued in another country than the IP address is in (`checkout.card.country` against the IP's country).",
+  },
+  "checkout.billing_country_mismatch": {
+    weight: 0.25,
+    description: "The billing address is in another country than the card was issued in.",
+  },
+  "checkout.prepaid_card": {
+    weight: 0.2,
+    description:
+      "The card is prepaid (`checkout.card.funding`): popular with card testing and resellers.",
+  },
+  "device.automation": {
+    weight: 0.7,
+    description:
+      "The browser is automated: it reports WebDriver control or a headless browser (Puppeteer, Playwright, Selenium…).",
+  },
+  "device.invalid": {
+    weight: 0.3,
+    description:
+      "The device token is malformed (not one `coss/device` made) or more than a day old.",
   },
   "login.new_country": {
     weight: 0.3,
@@ -325,6 +432,13 @@ export const DEFAULT_THRESHOLDS = { review: 0.5, block: 0.85 } as const;
 
 /** Reasons that report a decision rather than a signal: they can't be turned off. */
 export const DECISION_REASON_CODES = ["list.blocked", "list.allowed", "rule.matched"] as const;
+/** Reasons whose weight an environment can change (`reason_weights`): every signal reason. */
+export const WEIGHTABLE_REASON_CODES = RISK_REASON_CODES.filter(
+  (code) => !(DECISION_REASON_CODES as readonly string[]).includes(code),
+) as [RiskReasonCode, ...RiskReasonCode[]];
+/** The highest weight an environment can give a reason (1 would make it decide alone). */
+export const MAX_REASON_WEIGHT = 0.99;
+
 /** Every other reason, except `content.*`: those only fire at thresholds you set (`content_thresholds`). */
 export const DISABLEABLE_REASON_CODES = RISK_REASON_CODES.filter(
   (code) =>
@@ -352,13 +466,16 @@ export const RULE_FIELDS = {
   "email.domain_age_days": { type: "number", label: "Email domain age (days)" },
   "ip.tor": { type: "boolean", label: "IP is a Tor exit" },
   "ip.hosting": { type: "boolean", label: "IP is a cloud or hosting network" },
-  "ip.vpn": { type: "boolean", label: "IP is a VPN network" },
+  "ip.vpn": { type: "boolean", label: "IP is a VPN" },
+  "ip.proxy": { type: "boolean", label: "IP is a proxy" },
+  "ip.relay": { type: "boolean", label: "IP is a privacy relay" },
   "ip.private": { type: "boolean", label: "IP is private" },
   "ip.country": { type: "string", label: "IP country (ISO code)" },
   "ip.asn": { type: "string", label: "IP network (AS number)" },
   "ip.hosting_provider": { type: "string", label: "IP hosting provider" },
   "captcha.passed": { type: "boolean", label: "Captcha passed" },
   "duplicate.canonical_mailbox": { type: "boolean", label: "Mailbox already has an account" },
+  "duplicate.device": { type: "boolean", label: "Device already has an account" },
   "history.fraud": { type: "boolean", label: "Seen in fraud before" },
   "login.new_country": { type: "boolean", label: "Login from a new country" },
   "login.new_network": { type: "boolean", label: "Login from a new network" },
@@ -366,6 +483,15 @@ export const RULE_FIELDS = {
   "content.phishing": { type: "number", label: "Content phishing score (0-1)" },
   "content.malware": { type: "number", label: "Content malware score (0-1)" },
   "content.fraud": { type: "number", label: "Content fraud score (0-1)" },
+  "checkout.amount": { type: "number", label: "Checkout amount (minor units)" },
+  "checkout.currency": { type: "string", label: "Checkout currency (ISO code)" },
+  "checkout.card_country": { type: "string", label: "Card country (ISO code)" },
+  "checkout.card_funding": { type: "string", label: "Card funding (credit, debit, prepaid)" },
+  "checkout.billing_country": { type: "string", label: "Billing country (ISO code)" },
+  "checkout.shipping_country": { type: "string", label: "Shipping country (ISO code)" },
+  "device.automation": { type: "boolean", label: "Browser is automated" },
+  "device.timezone": { type: "string", label: "Browser time zone (IANA)" },
+  "device.language": { type: "string", label: "Browser language" },
   score: { type: "number", label: "Score (0-1)" },
   "velocity.ip_1h": { type: "number", label: "Events from the IP (1 h)" },
   "velocity.ip_24h": { type: "number", label: "Events from the IP (24 h)" },
@@ -377,6 +503,10 @@ export const RULE_FIELDS = {
   "velocity.mailbox_24h": { type: "number", label: "Events with the mailbox (24 h)" },
   "velocity.user_1h": { type: "number", label: "Events of the user (1 h)" },
   "velocity.user_24h": { type: "number", label: "Events of the user (24 h)" },
+  "velocity.card_1h": { type: "number", label: "Events with the card (1 h)" },
+  "velocity.card_24h": { type: "number", label: "Events with the card (24 h)" },
+  "velocity.device_1h": { type: "number", label: "Events from the device (1 h)" },
+  "velocity.device_24h": { type: "number", label: "Events from the device (24 h)" },
 } as const satisfies Record<string, { type: RuleFieldType; label: string }>;
 
 export type RuleField = keyof typeof RULE_FIELDS;
@@ -420,6 +550,45 @@ export const RiskListEntryTypeEnum = z.enum(RISK_LIST_ENTRY_TYPES).meta({
 });
 
 const UserId = z.string().min(1).max(256);
+const Country = z
+  .string()
+  .regex(/^[A-Z]{2}$/, "Use an upper-case ISO 3166-1 alpha-2 code.")
+  .meta({ description: "ISO 3166-1 alpha-2, upper-case (`GB`)." });
+
+export const CARD_FUNDING = ["credit", "debit", "prepaid", "unknown"] as const;
+
+/** Device tokens older than this are `device.invalid`: make one per form submission. */
+export const DEVICE_TOKEN_MAX_AGE_MS = 24 * 60 * 60_000;
+/** The longest device token accepted. */
+export const MAX_DEVICE_TOKEN_CHARS = 4096;
+
+const CheckoutRequest = z
+  .strictObject({
+    amount: z.number().int().min(0).max(1e12).meta({
+      description: "The amount in the currency's minor unit (cents for USD: 1999 is $19.99).",
+    }),
+    currency: z
+      .string()
+      .regex(/^[A-Z]{3}$/, "Use an upper-case ISO 4217 code.")
+      .meta({ description: "ISO 4217, upper-case (`USD`)." }),
+    card: z
+      .strictObject({
+        fingerprint: z.string().min(1).max(256).optional().meta({
+          description:
+            "Your payment processor's fingerprint of the card number (Stripe: `card.fingerprint`). Counted and remembered as a keyed hash only; never send the card number.",
+        }),
+        country: Country.optional().meta({ description: "Where the card was issued." }),
+        funding: z.enum(CARD_FUNDING).optional(),
+      })
+      .optional()
+      .meta({ description: "What your payment processor tells you about the card." }),
+    billing_country: Country.optional(),
+    shipping_country: Country.optional(),
+  })
+  .meta({
+    id: "RiskCheckoutRequest",
+    description: "Only with `checkout` events: what is being paid for, and with which card.",
+  });
 const EventName = z
   .string()
   .regex(/^[a-z0-9][a-z0-9._-]{0,63}$/, "Use 1-64 lower-case letters, digits, `.`, `_` or `-`.");
@@ -454,6 +623,19 @@ export const CreateRiskAssessmentRequest = z
         }),
       })
       .optional(),
+    checkout: CheckoutRequest.optional(),
+    device: z
+      .strictObject({
+        token: z.string().min(1).max(MAX_DEVICE_TOKEN_CHARS).meta({
+          description:
+            "What `collectDevice()` from `coss/device` returned in the user's browser, passed through your server.",
+        }),
+      })
+      .optional()
+      .meta({
+        description:
+          "The browser the event came from: recognizes it across accounts (`duplicate.device`, device velocity, fraud memory) and spots automation.",
+      }),
     content: z
       .strictObject({
         text: z.string().min(1).max(MAX_CONTENT_TEXT_CHARS).meta({
@@ -480,6 +662,13 @@ export const CreateRiskAssessmentRequest = z
         code: "custom",
         path: ["event_name"],
         message: "`event_name` is only for `custom` events.",
+      });
+    }
+    if (value.event !== "checkout" && value.checkout !== undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["checkout"],
+        message: "`checkout` is only for `checkout` events.",
       });
     }
   })
@@ -510,16 +699,17 @@ export const RiskReason = z
       .meta({ description: "What a `velocity.*` or `content.*` reason fires at." }),
     window: z.enum(VELOCITY_WINDOWS).optional(),
     suggestion: z.string().optional().meta({ description: "`email.typo`: the likely domain." }),
-    provider: z
-      .string()
-      .optional()
-      .meta({ description: "`ip.hosting_provider`, `ip.vpn_network`: the network's operator." }),
+    provider: z.string().optional().meta({
+      description:
+        "`ip.hosting_provider`, `ip.vpn_network`: the network's operator; `ip.vpn`: the VPN service.",
+    }),
     previous_user: z.string().nullable().optional().meta({
       description:
-        "`duplicate.canonical_mailbox`: your id of the user who has the mailbox, if known.",
+        "`duplicate.canonical_mailbox`, `duplicate.device`: your id of the user who has the mailbox or device, if known.",
     }),
     previous_assessment: z.string().optional().meta({
-      description: "`duplicate.canonical_mailbox`: the assessment that first saw the mailbox.",
+      description:
+        "`duplicate.canonical_mailbox`, `duplicate.device`: the assessment that first saw the mailbox or device.",
     }),
     entry: z.string().optional().meta({ description: "`list.*`: the matching list entry." }),
     rule: z.string().optional().meta({ description: "`rule.matched`: the rule's id." }),
@@ -580,6 +770,22 @@ export const RiskIpSignals = z
     asn: z.number().int().nullable(),
     as_name: z.string().nullable(),
     country: z.string().nullable().meta({ description: "ISO 3166-1 alpha-2." }),
+    privacy: z
+      .union([
+        z
+          .object({
+            vpn: z.boolean(),
+            proxy: z.boolean(),
+            relay: z.boolean(),
+            service: z.string().nullable().meta({ description: "The VPN or proxy service." }),
+          })
+          .meta({ id: "RiskIpPrivacy" }),
+        z.null(),
+      ])
+      .meta({
+        description:
+          "From COSS's IP privacy data provider (VPNs, proxies, relays). `null` when it isn't available or was not asked (private addresses).",
+      }),
   })
   .meta({ id: "RiskIpSignals" });
 
@@ -592,6 +798,36 @@ export const RiskContentSignals = z.object(ContentScores).meta({
   description:
     "Per category, the model's probability (0-1) that the content belongs to it. Scores are not calibrated: pick thresholds by looking at your own traffic.",
 });
+
+export const RiskCheckoutSignals = z
+  .object({
+    amount: z.number().int(),
+    currency: z.string(),
+    card_country: z.string().nullable(),
+    card_funding: z.enum(CARD_FUNDING).nullable(),
+    billing_country: z.string().nullable(),
+    shipping_country: z.string().nullable(),
+  })
+  .meta({
+    id: "RiskCheckoutSignals",
+    description: "What you sent in `checkout` (never the card).",
+  });
+
+export const RiskDeviceSignals = z
+  .object({
+    valid: z.boolean().meta({ description: "`false`: the token was malformed or too old." }),
+    automation: z.boolean().meta({ description: "WebDriver control or a headless browser." }),
+    timezone: z.string().nullable().meta({ description: "IANA time zone (`Europe/London`)." }),
+    language: z.string().nullable().meta({ description: "The browser's first language." }),
+    platform: z.string().nullable(),
+    screen: z.string().nullable().meta({ description: "`<width>x<height>` in CSS pixels." }),
+    touch: z.boolean().nullable(),
+  })
+  .meta({
+    id: "RiskDeviceSignals",
+    description:
+      "What the browser reported through `coss/device` (its device id is only kept as a keyed hash).",
+  });
 
 export const RiskVelocitySignals = z.record(z.string(), z.number().int()).meta({
   id: "RiskVelocitySignals",
@@ -641,11 +877,14 @@ const ASSESSMENT_EXAMPLE = {
       asn: 64500,
       as_name: "Example Broadband",
       country: "GB",
+      privacy: null,
     },
     velocity: { ip_1h: 7, ip_24h: 9, subnet_1h: 7, mailbox_24h: 1 },
     captcha: { provided: true, passed: true },
     login: null,
     content: null,
+    checkout: null,
+    device: null,
   },
   user: { id: null, email: "ada@gmail.con" },
   ip: "203.0.113.7",
@@ -678,6 +917,8 @@ export const RiskAssessment = z
       content: z.union([RiskContentSignals, z.null()]).meta({
         description: "`null` when no content was given or it couldn't be classified.",
       }),
+      checkout: z.union([RiskCheckoutSignals, z.null()]),
+      device: z.union([RiskDeviceSignals, z.null()]),
     }),
     user: z.object({
       id: z.string().nullable(),
@@ -872,8 +1113,11 @@ const SETTINGS_EXAMPLE = {
   disabled_reasons: ["email.role_account"],
   captcha: { provider: "turnstile", required: true },
   content_thresholds: { spam: null, phishing: 0.8, malware: 0.8, fraud: 0.9 },
+  reason_weights: { "ip.hosting_provider": 0.1 },
   updated_at: "2026-01-15T09:30:00.000Z",
 } as const;
+
+const ReasonWeight = z.number().min(0).max(MAX_REASON_WEIGHT);
 
 const ContentThresholdsOutput = z
   .object(
@@ -914,6 +1158,10 @@ export const RiskSettings = z
         description: "The captcha provider assessments verify tokens with (never the secret).",
       }),
     content_thresholds: ContentThresholdsOutput,
+    reason_weights: z.partialRecord(z.enum(WEIGHTABLE_REASON_CODES), z.number()).meta({
+      description:
+        "Reasons whose weight this environment changed (from calibration or by hand); the rest weigh what the reason catalog says.",
+    }),
     updated_at: z.iso.datetime().nullable().meta({ description: "`null` while on the defaults." }),
   })
   .meta({ id: "RiskSettings", examples: [SETTINGS_EXAMPLE] });
@@ -942,6 +1190,12 @@ export const UpdateRiskSettingsRequest = z
       .optional()
       .meta({ description: "`null` turns captcha verification off and deletes the secret." }),
     content_thresholds: ContentThresholdsInput.optional(),
+    reason_weights: z
+      .partialRecord(z.enum(WEIGHTABLE_REASON_CODES), z.union([ReasonWeight, z.null()]))
+      .optional()
+      .meta({
+        description: `Changes the reasons given: a weight in [0, ${MAX_REASON_WEIGHT}] replaces the default, \`null\` goes back to it.`,
+      }),
   })
   .meta({
     id: "UpdateRiskSettingsRequest",
@@ -1171,9 +1425,9 @@ export type RiskIpCheckRequestOutput = z.output<typeof RiskIpCheckRequest>;
 export const RiskIpCheck = RiskIpSignals.extend({
   object: z.literal("risk_ip_check"),
   ip: z.string(),
-  degraded: z.array(z.enum(["ip_data"])).meta({
+  degraded: z.array(z.enum(["ip_data", "ip_privacy"])).meta({
     description:
-      "`ip_data` when some IP data (Tor exits, cloud ranges, networks and countries) is unavailable at the moment.",
+      "`ip_data` when some IP data (Tor exits, cloud ranges, networks and countries) is unavailable at the moment; `ip_privacy` when the privacy data provider failed or timed out.",
   }),
 }).meta({
   id: "RiskIpCheck",
@@ -1190,6 +1444,7 @@ export const RiskIpCheck = RiskIpSignals.extend({
       asn: 60729,
       as_name: "Stiftung Erneuerbare Freiheit",
       country: "DE",
+      privacy: null,
       degraded: [],
     },
   ],
@@ -1381,3 +1636,92 @@ export const RiskLimit = z
     ],
   });
 export type RiskLimitOutput = z.output<typeof RiskLimit>;
+
+// ---------------------------------------------------------------------------------------------
+// Calibration: what feedback says about the environment's reasons and rules.
+// ---------------------------------------------------------------------------------------------
+
+/** How far back calibration reads assessments. */
+export const CALIBRATION_WINDOW_DAYS = 90;
+/** A reason needs this many assessments with feedback before calibration suggests a weight. */
+export const MIN_CALIBRATION_FEEDBACK = 20;
+
+const RiskCalibrationCounts = {
+  fraud: z.number().int().meta({ description: "With feedback `fraud` or `abuse`." }),
+  legitimate: z.number().int().meta({ description: "With feedback `legitimate`." }),
+  precision: z.number().nullable().meta({
+    description:
+      "`fraud / (fraud + legitimate)`: how often it was right when you told COSS. `null` without feedback.",
+  }),
+};
+
+export const RiskCalibration = z
+  .object({
+    object: z.literal("risk_calibration"),
+    window_days: z.number().int(),
+    assessments: z.number().int().meta({ description: "Assessments in the window." }),
+    labeled: z.number().int().meta({ description: "Of those, with feedback." }),
+    reasons: z.array(
+      z
+        .object({
+          code: z.enum(WEIGHTABLE_REASON_CODES),
+          fired: z.number().int().meta({ description: "Assessments it fired in." }),
+          ...RiskCalibrationCounts,
+          default_weight: z.number(),
+          weight: z.number().meta({ description: "Its weight in this environment now." }),
+          suggested_weight: z
+            .number()
+            .nullable()
+            .meta({
+              description: `The weight feedback supports: its precision, pulled toward the default while there is little feedback. \`null\` below ${MIN_CALIBRATION_FEEDBACK} assessments with feedback.`,
+            }),
+        })
+        .meta({ id: "RiskCalibrationReason" }),
+    ),
+    rules: z.array(
+      z
+        .object({
+          rule: z.string(),
+          name: z.string(),
+          matched: z.number().int().meta({ description: "Assessments it decided." }),
+          ...RiskCalibrationCounts,
+        })
+        .meta({ id: "RiskCalibrationRule" }),
+    ),
+  })
+  .meta({
+    id: "RiskCalibration",
+    description:
+      "Feedback against the reasons and rules that fired, over the last 90 days. Feedback you give mostly on reviews and blocks over-represents those: read precision as a guide, not a measurement.",
+    examples: [
+      {
+        object: "risk_calibration",
+        window_days: CALIBRATION_WINDOW_DAYS,
+        assessments: 1840,
+        labeled: 212,
+        reasons: [
+          {
+            code: "ip.hosting_provider",
+            fired: 96,
+            fraud: 4,
+            legitimate: 38,
+            precision: 0.095,
+            default_weight: 0.25,
+            weight: 0.25,
+            suggested_weight: 0.16,
+          },
+        ],
+        rules: [
+          {
+            rule: "rskrule_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            name: "Disposable email from a data center",
+            matched: 31,
+            fraud: 12,
+            legitimate: 1,
+            precision: 0.923,
+          },
+        ],
+      },
+    ],
+  });
+export type RiskCalibrationOutput = z.output<typeof RiskCalibration>;

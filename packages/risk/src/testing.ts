@@ -15,8 +15,10 @@ import {
 import { TEST_SECRETS_KEYS } from "@coss/webhooks/testing";
 import type { RiskDeps } from "./assess.ts";
 import type { IpIntelligenceSource } from "./datasets.ts";
+import { DEVICE_TOKEN_PREFIX } from "./device.ts";
 import type { DomainAgeLookup } from "./domain-age.ts";
 import { riskHasher } from "./hash.ts";
+import type { IpPrivacy, IpPrivacyLookup } from "./privacy.ts";
 import { MemoryVelocityStore } from "./velocity.ts";
 
 /** Public addresses with known signals in `testIpIntelligence()`. */
@@ -101,6 +103,42 @@ export function fakeCaptcha(
   return Object.assign(verify, { calls }) as NonNullable<RiskDeps["verifyCaptcha"]> & {
     calls: { token: string; secret: string }[];
   };
+}
+
+/** A device token as `coss/device` makes it (`at` defaults to now). */
+export function testDeviceToken(opts: {
+  id: string;
+  automation?: boolean;
+  at?: number;
+  timezone?: string;
+}): string {
+  const payload = {
+    id: opts.id,
+    t: opts.at ?? Date.now(),
+    tz: opts.timezone ?? "Europe/Berlin",
+    l: ["de-DE", "en"],
+    p: "MacIntel",
+    s: [1512, 982],
+    tp: 0,
+    wd: opts.automation ?? false,
+    hl: false,
+  };
+  return `${DEVICE_TOKEN_PREFIX}${Buffer.from(JSON.stringify(payload)).toString("base64url")}`;
+}
+
+/** Fake privacy provider: listed addresses get their answer, `"fail"` throws, others `null`. */
+export function fakeIpPrivacy(
+  answers: Record<string, Partial<IpPrivacy> | "fail"> = {},
+): IpPrivacyLookup & { calls: string[] } {
+  const calls: string[] = [];
+  const lookup = async (ip: string) => {
+    calls.push(ip);
+    const answer = answers[ip];
+    if (answer === "fail") throw new Error("provider unreachable");
+    if (!answer) return null;
+    return { vpn: false, proxy: false, relay: false, service: null, ...answer };
+  };
+  return Object.assign(lookup, { calls });
 }
 
 export const TEST_HASH_KEY: Uint8Array = new TextEncoder().encode(

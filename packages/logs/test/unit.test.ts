@@ -71,6 +71,12 @@ describe("redactBody", () => {
     expect(body.attachments).toEqual([{ filename: "a.pdf", content: "[400 characters]" }]);
     expect(body.secret).toBe(REDACTED);
     expect(body.nested).toEqual({ api_key: REDACTED, password: REDACTED, token: null });
+    const checkout = redactBody({
+      checkout: { amount: 100, card: { fingerprint: "fp_abc", country: "US" } },
+      device: { token: "cd1.abc" },
+    }) as { checkout: { card: Record<string, unknown> }; device: Record<string, unknown> };
+    expect(checkout.checkout.card).toEqual({ fingerprint: REDACTED, country: "US" });
+    expect(checkout.device).toEqual({ token: REDACTED });
   });
 
   test("keeps only the sizes of content objects", () => {

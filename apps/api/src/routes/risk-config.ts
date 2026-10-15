@@ -1,7 +1,11 @@
-/** The environment's risk configuration: settings (thresholds, disabled reasons, captcha) and rules. */
+/**
+ * The environment's risk configuration: settings (thresholds, disabled reasons, captcha, reason
+ * weights), rules, and the calibration that feedback supports.
+ */
 import {
   createRiskRule,
   deleteRiskRule,
+  getRiskCalibration,
   getRiskRule,
   getRiskSettings,
   listRiskRules,
@@ -12,6 +16,7 @@ import {
 import {
   CreateRiskRuleRequest,
   DeletedRiskRule,
+  RiskCalibration,
   RiskRule,
   RiskRuleList,
   RiskSettings,
@@ -78,7 +83,8 @@ export const updateRiskSettingsRoute = createRoute({
     "Changes the fields given. `review_threshold` must not exceed `block_threshold`. Disabled reasons " +
     "never fire (rules still see the facts behind them). Setting a captcha provider makes " +
     "assessments verify their `captcha.token` with it; `required` adds `captcha.missing` to " +
-    "assessments without one.",
+    "assessments without one. `reason_weights` replaces reasons' default weights (for example with " +
+    "calibration's `suggested_weight`); `null` restores a default.",
   security: [{ bearerAuth: [] }],
   middleware: [
     requireApiKey({ risk: ["update"] }),
@@ -99,6 +105,24 @@ export const updateRiskSettingsRoute = createRoute({
       "The body failed validation (`validation_error`, see `issues`), the thresholds are out of " +
         "order, or a new captcha provider has no secret (`invalid_settings`).",
     ),
+  },
+});
+
+export const getRiskCalibrationRoute = createRoute({
+  method: "get",
+  path: "/risk/calibration",
+  operationId: "getRiskCalibration",
+  tags: ["Risk"],
+  summary: "Retrieve the calibration",
+  description:
+    "How often each reason and rule was right over the last 90 days, by the outcomes you reported " +
+    "with feedback, and the reason weights that supports. Nothing changes until you apply them " +
+    "with `reason_weights` in the settings.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ risk: ["read"] }), rateLimit("api.read")],
+  responses: {
+    200: json("The calibration.", RiskCalibration),
+    ...commonErrors,
   },
 });
 
@@ -238,6 +262,11 @@ export function createRiskConfigRoutes(deps: RiskDeps): OpenAPIHono<AppEnv> {
       },
     });
     return c.json(settings, 200);
+  });
+
+  router.openapi(getRiskCalibrationRoute, async (c) => {
+    const { organizationId, environmentId } = c.var.auth;
+    return c.json(await getRiskCalibration({ organizationId, environmentId }), 200);
   });
 
   router.openapi(createRiskRuleRoute, async (c) => {

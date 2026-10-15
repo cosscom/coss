@@ -66,6 +66,10 @@ export const env = createEnv({
     // A live environment of COSS's own organization (the worker sends account emails from it):
     // admins can't suspend that organization.
     NOTIFICATIONS_ENVIRONMENT_ID: z.string().startsWith("env_").optional(),
+    // A live environment of COSS's own organization that COSS Risk assesses sign-ups in
+    // (dogfooding: `block` refuses the sign-up, `review` lands in that environment's queue).
+    // Unset: sign-ups aren't assessed.
+    RISK_SIGNUP_ENVIRONMENT_ID: z.string().startsWith("env_").optional(),
   },
   client: {},
   experimental__runtimeEnv: {},

@@ -17,6 +17,7 @@ import type { RiskDeps } from "./assess.ts";
 import { createIpIntelligenceSource } from "./datasets.ts";
 import type { RiskEnv } from "./env.ts";
 import { DEVELOPMENT_HASH_KEY, type RiskHasher, riskHasher } from "./hash.ts";
+import { type IpPrivacyLookup, ipinfoPrivacyLookup } from "./privacy.ts";
 import { MemoryVelocityStore, ValkeyVelocityStore } from "./velocity.ts";
 
 export { type RiskEnv, riskEnvShape } from "./env.ts";
@@ -29,6 +30,15 @@ export function riskHasherFromEnv(env: RiskEnv, opts: { production?: boolean } =
     throw new Error("RISK_HASH_KEY is required in production (openssl rand -base64 32).");
   }
   return riskHasher(DEVELOPMENT_HASH_KEY);
+}
+
+/** The IP privacy provider, or `null` when off; `ipinfo` without its token is a startup error. */
+export function ipPrivacyFromEnv(env: RiskEnv): IpPrivacyLookup | null {
+  if ((env.RISK_IP_PRIVACY ?? "off") === "off") return null;
+  if (!env.IPINFO_PRIVACY_TOKEN) {
+    throw new Error("RISK_IP_PRIVACY=ipinfo needs IPINFO_PRIVACY_TOKEN.");
+  }
+  return ipinfoPrivacyLookup({ token: env.IPINFO_PRIVACY_TOKEN });
 }
 
 export function createRiskDeps(
@@ -73,5 +83,6 @@ export function createRiskDeps(
       : undefined,
     // Customers' buckets share the velocity connection; in memory without Valkey (development).
     limits: opts.valkey ? new ValkeyStore(opts.valkey) : new MemoryStore(),
+    ipPrivacy: ipPrivacyFromEnv(env),
   };
 }

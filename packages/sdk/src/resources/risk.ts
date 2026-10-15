@@ -14,6 +14,7 @@ import type {
   ListRiskAssessmentsParams,
   ListRiskListEntriesParams,
   RiskAssessment,
+  RiskCalibration,
   RiskContentClassification,
   RiskEmailCheck,
   RiskFeedbackParams,
@@ -381,7 +382,8 @@ export class RiskResource {
 
   /**
    * Reports what an assessed user turned out to be: `fraud` and `abuse` teach later assessments to
-   * flag the same mailbox, user, IP and subnet; `legitimate` takes that back. Resolves a review.
+   * flag the same mailbox, user, card, device, IP and subnet; `legitimate` takes that back.
+   * Resolves a review, and counts in `calibration()`.
    */
   feedback(
     id: string,
@@ -393,6 +395,18 @@ export class RiskResource {
       path: `/v1/risk/assessments/${encodeURIComponent(id)}/feedback`,
       body: params,
       idempotencyKey: options?.idempotencyKey,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * How often each reason and rule was right over the last 90 days, by your feedback, and the
+   * reason weights that supports. Apply them with `settings.update({ reason_weights })`.
+   */
+  calibration(options?: ReadOptions): Promise<CossResult<RiskCalibration>> {
+    return this.#http.request<RiskCalibration>({
+      method: "GET",
+      path: "/v1/risk/calibration",
       signal: options?.signal,
     });
   }
@@ -410,7 +424,10 @@ export class RiskResource {
     });
   }
 
-  /** Checks an IP address on its own: Tor, cloud, hosting and VPN networks, ASN and country. */
+  /**
+   * Checks an IP address on its own: Tor, cloud, hosting and VPN networks, ASN and country, and
+   * VPN, proxy and relay exits when COSS's privacy data is available.
+   */
   checkIp(ip: string, options?: ReadOptions): Promise<CossResult<RiskIpCheck>> {
     return this.#http.request<RiskIpCheck>({
       method: "POST",

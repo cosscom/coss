@@ -198,6 +198,25 @@ const screening: EnvVar[] = [
   },
 ];
 
+/** VPN, proxy and relay data per address for risk (a paid provider; off until it's a subprocessor). */
+const riskIpPrivacy: EnvVar[] = [
+  {
+    name: "RISK_IP_PRIVACY",
+    kind: "plain",
+    required: false,
+    value: "off",
+    description:
+      "Risk's IP privacy data (off|ipinfo): `ipinfo` sends each assessed public IP address to IPinfo's privacy detection. List IPinfo as a subprocessor before turning it on.",
+  },
+  {
+    name: "IPINFO_PRIVACY_TOKEN",
+    kind: "secret",
+    required: false,
+    description:
+      "An IPinfo token whose plan includes privacy detection (not the free Lite one). Required with RISK_IP_PRIVACY=ipinfo.",
+  },
+];
+
 /** The API classifies risk content at request time with the screening model and key. */
 const riskClassifier: EnvVar[] = [
   {
@@ -360,6 +379,14 @@ export const SERVICES: Service[] = [
       portalPublicUrl,
       riskHashKey,
       notificationsEnvironment,
+      {
+        name: "RISK_SIGNUP_ENVIRONMENT_ID",
+        kind: "plain",
+        required: false,
+        value: "env_… (a live environment of COSS's own organization)",
+        description:
+          "COSS Risk assesses COSS's own sign-ups in this environment (dogfooding): `block` refuses the sign-up, `review` waits in its review queue. Unset: sign-ups aren't assessed.",
+      },
       billingProvider,
       stripeSecretKey,
       {
@@ -523,6 +550,7 @@ export const SERVICES: Service[] = [
       portalPublicUrl,
       riskHashKey,
       ...riskClassifier,
+      ...riskIpPrivacy,
       ...sentry("api"),
       sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },

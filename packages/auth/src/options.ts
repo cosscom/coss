@@ -29,6 +29,7 @@ import { enqueueAuthEmail, RESET_PASSWORD_LINK_TTL_S, VERIFICATION_LINK_TTL_S } 
 import { cancelStaleInvitations, inviterStillAllowed } from "./invitations.ts";
 import { membershipLimitFor } from "./limits.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
+import { assertSignUpNotBlocked } from "./risk.ts";
 import {
   assertScimEmail,
   isScimSessionSweep,
@@ -236,9 +237,12 @@ async function assertMailboxAvailable(email: string, executor: Executor): Promis
 
 /**
  * A new account from a Google or GitHub sign-in: the address must be one the provider verified
- * (it becomes the account's verified address), and passes the `/sign-up/email` guard.
+ * (it becomes the account's verified address), and passes the `/sign-up/email` guard and Risk.
  */
-async function assertSocialSignUpAllowed(user: { email: string; emailVerified?: boolean }) {
+async function assertSocialSignUpAllowed(
+  user: { email: string; emailVerified?: boolean },
+  headers: Headers | null,
+) {
   if (!user.emailVerified) {
     throw new APIError("FORBIDDEN", {
       code: "SOCIAL_EMAIL_NOT_VERIFIED",
@@ -247,6 +251,7 @@ async function assertSocialSignUpAllowed(user: { email: string; emailVerified?: 
   }
   await assertSignUpEmailAllowed(user.email);
   await assertMailboxAvailable(user.email, db);
+  await assertSignUpNotBlocked({ email: user.email, headers });
 }
 
 /** Origin of the dashboard, which hosts /api/auth (also the WebAuthn origin and RP ID). */
@@ -417,7 +422,7 @@ export const authOptions = {
             return { data: { ...data, emailVerified: true } };
           }
           if (isSocialCallbackPath(ctx?.path)) {
-            await assertSocialSignUpAllowed(user);
+            await assertSocialSignUpAllowed(user, ctx?.headers ?? ctx?.request?.headers ?? null);
             return { data };
           }
           const scimOrganizationId = scimOrganizationIdOf(ctx);
@@ -469,7 +474,14 @@ export const authOptions = {
     before: createAuthMiddleware(async (ctx) => {
       // Only the public sign-up: users created server-side (fixtures, seed, admins, SSO) skip it.
       if (ctx.path === "/sign-up/email") {
-        if (typeof ctx.body?.email === "string") await assertSignUpEmailAllowed(ctx.body.email);
+        if (typeof ctx.body?.email === "string") {
+          await assertSignUpEmailAllowed(ctx.body.email);
+          // COSS Risk, when the dashboard registered it (`./risk.ts`): only `block` refuses.
+          await assertSignUpNotBlocked({
+            email: ctx.body.email,
+            headers: ctx.headers ?? ctx.request?.headers ?? null,
+          });
+        }
         return;
       }
       if (FACTOR_MANAGEMENT_PATHS.has(ctx.path)) {

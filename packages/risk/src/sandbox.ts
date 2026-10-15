@@ -6,6 +6,8 @@
  */
 import type { MailDomainVerdict } from "@coss/signals/email";
 import { type IpSignals, normalizeIp } from "@coss/signals/ip";
+import type { DeviceReading } from "./device.ts";
+import type { IpPrivacy } from "./privacy.ts";
 import { CONTENT_CATEGORIES, type ContentCategory } from "./schemas.ts";
 
 const RESIDENTIAL = { asn: 64500, as_name: "Example Broadband", country: "GB" } as const;
@@ -31,7 +33,7 @@ const IP_FIXTURES: Record<string, Partial<IpSignals>> = {
   },
 };
 
-/** Signals for a documentation address (`192.0.2.x`): Tor, cloud, VPN, or a clean home connection. */
+/** Signals for a documentation address (`192.0.2.x`): Tor, cloud, a VPN network, or a clean home connection. */
 export function sandboxIpSignals(address: string): IpSignals | null {
   const ip = normalizeIp(address);
   if (!ip?.startsWith("192.0.2.")) return null;
@@ -47,6 +49,53 @@ export function sandboxIpSignals(address: string): IpSignals | null {
     ...RESIDENTIAL,
     ...IP_FIXTURES[ip],
   };
+}
+
+const PRIVACY_FIXTURES: Record<string, IpPrivacy> = {
+  "192.0.2.3": { vpn: true, proxy: false, relay: false, service: "Example VPN" },
+  "192.0.2.4": { vpn: false, proxy: true, relay: false, service: null },
+  "192.0.2.5": { vpn: false, proxy: false, relay: true, service: "iCloud Private Relay" },
+};
+
+/**
+ * IP privacy data for a documentation address, as if the provider were configured: `.3` is a VPN
+ * exit, `.4` a proxy, `.5` a privacy relay, the rest none of them.
+ */
+export function sandboxIpPrivacy(address: string): IpPrivacy | null {
+  const ip = normalizeIp(address);
+  if (!ip?.startsWith("192.0.2.")) return null;
+  return PRIVACY_FIXTURES[ip] ?? { vpn: false, proxy: false, relay: false, service: null };
+}
+
+/** Device tokens with fixed readings in sandbox environments (no browser needed). */
+export const SANDBOX_DEVICE_TOKENS = {
+  /** `test-device:<name>`: an ordinary browser whose device id is `<name>`. */
+  prefix: "test-device:",
+  /** An automated browser (`device.automation`). */
+  automated: "test-device-automated",
+} as const;
+
+export function sandboxDevice(token: string): DeviceReading | null {
+  const ordinary = {
+    valid: true,
+    automation: false,
+    timezone: "Europe/London",
+    language: "en-GB",
+    platform: "MacIntel",
+    screen: "1512x982",
+    touch: false,
+  };
+  if (token === SANDBOX_DEVICE_TOKENS.automated) {
+    return {
+      id: "sandbox-automated-device",
+      signals: { ...ordinary, automation: true, timezone: "UTC", language: "en-US" },
+    };
+  }
+  if (token.startsWith(SANDBOX_DEVICE_TOKENS.prefix)) {
+    const name = token.slice(SANDBOX_DEVICE_TOKENS.prefix.length);
+    if (name.length > 0 && name.length <= 64) return { id: `sandbox:${name}`, signals: ordinary };
+  }
+  return null;
 }
 
 /** Email domains with fixed behaviour in sandbox environments. */

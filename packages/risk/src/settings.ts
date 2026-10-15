@@ -11,11 +11,14 @@ import {
   CONTENT_CATEGORIES,
   type ContentCategory,
   DEFAULT_THRESHOLDS,
+  MAX_REASON_WEIGHT,
   type RiskCaptchaProvider,
   type RiskReasonCode,
   type RiskSettingsOutput,
   type UpdateRiskSettingsRequestOutput,
+  WEIGHTABLE_REASON_CODES,
 } from "./schemas.ts";
+import type { ReasonWeights } from "./score.ts";
 
 const { riskSettings } = schema;
 
@@ -28,7 +31,22 @@ export type ResolvedRiskSettings = {
   captcha: { provider: RiskCaptchaProvider; secretCiphertext: string; required: boolean } | null;
   /** Categories without a threshold never fire `content.*`. */
   contentThresholds: Partial<Record<ContentCategory, number>>;
+  /** The environment's own reason weights (the catalog's for the rest). */
+  reasonWeights: ReasonWeights;
 };
+
+/** Stored weights, keeping only known, weightable codes with a sane value. */
+function reasonWeightsOf(stored: unknown): ReasonWeights {
+  const weights: ReasonWeights = {};
+  if (!stored || typeof stored !== "object") return weights;
+  for (const code of WEIGHTABLE_REASON_CODES) {
+    const value = (stored as Record<string, unknown>)[code];
+    if (typeof value === "number" && value >= 0 && value <= MAX_REASON_WEIGHT) {
+      weights[code] = value;
+    }
+  }
+  return weights;
+}
 
 /** Stored thresholds, keeping only known categories with a sane value. */
 function contentThresholdsOf(stored: unknown): Partial<Record<ContentCategory, number>> {
@@ -76,6 +94,7 @@ function resolve(row: SettingsRow | null): ResolvedRiskSettings {
           }
         : null,
     contentThresholds: contentThresholdsOf(row?.contentThresholds),
+    reasonWeights: reasonWeightsOf(row?.reasonWeights),
   };
 }
 
@@ -107,6 +126,7 @@ function toObject(row: SettingsRow | null): RiskSettingsOutput {
         resolved.contentThresholds[category] ?? null,
       ]),
     ) as RiskSettingsOutput["content_thresholds"],
+    reason_weights: { ...resolved.reasonWeights },
     updated_at: row?.updatedAt.toISOString() ?? null,
   };
 }
@@ -175,9 +195,16 @@ export async function updateRiskSettings(
       if (value === null) delete contentThresholds[category];
       else if (value !== undefined) contentThresholds[category] = value;
     }
+    const reasonWeights = { ...resolved.reasonWeights };
+    for (const [code, value] of Object.entries(params.reason_weights ?? {})) {
+      const key = code as keyof ReasonWeights;
+      if (value === null) delete reasonWeights[key];
+      else if (value !== undefined) reasonWeights[key] = value;
+    }
     const values = {
       reviewThreshold: review,
       contentThresholds,
+      reasonWeights,
       blockThreshold: block,
       disabledReasons: params.disabled_reasons
         ? [...new Set(params.disabled_reasons)].sort()

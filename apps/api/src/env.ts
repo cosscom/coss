@@ -51,6 +51,9 @@ export const env = createEnv({
         : riskEnvShape.RISK_HASH_KEY,
     // Risk's content classification (`ai`: SCREENING_MODEL through the AI Gateway).
     RISK_CLASSIFIER: riskEnvShape.RISK_CLASSIFIER,
+    // VPN, proxy and relay data per address (`ipinfo`: IPinfo's privacy detection, a paid plan).
+    RISK_IP_PRIVACY: riskEnvShape.RISK_IP_PRIVACY,
+    IPINFO_PRIVACY_TOKEN: riskEnvShape.IPINFO_PRIVACY_TOKEN,
     SCREENING_MODEL: screeningEnvShape.SCREENING_MODEL,
     AI_GATEWAY_API_KEY: screeningEnvShape.AI_GATEWAY_API_KEY,
     // Error and performance monitoring; read by src/instrument.ts before this schema runs.

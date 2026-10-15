@@ -400,6 +400,13 @@
       "when": 1792022073891,
       "tag": "0056_crazy_sumo",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1792022721988,
+      "tag": "0057_safe_zombie",
+      "breakpoints": true
     }
   ]
 }
