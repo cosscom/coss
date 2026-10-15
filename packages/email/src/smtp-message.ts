@@ -31,7 +31,24 @@ export type SmtpEnvelope = {
 
 export type SmtpMessageResult =
   | { ok: true; params: SendEmailRequestOutput; idempotencyKey: string | null }
-  | { ok: false; reply: SmtpReply };
+  /**
+   * `reply` is for the client only (it may quote the message's addresses); `errorCode` is a
+   * stable reason that is safe to log.
+   */
+  | { ok: false; reply: SmtpReply; errorCode: SmtpMessageErrorCode };
+
+export type SmtpMessageErrorCode =
+  | "unparsable_message"
+  | "invalid_from"
+  | "no_recipients"
+  | "recipient_not_in_envelope"
+  | "no_to_recipient"
+  | "missing_subject"
+  | "duplicate_header"
+  | "header_too_long"
+  | "too_many_headers"
+  | "invalid_coss_header"
+  | "invalid_message";
 
 /** The relay's message size limit (SES's limit for a whole message), advertised as `SIZE`. */
 export const SMTP_MAX_MESSAGE_BYTES = 40 * 1024 * 1024;
@@ -92,11 +109,17 @@ const HEADER_VALUE_MAX_LENGTH = 995;
 const NON_ASCII = /\P{ASCII}/u;
 const MESSAGE_ID = /<[^<>\s]+>/g;
 
-function refuse(code: number, status: string, message: string): SmtpMessageResult {
-  return { ok: false, reply: { code, status, message } };
+function refuse(
+  errorCode: SmtpMessageErrorCode,
+  code: number,
+  status: string,
+  message: string,
+): SmtpMessageResult {
+  return { ok: false, reply: { code, status, message }, errorCode };
 }
 
-const contentError = (message: string) => refuse(554, "5.6.0", message);
+const contentError = (errorCode: SmtpMessageErrorCode, message: string) =>
+  refuse(errorCode, 554, "5.6.0", message);
 
 /** Folding whitespace (tabs, stray line breaks) becomes single spaces. */
 function unfold(value: string): string {
@@ -187,7 +210,7 @@ export async function messageToSendRequest(input: {
       maxHeadersSize: 1024 * 1024,
     });
   } catch {
-    return contentError("The message could not be parsed as MIME.");
+    return contentError("unparsable_message", "The message could not be parsed as MIME.");
   }
 
   // Header fields, first occurrence wins for the ones COSS reads.
@@ -196,11 +219,11 @@ export async function messageToSendRequest(input: {
 
   const fromHeaders = topHeaders.filter((header) => header.key === "from");
   if (fromHeaders.length !== 1 || !fromHeaders[0]?.value) {
-    return contentError("The message needs exactly one From header.");
+    return contentError("invalid_from", "The message needs exactly one From header.");
   }
   const fromAddresses = formatAddresses(addressParser(fromHeaders[0].value));
   if (fromAddresses.length !== 1 || addressParser(fromHeaders[0].value).some((a) => a.group)) {
-    return contentError("The From header must name exactly one mailbox.");
+    return contentError("invalid_from", "The From header must name exactly one mailbox.");
   }
   const from = fromAddresses[0] as string;
 
@@ -209,7 +232,7 @@ export async function messageToSendRequest(input: {
     const address = recipient.trim();
     if (address) envelope.set(address.toLowerCase(), address);
   }
-  if (envelope.size === 0) return refuse(554, "5.5.1", "No valid recipients.");
+  if (envelope.size === 0) return refuse("no_recipients", 554, "5.5.1", "No valid recipients.");
 
   const to = formatAddresses(email.to);
   const cc = formatAddresses(email.cc);
@@ -218,6 +241,7 @@ export async function messageToSendRequest(input: {
     const key = addressKey(address);
     if (!envelope.has(key)) {
       return refuse(
+        "recipient_not_in_envelope",
         554,
         "5.5.1",
         `The message names ${parseEmailAddress(address).address} in To/Cc, but it is not an envelope recipient (RCPT TO).`,
@@ -227,13 +251,14 @@ export async function messageToSendRequest(input: {
   }
   if (to.length === 0) {
     return contentError(
+      "no_to_recipient",
       "The message needs at least one To recipient. COSS does not move Bcc recipients into To.",
     );
   }
   const bcc = [...envelope].filter(([key]) => !named.has(key)).map(([, address]) => address);
 
   const subject = email.subject === undefined ? "" : unfold(email.subject);
-  if (subject === "") return contentError("The message needs a Subject.");
+  if (subject === "") return contentError("missing_subject", "The message needs a Subject.");
 
   // Custom headers: everything COSS or the provider doesn't own, minus client noise.
   const headers: Record<string, string> = {};
@@ -249,16 +274,20 @@ export async function messageToSendRequest(input: {
       continue;
     }
     if (Object.hasOwn(headers, name)) {
-      return contentError(`The ${header.originalKey} header appears more than once.`);
+      return contentError(
+        "duplicate_header",
+        `The ${header.originalKey} header appears more than once.`,
+      );
     }
     const value = headerValue(name, header.value);
     if (value === null) {
-      return contentError(`The ${header.originalKey} header is too long.`);
+      return contentError("header_too_long", `The ${header.originalKey} header is too long.`);
     }
     if (value !== "") headers[name] = value;
   }
   if (Object.keys(headers).length > MAX_HEADERS) {
     return contentError(
+      "too_many_headers",
       `At most ${MAX_HEADERS} custom headers are allowed; this message has ${Object.keys(headers).length} (${Object.keys(headers).join(", ")}).`,
     );
   }
@@ -280,7 +309,11 @@ export async function messageToSendRequest(input: {
   const tags = headerOf(COSS_HEADERS.tags);
   if (tags !== undefined) {
     const parsed = parseTags(unfold(tags));
-    if (!parsed) return contentError("X-Coss-Tags must look like `name=value, name=value`.");
+    if (!parsed)
+      return contentError(
+        "invalid_coss_header",
+        "X-Coss-Tags must look like `name=value, name=value`.",
+      );
     request.tags = parsed;
   }
   const scheduledAt = headerOf(COSS_HEADERS.scheduledAt);
@@ -289,7 +322,10 @@ export async function messageToSendRequest(input: {
   if (tracking !== undefined) {
     const parsed = parseTracking(unfold(tracking));
     if (!parsed) {
-      return contentError("X-Coss-Tracking must be `opens`, `clicks`, `opens, clicks` or `none`.");
+      return contentError(
+        "invalid_coss_header",
+        "X-Coss-Tracking must be `opens`, `clicks`, `opens, clicks` or `none`.",
+      );
     }
     request.tracking = parsed;
   }
@@ -299,6 +335,7 @@ export async function messageToSendRequest(input: {
     idempotencyKey = unfold(idempotencyHeader);
     if (idempotencyKey.length < 1 || idempotencyKey.length > IDEMPOTENCY_KEY_MAX_LENGTH) {
       return contentError(
+        "invalid_coss_header",
         `X-Coss-Idempotency-Key must be 1-${IDEMPOTENCY_KEY_MAX_LENGTH} characters.`,
       );
     }
@@ -327,7 +364,9 @@ export async function messageToSendRequest(input: {
     const issue = parsed.error.issues[0];
     const message = issue ? describeIssue(issue) : "The message is not a valid email.";
     // A From address the schema refuses is a sender problem, everything else content.
-    return issue?.path[0] === "from" ? refuse(550, "5.1.7", message) : contentError(message);
+    return issue?.path[0] === "from"
+      ? refuse("invalid_from", 550, "5.1.7", message)
+      : contentError("invalid_message", message);
   }
   return { ok: true, params: parsed.data, idempotencyKey };
 }

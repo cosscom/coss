@@ -139,3 +139,60 @@ export async function authenticateSmtp(input: {
     errorCode: "invalid_api_key",
   };
 }
+
+/**
+ * Checks an authenticated session's key again before each message: a pooled connection can stay
+ * open for hours, and revoking, disabling or expiring a key (or suspending its organization)
+ * must stop it like it stops the API's next request. No throttling: the session already passed
+ * it, and this is the lookup every API request makes.
+ */
+export async function recheckSmtpKey(
+  key: string,
+  authenticate: Authenticate = authenticateApiKey,
+): Promise<SmtpAuthResult> {
+  let result: AuthenticateResult;
+  try {
+    result = await authenticate(key, SEND_PERMISSION);
+  } catch (error) {
+    console.error("[smtp] API key verification failed:", error);
+    return {
+      ok: false,
+      reply: { code: 451, status: "4.3.0", message: "Temporary failure, retry shortly." },
+      errorCode: "service_unavailable",
+    };
+  }
+  if (result.ok) return result;
+  if (result.reason === "suspended") {
+    return {
+      ok: false,
+      reply: {
+        code: 550,
+        status: "5.7.1",
+        message: "This organization is suspended, so its API keys can't be used. Contact support.",
+      },
+      errorCode: "organization_suspended",
+      attempted: result.context,
+    };
+  }
+  if (result.reason === "forbidden") {
+    return {
+      ok: false,
+      reply: {
+        code: 550,
+        status: "5.7.1",
+        message: "This API key does not have the email:send permission.",
+      },
+      errorCode: "insufficient_permissions",
+      attempted: result.context,
+    };
+  }
+  return {
+    ok: false,
+    reply: {
+      code: 535,
+      status: "5.7.8",
+      message: "The API key is no longer valid (revoked, disabled or expired). Sign in again.",
+    },
+    errorCode: "invalid_api_key",
+  };
+}

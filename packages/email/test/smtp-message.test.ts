@@ -83,6 +83,8 @@ describe("messageToSendRequest", () => {
         status: "5.5.1",
         message: expect.stringContaining("grace@example.com"),
       },
+      // The reply names the address for the client; the code is what gets logged.
+      errorCode: "recipient_not_in_envelope",
     });
   });
 
@@ -191,6 +193,7 @@ describe("messageToSendRequest", () => {
     expect(result).toEqual({
       ok: false,
       reply: { code: 554, status: "5.6.0", message: expect.stringContaining(".exe") },
+      errorCode: "invalid_message",
     });
   });
 

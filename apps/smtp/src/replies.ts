@@ -3,7 +3,18 @@ import { BillingError } from "@coss/billing";
 import { EmailError } from "@coss/email";
 import type { SmtpReply } from "@coss/email/smtp";
 
-export type SmtpOutcome = SmtpReply & { errorCode: string | null };
+/** `logMessage` replaces the client's text in the log line (when that may quote addresses). */
+export type SmtpOutcome = SmtpReply & { errorCode: string | null; logMessage?: string };
+
+const ADDRESS = /[^\s<>"'(),;:]+@[^\s<>"'(),;:]+/g;
+
+/**
+ * The text a log line keeps of a reply: never an email address (logs and drains must not hold
+ * them), whatever produced the message.
+ */
+export function loggedMessage(outcome: SmtpOutcome): string {
+  return (outcome.logMessage ?? outcome.message).replace(ADDRESS, "[address]");
+}
 
 export function reply(
   code: number,

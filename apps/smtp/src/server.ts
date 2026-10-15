@@ -19,8 +19,15 @@ import {
   type SMTPServerOptions,
   type SMTPServerSession,
 } from "smtp-server";
-import { type Authenticate, authenticateSmtp } from "./auth.ts";
-import { reply, replyError, replyText, type SmtpOutcome, sendErrorReply } from "./replies.ts";
+import { type Authenticate, authenticateSmtp, recheckSmtpKey } from "./auth.ts";
+import {
+  loggedMessage,
+  reply,
+  replyError,
+  replyText,
+  type SmtpOutcome,
+  sendErrorReply,
+} from "./replies.ts";
 import type { TlsMaterial } from "./tls.ts";
 
 /** An idle client is disconnected after this long (RFC 5321 suggests at least 5 minutes). */
@@ -77,8 +84,11 @@ function clientIpOf(session: SMTPServerSession): string | null {
 export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
   const logWriter = options.logWriter ?? noopLogWriter;
   const maxMessageBytes = options.maxMessageBytes ?? SMTP_MAX_MESSAGE_BYTES;
-  /** Authenticated sessions (smtp-server keeps only a string user). */
-  const sessions = new Map<string, ApiKeyContext>();
+  /**
+   * Authenticated sessions (smtp-server keeps only a string user), with the key so each message
+   * checks it again (held in memory for the connection only).
+   */
+  const sessions = new Map<string, { context: ApiKeyContext; key: string }>();
   /** Sessions between MAIL FROM and the reply to their message. */
   const inTransaction = new Set<string>();
   let draining = false;
@@ -94,7 +104,7 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
       attributes?: Record<string, unknown>;
     },
   ) {
-    const { code, status, message, errorCode } = entry.outcome;
+    const { code, status, errorCode } = entry.outcome;
     logWriter.write({
       organizationId: context.organizationId,
       projectId: context.projectId,
@@ -103,7 +113,7 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
       source: "smtp",
       level: code >= 500 ? "error" : code >= 400 ? "warning" : "info",
       type: entry.type,
-      message: `${code} ${status} ${message}`,
+      message: `${code} ${status} ${loggedMessage(entry.outcome)}`,
       apiKeyId: context.apiKeyId,
       method: "SMTP",
       statusCode: code,
@@ -159,15 +169,29 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
       }
       throw replyError(result.reply);
     }
-    sessions.set(session.id, result.context);
+    sessions.set(session.id, { context: result.context, key: auth.password ?? "" });
     return { user: result.context.apiKeyId };
   }
 
   async function onMailFrom(_address: SMTPServerAddress, session: SMTPServerSession) {
     if (draining) throw replyError(reply(421, "4.3.2", "Shutting down, retry shortly."));
-    if (!sessions.has(session.id)) {
-      throw replyError(reply(530, "5.7.0", "Authentication required."));
+    const authenticated = sessions.get(session.id);
+    if (!authenticated) throw replyError(reply(530, "5.7.0", "Authentication required."));
+    // The key may have been revoked (or its organization suspended) since AUTH.
+    const startedAt = Date.now();
+    const result = await recheckSmtpKey(authenticated.key, options.authenticate);
+    if (!result.ok) {
+      if (result.errorCode !== "service_unavailable") sessions.delete(session.id);
+      if (result.attempted) {
+        log(result.attempted, session, {
+          type: "smtp.auth",
+          outcome: { ...result.reply, errorCode: result.errorCode },
+          startedAt,
+        });
+      }
+      throw replyError(result.reply);
     }
+    authenticated.context = result.context;
     inTransaction.add(session.id);
   }
 
@@ -212,7 +236,12 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
         rcptTo: session.envelope.rcptTo.map((recipient) => recipient.address),
       },
     });
-    if (!mapped.ok) return { outcome: { ...mapped.reply, errorCode: "invalid_message" } };
+    if (!mapped.ok) {
+      // The reply may quote the message's addresses: the log gets the stable reason only.
+      return {
+        outcome: { ...mapped.reply, errorCode: mapped.errorCode, logMessage: "Message refused." },
+      };
+    }
 
     // Tenancy always comes from the authenticated key, never from the message.
     const input = {
@@ -283,7 +312,7 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
       if (!stream.sizeExceeded) chunks.push(chunk);
     });
     stream.on("end", () => {
-      const context = sessions.get(session.id);
+      const context = sessions.get(session.id)?.context;
       const respond = (outcome: SmtpOutcome) => {
         inTransaction.delete(session.id);
         if (outcome.code >= 400) callback(replyError(outcome));
@@ -367,6 +396,14 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
   const implicitTls = new SMTPServer({ ...shared, secure: true });
   const startTls = new SMTPServer({ ...shared, secure: false });
   const servers = [implicitTls, startTls];
+  // Failed TLS handshakes (plaintext on the implicit-TLS port, scanners) and dropped sockets are
+  // emitted here; unhandled, an `error` event would end the process. Expected noise, not Sentry
+  // events (only console.error is).
+  for (const server of servers) {
+    server.on("error", (error: Error & { code?: string }) => {
+      console.warn(`[smtp] connection error: ${error.code ?? error.message}`);
+    });
+  }
 
   function connections(): Connection[] {
     return servers.flatMap((server) => [

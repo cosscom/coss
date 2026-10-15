@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { connect } from "node:net";
 import { db, schema } from "@coss/db";
 import { createEmailService, FakeEmailProvider } from "@coss/email";
 import { createVerifiedDomain, memoryDispatchQueue } from "@coss/email/testing";
@@ -203,6 +204,61 @@ describe("SMTP relay", () => {
         (entry) => entry.type === "smtp.auth" && entry.environmentId === suspended.development.id,
       ),
     ).toBe(true);
+  });
+
+  test("plaintext on the implicit-TLS port doesn't take the relay down", async () => {
+    await new Promise<void>((resolve) => {
+      const socket = connect(harness.ports.implicitTls, "127.0.0.1", () => {
+        socket.write("GET / HTTP/1.1\r\nHost: smtp\r\n\r\n");
+      });
+      socket.on("close", () => resolve());
+      socket.on("error", () => resolve());
+    });
+    const info = await transport(harness, tenant.sandboxKey).sendMail({
+      from: "hello@acme.test",
+      to: "ada@example.com",
+      subject: "Still up",
+      text: "Hi",
+    });
+    expect(info.response).toStartWith("250 ");
+  });
+
+  test("a key revoked mid-session stops the next message", async () => {
+    const revoked = await createTestTenant();
+    const pooled = transport(harness, revoked.sandboxKey, { pool: true, maxConnections: 1 });
+    const message = { from: "hello@acme.test", to: "ada@example.com", subject: "Hi", text: "Hi" };
+    const first = await pooled.sendMail(message);
+    const apiKeyId = harness.logs.entries.find(
+      (entry) => entry.resourceId === emailIdOf(first),
+    )?.apiKeyId;
+    expect(apiKeyId).toBeString();
+    await db
+      .update(schema.apikey)
+      .set({ enabled: false })
+      .where(eq(schema.apikey.id, apiKeyId as string));
+    const error = await smtpError(pooled.sendMail(message));
+    pooled.close();
+    expect(error.code).toBe(535);
+    expect(error.response).toContain("no longer valid");
+  });
+
+  test("refusal log lines never quote the message's addresses", async () => {
+    const error = await smtpError(
+      transport(harness, tenant.sandboxKey).sendMail({
+        from: "hello@acme.test",
+        to: ["ada@example.com", "grace@example.com"],
+        envelope: { from: "hello@acme.test", to: ["ada@example.com"] },
+        subject: "Hi",
+        text: "Hi",
+      }),
+    );
+    // The client is told which address, the log only why.
+    expect(error.response).toContain("grace@example.com");
+    const line = harness.logs.entries.findLast(
+      (entry) => entry.environmentId === tenant.development.id,
+    );
+    expect(line).toMatchObject({ statusCode: 554, errorCode: "recipient_not_in_envelope" });
+    expect(JSON.stringify(line)).not.toContain("@example.com");
   });
 
   test("refuses messages it can't map, with the reason", async () => {
