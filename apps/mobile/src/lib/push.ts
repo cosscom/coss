@@ -39,15 +39,19 @@ export async function enablePush(api: ApiClient): Promise<ApiResult<PushSettings
 }
 
 /**
- * Registers again when notifications are already allowed: a sign-in is a new session (the old
- * registration ended with the old one), and iOS can hand out a new token at any time.
+ * Registers this session's device: a sign-in is a new session (the old registration ended with
+ * the old one), and iOS can hand out a new token at any time. Asks iOS first while it never has
+ * (iOS shows its prompt once per install). Whether it registered.
  */
-export async function refreshPushRegistration(api: ApiClient): Promise<void> {
+export async function refreshPushRegistration(api: ApiClient): Promise<boolean> {
   try {
-    if ((await pushPermission()) === "granted") await register(api);
+    const permission = await pushPermission();
+    if (permission === "undetermined") return Boolean((await enablePush(api))?.data);
+    if (permission === "granted") return Boolean((await register(api)).data);
   } catch (error) {
     console.warn("[push] registration failed", error);
   }
+  return false;
 }
 
 /**

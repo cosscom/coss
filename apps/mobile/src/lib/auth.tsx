@@ -1,5 +1,6 @@
 import type { TokenResponse } from "@coss/companion";
 import type { QueryClient } from "@tanstack/react-query";
+import Constants from "expo-constants";
 import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
@@ -11,6 +12,8 @@ import { authorizeUrl, createPkceRequest, parseCallback } from "./pkce";
 import { refreshPushRegistration, stopPush, watchPushToken } from "./push";
 
 const TOKEN_KEY = "coss.session";
+// How the dashboard's session list names this app (it records the sign-in's User-Agent).
+const USER_AGENT = `COSS-iOS/${Constants.expoConfig?.version ?? "0"}`;
 // A credential whose sign-out didn't reach the dashboard (offline): revoked on a later start.
 const PENDING_REVOCATION_KEY = "coss.pending-revocation";
 const REDIRECT_URI = "coss://auth/callback";
@@ -56,6 +59,7 @@ export function AuthProvider(props: { queryClient: QueryClient; children: ReactN
       baseUrl: DASHBOARD_URL,
       getToken: () => token.current,
       onUnauthorized: () => void forget(),
+      userAgent: USER_AGENT,
     }),
   );
 
@@ -72,9 +76,11 @@ export function AuthProvider(props: { queryClient: QueryClient; children: ReactN
   // Push registrations belong to the session: signing out ends them on the server.
   useEffect(() => {
     if (status !== "signed_in") return;
-    void refreshPushRegistration(api);
+    void refreshPushRegistration(api).then((registered) => {
+      if (registered) void queryClient.invalidateQueries({ queryKey: ["push"] });
+    });
     return watchPushToken(api);
-  }, [status, api]);
+  }, [status, api, queryClient]);
 
   const signIn = async (): Promise<SignInResult> => {
     const request = await createPkceRequest(pkceCrypto);
@@ -124,6 +130,7 @@ async function revokePending(): Promise<void> {
     baseUrl: DASHBOARD_URL,
     getToken: () => pending,
     onUnauthorized: () => {},
+    userAgent: USER_AGENT,
   });
   const { error } = await revoke("/auth/sign-out", { method: "POST" });
   if (!error || error.status === 401) {

@@ -415,6 +415,24 @@ describe("sending", () => {
     expect(sender.sent[0]?.message.path).toBe(`/${tenant.organization.slug}/reputation`);
   });
 
+  test("devices on a gateway the key doesn't serve are left out, not retried", async () => {
+    const tenant = await createTestTenant();
+    const production = await createTestPushDevice({ userId: tenant.owner.id });
+    await db
+      .update(schema.pushDevice)
+      .set({ apnsEnvironment: "production" })
+      .where(eq(schema.pushDevice.id, production.device.id));
+    await createTestPushDevice({ userId: tenant.owner.id });
+    const endpoint = await disabledEndpoint(tenant);
+    await enqueueEndpointDisabled(tenant, endpoint.id);
+    const sender = new FakePushSender();
+    sender.environments = ["production"];
+    await runDuePushNotifications({ scope: scopeOf(tenant) }, { sender });
+    expect(sender.sent.map((push) => push.target.deviceId)).toEqual([production.device.id]);
+    const [row] = await listPushNotifications(tenant.organization.id);
+    expect(row?.status).toBe("sent");
+  });
+
   test("a worker that lost its claim stops and writes nothing", async () => {
     const tenant = await createTestTenant();
     const first = await createTestPushDevice({ userId: tenant.owner.id });

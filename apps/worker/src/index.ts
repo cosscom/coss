@@ -158,6 +158,7 @@ if (env.APNS_KEY_ID && env.APNS_TEAM_ID && env.APNS_PRIVATE_KEY) {
     teamId: env.APNS_TEAM_ID,
     privateKey: env.APNS_PRIVATE_KEY,
     topic: env.APNS_TOPIC,
+    environments: env.APNS_ENVIRONMENTS,
   });
   pushSender = apns;
 } else if (process.env.NODE_ENV === "production") {

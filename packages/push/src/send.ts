@@ -8,7 +8,7 @@ import { type PushContent, resolvePush } from "./content.ts";
 import { forgetPushDevice } from "./devices.ts";
 import type { PushNotificationRow } from "./outbox.ts";
 import { type PushTarget, pushTargets } from "./recipients.ts";
-import type { PushKind } from "./schemas.ts";
+import type { ApnsEnvironment, PushKind } from "./schemas.ts";
 
 const { pushNotification } = schema;
 
@@ -41,6 +41,8 @@ export type PushResult =
 /** Delivers one message to one device. Never throws for the device's answer. */
 export type PushSender = {
   send(target: PushTarget, message: PushMessage): Promise<PushResult>;
+  /** The APNs gateways its key works with; devices registered for another are left out. All when absent. */
+  environments?: readonly ApnsEnvironment[];
 };
 
 export type PushDeps = { sender: PushSender };
@@ -208,11 +210,10 @@ async function deliver(row: PushNotificationRow, deps: PushDeps, clock: () => Da
       await settle({ status: "skipped", lastError: resolved.skip });
       return;
     }
-    const targets = await pushTargets({
-      organizationId: row.organizationId,
-      kind: row.kind,
-      now: clock(),
-    });
+    const served = deps.sender.environments;
+    const targets = (
+      await pushTargets({ organizationId: row.organizationId, kind: row.kind, now: clock() })
+    ).filter((target) => !served || served.includes(target.apnsEnvironment));
     if (!targets.length && !delivered.size) {
       await settle({ status: "skipped", lastError: "no_recipients" });
       return;

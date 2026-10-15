@@ -26,6 +26,21 @@ describe("API client", () => {
     expect(init?.credentials).toBe("omit");
   });
 
+  test("sends the app's User-Agent when given", async () => {
+    const fetcher = mock(async (_url: string, _init: RequestInit) => Response.json({}));
+    const api = createApiClient({
+      baseUrl: "https://coss.com",
+      getToken: () => null,
+      onUnauthorized: () => {},
+      userAgent: "COSS-iOS/1.0.0",
+      fetch: fetcher as unknown as typeof fetch,
+    });
+    await api("/me");
+    expect(new Headers(fetcher.mock.calls[0]?.[1]?.headers).get("user-agent")).toBe(
+      "COSS-iOS/1.0.0",
+    );
+  });
+
   test("a 401 for a replaced credential doesn't forget the new one", async () => {
     let current = "old";
     const onUnauthorized = mock(() => {});
