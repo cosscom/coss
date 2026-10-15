@@ -58,6 +58,7 @@ const SCHEMAS: Record<Exclude<ServiceName, "site">, string[]> = {
   api: schemaKeys("apps/api/src/env.ts", emailEnvShape),
   worker: schemaKeys("apps/worker/src/env.ts", emailWorkerEnvShape),
   portal: schemaKeys("apps/portal/src/env.ts", {}),
+  smtp: schemaKeys("apps/smtp/src/env.ts", emailEnvShape),
 };
 
 describe("services", () => {
@@ -99,6 +100,9 @@ describe("services", () => {
         expect(dockerfile).toMatch(new RegExp(`\\b${variable.name}=${variable.value}\\b`));
       }
       if (service.port) expect(dockerfile).toContain(`EXPOSE ${service.port}`);
+      for (const port of new Set(service.tcpPorts?.map((mapping) => mapping.container))) {
+        expect(dockerfile).toMatch(new RegExp(`^EXPOSE .*\\b${port}\\b`, "m"));
+      }
     }
   });
 

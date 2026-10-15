@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        service: [web, site, portal, api, worker]
+        service: [web, site, portal, api, worker, smtp]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -206,7 +206,7 @@ jobs:
       # bought no compatibility, only time.
       - name: Roll out
         if: steps.latest.outputs.deploy == 'true'
-        run: infra/scripts/ecs-deploy.sh "$TAG" api worker web site portal
+        run: infra/scripts/ecs-deploy.sh "$TAG" api worker web site portal smtp
       - name: Record the deployed commit
         if: steps.latest.outputs.deploy == 'true'
         run: aws ssm put-parameter --name "/coss/$STAGE/image-tag" --value "$TAG" --overwrite >/dev/null

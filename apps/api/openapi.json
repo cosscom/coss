@@ -4138,9 +4138,10 @@
           "api",
           "email",
           "webhook",
-          "risk"
+          "risk",
+          "smtp"
         ],
-        "description": "`api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt. `risk`: a risk assessment or its feedback."
+        "description": "`api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt. `risk`: a risk assessment or its feedback. `smtp`: a message submitted to the SMTP relay."
       },
       "LogLevel": {
         "type": "string",
@@ -5725,6 +5726,7 @@
           "email",
           "webhook",
           "risk",
+          "smtp",
           "audit"
         ],
         "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
@@ -5754,7 +5756,7 @@
             "items": {
               "$ref": "#/components/schemas/LogDrainSource"
             },
-            "maxItems": 5,
+            "maxItems": 6,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later. Defaults to every source."
           }
         },
@@ -5942,7 +5944,7 @@
             "items": {
               "$ref": "#/components/schemas/LogDrainSource"
             },
-            "maxItems": 5,
+            "maxItems": 6,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
           },
           "enabled": {

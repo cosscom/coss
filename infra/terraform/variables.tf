@@ -35,6 +35,11 @@ variable "deploy_actor_ids" {
   description = "Numeric GitHub user ids allowed to start the deploy runner (`gh api users/<login> --jq .id`)."
 }
 
+variable "smtp_host" {
+  type        = string
+  description = "The SMTP relay's host (smtp.coss.com): a DNS-only Cloudflare record to the NLB."
+}
+
 variable "portal_host" {
   type        = string
   description = "The Hooks portal's host (PORTAL_HOST in infra/aws/routing.ts)."

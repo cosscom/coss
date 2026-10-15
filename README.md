@@ -270,6 +270,23 @@ organization's page in the admin console (`/admin/organizations`, recorded in th
 `bun run ratelimit:set`. The dashboard limits sign-in, sign-up, password reset and verification emails per
 client IP and per email address.
 
+## SMTP relay
+
+`apps/smtp` lets anything that only speaks SMTP send through COSS (Supabase Auth, WordPress, Rails, Laravel,
+Django, nodemailer, older apps): host `smtp.coss.com`, port 465 (TLS) or 587 (STARTTLS) (2465/2587 as
+alternatives), username `coss`, an API key as the password. Each message is mapped onto the same request as
+`POST /v1/emails` (envelope recipients decide who receives it; `To`/`Cc` headers keep their roles and the rest are
+Bcc; `X-Coss-Category`, `X-Coss-Tags`, `X-Coss-Tracking`, `X-Coss-Scheduled-At` and `X-Coss-Idempotency-Key` set
+the API's fields) and stored through the same email service, rate limits and quotas; the worker sends it. Locally,
+`bun run dev` starts it on 2465/2587 with a self-signed certificate (made with `openssl`):
+
+```sh
+swaks --server localhost:2587 --tls --auth-user coss --auth-password "$COSS_API_KEY" \
+  --from hello@acme.test --to ada@example.com --header "Subject: Hello"
+```
+
+The docs' guide is `/docs/email/smtp`.
+
 ## Running on Amazon SES
 
 Each organization gets its own SES **tenant** (isolated reputation and pausing), created with its first domain.
@@ -432,7 +449,7 @@ send nothing unless you set one.
 
 Production runs in AWS account `294417174674`, region **us-east-2** (the organization's guardrails allow no other
 region for regional services). The repository holds everything it takes: one Dockerfile per app
-(`apps/{web,site,api,worker}/Dockerfile`, built from the repository root), a machine-readable spec in
+(`apps/{web,site,portal,api,worker,smtp}/Dockerfile`, built from the repository root), a machine-readable spec in
 [`infra/`](./infra/AGENTS.md) (`bun run --cwd infra aws:spec` prints every service's port, health check, stop
 timeout, size, task-role policy and env vars, the ALB listener rules and the CloudFront behaviours as JSON), the
 Terraform that provisions it from that spec (`infra/terraform`) and the deploy workflow
@@ -448,6 +465,8 @@ Cloudflare DNS (coss.com zone, DNS only)
   track.cosslinks.com + customer tracking domains (Cloudflare for SaaS) ──(X-Tracking-Origin-Verify)──▶ ALB /t/* ─▶ api
   Cloudflare DNS (cosshooks.com zone, self-serve account, proxied)
   portal.cosshooks.com (Hooks portal) ──(X-Portal-Origin-Verify)──▶ ALB ─▶ portal (Next, :3003)
+  Cloudflare DNS (coss.com zone, DNS only)
+  smtp.coss.com ──(TCP 465/2465, 587/2587, client IP preserved)──▶ NLB ─▶ smtp (Bun, :2465 TLS, :2587 STARTTLS)
 ```
 
 ### Resources (`infra/terraform`)
@@ -455,14 +474,13 @@ Cloudflare DNS (coss.com zone, DNS only)
 - **Network:** a VPC (`10.40.0.0/16`) over us-east-2a/b; public subnets for the ALB and one NAT gateway per AZ,
   private subnets for tasks, RDS and Valkey. Security groups: the ALB takes 443 only from the managed prefix list
   `com.amazonaws.global.cloudfront.origin-facing` (its own group: the list weighs ~55 rules) and from Cloudflare's
-  IPv4 ranges (tracking domains); each service's tasks only from the ALB on their port; RDS 5432 only from web, api
-  and worker; Valkey 6379 only from web, api and worker
-  (the daily inbound limit).
+  IPv4 ranges (tracking domains); each service's tasks only from the ALB on their port (the SMTP relay's from
+  the internet through the NLB); RDS 5432 and Valkey 6379 only from web, portal, api, worker and smtp.
 - **NAT gateways (required):** the worker delivers customer webhooks to arbitrary public URLs and ports, and domain
   verification in web, api and worker queries public DNS (1.1.1.1 / 8.8.8.8, port 53) directly. AWS traffic stays
   off them through VPC endpoints: interface endpoints for `sqs`, `secretsmanager`, `ecr.api`, `ecr.dkr`, `logs` and
   `email` (the SES API), plus the free `s3` gateway endpoint (ECR image layers).
-- **ECS on Fargate (arm64):** cluster `coss-production`, services `web`, `site`, `api`, `worker`, task definitions
+- **ECS on Fargate (arm64):** cluster `coss-production`, services `web`, `site`, `portal`, `api`, `worker`, `smtp`, task definitions
   built from `spec.json` (sizes, minimum counts, `stopTimeout`, env names and kinds; plain values from
   `production.tfvars`, secrets from the stage secret), CPU target-tracking autoscaling, deployment circuit breaker
   with rollback, ECS Exec. ECR repositories `coss/<service>` (immutable commit tags; `buildcache-<hash>` is the
@@ -530,6 +548,18 @@ Cloudflare DNS (coss.com zone, DNS only)
   the ALB's certificate doesn't cover; the header secret is what proves a request came through Cloudflare. The
   apex redirects to coss.com. Free plan: 100 custom hostnames included, then $0.10 each per month.
 
+- **SMTP relay (`smtp.coss.com`):** the `smtp` service behind a network load balancer
+  (`infra/terraform/nlb.tf`): TCP listeners 465 and 2465 → container port 2465 (implicit TLS), 587 and 2587 → 2587
+  (STARTTLS), client addresses preserved (the relay limits connections and failed logins per address), so the
+  tasks' security group takes 2465/2587 from anywhere (they have no public address; only the NLB reaches them).
+  The relay terminates TLS itself, since STARTTLS can't be offloaded: Terraform requests an **exportable** ACM
+  certificate for `smtp.coss.com` (exportable certificates cost extra; validation CNAME from
+  `terraform output smtp_certificate_validation_records`, DNS only), passes its ARN as `SMTP_TLS_CERTIFICATE_ARN`,
+  and the task role may only `acm:ExportCertificate` it; the relay exports it at start and every 12 hours (ACM
+  renews it) with `SMTP_TLS_PASSPHRASE` (stage secret, any random value). `smtp.coss.com` is a **DNS-only** CNAME to
+  `terraform output nlb_dns_name` (Cloudflare can't proxy SMTP). Once it resolves, set
+  `SMTP_PUBLIC_HOST=smtp.coss.com` for web in `production.tfvars` so environment pages show the settings. No SES
+  permissions: the relay only stores and enqueues, the worker sends.
 - **Hooks portal (`cosshooks.com`, the same self-serve Cloudflare account as `cosslinks.com`):** `apps/portal`,
   the page customers embed for their users, runs as the `portal` service on a registrable domain of its own (never
   under coss.com, which would make it same-site with the dashboard). `portal.cosshooks.com` is a **proxied** record
@@ -561,7 +591,8 @@ One Secrets Manager secret per stage, `coss/production` (JSON), injected through
 (one key per `secret` variable of `infra/aws/services.ts`): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `VALKEY_URL`,
 `WEBHOOK_SECRETS_KEY`, `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`, `TURNSTILE_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`,
 `GITHUB_CLIENT_SECRET`, `CLOUDFLARE_API_TOKEN`,
-`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AI_GATEWAY_API_KEY`, `RISK_HASH_KEY` (changing it resets what
+`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AI_GATEWAY_API_KEY`, `SMTP_TLS_PASSPHRASE` (any random value: it
+only protects the SMTP relay's exported certificate key), `RISK_HASH_KEY` (changing it resets what
 risk assessments remember), `IPINFO_TOKEN` (optional: a free IPinfo account's token for risk's ASN and country
 data) and `IPINFO_PRIVACY_TOKEN` (optional, with `RISK_IP_PRIVACY=ipinfo`: a paid IPinfo plan's token for VPN and
 proxy data per address; IPinfo must be a listed subprocessor first) and `APNS_PRIVATE_KEY` (optional: the iOS app's
@@ -588,7 +619,7 @@ wrong. AWS credentials come from the task role.
 - **Execution role** (`coss-production-ecs-execution`, shared): pull from ECR, write logs, read the stage secret.
 - **Task roles:** web → `coss-dashboard`, api → `coss-api`, worker → `coss-worker`: the policies `ses:bootstrap`
   creates under `/coss/` (defined in [`apps/worker/scripts/ses-policies.ts`](./apps/worker/scripts/ses-policies.ts)),
-  plus ECS Exec. The site gets no permissions. The `ses-bootstrap` one-off task runs with
+  plus ECS Exec. The site gets no permissions; smtp only `acm:ExportCertificate` on its own certificate. The `ses-bootstrap` one-off task runs with
   `coss-production-ses-bootstrap` (SES, SNS, SQS, EventBridge, S3 (the inbound bucket), CloudWatch alarms, IAM
   policies under `/coss/`).
 - **Deploys** (`coss-production-deploy`): the role of the CodeBuild project whose runners execute the Deploy
@@ -618,21 +649,22 @@ failed and a re-run passed, re-run the Deploy run's failed jobs. A commit that's
 its CI finishes, or its deploy job's turn comes, isn't deployed (the newer commit's deploy ships it), so production
 never goes back to an older commit unless you dispatch one:
 
-1. Build and push the five images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
+1. Build and push the six images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
    apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
-   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker), skipping images that exist. Base
+   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API, worker and SMTP relay), skipping images that exist. Base
    images never come from Docker Hub there (CodeBuild's shared addresses exhaust its anonymous pull limit): Node from
    ECR Public (`NODE_IMAGE`), Bun from `coss/base/bun` in our ECR (`BUN_IMAGE`), which the workflow fills from Docker
    Hub once per Bun version. Local builds keep Docker Hub (the Dockerfiles' defaults).
 2. Run migrations as a one-off task from the new worker image (`infra/scripts/ecs-task.sh --image-tag <sha> worker --
    bun packages/db/src/migrate.ts`; never two at once, the deploy job's concurrency group). Migrations must be
    backward compatible with the running code.
-3. Roll out all five services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
+3. Roll out all six services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
    of its latest task definition with the new image, and the script fails if the circuit breaker rolled it back. A
    service behind the load balancer counts as deployed once its new tasks passed their health checks and the old
    ones are draining; the worker (no health check) once its old tasks are gone and the new ones ran for 60 s
    without a failure. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
-   the worker finishes each loop's current item).
+   the worker finishes each loop's current item, the SMTP relay answers messages in progress and sends idle
+   clients `421`, so they reconnect to another task).
 4. Record the commit in SSM (`/coss/production/image-tag`, read by Terraform) and invalidate the spec's
    `cloudFront.invalidateAfterDeploy` paths on the coss.com distribution.
 5. Check routing (`infra/scripts/check-routing.sh`, also runnable locally): the ALB's rules and the coss.com

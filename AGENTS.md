@@ -30,6 +30,7 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page, Shipyard's landing page and docs at `/shipyard`, kloq's pages at `/kloq` (landing page, demo, tools, comparisons, docs, shadcn registry) + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/portal` | `@coss/portal` | The Hooks portal (:3003) on its own domain (production: `portal.cosshooks.com`, Cloudflare → ALB, `PORTAL_HOST` in `infra/aws/routing.ts`): customers' users manage one application's endpoints and see its deliveries, signed in by a session the customer's backend creates (token in the URL fragment, never a cookie). See `apps/portal/AGENTS.md`. |
 | `apps/mobile` | `@coss/mobile` | Expo (SDK 57) iOS companion app mirroring the dashboard's pages (organization: projects, reputation, domains, members, billing, audit log; environment: emails, received, suppressions, tracking, risk with rules and lists, Hooks, API keys, webhooks, logs, log drains), mostly read-only, signed in through the dashboard (browser hand-off + PKCE) and using its `/api/mobile/v1/*`, with push notifications (APNs) for alerts. Not deployed by `infra`. See `apps/mobile/AGENTS.md`. |
+| `apps/smtp` | `@coss/smtp` | Bun SMTP relay (`smtp.coss.com`; locally :2465 implicit TLS, :2587 STARTTLS) on `smtp-server`: username `coss`, an API key as the password; each message becomes a `POST /v1/emails` request (`@coss/email/smtp`) stored through the same email service, rate limits and quotas. Behind an NLB; terminates TLS itself (exported ACM certificate). |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events and received emails from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss); `./idempotency` (`withIdempotencyKey`, request hashes); `./partitions` (daily range partitions: create ahead, drop expired). |
 | `packages/signals` | `@coss/signals` | Stateless abuse signals shared by COSS's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
@@ -56,12 +57,13 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests, and the production Terraform + deploy scripts that apply it. See `infra/AGENTS.md`. |
 
-Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `portal`, `infra`; `signals` (no workspace deps) ← `auth`, `webhooks`, `risk`; `db ← auth ← tenancy`,
+Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `portal`, `smtp`, `infra`; `signals` (no workspace deps) ← `auth`, `webhooks`, `risk`; `db ← auth ← tenancy`,
 `db ← logs ← webhooks ← risk` (`risk` also `→ signals, ratelimit, retention, screening` — only screening's DB-free `./classifier`, `./text`, `./runtime`, `./testing`; `email` imports only `@coss/risk/schemas`, for `WEBHOOK_EVENT_TYPES`), `db ← logs ← webhooks ← reputation ← screening ← email`, `reputation ← hooks`, `db ← ratelimit`, `db ← push ← webhooks, hooks, reputation, billing, risk, worker, web` (`push` also `→ retention` and only `@coss/auth/{permissions,org-access}`), `webhooks ← billing ← email` (packages take
 `billing`'s plan checks injected — `PlanGate`, `UsageGate`, and in webhooks the structural `WebhookPlanLimits`, since
 billing enqueues `billing.*` events through it — and email imports only `./metering`, `./gate` and `./wire`); `versioning` (no deps) ← `tenancy`, `webhooks`, `email`, `billing` (`schemas`/`wire` examples);
 `retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `hooks`, `billing`, `push`, `worker`, `web`, `site`, `mobile`;
 `api → tenancy, email, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, screening (`./env` only), db`;
+`smtp → tenancy, email, ratelimit, logs, billing, observability, db`;
 `web → auth, tenancy, email, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, push, companion, db, ui`; `mobile → companion` (types only; a dev dependency), `retention` (bundled by Metro: keep it dependency-free); `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, hooks, ratelimit, screening, billing` (`slugs`, `env` only);
 `worker → auth (`./emails` only), email, hooks, reputation, screening, webhooks, ratelimit, logs, risk, push, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui`, `kloq` and `companion` depend on no workspace (`site → kloq`); `mcp` depends only on the published `coss` (a semver
@@ -78,7 +80,7 @@ Valkey (or Redis) at `TEST_VALKEY_URL` for the ratelimit/api tests.
 
 ```sh
 bun install                 # never npm/pnpm/yarn
-bun run dev                 # web :3000 + api :3001 + site :3002 + portal :3003 + worker (turbo TUI; agents: bunx turbo run dev --ui=stream)
+bun run dev                 # web :3000 + api :3001 + site :3002 + portal :3003 + smtp :2465/:2587 + worker (turbo TUI; agents: bunx turbo run dev --ui=stream)
 bun run --cwd apps/mobile ios  # the iOS app on the Simulator (Xcode; needs `bun run dev` for the dashboard)
 bun run lint                # biome ci .            bun run format → biome check --write .
 bun run typecheck           # tsc --noEmit per workspace (TS 7); web runs `next typegen` first; builds the SDK first
@@ -176,13 +178,17 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `EMAIL_PROVIDER` | api, web, worker: provider for live environments (`fake` or `ses`); shape in `@coss/email/env` |
 | `AWS_REGION`, `SES_CONFIGURATION_SET`, `SES_TENANT_PREFIX` | required with `EMAIL_PROVIDER=ses` (api, web, worker); printed by `ses:bootstrap`. AWS credentials come from the default chain (`globalPassThroughEnv` in `turbo.json`) |
 | `TRACKING_DOMAIN_PROVIDER`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ZONE_ID`, `TRACKING_CNAME_TARGET` | api, web, worker: custom tracking domains (`fake` default, or `cloudflare`: Cloudflare for SaaS custom hostnames on the cosslinks.com zone, which needs the token and zone id); customers CNAME to `TRACKING_CNAME_TARGET` (default `track.cosslinks.com`); shape in `@coss/email/env` |
-| `TRACKING_PUBLIC_URL` | api + worker: origin of the open/click tracking links in emails (default `API_PUBLIC_URL`); production `https://track.cosslinks.com`, a domain of its own so senders' abuse never lands on coss.com |
+| `TRACKING_PUBLIC_URL` | api + worker + smtp: origin of the open/click tracking links in emails (default `API_PUBLIC_URL`; smtp: required in production, locally `http://localhost:3001`); production `https://track.cosslinks.com`, a domain of its own so senders' abuse never lands on coss.com |
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
 | `INBOUND_MANAGED_DOMAIN`, `SES_INBOUND_BUCKET` | api, web, worker: receiving. The managed inbound domain (`<label>.<domain>` addresses per environment; default `inbound.coss.test` with the fake provider) and, with SES, the bucket received content lives in (both or neither with SES; unset → receiving off). Printed by `ses:bootstrap --managed-domain` |
 | `SES_INBOUND_QUEUE_URL` | worker with SES receiving: the SQS queue of receipt notifications |
 | `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_PRIVATE_KEY`, `APNS_TOPIC`, `APNS_ENVIRONMENTS` | worker: push notifications to the iOS app through APNs with a token-based `.p8` key (its id, the Apple Developer team, the PEM contents — `\n` line breaks accepted — the bundle id, default `com.coss.ios`, and the gateways the key serves, default `production,sandbox`; devices registered for another are skipped). The first three together or none; unset → printed in development, held in production |
 | `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | web reads the id only to refuse admin suspensions of COSS's own organization (`isSystemOrganization`, `apps/web/src/lib/system-organization.ts`); worker: account emails (verification, password reset, invitation) and reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
-| `VALKEY_URL`, `VALKEY_CLUSTER` | api + web + worker (the daily inbound limit, Hooks delivery limits): rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
+| `SMTP_HOSTNAME`, `SMTP_IMPLICIT_TLS_PORT`, `SMTP_STARTTLS_PORT` | smtp: the relay's name (greeting, certificate; production `smtp.coss.com`) and the ports it listens on (default 2465/2587; the NLB maps 465/587 onto them) |
+| `SMTP_TLS_CERTIFICATE_ARN`, `SMTP_TLS_PASSPHRASE` | smtp (production, both required): the exportable ACM certificate the relay exports at start and every 12 hours, and the passphrase that encrypts the exported key in transit. The ARN is set by Terraform (`generated_env`) |
+| `SMTP_TLS_CERT_FILE`, `SMTP_TLS_KEY_FILE` | smtp (development): a certificate from files; neither → a self-signed one made with `openssl` (clients skip verification) |
+| `SMTP_PUBLIC_HOST` | web: the relay's host shown with its settings on environment pages (default `localhost` outside production; unset in production hides them) |
+| `VALKEY_URL`, `VALKEY_CLUSTER` | api + web + worker (the daily inbound limit, Hooks delivery limits) + smtp: rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
 | `RATE_LIMIT_KEY_PREFIX` | api + web: namespaces Valkey keys (default `coss`) |
 | `CLIENT_IP_HEADER`, `TRUSTED_PROXY_COUNT` | api + web: where the client IP comes from (e.g. `x-forwarded-for`, proxies of ours appending to it). Unset → public unauthenticated limits use an aggregate fallback subject instead of a per-IP subject |
 | `TEST_VALKEY_URL` | ratelimit + api tests (keys under a random prefix, never flushed) |
@@ -393,7 +399,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 
 ## Tests
 
-- `bun:test`. DB-backed suites (`apps/api`, `apps/worker`, `packages/billing`, `packages/email`, `packages/hooks`, `packages/push`, `packages/reputation`, `packages/risk`, `packages/screening`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
+- `bun:test`. DB-backed suites (`apps/api`, `apps/smtp`, `apps/worker`, `packages/billing`, `packages/email`, `packages/hooks`, `packages/push`, `packages/reputation`, `packages/risk`, `packages/screening`, `packages/tenancy`, `packages/webhooks`) preload `test/setup.ts` via their
   `bunfig.toml` → `@coss/db/testing`, which throws unless `TEST_DATABASE_URL` names a `*_test` database, then points
   `DATABASE_URL` at it. Other suites are DB-free; before adding DB tests elsewhere copy `packages/email/bunfig.toml` +
   `test/setup.ts`, or the tests hit the dev database.
@@ -781,6 +787,28 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   are cancel + send). Scheduled sends are held while their organization is suspended. Cancel and reschedule need
   `email:send`.
   `scheduled_at` is omitted from the parsed request when absent (request hashes).
+- **SMTP relay** (`apps/smtp`, mapping in `packages/email/src/smtp-message.ts` = `@coss/email/smtp`): never a raw
+  MIME passthrough — every message becomes a `SendEmailRequest` and goes through `EmailService.send` exactly like
+  `POST /v1/emails` (sender authorization, suppressions, billing, screening, webhooks). AUTH (`PLAIN`/`LOGIN`) only
+  after TLS (`allowInsecureAuth` only for `localhost` in development), username `coss`, the password an API key
+  needing `email:send`; `authenticateSmtp` (`src/auth.ts`) repeats `requireApiKey`'s throttling in its order
+  (`api.authentication.key`/`.ip` before the lookup, `api.auth_failure` peeked, charged for bad keys and wrong
+  usernames). Every message checks the key again first (`recheckSmtpKey` at MAIL FROM: pooled connections stay
+  open for hours, and revoking a key or suspending its organization must stop them). Connections are charged per client IP (`smtp.connections.ip`, the socket's address: the NLB preserves
+  it, never trust a header), each message `api.send` (per key) and `emailSendQuota` (`@coss/ratelimit`, shared with
+  the API's send routes; refunded on replays and errors). Mapping: the `From` header (one mailbox) is the sender
+  (`MAIL FROM` is ignored); the envelope (`RCPT TO`, ≤ `MAX_RECIPIENTS`) decides who receives it — `To`/`Cc` header
+  addresses stay `to`/`cc`, every other envelope recipient is `bcc`; a header recipient missing from the envelope
+  or a message without a `To` recipient is refused (never move Bcc'd addresses into visible headers). Reserved,
+  `Content-*` and mail-client headers are dropped, the rest (≤ `MAX_HEADERS`) kept with RFC 2047 words still
+  encoded; `X-Coss-{Category,Tags,Tracking,Scheduled-At,Idempotency-Key}` set the API's fields and are never sent
+  on. Failures are SMTP replies (`src/replies.ts`): 4xx where a retry can help (quotas, `request_in_progress`,
+  outages), 5xx otherwise; a `250` names the email id. Each attributable message is a log line (source `smtp`,
+  type `smtp.message`; `smtp.auth` for real keys refused), without addresses, subjects or content: refusals log
+  their stable `errorCode` (the client's reply may quote addresses) and `loggedMessage` masks any address left.
+  Both `SMTPServer`s need their `error` handlers (an unhandled handshake failure ends the process). SIGTERM: stop
+  accepting, `421` to idle clients, let messages in progress finish. TLS: the process holds the certificate
+  (STARTTLS can't be offloaded): production exports the ACM certificate (`src/tls.ts`), the NLB forwards plain TCP.
 - **Batch sends** (`POST /v1/emails/batch`, `EmailService.sendBatch`, table `email_batch`, ids `batch_`): ≤ 100
   emails (`MAX_BATCH_EMAILS`), each a full `SendEmailRequest`, all or nothing. Every distinct `from` is authorized
   first (a failure names `emails.N.from`), then the batch row and every email go through the same
