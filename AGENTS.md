@@ -676,7 +676,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   Client IPs come only from `clientIpResolver` (`CLIENT_IP_HEADER`, rightmost-trusted `x-forwarded-for` entry) —
   never trust a raw header. Emails are hashed into keys. Better Auth's built-in limiter stays off
   (`rateLimit: { enabled: false }`): `apps/web/src/lib/auth-rate-limit.ts` wraps the `/api/auth` POST handler. The
-  ElastiCache user's ACL (`valkey-bootstrap.ts` `APP_ACCESS`) must list every command the client and the script use.
+  ElastiCache user's ACL (`valkey-bootstrap.ts` `APP_ACCESS`) must list every command the client and the scripts use
+  (risk's `VELOCITY_SCRIPT` too). Changing it changes nothing live: re-run `valkey:bootstrap` in production (it
+  rewrites the user's access string), or every script call with a new command fails with `NOPERM`/`ACL failure`.
   Per-org overrides are changed in the admin console's organization page through `changeRateLimitOverride`, which
   records a `rate_limit.override_*` audit event (bucket, previous and new rule) in the same transaction (the
   `ratelimit:set` script writes without one). Rule values are stored as `integer` (`MAX_RULE_VALUE`).
