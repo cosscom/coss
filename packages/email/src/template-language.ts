@@ -23,6 +23,11 @@ export const TEMPLATE_SOURCE_LIMITS: Readonly<Record<TemplateField, number>> = {
 };
 /** Rendered length (characters) per field, checked while rendering so loops can't amplify past it. */
 export const MAX_RENDERED_LENGTH = 2 * 1024 * 1024;
+/**
+ * Nodes visited (and loop iterations) while rendering one field: nested `#each` blocks can repeat
+ * work that emits nothing, which the output length alone would never stop.
+ */
+export const MAX_RENDER_STEPS = 1_000_000;
 /** Nesting depth of `#if`/`#each` blocks. */
 export const MAX_TEMPLATE_DEPTH = 10;
 export const MAX_TEMPLATE_VARIABLES = 50;
@@ -83,16 +88,29 @@ class SyntaxProblem extends Error {
   }
 }
 
-function positionAt(source: string, offset: number): Position {
-  let line = 1;
-  let lineStart = 0;
-  for (let i = 0; i < offset; i++) {
-    if (source.charCodeAt(i) === 10) {
-      line++;
-      lineStart = i + 1;
+/**
+ * Maps offsets in `source` to lines and columns. The line starts are found once, on first use, so
+ * positioning every tag of a large template stays linear.
+ */
+function positionsIn(source: string): (offset: number) => Position {
+  let lineStarts: number[] | null = null;
+  return (offset) => {
+    if (!lineStarts) {
+      lineStarts = [0];
+      for (let i = source.indexOf("\n"); i !== -1; i = source.indexOf("\n", i + 1)) {
+        lineStarts.push(i + 1);
+      }
     }
-  }
-  return { line, column: offset - lineStart + 1 };
+    // The last line starting at or before `offset`.
+    let low = 0;
+    let high = lineStarts.length - 1;
+    while (low < high) {
+      const middle = (low + high + 1) >> 1;
+      if ((lineStarts[middle] as number) <= offset) low = middle;
+      else high = middle - 1;
+    }
+    return { line: low + 1, column: offset - (lineStarts[low] as number) + 1 };
+  };
 }
 
 type Tag =
@@ -102,12 +120,12 @@ type Tag =
   | { kind: "else"; offset: number }
   | { kind: "close"; block: "if" | "each"; offset: number };
 
-function tokenize(source: string): Tag[] {
+function tokenize(source: string, positionAt: (offset: number) => Position): Tag[] {
   const tags: Tag[] = [];
   let text = "";
   let i = 0;
   const fail = (message: string, offset: number): never => {
-    throw new SyntaxProblem(message, positionAt(source, offset));
+    throw new SyntaxProblem(message, positionAt(offset));
   };
   const name = (value: string, offset: number): string => {
     if (!TEMPLATE_VARIABLE_NAME.test(value) || RESERVED_TEMPLATE_NAMES.has(value)) {
@@ -121,16 +139,19 @@ function tokenize(source: string): Tag[] {
     return value;
   };
   while (i < source.length) {
-    if (source.startsWith("\\{{", i)) {
-      text += "{{";
-      i += 3;
+    const next = source.indexOf("{{", i);
+    if (next === -1) {
+      text += source.slice(i);
+      break;
+    }
+    if (next > i && source.charCodeAt(next - 1) === 92) {
+      // `\{{` is a literal `{{`.
+      text += `${source.slice(i, next - 1)}{{`;
+      i = next + 2;
       continue;
     }
-    if (!source.startsWith("{{", i)) {
-      text += source[i];
-      i++;
-      continue;
-    }
+    text += source.slice(i, next);
+    i = next;
     const start = i;
     if (text) tags.push({ kind: "text", value: text });
     text = "";
@@ -182,7 +203,8 @@ function tokenize(source: string): Tag[] {
 /** Parses a template's source. The first syntax problem (with its position) fails the parse. */
 export function parseTemplate(source: string): ParsedTemplate {
   try {
-    const tags = tokenize(source);
+    const positionAt = positionsIn(source);
+    const tags = tokenize(source, positionAt);
     let index = 0;
     const parseUntil = (depth: number, open: Extract<Tag, { kind: "open" }> | null) => {
       const nodes: TemplateNode[] = [];
@@ -199,20 +221,20 @@ export function parseTemplate(source: string): ParsedTemplate {
               kind: "variable",
               name: tag.name,
               raw: tag.raw,
-              ...positionAt(source, tag.offset),
+              ...positionAt(tag.offset),
             });
             break;
           case "else":
             if (!open) {
               throw new SyntaxProblem(
                 "{{else}} outside of an {{#if}} or {{#each}} block.",
-                positionAt(source, tag.offset),
+                positionAt(tag.offset),
               );
             }
             if (otherwise) {
               throw new SyntaxProblem(
                 `A {{#${open.block}}} block can have only one {{else}}.`,
-                positionAt(source, tag.offset),
+                positionAt(tag.offset),
               );
             }
             otherwise = [];
@@ -221,11 +243,11 @@ export function parseTemplate(source: string): ParsedTemplate {
             if (depth >= MAX_TEMPLATE_DEPTH) {
               throw new SyntaxProblem(
                 `Blocks can be nested at most ${MAX_TEMPLATE_DEPTH} deep.`,
-                positionAt(source, tag.offset),
+                positionAt(tag.offset),
               );
             }
             const inner = parseUntil(depth + 1, tag);
-            const position = positionAt(source, tag.offset);
+            const position = positionAt(tag.offset);
             target().push(
               tag.block === "if"
                 ? {
@@ -251,7 +273,7 @@ export function parseTemplate(source: string): ParsedTemplate {
                 open
                   ? `Expected {{/${open.block}}} to close {{#${open.block} ${open.name}}}, found {{/${tag.block}}}.`
                   : `{{/${tag.block}}} without a matching {{#${tag.block}}}.`,
-                positionAt(source, tag.offset),
+                positionAt(tag.offset),
               );
             }
             return { nodes, otherwise: otherwise ?? [] };
@@ -260,7 +282,7 @@ export function parseTemplate(source: string): ParsedTemplate {
       if (open) {
         throw new SyntaxProblem(
           `Unclosed {{#${open.block} ${open.name}}}: expected {{/${open.block}}}.`,
-          positionAt(source, open.offset),
+          positionAt(open.offset),
         );
       }
       return { nodes, otherwise: otherwise ?? [] };
@@ -370,14 +392,26 @@ function display(value: TemplateValue | undefined): string {
 
 /**
  * Renders a parsed template. `{{name}}` is HTML-escaped when rendering `html`. Missing values render
- * as nothing; throws `TemplateRenderError` once the output passes `maxLength`.
+ * as nothing; throws `TemplateRenderError` once the output passes `maxLength` or the work passes
+ * `maxSteps`.
  */
 export function renderTemplate(
   nodes: TemplateNode[],
   values: TemplateValues,
-  opts: { field: TemplateField; maxLength?: number },
+  opts: { field: TemplateField; maxLength?: number; maxSteps?: number },
 ): string {
   const maxLength = opts.maxLength ?? MAX_RENDERED_LENGTH;
+  const maxSteps = opts.maxSteps ?? MAX_RENDER_STEPS;
+  let steps = 0;
+  const step = () => {
+    steps++;
+    if (steps > maxSteps) {
+      throw new TemplateRenderError(
+        `Rendering ${opts.field} takes too many steps (more than ${maxSteps.toLocaleString("en-US")}): ` +
+          "nest fewer loops over long lists.",
+      );
+    }
+  };
   const escapeOutput = opts.field === "html";
   const parts: string[] = [];
   let length = 0;
@@ -396,6 +430,7 @@ export function renderTemplate(
   };
   const visit = (list: TemplateNode[], item: TemplateListItem | null) => {
     for (const node of list) {
+      step();
       switch (node.kind) {
         case "text":
           emit(node.value);
@@ -411,7 +446,10 @@ export function renderTemplate(
         case "each": {
           const value = lookup(node.name, item);
           if (Array.isArray(value) && value.length > 0) {
-            for (const entry of value) visit(node.body, entry);
+            for (const entry of value) {
+              step();
+              visit(node.body, entry);
+            }
           } else {
             visit(node.otherwise, item);
           }

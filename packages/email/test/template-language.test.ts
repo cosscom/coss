@@ -100,6 +100,18 @@ describe("parseTemplate", () => {
     const parsed = parseTemplate(deep(11));
     expect(parsed.ok ? null : parsed.problem.message).toBe("Blocks can be nested at most 10 deep.");
   });
+
+  test("positions problems on later lines, and parses many tags in linear time", () => {
+    const parsed = parseTemplate("one\ntwo {{a}}\nthree\n  {{#if}}");
+    expect(parsed.ok ? null : parsed.problem).toMatchObject({ line: 4, column: 3 });
+    // 512 KB of tags, each on its own line: quadratic positioning took seconds here.
+    const source = "{{x}}\n".repeat((512 * 1024) / 6);
+    const started = performance.now();
+    const many = parseTemplate(source);
+    expect(many.ok).toBe(true);
+    if (many.ok) expect(many.nodes.at(-2)).toMatchObject({ line: 87381, column: 1 });
+    expect(performance.now() - started).toBeLessThan(1_000);
+  });
 });
 
 describe("checkTemplate", () => {
@@ -195,6 +207,18 @@ describe("renderTemplate", () => {
         },
       ),
     ).toThrow(TemplateRenderError);
+  });
+
+  test("stops nested loops that emit nothing once the work passes the step budget", () => {
+    const items = Array.from({ length: 1000 }, () => ({}));
+    const nested = `${"{{#each items}}".repeat(10)}${"{{/each}}".repeat(10)}`;
+    const started = performance.now();
+    expect(() => renderTemplate(parse(nested), { items }, { field: "text" })).toThrow(
+      "Rendering text takes too many steps",
+    );
+    expect(performance.now() - started).toBeLessThan(1_000);
+    // Ordinary loops stay well inside it.
+    expect(render("{{#each items}}{{#if x}}y{{/if}}{{/each}}", { items })).toBe("");
   });
 });
 

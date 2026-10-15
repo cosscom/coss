@@ -795,7 +795,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   transform adds template keys only when present (old hashes stay valid); template errors fall back to the
   idempotent replay like `authorizeLiveSender`. The language (`@coss/email/templates`, also the dashboard's live
   preview) is a Mustache subset: `{{v}}` (HTML-escaped in `html` only), `{{{v}}}` (HTML only), `#if`/`#each`
-  with `{{else}}`, comments, `\{{`; no code runs, output is capped while rendering (2 MB a field, nesting 10).
+  with `{{else}}`, comments, `\{{`; no code runs, output and work are capped while rendering (2 MB and 1,000,000 steps a field, nesting 10).
   Publishing needs a parse-clean draft whose names are all declared and content for the default locale;
   re-publishing an unchanged draft returns the current version (retry-safe). Variables are checked strictly
   (unknown names refused, `null` = absent, defaults applied, lists ≤ 1,000 objects, `variables` ≤ 64 KB); errors
