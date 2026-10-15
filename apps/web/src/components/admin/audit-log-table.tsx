@@ -25,6 +25,8 @@ const ACTION_LABELS: Record<string, { label: string; variant: "error" | "success
   "user.reset_two_factor": { label: "Reset two-factor", variant: "error" },
   "organization.suspend": { label: "Suspended organization", variant: "error" },
   "organization.unsuspend": { label: "Lifted suspension", variant: "success" },
+  "organization.take_down": { label: "Took down organization", variant: "error" },
+  "email.view_content": { label: "Viewed email content", variant: "info" },
   "reputation.suspended": { label: "Suspended live sending", variant: "error" },
   "reputation.reinstated": { label: "Reinstated live sending", variant: "success" },
   "reputation.policy_updated": { label: "Changed reputation policy", variant: "info" },
@@ -49,6 +51,7 @@ const ACTION_LABELS: Record<string, { label: string; variant: "error" | "success
 function targetHref(event: AdminAuditEvent): string | null {
   if (event.targetType === "user") return `/admin/users/${event.targetId}`;
   if (event.targetType === "organization") return `/admin/organizations/${event.targetId}`;
+  if (event.targetType === "email") return `/admin/emails/${event.targetId}`;
   if (event.organizationId) return `/admin/organizations/${event.organizationId}`;
   return null;
 }
@@ -66,6 +69,9 @@ function describe(event: AdminAuditEvent): string {
   if (typeof meta.bucket === "string") parts.push(meta.bucket + ruleChange(meta));
   if (typeof meta.number === "string") parts.push(meta.number);
   if (typeof meta.plan === "string") parts.push(meta.plan);
+  if (Array.isArray(meta.bannedUserIds)) parts.push(`${meta.bannedUserIds.length} banned`);
+  if (Array.isArray(meta.revokedKeyIds)) parts.push(`${meta.revokedKeyIds.length} keys revoked`);
+  if (typeof meta.subject === "string") parts.push(`“${meta.subject}”`);
   return parts.join(" · ") || event.targetId;
 }
 

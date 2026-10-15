@@ -1,6 +1,6 @@
 /** Reads of metered usage (`billing_usage`). */
 import { db, type Executor, schema } from "@coss/db";
-import { and, asc, eq, gte, lt, sql, sum } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lt, sql, sum } from "drizzle-orm";
 import type { MeterKey } from "./catalog/meters.ts";
 import type { UsageRow, UsageTotal } from "./engine/types.ts";
 import type { Interval } from "./time.ts";
@@ -102,4 +102,41 @@ export async function organizationsWithUsageSince(
     .from(billingUsage)
     .where(gte(billingUsage.hourStart, since));
   return rows.map((row) => row.organizationId);
+}
+
+/**
+ * One meter's usage per UTC day across every organization, with `apartFrom`'s (COSS's own) kept
+ * apart: the admin console's platform chart. Platform-level: call only after `requirePlatformAdmin*`.
+ */
+export async function platformUsageByDay(
+  input: {
+    meter: MeterKey;
+    interval: Interval;
+    apartFrom?: string | null;
+    scope?: { organizationIds?: string[] };
+  },
+  executor: Executor = db,
+): Promise<{ day: Date; apart: boolean; quantity: number }[]> {
+  const day = sql<Date>`date_trunc('day', ${billingUsage.hourStart}, 'UTC')`.mapWith(
+    (value: string | Date) => new Date(value),
+  );
+  const apart = sql<boolean>`coalesce(${billingUsage.organizationId} = ${input.apartFrom ?? null}, false)`;
+  return (
+    executor
+      .select({ day, apart, quantity: sum(billingUsage.quantity).mapWith(Number) })
+      .from(billingUsage)
+      .where(
+        and(
+          eq(billingUsage.meter, input.meter),
+          gte(billingUsage.hourStart, input.interval.start),
+          lt(billingUsage.hourStart, input.interval.end),
+          input.scope?.organizationIds
+            ? inArray(billingUsage.organizationId, input.scope.organizationIds)
+            : undefined,
+        ),
+      )
+      // By position: `apartFrom` is a parameter, so `apart` is a new expression each time.
+      .groupBy(sql`1`, sql`2`)
+      .orderBy(sql`1`, sql`2`)
+  );
 }

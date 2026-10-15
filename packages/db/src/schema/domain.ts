@@ -1216,6 +1216,8 @@ export const contentScreening = pgTable(
     index("content_screening_organization_created_at_idx").on(t.organizationId, t.createdAt.desc()),
     // The worker's retention purge.
     index("content_screening_created_at_idx").on(t.createdAt),
+    // A message's verdicts (the admin console's email pages).
+    index("content_screening_subject_idx").on(t.product, t.subjectId),
   ],
 );
 
