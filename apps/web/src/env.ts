@@ -30,6 +30,12 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.url(),
     // Public origin of the API, shown in the quick-start snippets.
     API_PUBLIC_URL: z.url(),
+    // The SMTP relay's host (apps/smtp), shown with its settings on environment pages. Unset in
+    // production until smtp.coss.com resolves: the settings are hidden.
+    SMTP_PUBLIC_HOST:
+      process.env.NODE_ENV === "production"
+        ? z.string().optional()
+        : z.string().default("localhost"),
     ...emailEnvShape,
     ...rateLimitEnvShape,
     ...webhookEnvShape,

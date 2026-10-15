@@ -4,7 +4,7 @@
  * infra/test checks it against the apps' env schemas, turbo.json and the Dockerfiles.
  */
 
-export type ServiceName = "web" | "site" | "portal" | "api" | "worker";
+export type ServiceName = "web" | "site" | "portal" | "api" | "worker" | "smtp";
 
 /**
  * - `plain`: a task-definition `environment` value (`value`: the production value, or how to get it).
@@ -26,6 +26,12 @@ export type Service = {
   port?: number;
   /** ALB target group health check: HTTP 200 expected. Never touches the database. */
   healthCheckPath?: string;
+  /**
+   * Plain TCP through the network load balancer (the SMTP relay terminates TLS itself, for
+   * STARTTLS): each public `listener` port forwards to a container port. Client addresses are
+   * preserved, so tasks see who connected.
+   */
+  tcpPorts?: { listener: number; container: number }[];
   /** Seconds between SIGTERM and SIGKILL (ECS `stopTimeout`; Fargate allows at most 120). */
   stopTimeout: number;
   /** Fargate size (arm64). A starting point: watch CPU/memory and adjust. */
@@ -306,7 +312,7 @@ const apiPublicUrl: EnvVar = {
  * Error and performance monitoring (Sentry organization `cosscom`, see @coss/observability). Each
  * runtime has its own project; DSNs aren't secrets (browsers receive the dashboard's).
  */
-function sentry(project: "web" | "portal" | "api" | "worker"): EnvVar[] {
+function sentry(project: "web" | "portal" | "api" | "worker" | "smtp"): EnvVar[] {
   return [
     {
       name: "SENTRY_DSN",
@@ -379,6 +385,14 @@ export const SERVICES: Service[] = [
       portalPublicUrl,
       riskHashKey,
       notificationsEnvironment,
+      {
+        name: "SMTP_PUBLIC_HOST",
+        kind: "plain",
+        required: false,
+        value: "smtp.coss.com",
+        description:
+          "The SMTP relay's host, shown with its settings on environment pages. Set it once the DNS record resolves; unset hides the settings.",
+      },
       {
         name: "RISK_SIGNUP_ENVIRONMENT_ID",
         kind: "plain",
@@ -640,6 +654,77 @@ export const SERVICES: Service[] = [
       ...sentry("worker"),
       sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
+    ],
+  },
+  {
+    // The SMTP relay (smtp.coss.com): 465/2465 implicit TLS, 587/2587 STARTTLS, through the NLB.
+    name: "smtp",
+    dockerfile: "apps/smtp/Dockerfile",
+    tcpPorts: [
+      { listener: 465, container: 2465 },
+      { listener: 2465, container: 2465 },
+      { listener: 587, container: 2587 },
+      { listener: 2587, container: 2587 },
+    ],
+    // Lets messages in progress finish (clients get 421 between messages and reconnect).
+    stopTimeout: 120,
+    cpu: 256,
+    memory: 1024,
+    minTasks: 2,
+    // ACM (the certificate export) has no VPC endpoint here.
+    needsInternet: true,
+    env: [
+      ...db,
+      ...auth,
+      ...email,
+      ...rateLimits.filter((v) =>
+        ["VALKEY_URL", "VALKEY_CLUSTER", "RATE_LIMIT_KEY_PREFIX"].includes(v.name),
+      ),
+      {
+        name: "SMTP_HOSTNAME",
+        kind: "plain",
+        required: true,
+        value: "smtp.coss.com",
+        description: "The relay's name: its greeting and its certificate's name.",
+      },
+      {
+        name: "SMTP_TLS_CERTIFICATE_ARN",
+        kind: "plain",
+        required: true,
+        value: "Set by Terraform (aws_acm_certificate.smtp, exportable).",
+        description:
+          "The relay exports this ACM certificate at start and every 12 hours (ACM renews it).",
+      },
+      {
+        name: "SMTP_TLS_PASSPHRASE",
+        kind: "secret",
+        required: true,
+        value: "openssl rand -base64 32 (any value; it only protects the exported key in transit)",
+        description: "Encrypts the private key ACM exports; the relay decrypts it in memory.",
+      },
+      {
+        name: "SMTP_TLS_CERT_FILE",
+        kind: "plain",
+        required: false,
+        description: "Development only (with SMTP_TLS_KEY_FILE): a certificate from files.",
+      },
+      {
+        name: "SMTP_TLS_KEY_FILE",
+        kind: "plain",
+        required: false,
+        description: "Development only: the key of SMTP_TLS_CERT_FILE.",
+      },
+      ...sentry("smtp"),
+      sentryRelease,
+      { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
+      {
+        name: "SMTP_IMPLICIT_TLS_PORT",
+        kind: "image",
+        required: true,
+        value: "2465",
+        description: "",
+      },
+      { name: "SMTP_STARTTLS_PORT", kind: "image", required: true, value: "2587", description: "" },
     ],
   },
 ];

@@ -17,11 +17,19 @@ locals {
   # from the stage secret's JSON key of the same name (optional ones listed in var.unset_secrets
   # left out: ECS can't start a task whose secret names a missing key), `image` ones left to the
   # Dockerfile.
+  # Plain values Terraform owns (ARNs of resources it creates), merged over var.plain_env.
+  generated_env = {
+    smtp = { SMTP_TLS_CERTIFICATE_ARN = aws_acm_certificate_validation.smtp.certificate_arn }
+  }
+  plain_values = {
+    for name, service in local.services : name => merge(lookup(var.plain_env, name, {}), lookup(local.generated_env, name, {}))
+  }
+
   env = {
     for name, service in local.services : name => {
       plain = [
-        for variable in service.env : { name = variable.name, value = var.plain_env[name][variable.name] }
-        if variable.kind == "plain" && contains(keys(lookup(var.plain_env, name, {})), variable.name)
+        for variable in service.env : { name = variable.name, value = local.plain_values[name][variable.name] }
+        if variable.kind == "plain" && contains(keys(local.plain_values[name]), variable.name)
       ]
       secrets = [
         for variable in service.env : {
@@ -32,7 +40,7 @@ locals {
       ]
       missing = [
         for variable in service.env : variable.name
-        if variable.kind == "plain" && variable.required && !contains(keys(lookup(var.plain_env, name, {})), variable.name)
+        if variable.kind == "plain" && variable.required && !contains(keys(local.plain_values[name]), variable.name)
       ]
       unset_required = [
         for variable in service.env : variable.name
@@ -62,13 +70,18 @@ resource "aws_ecs_task_definition" "service" {
   }
 
   container_definitions = jsonencode([{
-    name         = each.key
-    image        = "${aws_ecr_repository.service[each.key].repository_url}:${aws_ssm_parameter.image_tag.insecure_value}"
-    essential    = true
-    stopTimeout  = each.value.stopTimeout
-    environment  = local.env[each.key].plain
-    secrets      = local.env[each.key].secrets
-    portMappings = try(each.value.port, null) == null ? [] : [{ containerPort = each.value.port, protocol = "tcp" }]
+    name        = each.key
+    image       = "${aws_ecr_repository.service[each.key].repository_url}:${aws_ssm_parameter.image_tag.insecure_value}"
+    essential   = true
+    stopTimeout = each.value.stopTimeout
+    environment = local.env[each.key].plain
+    secrets     = local.env[each.key].secrets
+    portMappings = [
+      for port in distinct(concat(
+        try(each.value.port, null) == null ? [] : [each.value.port],
+        [for mapping in try(each.value.tcpPorts, []) : mapping.container],
+      )) : { containerPort = port, protocol = "tcp" }
+    ]
     # Reaps zombie processes and lets ECS Exec start its agent.
     linuxParameters = { initProcessEnabled = true }
     logConfiguration = {
@@ -115,7 +128,7 @@ resource "aws_ecs_service" "service" {
     rollback = true
   }
 
-  health_check_grace_period_seconds = contains(keys(local.lb_services), each.key) ? 60 : null
+  health_check_grace_period_seconds = contains(keys(local.lb_services), each.key) || contains(keys(local.nlb_services), each.key) ? 60 : null
 
   network_configuration {
     subnets          = [for subnet in aws_subnet.private : subnet.id]
@@ -132,12 +145,21 @@ resource "aws_ecs_service" "service" {
     }
   }
 
+  dynamic "load_balancer" {
+    for_each = { for key, target in local.nlb_targets : key => target if target.service == each.key }
+    content {
+      target_group_arn = aws_lb_target_group.tcp[load_balancer.key].arn
+      container_name   = each.key
+      container_port   = load_balancer.value.port
+    }
+  }
+
   # The deploy workflow registers new revisions (new images) and autoscaling moves the count.
   lifecycle {
     ignore_changes = [task_definition, desired_count]
   }
 
-  depends_on = [aws_lb_listener.https]
+  depends_on = [aws_lb_listener.https, aws_lb_listener.tcp]
 }
 
 resource "aws_appautoscaling_target" "service" {

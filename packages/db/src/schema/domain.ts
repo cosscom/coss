@@ -1351,7 +1351,7 @@ export const scimGroupRole = pgTable(
   (t) => [unique("scim_group_role_organization_group_unique").on(t.organizationId, t.groupName)],
 );
 
-export const logSource = pgEnum("log_source", ["api", "email", "webhook", "risk"]);
+export const logSource = pgEnum("log_source", ["api", "email", "webhook", "risk", "smtp"]);
 export type LogSource = (typeof logSource.enumValues)[number];
 
 export const logLevel = pgEnum("log_level", ["info", "warning", "error"]);
@@ -1475,6 +1475,7 @@ export const logDrainSource = pgEnum("log_drain_source", [
   "webhook",
   "risk",
   "audit",
+  "smtp",
 ]);
 export type LogDrainSource = (typeof logDrainSource.enumValues)[number];
 

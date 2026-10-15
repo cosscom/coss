@@ -1,0 +1,216 @@
+---
+title: SMTP
+description: Send through COSS from anything that speaks SMTP, with an API key as the password.
+---
+
+Apps that can only send over SMTP, such as Supabase Auth, WordPress, Rails, Laravel, Django,
+nodemailer setups and older software, can send through COSS's SMTP relay. A message sent this
+way is turned into the same request as [`POST /v1/emails`](/docs/email/sending). It gets the same
+sender checks, suppressions, quotas, tracking, webhooks and logs.
+
+| Setting  | Value                                                      |
+| -------- | ---------------------------------------------------------- |
+| Host     | `smtp.coss.com`                                            |
+| Port     | `465` (TLS) or `587` (STARTTLS); `2465` and `2587` also work |
+| Username | `coss`                                                     |
+| Password | An API key (`coss_live_…` or `coss_test_…`)                |
+
+The key decides where the email goes, exactly as with the API. A sandbox key (`coss_test_…`)
+sends from a [sandbox environment](/docs/environments) and nothing leaves COSS. A live key sends for
+real, from a [verified domain](/docs/email/domains). The key needs the `email:send` permission.
+
+Encryption is required. Use port 465 for TLS from the first byte, or 587 with STARTTLS; COSS
+refuses `AUTH` before TLS. If your host blocks outgoing 465 and 587 (some cloud providers do),
+use 2465 or 2587.
+
+## Frameworks
+
+<Tabs items={["nodemailer", "Better Auth", "Supabase", "WordPress", "Rails", "Laravel", "Django"]}>
+<Tab value="nodemailer">
+
+```ts
+import nodemailer from "nodemailer";
+
+const transport = nodemailer.createTransport({
+  host: "smtp.coss.com",
+  port: 465,
+  secure: true,
+  auth: { user: "coss", pass: process.env.COSS_API_KEY },
+});
+
+await transport.sendMail({
+  from: "Acme <hello@acme.com>",
+  to: "ada@example.com",
+  subject: "Welcome",
+  html: "<p>Thanks for signing up!</p>",
+});
+```
+
+</Tab>
+<Tab value="Better Auth">
+
+Better Auth sends its emails through functions you write. Use the nodemailer transport above
+in them, or the [TypeScript SDK](/docs/sdk), which needs no SMTP at all.
+
+```ts
+import { betterAuth } from "better-auth";
+import nodemailer from "nodemailer";
+
+const transport = nodemailer.createTransport({
+  host: "smtp.coss.com",
+  port: 465,
+  secure: true,
+  auth: { user: "coss", pass: process.env.COSS_API_KEY },
+});
+
+export const auth = betterAuth({
+  emailAndPassword: {
+    enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      await transport.sendMail({
+        from: "Acme <hello@acme.com>",
+        to: user.email,
+        subject: "Reset your password",
+        text: `Reset your password: ${url}`,
+      });
+    },
+  },
+});
+```
+
+</Tab>
+<Tab value="Supabase">
+
+In the Supabase dashboard, open **Authentication → Emails → SMTP Settings** and turn on
+custom SMTP:
+
+| Field          | Value                                  |
+| -------------- | -------------------------------------- |
+| Sender email   | An address on your verified domain     |
+| Host           | `smtp.coss.com`                        |
+| Port           | `465`                                  |
+| Username       | `coss`                                 |
+| Password       | A live API key                         |
+
+</Tab>
+<Tab value="WordPress">
+
+With the WP Mail SMTP plugin, choose the **Other SMTP** mailer:
+
+| Field           | Value                |
+| --------------- | -------------------- |
+| SMTP Host       | `smtp.coss.com`      |
+| Encryption      | SSL                  |
+| SMTP Port       | `465`                |
+| Authentication  | On                   |
+| SMTP Username   | `coss`               |
+| SMTP Password   | A live API key       |
+
+Set **From Email** to an address on your verified domain.
+
+</Tab>
+<Tab value="Rails">
+
+```ruby
+# config/environments/production.rb
+config.action_mailer.delivery_method = :smtp
+config.action_mailer.smtp_settings = {
+  address: "smtp.coss.com",
+  port: 587,
+  user_name: "coss",
+  password: ENV["COSS_API_KEY"],
+  authentication: :plain,
+  enable_starttls: true,
+}
+```
+
+</Tab>
+<Tab value="Laravel">
+
+```bash
+# .env
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtps
+MAIL_HOST=smtp.coss.com
+MAIL_PORT=465
+MAIL_USERNAME=coss
+MAIL_PASSWORD=coss_live_…
+MAIL_FROM_ADDRESS=hello@acme.com
+```
+
+</Tab>
+<Tab value="Django">
+
+```python
+# settings.py
+import os
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.coss.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "coss"
+EMAIL_HOST_PASSWORD = os.environ["COSS_API_KEY"]
+DEFAULT_FROM_EMAIL = "Acme <hello@acme.com>"
+```
+
+</Tab>
+</Tabs>
+
+## How a message becomes an email
+
+- **Sender**: the `From` header, which must name exactly one address. With a live key it must be
+  on a verified domain. The envelope sender (`MAIL FROM`) is ignored; COSS uses its own return
+  path for bounces.
+- **Recipients**: the envelope (`RCPT TO`) decides who receives the message, at most 50 per
+  message. Addresses in the `To` and `Cc` headers stay `to` and `cc`, and every other envelope
+  recipient becomes `bcc`. A `To` or `Cc` address that isn't an envelope recipient is refused,
+  because COSS can't show a recipient without sending to them. So is a message with no `To`
+  recipient; COSS won't move Bcc'd addresses into `To`.
+- **Content**: `Subject` is required, plus an HTML part, a text part or both. Attachments keep
+  their file names, and parts without one get a generated name. Inline images (`cid:`) stay
+  inline. The [attachment limits](/docs/email/sending) apply: 20 files, 25 MB combined, and no
+  executable types.
+- **Headers**: up to 15 custom headers are sent on, such as `In-Reply-To`, `References`,
+  `List-Unsubscribe` and `X-…`. Transport headers (`Message-ID`, `Date`, `MIME-Version`,
+  `Content-*`, `Received`, `DKIM-Signature`) and mail-client headers (`X-Mailer`, `User-Agent`)
+  are dropped. COSS sets its own `Message-ID`, so threads continue through `In-Reply-To` and
+  `References`, not your original id.
+- **Size**: at most 40 MB per message, as advertised by `SIZE`.
+
+### COSS headers
+
+These headers set what the API takes as fields. COSS reads them and doesn't send them on.
+
+| Header                    | Example                         | Same as                    |
+| ------------------------- | ------------------------------- | -------------------------- |
+| `X-Coss-Category`         | `onboarding`                    | `category`                 |
+| `X-Coss-Tags`             | `template=welcome, plan=pro`    | `tags`                     |
+| `X-Coss-Tracking`         | `opens, clicks` or `none`       | `tracking`                 |
+| `X-Coss-Scheduled-At`     | `2026-11-01T09:00:00Z`          | `scheduled_at`             |
+| `X-Coss-Idempotency-Key`  | `welcome-user-123`              | the `Idempotency-Key` header |
+
+SMTP clients retry when a connection drops before COSS answers. With an
+`X-Coss-Idempotency-Key`, a retry gets the first email back instead of sending a second one.
+
+## Replies
+
+A `250` reply means COSS has accepted the email. It names the email's id, which you can look up
+with `coss.email.get()`: `250 2.0.0 OK queued as email_01…`. Delivery then happens just as it
+does for API sends: follow it with [webhooks](/docs/webhooks) or in the dashboard. Every message
+also appears in the environment's [logs](/docs/logs) with source `smtp`, without addresses or
+content.
+
+| Reply | Meaning                                                                                    |
+| ----- | ------------------------------------------------------------------------------------------ |
+| `250` | Accepted.                                                                                  |
+| `421` | Too many connections from your address, or the relay is restarting: reconnect and retry.   |
+| `451` | Temporary: the key's rate limit or your send quota is used up. Retry later.                |
+| `454` | Authentication could not be checked right now, or too many attempts. Retry later.          |
+| `535` | Wrong username, an invalid key, a key without `email:send`, or a suspended organization.   |
+| `550` | The sender isn't allowed: an unverified domain, a suspended account or a billing hold.     |
+| `552` | The message is larger than 40 MB, or has more recipients than the quota allows at once.    |
+| `554` | The message can't be sent as is; the reply says why, such as a missing subject or a blocked attachment. |
+
+Messages sent over SMTP share their API key's rate limit and the organization's send quotas with
+API sends.

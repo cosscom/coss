@@ -9,6 +9,7 @@ vpc_cidr           = "10.40.0.0/16"
 dashboard_host     = "coss.com"
 api_host           = "api.coss.com"
 portal_host        = "portal.cosshooks.com"
+smtp_host          = "smtp.coss.com"
 external_origin_hosts = {
   ui     = "coss-com-ui.vercel.app"
   origin = "coss-com-origin.vercel.app"
@@ -36,6 +37,7 @@ autoscaling = {
   portal = { max = 4, cpu_target = 60 }
   api    = { max = 6, cpu_target = 60 }
   worker = { max = 2, cpu_target = 70 }
+  smtp   = { max = 4, cpu_target = 60 }
 }
 
 waf_rate_limits = { dashboard = 5000, api = 20000 }
@@ -148,5 +150,24 @@ plain_env = {
     SENTRY_DSN                   = "https://77c5b5b1c87194a0942714259a44dcac@o4512237982711808.ingest.de.sentry.io/4512245153398865"
     SENTRY_ENVIRONMENT           = "production"
     SENTRY_TRACES_SAMPLE_RATE    = "0.1"
+  }
+  smtp = {
+    BETTER_AUTH_URL          = "https://coss.com"
+    SMTP_HOSTNAME            = "smtp.coss.com"
+    EMAIL_PROVIDER           = "ses"
+    AWS_REGION               = "us-east-2"
+    SES_CONFIGURATION_SET    = "coss"
+    SES_TENANT_PREFIX        = "coss"
+    INBOUND_MANAGED_DOMAIN   = "inbound.coss.com"
+    SES_INBOUND_BUCKET       = "coss-inbound-294417174674"
+    TRACKING_DOMAIN_PROVIDER = "cloudflare"
+    CLOUDFLARE_ZONE_ID       = "2e3adbb52b68d57dfa5d71a0b7cfa3cc"
+    TRACKING_CNAME_TARGET    = "track.cosslinks.com"
+    DATABASE_POOL_MAX        = "10"
+    VALKEY_CLUSTER           = "true"
+    RATE_LIMIT_KEY_PREFIX    = "coss"
+    # SENTRY_DSN: the `smtp` Sentry project's, once it exists (unset: nothing is reported).
+    SENTRY_ENVIRONMENT        = "production"
+    SENTRY_TRACES_SAMPLE_RATE = "0.1"
   }
 }

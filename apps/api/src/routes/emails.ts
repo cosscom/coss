@@ -10,7 +10,7 @@ import {
   SendEmailRequest,
   uniqueRecipientCount,
 } from "@coss/email/schemas";
-import type { RateLimitRequest } from "@coss/ratelimit";
+import { emailSendQuota } from "@coss/ratelimit";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { recordApiAudit } from "../audit.ts";
@@ -331,29 +331,6 @@ export const listEmailLinksRoute = createRoute({
     404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
   },
 });
-/**
- * The recipient quota a send is charged against: the organization's for live keys, the
- * environment's own (smaller, daily) quota for sandbox keys.
- */
-function sendQuota(
-  auth: { organizationId: string; environmentId: string; mode: string },
-  recipients: number,
-): RateLimitRequest {
-  return auth.mode === "sandbox"
-    ? {
-        buckets: ["email.sandbox_recipients.day"],
-        subject: auth.environmentId,
-        organizationId: auth.organizationId,
-        cost: recipients,
-      }
-    : {
-        buckets: ["email.recipients.second", "email.recipients.day"],
-        subject: auth.organizationId,
-        organizationId: auth.organizationId,
-        cost: recipients,
-      };
-}
-
 export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
 
@@ -370,7 +347,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         params,
         idempotencyKey,
       };
-      const quota = sendQuota(c.var.auth, uniqueRecipientCount(params));
+      const quota = emailSendQuota(c.var.auth, uniqueRecipientCount(params));
       const decision = await c.var.rateLimiter.consume(quota);
       if (!decision.allowed) {
         // A matching replay (queued or completed) needs no quota. This lookup cannot create or dispatch a send.
@@ -423,7 +400,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       };
       // Charged as one: the batch is accepted or refused as a whole.
       const recipients = emails.reduce((sum, params) => sum + uniqueRecipientCount(params), 0);
-      const quota = sendQuota(c.var.auth, recipients);
+      const quota = emailSendQuota(c.var.auth, recipients);
       const decision = await c.var.rateLimiter.consume(quota);
       if (!decision.allowed) {
         const replay = await emailService.replayBatch(input);
