@@ -49,6 +49,7 @@ export type DeployPhase =
   | "building"
   | "deploying"
   | "deployed"
+  | "deployed_with_errors"
   | "skipped"
   | "failed"
   | "canceled";
@@ -62,10 +63,14 @@ export const DEPLOY_PHASES: Record<
   building: { label: "Building", tone: "info", active: true },
   deploying: { label: "Deploying", tone: "info", active: true },
   deployed: { label: "Deployed", tone: "success", active: false },
+  deployed_with_errors: { label: "Deployed, a later step failed", tone: "warning", active: false },
   skipped: { label: "Shipped by a later run", tone: "neutral", active: false },
   failed: { label: "Failed", tone: "error", active: false },
   canceled: { label: "Canceled", tone: "neutral", active: false },
 };
+
+/** Runs whose rollout finished: production ran their commit (whatever came after). */
+export const ROLLED_OUT_PHASES: DeployPhase[] = ["deployed", "deployed_with_errors"];
 
 /** Runs that haven't started building or deploying: "Deploy now" cancels them. */
 export const CANCELABLE_PHASES: DeployPhase[] = ["queued", "waiting", "building"];
@@ -86,10 +91,14 @@ export function deployRunPhase(run: GitHubRun, jobs: GitHubJob[]): DeployPhase {
     if (deploy) return "deploying";
     return "queued";
   }
+  // The steps after the rollout (the CDN invalidation, the routing check) can fail once production
+  // already runs the commit.
+  const rolledOut =
+    deploy?.steps?.find((step) => step.name === ROLLOUT_STEP)?.conclusion === "success";
+  if (rolledOut) return run.conclusion === "success" ? "deployed" : "deployed_with_errors";
   if (run.conclusion === "cancelled") return "canceled";
   if (run.conclusion !== "success") return "failed";
-  const rollout = deploy?.steps?.find((step) => step.name === ROLLOUT_STEP);
-  return rollout?.conclusion === "success" ? "deployed" : "skipped";
+  return "skipped";
 }
 
 /** The run name of a dispatch that deploys an earlier commit's images (deploy.yml's `run-name`). */

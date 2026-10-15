@@ -47,13 +47,13 @@ export async function deployNowAction(
   return runAction(async () => {
     const { actor } = await requirePlatformAdminAction();
     const note = reason(formData, false);
-    const { commit, canceledRunIds } = await withGitHub(deployMainNow);
+    const { commit, runId, canceledRunIds } = await withGitHub(deployMainNow);
     await recordAdminAction({
       actor,
       action: "deploy.started",
       target: { type: "commit", id: commit },
       reason: note,
-      metadata: { canceledRunIds },
+      metadata: { runId, canceledRunIds },
     });
     refresh();
     return null;
@@ -72,7 +72,7 @@ export async function redeployAction(
     const { actor } = await requirePlatformAdminAction();
     const commit = formString(formData, "commit");
     const note = reason(formData, true);
-    const { canceledRunIds } = await withGitHub(async () => {
+    const { runId, canceledRunIds } = await withGitHub(async () => {
       // Only a commit a recent run deployed: its images exist and it ran in production before.
       if (!redeployableCommits(await getDeployOverview()).has(commit)) {
         throw new ActionError("That commit can't be redeployed from here.");
@@ -84,7 +84,7 @@ export async function redeployAction(
       action: "deploy.redeployed",
       target: { type: "commit", id: commit },
       reason: note,
-      metadata: { canceledRunIds },
+      metadata: { runId, canceledRunIds },
     });
     refresh();
     return null;

@@ -77,6 +77,12 @@ describe("deployRunPhase", () => {
     ],
     ["rolled out", {}, [rollout("success")], "deployed"],
     [
+      "rolled out, then the routing check failed",
+      { conclusion: "failure" },
+      [rollout("success")],
+      "deployed_with_errors",
+    ],
+    [
       "superseded at the gate",
       {},
       [job("gate", "completed", "success"), job("deploy", "completed", "skipped")],
