@@ -21,6 +21,18 @@ function firstFreeSlug(base: string, taken: ReadonlySet<string>): string {
   }
 }
 
+/** The trimmed name, or a `TenancyError("invalid")`. */
+function validProjectName(raw: string): string {
+  const name = raw.trim();
+  if (name.length === 0 || name.length > PROJECT_NAME_MAX_LENGTH) {
+    throw new TenancyError(
+      "invalid",
+      `Project name must be 1-${PROJECT_NAME_MAX_LENGTH} characters.`,
+    );
+  }
+  return name;
+}
+
 /**
  * Creates a project with its default environments (production/live, development/sandbox) in one
  * transaction. The slug is derived from the name and suffixed (`-2`, `-3`, …) when taken.
@@ -29,13 +41,7 @@ export async function createProject(input: {
   organizationId: string;
   name: string;
 }): Promise<{ project: Project; environments: Environment[] }> {
-  const name = input.name.trim();
-  if (name.length === 0 || name.length > PROJECT_NAME_MAX_LENGTH) {
-    throw new TenancyError(
-      "invalid",
-      `Project name must be 1-${PROJECT_NAME_MAX_LENGTH} characters.`,
-    );
-  }
+  const name = validProjectName(input.name);
   const { organizationId } = input;
   const base = slugify(name) || "project";
 
@@ -131,4 +137,28 @@ export async function getProject(input: {
     .where(and(eq(project.organizationId, input.organizationId), eq(project.slug, input.slug)))
     .limit(1);
   return row ?? null;
+}
+
+/**
+ * Renames a project. Only the name changes: the slug stays, so dashboard URLs and bookmarks keep
+ * working. Returns the project before and after, or `not_found` when it isn't the organization's.
+ */
+export async function renameProject(input: {
+  organizationId: string;
+  projectId: string;
+  name: string;
+}): Promise<{ previous: Project; project: Project }> {
+  const name = validProjectName(input.name);
+  return db.transaction(async (tx) => {
+    const where = and(
+      eq(project.organizationId, input.organizationId),
+      eq(project.id, input.projectId),
+    );
+    const [previous] = await tx.select().from(project).where(where).for("update").limit(1);
+    if (!previous) throw new TenancyError("not_found", "Project not found.");
+    if (previous.name === name) return { previous, project: previous };
+    const [renamed] = await tx.update(project).set({ name }).where(where).returning();
+    if (!renamed) throw new TenancyError("not_found", "Project not found.");
+    return { previous, project: renamed };
+  });
 }

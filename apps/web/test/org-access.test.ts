@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { type OrgAccessMembership, type OrgAccessSession, orgAccess } from "../src/lib/org-access";
+import {
+  isAccessRedirect,
+  type OrgAccessMembership,
+  type OrgAccessSession,
+  orgAccess,
+} from "../src/lib/org-access";
 
 function membership(
   overrides: Partial<OrgAccessMembership["organization"]> & { role?: string } = {},
@@ -100,5 +105,23 @@ describe("orgAccess", () => {
   test("an organization without a provider never matches a session", () => {
     const noProvider = { ...membership({ requireTwoFactor: true }), ssoProviderId: null };
     expect(orgAccess(noProvider, session({ ssoProviderId: null })).kind).toBe("redirect");
+  });
+});
+
+describe("isAccessRedirect", () => {
+  test("every redirect orgAccess makes is an access redirect", () => {
+    const sso = orgAccess(membership({ requireSso: true }), session());
+    const twoFactor = orgAccess(membership({ requireTwoFactor: true }), session());
+    for (const access of [sso, twoFactor]) {
+      expect(access.kind).toBe("redirect");
+      if (access.kind === "redirect") expect(isAccessRedirect(access.to)).toBe(true);
+    }
+    expect(isAccessRedirect("/sign-in")).toBe(true);
+  });
+
+  test("a server action finishing elsewhere is not", () => {
+    for (const url of ["/dashboard", "/acme/domains", "/acme/settings", "/settings", "/sso-team"]) {
+      expect(isAccessRedirect(url)).toBe(false);
+    }
   });
 });

@@ -287,6 +287,8 @@ export const emailRecipient = pgTable(
       foreignColumns: [email.id, email.organizationId],
     }).onDelete("cascade"),
     unique("email_recipient_email_address_unique").on(t.emailId, t.address),
+    // `GET /v1/emails?to=`: an address's emails.
+    index("email_recipient_organization_address_idx").on(t.organizationId, t.address),
   ],
 );
 

@@ -10,6 +10,7 @@ import {
   Globe02Icon,
   LicenseIcon,
   Mail01Icon,
+  McpServerIcon,
   Message01Icon,
   Robot01Icon,
   RocketIcon,
@@ -38,6 +39,11 @@ export const HEADER_BAR_ID = "site-header-bar";
  * rails and corner marks stay drawn over an open panel.
  */
 export const SITE_SHELL_ID = "site-shell";
+/**
+ * The docs sidebar's width (coss ui's default). On docs pages the header's wordmark cell takes it
+ * too, so the hairline after the wordmark continues the sidebar's edge.
+ */
+export const DOCS_SIDEBAR_WIDTH = "16rem";
 
 type Icon = typeof Mail01Icon;
 
@@ -208,6 +214,12 @@ export const DEVELOPER_COLUMNS: readonly MenuColumn[] = [
         description: "One prompt that sets COSS up.",
         icon: Robot01Icon,
         href: "/#agents",
+      },
+      {
+        label: "MCP server",
+        description: "Let your coding agent check delivery.",
+        icon: McpServerIcon,
+        href: `${DOCS_ROUTE}/mcp`,
       },
       {
         label: "llms.txt",

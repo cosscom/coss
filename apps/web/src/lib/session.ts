@@ -8,7 +8,7 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { ActionError, ForbiddenError } from "./actions";
 import { auth, type Session } from "./auth";
-import { orgAccess } from "./org-access";
+import { orgAccess, SIGN_IN_PATH } from "./org-access";
 
 export type OrgContext = Membership & {
   session: Session;
@@ -68,7 +68,7 @@ export const getSession = cache(async (): Promise<Session | null> => {
 /** The current session; redirects to /sign-in when signed out. */
 export async function requireSession(): Promise<Session> {
   const session = await getSession();
-  if (!session) redirect("/sign-in");
+  if (!session) redirect(SIGN_IN_PATH);
   return session;
 }
 

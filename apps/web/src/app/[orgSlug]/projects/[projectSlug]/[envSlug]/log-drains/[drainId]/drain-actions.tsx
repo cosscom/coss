@@ -26,6 +26,7 @@ import {
 import { useActionState, useEffect, useState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import {
   deleteLogDrainAction,
   revealLogDrainSecretAction,
@@ -48,16 +49,19 @@ function TargetInputs(props: Target) {
 }
 
 export function ToggleDrainButton(props: Target & { enabled: boolean }) {
-  const [state, formAction, pending] = useActionState(setLogDrainEnabledAction, null);
+  const [state, formAction, pending] = useActionToast(setLogDrainEnabledAction, {
+    success: props.enabled ? "Log drain disabled" : "Log drain enabled",
+    // Enabling is one click with nowhere to show an error; disabling confirms in a dialog.
+    errors: props.enabled ? "inline" : "toast",
+  });
   if (!props.enabled) {
     return (
-      <form action={formAction} className="flex flex-col items-end gap-2">
+      <form action={formAction}>
         <TargetInputs {...props} />
         <input name="enabled" type="hidden" value="true" />
         <Button loading={pending} size="sm" type="submit" variant="outline">
           Enable
         </Button>
-        {state && !state.ok ? <FormError message={state.error} /> : null}
       </form>
     );
   }
@@ -104,7 +108,9 @@ export function EditSourcesButton(props: Target & { sources: LogDrainSource[] })
 }
 
 function EditSourcesForm(props: Target & { sources: LogDrainSource[]; onSaved: () => void }) {
-  const [state, formAction, pending] = useActionState(updateLogDrainSourcesAction, null);
+  const [state, formAction, pending] = useActionToast(updateLogDrainSourcesAction, {
+    success: "Sources saved",
+  });
   const { onSaved } = props;
   useEffect(() => {
     if (state?.ok) onSaved();
@@ -136,7 +142,9 @@ function EditSourcesForm(props: Target & { sources: LogDrainSource[]; onSaved: (
 
 export function DeleteDrainButton(props: Target & { url: string }) {
   // On success the action redirects to the drain list.
-  const [state, formAction, pending] = useActionState(deleteLogDrainAction, null);
+  const [state, formAction, pending] = useActionToast(deleteLogDrainAction, {
+    success: "Log drain deleted",
+  });
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button size="sm" variant="destructive-outline" />}>

@@ -96,6 +96,7 @@ export default async function AcceptInvitationPage({
     >
       <AcceptInvitationButton
         invitationId={invitation.id}
+        organizationName={invitation.organizationName}
         organizationSlug={invitation.organizationSlug}
       />
     </InvitationCard>

@@ -9,6 +9,8 @@
  *   account is verified too (`account.accountLinking` in `options.ts`).
  * - Two-factor users still get the TOTP challenge (`socialTwoFactor`).
  * - Provider tokens are never stored (`withoutProviderTokens`): COSS calls neither API.
+ * - The account's profile picture becomes the user's when they have none (`providerPicture`):
+ *   Better Auth sets it on sign-up only (`updateUserInfoOnLink` stays off for the name).
  */
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
@@ -62,6 +64,38 @@ export function withoutProviderTokens<T extends { providerId?: string | undefine
       refreshTokenExpiresAt: null,
     },
   };
+}
+
+/**
+ * The profile picture of a Google or GitHub account being linked: GitHub serves every user's at
+ * a URL derived from their numeric id (what its API returns as `avatar_url`), Google puts it in
+ * the id token Better Auth just received from its token endpoint. Read before
+ * `withoutProviderTokens` clears that token.
+ */
+export function providerPicture(account: {
+  providerId?: string | undefined;
+  accountId?: string | undefined;
+  idToken?: string | null | undefined;
+}): string | null {
+  if (account.providerId === "github" && /^\d+$/.test(account.accountId ?? "")) {
+    return `https://avatars.githubusercontent.com/u/${account.accountId}?v=4`;
+  }
+  if (account.providerId === "google" && account.idToken) {
+    const picture = idTokenClaims(account.idToken)?.picture;
+    return typeof picture === "string" && picture.startsWith("https://") ? picture : null;
+  }
+  return null;
+}
+
+function idTokenClaims(idToken: string): Record<string, unknown> | null {
+  const payload = idToken.split(".")[1];
+  if (!payload) return null;
+  try {
+    const claims: unknown = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    return claims && typeof claims === "object" ? (claims as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
 }
 
 // Mirrors Better Auth's two-factor plugin (`TWO_FACTOR_COOKIE_NAME`, `twoFactorCookieMaxAge`

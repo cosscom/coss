@@ -3,8 +3,8 @@
 import { Button } from "@coss/ui/components/button";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { recordRiskFeedbackAction } from "../actions";
 
 const OUTCOMES = [
@@ -19,7 +19,9 @@ export function RiskFeedbackForm(props: {
   envSlug: string;
   assessmentId: string;
 }) {
-  const [state, formAction, pending] = useActionState(recordRiskFeedbackAction, null);
+  const [state, formAction, pending] = useActionToast(recordRiskFeedbackAction, {
+    success: ({ outcome }) => `Marked as ${outcome}`,
+  });
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <input name="orgSlug" type="hidden" value={props.orgSlug} />
