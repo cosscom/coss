@@ -1,5 +1,17 @@
 # coss
 
+## 0.3.0
+
+### Minor Changes
+
+- 57a79b8: Email: `coss.email.list()` finds emails by recipient (`to`), status, a recipient's delivery status, subject text, category, batch and creation time (newest first, without content), and every email now has `failure` (`{ code, message }` once it has failed, otherwise `null`).
+- 01979e0: Risk building blocks and rate limiting: `coss.risk.checkEmail()`, `coss.risk.checkIp()` and
+  `coss.risk.classify()` (content scores for spam, phishing, malware and fraud), `content` on
+  `coss.risk.assess()` with `signals.content` and `content.*` reasons and rule fields, content
+  thresholds in `coss.risk.settings`, and `coss.risk.limit()` with `coss.risk.limitBuckets` for rate
+  limiting your own endpoints.
+- c6fa2fd: Risk: `checkout` details and `device` tokens on `coss.risk.assess()`, the new `coss/device` browser entry (`collectDevice()`), `coss.risk.calibration()`, `reason_weights` in risk settings, IP `privacy` data (VPN, proxy, relay) on assessments and `checkIp()`, and the new reasons and rule fields that come with them.
+
 ## 0.2.0
 
 ### Minor Changes
