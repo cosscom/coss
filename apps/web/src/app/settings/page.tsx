@@ -6,10 +6,11 @@ import { SpecItem, SpecList } from "@/components/spec-list";
 import { formatDateTime } from "@/lib/format";
 import { requireSession } from "@/lib/session";
 import { ProfileForm, SendVerificationEmailButton } from "./profile-form";
+import { ThemePicker } from "./theme-picker";
 
 export const metadata: Metadata = { title: "Account settings" };
 
-/** The signed-in user's profile and email address. */
+/** The signed-in user's profile, email address and appearance. */
 export default async function AccountProfilePage() {
   const session = await requireSession();
   const impersonating = Boolean(session.session.impersonatedBy);
@@ -45,6 +46,14 @@ export default async function AccountProfilePage() {
           >
             <span className="font-mono text-sm">{user.email}</span>
             {user.emailVerified ? null : <SendVerificationEmailButton disabled={impersonating} />}
+          </PanelRow>
+        </PanelBody>
+      </Panel>
+
+      <Panel title="Appearance">
+        <PanelBody flush>
+          <PanelRow description="Applies to the dashboard in this browser." label="Theme">
+            <ThemePicker />
           </PanelRow>
         </PanelBody>
       </Panel>
