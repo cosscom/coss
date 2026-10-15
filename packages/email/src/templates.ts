@@ -368,12 +368,23 @@ async function requireDraft(
   return draft;
 }
 
+/**
+ * The draft with its contents, read from one snapshot: a save replaces both, and reading them
+ * apart could pair new contents with the variables (or revision) of the save before.
+ */
+function readDraft(template: EmailTemplateRow): Promise<TemplateVersion> {
+  return db.transaction(async (tx) => withContents(tx, await requireDraft(tx, template)), {
+    isolationLevel: "repeatable read",
+    accessMode: "read only",
+  });
+}
+
 export async function getTemplateDraft(
   env: TemplateEnvironment,
   ref: string,
 ): Promise<{ template: EmailTemplateRecord; draft: TemplateVersion }> {
   const template = await requireEmailTemplate(env, ref);
-  return { template, draft: await withContents(db, await requireDraft(db, template)) };
+  return { template, draft: await readDraft(template) };
 }
 
 /** A published version; `template_version_not_found`-free: `null` when it doesn't exist. */
@@ -673,10 +684,10 @@ async function loadForSend(
     );
   }
   const template = record;
+  // Published versions never change; only the draft needs a consistent read.
+  if (request.draft) return { ...(await readDraft(template)), template };
   let row: TemplateVersionRow | undefined;
-  if (request.draft) {
-    row = await requireDraft(db, template);
-  } else if (request.version !== undefined) {
+  if (request.version !== undefined) {
     row = await selectVersion(db, template, request.version);
     if (!row) {
       throw new EmailError(
