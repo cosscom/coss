@@ -85,7 +85,9 @@ export default async function AccountProfilePage() {
               </>
             }
           >
-            <span className="font-mono text-[0.8125rem]">{user.email}</span>
+            <span className="min-w-0 font-mono text-[0.8125rem] [overflow-wrap:anywhere]">
+              {user.email}
+            </span>
             {user.emailVerified ? null : <SendVerificationEmailButton disabled={impersonating} />}
           </SettingsRow>
           <ProfileForm disabled={impersonating} name={user.name} />

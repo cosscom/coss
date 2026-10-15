@@ -100,7 +100,9 @@ export function SettingsRow(props: {
         ) : null}
       </div>
       {props.children ? (
-        <div className="flex min-w-0 shrink-0 items-center gap-2 text-sm">{props.children}</div>
+        <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-2 text-sm">
+          {props.children}
+        </div>
       ) : null}
     </div>
   );
