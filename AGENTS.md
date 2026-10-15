@@ -746,6 +746,11 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   expose content. A queued email whose content is gone fails with `attachments_unavailable` rather than sending without
   it. The parsed request omits `attachments` when empty (request hashes). SES gets them as `Simple.Attachments`
   (`content_id` → `INLINE`); the fake provider keeps sha256 digests, not bytes.
+- **Generated text parts** (`packages/email/src/html-text.ts`, `htmlToText`): an email sent with `html` and no
+  `text` gets a plain-text part built from the original HTML in `toOutbound`, for the provider's copy only (like
+  tracking: `email.text` stays `null`, so API reads, request hashes and webhooks are unchanged). It is built before
+  `instrument`, so its links are the real targets, never click redirects. Hidden content (`display:none`, `hidden`)
+  is left out; nesting deep enough to exhaust the stack sends the email without one, as before.
 - **API versions** (`organization_api_version`, `webhook_endpoint.api_version`): an organization is pinned lazily to
   the latest version by its first authenticated request (`getOrganizationApiVersion`, insert-or-read; the dashboard
   only reads with `readOrganizationApiVersion`), and only moves forward (`setOrganizationApiVersion`, from org

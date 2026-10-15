@@ -21,6 +21,7 @@ import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
+import { htmlToText } from "./html-text.ts";
 import {
   type EmailProvider,
   type OutboundAttachment,
@@ -174,7 +175,10 @@ function bareAddress(value: string): string {
   return parseEmailAddress(value).address.toLowerCase();
 }
 
-/** The message for the provider, without the recipients COSS suppressed. */
+/**
+ * The message for the provider, without the recipients COSS suppressed. An email with only HTML
+ * gets a plain-text part generated from it (never stored: the email keeps what was sent to COSS).
+ */
 function toOutbound(
   row: EmailRow,
   suppressed: ReadonlySet<string>,
@@ -191,7 +195,7 @@ function toOutbound(
     replyTo: row.replyTo,
     subject: row.subject,
     html: row.html,
-    text: row.text,
+    text: row.text ?? (row.html === null ? null : htmlToText(row.html)),
     headers: row.headers,
     tags: row.tags,
     attachments,

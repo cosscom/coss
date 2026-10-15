@@ -161,6 +161,7 @@ export interface SendEmailParams {
   subject: string;
   /** At least one of `html` or `text` is required. */
   html?: string;
+  /** Without it, an `html` email goes out with a text part generated from the HTML. */
   text?: string;
   /** Custom headers. Names are case-insensitive; reserved names such as `subject` are rejected. */
   headers?: Record<string, string>;
