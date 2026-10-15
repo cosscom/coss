@@ -408,6 +408,20 @@ export async function listOrganizationsForAdmin(
   return { organizations: rows, total: totalRow?.total ?? 0 };
 }
 
+/** The organization with exactly this id or slug, or `null` (the admin console's filters). */
+export async function findOrganizationForAdmin(
+  idOrSlug: string,
+): Promise<{ id: string; name: string; slug: string } | null> {
+  const value = idOrSlug.trim();
+  if (!value) return null;
+  const [row] = await db
+    .select({ id: organization.id, name: organization.name, slug: organization.slug })
+    .from(organization)
+    .where(or(eq(organization.id, value), eq(organization.slug, value)))
+    .limit(1);
+  return row ?? null;
+}
+
 export type AdminOrganizationDetail = {
   organization: { id: string; name: string; slug: string; createdAt: Date };
   suspension: (OrganizationSuspension & { suspendedByEmail: string | null }) | null;

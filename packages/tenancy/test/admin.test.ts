@@ -6,6 +6,7 @@ import { uniqueSuffix } from "@coss/db/testing";
 import { eq } from "drizzle-orm";
 import {
   type AdminActor,
+  findOrganizationForAdmin,
   getOrganizationForAdmin,
   getOrganizationSuspension,
   listAdminAuditEvents,
@@ -419,6 +420,21 @@ describe("admin reads and key revocation", () => {
     });
     expect(second.events.map((e) => e.action)).toEqual(["user.ban"]);
     expect(second.nextBefore).toBeNull();
+  });
+});
+
+describe("findOrganizationForAdmin", () => {
+  test("finds an organization by exact id or slug only", async () => {
+    const tenant = await createTestTenant();
+    const expected = {
+      id: tenant.organization.id,
+      name: tenant.organization.name,
+      slug: tenant.organization.slug,
+    };
+    expect(await findOrganizationForAdmin(tenant.organization.id)).toEqual(expected);
+    expect(await findOrganizationForAdmin(` ${tenant.organization.slug} `)).toEqual(expected);
+    expect(await findOrganizationForAdmin(tenant.organization.slug.slice(0, -1))).toBeNull();
+    expect(await findOrganizationForAdmin("")).toBeNull();
   });
 });
 

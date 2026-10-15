@@ -1,5 +1,5 @@
 import { listEmailsForAdmin } from "@coss/email/admin";
-import { listOrganizationsForAdmin } from "@coss/tenancy/admin";
+import { findOrganizationForAdmin } from "@coss/tenancy/admin";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import {
@@ -42,13 +42,6 @@ const STATUSES = [
   { value: "canceled", label: "Canceled" },
 ] as const;
 
-/** An organization named by id or exact slug (the `org` filter). */
-async function findOrganization(value: string) {
-  if (!value) return null;
-  const { organizations } = await listOrganizationsForAdmin({ search: value, limit: 50 });
-  return organizations.find((row) => row.id === value || row.slug === value) ?? null;
-}
-
 /** Every organization's emails, newest first. Content is only shown on an email's own page. */
 export default async function AdminEmailsPage({ searchParams }: PageProps<"/admin/emails">) {
   await requirePlatformAdmin();
@@ -59,7 +52,7 @@ export default async function AdminEmailsPage({ searchParams }: PageProps<"/admi
   const from = stringParam(search.from);
   const orgParam = stringParam(search.org);
   const before = stringParam(search.before) || undefined;
-  const organization = await findOrganization(orgParam);
+  const organization = orgParam ? await findOrganizationForAdmin(orgParam) : null;
   const now = new Date();
 
   const page =
