@@ -34,6 +34,11 @@ export function clickUrl(baseUrl: string, token: string, position: number): stri
   return `${baseUrl}/t/c/${token}/${position}`;
 }
 
+/** The one-click unsubscribe URL (RFC 8058) of an email's `List-Unsubscribe` header. */
+export function unsubscribeUrl(baseUrl: string, token: string): string {
+  return `${baseUrl}/t/u/${token}`;
+}
+
 type Edit = { start: number; end: number; text: string };
 type Element = DefaultTreeAdapterTypes.Element;
 type ParentNode = DefaultTreeAdapterTypes.ParentNode;

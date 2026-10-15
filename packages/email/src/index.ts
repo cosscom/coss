@@ -368,6 +368,7 @@ export {
   NO_TRACK_ATTRIBUTE,
   openPixelUrl,
   type TrackedLink,
+  unsubscribeUrl,
 } from "./tracking-html.ts";
 export {
   deleteTrackingRule,
@@ -383,3 +384,4 @@ export {
   updateTrackingRule,
   upsertTrackingRule,
 } from "./tracking-settings.ts";
+export { getUnsubscribe, recordUnsubscribe } from "./unsubscribe.ts";

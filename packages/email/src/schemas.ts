@@ -288,6 +288,16 @@ export const TrackingOptions = z
           "Send HTML links through a COSS redirect and record `email.clicked` events. Links with a " +
           "`data-coss-no-track` attribute are left alone.",
       }),
+    unsubscribe: z
+      .boolean()
+      .optional()
+      .meta({
+        description:
+          "Add one-click unsubscribe headers (`List-Unsubscribe` and `List-Unsubscribe-Post`, " +
+          "RFC 8058). An unsubscribe suppresses the recipient for this email's category and " +
+          "records `email.unsubscribed`. Needs a `category`, a single recipient, no " +
+          "`List-Unsubscribe` header of your own and at most 13 custom headers.",
+      }),
   })
   .meta({
     id: "TrackingOptions",
@@ -295,6 +305,15 @@ export const TrackingOptions = z
       "Overrides the environment's tracking settings (its default, or the rule for this " +
       "email's category) for this email. Omitted fields keep the configured setting.",
   });
+
+/** Header names whose presence means the customer handles unsubscribes themselves. */
+export const LIST_UNSUBSCRIBE_HEADERS = ["list-unsubscribe", "list-unsubscribe-post"] as const;
+
+/**
+ * Custom headers an email can have and still get COSS's two unsubscribe headers: providers take
+ * at most `MAX_HEADERS` in all (SES's limit for a simple message).
+ */
+export const MAX_HEADERS_WITH_UNSUBSCRIBE = MAX_HEADERS - LIST_UNSUBSCRIBE_HEADERS.length;
 
 export type TrackingOptionsOutput = z.output<typeof TrackingOptions>;
 
@@ -475,6 +494,42 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
   if (value.scheduled_at !== undefined && tooFarAhead(value.scheduled_at)) {
     ctx.addIssue({ code: "custom", path: ["scheduled_at"], message: TOO_FAR_AHEAD_MESSAGE });
   }
+  if (value.tracking?.unsubscribe === true) {
+    const path = ["tracking", "unsubscribe"];
+    if (value.category === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message: "One-click unsubscribe needs a `category`: the unsubscribe is scoped to it.",
+      });
+    }
+    if (unique.size > 1) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message:
+          "One-click unsubscribe needs a single recipient across to, cc and bcc: send one " +
+          "email per recipient.",
+      });
+    }
+    const headerNames = Object.keys(value.headers ?? {}).map((name) => name.toLowerCase());
+    if (LIST_UNSUBSCRIBE_HEADERS.some((name) => headerNames.includes(name))) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message: "One-click unsubscribe can't be combined with your own List-Unsubscribe headers.",
+      });
+    }
+    if (headerNames.length > MAX_HEADERS_WITH_UNSUBSCRIBE) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message:
+          `One-click unsubscribe adds ${LIST_UNSUBSCRIBE_HEADERS.length} headers: send at most ` +
+          `${MAX_HEADERS_WITH_UNSUBSCRIBE} of your own.`,
+      });
+    }
+  }
 })
   // Only runs on fully valid input: recipients become arrays, header names lower-case, and every
   // key is present, which also makes the canonical request hash independent of how input was spelled.
@@ -524,6 +579,9 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
           tracking: {
             ...(value.tracking.opens === undefined ? {} : { opens: value.tracking.opens }),
             ...(value.tracking.clicks === undefined ? {} : { clicks: value.tracking.clicks }),
+            ...(value.tracking.unsubscribe === undefined
+              ? {}
+              : { unsubscribe: value.tracking.unsubscribe }),
           },
         }),
   }))
@@ -644,6 +702,7 @@ export const EMAIL_EVENT_TYPES = [
   "email.opened",
   "email.clicked",
   "email.rescheduled",
+  "email.unsubscribed",
 ] as const;
 
 /** Engagement events: recorded by COSS's tracking endpoints, never change a recipient's status. */
@@ -713,7 +772,13 @@ export const EmailRecipient = z
   })
   .meta({ id: "EmailRecipient", examples: [RECIPIENT_EXAMPLE] });
 
-export const SUPPRESSION_REASONS = ["bounce", "complaint", "manual", "import"] as const;
+export const SUPPRESSION_REASONS = [
+  "bounce",
+  "complaint",
+  "manual",
+  "import",
+  "unsubscribe",
+] as const;
 
 export type SuppressionReason = (typeof SUPPRESSION_REASONS)[number];
 
@@ -730,7 +795,8 @@ export const SuppressionScope = z
 const SuppressionReasonEnum = z.enum(SUPPRESSION_REASONS).meta({
   description:
     "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. " +
-    "`manual`: added one by one through the API or dashboard. `import`: added by a bulk import.",
+    "`manual`: added one by one through the API or dashboard. `import`: added by a bulk import. " +
+    "`unsubscribe`: added by the recipient's one-click unsubscribe, scoped to the email's category.",
 });
 
 export const EmailEventData = z
@@ -897,6 +963,7 @@ export type EmailAttachmentObjectOutput = z.output<typeof EmailAttachmentObject>
 const TRACKING_EXAMPLE = {
   opens: false,
   clicks: false,
+  unsubscribe: false,
   open_count: 0,
   first_opened_at: null,
   last_opened_at: null,
@@ -919,6 +986,9 @@ export const EmailTracking = z
   .object({
     opens: z.boolean().meta({ description: "Whether opens are tracked for this email." }),
     clicks: z.boolean().meta({ description: "Whether link clicks are tracked for this email." }),
+    unsubscribe: z.boolean().meta({
+      description: "Whether the email carries one-click unsubscribe headers (RFC 8058).",
+    }),
     open_count: z.number().int(),
     first_opened_at: z.iso.datetime().nullable(),
     last_opened_at: z.iso.datetime().nullable(),
@@ -1697,6 +1767,7 @@ export const TrackingRuleInput = z.strictObject({
   category: Category.nullable(),
   opens: z.boolean(),
   clicks: z.boolean(),
+  unsubscribe: z.boolean(),
 });
 
 export type TrackingRuleInputOutput = z.output<typeof TrackingRuleInput>;
@@ -1708,6 +1779,7 @@ const TRACKING_DEFAULT_EXAMPLE = {
   category: null,
   opens: true,
   clicks: true,
+  unsubscribe: false,
   created_at: "2026-01-15T09:30:00.000Z",
   updated_at: "2026-01-15T09:30:00.000Z",
 } as const;
@@ -1717,6 +1789,7 @@ const TRACKING_RULE_EXAMPLE = {
   category: "password-reset",
   opens: false,
   clicks: false,
+  unsubscribe: false,
   created_at: "2026-01-16T10:00:00.000Z",
   updated_at: "2026-01-16T10:00:00.000Z",
 } as const;
@@ -1730,6 +1803,11 @@ export const TrackingRule = z
     }),
     opens: z.boolean().meta({ description: "Whether opens are tracked." }),
     clicks: z.boolean().meta({ description: "Whether clicks are tracked." }),
+    unsubscribe: z.boolean().meta({
+      description:
+        "Whether emails get one-click unsubscribe headers (only emails with a category and a " +
+        "single recipient).",
+    }),
     created_at: z.iso.datetime(),
     updated_at: z.iso.datetime(),
   })
@@ -1754,9 +1832,10 @@ export const TrackingSettings = z
   .meta({
     id: "TrackingSettings",
     description:
-      "Open and click tracking settings of the API key's environment. For each of `opens` and " +
-      "`clicks`, a send's own `tracking` wins, then its category's rule, then `default` (the " +
-      "environment default; `null` when none is set), then off.",
+      "Open and click tracking and one-click unsubscribe settings of the API key's environment. " +
+      "For each of `opens`, `clicks` and `unsubscribe`, a send's own `tracking` wins, then its " +
+      "category's rule, then `default` (the environment default; `null` when none is set), " +
+      "then off.",
     examples: [
       {
         object: "tracking_settings",
@@ -1772,14 +1851,20 @@ export const UpdateTrackingRuleRequest = z
   .strictObject({
     opens: z.boolean().optional().meta({ description: "Track opens." }),
     clicks: z.boolean().optional().meta({ description: "Track clicks." }),
+    unsubscribe: z.boolean().optional().meta({
+      description:
+        "Add one-click unsubscribe headers to emails with a category and a single recipient.",
+    }),
   })
-  .refine((value) => value.opens !== undefined || value.clicks !== undefined, {
-    error: "Provide opens, clicks or both.",
-  })
+  .refine(
+    (value) =>
+      value.opens !== undefined || value.clicks !== undefined || value.unsubscribe !== undefined,
+    { error: "Provide opens, clicks or unsubscribe." },
+  )
   .meta({
     id: "UpdateTrackingRuleRequest",
     description:
-      "Fields left out keep their current value; a new rule starts with both off. A send's own " +
+      "Fields left out keep their current value; a new rule starts with all off. A send's own " +
       "`tracking` option still wins over the rule.",
     examples: [{ opens: false, clicks: false }],
   });

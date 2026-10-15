@@ -35,9 +35,10 @@ export default function TrackingScreen() {
       <PageIntro
         description={
           <>
-            COSS can add an invisible image to HTML emails to record opens, and send links through a
-            redirect to record clicks. Each email's settings are fixed when it is sent: its own{" "}
-            <Code>tracking</Code> option wins, then the rule for its category, then this
+            COSS can add an invisible image to HTML emails to record opens, send links through a
+            redirect to record clicks, and add one-click unsubscribe headers, which Gmail, Yahoo and
+            Outlook require from bulk senders. Each email's settings are fixed when it is sent: its
+            own <Code>tracking</Code> option wins, then the rule for its category, then this
             environment's default.
           </>
         }
@@ -48,7 +49,7 @@ export default function TrackingScreen() {
         description={`Applies to emails without a category rule. ${
           settings.default
             ? `Last changed ${formatDateTime(settings.default.updated_at)}.`
-            : "Not set: tracking is off."
+            : "Not set: tracking and one-click unsubscribe are off."
         }`}
         title="Environment default"
       >
@@ -59,13 +60,17 @@ export default function TrackingScreen() {
           <SpecItem label="Clicks">
             <TrackingBadge on={settings.default?.clicks ?? false} />
           </SpecItem>
+          <SpecItem label="Unsubscribe">
+            <TrackingBadge on={settings.default?.unsubscribe ?? false} />
+          </SpecItem>
         </SpecList>
       </Panel>
       <Panel
         description={
           <>
             Override the default for emails sent with a <Code>category</Code>, e.g. track{" "}
-            <Code>marketing</Code> but never <Code>password-reset</Code>.
+            <Code>marketing</Code> and let its recipients unsubscribe, but never{" "}
+            <Code>password-reset</Code>.
           </>
         }
         title="Category rules"
@@ -87,6 +92,7 @@ export default function TrackingScreen() {
                   <View style={styles.badges}>
                     <Badge variant={rule.opens ? "success" : "outline"}>Opens</Badge>
                     <Badge variant={rule.clicks ? "success" : "outline"}>Clicks</Badge>
+                    <Badge variant={rule.unsubscribe ? "success" : "outline"}>Unsubscribe</Badge>
                   </View>
                 }
               />

@@ -738,6 +738,18 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `coss.email.tracking`: `PATCH`/`DELETE` `…/default` and `…/categories/{category}`, unset fields keep their value)
   reads need `email:read` and changes `email:send` (a sender already overrides them per send; no new permission),
   audited as `tracking_rule.saved`/`.deleted` like the dashboard. The parsed send request omits `tracking` when absent (request hashes).
+- **One-click unsubscribe** (RFC 8058, `packages/email/src/unsubscribe.ts`, `email.unsubscribe`,
+  `email_tracking_rule.unsubscribe`): a third field of the tracking rules (send's `tracking.unsubscribe`, then the
+  category's rule, then the default, then off), snapshotted at send and true only for an email with a `category`, a
+  single distinct recipient, no customer `list-unsubscribe`/`list-unsubscribe-post` header and at most
+  `MAX_HEADERS_WITH_UNSUBSCRIBE` (13) custom headers, so SES's 15 still fit (an explicit
+  `tracking.unsubscribe: true` breaking one of those is a 422; a rule just doesn't apply). It reuses the email's
+  `tracking_token` (minted when opens, clicks or unsubscribe is on). `instrument` adds `List-Unsubscribe:
+  <base/t/u/token>` + `List-Unsubscribe-Post` to the provider's copy only (base as for links, custom tracking domain
+  included). `GET /t/u/:token` only shows a confirmation page (scanners follow links) — **never write on GET**;
+  `POST` with `List-Unsubscribe=One-Click` (`recordUnsubscribe`) records `email.unsubscribed` (once per email, never
+  changes the recipient's status) and adds a suppression scoped to the category (`reason` `unsubscribe`, re-added
+  on every POST), in one transaction; never a redirect.
 - **Custom tracking domains** (`packages/email/src/tracking-domains.ts`, table `tracking_domain`, ids `tdom_`):
   at most one per sending domain, a strict subdomain of it outside its MAIL FROM subdomain, and the hostname's most
   specific domain across orgs must be that domain. Served by a `TrackingHostnameProvider` (`DomainDeps.tracking`):

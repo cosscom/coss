@@ -108,7 +108,7 @@ describe("POST /v1/webhook_endpoints", () => {
 
     const res = await apiRequest(app, "POST", "/v1/webhook_endpoints", {
       key: tenant.sandboxKey,
-      body: { url: URL_ONE, event_types: ["email.unsubscribed"] },
+      body: { url: URL_ONE, event_types: ["email.forwarded"] },
     });
 
     expect(res.status).toBe(422);

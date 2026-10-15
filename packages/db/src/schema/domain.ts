@@ -166,9 +166,13 @@ export const email = pgTable(
     // Matched against category-scoped suppressions and tracking rules.
     category: text("category"),
     // Open/click tracking, resolved once at send (per-send override, category rule, environment
-    // default). The token names the email in its public `/t/*` URLs; set only when tracking is on.
+    // default). The token names the email in its public `/t/*` URLs; set only when tracking or
+    // one-click unsubscribe is on.
     trackOpens: boolean("track_opens").notNull().default(false),
     trackClicks: boolean("track_clicks").notNull().default(false),
+    // One-click unsubscribe (RFC 8058) headers on the provider's copy: resolved at send like
+    // tracking, and only for an email with a category and a single recipient.
+    unsubscribe: boolean("unsubscribe").notNull().default(false),
     trackingToken: text("tracking_token").unique("email_tracking_token_unique"),
     openCount: integer("open_count").notNull().default(0),
     firstOpenedAt: timestamp("first_opened_at", { withTimezone: true }),
@@ -341,6 +345,7 @@ export const emailEventType = pgEnum("email_event_type", [
   "email.opened",
   "email.clicked",
   "email.rescheduled",
+  "email.unsubscribed",
 ]);
 
 /**
@@ -381,6 +386,7 @@ export const emailSuppressionReason = pgEnum("email_suppression_reason", [
   "complaint",
   "manual",
   "import",
+  "unsubscribe",
 ]);
 
 export type EmailSuppressionReason = (typeof emailSuppressionReason.enumValues)[number];
@@ -444,6 +450,7 @@ export const emailTrackingRule = pgTable(
     category: text("category"),
     opens: boolean("opens").notNull(),
     clicks: boolean("clicks").notNull(),
+    unsubscribe: boolean("unsubscribe").notNull().default(false),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

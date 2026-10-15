@@ -58,6 +58,7 @@ export const EVENT_VARIANT: Record<EmailEventType, BadgeVariant> = {
   "email.opened": "secondary",
   "email.clicked": "secondary",
   "email.rescheduled": "info",
+  "email.unsubscribed": "warning",
 };
 
 export const STANDING_LABELS: Record<ReputationStatus, string> = {

@@ -14,8 +14,8 @@ const categoryPath = (category: string) =>
 
 /**
  * `coss.email.tracking`: which emails of the API key's environment have their opens and clicks
- * tracked. Emails keep the settings that applied when they were sent; a send's own `tracking`
- * option wins over them.
+ * tracked and get one-click unsubscribe headers. Emails keep the settings that applied when they
+ * were sent; a send's own `tracking` option wins over them.
  */
 export class TrackingResource {
   readonly #http: HttpClient;

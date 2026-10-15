@@ -89,12 +89,17 @@ resets) are printed to the dashboard's server console in development.
 - **Suppressions** — per environment. Sends skip a suppressed recipient (status `suppressed`, event
   `email.suppressed`) and still deliver to the rest. An entry covers every email (scope `*`) or one **category**
   (the optional `category` of a send, e.g. `marketing`), so it can back an unsubscribe flow. Permanent bounces and
-  complaints add `*` entries automatically (except for mailbox simulator addresses). COSS keeps the only list: SES
+  complaints add `*` entries automatically (except for mailbox simulator addresses), one-click unsubscribes an
+  entry for the email's category. COSS keeps the only list: SES
   suppression is turned off.
 - **Scheduled sends** — pass `scheduled_at` (ISO 8601 with an offset, up to 30 days ahead) and the email is stored
   as `scheduled` (event `email.scheduled`); the worker sends it when it is due, re-checking the domain and the
   suppression list. Until then `POST /v1/emails/{id}/reschedule` moves it to a new time (event `email.rescheduled`)
   and `POST /v1/emails/{id}/cancel` cancels it (`canceled`, event `email.canceled`).
+- **One-click unsubscribe** (RFC 8058) — off by default; turned on per category with the tracking rules (or per send,
+  `tracking: { unsubscribe: true }`). Emails with a category and a single recipient get `List-Unsubscribe` +
+  `List-Unsubscribe-Post` headers pointing at the tracking host (`/t/u/<token>`); the one-click POST suppresses the
+  recipient for that category (reason `unsubscribe`) and records `email.unsubscribed`.
 - **Open & click tracking** — off by default. Turn it on per environment (a default plus per-category rules, in the
   dashboard) or per send (`tracking: { opens, clicks }`). COSS adds an invisible image and rewrites HTML links to its
   own redirect (`API_PUBLIC_URL/t/…`) when it hands the email to the provider; the stored email keeps the original

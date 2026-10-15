@@ -33,6 +33,7 @@ export function email(overrides: Partial<Email> = {}): Email {
     tracking: {
       opens: false,
       clicks: false,
+      unsubscribe: false,
       open_count: 0,
       first_opened_at: null,
       last_opened_at: null,

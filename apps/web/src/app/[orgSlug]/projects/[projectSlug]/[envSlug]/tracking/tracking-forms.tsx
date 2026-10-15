@@ -32,7 +32,7 @@ import { useActionToast } from "@/lib/toast";
 import { deleteTrackingRuleAction, saveTrackingRuleAction } from "./actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
-type Setting = { opens: boolean; clicks: boolean };
+type Setting = { opens: boolean; clicks: boolean; unsubscribe: boolean };
 
 function TargetInputs(props: Target) {
   return (
@@ -66,6 +66,20 @@ function TrackingCheckboxes(props: Setting & { disabled?: boolean }) {
           <span className="text-muted-foreground">(sends links through a COSS redirect)</span>
         </span>
       </Label>
+      <Label>
+        <Checkbox
+          defaultChecked={props.unsubscribe}
+          disabled={props.disabled}
+          name="unsubscribe"
+          value="on"
+        />
+        <span>
+          One-click unsubscribe{" "}
+          <span className="text-muted-foreground">
+            (adds List-Unsubscribe headers; unsubscribing suppresses the category)
+          </span>
+        </span>
+      </Label>
     </div>
   );
 }
@@ -78,7 +92,12 @@ export function DefaultTrackingForm(props: Target & Setting & { canEdit: boolean
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <TargetInputs {...props} />
-      <TrackingCheckboxes clicks={props.clicks} disabled={!props.canEdit} opens={props.opens} />
+      <TrackingCheckboxes
+        clicks={props.clicks}
+        disabled={!props.canEdit}
+        opens={props.opens}
+        unsubscribe={props.unsubscribe}
+      />
       {state && !state.ok ? <FormError message={state.error} /> : null}
       {props.canEdit ? (
         <div>
@@ -153,7 +172,11 @@ function CategoryRuleForm(
             </FieldDescription>
           </Field>
         )}
-        <TrackingCheckboxes clicks={props.clicks ?? false} opens={props.opens ?? false} />
+        <TrackingCheckboxes
+          clicks={props.clicks ?? false}
+          opens={props.opens ?? false}
+          unsubscribe={props.unsubscribe ?? false}
+        />
         {state && !state.ok ? <FormError message={state.error} /> : null}
       </DialogPanel>
       <DialogFooter>
@@ -190,7 +213,7 @@ export function DeleteTrackingRuleButton(
             </AlertDialogTitle>
             <AlertDialogDescription>
               {isDefault
-                ? "Tracking will be off for emails without a category rule (unless a send asks for it)."
+                ? "Tracking and one-click unsubscribe will be off for emails without a category rule (unless a send asks for them)."
                 : "Emails in this category will use the environment default."}{" "}
               Emails already sent are not affected.
             </AlertDialogDescription>

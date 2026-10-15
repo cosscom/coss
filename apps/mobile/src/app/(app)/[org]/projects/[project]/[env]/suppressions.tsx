@@ -19,6 +19,7 @@ const REASON_VARIANT = {
   complaint: "error",
   manual: "secondary",
   import: "secondary",
+  unsubscribe: "warning",
 } as const;
 
 export default function SuppressionsScreen() {
