@@ -741,10 +741,11 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - **Sending metrics** (`packages/email/src/metrics.ts`, table `email_metric`, no id; `GET /v1/emails/metrics`,
   `coss.email.metrics`, the dashboard's `[envSlug]/metrics`): hourly counters per environment (sandbox included),
   summed by `countEmailMetric` in the transaction of each once-only transition — `sent` in `recordEmailSent`
-  (`usage.ts`: the `usage_recorded_at` compare-and-set now runs for every mode; billing only for live), recipients
-  moving into `delivered`/`bounced`/`complained` in `recordProviderEvent`, and an email's first open/click
-  (`open_count`/`click_count` reaching 1). A new path to `sent` or to those recipient statuses must count the same
-  way. Base rows (`tag_name = ''`) hold the category × From domain × mailbox provider cube; tag rows repeat each
+  (`usage.ts`: the `usage_recorded_at` compare-and-set now runs for every mode; billing only for live), a
+  recipient's first `email.delivered`/`email.bounced`/`email.complained` event (`countOutcomes` in `events.ts`: by
+  events, not statuses, since a complaint can arrive before its delivery; the recipient rows are locked first so
+  concurrent events count once), and an email's first open/click (`open_count`/`click_count` reaching 1). A new
+  path to `sent` must count the same way. Base rows (`tag_name = ''`) hold the category × From domain × mailbox provider cube; tag rows repeat each
   increment per tag (queries use one or the other, never both). Mailbox providers come from the address's domain
   only (`mailbox-providers.ts`, `MAILBOX_PROVIDERS`); opens and clicks without a sole recipient have provider `''`
   (`null` on the wire). One shard per transaction (`pg_current_xact_id() % 8`) and rows sorted before the upsert,

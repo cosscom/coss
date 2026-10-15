@@ -3,7 +3,7 @@
  * that make each outcome happen, so they outlive the emails they count. Each metric is counted
  * exactly once, at a compare-and-set that already exists:
  * - `sent`: the email becoming `sent` (`recordEmailSent`), for its non-suppressed recipients;
- * - `delivered`/`bounced`/`complained`: a recipient's status moving there (`recordProviderEvent`);
+ * - `delivered`/`bounced`/`complained`: a recipient's first event of that type (`recordProviderEvent`);
  * - `opened`/`clicked`: an email's first open/click (`recordOpen`/`recordClick`).
  * Every increment writes a base row (`tag_name = ''`) and one row per tag of the email.
  */

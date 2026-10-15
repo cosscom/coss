@@ -10,10 +10,10 @@ import { isId } from "@coss/db/id";
 import { appendLogEntries } from "@coss/logs";
 import { markReputationDue } from "@coss/reputation";
 import { enqueueWebhookMessage } from "@coss/webhooks";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
 import { purgeSendContent } from "./attachments.ts";
 import { emailEventLogEntries } from "./event-logs.ts";
-import { countEmailMetric } from "./metrics.ts";
+import { countEmailMetric, type MetricEmail } from "./metrics.ts";
 import type { ProviderEvent } from "./provider.ts";
 import { invalidateReputationRollup } from "./reputation-checks.ts";
 import {
@@ -83,6 +83,64 @@ function dedupeKey(event: ProviderEvent, recipient: string | null): string {
       ]),
     )
     .digest("hex");
+}
+
+const METRIC_BY_EVENT: Partial<Record<EmailEventType, "delivered" | "bounced" | "complained">> = {
+  "email.delivered": "delivered",
+  "email.bounced": "bounced",
+  "email.complained": "complained",
+};
+
+/**
+ * Counts a recipient's first delivery, bounce or complaint in the sending metrics. By the events,
+ * not the recipient's status: a complaint may arrive before its delivery, which then moves no
+ * status but still happened. Locking the recipients first makes concurrent events about the
+ * same one count in turn (the later one sees the earlier's row). SES-suppressed bounces were never
+ * attempted, so they don't count.
+ */
+async function countOutcomes(
+  tx: Executor,
+  target: MetricEmail & { id: string },
+  event: ProviderEvent,
+  inserted: EmailEventRow[],
+): Promise<void> {
+  const metric = METRIC_BY_EVENT[event.type];
+  if (!metric || (event.type === "email.bounced" && event.suppressed)) return;
+  const addresses = inserted.flatMap((row) => (row.recipient ? [row.recipient] : []));
+  if (addresses.length === 0) return;
+  const recipients = and(
+    eq(emailRecipient.organizationId, target.organizationId),
+    eq(emailRecipient.emailId, target.id),
+    inArray(emailRecipient.address, addresses),
+  );
+  await tx
+    .select({ id: emailRecipient.id })
+    .from(emailRecipient)
+    .where(recipients)
+    .orderBy(emailRecipient.address)
+    .for("update");
+  const earlier = await tx
+    .selectDistinct({ recipient: emailEvent.recipient })
+    .from(emailEvent)
+    .where(
+      and(
+        eq(emailEvent.organizationId, target.organizationId),
+        eq(emailEvent.emailId, target.id),
+        eq(emailEvent.type, event.type),
+        inArray(emailEvent.recipient, addresses),
+        notInArray(
+          emailEvent.id,
+          inserted.map((row) => row.id),
+        ),
+      ),
+    );
+  const seen = new Set(earlier.map((row) => row.recipient));
+  await countEmailMetric(tx, {
+    email: target,
+    metric,
+    addresses: addresses.filter((address) => !seen.has(address)),
+    at: event.occurredAt,
+  });
 }
 
 /**
@@ -244,6 +302,8 @@ export async function recordProviderEvent(
     if (failed) await purgeSendContent(tx, target);
   }
 
+  await countOutcomes(tx, target, event, inserted);
+
   const status = recipientStatus(event);
   const affected =
     event.recipients === null
@@ -265,16 +325,8 @@ export async function recordProviderEvent(
           inArray(emailRecipient.status, below),
         ),
       )
-      .returning({ address: emailRecipient.address });
+      .returning({ id: emailRecipient.id });
     if (moved.length > 0) recipientsChanged = true;
-    if (status === "delivered" || status === "bounced" || status === "complained") {
-      await countEmailMetric(tx, {
-        email: target,
-        metric: status,
-        addresses: moved.map((row) => row.address),
-        at: event.occurredAt,
-      });
-    }
   }
 
   // Permanent bounces and complaints suppress the address for every email of the environment.

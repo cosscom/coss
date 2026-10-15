@@ -237,6 +237,54 @@ describe("counting", () => {
     expect((await metricsOf(tenant)()).totals.sent).toBe(1);
   });
 
+  test("outcomes count by their first event, whatever order events arrive in", async () => {
+    const tenant = await createTestTenant();
+    // A provider that reports nothing itself: the test sends the events.
+    const gated = gatedProvider("fake");
+    gated.release();
+    const service = dispatchingEmailService({
+      liveProvider: gated.provider,
+      sandboxProvider: gated.provider,
+    });
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({
+        from: await verifiedFrom(tenant.organization.id),
+        to: ["ann@gmail.com", "bob@gmail.com"],
+      }),
+    });
+    const event = (
+      type: "email.delivered" | "email.complained" | "email.bounced",
+      recipient: string,
+      bounce?: "transient" | "permanent",
+    ) => ({
+      provider: "fake",
+      providerEventType: type,
+      emailId: email.id,
+      providerMessageId: "fake_1",
+      type,
+      recipients: [recipient],
+      occurredAt: new Date(),
+      sourceId: crypto.randomUUID(),
+      data: bounce ? { bounce: { type: bounce, sub_type: "General", diagnostic_code: null } } : {},
+    });
+    // SES may publish a complaint before the delivery it is about.
+    await ingestProviderEvents([event("email.complained", "ann@gmail.com")]);
+    await ingestProviderEvents([event("email.delivered", "ann@gmail.com")]);
+    await ingestProviderEvents([event("email.delivered", "ann@gmail.com")]);
+    await ingestProviderEvents([event("email.bounced", "bob@gmail.com", "transient")]);
+    await ingestProviderEvents([event("email.bounced", "bob@gmail.com", "permanent")]);
+    expect((await metricsOf(tenant)()).totals).toEqual({
+      sent: 2,
+      delivered: 1,
+      bounced: 1,
+      complained: 1,
+      opened: 0,
+      clicked: 0,
+    });
+  });
+
   test("the stale-claim sweep counts what it resolves as sent", async () => {
     const tenant = await createTestTenant();
     const gated = gatedProvider("fake");
