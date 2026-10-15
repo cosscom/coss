@@ -32,8 +32,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { useActionState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { deleteRiskLimitBucketAction, saveRiskLimitBucketAction } from "../actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
@@ -63,8 +64,9 @@ function Hidden(props: Target & { bucketId?: string }) {
 
 /** Creates a bucket, or edits `bucket` (everything but its name). */
 export function BucketDialog(props: Target & { bucket?: RiskLimitBucketOutput }) {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger
         render={props.bucket ? <Button size="xs" variant="outline" /> : <Button size="sm" />}
       >
@@ -72,15 +74,20 @@ export function BucketDialog(props: Target & { bucket?: RiskLimitBucketOutput })
       </DialogTrigger>
       <DialogPopup>
         {/* The popup unmounts when closed, which also resets the form. */}
-        <BucketForm {...props} />
+        <BucketForm {...props} onDone={() => setOpen(false)} />
       </DialogPopup>
     </Dialog>
   );
 }
 
-function BucketForm(props: Target & { bucket?: RiskLimitBucketOutput }) {
-  const [state, formAction, pending] = useActionState(saveRiskLimitBucketAction, null);
-  const { bucket } = props;
+function BucketForm(props: Target & { bucket?: RiskLimitBucketOutput; onDone: () => void }) {
+  const { bucket, onDone } = props;
+  const [state, formAction, pending] = useActionToast(saveRiskLimitBucketAction, {
+    success: bucket ? `${bucket.name} saved` : "Bucket created",
+  });
+  useEffect(() => {
+    if (state?.ok) onDone();
+  }, [state, onDone]);
   // A bucket's period that isn't one of the presets (set over the API) stays selectable.
   const periods = PERIODS.some((period) => Number(period.value) === bucket?.period_seconds)
     ? PERIODS
@@ -90,22 +97,6 @@ function BucketForm(props: Target & { bucket?: RiskLimitBucketOutput }) {
           { value: String(bucket.period_seconds), label: `per ${bucket.period_seconds} s` },
         ]
       : PERIODS;
-
-  if (state?.ok) {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>{bucket ? "Bucket saved" : "Bucket created"}</DialogTitle>
-          <DialogDescription>
-            The next <code>coss.risk.limit()</code> naming it uses these numbers.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose render={<Button />}>Done</DialogClose>
-        </DialogFooter>
-      </>
-    );
-  }
 
   return (
     <form action={formAction} className="contents">
@@ -211,7 +202,9 @@ function BucketForm(props: Target & { bucket?: RiskLimitBucketOutput }) {
 
 export function DeleteBucketButton(props: Target & { bucketId: string; name: string }) {
   // On success the page re-renders without this bucket, which unmounts the dialog.
-  const [state, formAction, pending] = useActionState(deleteRiskLimitBucketAction, null);
+  const [state, formAction, pending] = useActionToast(deleteRiskLimitBucketAction, {
+    success: `${props.name} deleted`,
+  });
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button size="xs" variant="destructive-outline" />}>

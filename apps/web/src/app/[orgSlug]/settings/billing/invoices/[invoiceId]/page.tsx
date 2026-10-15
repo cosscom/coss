@@ -1,14 +1,15 @@
 import { getInvoice, listPayments } from "@coss/billing";
 import { isId } from "@coss/db/id";
 import { Button } from "@coss/ui/components/button";
+import { cn } from "@coss/ui/lib/utils";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import { InvoiceLinesTable } from "@/components/billing/invoice-lines";
 import { InvoiceStatusBadge } from "@/components/billing/invoice-status";
-import { Panel, PanelBody } from "@/components/panel";
 import { SectionHeader } from "@/components/section-header";
-import { SpecItem, SpecList } from "@/components/spec-list";
+import { SettingsNote, SettingsPage, SettingsRow, SettingsSection } from "@/components/settings";
 import { formatCents, formatDate, formatPeriodRange } from "@/lib/billing-format";
 import { requireOrgMember } from "@/lib/session";
 
@@ -29,6 +30,7 @@ export default async function InvoicePage({
   return (
     <div className="flex flex-col gap-6 print:gap-4">
       <SectionHeader
+        className="max-w-4xl"
         actions={
           <div className="flex gap-2 print:hidden">
             <Button
@@ -72,69 +74,74 @@ export default async function InvoicePage({
         }
       />
 
-      <div className="grid items-start gap-6 lg:grid-cols-3">
-        <Panel className="lg:col-span-2" title="Lines">
-          <InvoiceLinesTable lines={invoice.lines} variant="card" />
-          {invoice.memo ? (
-            <p className="px-5 py-3 text-muted-foreground text-sm">{invoice.memo}</p>
+      <SettingsPage className="print:gap-4">
+        <SettingsSection title="Lines">
+          {/* The shared lines table, its outer cells padded like the section's rows. */}
+          <div className="border-t [&_td:first-child]:ps-5 [&_td:last-child]:pe-5 [&_th:first-child]:ps-5 [&_th:last-child]:pe-5">
+            <InvoiceLinesTable lines={invoice.lines} />
+          </div>
+          {invoice.memo ? <SettingsNote>{invoice.memo}</SettingsNote> : null}
+        </SettingsSection>
+
+        <SettingsSection title="Summary">
+          <SettingsRow label="Issued">{formatDate(invoice.finalizedAt)}</SettingsRow>
+          {invoice.status === "open" ? (
+            <SettingsRow label="Due">{formatDate(invoice.dueAt)}</SettingsRow>
           ) : null}
-        </Panel>
-        <Panel title="Summary">
-          <PanelBody flush>
-            <SpecList>
-              <SpecItem label="Issued">{formatDate(invoice.finalizedAt)}</SpecItem>
-              {invoice.status === "open" ? (
-                <SpecItem label="Due">{formatDate(invoice.dueAt)}</SpecItem>
-              ) : null}
-              {invoice.paidAt ? (
-                <SpecItem label="Paid on">{formatDate(invoice.paidAt)}</SpecItem>
-              ) : null}
-              {invoice.taxCents > 0n ? (
-                <SpecItem label="Tax" mono>
-                  {formatCents(invoice.taxCents)}
-                </SpecItem>
-              ) : null}
-              <SpecItem label="Total" mono>
-                {formatCents(invoice.totalCents)}
-              </SpecItem>
-              <SpecItem label="Paid" mono>
-                {formatCents(invoice.amountPaidCents)}
-              </SpecItem>
-              <SpecItem
-                label={<span className="font-medium text-foreground">Amount due</span>}
-                mono
+          {invoice.paidAt ? (
+            <SettingsRow label="Paid on">{formatDate(invoice.paidAt)}</SettingsRow>
+          ) : null}
+          {invoice.taxCents > 0n ? (
+            <SettingsRow label="Tax">
+              <Amount>{formatCents(invoice.taxCents)}</Amount>
+            </SettingsRow>
+          ) : null}
+          <SettingsRow label="Total">
+            <Amount>{formatCents(invoice.totalCents)}</Amount>
+          </SettingsRow>
+          <SettingsRow label="Paid">
+            <Amount>{formatCents(invoice.amountPaidCents)}</Amount>
+          </SettingsRow>
+          <SettingsRow className="bg-muted/40" label="Amount due">
+            <Amount className="font-medium">{formatCents(invoice.amountDueCents)}</Amount>
+          </SettingsRow>
+        </SettingsSection>
+
+        {payments.length ? (
+          <SettingsSection title="Payments">
+            {payments.map((payment) => (
+              <SettingsRow
+                key={payment.id}
+                label={
+                  <span className="font-normal">
+                    {formatDate(payment.receivedAt)} · {payment.method.replaceAll("_", " ")}
+                    {payment.reference ? ` (${payment.reference})` : ""}
+                  </span>
+                }
               >
-                <span className="font-medium">{formatCents(invoice.amountDueCents)}</span>
-              </SpecItem>
-            </SpecList>
-          </PanelBody>
-        </Panel>
-      </div>
+                <Amount>{formatCents(payment.amountCents)}</Amount>
+              </SettingsRow>
+            ))}
+          </SettingsSection>
+        ) : null}
 
-      {payments.length ? (
-        <Panel title="Payments">
-          <PanelBody flush>
-            <SpecList>
-              {payments.map((payment) => (
-                <SpecItem
-                  key={payment.id}
-                  label={`${formatDate(payment.receivedAt)} · ${payment.method.replaceAll("_", " ")}${payment.reference ? ` (${payment.reference})` : ""}`}
-                  mono
-                >
-                  {formatCents(payment.amountCents)}
-                </SpecItem>
-              ))}
-            </SpecList>
-          </PanelBody>
-        </Panel>
-      ) : null}
-
-      {invoice.provider === "manual" && invoice.status === "open" ? (
-        <Panel
-          description={`Pay by bank transfer and include invoice number ${invoice.number} as the reference. Your account manager has our bank details; contact billing if you need them again.`}
-          title="How to pay"
-        />
-      ) : null}
+        {invoice.provider === "manual" && invoice.status === "open" ? (
+          <SettingsSection title="How to pay">
+            <SettingsNote>
+              Pay by bank transfer and include invoice number {invoice.number} as the reference.
+              Your account manager has our bank details; contact billing if you need them again.
+            </SettingsNote>
+          </SettingsSection>
+        ) : null}
+      </SettingsPage>
     </div>
+  );
+}
+
+function Amount(props: { className?: string; children: ReactNode }) {
+  return (
+    <span className={cn("font-mono text-[0.8125rem] tabular-nums", props.className)}>
+      {props.children}
+    </span>
   );
 }

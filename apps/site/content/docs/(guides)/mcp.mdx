@@ -1,0 +1,138 @@
+---
+title: MCP server
+description: Let your coding agent look up emails, explain why one wasn't delivered, and fix your setup.
+---
+
+`coss-mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server for COSS. Add it
+to your coding agent (Claude Code, Cursor, VS Code, Codex, or any MCP client), then ask things like:
+
+- "Did the welcome email to jane@example.com get delivered?"
+- "Why did my last password reset email bounce?"
+- "Which emails bounced today, and are those addresses suppressed now?"
+- "My webhook handler isn't getting events: what is it answering?"
+- "Why did my send request fail with a 422?"
+- "What DNS records does acme.com still need?"
+
+The server runs locally on Node.js 22+ through `npx` and calls the COSS API with your API key.
+
+## Set it up
+
+Create an API key in the dashboard. The server sees what that key's environment sees: use a
+development key (`coss_test_…`) while you build, and a production key (`coss_live_…`) to look into
+real deliveries.
+
+<Tabs items={["Claude Code", "Cursor", "VS Code", "Codex"]}>
+<Tab value="Claude Code">
+
+```sh
+claude mcp add coss -e COSS_API_KEY=coss_test_… -- npx -y coss-mcp
+```
+
+</Tab>
+<Tab value="Cursor">
+
+In `~/.cursor/mcp.json` (global, so the key stays out of your repository):
+
+```json
+{
+  "mcpServers": {
+    "coss": {
+      "command": "npx",
+      "args": ["-y", "coss-mcp"],
+      "env": { "COSS_API_KEY": "coss_test_…" }
+    }
+  }
+}
+```
+
+</Tab>
+<Tab value="VS Code">
+
+In `.vscode/mcp.json`; VS Code asks for the key once and stores it securely:
+
+```json
+{
+  "inputs": [
+    { "type": "promptString", "id": "coss-api-key", "description": "COSS API key", "password": true }
+  ],
+  "servers": {
+    "coss": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "coss-mcp"],
+      "env": { "COSS_API_KEY": "${input:coss-api-key}" }
+    }
+  }
+}
+```
+
+</Tab>
+<Tab value="Codex">
+
+In `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.coss]
+command = "npx"
+args = ["-y", "coss-mcp"]
+env = { COSS_API_KEY = "coss_test_…" }
+```
+
+</Tab>
+</Tabs>
+
+The server reads its configuration from the environment only:
+
+| Variable | |
+| --- | --- |
+| `COSS_API_KEY` | Required. The key every tool calls the API with. |
+| `COSS_BASE_URL` | Another API origin, e.g. `http://localhost:3001` when you run COSS yourself. Defaults to `https://api.coss.com`. |
+
+<Callout type="warn">
+API keys can do everything the API can, so the agent can also send email and change suppressions
+and domains through this server. Tools that change something are marked as such, and most clients
+ask before calling them. Give the server a development key unless you need production data.
+</Callout>
+
+## Tools
+
+**Email delivery**
+
+| Tool | |
+| --- | --- |
+| `diagnose_email` | By email id, or by recipient (and subject text): a verdict, what happened to each recipient and why (the receiving server's bounce reason, the suppression entry that skipped it, the failure code), problems with the account (an unverified domain, reputation, billing holds) and what to do next. |
+| `find_emails` | Search by recipient, subject text, status, a recipient's delivery status and time ([`GET /v1/emails`](/docs/api-reference/emails/list-emails)). |
+| `get_email` | One email with its events, optionally its content and tracked links. |
+
+**Sending**: `send_email`, `cancel_email`, `reschedule_email`.
+
+**Suppressions**: `check_suppression`, `list_suppressions`, `add_suppression`, `remove_suppression`
+(by entry or by address).
+
+**Domains**: `list_domains`, `get_domain` (by id or name, with every DNS record and what COSS
+found), `add_domain`, `verify_domain`.
+
+**Webhooks**: `list_webhook_endpoints`, `list_webhook_deliveries`, `get_webhook_delivery` (every
+attempt with its status code, error and response excerpt), `retry_webhook_delivery`. Signing secrets
+are never returned.
+
+**Receiving**: `get_inbound_address`, `list_received_emails`, `get_received_email`.
+
+**Logs**: `search_logs` and `get_log`: every API request made with the environment's keys (with
+redacted request and response bodies), email events and webhook attempts. See [Logs](/docs/logs).
+
+**Account**: `get_account_status`: whether the key is live or sandbox, the
+[sending reputation](/docs/email/delivery) and its checks, billing status and holds, and tracking
+settings.
+
+## How it answers
+
+An email belongs to one environment, so a development key never finds production emails (and the
+other way round). Sandbox emails are never delivered: their outcomes are simulated, and
+[simulator addresses](/docs/environments) let you test bounces and complaints.
+
+When no email matches, the API most likely refused the send (for example a validation error or an
+unverified domain): `search_logs` finds those requests and the errors they got.
+
+Email content, received emails, bounce messages and webhook responses are written by other people.
+The server tells the agent to treat them as data, never as instructions.

@@ -21,6 +21,7 @@ import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
+import { htmlToText } from "./html-text.ts";
 import {
   type EmailProvider,
   type OutboundAttachment,
@@ -28,21 +29,30 @@ import {
   type ProviderEvent,
   UncertainSendError,
 } from "./provider.ts";
-import { type EmailRow, selectEmailsWithMode, toEmailObjects } from "./read.ts";
+import {
+  type EmailRow,
+  PROVIDER_ERROR_MESSAGE,
+  selectEmailsWithMode,
+  toEmailBatchObject,
+  toEmailObjects,
+} from "./read.ts";
 import { canonicalJson, hashSendBatchRequest, hashSendRequest } from "./request-hash.ts";
 import {
   type EmailBatchObjectOutput,
   type EmailObjectOutput,
+  LIST_UNSUBSCRIBE_HEADERS,
+  MAX_HEADERS_WITH_UNSUBSCRIBE,
   parseEmailAddress,
   type SendEmailRequestOutput,
+  uniqueRecipientCount,
 } from "./schemas.ts";
 import { emailScreeningContent } from "./screening.ts";
 import { type SuppressionRow, suppressedRecipients } from "./suppressions.ts";
 import { renderTemplateForSend, type TemplateVersionCache } from "./templates.ts";
 import { newTrackingToken } from "./tracking.ts";
 import { trackingBaseUrlFor } from "./tracking-domains.ts";
-import { instrumentHtml } from "./tracking-html.ts";
-import { resolveTracking } from "./tracking-settings.ts";
+import { instrumentHtml, unsubscribeUrl } from "./tracking-html.ts";
+import { type ResolvedTracking, resolveTracking } from "./tracking-settings.ts";
 import { billableRecipientsSql, freezeBillableRecipients, recordEmailUsage } from "./usage.ts";
 
 /** The authenticated environment a send happens in (from `authenticateApiKey`). */
@@ -177,7 +187,10 @@ function bareAddress(value: string): string {
   return parseEmailAddress(value).address.toLowerCase();
 }
 
-/** The message for the provider, without the recipients COSS suppressed. */
+/**
+ * The message for the provider, without the recipients COSS suppressed. An email with only HTML
+ * gets a plain-text part generated from it (never stored: the email keeps what was sent to COSS).
+ */
 function toOutbound(
   row: EmailRow,
   suppressed: ReadonlySet<string>,
@@ -194,7 +207,7 @@ function toOutbound(
     replyTo: row.replyTo,
     subject: row.subject,
     html: row.html,
-    text: row.text,
+    text: row.text ?? (row.html === null ? null : htmlToText(row.html)),
     headers: row.headers,
     tags: row.tags,
     attachments,
@@ -248,7 +261,7 @@ function cossEvent(
 function failedEvent(
   row: EmailRow,
   provider: string,
-  failure = { code: "provider_error", message: "The email provider did not accept the email." },
+  failure = { code: "provider_error", message: PROVIDER_ERROR_MESSAGE },
 ): ProviderEvent {
   return cossEvent(row, {
     type: "email.failed",
@@ -653,11 +666,14 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
   }
 
   /**
-   * Adds the open pixel and click redirects to the provider's copy of the HTML (the stored email
-   * keeps the original) and stores the links first, so a click can never beat its link row.
+   * Adds the open pixel and click redirects to the provider's copy of the HTML and the one-click
+   * unsubscribe headers to its headers (the stored email keeps the originals), storing the links
+   * first, so a click can never beat its link row.
    */
   async function instrument(row: EmailRow, message: OutboundEmail): Promise<OutboundEmail> {
-    if (!row.html || !row.trackingToken || (!row.trackOpens && !row.trackClicks)) return message;
+    const token = row.trackingToken;
+    const tracksHtml = row.html !== null && (row.trackOpens || row.trackClicks);
+    if (!token || (!tracksHtml && !row.unsubscribe)) return message;
     if (!trackingBaseUrl) throw new Error("Tracking requires the email service's trackingBaseUrl.");
     // Resolved now, as the links are written: a tracking domain that stopped working (or was
     // removed) since the send falls back to the default host.
@@ -668,9 +684,21 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           provider: opts.trackingDomainProvider,
         })
       : null;
+    const baseUrl = customBaseUrl ?? trackingBaseUrl;
+    const instrumented = row.unsubscribe
+      ? {
+          ...message,
+          headers: {
+            ...message.headers,
+            "List-Unsubscribe": `<${unsubscribeUrl(baseUrl, token)}>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          },
+        }
+      : message;
+    if (row.html === null || (!row.trackOpens && !row.trackClicks)) return instrumented;
     const { html, links } = instrumentHtml(row.html, {
-      baseUrl: customBaseUrl ?? trackingBaseUrl,
-      token: row.trackingToken,
+      baseUrl,
+      token,
       opens: row.trackOpens,
       clicks: row.trackClicks,
     });
@@ -687,7 +715,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         )
         .onConflictDoNothing({ target: [emailLink.emailId, emailLink.position] });
     }
-    return { ...message, html };
+    return { ...instrumented, html };
   }
 
   async function dispatch(input: {
@@ -744,7 +772,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     apiKeyId: string | null,
     params: SendEmailRequestOutput,
     caches: {
-      tracking: Map<string, Promise<{ opens: boolean; clicks: boolean }>>;
+      tracking: Map<string, Promise<ResolvedTracking>>;
       templates: TemplateVersionCache;
     },
     opts: { discardBody?: boolean; templateDraft?: boolean; paramPrefix?: string } = {},
@@ -779,7 +807,17 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       caches.tracking.set(trackingKey, resolving);
     }
     const tracking = await resolving;
-    if ((tracking.opens || tracking.clicks) && !trackingBaseUrl) {
+    // The unsubscribe is scoped to the category and names one recipient (one provider message
+    // goes to every recipient), the customer's own List-Unsubscribe headers win, and the two
+    // headers must still fit the provider's header limit. An explicit `tracking.unsubscribe` that
+    // can't be honored was already refused by validation.
+    const unsubscribe =
+      tracking.unsubscribe &&
+      params.category !== undefined &&
+      uniqueRecipientCount(params) === 1 &&
+      !LIST_UNSUBSCRIBE_HEADERS.some((name) => name in params.headers) &&
+      Object.keys(params.headers).length <= MAX_HEADERS_WITH_UNSUBSCRIBE;
+    if ((tracking.opens || tracking.clicks || unsubscribe) && !trackingBaseUrl) {
       throw new Error("Tracking requires the email service's trackingBaseUrl.");
     }
 
@@ -806,6 +844,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         category: params.category ?? null,
         trackOpens: tracking.opens,
         trackClicks: tracking.clicks,
+        unsubscribe,
         templateId: content?.template.id ?? null,
         templateVersion: content?.template.version ?? null,
         templateLocale: content?.template.locale ?? null,
@@ -831,7 +870,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       "idempotencyKey" | "requestHash" | "batchId" | "batchIndex"
     >,
   ): Promise<{ row: EmailRow; billable: number } | undefined> {
-    const tracked = prepared.values.trackOpens || prepared.values.trackClicks;
+    const tracked =
+      prepared.values.trackOpens || prepared.values.trackClicks || prepared.values.unsubscribe;
     const [row] = await tx
       .insert(email)
       .values({
@@ -1141,27 +1181,6 @@ function sameBatchKey(environment: SendEnvironment, idempotencyKey: string) {
     eq(emailBatch.environmentId, environment.environmentId),
     eq(emailBatch.idempotencyKey, idempotencyKey),
   );
-}
-
-/** A batch with its emails in request order. */
-async function toEmailBatchObject(
-  batch: EmailBatchRow,
-  sandbox: boolean,
-): Promise<EmailBatchObjectOutput> {
-  const rows = await db
-    .select()
-    .from(email)
-    .where(and(eq(email.organizationId, batch.organizationId), eq(email.batchId, batch.id)))
-    .orderBy(asc(email.batchIndex));
-  return {
-    object: "email_batch",
-    id: batch.id,
-    data: await toEmailObjects(
-      batch.organizationId,
-      rows.map((row) => ({ email: row, sandbox })),
-    ),
-    created_at: batch.createdAt.toISOString(),
-  };
 }
 
 async function currentEmail(row: EmailRow): Promise<EmailObjectOutput> {

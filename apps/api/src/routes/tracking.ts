@@ -1,11 +1,12 @@
 /**
- * Public open/click tracking endpoints (no API key: they are fetched by mail clients). Mounted
- * outside `/v1` and the OpenAPI document. They never answer with the JSON error envelope: a pixel
- * is always a GIF, and a click either redirects to the link stored at send or is a plain 404.
+ * Public open/click tracking and one-click unsubscribe endpoints (no API key: they are fetched by
+ * mail clients). Mounted outside `/v1` and the OpenAPI document. They never answer with the JSON
+ * error envelope: a pixel is always a GIF, a click either redirects to the link stored at send or
+ * is a plain 404, and an unsubscribe is a small HTML page or plain text.
  */
 
 import { createHash } from "node:crypto";
-import { recordClick, recordOpen } from "@coss/email";
+import { getUnsubscribe, recordClick, recordOpen, recordUnsubscribe } from "@coss/email";
 import { type Context, Hono } from "hono";
 import type { AppEnv } from "../types.ts";
 
@@ -18,6 +19,22 @@ export const PIXEL_GIF = Uint8Array.from(
 );
 
 const NO_STORE = "no-store, no-cache, must-revalidate, private";
+
+// The unsubscribe pages are static: no scripts, no external assets, posting only to themselves.
+const PAGE_CSP =
+  "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; " +
+  "base-uri 'none'";
+
+function escapeHtml(value: string): string {
+  return value.replace(
+    /[&<>"']/g,
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] ?? "",
+  );
+}
+
+function unsubscribePage(title: string, body: string): string {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>${title}</title><style>body{font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;color:#111;background:#fff}button{font:inherit;padding:.5rem 1rem;cursor:pointer}</style></head><body><h1>${title}</h1>${body}</body></html>`;
+}
 
 function userAgent(header: string | undefined): string | null {
   return header?.trim() || null;
@@ -88,6 +105,61 @@ export function createTrackingRoutes(): Hono<AppEnv> {
     c.header("Cache-Control", NO_STORE);
     // Encode Unicode without making Hono double-encode existing percent escapes.
     return c.redirect(destination.href, 302);
+  });
+
+  // One-click unsubscribe (RFC 8058). Link scanners and mail clients GET the URL, so a GET (or
+  // HEAD) only shows a confirmation page; the unsubscribe is the POST mailbox providers send.
+  router.get("/u/:token", async (c) => {
+    if (!(await trackingAllowed(c, c.req.param("token")))) {
+      return c.text("Too many requests.", 429, { "Cache-Control": NO_STORE, "Retry-After": "1" });
+    }
+    const found = await getUnsubscribe(c.req.param("token")).catch((error: unknown) => {
+      console.error(
+        `[api:tracking] failed to look up an unsubscribe (request_id=${c.var.requestId}):`,
+        error,
+      );
+      return null;
+    });
+    if (!found) return c.text("This link is not valid.", 404, { "Cache-Control": NO_STORE });
+    const page = unsubscribePage(
+      "Unsubscribe",
+      `<p>Stop receiving “${escapeHtml(found.category)}” emails from this sender?</p>` +
+        '<form method="post"><input type="hidden" name="List-Unsubscribe" value="One-Click">' +
+        '<button type="submit">Unsubscribe</button></form>',
+    );
+    return c.html(page, 200, { "Cache-Control": NO_STORE, "Content-Security-Policy": PAGE_CSP });
+  });
+
+  router.post("/u/:token", async (c) => {
+    if (!(await trackingAllowed(c, c.req.param("token")))) {
+      return c.text("Too many requests.", 429, { "Cache-Control": NO_STORE, "Retry-After": "1" });
+    }
+    const body = await c.req.parseBody().catch(() => ({}) as Record<string, unknown>);
+    if (body["List-Unsubscribe"] !== "One-Click") {
+      return c.text("Expected List-Unsubscribe=One-Click.", 400, { "Cache-Control": NO_STORE });
+    }
+    let unsubscribed: boolean;
+    try {
+      unsubscribed = await recordUnsubscribe({ token: c.req.param("token") });
+    } catch (error) {
+      console.error(
+        `[api:tracking] failed to record an unsubscribe (request_id=${c.var.requestId}):`,
+        error,
+      );
+      // Not a 2xx, so the mailbox provider tries again.
+      return c.text("Something went wrong. Please try again.", 503, {
+        "Cache-Control": NO_STORE,
+      });
+    }
+    if (!unsubscribed) {
+      return c.text("This link is not valid.", 404, { "Cache-Control": NO_STORE });
+    }
+    // Never a redirect (RFC 8058).
+    return c.html(
+      unsubscribePage("Unsubscribed", "<p>You won’t receive these emails anymore.</p>"),
+      200,
+      { "Cache-Control": NO_STORE, "Content-Security-Policy": PAGE_CSP },
+    );
   });
 
   return router;

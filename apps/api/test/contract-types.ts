@@ -39,6 +39,7 @@ import type {
   EmailLinkList,
   EmailObject,
   EmailRecipient,
+  EmailSummaryList,
   EmailTemplateList,
   EmailTemplateObject,
   EmailTemplateReference,
@@ -48,6 +49,7 @@ import type {
   ExportSuppressionsQuery,
   ImportSuppressionsRequest,
   InboundAddressObject,
+  ListEmailsQuery,
   ListEmailTemplatesQuery,
   ListEmailTemplateVersionsQuery,
   ListReceivedEmailsQuery,
@@ -167,11 +169,13 @@ import type {
   CreateWebhookEndpointParams,
   Email,
   EmailBatch,
+  EmailSummary,
   ExportSuppressionsParams,
   ImportSuppressionsParams,
   List,
   ListAuditEventsParams,
   ListCreditsParams,
+  ListEmailsParams,
   ListEmailTemplatesParams,
   ListEmailTemplateVersionsParams,
   ListInvoicesParams,
@@ -258,7 +262,6 @@ import type {
   WebhookAttempt as SdkWebhookAttempt,
   WebhookDelivery as SdkWebhookDelivery,
   SendEmailContentParams,
-  SendEmailParams,
   SendEmailTemplateParams,
   TrackingOptions,
   UpdateEmailTemplateDraftParams,
@@ -297,53 +300,49 @@ type Assert<T extends true> = T;
 type Extends<A, B> = [A] extends [B] ? true : false;
 
 type SendInput = z.input<typeof SendEmailRequest>;
+// `react` never reaches the API: the SDK renders it into `html`/`text` first.
+type SendContentBody = Omit<SendEmailContentParams, "react">;
+type SendTemplateBody = Omit<SendEmailTemplateParams, "react">;
+type SendEmailBody = SendContentBody | SendTemplateBody;
 type EmailOutput = z.output<typeof EmailObject>;
 type ApiError = ErrorEnvelopeBody["error"];
 
 export type Contract = [
   // API versions: the SDK knows exactly the API's versions.
   Assert<MutuallyAssignable<ApiVersion, SdkApiVersion>>,
-  // Request: a send has its own content or a template. Every SDK shape is valid API input, and
+  // Request: a send has its own content or a template. Every SDK body is valid API input, and
   // each kind names every API field (the other kind's as `never`).
-  Assert<Extends<SendEmailParams, SendInput>>,
-  Assert<Equals<keyof SendInput, keyof SendEmailParams>>,
-  Assert<Equals<keyof SendInput, keyof SendEmailContentParams>>,
-  Assert<Equals<keyof SendInput, keyof SendEmailTemplateParams>>,
-  Assert<MutuallyAssignable<NonNullable<SendInput["subject"]>, SendEmailContentParams["subject"]>>,
+  Assert<Extends<SendEmailBody, SendInput>>,
+  Assert<Equals<keyof SendInput, keyof SendContentBody>>,
+  Assert<Equals<keyof SendInput, keyof SendTemplateBody>>,
+  Assert<MutuallyAssignable<NonNullable<SendInput["subject"]>, SendContentBody["subject"]>>,
+  Assert<MutuallyAssignable<NonNullable<SendInput["html"]>, NonNullable<SendContentBody["html"]>>>,
+  Assert<MutuallyAssignable<NonNullable<SendInput["text"]>, NonNullable<SendContentBody["text"]>>>,
   Assert<
-    MutuallyAssignable<NonNullable<SendInput["html"]>, NonNullable<SendEmailContentParams["html"]>>
-  >,
-  Assert<
-    MutuallyAssignable<
-      NonNullable<SendInput["template_id"]>,
-      SendEmailTemplateParams["template_id"]
-    >
+    MutuallyAssignable<NonNullable<SendInput["template_id"]>, SendTemplateBody["template_id"]>
   >,
   Assert<
     MutuallyAssignable<
       NonNullable<SendInput["template_version"]>,
-      NonNullable<SendEmailTemplateParams["template_version"]>
+      NonNullable<SendTemplateBody["template_version"]>
     >
   >,
   Assert<
-    MutuallyAssignable<
-      NonNullable<SendInput["locale"]>,
-      NonNullable<SendEmailTemplateParams["locale"]>
-    >
+    MutuallyAssignable<NonNullable<SendInput["locale"]>, NonNullable<SendTemplateBody["locale"]>>
   >,
   Assert<
     MutuallyAssignable<
       NonNullable<SendInput["variables"]>,
-      NonNullable<SendEmailTemplateParams["variables"]>
+      NonNullable<SendTemplateBody["variables"]>
     >
   >,
-  Assert<MutuallyAssignable<SendInput["to"], SendEmailParams["to"]>>,
+  Assert<MutuallyAssignable<SendInput["to"], SendEmailBody["to"]>>,
   Assert<MutuallyAssignable<NonNullable<SendInput["tracking"]>, TrackingOptions>>,
-  Assert<MutuallyAssignable<NonNullable<SendInput["tags"]>, NonNullable<SendEmailParams["tags"]>>>,
+  Assert<MutuallyAssignable<NonNullable<SendInput["tags"]>, NonNullable<SendEmailBody["tags"]>>>,
   Assert<
     MutuallyAssignable<
       NonNullable<SendInput["attachments"]>[number],
-      NonNullable<SendEmailParams["attachments"]>[number]
+      NonNullable<SendEmailBody["attachments"]>[number]
     >
   >,
   // Response: what the API returns is exactly the SDK's `Email`.
@@ -351,6 +350,9 @@ export type Contract = [
   Assert<MutuallyAssignable<EmailOutput["status"], Email["status"]>>,
   Assert<MutuallyAssignable<EmailOutput["tags"], Email["tags"]>>,
   Assert<MutuallyAssignable<EmailOutput["attachments"][number], Email["attachments"][number]>>,
+  Assert<MutuallyAssignable<EmailOutput["failure"], Email["failure"]>>,
+  Assert<MutuallyAssignable<z.output<typeof EmailSummaryList>, List<EmailSummary>>>,
+  Assert<Equals<keyof z.input<typeof ListEmailsQuery>, keyof ListEmailsParams>>,
   Assert<MutuallyAssignable<z.output<typeof EmailRecipient>, SdkEmailRecipient>>,
   Assert<
     MutuallyAssignable<z.output<typeof EmailRecipient>["status"], SdkEmailRecipient["status"]>
@@ -363,7 +365,7 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof EmailLink>, SdkEmailLink>>,
   Assert<MutuallyAssignable<z.output<typeof EmailLinkList>, List<SdkEmailLink>>>,
   // Batch sends: `sendBatch(emails)` posts `{ emails }` and returns the batch.
-  Assert<Extends<SendEmailParams, z.input<typeof SendEmailBatchRequest>["emails"][number]>>,
+  Assert<Extends<SendEmailBody, z.input<typeof SendEmailBatchRequest>["emails"][number]>>,
   Assert<Equals<z.input<typeof SendEmailBatchRequest>["emails"][number], SendInput>>,
   Assert<Equals<keyof z.input<typeof SendEmailBatchRequest>, "emails">>,
   Assert<MutuallyAssignable<z.output<typeof EmailBatchObject>, EmailBatch>>,

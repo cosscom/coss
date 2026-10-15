@@ -1,110 +1,132 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
-import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { useActionState } from "react";
-import { FormError } from "@/components/form-error";
+import { SettingsFooter, SettingsRow } from "@/components/settings";
+import { useActionToast } from "@/lib/toast";
 import { changePasswordAction, setPasswordAction } from "./actions";
 
+/** A password input on the right of its row (the row's label names it). */
+function PasswordInput(props: {
+  id: string;
+  name: string;
+  autoComplete: "current-password" | "new-password";
+  disabled: boolean;
+  /** New passwords: at least 8 characters, like Better Auth's minimum. */
+  isNew?: boolean;
+}) {
+  return (
+    <Input
+      autoComplete={props.autoComplete}
+      className="sm:w-72"
+      disabled={props.disabled}
+      id={props.id}
+      maxLength={128}
+      minLength={props.isNew ? 8 : undefined}
+      name={props.name}
+      required
+      type="password"
+    />
+  );
+}
+
 export function PasswordForm({ disabled }: { disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(changePasswordAction, null);
+  const [state, formAction, pending] = useActionToast(changePasswordAction, {
+    success: { title: "Password changed", description: "Your other sessions were signed out." },
+  });
 
   return (
-    <form action={formAction} className="flex max-w-md flex-col gap-4">
+    <form action={formAction}>
       {/* Lets password managers attach the new password to this account. */}
       <input autoComplete="username" hidden readOnly />
-      <Field>
-        <FieldLabel>Current password</FieldLabel>
-        <Input
+      <SettingsRow label={<label htmlFor="current-password">Current password</label>}>
+        <PasswordInput
           autoComplete="current-password"
           disabled={disabled}
-          maxLength={128}
+          id="current-password"
           name="currentPassword"
-          required
-          type="password"
         />
-      </Field>
-      <Field>
-        <FieldLabel>New password</FieldLabel>
-        <Input
+      </SettingsRow>
+      <SettingsRow
+        description="At least 8 characters."
+        label={<label htmlFor="new-password">New password</label>}
+      >
+        <PasswordInput
           autoComplete="new-password"
           disabled={disabled}
-          maxLength={128}
-          minLength={8}
+          id="new-password"
+          isNew
           name="newPassword"
-          required
-          type="password"
         />
-        <FieldDescription>At least 8 characters.</FieldDescription>
-      </Field>
-      <Field>
-        <FieldLabel>Confirm new password</FieldLabel>
-        <Input
+      </SettingsRow>
+      <SettingsRow label={<label htmlFor="confirm-password">Confirm new password</label>}>
+        <PasswordInput
           autoComplete="new-password"
           disabled={disabled}
-          maxLength={128}
-          minLength={8}
+          id="confirm-password"
+          isNew
           name="confirmPassword"
-          required
-          type="password"
         />
-      </Field>
-      {state?.ok ? (
-        <p className="text-muted-foreground text-sm">
-          Password changed. Your other sessions were signed out.
-        </p>
-      ) : (
-        <FormError message={state?.error} />
-      )}
-      <div>
-        <Button disabled={disabled} loading={pending} type="submit">
+      </SettingsRow>
+      <SettingsFooter
+        hint={
+          state && !state.ok ? (
+            <span className="text-destructive-foreground">{state.error}</span>
+          ) : (
+            "Changing it signs out every other session."
+          )
+        }
+      >
+        <Button disabled={disabled} loading={pending} size="sm" type="submit">
           Change password
         </Button>
-      </div>
+      </SettingsFooter>
     </form>
   );
 }
 
 /** For accounts created with Google or GitHub, which have no password yet. */
 export function SetPasswordForm({ disabled }: { disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(setPasswordAction, null);
+  const [state, formAction, pending] = useActionToast(setPasswordAction, {
+    success: "Password set",
+  });
 
   return (
-    <form action={formAction} className="flex max-w-md flex-col gap-4">
+    <form action={formAction}>
       {/* Lets password managers attach the new password to this account. */}
       <input autoComplete="username" hidden readOnly />
-      <Field>
-        <FieldLabel>Password</FieldLabel>
-        <Input
+      <SettingsRow
+        description="At least 8 characters."
+        label={<label htmlFor="new-password">Password</label>}
+      >
+        <PasswordInput
           autoComplete="new-password"
           disabled={disabled}
-          maxLength={128}
-          minLength={8}
+          id="new-password"
+          isNew
           name="newPassword"
-          required
-          type="password"
         />
-        <FieldDescription>At least 8 characters.</FieldDescription>
-      </Field>
-      <Field>
-        <FieldLabel>Confirm password</FieldLabel>
-        <Input
+      </SettingsRow>
+      <SettingsRow label={<label htmlFor="confirm-password">Confirm password</label>}>
+        <PasswordInput
           autoComplete="new-password"
           disabled={disabled}
-          maxLength={128}
-          minLength={8}
+          id="confirm-password"
+          isNew
           name="confirmPassword"
-          required
-          type="password"
         />
-      </Field>
-      <FormError message={state?.ok ? null : state?.error} />
-      <div>
-        <Button disabled={disabled} loading={pending} type="submit">
+      </SettingsRow>
+      <SettingsFooter
+        hint={
+          state && !state.ok ? (
+            <span className="text-destructive-foreground">{state.error}</span>
+          ) : null
+        }
+      >
+        <Button disabled={disabled} loading={pending} size="sm" type="submit">
           Set password
         </Button>
-      </div>
+      </SettingsFooter>
     </form>
   );
 }

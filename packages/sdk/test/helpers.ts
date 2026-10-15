@@ -82,6 +82,7 @@ export const sampleEmail: Email = {
   tags: [{ name: "category", value: "welcome" }],
   category: null,
   status: "sent",
+  failure: null,
   recipients: [
     {
       address: "delivered@example.com",
@@ -95,6 +96,7 @@ export const sampleEmail: Email = {
   tracking: {
     opens: false,
     clicks: false,
+    unsubscribe: false,
     open_count: 0,
     first_opened_at: null,
     last_opened_at: null,

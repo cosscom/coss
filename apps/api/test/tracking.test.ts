@@ -240,3 +240,108 @@ describe("GET /v1/emails/{id}/links", () => {
     expect((await errorOf(res)).issues?.[0]).toMatchObject({ path: "tracking.opens" });
   });
 });
+
+describe("one-click unsubscribe", () => {
+  async function sendUnsubscribable(appOptions: Parameters<typeof createTestApp>[0] = {}) {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider, dispatch } = createTestApp(appOptions);
+    const res = await sendEmail(
+      app,
+      tenant.sandboxKey,
+      emailBody({ to: "jane@example.com", category: "news", tracking: { unsubscribe: true } }),
+    );
+    expect(res.status).toBe(202);
+    const email = (await res.json()) as { id: string; tracking: Record<string, unknown> };
+    expect(email.tracking.unsubscribe).toBe(true);
+    await dispatch();
+    const headers = sandboxProvider.sent.at(-1)?.headers ?? {};
+    expect(headers["List-Unsubscribe-Post"]).toBe("List-Unsubscribe=One-Click");
+    const url = /^<(.+)>$/.exec(headers["List-Unsubscribe"] ?? "")?.[1] ?? "";
+    expect(url).toStartWith(`${TRACKING_BASE_URL}/t/u/`);
+    return { tenant, app, email, path: url.slice(TRACKING_BASE_URL.length) };
+  }
+
+  function post(app: TestApp, path: string, body: BodyInit) {
+    return Promise.resolve(app.request(path, { method: "POST", body }));
+  }
+
+  async function suppressions(app: TestApp, key: string) {
+    const res = await apiRequest(app, "GET", "/v1/suppressions", { key });
+    return ((await res.json()) as { data: Array<Record<string, unknown>> }).data;
+  }
+
+  test("GET and HEAD show a confirmation page and change nothing", async () => {
+    const { tenant, app, path } = await sendUnsubscribable();
+    for (const method of ["GET", "HEAD"] as const) {
+      const res = await app.request(path, { method });
+      expect(res.status).toBe(200);
+      expect(res.headers.get("content-type")).toStartWith("text/html");
+      expect(res.headers.get("content-security-policy")).toContain("default-src 'none'");
+      expect(res.headers.get("cache-control")).toContain("no-store");
+      if (method === "GET") {
+        const page = await res.text();
+        expect(page).toContain('<form method="post">');
+        expect(page).toContain('name="List-Unsubscribe" value="One-Click"');
+        expect(page).not.toContain("<script");
+      }
+    }
+    expect(await suppressions(app, tenant.sandboxKey)).toEqual([]);
+  });
+
+  test("the one-click POST suppresses the recipient for the category", async () => {
+    const { tenant, app, email, path } = await sendUnsubscribable();
+    const res = await post(app, path, new URLSearchParams({ "List-Unsubscribe": "One-Click" }));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("location")).toBeNull();
+    expect(res.headers.get("content-type")).toStartWith("text/html");
+    expect(await suppressions(app, tenant.sandboxKey)).toMatchObject([
+      { address: "jane@example.com", scope: "news", reason: "unsubscribe", email_id: email.id },
+    ]);
+
+    const events = await apiRequest(app, "GET", `/v1/emails/${email.id}/events`, {
+      key: tenant.sandboxKey,
+    });
+    const types = ((await events.json()) as { data: Array<{ type: string }> }).data.map(
+      (event) => event.type,
+    );
+    expect(types).toContain("email.unsubscribed");
+  });
+
+  test("multipart bodies count too", async () => {
+    const { tenant, app, path } = await sendUnsubscribable();
+    const form = new FormData();
+    form.set("List-Unsubscribe", "One-Click");
+    expect((await post(app, path, form)).status).toBe(200);
+    expect(await suppressions(app, tenant.sandboxKey)).toHaveLength(1);
+  });
+
+  test("a POST without the one-click body or with an unknown token unsubscribes nobody", async () => {
+    const { tenant, app, path } = await sendUnsubscribable();
+    const empty = await post(app, path, new URLSearchParams());
+    expect(empty.status).toBe(400);
+    expect(empty.headers.get("content-type")).toStartWith("text/plain");
+    const unknown = `/t/u/${"x".repeat(32)}`;
+    const body = new URLSearchParams({ "List-Unsubscribe": "One-Click" });
+    expect((await post(app, unknown, body)).status).toBe(404);
+    expect((await app.request(unknown)).status).toBe(404);
+    expect(await suppressions(app, tenant.sandboxKey)).toEqual([]);
+  });
+
+  test("POSTs are rate limited by token", async () => {
+    const { app, path } = await sendUnsubscribable({ rateLimiter: memoryLimiter() });
+    let denied: Response | null = null;
+    for (let i = 0; i < 150; i++) {
+      const response = await post(
+        app,
+        path,
+        new URLSearchParams({ "List-Unsubscribe": "One-Click" }),
+      );
+      if (response.status === 429) {
+        denied = response;
+        break;
+      }
+      expect(response.status).toBe(200);
+    }
+    expect(denied?.headers.get("retry-after")).toBe("1");
+  });
+});

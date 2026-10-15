@@ -4,7 +4,6 @@ import {
   listPendingInvitations,
   listScimManagedUserIds,
 } from "@coss/tenancy";
-import { Avatar, AvatarFallback } from "@coss/ui/components/avatar";
 import { Badge } from "@coss/ui/components/badge";
 import {
   Table,
@@ -19,8 +18,9 @@ import type { Metadata } from "next";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
-import { initials } from "@/components/shell/initials";
 import { StatusDot } from "@/components/status-dot";
+import { UserAvatar } from "@/components/user-avatar";
+import { avatarUrl } from "@/lib/avatars";
 import { formatDateTime, formatRelative } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { CancelInvitationButton } from "./cancel-invitation-button";
@@ -99,11 +99,11 @@ export default async function MembersPage({ params }: PageProps<"/[orgSlug]/memb
                 <TableRow key={row.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Avatar className="size-8 border">
-                        <AvatarFallback className="text-[0.6875rem]">
-                          {initials(row.user.name || row.user.email)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserAvatar
+                        className="size-8 border"
+                        fallbackClassName="text-[0.6875rem]"
+                        user={{ ...row.user, image: avatarUrl(row.user) }}
+                      />
                       <div className="flex min-w-0 flex-col">
                         <span className="truncate font-medium">
                           {row.user.name}
@@ -218,6 +218,7 @@ export default async function MembersPage({ params }: PageProps<"/[orgSlug]/memb
                       <div className="flex justify-end gap-2">
                         {canInvite ? (
                           <ResendInvitationButton
+                            email={invitation.email}
                             invitationId={invitation.id}
                             orgSlug={organization.slug}
                           />

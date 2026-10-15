@@ -3,8 +3,9 @@
 /**
  * Why an address is suppressed. `bounce`: a permanent bounce. `complaint`: a spam complaint.
  * `manual`: added one by one through the API or the dashboard. `import`: added by a bulk import.
+ * `unsubscribe`: the recipient's one-click unsubscribe, scoped to the email's category.
  */
-export type SuppressionReason = "bounce" | "complaint" | "manual" | "import";
+export type SuppressionReason = "bounce" | "complaint" | "manual" | "import" | "unsubscribe";
 
 /** An entry of the API key's environment's suppression list. */
 export interface Suppression {

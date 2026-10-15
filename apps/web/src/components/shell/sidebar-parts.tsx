@@ -6,18 +6,21 @@ import { BookOpenIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-/** coss.com's wordmark, as in the site's header; an optional label names the area ("admin"). */
+/**
+ * coss.com's wordmark, as in the site's header; an optional label names the area ("admin") or
+ * holds the organization menu. A long label truncates.
+ */
 export function SidebarWordmark(props: { label?: ReactNode; href?: string }) {
   return (
     <div className="flex h-8 items-center gap-1.5 px-2 group-data-[collapsible=icon]:hidden">
       <Link
-        className="font-bold font-heading text-xl [font-variation-settings:'GEOM'_50,'opsz'_32]"
+        className="shrink-0 font-bold font-heading text-foreground text-xl [font-variation-settings:'GEOM'_50,'opsz'_32]"
         href={props.href ?? DASHBOARD_PATH}
       >
         coss.com
       </Link>
       {props.label ? (
-        <span className="font-heading font-semibold text-muted-foreground/64 text-xl [font-variation-settings:'GEOM'_50,'opsz'_32]">
+        <span className="flex min-w-0 font-heading font-semibold text-muted-foreground/64 text-xl [font-variation-settings:'GEOM'_50,'opsz'_32]">
           {props.label}
         </span>
       ) : null}

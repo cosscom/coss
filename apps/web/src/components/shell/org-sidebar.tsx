@@ -24,8 +24,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@coss/ui/components/sidebar";
-import { cn } from "@coss/ui/lib/utils";
-import { CheckIcon, ChevronsUpDownIcon, FolderIcon, PlusIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, ChevronsUpDownIcon, FolderIcon, PlusIcon } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import {
@@ -45,8 +44,8 @@ import { type ShellUser, UserNav } from "./user-nav";
 const ENVIRONMENT_ITEMS = navItems(ENVIRONMENT_NAV);
 
 /**
- * The sidebar of an organization's pages: the organization switcher, the current project and
- * environment with the environment's pages, then the organization's own pages.
+ * The sidebar of an organization's pages: the wordmark with the organization menu, the current
+ * project and environment with the environment's pages, then the organization's own pages.
  */
 export function OrgSidebar(props: {
   organization: ShellOrganization & { role: string };
@@ -73,40 +72,38 @@ export function OrgSidebar(props: {
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader className="gap-3">
-        <SidebarWordmark />
-        <OrganizationSwitcher current={props.organization} organizations={props.organizations} />
+        <SidebarWordmark
+          href={orgBase}
+          label={
+            <OrganizationMenu current={props.organization} organizations={props.organizations} />
+          }
+        />
+        {project && environment ? (
+          <div className="flex flex-col gap-1">
+            <OrganizationIcon current={props.organization} organizations={props.organizations} />
+            <ProjectSwitcher
+              current={{ project, environment }}
+              hrefIn={hrefIn}
+              orgSlug={props.organization.slug}
+              projects={props.projects}
+            />
+          </div>
+        ) : (
+          // Hidden unless the sidebar is collapsed to icons (and then the header's only item).
+          <OrganizationIcon current={props.organization} organizations={props.organizations} />
+        )}
       </SidebarHeader>
       <SidebarContent>
         {project && environment && envBase ? (
-          <>
-            <SidebarGroup className="py-1">
-              <SidebarGroupLabel>Project</SidebarGroupLabel>
-              <SidebarGroupContent className="flex flex-col gap-2">
-                <ProjectSwitcher
-                  current={{ project, environment }}
-                  hrefIn={hrefIn}
-                  orgSlug={props.organization.slug}
-                  projects={props.projects}
-                />
-                {project.environments.length > 1 ? (
-                  <EnvironmentToggle
-                    current={environment.slug}
-                    environments={project.environments}
-                    hrefFor={(envSlug) => hrefIn(project.slug, envSlug)}
-                  />
-                ) : null}
-              </SidebarGroupContent>
-            </SidebarGroup>
-            {ENVIRONMENT_NAV.map((group) => (
-              <NavGroup
-                active={activeEnvItem}
-                base={envBase}
-                items={group.items}
-                key={group.label ?? "overview"}
-                label={group.label}
-              />
-            ))}
-          </>
+          ENVIRONMENT_NAV.map((group) => (
+            <NavGroup
+              active={activeEnvItem}
+              base={envBase}
+              items={group.items}
+              key={group.label ?? "overview"}
+              label={group.label}
+            />
+          ))
         ) : (
           <ProjectList orgSlug={props.organization.slug} projects={props.projects} />
         )}
@@ -126,13 +123,61 @@ export function OrgSidebar(props: {
   );
 }
 
-function OrganizationSwitcher(props: {
+/** The organization menu's items: every organization (the current one with its role), then a new one. */
+function OrganizationMenuItems(props: {
   current: ShellOrganization & { role: string };
   organizations: ShellOrganization[];
 }) {
-  const { isMobile } = useSidebar();
   return (
-    <SidebarMenu>
+    <>
+      <MenuGroup>
+        <MenuGroupLabel>Organizations</MenuGroupLabel>
+        {props.organizations.map((org) => (
+          <MenuLinkItem key={org.slug} render={<Link href={`/${org.slug}`} />}>
+            <CheckIcon className={org.slug === props.current.slug ? "" : "invisible"} />
+            <span className="min-w-0 flex-1 truncate">{org.name}</span>
+            {org.slug === props.current.slug ? (
+              <span className="ms-3 text-muted-foreground text-xs capitalize">
+                {props.current.role}
+              </span>
+            ) : null}
+          </MenuLinkItem>
+        ))}
+      </MenuGroup>
+      <MenuSeparator />
+      <MenuLinkItem render={<Link href="/onboarding" />}>
+        <PlusIcon />
+        New organization
+      </MenuLinkItem>
+    </>
+  );
+}
+
+/** The organization next to the wordmark (`coss.com acme`), opening the organization menu. */
+function OrganizationMenu(props: {
+  current: ShellOrganization & { role: string };
+  organizations: ShellOrganization[];
+}) {
+  return (
+    <Menu>
+      <MenuTrigger className="flex min-w-0 items-center gap-1 rounded-md outline-none transition-colors hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring data-popup-open:text-muted-foreground">
+        <span className="truncate">{props.current.name}</span>
+        <ChevronDownIcon className="size-4 shrink-0" strokeWidth={2.25} />
+      </MenuTrigger>
+      <MenuPopup align="start" className="min-w-60" side="bottom">
+        <OrganizationMenuItems current={props.current} organizations={props.organizations} />
+      </MenuPopup>
+    </Menu>
+  );
+}
+
+/** With the sidebar collapsed to icons the wordmark is hidden: the organization's initial instead. */
+function OrganizationIcon(props: {
+  current: ShellOrganization & { role: string };
+  organizations: ShellOrganization[];
+}) {
+  return (
+    <SidebarMenu className="hidden group-data-[collapsible=icon]:flex">
       <SidebarMenuItem>
         <Menu>
           <MenuTrigger
@@ -149,29 +194,10 @@ function OrganizationSwitcher(props: {
                 {initials(props.current.name)}
               </AvatarFallback>
             </Avatar>
-            <div className="grid min-w-0 flex-1 text-left leading-tight">
-              <span className="truncate font-medium text-foreground">{props.current.name}</span>
-              <span className="truncate text-muted-foreground text-xs capitalize">
-                {props.current.role}
-              </span>
-            </div>
-            <ChevronsUpDownIcon className="ms-auto size-4" />
+            <span className="truncate font-medium text-foreground">{props.current.name}</span>
           </MenuTrigger>
-          <MenuPopup align="start" className="min-w-60" side={isMobile ? "bottom" : "right"}>
-            <MenuGroup>
-              <MenuGroupLabel>Organizations</MenuGroupLabel>
-              {props.organizations.map((org) => (
-                <MenuLinkItem key={org.slug} render={<Link href={`/${org.slug}`} />}>
-                  <CheckIcon className={org.slug === props.current.slug ? "" : "invisible"} />
-                  <span className="truncate">{org.name}</span>
-                </MenuLinkItem>
-              ))}
-            </MenuGroup>
-            <MenuSeparator />
-            <MenuLinkItem render={<Link href="/onboarding" />}>
-              <PlusIcon />
-              New organization
-            </MenuLinkItem>
+          <MenuPopup align="start" className="min-w-60" side="right">
+            <OrganizationMenuItems current={props.current} organizations={props.organizations} />
           </MenuPopup>
         </Menu>
       </SidebarMenuItem>
@@ -179,6 +205,11 @@ function OrganizationSwitcher(props: {
   );
 }
 
+/**
+ * The current project and environment in one row, like the organization switcher above it. Its
+ * menu switches the environment (same project) or the project (same environment when it has one,
+ * else its default), keeping the current section.
+ */
 function ProjectSwitcher(props: {
   orgSlug: string;
   projects: ShellProject[];
@@ -187,6 +218,10 @@ function ProjectSwitcher(props: {
 }) {
   const { isMobile } = useSidebar();
   const { project, environment } = props.current;
+  const envSlugIn = (item: ShellProject) =>
+    item.environments.some((env) => env.slug === environment.slug)
+      ? environment.slug
+      : item.defaultEnvironment;
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -195,40 +230,61 @@ function ProjectSwitcher(props: {
             render={
               <SidebarMenuButton
                 className="data-popup-open:bg-sidebar-accent"
+                size="lg"
                 tooltip={`${project.name} · ${environment.name}`}
-                variant="outline"
               />
             }
           >
-            <FolderIcon />
-            <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-              {project.name}
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border bg-background shadow-xs/5">
+              <FolderIcon className="size-4 text-muted-foreground" strokeWidth={1.75} />
             </span>
+            <div className="grid min-w-0 flex-1 text-left leading-tight">
+              <span className="truncate font-medium text-foreground">{project.name}</span>
+              <StatusDot
+                className="min-w-0 text-muted-foreground text-xs"
+                tone={environment.mode === "live" ? "success" : "info"}
+              >
+                <span className="truncate">{environment.name}</span>
+              </StatusDot>
+            </div>
             <ChevronsUpDownIcon className="ms-auto size-4" />
           </MenuTrigger>
           <MenuPopup align="start" className="min-w-60" side={isMobile ? "bottom" : "right"}>
-            {props.projects.map((item) => (
-              <MenuGroup key={item.slug}>
-                <MenuGroupLabel>{item.name}</MenuGroupLabel>
-                {item.environments.map((env) => (
+            {project.environments.length > 1 ? (
+              <>
+                <MenuGroup>
+                  <MenuGroupLabel>Environment</MenuGroupLabel>
+                  {project.environments.map((env) => (
+                    <MenuLinkItem
+                      key={env.slug}
+                      render={<Link href={props.hrefIn(project.slug, env.slug)} />}
+                    >
+                      <CheckIcon className={env.slug === environment.slug ? "" : "invisible"} />
+                      <StatusDot tone={env.mode === "live" ? "success" : "info"}>
+                        {env.name}
+                      </StatusDot>
+                    </MenuLinkItem>
+                  ))}
+                </MenuGroup>
+                <MenuSeparator />
+              </>
+            ) : null}
+            <MenuGroup>
+              <MenuGroupLabel>Projects</MenuGroupLabel>
+              {props.projects.map((item) => {
+                const envSlug = envSlugIn(item);
+                if (!envSlug) return null;
+                return (
                   <MenuLinkItem
-                    key={env.slug}
-                    render={<Link href={props.hrefIn(item.slug, env.slug)} />}
+                    key={item.slug}
+                    render={<Link href={props.hrefIn(item.slug, envSlug)} />}
                   >
-                    <CheckIcon
-                      className={
-                        item.slug === project.slug && env.slug === environment.slug
-                          ? ""
-                          : "invisible"
-                      }
-                    />
-                    <StatusDot tone={env.mode === "live" ? "success" : "info"}>
-                      {env.name}
-                    </StatusDot>
+                    <CheckIcon className={item.slug === project.slug ? "" : "invisible"} />
+                    <span className="truncate">{item.name}</span>
                   </MenuLinkItem>
-                ))}
-              </MenuGroup>
-            ))}
+                );
+              })}
+            </MenuGroup>
             <MenuSeparator />
             <MenuLinkItem render={<Link href={`/${props.orgSlug}`} />}>
               <FolderIcon />
@@ -241,41 +297,7 @@ function ProjectSwitcher(props: {
   );
 }
 
-/** Production / Development side by side, keeping the current section. */
-function EnvironmentToggle(props: {
-  environments: ShellProject["environments"];
-  current: string;
-  hrefFor: (envSlug: string) => string;
-}) {
-  const { setOpenMobile } = useSidebar();
-  return (
-    <div className="flex gap-0.5 rounded-lg bg-sidebar-accent p-0.5 group-data-[collapsible=icon]:hidden">
-      {props.environments.map((env) => {
-        const active = env.slug === props.current;
-        return (
-          <Link
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "flex h-7 min-w-0 flex-1 items-center justify-center rounded-md px-2 text-xs transition-colors",
-              active
-                ? "bg-background font-medium text-foreground shadow-sm/5 dark:bg-input"
-                : "text-sidebar-foreground hover:text-foreground",
-            )}
-            href={props.hrefFor(env.slug)}
-            key={env.slug}
-            onNavigate={() => setOpenMobile(false)}
-          >
-            <StatusDot className="min-w-0" tone={env.mode === "live" ? "success" : "info"}>
-              <span className="truncate">{env.name}</span>
-            </StatusDot>
-          </Link>
-        );
-      })}
-    </div>
-  );
-}
-
-/** Outside a project: the organization's projects, each opening its first environment. */
+/** Outside a project: the organization's projects, each opening its default environment. */
 function ProjectList(props: { orgSlug: string; projects: ShellProject[] }) {
   const { setOpenMobile } = useSidebar();
   if (props.projects.length === 0) return null;
@@ -285,14 +307,14 @@ function ProjectList(props: { orgSlug: string; projects: ShellProject[] }) {
       <SidebarGroupContent>
         <SidebarMenu className="gap-0.5">
           {props.projects.map((project) => {
-            const first = project.environments[0];
-            if (!first) return null;
+            const opens = project.defaultEnvironment;
+            if (!opens) return null;
             return (
               <SidebarMenuItem key={project.slug}>
                 <SidebarMenuButton
                   render={
                     <Link
-                      href={environmentPath(props.orgSlug, project.slug, first.slug)}
+                      href={environmentPath(props.orgSlug, project.slug, opens)}
                       onNavigate={() => setOpenMobile(false)}
                     />
                   }

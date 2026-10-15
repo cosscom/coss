@@ -20,6 +20,7 @@ import {
   CreateRiskLimitBucketRequest,
   CreateRiskListEntryRequest,
   CreateRiskRuleRequest,
+  type RiskOutcome,
   UpdateRiskLimitBucketRequest,
   UpdateRiskRuleRequest,
   UpdateRiskSettingsRequest,
@@ -49,9 +50,9 @@ async function environmentFromForm(context: OrgContext, formData: FormData) {
 
 /** Records an outcome for an assessment of this environment (also resolves an open review). */
 export async function recordRiskFeedbackAction(
-  _previous: ActionResult | null,
+  _previous: ActionResult<{ outcome: RiskOutcome }> | null,
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<ActionResult<{ outcome: RiskOutcome }>> {
   return runAction(async () => {
     const context = await requireOrgPermission(formString(formData, "orgSlug"), {
       risk: ["feedback"],
@@ -81,7 +82,7 @@ export async function recordRiskFeedbackAction(
       metadata: { outcome: parsed.data.outcome },
     });
     refresh();
-    return null;
+    return { outcome: parsed.data.outcome };
   });
 }
 

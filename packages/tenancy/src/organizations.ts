@@ -36,7 +36,15 @@ export type OrganizationMember = {
   id: string;
   role: string;
   createdAt: Date;
-  user: { id: string; name: string; email: string; twoFactorEnabled: boolean };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    emailVerified: boolean;
+    /** The picture Google or GitHub gave the account (or an SSO provider), if any. */
+    image: string | null;
+    twoFactorEnabled: boolean;
+  };
 };
 
 export type PendingInvitation = {
@@ -66,6 +74,8 @@ const memberColumns = {
     id: user.id,
     name: user.name,
     email: user.email,
+    emailVerified: user.emailVerified,
+    image: user.image,
     twoFactorEnabled: sql<boolean>`coalesce(${user.twoFactorEnabled}, false)`,
   },
 };
@@ -211,9 +221,9 @@ export async function setOrganizationTwoFactorRequired(input: {
 /** The user's organizations, by name (the org switcher; one query, unlike Better Auth's list). */
 export async function listUserOrganizations(input: {
   userId: string;
-}): Promise<{ name: string; slug: string }[]> {
+}): Promise<{ name: string; slug: string; role: string }[]> {
   return db
-    .select({ name: organization.name, slug: organization.slug })
+    .select({ name: organization.name, slug: organization.slug, role: member.role })
     .from(member)
     .innerJoin(organization, eq(organization.id, member.organizationId))
     .where(eq(member.userId, input.userId))

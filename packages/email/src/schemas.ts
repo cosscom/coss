@@ -295,6 +295,16 @@ export const TrackingOptions = z
           "Send HTML links through a COSS redirect and record `email.clicked` events. Links with a " +
           "`data-coss-no-track` attribute are left alone.",
       }),
+    unsubscribe: z
+      .boolean()
+      .optional()
+      .meta({
+        description:
+          "Add one-click unsubscribe headers (`List-Unsubscribe` and `List-Unsubscribe-Post`, " +
+          "RFC 8058). An unsubscribe suppresses the recipient for this email's category and " +
+          "records `email.unsubscribed`. Needs a `category`, a single recipient, no " +
+          "`List-Unsubscribe` header of your own and at most 13 custom headers.",
+      }),
   })
   .meta({
     id: "TrackingOptions",
@@ -302,6 +312,15 @@ export const TrackingOptions = z
       "Overrides the environment's tracking settings (its default, or the rule for this " +
       "email's category) for this email. Omitted fields keep the configured setting.",
   });
+
+/** Header names whose presence means the customer handles unsubscribes themselves. */
+export const LIST_UNSUBSCRIBE_HEADERS = ["list-unsubscribe", "list-unsubscribe-post"] as const;
+
+/**
+ * Custom headers an email can have and still get COSS's two unsubscribe headers: providers take
+ * at most `MAX_HEADERS` in all (SES's limit for a simple message).
+ */
+export const MAX_HEADERS_WITH_UNSUBSCRIBE = MAX_HEADERS - LIST_UNSUBSCRIBE_HEADERS.length;
 
 export type TrackingOptionsOutput = z.output<typeof TrackingOptions>;
 
@@ -341,7 +360,10 @@ const SendEmailRequestFields = z.strictObject({
     description: "Required unless the email is sent from a template (`template_id`).",
   }),
   html: z.string().optional().meta({ description: "HTML body. Provide `html`, `text`, or both." }),
-  text: z.string().optional().meta({ description: "Plain-text body." }),
+  text: z.string().optional().meta({
+    description:
+      "Plain-text body. Without it, an `html` email goes out with a text part generated from the HTML.",
+  }),
   template_id: z
     .string()
     .min(1)
@@ -537,6 +559,42 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
   if (value.scheduled_at !== undefined && tooFarAhead(value.scheduled_at)) {
     ctx.addIssue({ code: "custom", path: ["scheduled_at"], message: TOO_FAR_AHEAD_MESSAGE });
   }
+  if (value.tracking?.unsubscribe === true) {
+    const path = ["tracking", "unsubscribe"];
+    if (value.category === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message: "One-click unsubscribe needs a `category`: the unsubscribe is scoped to it.",
+      });
+    }
+    if (unique.size > 1) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message:
+          "One-click unsubscribe needs a single recipient across to, cc and bcc: send one " +
+          "email per recipient.",
+      });
+    }
+    const headerNames = Object.keys(value.headers ?? {}).map((name) => name.toLowerCase());
+    if (LIST_UNSUBSCRIBE_HEADERS.some((name) => headerNames.includes(name))) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message: "One-click unsubscribe can't be combined with your own List-Unsubscribe headers.",
+      });
+    }
+    if (headerNames.length > MAX_HEADERS_WITH_UNSUBSCRIBE) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message:
+          `One-click unsubscribe adds ${LIST_UNSUBSCRIBE_HEADERS.length} headers: send at most ` +
+          `${MAX_HEADERS_WITH_UNSUBSCRIBE} of your own.`,
+      });
+    }
+  }
 })
   // Only runs on fully valid input: recipients become arrays, header names lower-case, and every
   // key is present, which also makes the canonical request hash independent of how input was spelled.
@@ -587,6 +645,9 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
           tracking: {
             ...(value.tracking.opens === undefined ? {} : { opens: value.tracking.opens }),
             ...(value.tracking.clicks === undefined ? {} : { clicks: value.tracking.clicks }),
+            ...(value.tracking.unsubscribe === undefined
+              ? {}
+              : { unsubscribe: value.tracking.unsubscribe }),
           },
         }),
     // Only for template sends, for the same reason. The hash covers the request (template and
@@ -726,6 +787,7 @@ export const EMAIL_EVENT_TYPES = [
   "email.opened",
   "email.clicked",
   "email.rescheduled",
+  "email.unsubscribed",
 ] as const;
 
 /** Engagement events: recorded by COSS's tracking endpoints, never change a recipient's status. */
@@ -795,7 +857,13 @@ export const EmailRecipient = z
   })
   .meta({ id: "EmailRecipient", examples: [RECIPIENT_EXAMPLE] });
 
-export const SUPPRESSION_REASONS = ["bounce", "complaint", "manual", "import"] as const;
+export const SUPPRESSION_REASONS = [
+  "bounce",
+  "complaint",
+  "manual",
+  "import",
+  "unsubscribe",
+] as const;
 
 export type SuppressionReason = (typeof SUPPRESSION_REASONS)[number];
 
@@ -812,7 +880,8 @@ export const SuppressionScope = z
 const SuppressionReasonEnum = z.enum(SUPPRESSION_REASONS).meta({
   description:
     "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. " +
-    "`manual`: added one by one through the API or dashboard. `import`: added by a bulk import.",
+    "`manual`: added one by one through the API or dashboard. `import`: added by a bulk import. " +
+    "`unsubscribe`: added by the recipient's one-click unsubscribe, scoped to the email's category.",
 });
 
 export const EmailEventData = z
@@ -979,6 +1048,7 @@ export type EmailAttachmentObjectOutput = z.output<typeof EmailAttachmentObject>
 const TRACKING_EXAMPLE = {
   opens: false,
   clicks: false,
+  unsubscribe: false,
   open_count: 0,
   first_opened_at: null,
   last_opened_at: null,
@@ -1001,6 +1071,9 @@ export const EmailTracking = z
   .object({
     opens: z.boolean().meta({ description: "Whether opens are tracked for this email." }),
     clicks: z.boolean().meta({ description: "Whether link clicks are tracked for this email." }),
+    unsubscribe: z.boolean().meta({
+      description: "Whether the email carries one-click unsubscribe headers (RFC 8058).",
+    }),
     open_count: z.number().int(),
     first_opened_at: z.iso.datetime().nullable(),
     last_opened_at: z.iso.datetime().nullable(),
@@ -1044,6 +1117,23 @@ export const EmailLinkList = z
 
 export type EmailLinkListOutput = z.output<typeof EmailLinkList>;
 
+export const EmailFailure = z
+  .object({
+    code: z.string().meta({
+      description:
+        "Why the email failed, e.g. `all_recipients_suppressed`, `domain_not_verified`, " +
+        "`content_rejected`, `attachments_unavailable`, `dispatch_failed` or `provider_error`.",
+      examples: ["all_recipients_suppressed"],
+    }),
+    message: z.string(),
+  })
+  .meta({
+    id: "EmailFailure",
+    examples: [
+      { code: "all_recipients_suppressed", message: "Every recipient is on the suppression list." },
+    ],
+  });
+
 export const EmailObject = z
   .object({
     object: z.literal("email"),
@@ -1064,6 +1154,9 @@ export const EmailObject = z
         "Whether the email was handed to the delivery provider. `scheduled` emails wait for " +
         "`scheduled_at`; `canceled` ones were canceled before that. Per-recipient delivery is in " +
         "`recipients`.",
+    }),
+    failure: z.union([EmailFailure, z.null()]).meta({
+      description: "Why the email failed; `null` unless `status` is `failed`.",
     }),
     recipients: z.array(EmailRecipient),
     attachments: z.array(EmailAttachmentObject).meta({
@@ -1105,6 +1198,7 @@ export const EmailObject = z
         tags: [{ name: "template", value: "welcome" }],
         category: "onboarding",
         status: "sent",
+        failure: null,
         recipients: [RECIPIENT_EXAMPLE],
         sandbox: false,
         tracking: TRACKING_EXAMPLE,
@@ -1119,6 +1213,135 @@ export const EmailObject = z
   });
 
 export type EmailObjectOutput = z.output<typeof EmailObject>;
+
+const SUMMARY_EXAMPLE = {
+  object: "email",
+  id: EMAIL_ID_EXAMPLE,
+  from: "Acme <onboarding@acme.com>",
+  to: ["user@example.com"],
+  cc: [],
+  bcc: [],
+  reply_to: [],
+  subject: "Welcome to Acme",
+  tags: [{ name: "template", value: "welcome" }],
+  category: "onboarding",
+  status: "sent",
+  failure: null,
+  recipients: [RECIPIENT_EXAMPLE],
+  sandbox: false,
+  tracking: TRACKING_EXAMPLE,
+  created_at: "2026-10-10T12:00:00.000Z",
+  sent_at: "2026-10-10T12:00:01.000Z",
+  scheduled_at: null,
+  batch_id: null,
+  template: null,
+};
+
+/** An email in a list: everything but its content (`html`, `text`, `headers`, `attachments`). */
+export const EmailSummary = EmailObject.omit({
+  html: true,
+  text: true,
+  headers: true,
+  attachments: true,
+}).meta({
+  id: "EmailSummary",
+  description:
+    "An email without its content. Retrieve the email for `html`, `text`, `headers` and " +
+    "`attachments`.",
+  examples: [SUMMARY_EXAMPLE],
+});
+
+export type EmailSummaryOutput = z.output<typeof EmailSummary>;
+
+export const EmailSummaryList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(EmailSummary),
+    has_more: z.boolean(),
+  })
+  .meta({
+    id: "EmailSummaryList",
+    examples: [{ object: "list", data: [SUMMARY_EXAMPLE], has_more: false }],
+  });
+
+export type EmailSummaryListOutput = z.output<typeof EmailSummaryList>;
+
+export const DEFAULT_EMAIL_LIST_LIMIT = 20;
+export const MAX_EMAIL_LIST_LIMIT = 100;
+
+/** A comma-separated list of enum values (`status=failed,canceled`). */
+function csvEnum<const T extends readonly [string, ...string[]]>(values: T, description: string) {
+  const item = z.enum(values);
+  return z
+    .string()
+    .transform((value, ctx) => {
+      const out: T[number][] = [];
+      for (const part of value.split(",").map((piece) => piece.trim())) {
+        if (part.length === 0) continue;
+        const parsed = item.safeParse(part);
+        if (!parsed.success) {
+          ctx.addIssue({ code: "custom", message: `Invalid value "${part}".` });
+          return z.NEVER;
+        }
+        out.push(parsed.data);
+      }
+      return out;
+    })
+    .optional()
+    .meta({ description });
+}
+
+export const ListEmailsQuery = z
+  .strictObject({
+    to: z
+      .string()
+      .trim()
+      .min(1)
+      .max(320)
+      .transform((value) => value.toLowerCase())
+      .optional()
+      .meta({
+        description:
+          "Only emails with this recipient (in `to`, `cc` or `bcc`; the bare address, any case).",
+        examples: ["user@example.com"],
+      }),
+    recipient_status: csvEnum(
+      EMAIL_RECIPIENT_STATUSES,
+      "Only emails with a recipient in one of these statuses, comma-separated: " +
+        "`bounced,complained`. With `to`, that recipient's status.",
+    ),
+    status: csvEnum(EMAIL_STATUSES, "Only emails in these statuses, comma-separated: `failed`."),
+    q: z
+      .string()
+      .max(256)
+      .optional()
+      .meta({ description: "Free text, matched against the subject and the `to` addresses." }),
+    category: Category.optional().meta({ description: "Only emails of this category." }),
+    batch_id: z.string().max(64).optional().meta({ description: "Only the emails of this batch." }),
+    created_after: z.iso
+      .datetime({ offset: true })
+      .optional()
+      .meta({ description: "Only emails created at or after this time." }),
+    created_before: z.iso
+      .datetime({ offset: true })
+      .optional()
+      .meta({ description: "Only emails created before this time." }),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_EMAIL_LIST_LIMIT)
+      .optional()
+      .meta({ description: `1-${MAX_EMAIL_LIST_LIMIT}, default ${DEFAULT_EMAIL_LIST_LIMIT}.` }),
+    after: z
+      .string()
+      .max(64)
+      .optional()
+      .meta({ description: "Cursor: the `id` of the last email of the previous page." }),
+  })
+  .meta({ description: "Emails are returned newest first." });
+
+export type ListEmailsQueryOutput = z.output<typeof ListEmailsQuery>;
 
 const BATCH_EXAMPLE_ID = "batch_01k8d0n6x5f3w2e1r9t7y4u6i8";
 
@@ -1153,6 +1376,7 @@ export const EmailBatchObject = z
             tags: [],
             category: "digest",
             status: "queued",
+            failure: null,
             recipients: [
               { address: "ada@example.com", type: "to", status: "queued", last_event_at: null },
             ],
@@ -1634,6 +1858,7 @@ export const TrackingRuleInput = z.strictObject({
   category: Category.nullable(),
   opens: z.boolean(),
   clicks: z.boolean(),
+  unsubscribe: z.boolean(),
 });
 
 export type TrackingRuleInputOutput = z.output<typeof TrackingRuleInput>;
@@ -1645,6 +1870,7 @@ const TRACKING_DEFAULT_EXAMPLE = {
   category: null,
   opens: true,
   clicks: true,
+  unsubscribe: false,
   created_at: "2026-01-15T09:30:00.000Z",
   updated_at: "2026-01-15T09:30:00.000Z",
 } as const;
@@ -1654,6 +1880,7 @@ const TRACKING_RULE_EXAMPLE = {
   category: "password-reset",
   opens: false,
   clicks: false,
+  unsubscribe: false,
   created_at: "2026-01-16T10:00:00.000Z",
   updated_at: "2026-01-16T10:00:00.000Z",
 } as const;
@@ -1667,6 +1894,11 @@ export const TrackingRule = z
     }),
     opens: z.boolean().meta({ description: "Whether opens are tracked." }),
     clicks: z.boolean().meta({ description: "Whether clicks are tracked." }),
+    unsubscribe: z.boolean().meta({
+      description:
+        "Whether emails get one-click unsubscribe headers (only emails with a category and a " +
+        "single recipient).",
+    }),
     created_at: z.iso.datetime(),
     updated_at: z.iso.datetime(),
   })
@@ -1691,9 +1923,10 @@ export const TrackingSettings = z
   .meta({
     id: "TrackingSettings",
     description:
-      "Open and click tracking settings of the API key's environment. For each of `opens` and " +
-      "`clicks`, a send's own `tracking` wins, then its category's rule, then `default` (the " +
-      "environment default; `null` when none is set), then off.",
+      "Open and click tracking and one-click unsubscribe settings of the API key's environment. " +
+      "For each of `opens`, `clicks` and `unsubscribe`, a send's own `tracking` wins, then its " +
+      "category's rule, then `default` (the environment default; `null` when none is set), " +
+      "then off.",
     examples: [
       {
         object: "tracking_settings",
@@ -1709,14 +1942,20 @@ export const UpdateTrackingRuleRequest = z
   .strictObject({
     opens: z.boolean().optional().meta({ description: "Track opens." }),
     clicks: z.boolean().optional().meta({ description: "Track clicks." }),
+    unsubscribe: z.boolean().optional().meta({
+      description:
+        "Add one-click unsubscribe headers to emails with a category and a single recipient.",
+    }),
   })
-  .refine((value) => value.opens !== undefined || value.clicks !== undefined, {
-    error: "Provide opens, clicks or both.",
-  })
+  .refine(
+    (value) =>
+      value.opens !== undefined || value.clicks !== undefined || value.unsubscribe !== undefined,
+    { error: "Provide opens, clicks or unsubscribe." },
+  )
   .meta({
     id: "UpdateTrackingRuleRequest",
     description:
-      "Fields left out keep their current value; a new rule starts with both off. A send's own " +
+      "Fields left out keep their current value; a new rule starts with all off. A send's own " +
       "`tracking` option still wins over the rule.",
     examples: [{ opens: false, clicks: false }],
   });

@@ -51,6 +51,7 @@ export {
   listProjects,
   listProjectsWithEnvironments,
   PROJECT_NAME_MAX_LENGTH,
+  renameProject,
 } from "./projects.ts";
 export {
   connectScim,

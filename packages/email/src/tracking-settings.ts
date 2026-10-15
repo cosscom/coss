@@ -1,7 +1,8 @@
 /**
- * Open/click tracking settings, per environment: an optional default (the rule with no category)
- * and per-category rules. Tracking is off unless a rule or the send turns it on. Each field
- * resolves on its own: the send's `tracking`, then its category's rule, then the default.
+ * Open/click tracking and one-click unsubscribe settings, per environment: an optional default
+ * (the rule with no category) and per-category rules. Everything is off unless a rule or the send
+ * turns it on. Each field resolves on its own: the send's `tracking`, then its category's rule,
+ * then the default.
  */
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
@@ -21,7 +22,7 @@ export type TrackingRuleRow = typeof emailTrackingRule.$inferSelect;
 /** The environment tracking settings belong to. */
 export type TrackingEnvironment = { organizationId: string; environmentId: string };
 
-export type ResolvedTracking = { opens: boolean; clicks: boolean };
+export type ResolvedTracking = { opens: boolean; clicks: boolean; unsubscribe: boolean };
 
 export type TrackingSettings = {
   /** The rule without a category; `null` when the environment never set one (tracking off). */
@@ -37,6 +38,7 @@ export function toTrackingRuleObject(row: TrackingRuleRow): TrackingRuleOutput {
     category: row.category,
     opens: row.opens,
     clicks: row.clicks,
+    unsubscribe: row.unsubscribe,
     created_at: row.createdAt.toISOString(),
     updated_at: row.updatedAt.toISOString(),
   };
@@ -76,8 +78,12 @@ export async function resolveTracking(
   category: string | null,
   override: TrackingOptionsOutput | undefined,
 ): Promise<ResolvedTracking> {
-  if (override?.opens !== undefined && override.clicks !== undefined) {
-    return { opens: override.opens, clicks: override.clicks };
+  if (
+    override?.opens !== undefined &&
+    override.clicks !== undefined &&
+    override.unsubscribe !== undefined
+  ) {
+    return { opens: override.opens, clicks: override.clicks, unsubscribe: override.unsubscribe };
   }
   const rows = await executor
     .select()
@@ -95,6 +101,7 @@ export async function resolveTracking(
   return {
     opens: override?.opens ?? rule?.opens ?? false,
     clicks: override?.clicks ?? rule?.clicks ?? false,
+    unsubscribe: override?.unsubscribe ?? rule?.unsubscribe ?? false,
   };
 }
 
@@ -106,7 +113,11 @@ export async function upsertTrackingRule(
   env: TrackingEnvironment,
   input: TrackingRuleInputOutput,
 ): Promise<TrackingRuleRow | null> {
-  return updateTrackingRule(env, input.category, { opens: input.opens, clicks: input.clicks });
+  return updateTrackingRule(env, input.category, {
+    opens: input.opens,
+    clicks: input.clicks,
+    unsubscribe: input.unsubscribe,
+  });
 }
 
 /**
@@ -139,12 +150,14 @@ export async function updateTrackingRule(
       category,
       opens: input.opens ?? false,
       clicks: input.clicks ?? false,
+      unsubscribe: input.unsubscribe ?? false,
     })
     .onConflictDoUpdate({
       target: [emailTrackingRule.environmentId, emailTrackingRule.category],
       set: {
         ...(input.opens === undefined ? {} : { opens: input.opens }),
         ...(input.clicks === undefined ? {} : { clicks: input.clicks }),
+        ...(input.unsubscribe === undefined ? {} : { unsubscribe: input.unsubscribe }),
         updatedAt: new Date(),
       },
       // The conflicting row is in this environment, so it is the organization's too.

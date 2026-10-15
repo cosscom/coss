@@ -158,6 +158,7 @@ export default async function AdminOrganizationBillingPage({
             fields={{ ...fields, held: adminHold ? "false" : "true" }}
             reason="required"
             submitLabel={adminHold ? "Lift hold" : "Pause sending"}
+            success={adminHold ? "Billing hold lifted" : "Live sending paused"}
             title={adminHold ? "Lift the billing hold?" : "Pause live sending for billing?"}
             triggerLabel={adminHold ? "Lift admin hold" : "Pause live sending"}
           />
@@ -264,6 +265,7 @@ export default async function AdminOrganizationBillingPage({
                             fields={{ ...fields, contractId: contract.id }}
                             reason="required"
                             submitLabel="End contract"
+                            success="Contract ended"
                             title="End this contract?"
                             triggerLabel="End"
                           >
@@ -312,6 +314,7 @@ export default async function AdminOrganizationBillingPage({
               fields={fields}
               reason="required"
               submitLabel="Grant credit"
+              success="Credit granted"
               title="Grant credit"
               triggerLabel="Grant credit"
             >
@@ -426,6 +429,7 @@ export default async function AdminOrganizationBillingPage({
                           fields={{ ...fields, grantId: grant.id }}
                           reason="required"
                           submitLabel="Void credit"
+                          success="Credit voided"
                           title="Void this credit?"
                           triggerLabel="Void"
                         />
@@ -451,6 +455,7 @@ export default async function AdminOrganizationBillingPage({
               fields={fields}
               reason="required"
               submitLabel="Create invoice"
+              success="Invoice created"
               title="One-off invoice"
               triggerLabel="One-off invoice"
             >
@@ -521,6 +526,7 @@ export default async function AdminOrganizationBillingPage({
                                 fields={invoiceFields}
                                 reason="required"
                                 submitLabel="Record payment"
+                                success="Payment recorded"
                                 title={`Record a payment for ${invoice.number}`}
                                 triggerLabel="Paid"
                               >
@@ -560,6 +566,7 @@ export default async function AdminOrganizationBillingPage({
                                 fields={invoiceFields}
                                 reason="required"
                                 submitLabel="Retry"
+                                success={`Retried ${invoice.number}`}
                                 title={`Retry ${invoice.number}?`}
                                 triggerLabel="Retry"
                               />
@@ -571,6 +578,7 @@ export default async function AdminOrganizationBillingPage({
                                   fields={invoiceFields}
                                   reason="required"
                                   submitLabel="Void invoice"
+                                  success={`${invoice.number} voided`}
                                   title={`Void ${invoice.number}?`}
                                   triggerLabel="Void"
                                 />
@@ -582,6 +590,7 @@ export default async function AdminOrganizationBillingPage({
                                 fields={invoiceFields}
                                 reason="required"
                                 submitLabel="Write off"
+                                success={`${invoice.number} written off`}
                                 title={`Write off ${invoice.number}?`}
                                 triggerLabel="Write off"
                               />
@@ -594,6 +603,7 @@ export default async function AdminOrganizationBillingPage({
                               fields={invoiceFields}
                               reason="required"
                               submitLabel="Issue credit note"
+                              success="Credit note issued"
                               title={`Credit note for ${invoice.number}`}
                               triggerLabel="Credit note"
                             >

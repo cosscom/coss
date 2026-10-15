@@ -53,10 +53,11 @@ export default async function TrackingPage({
       <PageHeader
         description={
           <>
-            COSS can add an invisible image to HTML emails to record opens, and send links through a
-            redirect to record clicks. Each email&apos;s settings are fixed when it is sent: its own{" "}
-            <code className={code}>tracking</code> option wins, then the rule for its category, then
-            this environment&apos;s default.
+            COSS can add an invisible image to HTML emails to record opens, send links through a
+            redirect to record clicks, and add one-click unsubscribe headers, which Gmail, Yahoo and
+            Outlook require from bulk senders. Each email&apos;s settings are fixed when it is sent:
+            its own <code className={code}>tracking</code> option wins, then the rule for its
+            category, then this environment&apos;s default.
           </>
         }
         meta={<ModeBadge mode={environment.mode} />}
@@ -80,7 +81,7 @@ export default async function TrackingPage({
                 Applies to emails without a category rule.{" "}
                 {settings.default
                   ? `Last changed ${formatDateTime(settings.default.updatedAt)}.`
-                  : "Not set: tracking is off."}
+                  : "Not set: tracking and one-click unsubscribe are off."}
               </>
             }
             title="Environment default"
@@ -92,6 +93,7 @@ export default async function TrackingPage({
                 clicks={settings.default?.clicks ?? false}
                 key={settings.default?.updatedAt.toISOString() ?? "unset"}
                 opens={settings.default?.opens ?? false}
+                unsubscribe={settings.default?.unsubscribe ?? false}
               />
             </PanelBody>
           </Panel>
@@ -101,8 +103,8 @@ export default async function TrackingPage({
             description={
               <>
                 Override the default for emails sent with a <code className={code}>category</code>,
-                e.g. track <code className={code}>marketing</code> but never{" "}
-                <code className={code}>password-reset</code>.
+                e.g. track <code className={code}>marketing</code> and let its recipients
+                unsubscribe, but never <code className={code}>password-reset</code>.
               </>
             }
             title="Category rules"
@@ -123,6 +125,7 @@ export default async function TrackingPage({
                     <TableHead>Category</TableHead>
                     <TableHead>Opens</TableHead>
                     <TableHead>Clicks</TableHead>
+                    <TableHead>Unsubscribe</TableHead>
                     <TableHead>Updated</TableHead>
                     {canEdit ? <TableHead className="w-0" /> : null}
                   </TableRow>
@@ -137,6 +140,9 @@ export default async function TrackingPage({
                       <TableCell>
                         <TrackingBadge on={rule.clicks} />
                       </TableCell>
+                      <TableCell>
+                        <TrackingBadge on={rule.unsubscribe} />
+                      </TableCell>
                       <TableCell className="text-muted-foreground">
                         {formatDateTime(rule.updatedAt)}
                       </TableCell>
@@ -149,6 +155,7 @@ export default async function TrackingPage({
                               clicks={rule.clicks}
                               opens={rule.opens}
                               trigger="edit"
+                              unsubscribe={rule.unsubscribe}
                             />
                             <DeleteTrackingRuleButton
                               {...target}
@@ -186,6 +193,13 @@ export default async function TrackingPage({
               <li>
                 Some mail clients preload images (inflating opens) and security scanners follow
                 links (inflating clicks). Use the counts as signals, not exact numbers.
+              </li>
+              <li>
+                One-click unsubscribe headers are added only to emails with a{" "}
+                <code className={code}>category</code> and a single recipient (send one email per
+                recipient). An unsubscribe suppresses that recipient for the category and records{" "}
+                <code className={code}>email.unsubscribed</code>. A{" "}
+                <code className={code}>List-Unsubscribe</code> header of your own wins.
               </li>
               <li>
                 Tracking pixels and rewritten links can affect deliverability and may need consent

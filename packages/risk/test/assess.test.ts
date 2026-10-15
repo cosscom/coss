@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
+import { listPushNotifications } from "@coss/push";
 import { createWebhookEndpoint } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
 import { and, eq } from "drizzle-orm";
@@ -428,6 +429,20 @@ describe("memory", () => {
 });
 
 describe("review webhooks", () => {
+  test("reviews in live environments queue one push notification per environment", async () => {
+    const { assess, live, sandbox, organizationId } = await setup();
+    await assess({ event: "signup", user: { id: "u1", email: "x@mailinator.com" } });
+    await assess({ event: "signup", user: { id: "u2", email: "y@mailinator.com" } });
+    await assess(
+      { event: "signup", user: { id: "u3", email: "z@mailinator.com" } },
+      { env: sandbox },
+    );
+    const pushes = await listPushNotifications(organizationId);
+    expect(pushes.map((row) => [row.kind, row.environmentId, row.count])).toEqual([
+      ["risk_review", live.environmentId, 2],
+    ]);
+  });
+
   test("a review decision queues risk.assessment.review for subscribed endpoints", async () => {
     const { assess, live, organizationId } = await setup();
     const { endpoint } = await createWebhookEndpoint(
