@@ -1,8 +1,11 @@
 import { Badge } from "@coss/ui/components/badge";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { CopyValue } from "@/components/copy-value";
 import { PageHeader } from "@/components/page-header";
-import { Panel, PanelBody, PanelRow } from "@/components/panel";
-import { SpecItem, SpecList } from "@/components/spec-list";
+import { SettingsPage, SettingsRow, SettingsSection } from "@/components/settings";
+import { UserAvatar } from "@/components/user-avatar";
+import { avatarSource, avatarUrl } from "@/lib/avatars";
 import { formatDateTime } from "@/lib/format";
 import { requireSession } from "@/lib/session";
 import { ProfileForm, SendVerificationEmailButton } from "./profile-form";
@@ -10,66 +13,104 @@ import { ThemePicker } from "./theme-picker";
 
 export const metadata: Metadata = { title: "Account settings" };
 
+const PICTURE_SOURCES = {
+  google: "From your Google account.",
+  github: "From your GitHub account.",
+  gravatar: "From Gravatar, for your email address.",
+} as const;
+
 /** The signed-in user's profile, email address and appearance. */
 export default async function AccountProfilePage() {
   const session = await requireSession();
   const impersonating = Boolean(session.session.impersonatedBy);
   const { user } = session;
+  const source = avatarSource(user);
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader description="Your profile and the address you sign in with." title="Profile" />
 
-      <Panel>
-        <PanelBody flush>
-          <PanelRow description="Shown to the other members of your organizations." label="Name">
-            <div className="w-full max-w-md">
-              <ProfileForm disabled={impersonating} name={user.name} />
-            </div>
-          </PanelRow>
-          <PanelRow
+      <SettingsPage>
+        <SettingsSection>
+          <SettingsRow
+            description={
+              <>
+                {source
+                  ? PICTURE_SOURCES[source]
+                  : "Verify your email address to use its Gravatar, or connect Google or GitHub."}
+                {source === "gravatar" ? (
+                  <>
+                    {" "}
+                    No picture?{" "}
+                    <a
+                      className="text-foreground underline underline-offset-4"
+                      href="https://gravatar.com"
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      Set one on Gravatar
+                    </a>{" "}
+                    or connect Google or GitHub under{" "}
+                    <Link
+                      className="text-foreground underline underline-offset-4"
+                      href="/settings/security"
+                    >
+                      Security
+                    </Link>
+                    .
+                  </>
+                ) : null}
+              </>
+            }
+            label="Picture"
+          >
+            <UserAvatar
+              className="size-12 border"
+              user={{ name: user.name, email: user.email, image: avatarUrl(user) }}
+            />
+          </SettingsRow>
+          <SettingsRow
             description={
               user.emailVerified
                 ? "You sign in with this address."
                 : "Verify it to accept invitations and create live API keys."
             }
             label={
-              <span className="flex items-center gap-2">
+              <>
                 Email
                 {user.emailVerified ? (
                   <Badge variant="success">Verified</Badge>
                 ) : (
                   <Badge variant="warning">Unverified</Badge>
                 )}
-              </span>
+              </>
             }
           >
-            <span className="font-mono text-sm">{user.email}</span>
+            <span className="min-w-0 font-mono text-[0.8125rem] [overflow-wrap:anywhere]">
+              {user.email}
+            </span>
             {user.emailVerified ? null : <SendVerificationEmailButton disabled={impersonating} />}
-          </PanelRow>
-        </PanelBody>
-      </Panel>
+          </SettingsRow>
+          <ProfileForm disabled={impersonating} name={user.name} />
+        </SettingsSection>
 
-      <Panel title="Appearance">
-        <PanelBody flush>
-          <PanelRow description="Applies to the dashboard in this browser." label="Theme">
+        <SettingsSection title="Appearance">
+          <SettingsRow description="Applies to the dashboard in this browser." label="Theme">
             <ThemePicker />
-          </PanelRow>
-        </PanelBody>
-      </Panel>
+          </SettingsRow>
+        </SettingsSection>
 
-      <Panel title="Account">
-        <PanelBody flush>
-          <SpecList>
-            <SpecItem label="User ID" mono>
-              {user.id}
-            </SpecItem>
-            <SpecItem label="Created" mono>
+        <SettingsSection title="Account">
+          <SettingsRow description="Include it when you contact support." label="User ID">
+            <CopyValue value={user.id} />
+          </SettingsRow>
+          <SettingsRow label="Created">
+            <span className="font-mono text-[0.8125rem] text-muted-foreground">
               {formatDateTime(user.createdAt)}
-            </SpecItem>
-          </SpecList>
-        </PanelBody>
-      </Panel>
+            </span>
+          </SettingsRow>
+        </SettingsSection>
+      </SettingsPage>
     </div>
   );
 }
