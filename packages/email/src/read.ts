@@ -676,7 +676,7 @@ export async function emailActivity(input: {
   const start = new Date(
     Date.UTC(input.since.getUTCFullYear(), input.since.getUTCMonth(), input.since.getUTCDate()),
   );
-  const day = sql<string>`to_char(date_trunc('day', ${email.createdAt}, 'UTC'), 'YYYY-MM-DD')`;
+  const day = sql<string>`to_char(${email.createdAt} at time zone 'UTC', 'YYYY-MM-DD')`;
   const rows = await db
     .select({
       day,

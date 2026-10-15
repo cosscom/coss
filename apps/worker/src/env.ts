@@ -60,6 +60,13 @@ export const env = createEnv({
       .transform((value) => value?.replaceAll("\\n", "\n")),
     // The app's bundle id.
     APNS_TOPIC: z.string().default("com.coss.ios"),
+    // The gateways the key is configured for (`production`, `sandbox`, or both, comma-separated);
+    // devices registered for another (a development build signed in to production) are skipped.
+    APNS_ENVIRONMENTS: z
+      .string()
+      .default("production,sandbox")
+      .transform((value) => value.split(",").map((name) => name.trim()))
+      .pipe(z.array(z.enum(["production", "sandbox"])).min(1)),
     // The dashboard's origin, for links in notification emails.
     BETTER_AUTH_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
     // Decrypts webhook signing secrets (same value as the dashboard's and the API's).
