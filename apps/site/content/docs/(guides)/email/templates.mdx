@@ -141,7 +141,9 @@ await coss.email.templates.updateDraft("receipt", {
 
 - **Draft**: the one editable copy (`getDraft`, `updateDraft`). Saving replaces it whole. Every
   save increases its `revision`; pass the revision you read to `updateDraft` and `publish` to be
-  refused (`template_revision_mismatch`) instead of overwriting someone else's changes.
+  refused (`template_revision_mismatch`) instead of overwriting someone else's changes. The SDK
+  never retries a save on its own (a repeat of one that went through would be refused): read the
+  draft again before trying once more.
 - **Versions**: `publish` copies the draft into the next version (1, 2, 3…), which never changes.
   Publishing a draft without changes returns the current version, so retries are safe. List them
   with `versions.list`, and bring an old one back with `versions.restore` (it replaces the draft;

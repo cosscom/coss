@@ -53,7 +53,11 @@ export class EmailTemplateVersionsResource {
     });
   }
 
-  /** Replaces the draft with this version's content; publish the draft to send it again. */
+  /**
+   * Replaces the draft with this version's content; publish the draft to send it again. Never
+   * automatically retried: every restore is a new draft revision, so a repeat could overwrite an
+   * edit saved in between.
+   */
   restore(
     template: string,
     version: number,
@@ -62,6 +66,7 @@ export class EmailTemplateVersionsResource {
     return this.#http.request<EmailTemplateVersion>({
       method: "POST",
       path: `${templatePath(template)}/versions/${version}/restore`,
+      retry: false,
       signal: options?.signal,
     });
   }
@@ -153,7 +158,12 @@ export class EmailTemplatesResource {
     });
   }
 
-  /** Replaces the whole draft. Sends keep using the published version until you publish. */
+  /**
+   * Replaces the whole draft. Sends keep using the published version until you publish. Never
+   * automatically retried: every save is a new revision, so a repeat whose first attempt was saved
+   * would fail with `template_revision_mismatch` (or, without `revision`, overwrite an edit saved
+   * in between). Read the draft again before retrying.
+   */
   updateDraft(
     template: string,
     params: UpdateEmailTemplateDraftParams,
@@ -162,6 +172,7 @@ export class EmailTemplatesResource {
     return this.#http.request<EmailTemplateVersion>({
       method: "PUT",
       path: `${templatePath(template)}/draft`,
+      retry: false,
       body: params,
       signal: options?.signal,
     });

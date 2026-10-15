@@ -92,6 +92,17 @@ describe("coss.email.templates", () => {
     expect(calls[5]).toMatchObject({ method: "POST", url: `${BASE}/welcome/versions/1/restore` });
   });
 
+  test("draft saves and restores are never retried: each one is a new revision", async () => {
+    const { coss, calls } = client(json(503, {}), json(503, {}), json(200, version));
+    const templates = coss.email.templates;
+
+    expect(
+      (await templates.updateDraft("welcome", { revision: 2, contents: [] })).error?.status,
+    ).toBe(503);
+    expect((await templates.versions.restore("welcome", 1)).error?.status).toBe(503);
+    expect(calls).toHaveLength(2);
+  });
+
   test("send takes a template instead of a subject and body", async () => {
     const params: SendEmailParams = {
       from: "Acme <hello@acme.com>",
