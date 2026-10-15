@@ -38,6 +38,14 @@ export function VerifyDomainButton(props: Target & { restart: boolean }) {
 function domainCheckToast({ status, restarted }: VerifyOutcome) {
   if (restarted) return "Verification restarted";
   if (status === "verified") return "Domain verified";
+  // Failed domains aren't checked again until verification is restarted.
+  if (status === "failed") {
+    return {
+      type: "warning",
+      title: "Domain verification failed",
+      description: "Check its DNS records, then restart verification.",
+    } as const;
+  }
   return {
     type: status === "temporary_failure" ? "warning" : "info",
     title:

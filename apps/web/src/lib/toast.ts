@@ -1,9 +1,11 @@
 "use client";
 
 import { toastManager } from "@coss/ui/components/toast";
+import { getURLFromRedirectError } from "next/dist/client/components/redirect";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { useActionState } from "react";
 import type { ActionResult } from "./action-result";
+import { isAccessRedirect } from "./org-access";
 
 /** A toast's text; `type` (default `success`): `info`/`warning` for checks that changed nothing yet. */
 export type ToastContent = {
@@ -54,8 +56,13 @@ export function useActionToast<T>(
     try {
       result = await action(previous, formData);
     } catch (error) {
-      // An action that redirects (e.g. back to a list after deleting) rejects with the redirect.
-      if (isRedirectError(error) && typeof options.success !== "function") {
+      // An action that redirects (e.g. back to a list after deleting) rejects with the redirect;
+      // one to sign-in, SSO or two-factor setup is a guard refusing it before any change.
+      if (
+        isRedirectError(error) &&
+        !isAccessRedirect(getURLFromRedirectError(error)) &&
+        typeof options.success !== "function"
+      ) {
         show(options.success);
       }
       throw error;

@@ -5,6 +5,21 @@
  * organization's provider satisfies neither.
  */
 
+/** Where the session guards send a request they refuse (`requireSession`, `orgAccess`). */
+export const SIGN_IN_PATH = "/sign-in";
+export const SSO_SIGN_IN_PATH = "/sso";
+export const TWO_FACTOR_SETUP_PATH = "/settings/security";
+
+const ACCESS_REDIRECT_PATHS = new Set([SIGN_IN_PATH, SSO_SIGN_IN_PATH, TWO_FACTOR_SETUP_PATH]);
+
+/**
+ * Whether a redirect is a guard turning the request away rather than an action finishing: a
+ * server action redirected there changed nothing (`useActionToast` doesn't confirm it).
+ */
+export function isAccessRedirect(url: string): boolean {
+  return ACCESS_REDIRECT_PATHS.has(new URL(url, "http://localhost").pathname);
+}
+
 export type OrgAccessMembership = {
   organization: { slug: string; requireTwoFactor: boolean; requireSso: boolean };
   member: { role: string };
@@ -38,7 +53,7 @@ export function orgAccess(membership: OrgAccessMembership, session: OrgAccessSes
   // Platform admins impersonating a member (support) are not held to the member's sign-in method.
   if (requireSso && !viaSso && !session.session.impersonatedBy) {
     if (!isOwner(membership.member.role)) {
-      return { kind: "redirect", to: `/sso?org=${encodeURIComponent(slug)}` };
+      return { kind: "redirect", to: `${SSO_SIGN_IN_PATH}?org=${encodeURIComponent(slug)}` };
     }
     breakGlass = true;
   }
@@ -48,7 +63,7 @@ export function orgAccess(membership: OrgAccessMembership, session: OrgAccessSes
     !viaSso &&
     (!session.user.twoFactorEnabled || session.session.ssoProviderId)
   ) {
-    return { kind: "redirect", to: "/settings/security" };
+    return { kind: "redirect", to: TWO_FACTOR_SETUP_PATH };
   }
   return { kind: "allowed", viaSso, breakGlass };
 }
