@@ -373,13 +373,13 @@
     },
     "packages/mcp": {
       "name": "coss-mcp",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "bin": {
         "coss-mcp": "./dist/cli.js",
       },
       "dependencies": {
         "@modelcontextprotocol/server": "2.3.1",
-        "coss": "^0.2.0",
+        "coss": "^0.3.0",
         "zod": "^4.6.5",
       },
       "devDependencies": {
@@ -491,7 +491,7 @@
     },
     "packages/sdk": {
       "name": "coss",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "devDependencies": {
         "@arethetypeswrong/core": "0.18.5",
         "@types/bun": "1.4.2",
