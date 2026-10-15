@@ -9,7 +9,7 @@ import { RevokeOtherSessionsButton, RevokeSessionButton } from "../session-butto
 
 export const metadata: Metadata = { title: "Sessions" };
 
-/** Browsers where the user is signed in. */
+/** Browsers and apps where the user is signed in. */
 export default async function AccountSessionsPage() {
   const session = await requireSession();
   const impersonating = Boolean(session.session.impersonatedBy);
@@ -30,7 +30,7 @@ export default async function AccountSessionsPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        description="Browsers where you're signed in. Sign out of any you don't recognize."
+        description="Browsers and apps where you're signed in. Sign out of any you don't recognize."
         title="Sessions"
       />
 

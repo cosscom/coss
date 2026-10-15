@@ -165,6 +165,21 @@ describe("SMTP relay", () => {
     expect(row).toMatchObject({ trackOpens: true, trackClicks: true });
   });
 
+  test("X-Coss-Tracking turns on one-click unsubscribe", async () => {
+    const info = await transport(harness, tenant.sandboxKey).sendMail({
+      from: "hello@acme.test",
+      to: "ada@example.com",
+      subject: "Newsletter",
+      text: "Hi",
+      headers: { "X-Coss-Category": "newsletter", "X-Coss-Tracking": "unsubscribe" },
+    });
+    const [row] = await db
+      .select()
+      .from(schema.email)
+      .where(eq(schema.email.id, emailIdOf(info)));
+    expect(row).toMatchObject({ unsubscribe: true, trackOpens: false, trackClicks: false });
+  });
+
   test("an unverified From domain is refused for live keys", async () => {
     const error = await smtpError(
       transport(harness, tenant.liveKey).sendMail({

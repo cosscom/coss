@@ -2,13 +2,14 @@ import { db, schema } from "@coss/db";
 import { newId } from "@coss/db/id";
 import { registerPushDevice } from "./devices.ts";
 import type { PushTarget } from "./recipients.ts";
-import type { PushCategory } from "./schemas.ts";
+import type { ApnsEnvironment, PushCategory } from "./schemas.ts";
 import type { PushMessage, PushResult, PushSender } from "./send.ts";
 
 /** Records what it was asked to send; `answer` decides each device's result (delivered by default). */
 export class FakePushSender implements PushSender {
   sent: { target: PushTarget; message: PushMessage }[] = [];
   answer: (target: PushTarget) => PushResult = () => ({ status: "delivered" });
+  environments?: ApnsEnvironment[];
 
   async send(target: PushTarget, message: PushMessage): Promise<PushResult> {
     const result = this.answer(target);

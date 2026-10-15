@@ -47,7 +47,17 @@ export function registerSendingTools(ctx: ToolContext): void {
           .optional()
           .describe("ISO 8601 time with an offset, at most 30 days ahead: send later."),
         tracking: z
-          .object({ opens: z.boolean().optional(), clicks: z.boolean().optional() })
+          .object({
+            opens: z.boolean().optional(),
+            clicks: z.boolean().optional(),
+            unsubscribe: z
+              .boolean()
+              .optional()
+              .describe(
+                "One-click unsubscribe headers; needs a category and a single recipient. An " +
+                  "unsubscribe suppresses the recipient for that category.",
+              ),
+          })
           .optional(),
         idempotency_key: z
           .string()

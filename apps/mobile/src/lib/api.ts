@@ -14,6 +14,8 @@ export type ApiClientOptions = {
   getToken: () => string | null;
   /** The session ended (revoked, expired): forget the token. */
   onUnauthorized: () => void;
+  /** Replaces the platform's User-Agent (the dashboard names the session's device by it). */
+  userAgent?: string;
   fetch?: typeof fetch;
 };
 
@@ -36,6 +38,7 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     if (init.body) headers.set("content-type", "application/json");
     const token = options.getToken();
     if (token) headers.set("authorization", `Bearer ${token}`);
+    if (options.userAgent) headers.set("user-agent", options.userAgent);
     let response: Response;
     try {
       // Cookies would never authenticate this API; don't keep any.

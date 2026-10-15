@@ -62,7 +62,7 @@ export function emailNotifier(opts: {
         text: notice.text,
         html: notice.html,
         category: "account",
-        tracking: { opens: false, clicks: false },
+        tracking: { opens: false, clicks: false, unsubscribe: false },
       });
       try {
         // Keep the key across the entire notification lifetime, including crashes after enqueue.

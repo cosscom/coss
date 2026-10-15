@@ -1,4 +1,13 @@
 {
   "title": "Email",
-  "pages": ["sending", "smtp", "receiving", "domains", "tracking", "delivery", "suppressions"]
+  "pages": [
+    "sending",
+    "smtp",
+    "receiving",
+    "domains",
+    "tracking",
+    "unsubscribe",
+    "delivery",
+    "suppressions"
+  ]
 }

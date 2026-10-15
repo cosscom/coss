@@ -57,6 +57,7 @@ export async function saveTrackingRuleAction(
       category: formString(formData, "category") || null,
       opens: formData.get("opens") === "on",
       clicks: formData.get("clicks") === "on",
+      unsubscribe: formData.get("unsubscribe") === "on",
     });
     if (!parsed.success) {
       throw new ActionError(`Category: ${parsed.error.issues[0]?.message ?? "Invalid value."}`);
@@ -70,6 +71,7 @@ export async function saveTrackingRuleAction(
         category: parsed.data.category,
         opens: parsed.data.opens,
         clicks: parsed.data.clicks,
+        unsubscribe: parsed.data.unsubscribe,
       },
     });
     refresh();

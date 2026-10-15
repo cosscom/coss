@@ -245,7 +245,7 @@ describe("messageToSendRequest", () => {
         { name: "template", value: "welcome" },
         { name: "plan", value: "pro" },
       ],
-      tracking: { opens: false, clicks: true },
+      tracking: { opens: false, clicks: true, unsubscribe: false },
       scheduled_at: scheduled,
       headers: { "x-entity-ref-id": "abc" },
     });

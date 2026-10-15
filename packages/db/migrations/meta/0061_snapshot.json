@@ -1,5 +1,5 @@
 {
-  "id": "b3ea0448-ad4a-44e9-acfb-8ef6c5ef7a3f",
+  "id": "22adc3c0-553f-459a-ba74-6b26a8cb3d16",
   "prevId": "d094464e-4559-47e5-8b7b-9d30f867c18d",
   "version": "7",
   "dialect": "postgresql",
@@ -5783,6 +5783,13 @@
           "notNull": true,
           "default": false
         },
+        "unsubscribe": {
+          "name": "unsubscribe",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "tracking_token": {
           "name": "tracking_token",
           "type": "text",
@@ -7071,6 +7078,13 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": true
+        },
+        "unsubscribe": {
+          "name": "unsubscribe",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "created_at": {
           "name": "created_at",
@@ -14405,7 +14419,8 @@
         "email.canceled",
         "email.opened",
         "email.clicked",
-        "email.rescheduled"
+        "email.rescheduled",
+        "email.unsubscribed"
       ]
     },
     "public.email_recipient_kind": {
@@ -14450,7 +14465,8 @@
         "bounce",
         "complaint",
         "manual",
-        "import"
+        "import",
+        "unsubscribe"
       ]
     },
     "public.environment_mode": {
@@ -14495,8 +14511,7 @@
         "email",
         "webhook",
         "risk",
-        "audit",
-        "smtp"
+        "audit"
       ]
     },
     "public.log_level": {
@@ -14515,8 +14530,7 @@
         "api",
         "email",
         "webhook",
-        "risk",
-        "smtp"
+        "risk"
       ]
     },
     "public.mail_from_status": {

@@ -28,6 +28,12 @@ describe("describeUserAgent", () => {
     ).toBe("Chrome on Android");
   });
 
+  test("names the COSS iOS app", () => {
+    expect(describeUserAgent("COSS-iOS/1.0.0")).toBe("COSS app on iOS");
+    expect(describeUserAgent("COSS/3 CFNetwork/3860.100.1 Darwin/25.0.0")).toBe("COSS app on iOS");
+    expect(describeUserAgent("COSSfoo/1")).toBe("COSSfoo/1");
+  });
+
   test("falls back to the (shortened) raw value or a placeholder", () => {
     expect(describeUserAgent(null)).toBe("Unknown device");
     expect(describeUserAgent("")).toBe("Unknown device");

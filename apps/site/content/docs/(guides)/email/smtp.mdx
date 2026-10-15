@@ -186,9 +186,12 @@ These headers set what the API takes as fields. COSS reads them and doesn't send
 | ------------------------- | ------------------------------- | -------------------------- |
 | `X-Coss-Category`         | `onboarding`                    | `category`                 |
 | `X-Coss-Tags`             | `template=welcome, plan=pro`    | `tags`                     |
-| `X-Coss-Tracking`         | `opens, clicks` or `none`       | `tracking`                 |
+| `X-Coss-Tracking`         | `opens, clicks, unsubscribe` or `none` | `tracking` (the ones listed are on, the rest off) |
 | `X-Coss-Scheduled-At`     | `2026-11-01T09:00:00Z`          | `scheduled_at`             |
 | `X-Coss-Idempotency-Key`  | `welcome-user-123`              | the `Idempotency-Key` header |
+
+`unsubscribe` adds [one-click unsubscribe](/docs/email/unsubscribe) headers, so it needs an
+`X-Coss-Category` and a single recipient, like the API's `tracking.unsubscribe`.
 
 SMTP clients retry when a connection drops before COSS answers. With an
 `X-Coss-Idempotency-Key`, a retry gets the first email back instead of sending a second one.

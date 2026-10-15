@@ -66,9 +66,9 @@ dashboard page that resolves them.
 
 `expo-notifications` (config plugin in `app.json`, which adds the `aps-environment` entitlement)
 with raw APNs device tokens; the dashboard's worker sends them (`@coss/push`, root AGENTS.md).
-`src/lib/push.ts` asks for permission from the Account screen's Notifications panel
-(`components/push-settings.tsx`), then `PUT /api/mobile/v1/push` registers the token on this
-session with `apns_environment` `sandbox` in development builds (the plugin's default entitlement)
+`src/lib/push.ts` asks for permission on the first signed-in start (iOS shows its prompt once per
+install; afterwards the Account screen's Notifications panel, `components/push-settings.tsx`, turns
+it on or links to Settings), then `PUT /api/mobile/v1/push` registers the token on this session with `apns_environment` `sandbox` in development builds (the plugin's default entitlement)
 and `production` otherwise (Xcode's archive of a release build has the production entitlement).
 Production's APNs key only serves the production gateway and `com.coss.ios`, so a development
 build signed in to coss.com gets no pushes: APNs refuses them, and the worker retries that device until
@@ -76,7 +76,9 @@ the notification gives up (the others are delivered).
 `AuthProvider` re-registers on every sign-in and token change. Signing out unregisters from APNs
 (so a phone that couldn't reach the dashboard stops receiving pushes anyway) and revokes the
 session, which ends its registration on the server; offline, the credential is kept in the
-Keychain and revoked on a later start. A 401 only signs out when it answers the current credential. A tapped notification opens its `body.path`
+Keychain and revoked on a later start. A 401 only signs out when it answers the current credential.
+Requests send `User-Agent: COSS-iOS/<version>`, which the dashboard's session list names
+"COSS app on iOS" (`describeUserAgent`). A tapped notification opens its `body.path`
 (`content.data.path`) in `_layout.tsx`, only when `routeFromNotification` (`src/lib/push-route.ts`,
 an allow-list of the paths `@coss/push` builds) accepts it: a new kind of notification needs its
 path added there. Remote notifications need a physical iPhone or a Simulator on an Apple-silicon

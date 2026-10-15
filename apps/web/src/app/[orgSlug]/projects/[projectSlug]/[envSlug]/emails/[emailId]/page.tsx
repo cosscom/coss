@@ -62,6 +62,8 @@ export default async function EmailPage({
   const { tracking } = email;
   const base = environmentPath(organization.slug, project.slug, environment.slug);
   const eventList = events?.events ?? [];
+  const unsubscribedAt =
+    eventList.find((event) => event.type === "email.unsubscribed")?.occurred_at ?? null;
 
   const content =
     email.html !== null || email.text !== null ? (
@@ -179,7 +181,7 @@ export default async function EmailPage({
   const engagement = (
     <>
       <Panel
-        description="Opens and clicks, if tracking was on when the email was sent. Opens can be inflated by mail clients that preload images, clicks by link scanners."
+        description="Opens, clicks and unsubscribes, if they were on when the email was sent. Opens can be inflated by mail clients that preload images, clicks by link scanners."
         title="Engagement"
       >
         <Table variant="card">
@@ -221,6 +223,21 @@ export default async function EmailPage({
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {formatDateTime(tracking.last_clicked_at)}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-medium">Unsubscribes</TableCell>
+              <TableCell>
+                <TrackingBadge on={tracking.unsubscribe} />
+              </TableCell>
+              <TableCell className="font-mono">
+                {tracking.unsubscribe ? (unsubscribedAt ? 1 : 0) : "—"}
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {formatDateTime(unsubscribedAt)}
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {formatDateTime(unsubscribedAt)}
               </TableCell>
             </TableRow>
           </TableBody>

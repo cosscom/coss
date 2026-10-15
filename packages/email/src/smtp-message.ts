@@ -143,17 +143,29 @@ function parseTags(value: string): { name: string; value: string }[] | null {
   return tags;
 }
 
-/** `opens, clicks` (either or both) or `none`. */
-function parseTracking(value: string): { opens: boolean; clicks: boolean } | null {
+const TRACKING_TOKENS = ["opens", "clicks", "unsubscribe"] as const;
+type TrackingToken = (typeof TRACKING_TOKENS)[number];
+
+/**
+ * Any of `opens`, `clicks`, `unsubscribe` (comma-separated), or `none`: exactly those are on, the
+ * others off, whatever the environment's rules say.
+ */
+function parseTracking(value: string): Record<TrackingToken, boolean> | null {
   const tokens = value
     .toLowerCase()
     .split(",")
     .map((token) => token.trim())
     .filter(Boolean);
   if (tokens.length === 0) return null;
-  if (tokens.length === 1 && tokens[0] === "none") return { opens: false, clicks: false };
-  if (!tokens.every((token) => token === "opens" || token === "clicks")) return null;
-  return { opens: tokens.includes("opens"), clicks: tokens.includes("clicks") };
+  const none = tokens.length === 1 && tokens[0] === "none";
+  if (!none && !tokens.every((token) => (TRACKING_TOKENS as readonly string[]).includes(token))) {
+    return null;
+  }
+  return {
+    opens: tokens.includes("opens"),
+    clicks: tokens.includes("clicks"),
+    unsubscribe: tokens.includes("unsubscribe"),
+  };
 }
 
 /** A header value as the send schema takes it: one ASCII line, RFC 2047 words kept encoded. */
@@ -324,7 +336,7 @@ export async function messageToSendRequest(input: {
     if (!parsed) {
       return contentError(
         "invalid_coss_header",
-        "X-Coss-Tracking must be `opens`, `clicks`, `opens, clicks` or `none`.",
+        "X-Coss-Tracking must list `opens`, `clicks` and/or `unsubscribe`, or be `none`.",
       );
     }
     request.tracking = parsed;

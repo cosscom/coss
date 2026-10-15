@@ -17,6 +17,7 @@ export const GET = mobileRoute(
       default: settings.default && {
         opens: settings.default.opens,
         clicks: settings.default.clicks,
+        unsubscribe: settings.default.unsubscribe,
         updated_at: settings.default.updatedAt.toISOString(),
       },
       categories: settings.categories.flatMap((rule) =>
@@ -27,6 +28,7 @@ export const GET = mobileRoute(
                 category: rule.category,
                 opens: rule.opens,
                 clicks: rule.clicks,
+                unsubscribe: rule.unsubscribe,
                 updated_at: rule.updatedAt.toISOString(),
               },
             ],

@@ -151,6 +151,7 @@ plain_env = {
     APNS_KEY_ID               = "WCQDCU4HUL"
     APNS_TEAM_ID              = "ADWKXDJV75"
     APNS_TOPIC                = "com.coss.ios"
+    APNS_ENVIRONMENTS         = "production"
     SENTRY_DSN                = "https://77c5b5b1c87194a0942714259a44dcac@o4512237982711808.ingest.de.sentry.io/4512245153398865"
     SENTRY_ENVIRONMENT        = "production"
     SENTRY_TRACES_SAMPLE_RATE = "0.1"

@@ -284,7 +284,8 @@ export const listEmailEventsRoute = createRoute({
     "`email.sent` and `email.failed` for the whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, " +
     "`email.complained` and `email.suppressed` (skipped because of the suppression list) per " +
     "recipient, plus `email.opened` and `email.clicked` when tracking is on (attributed to a " +
-    "recipient only when the email had a single one).",
+    "recipient only when the email had a single one) and `email.unsubscribed` after a one-click " +
+    "unsubscribe.",
   security: [{ bearerAuth: [] }],
   middleware: [requireApiKey({ email: ["read"] }), rateLimit("api.read")],
   request: { params: EmailIdParams },

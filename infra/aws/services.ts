@@ -677,6 +677,14 @@ export const SERVICES: Service[] = [
         value: "com.coss.ios",
         description: "The iOS app's bundle id (default com.coss.ios).",
       },
+      {
+        name: "APNS_ENVIRONMENTS",
+        kind: "plain",
+        required: false,
+        value: "production",
+        description:
+          "APNs gateways the key is configured for (production, sandbox, or both comma-separated; default both). Devices registered for another are skipped.",
+      },
       ...sentry("worker"),
       sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },

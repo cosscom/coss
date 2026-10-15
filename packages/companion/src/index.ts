@@ -195,7 +195,8 @@ export type EmailEventType =
   | "email.canceled"
   | "email.opened"
   | "email.clicked"
-  | "email.rescheduled";
+  | "email.rescheduled"
+  | "email.unsubscribed";
 
 export type MobileEmailEvent = {
   id: string;
@@ -299,7 +300,7 @@ export type Suppression = {
   id: string;
   address: string;
   scope: string;
-  reason: "bounce" | "complaint" | "manual" | "import";
+  reason: "bounce" | "complaint" | "manual" | "import" | "unsubscribe";
   email_id: string | null;
   created_at: string;
 };
@@ -574,7 +575,12 @@ export type HookMessageResponse = {
 
 export type HookEventType = { name: string; description: string | null; archived: boolean };
 
-export type TrackingRule = { opens: boolean; clicks: boolean; updated_at: string };
+export type TrackingRule = {
+  opens: boolean;
+  clicks: boolean;
+  unsubscribe: boolean;
+  updated_at: string;
+};
 
 export type TrackingSettings = {
   /** `null`: not set, so tracking is off by default. */

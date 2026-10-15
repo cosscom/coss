@@ -26,6 +26,8 @@ export type ApnsConfig = {
   /** The app's bundle id. */
   topic: string;
   origins?: Record<ApnsEnvironment, string>;
+  /** The gateways the key is configured for in the developer account (default both). */
+  environments?: readonly ApnsEnvironment[];
   timeoutMs?: number;
   now?: () => number;
 };
@@ -142,6 +144,7 @@ export function createApnsSender(config: ApnsConfig): ApnsSender {
 
   return {
     send,
+    environments: config.environments ?? ["production", "sandbox"],
     close() {
       for (const created of sessions.values()) created.close();
       sessions.clear();
