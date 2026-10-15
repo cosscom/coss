@@ -12,7 +12,7 @@ import {
   type GitHubRun,
   imageTagRunName,
   isImageTagRun,
-  shippingStartedAt,
+  latestProductionJobAt,
 } from "../src/lib/deploy-runs";
 
 mock.module("server-only", () => ({}));
@@ -182,15 +182,21 @@ describe("batch timing", () => {
     expect(batchShipsAt(pushed, null).toISOString()).toBe(pushed.toISOString());
   });
 
-  test("the last deploy is when its first build or deploy job started", () => {
+  test("the last deploy is when its latest build or deploy job that ran started", () => {
     expect(
-      shippingStartedAt([
-        { ...job("gate", "completed"), started_at: "2026-10-15T11:00:00Z" },
-        { ...job("build (web)", "completed"), started_at: "2026-10-15T11:10:00Z" },
-        { ...job("deploy", "completed"), started_at: "2026-10-15T11:15:00Z" },
+      latestProductionJobAt([
+        { ...job("gate", "completed", "success"), started_at: "2026-10-15T11:00:00Z" },
+        { ...job("build (web)", "completed", "success"), started_at: "2026-10-15T11:10:00Z" },
+        { ...job("deploy", "completed", "success"), started_at: "2026-10-15T11:15:00Z" },
       ])?.toISOString(),
-    ).toBe("2026-10-15T11:10:00.000Z");
-    expect(shippingStartedAt([job("gate", "completed")])).toBeNull();
+    ).toBe("2026-10-15T11:15:00.000Z");
+    expect(
+      latestProductionJobAt([
+        { ...job("build", "completed", "skipped"), started_at: "2026-10-15T11:10:00Z" },
+        { ...job("deploy", "completed", "skipped"), started_at: "2026-10-15T11:10:00Z" },
+      ]),
+    ).toBeNull();
+    expect(latestProductionJobAt([job("gate", "completed")])).toBeNull();
   });
 });
 

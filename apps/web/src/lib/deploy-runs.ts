@@ -164,11 +164,15 @@ export function batchShipsAt(pushedAt: Date, lastDeployAt: Date | null): Date {
   return new Date(Math.min(quiet, interval));
 }
 
-/** When a run started building or deploying (its `build`/`deploy` jobs), if it did. */
-export function shippingStartedAt(jobs: GitHubJob[]): Date | null {
+/**
+ * When a run's latest `production` job started (its `build`/`deploy` jobs that ran), if one did:
+ * every such job records a GitHub deployment, and the gate counts from the latest one.
+ */
+export function latestProductionJobAt(jobs: GitHubJob[]): Date | null {
   const starts = jobs
     .filter((job) => job.name === "deploy" || job.name.startsWith("build"))
+    .filter((job) => job.conclusion !== "skipped")
     .map((job) => (job.started_at ? Date.parse(job.started_at) : Number.NaN))
     .filter((time) => !Number.isNaN(time));
-  return starts.length > 0 ? new Date(Math.min(...starts)) : null;
+  return starts.length > 0 ? new Date(Math.max(...starts)) : null;
 }

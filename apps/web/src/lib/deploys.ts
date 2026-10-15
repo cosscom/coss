@@ -14,7 +14,7 @@ import {
   type GitHubJob,
   type GitHubRun,
   isImageTagRun,
-  shippingStartedAt,
+  latestProductionJobAt,
 } from "./deploy-runs";
 import { githubAppJwt, githubAppPrivateKey } from "./github-app";
 
@@ -237,7 +237,7 @@ export async function getDeployOverview(): Promise<DeployOverview> {
     };
   });
 
-  const starts = runs.map((entry) => shippingStartedAt(entry.jobs)).filter((at) => at !== null);
+  const starts = runs.map((entry) => latestProductionJobAt(entry.jobs)).filter((at) => at !== null);
   const lastDeployAt = starts.length > 0 ? new Date(Math.max(...starts.map(Number))) : null;
 
   return {

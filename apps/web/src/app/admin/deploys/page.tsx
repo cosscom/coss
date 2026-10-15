@@ -108,8 +108,9 @@ export default async function AdminDeploysPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* While a run is moving, follow it without reloading. */}
-      {active ? <AutoRefresh seconds={30} /> : null}
+      {/* Follows runs without reloading: often while one moves, else slower (a dispatch's run
+          can take a few seconds to be listed). */}
+      <AutoRefresh seconds={active ? 30 : 60} />
       <PageHeader
         actions={
           <AdminActionDialog
