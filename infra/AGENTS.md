@@ -17,7 +17,8 @@ README.md, "Deploying to AWS". `bun run --cwd infra aws:spec` prints the whole s
 Rules: when an app gains an env var, declare it in `aws/services.ts` too (plus the usual `.env.example`, t3-env,
 `turbo.json`), run `bun run --cwd infra aws:spec:write`, and give a plain one its value in
 `terraform/production.tfvars` (the plan fails for a required plain variable without one) or a secret one its key with
-`put-secret.sh`. Routing changes go into `ZONE_ROUTES`, never into this folder (a new external zone also needs its host
+`put-secret.sh`. An optional secret that isn't stored goes in `unset_secrets` (tfvars) instead: every declared secret
+is mapped into the task definition, and ECS can't start a task whose secret names a missing key. Routing changes go into `ZONE_ROUTES`, never into this folder (a new external zone also needs its host
 in `external_origin_hosts`). Terraform applies the generated rules as printed (priorities, the origin header on every
 rule, a fixed 403 default action). Never put secret values in tfvars, the state or a commit; `terraform apply` needs
 admin credentials for the account and is run by a human or an agent they asked, not by CI. Services ignore
