@@ -11,8 +11,8 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { removeRiskListEntryAction } from "../actions";
 
 export function RemoveRiskListEntryButton(props: {
@@ -24,7 +24,9 @@ export function RemoveRiskListEntryButton(props: {
   list: "allow" | "block";
 }) {
   // On success the page re-renders without this entry, which unmounts the dialog.
-  const [state, formAction, pending] = useActionState(removeRiskListEntryAction, null);
+  const [state, formAction, pending] = useActionToast(removeRiskListEntryAction, {
+    success: `Removed ${props.value} from the ${props.list} list`,
+  });
 
   return (
     <AlertDialog>

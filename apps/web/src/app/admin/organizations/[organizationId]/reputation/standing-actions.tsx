@@ -18,10 +18,11 @@ import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
 import { Textarea } from "@coss/ui/components/textarea";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { Panel, PanelBody, PanelDescription, PanelHeader, PanelTitle } from "@/components/panel";
 import type { ActionResult } from "@/lib/action-result";
+import { useActionToast } from "@/lib/toast";
 import {
   reinstateOrganizationAction,
   suspendOrganizationAction,
@@ -37,6 +38,8 @@ type NoteDialogProps = {
   title: string;
   description: string;
   submit: string;
+  /** Toast shown once the action succeeded. */
+  success: string;
   destructive?: boolean;
 };
 
@@ -60,7 +63,7 @@ function NoteDialog(props: NoteDialogProps) {
 }
 
 function NoteForm(props: NoteDialogProps & { onDone: () => void }) {
-  const [state, formAction, pending] = useActionState(props.action, null);
+  const [state, formAction, pending] = useActionToast(props.action, { success: props.success });
   const { onDone } = props;
 
   useEffect(() => {
@@ -104,6 +107,7 @@ export function ReinstateButton({ organizationId }: { organizationId: string }) 
       description="Live sending resumes immediately. Rates are measured again from now on, so the sending that caused the suspension can't suspend the organization again."
       organizationId={organizationId}
       submit="Reinstate"
+      success="Organization reinstated"
       title="Reinstate this organization?"
       trigger="Reinstate"
     />
@@ -118,6 +122,7 @@ export function SuspendButton({ organizationId }: { organizationId: string }) {
       destructive
       organizationId={organizationId}
       submit="Suspend"
+      success="Live sending suspended"
       title="Suspend live sending?"
       trigger="Suspend"
     />
@@ -142,7 +147,17 @@ export function PolicyForm(props: {
     hookFailureRate: Partial<ReputationPolicy["hookFailureRate"]>;
   }> | null;
 }) {
-  const [state, formAction, pending] = useActionState(updatePolicyAction, null);
+  // Which submit button was used (both post to the same action): state for its spinner, and a ref
+  // for the toast, since the click's update hasn't rendered yet when the form dispatches.
+  const [intent, setIntent] = useState<"save" | "reset">("save");
+  const intentRef = useRef(intent);
+  const choose = (next: "save" | "reset") => {
+    intentRef.current = next;
+    setIntent(next);
+  };
+  const [state, formAction, pending] = useActionToast(updatePolicyAction, {
+    success: () => (intentRef.current === "reset" ? "Policy reset to defaults" : "Policy saved"),
+  });
   const { defaults } = props;
   const overrides = props.overrides ?? {};
   const rateFields = [
@@ -292,10 +307,25 @@ export function PolicyForm(props: {
           </Field>
           {state && !state.ok ? <FormError message={state.error} /> : null}
           <div className="flex gap-2">
-            <Button loading={pending} name="intent" type="submit" value="save">
+            <Button
+              disabled={pending && intent !== "save"}
+              loading={pending && intent === "save"}
+              name="intent"
+              onClick={() => choose("save")}
+              type="submit"
+              value="save"
+            >
               Save policy
             </Button>
-            <Button name="intent" type="submit" value="reset" variant="ghost">
+            <Button
+              disabled={pending && intent !== "reset"}
+              loading={pending && intent === "reset"}
+              name="intent"
+              onClick={() => choose("reset")}
+              type="submit"
+              value="reset"
+              variant="ghost"
+            >
               Reset to defaults
             </Button>
           </div>

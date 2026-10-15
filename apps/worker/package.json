@@ -28,6 +28,7 @@
     "@coss/hooks": "workspace:*",
     "@coss/logs": "workspace:*",
     "@coss/observability": "workspace:*",
+    "@coss/push": "workspace:*",
     "@coss/ratelimit": "workspace:*",
     "@coss/reputation": "workspace:*",
     "@coss/retention": "workspace:*",

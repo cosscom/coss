@@ -944,6 +944,31 @@
           "description": "Sender of notification emails, on a verified domain of that organization."
         },
         {
+          "name": "APNS_KEY_ID",
+          "kind": "plain",
+          "required": false,
+          "description": "Id of the APNs authentication key (.p8) for the iOS app's push notifications. Set with APNS_TEAM_ID and APNS_PRIVATE_KEY; unset: pushes are held."
+        },
+        {
+          "name": "APNS_TEAM_ID",
+          "kind": "plain",
+          "required": false,
+          "description": "Apple Developer team id that owns the iOS app and the APNs key."
+        },
+        {
+          "name": "APNS_PRIVATE_KEY",
+          "kind": "secret",
+          "required": false,
+          "description": "The APNs key's .p8 contents (PEM; `\\n` line breaks are accepted)."
+        },
+        {
+          "name": "APNS_TOPIC",
+          "kind": "plain",
+          "required": false,
+          "value": "com.coss.ios",
+          "description": "The iOS app's bundle id (default com.coss.ios)."
+        },
+        {
           "name": "SENTRY_DSN",
           "kind": "plain",
           "required": false,

@@ -207,6 +207,8 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "logDrains.batches.get",
     args: (request) => [pathId(request), pathParam(request, "batch_id")],
   },
+  "GET /v1/emails": { method: "email.list", args: (request) => [queryParams(request)] },
+  "GET /v1/emails/batch/{id}": { method: "email.getBatch", args: (r) => [pathId(r)] },
   // Before `/v1/emails/{id}`, which would match it too.
   "GET /v1/emails/metrics": { method: "email.metrics", args: (request) => [queryParams(request)] },
   "GET /v1/emails/{id}": {

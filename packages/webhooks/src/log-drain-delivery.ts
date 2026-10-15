@@ -7,6 +7,7 @@
  */
 import { db, type Executor, schema } from "@coss/db";
 import { recordOrgAuditEvent } from "@coss/logs";
+import { enqueuePush } from "@coss/push";
 import { and, asc, eq, inArray, isNull, lt, lte, notExists, or, sql } from "drizzle-orm";
 import {
   deliveryOutcome,
@@ -244,6 +245,13 @@ async function disableFailingDrain(
     },
     tx,
   );
+  await enqueuePush(tx, {
+    organizationId: disabled.organizationId,
+    environmentId: disabled.environmentId,
+    kind: "log_drain_disabled",
+    subjectId: disabled.id,
+    now,
+  });
 }
 
 /** A late worker must not overwrite cancellation or a newer worker's lease. */

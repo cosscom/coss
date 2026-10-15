@@ -1,35 +1,30 @@
 "use client";
 
-import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
-import { FormError } from "@/components/form-error";
+import type { ReactNode } from "react";
+import { SettingsSwitchRow } from "@/components/settings-switch-row";
 import { setTwoFactorRequirementAction } from "./actions";
 
-/** Turns the organization's two-factor requirement on or off. */
-export function TwoFactorRequirementForm(props: {
+/** The organization's two-factor requirement as a settings row; the switch saves on change. */
+export function TwoFactorRequirementRow(props: {
   orgSlug: string;
   required: boolean;
   /** The actor has two-factor themselves (needed to turn the requirement on). */
   canRequire: boolean;
+  disabled: boolean;
+  description: ReactNode;
 }) {
-  const [state, formAction, pending] = useActionState(setTwoFactorRequirementAction, null);
-
   return (
-    <form action={formAction} className="flex flex-col gap-3">
-      <input name="orgSlug" type="hidden" value={props.orgSlug} />
-      <input name="required" type="hidden" value={String(!props.required)} />
-      {state && !state.ok ? <FormError message={state.error} /> : null}
-      <div>
-        <Button
-          disabled={!props.required && !props.canRequire}
-          loading={pending}
-          size="sm"
-          type="submit"
-          variant={props.required ? "outline" : "default"}
-        >
-          {props.required ? "Stop requiring two-factor" : "Require two-factor"}
-        </Button>
-      </div>
-    </form>
+    <SettingsSwitchRow
+      action={setTwoFactorRequirementAction}
+      canTurnOn={props.canRequire}
+      description={props.description}
+      disabled={props.disabled}
+      id="require-two-factor"
+      label="Require two-factor authentication"
+      orgSlug={props.orgSlug}
+      required={props.required}
+      turnedOff="Two-factor no longer required"
+      turnedOn="Two-factor now required"
+    />
   );
 }

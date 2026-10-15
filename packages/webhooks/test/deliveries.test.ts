@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { newId } from "@coss/db/id";
 import { queryLogs } from "@coss/logs";
+import { listPushNotifications } from "@coss/push";
 import { requestOrganizationDeletion } from "@coss/tenancy";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
 import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy/testing";
@@ -697,6 +698,10 @@ describe("endpoint health", () => {
         );
       expect(audit).toHaveLength(1);
       expect(audit[0]).toMatchObject({ actorType: "system", targetId: endpoint.id });
+      const pushes = await listPushNotifications(tenant.organization.id);
+      expect(pushes.map((row) => [row.kind, row.subjectId])).toEqual([
+        ["webhook_endpoint_disabled", endpoint.id],
+      ]);
 
       // Enabling it again clears the reason and the streak.
       const enabled = await updateWebhookEndpoint(

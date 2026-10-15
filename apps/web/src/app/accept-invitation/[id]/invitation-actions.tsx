@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormError } from "@/components/form-error";
 import { authClient } from "@/lib/auth-client";
+import { toast } from "@/lib/toast";
 
 export function SendVerificationEmailButton(props: { email: string; callbackURL: string }) {
   const [pending, setPending] = useState(false);
@@ -37,7 +38,11 @@ export function SendVerificationEmailButton(props: { email: string; callbackURL:
   );
 }
 
-export function AcceptInvitationButton(props: { invitationId: string; organizationSlug: string }) {
+export function AcceptInvitationButton(props: {
+  invitationId: string;
+  organizationName: string;
+  organizationSlug: string;
+}) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +62,7 @@ export function AcceptInvitationButton(props: { invitationId: string; organizati
             setPending(false);
             return;
           }
+          toast.success(`You joined ${props.organizationName}`);
           router.push(`/${props.organizationSlug}`);
           router.refresh();
         }}

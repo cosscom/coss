@@ -13,8 +13,8 @@ import {
   SelectValue,
 } from "@coss/ui/components/select";
 import { Textarea } from "@coss/ui/components/textarea";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { updateAccountSettingsAction } from "./actions";
 
 export type AccountSettingsValues = {
@@ -66,7 +66,9 @@ export function AccountSettingsForm(props: {
   values: AccountSettingsValues;
   methods: { value: string; label: string }[];
 }) {
-  const [state, formAction, pending] = useActionState(updateAccountSettingsAction, null);
+  const [state, formAction, pending] = useActionToast(updateAccountSettingsAction, {
+    success: "Billing settings saved",
+  });
   const { values } = props;
   return (
     <form action={formAction} className="grid gap-4 sm:grid-cols-2">
@@ -173,11 +175,9 @@ export function AccountSettingsForm(props: {
           Kept in the admin audit log; never shown to the customer.
         </FieldDescription>
       </Field>
-      {state?.ok ? (
-        <p className="text-muted-foreground text-sm">Saved.</p>
-      ) : (
-        <FormError message={state?.error} />
-      )}
+      <div className="sm:col-span-2">
+        <FormError message={state?.ok ? null : state?.error} />
+      </div>
       <div className="sm:col-span-2">
         <Button loading={pending} type="submit">
           Save billing settings

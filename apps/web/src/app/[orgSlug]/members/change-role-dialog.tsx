@@ -15,8 +15,9 @@ import {
 } from "@coss/ui/components/dialog";
 import { Label } from "@coss/ui/components/label";
 import { Radio, RadioGroup } from "@coss/ui/components/radio-group";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { updateMemberRoleAction } from "./actions";
 import { ROLE_DETAILS } from "./roles";
 
@@ -45,9 +46,14 @@ export function ChangeRoleDialog(props: Props) {
 }
 
 function ChangeRoleForm(props: Props & { onDone: () => void }) {
-  const [state, formAction, pending] = useActionState(updateMemberRoleAction, null);
   // Controlled: a successful save refreshes the page (new `currentRole`) before the dialog closes.
   const [role, setRole] = useState(props.currentRole);
+  const [state, formAction, pending] = useActionToast(updateMemberRoleAction, {
+    success:
+      role === props.currentRole
+        ? undefined
+        : `${props.memberName}'s role changed to ${ROLE_DETAILS[role as OrgRole]?.label ?? role}`,
+  });
   const { onDone } = props;
 
   useEffect(() => {

@@ -62,7 +62,9 @@ export const ADMIN_ACTIONS = [
   "organization.disable_sso",
   "organization.delete",
   "organization.disable_scim",
+  "organization.take_down",
   "api_key.revoke",
+  "email.view_content",
   "reputation.suspended",
   "reputation.reinstated",
   "reputation.policy_updated",
@@ -86,7 +88,7 @@ export const ADMIN_ACTIONS = [
 ] as const;
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 
-export type AdminTargetType = "user" | "organization" | "api_key";
+export type AdminTargetType = "user" | "organization" | "api_key" | "email";
 
 export type AdminAuditEvent = {
   id: string;
@@ -404,6 +406,20 @@ export async function listOrganizationsForAdmin(
       .where(and(...filters)),
   ]);
   return { organizations: rows, total: totalRow?.total ?? 0 };
+}
+
+/** The organization with exactly this id or slug, or `null` (the admin console's filters). */
+export async function findOrganizationForAdmin(
+  idOrSlug: string,
+): Promise<{ id: string; name: string; slug: string } | null> {
+  const value = idOrSlug.trim();
+  if (!value) return null;
+  const [row] = await db
+    .select({ id: organization.id, name: organization.name, slug: organization.slug })
+    .from(organization)
+    .where(or(eq(organization.id, value), eq(organization.slug, value)))
+    .limit(1);
+  return row ?? null;
 }
 
 export type AdminOrganizationDetail = {
@@ -925,24 +941,34 @@ export type AdminOverview = {
   users: number;
   bannedUsers: number;
   admins: number;
+  /** Users created in the last 24 hours / 7 days. */
+  newUsersDay: number;
+  newUsersWeek: number;
   organizations: number;
   suspendedOrganizations: number;
+  /** Organizations created in the last 7 days. */
+  newOrganizationsWeek: number;
 };
 
 /** Headline counts for the admin overview. */
-export async function getAdminOverview(): Promise<AdminOverview> {
+export async function getAdminOverview(now: Date = new Date()): Promise<AdminOverview> {
+  const day = new Date(now.getTime() - 86_400_000);
+  const week = new Date(now.getTime() - 7 * 86_400_000);
   const [[users], [organizations]] = await Promise.all([
     db
       .select({
         users: count(),
         bannedUsers: sql<number>`count(*) filter (where ${activeBan})::int`,
         admins: sql<number>`count(*) filter (where ${isAdminRole})::int`,
+        newUsersDay: sql<number>`count(*) filter (where ${user.createdAt} >= ${day.toISOString()})::int`,
+        newUsersWeek: sql<number>`count(*) filter (where ${user.createdAt} >= ${week.toISOString()})::int`,
       })
       .from(user),
     db
       .select({
         organizations: count(),
         suspendedOrganizations: count(organizationSuspension.organizationId),
+        newOrganizationsWeek: sql<number>`count(*) filter (where ${organization.createdAt} >= ${week.toISOString()})::int`,
       })
       .from(organization)
       .leftJoin(organizationSuspension, eq(organizationSuspension.organizationId, organization.id)),
@@ -951,7 +977,155 @@ export async function getAdminOverview(): Promise<AdminOverview> {
     users: users?.users ?? 0,
     bannedUsers: users?.bannedUsers ?? 0,
     admins: users?.admins ?? 0,
+    newUsersDay: users?.newUsersDay ?? 0,
+    newUsersWeek: users?.newUsersWeek ?? 0,
     organizations: organizations?.organizations ?? 0,
     suspendedOrganizations: organizations?.suspendedOrganizations ?? 0,
+    newOrganizationsWeek: organizations?.newOrganizationsWeek ?? 0,
+  };
+}
+
+// --- Sign-ups and takedowns ------------------------------------------------------------------
+
+export type AdminUserSummary = {
+  id: string;
+  email: string;
+  banned: boolean;
+  createdAt: Date;
+  organizations: { id: string; name: string; slug: string; role: string; suspended: boolean }[];
+};
+
+/**
+ * The accounts of the given addresses (sign-up assessments name an address, not a user), keyed by
+ * the lowercased address, with every organization each belongs to.
+ */
+export async function usersByEmailForAdmin(
+  emails: string[],
+): Promise<Map<string, AdminUserSummary>> {
+  const result = new Map<string, AdminUserSummary>();
+  const candidates = [...new Set(emails.flatMap((address) => [address, address.toLowerCase()]))];
+  if (candidates.length === 0) return result;
+  const users = await db
+    .select({
+      id: user.id,
+      email: user.email,
+      banned: user.banned,
+      banExpires: user.banExpires,
+      createdAt: user.createdAt,
+    })
+    .from(user)
+    .where(inArray(user.email, candidates));
+  if (users.length === 0) return result;
+  const memberships = await db
+    .select({
+      userId: member.userId,
+      role: member.role,
+      id: organization.id,
+      name: organization.name,
+      slug: organization.slug,
+      suspendedAt: organizationSuspension.createdAt,
+    })
+    .from(member)
+    .innerJoin(organization, eq(organization.id, member.organizationId))
+    .leftJoin(organizationSuspension, eq(organizationSuspension.organizationId, organization.id))
+    .where(
+      inArray(
+        member.userId,
+        users.map((row) => row.id),
+      ),
+    )
+    .orderBy(asc(member.createdAt), asc(member.id));
+  for (const row of users) {
+    const { banned } = toAdminUser({
+      ...row,
+      name: "",
+      emailVerified: false,
+      role: null,
+      banReason: null,
+      twoFactorEnabled: false,
+    });
+    result.set(row.email.toLowerCase(), {
+      id: row.id,
+      email: row.email,
+      banned,
+      createdAt: row.createdAt,
+      organizations: memberships
+        .filter((membership) => membership.userId === row.id)
+        .map(({ userId: _userId, suspendedAt, ...membership }) => ({
+          ...membership,
+          suspended: suspendedAt !== null,
+        })),
+    });
+  }
+  return result;
+}
+
+export type TakedownMember = {
+  userId: string;
+  email: string;
+  role: string;
+  /** Why the takedown leaves this member alone; null when they are banned with it. */
+  keptBecause: string | null;
+};
+
+export type TakedownPlan = {
+  suspended: boolean;
+  deleting: boolean;
+  members: TakedownMember[];
+  apiKeys: AdminApiKeyRow[];
+};
+
+/**
+ * What taking an organization down does: suspend it, revoke its API keys, and ban the members who
+ * have nothing else on the platform. Members who are platform admins, already banned, or also
+ * belong to an organization that is neither suspended nor being deleted are kept.
+ */
+export async function planOrganizationTakedown(organizationId: string): Promise<TakedownPlan> {
+  const [members, apiKeys, detail] = await Promise.all([
+    db
+      .select({
+        userId: member.userId,
+        email: user.email,
+        role: member.role,
+        userRole: user.role,
+        banned: user.banned,
+        banExpires: user.banExpires,
+        otherOrganizations: sql<string[]>`coalesce(array(
+          select ${organization.name} from ${member} as other_member
+          inner join ${organization} on ${organization.id} = other_member.organization_id
+          where other_member.user_id = ${member.userId}
+            and other_member.organization_id <> ${organizationId}
+            and not exists (select 1 from ${organizationSuspension}
+              where ${organizationSuspension.organizationId} = ${organization.id})
+            and not exists (select 1 from ${organizationDeletion}
+              where ${organizationDeletion.organizationId} = ${organization.id}
+                and ${organizationDeletion.status} = 'pending')
+          order by ${organization.name}
+        ), '{}')`,
+      })
+      .from(member)
+      .innerJoin(user, eq(user.id, member.userId))
+      .where(eq(member.organizationId, organizationId))
+      .orderBy(asc(member.createdAt), asc(member.id)),
+    listOrganizationApiKeysForAdmin(organizationId),
+    getOrganizationForAdmin(organizationId),
+  ]);
+  return {
+    suspended: detail?.suspension != null,
+    deleting: detail?.deletion != null,
+    apiKeys,
+    members: members.map((row) => {
+      const banned =
+        row.banned === true && (row.banExpires === null || row.banExpires.getTime() > Date.now());
+      const admin = (row.userRole ?? "").split(",").includes("admin");
+      const keptBecause = admin
+        ? "platform admin"
+        : banned
+          ? "already banned"
+          : row.otherOrganizations.length > 0
+            ? `also in ${row.otherOrganizations.join(", ")}`
+            : null;
+      return { userId: row.userId, email: row.email, role: row.role, keptBecause };
+    }),
   };
 }
