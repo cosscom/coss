@@ -32,12 +32,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { useActionState, useState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import {
   addReceivingDomainAction,
   checkReceivingDomainAction,
   removeReceivingDomainAction,
+  type VerifyOutcome,
 } from "../actions";
 
 type Target = { orgSlug: string; domainId: string };
@@ -56,39 +58,34 @@ function TargetInputs(props: Target) {
 export function AddReceivingDomainDialog(
   props: Target & { domainName: string; environments: EnvironmentOption[] },
 ) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger render={<Button size="sm" />}>Receive email</DialogTrigger>
       <DialogPopup>
         {/* The popup unmounts when closed, which also resets the form. */}
-        <AddReceivingDomainForm {...props} />
+        <AddReceivingDomainForm {...props} onDone={() => setOpen(false)} />
       </DialogPopup>
     </Dialog>
   );
 }
 
 function AddReceivingDomainForm(
-  props: Target & { domainName: string; environments: EnvironmentOption[] },
+  props: Target & { domainName: string; environments: EnvironmentOption[]; onDone: () => void },
 ) {
-  const [state, formAction, pending] = useActionState(addReceivingDomainAction, null);
   const [hostname, setHostname] = useState(`inbound.${props.domainName}`);
+  const [state, formAction, pending] = useActionToast(addReceivingDomainAction, {
+    success: {
+      title: "Receiving set up",
+      description: `Publish its MX record, then email to any address at ${hostname} is received.`,
+    },
+  });
+  const { onDone } = props;
 
-  if (state?.ok) {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>Receiving set up</DialogTitle>
-          <DialogDescription>
-            Publish its MX record at your DNS provider. Email to any address at {hostname} is then
-            received by the environment you chose.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose render={<Button />}>Done</DialogClose>
-        </DialogFooter>
-      </>
-    );
-  }
+  useEffect(() => {
+    if (state?.ok) onDone();
+  }, [state, onDone]);
 
   const apex = hostname.trim().toLowerCase().replace(/\.$/, "") === props.domainName;
   return (
@@ -157,21 +154,34 @@ function AddReceivingDomainForm(
 }
 
 export function CheckReceivingDomainButton(props: Target) {
-  const [state, formAction, pending] = useActionState(checkReceivingDomainAction, null);
+  const [, formAction, pending] = useActionToast(checkReceivingDomainAction, {
+    success: receivingCheckToast,
+    errors: "toast",
+  });
 
   return (
-    <form action={formAction} className="flex flex-col items-end gap-2">
+    <form action={formAction}>
       <TargetInputs {...props} />
       <Button loading={pending} size="sm" type="submit" variant="outline">
         Check now
       </Button>
-      {state && !state.ok ? <FormError message={state.error} /> : null}
     </form>
   );
 }
 
+function receivingCheckToast({ status }: VerifyOutcome) {
+  if (status === "verified") return "MX record found";
+  return {
+    type: status === "mismatch" ? "warning" : "info",
+    title: status === "mismatch" ? "MX record points elsewhere" : "MX record not found yet",
+    description: "We keep checking automatically; DNS changes can take a while to spread.",
+  } as const;
+}
+
 export function RemoveReceivingDomainButton(props: Target & { hostname: string }) {
-  const [state, formAction, pending] = useActionState(removeReceivingDomainAction, null);
+  const [state, formAction, pending] = useActionToast(removeReceivingDomainAction, {
+    success: `Stopped receiving at ${props.hostname}`,
+  });
 
   return (
     <AlertDialog>

@@ -24,9 +24,10 @@ import {
 } from "@coss/ui/components/dialog";
 import { Label } from "@coss/ui/components/label";
 import { Radio, RadioGroup } from "@coss/ui/components/radio-group";
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import {
   deleteWebhookEndpointAction,
   recoverWebhookEndpointAction,
@@ -53,21 +54,25 @@ function TargetInputs(props: Target) {
 }
 
 export function ToggleEndpointButton(props: Target & { enabled: boolean }) {
-  const [state, formAction, pending] = useActionState(setWebhookEndpointEnabledAction, null);
+  const [, formAction, pending] = useActionToast(setWebhookEndpointEnabledAction, {
+    success: props.enabled ? "Endpoint disabled" : "Endpoint enabled",
+    errors: "toast",
+  });
   return (
-    <form action={formAction} className="flex flex-col items-end gap-2">
+    <form action={formAction}>
       <TargetInputs {...props} />
       <input name="enabled" type="hidden" value={String(!props.enabled)} />
       <Button loading={pending} size="sm" type="submit" variant="outline">
         {props.enabled ? "Disable" : "Enable"}
       </Button>
-      {state && !state.ok ? <FormError message={state.error} /> : null}
     </form>
   );
 }
 
 export function UpgradeEndpointVersionButton(props: Target & { latest: string }) {
-  const [state, formAction, pending] = useActionState(upgradeWebhookEndpointVersionAction, null);
+  const [state, formAction, pending] = useActionToast(upgradeWebhookEndpointVersionAction, {
+    success: `Endpoint upgraded to ${props.latest}`,
+  });
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button size="sm" variant="outline" />}>
@@ -100,7 +105,9 @@ export function UpgradeEndpointVersionButton(props: Target & { latest: string })
 
 export function DeleteEndpointButton(props: Target & { url: string }) {
   // On success the action redirects to the endpoint list.
-  const [state, formAction, pending] = useActionState(deleteWebhookEndpointAction, null);
+  const [state, formAction, pending] = useActionToast(deleteWebhookEndpointAction, {
+    success: "Webhook endpoint deleted",
+  });
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button size="sm" variant="destructive-outline" />}>
@@ -168,7 +175,9 @@ export function RollSecretButton(props: Target) {
 }
 
 function RollSecretForm(props: Target) {
-  const [state, formAction, pending] = useActionState(rollWebhookSecretAction, null);
+  const [state, formAction, pending] = useActionToast(rollWebhookSecretAction, {
+    success: "Signing secret rolled",
+  });
   if (state?.ok) {
     return (
       <>
@@ -237,57 +246,56 @@ function RollSecretForm(props: Target) {
 }
 
 export function RetryDeliveryButton(props: Target & { deliveryId: string }) {
-  const [state, formAction, pending] = useActionState(retryWebhookDeliveryAction, null);
+  const [, formAction, pending] = useActionToast(retryWebhookDeliveryAction, {
+    success: "Delivery queued for retry",
+    errors: "toast",
+  });
   return (
-    <form action={formAction} className="flex flex-col items-end gap-1">
+    <form action={formAction}>
       <TargetInputs {...props} />
       <input name="deliveryId" type="hidden" value={props.deliveryId} />
       <Button loading={pending} size="xs" type="submit" variant="outline">
         Retry
       </Button>
-      {state && !state.ok ? (
-        <span className="text-destructive-foreground text-xs">{state.error}</span>
-      ) : null}
     </form>
   );
 }
 
 export function RecoverDeliveriesButton(props: Target) {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger render={<Button size="sm" variant="outline" />}>Recover failed</DialogTrigger>
       <DialogPopup>
-        <RecoverDeliveriesForm {...props} />
+        <RecoverDeliveriesForm {...props} onDone={() => setOpen(false)} />
       </DialogPopup>
     </Dialog>
   );
 }
 
-function RecoverDeliveriesForm(props: Target) {
-  const [state, formAction, pending] = useActionState(recoverWebhookEndpointAction, null);
-  if (state?.ok) {
-    const { requeued, hasMore } = state.data;
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>
-            {requeued === 0
-              ? "No failed deliveries"
-              : `${requeued} ${requeued === 1 ? "delivery" : "deliveries"} queued`}
-          </DialogTitle>
-          <DialogDescription>
-            {requeued === 0
-              ? "Nothing failed in that period."
-              : "Each gets one more attempt within the next minute."}
-            {hasMore ? " More failed in that period: recover again to queue the rest." : ""}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose render={<Button />}>Done</DialogClose>
-        </DialogFooter>
-      </>
-    );
-  }
+function RecoverDeliveriesForm(props: Target & { onDone: () => void }) {
+  const [state, formAction, pending] = useActionToast(recoverWebhookEndpointAction, {
+    success: ({ requeued, hasMore }) => {
+      if (requeued === 0) {
+        return {
+          type: "info",
+          title: "No failed deliveries",
+          description: "Nothing failed in that period.",
+        };
+      }
+      return {
+        title: `${requeued} ${requeued === 1 ? "delivery" : "deliveries"} queued`,
+        description: hasMore
+          ? "More failed in that period: recover again to queue the rest."
+          : "Each gets one more attempt within the next minute.",
+      };
+    },
+  });
+  const { onDone } = props;
+
+  useEffect(() => {
+    if (state?.ok) onDone();
+  }, [state, onDone]);
   return (
     // `contents` keeps header/panel/footer as direct flex children of the popup (coss ui pattern).
     <form action={formAction} className="contents">

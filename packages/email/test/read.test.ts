@@ -8,6 +8,7 @@ import { FakeEmailProvider } from "../src/providers/fake.ts";
 import {
   type EmailListFilters,
   emailActivity,
+  environmentsWithSentEmail,
   getEmail,
   listEmails,
   listEmailsPage,
@@ -208,12 +209,12 @@ describe("listEmails filters and listEmailsPage", () => {
     expect(await list({ senderDomain: "notacme.com" })).toEqual(["C"]);
     expect(
       await list({
-        createdFrom: new Date("2026-01-10T00:00:00Z"),
-        createdUntil: new Date("2026-01-11T00:00:00Z"),
+        createdAfter: new Date("2026-01-10T00:00:00Z"),
+        createdBefore: new Date("2026-01-11T00:00:00Z"),
       }),
     ).toEqual(["C"]);
-    expect(await list({ createdUntil: new Date("2026-01-10T12:00:00Z") })).toEqual([]);
-    expect(await list({ createdFrom: new Date("2026-01-11T00:00:00Z") })).toEqual(["B", "A"]);
+    expect(await list({ createdBefore: new Date("2026-01-10T12:00:00Z") })).toEqual([]);
+    expect(await list({ createdAfter: new Date("2026-01-11T00:00:00Z") })).toEqual(["B", "A"]);
     expect(await list({ recipient: "ann@example.com", category: "onboarding" })).toEqual(["A"]);
   });
 
@@ -332,5 +333,61 @@ describe("emailActivity", () => {
       trackedClicks: 1,
       clicked: 0,
     });
+  });
+});
+
+describe("environmentsWithSentEmail", () => {
+  test("names the environments of the organization that have sent an email", async () => {
+    const tenant = await createTestTenant();
+    const other = await createTestTenant();
+    const org = tenant.organization.id;
+    const ids = [tenant.production.id, tenant.development.id];
+    expect(await environmentsWithSentEmail({ organizationId: org, environmentIds: ids })).toEqual(
+      new Set(),
+    );
+
+    // A failed send doesn't count.
+    const failing = dispatchingEmailService({
+      liveProvider: new FakeEmailProvider({ log: false, fail: () => true }),
+      sandboxProvider: provider,
+    });
+    const from = await verifiedFrom(org);
+    const { email: failed } = await failing.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({ from }),
+    });
+    expect(
+      (await getEmail({ organizationId: org, environmentId: tenant.production.id, id: failed.id }))
+        ?.status,
+    ).toBe("failed");
+    expect(await environmentsWithSentEmail({ organizationId: org, environmentIds: ids })).toEqual(
+      new Set(),
+    );
+
+    await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({ from }),
+    });
+    expect(await environmentsWithSentEmail({ organizationId: org, environmentIds: ids })).toEqual(
+      new Set([tenant.production.id]),
+    );
+    // Scoped to the organization, and to the ids asked about.
+    expect(
+      await environmentsWithSentEmail({
+        organizationId: other.organization.id,
+        environmentIds: ids,
+      }),
+    ).toEqual(new Set());
+    expect(
+      await environmentsWithSentEmail({
+        organizationId: org,
+        environmentIds: [tenant.development.id],
+      }),
+    ).toEqual(new Set());
+    expect(await environmentsWithSentEmail({ organizationId: org, environmentIds: [] })).toEqual(
+      new Set(),
+    );
   });
 });

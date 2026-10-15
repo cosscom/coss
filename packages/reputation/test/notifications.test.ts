@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
+import { listPushNotifications } from "@coss/push";
 import {
   addMember,
   createTestTenant,
@@ -181,6 +182,10 @@ describe("reputation notifications", () => {
     });
     const notifications = await listReputationNotifications(orgId);
     expect(notifications.map((row) => row.type)).toEqual(["suspended"]);
+    const pushes = await listPushNotifications(orgId);
+    expect(pushes.map((row) => `${row.kind}:${row.subjectId}`)).toEqual([
+      `reputation_suspended:${notifications[0]?.reputationEventId}`,
+    ]);
   });
 
   test("is skipped when nobody can receive it", async () => {

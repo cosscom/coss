@@ -28,7 +28,12 @@ import {
   type ProviderEvent,
   UncertainSendError,
 } from "./provider.ts";
-import { type EmailRow, selectEmailsWithMode, toEmailObjects } from "./read.ts";
+import {
+  type EmailRow,
+  PROVIDER_ERROR_MESSAGE,
+  selectEmailsWithMode,
+  toEmailObjects,
+} from "./read.ts";
 import { canonicalJson, hashSendBatchRequest, hashSendRequest } from "./request-hash.ts";
 import {
   type EmailBatchObjectOutput,
@@ -245,7 +250,7 @@ function cossEvent(
 function failedEvent(
   row: EmailRow,
   provider: string,
-  failure = { code: "provider_error", message: "The email provider did not accept the email." },
+  failure = { code: "provider_error", message: PROVIDER_ERROR_MESSAGE },
 ): ProviderEvent {
   return cossEvent(row, {
     type: "email.failed",

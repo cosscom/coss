@@ -11,8 +11,8 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { revokeApiKeyAction } from "./actions";
 
 export function RevokeApiKeyButton(props: {
@@ -23,7 +23,9 @@ export function RevokeApiKeyButton(props: {
   keyName: string;
 }) {
   // On success the page re-renders without this key, which unmounts the dialog.
-  const [state, formAction, pending] = useActionState(revokeApiKeyAction, null);
+  const [state, formAction, pending] = useActionToast(revokeApiKeyAction, {
+    success: `API key “${props.keyName}” revoked`,
+  });
 
   return (
     <AlertDialog>

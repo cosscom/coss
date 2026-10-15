@@ -81,9 +81,9 @@ export function toEmailListFilters(params: EmailFilterParams): EmailListFilters 
       : undefined,
     category: params.category || undefined,
     senderDomain: params.domain || undefined,
-    createdFrom: dayStart(params.since),
+    createdAfter: dayStart(params.since),
     // The whole `until` day is included.
-    createdUntil: until ? new Date(until.getTime() + 86_400_000) : undefined,
+    createdBefore: until ? new Date(until.getTime() + 86_400_000) : undefined,
   };
 }
 

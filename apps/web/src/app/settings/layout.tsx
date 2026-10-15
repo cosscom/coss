@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import Link from "next/link";
 import { AppShell } from "@/components/shell/app-shell";
 import { AreaSidebar } from "@/components/shell/area-sidebar";
+import { avatarUrl } from "@/lib/avatars";
 import { isPlatformAdmin, requireSession } from "@/lib/session";
 
 /**
@@ -23,6 +24,7 @@ export default async function AccountLayout({ children }: LayoutProps<"/settings
   const user = {
     name: session.user.name,
     email: session.user.email,
+    image: avatarUrl(session.user),
     isAdmin: isPlatformAdmin(session),
   };
 

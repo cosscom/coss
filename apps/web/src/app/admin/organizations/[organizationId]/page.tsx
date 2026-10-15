@@ -1,4 +1,6 @@
+import { usageByDay } from "@coss/billing";
 import { getEmailTenant, listDomains } from "@coss/email";
+import { listSendersForAdmin } from "@coss/email/admin";
 import {
   BUCKET_NAMES,
   BUCKETS,
@@ -14,9 +16,11 @@ import {
   getOrganizationSsoForAdmin,
   listAdminAuditEvents,
   listOrganizationApiKeysForAdmin,
+  planOrganizationTakedown,
 } from "@coss/tenancy/admin";
 import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
+import { Button } from "@coss/ui/components/button";
 import { Field, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import {
@@ -32,8 +36,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminActionDialog } from "@/components/admin/admin-action-dialog";
 import { AuditLogTable } from "@/components/admin/audit-log-table";
+import { listHref } from "@/components/admin/list-controls";
 import { AdminOrganizationTabs } from "@/components/admin/organization-tabs";
 import { OrganizationStatusBadge } from "@/components/admin/status-badges";
+import { StackedBars } from "@/components/charts/stacked-bars";
 import { DomainStatusBadge } from "@/components/domain-badges";
 import { PageHeader } from "@/components/page-header";
 import {
@@ -44,6 +50,7 @@ import {
   PanelHeader,
   PanelTitle,
 } from "@/components/panel";
+import { Stat, StatRow } from "@/components/stat-row";
 import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
 import { isSystemOrganization } from "@/lib/system-organization";
@@ -56,10 +63,16 @@ import {
   revokeApiKeyAction,
   setRateLimitOverrideAction,
   suspendOrganizationAction,
+  takeDownOrganizationAction,
   unsuspendOrganizationAction,
 } from "../../actions";
 
 export const metadata: Metadata = { title: "Organization · Admin" };
+
+const DAY_MS = 86_400_000;
+const CHART_DAYS = 30;
+
+const dayLabel = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", timeZone: "UTC" });
 
 /** What each overridable bucket counts, in the console's words. */
 const BUCKET_LABELS: Partial<Record<BucketName, string>> = {
@@ -91,7 +104,24 @@ export default async function AdminOrganizationPage({
   const detail = await getOrganizationForAdmin(organizationId);
   if (!detail) notFound();
   const { organization, suspension, deletion } = detail;
-  const [members, keys, domains, tenant, sso, scim, rateLimits, { events }] = await Promise.all([
+  const now = new Date();
+  const sendingSince = new Date(now.getTime() - 7 * DAY_MS);
+  const chartStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - (CHART_DAYS - 1) * DAY_MS,
+  );
+  const [
+    members,
+    keys,
+    domains,
+    tenant,
+    sso,
+    scim,
+    rateLimits,
+    { events },
+    [sending],
+    usage,
+    takedown,
+  ] = await Promise.all([
     listOrganizationMembers({ organizationId: organization.id }),
     listOrganizationApiKeysForAdmin(organization.id),
     listDomains({ organizationId: organization.id }),
@@ -100,8 +130,20 @@ export default async function AdminOrganizationPage({
     getOrganizationScim({ organizationId: organization.id }),
     listRateLimitOverrides(organization.id),
     listAdminAuditEvents({ organizationId: organization.id, limit: 25 }),
+    listSendersForAdmin({ since: sendingSince, now, organizationId: organization.id }),
+    usageByDay(organization.id, { start: chartStart, end: now }),
+    planOrganizationTakedown(organization.id),
   ]);
   const isSystem = await isSystemOrganization(organization.id);
+  const banned = takedown.members.filter((member) => member.keptBecause === null);
+  const kept = takedown.members.filter((member) => member.keptBecause !== null);
+  const usageColumns = Array.from({ length: CHART_DAYS }, (_, index) => {
+    const start = new Date(chartStart.getTime() + index * DAY_MS);
+    const row = usage.find(
+      (entry) => entry.meter === "email.recipients" && entry.day.getTime() === start.getTime(),
+    );
+    return { label: dayLabel.format(start), values: { recipients: row?.quantity ?? 0 } };
+  });
   const fields = { organizationId: organization.id };
 
   return (
@@ -135,7 +177,7 @@ export default async function AdminOrganizationPage({
               ? " This is COSS's own organization (it sends account emails), so it can't be suspended."
               : null}
           </PanelDescription>
-          <PanelAction>
+          <PanelAction className="flex flex-wrap gap-2">
             {suspension ? (
               <AdminActionDialog
                 action={unsuspendOrganizationAction}
@@ -143,6 +185,7 @@ export default async function AdminOrganizationPage({
                 fields={fields}
                 reason="optional"
                 submitLabel="Lift suspension"
+                success="Suspension lifted"
                 title={`Lift the suspension of ${organization.name}?`}
                 triggerLabel="Lift suspension"
               />
@@ -155,9 +198,59 @@ export default async function AdminOrganizationPage({
                 reason="required"
                 reasonPlaceholder="e.g. Phishing reported by …"
                 submitLabel="Suspend organization"
+                success="Organization suspended"
                 title={`Suspend ${organization.name}?`}
                 triggerLabel="Suspend"
               />
+            )}
+            {isSystem || deletion ? null : (
+              <AdminActionDialog
+                action={takeDownOrganizationAction}
+                description={
+                  <>
+                    For spam and abuse. Suspends the organization
+                    {takedown.suspended ? " (already suspended)" : ""}, revokes its{" "}
+                    {takedown.apiKeys.length} API {takedown.apiKeys.length === 1 ? "key" : "keys"}{" "}
+                    and permanently bans the members who have nothing else on the platform. Each
+                    step is recorded in the audit log.
+                  </>
+                }
+                destructive
+                fields={fields}
+                reason="required"
+                reasonPlaceholder="e.g. Phishing campaign, see /admin/emails"
+                submitLabel="Take down"
+                success="Organization taken down"
+                title={`Take down ${organization.name}?`}
+                triggerLabel="Take down"
+              >
+                <div className="flex flex-col gap-2 text-sm">
+                  <p className="font-medium">Banned ({banned.length})</p>
+                  {banned.length > 0 ? (
+                    <ul className="list-disc ps-5 text-muted-foreground">
+                      {banned.map((member) => (
+                        <li key={member.userId}>
+                          {member.email} ({member.role})
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-muted-foreground">Nobody.</p>
+                  )}
+                  {kept.length > 0 ? (
+                    <>
+                      <p className="font-medium">Kept ({kept.length})</p>
+                      <ul className="list-disc ps-5 text-muted-foreground">
+                        {kept.map((member) => (
+                          <li key={member.userId}>
+                            {member.email}: {member.keptBecause}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : null}
+                </div>
+              </AdminActionDialog>
             )}
           </PanelAction>
         </PanelHeader>
@@ -206,6 +299,50 @@ export default async function AdminOrganizationPage({
         </Alert>
       ) : null}
 
+      <Panel
+        action={
+          <Button
+            render={
+              <Link href={listHref("/admin/emails", { org: organization.id, mode: "all" })} />
+            }
+            size="sm"
+            variant="outline"
+          >
+            View emails
+          </Button>
+        }
+        description="The last 7 days; the chart shows live recipients sent per day over 30 days."
+        title="Sending"
+      >
+        <PanelBody className="flex flex-col gap-4">
+          <StatRow>
+            <Stat
+              detail={`${sending?.liveRecipients ?? 0} recipients`}
+              label="Live sent"
+              value={sending?.liveSent ?? 0}
+            />
+            <Stat
+              detail={`${sending?.livePending ?? 0} queued or scheduled`}
+              label="Live failed"
+              value={sending?.liveFailed ?? 0}
+            />
+            <Stat label="Sandbox" value={sending?.sandbox ?? 0} />
+            <Stat
+              detail={`${sending?.screeningBlocked ?? 0} blocked`}
+              label="Screening flagged"
+              value={sending?.screeningFlagged ?? 0}
+            />
+          </StatRow>
+          <StackedBars
+            columns={usageColumns}
+            label="Live recipients sent per day"
+            series={[
+              { key: "recipients", label: "Live recipients", className: "bg-foreground/72" },
+            ]}
+          />
+        </PanelBody>
+      </Panel>
+
       <Panel>
         <PanelHeader>
           <PanelTitle className="flex items-center gap-2">
@@ -227,6 +364,7 @@ export default async function AdminOrganizationPage({
                   reason="required"
                   reasonPlaceholder="e.g. IdP outage, ticket #1234"
                   submitLabel="Stop requiring SSO"
+                  success="SSO no longer required"
                   title={`Stop requiring SSO for ${organization.name}?`}
                   triggerLabel="Stop requiring SSO"
                 />
@@ -240,6 +378,7 @@ export default async function AdminOrganizationPage({
                   reason="required"
                   reasonPlaceholder="e.g. IdP compromised, reported in ticket #1234"
                   submitLabel="Disable SSO"
+                  success="SSO disabled"
                   title={`Disable SSO for ${organization.name}?`}
                   triggerLabel="Disable SSO"
                 />
@@ -274,6 +413,7 @@ export default async function AdminOrganizationPage({
                 reason="required"
                 reasonPlaceholder="e.g. token leaked, reported in ticket #1234"
                 submitLabel="Disconnect directory"
+                success="Directory sync disconnected"
                 title={`Disconnect directory sync for ${organization.name}?`}
                 triggerLabel="Disconnect directory"
               />
@@ -365,6 +505,7 @@ export default async function AdminOrganizationPage({
                       reason="required"
                       reasonPlaceholder="e.g. Key published on GitHub"
                       submitLabel="Revoke key"
+                      success="API key revoked"
                       title={`Revoke “${key.name ?? key.start ?? key.id}”?`}
                       triggerLabel="Revoke"
                     />
@@ -472,6 +613,7 @@ export default async function AdminOrganizationPage({
                         reason="required"
                         reasonPlaceholder="e.g. Volume increase agreed in ticket #1234"
                         submitLabel="Save rate limit"
+                        success={`${bucket} rate limit saved`}
                         title={`Change ${bucket} for ${organization.name}`}
                         triggerLabel="Change"
                       >
@@ -514,6 +656,7 @@ export default async function AdminOrganizationPage({
                           fields={{ ...fields, bucket }}
                           reason="optional"
                           submitLabel="Reset to default"
+                          success={`${bucket} reset to default`}
                           title={`Reset ${bucket} for ${organization.name}?`}
                           triggerLabel="Reset"
                         />
@@ -545,6 +688,10 @@ export default async function AdminOrganizationPage({
                 reason="required"
                 reasonPlaceholder="e.g. Account closure requested in ticket #1234"
                 submitLabel="Delete organization"
+                success={{
+                  title: `${organization.name} is being deleted`,
+                  description: "The worker is removing its data.",
+                }}
                 title={`Delete ${organization.name}?`}
                 triggerLabel="Delete"
               >

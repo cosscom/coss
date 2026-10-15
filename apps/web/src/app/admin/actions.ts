@@ -16,6 +16,7 @@ import {
   disableOrganizationScim,
   disableOrganizationSso,
   disableOrganizationSsoRequirement,
+  planOrganizationTakedown,
   recordAdminAction,
   resetUserTwoFactor,
   revokeApiKeyAsAdmin,
@@ -83,6 +84,32 @@ async function targetEmail(userId: string): Promise<string> {
   return user.email;
 }
 
+/**
+ * Bans a user through Better Auth (which also deletes their sessions) and records it. `duration`
+ * is a key of `BAN_DURATIONS`.
+ */
+async function banUser(input: {
+  actor: AdminActor;
+  userId: string;
+  reason: string;
+  duration: string;
+  metadata?: Record<string, unknown>;
+}): Promise<void> {
+  const banExpiresIn = BAN_DURATIONS[input.duration];
+  const email = await targetEmail(input.userId);
+  await auth.api.banUser({
+    headers: await headers(),
+    body: { userId: input.userId, banReason: input.reason, ...(banExpiresIn && { banExpiresIn }) },
+  });
+  await recordAdminAction({
+    actor: input.actor,
+    action: "user.ban",
+    target: { type: "user", id: input.userId },
+    reason: input.reason,
+    metadata: { email, duration: input.duration || "permanent", ...input.metadata },
+  });
+}
+
 /** Bans a user: signs them out everywhere and blocks sign-in until unbanned or expired. */
 export async function banUserAction(
   _previous: ActionResult | null,
@@ -95,21 +122,8 @@ export async function banUserAction(
     const reason = requiredReason(formData);
     const duration = formString(formData, "duration");
     if (!Object.hasOwn(BAN_DURATIONS, duration)) throw new ActionError("Choose a ban duration.");
-    const banExpiresIn = BAN_DURATIONS[duration];
 
-    const email = await targetEmail(userId);
-    // Better Auth deletes the user's sessions as part of the ban.
-    await auth.api.banUser({
-      headers: await headers(),
-      body: { userId, banReason: reason, ...(banExpiresIn && { banExpiresIn }) },
-    });
-    await recordAdminAction({
-      actor,
-      action: "user.ban",
-      target: { type: "user", id: userId },
-      reason,
-      metadata: { email, duration: duration || "permanent" },
-    });
+    await banUser({ actor, userId, reason, duration });
     refresh();
     return null;
   });
@@ -314,6 +328,64 @@ export async function unsuspendOrganizationAction(
     const organizationId = formOrganizationId(formData);
     await unsuspendOrganization({ organizationId, reason: optionalReason(formData), actor });
     await supportAudit(organizationId, "organization.unsuspended");
+    refresh();
+    return null;
+  });
+}
+
+/**
+ * Takes an abusive organization down in one step: suspends it, revokes every API key, and bans
+ * the members who have nothing else on the platform (`planOrganizationTakedown`). Each step is
+ * audited on its own and skipped when already done, so running it again finishes a partial run.
+ */
+export async function takeDownOrganizationAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { actor } = await requirePlatformAdminAction();
+    const organizationId = formOrganizationId(formData);
+    if (await isSystemOrganization(organizationId)) {
+      throw new ActionError(SYSTEM_ORGANIZATION_MESSAGE);
+    }
+    const reason = requiredReason(formData);
+    const plan = await planOrganizationTakedown(organizationId);
+    if (plan.deleting) throw new ActionError("This organization is already being deleted.");
+
+    if (!plan.suspended) {
+      await suspendOrganization({ organizationId, reason, actor });
+      await supportAudit(organizationId, "organization.suspended");
+    }
+    const revokedKeyIds: string[] = [];
+    for (const key of plan.apiKeys) {
+      await revokeApiKeyAsAdmin({ organizationId, keyId: key.id, reason, actor });
+      await supportAudit(organizationId, "api_key.revoked", { type: "api_key", id: key.id });
+      revokedKeyIds.push(key.id);
+    }
+    const bannedUserIds: string[] = [];
+    const keptUserIds: string[] = [];
+    for (const member of plan.members) {
+      if (member.keptBecause !== null || member.userId === actor.userId) {
+        keptUserIds.push(member.userId);
+        continue;
+      }
+      await banUser({
+        actor,
+        userId: member.userId,
+        reason,
+        duration: "",
+        metadata: { takeDown: organizationId },
+      });
+      bannedUserIds.push(member.userId);
+    }
+    await recordAdminAction({
+      actor,
+      action: "organization.take_down",
+      target: { type: "organization", id: organizationId },
+      organizationId,
+      reason,
+      metadata: { bannedUserIds, keptUserIds, revokedKeyIds },
+    });
     refresh();
     return null;
   });

@@ -24,9 +24,9 @@ describe("email list filters", () => {
       tag: { name: "template", value: "welcome" },
       category: "billing",
       senderDomain: "acme.com",
-      createdFrom: new Date("2026-10-01T00:00:00Z"),
+      createdAfter: new Date("2026-10-01T00:00:00Z"),
       // `until` includes its whole day.
-      createdUntil: new Date("2026-10-15T00:00:00Z"),
+      createdBefore: new Date("2026-10-15T00:00:00Z"),
     });
     expect(toEmailListFilters(read("tag=template")).tag).toEqual({ name: "template" });
   });
@@ -42,8 +42,8 @@ describe("email list filters", () => {
       tag: undefined,
       category: undefined,
       senderDomain: undefined,
-      createdFrom: undefined,
-      createdUntil: undefined,
+      createdAfter: undefined,
+      createdBefore: undefined,
     });
   });
 

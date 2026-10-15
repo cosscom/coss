@@ -10,6 +10,7 @@ import { type FormEvent, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
+import { toast } from "@/lib/toast";
 
 export function CreateOrganizationForm() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export function CreateOrganizationForm() {
       setPending(false);
       return;
     }
+    toast.success(`${name.trim()} created`);
     router.push(`/${slug}`);
     router.refresh();
   }

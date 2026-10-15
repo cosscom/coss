@@ -283,6 +283,23 @@ export const BUCKETS = {
     overridable: false,
     failureMode: "deny",
   },
+  // The iOS app's code exchange (`/api/mobile/v1/auth/token`), per client IP.
+  "mobile.token.ip": {
+    scope: "ip",
+    limit: 10,
+    periodMs: MINUTE,
+    overridable: false,
+    failureMode: "deny",
+  },
+  // The iOS app's read-only dashboard API, per user id.
+  "mobile.api": {
+    scope: "key",
+    limit: 20,
+    periodMs: SECOND,
+    burst: 60,
+    overridable: false,
+    failureMode: "allow",
+  },
   // Public telemetry ingress. This is intentionally per process/IP as well as bounded by its body
   // limit; a monitoring outage must not become an unlimited relay or connection sink.
   "monitoring.envelopes": {
