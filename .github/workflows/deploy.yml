@@ -195,7 +195,9 @@ jobs:
               --push
           }
 
-          # In parallel, each line prefixed with its service; fails if any build does (pipefail).
+          # In parallel, each line prefixed with its service. A step without `shell:` runs `bash -e`
+          # alone: without pipefail a failed build would pass for sed's success.
+          set -o pipefail
           pids=()
           for service in $SERVICES; do
             build "$service" 2>&1 | sed -u "s/^/[$service] /" &
@@ -226,15 +228,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
-      # This job may have waited for another deploy: never roll production back to a commit it
-      # already has because their turns came out of order (a dispatch deploys what it's given).
-      - name: Check production doesn't already have this commit
+      # This job may have waited for another deploy: never roll production back to an older commit
+      # because their turns came out of order (a dispatch deploys what it's given). The same commit
+      # deploys again, so re-running a job that failed after its rollout finishes the later steps.
+      - name: Check production doesn't run a newer commit
         id: latest
         env:
           EVENT: ${{ github.event_name }}
         run: |
           deployed="$(aws ssm get-parameter --name "/coss/$STAGE/image-tag" --query Parameter.Value --output text)"
-          if [ "$EVENT" = push ] && git merge-base --is-ancestor "$TAG" "$deployed" 2>/dev/null; then
+          if [ "$EVENT" = push ] && [ "$deployed" != "$TAG" ] && git merge-base --is-ancestor "$TAG" "$deployed" 2>/dev/null; then
             echo "::notice::Production already runs $deployed, which includes this commit. Skipping."
             echo "deploy=false" >> "$GITHUB_OUTPUT"
           else
