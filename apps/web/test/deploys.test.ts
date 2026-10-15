@@ -163,6 +163,10 @@ describe("batch timing", () => {
     );
   });
 
+  test("as soon as CI passes when no earlier deploy is known", () => {
+    expect(batchShipsAt(pushed, null).toISOString()).toBe(pushed.toISOString());
+  });
+
   test("the last deploy is when its first build or deploy job started", () => {
     expect(
       shippingStartedAt([

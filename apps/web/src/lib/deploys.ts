@@ -207,16 +207,17 @@ export async function getDeployOverview(): Promise<DeployOverview> {
   const live =
     process.env.NEXT_DEPLOYMENT_ID || (lastDeployed ? deployedCommit(lastDeployed.run) : null);
 
-  let commits: GitHubCommit[];
-  let ahead = 0;
+  let commits: GitHubCommit[] = [];
   if (live && live !== main) {
     const compare = await github<{ commits: GitHubCommit[]; ahead_by: number }>(
       `${REPO}/compare/${live}...${main}`,
     );
     commits = compare.commits;
-    ahead = compare.ahead_by;
-  } else {
-    commits = [];
+    // The compare lists the oldest 250 commits only: past that, main's latest 100 instead (the
+    // chain then stops before reaching production's commit).
+    if (compare.commits.length < compare.ahead_by) {
+      commits = await github<GitHubCommit[]>(`${REPO}/commits?sha=${main}&per_page=100`);
+    }
   }
   const chain = firstParentChain(commits, main, live);
   const pending = chain.map((commit): PendingCommit => {
@@ -242,7 +243,7 @@ export async function getDeployOverview(): Promise<DeployOverview> {
     live,
     main,
     pending,
-    pendingTruncated: commits.length < ahead && chain.at(-1)?.parents[0]?.sha !== live,
+    pendingTruncated: chain.length > 0 && chain.at(-1)?.parents[0]?.sha !== live,
     runs: runs.map(({ run, phase }): DeployRun => {
       const trigger = run.event === "push" ? "push" : isImageTagRun(run) ? "image_tag" : "manual";
       return {
@@ -268,24 +269,39 @@ export async function getDeployOverview(): Promise<DeployOverview> {
   };
 }
 
-/**
- * Cancels push runs that haven't started deploying: the dispatch that was just made ships main
- * (or the commit being redeployed), so their batch is either included or would undo it.
- */
-async function cancelPendingPushRuns(): Promise<number[]> {
-  const runs = await recentRuns();
-  const cancelable = runs.filter(
-    ({ run, phase }) => run.event === "push" && CANCELABLE_PHASES.includes(phase),
+/** Push runs that haven't reached their deploy job. */
+async function pendingPushRuns(): Promise<Set<number>> {
+  return new Set(
+    (await recentRuns())
+      .filter(({ run, phase }) => run.event === "push" && CANCELABLE_PHASES.includes(phase))
+      .map(({ run }) => run.id),
   );
+}
+
+/**
+ * Dispatches the Deploy workflow, then cancels the push runs that were waiting before it: their
+ * commits were on main already, so the dispatch either ships them or (a redeploy) would be undone
+ * by them. Pushes made after the dispatch keep their runs. Only runs still before their deploy job
+ * are canceled (checked again after the dispatch).
+ */
+async function dispatchAndCancelPending(inputs?: Record<string, string>): Promise<number[]> {
+  const before = await pendingPushRuns();
+  await github(`${REPO}/actions/workflows/${DEPLOY_WORKFLOW}/dispatches`, {
+    method: "POST",
+    body: { ref: DEPLOY_BRANCH, ...(inputs ? { inputs } : {}) },
+  });
+  const still = await pendingPushRuns();
   const canceled: number[] = [];
   await Promise.all(
-    cancelable.map(async ({ run }) => {
-      // Already finished (409) or gone: nothing to cancel.
-      await github(`${REPO}/actions/runs/${run.id}/cancel`, { method: "POST" }).then(
-        () => canceled.push(run.id),
-        () => {},
-      );
-    }),
+    [...before]
+      .filter((id) => still.has(id))
+      .map(async (id) => {
+        // Already finished (409) or gone: nothing to cancel.
+        await github(`${REPO}/actions/runs/${id}/cancel`, { method: "POST" }).then(
+          () => canceled.push(id),
+          () => {},
+        );
+      }),
   );
   return canceled;
 }
@@ -293,11 +309,7 @@ async function cancelPendingPushRuns(): Promise<number[]> {
 /** Dispatches the Deploy workflow for main's tip, skipping the batch wait. */
 export async function deployMainNow(): Promise<{ commit: string; canceledRunIds: number[] }> {
   const commit = await mainSha();
-  await github(`${REPO}/actions/workflows/${DEPLOY_WORKFLOW}/dispatches`, {
-    method: "POST",
-    body: { ref: DEPLOY_BRANCH },
-  });
-  return { commit, canceledRunIds: await cancelPendingPushRuns() };
+  return { commit, canceledRunIds: await dispatchAndCancelPending() };
 }
 
 /**
@@ -305,11 +317,7 @@ export async function deployMainNow(): Promise<{ commit: string; canceledRunIds:
  * (already built), until the next deploy of main.
  */
 export async function redeployCommit(commit: string): Promise<{ canceledRunIds: number[] }> {
-  await github(`${REPO}/actions/workflows/${DEPLOY_WORKFLOW}/dispatches`, {
-    method: "POST",
-    body: { ref: DEPLOY_BRANCH, inputs: { image_tag: commit } },
-  });
-  return { canceledRunIds: await cancelPendingPushRuns() };
+  return { canceledRunIds: await dispatchAndCancelPending({ image_tag: commit }) };
 }
 
 /** Commits a past run deployed (other than `live`): the only ones offered for redeploying. */

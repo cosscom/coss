@@ -149,13 +149,13 @@ export function firstParentChain(
 /**
  * When the `gate` of a push run waiting for a quieter main lets it through, if nothing newer is
  * pushed: `DEPLOY_QUIET_MINUTES` after its push or `DEPLOY_MAX_INTERVAL_MINUTES` after
- * production's last deploy started, whichever comes first (and never before its CI passes).
+ * production's last deploy started, whichever comes first (and never before its CI passes). No
+ * known last deploy (none among the runs read) means it was long ago: as soon as CI passes.
  */
 export function batchShipsAt(pushedAt: Date, lastDeployAt: Date | null): Date {
+  if (!lastDeployAt) return pushedAt;
   const quiet = pushedAt.getTime() + DEPLOY_QUIET_MINUTES * 60_000;
-  const interval = lastDeployAt
-    ? lastDeployAt.getTime() + DEPLOY_MAX_INTERVAL_MINUTES * 60_000
-    : Number.NEGATIVE_INFINITY;
+  const interval = lastDeployAt.getTime() + DEPLOY_MAX_INTERVAL_MINUTES * 60_000;
   return new Date(Math.min(quiet, interval));
 }
 
