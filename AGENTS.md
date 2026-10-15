@@ -907,7 +907,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   verdict stores a `blocked` row (envelope, sender, subject, verdicts; no content, no webhook); spam and auth
   failures are stored and flagged. The `email.received` payload is metadata only (no bodies, headers or cc).
   `received_email.text`/`html` are cut at 2 MB and headers at 64 KB (`truncated`); the raw message is whole. The
-  dashboard previews received HTML with `INBOUND_PREVIEW_HEAD` (`img-src data:` only — no remote images, they are
+  dashboard previews received HTML with `UNTRUSTED_PREVIEW_HEAD` (`apps/web/src/lib/email-preview.ts`; `img-src data:` only — no remote images, they are
   tracking pixels) and serves raw/attachment downloads as `attachment` + `nosniff` + `CSP: sandbox`; the API
   serves attachments as `application/octet-stream`. Reads need `email:read`; deleting (`DELETE
   /v1/received_emails/{id}`, content too) `receivedEmail:delete` (owners, admins, every key; backfilled by `0049`).
@@ -984,7 +984,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   Visibility: the overview, Sending (orgs by live volume), Emails (every org's emails, `@coss/email/admin`),
   Sign-ups (`RISK_SIGNUP_ENVIRONMENT_ID`'s assessments joined to accounts by address) and Screening pages. An
   email's content is only loaded by `revealEmailContentAction`, which records `email.view_content` in the
-  admin audit log (never the organization's own: that would tip off an abuser); never render it with the page.
+  admin audit log (never the organization's own: that would tip off an abuser); never render it with the page,
+  and preview it with `UNTRUSTED_PREVIEW_HEAD` (no remote loads: a tracking pixel would tell the sender too).
   **Take down** (`takeDownOrganizationAction`, from `planOrganizationTakedown`) suspends the organization,
   revokes its keys and permanently bans members without another active organization (platform admins, the
   actor and already-banned users are kept), each step audited on its own, so it can be re-run.

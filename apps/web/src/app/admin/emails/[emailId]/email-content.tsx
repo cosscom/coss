@@ -5,7 +5,7 @@ import { EyeIcon } from "lucide-react";
 import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
 import { Panel, PanelBody } from "@/components/panel";
-import { PREVIEW_HEAD } from "@/lib/email-preview";
+import { UNTRUSTED_PREVIEW_HEAD } from "@/lib/email-preview";
 import { revealEmailContentAction } from "../actions";
 
 /** The email's HTML and text, loaded (and audited) only when the admin asks for them. */
@@ -34,14 +34,14 @@ export function EmailContent({ emailId }: { emailId: string }) {
   return (
     <>
       {html !== null ? (
-        <Panel title="HTML">
+        <Panel description="Remote images and fonts are not loaded." title="HTML">
           <PanelBody className="p-2">
-            {/* Same isolation as the customer's own preview: never allow scripts or same-origin. */}
+            {/* Nothing remote loads: the sender must not learn that an admin opened it. */}
             <iframe
               className="h-[600px] w-full rounded-lg border bg-white"
               referrerPolicy="no-referrer"
               sandbox=""
-              srcDoc={PREVIEW_HEAD + html}
+              srcDoc={UNTRUSTED_PREVIEW_HEAD + html}
               title="Email preview"
             />
           </PanelBody>
