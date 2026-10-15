@@ -82,6 +82,33 @@ Sandbox keys accept any `from`.
 `subject` is required. Provide `html`, `text`, or both: sending both lets mail clients pick, and
 improves deliverability.
 
+### React Email
+
+With the SDK, pass a [React Email](https://react.email) component as `react` instead of `html`. The
+SDK renders it with `@react-email/render`, an optional peer dependency (`npm install
+@react-email/render`), into `html` and, unless you pass your own, `text`:
+
+```tsx
+import { Coss } from "coss";
+import { WelcomeEmail } from "./emails/welcome";
+
+const coss = new Coss();
+
+const { data, error } = await coss.email.send({
+  from: "Acme <hello@acme.com>",
+  to: "ada@example.com",
+  subject: "Welcome to Acme",
+  react: <WelcomeEmail name="Ada" />,
+});
+```
+
+Rendering happens in your process, once per call, before the request: the API only ever receives
+the HTML and text. `sendBatch()` renders each email's `react` the same way. `react` can't be combined
+with `html`. If `@react-email/render` isn't installed or the component throws, the call returns an
+`invalid_request_error` (`react_renderer_missing` or `react_render_failed`) without sending anything.
+If you retry with your own idempotency key, render the same output again: a different body fails with
+`idempotency_key_reused`.
+
 ## Headers and tags
 
 - `headers`: up to 15 custom headers. Names are case-insensitive, and reserved names such as

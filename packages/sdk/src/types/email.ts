@@ -150,7 +150,17 @@ export interface TrackingOptions {
   clicks?: boolean;
 }
 
-/** Body of `POST /v1/emails`. */
+/**
+ * A React element, such as `<WelcomeEmail name="Ada" />`. Described by its shape so the SDK needs
+ * no React types: any JSX element fits.
+ */
+export interface ReactEmailElement {
+  type: unknown;
+  props: unknown;
+  key: unknown;
+}
+
+/** Body of `POST /v1/emails`, plus `react`, which the SDK renders before sending. */
 export interface SendEmailParams {
   /** `"you@example.com"` or `"Your Name <you@example.com>"`. */
   from: string;
@@ -159,9 +169,15 @@ export interface SendEmailParams {
   bcc?: string | string[];
   reply_to?: string | string[];
   subject: string;
-  /** At least one of `html` or `text` is required. */
+  /** At least one of `html`, `text` or `react` is required. */
   html?: string;
   text?: string;
+  /**
+   * A [React Email](https://react.email) component, rendered by the SDK into `html` and, unless you
+   * pass `text`, into `text` too. Needs the optional peer dependency `@react-email/render`
+   * (`npm install @react-email/render`). Can't be combined with `html`; never sent to the API as is.
+   */
+  react?: ReactEmailElement;
   /** Custom headers. Names are case-insensitive; reserved names such as `subject` are rejected. */
   headers?: Record<string, string>;
   tags?: EmailTag[];
