@@ -32,6 +32,7 @@ import {
   type EmailRow,
   PROVIDER_ERROR_MESSAGE,
   selectEmailsWithMode,
+  toEmailBatchObject,
   toEmailObjects,
 } from "./read.ts";
 import { canonicalJson, hashSendBatchRequest, hashSendRequest } from "./request-hash.ts";
@@ -1093,27 +1094,6 @@ function sameBatchKey(environment: SendEnvironment, idempotencyKey: string) {
     eq(emailBatch.environmentId, environment.environmentId),
     eq(emailBatch.idempotencyKey, idempotencyKey),
   );
-}
-
-/** A batch with its emails in request order. */
-async function toEmailBatchObject(
-  batch: EmailBatchRow,
-  sandbox: boolean,
-): Promise<EmailBatchObjectOutput> {
-  const rows = await db
-    .select()
-    .from(email)
-    .where(and(eq(email.organizationId, batch.organizationId), eq(email.batchId, batch.id)))
-    .orderBy(asc(email.batchIndex));
-  return {
-    object: "email_batch",
-    id: batch.id,
-    data: await toEmailObjects(
-      batch.organizationId,
-      rows.map((row) => ({ email: row, sandbox })),
-    ),
-    created_at: batch.createdAt.toISOString(),
-  };
 }
 
 async function currentEmail(row: EmailRow): Promise<EmailObjectOutput> {

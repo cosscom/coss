@@ -66,6 +66,15 @@ export class EmailResource {
     });
   }
 
+  /** Retrieves a batch sent by `sendBatch`, with its emails' current statuses in request order. */
+  getBatch(id: string, options?: Pick<RequestOptions, "signal">): Promise<CossResult<EmailBatch>> {
+    return this.#http.request<EmailBatch>({
+      method: "GET",
+      path: `/v1/emails/batch/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+    });
+  }
+
   /** Retrieves an email sent from the same environment as the API key. */
   get(id: string, options?: Pick<RequestOptions, "signal">): Promise<CossResult<Email>> {
     return this.#http.request<Email>({

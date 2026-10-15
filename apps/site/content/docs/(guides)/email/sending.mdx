@@ -128,7 +128,8 @@ const { data, error } = await coss.email.sendBatch(
 
 The response is HTTP `202` with an `email_batch` whose `data` lists the emails in the order you
 passed them. Each email has the batch's id as `batch_id`, and is delivered and reported on (with
-webhooks) on its own.
+webhooks) on its own. `coss.email.getBatch(id)` returns the batch again later, with its emails'
+current statuses.
 
 A batch is all or nothing. If any email is invalid, nothing is sent and the error's `issues` name
 it by position, such as `emails.3.to`. The same goes for an unverified sender domain, which is
