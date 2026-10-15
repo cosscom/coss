@@ -173,6 +173,7 @@ export const DRAIN_SOURCE_LABELS: Record<string, string> = {
   email: "Email events",
   webhook: "Webhook attempts",
   risk: "Risk assessments",
+  smtp: "SMTP messages",
   audit: "Audit events",
 };
 
