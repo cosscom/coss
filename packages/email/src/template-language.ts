@@ -39,7 +39,8 @@ export const MAX_TEMPLATE_LOCALES = 30;
 
 /** Variable and list field names. `else` is a tag of its own. */
 export const TEMPLATE_VARIABLE_NAME = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/;
-export const RESERVED_TEMPLATE_NAMES: ReadonlySet<string> = new Set(["else", "this"]);
+// `__proto__` can't be a plain object's own key by assignment: its value would vanish.
+export const RESERVED_TEMPLATE_NAMES: ReadonlySet<string> = new Set(["else", "this", "__proto__"]);
 
 export const TEMPLATE_SCALAR_TYPES = ["string", "number", "boolean"] as const;
 export type TemplateScalarType = (typeof TEMPLATE_SCALAR_TYPES)[number];

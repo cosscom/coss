@@ -539,6 +539,7 @@ describe("CreateEmailTemplateRequest", () => {
           { name: "n", type: "string", fields: [{ name: "x", type: "string" }] },
           { name: "else", type: "string" },
           { name: "l", type: "list", default: 1, fields: [{ name: "a", type: "string" }] },
+          { name: "m", type: "list", fields: [{ name: "__proto__", type: "string" }] },
         ],
         contents: [
           { locale: "en", subject: "s" },
@@ -554,6 +555,7 @@ describe("CreateEmailTemplateRequest", () => {
       "variables.2.name": 'Duplicate variable "n".',
       "variables.3.name": "This name is reserved by the template language.",
       "variables.4.default": "Lists can't have a default.",
+      "variables.5.fields.0.name": "This name is reserved by the template language.",
       "contents.0.html": "Provide `html`, `text`, or both.",
       "contents.1.locale": 'Duplicate locale "en".',
       default_locale: "The default locale needs an entry in `contents`.",

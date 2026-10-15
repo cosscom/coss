@@ -87,6 +87,7 @@ describe("parseTemplate", () => {
     ["{{#if a b}}{{/if}}", "{{#if}} takes one variable name.", 1, 1],
     ["{{user.name}}", '"user.name" is not a valid variable name', 1, 1],
     ["{{}}", "Expected a variable name.", 1, 1],
+    ["{{__proto__}}", '"__proto__" is not a valid variable name', 1, 1],
   ])("reports %j", (source, message, line, column) => {
     const parsed = parseTemplate(source);
     expect(parsed.ok).toBe(false);

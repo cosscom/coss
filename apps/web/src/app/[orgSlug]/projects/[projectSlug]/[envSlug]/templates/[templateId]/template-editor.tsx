@@ -12,6 +12,7 @@ import {
   type TemplateVariable,
   type TemplateVariableType,
 } from "@coss/email/templates";
+import { Alert, AlertAction, AlertDescription } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Checkbox } from "@coss/ui/components/checkbox";
@@ -95,6 +96,39 @@ function fromVariableDraft(draft: VariableDraft): TemplateVariable {
   };
 }
 
+/** Unsaved edits, kept in this tab until they are saved, discarded or the draft moves on. */
+type StoredEdits = {
+  revision: number;
+  defaultLocale: string;
+  contents: EditorContent[];
+  variables: VariableDraft[];
+  sampleText: string;
+};
+
+function storageKey(templateId: string): string {
+  return `coss:template-edits:${templateId}`;
+}
+
+// Session storage can be missing or full (a private window, 30 locales of large HTML): the edits
+// are then only kept while the page is open, as before.
+function readStoredEdits(templateId: string): StoredEdits | null {
+  try {
+    const raw = window.sessionStorage.getItem(storageKey(templateId));
+    return raw ? (JSON.parse(raw) as StoredEdits) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredEdits(templateId: string, edits: StoredEdits | null) {
+  try {
+    if (edits) window.sessionStorage.setItem(storageKey(templateId), JSON.stringify(edits));
+    else window.sessionStorage.removeItem(storageKey(templateId));
+  } catch {
+    // Best effort.
+  }
+}
+
 /** Example values for the declared variables, for an empty sample. */
 function sampleSkeleton(variables: TemplateVariable[]): Record<string, unknown> {
   const example = (type: string, name: string) =>
@@ -173,13 +207,75 @@ export function TemplateEditor(props: {
   }, [state]);
   const dirty = payload !== saved.payload;
 
-  // Leaving with unsaved changes asks first.
+  // Closing or reloading the tab with unsaved changes asks first.
   useEffect(() => {
     if (!dirty) return;
     const warn = (event: BeforeUnloadEvent) => event.preventDefault();
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
+
+  // Navigating inside the dashboard (links, ⌘K, back) fires no `beforeunload`: unsaved edits are
+  // kept in this tab instead and come back when the template is opened again, as long as the
+  // draft is still at the revision they started from.
+  const templateId = props.target.templateId;
+  const initialRevision = props.draft.revision;
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    const stored = readStoredEdits(templateId);
+    if (!stored) return;
+    if (stored.revision !== initialRevision) {
+      writeStoredEdits(templateId, null);
+      return;
+    }
+    setDefaultLocale(stored.defaultLocale);
+    setContents(stored.contents);
+    setVariables(stored.variables);
+    setSampleText(stored.sampleText);
+    setLocale(
+      stored.contents.some((content) => content.locale === stored.defaultLocale)
+        ? stored.defaultLocale
+        : (stored.contents[0]?.locale ?? ""),
+    );
+    setRestored(true);
+  }, [templateId, initialRevision]);
+  const storing = useRef(false);
+  useEffect(() => {
+    // The first run sees the server's draft, before any restore: nothing to store or clear yet.
+    if (!storing.current) {
+      storing.current = true;
+      return;
+    }
+    if (!dirty) {
+      writeStoredEdits(templateId, null);
+      return;
+    }
+    const timer = setTimeout(
+      () =>
+        writeStoredEdits(templateId, {
+          revision: saved.revision,
+          defaultLocale,
+          contents,
+          variables,
+          sampleText,
+        }),
+      300,
+    );
+    return () => clearTimeout(timer);
+  }, [templateId, dirty, saved.revision, defaultLocale, contents, variables, sampleText]);
+  const discardRestored = () => {
+    writeStoredEdits(templateId, null);
+    setDefaultLocale(props.draft.defaultLocale);
+    setContents(props.draft.contents);
+    setVariables(props.draft.variables.map(toVariableDraft));
+    setSampleText(JSON.stringify(props.draft.sampleVariables, null, 2));
+    setLocale(
+      props.draft.contents.some((content) => content.locale === props.draft.defaultLocale)
+        ? props.draft.defaultLocale
+        : (props.draft.contents[0]?.locale ?? ""),
+    );
+    setRestored(false);
+  };
 
   const current = contents.find((content) => content.locale === locale) ?? null;
   const updateContent = (change: Partial<EditorContent>) =>
@@ -284,6 +380,18 @@ export function TemplateEditor(props: {
           title="Draft"
         >
           <PanelBody className="flex flex-col gap-5">
+            {restored && dirty ? (
+              <Alert variant="info">
+                <AlertDescription>
+                  Unsaved changes from earlier in this tab were restored.
+                </AlertDescription>
+                <AlertAction>
+                  <Button onClick={discardRestored} size="xs" type="button" variant="outline">
+                    Discard
+                  </Button>
+                </AlertAction>
+              </Alert>
+            ) : null}
             {state && !state.ok ? <FormError message={state.error} /> : null}
             <div className="flex flex-wrap items-end gap-3">
               <Field className="w-48">
