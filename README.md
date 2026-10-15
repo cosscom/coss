@@ -666,12 +666,13 @@ can verify their address or create a live key; afterwards, ask for a new verific
 They are ordinary live emails of that organization: its dashboard shows their delivery, and its suppressions and
 reputation guard apply. Account emails keep no body once sent (their links are secrets).
 
-Push notifications to the iOS app need an APNs key: in the Apple Developer account that owns `com.coss.ios`, create a
-key with "Apple Push Notifications service (APNs)" under Certificates, Identifiers & Profiles → Keys, then store the
-`.p8` file's contents with `put-secret.sh APNS_PRIVATE_KEY --clipboard`, remove `APNS_PRIVATE_KEY` from
-`unset_secrets`, set the worker's `APNS_KEY_ID` (the key's id) and `APNS_TEAM_ID` in `production.tfvars`, apply, and
-redeploy. Until then the worker logs a warning and holds pushes (each is dropped after an hour). One key serves the
-sandbox and production gateways; the device's registration says which one it needs.
+Push notifications to the iOS app use the APNs key "COSS push" (`APNS_KEY_ID` `WCQDCU4HUL`) of the Cal.com, Inc.
+Apple team (`ADWKXDJV75`), which owns `com.coss.ios`: Production environment, restricted to that topic. Its `.p8` is
+the `APNS_PRIVATE_KEY` key of `coss/production` (`put-secret.sh APNS_PRIVATE_KEY --stdin < AuthKey_….p8`); the key
+id, team and topic are plain values in `production.tfvars`. To replace it, create a new key under Certificates,
+Identifiers & Profiles → Keys (Apple lets you download it once), store it, change `APNS_KEY_ID`, apply and redeploy,
+then revoke the old one. Without them the worker logs a warning and holds pushes (each is dropped after an hour).
+Local development uses its own key (Sandbox) in `.env`.
 
 ### Upgrading from v1 webhook secret storage
 
