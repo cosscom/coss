@@ -55,8 +55,7 @@ export function AuthFrame({ children }: { children: ReactNode }) {
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span>{part.label}</span>
-                  <span aria-hidden className="leader" />
-                  <code className="font-mono text-[0.8125rem]">{part.call}</code>
+                  <code className="ms-auto font-mono text-[0.8125rem]">{part.call}</code>
                 </li>
               ))}
             </ul>

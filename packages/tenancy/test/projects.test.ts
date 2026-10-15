@@ -8,6 +8,7 @@ import {
   listEnvironments,
   listProjects,
   listProjectsWithEnvironments,
+  renameProject,
   TenancyError,
 } from "../src/index.ts";
 import { createTestOrganization } from "./helpers.ts";
@@ -73,6 +74,75 @@ describe("createProject", () => {
     );
     expect(error).toBeInstanceOf(TenancyError);
     expect(error.code).toBe("not_found");
+  });
+});
+
+describe("renameProject", () => {
+  test("changes the name only: the slug and environments stay", async () => {
+    const { organization } = await createTestOrganization();
+    const { project, environments } = await createProject({
+      organizationId: organization.id,
+      name: "Web App",
+    });
+
+    const result = await renameProject({
+      organizationId: organization.id,
+      projectId: project.id,
+      name: "  Storefront  ",
+    });
+    expect(result.previous.name).toBe("Web App");
+    expect(result.project).toMatchObject({ id: project.id, name: "Storefront", slug: "web-app" });
+    expect(await getProject({ organizationId: organization.id, slug: "web-app" })).toEqual(
+      result.project,
+    );
+    expect(
+      await listEnvironments({ organizationId: organization.id, projectId: project.id }),
+    ).toEqual(environments);
+  });
+
+  test("the same name changes nothing", async () => {
+    const { organization } = await createTestOrganization();
+    const { project } = await createProject({ organizationId: organization.id, name: "Same" });
+    const result = await renameProject({
+      organizationId: organization.id,
+      projectId: project.id,
+      name: "Same",
+    });
+    expect(result).toEqual({ previous: project, project });
+  });
+
+  test("rejects blank and overlong names", async () => {
+    const { organization } = await createTestOrganization();
+    const { project } = await createProject({ organizationId: organization.id, name: "Kept" });
+    for (const name of ["   ", "x".repeat(65)]) {
+      const error = await renameProject({
+        organizationId: organization.id,
+        projectId: project.id,
+        name,
+      }).catch((e) => e);
+      expect(error).toBeInstanceOf(TenancyError);
+      expect(error.code).toBe("invalid");
+    }
+    expect((await getProject({ organizationId: organization.id, slug: "kept" }))?.name).toBe(
+      "Kept",
+    );
+  });
+
+  test("another organization's project is not_found and unchanged", async () => {
+    const a = await createTestOrganization();
+    const b = await createTestOrganization();
+    const { project } = await createProject({ organizationId: a.organization.id, name: "Mine" });
+
+    const error = await renameProject({
+      organizationId: b.organization.id,
+      projectId: project.id,
+      name: "Theirs",
+    }).catch((e) => e);
+    expect(error).toBeInstanceOf(TenancyError);
+    expect(error.code).toBe("not_found");
+    expect((await getProject({ organizationId: a.organization.id, slug: "mine" }))?.name).toBe(
+      "Mine",
+    );
   });
 });
 

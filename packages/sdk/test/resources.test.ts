@@ -1,7 +1,7 @@
 /** The domain and webhook endpoint resources: request shape, and how results come back. */
 import { describe, expect, test } from "bun:test";
 import { Coss, type WebhookDelivery, type WebhookEndpointRecovery } from "../src/index.ts";
-import { apiError, json, mockFetch, sampleDomain, sampleEndpoint } from "./helpers.ts";
+import { apiError, json, mockFetch, sampleDomain, sampleEmail, sampleEndpoint } from "./helpers.ts";
 
 const API_KEY = "coss_test_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl";
 
@@ -9,6 +9,43 @@ function client(...handlers: Parameters<typeof mockFetch>) {
   const { fetch, calls } = mockFetch(...handlers);
   return { coss: new Coss({ apiKey: API_KEY, baseUrl: "https://api.test", fetch }), calls };
 }
+
+describe("coss.email.list", () => {
+  test("sends the filters as query parameters: lists comma-joined, dates as ISO 8601", async () => {
+    const {
+      html: _html,
+      text: _text,
+      headers: _headers,
+      attachments: _a,
+      ...summary
+    } = sampleEmail;
+    const { coss, calls } = client(json(200, { object: "list", data: [summary], has_more: true }));
+
+    const result = await coss.email.list({
+      to: "ada@example.com",
+      recipient_status: ["bounced", "complained"],
+      status: [],
+      created_after: new Date("2026-10-15T00:00:00Z"),
+      limit: 5,
+      after: "email_100",
+    });
+
+    expect(result).toEqual({
+      data: { object: "list", data: [summary], has_more: true },
+      error: null,
+    });
+    const url = new URL(calls[0]?.url ?? "");
+    expect(calls[0]?.method).toBe("GET");
+    expect(url.pathname).toBe("/v1/emails");
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      to: "ada@example.com",
+      recipient_status: "bounced,complained",
+      created_after: "2026-10-15T00:00:00.000Z",
+      limit: "5",
+      after: "email_100",
+    });
+  });
+});
 
 describe("coss.domains", () => {
   test("create posts the name with an idempotency key", async () => {

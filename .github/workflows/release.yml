@@ -1,9 +1,10 @@
 name: Release
 
-# Keeps a "Version packages" PR open while changesets are pending on main; merging it bumps the SDK's
-# version and CHANGELOG, and the push that merge makes publishes `coss` to npm. Publishing uses npm
-# trusted publishing (GitHub's OIDC token, no npm token stored anywhere) with provenance, and only
-# from this file, in the `npm` environment (deployable from main only): `npm trust list coss` shows
+# Keeps a "Version packages" PR open while changesets are pending on main; merging it bumps the
+# public packages' versions and CHANGELOGs (the SDK, `coss`, and the MCP server, `coss-mcp`), and the
+# push that merge makes publishes them to npm. Publishing uses npm trusted publishing (GitHub's OIDC
+# token, no npm token stored anywhere) with provenance, and only from this file, in the `npm`
+# environment (deployable from main only): `npm trust list coss` / `npm trust list coss-mcp` show
 # the relationship (README, "Releasing the SDK").
 
 on:
@@ -91,3 +92,21 @@ jobs:
           npm view "coss@$version" version dist.attestations.provenance.predicateType
           git tag "coss@$version"
           git push origin "coss@$version"
+      # The MCP server, after the SDK: it depends on the `coss` version just published.
+      - name: Publish coss-mcp
+        working-directory: packages/mcp
+        run: |
+          version="$(jq -r .version package.json)"
+          if npm view "coss-mcp@$version" version >/dev/null 2>&1; then
+            echo "coss-mcp@$version is already on npm."
+            exit 0
+          fi
+          bun run build
+          npm publish --provenance --access public
+          for _ in $(seq 30); do
+            npm view "coss-mcp@$version" version >/dev/null 2>&1 && break
+            sleep 5
+          done
+          npm view "coss-mcp@$version" version dist.attestations.provenance.predicateType
+          git tag "coss-mcp@$version"
+          git push origin "coss-mcp@$version"

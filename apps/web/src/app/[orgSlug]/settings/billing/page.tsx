@@ -21,25 +21,23 @@ import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { Progress } from "@coss/ui/components/progress";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@coss/ui/components/table";
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@coss/ui/components/table";
 import { CreditCardIcon, GaugeIcon, ReceiptIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import type { ReactNode } from "react";
 import { stringParam } from "@/components/admin/list-controls";
 import { InvoiceStatusBadge } from "@/components/billing/invoice-status";
 import { StackedBars } from "@/components/charts/stacked-bars";
 import { EmptyState } from "@/components/empty-state";
-import { Panel, PanelBody } from "@/components/panel";
-import { SectionHeader } from "@/components/section-header";
-import { Stat, StatRow } from "@/components/stat-row";
+import {
+  SettingsNote,
+  SettingsPage,
+  SettingsRow,
+  SettingsSection,
+  SettingsTable,
+} from "@/components/settings";
 import { env } from "@/env";
 import { recordAudit } from "@/lib/audit";
 import { billingRuntime, systemOrganizationId } from "@/lib/billing";
@@ -196,22 +194,10 @@ export default async function BillingPage({
       !grant.voidedAt && grant.remaining > 0n && (!grant.expiresAt || grant.expiresAt > now),
   );
 
-  return (
-    <div className="flex flex-col gap-6">
-      <SectionHeader
-        actions={
-          <Button
-            render={<Link href={`/${organization.slug}/settings/billing/plans`} />}
-            size="sm"
-            variant="outline"
-          >
-            Compare plans
-          </Button>
-        }
-        description="Your plan, usage, invoices, payment method and spend controls."
-        title="Billing"
-      />
+  const daysLeft = Math.max(0, Math.ceil((period.end.getTime() - now.getTime()) / 86_400_000));
 
+  return (
+    <SettingsPage>
       {notice ? (
         <Alert variant={notice.variant}>
           <AlertDescription>{notice.text}</AlertDescription>
@@ -238,147 +224,133 @@ export default async function BillingPage({
         </Alert>
       ) : null}
 
-      <StatRow>
-        <Stat
-          detail={contract && contract.kind !== "self_serve" ? "contract" : "self-serve"}
-          label="Plan"
-          value={plan.name}
-        />
-        <Stat
-          detail={
-            estimate.totals.creditCents > 0n
-              ? `${formatCents(estimate.totals.creditCents)} paid by credit`
-              : "live usage so far"
-          }
-          label="Usage this month"
-          value={formatCents(estimate.usageCents)}
-        />
-        <Stat
-          detail={state.terms.fee ? "plus next month's fee" : "at the end of the month"}
-          label="To pay"
-          value={formatCents(estimate.totals.totalCents)}
-        />
-        <Stat
-          detail={`${Math.max(0, Math.ceil((period.end.getTime() - now.getTime()) / 86_400_000))} days left`}
-          label="Billing period"
-          value={<span className="text-xl">{formatPeriodRange(period.start, period.end)}</span>}
-        />
-      </StatRow>
-
-      <Panel
+      <SettingsSection
         action={
-          contract && contract.kind !== "self_serve" ? (
-            <Badge variant="outline">Contract</Badge>
-          ) : null
+          <Button
+            render={<Link href={`/${organization.slug}/settings/billing/plans`} />}
+            size="sm"
+            variant="outline"
+          >
+            Compare plans
+          </Button>
         }
-        description={
-          state.terms.fee
-            ? `${formatCents(state.terms.fee.amountCents)} per ${state.terms.fee.interval}${state.terms.feeCredit.spendable ? ", all of it spendable on usage" : ""}.`
-            : plan.description
-        }
-        title={`${plan.name} plan`}
+        title="Plan"
       >
-        {contract?.termEnd || state.scheduled || pending || !selfServe ? (
-          <PanelBody className="flex flex-col gap-3 text-sm">
-            {contract?.termEnd ? (
-              <p className="text-muted-foreground">
-                Committed term until {formatDate(contract.termEnd)}
-                {contract.autoRenew ? ", renewing automatically" : ""}.
-              </p>
-            ) : null}
-            {state.scheduled ? (
-              <div className="flex flex-wrap items-center gap-3">
-                <p>
-                  Changes to the {PLANS[state.scheduled.terms.plan].name} plan on{" "}
-                  {formatDate(state.scheduled.at)}.
-                </p>
-                {canManage &&
-                selfServe &&
-                (!state.scheduled.contract || state.scheduled.contract.kind === "self_serve") ? (
-                  <CancelScheduledChangeButton label="Keep my plan" orgSlug={organization.slug} />
-                ) : null}
-              </div>
-            ) : null}
-            {pending ? (
-              <p>
-                The upgrade to {PLANS[pending.terms.plan].name} is waiting for its payment
-                {pendingInvoice?.hostedUrl ? (
-                  <>
-                    {" "}
-                    (
-                    <a
-                      className="underline"
-                      href={pendingInvoice.hostedUrl}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      pay the invoice
-                    </a>
-                    )
-                  </>
-                ) : null}
-                .
-              </p>
-            ) : null}
-            {selfServe ? null : (
-              <p className="text-muted-foreground">
-                Your plan is managed by your contract. Contact your account manager to change it.
-              </p>
-            )}
-          </PanelBody>
+        <SettingsRow
+          description={
+            state.terms.fee
+              ? `${formatCents(state.terms.fee.amountCents)} per ${state.terms.fee.interval}${state.terms.feeCredit.spendable ? ", all of it spendable on usage" : ""}.`
+              : plan.description
+          }
+          label={<span className="font-heading text-base tracking-[-0.01em]">{plan.name}</span>}
+        >
+          <Badge variant="outline">
+            {contract && contract.kind !== "self_serve" ? "Contract" : "Self-serve"}
+          </Badge>
+        </SettingsRow>
+        <BillingFigures>
+          <BillingFigure
+            detail={
+              estimate.totals.creditCents > 0n
+                ? `${formatCents(estimate.totals.creditCents)} paid by credit`
+                : "Live usage so far"
+            }
+            label="Usage this month"
+            value={formatCents(estimate.usageCents)}
+          />
+          <BillingFigure
+            detail={state.terms.fee ? "Plus next month's fee" : "At the end of the month"}
+            label="To pay"
+            value={formatCents(estimate.totals.totalCents)}
+          />
+          <BillingFigure
+            detail={`${daysLeft} days left`}
+            label="Billing period"
+            value={formatPeriodRange(period.start, period.end)}
+          />
+        </BillingFigures>
+        {contract?.termEnd ? (
+          <SettingsNote>
+            Committed term until {formatDate(contract.termEnd)}
+            {contract.autoRenew ? ", renewing automatically" : ""}.
+          </SettingsNote>
         ) : null}
-      </Panel>
+        {state.scheduled ? (
+          <SettingsRow
+            description={`On ${formatDate(state.scheduled.at)}.`}
+            label={`Changes to the ${PLANS[state.scheduled.terms.plan].name} plan`}
+          >
+            {canManage &&
+            selfServe &&
+            (!state.scheduled.contract || state.scheduled.contract.kind === "self_serve") ? (
+              <CancelScheduledChangeButton label="Keep my plan" orgSlug={organization.slug} />
+            ) : null}
+          </SettingsRow>
+        ) : null}
+        {pending ? (
+          <SettingsNote className="text-foreground">
+            The upgrade to {PLANS[pending.terms.plan].name} is waiting for its payment
+            {pendingInvoice?.hostedUrl ? (
+              <>
+                {" "}
+                (
+                <a
+                  className="underline underline-offset-4"
+                  href={pendingInvoice.hostedUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  pay the invoice
+                </a>
+                )
+              </>
+            ) : null}
+            .
+          </SettingsNote>
+        ) : null}
+        {selfServe ? null : (
+          <SettingsNote>
+            Your plan is managed by your contract. Contact your account manager to change it.
+          </SettingsNote>
+        )}
+      </SettingsSection>
 
-      <Panel
-        description={
-          <>
-            Live usage only (sandbox is free), {formatPeriodRange(period.start, period.end)}.
-            Estimated so far:{" "}
-            <span className="font-medium text-foreground">{formatCents(estimate.usageCents)}</span>{" "}
-            of usage
-            {estimate.totals.creditCents > 0n
-              ? `, ${formatCents(estimate.totals.creditCents)} of it paid by credit`
-              : ""}
-            ; {formatCents(estimate.totals.totalCents)} to pay at the end of the month
-            {state.terms.fee ? " (plus next month's fee)" : ""}.
-          </>
-        }
+      <SettingsSection
+        description={`Live usage only (sandbox is free), ${formatPeriodRange(period.start, period.end)}.`}
         title="Usage this month"
       >
-        {capped.length > 0 || dailyEmail.length > 0 ? (
-          <PanelBody className="flex flex-col gap-6">
-            {capped.map(([meter, cap], index) => {
-              const used = Math.min(reserved[index] ?? 0, cap);
-              return (
-                <div className="flex flex-col gap-1.5" key={meter}>
-                  <div className="flex justify-between gap-4 text-sm">
-                    <span>
-                      {METERS[meter].label} {METERS[meter].units} included
-                    </span>
-                    <span className="font-mono text-xs tabular-nums">
-                      {used.toLocaleString("en-US")} / {cap.toLocaleString("en-US")}
-                    </span>
-                  </div>
-                  <Progress max={cap} value={used} />
-                </div>
-              );
-            })}
-            {dailyEmail.length ? (
-              <StackedBars
-                columns={dailyEmail.map((row) => ({
-                  label: formatDate(row.day),
-                  values: { recipients: row.quantity },
-                }))}
-                label="Email recipients per day this month"
-                series={[
-                  { key: "recipients", label: "Email recipients", className: "bg-foreground/72" },
-                ]}
-              />
-            ) : null}
-          </PanelBody>
+        {capped.map(([meter, cap], index) => {
+          const used = Math.min(reserved[index] ?? 0, cap);
+          return (
+            <div className="flex flex-col gap-2 border-t px-5 py-4" key={meter}>
+              <div className="flex justify-between gap-4 text-sm">
+                <span className="font-medium">
+                  {METERS[meter].label} {METERS[meter].units} included
+                </span>
+                <span className="font-mono text-muted-foreground text-xs tabular-nums">
+                  {used.toLocaleString("en-US")} / {cap.toLocaleString("en-US")}
+                </span>
+              </div>
+              <Progress max={cap} value={used} />
+            </div>
+          );
+        })}
+        {dailyEmail.length ? (
+          <div className="border-t px-5 py-5">
+            <StackedBars
+              columns={dailyEmail.map((row) => ({
+                label: formatDate(row.day),
+                values: { recipients: row.quantity },
+              }))}
+              label="Email recipients per day this month"
+              series={[
+                { key: "recipients", label: "Email recipients", className: "bg-foreground/72" },
+              ]}
+            />
+          </div>
         ) : null}
         {meters.size ? (
-          <Table variant="card">
+          <SettingsTable>
             <TableHeader>
               <TableRow>
                 <TableHead>Product</TableHead>
@@ -403,22 +375,21 @@ export default async function BillingPage({
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+          </SettingsTable>
         ) : (
-          <PanelBody flush>
-            <EmptyState
-              compact
-              description="Live emails and other metered usage show up here as they happen."
-              icon={GaugeIcon}
-              title="No usage yet this month"
-            />
-          </PanelBody>
+          <EmptyState
+            className="border-t"
+            compact
+            description="Live emails and other metered usage show up here as they happen."
+            icon={GaugeIcon}
+            title="No usage yet this month"
+          />
         )}
-      </Panel>
+      </SettingsSection>
 
       {byEnvironment.length ? (
-        <Panel title="Usage by environment">
-          <Table variant="card">
+        <SettingsSection title="Usage by environment">
+          <SettingsTable>
             <TableHeader>
               <TableRow>
                 <TableHead>Environment</TableHead>
@@ -437,13 +408,13 @@ export default async function BillingPage({
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
-        </Panel>
+          </SettingsTable>
+        </SettingsSection>
       ) : null}
 
       {activeGrants.length ? (
-        <Panel description="Applied to usage before anything is charged." title="Credits">
-          <Table variant="card">
+        <SettingsSection description="Applied to usage before anything is charged." title="Credits">
+          <SettingsTable>
             <TableHeader>
               <TableRow>
                 <TableHead>Credit</TableHead>
@@ -466,13 +437,13 @@ export default async function BillingPage({
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
-        </Panel>
+          </SettingsTable>
+        </SettingsSection>
       ) : null}
 
-      <Panel title="Invoices">
+      <SettingsSection title="Invoices">
         {invoices.length ? (
-          <Table variant="card">
+          <SettingsTable>
             <TableHeader>
               <TableRow>
                 <TableHead>Invoice</TableHead>
@@ -510,21 +481,20 @@ export default async function BillingPage({
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+          </SettingsTable>
         ) : (
-          <PanelBody flush>
-            <EmptyState
-              compact
-              description="Each month's invoice appears here once the month closes."
-              icon={ReceiptIcon}
-              title="No invoices yet"
-            />
-          </PanelBody>
+          <EmptyState
+            className="border-t"
+            compact
+            description="Each month's invoice appears here once the month closes."
+            icon={ReceiptIcon}
+            title="No invoices yet"
+          />
         )}
-      </Panel>
+      </SettingsSection>
 
-      <div className="grid items-start gap-6 lg:grid-cols-2">
-        <Panel
+      <SettingsSection title="Payment method">
+        <SettingsRow
           description={
             provider === "manual"
               ? `Invoiced directly${account?.collectionMethod === "send_invoice" ? `, due ${account.netTermsDays} days after issue` : ""}. Contact billing to change how you pay.`
@@ -532,67 +502,92 @@ export default async function BillingPage({
                 ? `Invoices are emailed and due ${account.netTermsDays} days after issue.`
                 : "Invoices are charged to your default payment method."
           }
-          title="Payment method"
-        >
-          <PanelBody className="flex flex-col gap-3 text-sm">
-            {account?.paymentMethod ? (
-              <p className="flex items-center gap-2">
+          label={
+            account?.paymentMethod ? (
+              <>
                 <CreditCardIcon className="size-4 text-muted-foreground" />
                 <span>
                   {PAYMENT_METHOD_LABELS[account.paymentMethod.type as PaymentMethodType] ??
                     account.paymentMethod.type}
                   {account.paymentMethod.brand ? ` (${account.paymentMethod.brand})` : ""}
                   {account.paymentMethod.last4 ? (
-                    <span className="font-mono"> ···· {account.paymentMethod.last4}</span>
+                    <span className="font-mono font-normal">
+                      {" "}
+                      ···· {account.paymentMethod.last4}
+                    </span>
                   ) : null}
-                  {account.paymentMethod.expMonth && account.paymentMethod.expYear
-                    ? `, expires ${account.paymentMethod.expMonth}/${account.paymentMethod.expYear}`
-                    : ""}
+                  {account.paymentMethod.expMonth && account.paymentMethod.expYear ? (
+                    <span className="font-normal text-muted-foreground">
+                      , expires {account.paymentMethod.expMonth}/{account.paymentMethod.expYear}
+                    </span>
+                  ) : null}
                 </span>
-              </p>
-            ) : provider === "manual" ? null : (
-              <p className="text-muted-foreground">No payment method yet.</p>
-            )}
-            {account && !paymentMethodCompliant(account) ? (
-              <Alert variant="warning">
-                <AlertDescription>
-                  Your contract requires paying by{" "}
-                  {account.requiredPaymentMethods
-                    .map((type) => PAYMENT_METHOD_LABELS[type as PaymentMethodType] ?? type)
-                    .join(" or ")}
-                  . Replace your payment method.
-                </AlertDescription>
-              </Alert>
-            ) : null}
-            {canManage && provider !== "manual" ? (
-              <PaymentMethodButtons
-                hasMethod={Boolean(account?.paymentMethod)}
-                orgSlug={organization.slug}
-                portal={provider === "stripe"}
-              />
-            ) : null}
-          </PanelBody>
-        </Panel>
-
-        <Panel
-          description={
-            canManage
-              ? "Limits and alerts for usage beyond your plan."
-              : "Only owners can change these."
+              </>
+            ) : provider === "manual" ? (
+              "Invoice"
+            ) : (
+              "No payment method yet"
+            )
           }
-          title="Spend controls"
         >
-          <PanelBody>
-            <SpendControlsForm
-              alertThresholds={(account?.alertThresholds ?? [80, 100]).join(", ")}
-              billingEmail={account?.billingEmail ?? ""}
-              disabled={!canManage}
+          {canManage && provider !== "manual" ? (
+            <PaymentMethodButtons
+              hasMethod={Boolean(account?.paymentMethod)}
               orgSlug={organization.slug}
-              spendLimit={centsInput(account?.spendLimitCents)}
+              portal={provider === "stripe"}
             />
-          </PanelBody>
-        </Panel>
+          ) : null}
+        </SettingsRow>
+        {account && !paymentMethodCompliant(account) ? (
+          <SettingsNote>
+            <Alert variant="warning">
+              <AlertDescription>
+                Your contract requires paying by{" "}
+                {account.requiredPaymentMethods
+                  .map((type) => PAYMENT_METHOD_LABELS[type as PaymentMethodType] ?? type)
+                  .join(" or ")}
+                . Replace your payment method.
+              </AlertDescription>
+            </Alert>
+          </SettingsNote>
+        ) : null}
+      </SettingsSection>
+
+      <SettingsSection
+        description={
+          canManage
+            ? "Limits and alerts for usage beyond your plan."
+            : "Only owners can change these."
+        }
+        title="Spend controls"
+      >
+        <SpendControlsForm
+          alertThresholds={(account?.alertThresholds ?? [80, 100]).join(", ")}
+          billingEmail={account?.billingEmail ?? ""}
+          disabled={!canManage}
+          orgSlug={organization.slug}
+          spendLimit={centsInput(account?.spendLimitCents)}
+        />
+      </SettingsSection>
+    </SettingsPage>
+  );
+}
+
+/** The plan's running figures, ruled into cells inside the Plan card. */
+function BillingFigures(props: { children: ReactNode }) {
+  return (
+    <div className="grid border-t sm:grid-cols-3 sm:divide-x max-sm:divide-y">{props.children}</div>
+  );
+}
+
+function BillingFigure(props: { label: ReactNode; value: ReactNode; detail: ReactNode }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1 px-5 py-4">
+      <div className="text-muted-foreground text-xs">{props.label}</div>
+      <div className="truncate font-heading font-semibold text-lg tabular-nums tracking-[-0.01em]">
+        {props.value}
       </div>
+      <div className="truncate text-muted-foreground text-xs">{props.detail}</div>
     </div>
   );
 }

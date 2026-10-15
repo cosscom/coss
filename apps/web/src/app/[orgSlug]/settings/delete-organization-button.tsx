@@ -30,7 +30,7 @@ export function DeleteOrganizationButton(props: { orgSlug: string; orgName: stri
 
   return (
     <AlertDialog onOpenChange={() => setConfirmation("")}>
-      <AlertDialogTrigger render={<Button variant="destructive-outline" />}>
+      <AlertDialogTrigger render={<Button size="sm" variant="destructive-outline" />}>
         Delete organization
       </AlertDialogTrigger>
       <AlertDialogPopup>

@@ -12,10 +12,16 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@coss/ui/components/input-group";
 import { useActionState, useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { SettingsFooter, SettingsRow } from "@/components/settings";
 import { useActionToast } from "@/lib/toast";
 import {
   addPaymentMethodAction,
@@ -128,13 +134,11 @@ export function CancelScheduledChangeButton(props: { orgSlug: string; label: str
     success: "Scheduled plan change undone",
   });
   return (
-    <form action={formAction} className="flex flex-col gap-2">
+    <form action={formAction} className="flex flex-col items-start gap-2 sm:items-end">
       <input name="orgSlug" type="hidden" value={props.orgSlug} />
-      <div>
-        <Button loading={pending} size="sm" type="submit" variant="outline">
-          {props.label}
-        </Button>
-      </div>
+      <Button loading={pending} size="sm" type="submit" variant="outline">
+        {props.label}
+      </Button>
       {state && !state.ok ? <FormError message={state.error} /> : null}
     </form>
   );
@@ -149,7 +153,7 @@ export function PaymentMethodButtons(props: {
   const [addState, addAction, adding] = useActionState(addPaymentMethodAction, null);
   const [manageState, manageAction, managing] = useActionState(managePaymentMethodsAction, null);
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col items-start gap-2 sm:items-end">
       <div className="flex flex-wrap gap-2">
         <form action={addAction}>
           <input name="orgSlug" type="hidden" value={props.orgSlug} />
@@ -177,6 +181,7 @@ export function PaymentMethodButtons(props: {
   );
 }
 
+/** The Spend controls section's card: three rows saved together from the footer. */
 export function SpendControlsForm(props: {
   orgSlug: string;
   spendLimit: string;
@@ -188,49 +193,72 @@ export function SpendControlsForm(props: {
     success: "Spend controls saved",
   });
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction}>
       <input name="orgSlug" type="hidden" value={props.orgSlug} />
-      <Field>
-        <FieldLabel>Spend limit (USD per month)</FieldLabel>
+      <SettingsRow
+        description="Usage beyond your plan's credit that goes past this pauses live sending until the next month or until you raise it. Leave empty for no limit."
+        label={<label htmlFor="billing-spend-limit">Spend limit</label>}
+      >
+        <InputGroup className="sm:w-72">
+          <InputGroupAddon>
+            <InputGroupText>$</InputGroupText>
+          </InputGroupAddon>
+          <InputGroupInput
+            defaultValue={props.spendLimit}
+            disabled={props.disabled}
+            id="billing-spend-limit"
+            inputMode="decimal"
+            name="spendLimit"
+            placeholder="No limit"
+          />
+          <InputGroupAddon align="inline-end">
+            <InputGroupText>USD per month</InputGroupText>
+          </InputGroupAddon>
+        </InputGroup>
+      </SettingsRow>
+      <SettingsRow
+        description="Percentages of your monthly credit or allowance."
+        label={<label htmlFor="billing-alerts">Usage alerts</label>}
+      >
+        <InputGroup className="sm:w-72">
+          <InputGroupInput
+            defaultValue={props.alertThresholds}
+            disabled={props.disabled}
+            id="billing-alerts"
+            name="alertThresholds"
+            placeholder="80, 100"
+          />
+          <InputGroupAddon align="inline-end">
+            <InputGroupText>%</InputGroupText>
+          </InputGroupAddon>
+        </InputGroup>
+      </SettingsRow>
+      <SettingsRow
+        description="Invoices, payment reminders and usage alerts go here."
+        label={<label htmlFor="billing-email">Billing email</label>}
+      >
         <Input
-          defaultValue={props.spendLimit}
-          disabled={props.disabled}
-          inputMode="decimal"
-          name="spendLimit"
-          placeholder="No limit"
-        />
-        <FieldDescription>
-          Usage beyond your plan's credit that goes past this pauses live sending until the next
-          month or until you raise it. Leave empty for no limit.
-        </FieldDescription>
-      </Field>
-      <Field>
-        <FieldLabel>Usage alerts (% of your monthly credit or allowance)</FieldLabel>
-        <Input
-          defaultValue={props.alertThresholds}
-          disabled={props.disabled}
-          name="alertThresholds"
-          placeholder="80, 100"
-        />
-      </Field>
-      <Field>
-        <FieldLabel>Billing email</FieldLabel>
-        <Input
+          className="sm:w-72"
           defaultValue={props.billingEmail}
           disabled={props.disabled}
+          id="billing-email"
           name="billingEmail"
           placeholder="Owners and admins"
           type="email"
         />
-        <FieldDescription>Invoices, payment reminders and usage alerts go here.</FieldDescription>
-      </Field>
-      <FormError message={state?.ok ? null : state?.error} />
+      </SettingsRow>
       {props.disabled ? null : (
-        <div>
-          <Button loading={pending} type="submit">
+        <SettingsFooter
+          hint={
+            state && !state.ok ? (
+              <span className="text-destructive-foreground">{state.error}</span>
+            ) : null
+          }
+        >
+          <Button loading={pending} size="sm" type="submit">
             Save
           </Button>
-        </div>
+        </SettingsFooter>
       )}
     </form>
   );

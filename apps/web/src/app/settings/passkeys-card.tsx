@@ -1,6 +1,5 @@
 "use client";
 
-import { Alert, AlertDescription } from "@coss/ui/components/alert";
 import {
   AlertDialog,
   AlertDialogClose,
@@ -26,20 +25,12 @@ import {
 } from "@coss/ui/components/dialog";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@coss/ui/components/table";
 import { FingerprintIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { FormError } from "@/components/form-error";
-import { Panel, PanelBody } from "@/components/panel";
+import { SettingsNote, SettingsRow, SettingsSection } from "@/components/settings";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
 import { toast } from "@/lib/toast";
@@ -56,56 +47,37 @@ const NAME_MAX_LENGTH = 64;
 
 export function PasskeysCard(props: { passkeys: PasskeyRow[]; restriction: string | null }) {
   return (
-    <Panel
+    <SettingsSection
       action={props.restriction ? null : <AddPasskeyDialog />}
-      description="Sign in with your fingerprint, face or device PIN instead of a password. A passkey sign-in doesn't ask for an authenticator code."
+      description="Sign in with your fingerprint, face or device PIN instead of a password. Passkey sign-ins don't ask for an authenticator code."
       title="Passkeys"
     >
-      {props.restriction ? (
-        <PanelBody>
-          <Alert variant="warning">
-            <AlertDescription>{props.restriction}</AlertDescription>
-          </Alert>
-        </PanelBody>
-      ) : null}
+      {props.restriction ? <SettingsNote>{props.restriction}</SettingsNote> : null}
       {props.passkeys.length === 0 ? (
-        <PanelBody flush>
-          <EmptyState
-            compact
-            description="Add one to sign in without typing your password."
-            icon={FingerprintIcon}
-            title="No passkeys yet"
-          />
-        </PanelBody>
+        <EmptyState
+          className="border-t"
+          compact
+          description="Add one to sign in without typing your password."
+          icon={FingerprintIcon}
+          title="No passkeys yet"
+        />
       ) : (
-        <Table variant="card">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Added</TableHead>
-              {props.restriction ? null : <TableHead className="w-0" />}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {props.passkeys.map((passkey) => (
-              <TableRow key={passkey.id}>
-                <TableCell className="font-medium">{passkey.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">{passkey.synced ? "synced" : "this device"}</Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">{passkey.createdAt}</TableCell>
-                {props.restriction ? null : (
-                  <TableCell className="text-right">
-                    <DeletePasskeyButton id={passkey.id} name={passkey.name} />
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        props.passkeys.map((passkey) => (
+          <SettingsRow
+            description={`Added ${passkey.createdAt}`}
+            key={passkey.id}
+            label={
+              <>
+                {passkey.name}
+                <Badge variant="outline">{passkey.synced ? "Synced" : "This device"}</Badge>
+              </>
+            }
+          >
+            {props.restriction ? null : <DeletePasskeyButton id={passkey.id} name={passkey.name} />}
+          </SettingsRow>
+        ))
       )}
-    </Panel>
+    </SettingsSection>
   );
 }
 
@@ -198,7 +170,7 @@ function DeletePasskeyButton({ id, name }: { id: string; name: string }) {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger render={<Button size="xs" variant="destructive-outline" />}>
+      <AlertDialogTrigger render={<Button size="sm" variant="outline" />}>
         Remove
       </AlertDialogTrigger>
       <AlertDialogPopup>

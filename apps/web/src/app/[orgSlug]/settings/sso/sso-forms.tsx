@@ -12,17 +12,22 @@ import {
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
 import { Checkbox } from "@coss/ui/components/checkbox";
-import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
 import { Textarea } from "@coss/ui/components/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@coss/ui/components/toggle-group";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { FormError } from "@/components/form-error";
+import { SettingsFooter, SettingsRow } from "@/components/settings";
+import { SettingsSwitchRow } from "@/components/settings-switch-row";
 import { useActionToast } from "@/lib/toast";
 import { deleteSsoProviderAction, saveSsoProviderAction, setSsoRequirementAction } from "./actions";
 
 type ProviderType = "oidc" | "saml";
+
+/** Inputs on the right of a row: wide enough for URLs, never the whole card. */
+const CONTROL = "sm:w-80";
 
 export type SsoProviderFormValues = {
   type: ProviderType;
@@ -31,7 +36,10 @@ export type SsoProviderFormValues = {
   saml: { entryPoint: string; idpEntityId: string | null; usesMetadata: boolean } | null;
 };
 
-/** Creates or updates the organization's provider. Secrets are never sent back to the form. */
+/**
+ * Creates or updates the organization's provider: the rows of the Identity provider section,
+ * saved from its footer. Secrets are never sent back to the form.
+ */
 export function SsoProviderForm(props: {
   orgSlug: string;
   /** Verified email domains of the organization, plus any domain the provider already lists. */
@@ -46,13 +54,13 @@ export function SsoProviderForm(props: {
   const selected = new Set(props.current?.domains ?? []);
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form action={formAction}>
       <input name="orgSlug" type="hidden" value={props.orgSlug} />
       <input name="type" type="hidden" value={type} />
       {editing ? null : (
-        <Field>
-          <FieldLabel>Protocol</FieldLabel>
+        <SettingsRow description="Whichever your provider supports best." label="Protocol">
           <ToggleGroup
+            aria-label="Protocol"
             onValueChange={(value) => {
               const next = value[0];
               if (next === "oidc" || next === "saml") setType(next);
@@ -63,50 +71,64 @@ export function SsoProviderForm(props: {
             <ToggleGroupItem value="oidc">OpenID Connect</ToggleGroupItem>
             <ToggleGroupItem value="saml">SAML 2.0</ToggleGroupItem>
           </ToggleGroup>
-        </Field>
+        </SettingsRow>
       )}
 
       {type === "oidc" ? (
         <>
-          <Field>
-            <FieldLabel>Issuer URL</FieldLabel>
+          <SettingsRow
+            description="We read its /.well-known/openid-configuration. Must be public and https://."
+            label={<label htmlFor="sso-oidc-issuer">Issuer URL</label>}
+          >
             <Input
+              className={CONTROL}
               defaultValue={props.current?.oidc?.issuer ?? ""}
+              id="sso-oidc-issuer"
               name="oidcIssuer"
               placeholder="https://acme.okta.com"
               required
               type="url"
             />
-            <FieldDescription>
-              We read its /.well-known/openid-configuration. Must be public and https://.
-            </FieldDescription>
-          </Field>
-          <Field>
-            <FieldLabel>Client ID</FieldLabel>
+          </SettingsRow>
+          <SettingsRow label={<label htmlFor="sso-oidc-client-id">Client ID</label>}>
             <Input
               autoComplete="off"
+              className={CONTROL}
               defaultValue={props.current?.oidc?.clientId ?? ""}
+              id="sso-oidc-client-id"
               name="oidcClientId"
               required
             />
-          </Field>
-          <Field>
-            <FieldLabel>Client secret</FieldLabel>
+          </SettingsRow>
+          <SettingsRow
+            description={editing ? "Leave it empty to keep the current secret." : undefined}
+            label={<label htmlFor="sso-oidc-client-secret">Client secret</label>}
+          >
             <Input
               autoComplete="off"
+              className={CONTROL}
+              id="sso-oidc-client-secret"
               name="oidcClientSecret"
-              placeholder={editing ? "Leave empty to keep the current secret" : undefined}
+              placeholder={editing ? "••••••••" : undefined}
               required={!editing}
               type="password"
             />
-          </Field>
+          </SettingsRow>
         </>
       ) : (
         <>
-          <Field>
-            <FieldLabel>IdP metadata XML</FieldLabel>
+          <SettingsRow
+            description={
+              props.current?.saml?.usesMetadata
+                ? "Preferred. Leave it empty to keep the current metadata, or fill in the three fields below instead."
+                : "Preferred. Or leave it empty and fill in the three fields below instead."
+            }
+            label={<label htmlFor="sso-saml-metadata">IdP metadata XML</label>}
+            stacked
+          >
             <Textarea
               className="font-mono text-xs"
+              id="sso-saml-metadata"
               name="samlMetadata"
               placeholder={
                 props.current?.saml?.usesMetadata
@@ -116,67 +138,84 @@ export function SsoProviderForm(props: {
               rows={6}
               spellCheck={false}
             />
-            <FieldDescription>
-              Preferred. Or leave it empty and fill in the three fields below instead.
-            </FieldDescription>
-          </Field>
-          <Field>
-            <FieldLabel>SSO URL</FieldLabel>
+          </SettingsRow>
+          <SettingsRow label={<label htmlFor="sso-saml-entry-point">SSO URL</label>}>
             <Input
+              className={CONTROL}
               defaultValue={
                 props.current?.saml?.usesMetadata ? "" : props.current?.saml?.entryPoint
               }
+              id="sso-saml-entry-point"
               name="samlEntryPoint"
               placeholder="https://acme.okta.com/app/…/sso/saml"
               type="url"
             />
-          </Field>
-          <Field>
-            <FieldLabel>IdP entity ID (issuer)</FieldLabel>
+          </SettingsRow>
+          <SettingsRow
+            label={<label htmlFor="sso-saml-idp-entity-id">IdP entity ID (issuer)</label>}
+          >
             <Input
+              className={CONTROL}
               defaultValue={props.current?.saml?.idpEntityId ?? ""}
+              id="sso-saml-idp-entity-id"
               name="samlIdpEntityId"
               placeholder="http://www.okta.com/exk…"
             />
-          </Field>
-          <Field>
-            <FieldLabel>Signing certificate</FieldLabel>
+          </SettingsRow>
+          <SettingsRow
+            label={<label htmlFor="sso-saml-certificate">Signing certificate</label>}
+            stacked
+          >
             <Textarea
               className="font-mono text-xs"
+              id="sso-saml-certificate"
               name="samlCertificate"
               placeholder="-----BEGIN CERTIFICATE-----"
               rows={4}
               spellCheck={false}
             />
-          </Field>
+          </SettingsRow>
         </>
       )}
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 font-medium text-sm">Domains</legend>
+      <SettingsRow
+        description="People with an address at these domains sign in through this provider."
+        label="Domains"
+        stacked
+      >
         {props.domainOptions.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground">
             No verified domains yet. Add and verify one under Domains first.
           </p>
         ) : (
-          props.domainOptions.map((domain) => (
-            <Label key={domain}>
-              <Checkbox defaultChecked={selected.has(domain)} name="domains" value={domain} />
-              {domain}
-            </Label>
-          ))
+          <fieldset className="flex flex-wrap gap-x-6 gap-y-2">
+            <legend className="sr-only">Domains</legend>
+            {props.domainOptions.map((domain) => (
+              <Label className="font-mono font-normal text-[0.8125rem]" key={domain}>
+                <Checkbox defaultChecked={selected.has(domain)} name="domains" value={domain} />
+                {domain}
+              </Label>
+            ))}
+          </fieldset>
         )}
-        <p className="text-muted-foreground text-sm">
-          People with an address at these domains sign in through this provider.
-        </p>
-      </fieldset>
+      </SettingsRow>
 
-      {state && !state.ok ? <FormError message={state.error} /> : null}
-      <div>
-        <Button disabled={props.domainOptions.length === 0} loading={pending} type="submit">
+      <SettingsFooter
+        hint={
+          state && !state.ok ? (
+            <span className="text-destructive-foreground">{state.error}</span>
+          ) : null
+        }
+      >
+        <Button
+          disabled={props.domainOptions.length === 0}
+          loading={pending}
+          size="sm"
+          type="submit"
+        >
           {editing ? "Save changes" : "Save provider"}
         </Button>
-      </div>
+      </SettingsFooter>
     </form>
   );
 }
@@ -216,33 +255,25 @@ export function DeleteSsoProviderButton(props: { orgSlug: string }) {
   );
 }
 
-/** Turns the organization's SSO requirement on or off (owners only). */
-export function SsoRequirementForm(props: {
+/** The organization's SSO requirement as a settings row; the switch saves on change. */
+export function SsoRequirementRow(props: {
   orgSlug: string;
   required: boolean;
   /** Every precondition for turning it on holds (the action re-checks them). */
   canRequire: boolean;
+  description: ReactNode;
 }) {
-  const [state, formAction, pending] = useActionToast(setSsoRequirementAction, {
-    success: props.required ? "SSO no longer required" : "SSO now required",
-  });
-
   return (
-    <form action={formAction} className="flex flex-col gap-3">
-      <input name="orgSlug" type="hidden" value={props.orgSlug} />
-      <input name="required" type="hidden" value={String(!props.required)} />
-      {state && !state.ok ? <FormError message={state.error} /> : null}
-      <div>
-        <Button
-          disabled={!props.required && !props.canRequire}
-          loading={pending}
-          size="sm"
-          type="submit"
-          variant={props.required ? "outline" : "default"}
-        >
-          {props.required ? "Stop requiring SSO" : "Require SSO"}
-        </Button>
-      </div>
-    </form>
+    <SettingsSwitchRow
+      action={setSsoRequirementAction}
+      canTurnOn={props.canRequire}
+      description={props.description}
+      id="require-sso"
+      label="Require SSO for members and admins"
+      orgSlug={props.orgSlug}
+      required={props.required}
+      turnedOff="SSO no longer required"
+      turnedOn="SSO now required"
+    />
   );
 }

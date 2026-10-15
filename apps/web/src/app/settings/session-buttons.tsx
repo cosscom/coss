@@ -13,13 +13,7 @@ export function RevokeSessionButton(props: { sessionId: string; disabled: boolea
   return (
     <form action={formAction}>
       <input name="sessionId" type="hidden" value={props.sessionId} />
-      <Button
-        disabled={props.disabled}
-        loading={pending}
-        size="xs"
-        type="submit"
-        variant="destructive-outline"
-      >
+      <Button disabled={props.disabled} loading={pending} size="sm" type="submit" variant="outline">
         Sign out
       </Button>
     </form>
