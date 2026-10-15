@@ -15,7 +15,6 @@ export { describeRule, formatPeriod, parsePeriod } from "./format.ts";
 export type { ConsumeOptions, ConsumeResult, LimitSpec, LimitState } from "./gcra.ts";
 export {
   createRateLimiter,
-  emailRecipientQuota,
   hashEmail,
   type RateLimitDecision,
   type RateLimiter,
@@ -35,6 +34,7 @@ export {
   setRateLimitOverride,
   withPlanRules,
 } from "./overrides.ts";
+export { emailSendQuota } from "./quotas.ts";
 export { createRateLimitRuntime, type RateLimitRuntime } from "./runtime.ts";
 export {
   createValkeyClient,

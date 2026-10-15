@@ -20,7 +20,7 @@ import {
   SendEmailRequest,
   uniqueRecipientCount,
 } from "@coss/email/schemas";
-import { emailRecipientQuota } from "@coss/ratelimit";
+import { emailSendQuota } from "@coss/ratelimit";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { recordApiAudit } from "../audit.ts";
@@ -413,7 +413,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         params,
         idempotencyKey,
       };
-      const quota = emailRecipientQuota(c.var.auth, uniqueRecipientCount(params));
+      const quota = emailSendQuota(c.var.auth, uniqueRecipientCount(params));
       const decision = await c.var.rateLimiter.consume(quota);
       if (!decision.allowed) {
         // A matching replay (queued or completed) needs no quota. This lookup cannot create or dispatch a send.
@@ -466,7 +466,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       };
       // Charged as one: the batch is accepted or refused as a whole.
       const recipients = emails.reduce((sum, params) => sum + uniqueRecipientCount(params), 0);
-      const quota = emailRecipientQuota(c.var.auth, recipients);
+      const quota = emailSendQuota(c.var.auth, recipients);
       const decision = await c.var.rateLimiter.consume(quota);
       if (!decision.allowed) {
         const replay = await emailService.replayBatch(input);

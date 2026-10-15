@@ -3,6 +3,7 @@
   "pages": [
     "sending",
     "templates",
+    "smtp",
     "receiving",
     "domains",
     "tracking",

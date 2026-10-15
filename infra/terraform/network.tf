@@ -177,6 +177,18 @@ resource "aws_vpc_security_group_ingress_rule" "task_from_alb" {
   to_port                      = each.value.port
 }
 
+# Plain-TCP services (the SMTP relay) behind the NLB, which preserves client addresses: their
+# container ports are open to the internet. The tasks have no public address, so only the NLB
+# reaches them; abuse is limited per client address by the relay itself (smtp.connections.ip).
+resource "aws_vpc_security_group_ingress_rule" "task_from_nlb" {
+  for_each          = local.nlb_targets
+  security_group_id = aws_security_group.task[each.value.service].id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "tcp"
+  from_port         = each.value.port
+  to_port           = each.value.port
+}
+
 # Tasks reach everything outbound: customer webhooks go to arbitrary hosts and ports, and DNS
 # checks query public resolvers directly. The site needs nothing but AWS endpoints, but egress
 # rules can't tell the NAT from the endpoints, so it gets the same.
@@ -195,7 +207,7 @@ resource "aws_security_group" "db" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "db" {
-  for_each                     = toset(["web", "portal", "api", "worker"])
+  for_each                     = toset(["web", "portal", "api", "worker", "smtp"])
   security_group_id            = aws_security_group.db.id
   referenced_security_group_id = aws_security_group.task[each.key].id
   ip_protocol                  = "tcp"
@@ -213,7 +225,7 @@ resource "aws_security_group" "valkey" {
 # The worker counts each organization's daily inbound limit (`email.inbound.day`). The group's
 # description still says "web and api": changing it would replace the group.
 resource "aws_vpc_security_group_ingress_rule" "valkey" {
-  for_each                     = toset(["web", "portal", "api", "worker"])
+  for_each                     = toset(["web", "portal", "api", "worker", "smtp"])
   security_group_id            = aws_security_group.valkey.id
   referenced_security_group_id = aws_security_group.task[each.key].id
   ip_protocol                  = "tcp"

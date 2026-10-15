@@ -23,6 +23,7 @@ const SOURCES: Filter<LogSource>[] = [
   { value: "email", label: "Email" },
   { value: "webhook", label: "Webhooks" },
   { value: "risk", label: "Risk" },
+  { value: "smtp", label: "SMTP" },
 ];
 
 export default function LogsScreen() {

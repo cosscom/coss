@@ -173,6 +173,13 @@
           "description": "Sends account emails (sign-up verification, password resets, invitations) and reputation notifications through COSS itself (worker); neither the worker nor admins (dashboard) may suspend its organization. Unset until COSS's organization has a verified domain: both are held, and nobody can verify their email address."
         },
         {
+          "name": "SMTP_PUBLIC_HOST",
+          "kind": "plain",
+          "required": false,
+          "value": "smtp.coss.com",
+          "description": "The SMTP relay's host, shown with its settings on environment pages. Set it once the DNS record resolves; unset hides the settings."
+        },
+        {
           "name": "RISK_SIGNUP_ENVIRONMENT_ID",
           "kind": "plain",
           "required": false,
@@ -1008,6 +1015,236 @@
           "kind": "image",
           "required": true,
           "value": "production",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "smtp",
+      "dockerfile": "apps/smtp/Dockerfile",
+      "tcpPorts": [
+        {
+          "listener": 465,
+          "container": 2465
+        },
+        {
+          "listener": 2465,
+          "container": 2465
+        },
+        {
+          "listener": 587,
+          "container": 2587
+        },
+        {
+          "listener": 2587,
+          "container": 2587
+        }
+      ],
+      "stopTimeout": 120,
+      "cpu": 256,
+      "memory": 1024,
+      "minTasks": 2,
+      "needsInternet": true,
+      "env": [
+        {
+          "name": "DATABASE_URL",
+          "kind": "secret",
+          "required": true,
+          "value": "postgres://<user>:<password>@<rds-endpoint>:5432/coss?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem",
+          "description": "RDS Postgres over verified TLS (the images ship the RDS CA bundle at that path)."
+        },
+        {
+          "name": "DATABASE_POOL_MAX",
+          "kind": "plain",
+          "required": false,
+          "value": "10",
+          "description": "pg pool size per task. Sum over all tasks must stay below RDS max_connections."
+        },
+        {
+          "name": "BETTER_AUTH_SECRET",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage)",
+          "description": "Signs sessions. Same value for web and api."
+        },
+        {
+          "name": "BETTER_AUTH_URL",
+          "kind": "plain",
+          "required": true,
+          "value": "https://coss.com",
+          "description": "Origin of both zones (site and dashboard): base URL, trusted origin, secure cookies."
+        },
+        {
+          "name": "EMAIL_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "ses",
+          "description": "Live environments send through SES."
+        },
+        {
+          "name": "AWS_REGION",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "SES_CONFIGURATION_SET",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "SES_TENANT_PREFIX",
+          "kind": "plain",
+          "required": true,
+          "description": "Printed by ses:bootstrap."
+        },
+        {
+          "name": "INBOUND_MANAGED_DOMAIN",
+          "kind": "plain",
+          "required": false,
+          "value": "inbound.coss.com",
+          "description": "Receiving: each environment's `<label>.<domain>` addresses (ses:bootstrap --managed-domain). Set with SES_INBOUND_BUCKET, or neither (receiving off)."
+        },
+        {
+          "name": "SES_INBOUND_BUCKET",
+          "kind": "plain",
+          "required": false,
+          "description": "Receiving: the bucket received emails are stored in. Printed by ses:bootstrap."
+        },
+        {
+          "name": "TRACKING_DOMAIN_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "cloudflare",
+          "description": "Custom tracking domains are Cloudflare for SaaS custom hostnames."
+        },
+        {
+          "name": "CLOUDFLARE_API_TOKEN",
+          "kind": "secret",
+          "required": true,
+          "description": "Cloudflare API token limited to the coss.com zone with SSL and Certificates: Edit (custom hostnames). Same value for web, api and worker."
+        },
+        {
+          "name": "CLOUDFLARE_ZONE_ID",
+          "kind": "plain",
+          "required": true,
+          "description": "The coss.com zone id (Cloudflare dashboard, zone overview)."
+        },
+        {
+          "name": "TRACKING_CNAME_TARGET",
+          "kind": "plain",
+          "required": false,
+          "value": "track.cosslinks.com",
+          "description": "The zone's fallback origin, which customers CNAME their tracking domain to."
+        },
+        {
+          "name": "VALKEY_URL",
+          "kind": "secret",
+          "required": true,
+          "description": "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web, api and worker."
+        },
+        {
+          "name": "VALKEY_CLUSTER",
+          "kind": "plain",
+          "required": true,
+          "value": "true",
+          "description": "ElastiCache Serverless uses the cluster protocol."
+        },
+        {
+          "name": "RATE_LIMIT_KEY_PREFIX",
+          "kind": "plain",
+          "required": false,
+          "value": "coss",
+          "description": "Counter namespace; must match the cache user's ACL."
+        },
+        {
+          "name": "TRACKING_PUBLIC_URL",
+          "kind": "plain",
+          "required": true,
+          "value": "https://track.cosslinks.com",
+          "description": "Origin of the open/click tracking links in emails (defaults to API_PUBLIC_URL): its own domain, so abuse flagged by URL blocklists never lands on coss.com (infra/aws/routing.ts)."
+        },
+        {
+          "name": "SMTP_HOSTNAME",
+          "kind": "plain",
+          "required": true,
+          "value": "smtp.coss.com",
+          "description": "The relay's name: its greeting and its certificate's name."
+        },
+        {
+          "name": "SMTP_TLS_CERTIFICATE_ARN",
+          "kind": "plain",
+          "required": true,
+          "value": "Set by Terraform (aws_acm_certificate.smtp, exportable).",
+          "description": "The relay exports this ACM certificate at start and every 12 hours (ACM renews it)."
+        },
+        {
+          "name": "SMTP_TLS_PASSPHRASE",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (any value; it only protects the exported key in transit)",
+          "description": "Encrypts the private key ACM exports; the relay decrypts it in memory."
+        },
+        {
+          "name": "SMTP_TLS_CERT_FILE",
+          "kind": "plain",
+          "required": false,
+          "description": "Development only (with SMTP_TLS_KEY_FILE): a certificate from files."
+        },
+        {
+          "name": "SMTP_TLS_KEY_FILE",
+          "kind": "plain",
+          "required": false,
+          "description": "Development only: the key of SMTP_TLS_CERT_FILE."
+        },
+        {
+          "name": "SENTRY_DSN",
+          "kind": "plain",
+          "required": false,
+          "value": "DSN of the `smtp` Sentry project (Project settings → Client Keys)",
+          "description": "Unset: nothing is reported."
+        },
+        {
+          "name": "SENTRY_ENVIRONMENT",
+          "kind": "plain",
+          "required": false,
+          "value": "production (the stage's name)",
+          "description": "Sentry environment; defaults to NODE_ENV."
+        },
+        {
+          "name": "SENTRY_TRACES_SAMPLE_RATE",
+          "kind": "plain",
+          "required": false,
+          "value": "0.1",
+          "description": "Share of requests/jobs traced (0–1)."
+        },
+        {
+          "name": "SENTRY_RELEASE",
+          "kind": "plain",
+          "required": false,
+          "value": "Set by the image (build argument SENTRY_RELEASE, the commit); don't override.",
+          "description": "Sentry release of every event."
+        },
+        {
+          "name": "NODE_ENV",
+          "kind": "image",
+          "required": true,
+          "value": "production",
+          "description": ""
+        },
+        {
+          "name": "SMTP_IMPLICIT_TLS_PORT",
+          "kind": "image",
+          "required": true,
+          "value": "2465",
+          "description": ""
+        },
+        {
+          "name": "SMTP_STARTTLS_PORT",
+          "kind": "image",
+          "required": true,
+          "value": "2587",
           "description": ""
         }
       ]

@@ -44,3 +44,22 @@ resource "aws_acm_certificate" "portal" {
 resource "aws_acm_certificate_validation" "portal" {
   certificate_arn = aws_acm_certificate.portal.arn
 }
+
+# The SMTP relay terminates TLS itself (STARTTLS can't be offloaded), so its certificate must be
+# exportable: the relay exports it with a passphrase (SMTP_TLS_PASSPHRASE) at start and every 12
+# hours, which picks up ACM's renewals. Exportable certificates cost extra. Validation CNAME from
+# the `smtp_certificate_validation_records` output, added DNS-only in the coss.com zone.
+resource "aws_acm_certificate" "smtp" {
+  domain_name       = var.smtp_host
+  validation_method = "DNS"
+  options {
+    export = "ENABLED"
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_acm_certificate_validation" "smtp" {
+  certificate_arn = aws_acm_certificate.smtp.arn
+}

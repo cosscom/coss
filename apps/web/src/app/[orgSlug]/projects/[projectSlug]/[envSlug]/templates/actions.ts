@@ -15,7 +15,7 @@ import {
   UpdateEmailTemplateDraftRequest,
   UpdateEmailTemplateRequest,
 } from "@coss/email/schemas";
-import { emailRecipientQuota } from "@coss/ratelimit";
+import { emailSendQuota } from "@coss/ratelimit";
 import { getEnvironment, listVerifiedMemberEmails } from "@coss/tenancy";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
@@ -298,7 +298,7 @@ export async function sendTestAction(
       mode: env.environment.mode,
     };
     const { limiter } = rateLimitRuntime();
-    const quota = emailRecipientQuota(environment, recipients.length);
+    const quota = emailSendQuota(environment, recipients.length);
     const decision = await limiter.consume(quota);
     if (!decision.allowed) {
       throw new ActionError("The environment's send quota is used up for now. Try again later.");

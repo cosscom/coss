@@ -12,6 +12,7 @@
     "./env": "./src/env.ts",
     "./runtime": "./src/runtime.ts",
     "./ses": "./src/ses/index.ts",
+    "./smtp": "./src/smtp-message.ts",
     "./testing": "./src/testing.ts"
   },
   "scripts": {
@@ -40,6 +41,8 @@
     "@coss/tenancy": "workspace:*",
     "@coss/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
+    "@types/nodemailer": "catalog:",
+    "nodemailer": "catalog:",
     "typescript": "catalog:"
   }
 }
