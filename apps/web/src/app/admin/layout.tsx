@@ -1,6 +1,7 @@
 import { DASHBOARD_PATH } from "@coss/auth/slugs";
 import { AppShell } from "@/components/shell/app-shell";
 import { AreaSidebar } from "@/components/shell/area-sidebar";
+import { avatarUrl } from "@/lib/avatars";
 import { requirePlatformAdmin } from "@/lib/session";
 
 /**
@@ -9,7 +10,12 @@ import { requirePlatformAdmin } from "@/lib/session";
  */
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const { session } = await requirePlatformAdmin();
-  const user = { name: session.user.name, email: session.user.email, isAdmin: true };
+  const user = {
+    name: session.user.name,
+    email: session.user.email,
+    image: avatarUrl(session.user),
+    isAdmin: true,
+  };
 
   return (
     <AppShell

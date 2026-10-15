@@ -5,4 +5,10 @@ export type ShellOrganization = { name: string; slug: string };
 
 export type ShellEnvironment = { name: string; slug: string; mode: EnvironmentMode };
 
-export type ShellProject = { name: string; slug: string; environments: ShellEnvironment[] };
+export type ShellProject = {
+  name: string;
+  slug: string;
+  environments: ShellEnvironment[];
+  /** The slug of the environment the project opens on (`defaultEnvironment`). */
+  defaultEnvironment: string | undefined;
+};

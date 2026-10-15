@@ -1,6 +1,6 @@
 {
-  "id": "612efdef-6f12-4a6b-b9f2-241106426947",
-  "prevId": "062ed3b9-e4b5-463d-818e-e1fd18b30fb9",
+  "id": "2596d90a-98c7-48e1-a544-c551677027a4",
+  "prevId": "8bdc62ca-c488-4d86-8409-2cffd0c30e23",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -5308,6 +5308,27 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "content_screening_subject_idx": {
+          "name": "content_screening_subject_idx",
+          "columns": [
+            {
+              "expression": "product",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "subject_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -6602,7 +6623,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "email_recipient_organization_address_idx": {
+          "name": "email_recipient_organization_address_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "email_recipient_email_fk": {
           "name": "email_recipient_email_fk",
@@ -14090,8 +14133,7 @@
         "email",
         "webhook",
         "risk",
-        "audit",
-        "smtp"
+        "audit"
       ]
     },
     "public.log_level": {
@@ -14110,8 +14152,7 @@
         "api",
         "email",
         "webhook",
-        "risk",
-        "smtp"
+        "risk"
       ]
     },
     "public.mail_from_status": {

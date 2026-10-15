@@ -5,6 +5,7 @@
  * the account's billing email (and cc), else to the organization's owners and admins.
  */
 import { db, type Executor, schema } from "@coss/db";
+import { enqueuePush, type PushKind } from "@coss/push";
 import { and, asc, eq, inArray, isNotNull, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { formatCents } from "./money.ts";
 
@@ -86,8 +87,33 @@ export async function enqueueBillingNotification(
     .onConflictDoNothing({ target: billingNotification.dedupeKey })
     .returning({ id: billingNotification.id });
   // Whether it is new (each dedupe key is sent once).
-  return inserted.length > 0;
+  if (!inserted.length) return false;
+  const push = PUSHED[input.kind];
+  if (push) {
+    await enqueuePush(tx, {
+      organizationId: input.organizationId,
+      kind: push.kind,
+      subjectId: push.subject(input.payload),
+      now,
+    });
+  }
+  return true;
 }
+
+/** Billing notifications that are also pushed to the iOS app: the ones that stop or risk sending. */
+const PUSHED: Partial<
+  Record<
+    BillingNotificationKind,
+    { kind: PushKind; subject(payload: Record<string, unknown>): string }
+  >
+> = {
+  payment_failed: {
+    kind: "billing_payment_failed",
+    subject: (payload) => String(payload.invoiceId),
+  },
+  hold_placed: { kind: "billing_hold_placed", subject: () => "delinquent" },
+  spend_limit_reached: { kind: "billing_hold_placed", subject: () => "spend_limit" },
+};
 
 export async function listBillingNotifications(organizationId: string) {
   return db

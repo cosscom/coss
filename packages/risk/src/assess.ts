@@ -13,6 +13,7 @@ import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { IDEMPOTENCY_KEY_TTL_MS, isReplayOf, requestHash } from "@coss/db/idempotency";
 import { appendLogEntries } from "@coss/logs";
+import { enqueuePush } from "@coss/push";
 import type { RateLimitStore } from "@coss/ratelimit";
 import type { ContentClassifier } from "@coss/screening/classifier";
 import { type CaptchaVerdict, verifyCaptcha } from "@coss/signals/captcha";
@@ -844,6 +845,17 @@ async function insertAssessment(
       payload,
       now,
     });
+    // Sandbox environments are for testing integrations; nobody needs to be woken up for them.
+    if (environment.mode === "live") {
+      await enqueuePush(tx, {
+        organizationId: environment.organizationId,
+        environmentId: environment.environmentId,
+        kind: "risk_review",
+        subjectId: environment.environmentId,
+        collapseKey: `risk_review:${environment.environmentId}`,
+        now,
+      });
+    }
   }
   return row;
 }

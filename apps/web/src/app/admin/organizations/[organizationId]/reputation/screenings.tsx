@@ -1,5 +1,4 @@
 import type { ContentScreeningRow } from "@coss/screening";
-import { Badge } from "@coss/ui/components/badge";
 import {
   Table,
   TableBody,
@@ -8,16 +7,10 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
+import Link from "next/link";
+import { ScreeningVerdictBadge } from "@/components/admin/screening-verdict";
 import { Panel, PanelBody, PanelDescription, PanelHeader, PanelTitle } from "@/components/panel";
 import { formatDateTime } from "@/lib/format";
-
-function VerdictBadge({ row }: { row: ContentScreeningRow }) {
-  const shadow = row.enforced ? "" : " (shadow)";
-  if (row.verdict === "blocked") return <Badge variant="error">blocked{shadow}</Badge>;
-  if (row.verdict === "flagged") return <Badge variant="warning">flagged{shadow}</Badge>;
-  if (row.verdict === "error") return <Badge variant="outline">error</Badge>;
-  return <Badge variant="success">clean</Badge>;
-}
 
 /** The organization's latest AI content screenings (platform admins only). */
 export function ContentScreenings({ screenings }: { screenings: ContentScreeningRow[] }) {
@@ -51,11 +44,20 @@ export function ContentScreenings({ screenings }: { screenings: ContentScreening
                   {formatDateTime(row.createdAt)}
                 </TableCell>
                 <TableCell>
-                  <span className="font-mono text-xs">{row.subjectId}</span>
+                  {row.product === "email" ? (
+                    <Link
+                      className="font-mono text-xs hover:underline"
+                      href={`/admin/emails/${row.subjectId}`}
+                    >
+                      {row.subjectId}
+                    </Link>
+                  ) : (
+                    <span className="font-mono text-xs">{row.subjectId}</span>
+                  )}
                   <span className="text-muted-foreground"> · #{row.sequence}</span>
                 </TableCell>
                 <TableCell>
-                  <VerdictBadge row={row} />
+                  <ScreeningVerdictBadge enforced={row.enforced} verdict={row.verdict} />
                 </TableCell>
                 <TableCell className="tabular-nums">
                   {row.verdict === "error"

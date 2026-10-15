@@ -2,8 +2,8 @@ import { cn } from "@coss/ui/lib/utils";
 import type { ReactNode } from "react";
 
 /**
- * Key/value rows in the style of coss.com's spec sheet: the label, a dotted leader and the value
- * on the right. Rows are ruled; `columns={2}` splits them in two columns from `md`. Use inside a
+ * Key/value rows in the style of coss.com's spec sheet: the label and the value on
+ * the right. Rows are ruled; `columns={2}` splits them in two columns from `md`. Use inside a
  * `PanelBody flush` (it pads itself).
  */
 export function SpecList(props: { columns?: 1 | 2; className?: string; children: ReactNode }) {
@@ -44,10 +44,9 @@ export function SpecItem(props: {
   return (
     <div className="flex min-w-0 items-baseline gap-3 border-t py-3">
       <dt className="shrink-0 text-muted-foreground text-sm">{props.label}</dt>
-      <span aria-hidden className="leader" />
       <dd
         className={cn(
-          "flex min-w-0 flex-wrap items-center justify-end gap-1.5 text-right text-sm [overflow-wrap:anywhere]",
+          "flex min-w-0 flex-1 flex-wrap items-center justify-end gap-1.5 text-right text-sm [overflow-wrap:anywhere]",
           props.mono && "font-mono text-[0.8125rem]",
         )}
       >

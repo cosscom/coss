@@ -287,6 +287,8 @@ export const emailRecipient = pgTable(
       foreignColumns: [email.id, email.organizationId],
     }).onDelete("cascade"),
     unique("email_recipient_email_address_unique").on(t.emailId, t.address),
+    // `GET /v1/emails?to=`: an address's emails.
+    index("email_recipient_organization_address_idx").on(t.organizationId, t.address),
   ],
 );
 
@@ -1214,6 +1216,8 @@ export const contentScreening = pgTable(
     index("content_screening_organization_created_at_idx").on(t.organizationId, t.createdAt.desc()),
     // The worker's retention purge.
     index("content_screening_created_at_idx").on(t.createdAt),
+    // A message's verdicts (the admin console's email pages).
+    index("content_screening_subject_idx").on(t.product, t.subjectId),
   ],
 );
 

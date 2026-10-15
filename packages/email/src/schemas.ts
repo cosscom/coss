@@ -326,7 +326,10 @@ const SendEmailRequestFields = z.strictObject({
       message: "Subject must not contain invisible formatting characters.",
     }),
   html: z.string().optional().meta({ description: "HTML body. Provide `html`, `text`, or both." }),
-  text: z.string().optional().meta({ description: "Plain-text body." }),
+  text: z.string().optional().meta({
+    description:
+      "Plain-text body. Without it, an `html` email goes out with a text part generated from the HTML.",
+  }),
   headers: z
     // zod skips `__proto__` keys (prototype-pollution guard), which would silently drop such a
     // header; reject it explicitly while the raw object is still visible.
@@ -959,6 +962,23 @@ export const EmailLinkList = z
 
 export type EmailLinkListOutput = z.output<typeof EmailLinkList>;
 
+export const EmailFailure = z
+  .object({
+    code: z.string().meta({
+      description:
+        "Why the email failed, e.g. `all_recipients_suppressed`, `domain_not_verified`, " +
+        "`content_rejected`, `attachments_unavailable`, `dispatch_failed` or `provider_error`.",
+      examples: ["all_recipients_suppressed"],
+    }),
+    message: z.string(),
+  })
+  .meta({
+    id: "EmailFailure",
+    examples: [
+      { code: "all_recipients_suppressed", message: "Every recipient is on the suppression list." },
+    ],
+  });
+
 export const EmailObject = z
   .object({
     object: z.literal("email"),
@@ -979,6 +999,9 @@ export const EmailObject = z
         "Whether the email was handed to the delivery provider. `scheduled` emails wait for " +
         "`scheduled_at`; `canceled` ones were canceled before that. Per-recipient delivery is in " +
         "`recipients`.",
+    }),
+    failure: z.union([EmailFailure, z.null()]).meta({
+      description: "Why the email failed; `null` unless `status` is `failed`.",
     }),
     recipients: z.array(EmailRecipient),
     attachments: z.array(EmailAttachmentObject).meta({
@@ -1017,6 +1040,7 @@ export const EmailObject = z
         tags: [{ name: "template", value: "welcome" }],
         category: "onboarding",
         status: "sent",
+        failure: null,
         recipients: [RECIPIENT_EXAMPLE],
         sandbox: false,
         tracking: TRACKING_EXAMPLE,
@@ -1030,6 +1054,134 @@ export const EmailObject = z
   });
 
 export type EmailObjectOutput = z.output<typeof EmailObject>;
+
+const SUMMARY_EXAMPLE = {
+  object: "email",
+  id: EMAIL_ID_EXAMPLE,
+  from: "Acme <onboarding@acme.com>",
+  to: ["user@example.com"],
+  cc: [],
+  bcc: [],
+  reply_to: [],
+  subject: "Welcome to Acme",
+  tags: [{ name: "template", value: "welcome" }],
+  category: "onboarding",
+  status: "sent",
+  failure: null,
+  recipients: [RECIPIENT_EXAMPLE],
+  sandbox: false,
+  tracking: TRACKING_EXAMPLE,
+  created_at: "2026-10-10T12:00:00.000Z",
+  sent_at: "2026-10-10T12:00:01.000Z",
+  scheduled_at: null,
+  batch_id: null,
+};
+
+/** An email in a list: everything but its content (`html`, `text`, `headers`, `attachments`). */
+export const EmailSummary = EmailObject.omit({
+  html: true,
+  text: true,
+  headers: true,
+  attachments: true,
+}).meta({
+  id: "EmailSummary",
+  description:
+    "An email without its content. Retrieve the email for `html`, `text`, `headers` and " +
+    "`attachments`.",
+  examples: [SUMMARY_EXAMPLE],
+});
+
+export type EmailSummaryOutput = z.output<typeof EmailSummary>;
+
+export const EmailSummaryList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(EmailSummary),
+    has_more: z.boolean(),
+  })
+  .meta({
+    id: "EmailSummaryList",
+    examples: [{ object: "list", data: [SUMMARY_EXAMPLE], has_more: false }],
+  });
+
+export type EmailSummaryListOutput = z.output<typeof EmailSummaryList>;
+
+export const DEFAULT_EMAIL_LIST_LIMIT = 20;
+export const MAX_EMAIL_LIST_LIMIT = 100;
+
+/** A comma-separated list of enum values (`status=failed,canceled`). */
+function csvEnum<const T extends readonly [string, ...string[]]>(values: T, description: string) {
+  const item = z.enum(values);
+  return z
+    .string()
+    .transform((value, ctx) => {
+      const out: T[number][] = [];
+      for (const part of value.split(",").map((piece) => piece.trim())) {
+        if (part.length === 0) continue;
+        const parsed = item.safeParse(part);
+        if (!parsed.success) {
+          ctx.addIssue({ code: "custom", message: `Invalid value "${part}".` });
+          return z.NEVER;
+        }
+        out.push(parsed.data);
+      }
+      return out;
+    })
+    .optional()
+    .meta({ description });
+}
+
+export const ListEmailsQuery = z
+  .strictObject({
+    to: z
+      .string()
+      .trim()
+      .min(1)
+      .max(320)
+      .transform((value) => value.toLowerCase())
+      .optional()
+      .meta({
+        description:
+          "Only emails with this recipient (in `to`, `cc` or `bcc`; the bare address, any case).",
+        examples: ["user@example.com"],
+      }),
+    recipient_status: csvEnum(
+      EMAIL_RECIPIENT_STATUSES,
+      "Only emails with a recipient in one of these statuses, comma-separated: " +
+        "`bounced,complained`. With `to`, that recipient's status.",
+    ),
+    status: csvEnum(EMAIL_STATUSES, "Only emails in these statuses, comma-separated: `failed`."),
+    q: z
+      .string()
+      .max(256)
+      .optional()
+      .meta({ description: "Free text, matched against the subject and the `to` addresses." }),
+    category: Category.optional().meta({ description: "Only emails of this category." }),
+    batch_id: z.string().max(64).optional().meta({ description: "Only the emails of this batch." }),
+    created_after: z.iso
+      .datetime({ offset: true })
+      .optional()
+      .meta({ description: "Only emails created at or after this time." }),
+    created_before: z.iso
+      .datetime({ offset: true })
+      .optional()
+      .meta({ description: "Only emails created before this time." }),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_EMAIL_LIST_LIMIT)
+      .optional()
+      .meta({ description: `1-${MAX_EMAIL_LIST_LIMIT}, default ${DEFAULT_EMAIL_LIST_LIMIT}.` }),
+    after: z
+      .string()
+      .max(64)
+      .optional()
+      .meta({ description: "Cursor: the `id` of the last email of the previous page." }),
+  })
+  .meta({ description: "Emails are returned newest first." });
+
+export type ListEmailsQueryOutput = z.output<typeof ListEmailsQuery>;
 
 const BATCH_EXAMPLE_ID = "batch_01k8d0n6x5f3w2e1r9t7y4u6i8";
 
@@ -1064,6 +1216,7 @@ export const EmailBatchObject = z
             tags: [],
             category: "digest",
             status: "queued",
+            failure: null,
             recipients: [
               { address: "ada@example.com", type: "to", status: "queued", last_event_at: null },
             ],

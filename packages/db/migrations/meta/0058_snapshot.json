@@ -1,5 +1,5 @@
 {
-  "id": "062ed3b9-e4b5-463d-818e-e1fd18b30fb9",
+  "id": "8bdc62ca-c488-4d86-8409-2cffd0c30e23",
   "prevId": "1684f478-a53b-43fa-beec-5bf6218fb35a",
   "version": "7",
   "dialect": "postgresql",
@@ -6602,7 +6602,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "email_recipient_organization_address_idx": {
+          "name": "email_recipient_organization_address_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "email_recipient_email_fk": {
           "name": "email_recipient_email_fk",
@@ -14109,8 +14131,7 @@
         "api",
         "email",
         "webhook",
-        "risk",
-        "smtp"
+        "risk"
       ]
     },
     "public.mail_from_status": {

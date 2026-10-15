@@ -1,1 +1,0 @@
-ALTER TYPE "public"."log_source" ADD VALUE 'smtp';

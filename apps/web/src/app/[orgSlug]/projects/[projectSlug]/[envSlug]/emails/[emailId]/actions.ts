@@ -74,6 +74,15 @@ export async function rescheduleEmailAction(
       emailId: formString(formData, "emailId"),
       scheduledAt: parsed.data.scheduled_at,
     });
+    // The same event the API's reschedule records.
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "email.rescheduled",
+      target: { type: "email", id: email.id },
+      projectId: found.project.id,
+      environmentId: found.environment.id,
+      metadata: { scheduled_at: email.scheduled_at },
+    });
     refresh();
     return { scheduledAt: email.scheduled_at ?? parsed.data.scheduled_at };
   });

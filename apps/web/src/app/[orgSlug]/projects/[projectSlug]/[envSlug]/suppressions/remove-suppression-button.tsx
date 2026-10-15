@@ -11,8 +11,8 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { removeSuppressionAction } from "./actions";
 
 export function RemoveSuppressionButton(props: {
@@ -24,7 +24,9 @@ export function RemoveSuppressionButton(props: {
   scope: string;
 }) {
   // On success the page re-renders without this entry, which unmounts the dialog.
-  const [state, formAction, pending] = useActionState(removeSuppressionAction, null);
+  const [state, formAction, pending] = useActionToast(removeSuppressionAction, {
+    success: `${props.address} is no longer suppressed`,
+  });
 
   return (
     <AlertDialog>

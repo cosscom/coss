@@ -44,6 +44,8 @@ export const RETENTION_DAYS = {
   billingProviderEvents: 30,
   /** Settled billing notification emails (usage alerts, payment reminders). */
   billingNotifications: 90,
+  /** Settled push notifications to the iOS app (what was sent, not its text). */
+  pushNotifications: 30,
   /**
    * Hooks messages with their deliveries and attempts: whole days are dropped (by message day),
    * including deliveries still held for a suspended organization and messages of deleted
@@ -181,7 +183,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "expired_auth",
     label: "Expired sessions and invitations",
     description:
-      "Sign-in sessions, verification and reset tokens, and invitations that were never accepted.",
+      "Sign-in sessions (with the iOS app's push notification registration), verification and reset tokens, and invitations that were never accepted.",
     period: { days: RETENTION_DAYS.expiredAuth, after: "expiry" },
   },
   {
@@ -203,6 +205,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     label: "Billing notification emails",
     description: "Records of usage alerts and payment reminders sent to your billing contacts.",
     period: { days: RETENTION_DAYS.billingNotifications, after: "creation" },
+  },
+  {
+    id: "push_notifications",
+    label: "Push notifications",
+    description:
+      "Records of the notifications sent to the iOS app: their kind, subject and how many devices received them, never their text.",
+    period: { days: RETENTION_DAYS.pushNotifications, after: "creation" },
   },
   {
     id: "payment_provider_events",

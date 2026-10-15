@@ -150,7 +150,17 @@ export interface TrackingOptions {
   clicks?: boolean;
 }
 
-/** Body of `POST /v1/emails`. */
+/**
+ * A React element, such as `<WelcomeEmail name="Ada" />`. Described by its shape so the SDK needs
+ * no React types: any JSX element fits.
+ */
+export interface ReactEmailElement {
+  type: unknown;
+  props: unknown;
+  key: unknown;
+}
+
+/** Body of `POST /v1/emails`, plus `react`, which the SDK renders before sending. */
 export interface SendEmailParams {
   /** `"you@example.com"` or `"Your Name <you@example.com>"`. */
   from: string;
@@ -159,9 +169,16 @@ export interface SendEmailParams {
   bcc?: string | string[];
   reply_to?: string | string[];
   subject: string;
-  /** At least one of `html` or `text` is required. */
+  /** At least one of `html`, `text` or `react` is required. */
   html?: string;
+  /** Without it, an `html` email goes out with a text part generated from the HTML. */
   text?: string;
+  /**
+   * A [React Email](https://react.email) component, rendered by the SDK into `html` and, unless you
+   * pass `text`, into `text` too. Needs the optional peer dependency `@react-email/render`
+   * (`npm install @react-email/render`). Can't be combined with `html`; never sent to the API as is.
+   */
+  react?: ReactEmailElement;
   /** Custom headers. Names are case-insensitive; reserved names such as `subject` are rejected. */
   headers?: Record<string, string>;
   tags?: EmailTag[];
@@ -219,6 +236,16 @@ export interface EmailLink {
   last_clicked_at: string | null;
 }
 
+/** Why an email failed as a whole. */
+export interface EmailFailure {
+  /**
+   * E.g. `all_recipients_suppressed`, `domain_not_verified`, `content_rejected`,
+   * `attachments_unavailable`, `dispatch_failed` or `provider_error`.
+   */
+  code: string;
+  message: string;
+}
+
 /** An email as returned by the API. Recipient fields are always arrays. */
 export interface Email {
   object: "email";
@@ -236,6 +263,8 @@ export interface Email {
   tags: EmailTag[];
   category: string | null;
   status: EmailStatus;
+  /** Why the email failed; `null` unless `status` is `"failed"`. */
+  failure: EmailFailure | null;
   /** Every distinct recipient across `to`, `cc` and `bcc`, with its delivery status. */
   recipients: EmailRecipient[];
   /** Attachment metadata; the content is discarded once the email is sent. */
@@ -251,6 +280,33 @@ export interface Email {
   scheduled_at: string | null;
   /** The batch that sent the email (`coss.email.sendBatch`), or `null` if it was sent alone. */
   batch_id: string | null;
+}
+
+/** An email in a list (`coss.email.list`): everything but its content. */
+export type EmailSummary = Omit<Email, "html" | "text" | "headers" | "attachments">;
+
+/** Filters of `coss.email.list`. Emails are returned newest first. */
+export interface ListEmailsParams {
+  /** Only emails with this recipient (in `to`, `cc` or `bcc`; the bare address, any case). */
+  to?: string;
+  /** Only emails with a recipient in one of these statuses (with `to`, that recipient's). */
+  recipient_status?: EmailRecipientStatus[];
+  /** Only emails in these statuses. */
+  status?: EmailStatus[];
+  /** Free text, matched against the subject and the `to` addresses. */
+  q?: string;
+  /** Only emails of this category. */
+  category?: string;
+  /** Only the emails of this batch. */
+  batch_id?: string;
+  /** Only emails created at or after this time. */
+  created_after?: Date | string;
+  /** Only emails created before this time. */
+  created_before?: Date | string;
+  /** 1-100, default 20. */
+  limit?: number;
+  /** Cursor: the `id` of the last email of the previous page. */
+  after?: string;
 }
 
 /** Emails sent together by `coss.email.sendBatch`. */
