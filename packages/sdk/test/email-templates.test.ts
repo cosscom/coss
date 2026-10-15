@@ -103,6 +103,19 @@ describe("coss.email.templates", () => {
     expect(calls).toHaveLength(2);
   });
 
+  test("publish is retried only with a revision, which keeps a retry from publishing newer edits", async () => {
+    const unpinned = client(json(503, {}), json(200, version));
+    expect((await unpinned.coss.email.templates.publish("welcome")).error?.status).toBe(503);
+    expect(unpinned.calls).toHaveLength(1);
+
+    const pinned = client(json(503, {}), json(200, version));
+    expect(await pinned.coss.email.templates.publish("welcome", { revision: 2 })).toEqual({
+      data: version,
+      error: null,
+    });
+    expect(pinned.calls).toHaveLength(2);
+  });
+
   test("send takes a template instead of a subject and body", async () => {
     const params: SendEmailParams = {
       from: "Acme <hello@acme.com>",

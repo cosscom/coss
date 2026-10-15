@@ -145,7 +145,8 @@ await coss.email.templates.updateDraft("receipt", {
   never retries a save on its own (a repeat of one that went through would be refused): read the
   draft again before trying once more.
 - **Versions**: `publish` copies the draft into the next version (1, 2, 3…), which never changes.
-  Publishing a draft without changes returns the current version, so retries are safe. List them
+  Publishing a draft without changes returns the current version, so a publish with the `revision`
+  you reviewed is safe to retry (the SDK retries only those). List them
   with `versions.list`, and bring an old one back with `versions.restore` (it replaces the draft;
   publish it to send it again).
 - **Locales**: each version holds one subject, HTML and text per locale (up to 30), published

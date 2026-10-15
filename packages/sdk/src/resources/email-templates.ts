@@ -179,8 +179,10 @@ export class EmailTemplatesResource {
   }
 
   /**
-   * Publishes the draft as the next version, which sends use from then on. Safe to retry: a draft
-   * without changes since the last publish returns that version.
+   * Publishes the draft as the next version, which sends use from then on. Automatically retried
+   * only with a `revision`: a draft without changes since the last publish returns that version,
+   * and one saved again since is refused. Without it, a retry could publish someone else's newer
+   * edits as yet another version.
    */
   publish(
     template: string,
@@ -190,6 +192,7 @@ export class EmailTemplatesResource {
     return this.#http.request<EmailTemplateVersion>({
       method: "POST",
       path: `${templatePath(template)}/publish`,
+      retry: params.revision !== undefined,
       body: params,
       signal: options?.signal,
     });

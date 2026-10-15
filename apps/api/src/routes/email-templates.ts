@@ -243,7 +243,8 @@ export const publishEmailTemplateRoute = createRoute({
   description:
     "Copies the draft into the next version, which sends use from then on. Emails already " +
     "accepted keep the content they were rendered with. A draft without changes since the last " +
-    "publish returns that version, so retrying is safe.",
+    "publish returns that version, so retrying with the `revision` you reviewed is safe (without " +
+    "it, a retry could publish edits saved in between).",
   security: [{ bearerAuth: [] }],
   middleware: [
     requireApiKey({ emailTemplate: ["publish"] }),
