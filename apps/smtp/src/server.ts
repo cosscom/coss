@@ -91,6 +91,12 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
   const sessions = new Map<string, { context: ApiKeyContext; key: string }>();
   /** Sessions between MAIL FROM and the reply to their message. */
   const inTransaction = new Set<string>();
+  /**
+   * The negotiated TLS protocol per session (`TLSv1.3`), read in `onSecure`. smtp-server's
+   * `session.tlsOptions` is `getCipher()`, whose `version` is the suite's minimum protocol, not
+   * the one in use (Bun reports `TLSv1/SSLv3` for every suite).
+   */
+  const tlsProtocols = new Map<string, string>();
   let draining = false;
 
   function log(
@@ -125,8 +131,9 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
       attributes: {
         smtp: {
           port: session.localPort,
+          tls: tlsProtocols.get(session.id) ?? null,
           // smtp-server stores `getCipher()` here once the connection is encrypted.
-          tls: (session.tlsOptions as { version?: string } | undefined)?.version ?? null,
+          cipher: (session.tlsOptions as { name?: string } | undefined)?.name ?? null,
           client_hostname: session.hostNameAppearsAs ?? null,
           ...entry.attributes,
         },
@@ -384,13 +391,16 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
     },
     onData,
     // STARTTLS starts the session over (RFC 3207): smtp-server forgets its user, and so do we.
-    onSecure: (_socket, session, callback) => {
+    onSecure: (socket, session, callback) => {
       sessions.delete(session.id);
+      const protocol = "getProtocol" in socket ? socket.getProtocol() : null;
+      if (protocol) tlsProtocols.set(session.id, protocol);
       callback();
     },
     onClose: (session) => {
       sessions.delete(session.id);
       inTransaction.delete(session.id);
+      tlsProtocols.delete(session.id);
     },
   };
   const implicitTls = new SMTPServer({ ...shared, secure: true });
