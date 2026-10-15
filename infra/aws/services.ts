@@ -706,6 +706,8 @@ export const SERVICES: Service[] = [
       ...rateLimits.filter((v) =>
         ["VALKEY_URL", "VALKEY_CLUSTER", "RATE_LIMIT_KEY_PREFIX"].includes(v.name),
       ),
+      // Required here: sends with tracking on are refused without it (no API_PUBLIC_URL fallback).
+      { ...trackingPublicUrl, required: true },
       {
         name: "SMTP_HOSTNAME",
         kind: "plain",

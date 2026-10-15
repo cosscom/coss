@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { connect } from "node:net";
 import { db, schema } from "@coss/db";
-import { createEmailService, FakeEmailProvider } from "@coss/email";
+import { FakeEmailProvider } from "@coss/email";
 import { createVerifiedDomain, memoryDispatchQueue } from "@coss/email/testing";
 import { memoryLogWriter } from "@coss/logs/testing";
 import type { OverrideRules } from "@coss/ratelimit";
@@ -11,6 +11,7 @@ import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy
 import { and, eq } from "drizzle-orm";
 import nodemailer, { type Transporter } from "nodemailer";
 import type SMTPTransport from "nodemailer/lib/smtp-transport/index.js";
+import { createRelayEmailService } from "../src/email-service.ts";
 import { createSmtpRelay, type SmtpPorts, type SmtpRelay } from "../src/server.ts";
 import { selfSignedCertificate } from "../src/tls.ts";
 
@@ -31,10 +32,11 @@ async function startRelay(opts: { maxMessageBytes?: number; closeTimeoutMs?: num
   const relay = createSmtpRelay({
     hostname: "localhost",
     tls,
-    emailService: createEmailService({
+    emailService: createRelayEmailService({
       liveProvider: new FakeEmailProvider({ log: false }),
       sandboxProvider: new FakeEmailProvider({ log: false }),
       queue,
+      trackingBaseUrl: "https://track.coss.test",
     }),
     rateLimiter: memoryLimiter({
       overrides: async (organizationId) => overrides.get(organizationId) ?? {},
@@ -146,6 +148,21 @@ describe("SMTP relay", () => {
       .from(schema.email)
       .where(eq(schema.email.id, emailIdOf(info)));
     expect(row?.environmentId).toBe(tenant.production.id);
+  });
+
+  test("tracking set by X-Coss-Tracking is stored with the email", async () => {
+    const info = await transport(harness, tenant.sandboxKey).sendMail({
+      from: "hello@acme.test",
+      to: "ada@example.com",
+      subject: "Tracked",
+      html: '<p><a href="https://acme.test">Hi</a></p>',
+      headers: { "X-Coss-Tracking": "opens, clicks" },
+    });
+    const [row] = await db
+      .select()
+      .from(schema.email)
+      .where(eq(schema.email.id, emailIdOf(info)));
+    expect(row).toMatchObject({ trackOpens: true, trackClicks: true });
   });
 
   test("an unverified From domain is refused for live keys", async () => {

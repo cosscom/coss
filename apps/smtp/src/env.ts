@@ -25,6 +25,9 @@ export const env = createEnv({
     SMTP_TLS_PASSPHRASE: production ? z.string().min(4) : z.string().optional(),
     SMTP_TLS_CERT_FILE: z.string().optional(),
     SMTP_TLS_KEY_FILE: z.string().optional(),
+    // Origin of open/click tracking links: sends with tracking on are refused without it. The
+    // API serves /t/*; locally that's the API on :3001 (production: https://track.cosslinks.com).
+    TRACKING_PUBLIC_URL: production ? z.url() : z.url().default("http://localhost:3001"),
     // Which provider live environments use (the sender check needs its name).
     ...emailEnvShape,
     // Rate limits and quotas, counted in Valkey (shared with the API: one budget per key). Client

@@ -158,6 +158,7 @@ plain_env = {
   smtp = {
     BETTER_AUTH_URL          = "https://coss.com"
     SMTP_HOSTNAME            = "smtp.coss.com"
+    TRACKING_PUBLIC_URL      = "https://track.cosslinks.com"
     EMAIL_PROVIDER           = "ses"
     AWS_REGION               = "us-east-2"
     SES_CONFIGURATION_SET    = "coss"

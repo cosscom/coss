@@ -8,12 +8,12 @@ import "./instrument.ts";
 import { createUsageGate, planRateLimits } from "@coss/billing";
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
-import { createEmailService } from "@coss/email";
 import { ensureEmailDispatchQueue, pgBossDispatchQueue } from "@coss/email/dispatch";
 import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
 import { createLogWriter } from "@coss/logs";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import * as Sentry from "@sentry/bun";
+import { createRelayEmailService } from "./email-service.ts";
 import { env } from "./env.ts";
 import { createSmtpRelay } from "./server.ts";
 import {
@@ -59,10 +59,12 @@ const logWriter = createLogWriter();
 const relay = createSmtpRelay({
   hostname: env.SMTP_HOSTNAME,
   tls: await loadTls(),
-  emailService: createEmailService({
+  emailService: createRelayEmailService({
     liveProvider: email.liveProvider,
     sandboxProvider: email.sandboxProvider,
     queue: pgBossDispatchQueue(jobs),
+    trackingBaseUrl: env.TRACKING_PUBLIC_URL,
+    trackingDomainProvider: email.trackingHostnames.name,
     billing: createUsageGate(),
   }),
   rateLimiter: rateLimits.limiter,

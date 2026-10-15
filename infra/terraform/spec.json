@@ -1152,6 +1152,13 @@
           "description": "Counter namespace; must match the cache user's ACL."
         },
         {
+          "name": "TRACKING_PUBLIC_URL",
+          "kind": "plain",
+          "required": true,
+          "value": "https://track.cosslinks.com",
+          "description": "Origin of the open/click tracking links in emails (defaults to API_PUBLIC_URL): its own domain, so abuse flagged by URL blocklists never lands on coss.com (infra/aws/routing.ts)."
+        },
+        {
           "name": "SMTP_HOSTNAME",
           "kind": "plain",
           "required": true,
