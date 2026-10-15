@@ -82,6 +82,7 @@ export const sampleEmail: Email = {
   tags: [{ name: "category", value: "welcome" }],
   category: null,
   status: "sent",
+  failure: null,
   recipients: [
     {
       address: "delivered@example.com",

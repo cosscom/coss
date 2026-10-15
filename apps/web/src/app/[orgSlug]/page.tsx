@@ -1,4 +1,4 @@
-import { listProjectsWithEnvironments, PROJECT_NAME_MAX_LENGTH } from "@coss/tenancy";
+import { PROJECT_NAME_MAX_LENGTH } from "@coss/tenancy";
 import { ArrowUpRightIcon, FolderIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -8,6 +8,7 @@ import { Panel, PanelBody } from "@/components/panel";
 import { StatusDot } from "@/components/status-dot";
 import { formatDateTime } from "@/lib/format";
 import { environmentPath } from "@/lib/navigation";
+import { listProjectsWithDefaultEnvironment } from "@/lib/projects";
 import { requireOrgMember } from "@/lib/session";
 import { CreateProjectDialog } from "./create-project-form";
 import { RenameProjectDialog } from "./rename-project-form";
@@ -17,7 +18,7 @@ export const metadata: Metadata = { title: "Projects" };
 export default async function ProjectsPage({ params }: PageProps<"/[orgSlug]">) {
   const { orgSlug } = await params;
   const { organization, can } = await requireOrgMember(orgSlug);
-  const projects = await listProjectsWithEnvironments({ organizationId: organization.id });
+  const projects = await listProjectsWithDefaultEnvironment(organization.id);
   const canCreate = can({ project: ["create"] });
   const canRename = can({ project: ["update"] });
   const createDialog = canCreate ? (
@@ -51,8 +52,7 @@ export default async function ProjectsPage({ params }: PageProps<"/[orgSlug]">) 
         // Each tile draws its right and bottom rules; the container clips the outer ones.
         <div className="overflow-hidden rounded-2xl border bg-card shadow-xs/5">
           <div className="-me-px -mb-px grid md:grid-cols-2 xl:grid-cols-3">
-            {projects.map(({ project, environments }) => {
-              const first = environments[0];
+            {projects.map(({ project, environments, defaultEnvironment: opens }) => {
               return (
                 <article
                   className="group relative flex flex-col border-e border-b"
@@ -64,10 +64,10 @@ export default async function ProjectsPage({ params }: PageProps<"/[orgSlug]">) 
                     </span>
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <h2 className="truncate font-heading font-semibold text-lg tracking-[-0.01em]">
-                        {first ? (
+                        {opens ? (
                           <Link
                             className="after:absolute after:inset-0 focus-visible:outline-none"
-                            href={environmentPath(organization.slug, project.slug, first.slug)}
+                            href={environmentPath(organization.slug, project.slug, opens.slug)}
                           >
                             {project.name}
                           </Link>

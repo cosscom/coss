@@ -36,7 +36,15 @@ export type OrganizationMember = {
   id: string;
   role: string;
   createdAt: Date;
-  user: { id: string; name: string; email: string; twoFactorEnabled: boolean };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    emailVerified: boolean;
+    /** The picture Google or GitHub gave the account (or an SSO provider), if any. */
+    image: string | null;
+    twoFactorEnabled: boolean;
+  };
 };
 
 export type PendingInvitation = {
@@ -66,6 +74,8 @@ const memberColumns = {
     id: user.id,
     name: user.name,
     email: user.email,
+    emailVerified: user.emailVerified,
+    image: user.image,
     twoFactorEnabled: sql<boolean>`coalesce(${user.twoFactorEnabled}, false)`,
   },
 };
