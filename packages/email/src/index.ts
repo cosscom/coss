@@ -336,6 +336,30 @@ export {
   UNCLAIMED_FAIL_MS,
   UNCLAIMED_REQUEUE_MS,
 } from "./sweeps.ts";
+export {
+  createEmailTemplate,
+  deleteEmailTemplate,
+  type EmailTemplateRecord,
+  type EmailTemplateRow,
+  getEmailTemplate,
+  getTemplateDraft,
+  getTemplateVersion,
+  MAX_TEMPLATES_PER_ENVIRONMENT,
+  pageEmailTemplates,
+  pageTemplateVersions,
+  publishTemplateDraft,
+  type RenderedTemplateSend,
+  renderTemplateForSend,
+  requireEmailTemplate,
+  restoreTemplateVersion,
+  saveTemplateDraft,
+  type TemplateEnvironment,
+  type TemplateVersion,
+  templateVersionProblems,
+  toEmailTemplateObject,
+  toEmailTemplateVersionObject,
+  updateEmailTemplate,
+} from "./templates.ts";
 export { isTrackingToken, newTrackingToken, recordClick, recordOpen } from "./tracking.ts";
 export {
   checkTrackingDomain,

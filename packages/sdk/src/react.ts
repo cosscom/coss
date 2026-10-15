@@ -4,7 +4,11 @@
  * SDK itself keeps zero dependencies.
  */
 import { type CossError, clientError } from "./core/errors.ts";
-import type { SendEmailParams } from "./types/email.ts";
+import type {
+  SendEmailContentParams,
+  SendEmailParams,
+  SendEmailTemplateParams,
+} from "./types/email.ts";
 
 /** What the SDK needs from `@react-email/render` (its 1.x and 2.x releases both fit). */
 export interface ReactEmailRenderer {
@@ -13,8 +17,10 @@ export interface ReactEmailRenderer {
   toPlainText?: (html: string) => string;
 }
 
-/** A send's body as the API takes it. */
-export type SendEmailBody = Omit<SendEmailParams, "react">;
+/** A send's body as the API takes it: its own content or a template, without `react`. */
+export type SendEmailBody =
+  | Omit<SendEmailContentParams, "react">
+  | Omit<SendEmailTemplateParams, "react">;
 
 let renderer: Promise<ReactEmailRenderer | null> | undefined;
 
@@ -43,6 +49,9 @@ export async function renderReactEmail(
 ): Promise<{ body: SendEmailBody; error: null } | { body: null; error: CossError }> {
   const { react, ...body } = params;
   if (react === undefined) return { body, error: null };
+  if (body.template_id !== undefined) {
+    return failure("validation_error", "Pass either `react` or `template_id`, not both.", param);
+  }
   if (body.html !== undefined) {
     return failure("validation_error", "Pass either `react` or `html`, not both.", param);
   }

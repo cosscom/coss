@@ -198,6 +198,11 @@ export const email = pgTable(
     // claims it (suppressed ones excluded); `usage_recorded_at` marks it metered (once, when sent).
     billableRecipients: integer("billable_recipients"),
     usageRecordedAt: timestamp("usage_recorded_at", { withTimezone: true }),
+    // The template the email was rendered from (no FK: emails outlive their templates). The
+    // version is NULL for the dashboard's test sends of a draft.
+    templateId: text("template_id"),
+    templateVersion: integer("template_version"),
+    templateLocale: text("template_locale"),
   },
   (t) => [
     foreignKey({
@@ -463,6 +468,126 @@ export const emailTrackingRule = pgTable(
     unique("email_tracking_rule_environment_category_unique")
       .on(t.environmentId, t.category)
       .nullsNotDistinct(),
+  ],
+);
+
+/** A declared template variable (`@coss/email/templates` `TemplateVariable`). */
+export type EmailTemplateVariableJson = {
+  name: string;
+  type: "string" | "number" | "boolean" | "list";
+  required: boolean;
+  default?: string | number | boolean;
+  description?: string;
+  fields?: { name: string; type: "string" | "number" | "boolean"; required: boolean }[];
+};
+
+/**
+ * An environment's email template. Its content lives in versions: one draft (`version` NULL) that
+ * is edited, and immutable published versions numbered from 1; `published_version` is the one
+ * sends use unless they pin another. Sends address it by id or by its `alias`, which can be the
+ * same in every environment.
+ */
+export const emailTemplate = pgTable(
+  "email_template",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailTemplate)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    name: text("name").notNull(),
+    alias: text("alias"),
+    description: text("description"),
+    publishedVersion: integer("published_version"),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+    // Stable list order (keyset pages by created_at, then this).
+    sequence: bigint("sequence", { mode: "number" }).generatedAlwaysAsIdentity().notNull(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_template_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    // NULL aliases are distinct.
+    unique("email_template_environment_alias_unique").on(t.environmentId, t.alias),
+    index("email_template_environment_created_at_idx").on(
+      t.environmentId,
+      t.createdAt.desc(),
+      t.sequence.desc(),
+    ),
+    unique("email_template_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
+/**
+ * A template's draft (`version` NULL, one per template) or one of its published versions, which
+ * never change. `revision` counts the draft's saves, so an editor can refuse to overwrite (or
+ * publish) a draft someone else changed meanwhile.
+ */
+export const emailTemplateVersion = pgTable(
+  "email_template_version",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailTemplateVersion)),
+    organizationId: text("organization_id").notNull(),
+    templateId: text("template_id").notNull(),
+    version: integer("version"),
+    defaultLocale: text("default_locale").notNull(),
+    variables: jsonb("variables").$type<EmailTemplateVariableJson[]>().notNull().default([]),
+    // Example values for the dashboard's preview and test sends (customer data, never rendered by
+    // API versioning: `OPAQUE_FIELDS`).
+    sampleVariables: jsonb("sample_variables")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    revision: integer("revision").notNull().default(1),
+    // Draft only: saved since the last publish (or never published).
+    hasUnpublishedChanges: boolean("has_unpublished_changes").notNull().default(true),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_template_version_template_fk",
+      columns: [t.templateId, t.organizationId],
+      foreignColumns: [emailTemplate.id, emailTemplate.organizationId],
+    }).onDelete("cascade"),
+    unique("email_template_version_template_version_unique").on(t.templateId, t.version),
+    uniqueIndex("email_template_version_draft_unique")
+      .on(t.templateId)
+      .where(sql`${t.version} is null`),
+    unique("email_template_version_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
+/** One locale's subject, HTML and text in a template version. */
+export const emailTemplateContent = pgTable(
+  "email_template_content",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailTemplateContent)),
+    organizationId: text("organization_id").notNull(),
+    versionId: text("version_id").notNull(),
+    locale: text("locale").notNull(),
+    subject: text("subject").notNull(),
+    html: text("html"),
+    text: text("text"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_template_content_version_fk",
+      columns: [t.versionId, t.organizationId],
+      foreignColumns: [emailTemplateVersion.id, emailTemplateVersion.organizationId],
+    }).onDelete("cascade"),
+    unique("email_template_content_version_locale_unique").on(t.versionId, t.locale),
   ],
 );
 

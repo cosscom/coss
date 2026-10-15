@@ -45,6 +45,7 @@ export function email(overrides: Partial<Email> = {}): Email {
     sent_at: "2026-10-15T11:59:01.000Z",
     scheduled_at: null,
     batch_id: null,
+    template: null,
     ...overrides,
   };
 }

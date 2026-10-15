@@ -131,8 +131,13 @@ export const sendEmailRoute = createRoute({
     ),
     422: errorDoc(
       "The body failed validation (`validation_error`, see `issues`), the `from` domain is not a " +
-        "verified domain of the organization (`domain_not_verified`, live keys only), or the " +
-        "`Idempotency-Key` was already used with a different body (`idempotency_key_reused`).",
+        "verified domain of the organization (`domain_not_verified`, live keys only), the " +
+        "`Idempotency-Key` was already used with a different body (`idempotency_key_reused`), " +
+        "or the template can't be sent: it doesn't exist (`template_not_found`), has no " +
+        "published version (`template_not_published`) or no such version " +
+        "(`template_version_not_found`), the variables don't match it " +
+        "(`invalid_template_variables`, see `issues`), or it renders an invalid subject or " +
+        "empty body (`template_render_failed`).",
     ),
   },
 });
@@ -204,8 +209,9 @@ export const sendEmailBatchRoute = createRoute({
     422: errorDoc(
       "The body failed validation (`validation_error`, see `issues`), a `from` domain is not a " +
         "verified domain of the organization (`domain_not_verified`, live keys only; `param` " +
-        "names the email), or the `Idempotency-Key` was already used with a different body " +
-        "(`idempotency_key_reused`).",
+        "names the email), the `Idempotency-Key` was already used with a different body " +
+        "(`idempotency_key_reused`), or an email's template can't be sent (the `template_…` " +
+        "codes of `POST /v1/emails`; `param` names the email).",
     ),
   },
 });
@@ -390,6 +396,7 @@ export const listEmailLinksRoute = createRoute({
     404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
   },
 });
+
 export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
 

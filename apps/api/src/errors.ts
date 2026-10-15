@@ -47,7 +47,11 @@ export const ErrorEnvelope = z
           }),
         )
         .optional()
-        .meta({ description: "Every validation problem (`validation_error` only)." }),
+        .meta({
+          description:
+            "Every problem: of the request (`validation_error`) or of a template " +
+            "(`invalid_template_variables`, `template_invalid`).",
+        }),
       request_id: z.string().meta({ examples: ["req_01k7c8m4q2f3e9v6t5r1n0p8yz"] }),
     }),
   })
@@ -189,7 +193,28 @@ function fromEmailError(error: EmailError): ApiError {
       return new ApiError(402, { type: "billing_error", code: error.code, message: error.message });
     case "email_not_cancelable":
     case "email_not_reschedulable":
+    case "template_limit_reached":
       return invalidRequest(error.code, error.message);
+    case "template_not_found":
+    case "template_not_published":
+      return invalidRequest(error.code, error.message, error.param ?? "template_id");
+    case "template_version_not_found":
+      return invalidRequest(error.code, error.message, error.param ?? "template_version");
+    case "template_render_failed":
+      return invalidRequest(error.code, error.message, error.param ?? "variables");
+    case "template_alias_taken":
+      return invalidRequest(error.code, error.message, error.param ?? "alias");
+    case "template_revision_mismatch":
+      return invalidRequest(error.code, error.message, error.param ?? "revision");
+    case "invalid_template_variables":
+    case "template_invalid":
+      return new ApiError(422, {
+        type: "invalid_request_error",
+        code: error.code,
+        message: error.message,
+        ...(error.param && { param: error.param }),
+        ...(error.issues && { issues: error.issues }),
+      });
   }
 }
 

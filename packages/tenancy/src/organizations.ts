@@ -124,6 +124,28 @@ export async function listOrganizationMembers(input: {
     .orderBy(asc(member.createdAt), asc(member.id));
 }
 
+/**
+ * The verified email addresses of the organization's members who aren't banned, oldest member
+ * first: who the dashboard's test sends may go to.
+ */
+export async function listVerifiedMemberEmails(input: {
+  organizationId: string;
+}): Promise<string[]> {
+  const rows = await db
+    .select({ email: user.email })
+    .from(member)
+    .innerJoin(user, eq(user.id, member.userId))
+    .where(
+      and(
+        eq(member.organizationId, input.organizationId),
+        eq(user.emailVerified, true),
+        sql`coalesce(${user.banned}, false) = false`,
+      ),
+    )
+    .orderBy(asc(member.createdAt), asc(member.id));
+  return rows.map((row) => row.email);
+}
+
 /** One member of the organization (ownership check before changing it), or `null`. */
 export async function getOrganizationMember(input: {
   organizationId: string;

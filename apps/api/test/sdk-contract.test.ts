@@ -123,6 +123,102 @@ describe("coss SDK against the API", () => {
     expect(sandboxProvider.sent).toHaveLength(1);
   });
 
+  test("email templates: create, draft, publish, send by alias, versions and restore", async () => {
+    const tenant = await createTestTenant();
+    const { app, sandboxProvider, dispatch } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    const created = await coss.email.templates.create({
+      name: "Receipt",
+      alias: "receipt",
+      variables: [
+        { name: "first_name", type: "string" },
+        {
+          name: "items",
+          type: "list",
+          fields: [
+            { name: "name", type: "string" },
+            { name: "price", type: "number" },
+          ],
+        },
+      ],
+      contents: [
+        {
+          locale: "en",
+          subject: "Your receipt, {{first_name}}",
+          html: "{{#each items}}<li>{{name}}: {{price}}</li>{{/each}}",
+        },
+      ],
+    });
+    expect(created.error).toBeNull();
+    expect(created.data).toMatchObject({ alias: "receipt", published_version: null });
+
+    const draft = await coss.email.templates.getDraft("receipt");
+    expect(draft.data).toMatchObject({ version: null, revision: 1, problems: [] });
+    const updated = await coss.email.templates.updateDraft("receipt", {
+      revision: 1,
+      variables: draft.data?.variables,
+      contents: [
+        ...(draft.data?.contents ?? []),
+        { locale: "fr", subject: "Votre reçu, {{first_name}}", text: "Merci !" },
+      ],
+    });
+    expect(updated.data?.revision).toBe(2);
+    const published = await coss.email.templates.publish("receipt", { revision: 2 });
+    expect(published.data).toMatchObject({ version: 1, revision: 2 });
+
+    const sent = await coss.email.send({
+      from: "Acme <billing@acme.com>",
+      to: "user@example.com",
+      template_id: "receipt",
+      locale: "fr-CA",
+      variables: { first_name: "Ada", items: [{ name: "Pro", price: 20 }] },
+    });
+    expect(sent.data).toMatchObject({
+      subject: "Votre reçu, Ada",
+      text: "Merci !",
+      template: { id: created.data?.id, version: 1, locale: "fr" },
+    });
+    const english = await coss.email.send({
+      from: "Acme <billing@acme.com>",
+      to: "user@example.com",
+      template_id: "receipt",
+      variables: { first_name: "Ada", items: [{ name: "Pro", price: 20 }] },
+    });
+    expect(english.data?.html).toBe("<li>Pro: 20</li>");
+    await dispatch();
+    expect(sandboxProvider.sent.map((message) => message.subject)).toEqual([
+      "Votre reçu, Ada",
+      "Your receipt, Ada",
+    ]);
+
+    const invalid = await coss.email.send({
+      from: "Acme <billing@acme.com>",
+      to: "user@example.com",
+      template_id: "receipt",
+      variables: {},
+    });
+    expect(invalid.error).toMatchObject({
+      type: "invalid_request_error",
+      code: "invalid_template_variables",
+    });
+
+    const versions = await coss.email.templates.versions.list("receipt");
+    expect(versions.data?.data.map((version) => version.version)).toEqual([1]);
+    expect((await coss.email.templates.versions.get("receipt", 1)).data?.version).toBe(1);
+    expect((await coss.email.templates.versions.restore("receipt", 1)).data?.revision).toBe(3);
+    expect((await coss.email.templates.update("receipt", { alias: null })).data?.alias).toBeNull();
+    if (!created.data) throw new Error("create failed");
+    const list = await coss.email.templates.list({ limit: 10 });
+    expect(list.data?.data.map((template) => template.id)).toEqual([created.data.id]);
+    expect((await coss.email.templates.get(created.data.id)).data?.name).toBe("Receipt");
+    expect((await coss.email.templates.delete(created.data.id)).data).toEqual({
+      object: "email_template",
+      id: created.data.id,
+      deleted: true,
+    });
+  });
+
   test("recipients and events report simulated delivery outcomes", async () => {
     const tenant = await createTestTenant();
     const { app, dispatch } = createTestApp();

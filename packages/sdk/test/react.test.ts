@@ -88,6 +88,26 @@ describe("coss.email.send with react", () => {
     expect(calls).toHaveLength(0);
   });
 
+  test("refuses react with a template before any request", async () => {
+    const { coss, calls } = client(json(202, sampleEmail));
+
+    // Typed out (`react?: never` on template sends); plain JavaScript can still pass both.
+    const params = {
+      from: email.from,
+      to: email.to,
+      template_id: "welcome",
+      react: createElement(Welcome, { name: "Ada" }),
+    } as unknown as Parameters<typeof coss.email.send>[0];
+    const result = await coss.email.send(params);
+
+    expect(result.error).toMatchObject({
+      type: "invalid_request_error",
+      code: "validation_error",
+      param: "react",
+    });
+    expect(calls).toHaveLength(0);
+  });
+
   test("a component that throws comes back as an error, never thrown", async () => {
     const { coss, calls } = client(json(202, sampleEmail));
 

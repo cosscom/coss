@@ -123,7 +123,7 @@ export function createApp(opts: CreateAppOptions) {
     "/v1/*",
     cors({
       origin: [...(opts.corsOrigins ?? [])],
-      allowMethods: ["GET", "POST", "PATCH", "DELETE"],
+      allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       allowHeaders: CORS_ALLOW_HEADERS,
       exposeHeaders: CORS_EXPOSE_HEADERS,
       maxAge: 600,
@@ -215,6 +215,11 @@ export function openApiDocumentConfig(serverUrl: string) {
     servers: [{ url: serverUrl }],
     tags: [
       { name: "Emails", description: "Send transactional email and follow its delivery." },
+      {
+        name: "Email templates",
+        description:
+          "Versioned, localized subjects and bodies with typed variables, sent by id or alias.",
+      },
       {
         name: "Suppressions",
         description: "Addresses that sends skip, added by bounces, complaints or you.",

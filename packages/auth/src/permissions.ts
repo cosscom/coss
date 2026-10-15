@@ -20,6 +20,8 @@ export const orgStatements = {
   environment: ["create", "read", "update", "delete"],
   apiKey: ["create", "read", "update", "delete"],
   email: ["send", "read"],
+  // An environment's email templates; `publish` makes a draft what sends use.
+  emailTemplate: ["create", "read", "update", "delete", "publish"],
   // Received emails: reading them is `email:read`; deleting one (its content too) is owners/admins.
   receivedEmail: ["delete"],
   domain: ["create", "read", "verify", "delete"],
@@ -57,6 +59,7 @@ const fullCossAccess = {
   environment: ["create", "read", "update", "delete"],
   apiKey: ["create", "read", "update", "delete"],
   email: ["send", "read"],
+  emailTemplate: ["create", "read", "update", "delete", "publish"],
   receivedEmail: ["delete"],
   domain: ["create", "read", "verify", "delete"],
   webhook: ["create", "read", "update", "delete"],
@@ -75,6 +78,7 @@ const readOnlyCossAccess = {
   environment: ["read"],
   apiKey: ["read"],
   email: ["read"],
+  emailTemplate: ["read"],
   domain: ["read"],
   webhook: ["read"],
   suppression: ["read"],

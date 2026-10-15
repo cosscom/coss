@@ -12,7 +12,7 @@ repository root.
   usernames). Every message checks the key again first (`recheckSmtpKey` at MAIL FROM: pooled connections stay
   open for hours, and revoking a key or suspending its organization must stop them). Connections are charged per client IP (`smtp.connections.ip`, the socket's address: the NLB preserves
   it, never trust a header), each message `api.send` (per key) and `emailSendQuota` (`@coss/ratelimit`, shared with
-  the API's send routes; refunded on replays and errors). Mapping: the `From` header (one mailbox) is the sender
+  the API's send routes and the dashboard's template test sends; refunded on replays and errors). Mapping: the `From` header (one mailbox) is the sender
   (`MAIL FROM` is ignored); the envelope (`RCPT TO`, ≤ `MAX_RECIPIENTS`) decides who receives it — `To`/`Cc` header
   addresses stay `to`/`cc`, every other envelope recipient is `bcc`; a header recipient missing from the envelope
   or a message without a `To` recipient is refused (never move Bcc'd addresses into visible headers). Reserved,

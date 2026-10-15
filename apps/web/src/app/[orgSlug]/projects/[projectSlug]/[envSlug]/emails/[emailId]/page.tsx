@@ -430,6 +430,19 @@ export default async function EmailPage({
                     {email.batch_id}
                   </SpecItem>
                 ) : null}
+                {email.template ? (
+                  <SpecItem label="Template" mono>
+                    <Link
+                      className="underline-offset-4 hover:underline"
+                      href={`${base}/templates/${email.template.id}`}
+                    >
+                      {email.template.version === null
+                        ? "Draft (test send)"
+                        : `Version ${email.template.version}`}{" "}
+                      · {email.template.locale}
+                    </Link>
+                  </SpecItem>
+                ) : null}
                 {email.tags.length > 0 ? (
                   <SpecItem label="Tags" mono stacked>
                     <span className="flex flex-wrap gap-1.5">

@@ -2,6 +2,7 @@
  * Email wire types. Hand-written to mirror the API's snake_case JSON 1:1 (the API's contract test
  * asserts they stay assignable to and from its zod schemas).
  */
+import type { EmailTemplateReference } from "./email-template.ts";
 import type { SuppressionReason } from "./suppression.ts";
 
 /** A `name`/`value` pair attached to an email for your own filtering and analytics. */
@@ -172,25 +173,14 @@ export interface ReactEmailElement {
   key: unknown;
 }
 
-/** Body of `POST /v1/emails`, plus `react`, which the SDK renders before sending. */
-export interface SendEmailParams {
+/** What every send has, with or without a template. */
+export interface SendEmailBaseParams {
   /** `"you@example.com"` or `"Your Name <you@example.com>"`. */
   from: string;
   to: string | string[];
   cc?: string | string[];
   bcc?: string | string[];
   reply_to?: string | string[];
-  subject: string;
-  /** At least one of `html`, `text` or `react` is required. */
-  html?: string;
-  /** Without it, an `html` email goes out with a text part generated from the HTML. */
-  text?: string;
-  /**
-   * A [React Email](https://react.email) component, rendered by the SDK into `html` and, unless you
-   * pass `text`, into `text` too. Needs the optional peer dependency `@react-email/render`
-   * (`npm install @react-email/render`). Can't be combined with `html`; never sent to the API as is.
-   */
-  react?: ReactEmailElement;
   /** Custom headers. Names are case-insensitive; reserved names such as `subject` are rejected. */
   headers?: Record<string, string>;
   tags?: EmailTag[];
@@ -209,6 +199,47 @@ export interface SendEmailParams {
   attachments?: EmailAttachmentParams[];
   tracking?: TrackingOptions;
 }
+
+/** A send with its own subject and body. */
+export interface SendEmailContentParams extends SendEmailBaseParams {
+  subject: string;
+  /** At least one of `html`, `text` or `react` is required. */
+  html?: string;
+  /** Without it, an `html` email goes out with a text part generated from the HTML. */
+  text?: string;
+  /**
+   * A [React Email](https://react.email) component, rendered by the SDK into `html` and, unless you
+   * pass `text`, into `text` too. Needs the optional peer dependency `@react-email/render`
+   * (`npm install @react-email/render`). Can't be combined with `html`; never sent to the API as is.
+   */
+  react?: ReactEmailElement;
+  template_id?: never;
+  template_version?: never;
+  locale?: never;
+  variables?: never;
+}
+
+/** A send of a published email template (`coss.email.templates`). */
+export interface SendEmailTemplateParams extends SendEmailBaseParams {
+  /** The template's id or alias. */
+  template_id: string;
+  /** A published version to send; defaults to the latest one. */
+  template_version?: number;
+  /**
+   * The locale to send, e.g. `"pt-BR"`. Falls back to the language (`"pt"`), then to the
+   * template's default locale.
+   */
+  locale?: string;
+  /** Values for the template's variables, keyed by name. */
+  variables?: Record<string, unknown>;
+  subject?: never;
+  html?: never;
+  text?: never;
+  react?: never;
+}
+
+/** A send: a subject and body (or `react`, which the SDK renders before sending), or a template. */
+export type SendEmailParams = SendEmailContentParams | SendEmailTemplateParams;
 
 /** Parameters of `coss.email.reschedule`. */
 export interface RescheduleEmailParams {
@@ -294,6 +325,8 @@ export interface Email {
   scheduled_at: string | null;
   /** The batch that sent the email (`coss.email.sendBatch`), or `null` if it was sent alone. */
   batch_id: string | null;
+  /** The template the email was rendered from, or `null` if it was sent without one. */
+  template: EmailTemplateReference | null;
 }
 
 /** An email in a list (`coss.email.list`): everything but its content. */

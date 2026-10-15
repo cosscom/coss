@@ -2,6 +2,7 @@
   "title": "Email",
   "pages": [
     "sending",
+    "templates",
     "smtp",
     "receiving",
     "domains",

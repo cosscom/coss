@@ -117,7 +117,19 @@ export function toEmailObject(
     sent_at: row.sentAt?.toISOString() ?? null,
     scheduled_at: row.scheduledAt?.toISOString() ?? null,
     batch_id: row.batchId,
+    template: templateReference(row),
   };
+}
+
+/** The template an email was rendered from, if any. */
+function templateReference(row: {
+  templateId: string | null;
+  templateVersion: number | null;
+  templateLocale: string | null;
+}): EmailObjectOutput["template"] {
+  return row.templateId
+    ? { id: row.templateId, version: row.templateVersion, locale: row.templateLocale ?? "" }
+    : null;
 }
 
 /** Email rows joined with their environment's mode, scoped by organization. */
@@ -489,6 +501,9 @@ export async function listEmailSummariesPage(
       sentAt: email.sentAt,
       scheduledAt: email.scheduledAt,
       batchId: email.batchId,
+      templateId: email.templateId,
+      templateVersion: email.templateVersion,
+      templateLocale: email.templateLocale,
     })
     .from(email)
     .innerJoin(
@@ -528,6 +543,7 @@ export async function listEmailSummariesPage(
       sent_at: row.sentAt?.toISOString() ?? null,
       scheduled_at: row.scheduledAt?.toISOString() ?? null,
       batch_id: row.batchId,
+      template: templateReference(row),
     })),
     hasMore: rows.length > limit,
   };

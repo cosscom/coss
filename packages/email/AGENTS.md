@@ -3,7 +3,7 @@
 Read together with the root `AGENTS.md` (conventions, tenancy rule, tests). Paths are from the
 repository root.
 
-Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, attachments, text parts), reads and receiving.
+Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, attachments, text parts, templates), reads and receiving.
 
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -92,6 +92,31 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   are cancel + send). Scheduled sends are held while their organization is suspended. Cancel and reschedule need
   `email:send`.
   `scheduled_at` is omitted from the parsed request when absent (request hashes).
+- **Email templates** (`packages/email/src/{templates,template-language,template-schemas}.ts`, tables
+  `email_template` (ids `etpl_`), `email_template_version` (`etplv_`), `email_template_content` (`etplc_`),
+  `/v1/email_templates`, `coss.email.templates`, permission `emailTemplate` (backfilled by `0064`)): per
+  environment; one draft per template (`version` NULL, `revision` counts saves) and immutable published versions
+  numbered from 1 (`published_version` is what sends use). A version holds the typed variables, sample values
+  and one subject/HTML/text per locale (canonical BCP 47, ≤ 30), published together. Sends name a template by id
+  **or alias** (`template_id`, plus `variables`, `template_version`, `locale`; never with `subject`/`html`/`text`)
+  and are **rendered at send** (`renderTemplateForSend` in `prepareSend`, a per-request version cache in
+  batches): the `email` row stores the rendered content and `template_id`/`template_version`/`template_locale`
+  (no FK), so dispatch, screening, tracking and reads are unchanged and later publishes never alter stored or
+  scheduled emails. The request hash covers the request (template + variables), never the output, and the
+  transform adds template keys only when present (old hashes stay valid); template errors fall back to the
+  idempotent replay like `authorizeLiveSender`. The language (`@coss/email/templates`, also the dashboard's live
+  preview) is a Mustache subset: `{{v}}` (HTML-escaped in `html` only), `{{{v}}}` (HTML only), `#if`/`#each`
+  with `{{else}}`, comments, `\{{`; no code runs, output and work are capped while rendering (2 MB and 1,000,000
+  steps a field, nesting 10). Publishing needs a parse-clean draft whose names are all declared and content for
+  the default locale; re-publishing an unchanged draft returns the current version. Draft saves and restores are
+  never retried by the SDK, and publishes only with a `revision` (a retry must not save or publish twice). Variables
+  are checked strictly (unknown names refused, `null` = absent, defaults applied, lists ≤ 1,000 objects,
+  `variables` ≤ 64 KB); errors are 422 `invalid_request_error` codes (`template_*`, `invalid_template_variables`
+  with `issues`), never 404/409. Only the dashboard's test sends render a draft (`SendEmailInput.templateDraft`,
+  only at the revision the editor checked; `version: null` on the email): they need `email:send`, go to verified
+  members only (`listVerifiedMemberEmails`), and are charged `emailSendQuota` (`@coss/ratelimit`, shared with the
+  API and the SMTP relay) through the dashboard's own email service (`apps/web/src/lib/email-service.ts`, a pg-boss
+  producer). `sample_variables` is in `OPAQUE_FIELDS`.
 - **Batch sends** (`POST /v1/emails/batch`, `EmailService.sendBatch`, table `email_batch`, ids `batch_`): ≤ 100
   emails (`MAX_BATCH_EMAILS`), each a full `SendEmailRequest`, all or nothing. Every distinct `from` is authorized
   first (a failure names `emails.N.from`), then the batch row and every email go through the same

@@ -48,6 +48,7 @@ import {
 } from "./schemas.ts";
 import { emailScreeningContent } from "./screening.ts";
 import { type SuppressionRow, suppressedRecipients } from "./suppressions.ts";
+import { renderTemplateForSend, type TemplateVersionCache } from "./templates.ts";
 import { newTrackingToken } from "./tracking.ts";
 import { trackingBaseUrlFor } from "./tracking-domains.ts";
 import { instrumentHtml, unsubscribeUrl } from "./tracking-html.ts";
@@ -74,6 +75,11 @@ export type SendEmailInput = {
    * email is sent, failed or canceled. Its history keeps everything else.
    */
   discardBody?: boolean;
+  /**
+   * Internal callers only (the dashboard's test sends): render the template's draft, refused
+   * (`template_revision_mismatch`) unless it is still at the revision the caller checked.
+   */
+  templateDraft?: { revision: number };
 };
 
 export type SendEmailBatchInput = {
@@ -768,19 +774,44 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     environment: SendEnvironment,
     apiKeyId: string | null,
     params: SendEmailRequestOutput,
-    trackingCache: Map<string, Promise<ResolvedTracking>>,
-    discardBody = false,
+    caches: {
+      tracking: Map<string, Promise<ResolvedTracking>>;
+      templates: TemplateVersionCache;
+    },
+    opts: {
+      discardBody?: boolean;
+      templateDraft?: { revision: number };
+      paramPrefix?: string;
+    } = {},
   ): Promise<PreparedSend> {
+    // Rendered once, at send: a later publish never changes a stored (or scheduled) email.
+    const content =
+      params.template_id === undefined
+        ? null
+        : await renderTemplateForSend(
+            environment,
+            {
+              templateId: params.template_id,
+              version: params.template_version,
+              locale: params.locale,
+              variables: params.variables ?? {},
+              draft: opts.templateDraft,
+            },
+            { cache: caches.templates, paramPrefix: opts.paramPrefix },
+          );
+    const subject = content?.subject ?? params.subject;
+    // Guaranteed by `SendEmailRequest` for sends without a template.
+    if (subject === null) throw new Error("A send without a template needs a subject.");
     const scheduledAt = params.scheduled_at === undefined ? null : new Date(params.scheduled_at);
     // A time that is not in the future sends now (still recorded as `scheduled_at`).
     const scheduled = scheduledAt !== null && scheduledAt.getTime() > Date.now();
 
     // Resolved once, at send: later changes to the settings never affect a stored email.
     const trackingKey = canonicalJson([params.category ?? null, params.tracking ?? null]);
-    let resolving = trackingCache.get(trackingKey);
+    let resolving = caches.tracking.get(trackingKey);
     if (!resolving) {
       resolving = resolveTracking(db, environment, params.category ?? null, params.tracking);
-      trackingCache.set(trackingKey, resolving);
+      caches.tracking.set(trackingKey, resolving);
     }
     const tracking = await resolving;
     // The unsubscribe is scoped to the category and names one recipient (one provider message
@@ -811,16 +842,19 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         cc: params.cc,
         bcc: params.bcc,
         replyTo: params.reply_to,
-        subject: params.subject,
-        html: params.html,
-        text: params.text,
-        discardBody,
+        subject,
+        html: content ? content.html : params.html,
+        text: content ? content.text : params.text,
+        discardBody: opts.discardBody ?? false,
         headers: params.headers,
         tags: params.tags,
         category: params.category ?? null,
         trackOpens: tracking.opens,
         trackClicks: tracking.clicks,
         unsubscribe,
+        templateId: content?.template.id ?? null,
+        templateVersion: content?.template.version ?? null,
+        templateLocale: content?.template.locale ?? null,
       },
       scheduled,
       // Decoded once, outside the (retried) insert transaction.
@@ -902,13 +936,25 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const sandbox = environment.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
     const requestHash = idempotencyKey ? hashSendRequest(params) : null;
-    const prepared = await prepareSend(
-      environment,
-      input.apiKeyId,
-      params,
-      new Map(),
-      input.discardBody,
-    );
+    let prepared: PreparedSend;
+    try {
+      prepared = await prepareSend(
+        environment,
+        input.apiKeyId,
+        params,
+        { tracking: new Map(), templates: new Map() },
+        { discardBody: input.discardBody, templateDraft: input.templateDraft },
+      );
+    } catch (error) {
+      // A retry of a request that already succeeded still replays, even if its template changed
+      // (or was deleted) since.
+      const replay =
+        error instanceof EmailError &&
+        idempotencyKey &&
+        (await findReplay(environment, idempotencyKey, requestHash, retentionMs));
+      if (replay) return { email: replay, replayed: true };
+      throw error;
+    }
 
     if (!sandbox) {
       try {
@@ -977,10 +1023,24 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const sandbox = environment.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
     const requestHash = idempotencyKey ? hashSendBatchRequest(items) : null;
-    const trackingCache = new Map<string, Promise<ResolvedTracking>>();
+    const caches = { tracking: new Map(), templates: new Map() };
     const prepared: PreparedSend[] = [];
-    for (const params of items) {
-      prepared.push(await prepareSend(environment, input.apiKeyId, params, trackingCache));
+    try {
+      for (const [index, params] of items.entries()) {
+        prepared.push(
+          await prepareSend(environment, input.apiKeyId, params, caches, {
+            paramPrefix: `emails.${index}.`,
+          }),
+        );
+      }
+    } catch (error) {
+      // A retry of a request that already succeeded still replays, even if a template changed since.
+      const replay =
+        error instanceof EmailError &&
+        idempotencyKey &&
+        (await findBatchReplay(environment, idempotencyKey, requestHash));
+      if (replay) return { batch: replay, replayed: true };
+      throw error;
     }
 
     if (!sandbox) {
