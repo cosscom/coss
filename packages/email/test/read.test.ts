@@ -178,6 +178,17 @@ describe("listEmails filters and listEmailsPage", () => {
       category: "marketing",
     });
     const old = await send({ subject: "C", from: "hi@notacme.com", bcc: "ann@example.com" });
+    // Accepted as is: the bracketed address is trimmed when it is parsed, never when stored.
+    const spaced = await send({ subject: "D", from: "Acme < hi@spaced.acme.com >" });
+    await db
+      .update(schema.email)
+      .set({ createdAt: new Date("2026-01-09T12:00:00Z") })
+      .where(
+        and(
+          eq(schema.email.id, spaced.id),
+          eq(schema.email.organizationId, tenant.organization.id),
+        ),
+      );
     await db
       .update(schema.email)
       .set({ createdAt: new Date("2026-01-10T12:00:00Z") })
@@ -196,6 +207,16 @@ describe("listEmails filters and listEmailsPage", () => {
 
     // Recipients: to, cc and bcc, exact and case-insensitive.
     expect(await list({ recipient: " ANN@example.com " })).toEqual(["B", "A", "C"]);
+    expect(await list({ senderDomain: "spaced.acme.com" })).toEqual(["D"]);
+    const exported = await new Response(
+      emailsCsvStream({
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        senderDomain: "spaced.acme.com",
+      }),
+    ).text();
+    expect(exported).toContain(`,D,`);
+    expect(exported.split("\r\n")).toHaveLength(3);
     expect(await list({ recipient: "ann@example" })).toEqual([]);
     expect(await list({ tag: { name: "template" } })).toEqual(["B", "A"]);
     expect(await list({ tag: { name: "template", value: "welcome" } })).toEqual(["A"]);
@@ -203,7 +224,7 @@ describe("listEmails filters and listEmailsPage", () => {
     expect(await list({ category: "marketing" })).toEqual(["B"]);
     expect(await list({ category: "%" })).toEqual([]);
     // The domain and its subdomains, never a domain that merely ends the same way.
-    expect(await list({ senderDomain: "Acme.com" })).toEqual(["B", "A"]);
+    expect(await list({ senderDomain: "Acme.com" })).toEqual(["B", "A", "D"]);
     expect(await list({ senderDomain: "@mail.acme.com" })).toEqual(["B"]);
     expect(await list({ senderDomain: "cme.com" })).toEqual([]);
     expect(await list({ senderDomain: "notacme.com" })).toEqual(["C"]);
@@ -213,7 +234,7 @@ describe("listEmails filters and listEmailsPage", () => {
         createdBefore: new Date("2026-01-11T00:00:00Z"),
       }),
     ).toEqual(["C"]);
-    expect(await list({ createdBefore: new Date("2026-01-10T12:00:00Z") })).toEqual([]);
+    expect(await list({ createdBefore: new Date("2026-01-10T12:00:00Z") })).toEqual(["D"]);
     expect(await list({ createdAfter: new Date("2026-01-11T00:00:00Z") })).toEqual(["B", "A"]);
     expect(await list({ recipient: "ann@example.com", category: "onboarding" })).toEqual(["A"]);
   });

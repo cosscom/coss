@@ -265,8 +265,9 @@ export async function listEmails(
 /**
  * The domain of a stored `from` (`hello@acme.com` or `Acme <hello@acme.com>`): what follows the
  * last `@`, without the closing `>`. A display name can hold an `@`, the address always ends it.
+ * Whitespace before the `>` is allowed, as `parseEmailAddress` trims the bracketed address.
  */
-const senderDomainSql = sql<string>`lower(substring(${email.from} from '@([^@<>[:space:]]+)>?[[:space:]]*$'))`;
+const senderDomainSql = sql<string>`lower(substring(${email.from} from '@([^@<>[:space:]]+)[[:space:]]*>?[[:space:]]*$'))`;
 
 /** The SQL conditions of an email list (the dashboard's, its CSV export and the API's). */
 function listConditions(
