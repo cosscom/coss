@@ -806,8 +806,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   re-publishing an unchanged draft returns the current version (retry-safe). Variables are checked strictly
   (unknown names refused, `null` = absent, defaults applied, lists ≤ 1,000 objects, `variables` ≤ 64 KB); errors
   are 422 `invalid_request_error` codes (`template_*`, `invalid_template_variables` with `issues`), never 404/409.
-  Only the dashboard's test sends render a draft (`SendEmailInput.templateDraft`, `version: null` on the
-  email): they need `email:send`, go to verified members only (`listVerifiedMemberEmails`), and are charged
+  Only the dashboard's test sends render a draft (`SendEmailInput.templateDraft`, only at the revision the
+  editor checked; `version: null` on the email): they need `email:send`, go to verified members only (`listVerifiedMemberEmails`), and are charged
   `emailSendQuota` (`@coss/ratelimit`, shared with the API and the SMTP relay) through the dashboard's own email service
   (`apps/web/src/lib/email-service.ts`, a pg-boss producer). `sample_variables` is in `OPAQUE_FIELDS`.
 - **SMTP relay** (`apps/smtp`, mapping in `packages/email/src/smtp-message.ts` = `@coss/email/smtp`): never a raw

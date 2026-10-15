@@ -653,8 +653,11 @@ export type TemplateSendRequest = {
   version?: number | undefined;
   locale?: string | undefined;
   variables: Record<string, unknown>;
-  /** Internal only (the dashboard's test sends): render the draft. */
-  draft?: boolean;
+  /**
+   * Internal only (the dashboard's test sends): render the draft, which must still be at this
+   * revision (the one the caller reviewed).
+   */
+  draft?: { revision: number } | undefined;
 };
 
 export type RenderedTemplateSend = {
@@ -734,6 +737,8 @@ export async function renderTemplateForSend(
   const version = await loading;
 
   if (request.draft) {
+    // Checked against the snapshot being rendered, so a save in between can't slip in.
+    checkRevision(version, request.draft.revision);
     const problem = draftProblems(version);
     if (problem) throw problem;
   }

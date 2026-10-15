@@ -75,8 +75,11 @@ export type SendEmailInput = {
    * email is sent, failed or canceled. Its history keeps everything else.
    */
   discardBody?: boolean;
-  /** Internal callers only (the dashboard's test sends): render the template's draft. */
-  templateDraft?: boolean;
+  /**
+   * Internal callers only (the dashboard's test sends): render the template's draft, refused
+   * (`template_revision_mismatch`) unless it is still at the revision the caller checked.
+   */
+  templateDraft?: { revision: number };
 };
 
 export type SendEmailBatchInput = {
@@ -775,7 +778,11 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       tracking: Map<string, Promise<ResolvedTracking>>;
       templates: TemplateVersionCache;
     },
-    opts: { discardBody?: boolean; templateDraft?: boolean; paramPrefix?: string } = {},
+    opts: {
+      discardBody?: boolean;
+      templateDraft?: { revision: number };
+      paramPrefix?: string;
+    } = {},
   ): Promise<PreparedSend> {
     // Rendered once, at send: a later publish never changes a stored (or scheduled) email.
     const content =

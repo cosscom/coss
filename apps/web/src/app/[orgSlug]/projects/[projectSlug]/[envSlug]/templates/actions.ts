@@ -3,6 +3,7 @@
 import {
   createEmailTemplate,
   deleteEmailTemplate,
+  EmailError,
   getTemplateDraft,
   publishTemplateDraft,
   restoreTemplateVersion,
@@ -310,11 +311,16 @@ export async function sendTestAction(
         environment,
         apiKeyId: null,
         params: parsed.data,
-        templateDraft: true,
+        templateDraft: { revision: draft.revision },
       });
       emailId = email.id;
     } catch (error) {
       await limiter.refund(quota);
+      if (error instanceof EmailError && error.code === "template_revision_mismatch") {
+        throw new ActionError(
+          "The draft was changed by someone else. Reload it, then send a test.",
+        );
+      }
       throw error;
     }
     await audit(context, env, "email_template.test_sent", template, {

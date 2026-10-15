@@ -460,11 +460,11 @@ describe("sending with a template", () => {
       environment: sendEnvironment(tenant.development),
       apiKeyId: null,
       params: templateParams({ template_id: template.id, variables: { first_name: "Ada" } }),
-      templateDraft: true,
+      templateDraft: { revision: 1 },
     });
     expect(email.template).toEqual({ id: template.id, version: null, locale: "en" });
 
-    await saveTemplateDraft(
+    const { draft: saved } = await saveTemplateDraft(
       env,
       template.id,
       draft({ contents: [{ locale: "en", subject: "{{oops}}", text: "x" }] }),
@@ -474,9 +474,30 @@ describe("sending with a template", () => {
         environment: sendEnvironment(tenant.development),
         apiKeyId: null,
         params: templateParams({ template_id: template.id }),
-        templateDraft: true,
+        templateDraft: { revision: saved.revision },
       }),
       "template_invalid",
+    );
+  });
+
+  test("a draft test send renders only the revision that was checked", async () => {
+    const { tenant, env } = await tenantEnv();
+    const { service } = services();
+    const template = await create(env);
+    // Saved by someone else after the editor checked revision 1.
+    await saveTemplateDraft(
+      env,
+      template.id,
+      draft({ contents: [{ locale: "en", subject: "Changed", text: "x" }] }),
+    );
+    await expectEmailError(
+      service.send({
+        environment: sendEnvironment(tenant.development),
+        apiKeyId: null,
+        params: templateParams({ template_id: template.id, variables: { first_name: "Ada" } }),
+        templateDraft: { revision: 1 },
+      }),
+      "template_revision_mismatch",
     );
   });
 
