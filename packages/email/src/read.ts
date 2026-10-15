@@ -8,6 +8,7 @@ import {
   toAttachmentObject,
 } from "./attachments.ts";
 import type {
+  EmailBatchObjectOutput,
   EmailEventOutput,
   EmailLinkOutput,
   EmailObjectOutput,
@@ -27,7 +28,7 @@ const MAX_LIST_LIMIT = 100;
 /** Every event of one email is returned at once; an email has at most 50 recipients. */
 const MAX_EVENTS = 1000;
 
-const { email, emailEvent, emailLink, emailRecipient, environment } = schema;
+const { email, emailBatch, emailEvent, emailLink, emailRecipient, environment } = schema;
 
 /** Every tracked link of one email is returned at once. */
 const MAX_LINKS = 1000;
@@ -199,6 +200,56 @@ export async function getEmail(input: {
   if (!row) return null;
   const [object] = await toEmailObjects(input.organizationId, [row]);
   return object ?? null;
+}
+
+/** A batch with its emails in request order (those not yet purged by retention). */
+export async function toEmailBatchObject(
+  batch: typeof emailBatch.$inferSelect,
+  sandbox: boolean,
+): Promise<EmailBatchObjectOutput> {
+  const rows = await db
+    .select()
+    .from(email)
+    .where(and(eq(email.organizationId, batch.organizationId), eq(email.batchId, batch.id)))
+    .orderBy(asc(email.batchIndex));
+  return {
+    object: "email_batch",
+    id: batch.id,
+    data: await toEmailObjects(
+      batch.organizationId,
+      rows.map((row) => ({ email: row, sandbox })),
+    ),
+    created_at: batch.createdAt.toISOString(),
+  };
+}
+
+/** One batch of an environment. Malformed, unknown and foreign ids are all `null`. */
+export async function getEmailBatch(input: {
+  organizationId: string;
+  environmentId: string;
+  id: string;
+}): Promise<EmailBatchObjectOutput | null> {
+  if (!isId("batch", input.id)) return null;
+  const [row] = await db
+    .select({ batch: emailBatch, mode: environment.mode })
+    .from(emailBatch)
+    .innerJoin(
+      environment,
+      and(
+        eq(environment.id, emailBatch.environmentId),
+        eq(environment.organizationId, emailBatch.organizationId),
+      ),
+    )
+    .where(
+      and(
+        eq(emailBatch.organizationId, input.organizationId),
+        eq(emailBatch.environmentId, input.environmentId),
+        eq(emailBatch.id, input.id),
+      ),
+    )
+    .limit(1);
+  if (!row) return null;
+  return toEmailBatchObject(row.batch, row.mode === "sandbox");
 }
 
 /**

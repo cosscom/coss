@@ -222,3 +222,57 @@ describe("POST /v1/emails/batch send quota", () => {
     expect(replay.headers.get("idempotent-replayed")).toBe("true");
   });
 });
+
+describe("GET /v1/emails/batch/{id}", () => {
+  const getBatch = (app: TestApp, key: string, id: string) =>
+    apiRequest(app, "GET", `/v1/emails/batch/${encodeURIComponent(id)}`, { key });
+
+  test("returns the batch with its emails' current statuses in request order", async () => {
+    const tenant = await createTestTenant();
+    const { app, dispatch } = createTestApp();
+    const sent = (await (
+      await sendBatch(app, tenant.sandboxKey, {
+        emails: [emailBody({ subject: "One" }), emailBody({ subject: "Two" })],
+      })
+    ).json()) as EmailBatchObjectOutput;
+
+    const queued = await getBatch(app, tenant.sandboxKey, sent.id);
+    expect(queued.status).toBe(200);
+    expect(queued.headers.get("x-request-id")).toMatch(REQUEST_ID);
+    expect(await queued.json()).toEqual(sent);
+
+    await dispatch();
+    const batch = (await (
+      await getBatch(app, tenant.sandboxKey, sent.id)
+    ).json()) as EmailBatchObjectOutput;
+    expect(batch).toMatchObject({
+      object: "email_batch",
+      id: sent.id,
+      created_at: sent.created_at,
+    });
+    expect(batch.data.map((email) => [email.subject, email.status, email.batch_id])).toEqual([
+      ["One", "sent", sent.id],
+      ["Two", "sent", sent.id],
+    ]);
+  });
+
+  test("batches of other environments and organizations, and unknown ids, are 404", async () => {
+    const [tenant, other] = await Promise.all([createTestTenant(), createTestTenant()]);
+    const { app } = createTestApp();
+    const sent = (await (
+      await sendBatch(app, tenant.sandboxKey, { emails: [emailBody()] })
+    ).json()) as EmailBatchObjectOutput;
+
+    for (const [key, id] of [
+      [tenant.liveKey, sent.id],
+      [other.sandboxKey, sent.id],
+      [tenant.sandboxKey, "batch_01k8d0n6x5f3w2e1r9t7y4u6i8"],
+      [tenant.sandboxKey, "not-an-id"],
+      [tenant.sandboxKey, sent.data[0]?.id ?? ""],
+    ] as const) {
+      const res = await getBatch(app, key, id);
+      expect(res.status).toBe(404);
+      expect((await errorOf(res)).code).toBe("not_found");
+    }
+  });
+});

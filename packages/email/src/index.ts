@@ -116,6 +116,7 @@ export {
   environmentsWithSentEmail,
   exportEmailPages,
   getEmail,
+  getEmailBatch,
   listEmailEvents,
   listEmailLinks,
   listEmailSummariesPage,

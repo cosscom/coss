@@ -333,6 +333,29 @@ describe("coss SDK against the API", () => {
     expect(invalid.error?.issues?.map((issue) => issue.path)).toEqual(["emails.1.to"]);
   });
 
+  test("getBatch reads a batch back with its emails' current statuses", async () => {
+    const tenant = await createTestTenant();
+    const { app, dispatch } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const batch = await coss.email.sendBatch([
+      { from: "hello@acme.com", to: "a@example.com", subject: "One", text: "Hi" },
+      { from: "hello@acme.com", to: "b@example.com", subject: "Two", text: "Hi" },
+    ]);
+    await dispatch();
+
+    const read = await coss.email.getBatch(batch.data?.id ?? "");
+    expect(read.error).toBeNull();
+    expect(read.data?.id).toBe(batch.data?.id ?? "missing");
+    expect(read.data?.data.map((email) => [email.subject, email.status])).toEqual([
+      ["One", "sent"],
+      ["Two", "sent"],
+    ]);
+    expect((await coss.email.getBatch("batch_01k8d0n6x5f3w2e1r9t7y4u6i8")).error).toMatchObject({
+      type: "not_found_error",
+      status: 404,
+    });
+  });
+
   test("an invalid key maps to authentication_error with the request id", async () => {
     const { app } = createTestApp();
     const coss = clientFor(app, `coss_test_${"z".repeat(64)}`, { maxRetries: 0 });
