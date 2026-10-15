@@ -1,0 +1,1 @@
+CREATE INDEX "content_screening_subject_idx" ON "content_screening" USING btree ("product","subject_id");

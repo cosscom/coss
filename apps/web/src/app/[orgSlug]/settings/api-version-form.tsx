@@ -11,8 +11,8 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { upgradeApiVersionAction } from "./actions";
 
 export type ApiVersionChange = { version: string; title: string; description: string };
@@ -23,7 +23,10 @@ export function UpgradeApiVersionButton(props: {
   latest: string;
   changes: ApiVersionChange[];
 }) {
-  const [state, formAction, pending] = useActionState(upgradeApiVersionAction, null);
+  // On success the page re-renders on the new version, without this button.
+  const [state, formAction, pending] = useActionToast(upgradeApiVersionAction, {
+    success: `Upgraded to API version ${props.latest}`,
+  });
 
   return (
     <AlertDialog>

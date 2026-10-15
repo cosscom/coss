@@ -25,7 +25,7 @@ and the rest.
 
 Bun workspaces · Turborepo · TypeScript 7 · Biome · Next.js 16 (dashboard) · Hono (public API) ·
 Postgres + Drizzle · Valkey (rate limits) · Better Auth (organization, admin, API key plugins) · Tailwind v4 + [coss ui](https://coss.com/ui) ·
-[Fumadocs](https://fumadocs.dev) (coss.com and its docs: OpenAPI reference, Twoslash)
+[Fumadocs](https://fumadocs.dev) (coss.com and its docs: OpenAPI reference, Twoslash) · Expo + Expo Router (iOS app)
 
 See [AGENTS.md](./AGENTS.md) for the layout, conventions and guardrails.
 
@@ -214,6 +214,21 @@ access, and revoke a leaver's token (vercel.com/account/tokens, or remove them f
 
 Runtime settings (`DATABASE_URL`, secrets, URLs, …) are pass-through and never part of a fingerprint, which is what
 lets laptops and CI share results — see "Adding one" in AGENTS.md before adding a variable that changes build output.
+
+## iOS app
+
+`apps/mobile` is the iOS companion app (Expo SDK 57). It needs Xcode with an iOS Simulator and the dashboard running
+(`bun run dev`):
+
+```sh
+bun run --cwd apps/mobile ios    # generates ios/, builds, installs and opens the app on the Simulator
+bun run --cwd apps/mobile start  # Metro only, once the app is installed
+```
+
+"Sign in with COSS" opens the dashboard's sign-in in a browser sheet (`demo@coss.local` / `coss-demo-password`
+after `db:seed`). The app reads `EXPO_PUBLIC_DASHBOARD_URL` (default `http://localhost:3000`); on a physical device
+set it to your Mac's LAN address in `apps/mobile/.env.local`, and run the dashboard with `BETTER_AUTH_URL` on that
+address too. Signed-in devices are listed under Settings → Sessions. See `apps/mobile/AGENTS.md`.
 
 ## API
 
@@ -544,7 +559,8 @@ One Secrets Manager secret per stage, `coss/production` (JSON), injected through
 `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AI_GATEWAY_API_KEY`, `RISK_HASH_KEY` (changing it resets what
 risk assessments remember), `IPINFO_TOKEN` (optional: a free IPinfo account's token for risk's ASN and country
 data) and `IPINFO_PRIVACY_TOKEN` (optional, with `RISK_IP_PRIVACY=ipinfo`: a paid IPinfo plan's token for VPN and
-proxy data per address; IPinfo must be a listed subprocessor first). Terraform creates only the container; values are
+proxy data per address; IPinfo must be a listed subprocessor first) and `APNS_PRIVATE_KEY` (optional: the iOS app's
+push notifications, see below). Terraform creates only the container; values are
 written with `infra/terraform/scripts/put-secret.sh NAME --generate | --clipboard | --stdin`, which never prints them
 (losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable, see
 [Rotating `WEBHOOK_SECRETS_KEY`](#rotating-webhook_secrets_key) to change it). Tasks read secrets when they start:
@@ -650,6 +666,13 @@ can verify their address or create a live key; afterwards, ask for a new verific
 They are ordinary live emails of that organization: its dashboard shows their delivery, and its suppressions and
 reputation guard apply. Account emails keep no body once sent (their links are secrets).
 
+Push notifications to the iOS app need an APNs key: in the Apple Developer account that owns `com.coss.app`, create a
+key with "Apple Push Notifications service (APNs)" under Certificates, Identifiers & Profiles → Keys, then store the
+`.p8` file's contents with `put-secret.sh APNS_PRIVATE_KEY --clipboard`, remove `APNS_PRIVATE_KEY` from
+`unset_secrets`, set the worker's `APNS_KEY_ID` (the key's id) and `APNS_TEAM_ID` in `production.tfvars`, apply, and
+redeploy. Until then the worker logs a warning and holds pushes (each is dropped after an hour). One key serves the
+sandbox and production gateways; the device's registration says which one it needs.
+
 ### Upgrading from v1 webhook secret storage
 
 The key-ring release reads both `v1` and `v2` ciphertext, but immediately writes `v2` when an endpoint is created
@@ -717,6 +740,8 @@ COSS is licensed under the [GNU Affero General Public License v3.0](./LICENSE) (
 2026 Cal.com, Inc. — except:
 
 - `packages/sdk` (the `coss` npm package): [MIT](./packages/sdk/LICENSE), so applications can bundle it freely.
+- `packages/mcp` (the `coss-mcp` npm package, COSS's MCP server): [MIT](./packages/mcp/LICENSE), like the SDK it
+  is built on.
 - `packages/kloq`: [MIT](./packages/kloq/LICENSE), vendored from `cosscom/calendar` (as is the kloq registry the
   site serves).
 - The fonts in `packages/ui/src/fonts`: [SIL Open Font License 1.1](./packages/ui/src/fonts/OFL.txt).

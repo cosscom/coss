@@ -1,16 +1,25 @@
 /** Read side of the email product. Needs no providers, so the dashboard can use it directly. */
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
-import { and, asc, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gte, inArray, lt, type SQL, sql } from "drizzle-orm";
 import {
   attachmentsByEmail,
   type EmailAttachmentMetadata,
   toAttachmentObject,
 } from "./attachments.ts";
-import type { EmailEventOutput, EmailLinkOutput, EmailObjectOutput } from "./schemas.ts";
+import type {
+  EmailEventOutput,
+  EmailLinkOutput,
+  EmailObjectOutput,
+  EmailRecipientStatus,
+  EmailSummaryOutput,
+} from "./schemas.ts";
 
 export type EmailRow = typeof schema.email.$inferSelect;
 export type EmailRecipientRow = typeof schema.emailRecipient.$inferSelect;
+
+/** The public message of `provider_error` (also the `email.failed` event's). */
+export const PROVIDER_ERROR_MESSAGE = "The email provider did not accept the email.";
 
 const DEFAULT_LIST_LIMIT = 50;
 const MAX_LIST_LIMIT = 100;
@@ -48,6 +57,31 @@ function trackingObject(row: TrackingColumns): EmailObjectOutput["tracking"] {
   };
 }
 
+/**
+ * Why a failed email failed, as its `email.failed` event tells it. A provider's own error text is
+ * internal (it can name accounts or infrastructure), so `provider_error` gets the event's message;
+ * every other stored message is written by COSS for the customer. Emails that haven't failed
+ * have none: an error code on a queued email only marks a screening hold.
+ */
+export function emailFailure(
+  row: Pick<EmailRow, "status" | "errorCode" | "errorMessage">,
+): EmailObjectOutput["failure"] {
+  if (row.status !== "failed" || row.errorCode === null) return null;
+  if (row.errorCode === "provider_error") {
+    return { code: row.errorCode, message: PROVIDER_ERROR_MESSAGE };
+  }
+  return { code: row.errorCode, message: row.errorMessage ?? "The email could not be sent." };
+}
+
+function toRecipientObject(recipient: EmailRecipientRow): EmailObjectOutput["recipients"][number] {
+  return {
+    address: recipient.address,
+    type: recipient.kind,
+    status: recipient.status,
+    last_event_at: recipient.lastEventAt?.toISOString() ?? null,
+  };
+}
+
 export function toEmailObject(
   row: EmailRow,
   opts: {
@@ -71,12 +105,8 @@ export function toEmailObject(
     tags: row.tags,
     category: row.category,
     status: row.status,
-    recipients: opts.recipients.map((recipient) => ({
-      address: recipient.address,
-      type: recipient.kind,
-      status: recipient.status,
-      last_event_at: recipient.lastEventAt?.toISOString() ?? null,
-    })),
+    failure: emailFailure(row),
+    recipients: opts.recipients.map(toRecipientObject),
     attachments: opts.attachments.map(toAttachmentObject),
     sandbox: opts.sandbox,
     tracking: trackingObject(row),
@@ -186,6 +216,18 @@ export type EmailListFilters = {
   status?: EmailObjectOutput["status"][];
   /** A case-insensitive substring of the subject or a `to` address. */
   query?: string;
+  /** Only emails with this recipient (to, cc or bcc; a bare address, matched lower-cased). */
+  recipient?: string;
+  /** Only emails with a recipient in these statuses (with `recipient`: that recipient's). */
+  recipientStatus?: EmailRecipientStatus[];
+  /** Only emails of this category. */
+  category?: string;
+  /** Only the emails of this batch. */
+  batchId?: string;
+  /** Only emails created at or after this time. */
+  createdAfter?: Date;
+  /** Only emails created before this time. */
+  createdBefore?: Date;
   /** Only emails older than this one (keyset cursor: an email id of the same environment). */
   before?: string;
 };
@@ -212,10 +254,10 @@ export async function listEmails(
   return selectEmailList(input, clampLimit(input.limit));
 }
 
-async function selectEmailList(
+/** The SQL conditions of an email list (both the dashboard's and the API's). */
+function listConditions(
   input: { organizationId: string; environmentId: string } & EmailListFilters,
-  rowLimit: number,
-): Promise<EmailListItem[]> {
+): SQL[] {
   const conditions: SQL[] = [
     eq(email.organizationId, input.organizationId),
     eq(email.environmentId, input.environmentId),
@@ -230,6 +272,29 @@ async function selectEmailList(
       sql`(${email.subject} ilike ${pattern} or array_to_string(${email.to}, ' ') ilike ${pattern})`,
     );
   }
+  const recipient = input.recipient?.trim().toLowerCase();
+  const recipientStatus = input.recipientStatus ?? [];
+  if (recipient || recipientStatus.length > 0) {
+    // Recipient rows are found by (organization_id, address) when an address is given.
+    const matches: SQL[] = [
+      eq(emailRecipient.emailId, email.id),
+      eq(emailRecipient.organizationId, input.organizationId),
+    ];
+    if (recipient) matches.push(eq(emailRecipient.address, recipient));
+    if (recipientStatus.length > 0) matches.push(inArray(emailRecipient.status, recipientStatus));
+    conditions.push(
+      exists(
+        db
+          .select({ one: sql`1` })
+          .from(emailRecipient)
+          .where(and(...matches)),
+      ),
+    );
+  }
+  if (input.category !== undefined) conditions.push(eq(email.category, input.category));
+  if (input.batchId !== undefined) conditions.push(eq(email.batchId, input.batchId));
+  if (input.createdAfter) conditions.push(gte(email.createdAt, input.createdAfter));
+  if (input.createdBefore) conditions.push(lt(email.createdAt, input.createdBefore));
   if (input.before !== undefined) {
     // Keyset on the list's order; a cursor from another environment (or none) matches nothing.
     conditions.push(
@@ -241,6 +306,14 @@ async function selectEmailList(
       )`,
     );
   }
+  return conditions;
+}
+
+async function selectEmailList(
+  input: { organizationId: string; environmentId: string } & EmailListFilters,
+  rowLimit: number,
+): Promise<EmailListItem[]> {
+  const conditions = listConditions(input);
   const rows = await db
     .select({
       id: email.id,
@@ -297,6 +370,85 @@ export async function listEmailsPage(
   return { items, nextCursor: rows.length > limit ? (items.at(-1)?.id ?? null) : null };
 }
 
+/**
+ * One page of the API's email list (`GET /v1/emails`): newest first, without content (bodies can be
+ * megabytes each), with recipients and the failure. Two queries.
+ */
+export async function listEmailSummariesPage(
+  input: { organizationId: string; environmentId: string; limit?: number } & EmailListFilters,
+): Promise<{ data: EmailSummaryOutput[]; hasMore: boolean }> {
+  const limit = clampLimit(input.limit);
+  const rows = await db
+    .select({
+      id: email.id,
+      from: email.from,
+      to: email.to,
+      cc: email.cc,
+      bcc: email.bcc,
+      replyTo: email.replyTo,
+      subject: email.subject,
+      tags: email.tags,
+      category: email.category,
+      status: email.status,
+      errorCode: email.errorCode,
+      errorMessage: email.errorMessage,
+      mode: environment.mode,
+      trackOpens: email.trackOpens,
+      trackClicks: email.trackClicks,
+      openCount: email.openCount,
+      firstOpenedAt: email.firstOpenedAt,
+      lastOpenedAt: email.lastOpenedAt,
+      clickCount: email.clickCount,
+      firstClickedAt: email.firstClickedAt,
+      lastClickedAt: email.lastClickedAt,
+      createdAt: email.createdAt,
+      sentAt: email.sentAt,
+      scheduledAt: email.scheduledAt,
+      batchId: email.batchId,
+    })
+    .from(email)
+    .innerJoin(
+      environment,
+      and(
+        eq(environment.id, email.environmentId),
+        eq(environment.organizationId, email.organizationId),
+      ),
+    )
+    .where(and(...listConditions(input)))
+    .orderBy(sql`${email.createdAt} desc nulls last`, desc(email.id))
+    // One row more than the page tells whether another page follows.
+    .limit(limit + 1);
+  const page = rows.slice(0, limit);
+  const recipients = await recipientsByEmail(
+    input.organizationId,
+    page.map((row) => row.id),
+  );
+  return {
+    data: page.map((row) => ({
+      object: "email",
+      id: row.id,
+      from: row.from,
+      to: row.to,
+      cc: row.cc,
+      bcc: row.bcc,
+      reply_to: row.replyTo,
+      subject: row.subject,
+      tags: row.tags,
+      category: row.category,
+      status: row.status,
+      failure: emailFailure(row),
+      recipients: (recipients.get(row.id) ?? []).map(toRecipientObject),
+      sandbox: row.mode === "sandbox",
+      tracking: trackingObject(row),
+      created_at: row.createdAt.toISOString(),
+      sent_at: row.sentAt?.toISOString() ?? null,
+      scheduled_at: row.scheduledAt?.toISOString() ?? null,
+      batch_id: row.batchId,
+    })),
+    hasMore: rows.length > limit,
+  };
+}
+
 export type EmailActivityDay = {
   /** The UTC day, `YYYY-MM-DD`. */
   date: string;
@@ -314,6 +466,30 @@ export type EmailActivity = {
 };
 
 const EMAIL_STATUSES = ["queued", "sent", "failed", "scheduled", "canceled"] as const;
+
+/**
+ * Which of `environmentIds` (of one organization) have at least one sent email still kept:
+ * emails are purged after their retention period, so an environment that went quiet for longer
+ * stops counting. One index probe per environment. The dashboard opens a project on its live
+ * environment once that has sent something.
+ */
+export async function environmentsWithSentEmail(input: {
+  organizationId: string;
+  environmentIds: string[];
+}): Promise<Set<string>> {
+  if (input.environmentIds.length === 0) return new Set();
+  const rows = await db
+    .select({ id: environment.id })
+    .from(environment)
+    .where(
+      and(
+        eq(environment.organizationId, input.organizationId),
+        inArray(environment.id, input.environmentIds),
+        sql`exists (select 1 from ${email} where ${email.environmentId} = ${environment.id} and ${email.organizationId} = ${input.organizationId} and ${email.status} = 'sent')`,
+      ),
+    );
+  return new Set(rows.map((row) => row.id));
+}
 
 /**
  * An environment's emails per UTC day by their current status, from the day of `since` up to

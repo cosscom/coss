@@ -18,6 +18,7 @@
   "dependencies": {
     "@coss/db": "workspace:*",
     "@coss/logs": "workspace:*",
+    "@coss/push": "workspace:*",
     "@coss/ratelimit": "workspace:*",
     "@coss/retention": "workspace:*",
     "@coss/screening": "workspace:*",

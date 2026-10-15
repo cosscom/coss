@@ -26,6 +26,9 @@ import { emailRuntime } from "@/lib/email-runtime";
 import { isPlatformAdmin, type OrgContext, requireOrgPermission } from "@/lib/session";
 import { isSystemOrganization } from "@/lib/system-organization";
 
+/** What a manual check found, for the button's toast (the page shows the details). */
+export type VerifyOutcome = { status: string; restarted: boolean };
+
 /** A manual "Verify now" waits at least this long after the previous check. */
 const MANUAL_CHECK_INTERVAL_MS = 10_000;
 
@@ -73,17 +76,19 @@ export async function addDomainAction(
 
 /** Checks the provider and DNS now instead of waiting for the next scheduled check. */
 export async function verifyDomainAction(
-  _previous: ActionResult | null,
+  _previous: ActionResult<VerifyOutcome> | null,
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<ActionResult<VerifyOutcome>> {
   return runAction(async () => {
     const context = await requireOrgPermission(formString(formData, "orgSlug"), {
       domain: ["verify"],
     });
     const domain = await domainFromForm(context, formData);
     const deps = emailRuntime().domainDeps;
-    if (domain.status === "failed") {
-      await restartDomainVerification(
+    const restarted = domain.status === "failed";
+    let checked: { status: string };
+    if (restarted) {
+      checked = await restartDomainVerification(
         { organizationId: domain.organizationId, id: domain.id },
         deps,
       );
@@ -92,7 +97,7 @@ export async function verifyDomainAction(
       if (since < MANUAL_CHECK_INTERVAL_MS) {
         throw new ActionError("This domain was just checked. Try again in a few seconds.");
       }
-      await checkDomain({ organizationId: domain.organizationId, id: domain.id }, deps);
+      checked = await checkDomain({ organizationId: domain.organizationId, id: domain.id }, deps);
     }
     // Its tracking and receiving domains show their own problems on their cards.
     await verifyTrackingDomain(
@@ -109,7 +114,7 @@ export async function verifyDomainAction(
       });
     }
     refresh();
-    return null;
+    return { status: checked.status, restarted };
   });
 }
 
@@ -141,9 +146,9 @@ export async function addTrackingDomainAction(
 
 /** Checks the tracking domain now (or starts a `failed` one over). */
 export async function checkTrackingDomainAction(
-  _previous: ActionResult | null,
+  _previous: ActionResult<VerifyOutcome> | null,
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<ActionResult<VerifyOutcome>> {
   return runAction(async () => {
     const context = await requireOrgPermission(formString(formData, "orgSlug"), {
       domain: ["verify"],
@@ -156,9 +161,9 @@ export async function checkTrackingDomainAction(
     if (tracking.status !== "failed" && since < MANUAL_CHECK_INTERVAL_MS) {
       throw new ActionError("This tracking domain was just checked. Try again in a few seconds.");
     }
-    await verifyTrackingDomain(target, emailRuntime().domainDeps);
+    const checked = await verifyTrackingDomain(target, emailRuntime().domainDeps);
     refresh();
-    return null;
+    return { status: checked?.status ?? tracking.status, restarted: tracking.status === "failed" };
   });
 }
 
@@ -228,9 +233,9 @@ export async function addReceivingDomainAction(
 
 /** Checks the receiving domain's MX record now. */
 export async function checkReceivingDomainAction(
-  _previous: ActionResult | null,
+  _previous: ActionResult<VerifyOutcome> | null,
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<ActionResult<VerifyOutcome>> {
   return runAction(async () => {
     const context = await requireOrgPermission(formString(formData, "orgSlug"), {
       domain: ["verify"],
@@ -247,9 +252,9 @@ export async function checkReceivingDomainAction(
     if (since < MANUAL_CHECK_INTERVAL_MS) {
       throw new ActionError("This MX record was just checked. Try again in a few seconds.");
     }
-    await checkReceivingDomain(target, inbound, emailRuntime().dns);
+    const checked = await checkReceivingDomain(target, inbound, emailRuntime().dns);
     refresh();
-    return null;
+    return { status: checked.record.status, restarted: false };
   });
 }
 

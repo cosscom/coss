@@ -235,6 +235,16 @@ export interface EmailLink {
   last_clicked_at: string | null;
 }
 
+/** Why an email failed as a whole. */
+export interface EmailFailure {
+  /**
+   * E.g. `all_recipients_suppressed`, `domain_not_verified`, `content_rejected`,
+   * `attachments_unavailable`, `dispatch_failed` or `provider_error`.
+   */
+  code: string;
+  message: string;
+}
+
 /** An email as returned by the API. Recipient fields are always arrays. */
 export interface Email {
   object: "email";
@@ -252,6 +262,8 @@ export interface Email {
   tags: EmailTag[];
   category: string | null;
   status: EmailStatus;
+  /** Why the email failed; `null` unless `status` is `"failed"`. */
+  failure: EmailFailure | null;
   /** Every distinct recipient across `to`, `cc` and `bcc`, with its delivery status. */
   recipients: EmailRecipient[];
   /** Attachment metadata; the content is discarded once the email is sent. */
@@ -267,6 +279,33 @@ export interface Email {
   scheduled_at: string | null;
   /** The batch that sent the email (`coss.email.sendBatch`), or `null` if it was sent alone. */
   batch_id: string | null;
+}
+
+/** An email in a list (`coss.email.list`): everything but its content. */
+export type EmailSummary = Omit<Email, "html" | "text" | "headers" | "attachments">;
+
+/** Filters of `coss.email.list`. Emails are returned newest first. */
+export interface ListEmailsParams {
+  /** Only emails with this recipient (in `to`, `cc` or `bcc`; the bare address, any case). */
+  to?: string;
+  /** Only emails with a recipient in one of these statuses (with `to`, that recipient's). */
+  recipient_status?: EmailRecipientStatus[];
+  /** Only emails in these statuses. */
+  status?: EmailStatus[];
+  /** Free text, matched against the subject and the `to` addresses. */
+  q?: string;
+  /** Only emails of this category. */
+  category?: string;
+  /** Only the emails of this batch. */
+  batch_id?: string;
+  /** Only emails created at or after this time. */
+  created_after?: Date | string;
+  /** Only emails created before this time. */
+  created_before?: Date | string;
+  /** 1-100, default 20. */
+  limit?: number;
+  /** Cursor: the `id` of the last email of the previous page. */
+  after?: string;
 }
 
 /** Emails sent together by `coss.email.sendBatch`. */

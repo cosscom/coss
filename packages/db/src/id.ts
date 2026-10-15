@@ -95,6 +95,8 @@ export const ID_PREFIXES = {
   hookPortalSession: "hps",
   hookPortalSettings: "hpset",
   hookEndpointRecovery: "hrec",
+  pushDevice: "pushdev",
+  pushNotification: "pushntf",
 } as const;
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES];

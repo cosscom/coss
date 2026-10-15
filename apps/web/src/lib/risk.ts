@@ -42,6 +42,19 @@ function signUpRiskEnvironment(environmentId: string): Promise<RiskAssessEnviron
   return signUpEnvironment;
 }
 
+/** The environment COSS's own sign-ups are assessed in, for the admin console; `null` without one. */
+export async function signUpRiskScope(): Promise<{
+  organizationId: string;
+  environmentId: string;
+} | null> {
+  const environmentId = env.RISK_SIGNUP_ENVIRONMENT_ID;
+  if (!environmentId) return null;
+  const environment = await signUpRiskEnvironment(environmentId);
+  return environment
+    ? { organizationId: environment.organizationId, environmentId: environment.environmentId }
+    : null;
+}
+
 /**
  * COSS Risk on COSS's own sign-ups (dogfooding): each `/sign-up/email` (and new Google or GitHub
  * account) is assessed in `RISK_SIGNUP_ENVIRONMENT_ID`, with the client's address, user agent and

@@ -29,9 +29,11 @@ import { Label } from "@coss/ui/components/label";
 import { Radio, RadioGroup } from "@coss/ui/components/radio-group";
 import { Textarea } from "@coss/ui/components/textarea";
 import Link from "next/link";
-import { type ReactNode, useActionState, useEffect } from "react";
+import { type ReactNode, useActionState, useEffect, useState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
+import type { ActionResult } from "@/lib/action-result";
+import { useActionToast } from "@/lib/toast";
 import { DEFAULT_RECOVER_SINCE_HOURS, RECOVER_SINCE_OPTIONS } from "../webhooks/recover";
 import { DEFAULT_PREVIOUS_SECRET_OPTION, PREVIOUS_SECRET_OPTIONS } from "../webhooks/secret-roll";
 import {
@@ -78,25 +80,21 @@ function ShownSecret({ secret }: { secret: string }) {
   );
 }
 
-/** A one-button form (enable, archive, retry …) that shows its error next to it. */
+/** A one-button form (enable, archive, retry …) that toasts its outcome. */
 function ActionButton(props: {
-  action: (previous: { ok: false; error: string } | null, formData: FormData) => Promise<unknown>;
+  action: (previous: ActionResult | null, formData: FormData) => Promise<ActionResult>;
   hidden: Record<string, string>;
   children: ReactNode;
+  success: string;
   size?: "xs" | "sm";
   variant?: "outline" | "ghost";
 }) {
-  const [state, formAction, pending] = useActionState(
-    async (previous: { ok: false; error: string } | null, formData: FormData) => {
-      const result = (await props.action(previous, formData)) as
-        | { ok: true }
-        | { ok: false; error: string };
-      return result.ok ? null : result;
-    },
-    null,
-  );
+  const [, formAction, pending] = useActionToast(props.action, {
+    success: props.success,
+    errors: "toast",
+  });
   return (
-    <form action={formAction} className="flex flex-col items-end gap-1">
+    <form action={formAction}>
       {Object.entries(props.hidden).map(([name, value]) => (
         <input key={name} name={name} type="hidden" value={value} />
       ))}
@@ -108,7 +106,6 @@ function ActionButton(props: {
       >
         {props.children}
       </Button>
-      {state ? <span className="text-destructive-foreground text-xs">{state.error}</span> : null}
     </form>
   );
 }
@@ -185,26 +182,25 @@ function CreateApplicationForm(props: EnvTarget) {
 
 /** Mints a portal session for this member and opens it in a new tab. */
 export function OpenPortalButton(props: AppTarget) {
-  const [state, formAction, pending] = useActionState(openHookPortalAction, null);
+  const [state, formAction, pending] = useActionToast(openHookPortalAction, { errors: "toast" });
   useEffect(() => {
     if (state?.ok) window.open(state.data.url, "_blank", "noopener,noreferrer");
   }, [state]);
   return (
-    <form action={formAction} className="flex flex-col items-end gap-1">
+    <form action={formAction}>
       <Hidden {...props} />
       <Button loading={pending} size="sm" type="submit" variant="outline">
         Open portal
       </Button>
-      {state && !state.ok ? (
-        <span className="text-destructive-foreground text-xs">{state.error}</span>
-      ) : null}
     </form>
   );
 }
 
 export function DeleteApplicationButton(props: AppTarget & { name: string }) {
-  const [state, formAction, pending] = useActionState(deleteHookApplicationAction, null);
   const { name, ...target } = props;
+  const [state, formAction, pending] = useActionToast(deleteHookApplicationAction, {
+    success: `${name} deleted`,
+  });
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button size="sm" variant="destructive-outline" />}>
@@ -331,6 +327,7 @@ export function ToggleEndpointButton(props: EndpointTarget & { enabled: boolean 
     <ActionButton
       action={setHookEndpointEnabledAction}
       hidden={{ ...target, enabled: String(!enabled) }}
+      success={enabled ? "Endpoint disabled" : "Endpoint enabled"}
     >
       {enabled ? "Disable" : "Enable"}
     </ActionButton>
@@ -338,7 +335,9 @@ export function ToggleEndpointButton(props: EndpointTarget & { enabled: boolean 
 }
 
 export function DeleteEndpointButton(props: EndpointTarget & { url: string }) {
-  const [state, formAction, pending] = useActionState(deleteHookEndpointAction, null);
+  const [state, formAction, pending] = useActionToast(deleteHookEndpointAction, {
+    success: "Endpoint deleted",
+  });
   const { url, ...target } = props;
   return (
     <AlertDialog>
@@ -455,37 +454,31 @@ function RollSecretForm(props: EndpointTarget) {
 }
 
 export function RecoverButton(props: EndpointTarget) {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger render={<Button size="sm" variant="outline" />}>Recover failed</DialogTrigger>
       <DialogPopup>
-        <RecoverForm {...props} />
+        <RecoverForm {...props} onDone={() => setOpen(false)} />
       </DialogPopup>
     </Dialog>
   );
 }
 
-function RecoverForm(props: EndpointTarget) {
-  const [state, formAction, pending] = useActionState(recoverHookEndpointAction, null);
-  if (state?.ok) {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>Recovery started</DialogTitle>
-          <DialogDescription>
-            COSS is queueing every failed delivery of that period for one more attempt, oldest
-            first. This page shows its progress.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose render={<Button />}>Done</DialogClose>
-        </DialogFooter>
-      </>
-    );
-  }
+function RecoverForm(props: EndpointTarget & { onDone: () => void }) {
+  const { onDone, ...target } = props;
+  const [state, formAction, pending] = useActionToast(recoverHookEndpointAction, {
+    success: {
+      title: "Recovery started",
+      description: "Failed deliveries are queued for one more attempt; this page shows progress.",
+    },
+  });
+  useEffect(() => {
+    if (state?.ok) onDone();
+  }, [state, onDone]);
   return (
     <form action={formAction} className="contents">
-      <Hidden {...props} />
+      <Hidden {...target} />
       <DialogHeader>
         <DialogTitle>Recover failed deliveries?</DialogTitle>
         <DialogDescription>
@@ -519,7 +512,10 @@ function RecoverForm(props: EndpointTarget) {
 }
 
 export function SendTestButton(props: EndpointTarget & { eventTypes: readonly string[] }) {
-  const [state, formAction, pending] = useActionState(sendHookTestAction, null);
+  const [, formAction, pending] = useActionToast(sendHookTestAction, {
+    success: "Test message queued",
+    errors: "toast",
+  });
   const { eventTypes, ...target } = props;
   if (eventTypes.length === 0) return null;
   return (
@@ -540,49 +536,46 @@ export function SendTestButton(props: EndpointTarget & { eventTypes: readonly st
       <Button loading={pending} size="sm" type="submit" variant="outline">
         Send test
       </Button>
-      {state?.ok ? <span className="text-muted-foreground text-xs">Queued.</span> : null}
-      {state && !state.ok ? <FormError message={state.error} /> : null}
     </form>
   );
 }
 
 export function RetryDeliveryButton(props: AppTarget & { deliveryId: string }) {
   return (
-    <ActionButton action={retryHookDeliveryAction} hidden={props} size="xs">
+    <ActionButton
+      action={retryHookDeliveryAction}
+      hidden={props}
+      size="xs"
+      success="Delivery queued for retry"
+    >
       Retry
     </ActionButton>
   );
 }
 
 export function CreateEventTypeDialog(props: EnvTarget) {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger render={<Button size="sm" />}>Add event type</DialogTrigger>
       <DialogPopup>
-        <CreateEventTypeForm {...props} />
+        <CreateEventTypeForm {...props} onDone={() => setOpen(false)} />
       </DialogPopup>
     </Dialog>
   );
 }
 
-function CreateEventTypeForm(props: EnvTarget) {
-  const [state, formAction, pending] = useActionState(createHookEventTypeAction, null);
-  if (state?.ok) {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>Event type added</DialogTitle>
-          <DialogDescription>Endpoints can now subscribe to it.</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose render={<Button />}>Done</DialogClose>
-        </DialogFooter>
-      </>
-    );
-  }
+function CreateEventTypeForm(props: EnvTarget & { onDone: () => void }) {
+  const { onDone, ...target } = props;
+  const [state, formAction, pending] = useActionToast(createHookEventTypeAction, {
+    success: { title: "Event type added", description: "Endpoints can now subscribe to it." },
+  });
+  useEffect(() => {
+    if (state?.ok) onDone();
+  }, [state, onDone]);
   return (
     <form action={formAction} className="contents">
-      <Hidden {...props} />
+      <Hidden {...target} />
       <DialogHeader>
         <DialogTitle>Add an event type</DialogTitle>
         <DialogDescription>
@@ -628,6 +621,7 @@ export function ArchiveEventTypeButton(props: EnvTarget & { name: string; archiv
       action={setHookEventTypeArchivedAction}
       hidden={{ ...target, archived: String(!archived) }}
       size="xs"
+      success={archived ? `${props.name} restored` : `${props.name} archived`}
     >
       {archived ? "Restore" : "Archive"}
     </ActionButton>
@@ -645,7 +639,9 @@ export function PortalSettingsForm(
     };
   },
 ) {
-  const [state, formAction, pending] = useActionState(saveHookPortalSettingsAction, null);
+  const [state, formAction, pending] = useActionToast(saveHookPortalSettingsAction, {
+    success: "Portal settings saved",
+  });
   const { settings, sandbox, ...target } = props;
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -693,7 +689,6 @@ export function PortalSettingsForm(
         </RadioGroup>
       </Field>
       {state && !state.ok ? <FormError message={state.error} /> : null}
-      {state?.ok ? <p className="text-muted-foreground text-sm">Saved.</p> : null}
       <div>
         <Button loading={pending} type="submit">
           Save settings

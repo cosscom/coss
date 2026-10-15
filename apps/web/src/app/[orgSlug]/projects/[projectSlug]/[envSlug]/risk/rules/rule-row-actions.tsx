@@ -11,8 +11,8 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { deleteRiskRuleAction, toggleRiskRuleAction } from "../actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string; ruleId: string };
@@ -29,7 +29,10 @@ function Hidden(props: Target) {
 }
 
 export function ToggleRuleButton(props: Target & { enabled: boolean }) {
-  const [state, formAction, pending] = useActionState(toggleRiskRuleAction, null);
+  const [, formAction, pending] = useActionToast(toggleRiskRuleAction, {
+    success: props.enabled ? "Rule disabled" : "Rule enabled",
+    errors: "toast",
+  });
   return (
     <form action={formAction}>
       <Hidden {...props} />
@@ -37,14 +40,15 @@ export function ToggleRuleButton(props: Target & { enabled: boolean }) {
       <Button loading={pending} size="xs" type="submit" variant="outline">
         {props.enabled ? "Disable" : "Enable"}
       </Button>
-      {state && !state.ok ? <FormError message={state.error} /> : null}
     </form>
   );
 }
 
 export function DeleteRuleButton(props: Target & { name: string }) {
   // On success the page re-renders without this rule, which unmounts the dialog.
-  const [state, formAction, pending] = useActionState(deleteRiskRuleAction, null);
+  const [state, formAction, pending] = useActionToast(deleteRiskRuleAction, {
+    success: "Rule deleted",
+  });
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button size="xs" variant="destructive-outline" />}>
