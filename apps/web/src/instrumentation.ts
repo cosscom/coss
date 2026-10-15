@@ -31,6 +31,7 @@ export async function register() {
     for (const [id, secret] of [
       ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
       ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"],
+      ["DEPLOY_GITHUB_APP_ID", "DEPLOY_GITHUB_APP_PRIVATE_KEY"],
     ] as const) {
       if (Boolean(env[id]) !== Boolean(env[secret])) {
         throw new Error(`Set both ${id} and ${secret}, or neither.`);

@@ -85,10 +85,13 @@ export const ADMIN_ACTIONS = [
   "billing.credit_note_created",
   "billing.hold_placed",
   "billing.hold_lifted",
+  // The admin console's deploys page (apps/web): a Deploy workflow dispatch, target the commit.
+  "deploy.started",
+  "deploy.redeployed",
 ] as const;
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 
-export type AdminTargetType = "user" | "organization" | "api_key" | "email";
+export type AdminTargetType = "user" | "organization" | "api_key" | "email" | "commit";
 
 export type AdminAuditEvent = {
   id: string;

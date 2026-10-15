@@ -19,6 +19,7 @@ import {
   MonitorSmartphoneIcon,
   MousePointerClickIcon,
   PanelsTopLeftIcon,
+  RocketIcon,
   ScaleIcon,
   ScanSearchIcon,
   ScrollTextIcon,
@@ -129,6 +130,7 @@ export const ADMIN_NAV: NavItem[] = [
   { label: "Audit log", path: "/audit", icon: HistoryIcon },
   { label: "Reputation", path: "/reputation", icon: GaugeIcon },
   { label: "Billing", path: "/billing", icon: CreditCardIcon },
+  { label: "Deploys", path: "/deploys", icon: RocketIcon },
 ];
 
 /**
@@ -204,4 +206,5 @@ const SEGMENT_LABELS: Record<string, string> = {
   signups: "Sign-ups",
   sending: "Sending",
   screening: "Screening",
+  deploys: "Deploys",
 };

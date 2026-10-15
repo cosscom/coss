@@ -647,7 +647,8 @@ The Deploy workflow does this for pushes to main in batches: its `gate` job (on 
 nothing here, unlike CodeBuild's minutes) waits until the push's CI passed and then until main has had no newer
 push for 20 minutes or production's last deploy is an hour old, so the first push after a quiet spell ships right
 after CI and a busy stretch ships about hourly. A push that's superseded while it waits isn't built (the newer
-push's run ships it). Run it by hand from the Actions tab (`gh workflow run deploy.yml`) to ship main at once; with
+push's run ships it). Run it by hand from the admin console's Deploys page or the Actions tab (`gh workflow run
+deploy.yml`) to ship main at once; with
 `image_tag` it redeploys an earlier commit's images, e.g. a rollback. When CI failed and a re-run passed, re-run
 the Deploy run's failed jobs. A deploy job whose commit production already includes (a newer deploy went first)
 skips, so production never goes back to an older commit unless you dispatch one:
@@ -679,6 +680,34 @@ skips, so production never goes back to an older commit unless you dispatch one:
 Infrastructure changes: `cd infra/terraform && terraform init && terraform plan -var-file=production.tfvars` with
 admin credentials for the account, then `apply`. Services ignore task definition changes; after changing
 environment values, run the Deploy workflow by hand so the services pick up the new revision.
+
+### Deploying from the admin console
+
+`/admin/deploys` shows the commit production runs, main's merges it doesn't run yet (with their CI) and the Deploy
+workflow's latest runs (waiting for their batch, building, deploying, done), and refreshes itself while one moves.
+**Deploy now** dispatches the workflow for main (skipping the batch wait) and cancels the push runs still waiting;
+**Redeploy** on an earlier run's commit dispatches it with `image_tag` (production stays there until main is
+deployed again; migrations aren't undone). Both record an admin audit event with the admin and their reason.
+
+It reads and dispatches through a GitHub App, **COSS Deploy**, so no person's token is involved. Setting it up once:
+
+1. In the `cosscom` organization: Settings → Developer settings → GitHub Apps → New GitHub App. Name `COSS Deploy`,
+   homepage `https://coss.com`, webhook off, repository permissions **Actions: read and write** and **Contents:
+   read-only** (nothing else), installable on this account only. Create it, note its **App ID**, and generate a
+   private key (a `.pem` download).
+2. Install it on `cosscom`, only on `cosscom/coss`.
+3. Its bot account starts the deploy runner, so it goes on the allow-list: `gh api 'users/coss-deploy[bot]' --jq .id`
+   (the app's slug + `[bot]`) → `deploy_actor_ids` in `production.tfvars`.
+4. `infra/terraform/scripts/put-secret.sh DEPLOY_GITHUB_APP_PRIVATE_KEY --stdin < coss-deploy.*.private-key.pem`,
+   then take it out of `unset_secrets`, set `DEPLOY_GITHUB_APP_ID` under `plain_env.web`, and apply. Delete the
+   `.pem`.
+5. Run the Deploy workflow (`gh workflow run deploy.yml`) so the dashboard picks up the new task definition.
+
+The dashboard asks GitHub for installation tokens limited to those two permissions on this repository. With them
+it can dispatch, cancel and re-run this repository's workflows and read its code, never push: the Deploy workflow
+refuses anything but main, and the release workflow only runs on pushes. Anyone with the private key (the dashboard's
+task, the stage secret) can start the deploy runner like a maintainer can, so rotate it (generate a new key in the
+app's settings, store it, redeploy, delete the old one) if it may have leaked.
 
 One-off tasks (from `infra/`, with admin credentials):
 

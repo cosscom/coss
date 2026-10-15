@@ -17,10 +17,11 @@ external_origin_hosts = {
 ses_name          = "coss"
 github_repository = "cosscom/coss"
 # Who may start the deploy runner (people with write access): keithwillcode, PeerRich, pumfleet,
-# sean-brydon. Add a new maintainer here before their merges can deploy.
+# sean-brydon. Add a new maintainer here before their merges can deploy. The COSS Deploy GitHub
+# App's bot goes here too once it exists (README, "Deploying from the admin console").
 deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778"]
 # Optional secrets not stored in coss/production: take a name out once put-secret.sh has set it.
-unset_secrets      = ["IPINFO_PRIVACY_TOKEN"]
+unset_secrets      = ["IPINFO_PRIVACY_TOKEN", "DEPLOY_GITHUB_APP_PRIVATE_KEY"]
 initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
