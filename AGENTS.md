@@ -560,7 +560,12 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     keep it on: an unverified password account may belong to whoever registered someone else's address); keep
     `trustedProviders` empty. Explicit linking (account settings, `allowDifferentEmails`) and adding a first password
     need a session younger than `freshAge` (the actions check; `/link-social`, `/unlink-account` stay closed over
-    HTTP). Provider tokens are never stored (`withoutProviderTokens`). `?error=` codes are mapped by
+    HTTP). Provider tokens are never stored (`withoutProviderTokens`). Profile pictures: Better Auth copies
+    the provider's into `user.image` at sign-up; a linked account's becomes it when there is none
+    (`providerPicture` in `account.create.before`, written after commit; the name still never syncs). The
+    dashboard shows only `*.googleusercontent.com`/`avatars.githubusercontent.com` pictures (an SSO IdP's
+    `picture` could point anywhere), else the verified address's Gravatar (`d=404`), else initials
+    (`avatarUrl`, `apps/web/src/lib/avatars.ts`; `UserAvatar` loads it without a referrer). `?error=` codes are mapped by
     `apps/web/src/lib/social-errors.ts` (never show `error_description`). `/sign-in/social` is limited per IP
     (`auth.social.ip`).
   - **SSO** (`@better-auth/sso`, `packages/auth/src/sso.ts`, `packages/tenancy/src/sso.ts`): one provider per
@@ -1235,7 +1240,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page,
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
-org logos, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
+org logos, uploading a profile picture, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
 would drop an org's SSO provider or last owner), email change,
 email/SMS two-factor codes, sign-in providers other than Google and GitHub, "trust this device" for 2FA, renaming passkeys, self-serve add-ons (none is named yet), an automatic direct-debit policy (only per-account
 required payment methods), multi-currency, metering for SMS/video/scheduling (their meters
