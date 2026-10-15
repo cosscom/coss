@@ -3,6 +3,9 @@ export type RiskErrorCode =
   | "invalid_list_value"
   | "invalid_settings"
   | "too_many_rules"
+  | "too_many_limit_buckets"
+  | "limit_bucket_name_taken"
+  | "classification_unavailable"
   | "idempotency_key_reused"
   | "request_in_progress";
 

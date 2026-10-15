@@ -19,6 +19,16 @@ export { RiskError, type RiskErrorCode } from "./errors.ts";
 export { forgetRiskUser, type RiskFeedbackActor, recordRiskFeedback } from "./feedback.ts";
 export { type RiskHasher, type RiskHashKind, riskHasher } from "./hash.ts";
 export {
+  checkRiskLimit,
+  createRiskLimitBucket,
+  deleteRiskLimitBucket,
+  getRiskLimitBucket,
+  limitStoreKey,
+  listRiskLimitBuckets,
+  toRiskLimitBucketObject,
+  updateRiskLimitBucket,
+} from "./limits.ts";
+export {
   addRiskListEntry,
   getRiskListEntry,
   listRiskListEntries,
@@ -28,6 +38,13 @@ export {
   removeRiskListEntry,
   toRiskListEntryObject,
 } from "./lists.ts";
+export {
+  checkEmail,
+  checkIp,
+  classifyContent,
+  DEFAULT_CLASSIFY_TIMEOUT_MS,
+  type LookupEnvironment,
+} from "./lookups.ts";
 export {
   getRiskAssessment,
   getRiskAssessmentRow,
@@ -57,6 +74,7 @@ export {
   SANDBOX_DISPOSABLE_DOMAIN,
   SANDBOX_NEW_DOMAIN,
   SANDBOX_UNDELIVERABLE_DOMAIN,
+  sandboxContentScores,
   sandboxIpSignals,
 } from "./sandbox.ts";
 export { decide, reasonMessage, type StoredReason, scoreReasons } from "./score.ts";

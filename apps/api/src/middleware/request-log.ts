@@ -37,7 +37,19 @@ function skipped(method: string, path: string): boolean {
  */
 const CONTENT_RESPONSES = ["/v1/received_emails"];
 
+/**
+ * Stateless lookup identifiers and classification text must not enter request logs. Lookup
+ * responses (including errors) are omitted too; assessments' `content` is redacted by `redactBody`.
+ */
+const STATELESS_LOOKUPS = ["/v1/risk/email/check", "/v1/risk/ip/check"];
+const CONTENT_REQUESTS = ["/v1/risk/content/classify", ...STATELESS_LOOKUPS];
+
+function keepsRequestBody(path: string): boolean {
+  return !CONTENT_REQUESTS.includes(path);
+}
+
 function keepsResponseBody(path: string, status: number): boolean {
+  if (CONTENT_REQUESTS.includes(path)) return false;
   if (status >= 400) return true;
   return !CONTENT_RESPONSES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
@@ -125,7 +137,9 @@ export function requestLog(writer: LogWriter) {
     const route = c.req.routePath.endsWith("*") ? null : c.req.routePath;
     // Only bodies the handler already parsed (no second read of a 40 MB upload); Hono caches
     // what `c.req.json()` read as text.
-    const requestText = c.req.bodyCache.text as Promise<string> | undefined;
+    const requestText = keepsRequestBody(path)
+      ? (c.req.bodyCache.text as Promise<string> | undefined)
+      : undefined;
     const length = Number(response.headers.get("content-length") ?? Number.NaN);
     const responseCopy =
       isJson(response.headers) &&

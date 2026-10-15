@@ -1,0 +1,90 @@
+---
+title: Content classification
+description: Score what people post (bios, messages, listings) for spam, phishing, malware and fraud.
+---
+
+COSS scores text with an AI model, per category: `spam`, `phishing`, `malware` and `fraud`. Each
+score is the model's probability (0-1) that the text belongs to the category. COSS never turns the
+scores into a verdict for you: you choose what they mean, with thresholds or rules.
+
+Classify text on its own:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const profile: { bio: string };
+// ---cut---
+const { data, error } = await coss.risk.classify({ text: profile.bio });
+
+if (data && data.scores.phishing >= 0.8) {
+  // Hide the bio until someone looks at it.
+}
+```
+
+Or with an assessment, where the scores join every other signal:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const message: { senderId: string; text: string; ip: string };
+// ---cut---
+const { data } = await coss.risk.assess({
+  event: "message",
+  user: { id: message.senderId },
+  ip: message.ip,
+  content: { text: message.text },
+});
+// data?.signals.content: { spam: 0.02, phishing: 0.91, malware: 0.01, fraud: 0.12 }
+```
+
+## Thresholds and rules
+
+Content scores in an assessment change nothing until you say what they mean:
+
+- **Thresholds** ([settings](/docs/risk/settings#content-thresholds)): at or above the threshold you
+  set for a category, the assessment gets `content.<category>` (with the score as `value`), which
+  counts in the score like any reason. Categories without a threshold never fire.
+- **[Rules](/docs/risk/rules)**: `content.spam`, `content.phishing`, `content.malware` and
+  `content.fraud` are number fields, so a rule can block or review on a score directly.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.risk.settings.update({ content_thresholds: { phishing: 0.8, malware: 0.8 } });
+
+await coss.risk.rules.create({
+  name: "Scam listings",
+  events: ["custom"],
+  conditions: [{ field: "content.fraud", operator: "gte", value: 0.9 }],
+  action: "block",
+});
+```
+
+The scores aren't calibrated against your traffic: start with high thresholds (0.8 or more), look
+at what they catch in the dashboard, and adjust.
+
+## Limits and failures
+
+- The model reads the first 8,000 characters (`truncated: true` when there were more). Links in the
+  text are passed as host and path, without query strings.
+- A classification takes up to 3 seconds. `coss.risk.classify()` returns a `503`
+  (`classification_unavailable`) when the model fails or is slower, which the SDK retries; treat a
+  persistent error as "unknown". An assessment never fails because of it: it goes on without the
+  scores and lists `content` in `degraded`.
+- Live classifications are limited per organization, to 10 per second (bursts of 20) and 10,000 per
+  day, across `coss.risk.classify()` and assessments with `content`. Over the limit, `classify`
+  returns a `429` (`classification_rate_limited`) and assessments go on without the scores
+  (`degraded`). Sandbox classifications don't count.
+
+## Privacy
+
+The text goes to the model (a decision model on Vercel's AI Gateway) with zero data retention, and
+COSS keeps it nowhere: not on the assessment, not in [logs](/docs/logs) (they keep only its length),
+not in webhooks. Only the scores are stored, with the assessment.
+
+## Testing
+
+Sandbox keys don't call the model: `[coss-test:<category>]` in the text scores 0.99 in that category,
+`[coss-test:<category>:<score>]` exactly `<score>`, and everything else 0.01
+([Testing](/docs/risk/testing)).

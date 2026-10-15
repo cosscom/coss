@@ -42,7 +42,12 @@ export function fakeClassifier(
 }
 
 function markerScores(content: ScreeningContent): Partial<Record<ScreeningCategory, number>> {
-  const text = content.kind === "email" ? `${content.subject}\n${content.text}` : `${content.body}`;
+  const text =
+    content.kind === "email"
+      ? `${content.subject}\n${content.text}`
+      : content.kind === "sms"
+        ? content.body
+        : content.text;
   const scores: Partial<Record<ScreeningCategory, number>> = {};
   for (const [, category, score] of text.matchAll(MARKER)) {
     if ((SCREENING_CATEGORIES as readonly string[]).includes(category ?? "")) {

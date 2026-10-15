@@ -193,8 +193,22 @@ const screening: EnvVar[] = [
     kind: "secret",
     required: true,
     description:
-      "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker only.",
+      "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker " +
+      "(content screening) and api (risk's content classification).",
   },
+];
+
+/** The API classifies risk content at request time with the screening model and key. */
+const riskClassifier: EnvVar[] = [
+  {
+    name: "RISK_CLASSIFIER",
+    kind: "plain",
+    required: true,
+    value: "ai",
+    description:
+      "Risk's content classification in live environments (off|fake|ai): SCREENING_MODEL through the AI Gateway.",
+  },
+  ...screening.filter((variable) => variable.name !== "SCREENING_CLASSIFIER"),
 ];
 
 const billingProvider: EnvVar = {
@@ -508,6 +522,7 @@ export const SERVICES: Service[] = [
       webhookKey,
       portalPublicUrl,
       riskHashKey,
+      ...riskClassifier,
       ...sentry("api"),
       sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },

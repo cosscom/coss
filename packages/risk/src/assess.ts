@@ -1,38 +1,43 @@
 /**
  * `POST /v1/risk/assessments`: collects the signals of one event (email, domain age, IP,
- * captcha, velocity, lists, what the environment remembers), turns them into reasons, a score and
+ * captcha, content, velocity, lists, what the environment remembers), turns them into reasons, a score and
  * a decision (lists, then the environment's rules, then its thresholds), and stores the
  * assessment with its log line, mailbox identity, login networks and (for `review`) webhook in one
  * transaction.
  *
- * Every signal is best-effort: a slow DNS lookup, missing IP data or an unreachable Valkey make
- * the assessment go without it (listed in `degraded`) rather than fail.
+ * Every signal is best-effort: a slow DNS lookup, missing IP data, a failed classification or an
+ * unreachable Valkey make the assessment go without it (listed in `degraded`) rather than fail.
  */
 import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { IDEMPOTENCY_KEY_TTL_MS, isReplayOf, requestHash } from "@coss/db/idempotency";
 import { appendLogEntries } from "@coss/logs";
+import type { RateLimitStore } from "@coss/ratelimit";
+import type { ContentClassifier } from "@coss/screening/classifier";
 import { type CaptchaVerdict, verifyCaptcha } from "@coss/signals/captcha";
 import { analyzeEmail, type EmailAnalysis, type MailDomainVerdict } from "@coss/signals/email";
-import { type IpSignals, isBlockedAddress, normalizeIp, subnetOf } from "@coss/signals/ip";
+import { isBlockedAddress, normalizeIp, subnetOf } from "@coss/signals/ip";
 import { enqueueWebhookMessage, type SecretsKeyRing } from "@coss/webhooks";
-import { and, eq, gte, isNotNull, ne, or, type SQL, sql } from "drizzle-orm";
+import { and, eq, gte, isNotNull, lt, ne, or, type SQL, sql } from "drizzle-orm";
 import type { IpIntelligenceSource } from "./datasets.ts";
-import { type DomainAgeLookup, domainAge } from "./domain-age.ts";
+import type { DomainAgeLookup } from "./domain-age.ts";
 import { RiskError } from "./errors.ts";
 import type { RiskHasher, RiskHashKind } from "./hash.ts";
 import { type ListMatch, matchListEntries } from "./lists.ts";
+import {
+  assessmentContentScores,
+  type ContentScores,
+  emailDeliverability,
+  emailDomainAge,
+  ipSignalsFor,
+  isDisposable,
+} from "./lookups.ts";
 import { rememberUserNetwork, userNetworks } from "./networks.ts";
 import { type RiskAssessmentRow, type StoredSignals, toRiskAssessmentObject } from "./read.ts";
 import { firstMatchingRule, listRiskRuleRows, type RiskRuleRow, type RuleFacts } from "./rules.ts";
+import { sandboxCaptchaVerdict, sandboxIpSignals } from "./sandbox.ts";
 import {
-  SANDBOX_DISPOSABLE_DOMAIN,
-  sandboxCaptchaVerdict,
-  sandboxDomainAgeDays,
-  sandboxIpSignals,
-  sandboxMailDomainVerdict,
-} from "./sandbox.ts";
-import {
+  CONTENT_CATEGORIES,
   type CreateRiskAssessmentRequestOutput,
   NEW_DOMAIN_DAYS,
   type RiskAssessmentOutput,
@@ -51,8 +56,6 @@ const { riskAssessment, riskIdentity, riskReport } = schema;
 
 /** IP and subnet fraud reports only count this long; mailboxes and users until forgotten. */
 export const NETWORK_REPORT_TTL_MS = 30 * 24 * 60 * 60_000;
-const DEFAULT_DNS_TIMEOUT_MS = 800;
-const DEFAULT_DOMAIN_AGE_TIMEOUT_MS = 1000;
 const DEFAULT_CAPTCHA_TIMEOUT_MS = 2000;
 
 export type RiskDeps = {
@@ -72,6 +75,16 @@ export type RiskDeps = {
   /** Defaults to the providers' `siteverify` (`@coss/signals/captcha`). */
   verifyCaptcha?: typeof verifyCaptcha;
   captchaTimeoutMs?: number;
+  /** Scores `content` (Jev through the AI Gateway); `null`: content is reported as degraded. */
+  classifier: ContentClassifier | null;
+  classifyTimeoutMs?: number;
+  /**
+   * Charges an organization's classification budget (`risk.classify*` buckets) before a live
+   * classification; `false` when it is spent. Without it, classification is unlimited.
+   */
+  chargeClassification?: (organizationId: string) => Promise<boolean>;
+  /** Where customers' rate limit buckets live (`POST /v1/risk/limits`); `null`: unavailable. */
+  limits: RateLimitStore | null;
 };
 
 /** The authenticated environment (from the API key). */
@@ -122,29 +135,33 @@ export async function assessRisk(
   const idempotencyKey = input.idempotencyKey || null;
   const hash = idempotencyKey ? requestHash(params) : null;
 
-  // The dataset source can need its own database connection on first load. Resolve it before
-  // occupying a transaction connection, so concurrent requests cannot exhaust the pool.
-  const ipSignals = await ipSignalsFor(
-    deps,
-    params.ip ? normalizeIp(params.ip) : null,
-    environment.mode === "sandbox",
-  );
+  // A retry of a stored assessment is answered before asking a model to classify its content.
+  if (idempotencyKey) {
+    const existing = await assessmentByKey(db, environment, idempotencyKey);
+    if (existing && isReplayOf(existing, hash)) {
+      return { assessment: toRiskAssessmentObject(existing), replayed: true };
+    }
+    if (existing && Date.now() - existing.createdAt.getTime() <= IDEMPOTENCY_KEY_TTL_MS) {
+      throw IDEMPOTENCY_ERRORS.reused();
+    }
+  }
+
+  // The dataset source can need its own database connection on first load, and classification
+  // takes up to 3 s. Resolve both before occupying a transaction connection, so concurrent
+  // requests cannot exhaust the pool.
+  const [ipSignals, content] = await Promise.all([
+    ipSignalsFor(deps, params.ip ? normalizeIp(params.ip) : null, environment.mode === "sandbox"),
+    // Only paid work needs a claim: assessments without content stay one transaction.
+    idempotencyKey && params.content?.text
+      ? prepareIdempotentContent(deps, input, idempotencyKey, hash as string)
+      : assessmentContentScores(deps, environment, params.content?.text),
+  ]);
   return db.transaction(async (tx) => {
     if (idempotencyKey) {
       // Hold the key across collection and commit, including expired-key replacement.
       const lock = `risk:idempotency:${environment.environmentId}:${idempotencyKey}`;
       await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${lock}, 0))`);
-      const [existing] = await tx
-        .select()
-        .from(riskAssessment)
-        .where(
-          and(
-            eq(riskAssessment.environmentId, environment.environmentId),
-            eq(riskAssessment.organizationId, environment.organizationId),
-            eq(riskAssessment.idempotencyKey, idempotencyKey),
-          ),
-        )
-        .limit(1);
+      const existing = await assessmentByKey(tx, environment, idempotencyKey);
       if (existing && isReplayOf(existing, hash)) {
         return { assessment: toRiskAssessmentObject(existing), replayed: true };
       }
@@ -163,7 +180,10 @@ export async function assessRisk(
       resolveRiskSettings(tx, environment),
       listRiskRuleRows(tx, environment),
     ]);
-    const collected = await collectSignals(tx, deps, environment, params, ipSignals, settings);
+    const collected = await collectSignals(tx, deps, environment, params, settings, {
+      ip: ipSignals,
+      content,
+    });
     const row = await insertAssessment(tx, input, collected, settings, rules, {
       idempotencyKey,
       requestHash: hash,
@@ -173,15 +193,80 @@ export async function assessRisk(
   });
 }
 
-/** Resolves to `fallback` when `promise` takes longer than `ms` (the promise keeps running). */
-function within<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  return Promise.race([
-    promise,
-    new Promise<T>((resolve) => {
-      timer = setTimeout(() => resolve(fallback), ms);
-    }),
-  ]).finally(() => clearTimeout(timer));
+/** Reserve paid work in a short statement, without holding a connection during the model call.
+ * Keep its result across failed assessment transactions too. A crashed preparer fails open after
+ * 30 seconds; it is never replaced with another paid call during the key's 24-hour lifetime.
+ */
+async function prepareIdempotentContent(
+  deps: RiskDeps,
+  input: AssessRiskInput,
+  key: string,
+  hash: string,
+): Promise<{ scores: ContentScores | null; degraded: boolean }> {
+  const table = schema.riskAssessmentPreparation;
+  const identity = and(
+    eq(table.environmentId, input.environment.environmentId),
+    eq(table.idempotencyKey, key),
+  );
+  const createdAt = new Date();
+  const [claimed] = await db
+    .insert(table)
+    .values({
+      environmentId: input.environment.environmentId,
+      idempotencyKey: key,
+      requestHash: hash,
+      createdAt,
+    })
+    .onConflictDoUpdate({
+      target: [table.environmentId, table.idempotencyKey],
+      set: { requestHash: hash, createdAt, content: null },
+      setWhere: lt(table.createdAt, new Date(Date.now() - IDEMPOTENCY_KEY_TTL_MS)),
+    })
+    .returning();
+  if (claimed) {
+    const content = await assessmentContentScores(
+      deps,
+      input.environment,
+      input.params.content?.text,
+    );
+    await db
+      .update(table)
+      .set({ content })
+      .where(and(identity, eq(table.createdAt, createdAt)));
+    return content;
+  }
+  // Wait without occupying a pool connection; long-running requests answer the normal busy error.
+  const deadline = Date.now() + 4000;
+  do {
+    const [prepared] = await db.select().from(table).where(identity);
+    if (!prepared) throw IDEMPOTENCY_ERRORS.inProgress();
+    if (prepared.requestHash !== hash) throw IDEMPOTENCY_ERRORS.reused();
+    if (prepared.content) return prepared.content;
+    if (Date.now() - prepared.createdAt.getTime() > 30_000) {
+      return { scores: null, degraded: Boolean(input.params.content?.text) };
+    }
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  } while (Date.now() < deadline);
+  throw IDEMPOTENCY_ERRORS.inProgress();
+}
+
+async function assessmentByKey(
+  executor: Executor,
+  environment: RiskAssessEnvironment,
+  idempotencyKey: string,
+): Promise<RiskAssessmentRow | undefined> {
+  const [row] = await executor
+    .select()
+    .from(riskAssessment)
+    .where(
+      and(
+        eq(riskAssessment.environmentId, environment.environmentId),
+        eq(riskAssessment.organizationId, environment.organizationId),
+        eq(riskAssessment.idempotencyKey, idempotencyKey),
+      ),
+    )
+    .limit(1);
+  return row;
 }
 
 async function collectSignals(
@@ -189,8 +274,11 @@ async function collectSignals(
   deps: RiskDeps,
   environment: RiskAssessEnvironment,
   params: CreateRiskAssessmentRequestOutput,
-  resolvedIpSignals: Awaited<ReturnType<typeof ipSignalsFor>>,
   settings: ResolvedRiskSettings,
+  resolved: {
+    ip: Awaited<ReturnType<typeof ipSignalsFor>>;
+    content: { scores: ContentScores | null; degraded: boolean };
+  },
 ): Promise<Collected> {
   const sandbox = environment.mode === "sandbox";
   const env = environment.environmentId;
@@ -215,7 +303,7 @@ async function collectSignals(
       emailDeliverability(deps, email, sandbox),
       emailDomainAge(executor, deps, email, sandbox),
       captchaVerdict(deps, settings, params, ip, sandbox),
-      resolvedIpSignals,
+      resolved.ip,
       countVelocity(deps, environment, params, email, ip, hashes),
       matchListEntries(executor, environment, {
         mailbox: email?.valid ? email.canonical : null,
@@ -235,8 +323,7 @@ async function collectSignals(
   // Email.
   let emailSignals: StoredSignals["email"] = null;
   if (email) {
-    const disposable =
-      email.disposable || (sandbox && email.valid && email.domain === SANDBOX_DISPOSABLE_DOMAIN);
+    const disposable = isDisposable(email, sandbox);
     if (deliverability === "unknown" && email.valid) degraded.add("email_dns");
     if (age.degraded) degraded.add("domain_age");
     emailSignals = {
@@ -265,6 +352,19 @@ async function collectSignals(
   } else if (settings.captcha?.required) {
     captchaSignals = { provided: false, passed: null };
     reasons.push({ code: "captcha.missing" });
+  }
+
+  // Content: scores only, and reasons only at the thresholds the customer set.
+  if (resolved.content.degraded) degraded.add("content");
+  const contentScores = resolved.content.scores;
+  if (contentScores) {
+    for (const category of CONTENT_CATEGORIES) {
+      const threshold = settings.contentThresholds[category];
+      const value = contentScores[category];
+      if (threshold !== undefined && value >= threshold) {
+        reasons.push({ code: `content.${category}`, value, threshold });
+      }
+    }
   }
 
   // IP.
@@ -358,6 +458,7 @@ async function collectSignals(
       velocity,
       captcha: captchaSignals,
       login: loginSignals,
+      content: contentScores,
     },
     reasons,
     degraded: [...degraded].sort(),
@@ -369,23 +470,6 @@ async function collectSignals(
       domainNew: age.days === null ? null : age.days < NEW_DOMAIN_DAYS,
     },
   };
-}
-
-/** Domain age, looked up only for organizations' own domains (not free or disposable ones). */
-async function emailDomainAge(
-  executor: Executor,
-  deps: RiskDeps,
-  email: EmailAnalysis | null,
-  sandbox: boolean,
-): Promise<{ days: number | null; degraded: boolean }> {
-  if (!email?.valid || email.free || email.disposable) return { days: null, degraded: false };
-  if (sandbox && (email.domain === "test" || email.domain.endsWith(".test"))) {
-    return { days: sandboxDomainAgeDays(email.domain), degraded: false };
-  }
-  if (!deps.domainAge) return { days: null, degraded: true };
-  return domainAge(executor, deps.domainAge, email.domain, {
-    timeoutMs: deps.domainAgeTimeoutMs ?? DEFAULT_DOMAIN_AGE_TIMEOUT_MS,
-  });
 }
 
 /** `passed: null` when the token couldn't be checked; `degraded` when the provider failed. */
@@ -423,42 +507,6 @@ async function captchaVerdict(
 
 function dedupeMatches(matches: ListMatch[]): ListMatch[] {
   return [...new Map(matches.map((match) => [match.id, match])).values()];
-}
-
-async function emailDeliverability(
-  deps: RiskDeps,
-  email: EmailAnalysis | null,
-  sandbox: boolean,
-): Promise<MailDomainVerdict> {
-  if (!email?.valid) return "unknown";
-  const fixture = sandbox ? sandboxMailDomainVerdict(email.domain) : null;
-  if (fixture) return fixture;
-  try {
-    return await within(
-      deps.checkMailDomain(email.domain),
-      deps.dnsTimeoutMs ?? DEFAULT_DNS_TIMEOUT_MS,
-      "unknown",
-    );
-  } catch {
-    return "unknown";
-  }
-}
-
-async function ipSignalsFor(
-  deps: RiskDeps,
-  ip: string | null,
-  sandbox: boolean,
-): Promise<{ signals: IpSignals | null; degraded: boolean }> {
-  if (!ip) return { signals: null, degraded: false };
-  const fixture = sandbox ? sandboxIpSignals(ip) : null;
-  if (fixture) return { signals: fixture, degraded: false };
-  try {
-    const intelligence = await deps.ipIntelligence.current();
-    const { tor, cloud, asn } = intelligence.available;
-    return { signals: intelligence.lookup(ip), degraded: !(tor && cloud && asn) };
-  } catch {
-    return { signals: null, degraded: true };
-  }
 }
 
 /** Counts this event; `null` when velocity is unavailable. Keys are `<dimension>_<window>`. */
@@ -724,7 +772,7 @@ async function insertAssessment(
 
 /** The values rules test (`RULE_FIELDS`), from the collected signals. */
 function ruleFacts(collected: Collected, extra: { score: number; duplicate: boolean }): RuleFacts {
-  const { email, ip, velocity, captcha, login } = collected.signals;
+  const { email, ip, velocity, captcha, login, content } = collected.signals;
   const v = (key: string) => velocity?.[key] ?? null;
   return {
     "email.valid": email ? email.valid : null,
@@ -748,6 +796,10 @@ function ruleFacts(collected: Collected, extra: { score: number; duplicate: bool
     "history.fraud": collected.flags.history,
     "login.new_country": login ? login.new_country : null,
     "login.new_network": login ? login.new_network : null,
+    "content.spam": content?.spam ?? null,
+    "content.phishing": content?.phishing ?? null,
+    "content.malware": content?.malware ?? null,
+    "content.fraud": content?.fraud ?? null,
     score: extra.score,
     "velocity.ip_1h": v("ip_1h"),
     "velocity.ip_24h": v("ip_24h"),

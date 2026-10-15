@@ -5,7 +5,7 @@
  */
 import { db, schema } from "@coss/db";
 import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
-import { and, asc, inArray, isNull, lt, or, type SQL } from "drizzle-orm";
+import { and, asc, inArray, isNull, lt, or, type SQL, sql } from "drizzle-orm";
 import { NETWORK_REPORT_TTL_MS } from "./assess.ts";
 
 const { riskAssessment, riskDomainAge, riskIdentity, riskReport, riskUserNetwork } = schema;
@@ -67,10 +67,43 @@ export async function purgeExpiredRiskAssessments(opts: PurgeOptions = {}): Prom
 /**
  * Deletes mailbox identities and users' login networks not seen within `riskMemory`, network
  * reports once they stop counting (30 days), other reports after `riskMemory`, and cached domain
- * ages nobody looked up for 90 days. Returns [identities, reports, networks, domain ages].
+ * ages nobody looked up for 90 days, and assessment preparations after 48 hours. Returns
+ * [identities, reports, networks, domain ages, preparations].
  */
 export async function purgeExpiredRiskMemory(opts: PurgeOptions = {}): Promise<number[]> {
   const now = opts.now ?? new Date();
+  // Preparation fingerprints and scores have no purpose beyond idempotency's lifetime.
+  const preparation = schema.riskAssessmentPreparation;
+  const stalePreparation = and(
+    lt(preparation.createdAt, new Date(now.getTime() - 48 * 60 * 60_000)),
+    opts.scope
+      ? inArray(
+          preparation.environmentId,
+          db
+            .select({ id: schema.environment.id })
+            .from(schema.environment)
+            .where(inArray(schema.environment.organizationId, opts.scope.organizationIds)),
+        )
+      : undefined,
+  );
+  const expiredPreparations = db
+    .select({
+      environmentId: preparation.environmentId,
+      idempotencyKey: preparation.idempotencyKey,
+    })
+    .from(preparation)
+    .where(stalePreparation)
+    .orderBy(asc(preparation.createdAt))
+    .limit(opts.limit ?? 1000);
+  const preparations = await db
+    .delete(preparation)
+    .where(
+      and(
+        stalePreparation,
+        sql`(${preparation.environmentId}, ${preparation.idempotencyKey}) in (${expiredPreparations})`,
+      ),
+    )
+    .returning({ key: preparation.idempotencyKey });
   const cutoff = retentionCutoff(RETENTION_DAYS.riskMemory, now);
   const staleIdentity = and(
     lt(riskIdentity.lastSeenAt, cutoff),
@@ -136,5 +169,5 @@ export async function purgeExpiredRiskMemory(opts: PurgeOptions = {}): Promise<n
         .returning({ domain: riskDomainAge.domain })
     ).length;
   }
-  return [identities.length, reports.length, networks.length, domainAges];
+  return [identities.length, reports.length, networks.length, domainAges, preparations.length];
 }

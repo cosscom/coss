@@ -1333,3 +1333,66 @@ describe("coss.risk.settings and coss.risk.rules against the API", () => {
     }
   });
 });
+
+describe("coss.risk building blocks and rate limits against the API", () => {
+  test("checks, classification, content thresholds and limits round-trip", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    expect((await coss.risk.checkEmail("a@disposable.test")).data).toMatchObject({
+      object: "risk_email_check",
+      disposable: true,
+    });
+    expect((await coss.risk.checkIp("192.0.2.3")).data).toMatchObject({
+      object: "risk_ip_check",
+      hosting_kind: "vpn",
+    });
+    expect(await coss.risk.classify({ text: "Pay with gift cards [coss-test:fraud]" })).toEqual({
+      data: {
+        object: "risk_content_classification",
+        scores: { spam: 0.01, phishing: 0.01, malware: 0.01, fraud: 0.99 },
+        truncated: false,
+      },
+      error: null,
+    });
+
+    const settings = await coss.risk.settings.update({ content_thresholds: { fraud: 0.9 } });
+    expect(settings.data?.content_thresholds).toEqual({
+      spam: null,
+      phishing: null,
+      malware: null,
+      fraud: 0.9,
+    });
+    const assessed = await coss.risk.assess({
+      event: "message",
+      content: { text: "Pay with gift cards [coss-test:fraud]" },
+    });
+    expect(assessed.data?.signals.content?.fraud).toBe(0.99);
+    expect(assessed.data?.reasons.map((reason) => reason.code)).toEqual(["content.fraud"]);
+
+    const bucket = await coss.risk.limitBuckets.create({
+      name: "password_reset",
+      limit: 1,
+      period_seconds: 60,
+    });
+    if (!bucket.data) throw new Error("bucket failed");
+    expect(bucket.data).toMatchObject({ name: "password_reset", burst: 1, on_failure: "allow" });
+    expect((await coss.risk.limitBuckets.list()).data?.data).toEqual([bucket.data]);
+    const first = await coss.risk.limit({ bucket: "password_reset", key: "ada@example.com" });
+    expect(first.data).toMatchObject({ allowed: true, remaining: 0, degraded: false });
+    const second = await coss.risk.limit({ bucket: "password_reset", key: "ada@example.com" });
+    expect(second.data).toMatchObject({ allowed: false, remaining: 0 });
+    expect(second.data?.retry_after_ms).toBeGreaterThan(0);
+    const updated = await coss.risk.limitBuckets.update(bucket.data.id, { burst: 3 });
+    expect(updated.data).toMatchObject({ burst: 3 });
+    expect((await coss.risk.limitBuckets.get(bucket.data.id)).data).toEqual(updated.data);
+    expect((await coss.risk.limitBuckets.delete(bucket.data.id)).data).toEqual({
+      object: "risk_limit_bucket",
+      id: bucket.data.id,
+      deleted: true,
+    });
+    const missing = await coss.risk.limit({ bucket: "password_reset", key: "k" });
+    expect(missing.error).toMatchObject({ type: "not_found_error", param: "bucket" });
+  });
+});

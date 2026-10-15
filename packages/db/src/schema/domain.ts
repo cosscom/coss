@@ -2346,6 +2346,12 @@ export const riskSettings = pgTable(
     captchaSecretCiphertext: text("captcha_secret_ciphertext"),
     // Assessments without a captcha token get `captcha.missing`.
     captchaRequired: boolean("captcha_required").notNull().default(false),
+    // Per content category (`spam`, `phishing`, …), the score at which `content.<category>` fires.
+    // Categories without one never fire: the customer decides what their content scores mean.
+    contentThresholds: jsonb("content_thresholds")
+      .$type<Partial<Record<string, number>>>()
+      .notNull()
+      .default({}),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -2402,6 +2408,44 @@ export const riskRule = pgTable(
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
     index("risk_rule_environment_position_idx").on(t.environmentId, t.position, t.createdAt),
+  ],
+);
+
+export const riskLimitFailureMode = pgEnum("risk_limit_failure_mode", ["allow", "deny"]);
+
+/**
+ * Rate limiting as a service: an environment's own buckets, which `POST /v1/risk/limits` charges
+ * per key (GCRA in Valkey, like COSS's own limits; keys are HMACs). `limit` tokens refill per
+ * `period_ms`, at most `burst` at once; `on_failure` answers while the store is unavailable.
+ */
+export const riskLimitBucket = pgTable(
+  "risk_limit_bucket",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.riskLimitBucket)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    name: text("name").notNull(),
+    limit: integer("limit").notNull(),
+    periodMs: integer("period_ms").notNull(),
+    burst: integer("burst").notNull(),
+    onFailure: riskLimitFailureMode("on_failure").notNull().default("allow"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "risk_limit_bucket_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("risk_limit_bucket_name_unique").on(t.environmentId, t.name),
+    check(
+      "risk_limit_bucket_values_check",
+      sql`${t.limit} > 0 and ${t.periodMs} > 0 and ${t.burst} > 0`,
+    ),
   ],
 );
 
@@ -2462,3 +2506,24 @@ export const riskDataset = pgTable("risk_dataset", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   checkedAt: timestamp("checked_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Idempotent assessment preparation: fingerprints and scores only, never customer content. */
+export const riskAssessmentPreparation = pgTable(
+  "risk_assessment_preparation",
+  {
+    environmentId: text("environment_id")
+      .notNull()
+      .references(() => environment.id, { onDelete: "cascade" }),
+    idempotencyKey: text("idempotency_key").notNull(),
+    requestHash: text("request_hash").notNull(),
+    createdAt: createdAt(),
+    content: jsonb("content").$type<{
+      scores: Record<"spam" | "phishing" | "malware" | "fraud", number> | null;
+      degraded: boolean;
+    }>(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.environmentId, t.idempotencyKey] }),
+    index("risk_assessment_preparation_created_idx").on(t.createdAt),
+  ],
+);

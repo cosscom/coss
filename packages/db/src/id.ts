@@ -72,6 +72,7 @@ export const ID_PREFIXES = {
   riskListEntry: "rskle",
   riskRule: "rskrule",
   riskUserNetwork: "rskun",
+  riskLimitBucket: "rsklb",
   billingAccount: "bacct",
   billingContract: "bcon",
   billingCreditGrant: "bcg",

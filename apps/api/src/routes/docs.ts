@@ -19,7 +19,7 @@ export function errorDoc(description: string, headers: Record<string, HeaderDoc>
   };
 }
 
-const retryAfterHeader: HeaderDoc = {
+export const retryAfterHeader: HeaderDoc = {
   description: "Seconds to wait before retrying.",
   schema: { type: "integer" },
 };

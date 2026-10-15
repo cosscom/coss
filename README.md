@@ -330,8 +330,10 @@ drop `for <address>` clauses naming other environments' recipients).
    mode, a failed request records an `error` verdict and holds the email for a retry a minute later (it fails
    with `content_screening_unavailable` after an hour of outage); shadow mode records the failure and sends the
    email.
-2. Set `SCREENING_CLASSIFIER=ai` and `AI_GATEWAY_API_KEY` for the worker (only the worker screens).
-   `SCREENING_MODEL` defaults to `typesafe-ai/jev`; any Gateway decision model id works.
+2. Set `SCREENING_CLASSIFIER=ai` and `AI_GATEWAY_API_KEY` for the worker (which screens emails), and
+   `RISK_CLASSIFIER=ai` with the same key for the api (risk's content classification, at request time, 3 s
+   timeout, limited per organization by the `risk.classify*` buckets). `SCREENING_MODEL` defaults to
+   `typesafe-ai/jev`; any Gateway decision model id works.
 3. Cost: one screening is about 2k input tokens (bodies are truncated to 8,000 characters) — about $0.0001 with
    Jev — so the default sampling costs a few dollars per million live emails.
 

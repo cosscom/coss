@@ -14,6 +14,26 @@ import { setup } from "./helpers.ts";
 const DAY = 24 * 60 * 60 * 1000;
 
 describe("risk retention", () => {
+  test("purges old preparation records in bounded batches", async () => {
+    const { live, organizationId } = await setup();
+    const table = schema.riskAssessmentPreparation;
+    const now = new Date();
+    await db.insert(table).values(
+      ["old-1", "old-2", "fresh"].map((key) => ({
+        environmentId: live.environmentId,
+        idempotencyKey: key,
+        requestHash: "fingerprint",
+        createdAt: key === "fresh" ? now : new Date(now.getTime() - 3 * DAY),
+      })),
+    );
+    const rows = () => db.select().from(table).where(eq(table.environmentId, live.environmentId));
+    const scope = { organizationIds: [organizationId] };
+    expect((await purgeExpiredRiskMemory({ now, limit: 1, scope }))[4]).toBe(1);
+    expect(await rows()).toHaveLength(2);
+    expect((await purgeExpiredRiskMemory({ now, limit: 1, scope }))[4]).toBe(1);
+    expect(await rows()).toMatchObject([{ idempotencyKey: "fresh" }]);
+  });
+
   test("personal data after 90 days, network reports after 30, the rest after a year", async () => {
     const { assess, live, deps, organizationId } = await setup();
     const scope = { organizationIds: [organizationId] };
@@ -48,8 +68,8 @@ describe("risk retention", () => {
 
     // ip + subnet reports go after 30 days; mailbox + user reports and the identity after a year.
     // [identities, reports, login networks (country + ASN), domain ages (not scoped)].
-    expect(await purgeExpiredRiskMemory({ now: at(31), scope })).toEqual([0, 2, 0, 0]);
-    expect(await purgeExpiredRiskMemory({ now: at(366), scope })).toEqual([1, 2, 2, 0]);
+    expect(await purgeExpiredRiskMemory({ now: at(31), scope })).toEqual([0, 2, 0, 0, 0]);
+    expect(await purgeExpiredRiskMemory({ now: at(366), scope })).toEqual([1, 2, 2, 0, 0]);
 
     expect(await purgeExpiredRiskAssessments({ now: at(364), scope })).toBe(0);
     expect(await purgeExpiredRiskAssessments({ now: at(366), scope })).toBe(1);

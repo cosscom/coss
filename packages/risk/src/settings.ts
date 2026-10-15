@@ -8,6 +8,8 @@ import { decryptSecret, encryptSecret, type SecretsKeyRing } from "@coss/webhook
 import { and, eq } from "drizzle-orm";
 import { RiskError } from "./errors.ts";
 import {
+  CONTENT_CATEGORIES,
+  type ContentCategory,
   DEFAULT_THRESHOLDS,
   type RiskCaptchaProvider,
   type RiskReasonCode,
@@ -24,7 +26,20 @@ export type ResolvedRiskSettings = {
   thresholds: { review: number; block: number };
   disabledReasons: ReadonlySet<RiskReasonCode>;
   captcha: { provider: RiskCaptchaProvider; secretCiphertext: string; required: boolean } | null;
+  /** Categories without a threshold never fire `content.*`. */
+  contentThresholds: Partial<Record<ContentCategory, number>>;
 };
+
+/** Stored thresholds, keeping only known categories with a sane value. */
+function contentThresholdsOf(stored: unknown): Partial<Record<ContentCategory, number>> {
+  const thresholds: Partial<Record<ContentCategory, number>> = {};
+  if (!stored || typeof stored !== "object") return thresholds;
+  for (const category of CONTENT_CATEGORIES) {
+    const value = (stored as Record<string, unknown>)[category];
+    if (typeof value === "number" && value > 0 && value <= 1) thresholds[category] = value;
+  }
+  return thresholds;
+}
 
 type SettingsRow = typeof riskSettings.$inferSelect;
 
@@ -60,6 +75,7 @@ function resolve(row: SettingsRow | null): ResolvedRiskSettings {
             required: row.captchaRequired,
           }
         : null,
+    contentThresholds: contentThresholdsOf(row?.contentThresholds),
   };
 }
 
@@ -85,6 +101,12 @@ function toObject(row: SettingsRow | null): RiskSettingsOutput {
     captcha: resolved.captcha
       ? { provider: resolved.captcha.provider, required: resolved.captcha.required }
       : null,
+    content_thresholds: Object.fromEntries(
+      CONTENT_CATEGORIES.map((category) => [
+        category,
+        resolved.contentThresholds[category] ?? null,
+      ]),
+    ) as RiskSettingsOutput["content_thresholds"],
     updated_at: row?.updatedAt.toISOString() ?? null,
   };
 }
@@ -147,8 +169,15 @@ export async function updateRiskSettings(
         captchaRequired: params.captcha.required ?? resolved.captcha?.required ?? false,
       };
     }
+    const contentThresholds = { ...resolved.contentThresholds };
+    for (const category of CONTENT_CATEGORIES) {
+      const value = params.content_thresholds?.[category];
+      if (value === null) delete contentThresholds[category];
+      else if (value !== undefined) contentThresholds[category] = value;
+    }
     const values = {
       reviewThreshold: review,
+      contentThresholds,
       blockThreshold: block,
       disabledReasons: params.disabled_reasons
         ? [...new Set(params.disabled_reasons)].sort()

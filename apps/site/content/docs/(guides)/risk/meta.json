@@ -1,4 +1,14 @@
 {
   "title": "Risk",
-  "pages": ["index", "reasons", "rules", "settings", "lists-and-feedback", "testing"]
+  "pages": [
+    "index",
+    "reasons",
+    "rules",
+    "settings",
+    "content",
+    "lookups",
+    "rate-limits",
+    "lists-and-feedback",
+    "testing"
+  ]
 }

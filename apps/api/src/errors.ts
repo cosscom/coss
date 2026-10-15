@@ -272,12 +272,18 @@ function fromRiskError(error: RiskError): ApiError {
       return invalidRequest(error.code, error.message, error.param ?? "value");
     case "invalid_settings":
     case "too_many_rules":
+    case "too_many_limit_buckets":
+    case "limit_bucket_name_taken":
       return invalidRequest(error.code, error.message, error.param);
+    case "classification_unavailable":
+      // The model failed or timed out: worth a retry (the SDK retries 503s).
+      return new ApiError(503, { type: "api_error", code: error.code, message: error.message });
     case "not_found":
       return new ApiError(404, {
         type: "not_found_error",
         code: error.code,
         message: error.message,
+        ...(error.param ? { param: error.param } : {}),
       });
   }
 }

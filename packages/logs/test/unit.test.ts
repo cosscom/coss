@@ -73,6 +73,18 @@ describe("redactBody", () => {
     expect(body.nested).toEqual({ api_key: REDACTED, password: REDACTED, token: null });
   });
 
+  test("keeps only the sizes of content objects", () => {
+    const body = redactBody({
+      event: "signup",
+      content: { text: "My bio, in my own words", tags: ["a", "bc"] },
+    }) as Record<string, unknown>;
+    expect(body.event).toBe("signup");
+    expect(body.content).toEqual({
+      text: "[23 characters]",
+      tags: ["[1 characters]", "[2 characters]"],
+    });
+  });
+
   test("caps the whole body", () => {
     const big = { items: Array.from({ length: 40 }, () => "y".repeat(1000)) };
     const out = redactBody(big) as { truncated: boolean; bytes: number; preview: string };

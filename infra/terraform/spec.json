@@ -638,6 +638,26 @@
           "description": "Keys the hashes behind risk's velocity, duplicate detection and fraud memory. Same value for web and api."
         },
         {
+          "name": "RISK_CLASSIFIER",
+          "kind": "plain",
+          "required": true,
+          "value": "ai",
+          "description": "Risk's content classification in live environments (off|fake|ai): SCREENING_MODEL through the AI Gateway."
+        },
+        {
+          "name": "SCREENING_MODEL",
+          "kind": "plain",
+          "required": false,
+          "value": "typesafe-ai/jev",
+          "description": "Vercel AI Gateway decision model id; any Gateway decision model works."
+        },
+        {
+          "name": "AI_GATEWAY_API_KEY",
+          "kind": "secret",
+          "required": true,
+          "description": "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker (content screening) and api (risk's content classification)."
+        },
+        {
           "name": "SENTRY_DSN",
           "kind": "plain",
           "required": false,
@@ -853,7 +873,7 @@
           "name": "AI_GATEWAY_API_KEY",
           "kind": "secret",
           "required": true,
-          "description": "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker only."
+          "description": "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker (content screening) and api (risk's content classification)."
         },
         {
           "name": "WEBHOOK_SECRETS_KEY",

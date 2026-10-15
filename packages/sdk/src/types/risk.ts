@@ -18,7 +18,22 @@ export type RiskList = "allow" | "block";
 export type RiskListEntryType = "email" | "domain" | "ip" | "asn" | "country" | "user";
 
 /** Signal groups an assessment was made without (a lookup failed or timed out). */
-export type RiskDegradedSignal = "email_dns" | "domain_age" | "ip_data" | "velocity" | "captcha";
+export type RiskDegradedSignal =
+  | "email_dns"
+  | "domain_age"
+  | "ip_data"
+  | "velocity"
+  | "captcha"
+  | "content";
+
+/** What content classification scores. */
+export type RiskContentCategory = "spam" | "phishing" | "malware" | "fraud";
+
+/**
+ * Per category, the model's probability (0-1) that the content belongs to it. Not calibrated:
+ * pick thresholds by looking at your own traffic.
+ */
+export type RiskContentScores = Record<RiskContentCategory, number>;
 
 /** Every reason an assessment can give (see the reason catalog in the docs). */
 export type RiskReasonCode =
@@ -50,6 +65,10 @@ export type RiskReasonCode =
   | "login.new_network"
   | "captcha.failed"
   | "captcha.missing"
+  | "content.spam"
+  | "content.phishing"
+  | "content.malware"
+  | "content.fraud"
   | "rule.matched"
   | "list.blocked"
   | "list.allowed";
@@ -145,6 +164,8 @@ export interface RiskAssessment {
     velocity: Record<string, number> | null;
     captcha: RiskCaptchaSignals | null;
     login: RiskLoginSignals | null;
+    /** `null` when no content was given or it couldn't be classified. */
+    content: RiskContentScores | null;
   };
   user: { id: string | null; email: string | null };
   /** `null` once removed (90 days after the assessment). */
@@ -178,6 +199,12 @@ export interface AssessRiskParams {
    * browser. Verified once: don't reuse it.
    */
   captcha?: { token: string };
+  /**
+   * Text the user wrote (a bio, a message, a listing), classified with the event and never
+   * stored: its scores go in `signals.content`, and `content.*` reasons fire only at thresholds
+   * you set.
+   */
+  content?: { text: string };
 }
 
 /** Query of `GET /v1/risk/assessments`. */
@@ -271,6 +298,8 @@ export interface RiskSettings {
   disabled_reasons: RiskReasonCode[];
   /** The captcha provider assessments verify tokens with (never the secret). */
   captcha: { provider: RiskCaptchaProvider; required: boolean } | null;
+  /** Per content category, the score at which `content.<category>` fires; `null`: never. */
+  content_thresholds: Record<RiskContentCategory, number | null>;
   /** ISO 8601 timestamp; `null` while on the defaults. */
   updated_at: string | null;
 }
@@ -288,6 +317,8 @@ export interface UpdateRiskSettingsParams {
     /** Assessments without a token get `captcha.missing`. */
     required?: boolean;
   } | null;
+  /** Changes the categories given: a score in (0, 1] sets the threshold, `null` removes it. */
+  content_thresholds?: Partial<Record<RiskContentCategory, number | null>>;
 }
 
 /** A field a rule condition can test (see the rules guide). */
@@ -313,6 +344,10 @@ export type RiskRuleField =
   | "history.fraud"
   | "login.new_country"
   | "login.new_network"
+  | "content.spam"
+  | "content.phishing"
+  | "content.malware"
+  | "content.fraud"
   | "score"
   | "velocity.ip_1h"
   | "velocity.ip_24h"
@@ -374,4 +409,112 @@ export interface DeletedRiskRule {
   object: "risk_rule";
   id: string;
   deleted: true;
+}
+
+/** Result of `coss.risk.checkEmail()`: what COSS knows about an address. Nothing is stored. */
+export interface RiskEmailCheck {
+  object: "risk_email_check";
+  email: string;
+  valid: boolean;
+  domain: string | null;
+  /** The mailbox with the provider's aliasing folded (dots and `+tags` at Gmail…). */
+  canonical: string | null;
+  disposable: boolean;
+  /** From DNS (MX, A, AAAA). `unknown` when the lookup failed or timed out. */
+  deliverability: "deliverable" | "undeliverable" | "unknown";
+  role_account: boolean;
+  free_provider: boolean;
+  /** The likely intended domain when this one looks like a typo of a popular one. */
+  suggestion: string | null;
+  /** Days since the domain was registered (RDAP); `null` when unknown or not looked up. */
+  domain_age_days: number | null;
+  /** Lookups that failed or timed out. */
+  degraded: ("email_dns" | "domain_age")[];
+}
+
+/** Result of `coss.risk.checkIp()`. Nothing is stored. */
+export interface RiskIpCheck extends RiskIpSignals {
+  object: "risk_ip_check";
+  ip: string;
+  /** `ip_data` when some IP data is unavailable at the moment. */
+  degraded: "ip_data"[];
+}
+
+/** Result of `coss.risk.classify()`: scores only, neither stored nor logged. */
+export interface RiskContentClassification {
+  object: "risk_content_classification";
+  scores: RiskContentScores;
+  /** The text was longer than the model reads (8,000 characters): only its beginning counted. */
+  truncated: boolean;
+}
+
+/** What `on_failure` answers while COSS can't count. */
+export type RiskLimitFailureMode = "allow" | "deny";
+
+/** One of your rate limit buckets: each key gets `burst` tokens, refilling `limit` per period. */
+export interface RiskLimitBucket {
+  object: "risk_limit_bucket";
+  id: string;
+  /** What `coss.risk.limit({ bucket })` names it by. */
+  name: string;
+  /** Tokens added per `period_seconds`. */
+  limit: number;
+  period_seconds: number;
+  /** How many requests a key can make at once. */
+  burst: number;
+  on_failure: RiskLimitFailureMode;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  /** ISO 8601 timestamp. */
+  updated_at: string;
+}
+
+/** Body of `POST /v1/risk/limit_buckets`. */
+export interface CreateRiskLimitBucketParams {
+  /** 1-64 lower-case letters, digits, `.`, `_` or `-`; unique in the environment. */
+  name: string;
+  limit: number;
+  /** 1 second to 1 day. */
+  period_seconds: number;
+  /** Defaults to `limit`. */
+  burst?: number;
+  /** Defaults to `allow`. */
+  on_failure?: RiskLimitFailureMode;
+}
+
+/** Body of `PATCH /v1/risk/limit_buckets/{id}` (the name can't change). */
+export type UpdateRiskLimitBucketParams = Partial<Omit<CreateRiskLimitBucketParams, "name">>;
+
+export interface DeletedRiskLimitBucket {
+  object: "risk_limit_bucket";
+  id: string;
+  deleted: true;
+}
+
+/** Body of `POST /v1/risk/limits`. */
+export interface CheckRiskLimitParams {
+  /** The bucket's name. */
+  bucket: string;
+  /** Who or what is limited (a user id, an email or IP address…); COSS keeps only a hash. */
+  key: string;
+  /** Tokens this request takes. Default 1. */
+  cost?: number;
+}
+
+/** Result of `coss.risk.limit()`. */
+export interface RiskLimit {
+  object: "risk_limit";
+  bucket: string;
+  /** Whether to let the request through. Denied requests take no tokens. */
+  allowed: boolean;
+  /** The bucket's size (`burst`). */
+  limit: number;
+  /** Tokens left for this key. */
+  remaining: number;
+  /** Milliseconds until the key's bucket is full again. */
+  reset_ms: number;
+  /** When denied: milliseconds until the same request would fit; `null` if it never would. */
+  retry_after_ms: number | null;
+  /** COSS couldn't count: `allowed` is the bucket's `on_failure`. */
+  degraded: boolean;
 }

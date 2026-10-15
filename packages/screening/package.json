@@ -6,9 +6,11 @@
   "exports": {
     ".": "./src/index.ts",
     "./ai": "./src/ai-sdk.ts",
+    "./classifier": "./src/classifier.ts",
     "./env": "./src/env.ts",
     "./runtime": "./src/runtime.ts",
-    "./testing": "./src/testing.ts"
+    "./testing": "./src/testing.ts",
+    "./text": "./src/text.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

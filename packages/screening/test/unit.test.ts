@@ -112,6 +112,14 @@ describe("fakeClassifier", () => {
       ),
     ).rejects.toThrow("fake classifier failure");
   });
+
+  test("reads markers in user content", async () => {
+    const verdict = await fakeClassifier().classify(
+      { kind: "text", text: "Great deals [coss-test:spam]", links: [] },
+      signal(),
+    );
+    expect(verdict.scores).toEqual({ spam: 0.99, phishing: 0.01, malware: 0.01, fraud: 0.01 });
+  });
 });
 
 describe("aiSdkClassifier", () => {
@@ -173,5 +181,47 @@ describe("aiSdkClassifier", () => {
       },
     ]);
     expect(call?.providerOptions).toEqual({ gateway: { zeroDataRetention: true } });
+  });
+
+  test("classifies user content with its own questions", async () => {
+    const calls: Parameters<Experimental_DecisionMockModelV4["doDecide"]>[0][] = [];
+    const model = new Experimental_DecisionMockModelV4({
+      provider: "mock",
+      modelId: "mock-decider",
+      doDecide: async (options) => {
+        calls.push(options);
+        return {
+          answers: {
+            spam: { type: "boolean", probability: 0.8 },
+            phishing: { type: "boolean", probability: 0.1 },
+            malware: { type: "boolean", probability: 0.01 },
+            fraud: { type: "boolean", probability: 0.3 },
+          },
+          usage: { inputTokens: 40 },
+          warnings: [],
+        };
+      },
+    });
+    const verdict = await aiSdkClassifier({ model }).classify(
+      {
+        kind: "text",
+        text: "Cheap followers at fast-likes.example",
+        links: ["fast-likes.example"],
+      },
+      signal(),
+    );
+    expect(verdict.scores).toEqual({ spam: 0.8, phishing: 0.1, malware: 0.01, fraud: 0.3 });
+    const [call] = calls;
+    expect(call?.state).toEqual([
+      {
+        type: "json",
+        value: {
+          message: { channel: "user_content", body: "Cheap followers at fast-likes.example" },
+          links: ["fast-likes.example"],
+        },
+      },
+    ]);
+    expect(String(call?.questions.spam?.instructions)).toContain("SEO or link spam");
+    expect(String(call?.questions.spam?.instructions)).toContain("untrusted data");
   });
 });

@@ -27,7 +27,21 @@ before the thresholds. `review_threshold` can't be above `block_threshold`; sett
 
 Reasons you list in `disabled_reasons` never fire: they don't appear in assessments or count in the
 score. [Rules](/docs/risk/rules) still see the facts behind them. Decision reasons (`list.*`,
-`rule.matched`) can't be disabled.
+`rule.matched`) can't be disabled, and `content.*` reasons are controlled by their thresholds.
+
+## Content thresholds
+
+[Content](/docs/risk/content) scores fire `content.<category>` only at the thresholds you set; a
+category without one never fires (rules can still test its score). `null` removes a threshold.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.risk.settings.update({
+  content_thresholds: { phishing: 0.8, malware: 0.8, spam: null },
+});
+```
 
 ## Captcha
 

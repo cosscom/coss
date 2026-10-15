@@ -27,8 +27,20 @@ export const RISK_DEGRADED_SIGNALS = [
   "ip_data",
   "velocity",
   "captcha",
+  "content",
 ] as const;
 export type RiskDegradedSignal = (typeof RISK_DEGRADED_SIGNALS)[number];
+
+/**
+ * What content classification scores (the same categories as COSS's own content screening). A
+ * score is the model's probability that the content belongs to the category; COSS never turns it
+ * into a verdict on its own: you set the thresholds.
+ */
+export const CONTENT_CATEGORIES = ["spam", "phishing", "malware", "fraud"] as const;
+export type ContentCategory = (typeof CONTENT_CATEGORIES)[number];
+
+/** The longest `content.text` accepted; the model reads the first 8,000 characters. */
+export const MAX_CONTENT_TEXT_CHARS = 50_000;
 
 /** Webhook event types: `review` decisions, and their resolution, for a queue you work through. */
 export const RISK_EVENT_TYPES = ["risk.assessment.review", "risk.assessment.reviewed"] as const;
@@ -269,6 +281,26 @@ export const REASONS = {
     weight: 0.4,
     description: "No captcha token, while your settings require one (`captcha.required`).",
   },
+  "content.spam": {
+    weight: 0.5,
+    description:
+      "The content's spam score reached the threshold you set (`value`, `threshold`). Never fires without one.",
+  },
+  "content.phishing": {
+    weight: 0.8,
+    description:
+      "The content's phishing score reached the threshold you set (`value`, `threshold`). Never fires without one.",
+  },
+  "content.malware": {
+    weight: 0.8,
+    description:
+      "The content's malware score reached the threshold you set (`value`, `threshold`). Never fires without one.",
+  },
+  "content.fraud": {
+    weight: 0.7,
+    description:
+      "The content's fraud (scam) score reached the threshold you set (`value`, `threshold`). Never fires without one.",
+  },
   "rule.matched": {
     weight: 0,
     description:
@@ -293,8 +325,10 @@ export const DEFAULT_THRESHOLDS = { review: 0.5, block: 0.85 } as const;
 
 /** Reasons that report a decision rather than a signal: they can't be turned off. */
 export const DECISION_REASON_CODES = ["list.blocked", "list.allowed", "rule.matched"] as const;
+/** Every other reason, except `content.*`: those only fire at thresholds you set (`content_thresholds`). */
 export const DISABLEABLE_REASON_CODES = RISK_REASON_CODES.filter(
-  (code) => !(DECISION_REASON_CODES as readonly string[]).includes(code),
+  (code) =>
+    !(DECISION_REASON_CODES as readonly string[]).includes(code) && !code.startsWith("content."),
 ) as [RiskReasonCode, ...RiskReasonCode[]];
 
 /** How long a domain counts as new (`email.domain_new`). */
@@ -328,6 +362,10 @@ export const RULE_FIELDS = {
   "history.fraud": { type: "boolean", label: "Seen in fraud before" },
   "login.new_country": { type: "boolean", label: "Login from a new country" },
   "login.new_network": { type: "boolean", label: "Login from a new network" },
+  "content.spam": { type: "number", label: "Content spam score (0-1)" },
+  "content.phishing": { type: "number", label: "Content phishing score (0-1)" },
+  "content.malware": { type: "number", label: "Content malware score (0-1)" },
+  "content.fraud": { type: "number", label: "Content fraud score (0-1)" },
   score: { type: "number", label: "Score (0-1)" },
   "velocity.ip_1h": { type: "number", label: "Events from the IP (1 h)" },
   "velocity.ip_24h": { type: "number", label: "Events from the IP (24 h)" },
@@ -416,6 +454,18 @@ export const CreateRiskAssessmentRequest = z
         }),
       })
       .optional(),
+    content: z
+      .strictObject({
+        text: z.string().min(1).max(MAX_CONTENT_TEXT_CHARS).meta({
+          description:
+            "Text the user wrote (a profile bio, a message, a listing). Classified by an AI model with zero data retention and never stored: only its scores are.",
+        }),
+      })
+      .optional()
+      .meta({
+        description:
+          "Content to classify with the event. Its scores go in `signals.content` and rules can test them; `content.*` reasons fire only at thresholds you set.",
+      }),
   })
   .superRefine((value, ctx) => {
     if (value.event === "custom" && !value.event_name) {
@@ -451,11 +501,13 @@ export const RiskReason = z
   .object({
     code: z.enum(RISK_REASON_CODES),
     message: z.string(),
-    value: z.number().optional().meta({ description: "The count behind a `velocity.*` reason." }),
+    value: z.number().optional().meta({
+      description: "The count behind a `velocity.*` reason, or the score behind a `content.*` one.",
+    }),
     threshold: z
       .number()
       .optional()
-      .meta({ description: "The count a `velocity.*` reason fires at." }),
+      .meta({ description: "What a `velocity.*` or `content.*` reason fires at." }),
     window: z.enum(VELOCITY_WINDOWS).optional(),
     suggestion: z.string().optional().meta({ description: "`email.typo`: the likely domain." }),
     provider: z
@@ -531,6 +583,16 @@ export const RiskIpSignals = z
   })
   .meta({ id: "RiskIpSignals" });
 
+const ContentScores = Object.fromEntries(
+  CONTENT_CATEGORIES.map((category) => [category, z.number().min(0).max(1)]),
+) as Record<ContentCategory, z.ZodNumber>;
+
+export const RiskContentSignals = z.object(ContentScores).meta({
+  id: "RiskContentSignals",
+  description:
+    "Per category, the model's probability (0-1) that the content belongs to it. Scores are not calibrated: pick thresholds by looking at your own traffic.",
+});
+
 export const RiskVelocitySignals = z.record(z.string(), z.number().int()).meta({
   id: "RiskVelocitySignals",
   description:
@@ -583,6 +645,7 @@ const ASSESSMENT_EXAMPLE = {
     velocity: { ip_1h: 7, ip_24h: 9, subnet_1h: 7, mailbox_24h: 1 },
     captcha: { provided: true, passed: true },
     login: null,
+    content: null,
   },
   user: { id: null, email: "ada@gmail.con" },
   ip: "203.0.113.7",
@@ -612,6 +675,9 @@ export const RiskAssessment = z
       }),
       captcha: z.union([RiskCaptchaSignals, z.null()]),
       login: z.union([RiskLoginSignals, z.null()]),
+      content: z.union([RiskContentSignals, z.null()]).meta({
+        description: "`null` when no content was given or it couldn't be classified.",
+      }),
     }),
     user: z.object({
       id: z.string().nullable(),
@@ -805,8 +871,31 @@ const SETTINGS_EXAMPLE = {
   block_threshold: 0.85,
   disabled_reasons: ["email.role_account"],
   captcha: { provider: "turnstile", required: true },
+  content_thresholds: { spam: null, phishing: 0.8, malware: 0.8, fraud: 0.9 },
   updated_at: "2026-01-15T09:30:00.000Z",
 } as const;
+
+const ContentThresholdsOutput = z
+  .object(
+    Object.fromEntries(
+      CONTENT_CATEGORIES.map((category) => [category, z.union([z.number(), z.null()])]),
+    ) as Record<ContentCategory, z.ZodUnion<[z.ZodNumber, z.ZodNull]>>,
+  )
+  .meta({
+    description:
+      "Per content category, the score at which `content.<category>` fires; `null`: never (the score is still in `signals.content` for your rules).",
+  });
+
+const ContentThresholdsInput = z
+  .strictObject(
+    Object.fromEntries(
+      CONTENT_CATEGORIES.map((category) => [category, z.union([Threshold, z.null()]).optional()]),
+    ) as Record<ContentCategory, z.ZodOptional<z.ZodUnion<[typeof Threshold, z.ZodNull]>>>,
+  )
+  .meta({
+    description:
+      "Changes the categories given: a score in (0, 1] sets the threshold, `null` removes it.",
+  });
 
 export const RiskSettings = z
   .object({
@@ -824,6 +913,7 @@ export const RiskSettings = z
       .meta({
         description: "The captcha provider assessments verify tokens with (never the secret).",
       }),
+    content_thresholds: ContentThresholdsOutput,
     updated_at: z.iso.datetime().nullable().meta({ description: "`null` while on the defaults." }),
   })
   .meta({ id: "RiskSettings", examples: [SETTINGS_EXAMPLE] });
@@ -851,6 +941,7 @@ export const UpdateRiskSettingsRequest = z
       ])
       .optional()
       .meta({ description: "`null` turns captcha verification off and deletes the secret." }),
+    content_thresholds: ContentThresholdsInput.optional(),
   })
   .meta({
     id: "UpdateRiskSettingsRequest",
@@ -1010,3 +1101,283 @@ export type RiskRuleListOutput = z.output<typeof RiskRuleList>;
 export const DeletedRiskRule = z
   .object({ object: z.literal("risk_rule"), id: z.string(), deleted: z.literal(true) })
   .meta({ id: "DeletedRiskRule" });
+
+// ---------------------------------------------------------------------------------------------
+// Building blocks: stateless lookups (nothing is stored or counted).
+// ---------------------------------------------------------------------------------------------
+
+export const RiskEmailCheckRequest = z
+  .strictObject({
+    email: z.string().min(1).max(320).meta({ description: "The address to check, as given." }),
+  })
+  .meta({ id: "RiskEmailCheckRequest", examples: [{ email: "ada@gnail.com" }] });
+export type RiskEmailCheckRequestOutput = z.output<typeof RiskEmailCheckRequest>;
+
+export const RiskEmailCheck = z
+  .object({
+    object: z.literal("risk_email_check"),
+    email: z.string(),
+    valid: z.boolean().meta({ description: "Syntactically valid (the rest assumes it is)." }),
+    domain: z.string().nullable(),
+    canonical: z.string().nullable().meta({
+      description:
+        "The mailbox with the provider's aliasing folded (dots and `+tags` at Gmail…): two addresses with the same canonical form reach one inbox.",
+    }),
+    disposable: z.boolean(),
+    deliverability: z.enum(["deliverable", "undeliverable", "unknown"]).meta({
+      description: "From DNS (MX, A, AAAA). `unknown` when the lookup failed or timed out.",
+    }),
+    role_account: z.boolean(),
+    free_provider: z.boolean(),
+    suggestion: z.string().nullable().meta({
+      description: "The likely intended domain when this one looks like a typo of a popular one.",
+    }),
+    domain_age_days: z.number().int().nullable().meta({
+      description:
+        "Days since the domain was registered (RDAP); `null` when unknown or not looked up (free providers, disposable domains).",
+    }),
+    degraded: z.array(z.enum(["email_dns", "domain_age"])).meta({
+      description: "Lookups that failed or timed out (their fields are `unknown`/`null`).",
+    }),
+  })
+  .meta({
+    id: "RiskEmailCheck",
+    examples: [
+      {
+        object: "risk_email_check",
+        email: "ada@gnail.com",
+        valid: true,
+        domain: "gnail.com",
+        canonical: "ada@gnail.com",
+        disposable: false,
+        deliverability: "deliverable",
+        role_account: false,
+        free_provider: false,
+        suggestion: "gmail.com",
+        domain_age_days: 7300,
+        degraded: [],
+      },
+    ],
+  });
+export type RiskEmailCheckOutput = z.output<typeof RiskEmailCheck>;
+
+export const RiskIpCheckRequest = z
+  .strictObject({
+    ip: z.union([z.ipv4(), z.ipv6()]).meta({ description: "The address to check." }),
+  })
+  .meta({ id: "RiskIpCheckRequest", examples: [{ ip: "185.220.101.1" }] });
+export type RiskIpCheckRequestOutput = z.output<typeof RiskIpCheckRequest>;
+
+export const RiskIpCheck = RiskIpSignals.extend({
+  object: z.literal("risk_ip_check"),
+  ip: z.string(),
+  degraded: z.array(z.enum(["ip_data"])).meta({
+    description:
+      "`ip_data` when some IP data (Tor exits, cloud ranges, networks and countries) is unavailable at the moment.",
+  }),
+}).meta({
+  id: "RiskIpCheck",
+  examples: [
+    {
+      object: "risk_ip_check",
+      ip: "185.220.101.1",
+      version: 4,
+      private: false,
+      tor: true,
+      hosting: false,
+      hosting_provider: null,
+      hosting_kind: null,
+      asn: 60729,
+      as_name: "Stiftung Erneuerbare Freiheit",
+      country: "DE",
+      degraded: [],
+    },
+  ],
+});
+export type RiskIpCheckOutput = z.output<typeof RiskIpCheck>;
+
+export const RiskContentClassifyRequest = z
+  .strictObject({
+    text: z.string().min(1).max(MAX_CONTENT_TEXT_CHARS).meta({
+      description:
+        "The text to classify (a profile bio, a comment, a listing). The model reads the first 8,000 characters.",
+    }),
+  })
+  .meta({
+    id: "RiskContentClassifyRequest",
+    examples: [{ text: "Earn $5,000 a week from home! DM me on Telegram: t.me/fast-cash" }],
+  });
+export type RiskContentClassifyRequestOutput = z.output<typeof RiskContentClassifyRequest>;
+
+export const RiskContentClassification = z
+  .object({
+    object: z.literal("risk_content_classification"),
+    scores: RiskContentSignals,
+    truncated: z.boolean().meta({
+      description: "The text was longer than the model reads: only its beginning was classified.",
+    }),
+  })
+  .meta({
+    id: "RiskContentClassification",
+    description:
+      "Scores only: COSS never decides what they mean for you. Neither the text nor the scores are stored.",
+    examples: [
+      {
+        object: "risk_content_classification",
+        scores: { spam: 0.91, phishing: 0.04, malware: 0.01, fraud: 0.86 },
+        truncated: false,
+      },
+    ],
+  });
+export type RiskContentClassificationOutput = z.output<typeof RiskContentClassification>;
+
+// ---------------------------------------------------------------------------------------------
+// Rate limiting as a service: your buckets, charged per key.
+// ---------------------------------------------------------------------------------------------
+
+export const RISK_LIMIT_FAILURE_MODES = ["allow", "deny"] as const;
+export type RiskLimitFailureMode = (typeof RISK_LIMIT_FAILURE_MODES)[number];
+export const MAX_RISK_LIMIT_BUCKETS = 100;
+/** Bounds of a bucket's numbers (tokens and seconds). */
+export const MAX_RISK_LIMIT = 1_000_000;
+export const MAX_RISK_LIMIT_PERIOD_SECONDS = 86_400;
+
+const BUCKET_ID_EXAMPLE = "rsklb_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const BucketName = z
+  .string()
+  .regex(/^[a-z0-9][a-z0-9._-]{0,63}$/, "Use 1-64 lower-case letters, digits, `.`, `_` or `-`.");
+const Tokens = z.number().int().min(1).max(MAX_RISK_LIMIT);
+const PeriodSeconds = z.number().int().min(1).max(MAX_RISK_LIMIT_PERIOD_SECONDS);
+
+const LIMIT_BUCKET_EXAMPLE = {
+  object: "risk_limit_bucket",
+  id: BUCKET_ID_EXAMPLE,
+  name: "password_reset",
+  limit: 5,
+  period_seconds: 3600,
+  burst: 5,
+  on_failure: "allow",
+  created_at: "2026-01-15T09:30:00.000Z",
+  updated_at: "2026-01-15T09:30:00.000Z",
+} as const;
+
+export const RiskLimitBucket = z
+  .object({
+    object: z.literal("risk_limit_bucket"),
+    id: z.string().meta({ examples: [BUCKET_ID_EXAMPLE] }),
+    name: z.string().meta({ description: "What `POST /v1/risk/limits` names it by." }),
+    limit: z.number().int().meta({ description: "Tokens added per `period_seconds`." }),
+    period_seconds: z.number().int(),
+    burst: z.number().int().meta({
+      description: "The bucket's size: how many requests a key can make at once.",
+    }),
+    on_failure: z.enum(RISK_LIMIT_FAILURE_MODES).meta({
+      description:
+        "The answer while COSS can't count (its store is unavailable): `allow` (fail open) or `deny`.",
+    }),
+    created_at: z.iso.datetime(),
+    updated_at: z.iso.datetime(),
+  })
+  .meta({ id: "RiskLimitBucket", examples: [LIMIT_BUCKET_EXAMPLE] });
+export type RiskLimitBucketOutput = z.output<typeof RiskLimitBucket>;
+
+export const CreateRiskLimitBucketRequest = z
+  .strictObject({
+    name: BucketName.meta({ description: "Unique in the environment; can't be changed." }),
+    limit: Tokens.meta({ description: "Tokens added per `period_seconds`." }),
+    period_seconds: PeriodSeconds.meta({ description: "1 second to 1 day." }),
+    burst: Tokens.optional().meta({
+      description: "How many requests a key can make at once. Defaults to `limit`.",
+    }),
+    on_failure: z.enum(RISK_LIMIT_FAILURE_MODES).optional().meta({
+      description: "The answer while COSS can't count. Defaults to `allow`.",
+    }),
+  })
+  .meta({
+    id: "CreateRiskLimitBucketRequest",
+    examples: [{ name: "password_reset", limit: 5, period_seconds: 3600 }],
+  });
+export type CreateRiskLimitBucketRequestOutput = z.output<typeof CreateRiskLimitBucketRequest>;
+
+export const UpdateRiskLimitBucketRequest = z
+  .strictObject({
+    limit: Tokens.optional(),
+    period_seconds: PeriodSeconds.optional(),
+    burst: Tokens.optional(),
+    on_failure: z.enum(RISK_LIMIT_FAILURE_MODES).optional(),
+  })
+  .meta({ id: "UpdateRiskLimitBucketRequest", examples: [{ limit: 10, burst: 20 }] });
+export type UpdateRiskLimitBucketRequestOutput = z.output<typeof UpdateRiskLimitBucketRequest>;
+
+export const RiskLimitBucketList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(RiskLimitBucket),
+    has_more: z.literal(false),
+  })
+  .meta({
+    id: "RiskLimitBucketList",
+    description: `Every bucket of the environment (at most ${MAX_RISK_LIMIT_BUCKETS}), by name.`,
+    examples: [{ object: "list", data: [LIMIT_BUCKET_EXAMPLE], has_more: false }],
+  });
+export type RiskLimitBucketListOutput = z.output<typeof RiskLimitBucketList>;
+
+export const DeletedRiskLimitBucket = z
+  .object({ object: z.literal("risk_limit_bucket"), id: z.string(), deleted: z.literal(true) })
+  .meta({ id: "DeletedRiskLimitBucket" });
+
+export const CheckRiskLimitRequest = z
+  .strictObject({
+    bucket: BucketName.meta({ description: "The bucket's name." }),
+    key: z.string().min(1).max(512).meta({
+      description:
+        "Who or what is limited: a user id, an email address, an IP address… COSS keeps only a keyed hash of it.",
+    }),
+    cost: z.number().int().min(1).max(MAX_RISK_LIMIT).optional().meta({
+      description: "Tokens this request takes. Default 1.",
+    }),
+  })
+  .meta({
+    id: "CheckRiskLimitRequest",
+    examples: [{ bucket: "password_reset", key: "ada@example.com" }],
+  });
+export type CheckRiskLimitRequestOutput = z.output<typeof CheckRiskLimitRequest>;
+
+export const RiskLimit = z
+  .object({
+    object: z.literal("risk_limit"),
+    bucket: z.string(),
+    allowed: z.boolean().meta({
+      description: "Whether to let the request through. Denied requests take no tokens.",
+    }),
+    limit: z.number().int().meta({ description: "The bucket's size (`burst`)." }),
+    remaining: z.number().int().meta({ description: "Tokens left for this key." }),
+    reset_ms: z
+      .number()
+      .int()
+      .meta({ description: "Milliseconds until the key's bucket is full again." }),
+    retry_after_ms: z.number().int().nullable().meta({
+      description:
+        "When denied: milliseconds until the same request would be allowed; `null` when it never would (`cost` above the bucket's size). 0 when allowed.",
+    }),
+    degraded: z.boolean().meta({
+      description:
+        "COSS couldn't count (its store was unavailable): `allowed` is the bucket's `on_failure`.",
+    }),
+  })
+  .meta({
+    id: "RiskLimit",
+    examples: [
+      {
+        object: "risk_limit",
+        bucket: "password_reset",
+        allowed: true,
+        limit: 5,
+        remaining: 4,
+        reset_ms: 720000,
+        retry_after_ms: 0,
+        degraded: false,
+      },
+    ],
+  });
+export type RiskLimitOutput = z.output<typeof RiskLimit>;

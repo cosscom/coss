@@ -11,10 +11,15 @@ export type ScreeningProduct = (typeof SCREENING_PRODUCTS)[number];
 export const SCREENING_CATEGORIES = ["spam", "phishing", "malware", "fraud"] as const;
 export type ScreeningCategory = (typeof SCREENING_CATEGORIES)[number];
 
-/** What a classifier sees: plain text only, already truncated (`prepareText`). */
+/**
+ * What a classifier sees: plain text only, already truncated (`prepareText`). `text` is content
+ * people post on a customer's platform (a profile bio, a comment, a listing), classified for
+ * COSS Risk.
+ */
 export type ScreeningContent =
   | { kind: "email"; from: string; subject: string; text: string; links: string[] }
-  | { kind: "sms"; from: string; body: string; links: string[] };
+  | { kind: "sms"; from: string; body: string; links: string[] }
+  | { kind: "text"; text: string; links: string[] };
 
 export type ClassifierVerdict = {
   /** Probability (0..1) that the message belongs to each category. */

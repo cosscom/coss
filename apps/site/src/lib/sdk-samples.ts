@@ -393,6 +393,36 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "risk.users.forget",
     args: (request) => [pathParam(request, "user_id")],
   },
+  "POST /v1/risk/email/check": {
+    method: "risk.checkEmail",
+    args: (request) => [tsValue(bodyField(request.body, "email") ?? "")],
+  },
+  "POST /v1/risk/ip/check": {
+    method: "risk.checkIp",
+    args: (request) => [tsValue(bodyField(request.body, "ip") ?? "")],
+  },
+  "POST /v1/risk/content/classify": {
+    method: "risk.classify",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "POST /v1/risk/limits": {
+    method: "risk.limit",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "POST /v1/risk/limit_buckets": {
+    method: "risk.limitBuckets.create",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "GET /v1/risk/limit_buckets": { method: "risk.limitBuckets.list", args: () => [] },
+  "GET /v1/risk/limit_buckets/{id}": { method: "risk.limitBuckets.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/risk/limit_buckets/{id}": {
+    method: "risk.limitBuckets.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/risk/limit_buckets/{id}": {
+    method: "risk.limitBuckets.delete",
+    args: (r) => [pathId(r)],
+  },
 };
 
 const routes = Object.entries(SDK_SAMPLES).map(([key, sample]) => {
@@ -424,6 +454,13 @@ const coss = new Coss({
 });
 
 const { data, error } = await coss.${sample.method}(${args.map((arg) => arg ?? "undefined").join(", ")});`;
+}
+
+/** One field of the example's body (for methods that take it as their own argument). */
+function bodyField(body: unknown, name: string): unknown {
+  return body !== null && typeof body === "object"
+    ? (body as Record<string, unknown>)[name]
+    : undefined;
 }
 
 function pathId(request: SampleRequest): string {

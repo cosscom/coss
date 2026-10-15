@@ -2,19 +2,25 @@
 
 import {
   addRiskListEntry,
+  createRiskLimitBucket,
   createRiskRule,
+  deleteRiskLimitBucket,
   deleteRiskRule,
   getRiskListEntry,
   RiskError,
   recordRiskFeedback,
   removeRiskListEntry,
+  updateRiskLimitBucket,
   updateRiskRule,
   updateRiskSettings,
 } from "@coss/risk";
 import {
+  CONTENT_CATEGORIES,
   CreateRiskFeedbackRequest,
+  CreateRiskLimitBucketRequest,
   CreateRiskListEntryRequest,
   CreateRiskRuleRequest,
+  UpdateRiskLimitBucketRequest,
   UpdateRiskRuleRequest,
   UpdateRiskSettingsRequest,
 } from "@coss/risk/schemas";
@@ -187,6 +193,13 @@ export async function updateRiskSettingsAction(
               ...(secret ? { secret } : {}),
               required: formData.get("captchaRequired") === "on",
             },
+      // An empty field removes the category's threshold.
+      content_thresholds: Object.fromEntries(
+        CONTENT_CATEGORIES.map((category) => {
+          const value = formString(formData, `contentThreshold.${category}`);
+          return [category, value ? Number(value) : null];
+        }),
+      ),
     });
     if (!parsed.success) throw new ActionError(issueMessage(parsed.error));
     const settings = await riskCall(() =>
@@ -296,6 +309,76 @@ export async function deleteRiskRuleAction(
       projectId,
       environmentId: scope.environmentId,
       target: { type: "risk_rule", id: rule.id, label: rule.name },
+    });
+    refresh();
+    return null;
+  });
+}
+
+/** Creates a rate limit bucket, or (with `bucketId`) updates one; its name can't change. */
+export async function saveRiskLimitBucketAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      risk: ["update"],
+    });
+    const { scope, projectId } = await environmentFromForm(context, formData);
+    const bucketId = formString(formData, "bucketId");
+    const numbers = {
+      limit: Number(formString(formData, "limit")),
+      period_seconds: Number(formString(formData, "periodSeconds")),
+      ...(formString(formData, "burst") ? { burst: Number(formString(formData, "burst")) } : {}),
+      on_failure: formString(formData, "onFailure"),
+    };
+    const audit = (action: string, bucket: { id: string; name: string }) =>
+      recordAudit(context.session, {
+        action,
+        organizationId: scope.organizationId,
+        projectId,
+        environmentId: scope.environmentId,
+        target: { type: "risk_limit_bucket", id: bucket.id, label: bucket.name },
+      });
+    if (bucketId) {
+      const parsed = UpdateRiskLimitBucketRequest.safeParse(numbers);
+      if (!parsed.success) throw new ActionError(issueMessage(parsed.error));
+      // Only a bucket of this environment (and so of this organization) can be changed.
+      const bucket = await updateRiskLimitBucket(scope, bucketId, parsed.data);
+      if (!bucket) throw new ActionError("Bucket not found.");
+      await audit("risk_limit_bucket.updated", bucket);
+    } else {
+      const parsed = CreateRiskLimitBucketRequest.safeParse({
+        name: formString(formData, "name"),
+        ...numbers,
+      });
+      if (!parsed.success) throw new ActionError(issueMessage(parsed.error));
+      const bucket = await riskCall(() => createRiskLimitBucket(scope, parsed.data));
+      if (!bucket) throw new ActionError("Environment not found.");
+      await audit("risk_limit_bucket.created", bucket);
+    }
+    refresh();
+    return null;
+  });
+}
+
+export async function deleteRiskLimitBucketAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      risk: ["update"],
+    });
+    const { scope, projectId } = await environmentFromForm(context, formData);
+    const bucket = await deleteRiskLimitBucket(scope, formString(formData, "bucketId"));
+    if (!bucket) throw new ActionError("Bucket not found.");
+    await recordAudit(context.session, {
+      action: "risk_limit_bucket.deleted",
+      organizationId: scope.organizationId,
+      projectId,
+      environmentId: scope.environmentId,
+      target: { type: "risk_limit_bucket", id: bucket.id, label: bucket.name },
     });
     refresh();
     return null;
