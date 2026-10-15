@@ -5,6 +5,7 @@ import {
   checkTemplateContents,
   parseTemplate,
   pickTemplateLocale,
+  renderableValues,
   renderTemplate,
   renderTemplateContent,
   type TemplateField,
@@ -245,6 +246,23 @@ describe("renderTemplate", () => {
     expect(performance.now() - started).toBeLessThan(1_000);
     // Ordinary loops stay well inside it.
     expect(render("{{#each items}}{{#if x}}y{{/if}}{{/each}}", { items })).toBe("");
+  });
+});
+
+describe("renderableValues", () => {
+  test("keeps what a preview can render of invalid values, and drops the rest", () => {
+    const values = renderableValues({
+      name: "Ada",
+      count: 0,
+      flag: false,
+      gone: null,
+      nested: { a: 1 },
+      items: [null, 3, [], { name: "a", extra: { x: 1 } }],
+    });
+    expect(values).toEqual({ name: "Ada", count: 0, flag: false, items: [{ name: "a" }] });
+    expect(render("{{#each items}}[{{name}}]{{/each}}", values)).toBe("[a]");
+    expect(renderableValues(null)).toEqual({});
+    expect(renderableValues([1])).toEqual({});
   });
 });
 

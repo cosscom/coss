@@ -2,6 +2,7 @@
 
 import {
   parseTemplate,
+  renderableValues,
   renderTemplate,
   type TemplateField,
   TemplateRenderError,
@@ -58,8 +59,8 @@ export function TemplatePreview(props: {
     return validated.ok
       ? { values: validated.values, issues: [] }
       : {
-          // Still render what can be: the sample values as they are.
-          values: sample as TemplateValues,
+          // Still render what can be of the sample.
+          values: renderableValues(sample),
           issues: validated.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`),
         };
   }, [props.variables, sample]);

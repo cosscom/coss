@@ -123,7 +123,7 @@ export function createApp(opts: CreateAppOptions) {
     "/v1/*",
     cors({
       origin: [...(opts.corsOrigins ?? [])],
-      allowMethods: ["GET", "POST", "PATCH", "DELETE"],
+      allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       allowHeaders: CORS_ALLOW_HEADERS,
       exposeHeaders: CORS_EXPOSE_HEADERS,
       maxAge: 600,

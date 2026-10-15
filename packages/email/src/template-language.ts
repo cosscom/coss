@@ -499,6 +499,32 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+function isScalar(value: unknown): value is TemplateScalar {
+  return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
+}
+
+/**
+ * What can be rendered of values that failed validation (a draft's sample while it's being typed):
+ * scalars, and lists of objects with their scalar fields; everything else is left out, so the
+ * preview renders instead of tripping over `null` items or nested objects.
+ */
+export function renderableValues(raw: unknown): TemplateValues {
+  if (!isRecord(raw)) return {};
+  const values: TemplateValues = {};
+  for (const [name, value] of Object.entries(raw)) {
+    if (isScalar(value)) {
+      values[name] = value;
+    } else if (Array.isArray(value)) {
+      values[name] = value
+        .filter(isRecord)
+        .map((item) =>
+          Object.fromEntries(Object.entries(item).filter(([, field]) => isScalar(field))),
+        ) as TemplateListItem[];
+    }
+  }
+  return values;
+}
+
 /**
  * Checks send-time `variables` against the declarations: unknown names are refused (a typo would
  * otherwise render as nothing), `null` counts as absent, defaults fill in, required ones must be
