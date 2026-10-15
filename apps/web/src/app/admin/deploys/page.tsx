@@ -246,7 +246,8 @@ export default async function AdminDeploysPage() {
                       </div>
                       <div className="text-muted-foreground text-xs">
                         {TRIGGER[run.trigger]}
-                        {run.actor ? ` by ${run.actor}` : ""} · <CommitLink sha={run.commit} />
+                        {run.actor ? ` by ${run.actor}` : ""} ·{" "}
+                        {run.commit ? <CommitLink sha={run.commit} /> : "an earlier commit"}
                         {run.commit === overview.live ? " · running now" : ""}
                       </div>
                     </TableCell>
@@ -268,7 +269,7 @@ export default async function AdminDeploysPage() {
                       </StatusDot>
                     </TableCell>
                     <TableCell className="text-right">
-                      {redeployable.has(run.commit) ? (
+                      {run.commit && redeployable.has(run.commit) ? (
                         <AdminActionDialog
                           action={redeployAction}
                           description={`Production goes back to ${short(run.commit)}'s images (already built) until main is deployed again: the next push or Deploy now. Push runs waiting for their batch are canceled. Database migrations aren't undone, so the older code must work with today's schema.`}

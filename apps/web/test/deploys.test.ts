@@ -92,19 +92,34 @@ describe("deployRunPhase", () => {
 });
 
 describe("deployedCommit", () => {
+  const built = [job("build (web)", "completed", "success")];
+  const notBuilt = [job("build", "completed", "skipped")];
+
   test("a push ships its commit", () => {
-    expect(deployedCommit(run())).toBe(SHA);
-    expect(isImageTagRun(run())).toBe(false);
+    expect(deployedCommit(run(), built)).toBe(SHA);
+    expect(isImageTagRun(run(), built)).toBe(false);
+  });
+
+  test("Deploy now ships the commit it built", () => {
+    const dispatch = run({ event: "workflow_dispatch", display_title: "Deploy" });
+    expect(deployedCommit(dispatch, built)).toBe(SHA);
+    expect(isImageTagRun(dispatch, built)).toBe(false);
   });
 
   test("a redeploy ships the commit in its run name", () => {
     const redeploy = run({ event: "workflow_dispatch", display_title: imageTagRunName(OLD) });
-    expect(deployedCommit(redeploy)).toBe(OLD);
-    expect(isImageTagRun(redeploy)).toBe(true);
+    expect(deployedCommit(redeploy, notBuilt)).toBe(OLD);
+    expect(isImageTagRun(redeploy, notBuilt)).toBe(true);
+  });
+
+  test("an older redeploy that doesn't name its commit is unknown, never its own commit", () => {
+    const redeploy = run({ event: "workflow_dispatch", display_title: "Deploy" });
+    expect(deployedCommit(redeploy, notBuilt)).toBeNull();
+    expect(isImageTagRun(redeploy, notBuilt)).toBe(true);
   });
 
   test("a push whose message looks like a run name still ships its own commit", () => {
-    expect(deployedCommit(run({ display_title: imageTagRunName(OLD) }))).toBe(SHA);
+    expect(deployedCommit(run({ display_title: imageTagRunName(OLD) }), built)).toBe(SHA);
   });
 });
 

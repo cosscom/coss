@@ -97,18 +97,23 @@ export function imageTagRunName(sha: string): string {
   return `Deploy ${sha}`;
 }
 
-/** The commit a run ships: a dispatch's `image_tag` (in its run name), else the run's commit. */
-export function deployedCommit(run: GitHubRun): string {
-  if (run.event === "workflow_dispatch") {
-    const tag = /^Deploy ([0-9a-f]{40})$/.exec(run.display_title)?.[1];
-    if (tag) return tag;
-  }
+/**
+ * The commit a run ships: a dispatch's `image_tag` (in its run name), else the run's commit.
+ * `null` for an `image_tag` dispatch that doesn't name it (made before the workflow's `run-name`;
+ * it built nothing, so its own commit isn't what it shipped).
+ */
+export function deployedCommit(run: GitHubRun, jobs: GitHubJob[]): string | null {
+  if (run.event !== "workflow_dispatch") return run.head_sha;
+  const tag = /^Deploy ([0-9a-f]{40})$/.exec(run.display_title)?.[1];
+  if (tag) return tag;
+  const builds = jobs.filter((job) => job.name.startsWith("build"));
+  if (builds.length > 0 && builds.every((job) => job.conclusion === "skipped")) return null;
   return run.head_sha;
 }
 
 /** Whether a run deploys an earlier commit's images (`image_tag`) rather than its own commit. */
-export function isImageTagRun(run: GitHubRun): boolean {
-  return deployedCommit(run) !== run.head_sha;
+export function isImageTagRun(run: GitHubRun, jobs: GitHubJob[]): boolean {
+  return deployedCommit(run, jobs) !== run.head_sha;
 }
 
 /**

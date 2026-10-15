@@ -124,8 +124,8 @@ export type DeployRun = {
   id: number;
   url: string;
   phase: DeployPhase;
-  /** The commit it ships. */
-  commit: string;
+  /** The commit it ships (`null`: an old redeploy that doesn't say). */
+  commit: string | null;
   title: string;
   trigger: "push" | "manual" | "image_tag";
   actor: string | null;
@@ -205,7 +205,8 @@ export async function getDeployOverview(): Promise<DeployOverview> {
   // The build's commit (NEXT_DEPLOYMENT_ID, inlined by `next build`); unset in development.
   const lastDeployed = runs.find((entry) => entry.phase === "deployed");
   const live =
-    process.env.NEXT_DEPLOYMENT_ID || (lastDeployed ? deployedCommit(lastDeployed.run) : null);
+    process.env.NEXT_DEPLOYMENT_ID ||
+    (lastDeployed ? deployedCommit(lastDeployed.run, lastDeployed.jobs) : null);
 
   let commits: GitHubCommit[] = [];
   if (live && live !== main) {
@@ -244,13 +245,14 @@ export async function getDeployOverview(): Promise<DeployOverview> {
     main,
     pending,
     pendingTruncated: chain.length > 0 && chain.at(-1)?.parents[0]?.sha !== live,
-    runs: runs.map(({ run, phase }): DeployRun => {
-      const trigger = run.event === "push" ? "push" : isImageTagRun(run) ? "image_tag" : "manual";
+    runs: runs.map(({ run, jobs, phase }): DeployRun => {
+      const trigger =
+        run.event === "push" ? "push" : isImageTagRun(run, jobs) ? "image_tag" : "manual";
       return {
         id: run.id,
         url: run.html_url,
         phase,
-        commit: deployedCommit(run),
+        commit: deployedCommit(run, jobs),
         title:
           trigger === "push"
             ? commitSummary(run.head_commit?.message ?? run.display_title).title
@@ -290,7 +292,15 @@ async function dispatchAndCancelPending(inputs?: Record<string, string>): Promis
     method: "POST",
     body: { ref: DEPLOY_BRANCH, ...(inputs ? { inputs } : {}) },
   });
-  const still = await pendingPushRuns();
+  // The dispatch happened: from here on nothing may throw, or the action would report a failure
+  // (inviting a second dispatch) and skip its audit event.
+  let still: Set<number>;
+  try {
+    still = await pendingPushRuns();
+  } catch (error) {
+    console.error("[web] Deploy dispatched, but the runs to cancel couldn't be read:", error);
+    return [];
+  }
   const canceled: number[] = [];
   await Promise.all(
     [...before]
@@ -323,8 +333,8 @@ export async function redeployCommit(commit: string): Promise<{ canceledRunIds: 
 /** Commits a past run deployed (other than `live`): the only ones offered for redeploying. */
 export function redeployableCommits(overview: DeployOverview): Set<string> {
   return new Set(
-    overview.runs
-      .filter((run) => run.phase === "deployed" && run.commit !== overview.live)
-      .map((run) => run.commit),
+    overview.runs.flatMap((run) =>
+      run.phase === "deployed" && run.commit && run.commit !== overview.live ? [run.commit] : [],
+    ),
   );
 }
