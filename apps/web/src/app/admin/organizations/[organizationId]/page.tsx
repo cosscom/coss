@@ -220,6 +220,7 @@ export default async function AdminOrganizationPage({
                 reason="required"
                 reasonPlaceholder="e.g. Phishing campaign, see /admin/emails"
                 submitLabel="Take down"
+                success="Organization taken down"
                 title={`Take down ${organization.name}?`}
                 triggerLabel="Take down"
               >
