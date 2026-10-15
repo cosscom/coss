@@ -7,6 +7,7 @@ import { OrgSidebar } from "@/components/shell/org-sidebar";
 import type { ShellProject } from "@/components/shell/types";
 import { SsoBreakGlassAlert } from "@/components/sso-break-glass-alert";
 import { SuspendedAlert } from "@/components/suspended-alert";
+import { avatarUrl } from "@/lib/avatars";
 import { billingBannerState } from "@/lib/billing";
 import { environmentPath } from "@/lib/navigation";
 import { isPlatformAdmin, requireOrgMember } from "@/lib/session";
@@ -32,6 +33,7 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
   const user = {
     name: session.user.name,
     email: session.user.email,
+    image: avatarUrl(session.user),
     isAdmin: isPlatformAdmin(session),
   };
 
