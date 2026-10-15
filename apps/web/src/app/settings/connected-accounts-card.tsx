@@ -4,11 +4,11 @@ import { SOCIAL_PROVIDER_LABELS, type SocialProvider } from "@coss/auth/constant
 import { Alert, AlertDescription } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
 import { Panel, PanelBody } from "@/components/panel";
 import { ProviderIcon } from "@/components/social-sign-in";
 import { StatusDot } from "@/components/status-dot";
+import { useActionToast } from "@/lib/toast";
 import { connectSocialAccountAction, disconnectSocialAccountAction } from "./actions";
 
 export type ConnectedAccountRow = {
@@ -55,9 +55,10 @@ export function ConnectedAccountsCard(props: {
 
 function ConnectedAccount(props: { row: ConnectedAccountRow; isLast: boolean; disabled: boolean }) {
   const { provider, connected, available } = props.row;
-  const [state, formAction, pending] = useActionState(
+  // Connecting leaves for the provider's sign-in page, so only disconnecting is confirmed here.
+  const [state, formAction, pending] = useActionToast(
     connected ? disconnectSocialAccountAction : connectSocialAccountAction,
-    null,
+    { success: connected ? `${SOCIAL_PROVIDER_LABELS[provider]} disconnected` : undefined },
   );
   return (
     <form action={formAction} className="flex flex-col gap-2 border-t px-5 py-3.5 first:border-t-0">

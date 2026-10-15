@@ -31,6 +31,7 @@ import { Textarea } from "@coss/ui/components/textarea";
 import { useActionState, useMemo, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { Panel, PanelBody, PanelDescription, PanelHeader, PanelTitle } from "@/components/panel";
+import { useActionToast } from "@/lib/toast";
 import { createContractAction, simulateContractAction } from "./actions";
 
 type Option = { value: string; label: string };
@@ -357,7 +358,9 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
   const [state, setState] = useState<EditorState>(() => initialState(props.currentPlan));
   const [advanced, setAdvanced] = useState(false);
   const [json, setJson] = useState("");
-  const [created, createAction, creating] = useActionState(createContractAction, null);
+  const [created, createAction, creating] = useActionToast(createContractAction, {
+    success: "Contract created",
+  });
   const [simulation, simulateAction, simulating] = useActionState(simulateContractAction, null);
   const built = useMemo(() => {
     try {
@@ -1104,7 +1107,6 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
               Kept in the admin audit log; never shown to the customer.
             </FieldDescription>
           </Field>
-          {created?.ok ? <p className="text-muted-foreground text-sm">Contract created.</p> : null}
           {created && !created.ok ? <FormError message={created.error} /> : null}
           {simulation && !simulation.ok ? <FormError message={simulation.error} /> : null}
           <div className="flex gap-2 sm:col-span-2">

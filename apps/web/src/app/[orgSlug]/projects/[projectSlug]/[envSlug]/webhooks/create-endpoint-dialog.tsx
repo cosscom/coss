@@ -17,9 +17,9 @@ import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
 import Link from "next/link";
-import { useActionState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { createWebhookEndpointAction } from "./actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
@@ -37,7 +37,9 @@ export function CreateEndpointDialog(props: Target & { eventTypes: readonly stri
 }
 
 function CreateEndpointForm(props: Target & { eventTypes: readonly string[] }) {
-  const [state, formAction, pending] = useActionState(createWebhookEndpointAction, null);
+  const [state, formAction, pending] = useActionToast(createWebhookEndpointAction, {
+    success: "Webhook endpoint added",
+  });
 
   if (state?.ok) {
     return (

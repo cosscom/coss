@@ -24,12 +24,14 @@ import {
 } from "@coss/ui/components/dialog";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { useActionState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import {
   addTrackingDomainAction,
   checkTrackingDomainAction,
   removeTrackingDomainAction,
+  type VerifyOutcome,
 } from "../actions";
 
 type Target = { orgSlug: string; domainId: string };
@@ -44,35 +46,31 @@ function TargetInputs(props: Target) {
 }
 
 export function AddTrackingDomainDialog(props: Target & { domainName: string }) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger render={<Button size="sm" />}>Add tracking domain</DialogTrigger>
       <DialogPopup>
         {/* The popup unmounts when closed, which also resets the form. */}
-        <AddTrackingDomainForm {...props} />
+        <AddTrackingDomainForm {...props} onDone={() => setOpen(false)} />
       </DialogPopup>
     </Dialog>
   );
 }
 
-function AddTrackingDomainForm(props: Target & { domainName: string }) {
-  const [state, formAction, pending] = useActionState(addTrackingDomainAction, null);
+function AddTrackingDomainForm(props: Target & { domainName: string; onDone: () => void }) {
+  const [state, formAction, pending] = useActionToast(addTrackingDomainAction, {
+    success: {
+      title: "Tracking domain added",
+      description: "Publish its CNAME record. Emails switch to it once it is active.",
+    },
+  });
+  const { onDone } = props;
 
-  if (state?.ok) {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>Tracking domain added</DialogTitle>
-          <DialogDescription>
-            Publish its CNAME record at your DNS provider. Emails switch to it once it is active.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose render={<Button />}>Done</DialogClose>
-        </DialogFooter>
-      </>
-    );
-  }
+  useEffect(() => {
+    if (state?.ok) onDone();
+  }, [state, onDone]);
 
   return (
     // `contents` keeps header/panel/footer as direct flex children of the popup (coss ui pattern).
@@ -106,21 +104,41 @@ function AddTrackingDomainForm(props: Target & { domainName: string }) {
 }
 
 export function CheckTrackingDomainButton(props: Target & { restart: boolean }) {
-  const [state, formAction, pending] = useActionState(checkTrackingDomainAction, null);
+  const [, formAction, pending] = useActionToast(checkTrackingDomainAction, {
+    success: trackingCheckToast,
+    errors: "toast",
+  });
 
   return (
-    <form action={formAction} className="flex flex-col items-end gap-2">
+    <form action={formAction}>
       <TargetInputs {...props} />
       <Button loading={pending} size="sm" type="submit" variant="outline">
         {props.restart ? "Restart setup" : "Check now"}
       </Button>
-      {state && !state.ok ? <FormError message={state.error} /> : null}
     </form>
   );
 }
 
+function trackingCheckToast({ status, restarted }: VerifyOutcome) {
+  if (restarted) return "Tracking domain setup restarted";
+  if (status === "active") return "Tracking domain active";
+  return status === "failed"
+    ? ({
+        type: "warning",
+        title: "Tracking domain setup failed",
+        description: "Check its CNAME record, then restart setup.",
+      } as const)
+    : ({
+        type: "info",
+        title: "Tracking domain not active yet",
+        description: "We keep checking automatically once its CNAME record is published.",
+      } as const);
+}
+
 export function RemoveTrackingDomainButton(props: Target & { hostname: string }) {
-  const [state, formAction, pending] = useActionState(removeTrackingDomainAction, null);
+  const [state, formAction, pending] = useActionToast(removeTrackingDomainAction, {
+    success: `${props.hostname} removed`,
+  });
 
   return (
     <AlertDialog>

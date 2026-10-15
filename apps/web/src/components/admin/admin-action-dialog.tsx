@@ -14,9 +14,10 @@ import {
 } from "@coss/ui/components/dialog";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Textarea } from "@coss/ui/components/textarea";
-import { type ReactNode, useActionState, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
 import type { ActionResult } from "@/lib/action-result";
+import { type ToastContent, useActionToast } from "@/lib/toast";
 
 type AdminAction = (previous: ActionResult | null, formData: FormData) => Promise<ActionResult>;
 
@@ -28,6 +29,8 @@ type Props = {
   title: string;
   description: ReactNode;
   submitLabel: string;
+  /** Toast shown once the action succeeded (e.g. "Organization suspended"). */
+  success: string | ToastContent;
   /** `required` blocks submitting without one; either way it is stored in the audit log. */
   reason: "required" | "optional";
   reasonPlaceholder?: string;
@@ -37,7 +40,10 @@ type Props = {
   children?: ReactNode;
 };
 
-/** A button that opens a confirm dialog with a reason field, then runs an audited admin action. */
+/**
+ * A button that opens a confirm dialog with a reason field, then runs an audited admin action and
+ * toasts `success` (failures stay in the dialog).
+ */
 export function AdminActionDialog(props: Props) {
   const [open, setOpen] = useState(false);
 
@@ -60,7 +66,7 @@ export function AdminActionDialog(props: Props) {
 }
 
 function AdminActionForm(props: Props & { onDone: () => void }) {
-  const [state, formAction, pending] = useActionState(props.action, null);
+  const [state, formAction, pending] = useActionToast(props.action, { success: props.success });
   const { onDone } = props;
 
   useEffect(() => {

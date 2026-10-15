@@ -3,12 +3,14 @@
 import { Button } from "@coss/ui/components/button";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { changePasswordAction, setPasswordAction } from "./actions";
 
 export function PasswordForm({ disabled }: { disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(changePasswordAction, null);
+  const [state, formAction, pending] = useActionToast(changePasswordAction, {
+    success: { title: "Password changed", description: "Your other sessions were signed out." },
+  });
 
   return (
     <form action={formAction} className="flex max-w-md flex-col gap-4">
@@ -50,13 +52,7 @@ export function PasswordForm({ disabled }: { disabled: boolean }) {
           type="password"
         />
       </Field>
-      {state?.ok ? (
-        <p className="text-muted-foreground text-sm">
-          Password changed. Your other sessions were signed out.
-        </p>
-      ) : (
-        <FormError message={state?.error} />
-      )}
+      <FormError message={state?.ok ? null : state?.error} />
       <div>
         <Button disabled={disabled} loading={pending} type="submit">
           Change password
@@ -68,7 +64,9 @@ export function PasswordForm({ disabled }: { disabled: boolean }) {
 
 /** For accounts created with Google or GitHub, which have no password yet. */
 export function SetPasswordForm({ disabled }: { disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(setPasswordAction, null);
+  const [state, formAction, pending] = useActionToast(setPasswordAction, {
+    success: "Password set",
+  });
 
   return (
     <form action={formAction} className="flex max-w-md flex-col gap-4">

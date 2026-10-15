@@ -11,30 +11,48 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
-import { deleteDomainAction, verifyDomainAction } from "../actions";
+import { useActionToast } from "@/lib/toast";
+import { deleteDomainAction, type VerifyOutcome, verifyDomainAction } from "../actions";
 
 type Target = { orgSlug: string; domainId: string };
 
 export function VerifyDomainButton(props: Target & { restart: boolean }) {
-  const [state, formAction, pending] = useActionState(verifyDomainAction, null);
+  const [, formAction, pending] = useActionToast(verifyDomainAction, {
+    success: domainCheckToast,
+    errors: "toast",
+  });
 
   return (
-    <form action={formAction} className="flex flex-col items-end gap-2">
+    <form action={formAction}>
       <input name="orgSlug" type="hidden" value={props.orgSlug} />
       <input name="domainId" type="hidden" value={props.domainId} />
       <Button loading={pending} size="sm" type="submit" variant="outline">
         {props.restart ? "Restart verification" : "Verify now"}
       </Button>
-      {state && !state.ok ? <FormError message={state.error} /> : null}
     </form>
   );
 }
 
+/** A check that finds nothing new is still worth saying: the page itself may not change. */
+function domainCheckToast({ status, restarted }: VerifyOutcome) {
+  if (restarted) return "Verification restarted";
+  if (status === "verified") return "Domain verified";
+  return {
+    type: status === "temporary_failure" ? "warning" : "info",
+    title:
+      status === "temporary_failure"
+        ? "Some DNS records stopped resolving"
+        : "DNS records not found yet",
+    description: "We keep checking automatically; DNS changes can take a while to spread.",
+  } as const;
+}
+
 export function DeleteDomainButton(props: Target & { name: string }) {
   // On success the action redirects to the domain list.
-  const [state, formAction, pending] = useActionState(deleteDomainAction, null);
+  const [state, formAction, pending] = useActionToast(deleteDomainAction, {
+    success: `${props.name} deleted`,
+  });
 
   return (
     <AlertDialog>

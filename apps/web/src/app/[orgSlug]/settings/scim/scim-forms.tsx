@@ -20,9 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import {
   connectScimAction,
   createScimTokenAction,
@@ -88,7 +89,9 @@ export function ScimConnectionControls(props: {
   status: "none" | "active" | "decommissioning";
   canConnect: boolean;
 }) {
-  const [state, formAction, pending] = useActionState(connectScimAction, null);
+  const [state, formAction, pending] = useActionToast(connectScimAction, {
+    success: "Directory connected",
+  });
   if (props.status !== "none") {
     return (
       <div className="flex flex-col gap-4">
@@ -115,7 +118,9 @@ export function ScimConnectionControls(props: {
 }
 
 export function CreateScimTokenForm(props: { orgSlug: string; disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(createScimTokenAction, null);
+  const [state, formAction, pending] = useActionToast(createScimTokenAction, {
+    success: "SCIM token created",
+  });
   return (
     <div className="flex flex-col gap-3">
       <form action={formAction} className="flex flex-wrap items-end gap-3">
@@ -132,7 +137,10 @@ export function CreateScimTokenForm(props: { orgSlug: string; disabled: boolean 
 }
 
 export function RevokeScimTokenButton(props: { orgSlug: string; credentialId: string }) {
-  const [state, formAction, pending] = useActionState(revokeScimTokenAction, null);
+  // On success the page re-renders without this token, which unmounts the dialog.
+  const [state, formAction, pending] = useActionToast(revokeScimTokenAction, {
+    success: "SCIM token revoked",
+  });
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button size="sm" variant="destructive-outline" />}>
@@ -162,7 +170,9 @@ export function RevokeScimTokenButton(props: { orgSlug: string; credentialId: st
 }
 
 function DisconnectScimButton(props: { orgSlug: string; resume: boolean }) {
-  const [state, formAction, pending] = useActionState(disconnectScimAction, null);
+  const [state, formAction, pending] = useActionToast(disconnectScimAction, {
+    success: "Directory disconnected",
+  });
   if (props.resume) {
     return (
       <form action={formAction} className="flex flex-col gap-2">
@@ -212,7 +222,9 @@ export function ScimGroupRolesForm(props: {
   mappings: { groupName: string; role: "admin" | "member" }[];
   disabled: boolean;
 }) {
-  const [state, formAction, pending] = useActionState(saveScimGroupRolesAction, null);
+  const [state, formAction, pending] = useActionToast(saveScimGroupRolesAction, {
+    success: "Group mappings saved and applied",
+  });
   const [rows, setRows] = useState<MappingRow[]>(() =>
     props.mappings.map((mapping, index) => ({ key: index, ...mapping })),
   );
@@ -282,7 +294,6 @@ export function ScimGroupRolesForm(props: {
         ))
       )}
       {state && !state.ok ? <FormError message={state.error} /> : null}
-      {state?.ok ? <p className="text-muted-foreground text-sm">Saved and applied.</p> : null}
       <div className="flex gap-2">
         <Button
           disabled={props.disabled}

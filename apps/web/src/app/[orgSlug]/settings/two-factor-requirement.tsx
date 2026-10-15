@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { setTwoFactorRequirementAction } from "./actions";
 
 /** Turns the organization's two-factor requirement on or off. */
@@ -12,7 +12,9 @@ export function TwoFactorRequirementForm(props: {
   /** The actor has two-factor themselves (needed to turn the requirement on). */
   canRequire: boolean;
 }) {
-  const [state, formAction, pending] = useActionState(setTwoFactorRequirementAction, null);
+  const [state, formAction, pending] = useActionToast(setTwoFactorRequirementAction, {
+    success: props.required ? "Two-factor no longer required" : "Two-factor now required",
+  });
 
   return (
     <form action={formAction} className="flex flex-col gap-3">

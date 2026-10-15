@@ -11,8 +11,8 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { cancelInvitationAction } from "./actions";
 
 export function CancelInvitationButton(props: {
@@ -21,7 +21,9 @@ export function CancelInvitationButton(props: {
   email: string;
 }) {
   // On success the page re-renders without this invitation, which unmounts the dialog.
-  const [state, formAction, pending] = useActionState(cancelInvitationAction, null);
+  const [state, formAction, pending] = useActionToast(cancelInvitationAction, {
+    success: `Invitation for ${props.email} canceled`,
+  });
 
   return (
     <AlertDialog>

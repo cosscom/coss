@@ -13,13 +13,19 @@ import {
 import { Button } from "@coss/ui/components/button";
 import { Field, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { deleteOrganizationAction } from "./actions";
 
 export function DeleteOrganizationButton(props: { orgSlug: string; orgName: string }) {
   // On success the action redirects away from this organization.
-  const [state, formAction, pending] = useActionState(deleteOrganizationAction, null);
+  const [state, formAction, pending] = useActionToast(deleteOrganizationAction, {
+    success: {
+      title: `${props.orgName} is being deleted`,
+      description: "Its members have lost access; its data is deleted shortly.",
+    },
+  });
   const [confirmation, setConfirmation] = useState("");
 
   return (

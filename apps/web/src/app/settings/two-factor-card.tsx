@@ -24,6 +24,7 @@ import { Panel, PanelBody } from "@/components/panel";
 import { QrCode } from "@/components/qr-code";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
+import { toast } from "@/lib/toast";
 
 type Props = {
   enabled: boolean;
@@ -145,6 +146,7 @@ function SetupFlow() {
       setError(authErrorMessage(error, "Could not verify the code."));
       return;
     }
+    toast.success("Two-factor authentication turned on");
     setVerified(true);
   }
 
@@ -276,6 +278,7 @@ function BackupCodesFlow() {
       setError(authErrorMessage(error, "Could not create new backup codes."));
       return;
     }
+    toast.success("Backup codes replaced");
     setCodes(data.backupCodes);
   }
 
@@ -337,6 +340,7 @@ function DisableDialog({ requiredBy }: { requiredBy: string[] }) {
       setPending(false);
       return;
     }
+    toast.success("Two-factor authentication turned off");
     // The re-rendered page no longer shows this dialog.
     router.refresh();
   }

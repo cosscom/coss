@@ -4,12 +4,16 @@ import { ORG_NAME_MAX_LENGTH } from "@coss/auth/slugs";
 import { Button } from "@coss/ui/components/button";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { updateOrganizationAction } from "./actions";
 
 export function OrganizationForm(props: { orgSlug: string; name: string; disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(updateOrganizationAction, null);
+  // Static copy: a slug change ends in a redirect, which carries no result.
+  const [state, formAction, pending] = useActionToast(updateOrganizationAction, {
+    success: "Organization settings saved",
+  });
   const [slug, setSlug] = useState(props.orgSlug);
 
   return (
@@ -41,11 +45,7 @@ export function OrganizationForm(props: { orgSlug: string; name: string; disable
             : `Your dashboard will move to /${slug || "…"}. Links and bookmarks to /${props.orgSlug} will stop working.`}
         </FieldDescription>
       </Field>
-      {state?.ok ? (
-        <p className="text-muted-foreground text-sm">Saved.</p>
-      ) : (
-        <FormError message={state?.error} />
-      )}
+      <FormError message={state?.ok ? null : state?.error} />
       {props.disabled ? null : (
         <div>
           <Button loading={pending} type="submit">

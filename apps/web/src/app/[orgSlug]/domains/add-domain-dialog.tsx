@@ -15,8 +15,8 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { PlusIcon } from "lucide-react";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { addDomainAction } from "./actions";
 
 export function AddDomainDialog({ orgSlug }: { orgSlug: string }) {
@@ -35,7 +35,9 @@ export function AddDomainDialog({ orgSlug }: { orgSlug: string }) {
 
 function AddDomainForm({ orgSlug }: { orgSlug: string }) {
   // On success the action redirects to the new domain's page.
-  const [state, formAction, pending] = useActionState(addDomainAction, null);
+  const [state, formAction, pending] = useActionToast(addDomainAction, {
+    success: { title: "Domain added", description: "Publish its DNS records to start sending." },
+  });
 
   return (
     // `contents` keeps header/panel/footer as direct flex children of the popup (coss ui pattern).

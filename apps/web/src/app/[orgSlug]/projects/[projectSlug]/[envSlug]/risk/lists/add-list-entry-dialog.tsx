@@ -21,8 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { useActionState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { addRiskListEntryAction } from "../actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
@@ -42,37 +43,32 @@ const TYPES = [
 ];
 
 export function AddRiskListEntryDialog(props: Target) {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger render={<Button size="sm" />}>Add entry</DialogTrigger>
       <DialogPopup>
         {/* The popup unmounts when closed, which also resets the form. */}
-        <AddRiskListEntryForm {...props} />
+        <AddRiskListEntryForm {...props} onDone={() => setOpen(false)} />
       </DialogPopup>
     </Dialog>
   );
 }
 
-function AddRiskListEntryForm(props: Target) {
-  const [state, formAction, pending] = useActionState(addRiskListEntryAction, null);
-
-  if (state?.ok) {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>{state.data.created ? "Entry added" : "Already listed"}</DialogTitle>
-          <DialogDescription>
-            {state.data.created
-              ? "Assessments that match it are decided by it from now on."
-              : "This list already had this entry; nothing changed."}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose render={<Button />}>Done</DialogClose>
-        </DialogFooter>
-      </>
-    );
-  }
+function AddRiskListEntryForm(props: Target & { onDone: () => void }) {
+  const [state, formAction, pending] = useActionToast(addRiskListEntryAction, {
+    success: ({ created }) =>
+      created
+        ? {
+            title: "Entry added",
+            description: "Matching assessments are decided by it from now on.",
+          }
+        : { title: "Already listed", description: "Nothing changed." },
+  });
+  const { onDone } = props;
+  useEffect(() => {
+    if (state?.ok) onDone();
+  }, [state, onDone]);
 
   return (
     // `contents` keeps header/panel/footer as direct flex children of the popup (coss ui pattern).

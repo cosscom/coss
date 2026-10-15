@@ -3,12 +3,14 @@
 import { Button } from "@coss/ui/components/button";
 import { Field, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { sendVerificationEmailAction, updateNameAction } from "./actions";
 
 export function ProfileForm(props: { name: string; disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(updateNameAction, null);
+  const [state, formAction, pending] = useActionToast(updateNameAction, {
+    success: "Name updated",
+  });
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -29,17 +31,15 @@ export function ProfileForm(props: { name: string; disabled: boolean }) {
           Save
         </Button>
       </div>
-      {state?.ok ? (
-        <p className="text-muted-foreground text-sm">Saved.</p>
-      ) : (
-        <FormError message={state?.error} />
-      )}
+      <FormError message={state?.ok ? null : state?.error} />
     </form>
   );
 }
 
 export function SendVerificationEmailButton({ disabled }: { disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(sendVerificationEmailAction, null);
+  const [state, formAction, pending] = useActionToast(sendVerificationEmailAction, {
+    success: { title: "Verification email sent", description: "Check your inbox for the link." },
+  });
 
   return (
     <form action={formAction} className="flex flex-col gap-2">

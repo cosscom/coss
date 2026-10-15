@@ -15,9 +15,9 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import Link from "next/link";
-import { useActionState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { createLogDrainAction } from "./actions";
 import { SourceCheckboxes } from "./source-checkboxes";
 
@@ -36,7 +36,9 @@ export function CreateDrainDialog(props: Target) {
 }
 
 function CreateDrainForm(props: Target) {
-  const [state, formAction, pending] = useActionState(createLogDrainAction, null);
+  const [state, formAction, pending] = useActionToast(createLogDrainAction, {
+    success: "Log drain added",
+  });
 
   if (state?.ok) {
     return (

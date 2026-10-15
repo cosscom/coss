@@ -14,8 +14,9 @@ import {
 import { Button } from "@coss/ui/components/button";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import {
   addPaymentMethodAction,
   cancelScheduledChangeAction,
@@ -27,7 +28,10 @@ import {
 
 /** Upgrades now (prorated); reports a payment that needs confirming or failed. */
 export function UpgradeButton(props: { orgSlug: string; plan: string; label: string }) {
-  const [state, formAction, pending] = useActionState(upgradePlanAction, null);
+  const [state, formAction, pending] = useActionToast(upgradePlanAction, {
+    // A payment that needs confirming or is still processing is explained inline below.
+    success: (outcome) => (outcome.status === "active" ? "Plan upgraded" : null),
+  });
   return (
     <form action={formAction} className="flex flex-col gap-2">
       <input name="orgSlug" type="hidden" value={props.orgSlug} />
@@ -65,43 +69,64 @@ export function DowngradeButton(props: {
   title: string;
   description: string;
 }) {
-  const [state, formAction, pending] = useActionState(downgradePlanAction, null);
+  const [open, setOpen] = useState(false);
   return (
-    <AlertDialog>
+    <AlertDialog onOpenChange={setOpen} open={open}>
       <AlertDialogTrigger render={<Button size="sm" variant="outline" />}>
         {props.label}
       </AlertDialogTrigger>
       <AlertDialogPopup>
-        {/* `contents` keeps header/footer as direct flex children of the popup (coss ui pattern). */}
-        <form action={formAction} className="contents">
-          <input name="orgSlug" type="hidden" value={props.orgSlug} />
-          <input name="plan" type="hidden" value={props.plan} />
-          <AlertDialogHeader>
-            <AlertDialogTitle>{props.title}</AlertDialogTitle>
-            <AlertDialogDescription>{props.description}</AlertDialogDescription>
-            {state?.ok ? (
-              <p className="text-muted-foreground text-sm">
-                Scheduled. You can undo it until then.
-              </p>
-            ) : null}
-            {state && !state.ok ? <FormError message={state.error} /> : null}
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogClose render={<Button variant="ghost" />}>Close</AlertDialogClose>
-            {state?.ok ? null : (
-              <Button loading={pending} type="submit" variant="destructive">
-                {props.label}
-              </Button>
-            )}
-          </AlertDialogFooter>
-        </form>
+        {/* The popup unmounts when closed, which also resets the form state. */}
+        <DowngradeForm {...props} onDone={() => setOpen(false)} />
       </AlertDialogPopup>
     </AlertDialog>
   );
 }
 
+function DowngradeForm(props: {
+  orgSlug: string;
+  plan: string;
+  label: string;
+  title: string;
+  description: string;
+  onDone: () => void;
+}) {
+  const [state, formAction, pending] = useActionToast(downgradePlanAction, {
+    success: {
+      title: props.plan === "free" ? "Cancellation scheduled" : "Plan change scheduled",
+      description: "You can undo it until the end of the billing period.",
+    },
+  });
+  const { onDone } = props;
+
+  useEffect(() => {
+    if (state?.ok) onDone();
+  }, [state, onDone]);
+
+  return (
+    // `contents` keeps header/footer as direct flex children of the popup (coss ui pattern).
+    <form action={formAction} className="contents">
+      <input name="orgSlug" type="hidden" value={props.orgSlug} />
+      <input name="plan" type="hidden" value={props.plan} />
+      <AlertDialogHeader>
+        <AlertDialogTitle>{props.title}</AlertDialogTitle>
+        <AlertDialogDescription>{props.description}</AlertDialogDescription>
+        {state && !state.ok ? <FormError message={state.error} /> : null}
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogClose render={<Button variant="ghost" />}>Close</AlertDialogClose>
+        <Button loading={pending} type="submit" variant="destructive">
+          {props.label}
+        </Button>
+      </AlertDialogFooter>
+    </form>
+  );
+}
+
 export function CancelScheduledChangeButton(props: { orgSlug: string; label: string }) {
-  const [state, formAction, pending] = useActionState(cancelScheduledChangeAction, null);
+  const [state, formAction, pending] = useActionToast(cancelScheduledChangeAction, {
+    success: "Scheduled plan change undone",
+  });
   return (
     <form action={formAction} className="flex flex-col gap-2">
       <input name="orgSlug" type="hidden" value={props.orgSlug} />
@@ -159,7 +184,9 @@ export function SpendControlsForm(props: {
   billingEmail: string;
   disabled: boolean;
 }) {
-  const [state, formAction, pending] = useActionState(updateSpendControlsAction, null);
+  const [state, formAction, pending] = useActionToast(updateSpendControlsAction, {
+    success: "Spend controls saved",
+  });
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <input name="orgSlug" type="hidden" value={props.orgSlug} />
@@ -197,11 +224,7 @@ export function SpendControlsForm(props: {
         />
         <FieldDescription>Invoices, payment reminders and usage alerts go here.</FieldDescription>
       </Field>
-      {state?.ok ? (
-        <p className="text-muted-foreground text-sm">Saved.</p>
-      ) : (
-        <FormError message={state?.error} />
-      )}
+      <FormError message={state?.ok ? null : state?.error} />
       {props.disabled ? null : (
         <div>
           <Button loading={pending} type="submit">

@@ -17,8 +17,9 @@ import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
 import { Textarea } from "@coss/ui/components/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@coss/ui/components/toggle-group";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { deleteSsoProviderAction, saveSsoProviderAction, setSsoRequirementAction } from "./actions";
 
 type ProviderType = "oidc" | "saml";
@@ -37,9 +38,11 @@ export function SsoProviderForm(props: {
   domainOptions: string[];
   current: SsoProviderFormValues | null;
 }) {
-  const [state, formAction, pending] = useActionState(saveSsoProviderAction, null);
-  const [type, setType] = useState<ProviderType>(props.current?.type ?? "oidc");
   const editing = props.current !== null;
+  const [state, formAction, pending] = useActionToast(saveSsoProviderAction, {
+    success: editing ? "SSO provider saved" : "SSO provider added",
+  });
+  const [type, setType] = useState<ProviderType>(props.current?.type ?? "oidc");
   const selected = new Set(props.current?.domains ?? []);
 
   return (
@@ -179,7 +182,10 @@ export function SsoProviderForm(props: {
 }
 
 export function DeleteSsoProviderButton(props: { orgSlug: string }) {
-  const [state, formAction, pending] = useActionState(deleteSsoProviderAction, null);
+  // On success the page re-renders without a provider, which unmounts this dialog.
+  const [state, formAction, pending] = useActionToast(deleteSsoProviderAction, {
+    success: "SSO provider removed",
+  });
 
   return (
     <AlertDialog>
@@ -217,7 +223,9 @@ export function SsoRequirementForm(props: {
   /** Every precondition for turning it on holds (the action re-checks them). */
   canRequire: boolean;
 }) {
-  const [state, formAction, pending] = useActionState(setSsoRequirementAction, null);
+  const [state, formAction, pending] = useActionToast(setSsoRequirementAction, {
+    success: props.required ? "SSO no longer required" : "SSO now required",
+  });
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
