@@ -16,9 +16,9 @@ signals are also building blocks of their own, next to rate limiting as a servic
 
 ## License
 
-`AGPL-3.0-only` (root `LICENSE`), except `packages/sdk` (MIT, its own `LICENSE`: customers bundle it), `packages/kloq`
-(MIT, vendored) and the fonts (OFL). New code is AGPL unless it lives in one of those; never copy AGPL code into
-the SDK. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
+`AGPL-3.0-only` (root `LICENSE`), except `packages/sdk` (MIT, its own `LICENSE`: customers bundle it), `packages/mcp`
+(MIT, published with the SDK), `packages/kloq` (MIT, vendored) and the fonts (OFL). New code is AGPL unless it lives in
+one of those; never copy AGPL code into the SDK or the MCP server. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
 text it shows is a gist that must match `CLA.md`: change both together, as a new version).
 
 ## Layout
@@ -48,6 +48,7 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/retention` | `@coss/retention` | The data retention policy: `RETENTION_POLICY` (published by the docs and the dashboard) and `RETENTION_DAYS` (enforced by each package's purge, run by the worker). Zero deps, client-safe. |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens), `globals.css` (the dashboard's stylesheet) and `./fonts` (`next/font/local`: Cal Sans as `fontSans`/`fontHeading` and, upright only, `fontCalSans`; Paper Mono as `fontMono`). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. `coss/device` is its browser-only entry (risk's device tokens). |
+| `packages/mcp` | `coss-mcp` | **Public** MCP server (`npx coss-mcp`, stdio, Node): tools for coding agents built only on the published `coss` SDK — find emails and diagnose delivery (`diagnose.ts`, pure), send, suppressions, domains, webhook deliveries, received emails, logs, account status. See "MCP server" below. |
 | `packages/kloq` | `kloq` | The kloq library (the `cosscom/calendar` repository's `packages/kloq/src`, tests left out): the `<Kloq>` calendar, its themes, settings dialog, design mode and stylesheet. Vendored (excluded from Biome, `noUncheckedIndexedAccess` off); also what `/kloq/r/kloq.json` serves as source. Used only by `apps/site`. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests, and the production Terraform + deploy scripts that apply it. See `infra/AGENTS.md`. |
@@ -60,9 +61,10 @@ billing enqueues `billing.*` events through it — and email imports only `./met
 `api → tenancy, email, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, screening (`./env` only), db`;
 `web → auth, tenancy, email, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, db, ui`; `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, hooks, ratelimit, screening, billing` (`slugs`, `env` only);
-`worker → auth (`./emails` only), email, hooks, reputation, screening, webhooks, ratelimit, logs, risk, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui` and `kloq` depend on no workspace (`site → kloq`).
+`worker → auth (`./emails` only), email, hooks, reputation, screening, webhooks, ratelimit, logs, risk, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui` and `kloq` depend on no workspace (`site → kloq`); `mcp` depends only on the published `coss` (a semver
+range, not `workspace:`).
 Dev-only: `email`/`webhooks`/`hooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`risk`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
-`api`/`worker`/`site → coss` (SDK contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
+`api`/`worker`/`site → coss` and `api → coss-mcp` (SDK and MCP contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`). `web → coss` is a runtime dependency: the sign-up form sends
 `coss/device`'s token (turbo builds the SDK before the dashboard's `dev`/`build` too).
 
@@ -85,8 +87,10 @@ bun run auth:generate       # regenerate packages/db/src/schema/auth.ts after ch
                             #   then bun run db:generate && bun run db:migrate
 bun run signals:update-disposable  # refresh the vendored disposable-domain list (review the diff before committing)
 bun run openapi:generate    # rewrite apps/api/openapi.json after changing API routes (a test fails when stale)
-bun run changeset           # describe an SDK change (CI requires one when packages/sdk/src changes; --empty if none)
-bun run version-packages    # apply changesets: bump the SDK's package.json, src/version.ts, CHANGELOG.md, bun.lock
+bun run changeset           # describe an SDK or MCP server change (CI requires one when packages/{sdk,mcp}/src
+                            #   changes; --empty if none)
+bun run version-packages    # apply changesets: bump the SDK's (and coss-mcp's) package.json, src/version.ts,
+                            #   CHANGELOG.md, bun.lock
                             #   (CI's Release workflow opens a "Version packages" PR doing this; merging it publishes to npm)
 bun run db:seed             # idempotent demo data; mints a new development (coss_test_) key on every run
 bun run admin:create --email you@example.com   # promote an existing user to platform admin (also how the
@@ -266,7 +270,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - Every request sends `Coss-Version`: `API_VERSION` (`src/api-version.ts`, a hand mirror of `API_VERSIONS`; the
   contract tests keep them equal), overridable with the `apiVersion` client option. The SDK's wire types describe
   `API_VERSION` only.
-- Releases: Changesets 3 (`.changeset/`, SDK only — every other workspace is private and never versioned).
+- Releases: Changesets 3 (`.changeset/`, the SDK and `coss-mcp` — every other workspace is private and never versioned).
   `bun run version-packages` also rewrites `src/version.ts` (`scripts/sync-version.ts`) and refreshes `bun.lock`
   (it records workspace versions; CI installs with `--frozen-lockfile`).
 - **Publishing** (`.github/workflows/release.yml`): merging the "Version packages" PR publishes `coss` to npm
@@ -276,6 +280,24 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   waits until the registry serves the new one (a minute or two) and tags it. Never
   publish from a laptop. npm owners: baileypumfleet, peer_rich, keithwillcode (versions 0.0.1–0.0.5 are a previous
   owner's unrelated, deprecated package).
+
+## MCP server (`packages/mcp`, published as `coss-mcp`)
+
+- `createCossMcpServer({ coss, apiKey })` (`src/server.ts`) registers every tool on an `McpServer`
+  (`@modelcontextprotocol/server` v2); `src/cli.ts` serves it over stdio (`serveStdio`). Configuration comes from the
+  environment only (`COSS_API_KEY`, `COSS_BASE_URL`), never argv; stdout is the protocol, so log to stderr.
+- Tools (`src/tools/*.ts`) call only the public SDK — never workspace packages (AGPL) or the database — so anything a
+  tool needs must exist in the public API first. Every tool carries annotations (`READ_ONLY`, `WRITE`,
+  `DESTRUCTIVE`, `SENDS` in `tools/shared.ts`); API keys hold every permission, so clients rely on them to prompt.
+- Answers stay small: lists drop content (`compact`, `emailListItem`), bodies are cut (`truncate`), API failures
+  become `isError` results with a hint (`result.ts`). Third-party text (email content, received mail, bounce and
+  webhook responses) is labelled untrusted, and the server's `instructions` say so.
+- `diagnose.ts` is pure (email + events + best-effort context → verdict). Its explanations of failure codes and
+  recipient statuses must match the email product's behaviour: change both together.
+- Dependencies are explicit versions (`npm publish` doesn't rewrite `workspace:`/`catalog:`); `coss` is a caret
+  range that changesets moves when the SDK's version leaves it. The release job publishes it after `coss`.
+- Tests: `packages/mcp/test` (in-memory client, fake `fetch`) and `apps/api/test/mcp-contract.test.ts` (built
+  server against the in-process app; turbo builds it first).
 
 ## Dashboard (`apps/web`)
 
@@ -746,6 +768,11 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   expose content. A queued email whose content is gone fails with `attachments_unavailable` rather than sending without
   it. The parsed request omits `attachments` when empty (request hashes). SES gets them as `Simple.Attachments`
   (`content_id` → `INLINE`); the fake provider keeps sha256 digests, not bytes.
+- **Email reads** (`packages/email/src/read.ts`): `GET /v1/emails` (`listEmailSummariesPage`, `coss.email.list`)
+  shares `listConditions` with the dashboard's list and never selects content (`EmailSummary`: no `html`, `text`,
+  `headers`, `attachments`); `to` matches `email_recipient.address` through `(organization_id, address)`. An email's
+  `failure` (`emailFailure`) is set only while it is `failed` — an error code on a queued email is a screening hold —
+  and `provider_error` always shows `PROVIDER_ERROR_MESSAGE`, never the provider's own text (it can name internals).
 - **API versions** (`organization_api_version`, `webhook_endpoint.api_version`): an organization is pinned lazily to
   the latest version by its first authenticated request (`getOrganizationApiVersion`, insert-or-read; the dashboard
   only reads with `readOrganizationApiVersion`), and only moves forward (`setOrganizationApiVersion`, from org

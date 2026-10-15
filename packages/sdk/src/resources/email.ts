@@ -5,10 +5,13 @@ import type {
   EmailBatch,
   EmailEvent,
   EmailLink,
+  EmailSummary,
   List,
+  ListEmailsParams,
   RescheduleEmailParams,
   SendEmailParams,
 } from "../types/email.ts";
+import { listQuery } from "./list-query.ts";
 import { ReceivedEmailsResource } from "./received-emails.ts";
 import { SuppressionResource } from "./suppressions.ts";
 import { TrackingResource } from "./tracking.ts";
@@ -68,6 +71,23 @@ export class EmailResource {
     return this.#http.request<Email>({
       method: "GET",
       path: `/v1/emails/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Lists emails sent from the same environment as the API key, newest first and without their
+   * content (`get` one for `html`, `text`, `headers` and `attachments`). Pass the last `id` as
+   * `after` while `has_more` is true.
+   */
+  list(
+    params: ListEmailsParams = {},
+    options?: Pick<RequestOptions, "signal">,
+  ): Promise<CossResult<List<EmailSummary>>> {
+    return this.#http.request<List<EmailSummary>>({
+      method: "GET",
+      path: "/v1/emails",
+      query: listQuery(params),
       signal: options?.signal,
     });
   }
