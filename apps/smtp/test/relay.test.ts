@@ -125,6 +125,10 @@ describe("SMTP relay", () => {
       statusCode: 250,
       environmentId: tenant.development.id,
       clientIp: "127.0.0.1",
+      // The negotiated protocol, not the cipher suite's minimum (`TLSv1/SSLv3` under Bun).
+      attributes: {
+        smtp: { tls: expect.stringMatching(/^TLSv1\.[23]$/), cipher: expect.any(String) },
+      },
     });
     // Never addresses or the subject in the log line.
     expect(JSON.stringify(line)).not.toContain("ada@example.com");
@@ -148,6 +152,10 @@ describe("SMTP relay", () => {
       .from(schema.email)
       .where(eq(schema.email.id, emailIdOf(info)));
     expect(row?.environmentId).toBe(tenant.production.id);
+    const line = harness.logs.entries.find((entry) => entry.resourceId === emailIdOf(info));
+    expect(line?.attributes).toMatchObject({
+      smtp: { port: harness.ports.implicitTls, tls: expect.stringMatching(/^TLSv1\.[23]$/) },
+    });
   });
 
   test("tracking set by X-Coss-Tracking is stored with the email", async () => {
