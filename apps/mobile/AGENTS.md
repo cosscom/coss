@@ -65,7 +65,7 @@ dashboard page that resolves them.
 ## Push notifications
 
 `expo-notifications` (config plugin in `app.json`, which adds the `aps-environment` entitlement)
-with raw APNs device tokens; the dashboard's worker sends them (`@coss/push`, root AGENTS.md).
+with raw APNs device tokens; the dashboard's worker sends them (`@coss/push`, `packages/push/AGENTS.md`).
 `src/lib/push.ts` asks for permission on the first signed-in start (iOS shows its prompt once per
 install; afterwards the Account screen's Notifications panel, `components/push-settings.tsx`, turns
 it on or links to Settings), then `PUT /api/mobile/v1/push` registers the token on this session with `apns_environment` `sandbox` in development builds (the plugin's default entitlement)
