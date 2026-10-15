@@ -23,6 +23,8 @@ export function TwoFactorRequirementRow(props: {
       label="Require two-factor authentication"
       orgSlug={props.orgSlug}
       required={props.required}
+      turnedOff="Two-factor no longer required"
+      turnedOn="Two-factor now required"
     />
   );
 }

@@ -2,8 +2,8 @@
 
 import { Button } from "@coss/ui/components/button";
 import { Input } from "@coss/ui/components/input";
-import { useActionState } from "react";
 import { SettingsFooter, SettingsRow } from "@/components/settings";
+import { useActionToast } from "@/lib/toast";
 import { changePasswordAction, setPasswordAction } from "./actions";
 
 /** A password input on the right of its row (the row's label names it). */
@@ -31,7 +31,9 @@ function PasswordInput(props: {
 }
 
 export function PasswordForm({ disabled }: { disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(changePasswordAction, null);
+  const [state, formAction, pending] = useActionToast(changePasswordAction, {
+    success: { title: "Password changed", description: "Your other sessions were signed out." },
+  });
 
   return (
     <form action={formAction}>
@@ -70,8 +72,6 @@ export function PasswordForm({ disabled }: { disabled: boolean }) {
         hint={
           state && !state.ok ? (
             <span className="text-destructive-foreground">{state.error}</span>
-          ) : state?.ok ? (
-            "Password changed. Your other sessions were signed out."
           ) : (
             "Changing it signs out every other session."
           )
@@ -87,7 +87,9 @@ export function PasswordForm({ disabled }: { disabled: boolean }) {
 
 /** For accounts created with Google or GitHub, which have no password yet. */
 export function SetPasswordForm({ disabled }: { disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(setPasswordAction, null);
+  const [state, formAction, pending] = useActionToast(setPasswordAction, {
+    success: "Password set",
+  });
 
   return (
     <form action={formAction}>

@@ -141,6 +141,7 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
                   fields={fields}
                   reason="optional"
                   submitLabel="Unban"
+                  success="User unbanned"
                   title="Unban this user?"
                   triggerLabel="Unban"
                 />
@@ -153,6 +154,7 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
                   reason="required"
                   reasonPlaceholder="e.g. Spam complaints from …"
                   submitLabel="Ban user"
+                  success="User banned and signed out"
                   title="Ban this user?"
                   triggerLabel="Ban"
                 >
@@ -184,6 +186,7 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
                 fields={{ ...fields, role: isAdmin ? "user" : "admin" }}
                 reason="optional"
                 submitLabel={isAdmin ? "Remove admin" : "Make admin"}
+                success={isAdmin ? "Platform admin removed" : "Made platform admin"}
                 title={isAdmin ? "Remove platform admin?" : "Make platform admin?"}
                 triggerLabel={isAdmin ? "Remove admin" : "Make admin"}
               />
@@ -195,6 +198,7 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
                 reason="required"
                 reasonPlaceholder="e.g. Support ticket #1234"
                 submitLabel="Impersonate"
+                success={`Impersonating ${user.email}`}
                 title="Impersonate this user?"
                 triggerLabel="Impersonate"
               />
@@ -207,6 +211,7 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
                   reason="required"
                   reasonPlaceholder="e.g. Lost phone, identity confirmed in ticket #1234"
                   submitLabel="Reset two-factor"
+                  success="Two-factor authentication reset"
                   title="Reset two-factor authentication?"
                   triggerLabel="Reset 2FA"
                 />
@@ -220,6 +225,7 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
                   reason="required"
                   reasonPlaceholder="e.g. IdP account recreated, identity confirmed in ticket #1234"
                   submitLabel="Unlink SSO"
+                  success="SSO accounts unlinked"
                   title="Unlink SSO accounts?"
                   triggerLabel="Unlink SSO"
                 />
@@ -231,6 +237,7 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
                 fields={fields}
                 reason="optional"
                 submitLabel="Sign out everywhere"
+                success="Signed out of every session"
                 title="Revoke every session?"
                 triggerLabel="Revoke all sessions"
               />
@@ -338,6 +345,7 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
                         fields={{ ...fields, sessionId: session.id }}
                         reason="optional"
                         submitLabel="Revoke session"
+                        success="Session revoked"
                         title="Revoke this session?"
                         triggerLabel="Revoke"
                       />

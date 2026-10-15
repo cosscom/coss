@@ -317,7 +317,11 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   (`src/lib/actions.ts`). Start with `requireOrgPermission(formString(formData, "orgSlug"), {…})`, re-check that target
   ids belong to that org (`getKeyBinding`, `getOrganizationMember`, `getPendingInvitation`, `getDomain`,
   `getWebhookEndpoint` + its `environmentId`), `refresh()` after writes.
-  Throw `ActionError` for user-facing messages. Clients use `useActionState(action, null)` + `<FormError>`. Hidden inputs carry slugs/ids only.
+  Throw `ActionError` for user-facing messages. Clients use `useActionToast(action, { success })` (`src/lib/toast.ts`,
+  `useActionState` that toasts) + `<FormError>`: every user-triggered mutation toasts its success (short, past
+  tense, no period; redirecting actions too, with a static message), failures stay inline in forms and dialogs
+  (`errors: "toast"` for one-click buttons); `toast.*` for client-side calls (`authClient`). Pure reads don't toast.
+  Hidden inputs carry slugs/ids only.
 - coss ui is **Base UI, not Radix**: compose with `render` (`<DialogTrigger render={<Button />}>`), never `asChild`.
   A `<form>` inside `DialogPopup`/`AlertDialogPopup` needs `className="contents"` (otherwise the footer renders outside the
   popup). Popups unmount on close. Add components with `bunx shadcn@latest add @coss/<name>` from `packages/ui`;

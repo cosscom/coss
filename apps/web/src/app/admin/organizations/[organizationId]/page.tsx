@@ -143,6 +143,7 @@ export default async function AdminOrganizationPage({
                 fields={fields}
                 reason="optional"
                 submitLabel="Lift suspension"
+                success="Suspension lifted"
                 title={`Lift the suspension of ${organization.name}?`}
                 triggerLabel="Lift suspension"
               />
@@ -155,6 +156,7 @@ export default async function AdminOrganizationPage({
                 reason="required"
                 reasonPlaceholder="e.g. Phishing reported by …"
                 submitLabel="Suspend organization"
+                success="Organization suspended"
                 title={`Suspend ${organization.name}?`}
                 triggerLabel="Suspend"
               />
@@ -227,6 +229,7 @@ export default async function AdminOrganizationPage({
                   reason="required"
                   reasonPlaceholder="e.g. IdP outage, ticket #1234"
                   submitLabel="Stop requiring SSO"
+                  success="SSO no longer required"
                   title={`Stop requiring SSO for ${organization.name}?`}
                   triggerLabel="Stop requiring SSO"
                 />
@@ -240,6 +243,7 @@ export default async function AdminOrganizationPage({
                   reason="required"
                   reasonPlaceholder="e.g. IdP compromised, reported in ticket #1234"
                   submitLabel="Disable SSO"
+                  success="SSO disabled"
                   title={`Disable SSO for ${organization.name}?`}
                   triggerLabel="Disable SSO"
                 />
@@ -274,6 +278,7 @@ export default async function AdminOrganizationPage({
                 reason="required"
                 reasonPlaceholder="e.g. token leaked, reported in ticket #1234"
                 submitLabel="Disconnect directory"
+                success="Directory sync disconnected"
                 title={`Disconnect directory sync for ${organization.name}?`}
                 triggerLabel="Disconnect directory"
               />
@@ -365,6 +370,7 @@ export default async function AdminOrganizationPage({
                       reason="required"
                       reasonPlaceholder="e.g. Key published on GitHub"
                       submitLabel="Revoke key"
+                      success="API key revoked"
                       title={`Revoke “${key.name ?? key.start ?? key.id}”?`}
                       triggerLabel="Revoke"
                     />
@@ -472,6 +478,7 @@ export default async function AdminOrganizationPage({
                         reason="required"
                         reasonPlaceholder="e.g. Volume increase agreed in ticket #1234"
                         submitLabel="Save rate limit"
+                        success={`${bucket} rate limit saved`}
                         title={`Change ${bucket} for ${organization.name}`}
                         triggerLabel="Change"
                       >
@@ -514,6 +521,7 @@ export default async function AdminOrganizationPage({
                           fields={{ ...fields, bucket }}
                           reason="optional"
                           submitLabel="Reset to default"
+                          success={`${bucket} reset to default`}
                           title={`Reset ${bucket} for ${organization.name}?`}
                           triggerLabel="Reset"
                         />
@@ -545,6 +553,10 @@ export default async function AdminOrganizationPage({
                 reason="required"
                 reasonPlaceholder="e.g. Account closure requested in ticket #1234"
                 submitLabel="Delete organization"
+                success={{
+                  title: `${organization.name} is being deleted`,
+                  description: "The worker is removing its data.",
+                }}
                 title={`Delete ${organization.name}?`}
                 triggerLabel="Delete"
               >

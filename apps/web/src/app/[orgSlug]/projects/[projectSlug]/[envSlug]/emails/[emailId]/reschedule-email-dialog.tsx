@@ -14,8 +14,9 @@ import {
 } from "@coss/ui/components/dialog";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { useActionState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { rescheduleEmailAction } from "./actions";
 
 type Target = {
@@ -35,35 +36,31 @@ function utcMinute(iso: string): string {
 const MAX_AHEAD_MS = 30 * 24 * 60 * 60 * 1000;
 
 export function RescheduleEmailDialog(props: Target) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger render={<Button variant="outline" />}>Reschedule</DialogTrigger>
       <DialogPopup>
         {/* The popup unmounts when closed, which also resets the form. */}
-        <RescheduleEmailForm {...props} />
+        <RescheduleEmailForm {...props} onDone={() => setOpen(false)} />
       </DialogPopup>
     </Dialog>
   );
 }
 
-function RescheduleEmailForm(props: Target) {
-  const [state, formAction, pending] = useActionState(rescheduleEmailAction, null);
+function RescheduleEmailForm(props: Target & { onDone: () => void }) {
+  const [state, formAction, pending] = useActionToast(rescheduleEmailAction, {
+    success: (data) => ({
+      title: "Email rescheduled",
+      description: `It will be sent at ${utcMinute(data.scheduledAt).replace("T", " ")} UTC.`,
+    }),
+  });
+  const { onDone } = props;
 
-  if (state?.ok) {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>Email rescheduled</DialogTitle>
-          <DialogDescription>
-            It will be sent at {utcMinute(state.data.scheduledAt).replace("T", " ")} UTC.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose render={<Button />}>Done</DialogClose>
-        </DialogFooter>
-      </>
-    );
-  }
+  useEffect(() => {
+    if (state?.ok) onDone();
+  }, [state, onDone]);
 
   // Only rendered once the dialog opens (client-side), so reading the clock is safe here.
   const now = Date.now();

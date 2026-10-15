@@ -11,13 +11,15 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { leaveOrganizationAction } from "./actions";
 
 export function LeaveOrganizationButton(props: { orgSlug: string; orgName: string }) {
   // On success the action redirects away from this organization.
-  const [state, formAction, pending] = useActionState(leaveOrganizationAction, null);
+  const [state, formAction, pending] = useActionToast(leaveOrganizationAction, {
+    success: `You left ${props.orgName}`,
+  });
 
   return (
     <AlertDialog>

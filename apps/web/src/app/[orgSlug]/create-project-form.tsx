@@ -15,8 +15,8 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { PlusIcon } from "lucide-react";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { createProjectAction } from "./actions";
 
 /** "New project" in the page header: a dialog that creates the project and opens it. */
@@ -44,7 +44,9 @@ export function CreateProjectDialog({
 }
 
 function CreateProjectForm({ orgSlug, maxLength }: { orgSlug: string; maxLength: number }) {
-  const [state, formAction, pending] = useActionState(createProjectAction, null);
+  const [state, formAction, pending] = useActionToast(createProjectAction, {
+    success: "Project created",
+  });
 
   return (
     // `contents` keeps header/panel/footer as direct flex children of the popup (coss ui pattern).

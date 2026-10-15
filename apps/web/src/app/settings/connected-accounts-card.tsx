@@ -2,10 +2,10 @@
 
 import { SOCIAL_PROVIDER_LABELS, type SocialProvider } from "@coss/auth/constants";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { SettingsNote, SettingsRow, SettingsSection } from "@/components/settings";
 import { ProviderIcon } from "@/components/social-sign-in";
 import { StatusDot } from "@/components/status-dot";
+import { useActionToast } from "@/lib/toast";
 import { connectSocialAccountAction, disconnectSocialAccountAction } from "./actions";
 
 export type ConnectedAccountRow = {
@@ -46,9 +46,10 @@ export function ConnectedAccountsCard(props: {
 
 function ConnectedAccount(props: { row: ConnectedAccountRow; isLast: boolean; disabled: boolean }) {
   const { provider, connected, available } = props.row;
-  const [state, formAction, pending] = useActionState(
+  // Connecting leaves for the provider's sign-in page, so only disconnecting toasts.
+  const [state, formAction, pending] = useActionToast(
     connected ? disconnectSocialAccountAction : connectSocialAccountAction,
-    null,
+    { success: connected ? `${SOCIAL_PROVIDER_LABELS[provider]} disconnected` : undefined },
   );
   return (
     <form action={formAction}>

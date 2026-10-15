@@ -2,14 +2,17 @@
 
 import { Button } from "@coss/ui/components/button";
 import { Input } from "@coss/ui/components/input";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { FormError } from "@/components/form-error";
 import { SettingsFooter, SettingsRow } from "@/components/settings";
+import { useActionToast } from "@/lib/toast";
 import { sendVerificationEmailAction, updateNameAction } from "./actions";
 
 /** The Profile section's name row, saved from the card's footer. */
 export function ProfileForm(props: { name: string; disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(updateNameAction, null);
+  const [state, formAction, pending] = useActionToast(updateNameAction, {
+    success: "Name updated",
+  });
   const [name, setName] = useState(props.name);
   const dirty = name !== props.name;
 
@@ -36,8 +39,6 @@ export function ProfileForm(props: { name: string; disabled: boolean }) {
           hint={
             state && !state.ok ? (
               <span className="text-destructive-foreground">{state.error}</span>
-            ) : state?.ok && !dirty ? (
-              "Saved."
             ) : null
           }
         >
@@ -51,7 +52,9 @@ export function ProfileForm(props: { name: string; disabled: boolean }) {
 }
 
 export function SendVerificationEmailButton({ disabled }: { disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(sendVerificationEmailAction, null);
+  const [state, formAction, pending] = useActionToast(sendVerificationEmailAction, {
+    success: { title: "Verification email sent", description: "Check your inbox for the link." },
+  });
 
   return (
     <form action={formAction} className="flex flex-col items-end gap-2">

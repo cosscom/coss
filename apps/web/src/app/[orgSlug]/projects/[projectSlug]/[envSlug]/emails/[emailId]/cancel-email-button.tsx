@@ -11,8 +11,8 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { cancelEmailAction } from "./actions";
 
 export function CancelEmailButton(props: {
@@ -22,7 +22,9 @@ export function CancelEmailButton(props: {
   emailId: string;
 }) {
   // On success the page re-renders as canceled without this button, which unmounts the dialog.
-  const [state, formAction, pending] = useActionState(cancelEmailAction, null);
+  const [state, formAction, pending] = useActionToast(cancelEmailAction, {
+    success: "Scheduled email canceled",
+  });
 
   return (
     <AlertDialog>

@@ -218,6 +218,7 @@ export default async function MembersPage({ params }: PageProps<"/[orgSlug]/memb
                       <div className="flex justify-end gap-2">
                         {canInvite ? (
                           <ResendInvitationButton
+                            email={invitation.email}
                             invitationId={invitation.id}
                             orgSlug={organization.slug}
                           />

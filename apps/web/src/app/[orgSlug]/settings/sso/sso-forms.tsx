@@ -17,10 +17,11 @@ import { Label } from "@coss/ui/components/label";
 import { Textarea } from "@coss/ui/components/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@coss/ui/components/toggle-group";
 import type { ReactNode } from "react";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { FormError } from "@/components/form-error";
 import { SettingsFooter, SettingsRow } from "@/components/settings";
 import { SettingsSwitchRow } from "@/components/settings-switch-row";
+import { useActionToast } from "@/lib/toast";
 import { deleteSsoProviderAction, saveSsoProviderAction, setSsoRequirementAction } from "./actions";
 
 type ProviderType = "oidc" | "saml";
@@ -45,9 +46,11 @@ export function SsoProviderForm(props: {
   domainOptions: string[];
   current: SsoProviderFormValues | null;
 }) {
-  const [state, formAction, pending] = useActionState(saveSsoProviderAction, null);
-  const [type, setType] = useState<ProviderType>(props.current?.type ?? "oidc");
   const editing = props.current !== null;
+  const [state, formAction, pending] = useActionToast(saveSsoProviderAction, {
+    success: editing ? "SSO provider saved" : "SSO provider added",
+  });
+  const [type, setType] = useState<ProviderType>(props.current?.type ?? "oidc");
   const selected = new Set(props.current?.domains ?? []);
 
   return (
@@ -218,7 +221,10 @@ export function SsoProviderForm(props: {
 }
 
 export function DeleteSsoProviderButton(props: { orgSlug: string }) {
-  const [state, formAction, pending] = useActionState(deleteSsoProviderAction, null);
+  // On success the page re-renders without a provider, which unmounts this dialog.
+  const [state, formAction, pending] = useActionToast(deleteSsoProviderAction, {
+    success: "SSO provider removed",
+  });
 
   return (
     <AlertDialog>
@@ -266,6 +272,8 @@ export function SsoRequirementRow(props: {
       label="Require SSO for members and admins"
       orgSlug={props.orgSlug}
       required={props.required}
+      turnedOff="SSO no longer required"
+      turnedOn="SSO now required"
     />
   );
 }

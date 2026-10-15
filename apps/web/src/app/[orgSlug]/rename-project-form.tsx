@@ -15,8 +15,9 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { PencilIcon } from "lucide-react";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { renameProjectAction } from "./actions";
 
 /** A project tile's pencil: a dialog that renames the project (its slug and URLs stay). */
@@ -64,7 +65,9 @@ function RenameProjectForm({
   maxLength: number;
   onDone: () => void;
 }) {
-  const [state, formAction, pending] = useActionState(renameProjectAction, null);
+  const [state, formAction, pending] = useActionToast(renameProjectAction, {
+    success: "Project renamed",
+  });
 
   useEffect(() => {
     if (state?.ok) onDone();

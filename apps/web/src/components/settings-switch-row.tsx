@@ -2,13 +2,14 @@
 
 import { Switch } from "@coss/ui/components/switch";
 import type { ReactNode } from "react";
-import { useActionState, useRef } from "react";
+import { useRef } from "react";
 import type { ActionResult } from "@/lib/action-result";
+import { useActionToast } from "@/lib/toast";
 import { SettingsRow } from "./settings";
 
 /**
  * A settings row whose switch saves on change: it posts `orgSlug` and `required` (the new value)
- * to `action`, and shows the action's error under the description.
+ * to `action`, toasts `turnedOn`/`turnedOff` and shows the action's error under the description.
  */
 export function SettingsSwitchRow(props: {
   action: (previous: ActionResult | null, formData: FormData) => Promise<ActionResult>;
@@ -21,8 +22,13 @@ export function SettingsSwitchRow(props: {
   canTurnOn: boolean;
   /** Read-only members see the switch, disabled. */
   disabled?: boolean;
+  /** Toasts once the change is saved. */
+  turnedOn: string;
+  turnedOff: string;
 }) {
-  const [state, formAction, pending] = useActionState(props.action, null);
+  const [state, formAction, pending] = useActionToast(props.action, {
+    success: props.required ? props.turnedOff : props.turnedOn,
+  });
   const form = useRef<HTMLFormElement>(null);
   // While saving, show where the switch is going; the refreshed page then confirms it.
   const checked = pending ? !props.required : props.required;

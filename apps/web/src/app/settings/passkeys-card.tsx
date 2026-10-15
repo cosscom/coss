@@ -33,6 +33,7 @@ import { FormError } from "@/components/form-error";
 import { SettingsNote, SettingsRow, SettingsSection } from "@/components/settings";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
+import { toast } from "@/lib/toast";
 
 export type PasskeyRow = {
   id: string;
@@ -89,6 +90,7 @@ function AddPasskeyDialog() {
       <DialogPopup>
         <AddPasskeyForm
           onAdded={() => {
+            toast.success("Passkey added");
             setOpen(false);
             router.refresh();
           }}
@@ -161,7 +163,8 @@ function DeletePasskeyButton({ id, name }: { id: string; name: string }) {
       setPending(false);
       return;
     }
-    // On success the page re-renders without this passkey, which unmounts the dialog.
+    toast.success(`Passkey “${name}” removed`);
+    // The page re-renders without this passkey, which unmounts the dialog.
     router.refresh();
   }
 

@@ -14,46 +14,48 @@ import {
 } from "@coss/ui/components/dialog";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { useActionState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { addSuppressionAction } from "./actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
 
 export function AddSuppressionDialog(props: Target) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger render={<Button size="sm" />}>Add address</DialogTrigger>
       <DialogPopup>
         {/* The popup unmounts when closed, which also resets the form. */}
-        <AddSuppressionForm {...props} />
+        <AddSuppressionForm {...props} onDone={() => setOpen(false)} />
       </DialogPopup>
     </Dialog>
   );
 }
 
-function AddSuppressionForm(props: Target) {
-  const [state, formAction, pending] = useActionState(addSuppressionAction, null);
+function AddSuppressionForm(props: Target & { onDone: () => void }) {
+  const [state, formAction, pending] = useActionToast(addSuppressionAction, {
+    success: ({ created }) => {
+      if (created) {
+        return {
+          title: "Address suppressed",
+          description: "Emails from this environment will skip it.",
+        };
+      }
+      return {
+        type: "info",
+        title: "Already suppressed",
+        description: "It already had an entry with this scope; nothing changed.",
+      };
+    },
+  });
+  const { onDone } = props;
 
-  if (state?.ok) {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>
-            {state.data.created ? "Address suppressed" : "Already suppressed"}
-          </DialogTitle>
-          <DialogDescription>
-            {state.data.created
-              ? "Emails from this environment will skip this address."
-              : "This address already had an entry with this scope; nothing changed."}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose render={<Button />}>Done</DialogClose>
-        </DialogFooter>
-      </>
-    );
-  }
+  useEffect(() => {
+    if (state?.ok) onDone();
+  }, [state, onDone]);
 
   return (
     // `contents` keeps header/panel/footer as direct flex children of the popup (coss ui pattern).

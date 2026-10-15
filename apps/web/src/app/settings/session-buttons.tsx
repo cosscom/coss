@@ -1,18 +1,18 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
+import { useActionToast } from "@/lib/toast";
 import { revokeOtherSessionsAction, revokeSessionAction } from "./actions";
 
 export function RevokeSessionButton(props: { sessionId: string; disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(revokeSessionAction, null);
+  const [, formAction, pending] = useActionToast(revokeSessionAction, {
+    success: "Session signed out",
+    errors: "toast",
+  });
 
   return (
-    <form action={formAction} className="inline-flex items-center gap-2">
+    <form action={formAction}>
       <input name="sessionId" type="hidden" value={props.sessionId} />
-      {state && !state.ok ? (
-        <span className="text-destructive-foreground text-xs">{state.error}</span>
-      ) : null}
       <Button disabled={props.disabled} loading={pending} size="sm" type="submit" variant="outline">
         Sign out
       </Button>
@@ -21,13 +21,13 @@ export function RevokeSessionButton(props: { sessionId: string; disabled: boolea
 }
 
 export function RevokeOtherSessionsButton({ disabled }: { disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(revokeOtherSessionsAction, null);
+  const [, formAction, pending] = useActionToast(revokeOtherSessionsAction, {
+    success: "Other sessions signed out",
+    errors: "toast",
+  });
 
   return (
-    <form action={formAction} className="inline-flex items-center gap-2">
-      {state && !state.ok ? (
-        <span className="text-destructive-foreground text-xs">{state.error}</span>
-      ) : null}
+    <form action={formAction}>
       <Button disabled={disabled} loading={pending} size="sm" type="submit" variant="outline">
         Sign out other sessions
       </Button>

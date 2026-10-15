@@ -9,13 +9,17 @@ import {
   InputGroupInput,
   InputGroupText,
 } from "@coss/ui/components/input-group";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { SettingsFooter, SettingsRow } from "@/components/settings";
+import { useActionToast } from "@/lib/toast";
 import { updateOrganizationAction } from "./actions";
 
 /** The General section's card: name and URL slug rows, saved together from the footer. */
 export function OrganizationForm(props: { orgSlug: string; name: string; disabled: boolean }) {
-  const [state, formAction, pending] = useActionState(updateOrganizationAction, null);
+  // Fixed copy: a slug change ends in a redirect, which carries no data.
+  const [state, formAction, pending] = useActionToast(updateOrganizationAction, {
+    success: "Organization settings saved",
+  });
   const [name, setName] = useState(props.name);
   const [slug, setSlug] = useState(props.orgSlug);
   const dirty = name !== props.name || slug !== props.orgSlug;
@@ -64,8 +68,6 @@ export function OrganizationForm(props: { orgSlug: string; name: string; disable
               <span className="text-destructive-foreground">{state.error}</span>
             ) : slug !== props.orgSlug ? (
               `Links and bookmarks to /${props.orgSlug} will stop working.`
-            ) : state?.ok && !dirty ? (
-              "Saved."
             ) : null
           }
         >

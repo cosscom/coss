@@ -10,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@coss/ui/components/select";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { inviteMemberAction } from "./actions";
 
 const ROLE_ITEMS = [
@@ -20,7 +20,13 @@ const ROLE_ITEMS = [
 ];
 
 export function InviteMemberForm({ orgSlug }: { orgSlug: string }) {
-  const [state, formAction, pending] = useActionState(inviteMemberAction, null);
+  const [state, formAction, pending] = useActionToast(inviteMemberAction, {
+    success: (data) => ({
+      title: `Invitation sent to ${data.email}`,
+      // Outside production the dashboard logs account email links instead of sending them.
+      description: "They'll get an email with a link to join.",
+    }),
+  });
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -49,14 +55,7 @@ export function InviteMemberForm({ orgSlug }: { orgSlug: string }) {
           Send invitation
         </Button>
       </div>
-      {state?.ok ? (
-        <p className="text-muted-foreground text-sm">
-          Invited {state.data.email}. They'll get an email with the invitation link (in development,
-          it is logged to the web server console).
-        </p>
-      ) : (
-        <FormError message={state?.error} />
-      )}
+      {state && !state.ok ? <FormError message={state.error} /> : null}
     </form>
   );
 }
