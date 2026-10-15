@@ -15,6 +15,7 @@ export { describeRule, formatPeriod, parsePeriod } from "./format.ts";
 export type { ConsumeOptions, ConsumeResult, LimitSpec, LimitState } from "./gcra.ts";
 export {
   createRateLimiter,
+  emailRecipientQuota,
   hashEmail,
   type RateLimitDecision,
   type RateLimiter,

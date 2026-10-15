@@ -1,0 +1,159 @@
+---
+title: Templates
+description: Keep subjects and bodies in COSS, versioned and localized, and send them with variables.
+---
+
+A template holds an email's subject, HTML and text, in every language you send, with typed
+variables. You edit its **draft**, **publish** it as a numbered version, and send it by id or alias
+with the values for its variables. Changing your copy no longer needs a deploy, and every email
+records which template, version and locale it was rendered from.
+
+## Creating a template
+
+Create templates in the dashboard (**Templates**, under the environment's email pages), where the
+editor previews the draft as you type and sends tests to members of your organization, or through
+the API:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: template, error } = await coss.email.templates.create({
+  name: "Welcome",
+  alias: "welcome",
+  variables: [
+    { name: "first_name", type: "string" },
+    { name: "plan", type: "string", default: "Free" },
+  ],
+  contents: [
+    {
+      locale: "en",
+      subject: "Welcome to Acme, {{first_name}}",
+      html: "<p>Hi {{first_name}}, you're on the {{plan}} plan.</p>",
+      text: "Hi {{first_name}}, you're on the {{plan}} plan.",
+    },
+    {
+      locale: "de",
+      subject: "Willkommen bei Acme, {{first_name}}",
+      html: "<p>Hallo {{first_name}}, du nutzt den Tarif {{plan}}.</p>",
+    },
+  ],
+});
+
+// Sends use it once the draft is published.
+await coss.email.templates.publish("welcome");
+```
+
+Templates belong to the API key's environment. Give a template the same `alias` in each environment
+(for example `welcome` in development and production) and your code sends it the same way
+everywhere.
+
+## Sending
+
+Pass `template_id` (the template's id or alias) and `variables` instead of `subject`, `html` and
+`text`. Everything else (`to`, `scheduled_at`, `attachments`, `tracking`, batches, idempotency) works
+as for any [send](/docs/email/sending):
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: email, error } = await coss.email.send({
+  from: "Acme <onboarding@acme.com>",
+  to: "ada@example.com",
+  template_id: "welcome",
+  locale: "de-AT",
+  variables: { first_name: "Ada" },
+});
+
+console.log(email?.subject); // "Willkommen bei Acme, Ada"
+console.log(email?.template); // { id: "etpl_…", version: 1, locale: "de" }
+```
+
+- The template is rendered when the email is accepted: the email stores the result, and later
+  publishes never change it (scheduled emails included).
+- Without `template_version`, the latest published version is sent. Pin one with
+  `template_version: 3`.
+- `locale` falls back from an exact match (`de-AT`) to its language (`de`), then to the version's
+  default locale.
+- Variables are checked against their declarations. A missing required one, an unknown name or a
+  value of the wrong type refuses the send with `invalid_template_variables`, and `issues` lists
+  each problem (`variables.first_name`). A template that doesn't exist (`template_not_found`) or
+  was never published (`template_not_published`) refuses it too, with HTTP 422.
+
+## Template syntax
+
+| Tag | Does |
+|---|---|
+| `{{name}}` | Inserts a variable. In HTML it is escaped (`<` becomes `&lt;`); in the subject and text it is inserted as is. |
+| `{{{name}}}` | Inserts a variable without escaping, in HTML only (for HTML you trust). |
+| `{{#if name}}…{{else}}…{{/if}}` | Renders the first part when the variable is set and not `false`, `""` or an empty list. `0` counts as set. |
+| `{{#each items}}…{{else}}…{{/each}}` | Renders the part once per list item, or the `{{else}}` part for an empty list. Inside, `{{name}}` is the item's field first, then the top-level variable. |
+| `{{! note }}` | A comment, left out. |
+| `\{{` | A literal `{{`. |
+
+Nothing in a template runs code. A template can't be published while it has syntax errors or uses
+a name that isn't a declared variable (or, inside `{{#each}}`, a field of the list); the editor and
+the draft's `problems` show where, by line and column. A rendered subject must still be a valid
+subject (one line, at most 998 characters).
+
+## Variables
+
+Each variable has a `name` (letters, digits and `_`), a `type` and whether it is `required`
+(the default):
+
+| Type | Value | Example |
+|---|---|---|
+| `string` | A string | `"Ada"` |
+| `number` | A number | `42.5` |
+| `boolean` | `true` or `false` | `true` |
+| `list` | An array of objects with the declared `fields` (strings, numbers or booleans) | `[{ "name": "Pro", "price": 20 }]` |
+
+A `default` (not for lists) is used when a send leaves the variable out. A send's `variables` can be
+at most 64 KB, and a list at most 1,000 items:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.email.templates.updateDraft("receipt", {
+  variables: [
+    {
+      name: "items",
+      type: "list",
+      fields: [
+        { name: "name", type: "string" },
+        { name: "price", type: "number" },
+      ],
+    },
+  ],
+  contents: [
+    {
+      locale: "en",
+      subject: "Your receipt",
+      html: "<ul>{{#each items}}<li>{{name}}: ${{price}}</li>{{/each}}</ul>",
+    },
+  ],
+});
+```
+
+## Drafts, versions and locales
+
+- **Draft**: the one editable copy (`getDraft`, `updateDraft`). Saving replaces it whole. Every
+  save increases its `revision`; pass the revision you read to `updateDraft` and `publish` to be
+  refused (`template_revision_mismatch`) instead of overwriting someone else's changes.
+- **Versions**: `publish` copies the draft into the next version (1, 2, 3…), which never changes.
+  Publishing a draft without changes returns the current version, so retries are safe. List them
+  with `versions.list`, and bring an old one back with `versions.restore` (it replaces the draft;
+  publish it to send it again).
+- **Locales**: each version holds one subject, HTML and text per locale (up to 30), published
+  together, with one default locale. Locales are BCP 47 tags such as `en`, `de` or `pt-BR`.
+
+Deleting a template deletes its draft and versions. Emails already sent keep their content, and
+sends that name it fail from then on.
+
+## Permissions
+
+API keys can manage templates (`emailTemplate`) and send them (`email:send`). In the dashboard,
+owners and admins edit, publish and delete templates; members can read them. Test sends from the
+dashboard go only to members' verified addresses and count against the environment's send quota.

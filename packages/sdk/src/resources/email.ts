@@ -9,6 +9,7 @@ import type {
   RescheduleEmailParams,
   SendEmailParams,
 } from "../types/email.ts";
+import { EmailTemplatesResource } from "./email-templates.ts";
 import { ReceivedEmailsResource } from "./received-emails.ts";
 import { SuppressionResource } from "./suppressions.ts";
 import { TrackingResource } from "./tracking.ts";
@@ -22,6 +23,8 @@ export class EmailResource {
   readonly tracking: TrackingResource;
   /** Emails the environment received. */
   readonly received: ReceivedEmailsResource;
+  /** The environment's email templates. */
+  readonly templates: EmailTemplatesResource;
 
   /** @internal Use `new Coss().email`. */
   constructor(http: HttpClient) {
@@ -29,10 +32,12 @@ export class EmailResource {
     this.suppressions = new SuppressionResource(http);
     this.tracking = new TrackingResource(http);
     this.received = new ReceivedEmailsResource(http);
+    this.templates = new EmailTemplatesResource(http);
   }
 
   /**
-   * Sends an email. It is returned `queued` and handed to the delivery provider moments later:
+   * Sends an email, with its own subject and body or from a published template (`template_id`
+   * and `variables`). It is returned `queued` and handed to the delivery provider moments later:
    * `get` it or listen for the `email.sent` / `email.failed` webhooks for the outcome. Safe to
    * retry: the request always carries an `Idempotency-Key` (yours, or a generated one reused
    * across automatic retries), so the API never sends it twice.

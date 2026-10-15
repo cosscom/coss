@@ -208,3 +208,27 @@ export function createRateLimiter(opts: RateLimiterOptions): RateLimiter {
     close: () => opts.store.close(),
   };
 }
+
+/**
+ * The recipient quota an email send is charged against: the organization's for live environments,
+ * the environment's own (smaller, daily) quota for sandbox ones. Used by the API's sends and the
+ * dashboard's template test sends.
+ */
+export function emailRecipientQuota(
+  environment: { organizationId: string; environmentId: string; mode: string },
+  recipients: number,
+): RateLimitRequest {
+  return environment.mode === "sandbox"
+    ? {
+        buckets: ["email.sandbox_recipients.day"],
+        subject: environment.environmentId,
+        organizationId: environment.organizationId,
+        cost: recipients,
+      }
+    : {
+        buckets: ["email.recipients.second", "email.recipients.day"],
+        subject: environment.organizationId,
+        organizationId: environment.organizationId,
+        cost: recipients,
+      };
+}

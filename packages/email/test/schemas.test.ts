@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   CheckSuppressionQuery,
+  CreateEmailTemplateRequest,
   CreateSuppressionRequest,
   ListSuppressionsQuery,
   MAX_ATTACHMENTS_BYTES,
@@ -173,6 +174,58 @@ describe("SendEmailRequest: content", () => {
     expect(issues({ ...base, template: "welcome" })).toEqual({
       "": 'Unrecognized key: "template"',
     });
+  });
+});
+
+describe("SendEmailRequest: templates", () => {
+  const { subject: _, text: __, ...addresses } = base;
+
+  test("accepts a template instead of subject and body, keeping template keys for the hash", () => {
+    expect(
+      expectValid({
+        ...addresses,
+        template_id: "welcome",
+        template_version: 2,
+        locale: "pt-br",
+        variables: { first_name: "Ada" },
+      }),
+    ).toMatchObject({
+      subject: null,
+      html: null,
+      text: null,
+      template_id: "welcome",
+      template_version: 2,
+      locale: "pt-BR",
+      variables: { first_name: "Ada" },
+    });
+    expect(expectValid({ ...addresses, template_id: "welcome" }).variables).toEqual({});
+    // Sends without a template carry no template keys (request hashes stay as they were).
+    expect(Object.keys(expectValid(base))).not.toContain("variables");
+  });
+
+  test("refuses content next to a template, and template fields without one", () => {
+    expect(issues({ ...base, html: "<p>x</p>", template_id: "welcome" })).toEqual({
+      subject: "Not allowed with `template_id`: the template provides it.",
+      html: "Not allowed with `template_id`: the template provides it.",
+      text: "Not allowed with `template_id`: the template provides it.",
+    });
+    expect(issues({ ...addresses, text: "x", locale: "en", variables: {} })).toEqual({
+      subject: "Provide `subject`, or send a template with `template_id`.",
+      locale: "Only allowed with `template_id`.",
+      variables: "Only allowed with `template_id`.",
+    });
+  });
+
+  test("checks locales and the size of variables", () => {
+    expect(issues({ ...addresses, template_id: "t", locale: "not a locale" })).toEqual({
+      locale: 'Expected a BCP 47 language tag, e.g. "en" or "pt-BR".',
+    });
+    expect(
+      issues({ ...addresses, template_id: "t", variables: { big: "x".repeat(70_000) } }),
+    ).toEqual({ variables: "Variables can be at most 64 KB (as JSON)." });
+    expect(
+      issues({ ...addresses, template_id: "t", variables: JSON.parse('{"__proto__": 1}') }),
+    ).toEqual({ "variables.__proto__": "Invalid variable name." });
   });
 });
 
@@ -445,5 +498,65 @@ describe("suppression schemas", () => {
     expect(CheckSuppressionQuery.safeParse({ address: "a@b.co", category: "*" }).success).toBe(
       false,
     );
+  });
+});
+
+describe("CreateEmailTemplateRequest", () => {
+  function templateIssues(input: unknown): Record<string, string> {
+    const result = CreateEmailTemplateRequest.safeParse(input);
+    if (result.success) return {};
+    return Object.fromEntries(result.error.issues.map((i) => [i.path.join("."), i.message]));
+  }
+
+  test("defaults the draft and canonicalizes locales", () => {
+    expect(CreateEmailTemplateRequest.parse({ name: " Welcome " })).toEqual({
+      name: "Welcome",
+      alias: null,
+      description: null,
+      draft: { default_locale: "en", variables: [], sample_variables: {}, contents: [] },
+    });
+    const parsed = CreateEmailTemplateRequest.parse({
+      name: "Welcome",
+      variables: [{ name: "n", type: "number" }],
+      contents: [{ locale: "PT-br", subject: "s", text: "t", html: "" }],
+    });
+    expect(parsed.draft).toMatchObject({
+      default_locale: "pt-BR",
+      variables: [{ name: "n", type: "number", required: true }],
+      contents: [{ locale: "pt-BR", subject: "s", html: null, text: "t" }],
+    });
+  });
+
+  test("checks variable declarations, aliases and locales", () => {
+    expect(
+      templateIssues({
+        name: "T",
+        alias: "Bad Alias",
+        default_locale: "fr",
+        variables: [
+          { name: "items", type: "list" },
+          { name: "n", type: "number", default: "1" },
+          { name: "n", type: "string", fields: [{ name: "x", type: "string" }] },
+          { name: "else", type: "string" },
+          { name: "l", type: "list", default: 1, fields: [{ name: "a", type: "string" }] },
+        ],
+        contents: [
+          { locale: "en", subject: "s" },
+          { locale: "EN", subject: "s", text: "t" },
+        ],
+      }),
+    ).toEqual({
+      alias:
+        "Aliases are 1-64 lower-case letters, digits, - and _, starting with a letter or digit.",
+      "variables.0.fields": "Lists need `fields`.",
+      "variables.1.default": "The default must be a number.",
+      "variables.2.fields": "Only lists have `fields`.",
+      "variables.2.name": 'Duplicate variable "n".',
+      "variables.3.name": "This name is reserved by the template language.",
+      "variables.4.default": "Lists can't have a default.",
+      "contents.0.html": "Provide `html`, `text`, or both.",
+      "contents.1.locale": 'Duplicate locale "en".',
+      default_locale: "The default locale needs an entry in `contents`.",
+    });
   });
 });

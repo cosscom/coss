@@ -38,6 +38,7 @@ export {
   listOrganizationsRequiringTwoFactor,
   listPendingInvitations,
   listUserOrganizations,
+  listVerifiedMemberEmails,
   type Membership,
   type OrganizationMember,
   type OrganizationSummary,

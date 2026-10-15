@@ -11,6 +11,10 @@ export type {
 export type { DomainsResource } from "./resources/domains.ts";
 export type { EmailResource } from "./resources/email.ts";
 export type {
+  EmailTemplatesResource,
+  EmailTemplateVersionsResource,
+} from "./resources/email-templates.ts";
+export type {
   HookApplicationsResource,
   HookDeliveriesResource,
   HookEndpointsResource,
@@ -88,9 +92,31 @@ export type {
   EmailTracking,
   List,
   RescheduleEmailParams,
+  SendEmailBaseParams,
+  SendEmailContentParams,
   SendEmailParams,
+  SendEmailTemplateParams,
   TrackingOptions,
 } from "./types/email.ts";
+export type {
+  CreateEmailTemplateParams,
+  DeletedEmailTemplate,
+  EmailTemplate,
+  EmailTemplateReference,
+  EmailTemplateVersion,
+  ListEmailTemplatesParams,
+  ListEmailTemplateVersionsParams,
+  PublishEmailTemplateParams,
+  TemplateContent,
+  TemplateContentParams,
+  TemplateProblem,
+  TemplateScalarType,
+  TemplateVariable,
+  TemplateVariableParams,
+  TemplateVariableType,
+  UpdateEmailTemplateDraftParams,
+  UpdateEmailTemplateParams,
+} from "./types/email-template.ts";
 export type {
   CreateHookApplicationParams,
   CreateHookEndpointParams,

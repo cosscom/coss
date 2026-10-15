@@ -216,6 +216,11 @@ export function openApiDocumentConfig(serverUrl: string) {
     tags: [
       { name: "Emails", description: "Send transactional email and follow its delivery." },
       {
+        name: "Email templates",
+        description:
+          "Versioned, localized subjects and bodies with typed variables, sent by id or alias.",
+      },
+      {
         name: "Suppressions",
         description: "Addresses that sends skip, added by bounces, complaints or you.",
       },

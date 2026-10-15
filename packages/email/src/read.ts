@@ -84,6 +84,13 @@ export function toEmailObject(
     sent_at: row.sentAt?.toISOString() ?? null,
     scheduled_at: row.scheduledAt?.toISOString() ?? null,
     batch_id: row.batchId,
+    template: row.templateId
+      ? {
+          id: row.templateId,
+          version: row.templateVersion,
+          locale: row.templateLocale ?? "",
+        }
+      : null,
   };
 }
 

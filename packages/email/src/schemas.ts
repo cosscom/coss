@@ -9,6 +9,13 @@ import { RISK_EVENT_TYPES } from "@coss/risk/schemas";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { HOOK_OPERATIONAL_EVENT_TYPES } from "@coss/webhooks/schemas";
 import { z } from "zod";
+import {
+  EmailTemplateReference,
+  TemplateLocale,
+  TemplateVariableValues,
+} from "./template-schemas.ts";
+
+export * from "./template-schemas.ts";
 
 export const MAX_RECIPIENTS = 50;
 export const MAX_HEADERS = 15;
@@ -309,24 +316,54 @@ function tooFarAhead(scheduledAt: string): boolean {
   return Date.parse(scheduledAt) > Date.now() + MAX_SCHEDULE_AHEAD_MS;
 }
 
+/** Rules for an email's subject, sent as is or rendered from a template. */
+export const EmailSubject = z
+  .string()
+  .min(1, "Subject must not be empty.")
+  .max(SUBJECT_MAX_LENGTH, `Subject can be at most ${SUBJECT_MAX_LENGTH} characters.`)
+  .refine((value) => !CONTROL_CHARACTERS.test(value), {
+    message: "Subject must not contain control characters (CR, LF, NUL, …).",
+  })
+  .refine((value) => !FORMAT_CHARACTERS.test(value), {
+    message: "Subject must not contain invisible formatting characters.",
+  });
+
+const TEMPLATE_PROVIDED = ["subject", "html", "text"] as const;
+const TEMPLATE_ONLY = ["template_version", "locale", "variables"] as const;
+
 const SendEmailRequestFields = z.strictObject({
   from: EmailAddress,
   to: addressList(1),
   cc: addressList(0).optional(),
   bcc: addressList(0).optional(),
   reply_to: addressList(0).optional(),
-  subject: z
-    .string()
-    .min(1, "Subject must not be empty.")
-    .max(SUBJECT_MAX_LENGTH, `Subject can be at most ${SUBJECT_MAX_LENGTH} characters.`)
-    .refine((value) => !CONTROL_CHARACTERS.test(value), {
-      message: "Subject must not contain control characters (CR, LF, NUL, …).",
-    })
-    .refine((value) => !FORMAT_CHARACTERS.test(value), {
-      message: "Subject must not contain invisible formatting characters.",
-    }),
+  subject: EmailSubject.optional().meta({
+    description: "Required unless the email is sent from a template (`template_id`).",
+  }),
   html: z.string().optional().meta({ description: "HTML body. Provide `html`, `text`, or both." }),
   text: z.string().optional().meta({ description: "Plain-text body." }),
+  template_id: z
+    .string()
+    .min(1)
+    .max(100)
+    .optional()
+    .meta({
+      description:
+        "Send a published email template (its id or alias) instead of `subject`, `html` and " +
+        "`text`.",
+      examples: ["welcome"],
+    }),
+  template_version: z.number().int().min(1).optional().meta({
+    description: "A published version of the template to send. Defaults to the latest one.",
+  }),
+  locale: TemplateLocale.optional().meta({
+    description:
+      'The template locale to send, e.g. "pt-BR". Falls back to the language ("pt"), then ' +
+      "to the template's default locale.",
+  }),
+  variables: TemplateVariableValues.optional().meta({
+    description: "Values for the template's variables, keyed by name.",
+  }),
   headers: z
     // zod skips `__proto__` keys (prototype-pollution guard), which would silently drop such a
     // header; reject it explicitly while the raw object is still visible.
@@ -466,8 +503,36 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
       message: `An email can have at most ${MAX_RECIPIENTS} unique recipients across to, cc and bcc.`,
     });
   }
-  if (!value.html && !value.text) {
-    ctx.addIssue({ code: "custom", path: ["html"], message: "Provide `html`, `text`, or both." });
+  if (value.template_id !== undefined) {
+    for (const field of TEMPLATE_PROVIDED) {
+      if (value[field] !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [field],
+          message: "Not allowed with `template_id`: the template provides it.",
+        });
+      }
+    }
+  } else {
+    if (value.subject === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["subject"],
+        message: "Provide `subject`, or send a template with `template_id`.",
+      });
+    }
+    if (!value.html && !value.text) {
+      ctx.addIssue({ code: "custom", path: ["html"], message: "Provide `html`, `text`, or both." });
+    }
+    for (const field of TEMPLATE_ONLY) {
+      if (value[field] !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [field],
+          message: "Only allowed with `template_id`.",
+        });
+      }
+    }
   }
   if (value.scheduled_at !== undefined && tooFarAhead(value.scheduled_at)) {
     ctx.addIssue({ code: "custom", path: ["scheduled_at"], message: TOO_FAR_AHEAD_MESSAGE });
@@ -481,7 +546,8 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
     cc: asList(value.cc),
     bcc: asList(value.bcc),
     reply_to: asList(value.reply_to),
-    subject: value.subject,
+    // `null` for template sends, whose content is rendered at send time.
+    subject: value.subject ?? null,
     html: value.html || null,
     text: value.text || null,
     headers: Object.fromEntries(
@@ -523,6 +589,18 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
             ...(value.tracking.clicks === undefined ? {} : { clicks: value.tracking.clicks }),
           },
         }),
+    // Only for template sends, for the same reason. The hash covers the request (template and
+    // variables), never the rendered content.
+    ...(value.template_id === undefined
+      ? {}
+      : {
+          template_id: value.template_id,
+          ...(value.template_version === undefined
+            ? {}
+            : { template_version: value.template_version }),
+          ...(value.locale === undefined ? {} : { locale: value.locale }),
+          variables: value.variables ?? {},
+        }),
   }))
   .meta({
     id: "SendEmailRequest",
@@ -534,6 +612,13 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
         html: "<p>Thanks for signing up!</p>",
         tags: [{ name: "template", value: "welcome" }],
         category: "onboarding",
+      },
+      {
+        from: "Acme <onboarding@acme.com>",
+        to: "user@example.com",
+        template_id: "welcome",
+        locale: "de",
+        variables: { first_name: "Ada" },
       },
     ],
   });
@@ -998,6 +1083,9 @@ export const EmailObject = z
       .string()
       .nullable()
       .meta({ description: "The batch that sent the email; `null` if it was sent on its own." }),
+    template: z.union([EmailTemplateReference, z.null()]).meta({
+      description: "The template the email was rendered from; `null` if it was sent without one.",
+    }),
   })
   .meta({
     id: "Email",
@@ -1025,6 +1113,7 @@ export const EmailObject = z
         sent_at: "2026-10-10T12:00:01.000Z",
         scheduled_at: null,
         batch_id: null,
+        template: null,
       },
     ],
   });
@@ -1074,6 +1163,7 @@ export const EmailBatchObject = z
             sent_at: null,
             scheduled_at: null,
             batch_id: BATCH_EXAMPLE_ID,
+            template: null,
           },
         ],
         created_at: "2026-10-10T12:00:00.000Z",

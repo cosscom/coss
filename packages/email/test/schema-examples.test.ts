@@ -6,9 +6,11 @@ import { expect, test } from "bun:test";
 import type { z } from "zod";
 import {
   CreateDomainRequest,
+  CreateEmailTemplateRequest,
   CreateReceivingDomainRequest,
   CreateSuppressionRequest,
   DeletedDomain,
+  DeletedEmailTemplate,
   DeletedReceivedEmail,
   DeletedSuppression,
   DeletedTrackingRule,
@@ -23,10 +25,16 @@ import {
   EmailLinkList,
   EmailObject,
   EmailRecipient,
+  EmailTemplateList,
+  EmailTemplateObject,
+  EmailTemplateReference,
+  EmailTemplateVersionList,
+  EmailTemplateVersionObject,
   EmailTracking,
   EmailWebhookEvent,
   ImportSuppressionsRequest,
   InboundAddressObject,
+  PublishEmailTemplateRequest,
   ReceivedEmailAttachmentObject,
   ReceivedEmailList,
   ReceivedEmailObject,
@@ -40,8 +48,12 @@ import {
   SuppressionCheck,
   SuppressionImport,
   SuppressionList,
+  TemplateContentObject,
+  TemplateVariableObject,
   TrackingRule,
   TrackingSettings,
+  UpdateEmailTemplateDraftRequest,
+  UpdateEmailTemplateRequest,
   UpdateTrackingRuleRequest,
 } from "../src/schemas.ts";
 
@@ -84,14 +96,28 @@ const SCHEMAS: Record<string, z.ZodType> = {
   ReceivingDomain: ReceivingDomainObject,
   CreateReceivingDomainRequest,
   ReceivedEmailWebhookEvent,
+  EmailTemplate: EmailTemplateObject,
+  EmailTemplateList,
+  EmailTemplateVersion: EmailTemplateVersionObject,
+  EmailTemplateVersionList,
+  EmailTemplateReference,
+  TemplateVariable: TemplateVariableObject,
+  TemplateContent: TemplateContentObject,
+  CreateEmailTemplateRequest,
+  UpdateEmailTemplateRequest,
+  UpdateEmailTemplateDraftRequest,
+  PublishEmailTemplateRequest,
+  DeletedEmailTemplate,
 };
 
 for (const [name, schema] of Object.entries(SCHEMAS)) {
-  test(`${name} has an example that it accepts`, () => {
+  test(`${name} has examples that it accepts`, () => {
     // OpenAPI 3.1 (JSON Schema) form: `examples`, not the deprecated `example`.
-    const [example] = (schema.meta()?.examples as unknown[] | undefined) ?? [];
-    expect(example).toBeDefined();
-    const result = schema.safeParse(example);
-    expect(result.error?.issues ?? []).toEqual([]);
+    const examples = (schema.meta()?.examples as unknown[] | undefined) ?? [];
+    expect(examples.length).toBeGreaterThan(0);
+    for (const example of examples) {
+      const result = schema.safeParse(example);
+      expect(result.error?.issues ?? []).toEqual([]);
+    }
   });
 }

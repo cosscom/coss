@@ -26,6 +26,7 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
 import { SpecItem, SpecList } from "@/components/spec-list";
+import { PREVIEW_HEAD } from "@/lib/email-preview";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { environmentPath } from "@/lib/navigation";
 import { requireOrgMember } from "@/lib/session";
@@ -34,16 +35,6 @@ import { type EmailTab, EmailTabs } from "./email-tabs";
 import { RescheduleEmailDialog } from "./reschedule-email-dialog";
 
 export const metadata: Metadata = { title: "Email" };
-
-/**
- * Prepended to customer HTML so the parser places it in <head>. Together with `sandbox=""`
- * (no scripts, forms, popups or same-origin access) it blocks every network load except
- * images and fonts, and stops the dashboard URL from leaking via Referer.
- * NEVER add `allow-scripts` or `allow-same-origin` to the iframe.
- */
-const PREVIEW_HEAD =
-  `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https:; style-src 'unsafe-inline'; font-src data: https:">` +
-  `<meta name="referrer" content="no-referrer">`;
 
 function list(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "—";
@@ -442,6 +433,19 @@ export default async function EmailPage({
                 {email.batch_id ? (
                   <SpecItem label="Batch" mono>
                     {email.batch_id}
+                  </SpecItem>
+                ) : null}
+                {email.template ? (
+                  <SpecItem label="Template" mono>
+                    <Link
+                      className="underline-offset-4 hover:underline"
+                      href={`${base}/templates/${email.template.id}`}
+                    >
+                      {email.template.version === null
+                        ? "Draft (test send)"
+                        : `Version ${email.template.version}`}{" "}
+                      · {email.template.locale}
+                    </Link>
                   </SpecItem>
                 ) : null}
                 {email.tags.length > 0 ? (
