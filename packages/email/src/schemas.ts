@@ -2199,3 +2199,260 @@ export const ReceivedEmailWebhookEvent = z
 export type ReceivedEmailWebhookEventOutput = z.output<typeof ReceivedEmailWebhookEvent>;
 /** What the outbox stores: delivery adds `api_version` when it renders the event for an endpoint. */
 export type StoredReceivedEmailWebhookEvent = Omit<ReceivedEmailWebhookEventOutput, "api_version">;
+
+// ---------------------------------------------------------------------------------------------
+// Sending metrics (`GET /v1/emails/metrics`)
+
+export const EMAIL_METRICS = [
+  "sent",
+  "delivered",
+  "bounced",
+  "complained",
+  "opened",
+  "clicked",
+] as const;
+export type EmailMetricName = (typeof EMAIL_METRICS)[number];
+
+export const EMAIL_METRICS_GROUP_BY = ["category", "tag", "domain", "mailbox_provider"] as const;
+export type EmailMetricsGroupBy = (typeof EMAIL_METRICS_GROUP_BY)[number];
+
+/** Mailbox providers recipients are counted under (by their address's domain). */
+export const MAILBOX_PROVIDERS = [
+  "gmail",
+  "outlook",
+  "yahoo",
+  "icloud",
+  "proton",
+  "gmx",
+  "yandex",
+  "zoho",
+  "fastmail",
+  "mail_ru",
+  "other",
+] as const;
+export type MailboxProvider = (typeof MAILBOX_PROVIDERS)[number];
+
+export const MAILBOX_PROVIDER_LABELS: Record<MailboxProvider, string> = {
+  gmail: "Gmail",
+  outlook: "Outlook",
+  yahoo: "Yahoo",
+  icloud: "iCloud",
+  proton: "Proton",
+  gmx: "GMX",
+  yandex: "Yandex",
+  zoho: "Zoho",
+  fastmail: "Fastmail",
+  mail_ru: "Mail.ru",
+  other: "Other",
+};
+
+export const MAX_METRICS_RANGE_DAYS = 400;
+export const MAX_HOURLY_METRICS_RANGE_DAYS = 7;
+export const DEFAULT_METRICS_GROUPS = 10;
+export const MAX_METRICS_GROUPS = 25;
+
+const MetricTagFilter = z
+  .string()
+  .transform((value, ctx) => {
+    const separator = value.indexOf(":");
+    const name = value.slice(0, separator);
+    const tagValue = value.slice(separator + 1);
+    if (separator < 0 || !TAG_PART.test(name) || !TAG_PART.test(tagValue)) {
+      ctx.addIssue({ code: "custom", message: "Expected a tag as `name:value`." });
+      return z.NEVER;
+    }
+    return { name, value: tagValue };
+  })
+  .optional()
+  .meta({ description: "Only emails with this tag, as `name:value` (e.g. `campaign:spring`)." });
+
+/** A comma-separated list (`mailbox_provider=gmail,outlook`), each item validated. */
+function csv<T extends z.ZodType<string>>(item: T, description: string) {
+  return z
+    .string()
+    .transform((value, ctx) => {
+      const out: z.output<T>[] = [];
+      for (const part of value.split(",").map((piece) => piece.trim())) {
+        if (part.length === 0) continue;
+        const parsed = item.safeParse(part);
+        if (!parsed.success) {
+          ctx.addIssue({ code: "custom", message: `Invalid value "${part}".` });
+          return z.NEVER;
+        }
+        out.push(parsed.data as z.output<T>);
+      }
+      return out;
+    })
+    .optional()
+    .meta({ description });
+}
+
+const MetricDomain = z
+  .string()
+  .max(253)
+  .regex(/^[a-z0-9.-]+$/i, "Expected a domain name.")
+  .transform((value) => value.toLowerCase());
+
+export const EmailMetricsQuery = z.strictObject({
+  from: z.iso
+    .datetime({ offset: true })
+    .optional()
+    .meta({
+      description:
+        "Start (inclusive), rounded down to its bucket. Defaults to the 7 days (24 hours by hour) " +
+        "ending with the current one.",
+    }),
+  to: z.iso
+    .datetime({ offset: true })
+    .optional()
+    .meta({
+      description:
+        `End (exclusive), rounded up to its bucket. Defaults to now. At most ` +
+        `${MAX_METRICS_RANGE_DAYS} days after \`from\` (${MAX_HOURLY_METRICS_RANGE_DAYS} by hour).`,
+    }),
+  granularity: z
+    .enum(["hour", "day"])
+    .optional()
+    .meta({ description: "Bucket size (UTC). Defaults to `day`." }),
+  group_by: z
+    .enum(EMAIL_METRICS_GROUP_BY)
+    .optional()
+    .meta({
+      description:
+        "Split the counts into one series per category, tag (`name:value`), sending domain or " +
+        "mailbox provider. An email with several tags counts under each of them.",
+    }),
+  category: csv(Category, "Only emails with one of these categories (comma-separated)."),
+  tag: MetricTagFilter,
+  domain: csv(MetricDomain, "Only emails sent from one of these domains (comma-separated)."),
+  mailbox_provider: csv(
+    z.enum(MAILBOX_PROVIDERS),
+    "Only recipients at one of these mailbox providers (comma-separated). Opens and clicks of " +
+      "emails with several recipients belong to no provider, so they are left out.",
+  ),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_METRICS_GROUPS)
+    .optional()
+    .meta({
+      description: `With \`group_by\`: the largest groups (by \`sent\`) to return, 1-${MAX_METRICS_GROUPS}, default ${DEFAULT_METRICS_GROUPS}.`,
+    }),
+});
+
+export type EmailMetricsQueryInput = z.input<typeof EmailMetricsQuery>;
+export type EmailMetricsQueryOutput = z.output<typeof EmailMetricsQuery>;
+
+const MetricCount = z.int().nonnegative();
+
+export const EmailMetricCounts = z
+  .object({
+    sent: MetricCount.meta({
+      description: "Recipients the email was sent to (suppressed ones excluded).",
+    }),
+    delivered: MetricCount.meta({ description: "Recipients whose mailbox provider accepted it." }),
+    bounced: MetricCount.meta({
+      description: "Recipients it bounced for (permanent or transient).",
+    }),
+    complained: MetricCount.meta({ description: "Recipients who marked it as spam." }),
+    opened: MetricCount.meta({
+      description: "Emails opened for the first time (open tracking on).",
+    }),
+    clicked: MetricCount.meta({
+      description: "Emails with a first link click (click tracking on).",
+    }),
+  })
+  .meta({ id: "EmailMetricCounts" });
+
+export type EmailMetricCountsOutput = z.output<typeof EmailMetricCounts>;
+
+const EmailMetricsBucket = EmailMetricCounts.extend({
+  start: z.iso.datetime(),
+  end: z.iso.datetime(),
+}).meta({ id: "EmailMetricsBucket" });
+
+const EmailMetricsSeries = z
+  .object({
+    group: z.union([z.string(), z.null()]).meta({
+      description:
+        "The category, tag (`name:value`), domain or mailbox provider; `null` without " +
+        "`group_by`, and for emails without a category or opens and clicks without a provider.",
+    }),
+    totals: EmailMetricCounts,
+    buckets: z
+      .array(EmailMetricsBucket)
+      .meta({ description: "Every bucket of the range, oldest first." }),
+  })
+  .meta({ id: "EmailMetricsSeries" });
+
+const METRIC_COUNTS_EXAMPLE = {
+  sent: 1200,
+  delivered: 1180,
+  bounced: 14,
+  complained: 1,
+  opened: 540,
+  clicked: 96,
+} as const;
+
+export const EmailMetrics = z
+  .object({
+    object: z.literal("email_metrics"),
+    start: z.iso.datetime(),
+    end: z.iso.datetime(),
+    granularity: z.enum(["hour", "day"]),
+    group_by: z.union([z.enum(EMAIL_METRICS_GROUP_BY), z.null()]),
+    totals: EmailMetricCounts.meta({
+      description: "Everything in the range that matches the filters.",
+    }),
+    series: z.array(EmailMetricsSeries).meta({
+      description:
+        "One series without `group_by`; else one per group, largest first. Tag groups can " +
+        "overlap, so they need not add up to `totals`.",
+    }),
+    has_more: z.boolean().meta({ description: "Whether more groups than `limit` had activity." }),
+  })
+  .meta({
+    id: "EmailMetrics",
+    examples: [
+      {
+        object: "email_metrics",
+        start: "2026-10-12T00:00:00.000Z",
+        end: "2026-10-14T00:00:00.000Z",
+        granularity: "day",
+        group_by: "mailbox_provider",
+        totals: METRIC_COUNTS_EXAMPLE,
+        series: [
+          {
+            group: "gmail",
+            totals: METRIC_COUNTS_EXAMPLE,
+            buckets: [
+              {
+                start: "2026-10-12T00:00:00.000Z",
+                end: "2026-10-13T00:00:00.000Z",
+                sent: 700,
+                delivered: 690,
+                bounced: 8,
+                complained: 1,
+                opened: 320,
+                clicked: 50,
+              },
+              {
+                start: "2026-10-13T00:00:00.000Z",
+                end: "2026-10-14T00:00:00.000Z",
+                sent: 500,
+                delivered: 490,
+                bounced: 6,
+                complained: 0,
+                opened: 220,
+                clicked: 46,
+              },
+            ],
+          },
+        ],
+        has_more: false,
+      },
+    ],
+  });
+
+export type EmailMetricsOutput = z.output<typeof EmailMetrics>;

@@ -8,6 +8,7 @@ import { randomBytes } from "node:crypto";
 import { db, schema } from "@coss/db";
 import { and, eq, ne, sql } from "drizzle-orm";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
+import { countEmailMetric, type MetricEmail } from "./metrics.ts";
 import type { ProviderEvent } from "./provider.ts";
 
 const { email, emailLink, emailRecipient } = schema;
@@ -27,9 +28,8 @@ export function isTrackingToken(value: string): boolean {
 
 type Hit = { token: string; userAgent: string | null; now?: Date };
 
-type TrackedEmail = {
+type TrackedEmail = MetricEmail & {
   id: string;
-  organizationId: string;
   trackOpens: boolean;
   trackClicks: boolean;
 };
@@ -40,6 +40,10 @@ async function findTrackedEmail(token: string): Promise<TrackedEmail | null> {
     .select({
       id: email.id,
       organizationId: email.organizationId,
+      environmentId: email.environmentId,
+      from: email.from,
+      category: email.category,
+      tags: email.tags,
       trackOpens: email.trackOpens,
       trackClicks: email.trackClicks,
     })
@@ -95,13 +99,14 @@ export async function recordOpen(hit: Hit): Promise<boolean> {
   const now = hit.now ?? new Date();
   const target = await findTrackedEmail(hit.token);
   if (!target?.trackOpens) return false;
+  const recipients = await soleRecipient(target);
   const event = trackingEvent(
     target,
     {
       type: "email.opened",
       providerEventType: "Open",
       sourceId: windowOf(now),
-      recipients: await soleRecipient(target),
+      recipients,
       data: { open: { user_agent: cleanUserAgent(hit.userAgent) } },
     },
     now,
@@ -110,14 +115,24 @@ export async function recordOpen(hit: Hit): Promise<boolean> {
     const inserted = await recordProviderEvent(tx, event);
     if (inserted.length === 0) return false;
     const at = now.toISOString();
-    await tx
+    const [counted] = await tx
       .update(email)
       .set({
         openCount: sql`${email.openCount} + 1`,
         firstOpenedAt: sql`coalesce(${email.firstOpenedAt}, ${at}::timestamptz)`,
         lastOpenedAt: sql`greatest(${email.lastOpenedAt}, ${at}::timestamptz)`,
       })
-      .where(and(eq(email.id, target.id), eq(email.organizationId, target.organizationId)));
+      .where(and(eq(email.id, target.id), eq(email.organizationId, target.organizationId)))
+      .returning({ openCount: email.openCount });
+    // Sending metrics count each email's first open.
+    if (counted?.openCount === 1) {
+      await countEmailMetric(tx, {
+        email: target,
+        metric: "opened",
+        addresses: recipients,
+        at: now,
+      });
+    }
     return true;
   });
 }
@@ -145,13 +160,14 @@ export async function recordClick(
   const [link] = await db.select({ url: emailLink.url }).from(emailLink).where(linkScope).limit(1);
   if (!link) return null;
   if (hit.record === false) return link.url;
+  const recipients = await soleRecipient(target);
   const event = trackingEvent(
     target,
     {
       type: "email.clicked",
       providerEventType: "Click",
       sourceId: `${windowOf(now)}:${hit.position}`,
-      recipients: await soleRecipient(target),
+      recipients,
       data: {
         click: {
           url: link.url,
@@ -172,10 +188,20 @@ export async function recordClick(
         firstClickedAt: sql`coalesce(${email.firstClickedAt}, ${at}::timestamptz)`,
         lastClickedAt: sql`greatest(${email.lastClickedAt}, ${at}::timestamptz)`,
       };
-      await tx
+      const [clicked] = await tx
         .update(email)
         .set(counted)
-        .where(and(eq(email.id, target.id), eq(email.organizationId, target.organizationId)));
+        .where(and(eq(email.id, target.id), eq(email.organizationId, target.organizationId)))
+        .returning({ clickCount: email.clickCount });
+      // Sending metrics count each email's first click.
+      if (clicked?.clickCount === 1) {
+        await countEmailMetric(tx, {
+          email: target,
+          metric: "clicked",
+          addresses: recipients,
+          at: now,
+        });
+      }
       await tx
         .update(emailLink)
         .set({

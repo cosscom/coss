@@ -35,6 +35,8 @@ import type {
   EmailEventList,
   EmailLink,
   EmailLinkList,
+  EmailMetrics,
+  EmailMetricsQuery,
   EmailObject,
   EmailRecipient,
   EmailSummaryList,
@@ -154,6 +156,7 @@ import type {
   CreateWebhookEndpointParams,
   Email,
   EmailBatch,
+  EmailMetricsParams,
   EmailSummary,
   ExportSuppressionsParams,
   ImportSuppressionsParams,
@@ -198,6 +201,7 @@ import type {
   DomainRecord as SdkDomainRecord,
   EmailEvent as SdkEmailEvent,
   EmailLink as SdkEmailLink,
+  EmailMetrics as SdkEmailMetrics,
   EmailRecipient as SdkEmailRecipient,
   EmailTracking as SdkEmailTracking,
   EmailWebhookEvent as SdkEmailWebhookEvent,
@@ -309,6 +313,10 @@ export type Contract = [
   Assert<MutuallyAssignable<EmailOutput["tracking"], SdkEmailTracking>>,
   Assert<MutuallyAssignable<z.output<typeof EmailLink>, SdkEmailLink>>,
   Assert<MutuallyAssignable<z.output<typeof EmailLinkList>, List<SdkEmailLink>>>,
+  // Sending metrics: the response, and the query's parameter names (the SDK also accepts arrays
+  // and Dates).
+  Assert<MutuallyAssignable<z.output<typeof EmailMetrics>, SdkEmailMetrics>>,
+  Assert<Equals<keyof z.input<typeof EmailMetricsQuery>, keyof EmailMetricsParams>>,
   // Batch sends: `sendBatch(emails)` posts `{ emails }` and returns the batch.
   Assert<
     MutuallyAssignable<z.input<typeof SendEmailBatchRequest>["emails"][number], SendEmailBody>

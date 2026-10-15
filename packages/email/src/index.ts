@@ -78,6 +78,16 @@ export {
   organizationPrefix,
   receivedEmailPrefix,
 } from "./inbound-store.ts";
+export { mailboxProviderOf } from "./mailbox-providers.ts";
+export {
+  countEmailMetric,
+  type EmailMetricsQuery,
+  emailMetrics,
+  emailMetricsRange,
+  type MetricEmail,
+  type MetricsGranularity,
+  sendingDomainOf,
+} from "./metrics.ts";
 export { emailNotifier, type Notice, type Notifier, notificationEnvironment } from "./notifier.ts";
 export {
   type DomainIdentity,
@@ -159,6 +169,7 @@ export {
 } from "./reputation-checks.ts";
 export {
   purgeEmptyEmailBatches,
+  purgeExpiredEmailMetrics,
   purgeExpiredEmails,
   purgeExpiredFakeInboundObjects,
   purgeExpiredInboundDropCounters,

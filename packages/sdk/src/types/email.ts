@@ -318,3 +318,96 @@ export interface EmailBatch {
   /** ISO 8601 timestamp. */
   created_at: string;
 }
+
+/** Mailbox providers recipients are counted under, by their address's domain. */
+export type MailboxProvider =
+  | "gmail"
+  | "outlook"
+  | "yahoo"
+  | "icloud"
+  | "proton"
+  | "gmx"
+  | "yandex"
+  | "zoho"
+  | "fastmail"
+  | "mail_ru"
+  | "other";
+
+export type EmailMetricsGroupBy = "category" | "tag" | "domain" | "mailbox_provider";
+
+type OneOrMany<T> = T | readonly T[];
+
+/** Query of `coss.email.metrics`. Lists may be given as arrays or comma-separated strings. */
+export interface EmailMetricsParams {
+  /**
+   * Start (inclusive), rounded down to its bucket. Defaults to the 7 days (24 hours by hour)
+   * ending with the current one.
+   */
+  from?: string | Date;
+  /** End (exclusive), rounded up to its bucket. Defaults to now. At most 400 days after `from` (7 by hour). */
+  to?: string | Date;
+  /** Bucket size (UTC). Defaults to `day`. */
+  granularity?: "hour" | "day";
+  /** One series per category, tag (`name:value`), sending domain or mailbox provider. */
+  group_by?: EmailMetricsGroupBy;
+  /** Only emails with one of these categories. */
+  category?: OneOrMany<string>;
+  /** Only emails with this tag, as `name:value`. */
+  tag?: string;
+  /** Only emails sent from one of these domains. */
+  domain?: OneOrMany<string>;
+  /** Only recipients at one of these mailbox providers. */
+  mailbox_provider?: OneOrMany<MailboxProvider>;
+  /** With `group_by`: the largest groups (by `sent`) to return, 1-25, default 10. */
+  limit?: number;
+}
+
+export interface EmailMetricCounts {
+  /** Recipients the email was sent to (suppressed ones excluded). */
+  sent: number;
+  /** Recipients whose mailbox provider accepted it. */
+  delivered: number;
+  /** Recipients it bounced for (permanent or transient). */
+  bounced: number;
+  /** Recipients who marked it as spam. */
+  complained: number;
+  /** Emails opened for the first time (open tracking on). */
+  opened: number;
+  /** Emails with a first link click (click tracking on). */
+  clicked: number;
+}
+
+export interface EmailMetricsBucket extends EmailMetricCounts {
+  /** ISO 8601 timestamp. */
+  start: string;
+  /** ISO 8601 timestamp (exclusive). */
+  end: string;
+}
+
+export interface EmailMetricsSeries {
+  /**
+   * The category, tag (`name:value`), domain or mailbox provider; `null` without `group_by`, and
+   * for emails without a category or opens and clicks without a provider.
+   */
+  group: string | null;
+  totals: EmailMetricCounts;
+  /** Every bucket of the range, oldest first. */
+  buckets: EmailMetricsBucket[];
+}
+
+/** Sending metrics of the API key's environment (`coss.email.metrics`). */
+export interface EmailMetrics {
+  object: "email_metrics";
+  /** ISO 8601 timestamp. */
+  start: string;
+  /** ISO 8601 timestamp (exclusive). */
+  end: string;
+  granularity: "hour" | "day";
+  group_by: EmailMetricsGroupBy | null;
+  /** Everything in the range that matches the filters. */
+  totals: EmailMetricCounts;
+  /** One series without `group_by`; else one per group, largest first (tag groups can overlap). */
+  series: EmailMetricsSeries[];
+  /** Whether more groups than `limit` had activity. */
+  has_more: boolean;
+}

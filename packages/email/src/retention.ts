@@ -9,6 +9,7 @@ import { and, asc, inArray, lt, notExists, notInArray, sql } from "drizzle-orm";
 const {
   email,
   emailBatch,
+  emailMetric,
   emailReputationRollup,
   inboundDropCounter,
   inboundFakeObject,
@@ -106,6 +107,22 @@ export async function purgeExpiredReputationRollups(opts: PurgeOptions = {}): Pr
     )
     .returning({ organizationId: emailReputationRollup.organizationId });
   return deleted.length;
+}
+
+/** Deletes up to `limit` sending metric rows of hours before the cutoff. */
+export async function purgeExpiredEmailMetrics(opts: PurgeOptions = {}): Promise<number> {
+  const cutoff = retentionCutoff(RETENTION_DAYS.emailMetrics, opts.now);
+  const scope = opts.scope
+    ? sql`and ${emailMetric.organizationId} in (${sql.join(
+        opts.scope.organizationIds.map((id) => sql`${id}`),
+        sql`, `,
+      )})`
+    : sql``;
+  // The table has no id: batches go by row address.
+  const result = await db.execute(
+    sql`delete from ${emailMetric} where ctid in (select ctid from ${emailMetric} where ${emailMetric.hourStart} < ${cutoff} ${scope} limit ${opts.limit ?? 1000})`,
+  );
+  return result.rowCount ?? 0;
 }
 
 /**

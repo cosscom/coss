@@ -3,6 +3,7 @@ import {
   BoxesIcon,
   BuildingIcon,
   CableIcon,
+  ChartColumnIcon,
   CreditCardIcon,
   FoldersIcon,
   GaugeIcon,
@@ -55,6 +56,7 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
     label: "Email",
     items: [
       { label: "Emails", path: "/emails", icon: MailIcon },
+      { label: "Metrics", path: "/metrics", icon: ChartColumnIcon },
       { label: "Received", path: "/received", icon: InboxIcon },
       { label: "Suppressions", path: "/suppressions", icon: BanIcon },
       { label: "Tracking", path: "/tracking", icon: MousePointerClickIcon },
@@ -167,6 +169,7 @@ export function segmentLabel(segment: string): string | undefined {
 
 const SEGMENT_LABELS: Record<string, string> = {
   emails: "Emails",
+  metrics: "Metrics",
   hooks: "Hooks",
   "event-types": "Event types",
   endpoints: "Endpoints",

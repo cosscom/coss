@@ -49,7 +49,7 @@ import { newTrackingToken } from "./tracking.ts";
 import { trackingBaseUrlFor } from "./tracking-domains.ts";
 import { instrumentHtml } from "./tracking-html.ts";
 import { resolveTracking } from "./tracking-settings.ts";
-import { billableRecipientsSql, freezeBillableRecipients, recordEmailUsage } from "./usage.ts";
+import { billableRecipientsSql, freezeBillableRecipients, recordEmailSent } from "./usage.ts";
 
 /** The authenticated environment a send happens in (from `authenticateApiKey`). */
 export type SendEnvironment = {
@@ -528,9 +528,11 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       await purgeSendContent(tx, row);
       // A failure only counts if it is the recorded outcome; provider events are facts either way.
       if (!updated && outcome.status === "failed") return;
-      // Billed once, whichever path got the email to `sent` first (a `Send` event that beat this
-      // update meters it itself; a `Reject` that beat it means it was never sent).
-      if (updated && outcome.status === "sent" && !sandbox) await recordEmailUsage(tx, row);
+      // Counted (and billed) once, whichever path got the email to `sent` first (a `Send` event
+      // that beat this update counts it itself; a `Reject` that beat it means it was never sent).
+      if (updated && outcome.status === "sent") {
+        await recordEmailSent(tx, row, sandbox ? "sandbox" : "live");
+      }
       for (const event of events) await recordProviderEvent(tx, event);
     });
   }

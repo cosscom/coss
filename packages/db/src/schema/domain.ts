@@ -15,6 +15,7 @@ import {
   pgTable,
   primaryKey,
   real,
+  smallint,
   text,
   timestamp,
   unique,
@@ -191,7 +192,8 @@ export const email = pgTable(
     // When the email may be handed to the provider; set only for requests with `scheduled_at`.
     scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
     // Billing (`@coss/billing`): the recipients the send is billed for, frozen when a dispatcher
-    // claims it (suppressed ones excluded); `usage_recorded_at` marks it metered (once, when sent).
+    // claims it (suppressed ones excluded); `usage_recorded_at` marks it counted (once, when sent:
+    // sending metrics for every email, billed usage for live ones).
     billableRecipients: integer("billable_recipients"),
     usageRecordedAt: timestamp("usage_recorded_at", { withTimezone: true }),
   },
@@ -1168,6 +1170,57 @@ export const emailReputationRollup = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [primaryKey({ columns: [t.organizationId, t.bucketStart] })],
+);
+
+/**
+ * Sending metrics (`@coss/email` metrics.ts): per environment and UTC hour, summed by the
+ * transactions that make each outcome happen (`countEmailMetric`). Base rows (`tag_name = ''`)
+ * hold the category × sending domain × mailbox provider cube; tag rows repeat each increment once
+ * per tag of the email. `''` is "none" (no category, unattributed provider). `shard` spreads a
+ * busy environment's writes over several rows. Kept `RETENTION_DAYS.emailMetrics`, outliving the
+ * emails they count.
+ */
+export const emailMetric = pgTable(
+  "email_metric",
+  {
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    hourStart: timestamp("hour_start", { withTimezone: true }).notNull(),
+    tagName: text("tag_name").notNull().default(""),
+    tagValue: text("tag_value").notNull().default(""),
+    category: text("category").notNull().default(""),
+    domain: text("domain").notNull().default(""),
+    mailboxProvider: text("mailbox_provider").notNull().default(""),
+    shard: smallint("shard").notNull().default(0),
+    sent: integer("sent").notNull().default(0),
+    delivered: integer("delivered").notNull().default(0),
+    bounced: integer("bounced").notNull().default(0),
+    complained: integer("complained").notNull().default(0),
+    opened: integer("opened").notNull().default(0),
+    clicked: integer("clicked").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({
+      name: "email_metric_pkey",
+      columns: [
+        t.environmentId,
+        t.hourStart,
+        t.tagName,
+        t.tagValue,
+        t.category,
+        t.domain,
+        t.mailboxProvider,
+        t.shard,
+      ],
+    }),
+    foreignKey({
+      name: "email_metric_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    // The worker's retention purge (organization deletion goes by environment, the key's prefix).
+    index("email_metric_hour_idx").on(t.hourStart),
+  ],
 );
 export const contentScreeningVerdict = pgEnum("content_screening_verdict", [
   "clean",

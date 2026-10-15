@@ -10,6 +10,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const RETENTION_DAYS = {
   /** Emails with their recipients, events, links and attachment metadata (not queued or scheduled). */
   emails: 45,
+  /** Hourly sending metrics (sent, delivered, bounced… by category, tag, domain, mailbox provider). */
+  emailMetrics: 400,
   /** Received emails with their headers, bodies, raw message and attachments. */
   receivedEmails: 30,
   /** Webhook messages with their deliveries and attempts (once none is pending). */
@@ -84,6 +86,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     description:
       "The bytes of attachments; only their name, type, size and checksum stay with the email.",
     period: { until: "sent" },
+  },
+  {
+    id: "email_metrics",
+    label: "Sending metrics",
+    description:
+      "Hourly counts of sent, delivered, bounced, complained, opened and clicked emails by category, tag, sending domain and mailbox provider. No addresses or content.",
+    period: { days: RETENTION_DAYS.emailMetrics, after: "creation" },
   },
   {
     id: "received_emails",

@@ -6,6 +6,8 @@ import type {
   EmailBatch,
   EmailEvent,
   EmailLink,
+  EmailMetrics,
+  EmailMetricsParams,
   EmailSummary,
   List,
   ListEmailsParams,
@@ -77,6 +79,23 @@ export class EmailResource {
       path: "/v1/emails/batch",
       body: { emails: bodies },
       idempotencyKey: options?.idempotencyKey,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Sending metrics of the API key's environment over time: recipients sent, delivered, bounced
+   * and complained, and emails opened and clicked, in UTC hour or day buckets. Split them with
+   * `group_by` (category, tag, sending domain or mailbox provider) and filter by any of those.
+   */
+  metrics(
+    params: EmailMetricsParams = {},
+    options?: Pick<RequestOptions, "signal">,
+  ): Promise<CossResult<EmailMetrics>> {
+    return this.#http.request<EmailMetrics>({
+      method: "GET",
+      path: "/v1/emails/metrics",
+      query: listQuery(params),
       signal: options?.signal,
     });
   }
