@@ -166,6 +166,7 @@ describe("GET /openapi.json", () => {
       "/v1/domains/{id}/verify",
       "/v1/emails",
       "/v1/emails/batch",
+      "/v1/emails/batch/{id}",
       "/v1/emails/{id}",
       "/v1/emails/{id}/cancel",
       "/v1/emails/{id}/events",
@@ -242,6 +243,10 @@ describe("GET /openapi.json", () => {
         { in: "header", name: "Idempotency-Key", required: false },
         { $ref: "#/components/parameters/CossVersion" },
       ],
+    });
+    expect(doc.paths["/v1/emails/batch/{id}"]?.get).toMatchObject({
+      operationId: "getEmailBatch",
+      security: [{ bearerAuth: [] }],
     });
     expect(doc.paths["/v1/emails"]?.get).toMatchObject({
       operationId: "listEmails",
