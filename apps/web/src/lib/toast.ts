@@ -1,11 +1,11 @@
 "use client";
 
+import { isAccessRedirect } from "@coss/auth/org-access";
 import { toastManager } from "@coss/ui/components/toast";
 import { getURLFromRedirectError } from "next/dist/client/components/redirect";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { useActionState } from "react";
 import type { ActionResult } from "./action-result";
-import { isAccessRedirect } from "./org-access";
 
 /** A toast's text; `type` (default `success`): `info`/`warning` for checks that changed nothing yet. */
 export type ToastContent = {

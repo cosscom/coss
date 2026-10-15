@@ -4,7 +4,7 @@ import {
   type OrgAccessMembership,
   type OrgAccessSession,
   orgAccess,
-} from "../src/lib/org-access";
+} from "../src/org-access.ts";
 
 function membership(
   overrides: Partial<OrgAccessMembership["organization"]> & { role?: string } = {},

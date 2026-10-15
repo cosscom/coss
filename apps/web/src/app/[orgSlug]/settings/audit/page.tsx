@@ -1,5 +1,4 @@
 import { listOrgAuditActions, listOrgAuditEvents } from "@coss/logs";
-import type { OrgAuditEventOutput } from "@coss/logs/schemas";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@coss/ui/components/table";
@@ -10,35 +9,13 @@ import { CursorPager } from "@/components/cursor-pager";
 import { EmptyState } from "@/components/empty-state";
 import { FilterLinks } from "@/components/filter-links";
 import { SettingsPage, SettingsSection, SettingsTable } from "@/components/settings";
+import { auditActorLabel, auditLabels, describeAction, details } from "@/lib/audit-labels";
 import { formatDateTime } from "@/lib/format";
-import { auditFiltersFrom, auditLabels, requireAuditAccess } from "./audit-data";
+import { auditFiltersFrom, requireAuditAccess } from "./audit-data";
 
 export const metadata: Metadata = { title: "Audit log" };
 
 const PAGE_SIZE = 50;
-
-/** `api_key.created` → `API key created`. */
-function describeAction(action: string): string {
-  const [resource = action, verb = ""] = action.split(".");
-  const noun = resource
-    .replaceAll("_", " ")
-    .replace(/^api key/, "API key")
-    .replace(/^sso/, "SSO");
-  return `${noun.charAt(0).toUpperCase()}${noun.slice(1)} ${verb.replaceAll("_", " ")}`.trim();
-}
-
-/** The `field: from → to` changes an event's metadata describes, plus other details. */
-function details(event: OrgAuditEventOutput): string {
-  return Object.entries(event.metadata)
-    .filter(([key]) => key !== "request_id" && key !== "impersonated_by")
-    .map(([key, value]) => {
-      if (value && typeof value === "object" && "from" in value && "to" in value) {
-        return `${key}: ${String(value.from)} → ${String(value.to)}`;
-      }
-      return `${key}: ${Array.isArray(value) ? value.join(", ") || "all" : String(value)}`;
-    })
-    .join(" · ");
-}
 
 export default async function AuditLogPage({
   params,
@@ -143,14 +120,7 @@ export default async function AuditLogPage({
             </TableHeader>
             <TableBody>
               {events.map((event) => {
-                // Changes made in the Hooks portal keep their label (the key or member that
-                // opened the portal is the actor id).
-                const actorLabel =
-                  event.actor_type === "api_key" &&
-                  event.actor_id &&
-                  !event.actor_label.startsWith("Portal · ")
-                    ? `API key ${keyNames[event.actor_id] ?? event.actor_id}`
-                    : event.actor_label;
+                const actorLabel = auditActorLabel(event, keyNames);
                 const detail = details(event);
                 return (
                   <TableRow key={event.id}>

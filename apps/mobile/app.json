@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "COSS",
+    "slug": "coss",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "coss",
+    "userInterfaceStyle": "automatic",
+    "platforms": ["ios"],
+    "ios": {
+      "bundleIdentifier": "com.coss.app",
+      "supportsTablet": false,
+      "backgroundColor": "#ffffff"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-notifications",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/CalSans-Regular.ttf",
+            "./assets/fonts/CalSans-Medium.ttf",
+            "./assets/fonts/CalSans-SemiBold.ttf",
+            "./assets/fonts/CalSans-Display.ttf",
+            "./assets/fonts/CalSans-Wordmark.ttf",
+            "./assets/fonts/PaperMono-Regular.ttf"
+          ]
+        }
+      ],
+      "@react-native-community/datetimepicker"
+    ],
+    "experiments": {
+      "reactCompiler": true
+    }
+  }
+}

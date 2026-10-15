@@ -19,7 +19,7 @@ github_repository = "cosscom/coss"
 # sean-brydon. Add a new maintainer here before their merges can deploy.
 deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778"]
 # Optional secrets not stored in coss/production: take a name out once put-secret.sh has set it.
-unset_secrets      = ["IPINFO_PRIVACY_TOKEN"]
+unset_secrets      = ["IPINFO_PRIVACY_TOKEN", "APNS_PRIVATE_KEY"]
 initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
