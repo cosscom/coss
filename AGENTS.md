@@ -18,7 +18,8 @@ signals are also building blocks of their own, next to rate limiting as a servic
 
 `AGPL-3.0-only` (root `LICENSE`), except `packages/sdk` (MIT, its own `LICENSE`: customers bundle it), `packages/kloq`
 (MIT, vendored) and the fonts (OFL). New code is AGPL unless it lives in one of those; never copy AGPL code into
-the SDK.
+the SDK. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
+text it shows is a gist that must match `CLA.md`: change both together, as a new version).
 
 ## Layout
 

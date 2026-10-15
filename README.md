@@ -720,3 +720,10 @@ COSS is licensed under the [GNU Affero General Public License v3.0](./LICENSE) (
 - `packages/kloq`: [MIT](./packages/kloq/LICENSE), vendored from `cosscom/calendar` (as is the kloq registry the
   site serves).
 - The fonts in `packages/ui/src/fonts`: [SIL Open Font License 1.1](./packages/ui/src/fonts/OFL.txt).
+
+### Contributing
+
+Contributions are welcome. Before we can merge your first pull request, you sign our
+[Contributor License Agreement](./CLA.md) (`CLA.md`): the CLA Assistant check on the pull request links to it, and
+signing takes one click with your GitHub account. You keep the copyright to your work; the agreement lets Cal.com distribute it under the
+project's licenses and under commercial licenses.
