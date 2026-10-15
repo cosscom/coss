@@ -21,6 +21,7 @@ import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
+import { htmlToText } from "./html-text.ts";
 import {
   type EmailProvider,
   type OutboundAttachment,
@@ -28,7 +29,13 @@ import {
   type ProviderEvent,
   UncertainSendError,
 } from "./provider.ts";
-import { type EmailRow, selectEmailsWithMode, toEmailObjects } from "./read.ts";
+import {
+  type EmailRow,
+  PROVIDER_ERROR_MESSAGE,
+  selectEmailsWithMode,
+  toEmailBatchObject,
+  toEmailObjects,
+} from "./read.ts";
 import { canonicalJson, hashSendBatchRequest, hashSendRequest } from "./request-hash.ts";
 import {
   type EmailBatchObjectOutput,
@@ -176,7 +183,10 @@ function bareAddress(value: string): string {
   return parseEmailAddress(value).address.toLowerCase();
 }
 
-/** The message for the provider, without the recipients COSS suppressed. */
+/**
+ * The message for the provider, without the recipients COSS suppressed. An email with only HTML
+ * gets a plain-text part generated from it (never stored: the email keeps what was sent to COSS).
+ */
 function toOutbound(
   row: EmailRow,
   suppressed: ReadonlySet<string>,
@@ -193,7 +203,7 @@ function toOutbound(
     replyTo: row.replyTo,
     subject: row.subject,
     html: row.html,
-    text: row.text,
+    text: row.text ?? (row.html === null ? null : htmlToText(row.html)),
     headers: row.headers,
     tags: row.tags,
     attachments,
@@ -247,7 +257,7 @@ function cossEvent(
 function failedEvent(
   row: EmailRow,
   provider: string,
-  failure = { code: "provider_error", message: "The email provider did not accept the email." },
+  failure = { code: "provider_error", message: PROVIDER_ERROR_MESSAGE },
 ): ProviderEvent {
   return cossEvent(row, {
     type: "email.failed",
@@ -1115,27 +1125,6 @@ function sameBatchKey(environment: SendEnvironment, idempotencyKey: string) {
     eq(emailBatch.environmentId, environment.environmentId),
     eq(emailBatch.idempotencyKey, idempotencyKey),
   );
-}
-
-/** A batch with its emails in request order. */
-async function toEmailBatchObject(
-  batch: EmailBatchRow,
-  sandbox: boolean,
-): Promise<EmailBatchObjectOutput> {
-  const rows = await db
-    .select()
-    .from(email)
-    .where(and(eq(email.organizationId, batch.organizationId), eq(email.batchId, batch.id)))
-    .orderBy(asc(email.batchIndex));
-  return {
-    object: "email_batch",
-    id: batch.id,
-    data: await toEmailObjects(
-      batch.organizationId,
-      rows.map((row) => ({ email: row, sandbox })),
-    ),
-    created_at: batch.createdAt.toISOString(),
-  };
 }
 
 async function currentEmail(row: EmailRow): Promise<EmailObjectOutput> {

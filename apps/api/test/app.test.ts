@@ -166,6 +166,7 @@ describe("GET /openapi.json", () => {
       "/v1/domains/{id}/verify",
       "/v1/emails",
       "/v1/emails/batch",
+      "/v1/emails/batch/{id}",
       "/v1/emails/{id}",
       "/v1/emails/{id}/cancel",
       "/v1/emails/{id}/events",
@@ -243,6 +244,19 @@ describe("GET /openapi.json", () => {
         { $ref: "#/components/parameters/CossVersion" },
       ],
     });
+    expect(doc.paths["/v1/emails/batch/{id}"]?.get).toMatchObject({
+      operationId: "getEmailBatch",
+      security: [{ bearerAuth: [] }],
+    });
+    expect(doc.paths["/v1/emails"]?.get).toMatchObject({
+      operationId: "listEmails",
+      tags: ["Emails"],
+      security: [{ bearerAuth: [] }],
+    });
+    const listParameters = (doc.paths["/v1/emails"]?.get?.parameters ?? []) as { name?: string }[];
+    expect(listParameters.map((parameter) => parameter.name)).toEqual(
+      expect.arrayContaining(["to", "recipient_status", "status", "after", "limit"]),
+    );
     expect(doc.paths["/v1/emails/batch"]?.post).toMatchObject({
       operationId: "sendEmailBatch",
       tags: ["Emails"],

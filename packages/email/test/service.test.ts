@@ -146,7 +146,12 @@ describe("send", () => {
       params: params(),
     });
 
-    expect(email).toMatchObject({ status: "failed", sent_at: null });
+    // The provider's own text stays internal: the wire shows the `email.failed` event's message.
+    expect(email).toMatchObject({
+      status: "failed",
+      sent_at: null,
+      failure: { code: "provider_error", message: "The email provider did not accept the email." },
+    });
     expect(await loadRow(email.id)).toMatchObject({
       status: "failed",
       provider: "fake",
@@ -386,6 +391,37 @@ describe("dispatch", () => {
     });
     expect(email).toMatchObject({ id: row.id, status: "sent", sandbox: false });
     expect(liveProvider.sent.map((m) => m.emailId)).toEqual([row.id]);
+  });
+
+  test("gives an HTML-only email a generated text part, without storing it", async () => {
+    const tenant = await createTestTenant();
+    const { service, sandboxProvider, queue } = fakeProviders();
+    const html = '<p>Hi Ada,</p><p><a href="https://acme.com/start">Get started</a></p>';
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ html, text: undefined }),
+    });
+    await queue.drain(service);
+
+    expect(sandboxProvider.sent.at(-1)).toMatchObject({
+      html,
+      text: "Hi Ada,\n\nGet started [https://acme.com/start]",
+    });
+    expect(await loadRow(email.id)).toMatchObject({ html, text: null });
+  });
+
+  test("keeps the text part a send provided", async () => {
+    const tenant = await createTestTenant();
+    const { service, sandboxProvider, queue } = fakeProviders();
+    await service.send({
+      environment: sendEnvironment(tenant.development),
+      apiKeyId: null,
+      params: params({ html: "<p>HTML version</p>", text: "Text version" }),
+    });
+    await queue.drain(service);
+
+    expect(sandboxProvider.sent.at(-1)?.text).toBe("Text version");
   });
 
   test("concurrent dispatchers send an email only once", async () => {

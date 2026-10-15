@@ -1,5 +1,5 @@
 {
-  "id": "4f73efa5-9d40-45ba-b2ad-a69019ae7b79",
+  "id": "8bdc62ca-c488-4d86-8409-2cffd0c30e23",
   "prevId": "1684f478-a53b-43fa-beec-5bf6218fb35a",
   "version": "7",
   "dialect": "postgresql",
@@ -5762,13 +5762,6 @@
           "notNull": true,
           "default": false
         },
-        "unsubscribe": {
-          "name": "unsubscribe",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "tracking_token": {
           "name": "tracking_token",
           "type": "text",
@@ -6609,7 +6602,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "email_recipient_organization_address_idx": {
+          "name": "email_recipient_organization_address_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "email_recipient_email_fk": {
           "name": "email_recipient_email_fk",
@@ -7035,13 +7050,6 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": true
-        },
-        "unsubscribe": {
-          "name": "unsubscribe",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         },
         "created_at": {
           "name": "created_at",
@@ -14014,8 +14022,7 @@
         "email.canceled",
         "email.opened",
         "email.clicked",
-        "email.rescheduled",
-        "email.unsubscribed"
+        "email.rescheduled"
       ]
     },
     "public.email_recipient_kind": {
@@ -14060,8 +14067,7 @@
         "bounce",
         "complaint",
         "manual",
-        "import",
-        "unsubscribe"
+        "import"
       ]
     },
     "public.environment_mode": {

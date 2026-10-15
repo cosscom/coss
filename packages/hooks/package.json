@@ -16,6 +16,7 @@
   "dependencies": {
     "@coss/db": "workspace:*",
     "@coss/logs": "workspace:*",
+    "@coss/push": "workspace:*",
     "@coss/reputation": "workspace:*",
     "@coss/retention": "workspace:*",
     "@coss/webhooks": "workspace:*",

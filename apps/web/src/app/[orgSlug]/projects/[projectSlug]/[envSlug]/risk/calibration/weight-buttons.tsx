@@ -1,8 +1,7 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
-import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { applyRiskReasonWeightsAction } from "../actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
@@ -19,9 +18,12 @@ export function ApplyWeightsButton(
     size?: "xs" | "sm";
   },
 ) {
-  const [state, formAction, pending] = useActionState(applyRiskReasonWeightsAction, null);
+  const [, formAction, pending] = useActionToast(applyRiskReasonWeightsAction, {
+    success: "Reason weights saved",
+    errors: "toast",
+  });
   return (
-    <form action={formAction} className="flex flex-col items-end gap-1">
+    <form action={formAction} className="flex justify-end">
       <input name="orgSlug" type="hidden" value={props.orgSlug} />
       <input name="projectSlug" type="hidden" value={props.projectSlug} />
       <input name="envSlug" type="hidden" value={props.envSlug} />
@@ -34,7 +36,6 @@ export function ApplyWeightsButton(
       >
         {props.label}
       </Button>
-      {state && !state.ok ? <FormError message={state.error} /> : null}
     </form>
   );
 }

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@coss/db": "workspace:*",
+    "@coss/push": "workspace:*",
     "@coss/retention": "workspace:*",
     "@coss/versioning": "workspace:*",
     "@coss/webhooks": "workspace:*",

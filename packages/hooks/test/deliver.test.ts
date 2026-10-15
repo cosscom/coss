@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
+import { listPushNotifications } from "@coss/push";
 import { suspendOrganization, unsuspendOrganization } from "@coss/tenancy/admin";
 import { createTestTenant, createTestUser } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
@@ -193,6 +194,10 @@ describe("runDueHookDeliveries", () => {
         ),
       );
     expect(audit).toHaveLength(1);
+    const pushes = await listPushNotifications(tenant.organization.id);
+    expect(pushes.map((row) => [row.kind, row.subjectId])).toEqual([
+      ["hook_endpoint_disabled", endpoint.id],
+    ]);
   });
 
   test("a worker whose lease was taken over records nothing", async () => {

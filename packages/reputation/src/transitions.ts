@@ -5,11 +5,12 @@
  */
 import { db, type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
+import { enqueuePush } from "@coss/push";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ReputationError } from "./errors.ts";
-import { enqueueReputationNotification } from "./notifications.ts";
+import { enqueueReputationNotification, NOTIFIED_TRANSITIONS } from "./notifications.ts";
 import {
   type AccountEventType,
   effectivePolicy,
@@ -135,6 +136,14 @@ export async function applyTransition(
     type: input.type,
     now,
   });
+  if (NOTIFIED_TRANSITIONS.has(input.type)) {
+    await enqueuePush(tx, {
+      organizationId,
+      kind: input.type === "suspended" ? "reputation_suspended" : "reputation_warning",
+      subjectId: event.id,
+      now,
+    });
+  }
 
   // Standing is organization-wide; announce it to every live environment's endpoints. Sandbox
   // environments never send real mail, so they are left out.

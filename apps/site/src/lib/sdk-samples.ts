@@ -207,6 +207,8 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "logDrains.batches.get",
     args: (request) => [pathId(request), pathParam(request, "batch_id")],
   },
+  "GET /v1/emails": { method: "email.list", args: (request) => [queryParams(request)] },
+  "GET /v1/emails/batch/{id}": { method: "email.getBatch", args: (r) => [pathId(r)] },
   "GET /v1/emails/{id}": {
     method: "email.get",
     args: (request) => [pathId(request)],

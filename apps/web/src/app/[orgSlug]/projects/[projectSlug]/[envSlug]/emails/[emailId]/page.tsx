@@ -1,4 +1,4 @@
-import { type EmailEventOutput, getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
+import { getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
@@ -26,6 +26,8 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
 import { SpecItem, SpecList } from "@/components/spec-list";
+import { eventDetail } from "@/lib/email-events";
+import { PREVIEW_HEAD } from "@/lib/email-preview";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { environmentPath } from "@/lib/navigation";
 import { requireOrgMember } from "@/lib/session";
@@ -35,41 +37,8 @@ import { RescheduleEmailDialog } from "./reschedule-email-dialog";
 
 export const metadata: Metadata = { title: "Email" };
 
-/**
- * Prepended to customer HTML so the parser places it in <head>. Together with `sandbox=""`
- * (no scripts, forms, popups or same-origin access) it blocks every network load except
- * images and fonts, and stops the dashboard URL from leaking via Referer.
- * NEVER add `allow-scripts` or `allow-same-origin` to the iframe.
- */
-const PREVIEW_HEAD =
-  `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https:; style-src 'unsafe-inline'; font-src data: https:">` +
-  `<meta name="referrer" content="no-referrer">`;
-
 function list(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "—";
-}
-
-/** One-line summary of an event's details. */
-function eventDetail({ data }: EmailEventOutput): string {
-  if (data.bounce) {
-    const { type, sub_type, diagnostic_code } = data.bounce;
-    return [`${type} / ${sub_type}`, diagnostic_code].filter(Boolean).join(": ");
-  }
-  if (data.complaint) return data.complaint.feedback_type ?? "complaint";
-  if (data.delay) return [data.delay.type, data.delay.diagnostic_code].filter(Boolean).join(": ");
-  if (data.delivery) return data.delivery.smtp_response ?? "";
-  if (data.failure) return data.failure.message;
-  if (data.suppression) {
-    const scope = data.suppression.scope === "*" ? "all emails" : data.suppression.scope;
-    return `on the suppression list (${scope}, ${data.suppression.reason})`;
-  }
-  if (data.click) return [data.click.url, data.click.user_agent].filter(Boolean).join(" · ");
-  if (data.open) return data.open.user_agent ?? "";
-  if (data.reschedule) {
-    const { previous_scheduled_at, scheduled_at } = data.reschedule;
-    return `${formatDateTime(previous_scheduled_at)} → ${formatDateTime(scheduled_at)}`;
-  }
-  return "";
 }
 
 export default async function EmailPage({

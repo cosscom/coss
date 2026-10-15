@@ -1,7 +1,6 @@
 import "server-only";
 import { BillingError } from "@coss/billing";
 import type { OrgAuditFilters } from "@coss/logs";
-import { apiKeyNames, listEnvironments, listProjects } from "@coss/tenancy";
 import { notFound } from "next/navigation";
 import { planGate } from "@/lib/billing";
 import { requireOrgMember } from "@/lib/session";
@@ -44,19 +43,3 @@ export function auditFiltersFrom(search: SearchParams | URLSearchParams): OrgAud
 }
 
 /** Labels for the projects/environments and API keys events name. */
-export async function auditLabels(organizationId: string, keyIds: string[]) {
-  const projects = await listProjects({ organizationId });
-  const environments = await Promise.all(
-    projects.map(async (project) => ({
-      project,
-      environments: await listEnvironments({ organizationId, projectId: project.id }),
-    })),
-  );
-  const environmentNames: Record<string, string> = {};
-  for (const entry of environments) {
-    for (const environment of entry.environments) {
-      environmentNames[environment.id] = `${entry.project.name} · ${environment.name}`;
-    }
-  }
-  return { environmentNames, keyNames: await apiKeyNames({ organizationId, ids: keyIds }) };
-}

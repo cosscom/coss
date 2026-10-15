@@ -36,7 +36,9 @@
   "devDependencies": {
     "@coss/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
+    "@modelcontextprotocol/client": "2.3.1",
     "coss": "workspace:*",
+    "coss-mcp": "workspace:*",
     "typescript": "catalog:"
   }
 }

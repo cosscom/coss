@@ -1,5 +1,4 @@
 import { getRiskCalibration, listRiskRules } from "@coss/risk";
-import { type RiskRuleConditionOutput, RULE_FIELDS } from "@coss/risk/schemas";
 import { getEnvironment } from "@coss/tenancy";
 import {
   Table,
@@ -18,32 +17,12 @@ import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
 import { RiskDecisionBadge } from "@/components/risk-badges";
 import { StatusDot } from "@/components/status-dot";
+import { describeRuleConditions } from "@/lib/risk-rules";
 import { requireOrgMember } from "@/lib/session";
 import { RuleDialog } from "./rule-dialog";
 import { DeleteRuleButton, ToggleRuleButton } from "./rule-row-actions";
 
 export const metadata: Metadata = { title: "Risk rules" };
-
-const OPERATOR_TEXT: Record<string, string> = {
-  is: "is",
-  eq: "=",
-  neq: "≠",
-  gt: ">",
-  gte: "≥",
-  lt: "<",
-  lte: "≤",
-  in: "in",
-  not_in: "not in",
-};
-
-function describe(condition: RiskRuleConditionOutput): string {
-  const label = RULE_FIELDS[condition.field].label;
-  const value = Array.isArray(condition.value)
-    ? condition.value.join(", ")
-    : String(condition.value);
-  if (condition.operator === "is") return condition.value ? label : `not: ${label}`;
-  return `${label} ${OPERATOR_TEXT[condition.operator]} ${value}`;
-}
 
 export default async function RiskRulesPage({
   params,
@@ -121,7 +100,7 @@ export default async function RiskRulesPage({
                       rule.enabled ? "max-w-md text-sm" : "max-w-md text-muted-foreground text-sm"
                     }
                   >
-                    {rule.conditions.map(describe).join(rule.match === "all" ? " and " : " or ")}
+                    {describeRuleConditions(rule)}
                   </TableCell>
                   <TableCell>
                     <RiskDecisionBadge decision={rule.action} />

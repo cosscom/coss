@@ -13,7 +13,11 @@ description: How an email and each of its recipients move through delivery.
 | `canceled` | Canceled before dispatch |
 | `queued` | Accepted by COSS, not yet handed over          |
 | `sent`   | Accepted by the provider (`sent_at` is set)    |
-| `failed` | Could not be sent; see the `email.failed` event |
+| `failed` | Could not be sent; `failure` says why |
+
+A failed email's `failure` is `{ code, message }`, e.g. `all_recipients_suppressed`,
+`domain_not_verified`, `content_rejected`, `attachments_unavailable`, `dispatch_failed` or
+`provider_error`; it is `null` for every other status.
 
 ## Recipient status
 
@@ -32,6 +36,31 @@ sending them. An email it is confident about fails with `content_rejected` and l
 suspended until COSS support reviews the account. Sandbox emails are never screened.
 COSS also emails your organization's owners and admins when it warns about your sending reputation
 or suspends live sending.
+
+## Finding emails
+
+List an environment's emails, newest first, with `coss.email.list` (see
+[`GET /v1/emails`](/docs/api-reference/emails/list-emails)). Filter by a recipient's address, by the
+email's status or a recipient's, by subject text, category, batch or creation time. Listed emails
+have no content; retrieve one for `html`, `text`, `headers` and `attachments`.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data } = await coss.email.list({
+  to: "user@example.com",
+  recipient_status: ["bounced", "complained"],
+  created_after: new Date(Date.now() - 24 * 60 * 60 * 1000),
+});
+
+for (const email of data?.data ?? []) {
+  console.log(email.id, email.subject, email.failure?.code);
+  //                                         ^?
+}
+```
+
+Coding agents can answer these questions for you with the [MCP server](/docs/mcp).
 
 ## Events
 

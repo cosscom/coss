@@ -1,6 +1,5 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@coss/ui/components/avatar";
 import {
   Menu,
   MenuGroup,
@@ -8,8 +7,6 @@ import {
   MenuItem,
   MenuLinkItem,
   MenuPopup,
-  MenuRadioGroup,
-  MenuRadioItem,
   MenuSeparator,
   MenuTrigger,
 } from "@coss/ui/components/menu";
@@ -22,20 +19,18 @@ import {
 import { ChevronsUpDownIcon, LogOutIcon, SettingsIcon, ShieldIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
+import { UserAvatar } from "@/components/user-avatar";
 import { postAuth } from "@/lib/auth-post";
-import { initials } from "./initials";
-import { THEME_OPTIONS } from "./theme-options";
 
-export type ShellUser = { name: string; email: string; isAdmin: boolean };
+/** `image` is `avatarUrl(session.user)` (`@/lib/avatars`). */
+export type ShellUser = { name: string; email: string; image: string | null; isAdmin: boolean };
 
 /**
- * The signed-in user at the foot of the sidebar: account settings, the admin console (platform
- * admins), the theme and sign out.
+ * The signed-in user at the foot of the sidebar: account settings (where the theme is chosen), the
+ * admin console (platform admins) and sign out.
  */
 export function UserNav({ user }: { user: ShellUser }) {
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
   const { isMobile } = useSidebar();
 
   return (
@@ -45,11 +40,11 @@ export function UserNav({ user }: { user: ShellUser }) {
           <MenuTrigger
             render={<SidebarMenuButton className="data-popup-open:bg-sidebar-accent" size="lg" />}
           >
-            <Avatar className="size-8 rounded-lg border bg-background">
-              <AvatarFallback className="rounded-lg bg-transparent">
-                {initials(user.name || user.email)}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              className="size-8 rounded-lg border bg-background"
+              fallbackClassName="rounded-lg bg-transparent"
+              user={user}
+            />
             <div className="grid min-w-0 flex-1 text-left leading-tight">
               <span className="truncate font-medium text-foreground">
                 {user.name || user.email}
@@ -76,17 +71,6 @@ export function UserNav({ user }: { user: ShellUser }) {
                   Admin console
                 </MenuLinkItem>
               ) : null}
-            </MenuGroup>
-            <MenuSeparator />
-            <MenuGroup>
-              <MenuGroupLabel>Theme</MenuGroupLabel>
-              <MenuRadioGroup onValueChange={(value) => setTheme(value as string)} value={theme}>
-                {THEME_OPTIONS.map((option) => (
-                  <MenuRadioItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuRadioItem>
-                ))}
-              </MenuRadioGroup>
             </MenuGroup>
             <MenuSeparator />
             <MenuItem
