@@ -1,0 +1,80 @@
+---
+title: Checkouts
+description: Assess payments with what your payment processor knows about the card.
+---
+
+`checkout` events take a `checkout` object: the amount, and what your payment processor tells you
+about the card. COSS compares the card with the person's IP address and billing address, counts
+checkouts per card, and remembers cards you report as fraud.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const order: { userId: string; ip: string; total: number };
+declare const card: { fingerprint: string; country: string; funding: "credit" | "debit" | "prepaid" };
+// ---cut---
+const { data } = await coss.risk.assess({
+  event: "checkout",
+  user: { id: order.userId },
+  ip: order.ip,
+  checkout: {
+    amount: order.total, // in the currency's minor unit: 1999 is $19.99
+    currency: "USD",
+    card: { fingerprint: card.fingerprint, country: card.country, funding: card.funding },
+    billing_country: "US",
+  },
+});
+```
+
+With Stripe, the card's details are on the PaymentMethod (`card.fingerprint`, `card.country`,
+`card.funding`) once the customer has entered it. Assess before you confirm the payment, so a
+`block` costs nothing.
+
+- **Never send the card number.** `fingerprint` is your processor's own stable id for the card
+  number; COSS keeps only a keyed hash of it, never logs it, and doesn't return it.
+- Countries are upper-case ISO 3166-1 alpha-2 codes, currencies upper-case ISO 4217 codes.
+  `checkout` is refused on other events.
+
+## Reasons
+
+| Reason | When |
+|---|---|
+| `checkout.card_country_mismatch` | The card was issued in another country than the IP address is in. |
+| `checkout.billing_country_mismatch` | The billing address is in another country than the card was issued in. |
+| `checkout.prepaid_card` | The card is prepaid. |
+| `velocity.checkouts_per_ip_1h` | 10 or more checkouts from the IP address in an hour: the shape of card testing. |
+| `velocity.checkouts_per_user_1h` | 10 or more checkouts by the user in an hour. |
+| `velocity.checkouts_per_card_24h` | 10 or more checkouts with the card in 24 hours. |
+| `history.fraud_card` | The card was in an assessment you reported as `fraud` or `abuse`, whoever uses it now. |
+
+Each is a hint on its own (travelers pay abroad, gift cards are prepaid) and weighs little; together,
+or with the IP's signals, they add up. Their weights are in the [reason catalog](/docs/risk/reasons).
+
+## Rules
+
+Rules can test `checkout.amount` (minor units), `checkout.currency`, `checkout.card_country`,
+`checkout.card_funding`, `checkout.billing_country` and `checkout.shipping_country`, and
+`velocity.card_1h` / `velocity.card_24h`:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.risk.rules.create({
+  name: "Review large orders on prepaid cards",
+  events: ["checkout"],
+  conditions: [
+    { field: "checkout.card_funding", operator: "eq", value: "prepaid" },
+    { field: "checkout.amount", operator: "gte", value: 50000 },
+  ],
+  action: "review",
+});
+```
+
+Compare amounts within one currency (add a `checkout.currency` condition when you sell in several).
+
+## Feedback
+
+Report chargebacks and confirmed fraud with
+[feedback](/docs/risk/lists-and-feedback): the card is remembered, so its next checkout gets
+`history.fraud_card` even from another account and address. `legitimate` takes it back.

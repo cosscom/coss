@@ -1,4 +1,4 @@
-import { listRiskRules } from "@coss/risk";
+import { getRiskCalibration, listRiskRules } from "@coss/risk";
 import { type RiskRuleConditionOutput, RULE_FIELDS } from "@coss/risk/schemas";
 import { getEnvironment } from "@coss/tenancy";
 import {
@@ -54,10 +54,9 @@ export default async function RiskRulesPage({
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;
-  const rules = await listRiskRules({
-    organizationId: organization.id,
-    environmentId: environment.id,
-  });
+  const scope = { organizationId: organization.id, environmentId: environment.id };
+  const [rules, calibration] = await Promise.all([listRiskRules(scope), getRiskCalibration(scope)]);
+  const outcomes = new Map(calibration.rules.map((rule) => [rule.rule, rule]));
   const target = {
     orgSlug: organization.slug,
     projectSlug: project.slug,
@@ -96,6 +95,7 @@ export default async function RiskRulesPage({
                 <TableHead>Rule</TableHead>
                 <TableHead>When</TableHead>
                 <TableHead>Then</TableHead>
+                <TableHead>Last 90 days</TableHead>
                 {canUpdate || canDelete ? <TableHead className="w-0" /> : null}
               </TableRow>
             </TableHeader>
@@ -126,6 +126,9 @@ export default async function RiskRulesPage({
                   <TableCell>
                     <RiskDecisionBadge decision={rule.action} />
                   </TableCell>
+                  <TableCell className="text-sm tabular-nums">
+                    <RuleOutcomes outcome={outcomes.get(rule.id)} />
+                  </TableCell>
                   {canUpdate || canDelete ? (
                     <TableCell>
                       <span className="flex gap-2">
@@ -148,5 +151,28 @@ export default async function RiskRulesPage({
         )}
       </Panel>
     </div>
+  );
+}
+
+/** How often the rule decided, and the fraud rate among labeled matches. */
+function RuleOutcomes({
+  outcome,
+}: {
+  outcome:
+    | { matched: number; fraud: number; legitimate: number; precision: number | null }
+    | undefined;
+}) {
+  if (!outcome || outcome.matched === 0) {
+    return <span className="text-muted-foreground">No matches</span>;
+  }
+  return (
+    <span className="flex flex-col gap-0.5">
+      <span>{outcome.matched.toLocaleString()} matched</span>
+      <span className="text-muted-foreground text-xs">
+        {outcome.precision === null
+          ? "no feedback yet"
+          : `${Math.round(outcome.precision * 100)}% fraud rate · ${outcome.fraud} fraud, ${outcome.legitimate} legitimate`}
+      </span>
+    </span>
   );
 }

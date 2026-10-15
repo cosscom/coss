@@ -14,7 +14,8 @@
     "./social": "./src/social.ts",
     "./scim": "./src/scim.ts",
     "./audit": "./src/audit.ts",
-    "./limits": "./src/limits.ts"
+    "./limits": "./src/limits.ts",
+    "./risk": "./src/risk.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

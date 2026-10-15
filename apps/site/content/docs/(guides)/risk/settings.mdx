@@ -29,6 +29,22 @@ Reasons you list in `disabled_reasons` never fire: they don't appear in assessme
 score. [Rules](/docs/risk/rules) still see the facts behind them. Decision reasons (`list.*`,
 `rule.matched`) can't be disabled, and `content.*` reasons are controlled by their thresholds.
 
+## Reason weights
+
+Every reason weighs what the [reason catalog](/docs/risk/reasons) says, unless you give it another
+weight (0 to 0.99) in `reason_weights`; `null` goes back to the default. Weights are what
+[calibration](/docs/risk/calibration) suggests from your feedback, and the dashboard's
+**Calibration** page applies them in one click.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.risk.settings.update({
+  reason_weights: { "ip.hosting_provider": 0.1, "checkout.prepaid_card": null },
+});
+```
+
 ## Content thresholds
 
 [Content](/docs/risk/content) scores fire `content.<category>` only at the thresholds you set; a

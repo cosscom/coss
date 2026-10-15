@@ -29,6 +29,10 @@ export type StoredSignals = {
   login: RiskAssessmentOutput["signals"]["login"];
   /** Scores only: the content itself is never stored. */
   content: RiskAssessmentOutput["signals"]["content"];
+  /** Never the card's fingerprint (only its hash, in `card_hash`). */
+  checkout: RiskAssessmentOutput["signals"]["checkout"];
+  /** Never the device id (only its hash, in `device_hash`). */
+  device: RiskAssessmentOutput["signals"]["device"];
 };
 
 export function inRiskEnvironment(scope: RiskEnvironmentScope): SQL | undefined {
@@ -58,11 +62,13 @@ export function toRiskAssessmentObject(row: RiskAssessmentRow): RiskAssessmentOu
             domain_age_days: signals.email.domain_age_days ?? null,
           }
         : null,
-      ip: signals.ip ?? null,
+      ip: signals.ip ? { ...signals.ip, privacy: signals.ip.privacy ?? null } : null,
       velocity: signals.velocity ?? null,
       captcha: signals.captcha ?? null,
       login: signals.login ?? null,
       content: signals.content ?? null,
+      checkout: signals.checkout ?? null,
+      device: signals.device ?? null,
     },
     user: { id: row.userId, email: row.email },
     ip: row.ip,

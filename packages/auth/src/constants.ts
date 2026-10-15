@@ -36,6 +36,9 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   hook: ["create", "read", "update", "delete", "send"],
 };
 
+/** The header the dashboard's sign-up form carries `coss/device`'s token in (COSS Risk). */
+export const DEVICE_TOKEN_HEADER = "x-coss-device";
+
 /** Social sign-in providers COSS supports (each enabled only when its client id + secret are set). */
 export const SOCIAL_PROVIDERS = ["google", "github"] as const;
 export type SocialProvider = (typeof SOCIAL_PROVIDERS)[number];

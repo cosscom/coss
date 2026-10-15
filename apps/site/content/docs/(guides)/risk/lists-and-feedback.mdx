@@ -35,9 +35,11 @@ same lists.
 ## Feedback
 
 Tell COSS what an assessed user turned out to be. `fraud` and `abuse` make later assessments in the
-environment flag the same mailbox (`history.fraud_mailbox`), user (`history.fraud_user`), IP address
-(`history.fraud_ip`) and subnet (`history.fraud_subnet`); IP addresses and subnets count for 30
-days. `legitimate` takes back what that assessment reported.
+environment flag the same mailbox (`history.fraud_mailbox`), user (`history.fraud_user`), card
+(`history.fraud_card`), browser (`history.fraud_device`), IP address (`history.fraud_ip`) and subnet
+(`history.fraud_subnet`); IP addresses and subnets count for 30 days. `legitimate` takes back what
+that assessment reported. Feedback also tells you which reasons and rules are right for your
+traffic: see [Calibration](/docs/risk/calibration).
 
 ```ts twoslash
 import { Coss } from "coss";

@@ -74,7 +74,12 @@ used.
   (Cloudflare Turnstile or hCaptcha), we send it the captcha token, your secret key and the person's IP address
   to verify the token. If you send text the person wrote (a profile bio, a message) with an assessment or to be
   classified, AI models score it through Vercel's AI Gateway, with zero data retention; we keep only the scores, never
-  the text.
+  the text. For a payment, you may send the amount and currency, the payment card's issuing country and funding type,
+  the billing and shipping countries, and your payment processor's fingerprint of the card (never the card number),
+  which we keep only as a keyed hash. If you use our browser library (`coss/device`), it stores a random device
+  identifier in the person's browser (local storage, no cookies) and reports it with the browser's time zone,
+  languages, platform, screen size, touch support and whether the browser is automated; we keep the identifier only as
+  a keyed hash.
 - **Rate limiting for your service:** the keys you check against your own rate limit buckets (for example a user's
   email address) are kept only as keyed hashes, in our cache, until their bucket refills.
 - **Domains and webhooks:** the sending domains you verify and their DNS records; your webhook endpoint URLs and
@@ -166,7 +171,7 @@ We share personal data only as described here:
   closed.
 - **Sessions:** until they expire or are revoked.
 - **Risk assessments:** for 1 year; the email address, IP address and user agent are deleted after 90 days. The keyed
-  hashes used to recognize them are deleted a year after they were last seen (IP addresses reported as fraud stop
+  hashes used to recognize them (and cards and browsers) are deleted a year after they were last seen (IP addresses reported as fraud stop
   counting after 30 days). When your organization tells us one of its users is deleted, we delete that person's data
   from its assessments right away.
 - **Content screening verdicts and reputation history:** for as long as the organization exists, so that past

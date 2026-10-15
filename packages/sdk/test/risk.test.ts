@@ -32,6 +32,8 @@ const assessment: RiskAssessment = {
     captcha: null,
     login: null,
     content: null,
+    checkout: null,
+    device: null,
   },
   user: { id: null, email: "x@gmail.con" },
   ip: "203.0.113.7",
@@ -214,6 +216,22 @@ describe("coss.risk building blocks and rate limits", () => {
       ["POST", `${BASE}/ip/check`, { ip: "203.0.113.7" }],
       ["POST", `${BASE}/content/classify`, { text: "Win a prize" }],
     ]);
+  });
+
+  test("calibration GETs the environment's calibration", async () => {
+    const { risk, calls } = client(
+      json(200, {
+        object: "risk_calibration",
+        window_days: 90,
+        assessments: 0,
+        labeled: 0,
+        reasons: [],
+        rules: [],
+      }),
+    );
+    const { data } = await risk.calibration();
+    expect(data?.window_days).toBe(90);
+    expect(calls.map((call) => [call.method, call.url])).toEqual([["GET", `${BASE}/calibration`]]);
   });
 
   test("limit retries with the same idempotency key", async () => {

@@ -42,7 +42,7 @@ const { data } = await coss.risk.checkIp("185.220.101.1");
 // {
 //   ip: "185.220.101.1", version: 4, private: false, tor: true,
 //   hosting: false, hosting_provider: null, hosting_kind: null,
-//   asn: 60729, as_name: "…", country: "DE", degraded: []
+//   asn: 60729, as_name: "…", country: "DE", privacy: null, degraded: []
 // }
 ```
 
@@ -51,7 +51,12 @@ const { data } = await coss.risk.checkIp("185.220.101.1");
   proxy services).
 - `asn`, `as_name` and `country` come from IPinfo Lite. Network and country data by
   [IPinfo](https://ipinfo.io).
-- `degraded: ["ip_data"]` means some IP data is unavailable at the moment.
+- `privacy` says whether the address itself is a VPN exit, a proxy (residential proxies included) or
+  a privacy relay (iCloud Private Relay…), and which service, from COSS's IP privacy data provider;
+  `null` where COSS doesn't have that data, and for private addresses. Without it, `hosting_kind:
+  "vpn"` is only a guess from the network.
+- `degraded: ["ip_data"]` means some IP data is unavailable at the moment; `ip_privacy`, that the
+  privacy data provider failed or took longer than 500 ms.
 
 Both checks count against the same per-key limit as assessments (100 per second, bursts of 200), and
 sandbox keys see the [test inputs](/docs/risk/testing).

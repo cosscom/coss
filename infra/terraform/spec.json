@@ -173,6 +173,13 @@
           "description": "Sends account emails (sign-up verification, password resets, invitations) and reputation notifications through COSS itself (worker); neither the worker nor admins (dashboard) may suspend its organization. Unset until COSS's organization has a verified domain: both are held, and nobody can verify their email address."
         },
         {
+          "name": "RISK_SIGNUP_ENVIRONMENT_ID",
+          "kind": "plain",
+          "required": false,
+          "value": "env_… (a live environment of COSS's own organization)",
+          "description": "COSS Risk assesses COSS's own sign-ups in this environment (dogfooding): `block` refuses the sign-up, `review` waits in its review queue. Unset: sign-ups aren't assessed."
+        },
+        {
           "name": "BILLING_PROVIDER",
           "kind": "plain",
           "required": true,
@@ -656,6 +663,19 @@
           "kind": "secret",
           "required": true,
           "description": "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker (content screening) and api (risk's content classification)."
+        },
+        {
+          "name": "RISK_IP_PRIVACY",
+          "kind": "plain",
+          "required": false,
+          "value": "off",
+          "description": "Risk's IP privacy data (off|ipinfo): `ipinfo` sends each assessed public IP address to IPinfo's privacy detection. List IPinfo as a subprocessor before turning it on."
+        },
+        {
+          "name": "IPINFO_PRIVACY_TOKEN",
+          "kind": "secret",
+          "required": false,
+          "description": "An IPinfo token whose plan includes privacy detection (not the free Lite one). Required with RISK_IP_PRIVACY=ipinfo."
         },
         {
           "name": "SENTRY_DSN",

@@ -8297,6 +8297,26 @@
                   }
                 ],
                 "description": "`null` when no content was given or it couldn't be classified."
+              },
+              "checkout": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RiskCheckoutSignals"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "device": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RiskDeviceSignals"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "required": [
@@ -8305,7 +8325,9 @@
               "velocity",
               "captcha",
               "login",
-              "content"
+              "content",
+              "checkout",
+              "device"
             ]
           },
           "user": {
@@ -8347,7 +8369,8 @@
                 "ip_data",
                 "velocity",
                 "captcha",
-                "content"
+                "content",
+                "ip_privacy"
               ]
             },
             "description": "Signal groups that were unavailable for this assessment (it was made without them)."
@@ -8441,7 +8464,8 @@
                 "hosting_kind": null,
                 "asn": 64500,
                 "as_name": "Example Broadband",
-                "country": "GB"
+                "country": "GB",
+                "privacy": null
               },
               "velocity": {
                 "ip_1h": 7,
@@ -8454,7 +8478,9 @@
                 "passed": true
               },
               "login": null,
-              "content": null
+              "content": null,
+              "checkout": null,
+              "device": null
             },
             "user": {
               "id": null,
@@ -8503,21 +8529,36 @@
               "ip.tor",
               "ip.vpn_network",
               "ip.hosting_provider",
+              "ip.vpn",
+              "ip.proxy",
+              "ip.relay",
               "ip.private",
               "velocity.signups_per_ip_1h",
               "velocity.signups_per_ip_24h",
               "velocity.signups_per_subnet_1h",
               "velocity.signups_per_email_domain_1h",
               "velocity.signups_per_mailbox_24h",
+              "velocity.signups_per_device_24h",
+              "velocity.checkouts_per_ip_1h",
+              "velocity.checkouts_per_user_1h",
+              "velocity.checkouts_per_card_24h",
               "velocity.logins_per_ip_1h",
               "velocity.logins_per_user_1h",
               "velocity.events_per_ip_1h",
               "velocity.events_per_user_1h",
               "duplicate.canonical_mailbox",
+              "duplicate.device",
               "history.fraud_mailbox",
               "history.fraud_user",
               "history.fraud_ip",
               "history.fraud_subnet",
+              "history.fraud_card",
+              "history.fraud_device",
+              "checkout.card_country_mismatch",
+              "checkout.billing_country_mismatch",
+              "checkout.prepaid_card",
+              "device.automation",
+              "device.invalid",
               "login.new_country",
               "login.new_network",
               "captcha.failed",
@@ -8555,18 +8596,18 @@
           },
           "provider": {
             "type": "string",
-            "description": "`ip.hosting_provider`, `ip.vpn_network`: the network's operator."
+            "description": "`ip.hosting_provider`, `ip.vpn_network`: the network's operator; `ip.vpn`: the VPN service."
           },
           "previous_user": {
             "type": [
               "string",
               "null"
             ],
-            "description": "`duplicate.canonical_mailbox`: your id of the user who has the mailbox, if known."
+            "description": "`duplicate.canonical_mailbox`, `duplicate.device`: your id of the user who has the mailbox or device, if known."
           },
           "previous_assessment": {
             "type": "string",
-            "description": "`duplicate.canonical_mailbox`: the assessment that first saw the mailbox."
+            "description": "`duplicate.canonical_mailbox`, `duplicate.device`: the assessment that first saw the mailbox or device."
           },
           "entry": {
             "type": "string",
@@ -8718,6 +8759,17 @@
               "null"
             ],
             "description": "ISO 3166-1 alpha-2."
+          },
+          "privacy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskIpPrivacy"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "From COSS's IP privacy data provider (VPNs, proxies, relays). `null` when it isn't available or was not asked (private addresses)."
           }
         },
         "required": [
@@ -8729,7 +8781,35 @@
           "hosting_kind",
           "asn",
           "as_name",
-          "country"
+          "country",
+          "privacy"
+        ]
+      },
+      "RiskIpPrivacy": {
+        "type": "object",
+        "properties": {
+          "vpn": {
+            "type": "boolean"
+          },
+          "proxy": {
+            "type": "boolean"
+          },
+          "relay": {
+            "type": "boolean"
+          },
+          "service": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The VPN or proxy service."
+          }
+        },
+        "required": [
+          "vpn",
+          "proxy",
+          "relay",
+          "service"
         ]
       },
       "RiskVelocitySignals": {
@@ -8806,6 +8886,113 @@
         ],
         "description": "Per category, the model's probability (0-1) that the content belongs to it. Scores are not calibrated: pick thresholds by looking at your own traffic."
       },
+      "RiskCheckoutSignals": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "card_country": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "card_funding": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "credit",
+              "debit",
+              "prepaid",
+              "unknown",
+              null
+            ]
+          },
+          "billing_country": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "shipping_country": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "amount",
+          "currency",
+          "card_country",
+          "card_funding",
+          "billing_country",
+          "shipping_country"
+        ],
+        "description": "What you sent in `checkout` (never the card)."
+      },
+      "RiskDeviceSignals": {
+        "type": "object",
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "description": "`false`: the token was malformed or too old."
+          },
+          "automation": {
+            "type": "boolean",
+            "description": "WebDriver control or a headless browser."
+          },
+          "timezone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "IANA time zone (`Europe/London`)."
+          },
+          "language": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The browser's first language."
+          },
+          "platform": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "screen": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`<width>x<height>` in CSS pixels."
+          },
+          "touch": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "valid",
+          "automation",
+          "timezone",
+          "language",
+          "platform",
+          "screen",
+          "touch"
+        ],
+        "description": "What the browser reported through `coss/device` (its device id is only kept as a keyed hash)."
+      },
       "RiskOutcome": {
         "type": "string",
         "enum": [
@@ -8877,6 +9064,25 @@
             ],
             "additionalProperties": false
           },
+          "checkout": {
+            "$ref": "#/components/schemas/RiskCheckoutRequest"
+          },
+          "device": {
+            "type": "object",
+            "properties": {
+              "token": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "description": "What `collectDevice()` from `coss/device` returned in the user's browser, passed through your server."
+              }
+            },
+            "required": [
+              "token"
+            ],
+            "additionalProperties": false,
+            "description": "The browser the event came from: recognizes it across accounts (`duplicate.device`, device velocity, fraud memory) and spots automation."
+          },
           "content": {
             "type": "object",
             "properties": {
@@ -8908,6 +9114,65 @@
             "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/605.1.15"
           }
         ]
+      },
+      "RiskCheckoutRequest": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000,
+            "description": "The amount in the currency's minor unit (cents for USD: 1999 is $19.99)."
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "ISO 4217, upper-case (`USD`)."
+          },
+          "card": {
+            "type": "object",
+            "properties": {
+              "fingerprint": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "description": "Your payment processor's fingerprint of the card number (Stripe: `card.fingerprint`). Counted and remembered as a keyed hash only; never send the card number."
+              },
+              "country": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$",
+                "description": "Where the card was issued."
+              },
+              "funding": {
+                "type": "string",
+                "enum": [
+                  "credit",
+                  "debit",
+                  "prepaid",
+                  "unknown"
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "description": "What your payment processor tells you about the card."
+          },
+          "billing_country": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "description": "ISO 3166-1 alpha-2, upper-case (`GB`)."
+          },
+          "shipping_country": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "description": "ISO 3166-1 alpha-2, upper-case (`GB`)."
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "additionalProperties": false,
+        "description": "Only with `checkout` events: what is being paid for, and with which card."
       },
       "RiskAssessmentList": {
         "type": "object",
@@ -8978,7 +9243,8 @@
                     "hosting_kind": null,
                     "asn": 64500,
                     "as_name": "Example Broadband",
-                    "country": "GB"
+                    "country": "GB",
+                    "privacy": null
                   },
                   "velocity": {
                     "ip_1h": 7,
@@ -8991,7 +9257,9 @@
                     "passed": true
                   },
                   "login": null,
-                  "content": null
+                  "content": null,
+                  "checkout": null,
+                  "device": null
                 },
                 "user": {
                   "id": null,
@@ -9283,21 +9551,36 @@
                 "ip.tor",
                 "ip.vpn_network",
                 "ip.hosting_provider",
+                "ip.vpn",
+                "ip.proxy",
+                "ip.relay",
                 "ip.private",
                 "velocity.signups_per_ip_1h",
                 "velocity.signups_per_ip_24h",
                 "velocity.signups_per_subnet_1h",
                 "velocity.signups_per_email_domain_1h",
                 "velocity.signups_per_mailbox_24h",
+                "velocity.signups_per_device_24h",
+                "velocity.checkouts_per_ip_1h",
+                "velocity.checkouts_per_user_1h",
+                "velocity.checkouts_per_card_24h",
                 "velocity.logins_per_ip_1h",
                 "velocity.logins_per_user_1h",
                 "velocity.events_per_ip_1h",
                 "velocity.events_per_user_1h",
                 "duplicate.canonical_mailbox",
+                "duplicate.device",
                 "history.fraud_mailbox",
                 "history.fraud_user",
                 "history.fraud_ip",
                 "history.fraud_subnet",
+                "history.fraud_card",
+                "history.fraud_device",
+                "checkout.card_country_mismatch",
+                "checkout.billing_country_mismatch",
+                "checkout.prepaid_card",
+                "device.automation",
+                "device.invalid",
                 "login.new_country",
                 "login.new_network",
                 "captcha.failed",
@@ -9385,6 +9668,153 @@
             ],
             "description": "Per content category, the score at which `content.<category>` fires; `null`: never (the score is still in `signals.content` for your rules)."
           },
+          "reason_weights": {
+            "type": "object",
+            "properties": {
+              "email.invalid": {
+                "type": "number"
+              },
+              "email.disposable": {
+                "type": "number"
+              },
+              "email.undeliverable": {
+                "type": "number"
+              },
+              "email.role_account": {
+                "type": "number"
+              },
+              "email.typo": {
+                "type": "number"
+              },
+              "email.domain_new": {
+                "type": "number"
+              },
+              "ip.tor": {
+                "type": "number"
+              },
+              "ip.vpn_network": {
+                "type": "number"
+              },
+              "ip.hosting_provider": {
+                "type": "number"
+              },
+              "ip.vpn": {
+                "type": "number"
+              },
+              "ip.proxy": {
+                "type": "number"
+              },
+              "ip.relay": {
+                "type": "number"
+              },
+              "ip.private": {
+                "type": "number"
+              },
+              "velocity.signups_per_ip_1h": {
+                "type": "number"
+              },
+              "velocity.signups_per_ip_24h": {
+                "type": "number"
+              },
+              "velocity.signups_per_subnet_1h": {
+                "type": "number"
+              },
+              "velocity.signups_per_email_domain_1h": {
+                "type": "number"
+              },
+              "velocity.signups_per_mailbox_24h": {
+                "type": "number"
+              },
+              "velocity.signups_per_device_24h": {
+                "type": "number"
+              },
+              "velocity.checkouts_per_ip_1h": {
+                "type": "number"
+              },
+              "velocity.checkouts_per_user_1h": {
+                "type": "number"
+              },
+              "velocity.checkouts_per_card_24h": {
+                "type": "number"
+              },
+              "velocity.logins_per_ip_1h": {
+                "type": "number"
+              },
+              "velocity.logins_per_user_1h": {
+                "type": "number"
+              },
+              "velocity.events_per_ip_1h": {
+                "type": "number"
+              },
+              "velocity.events_per_user_1h": {
+                "type": "number"
+              },
+              "duplicate.canonical_mailbox": {
+                "type": "number"
+              },
+              "duplicate.device": {
+                "type": "number"
+              },
+              "history.fraud_mailbox": {
+                "type": "number"
+              },
+              "history.fraud_user": {
+                "type": "number"
+              },
+              "history.fraud_ip": {
+                "type": "number"
+              },
+              "history.fraud_subnet": {
+                "type": "number"
+              },
+              "history.fraud_card": {
+                "type": "number"
+              },
+              "history.fraud_device": {
+                "type": "number"
+              },
+              "checkout.card_country_mismatch": {
+                "type": "number"
+              },
+              "checkout.billing_country_mismatch": {
+                "type": "number"
+              },
+              "checkout.prepaid_card": {
+                "type": "number"
+              },
+              "device.automation": {
+                "type": "number"
+              },
+              "device.invalid": {
+                "type": "number"
+              },
+              "login.new_country": {
+                "type": "number"
+              },
+              "login.new_network": {
+                "type": "number"
+              },
+              "captcha.failed": {
+                "type": "number"
+              },
+              "captcha.missing": {
+                "type": "number"
+              },
+              "content.spam": {
+                "type": "number"
+              },
+              "content.phishing": {
+                "type": "number"
+              },
+              "content.malware": {
+                "type": "number"
+              },
+              "content.fraud": {
+                "type": "number"
+              }
+            },
+            "description": "Reasons whose weight this environment changed (from calibration or by hand); the rest weigh what the reason catalog says."
+          },
           "updated_at": {
             "type": [
               "string",
@@ -9401,6 +9831,7 @@
           "disabled_reasons",
           "captcha",
           "content_thresholds",
+          "reason_weights",
           "updated_at"
         ],
         "examples": [
@@ -9420,6 +9851,9 @@
               "phishing": 0.8,
               "malware": 0.8,
               "fraud": 0.9
+            },
+            "reason_weights": {
+              "ip.hosting_provider": 0.1
             },
             "updated_at": "2026-01-15T09:30:00.000Z"
           }
@@ -9452,21 +9886,36 @@
                 "ip.tor",
                 "ip.vpn_network",
                 "ip.hosting_provider",
+                "ip.vpn",
+                "ip.proxy",
+                "ip.relay",
                 "ip.private",
                 "velocity.signups_per_ip_1h",
                 "velocity.signups_per_ip_24h",
                 "velocity.signups_per_subnet_1h",
                 "velocity.signups_per_email_domain_1h",
                 "velocity.signups_per_mailbox_24h",
+                "velocity.signups_per_device_24h",
+                "velocity.checkouts_per_ip_1h",
+                "velocity.checkouts_per_user_1h",
+                "velocity.checkouts_per_card_24h",
                 "velocity.logins_per_ip_1h",
                 "velocity.logins_per_user_1h",
                 "velocity.events_per_ip_1h",
                 "velocity.events_per_user_1h",
                 "duplicate.canonical_mailbox",
+                "duplicate.device",
                 "history.fraud_mailbox",
                 "history.fraud_user",
                 "history.fraud_ip",
                 "history.fraud_subnet",
+                "history.fraud_card",
+                "history.fraud_device",
+                "checkout.card_country_mismatch",
+                "checkout.billing_country_mismatch",
+                "checkout.prepaid_card",
+                "device.automation",
+                "device.invalid",
                 "login.new_country",
                 "login.new_network",
                 "captcha.failed",
@@ -9563,6 +10012,576 @@
             },
             "additionalProperties": false,
             "description": "Changes the categories given: a score in (0, 1] sets the threshold, `null` removes it."
+          },
+          "reason_weights": {
+            "type": "object",
+            "properties": {
+              "email.invalid": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "email.disposable": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "email.undeliverable": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "email.role_account": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "email.typo": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "email.domain_new": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ip.tor": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ip.vpn_network": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ip.hosting_provider": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ip.vpn": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ip.proxy": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ip.relay": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ip.private": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.signups_per_ip_1h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.signups_per_ip_24h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.signups_per_subnet_1h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.signups_per_email_domain_1h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.signups_per_mailbox_24h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.signups_per_device_24h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.checkouts_per_ip_1h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.checkouts_per_user_1h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.checkouts_per_card_24h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.logins_per_ip_1h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.logins_per_user_1h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.events_per_ip_1h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "velocity.events_per_user_1h": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "duplicate.canonical_mailbox": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "duplicate.device": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "history.fraud_mailbox": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "history.fraud_user": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "history.fraud_ip": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "history.fraud_subnet": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "history.fraud_card": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "history.fraud_device": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "checkout.card_country_mismatch": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "checkout.billing_country_mismatch": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "checkout.prepaid_card": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "device.automation": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "device.invalid": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "login.new_country": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "login.new_network": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "captcha.failed": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "captcha.missing": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "content.spam": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "content.phishing": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "content.malware": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "content.fraud": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "description": "Changes the reasons given: a weight in [0, 0.99] replaces the default, `null` goes back to it."
           }
         },
         "additionalProperties": false,
@@ -9575,6 +10594,217 @@
               "required": true
             }
           }
+        ]
+      },
+      "RiskCalibration": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "risk_calibration"
+            ]
+          },
+          "window_days": {
+            "type": "integer"
+          },
+          "assessments": {
+            "type": "integer",
+            "description": "Assessments in the window."
+          },
+          "labeled": {
+            "type": "integer",
+            "description": "Of those, with feedback."
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RiskCalibrationReason"
+            }
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RiskCalibrationRule"
+            }
+          }
+        },
+        "required": [
+          "object",
+          "window_days",
+          "assessments",
+          "labeled",
+          "reasons",
+          "rules"
+        ],
+        "description": "Feedback against the reasons and rules that fired, over the last 90 days. Feedback you give mostly on reviews and blocks over-represents those: read precision as a guide, not a measurement.",
+        "examples": [
+          {
+            "object": "risk_calibration",
+            "window_days": 90,
+            "assessments": 1840,
+            "labeled": 212,
+            "reasons": [
+              {
+                "code": "ip.hosting_provider",
+                "fired": 96,
+                "fraud": 4,
+                "legitimate": 38,
+                "precision": 0.095,
+                "default_weight": 0.25,
+                "weight": 0.25,
+                "suggested_weight": 0.16
+              }
+            ],
+            "rules": [
+              {
+                "rule": "rskrule_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "name": "Disposable email from a data center",
+                "matched": 31,
+                "fraud": 12,
+                "legitimate": 1,
+                "precision": 0.923
+              }
+            ]
+          }
+        ]
+      },
+      "RiskCalibrationReason": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "email.invalid",
+              "email.disposable",
+              "email.undeliverable",
+              "email.role_account",
+              "email.typo",
+              "email.domain_new",
+              "ip.tor",
+              "ip.vpn_network",
+              "ip.hosting_provider",
+              "ip.vpn",
+              "ip.proxy",
+              "ip.relay",
+              "ip.private",
+              "velocity.signups_per_ip_1h",
+              "velocity.signups_per_ip_24h",
+              "velocity.signups_per_subnet_1h",
+              "velocity.signups_per_email_domain_1h",
+              "velocity.signups_per_mailbox_24h",
+              "velocity.signups_per_device_24h",
+              "velocity.checkouts_per_ip_1h",
+              "velocity.checkouts_per_user_1h",
+              "velocity.checkouts_per_card_24h",
+              "velocity.logins_per_ip_1h",
+              "velocity.logins_per_user_1h",
+              "velocity.events_per_ip_1h",
+              "velocity.events_per_user_1h",
+              "duplicate.canonical_mailbox",
+              "duplicate.device",
+              "history.fraud_mailbox",
+              "history.fraud_user",
+              "history.fraud_ip",
+              "history.fraud_subnet",
+              "history.fraud_card",
+              "history.fraud_device",
+              "checkout.card_country_mismatch",
+              "checkout.billing_country_mismatch",
+              "checkout.prepaid_card",
+              "device.automation",
+              "device.invalid",
+              "login.new_country",
+              "login.new_network",
+              "captcha.failed",
+              "captcha.missing",
+              "content.spam",
+              "content.phishing",
+              "content.malware",
+              "content.fraud"
+            ]
+          },
+          "fired": {
+            "type": "integer",
+            "description": "Assessments it fired in."
+          },
+          "fraud": {
+            "type": "integer",
+            "description": "With feedback `fraud` or `abuse`."
+          },
+          "legitimate": {
+            "type": "integer",
+            "description": "With feedback `legitimate`."
+          },
+          "precision": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "`fraud / (fraud + legitimate)`: how often it was right when you told COSS. `null` without feedback."
+          },
+          "default_weight": {
+            "type": "number"
+          },
+          "weight": {
+            "type": "number",
+            "description": "Its weight in this environment now."
+          },
+          "suggested_weight": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "The weight feedback supports: its precision, pulled toward the default while there is little feedback. `null` below 20 assessments with feedback."
+          }
+        },
+        "required": [
+          "code",
+          "fired",
+          "fraud",
+          "legitimate",
+          "precision",
+          "default_weight",
+          "weight",
+          "suggested_weight"
+        ]
+      },
+      "RiskCalibrationRule": {
+        "type": "object",
+        "properties": {
+          "rule": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "matched": {
+            "type": "integer",
+            "description": "Assessments it decided."
+          },
+          "fraud": {
+            "type": "integer",
+            "description": "With feedback `fraud` or `abuse`."
+          },
+          "legitimate": {
+            "type": "integer",
+            "description": "With feedback `legitimate`."
+          },
+          "precision": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "`fraud / (fraud + legitimate)`: how often it was right when you told COSS. `null` without feedback."
+          }
+        },
+        "required": [
+          "rule",
+          "name",
+          "matched",
+          "fraud",
+          "legitimate",
+          "precision"
         ]
       },
       "RiskRule": {
@@ -9692,12 +10922,15 @@
               "ip.tor",
               "ip.hosting",
               "ip.vpn",
+              "ip.proxy",
+              "ip.relay",
               "ip.private",
               "ip.country",
               "ip.asn",
               "ip.hosting_provider",
               "captcha.passed",
               "duplicate.canonical_mailbox",
+              "duplicate.device",
               "history.fraud",
               "login.new_country",
               "login.new_network",
@@ -9705,6 +10938,15 @@
               "content.phishing",
               "content.malware",
               "content.fraud",
+              "checkout.amount",
+              "checkout.currency",
+              "checkout.card_country",
+              "checkout.card_funding",
+              "checkout.billing_country",
+              "checkout.shipping_country",
+              "device.automation",
+              "device.timezone",
+              "device.language",
               "score",
               "velocity.ip_1h",
               "velocity.ip_24h",
@@ -9715,7 +10957,11 @@
               "velocity.mailbox_1h",
               "velocity.mailbox_24h",
               "velocity.user_1h",
-              "velocity.user_24h"
+              "velocity.user_24h",
+              "velocity.card_1h",
+              "velocity.card_24h",
+              "velocity.device_1h",
+              "velocity.device_24h"
             ]
           },
           "operator": {
@@ -10162,6 +11408,17 @@
             ],
             "description": "ISO 3166-1 alpha-2."
           },
+          "privacy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskIpPrivacy"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "From COSS's IP privacy data provider (VPNs, proxies, relays). `null` when it isn't available or was not asked (private addresses)."
+          },
           "object": {
             "type": "string",
             "enum": [
@@ -10176,10 +11433,11 @@
             "items": {
               "type": "string",
               "enum": [
-                "ip_data"
+                "ip_data",
+                "ip_privacy"
               ]
             },
-            "description": "`ip_data` when some IP data (Tor exits, cloud ranges, networks and countries) is unavailable at the moment."
+            "description": "`ip_data` when some IP data (Tor exits, cloud ranges, networks and countries) is unavailable at the moment; `ip_privacy` when the privacy data provider failed or timed out."
           }
         },
         "required": [
@@ -10192,6 +11450,7 @@
           "asn",
           "as_name",
           "country",
+          "privacy",
           "object",
           "ip",
           "degraded"
@@ -10209,6 +11468,7 @@
             "asn": 60729,
             "as_name": "Stiftung Erneuerbare Freiheit",
             "country": "DE",
+            "privacy": null,
             "degraded": []
           }
         ]
@@ -35369,7 +36629,7 @@
           "Risk"
         ],
         "summary": "Update the risk settings",
-        "description": "Changes the fields given. `review_threshold` must not exceed `block_threshold`. Disabled reasons never fire (rules still see the facts behind them). Setting a captcha provider makes assessments verify their `captcha.token` with it; `required` adds `captcha.missing` to assessments without one.",
+        "description": "Changes the fields given. `review_threshold` must not exceed `block_threshold`. Disabled reasons never fire (rules still see the facts behind them). Setting a captcha provider makes assessments verify their `captcha.token` with it; `required` adds `captcha.missing` to assessments without one. `reason_weights` replaces reasons' default weights (for example with calibration's `suggested_weight`); `null` restores a default.",
         "security": [
           {
             "bearerAuth": []
@@ -35523,6 +36783,190 @@
           },
           "422": {
             "description": "The body failed validation (`validation_error`, see `issues`), the thresholds are out of order, or a new captcha provider has no secret (`invalid_settings`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
+      }
+    },
+    "/v1/risk/calibration": {
+      "get": {
+        "operationId": "getRiskCalibration",
+        "tags": [
+          "Risk"
+        ],
+        "summary": "Retrieve the calibration",
+        "description": "How often each reason and rule was right over the last 90 days, by the outcomes you reported with feedback, and the reason weights that supports. Nothing changes until you apply them with `reason_weights` in the settings.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The calibration.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskCalibration"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

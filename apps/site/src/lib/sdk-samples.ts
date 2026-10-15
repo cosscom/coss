@@ -374,6 +374,7 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   "GET /v1/risk/list_entries/{id}": { method: "risk.lists.get", args: (r) => [pathId(r)] },
   "DELETE /v1/risk/list_entries/{id}": { method: "risk.lists.remove", args: (r) => [pathId(r)] },
   "GET /v1/risk/settings": { method: "risk.settings.get", args: () => [] },
+  "GET /v1/risk/calibration": { method: "risk.calibration", args: () => [] },
   "PATCH /v1/risk/settings": {
     method: "risk.settings.update",
     args: (request) => [tsValue(request.body ?? {})],

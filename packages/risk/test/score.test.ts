@@ -41,6 +41,37 @@ describe("golden cases", () => {
       "block",
     ],
     ["a private IP alone", [r("ip.private")], "allow"],
+    ["a privacy relay alone", [r("ip.relay")], "allow"],
+    ["a VPN alone", [r("ip.vpn")], "allow"],
+    ["a proxy alone", [r("ip.proxy")], "allow"],
+    ["a foreign card", [r("checkout.card_country_mismatch")], "allow"],
+    [
+      "a prepaid foreign card",
+      [r("checkout.card_country_mismatch"), r("checkout.prepaid_card")],
+      "allow",
+    ],
+    ["a foreign card over a proxy", [r("checkout.card_country_mismatch"), r("ip.proxy")], "review"],
+    [
+      "card testing: a checkout burst on a prepaid card",
+      [r("velocity.checkouts_per_ip_1h"), r("checkout.prepaid_card"), r("ip.hosting_provider")],
+      "review",
+    ],
+    ["a reported card", [r("history.fraud_card")], "review"],
+    ["a reported card over a proxy", [r("history.fraud_card"), r("ip.proxy")], "block"],
+    ["an automated browser", [r("device.automation")], "review"],
+    ["an automated browser on a VPN", [r("device.automation"), r("ip.vpn")], "review"],
+    [
+      "an automated browser in a data center behind a burst",
+      [r("device.automation"), r("ip.hosting_provider"), r("velocity.signups_per_ip_1h")],
+      "block",
+    ],
+    ["a second account from one browser", [r("duplicate.device")], "allow"],
+    [
+      "a browser with three accounts today",
+      [r("duplicate.device"), r("velocity.signups_per_device_24h")],
+      "review",
+    ],
+    ["a bad device token", [r("device.invalid")], "allow"],
   ])("%s → %s", (_, reasons, decision) => {
     expect(decide(scoreReasons(reasons), reasons)).toBe(decision);
   });

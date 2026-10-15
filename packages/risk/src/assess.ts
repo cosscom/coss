@@ -5,8 +5,9 @@
  * assessment with its log line, mailbox identity, login networks and (for `review`) webhook in one
  * transaction.
  *
- * Every signal is best-effort: a slow DNS lookup, missing IP data, a failed classification or an
- * unreachable Valkey make the assessment go without it (listed in `degraded`) rather than fail.
+ * Every signal is best-effort: a slow DNS lookup, missing IP data, a failed classification, a slow
+ * IP privacy provider or an unreachable Valkey make the assessment go without it (listed in
+ * `degraded`) rather than fail.
  */
 import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
@@ -20,6 +21,7 @@ import { isBlockedAddress, normalizeIp, subnetOf } from "@coss/signals/ip";
 import { enqueueWebhookMessage, type SecretsKeyRing } from "@coss/webhooks";
 import { and, eq, gte, isNotNull, lt, ne, or, type SQL, sql } from "drizzle-orm";
 import type { IpIntelligenceSource } from "./datasets.ts";
+import { readDeviceToken } from "./device.ts";
 import type { DomainAgeLookup } from "./domain-age.ts";
 import { RiskError } from "./errors.ts";
 import type { RiskHasher, RiskHashKind } from "./hash.ts";
@@ -29,10 +31,12 @@ import {
   type ContentScores,
   emailDeliverability,
   emailDomainAge,
+  ipPrivacyFor,
   ipSignalsFor,
   isDisposable,
 } from "./lookups.ts";
 import { rememberUserNetwork, userNetworks } from "./networks.ts";
+import type { IpPrivacy, IpPrivacyLookup } from "./privacy.ts";
 import { type RiskAssessmentRow, type StoredSignals, toRiskAssessmentObject } from "./read.ts";
 import { firstMatchingRule, listRiskRuleRows, type RiskRuleRow, type RuleFacts } from "./rules.ts";
 import { sandboxCaptchaVerdict, sandboxIpSignals } from "./sandbox.ts";
@@ -85,6 +89,9 @@ export type RiskDeps = {
   chargeClassification?: (organizationId: string) => Promise<boolean>;
   /** Where customers' rate limit buckets live (`POST /v1/risk/limits`); `null`: unavailable. */
   limits: RateLimitStore | null;
+  /** VPN, proxy and relay data per address (a paid provider); `null`: none (not degraded). */
+  ipPrivacy?: IpPrivacyLookup | null;
+  ipPrivacyTimeoutMs?: number;
 };
 
 /** The authenticated environment (from the API key). */
@@ -146,11 +153,14 @@ export async function assessRisk(
     }
   }
 
-  // The dataset source can need its own database connection on first load, and classification
-  // takes up to 3 s. Resolve both before occupying a transaction connection, so concurrent
-  // requests cannot exhaust the pool.
-  const [ipSignals, content] = await Promise.all([
-    ipSignalsFor(deps, params.ip ? normalizeIp(params.ip) : null, environment.mode === "sandbox"),
+  // The dataset source can need its own database connection on first load, classification takes
+  // up to 3 s and the privacy provider is a network call. Resolve them before occupying a
+  // transaction connection, so concurrent requests cannot exhaust the pool.
+  const ip = params.ip ? normalizeIp(params.ip) : null;
+  const sandbox = environment.mode === "sandbox";
+  const [ipSignals, privacy, content] = await Promise.all([
+    ipSignalsFor(deps, ip, sandbox),
+    ipPrivacyFor(deps, ip, sandbox),
     // Only paid work needs a claim: assessments without content stay one transaction.
     idempotencyKey && params.content?.text
       ? prepareIdempotentContent(deps, input, idempotencyKey, hash as string)
@@ -182,6 +192,7 @@ export async function assessRisk(
     ]);
     const collected = await collectSignals(tx, deps, environment, params, settings, {
       ip: ipSignals,
+      privacy,
       content,
     });
     const row = await insertAssessment(tx, input, collected, settings, rules, {
@@ -277,6 +288,7 @@ async function collectSignals(
   settings: ResolvedRiskSettings,
   resolved: {
     ip: Awaited<ReturnType<typeof ipSignalsFor>>;
+    privacy: { privacy: IpPrivacy | null; degraded: boolean };
     content: { scores: ContentScores | null; degraded: boolean };
   },
 ): Promise<Collected> {
@@ -297,6 +309,10 @@ async function collectSignals(
     if (subnet) hashes.subnet = deps.hash(env, "subnet", subnet);
   }
   if (userId) hashes.user = deps.hash(env, "user", userId);
+  const device = params.device ? readDeviceToken(params.device.token, { sandbox }) : null;
+  if (device?.id) hashes.device = deps.hash(env, "device", device.id);
+  const cardFingerprint = params.checkout?.card?.fingerprint;
+  if (cardFingerprint) hashes.card = deps.hash(env, "card", cardFingerprint);
 
   const [deliverability, age, captcha, ipSignals, velocity, listMatches, reports, networks] =
     await Promise.all([
@@ -367,10 +383,12 @@ async function collectSignals(
     }
   }
 
-  // IP.
+  // IP: the datasets know networks, the privacy provider (when there is one) knows addresses.
   let ipObject: StoredSignals["ip"] = null;
   if (ip) {
     if (ipSignals.degraded) degraded.add("ip_data");
+    if (resolved.privacy.degraded) degraded.add("ip_privacy");
+    const privacy = resolved.privacy.privacy;
     const found = ipSignals.signals;
     if (found) {
       ipObject = {
@@ -383,10 +401,16 @@ async function collectSignals(
         asn: found.asn,
         as_name: found.as_name,
         country: found.country,
+        privacy,
       };
       if (found.bogon) reasons.push({ code: "ip.private" });
       if (found.tor) reasons.push({ code: "ip.tor" });
-      if (found.hosting_kind === "vpn") {
+      if (privacy?.vpn) {
+        reasons.push(
+          privacy.service ? { code: "ip.vpn", provider: privacy.service } : { code: "ip.vpn" },
+        );
+      } else if (found.hosting_kind === "vpn" && !privacy) {
+        // Only a guess from the network: the provider, when there is one, knows the address.
         reasons.push({ code: "ip.vpn_network", provider: found.hosting_provider ?? "unknown" });
       } else if (found.hosting) {
         reasons.push({
@@ -394,7 +418,42 @@ async function collectSignals(
           provider: found.hosting_provider ?? "unknown",
         });
       }
+      if (privacy?.proxy) reasons.push({ code: "ip.proxy" });
+      if (privacy?.relay) reasons.push({ code: "ip.relay" });
     }
+  }
+
+  // Checkout: what the customer's payment processor knows about the card, against the IP.
+  let checkoutSignals: StoredSignals["checkout"] = null;
+  if (params.checkout) {
+    const { checkout } = params;
+    checkoutSignals = {
+      amount: checkout.amount,
+      currency: checkout.currency,
+      card_country: checkout.card?.country ?? null,
+      card_funding: checkout.card?.funding ?? null,
+      billing_country: checkout.billing_country ?? null,
+      shipping_country: checkout.shipping_country ?? null,
+    };
+    const cardCountry = checkoutSignals.card_country;
+    const ipCountry = ipObject?.country ?? null;
+    if (cardCountry && ipCountry && !ipObject?.private && cardCountry !== ipCountry) {
+      reasons.push({ code: "checkout.card_country_mismatch" });
+    }
+    if (
+      cardCountry &&
+      checkoutSignals.billing_country &&
+      cardCountry !== checkoutSignals.billing_country
+    ) {
+      reasons.push({ code: "checkout.billing_country_mismatch" });
+    }
+    if (checkoutSignals.card_funding === "prepaid") reasons.push({ code: "checkout.prepaid_card" });
+  }
+
+  // Device.
+  if (device) {
+    if (!device.signals.valid) reasons.push({ code: "device.invalid" });
+    if (device.signals.automation) reasons.push({ code: "device.automation" });
   }
 
   // Lists can also match on the IP's network and country, known only now.
@@ -448,6 +507,8 @@ async function collectSignals(
   // Memory.
   if (reports.has("mailbox")) reasons.push({ code: "history.fraud_mailbox" });
   if (reports.has("user")) reasons.push({ code: "history.fraud_user" });
+  if (reports.has("card")) reasons.push({ code: "history.fraud_card" });
+  if (reports.has("device")) reasons.push({ code: "history.fraud_device" });
   if (reports.has("ip")) reasons.push({ code: "history.fraud_ip" });
   else if (reports.has("subnet")) reasons.push({ code: "history.fraud_subnet" });
 
@@ -459,6 +520,8 @@ async function collectSignals(
       captcha: captchaSignals,
       login: loginSignals,
       content: contentScores,
+      checkout: checkoutSignals,
+      device: device?.signals ?? null,
     },
     reasons,
     degraded: [...degraded].sort(),
@@ -530,6 +593,8 @@ async function countVelocity(
     subnet: publicIp ? hashes.subnet : undefined,
     mailbox: hashes.mailbox,
     user: hashes.user,
+    card: hashes.card,
+    device: hashes.device,
     email_domain:
       email?.valid && !email.free ? deps.hash(env, "email_domain", email.domain) : undefined,
   };
@@ -562,7 +627,7 @@ async function reportedHashes(
 ): Promise<Set<string>> {
   const pairs: SQL[] = [];
   const networkCutoff = new Date(Date.now() - NETWORK_REPORT_TTL_MS);
-  for (const kind of ["mailbox", "user", "ip", "subnet"] as const) {
+  for (const kind of ["mailbox", "user", "card", "device", "ip", "subnet"] as const) {
     const value = hashes[kind];
     if (!value) continue;
     const network = kind === "ip" || kind === "subnet";
@@ -599,52 +664,53 @@ async function insertAssessment(
   const { environment, params } = input;
   const userId = params.user?.id ?? null;
   const mailboxHash = collected.hashes.mailbox;
+  const deviceHash = collected.hashes.device;
   const reasons = [...collected.reasons];
 
-  // "This mailbox already has an account": serialized per mailbox, so of two concurrent sign-ups
-  // with one mailbox the second sees the first.
-  let previous: { userId: string | null; assessmentId: string } | undefined;
-  if (params.event === "signup" && mailboxHash) {
-    const lock = `risk:mailbox:${environment.environmentId}:${mailboxHash}`;
-    await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${lock}, 0))`);
-    [previous] = await tx
-      .select({ userId: riskIdentity.userId, assessmentId: riskIdentity.assessmentId })
-      .from(riskIdentity)
-      .where(
-        and(
-          eq(riskIdentity.organizationId, environment.organizationId),
-          eq(riskIdentity.environmentId, environment.environmentId),
-          eq(riskIdentity.kind, "mailbox"),
-          eq(riskIdentity.valueHash, mailboxHash),
-          // Only accounts count: earlier attempts without a user are velocity, not duplicates.
-          isNotNull(riskIdentity.userId),
-          userId ? ne(riskIdentity.userId, userId) : undefined,
-        ),
-      )
-      .orderBy(riskIdentity.firstSeenAt)
-      .limit(1);
-    if (previous) {
-      reasons.push({
-        code: "duplicate.canonical_mailbox",
-        previous_user: previous.userId,
-        previous_assessment: previous.assessmentId,
-      });
-    }
+  // "This mailbox (or browser) already has an account": serialized per mailbox and per device
+  // (always in that order), so of two concurrent sign-ups the second sees the first.
+  const signup = params.event === "signup";
+  const previousMailbox =
+    signup && mailboxHash
+      ? await previousAccount(tx, environment, "mailbox", mailboxHash, userId)
+      : undefined;
+  if (previousMailbox) {
+    reasons.push({
+      code: "duplicate.canonical_mailbox",
+      previous_user: previousMailbox.userId,
+      previous_assessment: previousMailbox.assessmentId,
+    });
+  }
+  const previousDevice =
+    signup && deviceHash
+      ? await previousAccount(tx, environment, "device", deviceHash, userId)
+      : undefined;
+  if (previousDevice) {
+    reasons.push({
+      code: "duplicate.device",
+      previous_user: previousDevice.userId,
+      previous_assessment: previousDevice.assessmentId,
+    });
   }
 
   // Disabled reasons never fire; rules still see the facts behind them.
+  const weights = settings.reasonWeights;
   const enabled = reasons.filter((reason) => !settings.disabledReasons.has(reason.code));
-  const score = scoreReasons(enabled);
+  const score = scoreReasons(enabled, weights);
   const listed = enabled.some((reason) => reason.code.startsWith("list."));
   const rule = listed
     ? null
     : firstMatchingRule(
         rules,
         params.event,
-        ruleFacts(collected, { score, duplicate: previous !== undefined }),
+        ruleFacts(collected, {
+          score,
+          duplicate: previousMailbox !== undefined,
+          duplicateDevice: previousDevice !== undefined,
+        }),
       );
   if (rule) enabled.push({ code: "rule.matched", rule: rule.id, name: rule.name });
-  const sorted = sortReasons(enabled);
+  const sorted = sortReasons(enabled, weights);
   const decision = decide(score, sorted, settings.thresholds, rule?.action ?? null);
   const now = new Date();
 
@@ -663,6 +729,8 @@ async function insertAssessment(
       emailHash: collected.hashes.mailbox ?? null,
       ipHash: collected.hashes.ip ?? null,
       subnetHash: collected.hashes.subnet ?? null,
+      cardHash: collected.hashes.card ?? null,
+      deviceHash: deviceHash ?? null,
       decision,
       score,
       reasons: sorted,
@@ -677,29 +745,39 @@ async function insertAssessment(
     .returning();
   if (!row) return undefined;
 
-  if (params.event === "signup" && mailboxHash && decision !== "block") {
-    await tx
-      .insert(riskIdentity)
-      .values({
-        organizationId: environment.organizationId,
-        environmentId: environment.environmentId,
-        kind: "mailbox",
-        valueHash: mailboxHash,
-        userId,
-        assessmentId: row.id,
-        firstSeenAt: now,
-        lastSeenAt: now,
-      })
-      .onConflictDoUpdate({
-        target: [
-          riskIdentity.environmentId,
-          riskIdentity.kind,
-          riskIdentity.valueHash,
-          riskIdentity.userId,
-        ],
-        // `assessment_id` stays the first assessment that saw this user with the mailbox.
-        set: { lastSeenAt: now },
-      });
+  if (signup && decision !== "block") {
+    const identities = [
+      { kind: "mailbox" as const, valueHash: mailboxHash },
+      { kind: "device" as const, valueHash: deviceHash },
+    ].filter((identity): identity is { kind: "mailbox" | "device"; valueHash: string } =>
+      Boolean(identity.valueHash),
+    );
+    if (identities.length > 0) {
+      await tx
+        .insert(riskIdentity)
+        .values(
+          identities.map((identity) => ({
+            organizationId: environment.organizationId,
+            environmentId: environment.environmentId,
+            kind: identity.kind,
+            valueHash: identity.valueHash,
+            userId,
+            assessmentId: row.id,
+            firstSeenAt: now,
+            lastSeenAt: now,
+          })),
+        )
+        .onConflictDoUpdate({
+          target: [
+            riskIdentity.environmentId,
+            riskIdentity.kind,
+            riskIdentity.valueHash,
+            riskIdentity.userId,
+          ],
+          // `assessment_id` stays the first assessment that saw this user with the identity.
+          set: { lastSeenAt: now },
+        });
+    }
   }
 
   // Where users sign up and log in from, for `login.new_*` on later logins.
@@ -770,9 +848,44 @@ async function insertAssessment(
   return row;
 }
 
+/**
+ * The first account (a user id) another user signed up with this mailbox or device, after taking
+ * the identity's advisory lock (held until the transaction ends).
+ */
+async function previousAccount(
+  tx: Transaction,
+  environment: RiskAssessEnvironment,
+  kind: "mailbox" | "device",
+  valueHash: string,
+  userId: string | null,
+): Promise<{ userId: string | null; assessmentId: string } | undefined> {
+  const lock = `risk:${kind}:${environment.environmentId}:${valueHash}`;
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${lock}, 0))`);
+  const [previous] = await tx
+    .select({ userId: riskIdentity.userId, assessmentId: riskIdentity.assessmentId })
+    .from(riskIdentity)
+    .where(
+      and(
+        eq(riskIdentity.organizationId, environment.organizationId),
+        eq(riskIdentity.environmentId, environment.environmentId),
+        eq(riskIdentity.kind, kind),
+        eq(riskIdentity.valueHash, valueHash),
+        // Only accounts count: earlier attempts without a user are velocity, not duplicates.
+        isNotNull(riskIdentity.userId),
+        userId ? ne(riskIdentity.userId, userId) : undefined,
+      ),
+    )
+    .orderBy(riskIdentity.firstSeenAt)
+    .limit(1);
+  return previous;
+}
+
 /** The values rules test (`RULE_FIELDS`), from the collected signals. */
-function ruleFacts(collected: Collected, extra: { score: number; duplicate: boolean }): RuleFacts {
-  const { email, ip, velocity, captcha, login, content } = collected.signals;
+function ruleFacts(
+  collected: Collected,
+  extra: { score: number; duplicate: boolean; duplicateDevice: boolean },
+): RuleFacts {
+  const { email, ip, velocity, captcha, login, content, checkout, device } = collected.signals;
   const v = (key: string) => velocity?.[key] ?? null;
   return {
     "email.valid": email ? email.valid : null,
@@ -786,13 +899,17 @@ function ruleFacts(collected: Collected, extra: { score: number; duplicate: bool
     "email.domain_age_days": email?.domain_age_days ?? null,
     "ip.tor": ip ? ip.tor : null,
     "ip.hosting": ip ? ip.hosting : null,
-    "ip.vpn": ip ? ip.hosting_kind === "vpn" : null,
+    // The provider's answer when there is one, else the network's reputation.
+    "ip.vpn": ip ? (ip.privacy ? ip.privacy.vpn : ip.hosting_kind === "vpn") : null,
+    "ip.proxy": ip?.privacy ? ip.privacy.proxy : null,
+    "ip.relay": ip?.privacy ? ip.privacy.relay : null,
     "ip.private": ip ? ip.private : null,
     "ip.country": ip?.country ?? null,
     "ip.asn": ip?.asn ? String(ip.asn) : null,
     "ip.hosting_provider": ip?.hosting_provider ?? null,
     "captcha.passed": captcha ? captcha.passed : null,
     "duplicate.canonical_mailbox": collected.email?.valid ? extra.duplicate : null,
+    "duplicate.device": collected.hashes.device ? extra.duplicateDevice : null,
     "history.fraud": collected.flags.history,
     "login.new_country": login ? login.new_country : null,
     "login.new_network": login ? login.new_network : null,
@@ -800,6 +917,15 @@ function ruleFacts(collected: Collected, extra: { score: number; duplicate: bool
     "content.phishing": content?.phishing ?? null,
     "content.malware": content?.malware ?? null,
     "content.fraud": content?.fraud ?? null,
+    "checkout.amount": checkout?.amount ?? null,
+    "checkout.currency": checkout?.currency ?? null,
+    "checkout.card_country": checkout?.card_country ?? null,
+    "checkout.card_funding": checkout?.card_funding ?? null,
+    "checkout.billing_country": checkout?.billing_country ?? null,
+    "checkout.shipping_country": checkout?.shipping_country ?? null,
+    "device.automation": device?.valid ? device.automation : null,
+    "device.timezone": device?.timezone ?? null,
+    "device.language": device?.language ?? null,
     score: extra.score,
     "velocity.ip_1h": v("ip_1h"),
     "velocity.ip_24h": v("ip_24h"),
@@ -811,5 +937,9 @@ function ruleFacts(collected: Collected, extra: { score: number; duplicate: bool
     "velocity.mailbox_24h": v("mailbox_24h"),
     "velocity.user_1h": v("user_1h"),
     "velocity.user_24h": v("user_24h"),
+    "velocity.card_1h": v("card_1h"),
+    "velocity.card_24h": v("card_24h"),
+    "velocity.device_1h": v("device_1h"),
+    "velocity.device_24h": v("device_24h"),
   };
 }

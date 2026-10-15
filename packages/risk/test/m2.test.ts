@@ -31,6 +31,7 @@ describe("settings", () => {
       disabled_reasons: [],
       captcha: null,
       content_thresholds: { spam: null, phishing: null, malware: null, fraud: null },
+      reason_weights: {},
       updated_at: null,
     });
     // Disposable (0.7) is a review by default…

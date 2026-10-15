@@ -220,6 +220,44 @@ export async function updateRiskSettingsAction(
   });
 }
 
+/**
+ * Sets reason weights from the calibration page: `weights` (JSON) maps codes to a weight, or to
+ * `null` to restore the default.
+ */
+export async function applyRiskReasonWeightsAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      risk: ["update"],
+    });
+    const { scope, projectId } = await environmentFromForm(context, formData);
+    let weights: unknown;
+    try {
+      weights = JSON.parse(formString(formData, "weights"));
+    } catch {
+      throw new ActionError("The weights could not be read. Reload the page and try again.");
+    }
+    const parsed = UpdateRiskSettingsRequest.safeParse({ reason_weights: weights });
+    if (!parsed.success) throw new ActionError(issueMessage(parsed.error));
+    const settings = await riskCall(() =>
+      updateRiskSettings(scope, parsed.data, webhookManagementDeps().secretsKeys),
+    );
+    if (!settings) throw new ActionError("Environment not found.");
+    await recordAudit(context.session, {
+      action: "risk_settings.updated",
+      organizationId: scope.organizationId,
+      projectId,
+      environmentId: scope.environmentId,
+      target: { type: "risk_settings", id: scope.environmentId },
+      metadata: { reason_weights: parsed.data.reason_weights ?? {} },
+    });
+    refresh();
+    return null;
+  });
+}
+
 /** The rule builder posts its rule as JSON (`rule`). */
 function ruleFromForm(formData: FormData): unknown {
   try {

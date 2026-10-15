@@ -33,6 +33,7 @@
     "@sentry/nextjs": "catalog:",
     "@t3-oss/env-nextjs": "catalog:",
     "better-auth": "catalog:",
+    "coss": "workspace:*",
     "lucide-react": "catalog:",
     "next": "catalog:",
     "next-themes": "^0.4.6",

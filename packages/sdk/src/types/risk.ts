@@ -24,7 +24,8 @@ export type RiskDegradedSignal =
   | "ip_data"
   | "velocity"
   | "captcha"
-  | "content";
+  | "content"
+  | "ip_privacy";
 
 /** What content classification scores. */
 export type RiskContentCategory = "spam" | "phishing" | "malware" | "fraud";
@@ -46,21 +47,36 @@ export type RiskReasonCode =
   | "ip.tor"
   | "ip.vpn_network"
   | "ip.hosting_provider"
+  | "ip.vpn"
+  | "ip.proxy"
+  | "ip.relay"
   | "ip.private"
   | "velocity.signups_per_ip_1h"
   | "velocity.signups_per_ip_24h"
   | "velocity.signups_per_subnet_1h"
   | "velocity.signups_per_email_domain_1h"
   | "velocity.signups_per_mailbox_24h"
+  | "velocity.signups_per_device_24h"
+  | "velocity.checkouts_per_ip_1h"
+  | "velocity.checkouts_per_user_1h"
+  | "velocity.checkouts_per_card_24h"
   | "velocity.logins_per_ip_1h"
   | "velocity.logins_per_user_1h"
   | "velocity.events_per_ip_1h"
   | "velocity.events_per_user_1h"
   | "duplicate.canonical_mailbox"
+  | "duplicate.device"
   | "history.fraud_mailbox"
   | "history.fraud_user"
   | "history.fraud_ip"
   | "history.fraud_subnet"
+  | "history.fraud_card"
+  | "history.fraud_device"
+  | "checkout.card_country_mismatch"
+  | "checkout.billing_country_mismatch"
+  | "checkout.prepaid_card"
+  | "device.automation"
+  | "device.invalid"
   | "login.new_country"
   | "login.new_network"
   | "captcha.failed"
@@ -85,11 +101,11 @@ export interface RiskReason {
   window?: "1h" | "24h";
   /** `email.typo`: the likely domain, which you may show the user ("Did you mean …?"). */
   suggestion?: string;
-  /** `ip.hosting_provider`, `ip.vpn_network`: the network's operator. */
+  /** `ip.hosting_provider`, `ip.vpn_network`: the network's operator; `ip.vpn`: the VPN service. */
   provider?: string;
-  /** `duplicate.canonical_mailbox`: your id of the user who has the mailbox, if known. */
+  /** `duplicate.*`: your id of the user who has the mailbox or device, if known. */
   previous_user?: string | null;
-  /** `duplicate.canonical_mailbox`: the assessment that first saw the mailbox. */
+  /** `duplicate.*`: the assessment that first saw the mailbox or device. */
   previous_assessment?: string;
   /** `list.*`: the matching list entry. */
   entry?: string;
@@ -141,6 +157,49 @@ export interface RiskIpSignals {
   as_name: string | null;
   /** ISO 3166-1 alpha-2. */
   country: string | null;
+  /**
+   * From COSS's IP privacy data provider; `null` when it isn't available or was not asked
+   * (private addresses).
+   */
+  privacy: RiskIpPrivacy | null;
+}
+
+/** Whether an address is a VPN exit, a proxy or a privacy relay (iCloud Private Relay…). */
+export interface RiskIpPrivacy {
+  vpn: boolean;
+  proxy: boolean;
+  relay: boolean;
+  /** The VPN or proxy service. */
+  service: string | null;
+}
+
+/** How a card is funded, as your payment processor reports it. */
+export type RiskCardFunding = "credit" | "debit" | "prepaid" | "unknown";
+
+/** What you sent in `checkout` (never the card). */
+export interface RiskCheckoutSignals {
+  amount: number;
+  currency: string;
+  card_country: string | null;
+  card_funding: RiskCardFunding | null;
+  billing_country: string | null;
+  shipping_country: string | null;
+}
+
+/** What the browser reported through `coss/device` (its device id is only kept as a keyed hash). */
+export interface RiskDeviceSignals {
+  /** `false`: the token was malformed or too old. */
+  valid: boolean;
+  /** WebDriver control or a headless browser. */
+  automation: boolean;
+  /** IANA time zone (`Europe/London`). */
+  timezone: string | null;
+  /** The browser's first language. */
+  language: string | null;
+  platform: string | null;
+  /** `<width>x<height>` in CSS pixels. */
+  screen: string | null;
+  touch: boolean | null;
 }
 
 /** An assessment of one event. */
@@ -166,6 +225,8 @@ export interface RiskAssessment {
     login: RiskLoginSignals | null;
     /** `null` when no content was given or it couldn't be classified. */
     content: RiskContentScores | null;
+    checkout: RiskCheckoutSignals | null;
+    device: RiskDeviceSignals | null;
   };
   user: { id: string | null; email: string | null };
   /** `null` once removed (90 days after the assessment). */
@@ -205,6 +266,28 @@ export interface AssessRiskParams {
    * you set.
    */
   content?: { text: string };
+  /** Only with `checkout` events: what is being paid for, and with which card. */
+  checkout?: {
+    /** In the currency's minor unit (cents for USD: 1999 is $19.99). */
+    amount: number;
+    /** ISO 4217, upper-case (`USD`). */
+    currency: string;
+    /** What your payment processor tells you about the card. */
+    card?: {
+      /**
+       * Your processor's fingerprint of the card number (Stripe: `card.fingerprint`), kept as a
+       * keyed hash only. Never send the card number.
+       */
+      fingerprint?: string;
+      /** Where the card was issued (ISO 3166-1 alpha-2, upper-case). */
+      country?: string;
+      funding?: RiskCardFunding;
+    };
+    billing_country?: string;
+    shipping_country?: string;
+  };
+  /** What `collectDevice()` from `coss/device` returned in the user's browser. */
+  device?: { token: string };
 }
 
 /** Query of `GET /v1/risk/assessments`. */
@@ -300,6 +383,8 @@ export interface RiskSettings {
   captcha: { provider: RiskCaptchaProvider; required: boolean } | null;
   /** Per content category, the score at which `content.<category>` fires; `null`: never. */
   content_thresholds: Record<RiskContentCategory, number | null>;
+  /** Reasons whose weight this environment changed; the rest weigh what the catalog says. */
+  reason_weights: Partial<Record<RiskReasonCode, number>>;
   /** ISO 8601 timestamp; `null` while on the defaults. */
   updated_at: string | null;
 }
@@ -319,6 +404,45 @@ export interface UpdateRiskSettingsParams {
   } | null;
   /** Changes the categories given: a score in (0, 1] sets the threshold, `null` removes it. */
   content_thresholds?: Partial<Record<RiskContentCategory, number | null>>;
+  /**
+   * Changes the reasons given: a weight in [0, 0.99] replaces the default (for example
+   * calibration's `suggested_weight`), `null` restores it. Not `list.*` or `rule.matched`.
+   */
+  reason_weights?: Partial<Record<RiskReasonCode, number | null>>;
+}
+
+/** Feedback counted against one reason or rule (`fraud` includes `abuse`). */
+interface RiskCalibrationCounts {
+  fraud: number;
+  legitimate: number;
+  /** `fraud / (fraud + legitimate)`; `null` without feedback. */
+  precision: number | null;
+}
+
+/** How often each reason and rule was right over the last 90 days, by your feedback. */
+export interface RiskCalibration {
+  object: "risk_calibration";
+  window_days: number;
+  /** Assessments in the window. */
+  assessments: number;
+  /** Of those, with feedback. */
+  labeled: number;
+  reasons: (RiskCalibrationCounts & {
+    code: RiskReasonCode;
+    /** Assessments it fired in. */
+    fired: number;
+    default_weight: number;
+    /** Its weight in this environment now. */
+    weight: number;
+    /** What feedback supports; `null` with fewer than 20 assessments with feedback. */
+    suggested_weight: number | null;
+  })[];
+  rules: (RiskCalibrationCounts & {
+    rule: string;
+    name: string;
+    /** Assessments it decided. */
+    matched: number;
+  })[];
 }
 
 /** A field a rule condition can test (see the rules guide). */
@@ -335,12 +459,15 @@ export type RiskRuleField =
   | "ip.tor"
   | "ip.hosting"
   | "ip.vpn"
+  | "ip.proxy"
+  | "ip.relay"
   | "ip.private"
   | "ip.country"
   | "ip.asn"
   | "ip.hosting_provider"
   | "captcha.passed"
   | "duplicate.canonical_mailbox"
+  | "duplicate.device"
   | "history.fraud"
   | "login.new_country"
   | "login.new_network"
@@ -348,6 +475,15 @@ export type RiskRuleField =
   | "content.phishing"
   | "content.malware"
   | "content.fraud"
+  | "checkout.amount"
+  | "checkout.currency"
+  | "checkout.card_country"
+  | "checkout.card_funding"
+  | "checkout.billing_country"
+  | "checkout.shipping_country"
+  | "device.automation"
+  | "device.timezone"
+  | "device.language"
   | "score"
   | "velocity.ip_1h"
   | "velocity.ip_24h"
@@ -358,7 +494,11 @@ export type RiskRuleField =
   | "velocity.mailbox_1h"
   | "velocity.mailbox_24h"
   | "velocity.user_1h"
-  | "velocity.user_24h";
+  | "velocity.user_24h"
+  | "velocity.card_1h"
+  | "velocity.card_24h"
+  | "velocity.device_1h"
+  | "velocity.device_24h";
 
 /** A test of one field. A field without a value (no IP, no email…) never matches. */
 export interface RiskRuleCondition {
@@ -436,8 +576,11 @@ export interface RiskEmailCheck {
 export interface RiskIpCheck extends RiskIpSignals {
   object: "risk_ip_check";
   ip: string;
-  /** `ip_data` when some IP data is unavailable at the moment. */
-  degraded: "ip_data"[];
+  /**
+   * `ip_data` when some IP data is unavailable at the moment; `ip_privacy` when the privacy data
+   * provider failed or timed out.
+   */
+  degraded: ("ip_data" | "ip_privacy")[];
 }
 
 /** Result of `coss.risk.classify()`: scores only, neither stored nor logged. */

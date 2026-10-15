@@ -1,5 +1,6 @@
 /**
- * Keyed hashes of identifiers (mailboxes, IPs, subnets, user ids, email domains) for everything
+ * Keyed hashes of identifiers (mailboxes, IPs, subnets, user ids, email domains, payment cards'
+ * fingerprints, browsers' device ids) for everything
  * risk remembers: velocity counters, duplicate detection, fraud reports and the keys of customers'
  * rate limit buckets. HMAC-SHA256 with `RISK_HASH_KEY`, separated by environment and kind, so a
  * hash means nothing in another environment or without the key. Rotating the key resets that
@@ -7,7 +8,15 @@
  */
 import { createHmac } from "node:crypto";
 
-export type RiskHashKind = "mailbox" | "ip" | "subnet" | "user" | "email_domain" | "limit_key";
+export type RiskHashKind =
+  | "mailbox"
+  | "ip"
+  | "subnet"
+  | "user"
+  | "email_domain"
+  | "limit_key"
+  | "card"
+  | "device";
 
 export type RiskHasher = (environmentId: string, kind: RiskHashKind, value: string) => string;
 
