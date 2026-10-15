@@ -60,6 +60,10 @@ describe("mailbox providers", () => {
     expect(mailboxProviderOf("a@acme.com")).toBe("other");
     expect(mailboxProviderOf("a@outlook.acme.com")).toBe("other");
     expect(mailboxProviderOf("a@mail.gmail.com")).toBe("other");
+    // Never `Object.prototype`'s keys.
+    expect(mailboxProviderOf("a@constructor.fr")).toBe("other");
+    expect(mailboxProviderOf("a@__proto__")).toBe("other");
+    expect(mailboxProviderOf("a@tostring.com")).toBe("other");
   });
 
   test("sending domain", () => {
