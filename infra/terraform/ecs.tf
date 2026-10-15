@@ -14,7 +14,9 @@ resource "aws_cloudwatch_log_group" "service" {
 
 locals {
   # Every service's environment, from spec.json: `plain` values from var.plain_env, `secret` ones
-  # from the stage secret's JSON key of the same name, `image` ones left to the Dockerfile.
+  # from the stage secret's JSON key of the same name (optional ones listed in var.unset_secrets
+  # left out: ECS can't start a task whose secret names a missing key), `image` ones left to the
+  # Dockerfile.
   env = {
     for name, service in local.services : name => {
       plain = [
@@ -26,11 +28,15 @@ locals {
           name      = variable.name
           valueFrom = "${aws_secretsmanager_secret.stage.arn}:${variable.name}::"
         }
-        if variable.kind == "secret"
+        if variable.kind == "secret" && !contains(var.unset_secrets, variable.name)
       ]
       missing = [
         for variable in service.env : variable.name
         if variable.kind == "plain" && variable.required && !contains(keys(lookup(var.plain_env, name, {})), variable.name)
+      ]
+      unset_required = [
+        for variable in service.env : variable.name
+        if variable.kind == "secret" && variable.required && contains(var.unset_secrets, variable.name)
       ]
       undeclared = [
         for key in keys(lookup(var.plain_env, name, {})) : key
@@ -83,6 +89,10 @@ resource "aws_ecs_task_definition" "service" {
     precondition {
       condition     = length(local.env[each.key].undeclared) == 0
       error_message = "${each.key}: plain_env sets variables spec.json doesn't declare as plain: ${join(", ", local.env[each.key].undeclared)}"
+    }
+    precondition {
+      condition     = length(local.env[each.key].unset_required) == 0
+      error_message = "${each.key}: unset_secrets lists required secrets: ${join(", ", local.env[each.key].unset_required)}"
     }
   }
 }

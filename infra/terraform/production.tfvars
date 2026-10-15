@@ -17,7 +17,9 @@ ses_name          = "coss"
 github_repository = "cosscom/coss"
 # Who may start the deploy runner (people with write access): keithwillcode, PeerRich, pumfleet,
 # sean-brydon. Add a new maintainer here before their merges can deploy.
-deploy_actor_ids   = ["2538462", "8019099", "25907159", "55134778"]
+deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778"]
+# Optional secrets not stored in coss/production: take a name out once put-secret.sh has set it.
+unset_secrets      = ["IPINFO_PRIVACY_TOKEN"]
 initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
@@ -71,10 +73,10 @@ plain_env = {
     # COSS's own organization (`coss`, project `notifications`, live): never suspended by admins.
     NOTIFICATIONS_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
     # COSS Risk assesses COSS's own sign-ups in that same environment (dogfooding).
-    RISK_SIGNUP_ENVIRONMENT_ID   = "env_01m4s0af5zent8fzxwmtkergw5"
-    SENTRY_DSN                   = "https://4ff9a884d5223a8df7cb0a12b373cee5@o4512237982711808.ingest.de.sentry.io/4512245153333328"
-    SENTRY_ENVIRONMENT           = "production"
-    SENTRY_TRACES_SAMPLE_RATE    = "0.1"
+    RISK_SIGNUP_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
+    SENTRY_DSN                 = "https://4ff9a884d5223a8df7cb0a12b373cee5@o4512237982711808.ingest.de.sentry.io/4512245153333328"
+    SENTRY_ENVIRONMENT         = "production"
+    SENTRY_TRACES_SAMPLE_RATE  = "0.1"
   }
   site = {}
   portal = {
@@ -88,25 +90,30 @@ plain_env = {
     SENTRY_TRACES_SAMPLE_RATE = "0.1"
   }
   api = {
-    BETTER_AUTH_URL           = "https://coss.com"
-    API_PUBLIC_URL            = "https://api.coss.com"
-    TRACKING_PUBLIC_URL       = "https://track.cosslinks.com"
-    PORTAL_PUBLIC_URL         = "https://portal.cosshooks.com"
-    API_CORS_ORIGINS          = "https://coss.com"
-    EMAIL_PROVIDER            = "ses"
-    AWS_REGION                = "us-east-2"
-    SES_CONFIGURATION_SET     = "coss"
-    SES_TENANT_PREFIX         = "coss"
-    INBOUND_MANAGED_DOMAIN    = "inbound.coss.com"
-    SES_INBOUND_BUCKET        = "coss-inbound-294417174674"
-    TRACKING_DOMAIN_PROVIDER  = "cloudflare"
-    CLOUDFLARE_ZONE_ID        = "2e3adbb52b68d57dfa5d71a0b7cfa3cc"
-    TRACKING_CNAME_TARGET     = "track.cosslinks.com"
-    DATABASE_POOL_MAX         = "10"
-    VALKEY_CLUSTER            = "true"
-    RATE_LIMIT_KEY_PREFIX     = "coss"
-    CLIENT_IP_HEADER          = "x-forwarded-for"
-    TRUSTED_PROXY_COUNT       = "2"
+    BETTER_AUTH_URL          = "https://coss.com"
+    API_PUBLIC_URL           = "https://api.coss.com"
+    TRACKING_PUBLIC_URL      = "https://track.cosslinks.com"
+    PORTAL_PUBLIC_URL        = "https://portal.cosshooks.com"
+    API_CORS_ORIGINS         = "https://coss.com"
+    EMAIL_PROVIDER           = "ses"
+    AWS_REGION               = "us-east-2"
+    SES_CONFIGURATION_SET    = "coss"
+    SES_TENANT_PREFIX        = "coss"
+    INBOUND_MANAGED_DOMAIN   = "inbound.coss.com"
+    SES_INBOUND_BUCKET       = "coss-inbound-294417174674"
+    TRACKING_DOMAIN_PROVIDER = "cloudflare"
+    CLOUDFLARE_ZONE_ID       = "2e3adbb52b68d57dfa5d71a0b7cfa3cc"
+    TRACKING_CNAME_TARGET    = "track.cosslinks.com"
+    DATABASE_POOL_MAX        = "10"
+    VALKEY_CLUSTER           = "true"
+    RATE_LIMIT_KEY_PREFIX    = "coss"
+    CLIENT_IP_HEADER         = "x-forwarded-for"
+    TRUSTED_PROXY_COUNT      = "2"
+    # Risk's content classification: the worker's screening model through the AI Gateway
+    # (AI_GATEWAY_API_KEY is in the secret). Per-address VPN data stays off (IPinfo isn't a subprocessor).
+    RISK_CLASSIFIER           = "ai"
+    SCREENING_MODEL           = "typesafe-ai/jev"
+    RISK_IP_PRIVACY           = "off"
     SENTRY_DSN                = "https://32c12dc572c854d73947e15894cd2713@o4512237982711808.ingest.de.sentry.io/4512245153398864"
     SENTRY_ENVIRONMENT        = "production"
     SENTRY_TRACES_SAMPLE_RATE = "0.1"

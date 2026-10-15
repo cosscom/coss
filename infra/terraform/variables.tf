@@ -60,6 +60,12 @@ variable "plain_env" {
   description = "Plain environment values per service. Names and kinds come from spec.json; a required plain variable without a value fails the plan."
 }
 
+variable "unset_secrets" {
+  type        = set(string)
+  default     = []
+  description = "Optional secret variables with no key in the stage secret yet: left out of task definitions (ECS can't start a task whose secret names a missing key). Remove a name after put-secret.sh stores it."
+}
+
 variable "autoscaling" {
   type = map(object({ max = number, cpu_target = number }))
 }
