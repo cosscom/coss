@@ -34,6 +34,26 @@ describe("htmlToText", () => {
     );
   });
 
+  test("shows the target whenever the label isn't exactly that destination", () => {
+    expect(
+      htmlToText(
+        '<p><a href="https://acme.com">https://acme.com/docs</a></p>' +
+          '<p><a href="https://acme.com/reset?t=abc">https://acme.com/Reset?t=AbC</a></p>' +
+          '<p><a href="https://acme.com/">Visit https://acme.com</a></p>' +
+          '<p><a href="https://evil.example/acme.com">acme.com</a></p>' +
+          '<p><a href="mailto:help@acme.com">sales@acme.com</a></p>' +
+          '<p><a href="https://ACME.com/Docs/">https://www.acme.com/Docs</a></p>',
+      ),
+    ).toBe(
+      "https://acme.com/docs [https://acme.com]\n\n" +
+        "https://acme.com/Reset?t=AbC [https://acme.com/reset?t=abc]\n\n" +
+        "Visit https://acme.com [https://acme.com/]\n\n" +
+        "acme.com [https://evil.example/acme.com]\n\n" +
+        "sales@acme.com [help@acme.com]\n\n" +
+        "https://www.acme.com/Docs",
+    );
+  });
+
   test("marks lists, prefixes quotes and keeps preformatted text as is", () => {
     expect(
       htmlToText(

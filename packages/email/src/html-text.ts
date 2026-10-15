@@ -110,15 +110,29 @@ function linkTarget(href: string | undefined): string | null {
   return null;
 }
 
-/** Labels that already say where the link goes (`acme.com` for `https://acme.com/`). */
+/** `https://www.acme.com/a/` as `acme.com/a`: only the host is case-insensitive. */
+function destination(value: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+  } catch {
+    return null;
+  }
+  const credentials = url.username || url.password ? `${url.username}:${url.password}@` : "";
+  const host = url.host.replace(/^www\./, "");
+  return `${credentials}${host}${url.pathname.replace(/\/$/, "")}${url.search}${url.hash}`;
+}
+
+/**
+ * Labels that already are the link's destination (`acme.com` for `https://acme.com/`). Anything
+ * less certain shows the target: a plain-text reader must never lose where a link goes.
+ */
 function labelShowsTarget(label: string, target: string): boolean {
-  const normalize = (value: string) =>
-    value
-      .toLowerCase()
-      .replace(/^(?:https?:\/\/|mailto:)/, "")
-      .replace(/^www\./, "")
-      .replace(/\/$/, "");
-  return normalize(label).includes(normalize(target));
+  if (!/^https?:\/\//i.test(target)) return label.toLowerCase() === target.toLowerCase();
+  if (/^[a-z][a-z\d+.-]*:/i.test(label) && !/^https?:\/\//i.test(label)) return false;
+  if (/\s/.test(label)) return false;
+  const shown = destination(label);
+  return shown !== null && shown === destination(target);
 }
 
 type Prefix = { first: string; rest: string; used: boolean };
