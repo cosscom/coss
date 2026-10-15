@@ -59,7 +59,7 @@ export const env = createEnv({
       .optional()
       .transform((value) => value?.replaceAll("\\n", "\n")),
     // The app's bundle id.
-    APNS_TOPIC: z.string().default("com.coss.app"),
+    APNS_TOPIC: z.string().default("com.coss.ios"),
     // The dashboard's origin, for links in notification emails.
     BETTER_AUTH_URL: process.env.NODE_ENV === "production" ? z.url() : z.url().optional(),
     // Decrypts webhook signing secrets (same value as the dashboard's and the API's).

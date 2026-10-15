@@ -19,7 +19,7 @@ github_repository = "cosscom/coss"
 # sean-brydon. Add a new maintainer here before their merges can deploy.
 deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778"]
 # Optional secrets not stored in coss/production: take a name out once put-secret.sh has set it.
-unset_secrets      = ["IPINFO_PRIVACY_TOKEN", "APNS_PRIVATE_KEY"]
+unset_secrets      = ["IPINFO_PRIVACY_TOKEN"]
 initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
@@ -145,8 +145,12 @@ plain_env = {
     # Account and reputation emails go out through COSS itself, from its own organization.
     NOTIFICATIONS_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
     NOTIFICATIONS_FROM           = "COSS <notifications@coss.com>"
-    SENTRY_DSN                   = "https://77c5b5b1c87194a0942714259a44dcac@o4512237982711808.ingest.de.sentry.io/4512245153398865"
-    SENTRY_ENVIRONMENT           = "production"
-    SENTRY_TRACES_SAMPLE_RATE    = "0.1"
+    # Push notifications to the iOS app: the "COSS push" key (production, topic com.coss.ios).
+    APNS_KEY_ID               = "WCQDCU4HUL"
+    APNS_TEAM_ID              = "ADWKXDJV75"
+    APNS_TOPIC                = "com.coss.ios"
+    SENTRY_DSN                = "https://77c5b5b1c87194a0942714259a44dcac@o4512237982711808.ingest.de.sentry.io/4512245153398865"
+    SENTRY_ENVIRONMENT        = "production"
+    SENTRY_TRACES_SAMPLE_RATE = "0.1"
   }
 }

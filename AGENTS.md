@@ -180,7 +180,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `SES_EVENTS_QUEUE_URL` | worker with `EMAIL_PROVIDER=ses`: the SQS queue of SES events |
 | `INBOUND_MANAGED_DOMAIN`, `SES_INBOUND_BUCKET` | api, web, worker: receiving. The managed inbound domain (`<label>.<domain>` addresses per environment; default `inbound.coss.test` with the fake provider) and, with SES, the bucket received content lives in (both or neither with SES; unset → receiving off). Printed by `ses:bootstrap --managed-domain` |
 | `SES_INBOUND_QUEUE_URL` | worker with SES receiving: the SQS queue of receipt notifications |
-| `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_PRIVATE_KEY`, `APNS_TOPIC` | worker: push notifications to the iOS app through APNs with a token-based `.p8` key (its id, the Apple Developer team, the PEM contents — `\n` line breaks accepted — and the bundle id, default `com.coss.app`). The first three together or none; unset → printed in development, held in production |
+| `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_PRIVATE_KEY`, `APNS_TOPIC` | worker: push notifications to the iOS app through APNs with a token-based `.p8` key (its id, the Apple Developer team, the PEM contents — `\n` line breaks accepted — and the bundle id, default `com.coss.ios`). The first three together or none; unset → printed in development, held in production |
 | `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | web reads the id only to refuse admin suspensions of COSS's own organization (`isSystemOrganization`, `apps/web/src/lib/system-organization.ts`); worker: account emails (verification, password reset, invitation) and reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
 | `VALKEY_URL`, `VALKEY_CLUSTER` | api + web + worker (the daily inbound limit, Hooks delivery limits): rate limit counters (`rediss://user:pass@…`, `true` for ElastiCache Serverless; printed by `valkey:bootstrap`). Required in production; unset → in-memory per process |
 | `RATE_LIMIT_KEY_PREFIX` | api + web: namespaces Valkey keys (default `coss`) |
@@ -1338,7 +1338,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   at a verified sender of COSS's own organization.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page,
-Universal Link sign-in callbacks, EAS builds and an Android app, push notifications for other events (or per organization),
+Universal Link sign-in callbacks, an Android app, App Store (beyond TestFlight) releases of the iOS app, push notifications for other events (or per organization),
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 org logos, uploading a profile picture, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which

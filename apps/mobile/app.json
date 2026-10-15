@@ -8,9 +8,12 @@
     "userInterfaceStyle": "automatic",
     "platforms": ["ios"],
     "ios": {
-      "bundleIdentifier": "com.coss.app",
+      "bundleIdentifier": "com.coss.ios",
       "supportsTablet": false,
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffffff",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "plugins": [
       "expo-router",
@@ -34,6 +37,14 @@
     ],
     "experiments": {
       "reactCompiler": true
+    },
+    "owner": "calcoms-organization",
+    "icon": "./assets/images/icon.png",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2c85baaf-1696-452e-89c7-e2f4e5415af3"
+      }
     }
   }
 }

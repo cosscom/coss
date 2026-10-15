@@ -52,7 +52,7 @@ function sender(now = () => Date.now()) {
     keyId: "ABC123DEFG",
     teamId: "TEAM123456",
     privateKey: PEM,
-    topic: "com.coss.app",
+    topic: "com.coss.ios",
     origins: { production: origin, sandbox: origin },
     now,
   });
@@ -92,7 +92,7 @@ describe("APNs", () => {
     const [first, second] = received;
     expect(first?.headers[":method"]).toBe("POST");
     expect(first?.headers[":path"]).toBe(`/3/device/${"a".repeat(64)}`);
-    expect(first?.headers["apns-topic"]).toBe("com.coss.app");
+    expect(first?.headers["apns-topic"]).toBe("com.coss.ios");
     expect(first?.headers["apns-push-type"]).toBe("alert");
     expect(first?.headers["apns-collapse-id"]).toBe("pushntf_test");
     expect(first?.headers["apns-expiration"]).toBe(
@@ -162,7 +162,7 @@ describe("APNs", () => {
       keyId: "ABC123DEFG",
       teamId: "TEAM123456",
       privateKey: PEM,
-      topic: "com.coss.app",
+      topic: "com.coss.ios",
       origins: { production: "http://127.0.0.1:1", sandbox: "http://127.0.0.1:1" },
     });
     const result = await apns.send(

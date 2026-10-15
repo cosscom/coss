@@ -29,8 +29,27 @@ bun run --cwd apps/mobile test       # bun test: pure modules only (React Native
 
 The dashboard URL is `EXPO_PUBLIC_DASHBOARD_URL` (default `http://localhost:3000`, which the
 Simulator reaches; a device needs the Mac's LAN address), inlined by Metro at bundle time:
-set it in `apps/mobile/.env.local` (gitignored) or the shell. No `build` script:
-release builds go through EAS (`bunx eas-cli build`), not set up yet.
+set it in `apps/mobile/.env.local` (gitignored) or the shell. No `build` script: release builds
+go through EAS (below).
+
+## Releases (TestFlight)
+
+- EAS project `@calcoms-organization/coss` (`extra.eas.projectId`), Apple team Cal.com, Inc.
+  (`ADWKXDJV75`), bundle id `com.coss.ios` (`com.coss.app` belongs to another team), App Store
+  Connect app `6823275264` (listed as "coss.com"; the home screen name is `expo.name`).
+- `eas.json`'s `production` profile bakes in `EXPO_PUBLIC_DASHBOARD_URL=https://coss.com` and
+  takes build numbers from EAS (`appVersionSource: remote`, `autoIncrement`); bump
+  `expo.version` for a new marketing version. The `calcoms-organization` account also injects its
+  own production env vars (Cal.com's `EXPO_PUBLIC_CALCOM_*`), unused here.
+- Signing is EAS-managed: the team's shared distribution certificate (also calcom-companion's;
+  expires 2026-12-29, renew it in `eas credentials`) and a provisioning profile for `com.coss.ios`.
+  App Store builds get `aps-environment: production` from Xcode's archive.
+- Build: `bunx eas-cli build -p ios --profile production` with the App Store Connect API key in
+  `EXPO_ASC_API_KEY_PATH`/`EXPO_ASC_KEY_ID`/`EXPO_ASC_ISSUER_ID` and `EXPO_APPLE_TEAM_ID`
+  (an Admin team key; ask the owner for the `.p8`, never commit it). Upload the finished `.ipa`
+  with `xcrun altool --upload-app -f <ipa> -t ios --apiKey <id> --apiIssuer <issuer>` (the key in
+  `~/.appstoreconnect/private_keys`): `eas submit` insists on an Apple ID login to set up its own key.
+- TestFlight: internal group "Team (Expo)" (created by EAS); internal testers need no review.
 
 ## Sign-in
 
@@ -50,8 +69,10 @@ with raw APNs device tokens; the dashboard's worker sends them (`@coss/push`, ro
 `src/lib/push.ts` asks for permission from the Account screen's Notifications panel
 (`components/push-settings.tsx`), then `PUT /api/mobile/v1/push` registers the token on this
 session with `apns_environment` `sandbox` in development builds (the plugin's default entitlement)
-and `production` otherwise — a release build must have the production entitlement (the plugin's
-`mode: "production"` or EAS's provisioning), or APNs rejects the token and the server drops it.
+and `production` otherwise (Xcode's archive of a release build has the production entitlement).
+Production's APNs key only serves the production gateway and `com.coss.ios`, so a development
+build signed in to coss.com gets no pushes: APNs refuses them, and the worker retries that device until
+the notification gives up (the others are delivered).
 `AuthProvider` re-registers on every sign-in and token change. Signing out unregisters from APNs
 (so a phone that couldn't reach the dashboard stops receiving pushes anyway) and revokes the
 session, which ends its registration on the server; offline, the credential is kept in the

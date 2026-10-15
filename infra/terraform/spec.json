@@ -965,8 +965,8 @@
           "name": "APNS_TOPIC",
           "kind": "plain",
           "required": false,
-          "value": "com.coss.app",
-          "description": "The iOS app's bundle id (default com.coss.app)."
+          "value": "com.coss.ios",
+          "description": "The iOS app's bundle id (default com.coss.ios)."
         },
         {
           "name": "SENTRY_DSN",
