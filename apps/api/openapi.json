@@ -277,6 +277,7 @@
             "tracking": {
               "opens": false,
               "clicks": false,
+              "unsubscribe": false,
               "open_count": 0,
               "first_opened_at": null,
               "last_opened_at": null,
@@ -389,6 +390,10 @@
             "type": "boolean",
             "description": "Whether link clicks are tracked for this email."
           },
+          "unsubscribe": {
+            "type": "boolean",
+            "description": "Whether the email carries one-click unsubscribe headers (RFC 8058)."
+          },
           "open_count": {
             "type": "integer"
           },
@@ -427,6 +432,7 @@
         "required": [
           "opens",
           "clicks",
+          "unsubscribe",
           "open_count",
           "first_opened_at",
           "last_opened_at",
@@ -438,6 +444,7 @@
           {
             "opens": false,
             "clicks": false,
+            "unsubscribe": false,
             "open_count": 0,
             "first_opened_at": null,
             "last_opened_at": null,
@@ -720,6 +727,10 @@
           "clicks": {
             "type": "boolean",
             "description": "Send HTML links through a COSS redirect and record `email.clicked` events. Links with a `data-coss-no-track` attribute are left alone."
+          },
+          "unsubscribe": {
+            "type": "boolean",
+            "description": "Add one-click unsubscribe headers (`List-Unsubscribe` and `List-Unsubscribe-Post`, RFC 8058). An unsubscribe suppresses the recipient for this email's category and records `email.unsubscribed`. Needs a `category`, a single recipient and no `List-Unsubscribe` header of your own."
           }
         },
         "additionalProperties": false,
@@ -792,6 +803,7 @@
                 "tracking": {
                   "opens": false,
                   "clicks": false,
+                  "unsubscribe": false,
                   "open_count": 0,
                   "first_opened_at": null,
                   "last_opened_at": null,
@@ -955,7 +967,8 @@
               "email.canceled",
               "email.opened",
               "email.clicked",
-              "email.rescheduled"
+              "email.rescheduled",
+              "email.unsubscribed"
             ]
           },
           "recipient": {
@@ -1119,9 +1132,10 @@
                   "bounce",
                   "complaint",
                   "manual",
-                  "import"
+                  "import",
+                  "unsubscribe"
                 ],
-                "description": "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. `manual`: added one by one through the API or dashboard. `import`: added by a bulk import."
+                "description": "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. `manual`: added one by one through the API or dashboard. `import`: added by a bulk import. `unsubscribe`: added by the recipient's one-click unsubscribe, scoped to the email's category."
               }
             },
             "required": [
@@ -2199,6 +2213,7 @@
                 "email.opened",
                 "email.clicked",
                 "email.rescheduled",
+                "email.unsubscribed",
                 "email.received",
                 "account.reputation_warning",
                 "account.reputation_recovered",
@@ -2218,7 +2233,7 @@
                 "risk.assessment.reviewed"
               ]
             },
-            "maxItems": 29,
+            "maxItems": 30,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -2457,6 +2472,7 @@
                 "email.opened",
                 "email.clicked",
                 "email.rescheduled",
+                "email.unsubscribed",
                 "email.received",
                 "account.reputation_warning",
                 "account.reputation_recovered",
@@ -2476,7 +2492,7 @@
                 "risk.assessment.reviewed"
               ]
             },
-            "maxItems": 29,
+            "maxItems": 30,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {
@@ -2904,9 +2920,10 @@
               "bounce",
               "complaint",
               "manual",
-              "import"
+              "import",
+              "unsubscribe"
             ],
-            "description": "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. `manual`: added one by one through the API or dashboard. `import`: added by a bulk import."
+            "description": "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. `manual`: added one by one through the API or dashboard. `import`: added by a bulk import. `unsubscribe`: added by the recipient's one-click unsubscribe, scoped to the email's category."
           },
           "email_id": {
             "type": [
@@ -3232,7 +3249,7 @@
           "default",
           "categories"
         ],
-        "description": "Open and click tracking settings of the API key's environment. For each of `opens` and `clicks`, a send's own `tracking` wins, then its category's rule, then `default` (the environment default; `null` when none is set), then off.",
+        "description": "Open and click tracking and one-click unsubscribe settings of the API key's environment. For each of `opens`, `clicks` and `unsubscribe`, a send's own `tracking` wins, then its category's rule, then `default` (the environment default; `null` when none is set), then off.",
         "examples": [
           {
             "object": "tracking_settings",
@@ -3242,6 +3259,7 @@
               "category": null,
               "opens": true,
               "clicks": true,
+              "unsubscribe": false,
               "created_at": "2026-01-15T09:30:00.000Z",
               "updated_at": "2026-01-15T09:30:00.000Z"
             },
@@ -3252,6 +3270,7 @@
                 "category": "password-reset",
                 "opens": false,
                 "clicks": false,
+                "unsubscribe": false,
                 "created_at": "2026-01-16T10:00:00.000Z",
                 "updated_at": "2026-01-16T10:00:00.000Z"
               }
@@ -3289,6 +3308,10 @@
             "type": "boolean",
             "description": "Whether clicks are tracked."
           },
+          "unsubscribe": {
+            "type": "boolean",
+            "description": "Whether emails get one-click unsubscribe headers (only emails with a category and a single recipient)."
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -3304,6 +3327,7 @@
           "category",
           "opens",
           "clicks",
+          "unsubscribe",
           "created_at",
           "updated_at"
         ],
@@ -3315,6 +3339,7 @@
             "category": "password-reset",
             "opens": false,
             "clicks": false,
+            "unsubscribe": false,
             "created_at": "2026-01-16T10:00:00.000Z",
             "updated_at": "2026-01-16T10:00:00.000Z"
           }
@@ -3330,10 +3355,14 @@
           "clicks": {
             "type": "boolean",
             "description": "Track clicks."
+          },
+          "unsubscribe": {
+            "type": "boolean",
+            "description": "Add one-click unsubscribe headers to emails with a category and a single recipient."
           }
         },
         "additionalProperties": false,
-        "description": "Fields left out keep their current value; a new rule starts with both off. A send's own `tracking` option still wins over the rule.",
+        "description": "Fields left out keep their current value; a new rule starts with all off. A send's own `tracking` option still wins over the rule.",
         "examples": [
           {
             "opens": false,
@@ -13292,7 +13321,7 @@
           "Emails"
         ],
         "summary": "List an email's delivery events",
-        "description": "Every delivery event of the email, oldest first: `email.scheduled`, `email.rescheduled`, `email.canceled`, `email.sent` and `email.failed` for the whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained` and `email.suppressed` (skipped because of the suppression list) per recipient, plus `email.opened` and `email.clicked` when tracking is on (attributed to a recipient only when the email had a single one).",
+        "description": "Every delivery event of the email, oldest first: `email.scheduled`, `email.rescheduled`, `email.canceled`, `email.sent` and `email.failed` for the whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained` and `email.suppressed` (skipped because of the suppression list) per recipient, plus `email.opened` and `email.clicked` when tracking is on (attributed to a recipient only when the email had a single one) and `email.unsubscribed` after a one-click unsubscribe.",
         "security": [
           {
             "bearerAuth": []
@@ -19578,7 +19607,8 @@
                 "bounce",
                 "complaint",
                 "manual",
-                "import"
+                "import",
+                "unsubscribe"
               ],
               "description": "Only entries with this reason.",
               "examples": [

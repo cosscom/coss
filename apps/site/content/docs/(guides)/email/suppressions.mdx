@@ -17,7 +17,8 @@ only skips `*` entries.
 ## Automatic entries
 
 A permanent bounce or a complaint adds a `*` entry for that address, with `reason` `bounce` or
-`complaint` and the `email_id` that caused it. Mailbox simulator addresses
+`complaint` and the `email_id` that caused it. A [one-click unsubscribe](/docs/email/unsubscribe)
+adds an entry scoped to the email's category, with `reason` `unsubscribe`. Mailbox simulator addresses
 (`@simulator.amazonses.com`) are never suppressed, so they keep working for tests.
 
 ## Managing the list

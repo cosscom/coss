@@ -27,6 +27,7 @@ type TrackingColumns = Pick<
   EmailRow,
   | "trackOpens"
   | "trackClicks"
+  | "unsubscribe"
   | "openCount"
   | "firstOpenedAt"
   | "lastOpenedAt"
@@ -39,6 +40,7 @@ function trackingObject(row: TrackingColumns): EmailObjectOutput["tracking"] {
   return {
     opens: row.trackOpens,
     clicks: row.trackClicks,
+    unsubscribe: row.unsubscribe,
     open_count: row.openCount,
     first_opened_at: row.firstOpenedAt?.toISOString() ?? null,
     last_opened_at: row.lastOpenedAt?.toISOString() ?? null,
@@ -250,6 +252,7 @@ async function selectEmailList(
       mode: environment.mode,
       trackOpens: email.trackOpens,
       trackClicks: email.trackClicks,
+      unsubscribe: email.unsubscribe,
       openCount: email.openCount,
       firstOpenedAt: email.firstOpenedAt,
       lastOpenedAt: email.lastOpenedAt,

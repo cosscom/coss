@@ -85,7 +85,8 @@ improves deliverability.
 ## Headers and tags
 
 - `headers`: up to 15 custom headers. Names are case-insensitive, and reserved names such as
-  `subject` are rejected.
+  `subject` are rejected. COSS can add `List-Unsubscribe` headers itself: see
+  [one-click unsubscribe](/docs/email/unsubscribe).
 - `tags`: up to 50 `name`/`value` pairs (letters, digits, `_` and `-`) for your own filtering. They are
   included in webhook payloads.
 

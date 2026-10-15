@@ -90,7 +90,12 @@ export type EmailEventType =
   /** A tracked link was followed (click tracking). Never changes a recipient's status. */
   | "email.clicked"
   /** The scheduled email was moved to a new time. */
-  | "email.rescheduled";
+  | "email.rescheduled"
+  /**
+   * The recipient used one-click unsubscribe (`tracking.unsubscribe`) and is now suppressed for
+   * the email's category. Never changes a recipient's status.
+   */
+  | "email.unsubscribed";
 
 /** Details of an event; which member is present depends on the event type. */
 export interface EmailEventData {
@@ -148,6 +153,13 @@ export interface TrackingOptions {
    * `data-coss-no-track` attribute are left alone.
    */
   clicks?: boolean;
+  /**
+   * Add one-click unsubscribe headers (`List-Unsubscribe` and `List-Unsubscribe-Post`, RFC 8058).
+   * An unsubscribe suppresses the recipient for this email's category and records
+   * `email.unsubscribed`. Needs a `category`, a single recipient and no `List-Unsubscribe` header
+   * of your own.
+   */
+  unsubscribe?: boolean;
 }
 
 /** Body of `POST /v1/emails`. */
@@ -197,6 +209,8 @@ export interface RescheduleEmailParams {
 export interface EmailTracking {
   opens: boolean;
   clicks: boolean;
+  /** Whether the email carries one-click unsubscribe headers (RFC 8058). */
+  unsubscribe: boolean;
   open_count: number;
   /** ISO 8601 timestamps, or `null`. */
   first_opened_at: string | null;

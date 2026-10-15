@@ -11,6 +11,7 @@ const rule: TrackingRule = {
   category: "marketing",
   opens: true,
   clicks: false,
+  unsubscribe: false,
   created_at: "2026-10-09T12:00:00.000Z",
   updated_at: "2026-10-09T12:00:00.000Z",
 };

@@ -56,3 +56,4 @@ for (const event of events?.data ?? []) {
 `email.sent`, `email.failed`, `email.scheduled`, `email.rescheduled` and `email.canceled` describe the whole email
 (`recipient` is `null`). Delivery events describe individual recipients. Open and click events
 name a recipient only when the email had exactly one non-suppressed recipient.
+`email.unsubscribed` names the recipient who used [one-click unsubscribe](/docs/email/unsubscribe).

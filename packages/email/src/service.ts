@@ -33,15 +33,17 @@ import { canonicalJson, hashSendBatchRequest, hashSendRequest } from "./request-
 import {
   type EmailBatchObjectOutput,
   type EmailObjectOutput,
+  LIST_UNSUBSCRIBE_HEADERS,
   parseEmailAddress,
   type SendEmailRequestOutput,
+  uniqueRecipientCount,
 } from "./schemas.ts";
 import { emailScreeningContent } from "./screening.ts";
 import { type SuppressionRow, suppressedRecipients } from "./suppressions.ts";
 import { newTrackingToken } from "./tracking.ts";
 import { trackingBaseUrlFor } from "./tracking-domains.ts";
-import { instrumentHtml } from "./tracking-html.ts";
-import { resolveTracking } from "./tracking-settings.ts";
+import { instrumentHtml, unsubscribeUrl } from "./tracking-html.ts";
+import { type ResolvedTracking, resolveTracking } from "./tracking-settings.ts";
 import { billableRecipientsSql, freezeBillableRecipients, recordEmailUsage } from "./usage.ts";
 
 /** The authenticated environment a send happens in (from `authenticateApiKey`). */
@@ -650,11 +652,14 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
   }
 
   /**
-   * Adds the open pixel and click redirects to the provider's copy of the HTML (the stored email
-   * keeps the original) and stores the links first, so a click can never beat its link row.
+   * Adds the open pixel and click redirects to the provider's copy of the HTML and the one-click
+   * unsubscribe headers to its headers (the stored email keeps the originals), storing the links
+   * first, so a click can never beat its link row.
    */
   async function instrument(row: EmailRow, message: OutboundEmail): Promise<OutboundEmail> {
-    if (!row.html || !row.trackingToken || (!row.trackOpens && !row.trackClicks)) return message;
+    const token = row.trackingToken;
+    const tracksHtml = row.html !== null && (row.trackOpens || row.trackClicks);
+    if (!token || (!tracksHtml && !row.unsubscribe)) return message;
     if (!trackingBaseUrl) throw new Error("Tracking requires the email service's trackingBaseUrl.");
     // Resolved now, as the links are written: a tracking domain that stopped working (or was
     // removed) since the send falls back to the default host.
@@ -665,9 +670,21 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           provider: opts.trackingDomainProvider,
         })
       : null;
+    const baseUrl = customBaseUrl ?? trackingBaseUrl;
+    const instrumented = row.unsubscribe
+      ? {
+          ...message,
+          headers: {
+            ...message.headers,
+            "List-Unsubscribe": `<${unsubscribeUrl(baseUrl, token)}>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          },
+        }
+      : message;
+    if (row.html === null || (!row.trackOpens && !row.trackClicks)) return instrumented;
     const { html, links } = instrumentHtml(row.html, {
-      baseUrl: customBaseUrl ?? trackingBaseUrl,
-      token: row.trackingToken,
+      baseUrl,
+      token,
       opens: row.trackOpens,
       clicks: row.trackClicks,
     });
@@ -684,7 +701,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         )
         .onConflictDoNothing({ target: [emailLink.emailId, emailLink.position] });
     }
-    return { ...message, html };
+    return { ...instrumented, html };
   }
 
   async function dispatch(input: {
@@ -740,7 +757,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     environment: SendEnvironment,
     apiKeyId: string | null,
     params: SendEmailRequestOutput,
-    trackingCache: Map<string, Promise<{ opens: boolean; clicks: boolean }>>,
+    trackingCache: Map<string, Promise<ResolvedTracking>>,
     discardBody = false,
   ): Promise<PreparedSend> {
     const scheduledAt = params.scheduled_at === undefined ? null : new Date(params.scheduled_at);
@@ -755,7 +772,15 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       trackingCache.set(trackingKey, resolving);
     }
     const tracking = await resolving;
-    if ((tracking.opens || tracking.clicks) && !trackingBaseUrl) {
+    // The unsubscribe is scoped to the category and names one recipient (one provider message
+    // goes to every recipient), and the customer's own List-Unsubscribe headers win. An explicit
+    // `tracking.unsubscribe` that can't be honored was already refused by validation.
+    const unsubscribe =
+      tracking.unsubscribe &&
+      params.category !== undefined &&
+      uniqueRecipientCount(params) === 1 &&
+      !LIST_UNSUBSCRIBE_HEADERS.some((name) => name in params.headers);
+    if ((tracking.opens || tracking.clicks || unsubscribe) && !trackingBaseUrl) {
       throw new Error("Tracking requires the email service's trackingBaseUrl.");
     }
 
@@ -782,6 +807,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         category: params.category ?? null,
         trackOpens: tracking.opens,
         trackClicks: tracking.clicks,
+        unsubscribe,
       },
       scheduled,
       // Decoded once, outside the (retried) insert transaction.
@@ -804,7 +830,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       "idempotencyKey" | "requestHash" | "batchId" | "batchIndex"
     >,
   ): Promise<{ row: EmailRow; billable: number } | undefined> {
-    const tracked = prepared.values.trackOpens || prepared.values.trackClicks;
+    const tracked =
+      prepared.values.trackOpens || prepared.values.trackClicks || prepared.values.unsubscribe;
     const [row] = await tx
       .insert(email)
       .values({
@@ -937,7 +964,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const sandbox = environment.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
     const requestHash = idempotencyKey ? hashSendBatchRequest(items) : null;
-    const trackingCache = new Map<string, Promise<{ opens: boolean; clicks: boolean }>>();
+    const trackingCache = new Map<string, Promise<ResolvedTracking>>();
     const prepared: PreparedSend[] = [];
     for (const params of items) {
       prepared.push(await prepareSend(environment, input.apiKeyId, params, trackingCache));
