@@ -151,3 +151,28 @@ export async function listRiskAssessments(
     has_more: rows.length > limit,
   };
 }
+
+/**
+ * The environment's assessments of one address (case-insensitive), newest first: the admin
+ * console finds a COSS user's sign-up assessment this way (sign-ups are assessed before the user
+ * exists, so they carry no user id). Addresses are cleared after `riskPersonalData` days.
+ */
+export async function listRiskAssessmentsForEmail(
+  scope: RiskEnvironmentScope,
+  email: string,
+  opts: { event?: RiskAssessmentOutput["event"]; limit?: number } = {},
+): Promise<RiskAssessmentOutput[]> {
+  const rows = await db
+    .select()
+    .from(riskAssessment)
+    .where(
+      and(
+        inRiskEnvironment(scope),
+        sql`lower(${riskAssessment.email}) = ${email.toLowerCase()}`,
+        opts.event === undefined ? undefined : eq(riskAssessment.event, opts.event),
+      ),
+    )
+    .orderBy(desc(riskAssessment.createdAt), desc(riskAssessment.sequence))
+    .limit(Math.min(opts.limit ?? 5, MAX_RISK_LIST_LIMIT));
+  return rows.map(toRiskAssessmentObject);
+}

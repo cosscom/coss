@@ -15,12 +15,23 @@ mock.module("@coss/tenancy/admin", () => ({
   disableOrganizationScim: mock(async () => ({ complete: true })),
   disableOrganizationSso: mock(async () => {}),
   disableOrganizationSsoRequirement: mock(async () => {}),
+  planOrganizationTakedown: mock(),
   recordAdminAction: audit,
   resetUserTwoFactor: mock(async () => {}),
   revokeApiKeyAsAdmin: mock(),
   suspendOrganization: mock(),
   unlinkUserSso: mock(async () => {}),
   unsuspendOrganization: mock(),
+}));
+const emailContext = { organizationId: newId("org"), organizationSlug: "spam-co" };
+const emailContent = mock(async () => ({
+  organizationId: emailContext.organizationId,
+  html: "<p>Win</p>",
+  text: "Win",
+}));
+mock.module("@coss/email/admin", () => ({
+  getEmailForAdmin: async () => emailContext,
+  getEmailContentForAdmin: emailContent,
 }));
 const changeRateLimitOverride = mock(async () => true);
 const ratelimit = await import("@coss/ratelimit");
@@ -339,8 +350,10 @@ describe("rate limit overrides", () => {
   });
 });
 
-const { suspendOrganization } = (await import("@coss/tenancy/admin")) as unknown as Record<
-  "suspendOrganization",
+const { suspendOrganization, planOrganizationTakedown, revokeApiKeyAsAdmin } = (await import(
+  "@coss/tenancy/admin"
+)) as unknown as Record<
+  "suspendOrganization" | "planOrganizationTakedown" | "revokeApiKeyAsAdmin",
   ReturnType<typeof mock>
 >;
 const reputation = await import(
@@ -365,6 +378,7 @@ describe("COSS's own organization", () => {
     for (const action of [
       actions.suspendOrganizationAction,
       reputation.suspendOrganizationAction,
+      actions.takeDownOrganizationAction,
     ]) {
       expect(await action(null, form(systemOrgId))).toEqual({
         ok: false,
@@ -381,5 +395,112 @@ describe("COSS's own organization", () => {
     expect((await reputation.suspendOrganizationAction(null, form(organizationId))).ok).toBe(true);
     expect(suspendOrganization).toHaveBeenCalledTimes(1);
     expect(suspendSending).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("take down", () => {
+  const organizationId = newId("org");
+  const loner = newId("user");
+  const twoOrgs = newId("user");
+  function form(reason: string) {
+    const data = new FormData();
+    data.set("organizationId", organizationId);
+    data.set("reason", reason);
+    return data;
+  }
+  function plan(overrides: Record<string, unknown> = {}) {
+    return {
+      suspended: false,
+      deleting: false,
+      apiKeys: [{ id: "key_1" }, { id: "key_2" }],
+      members: [
+        { userId: loner, email: "spam@x.test", role: "owner", keptBecause: null },
+        { userId: twoOrgs, email: "dev@x.test", role: "member", keptBecause: "also in Acme" },
+      ],
+      ...overrides,
+    };
+  }
+
+  beforeEach(() => {
+    suspendOrganization.mockClear();
+    revokeApiKeyAsAdmin.mockClear();
+    mutate.mockClear();
+    audit.mockClear();
+  });
+
+  test("suspends, revokes every key and bans only the members it should", async () => {
+    planOrganizationTakedown.mockImplementation(async () => plan());
+    expect((await actions.takeDownOrganizationAction(null, form(" "))).ok).toBe(false);
+    expect(planOrganizationTakedown).not.toHaveBeenCalled();
+
+    expect(await actions.takeDownOrganizationAction(null, form("Phishing"))).toEqual({
+      ok: true,
+      data: null,
+    });
+    expect(suspendOrganization).toHaveBeenCalledWith(
+      expect.objectContaining({ organizationId, reason: "Phishing" }),
+    );
+    expect(revokeApiKeyAsAdmin.mock.calls.map(([input]) => input.keyId)).toEqual([
+      "key_1",
+      "key_2",
+    ]);
+    expect(mutate).toHaveBeenCalledTimes(1);
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ body: { userId: loner, banReason: "Phishing" } }),
+    );
+    expect(audit).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        action: "organization.take_down",
+        reason: "Phishing",
+        metadata: {
+          bannedUserIds: [loner],
+          keptUserIds: [twoOrgs],
+          revokedKeyIds: ["key_1", "key_2"],
+        },
+      }),
+    );
+  });
+
+  test("skips the suspension when it is already in place, and refuses a deleting org", async () => {
+    planOrganizationTakedown.mockImplementation(async () => plan({ suspended: true }));
+    expect((await actions.takeDownOrganizationAction(null, form("Spam"))).ok).toBe(true);
+    expect(suspendOrganization).not.toHaveBeenCalled();
+
+    planOrganizationTakedown.mockImplementation(async () => plan({ deleting: true }));
+    expect((await actions.takeDownOrganizationAction(null, form("Spam"))).ok).toBe(false);
+    expect(revokeApiKeyAsAdmin).toHaveBeenCalledTimes(2);
+  });
+});
+
+const emails = await import("../src/app/admin/emails/actions");
+
+describe("email content", () => {
+  beforeEach(() => {
+    audit.mockClear();
+    emailContent.mockClear();
+  });
+
+  test("returns the content and records the view", async () => {
+    const data = new FormData();
+    data.set("emailId", newId("email"));
+    expect(await emails.revealEmailContentAction(null, data)).toEqual({
+      ok: true,
+      data: { html: "<p>Win</p>", text: "Win" },
+    });
+    expect(audit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "email.view_content",
+        target: { type: "email", id: data.get("emailId") },
+        organizationId: emailContext.organizationId,
+      }),
+    );
+  });
+
+  test("refuses anything but an email id, without recording a view", async () => {
+    const data = new FormData();
+    data.set("emailId", newId("user"));
+    expect((await emails.revealEmailContentAction(null, data)).ok).toBe(false);
+    expect(emailContent).not.toHaveBeenCalled();
+    expect(audit).not.toHaveBeenCalled();
   });
 });

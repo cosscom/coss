@@ -34,7 +34,7 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/signals` | `@coss/signals` | Stateless abuse signals shared by COSS's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./social`: Google/GitHub sign-in (server-only); `./risk`: the injected sign-up risk assessor (COSS Risk on COSS's own sign-ups); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). |
-| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), receiving (received emails, receiving domains, managed inbound addresses, the content store), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
+| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), receiving (received emails, receiving domains, managed inbound addresses, the content store), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./admin` (the admin console's cross-org reads), `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption, endpoint auto-disable and recovery; log drains (management, signed NDJSON batch delivery, retention); `./engine` (the delivery engine shared by every product: holds, lease fencing, retry outcomes, the HTTP attempt, endpoint health, a bounded runner); `./schemas`, `./env` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
@@ -620,8 +620,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     `nextCookies()` is appended last, only in `apps/web/src/lib/auth.ts`.
 - **Tenancy rule:** every tenancy/email/webhooks function that touches tenant data takes `organizationId` and scopes its
   SQL by it; writes derive org/project from the environment row. Only `getMembership` (by slug), `authenticateApiKey`
-  (from the key's binding), the platform-level `@coss/tenancy/admin` module (call it only after
-  `requirePlatformAdmin*`), and these system-level functions resolve the org
+  (from the key's binding), the platform-level `@coss/tenancy/admin` and `@coss/email/admin` modules,
+  `listScreeningsForAdmin`/`countScreeningsForAdmin` (`@coss/screening`) and `platformUsageByDay` (`@coss/billing`)
+  (call them only after `requirePlatformAdmin*`), and these system-level functions resolve the org
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
   `recordOpen`/`recordClick` (from the email's tracking token), `trackingBaseUrlFor` (dispatch; reads domain names
@@ -944,6 +945,13 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   (verified). Actions use `requirePlatformAdminAction()` and record an `admin_audit_event` (append-only; no FKs; the
   actor's email is copied; deleted after `RETENTION_DAYS.adminAuditLog`); suspension/key revocation write it in the same transaction. Admins can't act on
   themselves; never send session tokens to the browser (revoke-one looks the token up server-side).
+  Visibility: the overview, Sending (orgs by live volume), Emails (every org's emails, `@coss/email/admin`),
+  Sign-ups (`RISK_SIGNUP_ENVIRONMENT_ID`'s assessments joined to accounts by address) and Screening pages. An
+  email's content is only loaded by `revealEmailContentAction`, which records `email.view_content` in the
+  admin audit log (never the organization's own: that would tip off an abuser); never render it with the page.
+  **Take down** (`takeDownOrganizationAction`, from `planOrganizationTakedown`) suspends the organization,
+  revokes its keys and permanently bans members without another active organization (platform admins, the
+  actor and already-banned users are kept), each step audited on its own, so it can be re-run.
 - **Organization suspension** (`organization_suspension`, presence = suspended; reason is admin-internal): enforced in
   `authenticateApiKey` (`suspended` → 403 `organization_suspended`, only for otherwise-valid keys),
   `createEnvironmentApiKey`, webhook `claimDue` (held, not failed), the org hooks above, and the dashboard

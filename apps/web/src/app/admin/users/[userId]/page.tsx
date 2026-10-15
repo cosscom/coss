@@ -1,3 +1,4 @@
+import { listRiskAssessmentsForEmail } from "@coss/risk";
 import {
   getUserForAdmin,
   listAdminAuditEvents,
@@ -34,8 +35,10 @@ import {
 } from "@/components/admin/status-badges";
 import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
+import { RiskDecisionBadge } from "@/components/risk-badges";
 import { SpecItem, SpecList } from "@/components/spec-list";
 import { formatDateTime } from "@/lib/format";
+import { signUpRiskScope } from "@/lib/risk";
 import { requirePlatformAdmin } from "@/lib/session";
 import {
   banUserAction,
@@ -64,11 +67,15 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
   const { userId } = await params;
   const user = await getUserForAdmin(userId);
   if (!user) notFound();
-  const [memberships, sessions, ssoAccounts, { events }] = await Promise.all([
+  const signUpScope = await signUpRiskScope();
+  const [memberships, sessions, ssoAccounts, { events }, [signUp]] = await Promise.all([
     listUserMembershipsForAdmin(user.id),
     listUserSessionsForAdmin(user.id),
     listUserSsoAccountsForAdmin({ userId: user.id }),
     listAdminAuditEvents({ target: { type: "user", id: user.id }, limit: 25 }),
+    signUpScope
+      ? listRiskAssessmentsForEmail(signUpScope, user.email, { event: "signup", limit: 1 })
+      : [],
   ]);
   const isSelf = user.id === actor.userId;
   const isAdmin = (user.role ?? "").split(",").some((role) => role.trim() === "admin");
@@ -122,6 +129,44 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
           </SpecList>
         </PanelBody>
       </Panel>
+
+      {signUp ? (
+        <Panel description="How COSS Risk assessed this sign-up." title="Sign-up">
+          <PanelBody flush>
+            <SpecList columns={2}>
+              <SpecItem label="Decision">
+                <span className="flex items-center gap-2">
+                  <RiskDecisionBadge decision={signUp.decision} />
+                  <span className="font-mono text-muted-foreground text-xs">
+                    {signUp.score.toFixed(2)}
+                  </span>
+                </span>
+              </SpecItem>
+              <SpecItem label="Assessed" mono>
+                {formatDateTime(signUp.created_at)}
+              </SpecItem>
+              <SpecItem label="IP" mono>
+                {signUp.ip ?? "—"}
+                {signUp.signals.ip?.country ? ` · ${signUp.signals.ip.country}` : ""}
+              </SpecItem>
+              <SpecItem label="Network" mono>
+                {[
+                  signUp.signals.ip?.as_name ?? signUp.signals.ip?.asn,
+                  signUp.signals.ip?.tor ? "Tor" : null,
+                  signUp.signals.ip?.hosting_kind,
+                ]
+                  .filter(Boolean)
+                  .join(" · ") || "—"}
+              </SpecItem>
+              <SpecItem label="Reasons" stacked>
+                {signUp.reasons.length > 0
+                  ? signUp.reasons.map((reason) => reason.message).join(" · ")
+                  : "None"}
+              </SpecItem>
+            </SpecList>
+          </PanelBody>
+        </Panel>
+      ) : null}
 
       <Panel
         description={

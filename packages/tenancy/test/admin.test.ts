@@ -12,9 +12,11 @@ import {
   listOrganizationApiKeysForAdmin,
   listOrganizationsForAdmin,
   listUserMembershipsForAdmin,
+  planOrganizationTakedown,
   revokeApiKeyAsAdmin,
   suspendOrganization,
   unsuspendOrganization,
+  usersByEmailForAdmin,
 } from "../src/admin.ts";
 import {
   authenticateApiKey,
@@ -417,5 +419,76 @@ describe("admin reads and key revocation", () => {
     });
     expect(second.events.map((e) => e.action)).toEqual(["user.ban"]);
     expect(second.nextBefore).toBeNull();
+  });
+});
+
+describe("sign-ups and takedowns", () => {
+  test("finds accounts by address with their organizations", async () => {
+    const tenant = await createTestTenant();
+    const actor = await adminActor();
+    await suspendOrganization({ organizationId: tenant.organization.id, reason: "x", actor });
+    const found = await usersByEmailForAdmin([
+      tenant.owner.email.toUpperCase(),
+      `nobody-${uniqueSuffix()}@coss.test`,
+    ]);
+    expect([...found.keys()]).toEqual([tenant.owner.email.toLowerCase()]);
+    expect(found.get(tenant.owner.email.toLowerCase())).toMatchObject({
+      id: tenant.owner.id,
+      banned: false,
+      organizations: [
+        {
+          id: tenant.organization.id,
+          slug: tenant.organization.slug,
+          role: "owner",
+          suspended: true,
+        },
+      ],
+    });
+    expect((await usersByEmailForAdmin([])).size).toBe(0);
+  });
+
+  test("plans to ban only members with nothing else on the platform", async () => {
+    const tenant = await createTestTenant();
+    const actor = await adminActor();
+    const elsewhere = await createTestTenant();
+    const suspendedElsewhere = await createTestTenant();
+    await suspendOrganization({
+      organizationId: suspendedElsewhere.organization.id,
+      reason: "x",
+      actor,
+    });
+    const loner = await createTestUser();
+    const twoOrgs = await createTestUser();
+    const twoOrgsSuspended = await createTestUser();
+    const admin = await createTestUser();
+    await promoteToAdmin(admin.email);
+    for (const user of [loner, twoOrgs, twoOrgsSuspended, admin]) {
+      await addMember({ organizationId: tenant.organization.id, userId: user.id, role: "member" });
+    }
+    await addMember({
+      organizationId: elsewhere.organization.id,
+      userId: twoOrgs.id,
+      role: "member",
+    });
+    await addMember({
+      organizationId: suspendedElsewhere.organization.id,
+      userId: twoOrgsSuspended.id,
+      role: "member",
+    });
+
+    const plan = await planOrganizationTakedown(tenant.organization.id);
+    expect(plan.suspended).toBe(false);
+    expect(plan.deleting).toBe(false);
+    expect(plan.apiKeys).toHaveLength(2);
+    expect(Object.fromEntries(plan.members.map((row) => [row.userId, row.keptBecause]))).toEqual({
+      [tenant.owner.id]: null,
+      [loner.id]: null,
+      [twoOrgs.id]: `also in ${elsewhere.organization.name}`,
+      [twoOrgsSuspended.id]: null,
+      [admin.id]: "platform admin",
+    });
+
+    await suspendOrganization({ organizationId: tenant.organization.id, reason: "x", actor });
+    expect((await planOrganizationTakedown(tenant.organization.id)).suspended).toBe(true);
   });
 });
