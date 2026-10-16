@@ -562,8 +562,9 @@ describe("broadcasts", () => {
     const f = await fixture();
     const broadcast = await f.create({ send: true });
     await runDueBroadcasts(f.deps, { scope: f.scope });
-    // Another worker took the lease meanwhile.
-    const stolen = new Date(Date.now() + 60_000);
+    // Another worker took the lease meanwhile (a different lease: this worker's own is now + 60 s,
+    // which `Date.now() + 60_000` can equal to the millisecond).
+    const stolen = new Date(Date.now() + 10 * 60_000);
     let steals = 0;
     const deps: BroadcastWorkerDeps = {
       ...f.deps,
