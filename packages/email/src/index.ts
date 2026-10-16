@@ -1,5 +1,53 @@
 export type { EmailAttachmentMetadata } from "./attachments.ts";
+export {
+  type ContactRecipient,
+  contactVariables,
+  countRecipients,
+  type RecipientOptions,
+  type RecipientTarget,
+  resolveRecipients,
+  variablesFor,
+} from "./audience-resolution.ts";
+export {
+  type AudienceRow,
+  addAudienceContacts,
+  contactAudienceIds,
+  createAudience,
+  deleteAudience,
+  getAudience,
+  listAudienceContacts,
+  listAudiences,
+  removeAudienceContact,
+  updateAudience,
+} from "./audiences.ts";
 export { checkBimi, parseTagList, toBimiObject } from "./bimi.ts";
+export { type ContactCsvEntry, parseContactCsv } from "./contact-csv.ts";
+export {
+  type ContactEnvironment,
+  type ContactPropertyRow,
+  createContactProperty,
+  deleteContactProperty,
+  getContactProperty,
+  listContactProperties,
+  listContactPropertyRows,
+  updateContactProperty,
+} from "./contact-properties.ts";
+export {
+  type ContactDeps,
+  type ContactRow,
+  contactCount,
+  contactsCsvStream,
+  deleteContact,
+  getContact,
+  getContactRow,
+  getContactTopics,
+  importContacts,
+  listContacts,
+  setContactTopics,
+  toContactObject,
+  updateContact,
+  upsertContact,
+} from "./contacts.ts";
 export {
   countDedicatedDeliveries,
   type DedicatedIpDeps,
@@ -127,6 +175,8 @@ export {
 } from "./domains.ts";
 export { EMAIL_CSV_COLUMNS, emailCsvRow, emailsCsvStream } from "./email-csv.ts";
 export {
+  ContactError,
+  type ContactErrorCode,
   DomainError,
   type DomainErrorCode,
   EmailError,
@@ -168,6 +218,12 @@ export {
   organizationPrefix,
   receivedEmailPrefix,
 } from "./inbound-store.ts";
+export {
+  getMarketingSettings,
+  getMarketingSettingsRow,
+  type MarketingSettingsRow,
+  updateMarketingSettings,
+} from "./marketing-settings.ts";
 export { emailNotifier, type Notice, type Notifier, notificationEnvironment } from "./notifier.ts";
 export {
   type DedicatedIpProvider,
@@ -405,6 +461,16 @@ export {
 } from "./schemas.ts";
 export { emailScreeningContent, htmlTextAndLinks } from "./screening.ts";
 export {
+  compileSegmentFilter,
+  createSegment,
+  deleteSegment,
+  getSegment,
+  listSegments,
+  previewSegmentContacts,
+  type SegmentRow,
+  updateSegment,
+} from "./segments.ts";
+export {
   cancelScheduledEmail,
   createEmailService,
   type DispatchDueOptions,
@@ -468,6 +534,16 @@ export {
   toEmailTemplateVersionObject,
   updateEmailTemplate,
 } from "./templates.ts";
+export {
+  createTopic,
+  deleteTopic,
+  getTopic,
+  listTopicRows,
+  listTopics,
+  type TopicRow,
+  topicsByKey,
+  updateTopic,
+} from "./topics.ts";
 export { isTrackingToken, newTrackingToken, recordClick, recordOpen } from "./tracking.ts";
 export {
   checkTrackingDomain,

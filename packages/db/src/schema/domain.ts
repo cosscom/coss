@@ -602,6 +602,290 @@ export const emailTemplateContent = pgTable(
   ],
 );
 
+export const contactStatus = pgEnum("contact_status", ["subscribed", "unsubscribed", "pending"]);
+export const contactSource = pgEnum("contact_source", [
+  "api",
+  "dashboard",
+  "import",
+  "preference_center",
+]);
+export const contactPropertyType = pgEnum("contact_property_type", [
+  "string",
+  "number",
+  "boolean",
+  "date",
+]);
+export const topicDefaultSubscription = pgEnum("topic_default_subscription", ["opt_in", "opt_out"]);
+export const topicVisibility = pgEnum("topic_visibility", ["public", "private"]);
+export const contactTopicStatus = pgEnum("contact_topic_status", ["opted_in", "opted_out"]);
+
+/**
+ * An environment's contacts: who marketing email goes to, and whether they consented. One per
+ * address (bare, lower-cased). `status` is consent to marketing as a whole (`pending`: waiting
+ * for a double opt-in confirmation); `contact_topic` holds consent per topic. Deliverability
+ * (bounces, complaints) stays in `email_suppression`.
+ */
+export const contact = pgTable(
+  "contact",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.contact)),
+    sequence: bigint("sequence", { mode: "number" }).generatedAlwaysAsIdentity(),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    address: text("address").notNull(),
+    firstName: text("first_name"),
+    lastName: text("last_name"),
+    status: contactStatus("status").notNull().default("subscribed"),
+    // Custom properties, validated against `contact_property` (`@coss/email` contacts.ts).
+    properties: jsonb("properties").$type<Record<string, unknown>>().notNull().default({}),
+    source: contactSource("source").notNull(),
+    // The consent trail.
+    subscribedAt: timestamp("subscribed_at", { withTimezone: true }),
+    unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
+    pendingSince: timestamp("pending_since", { withTimezone: true }),
+    confirmationSentAt: timestamp("confirmation_sent_at", { withTimezone: true }),
+    confirmationCount: integer("confirmation_count").notNull().default(0),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "contact_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("contact_environment_address_unique").on(t.environmentId, t.address),
+    unique("contact_id_organization_unique").on(t.id, t.organizationId),
+    index("contact_environment_sequence_idx").on(
+      t.environmentId,
+      t.createdAt.desc(),
+      t.sequence.desc(),
+    ),
+    // Recipient resolution walks an environment's contacts by id (`@coss/email` audience-resolution.ts).
+    index("contact_environment_id_idx").on(t.environmentId, t.id),
+    // Segment filters on properties (`properties @> …`).
+    index("contact_properties_idx").using("gin", t.properties.op("jsonb_path_ops")),
+    // Pending contacts expire (retention purge).
+    index("contact_pending_since_idx").on(t.pendingSince).where(sql`${t.status} = 'pending'`),
+  ],
+);
+
+/** How many contacts an environment has: the plan limit is checked against it, not a count(*). */
+export const contactCounter = pgTable(
+  "contact_counter",
+  {
+    environmentId: text("environment_id").primaryKey(),
+    organizationId: text("organization_id").notNull(),
+    count: integer("count").notNull().default(0),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "contact_counter_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    check("contact_counter_count_check", sql`${t.count} >= 0`),
+  ],
+);
+
+/** A custom contact property of an environment (typed; `fallback` fills templates without one). */
+export const contactProperty = pgTable(
+  "contact_property",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.contactProperty)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    key: text("key").notNull(),
+    type: contactPropertyType("type").notNull(),
+    fallback: jsonb("fallback").$type<string | number | boolean | null>(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "contact_property_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("contact_property_environment_key_unique").on(t.environmentId, t.key),
+  ],
+);
+
+/** A static list of contacts (members added and removed explicitly). */
+export const audience = pgTable(
+  "audience",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.audience)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    name: text("name").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "audience_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("audience_environment_name_unique").on(t.environmentId, t.name),
+    unique("audience_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
+export const audienceMember = pgTable(
+  "audience_member",
+  {
+    audienceId: text("audience_id").notNull(),
+    contactId: text("contact_id").notNull(),
+    organizationId: text("organization_id").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.audienceId, t.contactId] }),
+    foreignKey({
+      name: "audience_member_audience_fk",
+      columns: [t.audienceId, t.organizationId],
+      foreignColumns: [audience.id, audience.organizationId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "audience_member_contact_fk",
+      columns: [t.contactId, t.organizationId],
+      foreignColumns: [contact.id, contact.organizationId],
+    }).onDelete("cascade"),
+    index("audience_member_contact_idx").on(t.contactId),
+  ],
+);
+
+/** A filter over an environment's contacts, evaluated whenever it is used (`@coss/email` segments.ts). */
+export const segment = pgTable(
+  "segment",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.segment)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    name: text("name").notNull(),
+    filter: jsonb("filter").$type<Record<string, unknown>>().notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "segment_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("segment_environment_name_unique").on(t.environmentId, t.name),
+  ],
+);
+
+/**
+ * A subscription topic of an environment, built on categories: `key` is the `category` of the
+ * emails about it. `opt_in` topics reach every subscribed contact unless they opted out; `opt_out`
+ * topics only those who opted in. `private` ones never show in the preference center.
+ */
+export const topic = pgTable(
+  "topic",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.topic)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    key: text("key").notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    defaultSubscription: topicDefaultSubscription("default_subscription").notNull(),
+    visibility: topicVisibility("visibility").notNull().default("public"),
+    position: integer("position").notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "topic_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("topic_environment_key_unique").on(t.environmentId, t.key),
+    unique("topic_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
+/** A contact's explicit choice for one topic (no row: the topic's default applies). */
+export const contactTopic = pgTable(
+  "contact_topic",
+  {
+    contactId: text("contact_id").notNull(),
+    topicId: text("topic_id").notNull(),
+    organizationId: text("organization_id").notNull(),
+    status: contactTopicStatus("status").notNull(),
+    source: contactSource("source").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.contactId, t.topicId] }),
+    foreignKey({
+      name: "contact_topic_contact_fk",
+      columns: [t.contactId, t.organizationId],
+      foreignColumns: [contact.id, contact.organizationId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "contact_topic_topic_fk",
+      columns: [t.topicId, t.organizationId],
+      foreignColumns: [topic.id, topic.organizationId],
+    }).onDelete("cascade"),
+    index("contact_topic_topic_status_idx").on(t.topicId, t.status, t.contactId),
+  ],
+);
+
+/**
+ * An environment's marketing settings: the name and postal address marketing emails carry
+ * (CAN-SPAM), and double opt-in confirmations.
+ */
+export const marketingSettings = pgTable(
+  "marketing_settings",
+  {
+    environmentId: text("environment_id").primaryKey(),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    displayName: text("display_name"),
+    // Required before any marketing email goes out.
+    mailingAddress: text("mailing_address"),
+    confirmationFrom: text("confirmation_from"),
+    confirmationSubject: text("confirmation_subject"),
+    confirmationHtml: text("confirmation_html"),
+    confirmationText: text("confirmation_text"),
+    confirmedRedirectUrl: text("confirmed_redirect_url"),
+    doubleOptInDefault: boolean("double_opt_in_default").notNull().default(false),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "marketing_settings_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+  ],
+);
+
 /** A link coss.com rewrote in a click-tracked email; `position` is its index in the HTML. */
 export const emailLink = pgTable(
   "email_link",

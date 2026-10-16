@@ -95,3 +95,35 @@ export class DomainError extends Error {
     this.code = code;
   }
 }
+
+export type ContactErrorCode =
+  | "not_found"
+  | "unknown_property"
+  | "invalid_property"
+  | "too_many_properties"
+  | "property_exists"
+  | "property_in_use"
+  | "name_taken"
+  | "topic_exists"
+  | "topic_in_use"
+  | "audience_in_use"
+  | "audience_not_found"
+  | "topic_not_found"
+  | "invalid_filter";
+
+/**
+ * Expected failures of contacts, audiences, segments and topics; messages are safe to show.
+ * `param` is the request field at fault. Only `not_found` is a 404; the rest are 422 (not 409:
+ * the SDK retries those, and these conflicts never resolve on their own).
+ */
+export class ContactError extends Error {
+  readonly code: ContactErrorCode;
+  readonly param: string | undefined;
+
+  constructor(code: ContactErrorCode, message: string, opts?: { param?: string }) {
+    super(message);
+    this.name = "ContactError";
+    this.code = code;
+    this.param = opts?.param;
+  }
+}

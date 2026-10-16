@@ -17,6 +17,8 @@ import {
 
 export * from "./template-schemas.ts";
 
+import { CONTACT_EVENT_TYPES } from "./contact-event-types.ts";
+
 export const MAX_RECIPIENTS = 50;
 export const MAX_HEADERS = 15;
 export const MAX_TAGS = 50;
@@ -205,8 +207,8 @@ export function emailAddressProblem(value: string): string | null {
   return null;
 }
 
-/** Normalized address used to count distinct recipients. */
-function addressKey(value: string): string {
+/** Normalized address used to count distinct recipients (bare, lower-cased). */
+export function addressKey(value: string): string {
   return parseEmailAddress(value).address.toLowerCase();
 }
 
@@ -248,7 +250,8 @@ const TagPart = z
 
 const Tag = z.strictObject({ name: TagPart, value: TagPart });
 
-const Category = z
+/** A send's `category` (and a topic's `key`). */
+export const Category = z
   .string()
   .regex(CATEGORY, "Must be 1-256 characters: ASCII letters, numbers, underscores or dashes.");
 
@@ -824,7 +827,8 @@ export type DomainEventType = (typeof DOMAIN_EVENT_TYPES)[number];
 /**
  * Every type a webhook endpoint can subscribe to: email events, received emails, the
  * organization's domain events (`domain.*`), reputation changes (`account.*`) and billing events
- * (`billing.*`), all three delivered to live environments only, and risk reviews (`risk.*`).
+ * (`billing.*`), all three delivered to live environments only, risk reviews (`risk.*`) and
+ * contact changes (`contact.*`).
  */
 export const WEBHOOK_EVENT_TYPES = [
   ...EMAIL_EVENT_TYPES,
@@ -834,6 +838,7 @@ export const WEBHOOK_EVENT_TYPES = [
   ...HOOK_OPERATIONAL_EVENT_TYPES,
   ...BILLING_EVENT_TYPES,
   ...RISK_EVENT_TYPES,
+  ...CONTACT_EVENT_TYPES,
 ] as const;
 // Examples shown in the API reference; test/schema-examples.test.ts parses each with its schema.
 const EMAIL_ID_EXAMPLE = "email_01k7c8m4q2f3e9v6t5r1n0p8yz";
@@ -1888,7 +1893,8 @@ export const CreateTrackingDomainRequest = z
   .meta({ id: "CreateTrackingDomainRequest", examples: [{ hostname: "links.acme.com" }] });
 
 export type CreateTrackingDomainRequestInput = z.input<typeof CreateTrackingDomainRequest>;
-const SuppressionAddress = z
+/** An address of a list entry: validated, then stored bare and lower-cased. */
+export const SuppressionAddress = z
   .string()
   .superRefine((value, ctx) => {
     const problem = emailAddressProblem(value);

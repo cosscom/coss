@@ -50,7 +50,12 @@ export const PLANS = {
         scim: false,
         dedicatedIps: false,
       },
-      limits: { domains: 1, members: 3, webhookEndpointsPerEnvironment: 2 },
+      limits: {
+        domains: 1,
+        members: 3,
+        webhookEndpointsPerEnvironment: 2,
+        contactsPerEnvironment: 1_000,
+      },
       rateLimits: {
         "email.recipients.second": perSecond(2, 50),
         "email.recipients.day": perDay(3_000),
@@ -77,7 +82,12 @@ export const PLANS = {
         scim: false,
         dedicatedIps: false,
       },
-      limits: { domains: 10, members: 10, webhookEndpointsPerEnvironment: 10 },
+      limits: {
+        domains: 10,
+        members: 10,
+        webhookEndpointsPerEnvironment: 10,
+        contactsPerEnvironment: 50_000,
+      },
       rateLimits: {
         "email.recipients.second": perSecond(14, 100),
         "email.recipients.day": perDay(100_000),
@@ -110,7 +120,12 @@ export const PLANS = {
         scim: false,
         dedicatedIps: false,
       },
-      limits: { domains: 100, members: null, webhookEndpointsPerEnvironment: 10 },
+      limits: {
+        domains: 100,
+        members: null,
+        webhookEndpointsPerEnvironment: 10,
+        contactsPerEnvironment: 250_000,
+      },
       rateLimits: {
         "email.recipients.second": perSecond(50, 200),
         "email.recipients.day": perDay(1_000_000),
@@ -143,7 +158,12 @@ export const PLANS = {
         scim: true,
         dedicatedIps: false,
       },
-      limits: { domains: null, members: null, webhookEndpointsPerEnvironment: 10 },
+      limits: {
+        domains: null,
+        members: null,
+        webhookEndpointsPerEnvironment: 10,
+        contactsPerEnvironment: null,
+      },
       rateLimits: {
         "email.recipients.second": perSecond(100, 500),
         "email.recipients.day": perDay(5_000_000),

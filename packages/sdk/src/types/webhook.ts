@@ -1,9 +1,10 @@
 /**
  * Webhook wire types (hand-written mirrors of the API's `EmailWebhookEvent`,
  * `ReceivedEmailWebhookEvent`, `DomainWebhookEvent`, `AccountWebhookEvent`, `BillingWebhookEvent`,
- * `RiskWebhookEvent` and `HookEndpointWebhookEvent`).
+ * `RiskWebhookEvent`, `HookEndpointWebhookEvent` and `ContactWebhookEvent`).
  */
 import type { BillingHoldReason, Credit, InvoiceSummary, Meter, PlanKey } from "./billing.ts";
+import type { ContactSource, ContactStatus } from "./contact.ts";
 import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
 import type { ReceivedEmailVerdicts } from "./received-email.ts";
 import type { MarketingStanding, ReputationCheck, ReputationStatus } from "./reputation.ts";
@@ -275,6 +276,29 @@ export interface HookEndpointWebhookEvent {
   data: HookEndpointWebhookEventData;
 }
 
+/** Contact events (sent to the contact's environment). */
+export type ContactEventType = "contact.created" | "contact.updated" | "contact.deleted";
+
+export interface ContactWebhookEventData {
+  /** Who changed; never their properties or names. */
+  contact: { id: string; email: string; status: ContactStatus };
+  source: ContactSource;
+  /** ISO 8601 timestamp. */
+  occurred_at: string;
+}
+
+/** A contact was created, updated or deleted. `id` equals the `webhook-id` header. */
+export interface ContactWebhookEvent {
+  id: string;
+  object: "event";
+  type: ContactEventType;
+  /** The API version this event is rendered in: the receiving endpoint's `api_version`. */
+  api_version: string;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  data: ContactWebhookEventData;
+}
+
 /** The JSON body of a webhook request; narrow on `type`. */
 export type WebhookEvent =
   | EmailWebhookEvent
@@ -283,4 +307,5 @@ export type WebhookEvent =
   | AccountWebhookEvent
   | BillingWebhookEvent
   | RiskWebhookEvent
-  | HookEndpointWebhookEvent;
+  | HookEndpointWebhookEvent
+  | ContactWebhookEvent;

@@ -1,0 +1,535 @@
+import {
+  contactsCsvStream,
+  createContactProperty,
+  deleteContact,
+  deleteContactProperty,
+  getContact,
+  getContactProperty,
+  getContactTopics,
+  importContacts,
+  listContactProperties,
+  listContacts,
+  setContactTopics,
+  updateContact,
+  updateContactProperty,
+  upsertContact,
+} from "@coss/email";
+import {
+  Contact,
+  ContactImport,
+  ContactList,
+  ContactPropertyList,
+  ContactPropertyObject,
+  ContactTopics,
+  CreateContactPropertyRequest,
+  DeletedContact,
+  DeletedContactProperty,
+  ExportContactsQuery,
+  ImportContactsRequest,
+  ListContactsQuery,
+  MAX_CONTACT_IMPORT_ENTRIES,
+  UpdateContactPropertyRequest,
+  UpdateContactRequest,
+  UpdateContactTopicsRequest,
+  UpsertContactRequest,
+} from "@coss/email/contact-schemas";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { z } from "zod";
+import { recordApiAudit } from "../audit.ts";
+import { notFound } from "../errors.ts";
+import { requireApiKey } from "../middleware/api-key.ts";
+import { upgradeRequestBody } from "../middleware/api-version.ts";
+import { rateLimit } from "../middleware/rate-limit.ts";
+import type { AppEnv } from "../types.ts";
+import { billingErrorDoc, commonErrors, errorDoc, jsonDoc, requestIdHeader } from "./docs.ts";
+
+const ContactParams = z.object({
+  id: z.string().meta({
+    description: "The contact's id, or its address (URL-encoded).",
+    examples: ["contact_01k7c8m4q2f3e9v6t5r1n0p8yz"],
+  }),
+});
+
+const PropertyParams = z.object({
+  id: z.string().meta({
+    description: "The property's id.",
+    examples: ["cprop_01k7c8m4q2f3e9v6t5r1n0p8yz"],
+  }),
+});
+
+const notFoundDoc = errorDoc(
+  "No contact with this id or address exists in the API key's environment (`not_found`).",
+);
+const propertyNotFoundDoc = errorDoc(
+  "No property with this id exists in the API key's environment (`not_found`).",
+);
+const bodyErrors = {
+  400: errorDoc("The body is not valid JSON (`invalid_json`)."),
+  413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
+  415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
+};
+
+export const upsertContactRoute = createRoute({
+  method: "post",
+  path: "/contacts",
+  operationId: "upsertContact",
+  tags: ["Contacts"],
+  summary: "Create or update a contact",
+  description:
+    "Creates the contact with this address in the API key's environment, or updates the existing " +
+    "one: names are replaced when given, `properties` are merged (`null` removes one), " +
+    "`audience_ids` are added and `topics` choices recorded. `status` only changes when passed.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ contact: ["create", "update"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/contacts"),
+  ],
+  request: {
+    body: { required: true, content: { "application/json": { schema: UpsertContactRequest } } },
+  },
+  responses: {
+    200: jsonDoc("The existing contact, updated.", Contact),
+    201: jsonDoc("The new contact.", Contact),
+    ...bodyErrors,
+    ...commonErrors,
+    402: billingErrorDoc(
+      "The environment has as many contacts as the organization's plan allows (`plan_limit_reached`)",
+    ),
+    422: errorDoc(
+      "The body failed validation (`validation_error`), names an unknown property, audience or " +
+        "topic (`unknown_property`, `audience_not_found`, `topic_not_found`) or a value of the " +
+        "wrong type (`invalid_property`).",
+    ),
+  },
+});
+
+export const listContactsRoute = createRoute({
+  method: "get",
+  path: "/contacts",
+  operationId: "listContacts",
+  tags: ["Contacts"],
+  summary: "List contacts",
+  description:
+    "The contacts of the API key's environment, newest first. Pass the last `id` as `after` to " +
+    "get the next page while `has_more` is true.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ contact: ["read"] }), rateLimit("api.read")],
+  request: { query: ListContactsQuery },
+  responses: {
+    200: jsonDoc("A page of contacts.", ContactList),
+    ...commonErrors,
+    422: errorDoc("A query parameter failed validation (`validation_error`, see `issues`)."),
+  },
+});
+
+export const importContactsRoute = createRoute({
+  method: "post",
+  path: "/contacts/import",
+  operationId: "importContacts",
+  tags: ["Contacts"],
+  summary: "Import contacts in bulk",
+  description:
+    `Creates or updates up to ${MAX_CONTACT_IMPORT_ENTRIES} contacts at once (source \`import\`). ` +
+    "Each entry is validated on its own: invalid ones are skipped and listed in `invalid`. " +
+    "Existing contacts get the new names and properties, but an import never re-subscribes an " +
+    "unsubscribed contact (`kept_unsubscribed`). Imports send no `contact.*` webhooks. Over the " +
+    "plan's contact limit nothing is imported.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ contact: ["create", "update"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/contacts/import"),
+  ],
+  request: {
+    body: { required: true, content: { "application/json": { schema: ImportContactsRequest } } },
+  },
+  responses: {
+    200: jsonDoc("What the import did.", ContactImport),
+    ...bodyErrors,
+    ...commonErrors,
+    402: billingErrorDoc(
+      "The import would exceed the organization's plan's contact limit (`plan_limit_reached`)",
+    ),
+    422: errorDoc(
+      `The body is not a list of 1-${MAX_CONTACT_IMPORT_ENTRIES} contacts (\`validation_error\`), ` +
+        "or `audience_id` is unknown (`audience_not_found`).",
+    ),
+  },
+});
+
+export const exportContactsRoute = createRoute({
+  method: "get",
+  path: "/contacts/export",
+  operationId: "exportContacts",
+  tags: ["Contacts"],
+  summary: "Export contacts as CSV",
+  description:
+    "The contacts of the API key's environment (optionally filtered), oldest first, as CSV with " +
+    "the columns `email,first_name,last_name,status`, one column per custom property, then " +
+    "`created_at,id`. The file can be imported again as is. Values a spreadsheet would run as a " +
+    "formula are prefixed with `'`.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ contact: ["read"] }), rateLimit("api.read")],
+  request: { query: ExportContactsQuery },
+  responses: {
+    200: {
+      description: "The CSV file.",
+      headers: { "X-Request-Id": requestIdHeader },
+      content: { "text/csv": { schema: z.string() } },
+    },
+    ...commonErrors,
+    422: errorDoc("A query parameter failed validation (`validation_error`, see `issues`)."),
+  },
+});
+
+export const getContactRoute = createRoute({
+  method: "get",
+  path: "/contacts/{id}",
+  operationId: "getContact",
+  tags: ["Contacts"],
+  summary: "Retrieve a contact",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ contact: ["read"] }), rateLimit("api.read")],
+  request: { params: ContactParams },
+  responses: { 200: jsonDoc("The contact.", Contact), ...commonErrors, 404: notFoundDoc },
+});
+
+export const updateContactRoute = createRoute({
+  method: "patch",
+  path: "/contacts/{id}",
+  operationId: "updateContact",
+  tags: ["Contacts"],
+  summary: "Update a contact",
+  description: "Changes the fields given; `properties` are merged (`null` removes one).",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ contact: ["update"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("PATCH /v1/contacts/{id}"),
+  ],
+  request: {
+    params: ContactParams,
+    body: { required: true, content: { "application/json": { schema: UpdateContactRequest } } },
+  },
+  responses: {
+    200: jsonDoc("The contact.", Contact),
+    ...bodyErrors,
+    ...commonErrors,
+    404: notFoundDoc,
+    422: errorDoc(
+      "The body failed validation (`validation_error`), names an unknown property or topic, or " +
+        "a value of the wrong type.",
+    ),
+  },
+});
+
+export const deleteContactRoute = createRoute({
+  method: "delete",
+  path: "/contacts/{id}",
+  operationId: "deleteContact",
+  tags: ["Contacts"],
+  summary: "Delete a contact",
+  description:
+    "Deletes the contact with its audience memberships and topic choices. Its suppressions stay: " +
+    "they are about the address, not the contact.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ contact: ["delete"] }), rateLimit("api.write")],
+  request: { params: ContactParams },
+  responses: {
+    200: jsonDoc("The contact was deleted.", DeletedContact),
+    ...commonErrors,
+    404: notFoundDoc,
+  },
+});
+
+export const getContactTopicsRoute = createRoute({
+  method: "get",
+  path: "/contacts/{id}/topics",
+  operationId: "getContactTopics",
+  tags: ["Contacts"],
+  summary: "Retrieve a contact's topics",
+  description:
+    "Every topic of the environment with the contact's choice and whether its emails reach them.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ contact: ["read"] }), rateLimit("api.read")],
+  request: { params: ContactParams },
+  responses: { 200: jsonDoc("The topics.", ContactTopics), ...commonErrors, 404: notFoundDoc },
+});
+
+export const updateContactTopicsRoute = createRoute({
+  method: "patch",
+  path: "/contacts/{id}/topics",
+  operationId: "updateContactTopics",
+  tags: ["Contacts"],
+  summary: "Update a contact's topics",
+  description: "Records the contact's choices for the topics given; the others keep theirs.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ contact: ["update"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("PATCH /v1/contacts/{id}/topics"),
+  ],
+  request: {
+    params: ContactParams,
+    body: {
+      required: true,
+      content: { "application/json": { schema: UpdateContactTopicsRequest } },
+    },
+  },
+  responses: {
+    200: jsonDoc("The topics.", ContactTopics),
+    ...bodyErrors,
+    ...commonErrors,
+    404: notFoundDoc,
+    422: errorDoc("The body failed validation, or names an unknown topic (`topic_not_found`)."),
+  },
+});
+
+export const listContactPropertiesRoute = createRoute({
+  method: "get",
+  path: "/contact_properties",
+  operationId: "listContactProperties",
+  tags: ["Contacts"],
+  summary: "List contact properties",
+  description: "Every custom contact property of the API key's environment (at most 50), by key.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ contact: ["read"] }), rateLimit("api.read")],
+  responses: { 200: jsonDoc("The properties.", ContactPropertyList), ...commonErrors },
+});
+
+export const createContactPropertyRoute = createRoute({
+  method: "post",
+  path: "/contact_properties",
+  operationId: "createContactProperty",
+  tags: ["Contacts"],
+  summary: "Create a contact property",
+  description:
+    "Defines a custom property contacts can have. Its key and type can't change; `fallback` is " +
+    "what templates use for contacts without a value.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ contact: ["create"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/contact_properties"),
+  ],
+  request: {
+    body: {
+      required: true,
+      content: { "application/json": { schema: CreateContactPropertyRequest } },
+    },
+  },
+  responses: {
+    201: jsonDoc("The new property.", ContactPropertyObject),
+    ...bodyErrors,
+    ...commonErrors,
+    422: errorDoc(
+      "The body failed validation, the key exists (`property_exists`), or the environment has " +
+        "50 properties (`too_many_properties`).",
+    ),
+  },
+});
+
+export const getContactPropertyRoute = createRoute({
+  method: "get",
+  path: "/contact_properties/{id}",
+  operationId: "getContactProperty",
+  tags: ["Contacts"],
+  summary: "Retrieve a contact property",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ contact: ["read"] }), rateLimit("api.read")],
+  request: { params: PropertyParams },
+  responses: {
+    200: jsonDoc("The property.", ContactPropertyObject),
+    ...commonErrors,
+    404: propertyNotFoundDoc,
+  },
+});
+
+export const updateContactPropertyRoute = createRoute({
+  method: "patch",
+  path: "/contact_properties/{id}",
+  operationId: "updateContactProperty",
+  tags: ["Contacts"],
+  summary: "Update a contact property's fallback",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ contact: ["update"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("PATCH /v1/contact_properties/{id}"),
+  ],
+  request: {
+    params: PropertyParams,
+    body: {
+      required: true,
+      content: { "application/json": { schema: UpdateContactPropertyRequest } },
+    },
+  },
+  responses: {
+    200: jsonDoc("The property.", ContactPropertyObject),
+    ...bodyErrors,
+    ...commonErrors,
+    404: propertyNotFoundDoc,
+    422: errorDoc("The fallback doesn't fit the property's type (`invalid_property`)."),
+  },
+});
+
+export const deleteContactPropertyRoute = createRoute({
+  method: "delete",
+  path: "/contact_properties/{id}",
+  operationId: "deleteContactProperty",
+  tags: ["Contacts"],
+  summary: "Delete a contact property",
+  description:
+    "Deletes the property and removes its values from every contact. Refused while a segment " +
+    "filters on it (`property_in_use`).",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ contact: ["delete"] }), rateLimit("api.write")],
+  request: { params: PropertyParams },
+  responses: {
+    200: jsonDoc("The property was deleted.", DeletedContactProperty),
+    ...commonErrors,
+    404: propertyNotFoundDoc,
+    422: errorDoc("A segment filters on the property (`property_in_use`)."),
+  },
+});
+
+const NOT_FOUND = "No contact with this id or address exists in this API key's environment.";
+const PROPERTY_NOT_FOUND = "No contact property with this id exists in this API key's environment.";
+
+export function createContactRoutes(): OpenAPIHono<AppEnv> {
+  const router = new OpenAPIHono<AppEnv>();
+  const envOf = (c: { var: AppEnv["Variables"] }) => ({
+    organizationId: c.var.auth.organizationId,
+    environmentId: c.var.auth.environmentId,
+  });
+
+  router.openapi(upsertContactRoute, async (c) => {
+    const params = c.req.valid("json");
+    const result = await upsertContact(envOf(c), params, {
+      source: "api",
+      plans: c.var.plans ?? undefined,
+    });
+    return c.json(result.contact, result.created ? 201 : 200);
+  });
+
+  router.openapi(listContactsRoute, async (c) => {
+    return c.json(await listContacts(envOf(c), c.req.valid("query")), 200);
+  });
+
+  // `import` and `export` are registered before `/contacts/{id}`, which would match them.
+  router.openapi(importContactsRoute, async (c) => {
+    const { contacts, audience_id } = c.req.valid("json");
+    const result = await importContacts(envOf(c), contacts, {
+      plans: c.var.plans ?? undefined,
+      ...(audience_id ? { audienceId: audience_id } : {}),
+    });
+    await recordApiAudit(c, {
+      action: "contact.imported",
+      metadata: {
+        created: result.created,
+        updated: result.updated,
+        invalid: result.invalid.length,
+      },
+    });
+    return c.json(result, 200);
+  });
+
+  router.openapi(exportContactsRoute, async (c) => {
+    const env = envOf(c);
+    const keys = (await listContactProperties(env)).map((property) => property.key);
+    return c.body(contactsCsvStream(env, c.req.valid("query"), keys), 200, {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="contacts-${env.environmentId}.csv"`,
+      "Cache-Control": "no-store",
+    });
+  });
+
+  router.openapi(getContactRoute, async (c) => {
+    const contact = await getContact(envOf(c), c.req.valid("param").id);
+    if (!contact) throw notFound(NOT_FOUND);
+    return c.json(contact, 200);
+  });
+
+  router.openapi(updateContactRoute, async (c) => {
+    const contact = await updateContact(envOf(c), c.req.valid("param").id, c.req.valid("json"), {
+      source: "api",
+    });
+    if (!contact) throw notFound(NOT_FOUND);
+    return c.json(contact, 200);
+  });
+
+  router.openapi(deleteContactRoute, async (c) => {
+    const deleted = await deleteContact(envOf(c), c.req.valid("param").id, { source: "api" });
+    if (!deleted) throw notFound(NOT_FOUND);
+    await recordApiAudit(c, {
+      action: "contact.deleted",
+      target: { type: "contact", id: deleted.id, label: deleted.email },
+    });
+    return c.json({ object: "contact" as const, id: deleted.id, deleted: true as const }, 200);
+  });
+
+  router.openapi(getContactTopicsRoute, async (c) => {
+    const topics = await getContactTopics(envOf(c), c.req.valid("param").id);
+    if (!topics) throw notFound(NOT_FOUND);
+    return c.json(topics, 200);
+  });
+
+  router.openapi(updateContactTopicsRoute, async (c) => {
+    const topics = await setContactTopics(
+      envOf(c),
+      c.req.valid("param").id,
+      c.req.valid("json").topics,
+      { source: "api" },
+    );
+    if (!topics) throw notFound(NOT_FOUND);
+    return c.json(topics, 200);
+  });
+
+  router.openapi(listContactPropertiesRoute, async (c) => {
+    const data = await listContactProperties(envOf(c));
+    return c.json({ object: "list" as const, data, has_more: false }, 200);
+  });
+
+  router.openapi(createContactPropertyRoute, async (c) => {
+    const property = await createContactProperty(envOf(c), c.req.valid("json"));
+    await recordApiAudit(c, {
+      action: "contact_property.created",
+      target: { type: "contact_property", id: property.id, label: property.key },
+      metadata: { type: property.type },
+    });
+    return c.json(property, 201);
+  });
+
+  router.openapi(getContactPropertyRoute, async (c) => {
+    const property = await getContactProperty(envOf(c), c.req.valid("param").id);
+    if (!property) throw notFound(PROPERTY_NOT_FOUND);
+    return c.json(property, 200);
+  });
+
+  router.openapi(updateContactPropertyRoute, async (c) => {
+    const property = await updateContactProperty(
+      envOf(c),
+      c.req.valid("param").id,
+      c.req.valid("json"),
+    );
+    if (!property) throw notFound(PROPERTY_NOT_FOUND);
+    await recordApiAudit(c, {
+      action: "contact_property.updated",
+      target: { type: "contact_property", id: property.id, label: property.key },
+    });
+    return c.json(property, 200);
+  });
+
+  router.openapi(deleteContactPropertyRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    if (!(await deleteContactProperty(envOf(c), id))) throw notFound(PROPERTY_NOT_FOUND);
+    await recordApiAudit(c, {
+      action: "contact_property.deleted",
+      target: { type: "contact_property", id },
+    });
+    return c.json({ object: "contact_property" as const, id, deleted: true as const }, 200);
+  });
+
+  return router;
+}
