@@ -1,16 +1,26 @@
-import { type EmailService, getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
 import {
+  type EmailService,
+  getEmail,
+  getEmailBatch,
+  listEmailEvents,
+  listEmailLinks,
+  listEmailSummariesPage,
+} from "@coss/email";
+import {
+  DEFAULT_EMAIL_LIST_LIMIT,
   EmailBatchObject,
   EmailEventList,
   EmailLinkList,
   EmailObject,
+  EmailSummaryList,
+  ListEmailsQuery,
   MAX_BATCH_EMAILS,
   RescheduleEmailRequest,
   SendEmailBatchRequest,
   SendEmailRequest,
   uniqueRecipientCount,
 } from "@coss/email/schemas";
-import type { RateLimitRequest } from "@coss/ratelimit";
+import { emailSendQuota } from "@coss/ratelimit";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { recordApiAudit } from "../audit.ts";
@@ -20,7 +30,7 @@ import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
-import { billingErrorDoc, commonErrors, errorDoc, requestIdHeader } from "./docs.ts";
+import { billingErrorDoc, commonErrors, errorDoc, jsonDoc, requestIdHeader } from "./docs.ts";
 import {
   IDEMPOTENCY_KEY_MAX_LENGTH,
   idempotencyHeaders,
@@ -39,6 +49,13 @@ const EmailIdParams = z.object({
   id: z.string().meta({
     description: "The email's id.",
     examples: ["email_01k7c8m4q2f3e9v6t5r1n0p8yz"],
+  }),
+});
+
+const BatchIdParams = z.object({
+  id: z.string().meta({
+    description: "The batch's id (`batch_id` of its emails).",
+    examples: ["batch_01k8d0n6x5f3w2e1r9t7y4u6i8"],
   }),
 });
 
@@ -114,8 +131,13 @@ export const sendEmailRoute = createRoute({
     ),
     422: errorDoc(
       "The body failed validation (`validation_error`, see `issues`), the `from` domain is not a " +
-        "verified domain of the organization (`domain_not_verified`, live keys only), or the " +
-        "`Idempotency-Key` was already used with a different body (`idempotency_key_reused`).",
+        "verified domain of the organization (`domain_not_verified`, live keys only), the " +
+        "`Idempotency-Key` was already used with a different body (`idempotency_key_reused`), " +
+        "or the template can't be sent: it doesn't exist (`template_not_found`), has no " +
+        "published version (`template_not_published`) or no such version " +
+        "(`template_version_not_found`), the variables don't match it " +
+        "(`invalid_template_variables`, see `issues`), or it renders an invalid subject or " +
+        "empty body (`template_render_failed`).",
     ),
   },
 });
@@ -187,9 +209,30 @@ export const sendEmailBatchRoute = createRoute({
     422: errorDoc(
       "The body failed validation (`validation_error`, see `issues`), a `from` domain is not a " +
         "verified domain of the organization (`domain_not_verified`, live keys only; `param` " +
-        "names the email), or the `Idempotency-Key` was already used with a different body " +
-        "(`idempotency_key_reused`).",
+        "names the email), the `Idempotency-Key` was already used with a different body " +
+        "(`idempotency_key_reused`), or an email's template can't be sent (the `template_…` " +
+        "codes of `POST /v1/emails`; `param` names the email).",
     ),
+  },
+});
+
+export const getEmailBatchRoute = createRoute({
+  method: "get",
+  path: "/emails/batch/{id}",
+  operationId: "getEmailBatch",
+  tags: ["Emails"],
+  summary: "Retrieve a batch of emails",
+  description:
+    "A batch sent with `POST /v1/emails/batch`, with its emails' current statuses in the order " +
+    "of the request. Emails past the data retention period are left out. Only batches sent " +
+    "from the API key's own environment can be retrieved.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ email: ["read"] }), rateLimit("api.read")],
+  request: { params: BatchIdParams },
+  responses: {
+    200: jsonDoc("The batch.", EmailBatchObject),
+    ...commonErrors,
+    404: errorDoc("No batch with this id exists in the API key's environment (`not_found`)."),
   },
 });
 
@@ -214,6 +257,27 @@ export const getEmailRoute = createRoute({
   },
 });
 
+export const listEmailsRoute = createRoute({
+  method: "get",
+  path: "/emails",
+  operationId: "listEmails",
+  tags: ["Emails"],
+  summary: "List emails",
+  description:
+    "Emails sent from the API key's environment, newest first, without their content " +
+    "(retrieve an email for `html`, `text`, `headers` and `attachments`). Filter by recipient " +
+    "(`to`), by the email's or a recipient's status, by category, batch or creation time. Pass " +
+    "the last `id` as `after` to get the next page while `has_more` is true.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ email: ["read"] }), rateLimit("api.read")],
+  request: { query: ListEmailsQuery },
+  responses: {
+    200: jsonDoc("A page of emails.", EmailSummaryList),
+    ...commonErrors,
+    422: errorDoc("A query parameter failed validation (`validation_error`, see `issues`)."),
+  },
+});
+
 export const listEmailEventsRoute = createRoute({
   method: "get",
   path: "/emails/{id}/events",
@@ -226,7 +290,8 @@ export const listEmailEventsRoute = createRoute({
     "`email.sent` and `email.failed` for the whole email, and `email.delivered`, `email.delivery_delayed`, `email.bounced`, " +
     "`email.complained` and `email.suppressed` (skipped because of the suppression list) per " +
     "recipient, plus `email.opened` and `email.clicked` when tracking is on (attributed to a " +
-    "recipient only when the email had a single one).",
+    "recipient only when the email had a single one) and `email.unsubscribed` after a one-click " +
+    "unsubscribe.",
   security: [{ bearerAuth: [] }],
   middleware: [requireApiKey({ email: ["read"] }), rateLimit("api.read")],
   request: { params: EmailIdParams },
@@ -331,28 +396,6 @@ export const listEmailLinksRoute = createRoute({
     404: errorDoc("No email with this id exists in the API key's environment (`not_found`)."),
   },
 });
-/**
- * The recipient quota a send is charged against: the organization's for live keys, the
- * environment's own (smaller, daily) quota for sandbox keys.
- */
-function sendQuota(
-  auth: { organizationId: string; environmentId: string; mode: string },
-  recipients: number,
-): RateLimitRequest {
-  return auth.mode === "sandbox"
-    ? {
-        buckets: ["email.sandbox_recipients.day"],
-        subject: auth.environmentId,
-        organizationId: auth.organizationId,
-        cost: recipients,
-      }
-    : {
-        buckets: ["email.recipients.second", "email.recipients.day"],
-        subject: auth.organizationId,
-        organizationId: auth.organizationId,
-        cost: recipients,
-      };
-}
 
 export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
@@ -370,7 +413,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         params,
         idempotencyKey,
       };
-      const quota = sendQuota(c.var.auth, uniqueRecipientCount(params));
+      const quota = emailSendQuota(c.var.auth, uniqueRecipientCount(params));
       const decision = await c.var.rateLimiter.consume(quota);
       if (!decision.allowed) {
         // A matching replay (queued or completed) needs no quota. This lookup cannot create or dispatch a send.
@@ -423,7 +466,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       };
       // Charged as one: the batch is accepted or refused as a whole.
       const recipients = emails.reduce((sum, params) => sum + uniqueRecipientCount(params), 0);
-      const quota = sendQuota(c.var.auth, recipients);
+      const quota = emailSendQuota(c.var.auth, recipients);
       const decision = await c.var.rateLimiter.consume(quota);
       if (!decision.allowed) {
         const replay = await emailService.replayBatch(input);
@@ -458,6 +501,14 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     },
   );
 
+  router.openapi(getEmailBatchRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { organizationId, environmentId } = c.var.auth;
+    const batch = await getEmailBatch({ organizationId, environmentId, id });
+    if (!batch) throw notFound("No batch with this id exists in this API key's environment.");
+    return c.json(batch, 200);
+  });
+
   router.openapi(getEmailRoute, async (c) => {
     const { id } = c.req.valid("param");
     const { organizationId, environmentId } = c.var.auth;
@@ -465,6 +516,26 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     const email = await getEmail({ organizationId, environmentId, id });
     if (!email) throw notFound("No email with this id exists in this API key's environment.");
     return c.json(email, 200);
+  });
+
+  router.openapi(listEmailsRoute, async (c) => {
+    const query = c.req.valid("query");
+    const { organizationId, environmentId } = c.var.auth;
+    const page = await listEmailSummariesPage({
+      organizationId,
+      environmentId,
+      limit: query.limit ?? DEFAULT_EMAIL_LIST_LIMIT,
+      recipient: query.to,
+      recipientStatus: query.recipient_status,
+      status: query.status,
+      query: query.q,
+      category: query.category,
+      batchId: query.batch_id,
+      createdAfter: query.created_after ? new Date(query.created_after) : undefined,
+      createdBefore: query.created_before ? new Date(query.created_before) : undefined,
+      before: query.after,
+    });
+    return c.json({ object: "list" as const, data: page.data, has_more: page.hasMore }, 200);
   });
 
   router.openapi(cancelEmailRoute, async (c) => {

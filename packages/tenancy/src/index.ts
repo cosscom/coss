@@ -38,6 +38,7 @@ export {
   listOrganizationsRequiringTwoFactor,
   listPendingInvitations,
   listUserOrganizations,
+  listVerifiedMemberEmails,
   type Membership,
   type OrganizationMember,
   type OrganizationSummary,
@@ -50,6 +51,7 @@ export {
   listProjects,
   listProjectsWithEnvironments,
   PROJECT_NAME_MAX_LENGTH,
+  renameProject,
 } from "./projects.ts";
 export {
   connectScim,

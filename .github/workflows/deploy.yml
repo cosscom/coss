@@ -1,11 +1,11 @@
 name: Deploy
 
-# Production deploys (README, "Deploying to AWS"): builds the five images while CI runs, then, once
-# CI passed, migrates, rolls out all five services at once and invalidates the coss.com CDN. Jobs
-# that touch AWS run on CodeBuild-hosted runners whose role holds the credentials
-# (infra/terraform/deploy.tf); nothing AWS-related is stored in GitHub. Runs on every push to main;
-# run it by hand to redeploy (e.g. after a Terraform environment change) or, with `image_tag`, to
-# roll back to an earlier commit. If CI fails and a re-run passes, re-run this run's failed jobs.
+# Production deploys (README, "Deploying to AWS"): builds the six images, migrates, rolls out all six
+# services at once and invalidates the coss.com CDN. Jobs that touch AWS run on CodeBuild-hosted
+# runners whose role holds the credentials (infra/terraform/deploy.tf); nothing AWS-related is stored
+# in GitHub. Pushes to main ship in batches (the `gate` job); run it by hand to deploy main at once,
+# to redeploy (e.g. after a Terraform environment change) or, with `image_tag`, to roll back to an
+# earlier commit. If CI fails and a re-run passes, re-run this run's failed jobs.
 on:
   push:
     branches: [main]
@@ -15,6 +15,9 @@ on:
         description: Commit whose images to deploy (already built, e.g. a rollback). Empty builds this run's commit.
         required: false
         default: ""
+# A redeploy of an earlier commit names it (the admin console's deploys page reads it back:
+# apps/web/src/lib/deploy-runs.ts). Anything else keeps GitHub's default name.
+run-name: ${{ inputs.image_tag && format('Deploy {0}', inputs.image_tag) || '' }}
 
 permissions:
   contents: read
@@ -55,38 +58,100 @@ jobs:
             echo "build=true" >> "$GITHUB_OUTPUT"
           fi
 
-  build:
+  # Pushes ship in batches, so a burst of merges costs one build and one rollout. A push waits here
+  # (on GitHub's runners, free for this public repository; CodeBuild bills every minute) until its
+  # CI passed and either main has had no newer push for QUIET_MINUTES or production's last deploy
+  # is MAX_INTERVAL_MINUTES old (so the first push after a quiet spell ships at once). A newer push
+  # supersedes this run: its own run waits instead and ships this commit too. Dispatches don't wait.
+  gate:
     needs: prepare
-    if: needs.prepare.outputs.build == 'true'
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
+      deployments: read
+    outputs:
+      deploy: ${{ steps.wait.outputs.deploy }}
+    steps:
+      - name: Wait for CI and a quiet main
+        id: wait
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          QUIET_MINUTES: 20
+          MAX_INTERVAL_MINUTES: 60
+        run: |
+          pushed="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" --jq '.created_at | fromdate')"
+          waiting=""
+          while :; do
+            if [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)" != "$SHA" ]; then
+              echo "::notice::Superseded by a newer commit on main, whose run deploys this one too."
+              echo "deploy=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            run="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$SHA&event=push&per_page=1" \
+              --jq '.workflow_runs[0] // empty | "\(.status) \(.conclusion) \(.html_url)"')"
+            read -r status conclusion url <<<"$run"
+            if [ "${status:-}" = completed ]; then
+              if [ "$conclusion" != success ]; then
+                echo "CI $conclusion: $url — re-run it, then re-run this run's failed jobs." >&2
+                exit 1
+              fi
+              # Every job with the `production` environment records a deployment: the last one is
+              # when production last started shipping.
+              last="$(gh api "repos/$GITHUB_REPOSITORY/deployments?environment=production&per_page=1" \
+                --jq '.[0].created_at // empty | fromdate')"
+              now="$(date +%s)"
+              quiet=$(((now - pushed) / 60))
+              since=$(((now - ${last:-0}) / 60))
+              if [ "$quiet" -ge "$QUIET_MINUTES" ] || [ "$since" -ge "$MAX_INTERVAL_MINUTES" ]; then
+                echo "CI passed ($url); main quiet for ${quiet} min, last deploy ${since} min ago: deploying."
+                echo "deploy=true" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              if [ -z "$waiting" ]; then
+                echo "CI passed; waiting for ${QUIET_MINUTES} quiet minutes or ${MAX_INTERVAL_MINUTES} since the last deploy (now ${quiet} and ${since})."
+                waiting=1
+              fi
+            fi
+            # GITHUB_TOKEN gets 1,000 API requests an hour per repository.
+            sleep 60
+          done
+
+  build:
+    needs: [prepare, gate]
+    if: >-
+      !cancelled() && needs.prepare.result == 'success' && needs.prepare.outputs.build == 'true' &&
+      (needs.gate.result == 'skipped' || (needs.gate.result == 'success' && needs.gate.outputs.deploy == 'true'))
     environment: production
     runs-on: codebuild-coss-production-deploy-${{ github.run_id }}-${{ github.run_attempt }}
     timeout-minutes: 45
     strategy:
       fail-fast: true
       matrix:
-        service: [web, site, portal, api, worker]
+        # The Bun images take seconds to build and CodeBuild bills each job by the started minute,
+        # so they share one job; the Next apps get one each.
+        images: [web, site, portal, api worker smtp]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.prepare.outputs.tag }}
-      # Builds start with CI instead of after it; nothing ships until the `ci` job below passes.
-      - name: Build and push ${{ matrix.service }}
+      - name: Build and push ${{ matrix.images }}
         env:
-          SERVICE: ${{ matrix.service }}
+          SERVICES: ${{ matrix.images }}
           TAG: ${{ needs.prepare.outputs.tag }}
           # Uploads the Next.js apps' source maps to Sentry (a BuildKit secret, never in a layer).
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: |
-          image="$REGISTRY/coss/$SERVICE"
-          if aws ecr describe-images --repository-name "coss/$SERVICE" --image-ids "imageTag=$TAG" >/dev/null 2>&1; then
-            echo "$image:$TAG already exists"
-            exit 0
-          fi
           aws ecr get-login-password | docker login --username AWS --password-stdin "$REGISTRY"
           # Base images never come from Docker Hub here: CodeBuild's shared addresses keep running
           # out of its anonymous pulls. Node is on ECR Public; Bun is copied into our ECR once per
-          # version (this pull is the only one, and is retried until Docker Hub allows it).
-          bun_version="$(sed -n 's/^ARG BUN_VERSION=//p' "apps/$SERVICE/Dockerfile")"
+          # version (this pull is the only one, and is retried until Docker Hub allows it). Every
+          # Dockerfile has the same Bun version (infra/test).
+          bun_version="$(sed -n 's/^ARG BUN_VERSION=//p' "apps/${SERVICES%% *}/Dockerfile")"
           bun_image="$REGISTRY/coss/base/bun"
           if ! aws ecr describe-images --repository-name coss/base/bun --image-ids "imageTag=$bun_version-slim" >/dev/null 2>&1; then
             for attempt in 1 2 3 4 5 6; do
@@ -99,100 +164,84 @@ jobs:
             docker push "$bun_image:$bun_version-slim" \
               || aws ecr describe-images --repository-name coss/base/bun --image-ids "imageTag=$bun_version-slim" >/dev/null
           fi
-          case "$SERVICE" in
-            web | site | portal) release_arg="NEXT_DEPLOYMENT_ID=$TAG" ;;
-            *) release_arg="SENTRY_RELEASE=$TAG" ;;
-          esac
-          # Only the dependency layers are reusable (the build layer depends on the commit), so the
-          # layer cache is keyed by what they're built from and exported only when that changes:
-          # exporting it took longer than the build itself.
-          deps="$({ cat bun.lock "apps/$SERVICE/Dockerfile"; git ls-files -z '*package.json' | xargs -0 cat; } | sha256sum | cut -c1-16)"
-          cache="$image:buildcache-$deps"
-          cache_to=()
-          if ! aws ecr describe-images --repository-name "coss/$SERVICE" --image-ids "imageTag=buildcache-$deps" >/dev/null 2>&1; then
-            cache_to=(--cache-to "type=registry,ref=$cache,mode=max,image-manifest=true,oci-mediatypes=true,ignore-error=true")
-          fi
           docker buildx create --use --driver docker-container >/dev/null
-          docker buildx build . \
-            --file "apps/$SERVICE/Dockerfile" \
-            --platform linux/arm64 \
-            --build-arg "$release_arg" \
-            --build-arg "BUN_IMAGE=$bun_image" \
-            --build-arg NODE_IMAGE=public.ecr.aws/docker/library/node \
-            --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN \
-            --cache-from "type=registry,ref=$cache" \
-            "${cache_to[@]}" \
-            --provenance=false \
-            --tag "$image:$TAG" \
-            --push
 
-  # Waits for this commit's CI run (pushes only: a dispatch deploys what it's given). A commit
-  # that's no longer main's tip isn't deployed (CI cancels its run): the newer one ships it all.
-  ci:
-    needs: prepare
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      actions: read
-      contents: read
-    outputs:
-      deploy: ${{ steps.wait.outputs.deploy }}
-    steps:
-      - name: Wait for CI to pass
-        id: wait
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SHA: ${{ github.sha }}
-        run: |
-          while :; do
-            run="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$SHA&event=push&per_page=1" \
-              --jq '.workflow_runs[0] // empty | "\(.status) \(.conclusion) \(.html_url)"')"
-            read -r status conclusion url <<<"$run"
-            if [ "${status:-}" = completed ]; then
-              if [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)" != "$SHA" ]; then
-                echo "::notice::Superseded by a newer commit on main, which deploys instead (CI $conclusion)."
-                echo "deploy=false" >> "$GITHUB_OUTPUT"
-                exit 0
-              fi
-              if [ "$conclusion" = success ]; then
-                echo "CI passed: $url"
-                echo "deploy=true" >> "$GITHUB_OUTPUT"
-                exit 0
-              fi
-              echo "CI $conclusion: $url — re-run it, then re-run this run's failed jobs." >&2
-              exit 1
+          build() {
+            local service="$1" image="$REGISTRY/coss/$1" release_arg deps cache cache_to=()
+            if aws ecr describe-images --repository-name "coss/$service" --image-ids "imageTag=$TAG" >/dev/null 2>&1; then
+              echo "$image:$TAG already exists"
+              return 0
             fi
-            sleep 10
+            case "$service" in
+              web | site | portal) release_arg="NEXT_DEPLOYMENT_ID=$TAG" ;;
+              *) release_arg="SENTRY_RELEASE=$TAG" ;;
+            esac
+            # Only the dependency layers are reusable (the build layer depends on the commit), so the
+            # layer cache is keyed by what they're built from and exported only when that changes:
+            # exporting it took longer than the build itself.
+            deps="$({ cat bun.lock "apps/$service/Dockerfile"; git ls-files -z '*package.json' | xargs -0 cat; } | sha256sum | cut -c1-16)"
+            cache="$image:buildcache-$deps"
+            if ! aws ecr describe-images --repository-name "coss/$service" --image-ids "imageTag=buildcache-$deps" >/dev/null 2>&1; then
+              cache_to=(--cache-to "type=registry,ref=$cache,mode=max,image-manifest=true,oci-mediatypes=true,ignore-error=true")
+            fi
+            docker buildx build . \
+              --file "apps/$service/Dockerfile" \
+              --platform linux/arm64 \
+              --build-arg "$release_arg" \
+              --build-arg "BUN_IMAGE=$bun_image" \
+              --build-arg NODE_IMAGE=public.ecr.aws/docker/library/node \
+              --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN \
+              --cache-from "type=registry,ref=$cache" \
+              "${cache_to[@]}" \
+              --provenance=false \
+              --tag "$image:$TAG" \
+              --push
+          }
+
+          # In parallel, each line prefixed with its service. A step without `shell:` runs `bash -e`
+          # alone: without pipefail a failed build would pass for sed's success.
+          set -o pipefail
+          pids=()
+          for service in $SERVICES; do
+            build "$service" 2>&1 | sed -u "s/^/[$service] /" &
+            pids+=("$!")
+          done
+          for pid in "${pids[@]}"; do
+            wait "$pid"
           done
 
   deploy:
-    needs: [prepare, build, ci]
+    needs: [prepare, gate, build]
     if: >-
-      always() && needs.prepare.result == 'success' &&
+      !cancelled() && needs.prepare.result == 'success' &&
       (needs.build.result == 'success' || needs.build.result == 'skipped') &&
-      (needs.ci.result == 'skipped' || (needs.ci.result == 'success' && needs.ci.outputs.deploy == 'true'))
+      (needs.gate.result == 'skipped' || (needs.gate.result == 'success' && needs.gate.outputs.deploy == 'true'))
     # Never two migrations or rollouts at once (builds may overlap).
     concurrency:
       group: deploy-production
       cancel-in-progress: false
     environment: production
-    runs-on: codebuild-coss-production-deploy-${{ github.run_id }}-${{ github.run_attempt }}
+    # This job only drives the AWS CLI and waits on ECS: the smallest instance (the label overrides
+    # the project's large one, which the image builds need).
+    runs-on: codebuild-coss-production-deploy-${{ github.run_id }}-${{ github.run_attempt }}-arm-3.0-small
     timeout-minutes: 60
     env:
       TAG: ${{ needs.prepare.outputs.tag }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      # This job may have waited for another deploy: never roll production back to an older
-      # commit because their turns came out of order (a dispatch deploys what it's given).
-      - name: Check this is still main's latest commit
+        with:
+          fetch-depth: 0
+      # This job may have waited for another deploy: never roll production back to an older commit
+      # because their turns came out of order (a dispatch deploys what it's given). The same commit
+      # deploys again, so re-running a job that failed after its rollout finishes the later steps.
+      - name: Check production doesn't run a newer commit
         id: latest
         env:
           EVENT: ${{ github.event_name }}
         run: |
-          main="$(git ls-remote origin refs/heads/main | cut -f1)"
-          if [ "$EVENT" = push ] && [ "$main" != "$TAG" ]; then
-            echo "::notice::main moved on to $main, whose deploy ships this commit too. Skipping."
+          deployed="$(aws ssm get-parameter --name "/coss/$STAGE/image-tag" --query Parameter.Value --output text)"
+          if [ "$EVENT" = push ] && [ "$deployed" != "$TAG" ] && git merge-base --is-ancestor "$TAG" "$deployed" 2>/dev/null; then
+            echo "::notice::Production already runs $deployed, which includes this commit. Skipping."
             echo "deploy=false" >> "$GITHUB_OUTPUT"
           else
             echo "deploy=true" >> "$GITHUB_OUTPUT"
@@ -206,7 +255,7 @@ jobs:
       # bought no compatibility, only time.
       - name: Roll out
         if: steps.latest.outputs.deploy == 'true'
-        run: infra/scripts/ecs-deploy.sh "$TAG" api worker web site portal
+        run: infra/scripts/ecs-deploy.sh "$TAG" api worker web site portal smtp
       - name: Record the deployed commit
         if: steps.latest.outputs.deploy == 'true'
         run: aws ssm put-parameter --name "/coss/$STAGE/image-tag" --value "$TAG" --overwrite >/dev/null

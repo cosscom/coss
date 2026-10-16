@@ -1,0 +1,98 @@
+---
+title: Brand logos (BIMI)
+description: Show your logo next to your emails in Gmail, Apple Mail and other inboxes.
+---
+
+BIMI (Brand Indicators for Message Identification) lets mailbox providers show your logo next to
+the emails you send. It is set up entirely in your own DNS: a record that points at your logo and at
+a certificate proving the logo is yours. COSS doesn't host logos or issue certificates. It checks
+your DNS and tells you what is still missing.
+
+## What you need
+
+1. **A verified domain.** COSS signs your emails with DKIM as your domain, so they pass DMARC once
+   the domain is [verified](/docs/email/domains).
+2. **DMARC at enforcement.** Your domain's DMARC policy must be `p=quarantine` or `p=reject`, and
+   apply to all of your mail: no `pct` below 100, no `t=y`. When you send from a subdomain such as
+   `mail.example.com`, the organizational domain (`example.com`, the domain you registered) needs a
+   DMARC record at enforcement of its own as well. A subdomain without a DMARC record of its own
+   uses the organizational domain's, where its `sp` (subdomain policy) applies when set, so
+   `sp=none` doesn't count either. Before you tighten the policy, read your DMARC reports (`rua=`)
+   to make sure every service that sends as your domain passes DMARC. Then move from `p=none` to
+   `quarantine` to `reject`.
+3. **Your logo as an SVG** in the SVG Tiny Portable/Secure (SVG Tiny PS) profile. It should be
+   square, with a solid background, and served over HTTPS. Mailbox providers suggest keeping it under
+   32 KB.
+4. **A mark certificate** for that logo, as a PEM file served over HTTPS. Gmail and Apple Mail show
+   logos only with one, and you buy it from a certificate authority approved by the
+   [BIMI Group](https://bimigroup.org/):
+   - A **Verified Mark Certificate (VMC)** needs the logo to be a registered trademark. Gmail and
+     Apple Mail both accept it, and Gmail also shows a verified checkmark.
+   - A **Common Mark Certificate (CMC)** needs no trademark, but the logo must have been shown on your
+     website for at least 12 months. Gmail accepts it; Apple Mail does not.
+
+Other mailbox providers have their own requirements. Each provider validates the logo and
+certificate itself and decides when to show the logo (sender reputation and volume play a part),
+and caches what it finds.
+
+## The record
+
+Publish a `TXT` record at `default._bimi.` followed by your domain:
+
+| Type  | Name                       | Value                                                                              |
+| ----- | -------------------------- | ---------------------------------------------------------------------------------- |
+| `TXT` | `default._bimi.example.com` | `v=BIMI1; l=https://example.com/brand/logo.svg; a=https://example.com/brand/vmc.pem` |
+
+`l=` is your logo's URL and `a=` your certificate's. Keep exactly one `v=BIMI1` record at the name:
+mailbox providers ignore the domain's logo when there are several.
+
+Mailbox providers look up the record for the domain of the From address. If there is none, they
+use the organizational domain's: emails from `@mail.example.com` show the logo of
+`default._bimi.example.com` unless `mail.example.com` has a record of its own. COSS sends with the
+`default` selector.
+
+## Checking it
+
+COSS checks the BIMI record and the DMARC policy with the rest of the domain's DNS records. That
+happens every 12 hours once the domain is verified, or right away with **Verify now** on the
+domain's page in the dashboard (**Domains**) or `coss.domains.verify(id)`. The result is on the
+domain's page under **Brand logo (BIMI)**, and in the domain's `bimi` field:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const domainId: string;
+// ---cut---
+const { data: domain } = await coss.domains.get(domainId);
+
+console.log(domain?.bimi.status); // "configured"
+for (const issue of domain?.bimi.issues ?? []) {
+  console.log(issue.code, issue.message);
+}
+```
+
+| Status        | Meaning                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| `configured`  | The record is valid and DMARC is enforced. Mailbox providers can find the logo and certificate. |
+| `invalid`     | A record exists, but something keeps the logo from showing: see `issues`.                     |
+| `missing`     | There is no BIMI record. `issues` still lists what DMARC needs first.                         |
+| `not_checked` | DNS hasn't been checked yet, or couldn't be reached during the last check.                    |
+
+`bimi` also has the record found (`name`, `record`), its `logo_url` and `certificate_url`, and
+`dmarc_policy`, the DMARC policy that applies to the domain. These are the issues it can report:
+
+| Issue                   | Meaning                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| `dmarc_missing`         | The domain, or its organizational domain, has no valid DMARC record (one with a repeated or malformed tag is invalid), or more than one. |
+| `dmarc_not_enforced`    | The DMARC policy is `p=none` (or `sp=none` for a subdomain), or the organizational domain's `p` is `none`. |
+| `dmarc_partial`         | The DMARC policy (or the organizational domain's) applies to only part of the mail (`pct` below 100, or `t=y`). |
+| `record_multiple`       | There is more than one `v=BIMI1` record.                                        |
+| `record_invalid`        | The record doesn't start with `v=BIMI1`, lists a tag more than once, or has a part that isn't a `tag=value`. |
+| `logo_missing`          | The record has no logo URL (`l=`).                                              |
+| `logo_not_https`        | The logo URL isn't an `https://` URL.                                           |
+| `certificate_missing`   | The record has no certificate URL (`a=`).                                       |
+| `certificate_not_https` | The certificate URL isn't an `https://` URL.                                    |
+
+COSS checks DNS only: it never downloads your logo or certificate. A `configured` domain can still
+go without a logo if the certificate has expired, doesn't cover the domain, or doesn't match the
+logo. Your certificate authority can check those for you.

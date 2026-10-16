@@ -1,4 +1,4 @@
-import { type EmailEventOutput, getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
+import { getEmail, listEmailEvents, listEmailLinks } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
@@ -26,6 +26,8 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
 import { SpecItem, SpecList } from "@/components/spec-list";
+import { eventDetail } from "@/lib/email-events";
+import { PREVIEW_HEAD } from "@/lib/email-preview";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { environmentPath } from "@/lib/navigation";
 import { requireOrgMember } from "@/lib/session";
@@ -35,41 +37,8 @@ import { RescheduleEmailDialog } from "./reschedule-email-dialog";
 
 export const metadata: Metadata = { title: "Email" };
 
-/**
- * Prepended to customer HTML so the parser places it in <head>. Together with `sandbox=""`
- * (no scripts, forms, popups or same-origin access) it blocks every network load except
- * images and fonts, and stops the dashboard URL from leaking via Referer.
- * NEVER add `allow-scripts` or `allow-same-origin` to the iframe.
- */
-const PREVIEW_HEAD =
-  `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https:; style-src 'unsafe-inline'; font-src data: https:">` +
-  `<meta name="referrer" content="no-referrer">`;
-
 function list(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "—";
-}
-
-/** One-line summary of an event's details. */
-function eventDetail({ data }: EmailEventOutput): string {
-  if (data.bounce) {
-    const { type, sub_type, diagnostic_code } = data.bounce;
-    return [`${type} / ${sub_type}`, diagnostic_code].filter(Boolean).join(": ");
-  }
-  if (data.complaint) return data.complaint.feedback_type ?? "complaint";
-  if (data.delay) return [data.delay.type, data.delay.diagnostic_code].filter(Boolean).join(": ");
-  if (data.delivery) return data.delivery.smtp_response ?? "";
-  if (data.failure) return data.failure.message;
-  if (data.suppression) {
-    const scope = data.suppression.scope === "*" ? "all emails" : data.suppression.scope;
-    return `on the suppression list (${scope}, ${data.suppression.reason})`;
-  }
-  if (data.click) return [data.click.url, data.click.user_agent].filter(Boolean).join(" · ");
-  if (data.open) return data.open.user_agent ?? "";
-  if (data.reschedule) {
-    const { previous_scheduled_at, scheduled_at } = data.reschedule;
-    return `${formatDateTime(previous_scheduled_at)} → ${formatDateTime(scheduled_at)}`;
-  }
-  return "";
 }
 
 export default async function EmailPage({
@@ -93,6 +62,8 @@ export default async function EmailPage({
   const { tracking } = email;
   const base = environmentPath(organization.slug, project.slug, environment.slug);
   const eventList = events?.events ?? [];
+  const unsubscribedAt =
+    eventList.find((event) => event.type === "email.unsubscribed")?.occurred_at ?? null;
 
   const content =
     email.html !== null || email.text !== null ? (
@@ -210,7 +181,7 @@ export default async function EmailPage({
   const engagement = (
     <>
       <Panel
-        description="Opens and clicks, if tracking was on when the email was sent. Opens can be inflated by mail clients that preload images, clicks by link scanners."
+        description="Opens, clicks and unsubscribes, if they were on when the email was sent. Opens can be inflated by mail clients that preload images, clicks by link scanners."
         title="Engagement"
       >
         <Table variant="card">
@@ -252,6 +223,21 @@ export default async function EmailPage({
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {formatDateTime(tracking.last_clicked_at)}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-medium">Unsubscribes</TableCell>
+              <TableCell>
+                <TrackingBadge on={tracking.unsubscribe} />
+              </TableCell>
+              <TableCell className="font-mono">
+                {tracking.unsubscribe ? (unsubscribedAt ? 1 : 0) : "—"}
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {formatDateTime(unsubscribedAt)}
+              </TableCell>
+              <TableCell className="text-muted-foreground">
+                {formatDateTime(unsubscribedAt)}
               </TableCell>
             </TableRow>
           </TableBody>
@@ -442,6 +428,19 @@ export default async function EmailPage({
                 {email.batch_id ? (
                   <SpecItem label="Batch" mono>
                     {email.batch_id}
+                  </SpecItem>
+                ) : null}
+                {email.template ? (
+                  <SpecItem label="Template" mono>
+                    <Link
+                      className="underline-offset-4 hover:underline"
+                      href={`${base}/templates/${email.template.id}`}
+                    >
+                      {email.template.version === null
+                        ? "Draft (test send)"
+                        : `Version ${email.template.version}`}{" "}
+                      · {email.template.locale}
+                    </Link>
                   </SpecItem>
                 ) : null}
                 {email.tags.length > 0 ? (

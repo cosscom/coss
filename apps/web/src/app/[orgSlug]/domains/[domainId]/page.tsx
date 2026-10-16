@@ -1,4 +1,5 @@
 import {
+  type DomainBimiObjectOutput,
   type DomainRecord,
   domainRecords,
   getDomain,
@@ -7,6 +8,7 @@ import {
   getTrackingDomain,
   type ReceivingDomainRow,
   type TrackingDomainRow,
+  toBimiObject,
 } from "@coss/email";
 import { listEnvironments, listProjects } from "@coss/tenancy";
 import { Alert, AlertDescription } from "@coss/ui/components/alert";
@@ -24,6 +26,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { CopyValue } from "@/components/copy-value";
 import {
+  BimiStatusBadge,
   DomainStatusBadge,
   RecordStatusBadge,
   TrackingDomainStatusBadge,
@@ -248,6 +251,12 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
             receiving={receiving}
             target={target}
           />
+          <BimiPanel
+            bimi={toBimiObject(domain)}
+            domainName={domain.name}
+            fake={domain.provider === "fake"}
+            lastCheckedAt={domain.lastCheckedAt}
+          />
         </div>
         <Panel title="Details">
           <PanelBody flush>
@@ -446,6 +455,99 @@ function ReceivingDomainPanel(props: {
       <RecordsTable>
         <RecordRow purpose="MX: delivers this hostname's email to COSS." record={record} />
       </RecordsTable>
+    </Panel>
+  );
+}
+
+const BIMI_STATUS_HELP = {
+  not_checked: "Not checked yet: we check it with the domain's DNS records.",
+  missing:
+    "Show your logo next to your emails in Gmail, Apple Mail, Yahoo and other inboxes. It takes a " +
+    "BIMI record, a VMC or CMC certificate of your own and DMARC at enforcement.",
+  invalid: "Mailbox providers won't show your logo until the problems below are fixed.",
+  configured:
+    "Mailbox providers can find your logo and certificate. They validate both themselves and " +
+    "decide when to show the logo.",
+} as const satisfies Record<DomainBimiObjectOutput["status"], string>;
+
+/** BIMI is DNS only: the logo and certificate are the customer's, and never fetched here. */
+function BimiPanel(props: {
+  bimi: DomainBimiObjectOutput;
+  domainName: string;
+  fake: boolean;
+  lastCheckedAt: Date | null;
+}) {
+  const { bimi } = props;
+  const found = bimi.status === "invalid" || bimi.status === "configured";
+  return (
+    <Panel
+      description={
+        <>
+          {props.fake && bimi.status === "not_checked"
+            ? "The fake email provider (local development) doesn't check DNS."
+            : BIMI_STATUS_HELP[bimi.status]}{" "}
+          {bimi.status !== "not_checked"
+            ? `Last checked ${formatDateTime(props.lastCheckedAt)}. `
+            : null}
+          <a className="underline underline-offset-4" href="/docs/email/bimi">
+            Setting up BIMI
+          </a>
+        </>
+      }
+      title={
+        <span className="flex flex-wrap items-center gap-2">
+          Brand logo (BIMI)
+          <BimiStatusBadge status={bimi.status} />
+        </span>
+      }
+    >
+      {bimi.issues.length > 0 ? (
+        <div className="px-1 pb-1">
+          <Alert variant="warning">
+            <AlertDescription>
+              <ul className="list-disc pl-4">
+                {bimi.issues.map((issue) => (
+                  <li key={issue.code}>{issue.message}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        </div>
+      ) : null}
+      {found ? (
+        <PanelBody flush>
+          <SpecList>
+            <SpecItem label="Record" mono>
+              <span className="break-all">{bimi.name}</span>
+            </SpecItem>
+            <SpecItem label="Value" mono stacked>
+              <span className="break-all">{bimi.record}</span>
+            </SpecItem>
+            <SpecItem label="Logo" mono stacked>
+              <span className="break-all">{bimi.logo_url ?? "None"}</span>
+            </SpecItem>
+            <SpecItem label="Certificate" mono stacked>
+              <span className="break-all">{bimi.certificate_url ?? "None"}</span>
+            </SpecItem>
+            <SpecItem label="DMARC policy" mono>
+              {bimi.dmarc_policy ?? "None"}
+            </SpecItem>
+          </SpecList>
+        </PanelBody>
+      ) : (
+        <RecordsTable>
+          <RecordRow
+            purpose="BIMI: your SVG logo (l=) and its VMC or CMC certificate (a=), both served over HTTPS."
+            record={{
+              type: "TXT",
+              name: bimi.name,
+              value: `v=BIMI1; l=https://${props.domainName}/logo.svg; a=https://${props.domainName}/certificate.pem`,
+              found: [],
+              status: bimi.status === "missing" ? "missing" : "not_checked",
+            }}
+          />
+        </RecordsTable>
+      )}
     </Panel>
   );
 }

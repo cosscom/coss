@@ -25,7 +25,7 @@ and the rest.
 
 Bun workspaces · Turborepo · TypeScript 7 · Biome · Next.js 16 (dashboard) · Hono (public API) ·
 Postgres + Drizzle · Valkey (rate limits) · Better Auth (organization, admin, API key plugins) · Tailwind v4 + [coss ui](https://coss.com/ui) ·
-[Fumadocs](https://fumadocs.dev) (coss.com and its docs: OpenAPI reference, Twoslash)
+[Fumadocs](https://fumadocs.dev) (coss.com and its docs: OpenAPI reference, Twoslash) · Expo + Expo Router (iOS app)
 
 See [AGENTS.md](./AGENTS.md) for the layout, conventions and guardrails.
 
@@ -89,12 +89,17 @@ resets) are printed to the dashboard's server console in development.
 - **Suppressions** — per environment. Sends skip a suppressed recipient (status `suppressed`, event
   `email.suppressed`) and still deliver to the rest. An entry covers every email (scope `*`) or one **category**
   (the optional `category` of a send, e.g. `marketing`), so it can back an unsubscribe flow. Permanent bounces and
-  complaints add `*` entries automatically (except for mailbox simulator addresses). COSS keeps the only list: SES
+  complaints add `*` entries automatically (except for mailbox simulator addresses), one-click unsubscribes an
+  entry for the email's category. COSS keeps the only list: SES
   suppression is turned off.
 - **Scheduled sends** — pass `scheduled_at` (ISO 8601 with an offset, up to 30 days ahead) and the email is stored
   as `scheduled` (event `email.scheduled`); the worker sends it when it is due, re-checking the domain and the
   suppression list. Until then `POST /v1/emails/{id}/reschedule` moves it to a new time (event `email.rescheduled`)
   and `POST /v1/emails/{id}/cancel` cancels it (`canceled`, event `email.canceled`).
+- **One-click unsubscribe** (RFC 8058) — off by default; turned on per category with the tracking rules (or per send,
+  `tracking: { unsubscribe: true }`). Emails with a category and a single recipient get `List-Unsubscribe` +
+  `List-Unsubscribe-Post` headers pointing at the tracking host (`/t/u/<token>`); the one-click POST suppresses the
+  recipient for that category (reason `unsubscribe`) and records `email.unsubscribed`.
 - **Open & click tracking** — off by default. Turn it on per environment (a default plus per-category rules, in the
   dashboard) or per send (`tracking: { opens, clicks }`). COSS adds an invisible image and rewrites HTML links to its
   own redirect (`API_PUBLIC_URL/t/…`) when it hands the email to the provider; the stored email keeps the original
@@ -215,6 +220,21 @@ access, and revoke a leaver's token (vercel.com/account/tokens, or remove them f
 Runtime settings (`DATABASE_URL`, secrets, URLs, …) are pass-through and never part of a fingerprint, which is what
 lets laptops and CI share results — see "Adding one" in AGENTS.md before adding a variable that changes build output.
 
+## iOS app
+
+`apps/mobile` is the iOS companion app (Expo SDK 57). It needs Xcode with an iOS Simulator and the dashboard running
+(`bun run dev`):
+
+```sh
+bun run --cwd apps/mobile ios    # generates ios/, builds, installs and opens the app on the Simulator
+bun run --cwd apps/mobile start  # Metro only, once the app is installed
+```
+
+"Sign in with COSS" opens the dashboard's sign-in in a browser sheet (`demo@coss.local` / `coss-demo-password`
+after `db:seed`). The app reads `EXPO_PUBLIC_DASHBOARD_URL` (default `http://localhost:3000`); on a physical device
+set it to your Mac's LAN address in `apps/mobile/.env.local`, and run the dashboard with `BETTER_AUTH_URL` on that
+address too. Signed-in devices are listed under Settings → Sessions. See `apps/mobile/AGENTS.md`.
+
 ## API
 
 - `POST /v1/emails` — send an email (`Idempotency-Key` header supported)
@@ -249,6 +269,23 @@ Defaults live in `packages/ratelimit/src/buckets.ts`; platform admins override t
 organization's page in the admin console (`/admin/organizations`, recorded in the audit log) or with
 `bun run ratelimit:set`. The dashboard limits sign-in, sign-up, password reset and verification emails per
 client IP and per email address.
+
+## SMTP relay
+
+`apps/smtp` lets anything that only speaks SMTP send through COSS (Supabase Auth, WordPress, Rails, Laravel,
+Django, nodemailer, older apps): host `smtp.coss.com`, port 465 (TLS) or 587 (STARTTLS) (2465/2587 as
+alternatives), username `coss`, an API key as the password. Each message is mapped onto the same request as
+`POST /v1/emails` (envelope recipients decide who receives it; `To`/`Cc` headers keep their roles and the rest are
+Bcc; `X-Coss-Category`, `X-Coss-Tags`, `X-Coss-Tracking`, `X-Coss-Scheduled-At` and `X-Coss-Idempotency-Key` set
+the API's fields) and stored through the same email service, rate limits and quotas; the worker sends it. Locally,
+`bun run dev` starts it on 2465/2587 with a self-signed certificate (made with `openssl`):
+
+```sh
+swaks --server localhost:2587 --tls --auth-user coss --auth-password "$COSS_API_KEY" \
+  --from hello@acme.test --to ada@example.com --header "Subject: Hello"
+```
+
+The docs' guide is `/docs/email/smtp`.
 
 ## Running on Amazon SES
 
@@ -415,7 +452,7 @@ send nothing unless you set one.
 
 Production runs in AWS account `294417174674`, region **us-east-2** (the organization's guardrails allow no other
 region for regional services). The repository holds everything it takes: one Dockerfile per app
-(`apps/{web,site,api,worker}/Dockerfile`, built from the repository root), a machine-readable spec in
+(`apps/{web,site,portal,api,worker,smtp}/Dockerfile`, built from the repository root), a machine-readable spec in
 [`infra/`](./infra/AGENTS.md) (`bun run --cwd infra aws:spec` prints every service's port, health check, stop
 timeout, size, task-role policy and env vars, the ALB listener rules and the CloudFront behaviours as JSON), the
 Terraform that provisions it from that spec (`infra/terraform`) and the deploy workflow
@@ -431,6 +468,8 @@ Cloudflare DNS (coss.com zone, DNS only)
   track.cosslinks.com + customer tracking domains (Cloudflare for SaaS) ──(X-Tracking-Origin-Verify)──▶ ALB /t/* ─▶ api
   Cloudflare DNS (cosshooks.com zone, self-serve account, proxied)
   portal.cosshooks.com (Hooks portal) ──(X-Portal-Origin-Verify)──▶ ALB ─▶ portal (Next, :3003)
+  Cloudflare DNS (coss.com zone, DNS only)
+  smtp.coss.com ──(TCP 465/2465, 587/2587, client IP preserved)──▶ NLB ─▶ smtp (Bun, :2465 TLS, :2587 STARTTLS)
 ```
 
 ### Resources (`infra/terraform`)
@@ -438,14 +477,13 @@ Cloudflare DNS (coss.com zone, DNS only)
 - **Network:** a VPC (`10.40.0.0/16`) over us-east-2a/b; public subnets for the ALB and one NAT gateway per AZ,
   private subnets for tasks, RDS and Valkey. Security groups: the ALB takes 443 only from the managed prefix list
   `com.amazonaws.global.cloudfront.origin-facing` (its own group: the list weighs ~55 rules) and from Cloudflare's
-  IPv4 ranges (tracking domains); each service's tasks only from the ALB on their port; RDS 5432 only from web, api
-  and worker; Valkey 6379 only from web, api and worker
-  (the daily inbound limit).
+  IPv4 ranges (tracking domains); each service's tasks only from the ALB on their port (the SMTP relay's from
+  the internet through the NLB); RDS 5432 and Valkey 6379 only from web, portal, api, worker and smtp.
 - **NAT gateways (required):** the worker delivers customer webhooks to arbitrary public URLs and ports, and domain
   verification in web, api and worker queries public DNS (1.1.1.1 / 8.8.8.8, port 53) directly. AWS traffic stays
   off them through VPC endpoints: interface endpoints for `sqs`, `secretsmanager`, `ecr.api`, `ecr.dkr`, `logs` and
   `email` (the SES API), plus the free `s3` gateway endpoint (ECR image layers).
-- **ECS on Fargate (arm64):** cluster `coss-production`, services `web`, `site`, `api`, `worker`, task definitions
+- **ECS on Fargate (arm64):** cluster `coss-production`, services `web`, `site`, `portal`, `api`, `worker`, `smtp`, task definitions
   built from `spec.json` (sizes, minimum counts, `stopTimeout`, env names and kinds; plain values from
   `production.tfvars`, secrets from the stage secret), CPU target-tracking autoscaling, deployment circuit breaker
   with rollback, ECS Exec. ECR repositories `coss/<service>` (immutable commit tags; `buildcache-<hash>` is the
@@ -513,6 +551,18 @@ Cloudflare DNS (coss.com zone, DNS only)
   the ALB's certificate doesn't cover; the header secret is what proves a request came through Cloudflare. The
   apex redirects to coss.com. Free plan: 100 custom hostnames included, then $0.10 each per month.
 
+- **SMTP relay (`smtp.coss.com`):** the `smtp` service behind a network load balancer
+  (`infra/terraform/nlb.tf`): TCP listeners 465 and 2465 → container port 2465 (implicit TLS), 587 and 2587 → 2587
+  (STARTTLS), client addresses preserved (the relay limits connections and failed logins per address), so the
+  tasks' security group takes 2465/2587 from anywhere (they have no public address; only the NLB reaches them).
+  The relay terminates TLS itself, since STARTTLS can't be offloaded: Terraform requests an **exportable** ACM
+  certificate for `smtp.coss.com` (exportable certificates cost extra; validation CNAME from
+  `terraform output smtp_certificate_validation_records`, DNS only), passes its ARN as `SMTP_TLS_CERTIFICATE_ARN`,
+  and the task role may only `acm:ExportCertificate` it; the relay exports it at start and every 12 hours (ACM
+  renews it) with `SMTP_TLS_PASSPHRASE` (stage secret, any random value). `smtp.coss.com` is a **DNS-only** CNAME to
+  `terraform output nlb_dns_name` (Cloudflare can't proxy SMTP). `SMTP_PUBLIC_HOST=smtp.coss.com` (web) shows the
+  settings on environment pages; leave it unset on a stage whose relay isn't reachable yet. No SES
+  permissions: the relay only stores and enqueues, the worker sends.
 - **Hooks portal (`cosshooks.com`, the same self-serve Cloudflare account as `cosslinks.com`):** `apps/portal`,
   the page customers embed for their users, runs as the `portal` service on a registrable domain of its own (never
   under coss.com, which would make it same-site with the dashboard). `portal.cosshooks.com` is a **proxied** record
@@ -544,10 +594,12 @@ One Secrets Manager secret per stage, `coss/production` (JSON), injected through
 (one key per `secret` variable of `infra/aws/services.ts`): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `VALKEY_URL`,
 `WEBHOOK_SECRETS_KEY`, `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`, `TURNSTILE_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`,
 `GITHUB_CLIENT_SECRET`, `CLOUDFLARE_API_TOKEN`,
-`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AI_GATEWAY_API_KEY`, `RISK_HASH_KEY` (changing it resets what
+`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AI_GATEWAY_API_KEY`, `SMTP_TLS_PASSPHRASE` (any random value: it
+only protects the SMTP relay's exported certificate key), `RISK_HASH_KEY` (changing it resets what
 risk assessments remember), `IPINFO_TOKEN` (optional: a free IPinfo account's token for risk's ASN and country
 data) and `IPINFO_PRIVACY_TOKEN` (optional, with `RISK_IP_PRIVACY=ipinfo`: a paid IPinfo plan's token for VPN and
-proxy data per address; IPinfo must be a listed subprocessor first). Terraform creates only the container; values are
+proxy data per address; IPinfo must be a listed subprocessor first) and `APNS_PRIVATE_KEY` (optional: the iOS app's
+push notifications, see below). Terraform creates only the container; values are
 written with `infra/terraform/scripts/put-secret.sh NAME --generate | --clipboard | --stdin`, which never prints them
 (losing `WEBHOOK_SECRETS_KEY` makes webhook secrets unreadable, see
 [Rotating `WEBHOOK_SECRETS_KEY`](#rotating-webhook_secrets_key) to change it). Tasks read secrets when they start:
@@ -570,7 +622,7 @@ wrong. AWS credentials come from the task role.
 - **Execution role** (`coss-production-ecs-execution`, shared): pull from ECR, write logs, read the stage secret.
 - **Task roles:** web → `coss-dashboard`, api → `coss-api`, worker → `coss-worker`: the policies `ses:bootstrap`
   creates under `/coss/` (defined in [`apps/worker/scripts/ses-policies.ts`](./apps/worker/scripts/ses-policies.ts)),
-  plus ECS Exec. The site gets no permissions. The `ses-bootstrap` one-off task runs with
+  plus ECS Exec. The site gets no permissions; smtp only `acm:ExportCertificate` on its own certificate. The `ses-bootstrap` one-off task runs with
   `coss-production-ses-bootstrap` (SES, SNS, SQS, EventBridge, S3 (the inbound bucket), CloudWatch alarms, IAM
   policies under `/coss/`).
 - **Deploys** (`coss-production-deploy`): the role of the CodeBuild project whose runners execute the Deploy
@@ -594,27 +646,32 @@ wrong. AWS credentials come from the task role.
 [one-time coordinated upgrade](#upgrading-from-v1-webhook-secret-storage) below instead of step 3's rolling
 deployment. This applies even when `WEBHOOK_SECRETS_KEY` is unchanged.
 
-The Deploy workflow does this on every push to main, building while CI runs and shipping only once it passed (or by
-hand from the Actions tab; with `image_tag` it redeploys an earlier commit's images, e.g. a rollback). When CI
-failed and a re-run passed, re-run the Deploy run's failed jobs. A commit that's no longer main's tip by the time
-its CI finishes, or its deploy job's turn comes, isn't deployed (the newer commit's deploy ships it), so production
-never goes back to an older commit unless you dispatch one:
+The Deploy workflow does this for pushes to main in batches: its `gate` job (on GitHub's runners, which cost
+nothing here, unlike CodeBuild's minutes) waits until the push's CI passed and then until main has had no newer
+push for 20 minutes or production's last deploy is an hour old, so the first push after a quiet spell ships right
+after CI and a busy stretch ships about hourly. A push that's superseded while it waits isn't built (the newer
+push's run ships it). Run it by hand from the admin console's Deploys page or the Actions tab (`gh workflow run
+deploy.yml`) to ship main at once; with
+`image_tag` it redeploys an earlier commit's images, e.g. a rollback. When CI failed and a re-run passed, re-run
+the Deploy run's failed jobs. A deploy job whose commit production already includes (a newer deploy went first)
+skips, so production never goes back to an older commit unless you dispatch one:
 
-1. Build and push the five images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
+1. Build and push the six images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
    apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
-   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API and worker), skipping images that exist. Base
+   for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API, worker and SMTP relay), skipping images that exist. Base
    images never come from Docker Hub there (CodeBuild's shared addresses exhaust its anonymous pull limit): Node from
    ECR Public (`NODE_IMAGE`), Bun from `coss/base/bun` in our ECR (`BUN_IMAGE`), which the workflow fills from Docker
    Hub once per Bun version. Local builds keep Docker Hub (the Dockerfiles' defaults).
 2. Run migrations as a one-off task from the new worker image (`infra/scripts/ecs-task.sh --image-tag <sha> worker --
    bun packages/db/src/migrate.ts`; never two at once, the deploy job's concurrency group). Migrations must be
    backward compatible with the running code.
-3. Roll out all five services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
+3. Roll out all six services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
    of its latest task definition with the new image, and the script fails if the circuit breaker rolled it back. A
    service behind the load balancer counts as deployed once its new tasks passed their health checks and the old
    ones are draining; the worker (no health check) once its old tasks are gone and the new ones ran for 60 s
    without a failure. Rolling deploys keep 100 % healthy; SIGTERM drains each task (Next and the API finish in-flight requests,
-   the worker finishes each loop's current item).
+   the worker finishes each loop's current item, the SMTP relay answers messages in progress and sends idle
+   clients `421`, so they reconnect to another task).
 4. Record the commit in SSM (`/coss/production/image-tag`, read by Terraform) and invalidate the spec's
    `cloudFront.invalidateAfterDeploy` paths on the coss.com distribution.
 5. Check routing (`infra/scripts/check-routing.sh`, also runnable locally): the ALB's rules and the coss.com
@@ -626,6 +683,35 @@ never goes back to an older commit unless you dispatch one:
 Infrastructure changes: `cd infra/terraform && terraform init && terraform plan -var-file=production.tfvars` with
 admin credentials for the account, then `apply`. Services ignore task definition changes; after changing
 environment values, run the Deploy workflow by hand so the services pick up the new revision.
+
+### Deploying from the admin console
+
+`/admin/deploys` shows the commit production runs, main's merges it doesn't run yet (with their CI) and the Deploy
+workflow's latest runs (waiting for their batch, building, deploying, done), and refreshes itself (every 30 s
+while a run moves, else every minute).
+**Deploy now** dispatches the workflow for main (skipping the batch wait) and cancels the push runs still waiting;
+**Redeploy** on an earlier run's commit dispatches it with `image_tag` (production stays there until main is
+deployed again; migrations aren't undone). Both record an admin audit event with the admin and their reason.
+
+It reads and dispatches through a GitHub App, **COSS Deploy**, so no person's token is involved. Setting it up once:
+
+1. In the `cosscom` organization: Settings → Developer settings → GitHub Apps → New GitHub App. Name `COSS Deploy`,
+   homepage `https://coss.com`, webhook off, repository permissions **Actions: read and write** and **Contents:
+   read-only** (nothing else), installable on this account only. Create it, note its **App ID**, and generate a
+   private key (a `.pem` download).
+2. Install it on `cosscom`, only on `cosscom/coss`.
+3. Its bot account starts the deploy runner, so it goes on the allow-list: `gh api 'users/coss-deploy[bot]' --jq .id`
+   (the app's slug + `[bot]`) → `deploy_actor_ids` in `production.tfvars`.
+4. `infra/terraform/scripts/put-secret.sh DEPLOY_GITHUB_APP_PRIVATE_KEY --stdin < coss-deploy.*.private-key.pem`,
+   then take it out of `unset_secrets`, set `DEPLOY_GITHUB_APP_ID` under `plain_env.web`, and apply. Delete the
+   `.pem`.
+5. Run the Deploy workflow (`gh workflow run deploy.yml`) so the dashboard picks up the new task definition.
+
+The dashboard asks GitHub for installation tokens limited to those two permissions on this repository. With them
+it can dispatch, cancel and re-run this repository's workflows and read its code, never push: the Deploy workflow
+refuses anything but main, and the release workflow only runs on pushes. Anyone with the private key (the dashboard's
+task, the stage secret) can start the deploy runner like a maintainer can, so rotate it (generate a new key in the
+app's settings, store it, redeploy, delete the old one) if it may have leaked.
 
 One-off tasks (from `infra/`, with admin credentials):
 
@@ -652,6 +738,14 @@ expires: an hour, or the invitation's 48 hours) and reputation notification emai
 can verify their address or create a live key; afterwards, ask for a new verification email from account settings.
 They are ordinary live emails of that organization: its dashboard shows their delivery, and its suppressions and
 reputation guard apply. Account emails keep no body once sent (their links are secrets).
+
+Push notifications to the iOS app use the APNs key "COSS push" (`APNS_KEY_ID` `WCQDCU4HUL`) of the Cal.com, Inc.
+Apple team (`ADWKXDJV75`), which owns `com.coss.ios`: Production environment, restricted to that topic. Its `.p8` is
+the `APNS_PRIVATE_KEY` key of `coss/production` (`put-secret.sh APNS_PRIVATE_KEY --stdin < AuthKey_….p8`); the key
+id, team and topic are plain values in `production.tfvars`. To replace it, create a new key under Certificates,
+Identifiers & Profiles → Keys (Apple lets you download it once), store it, change `APNS_KEY_ID`, apply and redeploy,
+then revoke the old one. Without them the worker logs a warning and holds pushes (each is dropped after an hour).
+Local development uses its own key (Sandbox) in `.env`.
 
 ### Upgrading from v1 webhook secret storage
 
@@ -720,6 +814,8 @@ COSS is licensed under the [GNU Affero General Public License v3.0](./LICENSE) (
 2026 Cal.com, Inc. — except:
 
 - `packages/sdk` (the `coss` npm package): [MIT](./packages/sdk/LICENSE), so applications can bundle it freely.
+- `packages/mcp` (the `coss-mcp` npm package, COSS's MCP server): [MIT](./packages/mcp/LICENSE), like the SDK it
+  is built on.
 - `packages/kloq`: [MIT](./packages/kloq/LICENSE), vendored from `cosscom/calendar` (as is the kloq registry the
   site serves).
 - The fonts in `packages/ui/src/fonts`: [SIL Open Font License 1.1](./packages/ui/src/fonts/OFL.txt).

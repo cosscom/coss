@@ -1,4 +1,5 @@
 export type { EmailAttachmentMetadata } from "./attachments.ts";
+export { checkBimi, parseTagList, toBimiObject } from "./bimi.ts";
 // Runtime dispatch code (pg-boss) lives in `@coss/email/dispatch`, which the dashboard never loads.
 export type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 export {
@@ -101,6 +102,7 @@ export {
   toDomainObject,
   VERIFICATION_WINDOW_MS,
 } from "./domains.ts";
+export { EMAIL_CSV_COLUMNS, emailCsvRow, emailsCsvStream } from "./email-csv.ts";
 export {
   DomainError,
   type DomainErrorCode,
@@ -171,14 +173,20 @@ export { FakeTrackingHostnameProvider } from "./providers/fake-tracking-hostname
 export {
   type EmailActivity,
   type EmailActivityDay,
+  type EmailExportItem,
   type EmailListFilters,
   type EmailListItem,
   type EmailRecipientRow,
   type EmailRow,
   emailActivity,
+  emailFailure,
+  environmentsWithSentEmail,
+  exportEmailPages,
   getEmail,
+  getEmailBatch,
   listEmailEvents,
   listEmailLinks,
+  listEmailSummariesPage,
   listEmails,
   listEmailsPage,
   toEmailEventObject,
@@ -229,6 +237,10 @@ export {
 export {
   ALL_CATEGORIES,
   ATTACHMENT_DISPOSITIONS,
+  BIMI_ISSUE_CODES,
+  BIMI_ISSUE_MESSAGES,
+  BIMI_STATUSES,
+  type BimiIssueCode,
   CheckSuppressionQuery,
   type CheckSuppressionQueryOutput,
   CreateDomainRequest,
@@ -251,6 +263,8 @@ export {
   DOMAIN_RECORD_PURPOSES,
   DOMAIN_RECORD_STATUSES,
   DOMAIN_STATUSES,
+  DomainBimiObject,
+  type DomainBimiObjectOutput,
   DomainList,
   type DomainListOutput,
   DomainObject,
@@ -397,6 +411,30 @@ export {
   UNCLAIMED_FAIL_MS,
   UNCLAIMED_REQUEUE_MS,
 } from "./sweeps.ts";
+export {
+  createEmailTemplate,
+  deleteEmailTemplate,
+  type EmailTemplateRecord,
+  type EmailTemplateRow,
+  getEmailTemplate,
+  getTemplateDraft,
+  getTemplateVersion,
+  MAX_TEMPLATES_PER_ENVIRONMENT,
+  pageEmailTemplates,
+  pageTemplateVersions,
+  publishTemplateDraft,
+  type RenderedTemplateSend,
+  renderTemplateForSend,
+  requireEmailTemplate,
+  restoreTemplateVersion,
+  saveTemplateDraft,
+  type TemplateEnvironment,
+  type TemplateVersion,
+  templateVersionProblems,
+  toEmailTemplateObject,
+  toEmailTemplateVersionObject,
+  updateEmailTemplate,
+} from "./templates.ts";
 export { isTrackingToken, newTrackingToken, recordClick, recordOpen } from "./tracking.ts";
 export {
   checkTrackingDomain,
@@ -429,6 +467,7 @@ export {
   NO_TRACK_ATTRIBUTE,
   openPixelUrl,
   type TrackedLink,
+  unsubscribeUrl,
 } from "./tracking-html.ts";
 export {
   deleteTrackingRule,
@@ -444,3 +483,4 @@ export {
   updateTrackingRule,
   upsertTrackingRule,
 } from "./tracking-settings.ts";
+export { getUnsubscribe, recordUnsubscribe } from "./unsubscribe.ts";

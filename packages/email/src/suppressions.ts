@@ -1,6 +1,7 @@
 /**
  * Suppression lists: one per environment. A send skips every recipient with an entry whose scope
- * is `*` or the email's category; permanent bounces and complaints add `*` entries automatically.
+ * is `*` or the email's category; permanent bounces and complaints add `*` entries automatically,
+ * one-click unsubscribes an entry for the email's category.
  * COSS is the only suppression list: SES tenants are created with suppression turned off.
  */
 import { db, type Executor, schema } from "@coss/db";
@@ -368,8 +369,9 @@ export async function suppressedRecipients(
 }
 
 /**
- * Adds a `*` entry after a permanent bounce or a complaint (no-op if one exists). Mailbox
- * simulator addresses are never suppressed, like SES, so they keep working for tests.
+ * Adds a `*` entry after a permanent bounce or a complaint, or one for the email's category after
+ * a one-click unsubscribe (no-op if one exists). Mailbox simulator addresses are never suppressed,
+ * like SES, so they keep working for tests.
  */
 export async function autoSuppress(
   tx: Executor,
@@ -380,6 +382,8 @@ export async function autoSuppress(
     address: string;
     reason: Exclude<SuppressionReason, "manual">;
     emailId: string;
+    /** `*` unless given. */
+    scope?: string;
   },
 ): Promise<void> {
   const address = input.address.toLowerCase();
@@ -391,7 +395,7 @@ export async function autoSuppress(
       projectId: input.projectId,
       environmentId: input.environmentId,
       address,
-      scope: ALL_CATEGORIES,
+      scope: input.scope ?? ALL_CATEGORIES,
       reason: input.reason,
       emailId: input.emailId,
     })

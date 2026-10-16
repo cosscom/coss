@@ -207,6 +207,8 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "logDrains.batches.get",
     args: (request) => [pathId(request), pathParam(request, "batch_id")],
   },
+  "GET /v1/emails": { method: "email.list", args: (request) => [queryParams(request)] },
+  "GET /v1/emails/batch/{id}": { method: "email.getBatch", args: (r) => [pathId(r)] },
   "GET /v1/emails/{id}": {
     method: "email.get",
     args: (request) => [pathId(request)],
@@ -250,6 +252,47 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   },
   "GET /v1/suppressions/{id}": { method: "email.suppressions.get", args: (r) => [pathId(r)] },
   "DELETE /v1/suppressions/{id}": { method: "email.suppressions.remove", args: (r) => [pathId(r)] },
+  "POST /v1/email_templates": {
+    method: "email.templates.create",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/email_templates": {
+    method: "email.templates.list",
+    args: (request) => [queryParams(request)],
+  },
+  "GET /v1/email_templates/{id}": { method: "email.templates.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/email_templates/{id}": {
+    method: "email.templates.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/email_templates/{id}": {
+    method: "email.templates.delete",
+    args: (request) => [pathId(request)],
+  },
+  "GET /v1/email_templates/{id}/draft": {
+    method: "email.templates.getDraft",
+    args: (request) => [pathId(request)],
+  },
+  "PUT /v1/email_templates/{id}/draft": {
+    method: "email.templates.updateDraft",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "POST /v1/email_templates/{id}/publish": {
+    method: "email.templates.publish",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "GET /v1/email_templates/{id}/versions": {
+    method: "email.templates.versions.list",
+    args: (request) => [pathId(request), queryParams(request)],
+  },
+  "GET /v1/email_templates/{id}/versions/{version}": {
+    method: "email.templates.versions.get",
+    args: (request) => [pathId(request), numberParam(request, "version")],
+  },
+  "POST /v1/email_templates/{id}/versions/{version}/restore": {
+    method: "email.templates.versions.restore",
+    args: (request) => [pathId(request), numberParam(request, "version")],
+  },
   "GET /v1/tracking_settings": { method: "email.tracking.get", args: () => [] },
   "PATCH /v1/tracking_settings/default": {
     method: "email.tracking.updateDefault",
@@ -479,6 +522,12 @@ function pathId(request: SampleRequest): string {
 
 function pathParam(request: SampleRequest, name: string): string {
   return tsValue(request.path[name]?.value ?? "");
+}
+
+/** A numeric path parameter, as the number the SDK method takes. */
+function numberParam(request: SampleRequest, name: string): string {
+  const value = request.path[name]?.value;
+  return /^\d+$/.test(String(value ?? "")) ? String(value) : tsValue(value ?? "");
 }
 
 function application(request: SampleRequest): string {

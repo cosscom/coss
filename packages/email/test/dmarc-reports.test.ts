@@ -294,7 +294,9 @@ describe("reading reports", () => {
       next: { kind: "publish", policy: "none" },
     });
     expect(overview.report_summary.reports).toBe(3);
-    expect(overview.report_summary.messages).toBeGreaterThan(overview.report_summary.coss_messages - 1);
+    expect(overview.report_summary.messages).toBeGreaterThan(
+      overview.report_summary.coss_messages - 1,
+    );
     expect(overview.report_summary.sources.length).toBe(9);
 
     const series = await dmarcDailySeries({ organizationId, domainId: row.id, days: 7, now });

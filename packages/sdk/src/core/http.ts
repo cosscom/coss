@@ -31,7 +31,7 @@ export interface HttpClientOptions {
 export interface ApiRequest {
   /** Disable automatic retries for operations without server-side deduplication. */
   retry?: boolean;
-  method: "GET" | "POST" | "PATCH" | "DELETE";
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   /** Path including the version prefix, e.g. `/v1/emails`. */
   path: string;
   /** Query parameters; `undefined` values are left out. */

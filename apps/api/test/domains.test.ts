@@ -67,6 +67,16 @@ describe("POST /v1/domains", () => {
     ]);
     expect(domain.records.every((record) => record.status === "not_checked")).toBe(true);
     expect(domain.records.filter((record) => !record.required)).toHaveLength(1);
+    // BIMI is reported on its own, unchecked until DNS has been consulted.
+    expect(domain.bimi).toEqual({
+      status: "not_checked",
+      name: `default._bimi.${name}`,
+      record: null,
+      logo_url: null,
+      certificate_url: null,
+      dmarc_policy: null,
+      issues: [],
+    });
   });
 
   test("a sandbox key manages the same organization-wide domains as a live key", async () => {

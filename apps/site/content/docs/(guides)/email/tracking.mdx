@@ -47,7 +47,8 @@ const { data, error } = await coss.email.send({
 ```
 
 For each of `opens` and `clicks`, the send's own setting wins, then its category's rule, then the
-environment default.
+environment default. The same rules also turn on [one-click unsubscribe](/docs/email/unsubscribe)
+headers (`unsubscribe`).
 
 - Only HTML bodies are tracked; the plain-text part is sent unchanged.
 - Add `data-coss-no-track` to a link to leave it as is. `mailto:`, `tel:` and links containing

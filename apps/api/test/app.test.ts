@@ -167,8 +167,16 @@ describe("GET /openapi.json", () => {
       "/v1/domains/{id}/receiving",
       "/v1/domains/{id}/tracking",
       "/v1/domains/{id}/verify",
+      "/v1/email_templates",
+      "/v1/email_templates/{id}",
+      "/v1/email_templates/{id}/draft",
+      "/v1/email_templates/{id}/publish",
+      "/v1/email_templates/{id}/versions",
+      "/v1/email_templates/{id}/versions/{version}",
+      "/v1/email_templates/{id}/versions/{version}/restore",
       "/v1/emails",
       "/v1/emails/batch",
+      "/v1/emails/batch/{id}",
       "/v1/emails/{id}",
       "/v1/emails/{id}/cancel",
       "/v1/emails/{id}/events",
@@ -246,6 +254,19 @@ describe("GET /openapi.json", () => {
         { $ref: "#/components/parameters/CossVersion" },
       ],
     });
+    expect(doc.paths["/v1/emails/batch/{id}"]?.get).toMatchObject({
+      operationId: "getEmailBatch",
+      security: [{ bearerAuth: [] }],
+    });
+    expect(doc.paths["/v1/emails"]?.get).toMatchObject({
+      operationId: "listEmails",
+      tags: ["Emails"],
+      security: [{ bearerAuth: [] }],
+    });
+    const listParameters = (doc.paths["/v1/emails"]?.get?.parameters ?? []) as { name?: string }[];
+    expect(listParameters.map((parameter) => parameter.name)).toEqual(
+      expect.arrayContaining(["to", "recipient_status", "status", "after", "limit"]),
+    );
     expect(doc.paths["/v1/emails/batch"]?.post).toMatchObject({
       operationId: "sendEmailBatch",
       tags: ["Emails"],
@@ -389,6 +410,7 @@ describe("GET /openapi.json", () => {
         )
         .filter(
           ([route]) =>
+            String(route).includes("email_templates") ||
             String(route).includes("domains") ||
             String(route).includes("webhook") ||
             String(route).includes("log_drains") ||
@@ -396,6 +418,17 @@ describe("GET /openapi.json", () => {
             String(route).includes("tracking_settings"),
         ),
     ).toEqual([
+      ["post /v1/email_templates", "createEmailTemplate"],
+      ["get /v1/email_templates", "listEmailTemplates"],
+      ["get /v1/email_templates/{id}", "getEmailTemplate"],
+      ["patch /v1/email_templates/{id}", "updateEmailTemplate"],
+      ["delete /v1/email_templates/{id}", "deleteEmailTemplate"],
+      ["get /v1/email_templates/{id}/draft", "getEmailTemplateDraft"],
+      ["put /v1/email_templates/{id}/draft", "updateEmailTemplateDraft"],
+      ["post /v1/email_templates/{id}/publish", "publishEmailTemplate"],
+      ["get /v1/email_templates/{id}/versions", "listEmailTemplateVersions"],
+      ["get /v1/email_templates/{id}/versions/{version}", "getEmailTemplateVersion"],
+      ["post /v1/email_templates/{id}/versions/{version}/restore", "restoreEmailTemplateVersion"],
       ["post /v1/domains", "createDomain"],
       ["get /v1/domains", "listDomains"],
       ["get /v1/domains/{id}", "getDomain"],
@@ -501,6 +534,7 @@ describe("GET /openapi.json", () => {
         "CreateDomainRequest",
         "Domain",
         "DomainRecord",
+        "DomainBimi",
         "DomainList",
         "DeletedDomain",
         "TrackingDomain",

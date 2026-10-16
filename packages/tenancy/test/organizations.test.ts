@@ -2,12 +2,14 @@ import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { newId } from "@coss/db/id";
 import { uniqueSuffix } from "@coss/db/testing";
+import { eq } from "drizzle-orm";
 import {
   getMembership,
   getOrganizationMember,
   getPendingInvitation,
   listOrganizationMembers,
   listPendingInvitations,
+  listVerifiedMemberEmails,
 } from "../src/index.ts";
 import { addMember, createTestUser } from "../src/testing.ts";
 import { createTestOrganization } from "./helpers.ts";
@@ -142,5 +144,22 @@ describe("getPendingInvitation", () => {
     for (const { id } of [expired, canceled, accepted]) {
       expect(await find(organization.id, id)).toBeNull();
     }
+  });
+});
+
+describe("listVerifiedMemberEmails", () => {
+  test("lists members with a verified address who aren't banned, oldest first", async () => {
+    const { owner, organization } = await createTestOrganization();
+    const verified = await createTestUser();
+    const unverified = await createTestUser({ emailVerified: false });
+    const banned = await createTestUser();
+    for (const user of [verified, unverified, banned]) {
+      await addMember({ organizationId: organization.id, userId: user.id, role: "member" });
+    }
+    await db.update(schema.user).set({ banned: true }).where(eq(schema.user.id, banned.id));
+    expect(await listVerifiedMemberEmails({ organizationId: organization.id })).toEqual([
+      owner.email,
+      verified.email,
+    ]);
   });
 });

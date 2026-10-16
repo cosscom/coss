@@ -30,6 +30,12 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.url(),
     // Public origin of the API, shown in the quick-start snippets.
     API_PUBLIC_URL: z.url(),
+    // The SMTP relay's host (apps/smtp), shown with its settings on environment pages. Unset in
+    // production until smtp.coss.com resolves: the settings are hidden.
+    SMTP_PUBLIC_HOST:
+      process.env.NODE_ENV === "production"
+        ? z.string().optional()
+        : z.string().default("localhost"),
     ...emailEnvShape,
     ...rateLimitEnvShape,
     ...webhookEnvShape,
@@ -60,6 +66,10 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     GITHUB_CLIENT_ID: z.string().optional(),
     GITHUB_CLIENT_SECRET: z.string().optional(),
+    // The admin console's deploys page (src/lib/deploys.ts): the COSS Deploy GitHub App's id and
+    // private key (both or neither, src/instrumentation.ts). Unset: the page explains the setup.
+    DEPLOY_GITHUB_APP_ID: z.string().regex(/^\d+$/, "The app's numeric id.").optional(),
+    DEPLOY_GITHUB_APP_PRIVATE_KEY: z.string().includes("PRIVATE KEY").optional(),
     // Error and performance monitoring of the dashboard's server and, through /api/monitoring,
     // of browsers on both zones (dashboard and site).
     ...sentryEnvShape,

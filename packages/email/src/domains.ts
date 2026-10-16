@@ -22,6 +22,7 @@ import {
   notInArray,
   or,
 } from "drizzle-orm";
+import { checkBimi, toBimiObject } from "./bimi.ts";
 import { dmarcPolicyKey, parseDmarcRecord } from "./dmarc-record.ts";
 import { deleteOrganizationDmarcReports } from "./dmarc-reports.ts";
 import { checkDomainDns, type DnsResolver, expectedRecords } from "./dns.ts";
@@ -144,6 +145,7 @@ export function toDomainObject(
     failed_at: row.failedAt?.toISOString() ?? null,
     tracking,
     receiving,
+    bimi: toBimiObject(row),
   };
 }
 
@@ -369,6 +371,7 @@ export async function restartDomainVerification(
         provider: deps.identity.name,
         mailFromStatus: "pending",
         records: [],
+        bimi: null,
         verificationStartedAt: new Date(),
         failedAt: null,
       })
@@ -416,10 +419,13 @@ export async function checkDomain(
     dkimHostedZone: state?.dkimHostedZone ?? row.dkimHostedZone,
     region: state?.region ?? row.region,
   };
-  const { records, dmarc } = await checkDomainDns(
-    expectedRecords({ ...row, ...identity }, deps.dmarcReportDomain ?? null),
-    deps.dns,
-  );
+  const [{ records, dmarc }, bimi] = await Promise.all([
+    checkDomainDns(
+      expectedRecords({ ...row, ...identity }, deps.dmarcReportDomain ?? null),
+      deps.dns,
+    ),
+    checkBimi(row.name, deps.dns),
+  ]);
   // `undefined`: DNS couldn't be asked, so the stored record (and its policy's start) stays.
   const dmarcState =
     dmarc === undefined
@@ -455,6 +461,7 @@ export async function checkDomain(
       mailFromStatus: state?.mailFromStatus ?? row.mailFromStatus,
       records,
       ...dmarcState,
+      bimi,
       lastCheckedAt: now,
       nextCheckAt: nextCheckAt({ status, verificationStartedAt: row.verificationStartedAt }, now),
       verifiedAt: status === "verified" ? (row.verifiedAt ?? now) : row.verifiedAt,

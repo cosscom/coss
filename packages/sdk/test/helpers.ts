@@ -82,6 +82,7 @@ export const sampleEmail: Email = {
   tags: [{ name: "category", value: "welcome" }],
   category: null,
   status: "sent",
+  failure: null,
   recipients: [
     {
       address: "delivered@example.com",
@@ -95,6 +96,7 @@ export const sampleEmail: Email = {
   tracking: {
     opens: false,
     clicks: false,
+    unsubscribe: false,
     open_count: 0,
     first_opened_at: null,
     last_opened_at: null,
@@ -106,6 +108,7 @@ export const sampleEmail: Email = {
   sent_at: "2026-10-09T12:00:00.100Z",
   scheduled_at: null,
   batch_id: null,
+  template: null,
 };
 
 export const sampleDomain: Domain = {
@@ -135,6 +138,15 @@ export const sampleDomain: Domain = {
   failed_at: null,
   tracking: null,
   receiving: null,
+  bimi: {
+    status: "not_checked",
+    name: "default._bimi.acme.com",
+    record: null,
+    logo_url: null,
+    certificate_url: null,
+    dmarc_policy: null,
+    issues: [],
+  },
 };
 
 export const sampleEndpoint: WebhookEndpoint = {

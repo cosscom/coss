@@ -9,6 +9,13 @@ import { RISK_EVENT_TYPES } from "@coss/risk/schemas";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { HOOK_OPERATIONAL_EVENT_TYPES } from "@coss/webhooks/schemas";
 import { z } from "zod";
+import {
+  EmailTemplateReference,
+  TemplateLocale,
+  TemplateVariableValues,
+} from "./template-schemas.ts";
+
+export * from "./template-schemas.ts";
 
 export const MAX_RECIPIENTS = 50;
 export const MAX_HEADERS = 15;
@@ -288,6 +295,16 @@ export const TrackingOptions = z
           "Send HTML links through a COSS redirect and record `email.clicked` events. Links with a " +
           "`data-coss-no-track` attribute are left alone.",
       }),
+    unsubscribe: z
+      .boolean()
+      .optional()
+      .meta({
+        description:
+          "Add one-click unsubscribe headers (`List-Unsubscribe` and `List-Unsubscribe-Post`, " +
+          "RFC 8058). An unsubscribe suppresses the recipient for this email's category and " +
+          "records `email.unsubscribed`. Needs a `category`, a single recipient, no " +
+          "`List-Unsubscribe` header of your own and at most 13 custom headers.",
+      }),
   })
   .meta({
     id: "TrackingOptions",
@@ -295,6 +312,15 @@ export const TrackingOptions = z
       "Overrides the environment's tracking settings (its default, or the rule for this " +
       "email's category) for this email. Omitted fields keep the configured setting.",
   });
+
+/** Header names whose presence means the customer handles unsubscribes themselves. */
+export const LIST_UNSUBSCRIBE_HEADERS = ["list-unsubscribe", "list-unsubscribe-post"] as const;
+
+/**
+ * Custom headers an email can have and still get COSS's two unsubscribe headers: providers take
+ * at most `MAX_HEADERS` in all (SES's limit for a simple message).
+ */
+export const MAX_HEADERS_WITH_UNSUBSCRIBE = MAX_HEADERS - LIST_UNSUBSCRIBE_HEADERS.length;
 
 export type TrackingOptionsOutput = z.output<typeof TrackingOptions>;
 
@@ -309,24 +335,57 @@ function tooFarAhead(scheduledAt: string): boolean {
   return Date.parse(scheduledAt) > Date.now() + MAX_SCHEDULE_AHEAD_MS;
 }
 
+/** Rules for an email's subject, sent as is or rendered from a template. */
+export const EmailSubject = z
+  .string()
+  .min(1, "Subject must not be empty.")
+  .max(SUBJECT_MAX_LENGTH, `Subject can be at most ${SUBJECT_MAX_LENGTH} characters.`)
+  .refine((value) => !CONTROL_CHARACTERS.test(value), {
+    message: "Subject must not contain control characters (CR, LF, NUL, …).",
+  })
+  .refine((value) => !FORMAT_CHARACTERS.test(value), {
+    message: "Subject must not contain invisible formatting characters.",
+  });
+
+const TEMPLATE_PROVIDED = ["subject", "html", "text"] as const;
+const TEMPLATE_ONLY = ["template_version", "locale", "variables"] as const;
+
 const SendEmailRequestFields = z.strictObject({
   from: EmailAddress,
   to: addressList(1),
   cc: addressList(0).optional(),
   bcc: addressList(0).optional(),
   reply_to: addressList(0).optional(),
-  subject: z
-    .string()
-    .min(1, "Subject must not be empty.")
-    .max(SUBJECT_MAX_LENGTH, `Subject can be at most ${SUBJECT_MAX_LENGTH} characters.`)
-    .refine((value) => !CONTROL_CHARACTERS.test(value), {
-      message: "Subject must not contain control characters (CR, LF, NUL, …).",
-    })
-    .refine((value) => !FORMAT_CHARACTERS.test(value), {
-      message: "Subject must not contain invisible formatting characters.",
-    }),
+  subject: EmailSubject.optional().meta({
+    description: "Required unless the email is sent from a template (`template_id`).",
+  }),
   html: z.string().optional().meta({ description: "HTML body. Provide `html`, `text`, or both." }),
-  text: z.string().optional().meta({ description: "Plain-text body." }),
+  text: z.string().optional().meta({
+    description:
+      "Plain-text body. Without it, an `html` email goes out with a text part generated from the HTML.",
+  }),
+  template_id: z
+    .string()
+    .min(1)
+    .max(100)
+    .optional()
+    .meta({
+      description:
+        "Send a published email template (its id or alias) instead of `subject`, `html` and " +
+        "`text`.",
+      examples: ["welcome"],
+    }),
+  template_version: z.number().int().min(1).optional().meta({
+    description: "A published version of the template to send. Defaults to the latest one.",
+  }),
+  locale: TemplateLocale.optional().meta({
+    description:
+      'The template locale to send, e.g. "pt-BR". Falls back to the language ("pt"), then ' +
+      "to the template's default locale.",
+  }),
+  variables: TemplateVariableValues.optional().meta({
+    description: "Values for the template's variables, keyed by name.",
+  }),
   headers: z
     // zod skips `__proto__` keys (prototype-pollution guard), which would silently drop such a
     // header; reject it explicitly while the raw object is still visible.
@@ -466,11 +525,75 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
       message: `An email can have at most ${MAX_RECIPIENTS} unique recipients across to, cc and bcc.`,
     });
   }
-  if (!value.html && !value.text) {
-    ctx.addIssue({ code: "custom", path: ["html"], message: "Provide `html`, `text`, or both." });
+  if (value.template_id !== undefined) {
+    for (const field of TEMPLATE_PROVIDED) {
+      if (value[field] !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [field],
+          message: "Not allowed with `template_id`: the template provides it.",
+        });
+      }
+    }
+  } else {
+    if (value.subject === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["subject"],
+        message: "Provide `subject`, or send a template with `template_id`.",
+      });
+    }
+    if (!value.html && !value.text) {
+      ctx.addIssue({ code: "custom", path: ["html"], message: "Provide `html`, `text`, or both." });
+    }
+    for (const field of TEMPLATE_ONLY) {
+      if (value[field] !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: [field],
+          message: "Only allowed with `template_id`.",
+        });
+      }
+    }
   }
   if (value.scheduled_at !== undefined && tooFarAhead(value.scheduled_at)) {
     ctx.addIssue({ code: "custom", path: ["scheduled_at"], message: TOO_FAR_AHEAD_MESSAGE });
+  }
+  if (value.tracking?.unsubscribe === true) {
+    const path = ["tracking", "unsubscribe"];
+    if (value.category === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message: "One-click unsubscribe needs a `category`: the unsubscribe is scoped to it.",
+      });
+    }
+    if (unique.size > 1) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message:
+          "One-click unsubscribe needs a single recipient across to, cc and bcc: send one " +
+          "email per recipient.",
+      });
+    }
+    const headerNames = Object.keys(value.headers ?? {}).map((name) => name.toLowerCase());
+    if (LIST_UNSUBSCRIBE_HEADERS.some((name) => headerNames.includes(name))) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message: "One-click unsubscribe can't be combined with your own List-Unsubscribe headers.",
+      });
+    }
+    if (headerNames.length > MAX_HEADERS_WITH_UNSUBSCRIBE) {
+      ctx.addIssue({
+        code: "custom",
+        path,
+        message:
+          `One-click unsubscribe adds ${LIST_UNSUBSCRIBE_HEADERS.length} headers: send at most ` +
+          `${MAX_HEADERS_WITH_UNSUBSCRIBE} of your own.`,
+      });
+    }
   }
 })
   // Only runs on fully valid input: recipients become arrays, header names lower-case, and every
@@ -481,7 +604,8 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
     cc: asList(value.cc),
     bcc: asList(value.bcc),
     reply_to: asList(value.reply_to),
-    subject: value.subject,
+    // `null` for template sends, whose content is rendered at send time.
+    subject: value.subject ?? null,
     html: value.html || null,
     text: value.text || null,
     headers: Object.fromEntries(
@@ -521,7 +645,22 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
           tracking: {
             ...(value.tracking.opens === undefined ? {} : { opens: value.tracking.opens }),
             ...(value.tracking.clicks === undefined ? {} : { clicks: value.tracking.clicks }),
+            ...(value.tracking.unsubscribe === undefined
+              ? {}
+              : { unsubscribe: value.tracking.unsubscribe }),
           },
+        }),
+    // Only for template sends, for the same reason. The hash covers the request (template and
+    // variables), never the rendered content.
+    ...(value.template_id === undefined
+      ? {}
+      : {
+          template_id: value.template_id,
+          ...(value.template_version === undefined
+            ? {}
+            : { template_version: value.template_version }),
+          ...(value.locale === undefined ? {} : { locale: value.locale }),
+          variables: value.variables ?? {},
         }),
   }))
   .meta({
@@ -534,6 +673,13 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
         html: "<p>Thanks for signing up!</p>",
         tags: [{ name: "template", value: "welcome" }],
         category: "onboarding",
+      },
+      {
+        from: "Acme <onboarding@acme.com>",
+        to: "user@example.com",
+        template_id: "welcome",
+        locale: "de",
+        variables: { first_name: "Ada" },
       },
     ],
   });
@@ -641,6 +787,7 @@ export const EMAIL_EVENT_TYPES = [
   "email.opened",
   "email.clicked",
   "email.rescheduled",
+  "email.unsubscribed",
 ] as const;
 
 /** Engagement events: recorded by COSS's tracking endpoints, never change a recipient's status. */
@@ -716,7 +863,13 @@ export const EmailRecipient = z
   })
   .meta({ id: "EmailRecipient", examples: [RECIPIENT_EXAMPLE] });
 
-export const SUPPRESSION_REASONS = ["bounce", "complaint", "manual", "import"] as const;
+export const SUPPRESSION_REASONS = [
+  "bounce",
+  "complaint",
+  "manual",
+  "import",
+  "unsubscribe",
+] as const;
 
 export type SuppressionReason = (typeof SUPPRESSION_REASONS)[number];
 
@@ -733,7 +886,8 @@ export const SuppressionScope = z
 const SuppressionReasonEnum = z.enum(SUPPRESSION_REASONS).meta({
   description:
     "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. " +
-    "`manual`: added one by one through the API or dashboard. `import`: added by a bulk import.",
+    "`manual`: added one by one through the API or dashboard. `import`: added by a bulk import. " +
+    "`unsubscribe`: added by the recipient's one-click unsubscribe, scoped to the email's category.",
 });
 
 export const EmailEventData = z
@@ -900,6 +1054,7 @@ export type EmailAttachmentObjectOutput = z.output<typeof EmailAttachmentObject>
 const TRACKING_EXAMPLE = {
   opens: false,
   clicks: false,
+  unsubscribe: false,
   open_count: 0,
   first_opened_at: null,
   last_opened_at: null,
@@ -922,6 +1077,9 @@ export const EmailTracking = z
   .object({
     opens: z.boolean().meta({ description: "Whether opens are tracked for this email." }),
     clicks: z.boolean().meta({ description: "Whether link clicks are tracked for this email." }),
+    unsubscribe: z.boolean().meta({
+      description: "Whether the email carries one-click unsubscribe headers (RFC 8058).",
+    }),
     open_count: z.number().int(),
     first_opened_at: z.iso.datetime().nullable(),
     last_opened_at: z.iso.datetime().nullable(),
@@ -965,6 +1123,23 @@ export const EmailLinkList = z
 
 export type EmailLinkListOutput = z.output<typeof EmailLinkList>;
 
+export const EmailFailure = z
+  .object({
+    code: z.string().meta({
+      description:
+        "Why the email failed, e.g. `all_recipients_suppressed`, `domain_not_verified`, " +
+        "`content_rejected`, `attachments_unavailable`, `dispatch_failed` or `provider_error`.",
+      examples: ["all_recipients_suppressed"],
+    }),
+    message: z.string(),
+  })
+  .meta({
+    id: "EmailFailure",
+    examples: [
+      { code: "all_recipients_suppressed", message: "Every recipient is on the suppression list." },
+    ],
+  });
+
 export const EmailObject = z
   .object({
     object: z.literal("email"),
@@ -986,6 +1161,9 @@ export const EmailObject = z
         "`scheduled_at`; `canceled` ones were canceled before that. Per-recipient delivery is in " +
         "`recipients`.",
     }),
+    failure: z.union([EmailFailure, z.null()]).meta({
+      description: "Why the email failed; `null` unless `status` is `failed`.",
+    }),
     recipients: z.array(EmailRecipient),
     attachments: z.array(EmailAttachmentObject).meta({
       description: "Attachment metadata. Content is never returned, and is discarded once sent.",
@@ -1004,6 +1182,9 @@ export const EmailObject = z
       .string()
       .nullable()
       .meta({ description: "The batch that sent the email; `null` if it was sent on its own." }),
+    template: z.union([EmailTemplateReference, z.null()]).meta({
+      description: "The template the email was rendered from; `null` if it was sent without one.",
+    }),
   })
   .meta({
     id: "Email",
@@ -1023,6 +1204,7 @@ export const EmailObject = z
         tags: [{ name: "template", value: "welcome" }],
         category: "onboarding",
         status: "sent",
+        failure: null,
         recipients: [RECIPIENT_EXAMPLE],
         sandbox: false,
         tracking: TRACKING_EXAMPLE,
@@ -1031,11 +1213,141 @@ export const EmailObject = z
         sent_at: "2026-10-10T12:00:01.000Z",
         scheduled_at: null,
         batch_id: null,
+        template: null,
       },
     ],
   });
 
 export type EmailObjectOutput = z.output<typeof EmailObject>;
+
+const SUMMARY_EXAMPLE = {
+  object: "email",
+  id: EMAIL_ID_EXAMPLE,
+  from: "Acme <onboarding@acme.com>",
+  to: ["user@example.com"],
+  cc: [],
+  bcc: [],
+  reply_to: [],
+  subject: "Welcome to Acme",
+  tags: [{ name: "template", value: "welcome" }],
+  category: "onboarding",
+  status: "sent",
+  failure: null,
+  recipients: [RECIPIENT_EXAMPLE],
+  sandbox: false,
+  tracking: TRACKING_EXAMPLE,
+  created_at: "2026-10-10T12:00:00.000Z",
+  sent_at: "2026-10-10T12:00:01.000Z",
+  scheduled_at: null,
+  batch_id: null,
+  template: null,
+};
+
+/** An email in a list: everything but its content (`html`, `text`, `headers`, `attachments`). */
+export const EmailSummary = EmailObject.omit({
+  html: true,
+  text: true,
+  headers: true,
+  attachments: true,
+}).meta({
+  id: "EmailSummary",
+  description:
+    "An email without its content. Retrieve the email for `html`, `text`, `headers` and " +
+    "`attachments`.",
+  examples: [SUMMARY_EXAMPLE],
+});
+
+export type EmailSummaryOutput = z.output<typeof EmailSummary>;
+
+export const EmailSummaryList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(EmailSummary),
+    has_more: z.boolean(),
+  })
+  .meta({
+    id: "EmailSummaryList",
+    examples: [{ object: "list", data: [SUMMARY_EXAMPLE], has_more: false }],
+  });
+
+export type EmailSummaryListOutput = z.output<typeof EmailSummaryList>;
+
+export const DEFAULT_EMAIL_LIST_LIMIT = 20;
+export const MAX_EMAIL_LIST_LIMIT = 100;
+
+/** A comma-separated list of enum values (`status=failed,canceled`). */
+function csvEnum<const T extends readonly [string, ...string[]]>(values: T, description: string) {
+  const item = z.enum(values);
+  return z
+    .string()
+    .transform((value, ctx) => {
+      const out: T[number][] = [];
+      for (const part of value.split(",").map((piece) => piece.trim())) {
+        if (part.length === 0) continue;
+        const parsed = item.safeParse(part);
+        if (!parsed.success) {
+          ctx.addIssue({ code: "custom", message: `Invalid value "${part}".` });
+          return z.NEVER;
+        }
+        out.push(parsed.data);
+      }
+      return out;
+    })
+    .optional()
+    .meta({ description });
+}
+
+export const ListEmailsQuery = z
+  .strictObject({
+    to: z
+      .string()
+      .trim()
+      .min(1)
+      .max(320)
+      .transform((value) => value.toLowerCase())
+      .optional()
+      .meta({
+        description:
+          "Only emails with this recipient (in `to`, `cc` or `bcc`; the bare address, any case).",
+        examples: ["user@example.com"],
+      }),
+    recipient_status: csvEnum(
+      EMAIL_RECIPIENT_STATUSES,
+      "Only emails with a recipient in one of these statuses, comma-separated: " +
+        "`bounced,complained`. With `to`, that recipient's status.",
+    ),
+    status: csvEnum(EMAIL_STATUSES, "Only emails in these statuses, comma-separated: `failed`."),
+    q: z
+      .string()
+      .max(256)
+      .optional()
+      .meta({ description: "Free text, matched against the subject and the `to` addresses." }),
+    category: Category.optional().meta({ description: "Only emails of this category." }),
+    batch_id: z.string().max(64).optional().meta({ description: "Only the emails of this batch." }),
+    created_after: z.iso
+      .datetime({ offset: true })
+      .optional()
+      .meta({ description: "Only emails created at or after this time." }),
+    created_before: z.iso
+      .datetime({ offset: true })
+      .optional()
+      .meta({ description: "Only emails created before this time." }),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_EMAIL_LIST_LIMIT)
+      .optional()
+      .meta({ description: `1-${MAX_EMAIL_LIST_LIMIT}, default ${DEFAULT_EMAIL_LIST_LIMIT}.` }),
+    after: z
+      .string()
+      .max(64)
+      .optional()
+      .meta({ description: "Cursor: the `id` of the last email of the previous page." }),
+  })
+  .meta({ description: "Emails are returned newest first." });
+
+export type ListEmailsQueryOutput = z.output<typeof ListEmailsQuery>;
 
 const BATCH_EXAMPLE_ID = "batch_01k8d0n6x5f3w2e1r9t7y4u6i8";
 
@@ -1070,6 +1382,7 @@ export const EmailBatchObject = z
             tags: [],
             category: "digest",
             status: "queued",
+            failure: null,
             recipients: [
               { address: "ada@example.com", type: "to", status: "queued", last_event_at: null },
             ],
@@ -1080,6 +1393,7 @@ export const EmailBatchObject = z
             sent_at: null,
             scheduled_at: null,
             batch_id: BATCH_EXAMPLE_ID,
+            template: null,
           },
         ],
         created_at: "2026-10-10T12:00:00.000Z",
@@ -1102,6 +1416,41 @@ export const MAIL_FROM_STATUSES = ["pending", "success", "temporary_failure", "f
 export const DOMAIN_RECORD_PURPOSES = ["dkim", "mail_from_mx", "mail_from_spf", "dmarc"] as const;
 
 export const DOMAIN_RECORD_STATUSES = ["verified", "missing", "mismatch", "not_checked"] as const;
+
+export const BIMI_STATUSES = ["not_checked", "missing", "invalid", "configured"] as const;
+
+export const BIMI_ISSUE_CODES = [
+  "dmarc_missing",
+  "dmarc_not_enforced",
+  "dmarc_partial",
+  "record_multiple",
+  "record_invalid",
+  "logo_missing",
+  "logo_not_https",
+  "certificate_missing",
+  "certificate_not_https",
+] as const;
+
+export type BimiIssueCode = (typeof BIMI_ISSUE_CODES)[number];
+
+/** What each BIMI issue means, rendered on read (the domain row stores only the codes). */
+export const BIMI_ISSUE_MESSAGES: Record<BimiIssueCode, string> = {
+  dmarc_missing:
+    "The domain (or its organizational domain) has no valid DMARC record, or more than one. BIMI needs DMARC at p=quarantine or p=reject.",
+  dmarc_not_enforced:
+    "The DMARC policy of the domain or of its organizational domain is p=none (or sp=none for a subdomain). BIMI needs p=quarantine or p=reject.",
+  dmarc_partial:
+    "The DMARC policy of the domain (or of its organizational domain) applies to only part of the mail (pct below 100, or t=y). BIMI needs it to apply to all of it.",
+  record_multiple:
+    "There is more than one v=BIMI1 record, which mailbox providers treat as no record. Keep one.",
+  record_invalid:
+    "The BIMI record is not valid: it must start with v=BIMI1 and list each tag=value only once.",
+  logo_missing: "The BIMI record has no logo (l=). Point it at your SVG logo.",
+  logo_not_https: "The logo URL (l=) must be an https:// URL.",
+  certificate_missing:
+    "The BIMI record has no certificate (a=). Gmail and Apple Mail show logos only with a VMC or CMC.",
+  certificate_not_https: "The certificate URL (a=) must be an https:// URL.",
+};
 
 export const TRACKING_DOMAIN_STATUSES = [
   "pending",
@@ -1135,6 +1484,15 @@ const DKIM_RECORD_EXAMPLE = {
   type: "CNAME",
   name: "x7f3k2m9qp4ld8sv6hwz1nyc5rbtgj0e._domainkey.acme.com",
   value: "x7f3k2m9qp4ld8sv6hwz1nyc5rbtgj0e.dkim.amazonses.com",
+} as const;
+const BIMI_EXAMPLE = {
+  status: "configured",
+  name: "default._bimi.acme.com",
+  record: "v=BIMI1; l=https://acme.com/brand/logo.svg; a=https://acme.com/brand/vmc.pem",
+  logo_url: "https://acme.com/brand/logo.svg",
+  certificate_url: "https://acme.com/brand/vmc.pem",
+  dmarc_policy: "reject",
+  issues: [],
 } as const;
 const DOMAIN_EXAMPLE = {
   object: "domain",
@@ -1177,6 +1535,7 @@ const DOMAIN_EXAMPLE = {
   failed_at: null,
   tracking: TRACKING_DOMAIN_EXAMPLE,
   receiving: null,
+  bimi: BIMI_EXAMPLE,
 } as const;
 
 export const DomainRecordObject = z
@@ -1200,6 +1559,48 @@ export const DomainRecordObject = z
   .meta({ id: "DomainRecord", examples: [DKIM_RECORD_EXAMPLE] });
 
 export type DomainRecordObjectOutput = z.output<typeof DomainRecordObject>;
+
+export const DomainBimiObject = z
+  .object({
+    status: z.enum(BIMI_STATUSES).meta({
+      description:
+        "`configured` when the BIMI record is valid and DMARC is enforced, `invalid` when a " +
+        "record exists but something is wrong (see `issues`), `missing` when there is no record, " +
+        "and `not_checked` until DNS has been consulted. COSS checks DNS only: mailbox providers " +
+        "still validate the logo and the certificate.",
+    }),
+    name: z.string().meta({
+      description:
+        "Where the BIMI record was found, or looked up when there is none: " +
+        "`default._bimi.<domain>`, or the organizational domain's when only it has one.",
+    }),
+    record: z.string().nullable().meta({ description: "The `v=BIMI1` record found." }),
+    logo_url: z.string().nullable().meta({ description: "The record's logo URL (`l=`)." }),
+    certificate_url: z
+      .string()
+      .nullable()
+      .meta({ description: "The record's VMC or CMC certificate URL (`a=`)." }),
+    dmarc_policy: z
+      .enum(["none", "quarantine", "reject"])
+      .nullable()
+      .meta({
+        description:
+          "The DMARC policy that applies to the domain (the organizational domain's `sp` when it has no record of its own), " +
+          "`null` without a DMARC record.",
+      }),
+    issues: z
+      .array(z.object({ code: z.enum(BIMI_ISSUE_CODES), message: z.string() }))
+      .meta({ description: "What keeps the domain's logo from showing, as far as DNS tells." }),
+  })
+  .meta({
+    id: "DomainBimi",
+    description:
+      "The result of the last BIMI check: whether mailbox providers can find the domain's brand " +
+      "logo and certificate. The record and the certificate are your own.",
+    examples: [BIMI_EXAMPLE],
+  });
+
+export type DomainBimiObjectOutput = z.output<typeof DomainBimiObject>;
 
 export const TrackingDomainObject = z
   .object({
@@ -1336,6 +1737,7 @@ export const DomainObject = z
     tracking: z.union([TrackingDomainObject, z.null()]),
     // The receiving hostname (`null` when the domain doesn't receive email). A union, like `tracking`.
     receiving: z.union([ReceivingDomainObject, z.null()]),
+    bimi: DomainBimiObject,
   })
   .meta({ id: "Domain", examples: [DOMAIN_EXAMPLE] });
 
@@ -1550,6 +1952,7 @@ export const TrackingRuleInput = z.strictObject({
   category: Category.nullable(),
   opens: z.boolean(),
   clicks: z.boolean(),
+  unsubscribe: z.boolean(),
 });
 
 export type TrackingRuleInputOutput = z.output<typeof TrackingRuleInput>;
@@ -1561,6 +1964,7 @@ const TRACKING_DEFAULT_EXAMPLE = {
   category: null,
   opens: true,
   clicks: true,
+  unsubscribe: false,
   created_at: "2026-01-15T09:30:00.000Z",
   updated_at: "2026-01-15T09:30:00.000Z",
 } as const;
@@ -1570,6 +1974,7 @@ const TRACKING_RULE_EXAMPLE = {
   category: "password-reset",
   opens: false,
   clicks: false,
+  unsubscribe: false,
   created_at: "2026-01-16T10:00:00.000Z",
   updated_at: "2026-01-16T10:00:00.000Z",
 } as const;
@@ -1583,6 +1988,11 @@ export const TrackingRule = z
     }),
     opens: z.boolean().meta({ description: "Whether opens are tracked." }),
     clicks: z.boolean().meta({ description: "Whether clicks are tracked." }),
+    unsubscribe: z.boolean().meta({
+      description:
+        "Whether emails get one-click unsubscribe headers (only emails with a category and a " +
+        "single recipient).",
+    }),
     created_at: z.iso.datetime(),
     updated_at: z.iso.datetime(),
   })
@@ -1607,9 +2017,10 @@ export const TrackingSettings = z
   .meta({
     id: "TrackingSettings",
     description:
-      "Open and click tracking settings of the API key's environment. For each of `opens` and " +
-      "`clicks`, a send's own `tracking` wins, then its category's rule, then `default` (the " +
-      "environment default; `null` when none is set), then off.",
+      "Open and click tracking and one-click unsubscribe settings of the API key's environment. " +
+      "For each of `opens`, `clicks` and `unsubscribe`, a send's own `tracking` wins, then its " +
+      "category's rule, then `default` (the environment default; `null` when none is set), " +
+      "then off.",
     examples: [
       {
         object: "tracking_settings",
@@ -1625,14 +2036,20 @@ export const UpdateTrackingRuleRequest = z
   .strictObject({
     opens: z.boolean().optional().meta({ description: "Track opens." }),
     clicks: z.boolean().optional().meta({ description: "Track clicks." }),
+    unsubscribe: z.boolean().optional().meta({
+      description:
+        "Add one-click unsubscribe headers to emails with a category and a single recipient.",
+    }),
   })
-  .refine((value) => value.opens !== undefined || value.clicks !== undefined, {
-    error: "Provide opens, clicks or both.",
-  })
+  .refine(
+    (value) =>
+      value.opens !== undefined || value.clicks !== undefined || value.unsubscribe !== undefined,
+    { error: "Provide opens, clicks or unsubscribe." },
+  )
   .meta({
     id: "UpdateTrackingRuleRequest",
     description:
-      "Fields left out keep their current value; a new rule starts with both off. A send's own " +
+      "Fields left out keep their current value; a new rule starts with all off. A send's own " +
       "`tracking` option still wins over the rule.",
     examples: [{ opens: false, clicks: false }],
   });

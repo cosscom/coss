@@ -32,8 +32,9 @@ for (const record of domain?.records ?? []) {
 
 Copy the exact values from the dashboard or the `records` array: the DKIM tokens, the region and
 the DMARC report address are specific to your domain. The DMARC record starts in monitoring mode
-and sends aggregate reports to COSS; [DMARC](/docs/email/dmarc) explains the reports and the path
-to `p=reject`.
+(`p=none`) and sends aggregate reports to COSS; [DMARC](/docs/email/dmarc) explains the reports and
+the path to `p=reject`. Showing your logo with [BIMI](/docs/email/bimi) needs `p=quarantine` or
+`p=reject`.
 
 ## Verification
 
@@ -51,3 +52,9 @@ verifying `mail.example.com` lets you send from `@mail.example.com` even if some
 
 A verified domain can serve open and click tracking links from its own subdomain, such as
 `links.acme.com`. See [custom tracking domains](/docs/email/tracking#custom-tracking-domains).
+
+## Brand logo (BIMI)
+
+With your own VMC or CMC certificate, mailbox providers such as Gmail and Apple Mail can show your
+logo next to your emails. COSS checks the BIMI record and DMARC policy with the domain's other
+records and reports the result in the domain's `bimi` field. See [brand logos (BIMI)](/docs/email/bimi).

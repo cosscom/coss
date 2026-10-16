@@ -2,6 +2,7 @@
  * Email wire types. Hand-written to mirror the API's snake_case JSON 1:1 (the API's contract test
  * asserts they stay assignable to and from its zod schemas).
  */
+import type { EmailTemplateReference } from "./email-template.ts";
 import type { SuppressionReason } from "./suppression.ts";
 
 /** A `name`/`value` pair attached to an email for your own filtering and analytics. */
@@ -90,7 +91,12 @@ export type EmailEventType =
   /** A tracked link was followed (click tracking). Never changes a recipient's status. */
   | "email.clicked"
   /** The scheduled email was moved to a new time. */
-  | "email.rescheduled";
+  | "email.rescheduled"
+  /**
+   * The recipient used one-click unsubscribe (`tracking.unsubscribe`) and is now suppressed for
+   * the email's category. Never changes a recipient's status.
+   */
+  | "email.unsubscribed";
 
 /** Details of an event; which member is present depends on the event type. */
 export interface EmailEventData {
@@ -148,20 +154,33 @@ export interface TrackingOptions {
    * `data-coss-no-track` attribute are left alone.
    */
   clicks?: boolean;
+  /**
+   * Add one-click unsubscribe headers (`List-Unsubscribe` and `List-Unsubscribe-Post`, RFC 8058).
+   * An unsubscribe suppresses the recipient for this email's category and records
+   * `email.unsubscribed`. Needs a `category`, a single recipient, no `List-Unsubscribe` header of
+   * your own and at most 13 custom headers.
+   */
+  unsubscribe?: boolean;
 }
 
-/** Body of `POST /v1/emails`. */
-export interface SendEmailParams {
+/**
+ * A React element, such as `<WelcomeEmail name="Ada" />`. Described by its shape so the SDK needs
+ * no React types: any JSX element fits.
+ */
+export interface ReactEmailElement {
+  type: unknown;
+  props: unknown;
+  key: unknown;
+}
+
+/** What every send has, with or without a template. */
+export interface SendEmailBaseParams {
   /** `"you@example.com"` or `"Your Name <you@example.com>"`. */
   from: string;
   to: string | string[];
   cc?: string | string[];
   bcc?: string | string[];
   reply_to?: string | string[];
-  subject: string;
-  /** At least one of `html` or `text` is required. */
-  html?: string;
-  text?: string;
   /** Custom headers. Names are case-insensitive; reserved names such as `subject` are rejected. */
   headers?: Record<string, string>;
   tags?: EmailTag[];
@@ -181,6 +200,47 @@ export interface SendEmailParams {
   tracking?: TrackingOptions;
 }
 
+/** A send with its own subject and body. */
+export interface SendEmailContentParams extends SendEmailBaseParams {
+  subject: string;
+  /** At least one of `html`, `text` or `react` is required. */
+  html?: string;
+  /** Without it, an `html` email goes out with a text part generated from the HTML. */
+  text?: string;
+  /**
+   * A [React Email](https://react.email) component, rendered by the SDK into `html` and, unless you
+   * pass `text`, into `text` too. Needs the optional peer dependency `@react-email/render`
+   * (`npm install @react-email/render`). Can't be combined with `html`; never sent to the API as is.
+   */
+  react?: ReactEmailElement;
+  template_id?: never;
+  template_version?: never;
+  locale?: never;
+  variables?: never;
+}
+
+/** A send of a published email template (`coss.email.templates`). */
+export interface SendEmailTemplateParams extends SendEmailBaseParams {
+  /** The template's id or alias. */
+  template_id: string;
+  /** A published version to send; defaults to the latest one. */
+  template_version?: number;
+  /**
+   * The locale to send, e.g. `"pt-BR"`. Falls back to the language (`"pt"`), then to the
+   * template's default locale.
+   */
+  locale?: string;
+  /** Values for the template's variables, keyed by name. */
+  variables?: Record<string, unknown>;
+  subject?: never;
+  html?: never;
+  text?: never;
+  react?: never;
+}
+
+/** A send: a subject and body (or `react`, which the SDK renders before sending), or a template. */
+export type SendEmailParams = SendEmailContentParams | SendEmailTemplateParams;
+
 /** Parameters of `coss.email.reschedule`. */
 export interface RescheduleEmailParams {
   /**
@@ -197,6 +257,8 @@ export interface RescheduleEmailParams {
 export interface EmailTracking {
   opens: boolean;
   clicks: boolean;
+  /** Whether the email carries one-click unsubscribe headers (RFC 8058). */
+  unsubscribe: boolean;
   open_count: number;
   /** ISO 8601 timestamps, or `null`. */
   first_opened_at: string | null;
@@ -219,6 +281,16 @@ export interface EmailLink {
   last_clicked_at: string | null;
 }
 
+/** Why an email failed as a whole. */
+export interface EmailFailure {
+  /**
+   * E.g. `all_recipients_suppressed`, `domain_not_verified`, `content_rejected`,
+   * `attachments_unavailable`, `dispatch_failed` or `provider_error`.
+   */
+  code: string;
+  message: string;
+}
+
 /** An email as returned by the API. Recipient fields are always arrays. */
 export interface Email {
   object: "email";
@@ -236,6 +308,8 @@ export interface Email {
   tags: EmailTag[];
   category: string | null;
   status: EmailStatus;
+  /** Why the email failed; `null` unless `status` is `"failed"`. */
+  failure: EmailFailure | null;
   /** Every distinct recipient across `to`, `cc` and `bcc`, with its delivery status. */
   recipients: EmailRecipient[];
   /** Attachment metadata; the content is discarded once the email is sent. */
@@ -251,6 +325,35 @@ export interface Email {
   scheduled_at: string | null;
   /** The batch that sent the email (`coss.email.sendBatch`), or `null` if it was sent alone. */
   batch_id: string | null;
+  /** The template the email was rendered from, or `null` if it was sent without one. */
+  template: EmailTemplateReference | null;
+}
+
+/** An email in a list (`coss.email.list`): everything but its content. */
+export type EmailSummary = Omit<Email, "html" | "text" | "headers" | "attachments">;
+
+/** Filters of `coss.email.list`. Emails are returned newest first. */
+export interface ListEmailsParams {
+  /** Only emails with this recipient (in `to`, `cc` or `bcc`; the bare address, any case). */
+  to?: string;
+  /** Only emails with a recipient in one of these statuses (with `to`, that recipient's). */
+  recipient_status?: EmailRecipientStatus[];
+  /** Only emails in these statuses. */
+  status?: EmailStatus[];
+  /** Free text, matched against the subject and the `to` addresses. */
+  q?: string;
+  /** Only emails of this category. */
+  category?: string;
+  /** Only the emails of this batch. */
+  batch_id?: string;
+  /** Only emails created at or after this time. */
+  created_after?: Date | string;
+  /** Only emails created before this time. */
+  created_before?: Date | string;
+  /** 1-100, default 20. */
+  limit?: number;
+  /** Cursor: the `id` of the last email of the previous page. */
+  after?: string;
 }
 
 /** Emails sent together by `coss.email.sendBatch`. */

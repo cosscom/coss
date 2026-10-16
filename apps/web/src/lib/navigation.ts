@@ -11,6 +11,7 @@ import {
   InboxIcon,
   KeyRoundIcon,
   LayoutDashboardIcon,
+  LayoutTemplateIcon,
   ListChecksIcon,
   ListFilterIcon,
   type LucideIcon,
@@ -18,14 +19,18 @@ import {
   MonitorSmartphoneIcon,
   MousePointerClickIcon,
   PanelsTopLeftIcon,
+  RocketIcon,
   ScaleIcon,
+  ScanSearchIcon,
   ScrollTextIcon,
+  SendIcon,
   SettingsIcon,
   ShieldAlertIcon,
   ShieldIcon,
   SlidersHorizontalIcon,
   TagsIcon,
   UserIcon,
+  UserPlusIcon,
   UsersIcon,
   WebhookIcon,
 } from "lucide-react";
@@ -52,6 +57,7 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
     label: "Email",
     items: [
       { label: "Emails", path: "/emails", icon: MailIcon },
+      { label: "Templates", path: "/templates", icon: LayoutTemplateIcon },
       { label: "Received", path: "/received", icon: InboxIcon },
       { label: "Suppressions", path: "/suppressions", icon: BanIcon },
       { label: "Tracking", path: "/tracking", icon: MousePointerClickIcon },
@@ -123,9 +129,14 @@ export const ADMIN_NAV: NavItem[] = [
   { label: "Overview", path: "", icon: LayoutDashboardIcon, exact: true },
   { label: "Users", path: "/users", icon: UserIcon },
   { label: "Organizations", path: "/organizations", icon: BuildingIcon },
+  { label: "Sign-ups", path: "/signups", icon: UserPlusIcon },
+  { label: "Sending", path: "/sending", icon: SendIcon },
+  { label: "Emails", path: "/emails", icon: MailIcon },
+  { label: "Screening", path: "/screening", icon: ScanSearchIcon },
   { label: "Audit log", path: "/audit", icon: HistoryIcon },
   { label: "Reputation", path: "/reputation", icon: GaugeIcon },
   { label: "Billing", path: "/billing", icon: CreditCardIcon },
+  { label: "Deploys", path: "/deploys", icon: RocketIcon },
 ];
 
 /**
@@ -166,6 +177,8 @@ export function segmentLabel(segment: string): string | undefined {
 
 const SEGMENT_LABELS: Record<string, string> = {
   emails: "Emails",
+  templates: "Templates",
+  versions: "Versions",
   hooks: "Hooks",
   "event-types": "Event types",
   endpoints: "Endpoints",
@@ -197,4 +210,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   sessions: "Sessions",
   users: "Users",
   organizations: "Organizations",
+  signups: "Sign-ups",
+  sending: "Sending",
+  screening: "Screening",
+  deploys: "Deploys",
 };

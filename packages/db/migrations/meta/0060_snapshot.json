@@ -1,6 +1,6 @@
 {
-  "id": "a6b2b6eb-38e9-4fe1-83a6-e63aec7e65df",
-  "prevId": "0b70c2a6-c7e5-4142-b86f-e72884fa2ffb",
+  "id": "d094464e-4559-47e5-8b7b-9d30f867c18d",
+  "prevId": "2596d90a-98c7-48e1-a544-c551677027a4",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -5308,6 +5308,27 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "content_screening_subject_idx": {
+          "name": "content_screening_subject_idx",
+          "columns": [
+            {
+              "expression": "product",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "subject_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -5396,580 +5417,6 @@
           ]
         }
       },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.dmarc_notification": {
-      "name": "dmarc_notification",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "domain_id": {
-          "name": "domain_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "kind": {
-          "name": "kind",
-          "type": "dmarc_notification_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dedupe_key": {
-          "name": "dedupe_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "policy_changed_at": {
-          "name": "policy_changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "detail": {
-          "name": "detail",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::jsonb"
-        },
-        "status": {
-          "name": "status",
-          "type": "dmarc_notification_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'pending'"
-        },
-        "attempt_count": {
-          "name": "attempt_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "next_attempt_at": {
-          "name": "next_attempt_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "recipients": {
-          "name": "recipients",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::text[]"
-        },
-        "last_error": {
-          "name": "last_error",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "sent_at": {
-          "name": "sent_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "dmarc_notification_due_idx": {
-          "name": "dmarc_notification_due_idx",
-          "columns": [
-            {
-              "expression": "next_attempt_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"dmarc_notification\".\"status\" = 'pending'",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "dmarc_notification_created_at_idx": {
-          "name": "dmarc_notification_created_at_idx",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "dmarc_notification_domain_fk": {
-          "name": "dmarc_notification_domain_fk",
-          "tableFrom": "dmarc_notification",
-          "tableTo": "domain",
-          "columnsFrom": [
-            "domain_id",
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id",
-            "organization_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "dmarc_notification_dedupe_unique": {
-          "name": "dmarc_notification_dedupe_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "dedupe_key"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.dmarc_report": {
-      "name": "dmarc_report",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "domain_id": {
-          "name": "domain_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reporter_org": {
-          "name": "reporter_org",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reporter_email": {
-          "name": "reporter_email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "report_id": {
-          "name": "report_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "period_begin": {
-          "name": "period_begin",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "period_end": {
-          "name": "period_end",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "policy_published": {
-          "name": "policy_published",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "message_count": {
-          "name": "message_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pass_count": {
-          "name": "pass_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "truncated": {
-          "name": "truncated",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "provider": {
-          "name": "provider",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "provider_message_id": {
-          "name": "provider_message_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "dmarc_report_domain_period_idx": {
-          "name": "dmarc_report_domain_period_idx",
-          "columns": [
-            {
-              "expression": "domain_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "period_end",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "dmarc_report_domain_id_idx": {
-          "name": "dmarc_report_domain_id_idx",
-          "columns": [
-            {
-              "expression": "domain_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "id",
-              "isExpression": false,
-              "asc": false,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "dmarc_report_created_at_idx": {
-          "name": "dmarc_report_created_at_idx",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "dmarc_report_organization_idx": {
-          "name": "dmarc_report_organization_idx",
-          "columns": [
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "dmarc_report_domain_fk": {
-          "name": "dmarc_report_domain_fk",
-          "tableFrom": "dmarc_report",
-          "tableTo": "domain",
-          "columnsFrom": [
-            "domain_id",
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id",
-            "organization_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "dmarc_report_reporter_unique": {
-          "name": "dmarc_report_reporter_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "domain_id",
-            "reporter_org",
-            "report_id"
-          ]
-        },
-        "dmarc_report_id_organization_unique": {
-          "name": "dmarc_report_id_organization_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "organization_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.dmarc_report_record": {
-      "name": "dmarc_report_record",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "domain_id": {
-          "name": "domain_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dmarc_report_id": {
-          "name": "dmarc_report_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "period_begin": {
-          "name": "period_begin",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "period_end": {
-          "name": "period_end",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "source_ip": {
-          "name": "source_ip",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "count": {
-          "name": "count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "disposition": {
-          "name": "disposition",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dkim": {
-          "name": "dkim",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "spf": {
-          "name": "spf",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dmarc_pass": {
-          "name": "dmarc_pass",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "header_from": {
-          "name": "header_from",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "envelope_from": {
-          "name": "envelope_from",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "auth_results": {
-          "name": "auth_results",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reasons": {
-          "name": "reasons",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "via_coss": {
-          "name": "via_coss",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "position": {
-          "name": "position",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "dmarc_report_record_report_idx": {
-          "name": "dmarc_report_record_report_idx",
-          "columns": [
-            {
-              "expression": "dmarc_report_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "position",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "dmarc_report_record_domain_period_idx": {
-          "name": "dmarc_report_record_domain_period_idx",
-          "columns": [
-            {
-              "expression": "domain_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "period_end",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "dmarc_report_record_organization_idx": {
-          "name": "dmarc_report_record_organization_idx",
-          "columns": [
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "dmarc_report_record_report_fk": {
-          "name": "dmarc_report_record_report_fk",
-          "tableFrom": "dmarc_report_record",
-          "tableTo": "dmarc_report",
-          "columnsFrom": [
-            "dmarc_report_id",
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id",
-            "organization_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -6089,24 +5536,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "dmarc_report_token": {
-          "name": "dmarc_report_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dmarc_record": {
-          "name": "dmarc_record",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "dmarc_policy_changed_at": {
-          "name": "dmarc_policy_changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_by_user_id": {
           "name": "created_by_user_id",
           "type": "text",
@@ -6207,13 +5636,6 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "domain_dmarc_report_token_unique": {
-          "name": "domain_dmarc_report_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "dmarc_report_token"
-          ]
-        },
         "domain_id_organization_unique": {
           "name": "domain_id_organization_unique",
           "nullsNotDistinct": false,
@@ -7201,7 +6623,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "email_recipient_organization_address_idx": {
+          "name": "email_recipient_organization_address_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "email_recipient_email_fk": {
           "name": "email_recipient_email_fk",
@@ -14366,6 +13810,368 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+    },
+    "public.push_device": {
+      "name": "push_device",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "apns_environment": {
+          "name": "apns_environment",
+          "type": "apns_environment",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "categories": {
+          "name": "categories",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "push_device_session_idx": {
+          "name": "push_device_session_idx",
+          "columns": [
+            {
+              "expression": "session_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "push_device_token_idx": {
+          "name": "push_device_token_idx",
+          "columns": [
+            {
+              "expression": "token",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "push_device_user_idx": {
+          "name": "push_device_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "push_device_user_id_user_id_fk": {
+          "name": "push_device_user_id_user_id_fk",
+          "tableFrom": "push_device",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "push_device_session_id_session_id_fk": {
+          "name": "push_device_session_id_session_id_fk",
+          "tableFrom": "push_device",
+          "tableTo": "session",
+          "columnsFrom": [
+            "session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.push_notification": {
+      "name": "push_notification",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "environment_id": {
+          "name": "environment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "push_notification_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subject_id": {
+          "name": "subject_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "collapse_key": {
+          "name": "collapse_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "count": {
+          "name": "count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "status": {
+          "name": "status",
+          "type": "push_notification_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "next_attempt_at": {
+          "name": "next_attempt_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "delivered_device_ids": {
+          "name": "delivered_device_ids",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "push_notification_pending_collapse_idx": {
+          "name": "push_notification_pending_collapse_idx",
+          "columns": [
+            {
+              "expression": "collapse_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"push_notification\".\"status\" = 'pending'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "push_notification_collapse_sent_idx": {
+          "name": "push_notification_collapse_sent_idx",
+          "columns": [
+            {
+              "expression": "collapse_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "sent_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"push_notification\".\"collapse_key\" IS NOT NULL AND \"push_notification\".\"sent_at\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "push_notification_next_attempt_idx": {
+          "name": "push_notification_next_attempt_idx",
+          "columns": [
+            {
+              "expression": "next_attempt_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"push_notification\".\"next_attempt_at\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "push_notification_created_at_idx": {
+          "name": "push_notification_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "push_notification_organization_idx": {
+          "name": "push_notification_organization_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "push_notification_organization_id_organization_id_fk": {
+          "name": "push_notification_organization_id_organization_id_fk",
+          "tableFrom": "push_notification",
+          "tableTo": "organization",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "push_notification_environment_fk": {
+          "name": "push_notification_environment_fk",
+          "tableFrom": "push_notification",
+          "tableTo": "environment",
+          "columnsFrom": [
+            "environment_id",
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id",
+            "organization_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -14571,25 +14377,6 @@
         "flagged",
         "blocked",
         "error"
-      ]
-    },
-    "public.dmarc_notification_kind": {
-      "name": "dmarc_notification_kind",
-      "schema": "public",
-      "values": [
-        "ready_quarantine",
-        "ready_reject",
-        "pass_rate_dropped"
-      ]
-    },
-    "public.dmarc_notification_status": {
-      "name": "dmarc_notification_status",
-      "schema": "public",
-      "values": [
-        "pending",
-        "sent",
-        "skipped",
-        "failed"
       ]
     },
     "public.domain_status": {
@@ -14946,6 +14733,38 @@
       "values": [
         "pending",
         "succeeded",
+        "failed"
+      ]
+    },
+    "public.apns_environment": {
+      "name": "apns_environment",
+      "schema": "public",
+      "values": [
+        "production",
+        "sandbox"
+      ]
+    },
+    "public.push_notification_kind": {
+      "name": "push_notification_kind",
+      "schema": "public",
+      "values": [
+        "reputation_warning",
+        "reputation_suspended",
+        "billing_payment_failed",
+        "billing_hold_placed",
+        "webhook_endpoint_disabled",
+        "hook_endpoint_disabled",
+        "log_drain_disabled",
+        "risk_review"
+      ]
+    },
+    "public.push_notification_status": {
+      "name": "push_notification_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "sent",
+        "skipped",
         "failed"
       ]
     }

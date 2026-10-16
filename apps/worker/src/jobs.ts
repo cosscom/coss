@@ -39,6 +39,7 @@ import {
   runDueHookRecoveries,
 } from "@coss/hooks";
 import { dropExpiredLogPartitions, ensureLogPartitions } from "@coss/logs";
+import { type PushDeps, runDuePushNotifications } from "@coss/push";
 import {
   type ReputationNotificationDeps,
   runDueReputationEvaluations,
@@ -99,6 +100,8 @@ export type WorkerDeps = {
    * (ready for a stricter policy, failing mail); `null`: held until configured.
    */
   notifications: ReputationNotificationDeps | null;
+  /** Push notifications to the iOS app; `null`: held until APNs is configured. */
+  push?: PushDeps | null;
   /** COSS's own organization (`NOTIFICATIONS_ENVIRONMENT_ID`'s): the guard never suspends it. */
   systemOrganizationId: string | null;
   /** Only with `EMAIL_PROVIDER=ses`. */
@@ -127,7 +130,7 @@ export type WorkerDeps = {
 /**
  * Every loop (and pg-boss's email dispatch), by name, for `WORKER_LOOPS`. The conditional ones
  * (`billing-notifications`, `auth-emails`, `reputation-notifications`, `dmarc-notifications`,
- * `ses-events`, `ses-inbound`) also need their configuration.
+ * `push-notifications`, `ses-events`, `ses-inbound`) also need their configuration.
  */
 export const WORKER_LOOP_NAMES = [
   "email-dispatch",
@@ -154,6 +157,7 @@ export const WORKER_LOOP_NAMES = [
   "auth-emails",
   "reputation-notifications",
   "dmarc-notifications",
+  "push-notifications",
   "ses-events",
   "ses-inbound",
 ] as const;
@@ -425,6 +429,19 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         intervalMs: 30_000,
         run: async () =>
           (await runDueDmarcNotifications({ limit: NOTIFICATION_BATCH }, notifications)) ===
+          NOTIFICATION_BATCH,
+      }),
+    );
+  }
+  const push = deps.push;
+  if (push) {
+    loops.push(
+      start({
+        name: "push-notifications",
+        // Alerts: worth sending within seconds.
+        intervalMs: 2000,
+        run: async () =>
+          (await runDuePushNotifications({ limit: NOTIFICATION_BATCH }, push)) ===
           NOTIFICATION_BATCH,
       }),
     );

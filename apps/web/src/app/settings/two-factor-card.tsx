@@ -20,10 +20,11 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
-import { Panel, PanelBody } from "@/components/panel";
 import { QrCode } from "@/components/qr-code";
+import { SettingsNote, SettingsRow, SettingsSection } from "@/components/settings";
 import { authClient } from "@/lib/auth-client";
 import { authErrorMessage } from "@/lib/auth-errors";
+import { toast } from "@/lib/toast";
 
 type Props = {
   enabled: boolean;
@@ -37,43 +38,45 @@ type Props = {
 
 export function TwoFactorCard({ enabled, requiredBy, restriction, needsPassword }: Props) {
   return (
-    <Panel
-      action={
-        restriction ? null : enabled ? (
+    <SettingsSection
+      description="A 6-digit code from an app like 1Password, Google Authenticator or Authy, asked whenever you sign in with your password or a connected account."
+      title="Two-factor authentication"
+    >
+      <SettingsRow
+        description={
+          enabled
+            ? "Your sign-ins ask for a code from your app."
+            : needsPassword
+              ? "Set a password first: turning it on asks for it."
+              : "Your password alone signs you in."
+        }
+        label={
           <>
-            <BackupCodesDialog />
-            <DisableDialog requiredBy={requiredBy} />
+            Authenticator app
+            {enabled ? (
+              <Badge variant="success">Enabled</Badge>
+            ) : (
+              <Badge variant="outline">Off</Badge>
+            )}
           </>
+        }
+      >
+        {restriction ? null : enabled ? (
+          <DisableDialog requiredBy={requiredBy} />
         ) : needsPassword ? null : (
           <SetupDialog />
-        )
-      }
-      description="Ask for a 6-digit code from an app like 1Password, Google Authenticator or Authy whenever you sign in with your password or a connected account."
-      title={
-        <span className="flex items-center gap-2">
-          Authenticator app
-          {enabled ? (
-            <Badge variant="success">Enabled</Badge>
-          ) : (
-            <Badge variant="outline">Off</Badge>
-          )}
-        </span>
-      }
-    >
-      {restriction ? (
-        <PanelBody>
-          <Alert variant="warning">
-            <AlertDescription>{restriction}</AlertDescription>
-          </Alert>
-        </PanelBody>
-      ) : !enabled && needsPassword ? (
-        <PanelBody>
-          <p className="text-muted-foreground text-sm">
-            Set a password first: turning on an authenticator app asks for it.
-          </p>
-        </PanelBody>
+        )}
+      </SettingsRow>
+      {enabled ? (
+        <SettingsRow
+          description="Each one signs you in once if you lose your authenticator. Create a new set if yours are gone."
+          label="Backup codes"
+        >
+          {restriction ? null : <BackupCodesDialog />}
+        </SettingsRow>
       ) : null}
-    </Panel>
+      {restriction ? <SettingsNote>{restriction}</SettingsNote> : null}
+    </SettingsSection>
   );
 }
 
@@ -145,6 +148,7 @@ function SetupFlow() {
       setError(authErrorMessage(error, "Could not verify the code."));
       return;
     }
+    toast.success("Two-factor authentication turned on");
     setVerified(true);
   }
 
@@ -251,7 +255,7 @@ function BackupCodeList({ codes }: { codes: string[] }) {
 function BackupCodesDialog() {
   return (
     <Dialog>
-      <DialogTrigger render={<Button size="sm" variant="outline" />}>Backup codes</DialogTrigger>
+      <DialogTrigger render={<Button size="sm" variant="outline" />}>New codes</DialogTrigger>
       <DialogPopup>
         <BackupCodesFlow />
       </DialogPopup>
@@ -276,6 +280,7 @@ function BackupCodesFlow() {
       setError(authErrorMessage(error, "Could not create new backup codes."));
       return;
     }
+    toast.success("Backup codes replaced");
     setCodes(data.backupCodes);
   }
 
@@ -337,6 +342,7 @@ function DisableDialog({ requiredBy }: { requiredBy: string[] }) {
       setPending(false);
       return;
     }
+    toast.success("Two-factor authentication turned off");
     // The re-rendered page no longer shows this dialog.
     router.refresh();
   }

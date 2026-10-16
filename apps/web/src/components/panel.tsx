@@ -93,31 +93,3 @@ export function PanelFooter(props: SlotProps) {
 export function PanelBody(props: { flush?: boolean; className?: string; children?: ReactNode }) {
   return <Card className={cn(!props.flush && "p-5", props.className)}>{props.children}</Card>;
 }
-
-/**
- * A settings row inside a `PanelBody`: the label and its explanation on the left, the control on
- * the right (stacked on small screens). Rows are ruled by hairlines.
- */
-export function PanelRow(props: {
-  label: ReactNode;
-  description?: ReactNode;
-  children?: ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "grid gap-3 border-t px-5 py-4 first:border-t-0 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-8",
-        props.className,
-      )}
-    >
-      <div className="flex flex-col gap-1">
-        <div className="font-medium text-sm">{props.label}</div>
-        {props.description ? (
-          <div className="text-muted-foreground text-sm">{props.description}</div>
-        ) : null}
-      </div>
-      <div className="flex min-w-0 flex-col items-start gap-3">{props.children}</div>
-    </div>
-  );
-}

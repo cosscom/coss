@@ -5,11 +5,14 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./admin": "./src/admin.ts",
     "./dispatch": "./src/dispatch.ts",
     "./schemas": "./src/schemas.ts",
+    "./templates": "./src/template-language.ts",
     "./env": "./src/env.ts",
     "./runtime": "./src/runtime.ts",
     "./ses": "./src/ses/index.ts",
+    "./smtp": "./src/smtp-message.ts",
     "./testing": "./src/testing.ts"
   },
   "scripts": {
@@ -32,12 +35,15 @@
     "parse5": "8.0.1",
     "pg-boss": "catalog:",
     "postal-mime": "4.0.6",
+    "tldts": "7.4.16",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@coss/tenancy": "workspace:*",
     "@coss/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
+    "@types/nodemailer": "catalog:",
+    "nodemailer": "catalog:",
     "typescript": "catalog:"
   }
 }

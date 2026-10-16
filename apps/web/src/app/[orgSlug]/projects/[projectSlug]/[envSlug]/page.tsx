@@ -95,6 +95,9 @@ export default async function EnvironmentOverviewPage({
   const apiUrl = env.API_PUBLIC_URL;
   const from = `onboarding@${sendingDomain ?? "your-verified-domain.com"}`;
   const samples = quickStart(apiUrl, from);
+  const smtpHost = env.SMTP_PUBLIC_HOST;
+  // Locally the relay listens only on its unprivileged ports (production maps 465/587 onto them).
+  const smtpLocal = smtpHost === "localhost" || smtpHost === "127.0.0.1";
 
   const { totals } = activity;
   const attempted = totals.sent + totals.failed;
@@ -363,6 +366,46 @@ export default async function EnvironmentOverviewPage({
           />
         </PanelBody>
       </Panel>
+
+      {smtpHost ? (
+        <Panel
+          description={
+            <>
+              For apps that send over SMTP (Supabase Auth, WordPress, Rails, Laravel, Django,
+              nodemailer…). The password is an{" "}
+              <Link className="underline underline-offset-4" href={`${base}/api-keys`}>
+                API key
+              </Link>{" "}
+              of this environment; emails sent this way behave like API sends.
+            </>
+          }
+          id="smtp"
+          title="SMTP"
+        >
+          <PanelBody flush>
+            <SpecList>
+              <SpecItem label="Host" mono>
+                <CopyValue value={smtpHost} />
+              </SpecItem>
+              <SpecItem label="Port" mono>
+                {smtpLocal ? "2465 (TLS) · 2587 (STARTTLS)" : "465 (TLS) · 587 (STARTTLS)"}
+              </SpecItem>
+              {smtpLocal ? null : (
+                <SpecItem label="Alternative ports" mono>
+                  2465 (TLS) · 2587 (STARTTLS)
+                </SpecItem>
+              )}
+              <SpecItem label="Username" mono>
+                <CopyValue value="coss" />
+              </SpecItem>
+              <SpecItem label="Password">
+                An API key starting with{" "}
+                <code className="font-mono">{API_KEY_PREFIX[environment.mode]}</code>
+              </SpecItem>
+            </SpecList>
+          </PanelBody>
+        </Panel>
+      ) : null}
     </div>
   );
 }

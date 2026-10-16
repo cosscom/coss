@@ -10,6 +10,11 @@ export interface TrackingRule {
   opens: boolean;
   /** Whether clicks are tracked. */
   clicks: boolean;
+  /**
+   * Whether emails get one-click unsubscribe headers (only emails with a category and a single
+   * recipient).
+   */
+  unsubscribe: boolean;
   /** ISO 8601 timestamp. */
   created_at: string;
   /** ISO 8601 timestamp. */
@@ -17,8 +22,9 @@ export interface TrackingRule {
 }
 
 /**
- * Open and click tracking settings of the API key's environment. For each of `opens` and
- * `clicks`, a send's own `tracking` wins, then its category's rule, then `default`, then off.
+ * Open and click tracking and one-click unsubscribe settings of the API key's environment. For
+ * each of `opens`, `clicks` and `unsubscribe`, a send's own `tracking` wins, then its category's
+ * rule, then `default`, then off.
  */
 export interface TrackingSettings {
   object: "tracking_settings";
@@ -30,11 +36,13 @@ export interface TrackingSettings {
 
 /**
  * Body of `PATCH /v1/tracking_settings/default` and `…/categories/{category}`: at least one
- * field. Fields left out keep their value; a new rule starts with both off.
+ * field. Fields left out keep their value; a new rule starts with all off.
  */
 export interface UpdateTrackingRuleParams {
   opens?: boolean;
   clicks?: boolean;
+  /** Add one-click unsubscribe headers to emails with a category and a single recipient. */
+  unsubscribe?: boolean;
 }
 
 /** Returned when a rule is removed. */

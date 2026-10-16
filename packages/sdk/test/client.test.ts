@@ -169,6 +169,24 @@ describe("coss.email.sendBatch", () => {
   });
 });
 
+describe("coss.email.getBatch", () => {
+  test("GETs the batch by id", async () => {
+    const batch: EmailBatch = {
+      object: "email_batch",
+      id: "batch_1",
+      data: [sampleEmail],
+      created_at: sampleEmail.created_at,
+    };
+    const { fetch, calls } = mockFetch(json(200, batch));
+    const result = await new Coss({ apiKey: API_KEY, fetch }).email.getBatch("batch_a/b");
+
+    expect(result).toEqual({ data: batch, error: null });
+    expect(calls[0]?.method).toBe("GET");
+    expect(calls[0]?.url).toBe("https://api.coss.com/v1/emails/batch/batch_a%2Fb");
+    expect(calls[0]?.body).toBeNull();
+  });
+});
+
 describe("coss.email.get", () => {
   test("GETs the email by id without a body or idempotency key", async () => {
     const { fetch, calls } = mockFetch(json(200, sampleEmail));

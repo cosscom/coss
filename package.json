@@ -17,6 +17,7 @@
     ],
     "catalog": {
       "@arethetypeswrong/core": "0.18.5",
+      "@aws-sdk/client-acm": "3.1141.0",
       "@aws-sdk/client-cloudwatch": "3.1141.0",
       "@aws-sdk/client-elasticache": "3.1141.0",
       "@aws-sdk/client-eventbridge": "3.1141.0",
@@ -41,6 +42,7 @@
       "@tailwindcss/postcss": "4.3.3",
       "@types/bun": "1.4.2",
       "@types/node": "^24",
+      "@types/nodemailer": "8.0.2",
       "@types/pg": "8.23.1",
       "@types/react": "19.3.0",
       "@types/react-dom": "19.3.0",
@@ -53,6 +55,7 @@
       "iovalkey": "0.4.0",
       "lucide-react": "1.54.0",
       "next": "16.4.0",
+      "nodemailer": "10.0.13",
       "pg": "8.23.1",
       "pg-boss": "12.33.7",
       "postcss": "8.5.29",
@@ -93,7 +96,7 @@
     "signals:update-disposable": "bun run --cwd packages/signals signals:update-disposable",
     "openapi:generate": "bun run --cwd apps/api openapi:generate",
     "changeset": "changeset",
-    "version-packages": "changeset version && bun packages/sdk/scripts/sync-version.ts && bun install --lockfile-only && biome check --write packages/sdk/package.json packages/sdk/src/version.ts"
+    "version-packages": "changeset version && bun packages/sdk/scripts/sync-version.ts && bun install --lockfile-only && biome check --write packages/sdk/package.json packages/sdk/src/version.ts packages/mcp/package.json"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

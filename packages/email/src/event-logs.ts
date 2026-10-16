@@ -16,6 +16,7 @@ const LEVEL: Record<EmailEventType, LogLevel> = {
   "email.canceled": "info",
   "email.opened": "info",
   "email.clicked": "info",
+  "email.unsubscribed": "info",
 };
 
 function describe(type: EmailEventType, recipient: string | null, details: EmailEventDetails) {
@@ -47,6 +48,8 @@ function describe(type: EmailEventType, recipient: string | null, details: Email
       return `Opened${to ? ` by${to}` : ""}`;
     case "email.clicked":
       return `Clicked ${details.click?.url ?? "a link"}${to ? ` (${recipient})` : ""}`;
+    case "email.unsubscribed":
+      return `Unsubscribed${to ? `:${to}` : ""}`;
   }
 }
 

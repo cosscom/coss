@@ -11,8 +11,8 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { removeMemberAction } from "./actions";
 
 export function RemoveMemberButton(props: {
@@ -22,7 +22,9 @@ export function RemoveMemberButton(props: {
   memberName: string;
 }) {
   // On success the page re-renders without this member, which unmounts the dialog.
-  const [state, formAction, pending] = useActionState(removeMemberAction, null);
+  const [state, formAction, pending] = useActionToast(removeMemberAction, {
+    success: `${props.memberName} removed`,
+  });
 
   return (
     <AlertDialog>

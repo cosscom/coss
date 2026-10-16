@@ -12,8 +12,8 @@ import type { Breadcrumb, Event, Log, StreamedSpanJSON } from "@sentry/core";
  * (`:token`) and already masked segments are kept.
  */
 const SECRET_PATH_SEGMENTS: [RegExp, string][] = [
-  // Open pixel and click redirect (apps/api/src/routes/tracking.ts).
-  [/(\/t\/[oc]\/)(?![:[])[^/?#\s:]+/g, "$1[token]"],
+  // Open pixel, click redirect and one-click unsubscribe (apps/api/src/routes/tracking.ts).
+  [/(\/t\/[ocu]\/)(?![:[])[^/?#\s:]+/g, "$1[token]"],
   // Better Auth's emailed reset link, which redirects to the dashboard.
   [/(\/reset-password\/)(?![:[])[^/?#\s:]+/g, "$1[token]"],
 ];

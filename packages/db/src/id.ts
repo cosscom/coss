@@ -41,6 +41,9 @@ export const ID_PREFIXES = {
   emailSuppression: "sup",
   emailTrackingRule: "etr",
   emailLink: "lnk",
+  emailTemplate: "etpl",
+  emailTemplateVersion: "etplv",
+  emailTemplateContent: "etplc",
   domain: "dom",
   trackingDomain: "tdom",
   receivingDomain: "rdom",
@@ -98,6 +101,8 @@ export const ID_PREFIXES = {
   hookPortalSession: "hps",
   hookPortalSettings: "hpset",
   hookEndpointRecovery: "hrec",
+  pushDevice: "pushdev",
+  pushNotification: "pushntf",
 } as const;
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES];

@@ -38,20 +38,25 @@ export function SubNav(
       ? props.items
       : NAVS[props.nav].filter((item) => !props.paths || props.paths.includes(item.path));
   const active = activeNavItem(pathname, props.base, items);
+  // The tabs scroll sideways on narrow screens. The underline sits 1px below the list to cover a
+  // border (`className="border-b"`), so the scroller reaches 1px over that border (`-mb-px pb-px`)
+  // or the underline would overflow it and add a vertical scrollbar.
   return (
-    <Tabs className={cn("-mx-1 overflow-x-auto", props.className)} value={active?.path ?? null}>
-      <TabsList variant="underline">
-        {items.map((item) => (
-          <TabsTab
-            key={item.path}
-            nativeButton={false}
-            render={<Link href={props.base + item.path} />}
-            value={item.path}
-          >
-            {item.label}
-          </TabsTab>
-        ))}
-      </TabsList>
-    </Tabs>
+    <div className={cn("-mx-1", props.className)}>
+      <Tabs className="-mb-px overflow-x-auto pb-px" value={active?.path ?? null}>
+        <TabsList variant="underline">
+          {items.map((item) => (
+            <TabsTab
+              key={item.path}
+              nativeButton={false}
+              render={<Link href={props.base + item.path} />}
+              value={item.path}
+            >
+              {item.label}
+            </TabsTab>
+          ))}
+        </TabsList>
+      </Tabs>
+    </div>
   );
 }

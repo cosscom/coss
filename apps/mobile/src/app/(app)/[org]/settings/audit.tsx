@@ -1,0 +1,100 @@
+import { Stack, useLocalSearchParams } from "expo-router";
+import { History, Lock } from "lucide-react-native";
+import { StyleSheet, View } from "react-native";
+import { Badge } from "../../../../components/badge";
+import { Button } from "../../../../components/button";
+import { EmptyState } from "../../../../components/empty";
+import { PagedPanel } from "../../../../components/paged";
+import { Panel } from "../../../../components/panel";
+import { ErrorState, Loading, PageIntro, Screen } from "../../../../components/screen";
+import { Text } from "../../../../components/text";
+import { WebButton } from "../../../../components/web-button";
+import { formatAgo } from "../../../../lib/format";
+import { useAudit } from "../../../../lib/queries";
+import { openOnWeb } from "../../../../lib/web";
+
+export default function AuditScreen() {
+  const { org } = useLocalSearchParams<{ org: string }>();
+  const query = useAudit(org);
+  if (query.isPending) return <Loading />;
+  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  const allowed = query.data.pages[0]?.plan_allows ?? true;
+  const events = query.data.pages.flatMap((page) => page.data);
+  const path = `/${org}/settings/audit`;
+  return (
+    <Screen
+      onRefresh={() => query.refetch()}
+      refreshing={query.isRefetching && !query.isFetchingNextPage}
+      title="Audit log"
+    >
+      <Stack.Screen options={{ headerRight: () => <WebButton path={path} /> }} />
+      <PageIntro
+        description="Who changed what in this organization: members in the dashboard, API keys, and COSS support. Newest first; entries can't be edited or deleted."
+        title="Audit log"
+      />
+      {allowed ? (
+        <PagedPanel
+          empty={{
+            icon: History,
+            title: "Nothing recorded yet",
+            description:
+              "Changes to API keys, members, domains, webhooks and settings show up here.",
+          }}
+          items={events}
+          olderLabel="Older entries"
+          query={query}
+          render={(event) => (
+            <View key={event.id} style={styles.event}>
+              <View style={styles.head}>
+                <Text style={styles.action} variant="label">
+                  {event.action_label}
+                </Text>
+                <Text muted variant="mono">
+                  {formatAgo(event.created_at)}
+                </Text>
+              </View>
+              <View style={styles.meta}>
+                {event.actor_type === "system" ? <Badge variant="info">COSS</Badge> : null}
+                <Text muted numberOfLines={1} style={styles.flex} variant="small">
+                  {[event.actor_label, event.target_label].filter(Boolean).join(" → ")}
+                </Text>
+              </View>
+              {event.details ? (
+                <Text muted numberOfLines={3} variant="mono">
+                  {event.details}
+                </Text>
+              ) : null}
+              <Text muted variant="mono">
+                {event.environment ?? "Organization"}
+                {event.client_ip ? ` · ${event.client_ip}` : ""}
+              </Text>
+            </View>
+          )}
+        />
+      ) : (
+        <Panel>
+          <EmptyState
+            action={
+              <Button
+                onPress={() => openOnWeb(`/${org}/settings/billing/plans`)}
+                size="sm"
+                title="Compare plans"
+              />
+            }
+            description="See who changed API keys, members, domains, webhooks and settings, from the dashboard or the API. Changes are already being recorded: upgrade to see them."
+            icon={Lock}
+            title="The audit log is part of the Pro plan"
+          />
+        </Panel>
+      )}
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  event: { gap: 4, padding: 16 },
+  head: { flexDirection: "row", alignItems: "baseline", gap: 12 },
+  action: { flex: 1 },
+  meta: { flexDirection: "row", alignItems: "center", gap: 6 },
+  flex: { flex: 1 },
+});

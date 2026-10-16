@@ -60,6 +60,7 @@ export {
   getRiskAssessment,
   getRiskAssessmentRow,
   listRiskAssessments,
+  listRiskAssessmentsForEmail,
   type RiskAssessmentRow,
   type RiskEnvironmentScope,
   toRiskAssessmentObject,

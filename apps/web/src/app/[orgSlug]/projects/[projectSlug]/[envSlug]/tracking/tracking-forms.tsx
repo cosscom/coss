@@ -26,12 +26,13 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
-import { useActionState } from "react";
+import { useEffect, useState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { deleteTrackingRuleAction, saveTrackingRuleAction } from "./actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
-type Setting = { opens: boolean; clicks: boolean };
+type Setting = { opens: boolean; clicks: boolean; unsubscribe: boolean };
 
 function TargetInputs(props: Target) {
   return (
@@ -65,26 +66,44 @@ function TrackingCheckboxes(props: Setting & { disabled?: boolean }) {
           <span className="text-muted-foreground">(sends links through a COSS redirect)</span>
         </span>
       </Label>
+      <Label>
+        <Checkbox
+          defaultChecked={props.unsubscribe}
+          disabled={props.disabled}
+          name="unsubscribe"
+          value="on"
+        />
+        <span>
+          One-click unsubscribe{" "}
+          <span className="text-muted-foreground">
+            (adds List-Unsubscribe headers; unsubscribing suppresses the category)
+          </span>
+        </span>
+      </Label>
     </div>
   );
 }
 
 /** The environment default; read-only (disabled) without `environment:update`. */
 export function DefaultTrackingForm(props: Target & Setting & { canEdit: boolean }) {
-  const [state, formAction, pending] = useActionState(saveTrackingRuleAction, null);
+  const [state, formAction, pending] = useActionToast(saveTrackingRuleAction, {
+    success: "Tracking default saved",
+  });
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <TargetInputs {...props} />
-      <TrackingCheckboxes clicks={props.clicks} disabled={!props.canEdit} opens={props.opens} />
+      <TrackingCheckboxes
+        clicks={props.clicks}
+        disabled={!props.canEdit}
+        opens={props.opens}
+        unsubscribe={props.unsubscribe}
+      />
       {state && !state.ok ? <FormError message={state.error} /> : null}
       {props.canEdit ? (
-        <div className="flex items-center gap-3">
+        <div>
           <Button loading={pending} size="sm" type="submit">
             Save default
           </Button>
-          {state?.ok && !pending ? (
-            <span className="text-muted-foreground text-sm">Saved.</span>
-          ) : null}
         </div>
       ) : null}
     </form>
@@ -95,8 +114,9 @@ export function DefaultTrackingForm(props: Target & Setting & { canEdit: boolean
 export function CategoryRuleDialog(
   props: Target & Partial<Setting> & { category?: string; trigger: "add" | "edit" },
 ) {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger
         render={
           props.trigger === "add" ? <Button size="sm" /> : <Button size="xs" variant="outline" />
@@ -106,31 +126,26 @@ export function CategoryRuleDialog(
       </DialogTrigger>
       <DialogPopup>
         {/* The popup unmounts when closed, which also resets the form. */}
-        <CategoryRuleForm {...props} />
+        <CategoryRuleForm {...props} onDone={() => setOpen(false)} />
       </DialogPopup>
     </Dialog>
   );
 }
 
-function CategoryRuleForm(props: Target & Partial<Setting> & { category?: string }) {
-  const [state, formAction, pending] = useActionState(saveTrackingRuleAction, null);
+function CategoryRuleForm(
+  props: Target & Partial<Setting> & { category?: string; onDone: () => void },
+) {
+  const [state, formAction, pending] = useActionToast(saveTrackingRuleAction, {
+    success: {
+      title: "Tracking rule saved",
+      description: "New emails in this category use it; emails already sent keep theirs.",
+    },
+  });
   const editing = props.category !== undefined;
-
-  if (state?.ok) {
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>Rule saved</DialogTitle>
-          <DialogDescription>
-            New emails with this category use it; emails already sent keep their settings.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose render={<Button />}>Done</DialogClose>
-        </DialogFooter>
-      </>
-    );
-  }
+  const { onDone } = props;
+  useEffect(() => {
+    if (state?.ok) onDone();
+  }, [state, onDone]);
 
   return (
     // `contents` keeps header/panel/footer as direct flex children of the popup (coss ui pattern).
@@ -157,7 +172,11 @@ function CategoryRuleForm(props: Target & Partial<Setting> & { category?: string
             </FieldDescription>
           </Field>
         )}
-        <TrackingCheckboxes clicks={props.clicks ?? false} opens={props.opens ?? false} />
+        <TrackingCheckboxes
+          clicks={props.clicks ?? false}
+          opens={props.opens ?? false}
+          unsubscribe={props.unsubscribe ?? false}
+        />
         {state && !state.ok ? <FormError message={state.error} /> : null}
       </DialogPanel>
       <DialogFooter>
@@ -174,8 +193,10 @@ export function DeleteTrackingRuleButton(
   props: Target & { ruleId: string; category: string | null },
 ) {
   // On success the page re-renders without this rule, which unmounts the dialog.
-  const [state, formAction, pending] = useActionState(deleteTrackingRuleAction, null);
   const isDefault = props.category === null;
+  const [state, formAction, pending] = useActionToast(deleteTrackingRuleAction, {
+    success: isDefault ? "Tracking default reset" : `${props.category} rule removed`,
+  });
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button size="xs" variant="destructive-outline" />}>
@@ -192,7 +213,7 @@ export function DeleteTrackingRuleButton(
             </AlertDialogTitle>
             <AlertDialogDescription>
               {isDefault
-                ? "Tracking will be off for emails without a category rule (unless a send asks for it)."
+                ? "Tracking and one-click unsubscribe will be off for emails without a category rule (unless a send asks for them)."
                 : "Emails in this category will use the environment default."}{" "}
               Emails already sent are not affected.
             </AlertDialogDescription>

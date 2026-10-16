@@ -129,6 +129,7 @@ export const OPAQUE_FIELDS: Readonly<Record<string, readonly string[]>> = {
   hook_event_type: ["schema", "examples"],
   hook_application: ["metadata"],
   hook_endpoint: ["metadata"],
+  email_template_version: ["sample_variables"],
 };
 
 /** Post-order copy: children are rendered first, then the node's own transform (if its `object` has one). */
