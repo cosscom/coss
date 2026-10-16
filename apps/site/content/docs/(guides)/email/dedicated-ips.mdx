@@ -23,6 +23,15 @@ at least one sending domain. Sandbox emails are never affected.
 The add-on's monthly price is charged up front, prorated for the first month, and email sent
 through your dedicated IPs is also metered (see [usage rates](/docs/billing#usage)).
 
+## Transactional and marketing email
+
+Both [streams](/docs/email/streams) leave from your dedicated IPs, so all your live email builds
+the same IPs' reputation. Each stream still goes through its own sending configuration: coss.com
+measures their bounce and complaint rates apart, and pausing marketing email never stops your
+transactional email. Because they share the IPs, though, a marketing campaign that draws many
+complaints can hurt how mailbox providers treat your transactional email too: keep your lists
+clean.
+
 ## Warm-up
 
 New IPs have no reputation, and mailbox providers accept only a little mail from them at first.
