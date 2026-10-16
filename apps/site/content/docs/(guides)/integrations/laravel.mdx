@@ -1,0 +1,142 @@
+---
+title: Laravel
+description: A Laravel mail transport that sends Mailables and notifications through coss.com, with categories, tags, scheduling and tracking per message.
+---
+
+`coss/laravel` adds a `coss` mail transport to Laravel 12 and 13 (PHP 8.2+). Switch the mailer
+and keep your Mailables, notifications and `Mail::` calls as they are.
+
+```sh
+composer require coss/laravel
+```
+
+The service provider is auto-discovered. Add a mailer to `config/mail.php` and the API key to
+`config/services.php`:
+
+```php
+// config/mail.php
+'mailers' => [
+    'coss' => [
+        'transport' => 'coss',
+    ],
+    // …
+],
+
+// config/services.php
+'coss' => [
+    'key' => env('COSS_API_KEY'),
+],
+```
+
+```sh
+# .env
+MAIL_MAILER=coss
+COSS_API_KEY=coss_live_…
+MAIL_FROM_ADDRESS=hello@acme.com
+```
+
+With a live key, the From address must use a [verified domain](/docs/email/domains). A sandbox key
+(`coss_test_…`) sends from any address and delivers nothing.
+
+| Setting       | Default                | Environment     |                                                  |
+| ------------- | ---------------------- | --------------- | ------------------------------------------------ |
+| `key`         |                        | `COSS_API_KEY`  | Checked on the first send, never while booting.  |
+| `base_url`    | `https://api.coss.com` | `COSS_BASE_URL` |                                                  |
+| `timeout`     | `30`                   |                 | Seconds per attempt.                             |
+| `max_retries` | `2`                    |                 | Retries of network errors, timeouts, 409, 429 and 5xx. |
+
+Each setting is read from the mailer's own config, then `services.coss`, then the environment.
+Retries reuse the message's `Idempotency-Key`, so a retried send is never sent twice.
+
+## Sending
+
+```php
+$sent = Mail::to($user)->send(new OrderShipped($order));
+
+$sent->getMessageId(); // "email_01k…", the email in the dashboard and the API
+```
+
+From, To, Cc, Bcc, Reply-To, the subject, the HTML and text bodies and attachments are sent as
+they are. Embedded images (`$message->embed()`, `embedData()`) keep their `cid:` references.
+Laravel's own tags and metadata map to coss.com's fields:
+
+- `tag('receipts')` (or `Envelope(tags: [...])`) becomes the email's [category](/docs/email/suppressions).
+  An email has one category, so a second tag is refused.
+- `metadata('plan', 'pro')` becomes a [tag](/docs/email/sending), `{ "name": "plan", "value": "pro" }`.
+
+Other headers are sent as custom headers. Headers coss.com sets itself (`Message-ID`, `Date`,
+`Content-Type` and similar) are dropped.
+
+## coss.com options
+
+Add the `SendsWithCoss` trait to a Mailable to set a category, tags, a send time, tracking or your
+own idempotency key:
+
+```php
+use Coss\Laravel\Concerns\SendsWithCoss;
+use Illuminate\Mail\Mailable;
+
+class OrderShipped extends Mailable
+{
+    use SendsWithCoss;
+
+    // …
+}
+
+Mail::to($user)->send((new OrderShipped($order))->coss([
+    'category' => 'receipts',
+    'tags' => ['plan' => 'pro'],
+    'scheduled_at' => now()->addHour(),
+    'tracking' => ['opens' => true, 'clicks' => false],
+    'idempotency_key' => "order-{$order->id}-shipped",
+]));
+```
+
+`category` wins over `tag()`, and `tags` are merged over `metadata()`. Queued Mailables keep their
+options. In a notification, or on any Symfony `Email`, use `CossOptions::apply()`:
+
+```php
+use Coss\Laravel\CossOptions;
+use Illuminate\Notifications\Messages\MailMessage;
+use Symfony\Component\Mime\Email;
+
+public function toMail(object $notifiable): MailMessage
+{
+    return (new MailMessage)
+        ->subject('Invoice paid')
+        ->line('Thanks!')
+        ->withSymfonyMessage(fn (Email $message) => CossOptions::apply($message, [
+            'category' => 'billing',
+        ]));
+}
+```
+
+Without an `idempotency_key`, each message gets a random key. Set your own to make a send safe to
+repeat: a second send with the same key returns the first email instead of sending again.
+
+## Errors
+
+When coss.com refuses an email or can't be reached (after the retries), the send throws
+`CossTransportException`, a Symfony `TransportException`:
+
+```php
+use Coss\Laravel\Exceptions\CossTransportException;
+
+try {
+    Mail::to($user)->send(new OrderShipped($order));
+} catch (CossTransportException $e) {
+    $e->getErrorCode(); // "domain_not_verified"
+    $e->getType();      // "invalid_request_error", …, "connection_error", "timeout_error"
+    $e->getStatus();    // 422, or null without a response
+    $e->getRequestId(); // "req_…": quote it to support
+    $e->getParam();     // "from"
+    $e->getIssues();    // [['path' => 'to', 'message' => '…']] for validation errors
+}
+```
+
+What coss.com can't send throws an `UnsupportedMessageException` before anything is sent, instead of
+being dropped: raw MIME messages, a body set with `setBody()` (including signed messages), a
+`Sender` or `Return-Path` other than the From address, an envelope whose recipients differ from To,
+Cc and Bcc, no To address, more than one From address, a header given more than once, and more than
+one tag. A missing API key throws a `MissingApiKeyException`. Both are logic errors rather than
+transport errors, so a `failover` mailer doesn't hide them by sending through its next mailer.

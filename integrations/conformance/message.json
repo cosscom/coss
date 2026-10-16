@@ -1,0 +1,122 @@
+{
+  "description": "How a framework message becomes the POST /v1/emails body. Each driver builds the framework's own message from `messages.<name>.input` (attachment bytes are given as base64; `inline` attachments use the framework's inline/embed API with that content id; `coss` goes through the driver's extension point) and asserts the request body equals `body` exactly (header names compared case-insensitively) and the Idempotency-Key equals `idempotency_key` when given. The value tables check the helpers on their own.",
+  "header_values": [
+    { "value": "spring", "sent": "spring" },
+    { "value": "Grüße", "sent": "=?UTF-8?B?R3LDvMOfZQ==?=" },
+    { "value": "  folded\r\n   line  ", "sent": "folded line" },
+    { "value": "tab\there", "sent": "tab here" },
+    { "value": "", "sent": null },
+    { "value": "   ", "sent": null },
+    {
+      "value": "日本語のヘッダー値はエンコードされ、四十五バイトごとに分割されます",
+      "sent": "=?UTF-8?B?5pel5pys6Kqe44Gu44OY44OD44OA44O85YCk44Gv44Ko44Oz44Kz44O844OJ?= =?UTF-8?B?44GV44KM44CB5Zub5Y2B5LqU44OQ44Kk44OI44GU44Go44Gr5YiG5Ymy44GV?= =?UTF-8?B?44KM44G+44GZ?="
+    },
+    { "value": "emoji 🎉 party", "sent": "=?UTF-8?B?ZW1vamkg8J+OiSBwYXJ0eQ==?=" }
+  ],
+  "addresses": [
+    { "address": "ada@example.com", "name": null, "formatted": "ada@example.com" },
+    { "address": "ada@example.com", "name": "Ada Lovelace", "formatted": "Ada Lovelace <ada@example.com>" },
+    { "address": "ada@example.com", "name": "  Ada  ", "formatted": "Ada <ada@example.com>" },
+    { "address": "hello@acme.test", "name": "Acme, Inc.", "formatted": "\"Acme, Inc.\" <hello@acme.test>" },
+    { "address": "q@example.com", "name": "Say \"hi\" \\ there", "formatted": "\"Say \\\"hi\\\" \\\\ there\" <q@example.com>" },
+    { "address": "x@example.com", "name": "Dr. Who", "formatted": "Dr. Who <x@example.com>" },
+    { "address": "z@example.com", "name": "Zoë", "formatted": "Zoë <z@example.com>" },
+    { "address": "e@example.com", "name": "   ", "formatted": "e@example.com" }
+  ],
+  "media_types": [
+    { "given": "text/plain; charset=utf-8", "sent": "text/plain" },
+    { "given": "Image/PNG", "sent": "image/png" },
+    { "given": " application/pdf ", "sent": "application/pdf" },
+    { "given": "", "sent": null },
+    { "given": null, "sent": null }
+  ],
+  "reserved_headers": [
+    "From",
+    "To",
+    "Cc",
+    "Bcc",
+    "Reply-To",
+    "Subject",
+    "Sender",
+    "Return-Path",
+    "Date",
+    "Message-ID",
+    "MIME-Version",
+    "Content-Type",
+    "Content-Transfer-Encoding",
+    "Content-Disposition",
+    "DKIM-Signature",
+    "Received",
+    "X-SES-Configuration-Set"
+  ],
+  "messages": {
+    "minimal": {
+      "input": {
+        "from": { "address": "hello@acme.test" },
+        "to": [{ "address": "ada@example.com" }],
+        "subject": "Hello",
+        "text": "Hi Ada"
+      },
+      "body": {
+        "from": "hello@acme.test",
+        "to": ["ada@example.com"],
+        "subject": "Hello",
+        "text": "Hi Ada"
+      }
+    },
+    "canonical": {
+      "input": {
+        "from": { "name": "Acme, Inc.", "address": "hello@acme.test" },
+        "to": [{ "name": "Ada Lovelace", "address": "ada@example.com" }, { "address": "bob@example.com" }],
+        "cc": [{ "address": "carol@example.com" }],
+        "bcc": [{ "name": "Dan", "address": "dan@example.com" }],
+        "reply_to": [{ "address": "support@acme.test" }],
+        "subject": "Your receipt ✓",
+        "text": "Thanks for your order!",
+        "html": "<p>Thanks for your order! <img src=\"cid:logo@acme\"></p>",
+        "attachments": [
+          { "filename": "receipt.pdf", "content_base64": "JVBERi0xLjQK", "content_type": "application/pdf" },
+          { "filename": "notes.txt", "content_base64": "aMOpbGxv", "content_type": "text/plain; charset=utf-8" },
+          { "filename": "logo.png", "content_base64": "iVBORw0KGgo=", "content_type": "image/png", "inline": true, "content_id": "logo@acme" }
+        ],
+        "headers": {
+          "X-Campaign": "spring",
+          "X-Greeting": "Grüße",
+          "Message-ID": "<custom@acme.test>",
+          "X-SES-Configuration-Set": "nope"
+        },
+        "coss": {
+          "category": "receipts",
+          "tags": { "plan": "pro", "order": "42" },
+          "scheduled_at": "2026-11-01T09:00:00Z",
+          "tracking": { "opens": true, "clicks": false },
+          "idempotency_key": "order-42"
+        }
+      },
+      "idempotency_key": "order-42",
+      "body": {
+        "from": "\"Acme, Inc.\" <hello@acme.test>",
+        "to": ["Ada Lovelace <ada@example.com>", "bob@example.com"],
+        "cc": ["carol@example.com"],
+        "bcc": ["Dan <dan@example.com>"],
+        "reply_to": ["support@acme.test"],
+        "subject": "Your receipt ✓",
+        "html": "<p>Thanks for your order! <img src=\"cid:logo@acme\"></p>",
+        "text": "Thanks for your order!",
+        "attachments": [
+          { "filename": "receipt.pdf", "content": "JVBERi0xLjQK", "content_type": "application/pdf" },
+          { "filename": "notes.txt", "content": "aMOpbGxv", "content_type": "text/plain" },
+          { "filename": "logo.png", "content": "iVBORw0KGgo=", "content_type": "image/png", "content_id": "logo@acme" }
+        ],
+        "headers": { "X-Campaign": "spring", "X-Greeting": "=?UTF-8?B?R3LDvMOfZQ==?=" },
+        "category": "receipts",
+        "tags": [
+          { "name": "plan", "value": "pro" },
+          { "name": "order", "value": "42" }
+        ],
+        "scheduled_at": "2026-11-01T09:00:00Z",
+        "tracking": { "opens": true, "clicks": false }
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "coss-django"
+dynamic = ["version"]
+description = "A Django email backend that sends through the coss.com API."
+readme = "README.md"
+# MIT (see LICENSE). Declared by the classifier: PEP 639 doesn't allow a `license` expression
+# next to license classifiers.
+license-files = ["LICENSE"]
+authors = [{ name = "Cal.com, Inc." }]
+requires-python = ">=3.10"
+dependencies = ["Django>=5.2,<6.2"]
+keywords = ["django", "email", "email-backend", "coss"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 5.2",
+    "Framework :: Django :: 6.0",
+    "Framework :: Django :: 6.1",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Communications :: Email",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://coss.com/docs/integrations/django"
+Documentation = "https://coss.com/docs/integrations/django"
+Source = "https://github.com/cosscom/coss/tree/main/integrations/django"
+Changelog = "https://github.com/cosscom/coss/blob/main/integrations/django/CHANGELOG.md"
+Issues = "https://github.com/cosscom/coss/issues"
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-django>=4.9", "ruff>=0.9"]
+
+[tool.hatch.version]
+path = "src/coss_django/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/coss_django"]
+
+[tool.hatch.build.targets.sdist]
+# The tests read ../conformance, which an sdist can't carry.
+include = ["src/coss_django", "LICENSE", "README.md", "CHANGELOG.md"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = [
+    "error",
+    # Django 6.1 deprecates EMAIL_BACKEND for MAILERS; the suite runs on 5.2 too.
+    "ignore:The EMAIL_BACKEND setting is deprecated",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

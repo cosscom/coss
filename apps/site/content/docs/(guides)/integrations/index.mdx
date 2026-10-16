@@ -3,9 +3,11 @@ title: Overview
 description: Send email through coss.com from the libraries you already use, by changing configuration instead of call sites.
 ---
 
-If your app already sends email through a mail library or an auth framework, you don't need to
-rewrite those calls. Point the library at coss.com instead. Each integration ships in the
-[`coss` package](/docs/sdk), so there is nothing else to install:
+If your app already sends email through a mail library, an auth framework or a web framework's
+mailer, you don't need to rewrite those calls. Point it at coss.com instead.
+
+The JavaScript integrations ship in the [`coss` package](/docs/sdk), so there is nothing else to
+install:
 
 ```package-install
 coss
@@ -17,9 +19,20 @@ coss
 | [Better Auth](/docs/integrations/better-auth) | `coss/better-auth` | The email callbacks: verification, password reset, magic links, codes, invitations |
 | [Auth.js](/docs/integrations/authjs)          | `coss/authjs`      | The email (magic link) provider                           |
 
-Every integration reads the API key from `COSS_API_KEY` unless you pass `apiKey`. You can also pass
-`client` to reuse a `Coss` client you already have. The client is created on the first send, so a
-missing key fails that send, not your app's startup or its build.
+Every JavaScript integration reads the API key from `COSS_API_KEY` unless you pass `apiKey`. You
+can also pass `client` to reuse a `Coss` client you already have. The client is created on the
+first send, so a missing key fails that send, not your app's startup or its build.
+
+The framework drivers are packages of their own, each with no dependency beyond its framework:
+
+| Framework                             | Package                   | What it replaces                               |
+| ------------------------------------- | ------------------------- | ---------------------------------------------- |
+| [Laravel](/docs/integrations/laravel) | `coss/laravel` (Composer) | The mailer transport (`MAIL_MAILER=coss`)      |
+| [Rails](/docs/integrations/rails)     | `coss-rails` (gem)        | Action Mailer's delivery method (`:coss`)      |
+| [Django](/docs/integrations/django)   | `coss-django` (pip)       | The email backend (`coss_django.EmailBackend`) |
+
+They read the API key from their own configuration, else `COSS_API_KEY`, and also check it on the
+first send rather than at startup.
 
 ## How messages are mapped
 
@@ -37,9 +50,11 @@ you the API's error codes. Each integration turns the library's message into a s
 - **What coss.com can't send fails the send instead of being silently dropped**: raw MIME messages, a
   custom SMTP envelope, a separate `Sender`, and AMP bodies.
 
-coss.com refusals throw a `CossSendError`. It carries the API's error as `error` and its `code`,
-`status` and `requestId` (quote the request id to support). These libraries report failures by
-throwing, so integrations throw too, unlike `coss.email.send`, which returns `{ data, error }`.
+In JavaScript, coss.com refusals throw a `CossSendError`. It carries the API's error as `error`
+and its `code`, `status` and `requestId` (quote the request id to support). These libraries report
+failures by throwing, so integrations throw too, unlike `coss.email.send`, which returns
+`{ data, error }`. The framework drivers raise their framework's kind of error with the same
+fields; see each page.
 
 ```ts twoslash
 import { CossSendError } from "coss/nodemailer";

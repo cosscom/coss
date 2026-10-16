@@ -1,0 +1,16 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+gemspec
+
+# CI picks the Rails line with RAILS_VERSION (e.g. "7.2", "8.0", "8.1"); the latest 8.1 otherwise.
+rails_version = ENV.fetch("RAILS_VERSION", "8.1")
+gem "rails", "~> #{rails_version}.0"
+
+gem "minitest", "~> 5.25"
+gem "rake", "~> 13.0"
+gem "rubocop", "~> 1.75", require: false
+gem "rubocop-minitest", require: false
+gem "rubocop-rake", require: false
+gem "webmock", "~> 3.25"

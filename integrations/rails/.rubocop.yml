@@ -1,0 +1,57 @@
+plugins:
+  - rubocop-minitest
+  - rubocop-rake
+
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - vendor/**/*
+    - pkg/**/*
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/Documentation:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 120
+
+Naming/FileName:
+  Exclude:
+    - lib/coss-rails.rb
+
+Metrics/ClassLength:
+  Max: 250
+
+Metrics/ModuleLength:
+  Max: 150
+
+Metrics/MethodLength:
+  Max: 30
+  Exclude:
+    - test/**/*
+
+Metrics/AbcSize:
+  Max: 35
+  Exclude:
+    - test/**/*
+
+Metrics/CyclomaticComplexity:
+  Max: 12
+
+Metrics/PerceivedComplexity:
+  Max: 12
+
+Metrics/BlockLength:
+  Exclude:
+    - test/**/*
+    - "*.gemspec"
+
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
+Minitest/MultipleAssertions:
+  Max: 25
