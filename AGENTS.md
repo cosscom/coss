@@ -683,6 +683,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   dispatches `deploy.yml` for main and cancels push runs still before their deploy job; "Redeploy" dispatches
   `image_tag` for a commit a recent run deployed (re-checked server-side). It parses the runs' job names (`gate`,
   `build (…)`, `deploy`, its `Roll out` step) and the `run-name` of `image_tag` dispatches: change them together.
+  The pages poll GitHub (`DEPLOY_REFRESH_SECONDS`): GETs are conditional (ETags; a 304 doesn't count against the
+  token's 5,000 requests an hour) and the overview is shared for a few seconds, so keep new reads behind `github()`.
+  A run's page (`[runId]`) also downloads failed jobs' logs (only their last 256 KB, excerpted by
+  `failureLogExcerpt`; GitHub masks the workflow's secrets in them).
 - **Organization suspension** (`organization_suspension`, presence = suspended; reason is admin-internal): enforced in
   `authenticateApiKey` (`suspended` → 403 `organization_suspended`, only for otherwise-valid keys),
   `createEnvironmentApiKey`, webhook `claimDue` (held, not failed), the Better Auth org hooks

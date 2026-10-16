@@ -13,12 +13,30 @@ export const DEPLOY_BRANCH = "main";
 export const DEPLOY_QUIET_MINUTES = 20;
 export const DEPLOY_MAX_INTERVAL_MINUTES = 60;
 
-export type GitHubJob = {
+/**
+ * How often the deploys pages re-read GitHub: often while a run moves, slower otherwise (and
+ * after GitHub couldn't be read). Conditional requests make unchanged reads free (`deploys.ts`).
+ */
+export const DEPLOY_REFRESH_SECONDS = { active: 10, idle: 30, error: 60 };
+
+export type GitHubStep = {
   name: string;
+  number?: number;
   status: string;
   conclusion: string | null;
   started_at?: string | null;
-  steps?: { name: string; status: string; conclusion: string | null }[];
+  completed_at?: string | null;
+};
+
+export type GitHubJob = {
+  id?: number;
+  name: string;
+  status: string;
+  conclusion: string | null;
+  html_url?: string | null;
+  started_at?: string | null;
+  completed_at?: string | null;
+  steps?: GitHubStep[];
 };
 
 export type GitHubRun = {
@@ -30,7 +48,13 @@ export type GitHubRun = {
   head_sha: string;
   display_title: string;
   created_at: string;
+  /** When the current attempt started, and when GitHub last changed the run (its end, once done). */
+  run_started_at?: string;
+  updated_at?: string;
   html_url: string;
+  /** The workflow file (`.github/workflows/deploy.yml`). */
+  path?: string;
+  head_branch?: string | null;
   triggering_actor?: { login: string } | null;
   head_commit?: { message: string } | null;
 };
@@ -184,4 +208,94 @@ export function latestProductionJobAt(jobs: GitHubJob[]): Date | null {
     .map((job) => (job.started_at ? Date.parse(job.started_at) : Number.NaN))
     .filter((time) => !Number.isNaN(time));
   return starts.length > 0 ? new Date(Math.max(...starts)) : null;
+}
+
+export type StepState = "queued" | "running" | "success" | "failure" | "canceled" | "skipped";
+
+export const STEP_STATES: Record<StepState, { label: string; tone: StatusTone; active: boolean }> =
+  {
+    queued: { label: "Queued", tone: "neutral", active: true },
+    running: { label: "Running", tone: "info", active: true },
+    success: { label: "Succeeded", tone: "success", active: false },
+    failure: { label: "Failed", tone: "error", active: false },
+    canceled: { label: "Canceled", tone: "neutral", active: false },
+    skipped: { label: "Skipped", tone: "neutral", active: false },
+  };
+
+/** A job's or step's state from GitHub's `status` and `conclusion`. */
+export function stepState(item: { status: string; conclusion: string | null }): StepState {
+  if (item.status === "in_progress") return "running";
+  if (item.status !== "completed") return "queued";
+  if (item.conclusion === "success" || item.conclusion === "neutral") return "success";
+  if (item.conclusion === "skipped") return "skipped";
+  if (item.conclusion === "cancelled") return "canceled";
+  return "failure";
+}
+
+/**
+ * What an active run is doing right now: the running step of its running job (the deploy job
+ * first, it is the one that matters while builds overlap), e.g. `{ job: "deploy", step: "Migrate" }`.
+ */
+export function currentStep(jobs: GitHubJob[]): { job: string; step: string } | null {
+  const running = jobs
+    .filter((job) => job.status === "in_progress")
+    .sort((a, b) => Number(b.name === "deploy") - Number(a.name === "deploy"));
+  for (const job of running) {
+    const step = job.steps?.find((candidate) => candidate.status === "in_progress");
+    if (step) return { job: job.name, step: step.name };
+  }
+  return null;
+}
+
+/** Milliseconds from `start` to `end` (or `now`, still running); `null` if it never started. */
+export function elapsedMs(
+  start: string | null | undefined,
+  end: string | null | undefined,
+  now: Date,
+): number | null {
+  if (!start) return null;
+  const from = Date.parse(start);
+  const to = end ? Date.parse(end) : now.getTime();
+  if (Number.isNaN(from) || Number.isNaN(to)) return null;
+  return Math.max(0, to - from);
+}
+
+export type LogLine = { text: string; error: boolean };
+
+const LOG_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z ?/;
+// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI colours start with ESC.
+const ANSI = /\u001b\[[0-9;]*[A-Za-z]/g;
+
+/**
+ * The part of a failed job's log worth showing: the failing step's output, from its "Run …" line
+ * to the job's last `##[error]` line (what follows is GitHub's post-job cleanup), at most its
+ * last `max` lines. Without an error line, the log's last lines. Each step's echoed script and
+ * environment (inside GitHub's `##[group]`, whose title stays), timestamps and colours are
+ * dropped. GitHub masks the workflow's secrets in logs itself.
+ */
+export function failureLogExcerpt(log: string, max = 60): LogLine[] {
+  const lines: LogLine[] = [];
+  /** Where each step's output starts (its "Run …" title). */
+  const stepStarts: number[] = [];
+  let grouped = false;
+  for (const raw of log.replace(/^\uFEFF/, "").split(/\r?\n/)) {
+    const line = raw.replace(LOG_TIMESTAMP, "").replace(ANSI, "");
+    if (line.startsWith("##[group]")) {
+      if (line.startsWith("##[group]Run ")) stepStarts.push(lines.length);
+      lines.push({ text: line.slice(9), error: false });
+      grouped = true;
+    } else if (line.startsWith("##[endgroup]")) {
+      grouped = false;
+    } else if (line.startsWith("##[error]")) {
+      lines.push({ text: line.slice(9), error: true });
+    } else if (!grouped) {
+      lines.push({ text: line, error: false });
+    }
+  }
+  while (lines.length > 0 && lines.at(-1)?.text.trim() === "") lines.pop();
+  const lastError = lines.findLastIndex((line) => line.error);
+  if (lastError === -1) return lines.slice(-max);
+  const end = lastError + 1;
+  const stepStart = stepStarts.findLast((start) => start < end) ?? 0;
+  return lines.slice(Math.max(stepStart, end - max), end);
 }

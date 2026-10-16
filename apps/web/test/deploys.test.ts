@@ -3,9 +3,12 @@ import { generateKeyPairSync, verify } from "node:crypto";
 import {
   batchShipsAt,
   commitSummary,
+  currentStep,
   type DeployPhase,
   deployedCommit,
   deployRunPhase,
+  elapsedMs,
+  failureLogExcerpt,
   firstParentChain,
   type GitHubCommit,
   type GitHubJob,
@@ -13,7 +16,9 @@ import {
   imageTagRunName,
   isImageTagRun,
   latestProductionJobAt,
+  stepState,
 } from "../src/lib/deploy-runs";
+import { formatElapsed } from "../src/lib/format";
 
 mock.module("server-only", () => ({}));
 const { githubAppJwt, githubAppPrivateKey } = await import("../src/lib/github-app");
@@ -203,6 +208,80 @@ describe("batch timing", () => {
       ]),
     ).toBeNull();
     expect(latestProductionJobAt([job("gate", "completed")])).toBeNull();
+  });
+});
+
+describe("run details", () => {
+  test("stepState", () => {
+    expect(stepState({ status: "queued", conclusion: null })).toBe("queued");
+    expect(stepState({ status: "waiting", conclusion: null })).toBe("queued");
+    expect(stepState({ status: "in_progress", conclusion: null })).toBe("running");
+    expect(stepState({ status: "completed", conclusion: "success" })).toBe("success");
+    expect(stepState({ status: "completed", conclusion: "skipped" })).toBe("skipped");
+    expect(stepState({ status: "completed", conclusion: "cancelled" })).toBe("canceled");
+    expect(stepState({ status: "completed", conclusion: "timed_out" })).toBe("failure");
+  });
+
+  test("currentStep prefers the deploy job's running step", () => {
+    const steps = (running: string) => [
+      { name: "Set up job", status: "completed", conclusion: "success" },
+      { name: running, status: "in_progress", conclusion: null },
+    ];
+    expect(
+      currentStep([
+        { ...job("build (web)", "in_progress"), steps: steps("Build and push web") },
+        { ...job("deploy", "in_progress"), steps: steps("Migrate") },
+      ]),
+    ).toEqual({ job: "deploy", step: "Migrate" });
+    expect(
+      currentStep([{ ...job("build (web)", "in_progress"), steps: steps("Build and push web") }]),
+    ).toEqual({ job: "build (web)", step: "Build and push web" });
+    expect(currentStep([job("deploy", "queued")])).toBeNull();
+  });
+
+  test("elapsedMs and formatElapsed", () => {
+    const now = new Date("2026-10-15T12:10:00Z");
+    expect(elapsedMs("2026-10-15T12:00:00Z", "2026-10-15T12:04:12Z", now)).toBe(252_000);
+    expect(elapsedMs("2026-10-15T12:00:00Z", null, now)).toBe(600_000);
+    expect(elapsedMs(null, null, now)).toBeNull();
+    expect(formatElapsed(45_000)).toBe("45s");
+    expect(formatElapsed(252_000)).toBe("4m 12s");
+    expect(formatElapsed(3_780_000)).toBe("1h 3m");
+  });
+
+  test("failureLogExcerpt ends at the last error and drops GitHub's markup", () => {
+    const log = [
+      "\uFEFF2026-10-15T11:59:59.0Z Current runner version: '2.337.0'",
+      "2026-10-15T11:59:59.1Z ##[group]Runner Image",
+      "2026-10-15T11:59:59.2Z Image: ubuntu-24.04",
+      "2026-10-15T11:59:59.3Z ##[endgroup]",
+      "2026-10-15T11:59:59.4Z ##[group]Run infra/scripts/ecs-task.sh",
+      "2026-10-15T11:59:59.5Z ##[endgroup]",
+      "2026-10-15T11:59:59.6Z migrated",
+      "2026-10-15T12:00:00.1234567Z ##[group]Run infra/scripts/ecs-deploy.sh",
+      "2026-10-15T12:00:00.2Z \u001b[36;1minfra/scripts/ecs-deploy.sh abc api\u001b[0m",
+      "2026-10-15T12:00:00.2Z env:",
+      "2026-10-15T12:00:00.3Z ##[endgroup]",
+      "2026-10-15T12:00:01.0Z \u001b[31mapi: rollout failed\u001b[0m",
+      "2026-10-15T12:00:01.1Z ##[error]Process completed with exit code 1.",
+      "2026-10-15T12:00:02.0Z Post job cleanup.",
+      "",
+    ].join("\n");
+    expect(failureLogExcerpt(log)).toEqual([
+      // From the failing step's start; its echoed script and env are left out, colours too.
+      { text: "Run infra/scripts/ecs-deploy.sh", error: false },
+      { text: "api: rollout failed", error: false },
+      { text: "Process completed with exit code 1.", error: true },
+    ]);
+    expect(failureLogExcerpt(log, 2).map((line) => line.text)).toEqual([
+      "api: rollout failed",
+      "Process completed with exit code 1.",
+    ]);
+    // Without an error line: the end.
+    expect(failureLogExcerpt("one\ntwo\nthree\n", 2).map((line) => line.text)).toEqual([
+      "two",
+      "three",
+    ]);
   });
 });
 
