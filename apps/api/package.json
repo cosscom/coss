@@ -11,7 +11,8 @@
     "start": "bun --env-file=../../.env src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun --env-file=../../.env test",
-    "openapi:generate": "bun --env-file=../../.env scripts/openapi.ts"
+    "openapi:generate": "bun --env-file=../../.env scripts/openapi.ts",
+    "serve:test": "bun --env-file=../../.env test/serve.ts"
   },
   "dependencies": {
     "@coss/billing": "workspace:*",

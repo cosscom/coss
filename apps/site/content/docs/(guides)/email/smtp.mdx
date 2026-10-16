@@ -128,6 +128,9 @@ config.action_mailer.smtp_settings = {
 }
 ```
 
+Or send over HTTPS with the [`coss-rails`](/docs/integrations/rails) delivery method, which also
+sets a category, tags and tracking per message.
+
 </Tab>
 <Tab value="Laravel">
 
@@ -141,6 +144,9 @@ MAIL_USERNAME=coss
 MAIL_PASSWORD=coss_live_…
 MAIL_FROM_ADDRESS=hello@acme.com
 ```
+
+Or send over HTTPS with the [`coss/laravel`](/docs/integrations/laravel) transport, which also maps
+`tag()` and `metadata()` to coss.com's category and tags.
 
 </Tab>
 <Tab value="Django">
@@ -157,6 +163,9 @@ EMAIL_HOST_USER = "coss"
 EMAIL_HOST_PASSWORD = os.environ["COSS_API_KEY"]
 DEFAULT_FROM_EMAIL = "Acme <hello@acme.com>"
 ```
+
+Or send over HTTPS with the [`coss-django`](/docs/integrations/django) email backend, which also
+sets a category, tags and tracking per message.
 
 </Tab>
 </Tabs>

@@ -1,0 +1,57 @@
+{
+    "name": "coss/laravel",
+    "description": "Send Laravel mail through coss.com.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["laravel", "mail", "email", "transport", "coss"],
+    "homepage": "https://coss.com/docs/integrations/laravel",
+    "support": {
+        "issues": "https://github.com/cosscom/coss/issues",
+        "source": "https://github.com/cosscom/coss/tree/main/integrations/laravel",
+        "docs": "https://coss.com/docs/integrations/laravel"
+    },
+    "authors": [
+        {
+            "name": "Cal.com, Inc.",
+            "homepage": "https://coss.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.8",
+        "illuminate/mail": "^12.0 || ^13.0",
+        "illuminate/support": "^12.0 || ^13.0",
+        "symfony/mailer": "^7.2 || ^8.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^10.0 || ^11.0",
+        "phpunit/phpunit": "^11.5 || ^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Coss\\Laravel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Coss\\Laravel\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Coss\\Laravel\\CossServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "lint": "pint --test"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

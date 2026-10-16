@@ -1,0 +1,231 @@
+{
+  "description": "HTTP behaviour every driver's client must show. Each scenario sends message.json's `minimal` message with api_key `coss_test_conformance` and base_url `https://api.coss.test` (plus `options`, if any), answers its attempts with `responses` in order (`network_error` and `timeout` make the transport fail that way), with the jitter's random source returning `random` (default 0) and sleeps recorded instead of waited. Every attempt must be POST https://api.coss.test/v1/emails with `request_headers` and the same Idempotency-Key.",
+  "request_headers": {
+    "Authorization": "Bearer coss_test_conformance",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Coss-Version": "2026-10-10"
+  },
+  "email": {
+    "object": "email",
+    "id": "email_01k0000000000000000000000",
+    "status": "queued"
+  },
+  "scenarios": [
+    {
+      "name": "a 202 is sent once",
+      "responses": [{ "status": 202, "body": "@email" }],
+      "expect": { "attempts": 1, "delays_ms": [], "outcome": "ok" }
+    },
+    {
+      "name": "a 503 is retried with the same idempotency key",
+      "responses": [
+        { "status": 503, "body": { "error": { "type": "api_error", "code": "service_unavailable", "message": "Try again.", "request_id": "req_1" } } },
+        { "status": 202, "body": "@email" }
+      ],
+      "expect": { "attempts": 2, "delays_ms": [500], "outcome": "ok" }
+    },
+    {
+      "name": "network errors and timeouts are retried",
+      "responses": [{ "network_error": true }, { "timeout": true }, { "status": 202, "body": "@email" }],
+      "expect": { "attempts": 3, "delays_ms": [500, 1000], "outcome": "ok" }
+    },
+    {
+      "name": "a 409 (request still in progress) is retried",
+      "responses": [
+        { "status": 409, "body": { "error": { "type": "idempotency_error", "code": "idempotency_key_in_progress", "message": "In progress.", "request_id": "req_1" } } },
+        { "status": 202, "body": "@email" }
+      ],
+      "expect": { "attempts": 2, "delays_ms": [500], "outcome": "ok" }
+    },
+    {
+      "name": "gives up after max_retries and returns the last error",
+      "responses": [
+        { "status": 500, "body": { "error": { "type": "api_error", "code": "internal_error", "message": "One.", "request_id": "req_1" } } },
+        { "status": 502, "body": { "error": { "type": "api_error", "code": "internal_error", "message": "Two.", "request_id": "req_2" } } },
+        { "status": 503, "body": { "error": { "type": "api_error", "code": "service_unavailable", "message": "Three.", "request_id": "req_3" } } }
+      ],
+      "expect": {
+        "attempts": 3,
+        "delays_ms": [500, 1000],
+        "outcome": "error",
+        "error": { "type": "api_error", "code": "service_unavailable", "message": "Three.", "status": 503, "request_id": "req_3" },
+        "error_message": "coss.com could not send the email: Three. (service_unavailable)"
+      }
+    },
+    {
+      "name": "the last network error is returned with no status",
+      "options": { "max_retries": 1 },
+      "responses": [{ "network_error": true }, { "network_error": true }],
+      "expect": {
+        "attempts": 2,
+        "delays_ms": [500],
+        "outcome": "error",
+        "error": { "type": "connection_error", "code": "network_error", "status": null, "request_id": null }
+      }
+    },
+    {
+      "name": "a timeout is a timeout_error",
+      "options": { "max_retries": 0 },
+      "responses": [{ "timeout": true }],
+      "expect": {
+        "attempts": 1,
+        "delays_ms": [],
+        "outcome": "error",
+        "error": { "type": "timeout_error", "code": "request_timeout", "status": null, "request_id": null }
+      }
+    },
+    {
+      "name": "Retry-After in seconds is honoured",
+      "responses": [
+        { "status": 429, "headers": { "Retry-After": "2" }, "body": { "error": { "type": "rate_limit_error", "code": "rate_limited", "message": "Slow down.", "request_id": "req_1" } } },
+        { "status": 202, "body": "@email" }
+      ],
+      "expect": { "attempts": 2, "delays_ms": [2000], "outcome": "ok" }
+    },
+    {
+      "name": "Retry-After: 0 retries at once",
+      "responses": [
+        { "status": 429, "headers": { "Retry-After": "0" }, "body": { "error": { "type": "rate_limit_error", "code": "rate_limited", "message": "Slow down.", "request_id": "req_1" } } },
+        { "status": 202, "body": "@email" }
+      ],
+      "expect": { "attempts": 2, "delays_ms": [0], "outcome": "ok" }
+    },
+    {
+      "name": "a Retry-After above 60 seconds gives up",
+      "responses": [
+        { "status": 429, "headers": { "Retry-After": "120" }, "body": { "error": { "type": "rate_limit_error", "code": "rate_limited", "message": "Slow down.", "request_id": "req_1" } } }
+      ],
+      "expect": {
+        "attempts": 1,
+        "delays_ms": [],
+        "outcome": "error",
+        "error": { "type": "rate_limit_error", "code": "rate_limited", "status": 429, "request_id": "req_1" }
+      }
+    },
+    {
+      "name": "jitter takes up to a quarter off the backoff",
+      "random": 1,
+      "responses": [
+        { "status": 503, "body": { "error": { "type": "api_error", "code": "service_unavailable", "message": "Try again.", "request_id": "req_1" } } },
+        { "status": 202, "body": "@email" }
+      ],
+      "expect": { "attempts": 2, "delays_ms": [375], "outcome": "ok" }
+    },
+    {
+      "name": "backoff doubles up to 8 seconds",
+      "options": { "max_retries": 6 },
+      "responses": [
+        { "status": 503, "body": { "error": { "type": "api_error", "code": "service_unavailable", "message": "1", "request_id": "req_1" } } },
+        { "status": 503, "body": { "error": { "type": "api_error", "code": "service_unavailable", "message": "2", "request_id": "req_2" } } },
+        { "status": 503, "body": { "error": { "type": "api_error", "code": "service_unavailable", "message": "3", "request_id": "req_3" } } },
+        { "status": 503, "body": { "error": { "type": "api_error", "code": "service_unavailable", "message": "4", "request_id": "req_4" } } },
+        { "status": 503, "body": { "error": { "type": "api_error", "code": "service_unavailable", "message": "5", "request_id": "req_5" } } },
+        { "status": 503, "body": { "error": { "type": "api_error", "code": "service_unavailable", "message": "6", "request_id": "req_6" } } },
+        { "status": 202, "body": "@email" }
+      ],
+      "expect": { "attempts": 7, "delays_ms": [500, 1000, 2000, 4000, 8000, 8000], "outcome": "ok" }
+    },
+    {
+      "name": "a 402 is never retried",
+      "responses": [
+        { "status": 402, "body": { "error": { "type": "billing_error", "code": "billing_hold", "message": "Pay your invoice.", "request_id": "req_1" } } }
+      ],
+      "expect": {
+        "attempts": 1,
+        "delays_ms": [],
+        "outcome": "error",
+        "error": { "type": "billing_error", "code": "billing_hold", "status": 402, "request_id": "req_1" }
+      }
+    },
+    {
+      "name": "a 422 carries param and issues",
+      "responses": [
+        {
+          "status": 422,
+          "body": {
+            "error": {
+              "type": "invalid_request_error",
+              "code": "validation_failed",
+              "message": "Invalid request.",
+              "param": "to",
+              "issues": [
+                { "path": "to", "message": "Invalid email address." },
+                { "path": "headers.X-Bad", "message": "Header values must be 1-995 printable ASCII characters without line breaks." }
+              ],
+              "request_id": "req_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "attempts": 1,
+        "delays_ms": [],
+        "outcome": "error",
+        "error": {
+          "type": "invalid_request_error",
+          "code": "validation_failed",
+          "status": 422,
+          "request_id": "req_1",
+          "param": "to",
+          "issues": [
+            { "path": "to", "message": "Invalid email address." },
+            { "path": "headers.X-Bad", "message": "Header values must be 1-995 printable ASCII characters without line breaks." }
+          ]
+        },
+        "error_message": "coss.com could not send the email: Invalid request. (validation_failed) to: Invalid email address.; headers.X-Bad: Header values must be 1-995 printable ASCII characters without line breaks."
+      }
+    },
+    {
+      "name": "a 401 is never retried",
+      "responses": [
+        { "status": 401, "body": { "error": { "type": "authentication_error", "code": "invalid_api_key", "message": "Invalid API key.", "request_id": "req_1" } } }
+      ],
+      "expect": {
+        "attempts": 1,
+        "delays_ms": [],
+        "outcome": "error",
+        "error": { "type": "authentication_error", "code": "invalid_api_key", "status": 401, "request_id": "req_1" }
+      }
+    },
+    {
+      "name": "an unknown error type becomes api_error, a missing code unknown_error",
+      "responses": [
+        { "status": 418, "headers": { "X-Request-Id": "req_header" }, "body": { "error": { "type": "teapot_error", "message": "I'm a teapot." } } }
+      ],
+      "expect": {
+        "attempts": 1,
+        "delays_ms": [],
+        "outcome": "error",
+        "error": { "type": "api_error", "code": "unknown_error", "message": "I'm a teapot.", "status": 418, "request_id": "req_header" }
+      }
+    },
+    {
+      "name": "an error response without the envelope is unexpected_response",
+      "options": { "max_retries": 0 },
+      "responses": [{ "status": 500, "headers": { "X-Request-Id": "req_header" }, "body": "<html>oops</html>" }],
+      "expect": {
+        "attempts": 1,
+        "delays_ms": [],
+        "outcome": "error",
+        "error": {
+          "type": "api_error",
+          "code": "unexpected_response",
+          "message": "The coss.com API returned an unexpected HTTP 500 response.",
+          "status": 500,
+          "request_id": "req_header"
+        }
+      }
+    },
+    {
+      "name": "a 2xx that isn't JSON is invalid_response",
+      "responses": [{ "status": 202, "headers": { "X-Request-Id": "req_header" }, "body": "not json" }],
+      "expect": {
+        "attempts": 1,
+        "delays_ms": [],
+        "outcome": "error",
+        "error": { "type": "api_error", "code": "invalid_response", "status": 202, "request_id": "req_header" }
+      }
+    }
+  ]
+}

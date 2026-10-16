@@ -1,0 +1,170 @@
+name: Release integrations
+
+# Publishes a framework driver (integrations/*) whenever main has a version of it that its registry
+# doesn't, and tags `coss-<driver>@<version>` here. Bump the version file and CHANGELOG.md in the
+# pull request; merging it releases. Nothing is ever published from a laptop.
+#
+# - Django → PyPI and Rails → RubyGems use trusted publishing (GitHub OIDC, no tokens): each
+#   registry trusts exactly cosscom/coss → this file → the `pypi` / `rubygems` environment.
+# - Laravel → Packagist, which only reads a repository whose root holds composer.json: the job
+#   pushes `git subtree split --prefix integrations/laravel` to the read-only mirror
+#   cosscom/coss-laravel (a deploy key with write access, secret `COSS_LARAVEL_DEPLOY_KEY` in the
+#   `packagist` environment) and tags it `v<version>`; Packagist's GitHub hook on the mirror
+#   picks the tag up.
+#
+# Every job is skipped until the repository variable INTEGRATIONS_PUBLISH is `true`, set once the
+# registries are configured (integrations/README.md, "Releases").
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "integrations/**"
+      - ".github/workflows/release-integrations.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-integrations
+  cancel-in-progress: false
+
+jobs:
+  django:
+    if: vars.INTEGRATIONS_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: pypi
+    permissions:
+      contents: write # the release's git tag
+      id-token: write # PyPI trusted publishing
+    defaults:
+      run:
+        working-directory: integrations/django
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - id: version
+        run: |
+          version="$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' src/coss_django/__init__.py)"
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if curl -sf "https://pypi.org/pypi/coss-django/$version/json" >/dev/null; then
+            echo "coss-django $version is already on PyPI."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.version.outputs.publish == 'true'
+        run: |
+          uv run ruff check
+          uv run pytest
+          uv build
+          uvx twine check dist/*
+      - if: steps.version.outputs.publish == 'true'
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          packages-dir: integrations/django/dist
+      - if: steps.version.outputs.publish == 'true'
+        run: |
+          tag="coss-django@${{ steps.version.outputs.version }}"
+          git tag "$tag"
+          git push origin "$tag"
+
+  rails:
+    if: vars.INTEGRATIONS_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: rubygems
+    permissions:
+      contents: write # the release's git tag
+      id-token: write # RubyGems trusted publishing
+    defaults:
+      run:
+        working-directory: integrations/rails
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          working-directory: integrations/rails
+      - id: version
+        run: |
+          version="$(ruby -e 'require_relative "lib/coss/rails/version"; print Coss::Rails::VERSION')"
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if curl -sf "https://rubygems.org/api/v2/rubygems/coss-rails/versions/$version.json" >/dev/null; then
+            echo "coss-rails $version is already on RubyGems."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.version.outputs.publish == 'true'
+        run: |
+          bundle exec rubocop
+          bundle exec rake test
+          gem build coss-rails.gemspec
+      - if: steps.version.outputs.publish == 'true'
+        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+      - if: steps.version.outputs.publish == 'true'
+        run: |
+          gem push "coss-rails-${{ steps.version.outputs.version }}.gem"
+          tag="coss-rails@${{ steps.version.outputs.version }}"
+          git tag "$tag"
+          git push origin "$tag"
+
+  laravel:
+    if: vars.INTEGRATIONS_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: packagist
+    permissions:
+      contents: write # the release's git tag
+    env:
+      MIRROR: git@github.com:cosscom/coss-laravel.git
+    steps:
+      # The whole history: the split replays it, so the mirror's history is the same every time.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: "8.4"
+          tools: composer
+      - id: version
+        run: |
+          version="$(sed -n "s/.*VERSION = '\(.*\)';.*/\1/p" integrations/laravel/src/Version.php)"
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags https://github.com/cosscom/coss-laravel "refs/tags/v$version" >/dev/null; then
+            echo "coss/laravel $version is already tagged on the mirror."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.version.outputs.publish == 'true'
+        working-directory: integrations/laravel
+        run: |
+          composer update --no-interaction --no-progress
+          composer lint
+          composer test
+      - if: steps.version.outputs.publish == 'true'
+        env:
+          DEPLOY_KEY: ${{ secrets.COSS_LARAVEL_DEPLOY_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/coss-laravel
+          chmod 600 ~/.ssh/coss-laravel
+          # GitHub's published SSH host key (docs.github.com, "GitHub's SSH key fingerprints").
+          echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/coss-laravel -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          version="${{ steps.version.outputs.version }}"
+          split="$(git subtree split --prefix integrations/laravel)"
+          # Never forced: the mirror only ever moves forward along main's history.
+          git push "$MIRROR" "$split:refs/heads/main"
+          git push "$MIRROR" "$split:refs/tags/v$version"
+          tag="coss-laravel@$version"
+          git tag "$tag"
+          git push origin "$tag"

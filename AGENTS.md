@@ -17,8 +17,9 @@ signals are also building blocks of their own, next to rate limiting as a servic
 ## License
 
 `AGPL-3.0-only` (root `LICENSE`), except `packages/sdk` (MIT, its own `LICENSE`: customers bundle it), `packages/mcp`
-and `packages/cli` (MIT, published with the SDK), `packages/kloq` (MIT, vendored) and the fonts (OFL). New code is AGPL
-unless it lives in one of those; never copy AGPL code into the SDK, the MCP server or the CLI. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
+and `packages/cli` (MIT, published with the SDK), the framework drivers in `integrations/*` (MIT, each with its own
+`LICENSE`), `packages/kloq` (MIT, vendored) and the fonts (OFL). New code is AGPL
+unless it lives in one of those; never copy AGPL code into the SDK, the MCP server, the CLI or the drivers. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
 text it shows is a gist that must match `CLA.md`: change both together, as a new version).
 
 ## Layout
@@ -56,6 +57,7 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/cli` | `coss-cli` | **Public** CLI (`npm i -g coss-cli`, command `coss`, Node): `login` (browser PKCE or `--manual`), `logout`, `whoami`, `emails send`, `logs tail`, `listen` (forwards webhook events to localhost), built only on the published `coss` SDK. See "CLI" below. |
 | `packages/kloq` | `kloq` | The kloq library (the `cosscom/calendar` repository's `packages/kloq/src`, tests left out): the `<Kloq>` calendar, its themes, settings dialog, design mode and stylesheet. Vendored (excluded from Biome, `noUncheckedIndexedAccess` off); also what `/kloq/r/kloq.json` serves as source. Used only by `apps/site`. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
+| `integrations/{laravel,rails,django}` | `coss/laravel`, `coss-rails`, `coss-django` | **Public** framework mail drivers (PHP/Composer, Ruby gem, Python/PyPI), each sending its framework's messages to `POST /v1/emails` with a small HTTP client of its own. Not Bun workspaces (turbo, Biome and the images never see them). Shared rules in `integrations/README.md`, shared test scenarios in `integrations/conformance/*.json`. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests, and the production Terraform + deploy scripts that apply it. See `infra/AGENTS.md`. |
 
 Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `web`, `site`, `portal`, `smtp`, `infra`; `signals` (no workspace deps) ← `auth`, `webhooks`, `risk`; `db ← auth ← tenancy`,
@@ -125,7 +127,10 @@ Single package: `bun run --cwd <pkg> test [filter]` (after `bun run db:migrate:t
 from the root or a package — the package script is what loads `.env` and the test-DB preload.
 
 **Before committing**, run what CI (`.github/workflows/ci.yml`, Postgres 18, no `.env`) runs:
-`bun run lint && bun run typecheck && bun run test && bun run build`.
+`bun run lint && bun run typecheck && bun run test && bun run build`. After changing `integrations/<driver>` also
+run its own lint and tests (CI's `integrations` job): `composer lint && composer test` (Laravel),
+`bundle exec rubocop && bundle exec rake test` (Rails), `uv run ruff check && uv run ruff format --check && uv run
+pytest` (Django); their end-to-end tests run when `COSS_E2E` holds the line `bun run --cwd apps/api serve:test` prints.
 
 **Remote cache** (README, "Remote cache"): `typecheck` and `build` results are uploaded to Turbo's Vercel Remote Cache
 (team `cal`, signed) and CI replays any task whose hash it finds, so running the commands above also makes CI fast.
@@ -295,6 +300,11 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   rather than dropping it. Auth emails (Better Auth, Auth.js) always send `category: "account"` with tracking
   off — click tracking would route secret links through `/t/c/…` — and derive idempotency keys only from
   single-use tokens (hashed), never from OTP codes or invitation ids, which are legitimately resent.
+- **Framework drivers** (`integrations/*`, not part of the SDK): Laravel, Rails and Django follow the same mapping and
+  retry rules as the JS integrations, written down in `integrations/README.md` and checked by every driver's tests
+  against `integrations/conformance/{http,message}.json` (generated from `src/core/mime.ts`'s behaviour: change the
+  README, the JSON, the SDK and all three drivers together). Each keeps `Coss-Version` and the reserved-header list as
+  hand mirrors of `API_VERSION` and `RESERVED_HEADERS`. Releases: `.github/workflows/release-integrations.yml` (below).
 - Error types are listed in three places: `ERROR_TYPES` (`apps/api/src/errors.ts`) and `CossErrorType` +
   `API_ERROR_TYPES` (`packages/sdk/src/core/errors.ts`).
 - The api contract tests import the SDK's built `dist`: turbo builds it first, but outside turbo run
@@ -312,9 +322,17 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   from CI only — npm trusted publishing (GitHub OIDC, no npm token anywhere) with provenance, trusted for exactly
   `cosscom/coss` → `release.yml` → the `npm` environment (deployable from `main`); `npm trust list coss` shows it.
   The publish job builds the SDK and runs `npm publish --provenance` itself, skipping a version already on npm,
-  waits until the registry serves the new one (a minute or two) and tags it. Never
+  waits until the registry serves the new one (usually a minute or two, up to 15 minutes) and tags it. Never
   publish from a laptop. npm owners: baileypumfleet, peer_rich, keithwillcode (versions 0.0.1–0.0.5 are a previous
   owner's unrelated, deprecated package).
+- **Publishing the framework drivers** (`.github/workflows/release-integrations.yml`, on pushes to `main` touching
+  `integrations/**`): a driver whose version file (`laravel/src/Version.php`, `rails/lib/coss/rails/version.rb`,
+  `django/src/coss_django/__init__.py`, with its `CHANGELOG.md`) names a version its registry doesn't have is tested,
+  published and tagged `coss-<driver>@<version>`. PyPI (`pypi` environment) and RubyGems (`rubygems` environment) use
+  trusted publishing; Packagist reads `cosscom/coss-laravel`, a read-only mirror the job pushes `git subtree split
+  --prefix integrations/laravel` and a `v<version>` tag to with the deploy key `COSS_LARAVEL_DEPLOY_KEY` (`packagist`
+  environment) — never commit to the mirror. Every job is skipped until the repository variable
+  `INTEGRATIONS_PUBLISH` is `true`.
 
 ## MCP server (`packages/mcp`, published as `coss-mcp`)
 
@@ -804,7 +822,7 @@ would drop an org's SSO provider or last owner), email change,
 email/SMS two-factor codes, sign-in providers other than Google and GitHub, "trust this device" for 2FA, renaming passkeys, webhooks and notification emails for dedicated IP status changes, standard (manually
 warmed) dedicated IPs or more than one pool per organization, an automatic direct-debit policy (only per-account
 required payment methods), multi-currency, metering for SMS/video/scheduling (their meters
-and rates exist; the products don't), the Laravel, Rails and Django mail drivers (only the JS integrations exist), and
+and rates exist; the products don't), and
 these Hooks features: channels, payload transformations, custom endpoint headers, sending one message to several
 applications, strict ordering, portal custom domains, per-destination rate-limit overrides, Hooks attempts in
 environment logs and log drains.

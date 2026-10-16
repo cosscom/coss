@@ -1,4 +1,4 @@
 {
   "title": "Integrations",
-  "pages": ["index", "nodemailer", "better-auth", "authjs"]
+  "pages": ["index", "nodemailer", "better-auth", "authjs", "laravel", "rails", "django"]
 }

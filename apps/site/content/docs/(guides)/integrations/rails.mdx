@@ -1,0 +1,95 @@
+---
+title: Rails
+description: An Action Mailer delivery method that sends Rails mailers through coss.com, with categories, tags, scheduling and tracking per message.
+---
+
+`coss-rails` adds a `:coss` delivery method to Action Mailer (Rails 7.2 to 8.1, Ruby 3.2+). Switch
+the delivery method and keep your mailers as they are.
+
+```ruby
+# Gemfile
+gem "coss-rails"
+```
+
+```ruby
+# config/environments/production.rb
+config.action_mailer.delivery_method = :coss
+config.action_mailer.coss_settings = {
+  api_key: Rails.application.credentials.coss_api_key,
+}
+```
+
+With a live key, `from` must use a [verified domain](/docs/email/domains). A sandbox key
+(`coss_test_…`) sends from any address and delivers nothing.
+
+| Setting           | Default                                             |                                                   |
+| ----------------- | --------------------------------------------------- | ------------------------------------------------- |
+| `api_key`         | `ENV["COSS_API_KEY"]`                               | Checked on the first delivery, never at boot.     |
+| `base_url`        | `ENV["COSS_BASE_URL"]`, else `https://api.coss.com` |                                                   |
+| `timeout`         | `30`                                                | Seconds per attempt.                              |
+| `max_retries`     | `2`                                                 | Retries of network errors, timeouts, 409, 429 and 5xx. |
+| `return_response` | `false`                                             | Makes `deliver_now!` return the email (below).    |
+
+Retries reuse the message's `Idempotency-Key`, so a retried delivery is never sent twice.
+
+## Sending
+
+From, To, Cc, Bcc, Reply-To, the subject, the text and HTML bodies, attachments
+(`attachments[...]`, and `attachments.inline[...]` referenced by their `url`) and custom headers
+(`headers["X-Campaign"] = "spring"`) go through as they are. Headers coss.com sets itself (`Date`,
+`Message-ID`, `Content-Type` and similar) are dropped. `deliver_later` works as usual.
+
+```ruby
+message = ReceiptMailer.receipt(order).deliver_now
+message.coss_email["id"] # => "email_01k…", the email in the dashboard and the API
+```
+
+`message.coss_email` is the email as the API returned it. With `return_response: true`,
+`deliver_now!` returns that Hash instead of the message.
+
+## coss.com options
+
+The gem adds `coss(...)` to every mailer. Call it in an action to set a category, tags, a send
+time, tracking or your own idempotency key:
+
+```ruby
+class ReceiptMailer < ApplicationMailer
+  def receipt(order)
+    coss category: "receipts",
+         tags: { plan: order.plan },
+         scheduled_at: 1.hour.from_now,
+         tracking: { opens: true, clicks: false },
+         idempotency_key: "receipt-#{order.id}"
+    mail to: order.email, subject: "Your receipt"
+  end
+end
+```
+
+The options are stored on the message, so they survive `deliver_later` (the job runs the action
+again). Without an `idempotency_key`, each message gets a random key. Set your own to make a
+delivery safe to repeat: a second one with the same key returns the first email instead of
+sending again.
+
+## Errors
+
+Everything the gem raises is a `Coss::Rails::Error`. As for any delivery method,
+`raise_delivery_errors` decides whether `deliver_now` raises.
+
+```ruby
+begin
+  ReceiptMailer.receipt(order).deliver_now
+rescue Coss::Rails::DeliveryError => e
+  e.code       # => "domain_not_verified"
+  e.type       # => "invalid_request_error", …, "connection_error", "timeout_error"
+  e.status     # => 422, or nil without a response
+  e.request_id # => "req_…": quote it to support
+  e.param      # => "from"
+  e.issues     # => [{ "path" => "to", "message" => "…" }] for validation errors
+end
+```
+
+What coss.com can't send raises `Coss::Rails::UnsupportedMessageError` before anything is sent,
+instead of being dropped: a `Sender` header, Return-Path or SMTP envelope (`smtp_envelope_from`,
+`smtp_envelope_to`) other than the From address and recipients, a header given more than once, and
+parts other than the text body, one HTML body and attachments (attach a calendar invite instead of
+sending it as an alternative). A missing API key raises `Coss::Rails::ConfigurationError`.
