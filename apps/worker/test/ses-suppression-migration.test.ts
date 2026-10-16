@@ -115,7 +115,7 @@ test("imports paginated SES lists and already-ingested history before disabling,
     });
   }
   const { ses, calls } = fakeSes(name);
-  const input = { configurationSet: "test", tenantPrefix: prefix };
+  const input = { configurationSets: ["test"], tenantPrefix: prefix };
   expect(await migrateSesSuppressions(ses, input)).toBe(1);
   const imported = await rows(t.organization.id);
   expect(
@@ -156,7 +156,7 @@ test("failed import rolls back history/list entries and leaves AWS protection in
   const { t, name, prefix } = await fixture();
   const { ses, calls } = fakeSes(name, { failImport: true });
   await expect(
-    migrateSesSuppressions(ses, { configurationSet: "test", tenantPrefix: prefix }),
+    migrateSesSuppressions(ses, { configurationSets: ["test"], tenantPrefix: prefix }),
   ).rejects.toThrow("export failed");
   expect(await rows(t.organization.id)).toEqual([]);
   const [tenant] = await db
@@ -169,7 +169,7 @@ test("failed import rolls back history/list entries and leaves AWS protection in
 
 test("AWS update failure leaves committed protection and retries without resurrecting removals", async () => {
   const { t, name, prefix } = await fixture();
-  const input = { configurationSet: "test", tenantPrefix: prefix };
+  const input = { configurationSets: ["test"], tenantPrefix: prefix };
   await expect(
     migrateSesSuppressions(fakeSes(name, { failDisable: true }).ses, input),
   ).rejects.toThrow("AWS update failed");
@@ -190,7 +190,46 @@ test("an unmapped tenant prevents disabling SES protection", async () => {
   const prefix = `missing-${crypto.randomUUID()}`;
   const { ses, calls } = fakeSes(`${prefix}-org_missing`);
   await expect(
-    migrateSesSuppressions(ses, { configurationSet: "test", tenantPrefix: prefix }),
+    migrateSesSuppressions(ses, { configurationSets: ["test"], tenantPrefix: prefix }),
   ).rejects.toThrow("No coss.com database mapping");
   expect(calls.some((c) => c.kind.startsWith("Put"))).toBe(false);
+});
+
+test("maps stream tenants by name and never imports into a migrated marketing tenant", async () => {
+  const { t, name, prefix } = await fixture();
+  const marketing = `${name}-marketing`;
+  await db.insert(schema.emailTenant).values({
+    organizationId: t.organization.id,
+    stream: "marketing",
+    provider: "ses",
+    tenantName: marketing,
+    suppressionMigratedAt: new Date(),
+  });
+  const { ses, calls } = fakeSes(name);
+  const listed = ses.send.bind(ses);
+  const both = {
+    async send(command: { input: Record<string, unknown>; constructor: { name: string } }) {
+      if (command instanceof ListTenantsCommand) {
+        calls.push({ kind: command.constructor.name, input: command.input });
+        return { Tenants: [{ TenantName: name }, { TenantName: marketing }] };
+      }
+      return listed(command as never);
+    },
+  } as unknown as Pick<SESv2Client, "send">;
+  await migrateSesSuppressions(both, {
+    configurationSets: ["test", "test-marketing"],
+    tenantPrefix: prefix,
+  });
+  const imports = calls.filter((c) => c.kind === "ListSuppressedDestinationsCommand");
+  expect(imports.every((c) => (c.input as { TenantName?: string }).TenantName !== marketing)).toBe(
+    true,
+  );
+  const disabled = calls
+    .filter((c) => c.kind === "PutTenantSuppressionAttributesCommand")
+    .map((c) => (c.input as { TenantName: string }).TenantName);
+  expect(disabled).toEqual([name, marketing]);
+  const sets = calls
+    .filter((c) => c.kind === "PutConfigurationSetSuppressionOptionsCommand")
+    .map((c) => (c.input as { ConfigurationSetName: string }).ConfigurationSetName);
+  expect(sets).toEqual(["test", "test-marketing"]);
 });

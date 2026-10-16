@@ -12,7 +12,8 @@ import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
 import { createEmailService, emailNotifier, notificationEnvironment } from "@coss/email";
 import {
-  ensureEmailDispatchQueue,
+  EMAIL_DISPATCH_MARKETING_QUEUE,
+  ensureEmailDispatchQueues,
   pgBossDispatchQueue,
   workEmailDispatchQueue,
 } from "@coss/email/dispatch";
@@ -100,7 +101,7 @@ const systemEnvironment = env.NOTIFICATIONS_ENVIRONMENT_ID
 const systemOrganizationId = systemEnvironment?.organizationId ?? null;
 // Email dispatch runs on pg-boss (its own pool, woken by NOTIFY when a send commits).
 const jobs = await startJobBoss({ worker: true });
-await ensureEmailDispatchQueue(jobs);
+await ensureEmailDispatchQueues(jobs);
 const dispatchQueue = pgBossDispatchQueue(jobs);
 const emailService = createEmailService({
   liveProvider: email.liveProvider,
@@ -118,6 +119,14 @@ const emailService = createEmailService({
   billing: createUsageGate({ systemOrganizationId }),
 });
 if (runs("email-dispatch")) await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
+// Fewer at once: marketing must leave most of the account's SES send rate to transactional mail.
+if (runs("email-dispatch-marketing")) {
+  await workEmailDispatchQueue(jobs, monitoredDispatch(emailService), {
+    name: EMAIL_DISPATCH_MARKETING_QUEUE,
+    concurrency: 4,
+  });
+}
+const dispatching = ["email-dispatch", "email-dispatch-marketing"].filter(runs);
 
 // Account emails (verification, password resets, invitations) and reputation notifications go
 // out through coss.com's own email product. Without a configured environment, reputation
@@ -205,7 +214,7 @@ const loops = startJobs({
   loops: env.WORKER_LOOPS,
 });
 console.info(
-  `[worker] started (${[...(runs("email-dispatch") ? ["email-dispatch"] : []), ...loops.map((loop) => loop.name)].join(", ")}; ` +
+  `[worker] started (${[...dispatching, ...loops.map((loop) => loop.name)].join(", ")}; ` +
     `content screening: ${env.SCREENING_CLASSIFIER === "ai" ? env.SCREENING_MODEL : env.SCREENING_CLASSIFIER})`,
 );
 
@@ -213,6 +222,7 @@ const shutdown = createShutdown({
   controller,
   loops: [
     ...loops,
+    // One pg-boss instance works both dispatch queues.
     { name: "email-dispatch", stop: () => jobs.stop({ graceful: true, timeout: 30_000 }) },
   ],
   close: async () => {

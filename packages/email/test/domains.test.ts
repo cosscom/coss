@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { checkRecords, expectedRecords } from "../src/dns.ts";
 import {
   authorizeLiveSender,
@@ -11,6 +11,7 @@ import {
   type DomainDeps,
   deleteDomain,
   ensureOrgTenant,
+  ensureOrgTenants,
   MAX_PENDING_DOMAINS,
   normalizeDomainName,
   recheckDueDomains,
@@ -196,6 +197,7 @@ describe("createDomain", () => {
         createDomainIdentity: async () => {
           throw error;
         },
+        associateDomainIdentity: () => fake.associateDomainIdentity(),
         getDomainIdentity: (domain) => fake.getDomainIdentity(domain),
         deleteDomainIdentity: (input) => fake.deleteDomainIdentity(input),
         deleteTenant: () => fake.deleteTenant(),
@@ -332,6 +334,7 @@ describe("checkDomain", () => {
       createDomainIdentity: async () => {
         throw new Error("unused");
       },
+      associateDomainIdentity: async () => {},
       getDomainIdentity: async () => ({
         dkimTokens: row.dkimTokens,
         dkimHostedZone: "dkim.amazonses.com",
@@ -477,6 +480,30 @@ describe("authorizeLiveSender", () => {
       deps(),
     );
     await expectError(allowed(`hello@${pending.name}`), EmailError, "domain_not_verified");
+  });
+
+  test("a paused marketing tenant stops only marketing sends", async () => {
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const verified = await createVerifiedDomain(organizationId);
+    await ensureOrgTenants(organizationId, new FakeIdentityProvider());
+    await db
+      .update(schema.emailTenant)
+      .set({ sendingStatus: "disabled" })
+      .where(
+        and(
+          eq(schema.emailTenant.organizationId, organizationId),
+          eq(schema.emailTenant.stream, "marketing"),
+        ),
+      );
+    const from = `hello@${verified.name}`;
+
+    await authorizeLiveSender({ organizationId, from, provider: "fake" });
+    await expectError(
+      authorizeLiveSender({ organizationId, from, provider: "fake", stream: "marketing" }),
+      EmailError,
+      "sending_paused",
+    );
   });
 
   test("a paused tenant can't send", async () => {

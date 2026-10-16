@@ -289,9 +289,12 @@ The docs' guide is `/docs/email/smtp`.
 
 ## Running on Amazon SES
 
-Each organization gets its own SES **tenant** (isolated reputation and pausing), created with its first domain.
-SES suppression is off for tenants and the configuration set: coss.com's own suppression lists decide who is skipped. All tenants share one **configuration set**, which publishes delivery events to SNS → SQS,
-where the worker picks them up; an EventBridge rule sends tenant pause/resume events to the same queue.
+Email is split into two **streams**, transactional and marketing (`email.stream`), so marketing complaints never
+pause password resets. Each organization gets one SES **tenant** per stream (isolated reputation and pausing),
+created with its first domain, and every domain identity is associated with both. Each stream has its own
+**configuration set**, `<name>` and `<name>-marketing`, both publishing delivery events to SNS → SQS, where the
+worker picks them up; an EventBridge rule sends tenant pause/resume events to the same queue. SES suppression is
+off for tenants and configuration sets: coss.com's own suppression lists decide who is skipped.
 
 1. Use a dedicated AWS account (or at least region) per stage: SES identities are account-wide, so the same
    domain can't be verified in two stages of one account. New accounts start in the SES sandbox; request
@@ -324,12 +327,27 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
    suppression. Keep traffic paused if bootstrap fails, correct the error, and rerun it.
    Bootstrap needs `ses:ListSuppressedDestinations` for both account and tenant lists in addition
    to its infrastructure permissions; an unmapped SES tenant stops the transition.
+   **Upgrading to streams:** apply the migration, run bootstrap *before* deploying (it creates the
+   `<name>-marketing` configuration set, lets SES publish its events to the topic, adds it to the
+   IAM policies and creates every existing organization's marketing tenant with its domains'
+   identities associated), deploy, then run bootstrap once more: it associates domains the old
+   release added meanwhile with the marketing tenants too. Keep domain changes paused from the
+   migration until the deploy (as above): the migration re-keys `email_tenant` by stream, so the old
+   release can't store an organization's first tenant, and adding a first domain fails until the new
+   release runs (retrying afterwards works). Tenants double, so ask
+   AWS for a higher SES tenant quota first if you are near it. The tenant prefix is now at most 23
+   characters (`<prefix>-<organization id>-marketing` must fit SES's 64).
+4. Optionally, put a stream on a managed dedicated IP pool: `--transactional-pool <pool>` and/or
+   `--marketing-pool <pool>` create the pool (`ScalingMode: MANAGED`) and set it as that configuration set's
+   sending pool; omitting a flag leaves the set as it is. Dedicated IPs are billed per pool and by volume
+   and warm up over weeks, so start them well before the traffic they are for.
 
 coss.com tags the identities it creates `coss_managed=<tenant prefix>` and only ever recreates or deletes identities
 carrying its own tag (enforced in code and by the IAM policies), so domains verified by hand in the same account
 are left alone. Sending can't be limited by tag (SES authorizes sends against the sender address), so the API
-and worker policies allow `ses:SendEmail` on any identity but only with the coss.com configuration set (another set,
-or none, is denied); coss.com always sends with the organization's tenant, which SES only allows for identities associated with it.
+and worker policies allow `ses:SendEmail` on any identity but only with the coss.com configuration sets (another set,
+or none, is denied); coss.com always sends with the organization's tenant of the email's stream, which SES only allows
+for identities associated with it.
 
 ### Receiving email on SES
 

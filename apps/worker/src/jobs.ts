@@ -131,12 +131,14 @@ export type WorkerDeps = {
 };
 
 /**
- * Every loop (and pg-boss's email dispatch), by name, for `WORKER_LOOPS`. The conditional ones
- * (`billing-notifications`, `auth-emails`, `reputation-notifications`, `dmarc-notifications`,
- * `push-notifications`, `ses-events`, `ses-inbound`) also need their configuration.
+ * Every loop (and pg-boss's email dispatch, one queue per stream), by name, for `WORKER_LOOPS`. The
+ * conditional ones (`billing-notifications`, `auth-emails`, `reputation-notifications`,
+ * `dmarc-notifications`, `push-notifications`, `ses-events`, `ses-inbound`) also need their
+ * configuration.
  */
 export const WORKER_LOOP_NAMES = [
   "email-dispatch",
+  "email-dispatch-marketing",
   "webhooks",
   "hooks",
   "hooks-maintenance",

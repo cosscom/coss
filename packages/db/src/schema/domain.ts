@@ -110,6 +110,12 @@ export const emailStatus = pgEnum("email_status", [
 
 export type EmailTag = { name: string; value: string };
 
+/**
+ * Separates traffic whose reputation must never mix: each stream has its own SES configuration
+ * set and tenant per organization, so marketing complaints never pause password resets.
+ */
+export const emailStream = pgEnum("email_stream", ["transactional", "marketing"]);
+
 // One `POST /v1/emails/batch` request. Holds the batch's idempotency key; its emails' keys are NULL.
 export const emailBatch = pgTable(
   "email_batch",
@@ -165,6 +171,8 @@ export const email = pgTable(
     tags: jsonb("tags").$type<EmailTag[]>().notNull().default([]),
     // Matched against category-scoped suppressions and tracking rules.
     category: text("category"),
+    // Decides the provider's configuration set and tenant (and the dispatch queue).
+    stream: emailStream("stream").notNull().default("transactional"),
     // Open/click tracking, resolved once at send (per-send override, category rule, environment
     // default). The token names the email in its public `/t/*` URLs; set only when tracking or
     // one-click unsubscribe is on.
@@ -628,24 +636,31 @@ export const tenantSendingStatus = pgEnum("tenant_sending_status", [
 ]);
 
 /**
- * The provider-side tenant of an organization (an SES tenant: isolated reputation, suppression
- * list and pausing). Created with the organization's first domain.
+ * The provider-side tenants of an organization, one per stream (an SES tenant: isolated
+ * reputation, suppression list and pausing). Created with the organization's first domain.
  */
-export const emailTenant = pgTable("email_tenant", {
-  organizationId: text("organization_id")
-    .primaryKey()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  provider: text("provider").notNull(),
-  tenantName: text("tenant_name").notNull().unique("email_tenant_name_unique"),
-  tenantArn: text("tenant_arn"),
-  sendingStatus: tenantSendingStatus("sending_status").notNull().default("enabled"),
-  // Bootstrap commits the imported lists and this marker together before disabling SES suppression.
-  suppressionMigratedAt: timestamp("suppression_migrated_at", { withTimezone: true }),
-  statusCause: text("status_cause"),
-  statusUpdatedAt: timestamp("status_updated_at", { withTimezone: true }),
-  createdAt: createdAt(),
-  updatedAt: updatedAt(),
-});
+export const emailTenant = pgTable(
+  "email_tenant",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    // One tenant per stream: SES pauses (and rates) each on its own.
+    stream: emailStream("stream").notNull().default("transactional"),
+    provider: text("provider").notNull(),
+    tenantName: text("tenant_name").notNull().unique("email_tenant_name_unique"),
+    tenantArn: text("tenant_arn"),
+    sendingStatus: tenantSendingStatus("sending_status").notNull().default("enabled"),
+    // Bootstrap commits the imported lists and this marker together before disabling SES
+    // suppression.
+    suppressionMigratedAt: timestamp("suppression_migrated_at", { withTimezone: true }),
+    statusCause: text("status_cause"),
+    statusUpdatedAt: timestamp("status_updated_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ columns: [t.organizationId, t.stream] })],
+);
 
 export const dedicatedIpPoolStatus = pgEnum("dedicated_ip_pool_status", [
   // Over COSS's pool capacity: nothing is created until a slot frees up.
@@ -660,8 +675,8 @@ export const dedicatedIpPoolStatus = pgEnum("dedicated_ip_pool_status", [
 
 /**
  * An organization's dedicated IP pool (the Dedicated IPs add-on): a provider-managed pool (SES
- * managed dedicated IPs, warmed up automatically) and the configuration set that sends through
- * it. Reconciled by the worker against billing; the row is deleted once the pool is released.
+ * managed dedicated IPs, warmed up automatically) and a configuration set per stream that sends
+ * through it. Reconciled by the worker against billing; the row is deleted once the pool is released.
  */
 export const dedicatedIpPool = pgTable(
   "dedicated_ip_pool",
@@ -691,6 +706,10 @@ export const dedicatedIpPool = pgTable(
     // Set before the provider resources are deleted: from then on a returning entitlement no
     // longer restores this row (it gets a new pool once the release has finished).
     releaseStartedAt: timestamp("release_started_at", { withTimezone: true }),
+    // When the marketing stream's configuration set on the pool was set up (null: marketing
+    // sends stay on shared IPs). Pools made before the streams split, or while the organization
+    // had no marketing tenant yet, get it at a later check.
+    marketingConfiguredAt: timestamp("marketing_configured_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

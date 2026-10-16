@@ -2,9 +2,11 @@
  * Dedicated IPs (the Dedicated IPs add-on): one provider-managed pool per organization, warmed
  * up by the provider. The worker reconciles what billing grants (`entitled`) with what exists:
  * - an entitled organization gets a row, `provisioning` (or `waiting` past `MAX_DEDICATED_IP_POOLS`),
- *   then `warming` once the pool and its configuration set exist: from then on its live sends go
+ *   then `warming` once the pool and its configuration sets exist: from then on its live sends go
  *   through the pool (`dedicatedPoolInUse`), and SES warms the IPs up, spilling the rest of the
- *   traffic to shared IPs while it does;
+ *   traffic to shared IPs while it does. Both streams share the pool, each through its own
+ *   configuration set (so events and reputation metrics stay per stream); marketing joins once
+ *   its set exists (`marketing_configured_at`), which needs the organization's marketing tenant;
  * - `warming` ⇄ `ready` follows how much of the last week's deliveries left from the pool's IPs;
  * - an organization no longer entitled goes `releasing` at once (sends are back on shared IPs)
  *   and its pool is released after `RELEASE_DELAY_MS`, unless the entitlement comes back first
@@ -28,8 +30,13 @@ import {
   type SQL,
   sql,
 } from "drizzle-orm";
-import { getEmailTenant } from "./domains.ts";
-import type { DedicatedIpProvider, IdentityProvider, ProviderTenant } from "./provider.ts";
+import { listEmailTenants } from "./domains.ts";
+import type {
+  DedicatedIpProvider,
+  EmailStream,
+  IdentityProvider,
+  ProviderTenant,
+} from "./provider.ts";
 import type { DedicatedIpPoolObjectOutput } from "./schemas.ts";
 
 const { dedicatedIpPool, dedicatedIpDeliveryRollup, organizationDeletion } = schema;
@@ -99,10 +106,11 @@ export async function dedicatedIpSlotAvailable(
   return taken.size < (opts.capacity ?? MAX_DEDICATED_IP_POOLS);
 }
 
-/** Whether the organization's live sends go through its pool now (with this provider). */
+/** Whether the organization's live sends of the stream go through its pool now (with this provider). */
 export async function dedicatedPoolInUse(
   organizationId: string,
   provider: string,
+  stream: EmailStream = "transactional",
   executor: Executor = db,
 ): Promise<boolean> {
   const [row] = await executor
@@ -113,6 +121,7 @@ export async function dedicatedPoolInUse(
         eq(dedicatedIpPool.organizationId, organizationId),
         eq(dedicatedIpPool.provider, provider),
         inArray(dedicatedIpPool.status, ["warming", "ready"]),
+        stream === "marketing" ? isNotNull(dedicatedIpPool.marketingConfiguredAt) : undefined,
       ),
     )
     .limit(1);
@@ -120,11 +129,30 @@ export async function dedicatedPoolInUse(
 }
 
 /**
- * Whether the organization's live sends go through its pool, as SQL for a claim's `set` (the
- * decision is stored on the email: `email.dedicated_pool`).
+ * Whether the organization's live sends of the stream go through its pool, as SQL for a claim's
+ * `set` (the decision is stored on the email: `email.dedicated_pool`). Marketing needs its
+ * configuration set on the pool (`marketing_configured_at`).
  */
-export function dedicatedPoolSql(organizationId: string, provider: string): SQL<boolean> {
-  return sql<boolean>`exists (select 1 from ${dedicatedIpPool} where ${dedicatedIpPool.organizationId} = ${organizationId} and ${dedicatedIpPool.provider} = ${provider} and ${dedicatedIpPool.status} in ('warming', 'ready'))`;
+export function dedicatedPoolSql(
+  organizationId: string,
+  provider: string,
+  stream: EmailStream,
+): SQL<boolean> {
+  const marketing =
+    stream === "marketing" ? sql` and ${dedicatedIpPool.marketingConfiguredAt} is not null` : sql``;
+  return sql<boolean>`exists (select 1 from ${dedicatedIpPool} where ${dedicatedIpPool.organizationId} = ${organizationId} and ${dedicatedIpPool.provider} = ${provider} and ${dedicatedIpPool.status} in ('warming', 'ready')${marketing})`;
+}
+
+type StreamTenants = Partial<Record<EmailStream, ProviderTenant>>;
+
+/** The organization's tenants of this provider, by stream. */
+async function streamTenants(organizationId: string, provider: string): Promise<StreamTenants> {
+  const tenants: StreamTenants = {};
+  for (const row of await listEmailTenants(organizationId)) {
+    if (row.provider !== provider) continue;
+    tenants[row.stream] = { tenantName: row.tenantName, tenantArn: row.tenantArn };
+  }
+  return tenants;
 }
 
 /**
@@ -402,9 +430,10 @@ async function step(row: DedicatedIpPoolRow, now: Date, deps: DedicatedIpDeps): 
     case "waiting":
       return;
     case "provisioning": {
-      // The tenant comes with the organization's first domain (the worker never creates one).
-      const tenantRow = await getEmailTenant(row.organizationId);
-      if (!tenantRow || tenantRow.provider !== deps.identity.name) {
+      // The tenants come with the organization's first domain (the worker never creates one, but
+      // marketing tenants of organizations from before the streams split are backfilled).
+      const tenants = await streamTenants(row.organizationId, deps.identity.name);
+      if (!tenants.transactional) {
         await db
           .update(dedicatedIpPool)
           .set({
@@ -414,20 +443,20 @@ async function step(row: DedicatedIpPoolRow, now: Date, deps: DedicatedIpDeps): 
           .where(ours);
         return;
       }
-      const tenant = { tenantName: tenantRow.tenantName, tenantArn: tenantRow.tenantArn };
       try {
-        await deps.dedicatedIps.ensurePool({ organizationId: row.organizationId, tenant });
+        await deps.dedicatedIps.ensurePool({ organizationId: row.organizationId, tenants });
       } catch (error) {
-        await undoIfTornDown(row, tenant, deps.dedicatedIps);
+        await undoIfTornDown(row, tenants, deps.dedicatedIps);
         throw error;
       }
-      if (await undoIfTornDown(row, tenant, deps.dedicatedIps)) return;
+      if (await undoIfTornDown(row, tenants, deps.dedicatedIps)) return;
       await db.transaction(async (tx) => {
         const [updated] = await tx
           .update(dedicatedIpPool)
           .set({
             status: "warming",
             provisionedAt: now,
+            marketingConfiguredAt: tenants.marketing ? now : null,
             attempts: 0,
             statusMessage: null,
             // Right away: the first look at the pool's IPs.
@@ -450,6 +479,27 @@ async function step(row: DedicatedIpPoolRow, now: Date, deps: DedicatedIpDeps): 
     }
     case "warming":
     case "ready": {
+      // Marketing's configuration set, for a pool made without it (before the streams split, or
+      // before the organization's marketing tenant existed). Until then marketing stays on
+      // shared IPs.
+      let marketingConfiguredAt = row.marketingConfiguredAt;
+      if (!marketingConfiguredAt) {
+        const tenants = await streamTenants(row.organizationId, deps.identity.name);
+        if (tenants.marketing) {
+          const marketing = { marketing: tenants.marketing };
+          try {
+            await deps.dedicatedIps.ensurePool({
+              organizationId: row.organizationId,
+              tenants: marketing,
+            });
+          } catch (error) {
+            await undoIfTornDown(row, tenants, deps.dedicatedIps);
+            throw error;
+          }
+          if (await undoIfTornDown(row, tenants, deps.dedicatedIps)) return;
+          marketingConfiguredAt = now;
+        }
+      }
       const ips = await deps.dedicatedIps.poolIps(row.organizationId);
       const share = dedicatedShare(await deliveriesByIp(row.organizationId, now), ips);
       const ready = ips.length > 0 && share !== null && share >= READY_SHARE;
@@ -464,6 +514,7 @@ async function step(row: DedicatedIpPoolRow, now: Date, deps: DedicatedIpDeps): 
           ips,
           dedicatedShare: share,
           readyAt: ready ? (row.readyAt ?? now) : row.readyAt,
+          marketingConfiguredAt,
           statusMessage: quiet
             ? "SES assigns the first dedicated IP once you send a few hundred emails a day."
             : null,
@@ -519,8 +570,8 @@ async function step(row: DedicatedIpPoolRow, now: Date, deps: DedicatedIpDeps): 
  */
 async function undoIfTornDown(
   row: DedicatedIpPoolRow,
-  /** The tenant it was created for: the teardown may have deleted its row by now. */
-  tenant: ProviderTenant,
+  /** The tenants it was created for: the teardown may have deleted their rows by now. */
+  tenants: StreamTenants,
   provider: DedicatedIpProvider,
 ): Promise<boolean> {
   const [deleting] = await db
@@ -534,25 +585,20 @@ async function undoIfTornDown(
     )
     .limit(1);
   if (!deleting && (await getDedicatedIpPool(row.organizationId))) return false;
-  await releaseDedicatedIpPool(row, provider, tenant);
+  await releaseDedicatedIpPool(row, provider, tenants);
   return true;
 }
 
 async function releaseDedicatedIpPool(
   row: Pick<DedicatedIpPoolRow, "organizationId" | "provider" | "provisionedAt" | "status">,
   provider: DedicatedIpProvider,
-  /** Known already (else read from the organization's tenant row). */
-  known?: ProviderTenant,
+  /** Known already (else read from the organization's tenant rows). */
+  known?: StreamTenants,
 ): Promise<void> {
   if (row.provider !== provider.name) return;
-  const tenantRow = known ? null : await getEmailTenant(row.organizationId);
   await provider.releasePool({
     organizationId: row.organizationId,
-    tenant:
-      known ??
-      (tenantRow && tenantRow.provider === provider.name
-        ? { tenantName: tenantRow.tenantName, tenantArn: tenantRow.tenantArn }
-        : null),
+    tenants: known ?? (await streamTenants(row.organizationId, provider.name)),
   });
 }
 

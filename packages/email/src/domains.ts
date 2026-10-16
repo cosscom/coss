@@ -21,6 +21,7 @@ import {
   ne,
   notInArray,
   or,
+  sql,
 } from "drizzle-orm";
 import { checkBimi, organizationalDomain, toBimiObject } from "./bimi.ts";
 import { releaseOrganizationDedicatedIps } from "./dedicated-ips.ts";
@@ -31,6 +32,8 @@ import { DomainError, EmailError } from "./errors.ts";
 import type { InboundContentStore } from "./inbound-store.ts";
 import {
   type DedicatedIpProvider,
+  EMAIL_STREAMS,
+  type EmailStream,
   type IdentityProvider,
   IdentityTakenError,
   type ProviderTenant,
@@ -175,35 +178,161 @@ export function nextCheckAt(
   }
 }
 
-export async function getEmailTenant(organizationId: string): Promise<EmailTenantRow | null> {
+/** The organization's provider tenant of one stream (default: the transactional one). */
+export async function getEmailTenant(
+  organizationId: string,
+  stream: EmailStream = "transactional",
+): Promise<EmailTenantRow | null> {
   const [row] = await db
     .select()
     .from(emailTenant)
-    .where(eq(emailTenant.organizationId, organizationId))
+    .where(and(eq(emailTenant.organizationId, organizationId), eq(emailTenant.stream, stream)))
     .limit(1);
   return row ?? null;
+}
+
+/** Every provider tenant of the organization (one per stream once both exist). */
+export async function listEmailTenants(organizationId: string): Promise<EmailTenantRow[]> {
+  return db
+    .select()
+    .from(emailTenant)
+    .where(eq(emailTenant.organizationId, organizationId))
+    .orderBy(asc(emailTenant.stream));
 }
 
 function tenantOf(row: EmailTenantRow): ProviderTenant {
   return { tenantName: row.tenantName, tenantArn: row.tenantArn };
 }
 
-/** The organization's provider tenant, created on first use. */
+/** The organization's tenants known to `provider`, for identity associations. */
+async function providerTenants(
+  organizationId: string,
+  provider: string,
+): Promise<ProviderTenant[]> {
+  const rows = await listEmailTenants(organizationId);
+  return rows.filter((row) => row.provider === provider).map(tenantOf);
+}
+
+/** The organization's provider tenant of one stream, created on first use. */
 export async function ensureOrgTenant(
   organizationId: string,
   identity: IdentityProvider,
+  stream: EmailStream = "transactional",
+  opts: { provisioning?: string } = {},
 ): Promise<ProviderTenant> {
-  const existing = await getEmailTenant(organizationId);
+  const existing = await getEmailTenant(organizationId, stream);
   if (existing?.provider === identity.name) return tenantOf(existing);
-  const tenant = await identity.ensureTenant({ organizationId });
-  await db
+  return (await storeOrgTenant(organizationId, identity, stream, opts)).tenant;
+}
+
+/**
+ * Creates (or adopts) one stream's provider tenant and stores its row. The organization's domain
+ * identities are associated with it first, so a stored tenant can always send from every domain
+ * (a stream added after an organization's first domain, at provisioning or by the backfill).
+ * Only identities provisioned for this organization (their DKIM tokens are stored): a domain still
+ * being claimed goes through `createDomainIdentity`'s ownership checks, which an association made
+ * here would get around (an orphaned identity's old keys would look like the organization's own).
+ */
+async function storeOrgTenant(
+  organizationId: string,
+  identity: IdentityProvider,
+  stream: EmailStream,
+  opts: { provisioning?: string } = {},
+): Promise<{ tenant: ProviderTenant; created: boolean }> {
+  const tenant = await identity.ensureTenant({ organizationId, stream });
+  await associateOrgDomains(organizationId, identity, tenant, opts);
+  const [stored] = await db
     .insert(emailTenant)
-    .values({ organizationId, provider: identity.name, ...tenant })
+    .values({
+      organizationId,
+      stream,
+      provider: identity.name,
+      ...tenant,
+      // Marketing tenants are always born without SES suppression (`TENANT_SUPPRESSION`): the
+      // bootstrap's migration must never import (and so revive) entries into them.
+      suppressionMigratedAt: stream === "transactional" ? null : new Date(),
+    })
     .onConflictDoUpdate({
-      target: emailTenant.organizationId,
+      target: [emailTenant.organizationId, emailTenant.stream],
       set: { provider: identity.name, ...tenant },
-    });
-  return tenant;
+    })
+    .returning({ created: sql<boolean>`xmax = 0` });
+  return { tenant, created: Boolean(stored?.created) };
+}
+
+/** Associates the organization's provisioned domain identities with `tenant` (idempotent). */
+async function associateOrgDomains(
+  organizationId: string,
+  identity: IdentityProvider,
+  tenant: ProviderTenant,
+  /** The domain being provisioned (a restart keeps its old tokens): its ownership check comes first. */
+  opts: { provisioning?: string } = {},
+): Promise<void> {
+  const domains = await db
+    .select({ name: domain.name })
+    .from(domain)
+    .where(
+      and(
+        eq(domain.organizationId, organizationId),
+        eq(domain.provider, identity.name),
+        notInArray(domain.status, ["failed", "deleting"]),
+        sql`cardinality(${domain.dkimTokens}) > 0`,
+        opts.provisioning ? ne(domain.name, opts.provisioning) : undefined,
+      ),
+    );
+  for (const row of domains) {
+    await identity.associateDomainIdentity({ tenant, domain: row.name });
+  }
+}
+
+/** Every stream's tenant of the organization, created on first use (transactional first). */
+export async function ensureOrgTenants(
+  organizationId: string,
+  identity: IdentityProvider,
+  opts: { provisioning?: string } = {},
+): Promise<ProviderTenant[]> {
+  const tenants: ProviderTenant[] = [];
+  for (const stream of EMAIL_STREAMS) {
+    tenants.push(await ensureOrgTenant(organizationId, identity, stream, opts));
+  }
+  return tenants;
+}
+
+/**
+ * Creates the tenants of streams added after an organization's first domain (`ses:bootstrap`
+ * after an upgrade), each associated with the organization's domain identities before its row is
+ * stored (`storeOrgTenant`), and associates existing stream tenants with domains added since (the
+ * old release, between the upgrade's bootstrap and its deploy, associated new domains with the
+ * transactional tenant only). Idempotent; returns the number of tenants created. `scope` limits it
+ * to some organizations (tests).
+ */
+export async function ensureMissingStreamTenants(
+  identity: IdentityProvider,
+  opts: { scope?: { organizationIds: string[] } } = {},
+): Promise<number> {
+  const organizations = await db
+    .selectDistinct({ organizationId: emailTenant.organizationId })
+    .from(emailTenant)
+    .where(
+      and(
+        eq(emailTenant.provider, identity.name),
+        opts.scope ? inArray(emailTenant.organizationId, opts.scope.organizationIds) : undefined,
+      ),
+    )
+    .orderBy(asc(emailTenant.organizationId));
+  let created = 0;
+  for (const { organizationId } of organizations) {
+    const existing = await listEmailTenants(organizationId);
+    for (const stream of EMAIL_STREAMS) {
+      const row = existing.find((tenant) => tenant.stream === stream);
+      if (row?.provider === identity.name) {
+        await associateOrgDomains(organizationId, identity, tenantOf(row));
+        continue;
+      }
+      if ((await storeOrgTenant(organizationId, identity, stream)).created) created++;
+    }
+  }
+  return created;
 }
 
 export async function listDomains(input: { organizationId: string }): Promise<DomainRow[]> {
@@ -265,9 +394,11 @@ async function provision(
   onFailure: "delete" | "fail",
 ): Promise<DomainRow> {
   try {
-    const tenant = await ensureOrgTenant(row.organizationId, deps.identity);
+    const tenants = await ensureOrgTenants(row.organizationId, deps.identity, {
+      provisioning: row.name,
+    });
     const identity = await deps.identity.createDomainIdentity({
-      tenant,
+      tenants,
       domain: row.name,
       mailFromDomain: row.mailFromDomain,
     });
@@ -459,9 +590,8 @@ export async function checkDomain(
 
   if (status === "failed" && state) {
     try {
-      const tenant = await getEmailTenant(row.organizationId);
       await deps.identity.deleteDomainIdentity({
-        tenant: tenant ? tenantOf(tenant) : { tenantName: "", tenantArn: null },
+        tenants: await providerTenants(row.organizationId, deps.identity.name),
         domain: row.name,
       });
     } catch (error) {
@@ -562,9 +692,8 @@ export async function deleteDomain(
     // Stops sends from this domain before the identity disappears.
     await db.update(domain).set({ status: "deleting", canSend: false }).where(scope);
     try {
-      const tenant = await getEmailTenant(row.organizationId);
       await deps.identity.deleteDomainIdentity({
-        tenant: tenant ? tenantOf(tenant) : { tenantName: "", tenantArn: null },
+        tenants: await providerTenants(row.organizationId, deps.identity.name),
         domain: row.name,
       });
     } catch (error) {
@@ -607,8 +736,8 @@ export async function releaseOrganizationEmailResources(
   }
   // In batches, before the domains: deleting a domain would cascade into all its report rows.
   await deleteOrganizationDmarcReports(organizationId, assertLease);
-  const tenantRow = await getEmailTenant(organizationId);
-  const tenant = tenantRow ? tenantOf(tenantRow) : { tenantName: "", tenantArn: null };
+  const tenantRows = await listEmailTenants(organizationId);
+  const tenants = tenantRows.filter((row) => row.provider === deps.identity.name).map(tenantOf);
   const rows = await db
     .select({ id: domain.id, name: domain.name, status: domain.status, provider: domain.provider })
     .from(domain)
@@ -619,21 +748,30 @@ export async function releaseOrganizationEmailResources(
     await assertLease();
     // Identities of another provider (e.g. fake domains in an SES deployment) aren't ours to touch.
     if (row.status !== "failed" && row.provider === deps.identity.name) {
-      await deps.identity.deleteDomainIdentity({ tenant, domain: row.name });
+      await deps.identity.deleteDomainIdentity({ tenants, domain: row.name });
     }
     await assertLease();
     await db
       .delete(domain)
       .where(and(eq(domain.id, row.id), eq(domain.organizationId, organizationId)));
   }
-  // Before the tenant: SES won't delete a configuration set still associated with one.
+  // Before the tenants: SES won't delete a configuration set still associated with one.
   await assertLease();
   await releaseOrganizationDedicatedIps(organizationId, deps.dedicatedIps);
-  if (tenantRow) {
+  for (const tenantRow of tenantRows) {
     await assertLease();
-    if (tenantRow.provider === deps.identity.name) await deps.identity.deleteTenant(tenant);
+    if (tenantRow.provider === deps.identity.name) {
+      await deps.identity.deleteTenant(tenantOf(tenantRow));
+    }
     await assertLease();
-    await db.delete(emailTenant).where(eq(emailTenant.organizationId, organizationId));
+    await db
+      .delete(emailTenant)
+      .where(
+        and(
+          eq(emailTenant.organizationId, organizationId),
+          eq(emailTenant.stream, tenantRow.stream),
+        ),
+      );
   }
 }
 
@@ -731,6 +869,8 @@ export async function authorizeLiveSender(input: {
   from: string;
   /** The live provider: only domains it verified count. */
   provider: string;
+  /** Whose tenant must not be paused (default: transactional). */
+  stream?: EmailStream;
 }): Promise<void> {
   // Checked first: a suspended organization is told so whatever it sends from.
   if (await isSuspended(input.organizationId)) {
@@ -777,11 +917,16 @@ export async function authorizeLiveSender(input: {
         "Domains in the dashboard, or use a sandbox key to test.",
     );
   }
-  const tenant = await getEmailTenant(input.organizationId);
+  const stream = input.stream ?? "transactional";
+  const tenant = await getEmailTenant(input.organizationId, stream);
   if (tenant?.sendingStatus === "disabled") {
     throw new EmailError(
       "sending_paused",
-      "Sending is paused for this organization because of its sending reputation. Contact support.",
+      stream === "transactional"
+        ? "Sending is paused for this organization because of its sending reputation. " +
+            "Contact support."
+        : `${stream[0]?.toUpperCase()}${stream.slice(1)} sending is paused for this ` +
+            "organization because of its sending reputation. Contact support.",
     );
   }
 }

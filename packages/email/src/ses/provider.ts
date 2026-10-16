@@ -68,8 +68,9 @@ function attachments(message: OutboundEmail): Attachment[] {
 }
 
 /**
- * Sends through SES v2 with the organization's tenant and the shared configuration set (or, for
- * `dedicatedPool` messages, the organization's own one).
+ * Sends through SES v2 with the organization's tenant of the stream and the stream's shared
+ * configuration set (or, for `dedicatedPool` messages, the organization's own one of the stream,
+ * which sends through its dedicated IP pool).
  */
 export class SesEmailProvider implements EmailProvider {
   readonly name = "ses";
@@ -103,11 +104,11 @@ export class SesEmailProvider implements EmailProvider {
           ...(message.attachments.length ? { Attachments: attachments(message) } : {}),
         },
       },
-      // The organization's own configuration set sends through its dedicated IP pool.
+      // The organization's own configuration sets send through its dedicated IP pool.
       ConfigurationSetName: message.dedicatedPool
-        ? tenantNameFor(this.#config.tenantPrefix, message.organizationId)
-        : this.#config.configurationSet,
-      TenantName: tenantNameFor(this.#config.tenantPrefix, message.organizationId),
+        ? tenantNameFor(this.#config.tenantPrefix, message.organizationId, message.stream)
+        : this.#config.configurationSets[message.stream],
+      TenantName: tenantNameFor(this.#config.tenantPrefix, message.organizationId, message.stream),
       EmailTags: [{ Name: EMAIL_ID_TAG, Value: message.emailId }],
     };
     for (let attempt = 0; ; attempt++) {
