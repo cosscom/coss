@@ -12,9 +12,9 @@ import type {
   RescheduleEmailParams,
   SendEmailParams,
 } from "../types/email.ts";
+import { DedicatedIpsResource } from "./dedicated-ips.ts";
 import { EmailTemplatesResource } from "./email-templates.ts";
 import { listQuery } from "./list-query.ts";
-import { DedicatedIpsResource } from "./dedicated-ips.ts";
 import { ReceivedEmailsResource } from "./received-emails.ts";
 import { SuppressionResource } from "./suppressions.ts";
 import { TrackingResource } from "./tracking.ts";
