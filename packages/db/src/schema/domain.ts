@@ -1360,6 +1360,91 @@ export const webhookAttempt = pgTable(
   ],
 );
 
+/**
+ * A temporary subscriber the CLI (`coss listen`) pulls deliveries from over the API, instead of COSS
+ * POSTing them to a URL. Kept apart from `webhook_endpoint` so nothing that reads endpoints (the
+ * worker's delivery loop, plan limits, health, the endpoint API) ever sees one. Alive while it is
+ * polled (`expires_at` moves forward); closing it ends it early. Expired rows are purged.
+ */
+export const webhookListener = pgTable(
+  "webhook_listener",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.webhookListener)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    apiVersion: text("api_version").notNull(),
+    // Empty: every event type.
+    eventTypes: text("event_types").array().notNull().default(sql`'{}'::text[]`),
+    description: text("description"),
+    // No FK: Better Auth hard-deletes keys.
+    createdByApiKeyId: text("created_by_api_key_id"),
+    lastPolledAt: timestamp("last_polled_at", { withTimezone: true }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "webhook_listener_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("webhook_listener_id_organization_unique").on(t.id, t.organizationId),
+    // Fan-out and the per-environment cap: the environment's live listeners.
+    index("webhook_listener_environment_expires_idx").on(t.environmentId, t.expiresAt),
+    // The retention purge.
+    index("webhook_listener_expires_at_idx").on(t.expiresAt),
+  ],
+);
+
+/** One message queued for one listener; handed out by polls (leased) and acknowledged by the CLI. */
+export const webhookListenerDelivery = pgTable(
+  "webhook_listener_delivery",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.webhookListenerDelivery)),
+    organizationId: text("organization_id").notNull(),
+    listenerId: text("listener_id").notNull(),
+    messageId: text("message_id").notNull(),
+    status: webhookDeliveryStatus("status").notNull().default("pending"),
+    // Polls that handed it out; a delivery the CLI never acknowledges stops being handed out.
+    handedOutCount: integer("handed_out_count").notNull().default(0),
+    // Set while a poll's answer is out; the fencing token of its acknowledgement.
+    leaseExpiresAt: timestamp("lease_expires_at", { withTimezone: true }),
+    // What the CLI reported forwarding it to the local URL (no status: printed only).
+    statusCode: integer("status_code"),
+    durationMs: integer("duration_ms"),
+    error: text("error"),
+    forwardedAt: timestamp("forwarded_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "webhook_listener_delivery_listener_fk",
+      columns: [t.listenerId, t.organizationId],
+      foreignColumns: [webhookListener.id, webhookListener.organizationId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "webhook_listener_delivery_message_fk",
+      columns: [t.messageId, t.organizationId],
+      foreignColumns: [webhookMessage.id, webhookMessage.organizationId],
+    }).onDelete("cascade"),
+    unique("webhook_listener_delivery_message_listener_unique").on(t.messageId, t.listenerId),
+    unique("webhook_listener_delivery_id_organization_unique").on(t.id, t.organizationId),
+    // Polls: the listener's pending deliveries in order.
+    index("webhook_listener_delivery_pending_idx")
+      .on(t.listenerId, t.createdAt, t.id)
+      .where(sql`${t.status} = 'pending'`),
+    // The listener's cascade (retention purges listeners with deliveries in every status).
+    index("webhook_listener_delivery_listener_idx").on(t.listenerId),
+  ],
+);
+
 export const reputationStatus = pgEnum("reputation_status", ["good", "warning", "suspended"]);
 
 /**

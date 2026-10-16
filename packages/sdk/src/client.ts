@@ -1,15 +1,18 @@
 import { API_VERSION, type ApiVersion } from "./api-version.ts";
 import { type FetchLike, HttpClient } from "./core/http.ts";
+import { ApiKeyResource } from "./resources/api-key.ts";
 import { AuditEventsResource } from "./resources/audit-events.ts";
 import { BillingResource } from "./resources/billing.ts";
 import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
+import { EnvironmentResource } from "./resources/environment.ts";
 import { HooksResource } from "./resources/hooks.ts";
 import { LogDrainsResource } from "./resources/log-drains.ts";
 import { LogsResource } from "./resources/logs.ts";
 import { ReputationResource } from "./resources/reputation.ts";
 import { RiskResource } from "./resources/risk.ts";
 import { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
+import { WebhookListenersResource } from "./resources/webhook-listeners.ts";
 
 export interface CossOptions {
   /** Secret API key (`coss_live_…` or `coss_test_…`). Defaults to the `COSS_API_KEY` env variable. */
@@ -75,10 +78,16 @@ function timeoutMs(value: number | undefined): number {
  */
 export class Coss {
   readonly email: EmailResource;
+  /** The API key's environment, project and organization (`coss.environment.get()`). */
+  readonly environment: EnvironmentResource;
+  /** The client's own API key (`coss.apiKey.revoke()`). */
+  readonly apiKey: ApiKeyResource;
   /** Sending domains of the organization (`coss.domains.create`, `.verify`, …). */
   readonly domains: DomainsResource;
   /** Webhook endpoints of the API key's environment. */
   readonly webhookEndpoints: WebhookEndpointsResource;
+  /** Temporary listeners `coss listen` pulls the environment's events from. */
+  readonly webhookListeners: WebhookListenersResource;
   /** The organization's sending reputation (`coss.reputation.get()`). */
   readonly reputation: ReputationResource;
   /** The environment's log: API requests, email events, webhook attempts (`coss.logs.list()`). */
@@ -128,8 +137,11 @@ export class Coss {
       apiVersion: options.apiVersion?.trim() || API_VERSION,
     });
     this.email = new EmailResource(http);
+    this.environment = new EnvironmentResource(http);
+    this.apiKey = new ApiKeyResource(http);
     this.domains = new DomainsResource(http);
     this.webhookEndpoints = new WebhookEndpointsResource(http);
+    this.webhookListeners = new WebhookListenersResource(http);
     this.reputation = new ReputationResource(http);
     this.logs = new LogsResource(http);
     this.logDrains = new LogDrainsResource(http);

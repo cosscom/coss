@@ -1,0 +1,124 @@
+---
+title: CLI
+description: Sign in from your terminal, send test emails, follow your log, and get webhooks on localhost.
+icon: Terminal
+---
+
+The `coss` command line works with one environment at a time, like an API key does. It runs on
+Node.js 22+:
+
+```sh
+npm install -g coss-cli
+coss login
+```
+
+Or run any command with `npx coss-cli <command>` without installing it (`npx coss` is the SDK,
+not the CLI).
+
+## Sign in
+
+`coss login` opens the dashboard in your browser. Check that the page shows the same verification
+code as your terminal, pick the environment the CLI should work in (a development environment
+is the default), and approve: the CLI gets a new API key of that environment, named after your
+machine, and saves it.
+
+```sh
+coss login
+coss whoami   # Acme / Default / Development (sandbox)
+```
+
+- **No browser on that machine** (over SSH, the default there): `coss login --no-browser` prints a
+  link to open anywhere you're signed in; paste the code the page shows back into the terminal.
+- **Members** can't create API keys: ask an owner or admin for one and run `coss login --manual`,
+  which asks for the key (or reads it from stdin: `echo "$KEY" | coss login --manual`).
+- **Several environments**: save each under a profile (`coss login --profile prod`), then pass
+  `--profile prod` or set `COSS_PROFILE=prod`.
+- **CI and scripts**: set `COSS_API_KEY`; it wins over saved profiles. No flag takes a key,
+  since command lines are visible to other processes on the machine.
+
+`coss logout` removes the saved key and revokes it if `coss login` created it (`--revoke` also
+revokes a key you pasted). Keys are saved in `~/.config/coss/config.json` (`$XDG_CONFIG_HOME`, or
+`%APPDATA%` on Windows), readable only by you.
+
+## Receive webhooks locally
+
+COSS can't reach `localhost`, so `coss listen` fetches the environment's events and forwards each
+one to your local server, exactly as an [endpoint](/docs/webhooks) would receive it:
+
+```sh
+coss listen --forward-to localhost:3000/webhooks
+# Ready! Listening to Acme / Default / Development (sandbox), forwarding to http://localhost:3000/webhooks.
+# Signing secret: whsec_… (API version 2026-10-01)
+```
+
+Requests are signed with the secret it prints, which stays the same for the profile, so put it in
+your local environment once and verify requests as you would in production:
+
+```ts twoslash title="app/webhooks/route.ts"
+import { verifyWebhook } from "coss";
+
+export async function POST(request: Request) {
+  // In development, the secret `coss listen` printed; in production, the endpoint's.
+  const event = await verifyWebhook(
+    await request.text(),
+    request.headers,
+    process.env.COSS_WEBHOOK_SECRET!,
+  );
+  console.log(event.type, event.id);
+  return new Response("ok");
+}
+```
+
+- Only events created while it runs are forwarded, oldest first; the `webhook-id` header is the
+  event's id, as in production. `--events email.delivered,email.bounced` subscribes to fewer.
+- Each forward shows its status in the terminal and in the environment's [log](/docs/logs)
+  (`webhook.forward`). A failed forward isn't retried: send the email again.
+- Without `--forward-to`, events are only printed (`--print-json` shows their bodies, `--json`
+  prints one JSON object per event).
+- Events render in your organization's API version unless you pass `--api-version`.
+- `account.*` and `billing.*` events only reach live environments. Listening to a live
+  environment, with its real events, needs `--live`.
+- An environment has at most 5 listeners at once. One that stops polling (your laptop sleeps)
+  closes after 10 minutes, and `coss listen` opens a new one when it wakes up: events in between
+  are missed.
+
+## Send test emails
+
+```sh
+coss emails send --to you@example.com
+coss emails send --simulate bounced --wait
+```
+
+With a development key nothing is delivered, but every event and webhook a real send has still
+happens. `--simulate delivered|bounced|complained|suppressed` sends to the [mailbox
+simulator](/docs/environments), which produces that outcome in development and production alike;
+`--wait` follows the email until it's known and prints its events, so with `coss listen` running
+you see the matching webhooks arrive.
+
+The default sender for development keys is `COSS CLI <cli@example.com>`; production keys need
+`--from` on a verified domain. Also: `--subject`, `--text`/`--text-file`, `--html`/`--html-file`,
+`--template <id or alias>` with `--var name=value`, `--cc`, `--bcc`, `--reply-to`, `--category`,
+`--tag name=value` and `--json`.
+
+## Follow the log
+
+```sh
+coss logs tail
+coss logs tail --source email --level error
+coss logs tail --type api.request --status 4xx,5xx --since 15m
+```
+
+New lines of the environment's [log](/docs/logs) as they arrive: API requests made with its keys,
+email events, webhook attempts and `coss listen` forwards. Filter by `--source`, `--level`,
+`--type`, `--status` and free text (`-q`); `--since` starts with earlier lines, and `--json`
+prints one log object per line for `jq`.
+
+## Environment variables
+
+| Variable | |
+| --- | --- |
+| `COSS_API_KEY` | Use this key instead of a saved profile. |
+| `COSS_PROFILE` | The saved profile to use. |
+| `COSS_BASE_URL` | Another API origin. Remembered by `coss login`. |
+| `COSS_DASHBOARD_URL` | Another dashboard for `coss login`. |
+| `NO_COLOR` | No colors (or `--no-color`). |

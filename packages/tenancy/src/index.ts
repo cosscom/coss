@@ -1,22 +1,26 @@
 export { promoteToAdmin } from "./admin.ts";
 export {
   type ApiKeyContext,
+  type ApiKeyEnvironmentSummary,
   type AuthenticateResult,
   apiKeyNames,
   authenticateApiKey,
   createEnvironmentApiKey,
   type EnvironmentApiKeySummary,
+  getApiKeyEnvironmentSummary,
   getKeyBinding,
   type KeyPermissions,
   LAST_USED_RESOLUTION_MS,
   listEnvironmentApiKeys,
   type RefusedKeyContext,
+  revokeEnvironmentApiKey,
 } from "./api-keys.ts";
 export {
   getOrganizationApiVersion,
   readOrganizationApiVersion,
   setOrganizationApiVersion,
 } from "./api-versions.ts";
+export { type CliGrant, type CliRedemption, redeemCliAuthorization } from "./cli-auth.ts";
 export {
   getOrganizationDeletion,
   isOrganizationBeingDeleted,

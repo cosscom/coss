@@ -8,11 +8,15 @@ export type SentryService = "web" | "site" | "api" | "worker" | "portal" | "smtp
 
 /** Paths not worth a trace: load balancer health checks and the browser tunnel. */
 const UNTRACED_PATH = /^\/(api\/)?(health|monitoring)\/?$/;
+// `coss listen`'s long polls wait up to 25 s by design: traced, they would read as slow requests.
+const LISTENER_POLL_PATH = /^\/v1\/webhook_listeners\/[^/]+\/poll$/;
 
 /** Streamed spans are matched when they start, before a server knows the route: by path. */
 const IGNORED_SPANS: NonNullable<Options["ignoreSpans"]> = [
   { attributes: { "url.path": UNTRACED_PATH } },
   { attributes: { "http.target": UNTRACED_PATH } },
+  { attributes: { "url.path": LISTENER_POLL_PATH } },
+  { attributes: { "http.target": LISTENER_POLL_PATH } },
 ];
 
 /**

@@ -53,6 +53,9 @@ export function createTestApp(
     /** Enforce plans (`createPlanGate`) and Free's allowance (`createUsageGate`). Off by default. */
     plans?: PlanGate;
     billing?: UsageGate;
+    shutdownSignal?: AbortSignal;
+    /** Waiting listener polls check this often (default 20 ms, so tests don't wait). */
+    listenerPollIntervalMs?: number;
   } = {},
 ) {
   const liveProvider = new FakeEmailProvider({ log: false });
@@ -91,6 +94,8 @@ export function createTestApp(
     corsOrigins: opts.corsOrigins,
     logWriter: opts.logWriter,
     versioning: opts.versioning,
+    shutdownSignal: opts.shutdownSignal,
+    listenerPollIntervalMs: opts.listenerPollIntervalMs ?? 20,
   });
   const dispatch = () => queue.drain(emailService);
   return { app, liveProvider, sandboxProvider, identity, tracking, queue, dispatch, inbound };

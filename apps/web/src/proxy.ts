@@ -8,7 +8,8 @@ import { clientIpFromForwardedFor } from "@/lib/client-ip";
  * Reachable without a session cookie. /accept-invitation and /sso render their own signed-out state;
  * /api/health is the load balancer's health check; /api/monitoring relays browser errors to Sentry
  * (signed-out pages and the site report too); /api/billing/webhook takes Stripe's (signed) events;
- * /api/mobile is the iOS app's API (bearer tokens, checked by each handler).
+ * /api/mobile is the iOS app's API (bearer tokens, checked by each handler); /api/cli/v1/token is
+ * where `coss login` exchanges its one-time code (PKCE).
  */
 const PUBLIC_PATH_PREFIXES = [
   "/sign-in",
@@ -21,6 +22,7 @@ const PUBLIC_PATH_PREFIXES = [
   "/api/monitoring",
   "/api/billing/webhook",
   "/api/mobile",
+  "/api/cli",
   "/accept-invitation",
 ];
 

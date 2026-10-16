@@ -52,3 +52,21 @@ repository root.
   finished batches after `RETENTION_DAYS.logDrainBatches`, unbatched lines after `logDrainBacklog`. Lines are not
   versioned (like `GET /v1/logs`). Permissions: `logDrain` (members read; API keys all, backfilled by `0040`); revealing a
   secret needs `logDrain:update`.
+- **Webhook listeners** (`coss listen`; `webhook_listener` (ids `whlis_`), `webhook_listener_delivery` (`whlisdel_`),
+  `src/listeners.ts`, `/v1/webhook_listeners*`, `coss.webhookListeners`): COSS can't POST to `localhost`, so the CLI
+  pulls. A listener is **not** an endpoint (own tables), so the worker's delivery loop, plan limits, endpoint health,
+  recover and the endpoint API never see one; `enqueueWebhookMessage` fans out to the environment's open listeners
+  (`expires_at > now()`, `FOR KEY SHARE`) next to its endpoints, and writes the message if either subscribed.
+  Listeners stay open while polled (`touchWebhookListener`: +`LISTENER_IDLE_TTL_MS`, 10 min) and are closed softly
+  (`expires_at = now`, never a DELETE racing a fan-out insert); `purgeExpiredWebhookListeners` removes them a day
+  after expiry (cascading their deliveries; a purged message takes its listener deliveries too). At most
+  `MAX_LISTENERS_PER_ENVIRONMENT` (5) open per environment. `pollWebhookListener`: touch, record acks, then
+  claim/wait (`intervalMs` sleeps outside any connection; ≤ 25 s, ends on the request's or the server's
+  `shutdownSignal`). Claims are leased (`leaseUntil`, 2 min) and the lease is the delivery's `ack_token`; acks are
+  fenced by it (`stillOwned`) and write one `webhook.forward` log line each — no `webhook_attempt`, no retry (a
+  failed forward is final), no endpoint health. Unacknowledged deliveries are handed out again (same `event_id`)
+  until `MAX_HAND_OUTS`. Bodies are rendered per listener `api_version` and returned as a **string** (never
+  rewritten by response versioning). Listeners hold no secret: the CLI signs what it forwards (Standard Webhooks)
+  with its own `whsec_`, so `reencryptWebhookSecrets` has nothing to cover. Polls are not request-logged
+  (`apps/api/src/middleware/request-log.ts`) nor traced (`@coss/observability`); creating one is audited
+  (`webhook_listener.created`).

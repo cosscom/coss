@@ -17,6 +17,7 @@
     "./limits": "./src/limits.ts",
     "./risk": "./src/risk.ts",
     "./mobile": "./src/mobile.ts",
+    "./cli": "./src/cli.ts",
     "./org-access": "./src/org-access.ts"
   },
   "scripts": {

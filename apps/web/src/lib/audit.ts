@@ -49,6 +49,25 @@ export async function recordAudit(session: Session, input: AuditInput): Promise<
 }
 
 /**
+ * `recordAudit` for a change made on a user's behalf outside a session: the CLI's code exchange,
+ * which the user approved in the dashboard moments before.
+ */
+export async function recordUserAudit(
+  actor: { id: string; email: string },
+  input: AuditInput,
+): Promise<void> {
+  try {
+    await recordOrgAuditEvent({
+      ...input,
+      actor: { type: "user", id: actor.id, label: actor.email },
+      ...(await requestContext()),
+    });
+  } catch (error) {
+    console.error(`[web] audit event ${input.action} not recorded:`, error);
+  }
+}
+
+/**
  * What a platform admin did to an organization, in that organization's own audit log. The actor is
  * "COSS support", never the admin, and the reason (admin-internal) is never copied.
  */

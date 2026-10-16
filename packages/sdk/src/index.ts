@@ -2,6 +2,7 @@ export { API_VERSION, API_VERSIONS, type ApiVersion } from "./api-version.ts";
 export { Coss, type CossOptions } from "./client.ts";
 export type { CossError, CossErrorIssue, CossErrorType, CossResult } from "./core/errors.ts";
 export type { FetchLike, RequestOptions } from "./core/http.ts";
+export type { ApiKeyResource } from "./resources/api-key.ts";
 export type { AuditEventsResource } from "./resources/audit-events.ts";
 export type {
   BillingCreditsResource,
@@ -15,6 +16,7 @@ export type {
   EmailTemplatesResource,
   EmailTemplateVersionsResource,
 } from "./resources/email-templates.ts";
+export type { EnvironmentResource } from "./resources/environment.ts";
 export type {
   HookApplicationsResource,
   HookDeliveriesResource,
@@ -43,6 +45,7 @@ export type { TrackingResource } from "./resources/tracking.ts";
 export type { TrackingDomainsResource } from "./resources/tracking-domains.ts";
 export type { WebhookDeliveriesResource } from "./resources/webhook-deliveries.ts";
 export type { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
+export type { WebhookListenersResource } from "./resources/webhook-listeners.ts";
 export type { AuditActorType, AuditEvent, ListAuditEventsParams } from "./types/audit-event.ts";
 export type {
   Billing,
@@ -141,6 +144,7 @@ export type {
   UpdateEmailTemplateDraftParams,
   UpdateEmailTemplateParams,
 } from "./types/email-template.ts";
+export type { DeletedApiKey, Environment, NamedResource } from "./types/environment.ts";
 export type {
   CreateHookApplicationParams,
   CreateHookEndpointParams,
@@ -310,6 +314,15 @@ export type {
   WebhookEndpointWithSecret,
   WebhookEventType,
 } from "./types/webhook-endpoint.ts";
+export type {
+  CreateWebhookListenerParams,
+  DeletedWebhookListener,
+  PollWebhookListenerParams,
+  WebhookListener,
+  WebhookListenerAck,
+  WebhookListenerDelivery,
+  WebhookListenerPoll,
+} from "./types/webhook-listener.ts";
 export { VERSION } from "./version.ts";
 export {
   type VerifyWebhookOptions,

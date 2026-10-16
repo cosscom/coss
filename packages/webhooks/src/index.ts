@@ -37,6 +37,20 @@ export {
 export { DISABLE_FAILING_ENDPOINT_AFTER_MS } from "./engine/index.ts";
 export { WebhookError, type WebhookErrorCode } from "./errors.ts";
 export {
+  ackWebhookListenerDeliveries,
+  closeWebhookListener,
+  createWebhookListener,
+  LISTENER_IDLE_TTL_MS,
+  listOpenWebhookListeners,
+  MAX_HAND_OUTS,
+  MAX_LISTENERS_PER_ENVIRONMENT,
+  pollWebhookListener,
+  touchWebhookListener,
+  toWebhookListenerObject,
+  type WebhookListenerAck,
+  type WebhookListenerRow,
+} from "./listeners.ts";
+export {
   LOG_DRAIN_CONTENT_TYPE,
   LOG_DRAIN_MAX_ATTEMPTS,
   LOG_DRAIN_RETRY_DELAYS_MS,
@@ -71,15 +85,27 @@ export {
   type ReencryptResult,
   reencryptWebhookSecrets,
 } from "./reencrypt.ts";
-export { purgeExpiredLogDrainBatches, purgeExpiredWebhookMessages } from "./retention.ts";
 export {
+  purgeExpiredLogDrainBatches,
+  purgeExpiredWebhookListeners,
+  purgeExpiredWebhookMessages,
+} from "./retention.ts";
+export {
+  DEFAULT_LISTENER_POLL_LIMIT,
+  DEFAULT_LISTENER_WAIT_MS,
   DEFAULT_PREVIOUS_SECRET_EXPIRES_IN,
   DESCRIPTION_MAX_LENGTH,
   DeletedWebhookEndpoint,
   type DeletedWebhookEndpointOutput,
+  DeletedWebhookListener,
+  type DeletedWebhookListenerOutput,
   ListWebhookDeliveriesQuery,
   type ListWebhookDeliveriesQueryOutput,
+  MAX_LISTENER_POLL_LIMIT,
+  MAX_LISTENER_WAIT_MS,
   MAX_PREVIOUS_SECRET_EXPIRES_IN,
+  PollWebhookListenerRequest,
+  type PollWebhookListenerRequestOutput,
   RecoverWebhookEndpointRequest,
   type RecoverWebhookEndpointRequestOutput,
   RecoverWebhookEndpointResult,
@@ -102,7 +128,15 @@ export {
   type WebhookEndpointObjectOutput,
   WebhookEndpointWithSecret,
   type WebhookEndpointWithSecretOutput,
+  WebhookListenerAckRequest,
+  WebhookListenerDeliveryObject,
+  type WebhookListenerDeliveryObjectOutput,
+  WebhookListenerObject,
+  type WebhookListenerObjectOutput,
+  WebhookListenerPoll,
+  type WebhookListenerPollOutput,
   webhookEndpointRequests,
+  webhookListenerRequests,
 } from "./schemas.ts";
 export {
   decryptSecret,

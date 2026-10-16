@@ -313,6 +313,14 @@ export const BUCKETS = {
     overridable: false,
     failureMode: "deny",
   },
+  // The CLI's code exchange (`/api/cli/v1/token`, `coss login`), per client IP.
+  "cli.token.ip": {
+    scope: "ip",
+    limit: 10,
+    periodMs: MINUTE,
+    overridable: false,
+    failureMode: "deny",
+  },
   // The iOS app's read-only dashboard API, per user id.
   "mobile.api": {
     scope: "key",

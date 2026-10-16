@@ -18,6 +18,8 @@ export const RETENTION_DAYS = {
   dmarcNotifications: 90,
   /** Webhook messages with their deliveries and attempts (once none is pending). */
   webhookDeliveries: 30,
+  /** `coss listen` listeners and what they were handed, once the listener has expired or was closed. */
+  webhookListeners: 1,
   /** Log drain batches with their lines and attempt logs (once finished). */
   logDrainBatches: 7,
   /** Lines queued for a log drain that never got into a batch (e.g. while its organization is suspended). */
@@ -115,6 +117,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     description:
       "Event payloads, delivery statuses and attempt logs (including response excerpts). Deliveries still being retried are kept until they finish.",
     period: { days: RETENTION_DAYS.webhookDeliveries, after: "creation" },
+  },
+  {
+    id: "webhook_listeners",
+    label: "CLI webhook listeners",
+    description:
+      "Listeners `coss listen` opens to receive the environment's events, and the forwarding status (local status code, duration, error) the CLI reports for each event. The events themselves are kept as webhook deliveries.",
+    period: { days: RETENTION_DAYS.webhookListeners, after: "expiry" },
   },
   {
     id: "hook_messages",

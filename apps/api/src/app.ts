@@ -77,6 +77,13 @@ export type CreateAppOptions = {
   logWriter?: LogWriter;
   /** The API's versions (`@coss/versioning`). Tests inject `testVersioning()`. */
   versioning?: Versioning;
+  /**
+   * Aborted when the server starts shutting down, so long polls (`coss listen`) answer at once and
+   * the drain doesn't wait for them. Defaults to never.
+   */
+  shutdownSignal?: AbortSignal;
+  /** How often a waiting listener poll checks for deliveries (tests shorten it). Default 1 s. */
+  listenerPollIntervalMs?: number;
 };
 
 /** Request headers a browser may send, and response headers it may read, cross-origin. */
@@ -169,6 +176,8 @@ export function createApp(opts: CreateAppOptions) {
       portalUrl: opts.portalUrl === undefined ? "http://localhost:3003" : opts.portalUrl,
       riskDeps: opts.riskDeps,
       inbound,
+      shutdownSignal: opts.shutdownSignal ?? new AbortController().signal,
+      listenerPollIntervalMs: opts.listenerPollIntervalMs,
     }),
   );
 
@@ -214,6 +223,10 @@ export function openApiDocumentConfig(serverUrl: string) {
     },
     servers: [{ url: serverUrl }],
     tags: [
+      {
+        name: "Environment",
+        description: "The environment, project and organization an API key belongs to.",
+      },
       { name: "Emails", description: "Send transactional email and follow its delivery." },
       {
         name: "Email templates",

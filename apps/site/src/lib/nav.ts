@@ -216,6 +216,12 @@ export const DEVELOPER_COLUMNS: readonly MenuColumn[] = [
         href: "/#agents",
       },
       {
+        label: "CLI",
+        description: "Webhooks on localhost, from your terminal.",
+        icon: CommandLineIcon,
+        href: `${DOCS_ROUTE}/cli`,
+      },
+      {
         label: "MCP server",
         description: "Let your coding agent check delivery.",
         icon: McpServerIcon,

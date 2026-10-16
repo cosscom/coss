@@ -152,6 +152,7 @@ describe("GET /openapi.json", () => {
     expect(doc.info).toMatchObject({ title: "COSS API", version: LATEST_API_VERSION });
     expect(doc.servers).toEqual([{ url: "http://api.test" }]);
     expect(Object.keys(doc.paths).sort()).toEqual([
+      "/v1/api_key",
       "/v1/audit_events",
       "/v1/audit_events/{id}",
       "/v1/billing",
@@ -182,6 +183,7 @@ describe("GET /openapi.json", () => {
       "/v1/emails/{id}/events",
       "/v1/emails/{id}/links",
       "/v1/emails/{id}/reschedule",
+      "/v1/environment",
       "/v1/hooks/applications",
       "/v1/hooks/applications/{application}",
       "/v1/hooks/applications/{application}/deliveries/{delivery_id}",
@@ -244,6 +246,9 @@ describe("GET /openapi.json", () => {
       "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry",
       "/v1/webhook_endpoints/{id}/recover",
       "/v1/webhook_endpoints/{id}/roll_secret",
+      "/v1/webhook_listeners",
+      "/v1/webhook_listeners/{id}",
+      "/v1/webhook_listeners/{id}/poll",
     ]);
     expect(doc.paths["/v1/emails"]?.post).toMatchObject({
       operationId: "sendEmail",
@@ -451,6 +456,9 @@ describe("GET /openapi.json", () => {
       ["get /v1/webhook_endpoints/{id}/deliveries", "listWebhookDeliveries"],
       ["get /v1/webhook_endpoints/{id}/deliveries/{delivery_id}", "getWebhookDelivery"],
       ["post /v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry", "retryWebhookDelivery"],
+      ["post /v1/webhook_listeners", "createWebhookListener"],
+      ["post /v1/webhook_listeners/{id}/poll", "pollWebhookListener"],
+      ["delete /v1/webhook_listeners/{id}", "deleteWebhookListener"],
       ["get /v1/tracking_settings", "getTrackingSettings"],
       ["patch /v1/tracking_settings/default", "updateTrackingDefault"],
       ["delete /v1/tracking_settings/default", "deleteTrackingDefault"],

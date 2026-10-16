@@ -38,6 +38,7 @@
     "@types/bun": "catalog:",
     "@modelcontextprotocol/client": "2.3.1",
     "coss": "workspace:*",
+    "coss-cli": "workspace:*",
     "coss-mcp": "workspace:*",
     "typescript": "catalog:"
   }

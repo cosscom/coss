@@ -4,6 +4,7 @@ export type WebhookErrorCode =
   | "invalid_url"
   | "not_found"
   | "too_many_endpoints"
+  | "too_many_listeners"
   | "too_many_log_drains";
 
 /** Expected failures of webhook management; messages are safe to show to the user. */

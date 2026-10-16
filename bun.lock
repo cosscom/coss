@@ -39,6 +39,7 @@
         "@modelcontextprotocol/client": "2.3.1",
         "@types/bun": "catalog:",
         "coss": "workspace:*",
+        "coss-cli": "workspace:*",
         "coss-mcp": "workspace:*",
         "typescript": "catalog:",
       },
@@ -338,6 +339,24 @@
         "typescript": "catalog:",
       },
     },
+    "packages/cli": {
+      "name": "coss-cli",
+      "version": "0.0.0",
+      "bin": {
+        "coss": "dist/cli.js",
+      },
+      "dependencies": {
+        "coss": "^0.3.0",
+      },
+      "devDependencies": {
+        "@arethetypeswrong/core": "0.18.5",
+        "@types/bun": "1.4.2",
+        "@types/node": "^24",
+        "publint": "0.3.25",
+        "tsdown": "0.23.0",
+        "typescript": "7.0.2",
+      },
+    },
     "packages/companion": {
       "name": "@coss/companion",
       "version": "0.0.0",
@@ -457,7 +476,7 @@
       "name": "coss-mcp",
       "version": "0.1.0",
       "bin": {
-        "coss-mcp": "./dist/cli.js",
+        "coss-mcp": "dist/cli.js",
       },
       "dependencies": {
         "@modelcontextprotocol/server": "2.3.1",
@@ -2137,6 +2156,8 @@
     "core-js-compat": ["core-js-compat@3.50.0", "", { "dependencies": { "browserslist": "^4.28.7" } }, "sha512-XGpFGbMLHwSt74YLTKho7Ib242qi6O8MSX+sRokV4oz7iKXvQWGYZthjIhjRGMxjzVkAubBO512dKGYcefmX3Q=="],
 
     "coss": ["coss@workspace:packages/sdk"],
+
+    "coss-cli": ["coss-cli@workspace:packages/cli"],
 
     "coss-mcp": ["coss-mcp@workspace:packages/mcp"],
 

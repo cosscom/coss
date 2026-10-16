@@ -36,7 +36,11 @@ import {
 } from "@coss/risk";
 import { purgeExpiredScreenings } from "@coss/screening";
 import { purgeExpiredAdminAuditEvents, purgeExpiredAuthRows } from "@coss/tenancy/retention";
-import { purgeExpiredLogDrainBatches, purgeExpiredWebhookMessages } from "@coss/webhooks";
+import {
+  purgeExpiredLogDrainBatches,
+  purgeExpiredWebhookListeners,
+  purgeExpiredWebhookMessages,
+} from "@coss/webhooks";
 
 /** Limits every step to some organizations, users and verification identifiers (tests). */
 export type RetentionScope = {
@@ -59,6 +63,7 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "dmarc reports", purge: purgeExpiredDmarcReports },
   { name: "dmarc notifications", purge: purgeExpiredDmarcNotifications },
   { name: "webhook messages", purge: purgeExpiredWebhookMessages },
+  { name: "webhook listeners", purge: purgeExpiredWebhookListeners },
   { name: "log drain batches and backlog", purge: purgeExpiredLogDrainBatches },
   // Hooks messages, deliveries and attempts leave with their partitions (the `partitions` loop).
   { name: "hook idempotency keys", purge: purgeExpiredHookIdempotencyKeys },

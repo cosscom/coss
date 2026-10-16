@@ -95,6 +95,13 @@ Requests are signed with [Standard Webhooks](https://www.standardwebhooks.com) h
 `webhook-id`, `webhook-timestamp` and `webhook-signature`. Always verify them before trusting the
 body. With the SDK, use [`verifyWebhook`](/docs/sdk/webhooks).
 
+## Testing locally
+
+Your development server isn't reachable from the internet, so register no endpoint for it: run
+[`coss listen --forward-to localhost:3000/webhooks`](/docs/cli#receive-webhooks-locally), which receives the
+environment's events and forwards them to your server, signed with a secret of its own that you
+verify the same way.
+
 ## Rolling the secret
 
 Roll an endpoint's secret in the dashboard (**Roll secret** on the endpoint) or through the API to

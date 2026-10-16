@@ -10,7 +10,7 @@ Each environment has a log. It records:
 | --------- | -------------------------------------------------------------------------------------------- |
 | `api`     | Every request made with one of the environment's API keys (`api.request`)                    |
 | `email`   | Every email event: `email.sent`, `email.delivered`, `email.bounced`, `email.opened`…        |
-| `webhook` | Every delivery attempt to one of the environment's webhook endpoints (`webhook.attempt`)     |
+| `webhook` | Every delivery attempt to one of the environment's webhook endpoints (`webhook.attempt`), and every event [`coss listen`](/docs/cli#receive-webhooks-locally) forwarded (`webhook.forward`) |
 
 Lines have a level: `error` for 5xx responses, bounces, complaints and failures, `warning` for 4xx
 responses, delays, suppressions and webhook attempts that will be retried, `info` for everything

@@ -20,7 +20,7 @@ export interface Log {
   occurred_at: string;
   source: LogSource;
   level: LogLevel;
-  /** `api.request`, `webhook.attempt`, or an email event type such as `email.delivered`. */
+  /** `api.request`, `webhook.attempt`, `webhook.forward` (`coss listen`), or an email event type such as `email.delivered`. */
   type: string;
   /** A one-line summary. */
   message: string;
