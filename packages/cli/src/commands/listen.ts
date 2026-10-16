@@ -158,13 +158,12 @@ async function run(context: Context, values: Record<string, unknown>): Promise<n
   const listenerParams = { eventTypes, apiVersion, description };
   let listener = await openListener(coss, listenerParams);
 
-  if (!out.json) {
-    out.info(
-      `${out.style("green", "Ready!")} Listening to ${describeEnvironment(environment)}${target ? `, forwarding to ${target}` : ""}.`,
-    );
-    out.info(`Signing secret: ${out.style("bold", secret)} (API version ${listener.api_version})`);
-    out.info(out.style("dim", "Press Ctrl-C to stop."));
-  }
+  out.info(
+    `${out.style("green", "Ready!")} Listening to ${describeEnvironment(environment)}${target ? `, forwarding to ${target}` : ""}.`,
+  );
+  // On stderr, so even with --json: the receiver needs it, and with COSS_API_KEY it isn't saved.
+  out.info(`Signing secret: ${out.style("bold", secret)} (API version ${listener.api_version})`);
+  out.info(out.style("dim", "Press Ctrl-C to stop."));
 
   let pending: WebhookListenerAck[] = [];
   let failures = 0;

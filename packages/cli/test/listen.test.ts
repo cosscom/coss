@@ -5,7 +5,7 @@ import { verifyWebhook } from "coss";
 import { readConfig } from "../src/config.ts";
 import { normalizeTarget } from "../src/listen/forward.ts";
 import { run } from "../src/run.ts";
-import { apiError, environmentObject, fakeFetch, SANDBOX_KEY, testIo } from "./helpers.ts";
+import { apiError, environmentObject, fakeFetch, NOW, SANDBOX_KEY, testIo } from "./helpers.ts";
 
 const servers: Server[] = [];
 afterEach(() => {
@@ -191,6 +191,47 @@ describe("coss listen", () => {
     expect(io.errors()).toContain("listener had expired");
     expect(io.output()).toContain("connection refused");
     expect(polls.at(-1)?.acks?.[0]?.error).toBe("connection refused");
+  });
+
+  test("with --json and COSS_API_KEY, the (unsaved) secret still goes to stderr", async () => {
+    const local = await receiver();
+    const io = testIo({ env: { COSS_API_KEY: SANDBOX_KEY } });
+    const answers = [[delivery()]];
+    const api = fakeFetch({
+      "GET /v1/environment": environmentObject(),
+      "POST /v1/webhook_listeners": listenerObject,
+      "POST /v1/webhook_listeners/whlis_1/poll": () => {
+        const next = answers.shift();
+        if (!next) io.controller.abort();
+        return {
+          object: "webhook_listener_poll",
+          listener: listenerObject,
+          deliveries: next ?? [],
+          acknowledged: 0,
+        };
+      },
+      "DELETE /v1/webhook_listeners/whlis_1": {
+        object: "webhook_listener",
+        id: "whlis_1",
+        deleted: true,
+      },
+    });
+    io.fetch = (input, init) =>
+      String(input).startsWith(local.url) ? fetch(input, init) : api.fetch(input, init);
+    expect(await run(["listen", "--json", "--forward-to", local.url], io)).toBe(130);
+    const secret = /Signing secret: (whsec_\S+)/.exec(io.errors())?.[1];
+    expect(secret).toBeTruthy();
+    const [request] = local.received;
+    const headers = Object.fromEntries(
+      Object.entries(request?.headers ?? {}).map(([name, value]) => [name, String(value)]),
+    );
+    expect(
+      await verifyWebhook(request?.body ?? "", headers, secret ?? "", { now: NOW }),
+    ).toMatchObject({
+      id: "evt_1",
+    });
+    // stdout stays one JSON object per line.
+    for (const text of io.output().trim().split("\n")) expect(() => JSON.parse(text)).not.toThrow();
   });
 
   test("refuses live environments without --live", async () => {

@@ -90,7 +90,9 @@ export async function logsTail(argv: string[], io: CliIo): Promise<number> {
   let warnedTruncated = false;
   let failures = 0;
   while (!io.signal.aborted) {
-    const from = first && since ? since : tail.windowStart();
+    // The overlap never reaches back before --since: those lines were excluded.
+    const overlap = tail.windowStart();
+    const from = since && since > overlap ? since : overlap;
     const window = await readWindow(coss, filters, from, io.signal);
     if (window.error) {
       if (io.signal.aborted) break;

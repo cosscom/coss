@@ -136,6 +136,24 @@ describe("coss logs tail", () => {
     expect(printed).toEqual(["log_late"]);
   });
 
+  test("--since stays the lower bound of every poll", async () => {
+    const io = testIo({ env: { COSS_API_KEY: SANDBOX_KEY } });
+    let polls = 0;
+    const api = fakeFetch({
+      "GET /v1/environment": environmentObject(),
+      "GET /v1/logs": () => {
+        if (++polls > 2) io.controller.abort();
+        return { object: "list", data: [], has_more: false };
+      },
+    });
+    io.fetch = api.fetch;
+    expect(await run(["logs", "tail", "--since", "30s"], io)).toBe(130);
+    const froms = api.requests
+      .filter((r) => r.url.pathname === "/v1/logs")
+      .map((r) => r.url.searchParams.get("from"));
+    expect(new Set(froms)).toEqual(new Set(["2026-10-15T11:59:30.000Z"]));
+  });
+
   test("stops on an error retrying can't fix", async () => {
     const io = testIo({ env: { COSS_API_KEY: SANDBOX_KEY } });
     const answers = [
