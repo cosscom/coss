@@ -79,6 +79,20 @@ describe("dmarcGuidance", () => {
     });
   });
 
+  test("adding reporting to a partly enforced record keeps pct and t", () => {
+    const guidance = dmarcGuidance(input("v=DMARC1; p=reject; pct=1; t=y"));
+    expect(guidance).toMatchObject({
+      stage: "reject",
+      partial: true,
+      ready: true,
+      next: {
+        kind: "add_reporting",
+        policy: "reject",
+        record: `v=DMARC1; p=reject; pct=1; t=y; rua=mailto:${ADDRESS};`,
+      },
+    });
+  });
+
   test("monitoring with healthy reports: ready for quarantine", () => {
     const guidance = dmarcGuidance(input(NONE));
     expect(guidance.stage).toBe("monitoring");

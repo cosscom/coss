@@ -144,6 +144,21 @@ export function withPolicy(
     tags.push([name, value]);
   }
   if (rua.length > 0) tags.push(["rua", rua.join(",")]);
+  return withTags(tags);
+}
+
+/**
+ * The current record with COSS's address added to `rua` and nothing else changed: partial
+ * enforcement (`pct`, `t`) stays, since dropping it is a step of its own that needs reports first.
+ */
+export function withReporting(current: DmarcRecord, reportAddress: string): string {
+  if (ruaIncludes(current, reportAddress)) return withTags(current.tags);
+  const rua = [...current.rua, `mailto:${reportAddress}`].join(",");
+  const tags = current.tags.filter(([name]) => name !== "rua");
+  return withTags([...tags, ["rua", rua]]);
+}
+
+function withTags(tags: readonly (readonly [string, string])[]): string {
   return ["v=DMARC1", ...tags.map(([name, value]) => `${name}=${value}`)].join("; ").concat(";");
 }
 

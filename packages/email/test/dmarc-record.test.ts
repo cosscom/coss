@@ -9,6 +9,7 @@ import {
   recommendedDmarc,
   ruaIncludes,
   withPolicy,
+  withReporting,
 } from "../src/dmarc-record.ts";
 
 const ADDRESS = "dmarc-abcdefghijkmnpqr@inbound.coss.test";
@@ -98,6 +99,21 @@ describe("withPolicy", () => {
     const reporting = parseDmarcRecord(`v=DMARC1; p=quarantine; rua=mailto:${ADDRESS}`);
     expect(withPolicy(reporting, "reject", ADDRESS)).toBe(
       `v=DMARC1; p=reject; rua=mailto:${ADDRESS};`,
+    );
+  });
+});
+
+describe("withReporting", () => {
+  test("adds COSS's address and changes nothing else", () => {
+    const current = parseDmarcRecord(
+      "v=DMARC1; p=quarantine; pct=25; rua=mailto:ops@acme.test; fo=1",
+    );
+    expect(current && withReporting(current, ADDRESS)).toBe(
+      `v=DMARC1; p=quarantine; pct=25; fo=1; rua=mailto:ops@acme.test,mailto:${ADDRESS};`,
+    );
+    const reporting = parseDmarcRecord(`v=DMARC1; p=none; rua=mailto:${ADDRESS}; t=y`);
+    expect(reporting && withReporting(reporting, ADDRESS)).toBe(
+      `v=DMARC1; p=none; rua=mailto:${ADDRESS}; t=y;`,
     );
   });
 });

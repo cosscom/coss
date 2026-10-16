@@ -17,7 +17,20 @@ import { db, type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, isId, newId } from "@coss/db/id";
 import { RETENTION_DAYS } from "@coss/retention";
 import { enqueueWebhookMessage } from "@coss/webhooks";
-import { and, count, desc, eq, gte, inArray, lt, max, min, notInArray, sql } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gte,
+  inArray,
+  lt,
+  max,
+  min,
+  notExists,
+  notInArray,
+  sql,
+} from "drizzle-orm";
 import { DMARC_READINESS, type DmarcReportTotals, dmarcGuidance } from "./dmarc-guidance.ts";
 import {
   dmarcReportAddress,
@@ -42,7 +55,14 @@ import type {
   StoredDomainWebhookEvent,
 } from "./schemas.ts";
 
-const { dmarcNotification, dmarcReport, dmarcReportRecord, domain, environment } = schema;
+const {
+  dmarcNotification,
+  dmarcReport,
+  dmarcReportRecord,
+  domain,
+  environment,
+  organizationDeletion,
+} = schema;
 
 const DAY = 24 * 60 * 60 * 1000;
 /** Reports covering more than this are refused (RFC 9990 asks for at most a day; some send a week). */
@@ -138,12 +158,27 @@ async function reportOf(raw: Uint8Array): Promise<DmarcAggregateReport | DmarcRe
   return failure;
 }
 
+/** The live domain a token names; organizations pending deletion receive nothing more. */
 async function domainForToken(token: string) {
   const [row] = await db
     .select()
     .from(domain)
     .where(
-      and(eq(domain.dmarcReportToken, token), notInArray(domain.status, ["failed", "deleting"])),
+      and(
+        eq(domain.dmarcReportToken, token),
+        notInArray(domain.status, ["failed", "deleting"]),
+        notExists(
+          db
+            .select({ one: sql`1` })
+            .from(organizationDeletion)
+            .where(
+              and(
+                eq(organizationDeletion.organizationId, domain.organizationId),
+                eq(organizationDeletion.status, "pending"),
+              ),
+            ),
+        ),
+      ),
     )
     .limit(1);
   return row ?? null;

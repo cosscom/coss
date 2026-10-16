@@ -153,6 +153,26 @@ describe("ingesting reports", () => {
     expect((await ingest(sub))[0]?.kind).toBe("recorded");
   });
 
+  test("organizations being deleted get no more reports", async () => {
+    const { tenant, row } = await setup();
+    await db.insert(schema.organizationDeletion).values({
+      organizationId: tenant.organization.id,
+      organizationName: tenant.organization.name,
+      organizationSlug: tenant.organization.slug,
+      requestedByEmail: "owner@example.com",
+      // Never claimed by a deletion run.
+      nextAttemptAt: null,
+    });
+    const address = addressOf(row);
+    const [outcome] = await ingestDmarcReports(
+      message(dmarcReportMessage(reportFor(row), { to: address }), [address]),
+      [row.dmarcReportToken],
+      { managedDomain: MANAGED },
+    );
+    expect(outcome?.kind).toBe("unknown_address");
+    expect(await reportsOf(row.id)).toHaveLength(0);
+  });
+
   test("records a report once, and charges the organization's report budget", async () => {
     const { row, organizationId } = await setup();
     const address = addressOf(row);

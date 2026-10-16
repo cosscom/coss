@@ -35,6 +35,7 @@ export {
   recommendedDmarc,
   ruaIncludes,
   withPolicy,
+  withReporting,
 } from "./dmarc-record.ts";
 export {
   type DmarcAggregateReport,

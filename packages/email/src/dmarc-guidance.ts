@@ -13,6 +13,7 @@ import {
   partiallyEnforced,
   ruaIncludes,
   withPolicy,
+  withReporting,
 } from "./dmarc-record.ts";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -225,7 +226,7 @@ export function dmarcGuidance(input: DmarcGuidanceInput): DmarcGuidance {
     return {
       ...base,
       stage,
-      next: { kind: "add_reporting", policy, record: withPolicy(record, policy, reportAddress) },
+      next: { kind: "add_reporting", policy, record: withReporting(record, reportAddress) },
       ready: true,
       checks: [],
     };
