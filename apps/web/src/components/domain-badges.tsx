@@ -1,4 +1,9 @@
-import type { DomainRecord, DomainRow, TrackingDomainRow } from "@coss/email";
+import type {
+  DomainBimiObjectOutput,
+  DomainRecord,
+  DomainRow,
+  TrackingDomainRow,
+} from "@coss/email";
 import { Badge } from "@coss/ui/components/badge";
 import { StatusDot, type StatusTone } from "./status-dot";
 
@@ -58,6 +63,22 @@ export function TrackingDomainStatusBadge({ status }: { status: TrackingDomainRo
       <StatusDot pulse={status === "pending"} tone={tone}>
         {label}
       </StatusDot>
+    </Badge>
+  );
+}
+
+const BIMI_STATUS = {
+  not_checked: ["neutral", "Not checked"],
+  missing: ["neutral", "Not set up"],
+  invalid: ["warning", "Needs attention"],
+  configured: ["success", "Configured"],
+} as const satisfies Record<DomainBimiObjectOutput["status"], readonly [StatusTone, string]>;
+
+export function BimiStatusBadge({ status }: { status: DomainBimiObjectOutput["status"] }) {
+  const [tone, label] = BIMI_STATUS[status];
+  return (
+    <Badge variant="outline">
+      <StatusDot tone={tone}>{label}</StatusDot>
     </Badge>
   );
 }

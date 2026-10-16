@@ -103,6 +103,48 @@ export interface ReceivingDomain {
   last_checked_at: string | null;
 }
 
+/**
+ * `configured` when the BIMI record is valid and DMARC is enforced, `invalid` when a record exists
+ * but something is wrong (see `issues`), `missing` when there is no record, and `not_checked` until
+ * DNS has been consulted. COSS checks DNS only: mailbox providers still validate the logo and the
+ * certificate.
+ */
+export type BimiStatus = "not_checked" | "missing" | "invalid" | "configured";
+
+/** What keeps a domain's logo from showing, as far as DNS tells. */
+export type BimiIssueCode =
+  | "dmarc_missing"
+  | "dmarc_not_enforced"
+  | "dmarc_partial"
+  | "record_multiple"
+  | "record_invalid"
+  | "logo_missing"
+  | "logo_not_https"
+  | "certificate_missing"
+  | "certificate_not_https";
+
+/** The last BIMI check of a domain (brand logos in inboxes; the certificate is your own). */
+export interface DomainBimi {
+  status: BimiStatus;
+  /**
+   * Where the BIMI record was found, or looked up when there is none: `default._bimi.<domain>`,
+   * or the organizational domain's when only it has one.
+   */
+  name: string;
+  /** The `v=BIMI1` record found. */
+  record: string | null;
+  /** The record's logo URL (`l=`). */
+  logo_url: string | null;
+  /** The record's VMC or CMC certificate URL (`a=`). */
+  certificate_url: string | null;
+  /**
+   * The DMARC policy that applies to the domain (`sp` when it comes from a parent domain), `null`
+   * without a DMARC record.
+   */
+  dmarc_policy: "none" | "quarantine" | "reject" | null;
+  issues: { code: BimiIssueCode; message: string }[];
+}
+
 /** A sending domain of the organization. */
 export interface Domain {
   object: "domain";
@@ -127,6 +169,8 @@ export interface Domain {
   tracking: TrackingDomain | null;
   /** The receiving hostname, or `null` when the domain doesn't receive email. */
   receiving: ReceivingDomain | null;
+  /** The last BIMI check: whether mailbox providers can find the domain's brand logo. */
+  bimi: DomainBimi;
 }
 
 /** Body of `POST /v1/domains`. */

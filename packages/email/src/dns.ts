@@ -71,7 +71,7 @@ function normalizeHost(value: string): string {
 }
 
 /** Missing names and empty answers are "not found"; anything else is a lookup failure. */
-async function lookup<T>(query: () => Promise<T[]>): Promise<T[] | null> {
+export async function lookup<T>(query: () => Promise<T[]>): Promise<T[] | null> {
   try {
     return await query();
   } catch (error) {

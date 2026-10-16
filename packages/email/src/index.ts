@@ -1,4 +1,5 @@
 export type { EmailAttachmentMetadata } from "./attachments.ts";
+export { checkBimi, parseTagList, toBimiObject } from "./bimi.ts";
 // Runtime dispatch code (pg-boss) lives in `@coss/email/dispatch`, which the dashboard never loads.
 export type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 export {
@@ -161,6 +162,10 @@ export {
 export {
   ALL_CATEGORIES,
   ATTACHMENT_DISPOSITIONS,
+  BIMI_ISSUE_CODES,
+  BIMI_ISSUE_MESSAGES,
+  BIMI_STATUSES,
+  type BimiIssueCode,
   CheckSuppressionQuery,
   type CheckSuppressionQueryOutput,
   CreateDomainRequest,
@@ -183,6 +188,8 @@ export {
   DOMAIN_RECORD_PURPOSES,
   DOMAIN_RECORD_STATUSES,
   DOMAIN_STATUSES,
+  DomainBimiObject,
+  type DomainBimiObjectOutput,
   DomainList,
   type DomainListOutput,
   DomainObject,

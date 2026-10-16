@@ -148,7 +148,8 @@ await coss.domains.delete(domain!.id);
 rate limited: a second call within a few seconds answers `429` (the SDK waits out `Retry-After` and
 retries). Verification gives up after 72 hours and the domain becomes `failed`; calling `verify`
 again then starts over with fresh DKIM records, which have to be published too. The `dmarc` record
-is recommended rather than required (`required: false`).
+is recommended rather than required (`required: false`). `bimi` reports whether mailbox providers can show
+your brand logo (your own BIMI record and VMC or CMC certificate, with DMARC at enforcement).
 
 ## Webhook endpoints
 

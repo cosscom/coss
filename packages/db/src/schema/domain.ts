@@ -539,6 +539,31 @@ export type DomainRecord = {
 };
 
 /**
+ * The last BIMI check of a domain (`packages/email/src/bimi.ts`): DNS only, COSS never fetches
+ * the logo or the certificate. Issues are stored as codes; messages are rendered on read.
+ */
+export type DomainBimi = {
+  status: "not_checked" | "missing" | "invalid" | "configured";
+  /** Where the BIMI record was found, or looked up when there is none. */
+  name: string;
+  record: string | null;
+  logoUrl: string | null;
+  certificateUrl: string | null;
+  dmarcPolicy: "none" | "quarantine" | "reject" | null;
+  issues: (
+    | "dmarc_missing"
+    | "dmarc_not_enforced"
+    | "dmarc_partial"
+    | "record_multiple"
+    | "record_invalid"
+    | "logo_missing"
+    | "logo_not_https"
+    | "certificate_missing"
+    | "certificate_not_https"
+  )[];
+};
+
+/**
  * A sending domain of an organization (an SES domain identity with Easy DKIM and a custom MAIL
  * FROM subdomain). Names are unique across organizations while not `failed`: DKIM tokens belong
  * to the provider account, so two organizations can never hold the same identity.
@@ -563,6 +588,8 @@ export const domain = pgTable(
     mailFromDomain: text("mail_from_domain").notNull(),
     mailFromStatus: mailFromStatus("mail_from_status").notNull().default("pending"),
     records: jsonb("records").$type<DomainRecord[]>().notNull().default([]),
+    // The last BIMI check (`null` until the domain is checked).
+    bimi: jsonb("bimi").$type<DomainBimi>(),
     // Verification gives up 72 hours after this (creation, or the latest restart).
     verificationStartedAt: timestamp("verification_started_at", { withTimezone: true })
       .notNull()
