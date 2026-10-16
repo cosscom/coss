@@ -8,6 +8,8 @@ import { useLayoutEffect, useRef, useState } from "react";
 
 const FRAME_WIDTH = 1280;
 const FRAME_HEIGHT = 820;
+const MOBILE_BELOW = 768;
+const MOBILE_HEIGHT = 640;
 
 /**
  * The product itself as the demo: a project page of the hub, framed and scaled down to the
@@ -24,7 +26,9 @@ export function ProductDemo({ path, label }: { path: string; label: string }) {
     const node = ref.current;
     if (!node) return;
     const update = () => {
-      const width = Math.max(FRAME_WIDTH, node.clientWidth);
+      // A phone gets the page at its own width (so the hub's mobile layout), not a shrunken desktop.
+      const mobile = node.clientWidth < MOBILE_BELOW;
+      const width = mobile ? node.clientWidth : Math.max(FRAME_WIDTH, node.clientWidth);
       setFrame({ width, scale: node.clientWidth / width });
     };
     update();
@@ -50,14 +54,22 @@ export function ProductDemo({ path, label }: { path: string; label: string }) {
             <ExternalLinkIcon aria-hidden />
           </Button>
         </div>
-        <div className="relative aspect-[1280/820] max-h-[820px] w-full overflow-hidden" ref={ref}>
+        <div
+          className="relative w-full overflow-hidden max-md:h-[640px] md:aspect-[1280/820] md:max-h-[820px]"
+          ref={ref}
+        >
           {!loaded && <DemoSkeleton />}
           <iframe
             className={`absolute top-0 left-0 origin-top-left border-0 transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
             loading="lazy"
             onLoad={() => setLoaded(true)}
+            scrolling="no"
             src={path}
-            style={{ width: frame.width, height: FRAME_HEIGHT, transform: `scale(${frame.scale})` }}
+            style={{
+              width: frame.width,
+              height: frame.width < MOBILE_BELOW ? MOBILE_HEIGHT : FRAME_HEIGHT,
+              transform: `scale(${frame.scale})`,
+            }}
             title={label}
           />
         </div>

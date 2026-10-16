@@ -120,3 +120,12 @@
   --color-chart-scale-05: var(--chart-scale-05);
   --color-chart-scale-pattern-color: var(--chart-scale-pattern-color);
 }
+
+/* A hub page framed as the front page's demo: clickable, no page scroll, and no header (the
+   frame's own chrome stands in for it). */
+:root[data-framed] {
+  overflow: hidden;
+}
+:root[data-framed] header[data-slot="hub-header"] {
+  display: none;
+}

@@ -4,8 +4,9 @@ import { useEffect } from "react";
 
 /**
  * When a hub page is framed (the front page's product demo), everything on the hub stays
- * clickable inside the frame, while links that leave the hub open in a new tab instead of
- * navigating the frame (the CSP would refuse another origin in it anyway).
+ * clickable inside the frame and the page doesn't scroll (`globals.css`, `[data-framed]`), while
+ * links that leave the hub open in a new tab instead of navigating the frame (the CSP would
+ * refuse another origin in it anyway).
  */
 export function Framed() {
   useEffect(() => {

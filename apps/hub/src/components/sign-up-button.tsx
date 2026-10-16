@@ -1,6 +1,6 @@
 import { Button } from "@coss/ui/components/button";
 
-const SIGN_UP_URL = "https://coss.com/sign-up";
+const SIGN_UP_URL = "/sign-up";
 
 /** GitHub's mark (the hub keeps contributors' GitHub identity). */
 function GitHubMark() {
@@ -11,7 +11,7 @@ function GitHubMark() {
   );
 }
 
-/** The primary sign-up action: a coss.com account, GitHub first. */
+/** The primary sign-up action: a hub account, GitHub first. */
 export function SignUpButton({
   size = "default",
   label = "Sign up with GitHub",

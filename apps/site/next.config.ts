@@ -43,6 +43,16 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders({ dev }) }];
   },
+  // The crowd-opinionated page became the hub's front page (apps/hub).
+  async redirects() {
+    return [
+      {
+        source: "/crowd-opinionated-source-software",
+        destination: "https://hub.coss.com",
+        permanent: true,
+      },
+    ];
+  },
   // In production the dashboard's zone serves /api/auth and browser monitoring on the same origin.
   async rewrites() {
     if (!dev) return [];

@@ -23,7 +23,10 @@ export async function HubHeader() {
     ...(user ? ([["Your prompts", `/${user.handle}`]] as [string, string][]) : []),
   ];
   return (
-    <header className="sticky top-0 z-40 w-full bg-sidebar/80 backdrop-blur-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border/64">
+    <header
+      data-slot="hub-header"
+      className="sticky top-0 z-40 w-full bg-sidebar/80 backdrop-blur-sm before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border/64"
+    >
       <div className="container relative flex h-(--header-height) w-full items-center gap-2 px-4 sm:px-6">
         <div className="flex shrink-0 items-center gap-1.5 pe-4 font-bold font-heading text-[1.375em] [font-variation-settings:'GEOM'_50,'opsz'_32] sm:text-2xl lg:pe-5">
           <Link aria-label="Home" href="/">

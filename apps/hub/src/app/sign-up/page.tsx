@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthFrame } from "@/components/auth/auth-frame";
 import { CredentialsForm } from "@/components/auth/credentials-form";
@@ -14,6 +15,17 @@ export default async function SignUpPage({ searchParams }: PageProps<"/sign-up">
   if (viewer) redirect(viewer.onboarded ? next : `/onboarding?next=${encodeURIComponent(next)}`);
   return (
     <AuthFrame
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link
+            className="text-foreground underline underline-offset-4"
+            href={`/sign-in?next=${encodeURIComponent(next)}`}
+          >
+            Sign in
+          </Link>
+        </>
+      }
       lede="Contribute in English, not code. One account for every project on the hub."
       title="Create your hub account"
     >

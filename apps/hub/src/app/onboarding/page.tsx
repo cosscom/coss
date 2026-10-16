@@ -24,6 +24,7 @@ export default async function OnboardingPage({ searchParams }: PageProps<"/onboa
     "";
   return (
     <AuthFrame
+      footer="Everything here can be changed later from your account menu."
       lede={
         profile?.onboardedAt
           ? "Change what the hub shows under your name."
