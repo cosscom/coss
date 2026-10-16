@@ -1,41 +1,31 @@
-import { type EmailObjectOutput, listEmailsPage } from "@coss/email";
+import { listDomains, listEmailsPage } from "@coss/email";
 import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
-import { MailIcon, SearchXIcon } from "lucide-react";
+import { DownloadIcon, MailIcon, SearchXIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { listHref, stringParam } from "@/components/admin/list-controls";
 import { CursorPager } from "@/components/cursor-pager";
 import { ModeBadge } from "@/components/email-badges";
+import { EmailFilterBar } from "@/components/email-filters";
 import { EmailTable } from "@/components/email-table";
 import { EmptyState } from "@/components/empty-state";
-import { FilterLinks } from "@/components/filter-links";
 import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
-import { SearchForm } from "@/components/search-form";
+import {
+  emailFilterParams,
+  emailFilterQuery,
+  hasEmailFilters,
+  toEmailListFilters,
+} from "@/lib/email-filters";
 import { environmentPath } from "@/lib/navigation";
 import { requireOrgMember } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Emails" };
 
 const PAGE_SIZE = 50;
-
-const STATUS_FILTERS = [
-  { value: "all", label: "All" },
-  { value: "sent", label: "Sent" },
-  { value: "failed", label: "Failed" },
-  { value: "scheduled", label: "Scheduled" },
-  { value: "queued", label: "Queued" },
-  { value: "canceled", label: "Canceled" },
-] as const satisfies readonly { value: EmailObjectOutput["status"] | "all"; label: string }[];
-
-type StatusFilter = (typeof STATUS_FILTERS)[number]["value"];
-
-function statusParam(value: string): StatusFilter {
-  return STATUS_FILTERS.find((filter) => filter.value === value)?.value ?? "all";
-}
 
 export default async function EmailsPage({
   params,
@@ -48,52 +38,40 @@ export default async function EmailsPage({
   if (!found) notFound();
   const { project, environment } = found;
 
-  const query = stringParam(search.q);
-  const status = statusParam(stringParam(search.status));
+  const filters = emailFilterParams((name) => stringParam(search[name]));
   const before = stringParam(search.before) || undefined;
-  const page = await listEmailsPage({
-    organizationId: organization.id,
-    environmentId: environment.id,
-    limit: PAGE_SIZE,
-    query: query || undefined,
-    status: status === "all" ? undefined : [status],
-    before,
-  });
+  const scope = { organizationId: organization.id, environmentId: environment.id };
+  const [page, domains] = await Promise.all([
+    listEmailsPage({ ...scope, limit: PAGE_SIZE, ...toEmailListFilters(filters), before }),
+    listDomains({ organizationId: organization.id }),
+  ]);
 
   const base = environmentPath(organization.slug, project.slug, environment.slug);
   const path = `${base}/emails`;
-  const filtered = Boolean(query) || status !== "all";
-  const hrefWith = (overrides: { status?: StatusFilter; before?: string }) =>
-    listHref(path, {
-      q: query,
-      status: (overrides.status ?? status) === "all" ? undefined : (overrides.status ?? status),
-      before: overrides.before,
-    });
+  const filtered = hasEmailFilters(filters);
+  const hrefWith = (overrides: { before?: string }) =>
+    listHref(path, { ...emailFilterQuery(filters), before: overrides.before });
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
+        actions={
+          // A plain link: the CSV comes from a route handler, with the list's filters.
+          <Button
+            render={<a download href={listHref(`${path}/export`, emailFilterQuery(filters))} />}
+            size="sm"
+            variant="outline"
+          >
+            <DownloadIcon />
+            Export CSV
+          </Button>
+        }
         description={`Every email sent with ${project.name} · ${environment.name}'s keys, newest first. Emails are kept for ${formatRetentionDays(RETENTION_DAYS.emails)}.`}
         meta={<ModeBadge mode={environment.mode} />}
         title="Emails"
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <FilterLinks
-          options={STATUS_FILTERS.map((filter) => ({
-            value: filter.value,
-            label: filter.label,
-            href: hrefWith({ status: filter.value }),
-          }))}
-          value={status}
-        />
-        <SearchForm
-          action={path}
-          keep={{ status: status === "all" ? undefined : status }}
-          placeholder="Subject or recipient"
-          query={query}
-        />
-      </div>
+      <EmailFilterBar domains={domains.map((domain) => domain.name)} params={filters} path={path} />
 
       <Panel
         footer={

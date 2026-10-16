@@ -30,6 +30,27 @@ describe("CORS", () => {
     expect(res.headers.get("access-control-allow-credentials")).toBeNull();
   });
 
+  test("a preflight allows every method the API uses, PUT included (template drafts)", async () => {
+    const { app } = createTestApp({ corsOrigins: [DOCS] });
+    const res = await app.request("/v1/email_templates/welcome/draft", {
+      method: "OPTIONS",
+      headers: {
+        Origin: DOCS,
+        "Access-Control-Request-Method": "PUT",
+        "Access-Control-Request-Headers": "authorization, content-type",
+      },
+    });
+
+    expect(res.status).toBe(204);
+    expect(res.headers.get("access-control-allow-methods")?.split(",")).toEqual([
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+    ]);
+  });
+
   test("other origins, and every origin by default, get no CORS headers", async () => {
     const allowList = createTestApp({ corsOrigins: [DOCS] }).app;
     const byDefault = createTestApp().app;

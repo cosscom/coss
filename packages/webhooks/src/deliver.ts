@@ -5,6 +5,7 @@
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { appendLogEntries, type LogEntryInput, recordOrgAuditEvent } from "@coss/logs";
+import { enqueuePush } from "@coss/push";
 import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
 import { and, asc, eq, gte, inArray, isNotNull, isNull, lt, lte, ne, or, sql } from "drizzle-orm";
 import { signingSecrets, type WebhookEndpointRow } from "./endpoints.ts";
@@ -280,6 +281,13 @@ async function updateEndpointHealth(
         },
         tx,
       );
+      await enqueuePush(tx, {
+        organizationId: disabled.organizationId,
+        environmentId: disabled.environmentId,
+        kind: "webhook_endpoint_disabled",
+        subjectId: disabled.id,
+        now,
+      });
       return;
     }
   }

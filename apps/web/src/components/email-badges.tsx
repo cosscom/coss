@@ -74,6 +74,7 @@ const EVENT_VARIANT = {
   "email.opened": "secondary",
   "email.clicked": "secondary",
   "email.rescheduled": "info",
+  "email.unsubscribed": "warning",
 } as const satisfies Record<EmailEventType, string>;
 
 export function EmailEventBadge({ type }: { type: EmailEventType }) {
@@ -85,6 +86,7 @@ const SUPPRESSION_REASON_VARIANT = {
   complaint: "error",
   manual: "secondary",
   import: "secondary",
+  unsubscribe: "warning",
 } as const satisfies Record<SuppressionReason, string>;
 
 export function SuppressionReasonBadge({ reason }: { reason: SuppressionReason }) {

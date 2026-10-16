@@ -1,0 +1,79 @@
+---
+title: One-click unsubscribe
+description: List-Unsubscribe headers that mailbox providers show as an Unsubscribe button, backed by your suppression list.
+---
+
+Gmail, Yahoo and Outlook require bulk senders to support one-click unsubscribe
+([RFC 8058](https://www.rfc-editor.org/rfc/rfc8058)): every marketing email carries a
+`List-Unsubscribe` header with an HTTPS link and a `List-Unsubscribe-Post: List-Unsubscribe=One-Click`
+header, and the sender honors the unsubscribe without asking anything else. Mailbox providers then
+show their own **Unsubscribe** button next to the sender's name.
+
+COSS adds both headers for the categories you choose, serves the link from your tracking host, and
+turns every unsubscribe into a [suppression](/docs/email/suppressions) for that category.
+
+## Turning it on
+
+One-click unsubscribe is off by default. Turn it on for a category under **Tracking** in the
+environment's dashboard page, or through the API:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.email.tracking.updateCategory("marketing", { unsubscribe: true });
+```
+
+It is a field of the same rules as [open and click tracking](/docs/email/tracking): a send's own
+`tracking.unsubscribe` wins, then its category's rule, then the environment default. Keep it off for
+transactional categories such as `password-reset`: those recipients can't opt out of them.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data, error } = await coss.email.send({
+  from: "Acme <news@acme.com>",
+  to: "ada@example.com",
+  subject: "What's new in October",
+  html: "<p>Hello!</p>",
+  category: "marketing",
+  tracking: { unsubscribe: true },
+});
+```
+
+## Which emails get the headers
+
+An email gets them when unsubscribe is on for it and:
+
+- it has a `category`: the unsubscribe is scoped to it, so emails without one never get the
+  headers, even with the environment default on;
+- it has a single recipient across `to`, `cc` and `bcc`: one message goes to every recipient, so the
+  link could not tell who asked. Send one email per recipient, for example with
+  [`sendBatch`](/docs/email/sending#sending-in-batches), which makes each entry its own email;
+- it has no `List-Unsubscribe` or `List-Unsubscribe-Post` header of your own (yours win), and at
+  most 13 custom `headers`, so the two COSS adds stay within the limit of 15.
+
+A send that asks for `tracking: { unsubscribe: true }` but breaks one of these rules is refused with
+a `validation_error` on `tracking.unsubscribe`. Emails that only get it from a rule are sent without
+the headers instead. The email's `tracking.unsubscribe` says whether it carries them.
+
+The link points at COSS's tracking host, or at your [custom tracking domain](/docs/email/tracking#custom-tracking-domains)
+while it is active. Opening it in a browser shows a confirmation page; only the `POST` that
+mailbox providers (and that page's button) send unsubscribes, so link scanners can't unsubscribe
+anyone by following it.
+
+## What happens on unsubscribe
+
+- The recipient is added to the environment's suppression list with `scope` set to the email's
+  category, `reason` `unsubscribe` and the `email_id`. Later emails of that category skip them;
+  other categories still reach them.
+- The email gets an `email.unsubscribed` event naming the recipient, also sent as a
+  [webhook](/docs/webhooks), once per email. It doesn't change the recipient's delivery status.
+
+Removing the suppression lets that category reach the recipient again; unsubscribing again through
+the same email adds it back.
+
+Mailbox providers also expect an unsubscribe link in the body of marketing emails. Keep yours: COSS
+doesn't change the content for unsubscribes, and your link can lead to a preference page that adds
+[suppressions](/docs/email/suppressions#managing-the-list) of its own.

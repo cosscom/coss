@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
+import { listPushNotifications } from "@coss/push";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { createWebhookEndpoint, renderWebhookPayload } from "@coss/webhooks";
@@ -128,6 +129,10 @@ describe("billing.* webhook events", () => {
       failure: { message: "insufficient funds" },
     });
     expect(ofType("billing.hold_placed")?.data).toMatchObject({ reason: "delinquent" });
+    const pushes = await listPushNotifications(org);
+    expect(new Set(pushes.map((row) => `${row.kind}:${row.subjectId}`))).toEqual(
+      new Set([`billing_payment_failed:${invoice?.id}`, "billing_hold_placed:delinquent"]),
+    );
     const paid = ofType("billing.invoice_paid");
     expect(paid?.data).toMatchObject({
       invoice: { id: invoice?.id, status: "paid", amount_due: 0 },

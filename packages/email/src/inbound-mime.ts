@@ -69,7 +69,7 @@ function formatMailbox(name: string, address: string): string {
   return `${display} <${address}>`;
 }
 
-function formatAddresses(addresses: readonly Address[] | Address | undefined): string[] {
+export function formatAddresses(addresses: readonly Address[] | Address | undefined): string[] {
   if (!addresses) return [];
   const list = Array.isArray(addresses) ? addresses : [addresses];
   return list.flatMap((entry) =>

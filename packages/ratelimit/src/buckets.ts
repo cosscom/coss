@@ -113,6 +113,17 @@ export const BUCKETS = {
     overridable: false,
     failureMode: "deny",
   },
+  // New SMTP relay connections per client IP, charged before the banner (TLS handshakes and
+  // AUTH attempts cost CPU and a database lookup). Authenticated sessions then share the API's
+  // buckets: `api.authentication.*` for AUTH, `api.send` per message.
+  "smtp.connections.ip": {
+    scope: "ip",
+    limit: 20,
+    periodMs: SECOND,
+    burst: 60,
+    overridable: false,
+    failureMode: "deny",
+  },
   // Recipients sent per organization (live) or environment (sandbox), across all keys. The burst
   // of the per-second bucket must stay at least MAX_RECIPIENTS (50), or a full email never fits.
   "email.recipients.second": {
@@ -282,6 +293,23 @@ export const BUCKETS = {
     periodMs: DAY,
     overridable: false,
     failureMode: "deny",
+  },
+  // The iOS app's code exchange (`/api/mobile/v1/auth/token`), per client IP.
+  "mobile.token.ip": {
+    scope: "ip",
+    limit: 10,
+    periodMs: MINUTE,
+    overridable: false,
+    failureMode: "deny",
+  },
+  // The iOS app's read-only dashboard API, per user id.
+  "mobile.api": {
+    scope: "key",
+    limit: 20,
+    periodMs: SECOND,
+    burst: 60,
+    overridable: false,
+    failureMode: "allow",
   },
   // Public telemetry ingress. This is intentionally per process/IP as well as bounded by its body
   // limit; a monitoring outage must not become an unlimited relay or connection sink.

@@ -17,7 +17,7 @@ import type { BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware, getSessionFromCtx, signUpEmail } from "better-auth/api";
 import { admin, captcha, organization, twoFactor } from "better-auth/plugins";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { recordOrgAudit } from "./audit.ts";
 import {
   API_KEY_NAME_MAX_LENGTH,
@@ -41,6 +41,7 @@ import { serializedEndpoint } from "./serialized-endpoint.ts";
 import { validateOrgName, validateOrgSlug } from "./slugs.ts";
 import {
   isSocialCallbackPath,
+  providerPicture,
   socialProvidersFromEnv,
   socialTwoFactor,
   withoutProviderTokens,
@@ -254,6 +255,22 @@ async function assertSocialSignUpAllowed(
   await assertSignUpNotBlocked({ email: user.email, headers });
 }
 
+/**
+ * A linked Google or GitHub account's picture becomes the user's when they have none: Better
+ * Auth only copies it on sign-up. Runs after the account's transaction commits, and never fails
+ * the sign-in or link it follows.
+ */
+async function adoptProviderPicture(userId: string, picture: string): Promise<void> {
+  try {
+    await db
+      .update(schema.user)
+      .set({ image: picture, updatedAt: new Date() })
+      .where(and(eq(schema.user.id, userId), isNull(schema.user.image)));
+  } catch (error) {
+    console.error("[auth] could not adopt a provider picture", error);
+  }
+}
+
 /** Origin of the dashboard, which hosts /api/auth (also the WebAuthn origin and RP ID). */
 const dashboardUrl = process.env.BETTER_AUTH_URL ? new URL(process.env.BETTER_AUTH_URL) : undefined;
 
@@ -448,7 +465,16 @@ export const authOptions = {
       },
     },
     account: {
-      create: { before: async (account) => withoutProviderTokens(account) },
+      create: {
+        before: async (account) => {
+          const picture = providerPicture(account);
+          const userId = account.userId;
+          if (picture && typeof userId === "string") {
+            await queueAfterTransactionHook(() => adoptProviderPicture(userId, picture));
+          }
+          return withoutProviderTokens(account);
+        },
+      },
       update: { before: async (account) => withoutProviderTokens(account) },
     },
     session: {

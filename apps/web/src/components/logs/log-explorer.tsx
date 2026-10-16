@@ -90,6 +90,12 @@ function Row(props: {
             <span className="w-11 text-muted-foreground">HOOK</span>
             <span className={statusClassName(entry.status_code)}>{entry.status_code ?? "—"}</span>
           </span>
+        ) : entry.source === "smtp" ? (
+          // SMTP reply codes share HTTP's classes (2xx accepted, 4xx retry, 5xx refused).
+          <span className="flex gap-2">
+            <span className="w-11 text-muted-foreground">SMTP</span>
+            <span className={statusClassName(entry.status_code)}>{entry.status_code ?? "—"}</span>
+          </span>
         ) : (
           <span className="text-muted-foreground">{entry.type.replace(/^email\./, "")}</span>
         )}

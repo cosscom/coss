@@ -62,6 +62,7 @@ describe("resolving settings", () => {
     expect(email.tracking).toEqual({
       opens: false,
       clicks: false,
+      unsubscribe: false,
       open_count: 0,
       first_opened_at: null,
       last_opened_at: null,
@@ -76,8 +77,18 @@ describe("resolving settings", () => {
   test("per send beats the category rule, which beats the environment default", async () => {
     const tenant = await createTestTenant();
     const env = envOf(tenant);
-    await upsertTrackingRule(env, { category: null, opens: true, clicks: true });
-    await upsertTrackingRule(env, { category: "receipts", opens: false, clicks: false });
+    await upsertTrackingRule(env, {
+      category: null,
+      opens: true,
+      clicks: true,
+      unsubscribe: false,
+    });
+    await upsertTrackingRule(env, {
+      category: "receipts",
+      opens: false,
+      clicks: false,
+      unsubscribe: false,
+    });
 
     expect((await send(tenant)).email.tracking).toMatchObject({ opens: true, clicks: true });
     expect((await send(tenant, { category: "receipts" })).email.tracking).toMatchObject({
@@ -97,10 +108,25 @@ describe("resolving settings", () => {
     const tenant = await createTestTenant();
     const other = await createTestTenant();
     const env = envOf(tenant);
-    const first = await upsertTrackingRule(env, { category: null, opens: true, clicks: false });
-    const again = await upsertTrackingRule(env, { category: null, opens: false, clicks: true });
+    const first = await upsertTrackingRule(env, {
+      category: null,
+      opens: true,
+      clicks: false,
+      unsubscribe: false,
+    });
+    const again = await upsertTrackingRule(env, {
+      category: null,
+      opens: false,
+      clicks: true,
+      unsubscribe: false,
+    });
     expect(again?.id).toBe(first?.id ?? "");
-    await upsertTrackingRule(env, { category: "news", opens: true, clicks: true });
+    await upsertTrackingRule(env, {
+      category: "news",
+      opens: true,
+      clicks: true,
+      unsubscribe: false,
+    });
     const settings = await getTrackingSettings(env);
     expect(settings.default).toMatchObject({ opens: false, clicks: true });
     expect(settings.categories.map((rule) => rule.category)).toEqual(["news"]);
@@ -112,6 +138,7 @@ describe("resolving settings", () => {
           category: null,
           opens: true,
           clicks: true,
+          unsubscribe: false,
         },
       ),
     ).toBeNull();
@@ -123,7 +150,12 @@ describe("resolving settings", () => {
   test("settings changes never affect an email already sent", async () => {
     const tenant = await createTestTenant();
     const { email, urls } = await send(tenant, { tracking: { opens: true, clicks: false } });
-    await upsertTrackingRule(envOf(tenant), { category: null, opens: false, clicks: false });
+    await upsertTrackingRule(envOf(tenant), {
+      category: null,
+      opens: false,
+      clicks: false,
+      unsubscribe: false,
+    });
     expect(urls.clicks).toEqual([]);
     expect(await recordOpen({ token: parts(urls.open ?? "").token, userAgent: null })).toBe(true);
     const current = await getEmail({ ...envOf(tenant), id: email.id });
@@ -170,6 +202,7 @@ describe("recording hits", () => {
     expect(current?.tracking).toEqual({
       opens: true,
       clicks: true,
+      unsubscribe: false,
       open_count: 2,
       first_opened_at: now.toISOString(),
       last_opened_at: later.toISOString(),

@@ -25,8 +25,8 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { Textarea } from "@coss/ui/components/textarea";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { deleteReceivedEmailAction, simulateReceivedEmailAction } from "./actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
@@ -56,7 +56,9 @@ export function SimulateReceivedEmailDialog(props: Target & { defaultTo: string 
 }
 
 function SimulateForm(props: Target & { defaultTo: string }) {
-  const [state, formAction, pending] = useActionState(simulateReceivedEmailAction, null);
+  const [state, formAction, pending] = useActionToast(simulateReceivedEmailAction, {
+    success: "Test email received",
+  });
 
   return (
     // `contents` keeps header/panel/footer as direct flex children of the popup (coss ui pattern).
@@ -103,7 +105,9 @@ function SimulateForm(props: Target & { defaultTo: string }) {
 }
 
 export function DeleteReceivedEmailButton(props: Target & { receivedEmailId: string }) {
-  const [state, formAction, pending] = useActionState(deleteReceivedEmailAction, null);
+  const [state, formAction, pending] = useActionToast(deleteReceivedEmailAction, {
+    success: "Email deleted",
+  });
 
   return (
     <AlertDialog>

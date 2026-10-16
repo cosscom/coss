@@ -14,8 +14,8 @@ import {
 } from "@coss/ui/components/dialog";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
+import { useActionToast } from "@/lib/toast";
 import { type ImportSuppressionsResult, importSuppressionsAction } from "./actions";
 import { MAX_IMPORT_ROWS } from "./import-limits";
 
@@ -76,7 +76,9 @@ function ImportSummary({ result }: { result: ImportSuppressionsResult }) {
 }
 
 function ImportSuppressionsForm(props: Target) {
-  const [state, formAction, pending] = useActionState(importSuppressionsAction, null);
+  const [state, formAction, pending] = useActionToast(importSuppressionsAction, {
+    success: (result) => `${plural(result.created, "address", "addresses")} suppressed`,
+  });
 
   if (state?.ok) return <ImportSummary result={state.data} />;
 

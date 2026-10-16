@@ -11,6 +11,7 @@ import {
 } from "@coss/ui/components/table";
 import { HistoryIcon } from "lucide-react";
 import Link from "next/link";
+import { DEPLOY_REPOSITORY } from "@/lib/deploy-runs";
 import { formatDateTime } from "@/lib/format";
 import { EmptyState } from "../empty-state";
 import { PanelBody } from "../panel";
@@ -25,6 +26,8 @@ const ACTION_LABELS: Record<string, { label: string; variant: "error" | "success
   "user.reset_two_factor": { label: "Reset two-factor", variant: "error" },
   "organization.suspend": { label: "Suspended organization", variant: "error" },
   "organization.unsuspend": { label: "Lifted suspension", variant: "success" },
+  "organization.take_down": { label: "Took down organization", variant: "error" },
+  "email.view_content": { label: "Viewed email content", variant: "info" },
   "reputation.suspended": { label: "Suspended live sending", variant: "error" },
   "reputation.reinstated": { label: "Reinstated live sending", variant: "success" },
   "reputation.policy_updated": { label: "Changed reputation policy", variant: "info" },
@@ -44,11 +47,17 @@ const ACTION_LABELS: Record<string, { label: string; variant: "error" | "success
   "billing.credit_note_created": { label: "Issued a credit note", variant: "info" },
   "billing.hold_placed": { label: "Paused live sending (billing)", variant: "error" },
   "billing.hold_lifted": { label: "Resumed live sending (billing)", variant: "success" },
+  "deploy.started": { label: "Deployed main", variant: "info" },
+  "deploy.redeployed": { label: "Redeployed an earlier commit", variant: "error" },
 };
 
 function targetHref(event: AdminAuditEvent): string | null {
   if (event.targetType === "user") return `/admin/users/${event.targetId}`;
   if (event.targetType === "organization") return `/admin/organizations/${event.targetId}`;
+  if (event.targetType === "email") return `/admin/emails/${event.targetId}`;
+  if (event.targetType === "commit") {
+    return `https://github.com/${DEPLOY_REPOSITORY}/commit/${event.targetId}`;
+  }
   if (event.organizationId) return `/admin/organizations/${event.organizationId}`;
   return null;
 }
@@ -66,6 +75,10 @@ function describe(event: AdminAuditEvent): string {
   if (typeof meta.bucket === "string") parts.push(meta.bucket + ruleChange(meta));
   if (typeof meta.number === "string") parts.push(meta.number);
   if (typeof meta.plan === "string") parts.push(meta.plan);
+  if (Array.isArray(meta.bannedUserIds)) parts.push(`${meta.bannedUserIds.length} banned`);
+  if (Array.isArray(meta.revokedKeyIds)) parts.push(`${meta.revokedKeyIds.length} keys revoked`);
+  if (typeof meta.subject === "string") parts.push(`“${meta.subject}”`);
+  if (event.targetType === "commit") parts.push(event.targetId.slice(0, 7));
   return parts.join(" · ") || event.targetId;
 }
 

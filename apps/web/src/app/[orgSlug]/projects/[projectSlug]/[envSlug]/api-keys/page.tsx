@@ -57,8 +57,8 @@ export default async function ApiKeysPage({
         actions={createDialog}
         description={
           <>
-            Keys authenticate requests to the API and SDK. They start with{" "}
-            <code className="font-mono text-foreground">{prefix}</code> and only work in{" "}
+            Keys authenticate requests to the API and SDK, and are the password for SMTP. They start
+            with <code className="font-mono text-foreground">{prefix}</code> and only work in{" "}
             {project.name} · {environment.name}.
           </>
         }

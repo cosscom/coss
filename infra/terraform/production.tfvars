@@ -9,6 +9,7 @@ vpc_cidr           = "10.40.0.0/16"
 dashboard_host     = "coss.com"
 api_host           = "api.coss.com"
 portal_host        = "portal.cosshooks.com"
+smtp_host          = "smtp.coss.com"
 external_origin_hosts = {
   ui     = "coss-com-ui.vercel.app"
   origin = "coss-com-origin.vercel.app"
@@ -16,10 +17,11 @@ external_origin_hosts = {
 ses_name          = "coss"
 github_repository = "cosscom/coss"
 # Who may start the deploy runner (people with write access): keithwillcode, PeerRich, pumfleet,
-# sean-brydon. Add a new maintainer here before their merges can deploy.
+# sean-brydon. Add a new maintainer here before their merges can deploy. The COSS Deploy GitHub
+# App's bot goes here too once it exists (README, "Deploying from the admin console").
 deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778"]
 # Optional secrets not stored in coss/production: take a name out once put-secret.sh has set it.
-unset_secrets      = ["IPINFO_PRIVACY_TOKEN"]
+unset_secrets      = ["IPINFO_PRIVACY_TOKEN", "DEPLOY_GITHUB_APP_PRIVATE_KEY"]
 initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
@@ -36,6 +38,7 @@ autoscaling = {
   portal = { max = 4, cpu_target = 60 }
   api    = { max = 6, cpu_target = 60 }
   worker = { max = 2, cpu_target = 70 }
+  smtp   = { max = 4, cpu_target = 60 }
 }
 
 waf_rate_limits = { dashboard = 5000, api = 20000 }
@@ -50,6 +53,7 @@ plain_env = {
   web = {
     BETTER_AUTH_URL          = "https://coss.com"
     API_PUBLIC_URL           = "https://api.coss.com"
+    SMTP_PUBLIC_HOST         = "smtp.coss.com"
     TRUSTED_PROXY_HOPS       = "2"
     TURNSTILE_SITE_KEY       = "0x4AAAAAAFU8QY0DX4ZJGoSK"
     PORTAL_PUBLIC_URL        = "https://portal.cosshooks.com"
@@ -145,8 +149,33 @@ plain_env = {
     # Account and reputation emails go out through COSS itself, from its own organization.
     NOTIFICATIONS_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
     NOTIFICATIONS_FROM           = "COSS <notifications@coss.com>"
-    SENTRY_DSN                   = "https://77c5b5b1c87194a0942714259a44dcac@o4512237982711808.ingest.de.sentry.io/4512245153398865"
-    SENTRY_ENVIRONMENT           = "production"
-    SENTRY_TRACES_SAMPLE_RATE    = "0.1"
+    # Push notifications to the iOS app: the "COSS push" key (production, topic com.coss.ios).
+    APNS_KEY_ID               = "WCQDCU4HUL"
+    APNS_TEAM_ID              = "ADWKXDJV75"
+    APNS_TOPIC                = "com.coss.ios"
+    APNS_ENVIRONMENTS         = "production"
+    SENTRY_DSN                = "https://77c5b5b1c87194a0942714259a44dcac@o4512237982711808.ingest.de.sentry.io/4512245153398865"
+    SENTRY_ENVIRONMENT        = "production"
+    SENTRY_TRACES_SAMPLE_RATE = "0.1"
+  }
+  smtp = {
+    BETTER_AUTH_URL           = "https://coss.com"
+    SMTP_HOSTNAME             = "smtp.coss.com"
+    TRACKING_PUBLIC_URL       = "https://track.cosslinks.com"
+    EMAIL_PROVIDER            = "ses"
+    AWS_REGION                = "us-east-2"
+    SES_CONFIGURATION_SET     = "coss"
+    SES_TENANT_PREFIX         = "coss"
+    INBOUND_MANAGED_DOMAIN    = "inbound.coss.com"
+    SES_INBOUND_BUCKET        = "coss-inbound-294417174674"
+    TRACKING_DOMAIN_PROVIDER  = "cloudflare"
+    CLOUDFLARE_ZONE_ID        = "2e3adbb52b68d57dfa5d71a0b7cfa3cc"
+    TRACKING_CNAME_TARGET     = "track.cosslinks.com"
+    DATABASE_POOL_MAX         = "10"
+    VALKEY_CLUSTER            = "true"
+    RATE_LIMIT_KEY_PREFIX     = "coss"
+    SENTRY_DSN                = "https://868b2bf2f705696c061f86be6597eb68@o4512237982711808.ingest.de.sentry.io/4512262232604752"
+    SENTRY_ENVIRONMENT        = "production"
+    SENTRY_TRACES_SAMPLE_RATE = "0.1"
   }
 }

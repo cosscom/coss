@@ -48,7 +48,10 @@ export function statusesBelow(status: EmailRecipientStatus): EmailRecipientStatu
   return EMAIL_RECIPIENT_STATUSES.filter((candidate) => RANK[candidate] < RANK[status]);
 }
 
-/** `null`: engagement events (opens, clicks) never change a recipient's status or details. */
+/**
+ * `null`: engagement events (opens, clicks) and unsubscribes never change a recipient's status or
+ * details.
+ */
 const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus | null> = {
   "email.sent": "sent",
   "email.delivered": "delivered",
@@ -63,6 +66,7 @@ const STATUS_BY_EVENT: Record<EmailEventType, EmailRecipientStatus | null> = {
   "email.opened": null,
   "email.clicked": null,
   "email.rescheduled": "queued",
+  "email.unsubscribed": null,
 };
 
 function recipientStatus(event: ProviderEvent): EmailRecipientStatus | null {

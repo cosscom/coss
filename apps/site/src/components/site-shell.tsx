@@ -1,7 +1,7 @@
 import { cn } from "@coss/ui/lib/utils";
 import type * as PageTree from "fumadocs-core/page-tree";
-import type { ReactNode } from "react";
-import { SITE_SHELL_ID } from "@/lib/nav";
+import type { CSSProperties, ReactNode } from "react";
+import { DOCS_SIDEBAR_WIDTH, SITE_SHELL_ID } from "@/lib/nav";
 import type { NavItem } from "@/lib/site";
 import { SiteHeader } from "./site-header";
 
@@ -14,6 +14,7 @@ export function SiteShell({
   items,
   tree,
   searchApi,
+  docsSidebar = false,
   className,
   children,
 }: {
@@ -21,6 +22,8 @@ export function SiteShell({
   /** The docs the menus list and the ⌘K menu searches (coss's docs unless given). */
   tree?: PageTree.Root;
   searchApi?: string;
+  /** The page has the docs sidebar: the header's wordmark cell lines up with it. */
+  docsSidebar?: boolean;
   className?: string;
   children: ReactNode;
 }) {
@@ -31,6 +34,7 @@ export function SiteShell({
         "relative isolate flex min-h-svh flex-col overflow-clip [--header-height:4rem]",
         className,
       )}
+      style={docsSidebar ? ({ "--sidebar-width": DOCS_SIDEBAR_WIDTH } as CSSProperties) : undefined}
     >
       <div
         aria-hidden="true"
@@ -40,7 +44,7 @@ export function SiteShell({
         aria-hidden="true"
         className="container pointer-events-none fixed inset-x-0 top-0 z-45 h-(--header-height) before:absolute before:top-[calc(var(--header-height)-4.5px)] before:-left-[11.5px] before:z-1 before:-ml-1 before:size-2 before:rounded-[2px] before:border before:border-border before:bg-popover before:bg-clip-padding before:shadow-xs/5 after:absolute after:top-[calc(var(--header-height)-4.5px)] after:-right-[11.5px] after:z-1 after:-mr-1 after:size-2 after:rounded-[2px] after:border after:border-border after:bg-background after:bg-clip-padding after:shadow-xs/5 dark:after:bg-clip-border dark:before:bg-clip-border"
       />
-      <SiteHeader items={items} searchApi={searchApi} tree={tree} />
+      <SiteHeader docsSidebar={docsSidebar} items={items} searchApi={searchApi} tree={tree} />
       {children}
     </div>
   );

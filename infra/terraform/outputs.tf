@@ -11,6 +11,16 @@ output "portal_certificate_validation_records" {
   value       = [for option in aws_acm_certificate.portal.domain_validation_options : { name = option.resource_record_name, value = option.resource_record_value }]
 }
 
+output "smtp_certificate_validation_records" {
+  description = "CNAMEs to add (DNS only) in the coss.com Cloudflare zone for the SMTP relay's certificate."
+  value       = [for option in aws_acm_certificate.smtp.domain_validation_options : { name = option.resource_record_name, value = option.resource_record_value }]
+}
+
+output "nlb_dns_name" {
+  description = "Target of the DNS-only smtp.coss.com CNAME (Cloudflare can't proxy SMTP)."
+  value       = aws_lb.smtp.dns_name
+}
+
 output "dashboard_distribution" {
   value = { id = aws_cloudfront_distribution.dashboard.id, domain = aws_cloudfront_distribution.dashboard.domain_name }
 }

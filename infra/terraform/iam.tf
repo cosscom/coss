@@ -54,6 +54,20 @@ resource "aws_iam_role_policy_attachment" "task_ses" {
   policy_arn = each.value
 }
 
+# The SMTP relay exports its own TLS certificate (and nothing else).
+resource "aws_iam_role_policy" "task_smtp_certificate" {
+  name = "smtp-certificate"
+  role = aws_iam_role.task["smtp"].id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["acm:ExportCertificate"]
+      Resource = [aws_acm_certificate.smtp.arn]
+    }]
+  })
+}
+
 # ECS Exec (`aws ecs execute-command`) for operators.
 resource "aws_iam_role_policy" "task_exec" {
   for_each = aws_iam_role.task

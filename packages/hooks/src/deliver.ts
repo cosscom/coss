@@ -5,6 +5,7 @@
 import { db, type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { recordOrgAuditEvent } from "@coss/logs";
+import { enqueuePush } from "@coss/push";
 import { enqueueWebhookMessage, signatureHeaders, type WebhookSender } from "@coss/webhooks";
 import {
   type AttemptResult,
@@ -385,6 +386,13 @@ async function updateEndpointHealth(
         tx,
       );
       await announceEndpointDisabled(tx, disabled, change.failingSince, now);
+      await enqueuePush(tx, {
+        organizationId: disabled.organizationId,
+        environmentId: disabled.environmentId,
+        kind: "hook_endpoint_disabled",
+        subjectId: disabled.id,
+        now,
+      });
       return;
     }
   }

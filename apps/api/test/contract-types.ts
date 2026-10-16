@@ -20,10 +20,12 @@ import type {
 import type {
   CheckSuppressionQuery,
   CreateDomainRequest,
+  CreateEmailTemplateRequest,
   CreateReceivingDomainRequest,
   CreateSuppressionRequest,
   CreateTrackingDomainRequest,
   DeletedDomain,
+  DeletedEmailTemplate,
   DeletedReceivedEmail,
   DeletedSuppression,
   DeletedTrackingRule,
@@ -38,12 +40,22 @@ import type {
   EmailLinkList,
   EmailObject,
   EmailRecipient,
+  EmailSummaryList,
+  EmailTemplateList,
+  EmailTemplateObject,
+  EmailTemplateReference,
+  EmailTemplateVersionList,
+  EmailTemplateVersionObject,
   EmailWebhookEvent,
   ExportSuppressionsQuery,
   ImportSuppressionsRequest,
   InboundAddressObject,
+  ListEmailsQuery,
+  ListEmailTemplatesQuery,
+  ListEmailTemplateVersionsQuery,
   ListReceivedEmailsQuery,
   ListSuppressionsQuery,
+  PublishEmailTemplateRequest,
   ReceivedEmailList,
   ReceivedEmailObject,
   ReceivedEmailSummary,
@@ -56,9 +68,13 @@ import type {
   SuppressionCheck,
   SuppressionImport,
   SuppressionList,
+  TemplateContentObject,
+  TemplateVariableObject,
   TrackingDomainObject,
   TrackingRule,
   TrackingSettings,
+  UpdateEmailTemplateDraftRequest,
+  UpdateEmailTemplateRequest,
   UpdateTrackingRuleRequest,
 } from "@coss/email/schemas";
 import type {
@@ -143,6 +159,7 @@ import type {
   CossErrorIssue,
   CossErrorType,
   CreateDomainParams,
+  CreateEmailTemplateParams,
   CreateLogDrainParams,
   CreateReceivingDomainParams,
   CreateRiskLimitBucketParams,
@@ -153,11 +170,15 @@ import type {
   CreateWebhookEndpointParams,
   Email,
   EmailBatch,
+  EmailSummary,
   ExportSuppressionsParams,
   ImportSuppressionsParams,
   List,
   ListAuditEventsParams,
   ListCreditsParams,
+  ListEmailsParams,
+  ListEmailTemplatesParams,
+  ListEmailTemplateVersionsParams,
   ListInvoicesParams,
   ListLogDrainBatchesParams,
   ListLogsParams,
@@ -172,6 +193,7 @@ import type {
   LogDrainBatch,
   LogDrainLine,
   LogDrainSource,
+  PublishEmailTemplateParams,
   RecoverWebhookEndpointParams,
   RescheduleEmailParams,
   RiskFeedbackParams,
@@ -183,6 +205,7 @@ import type {
   BillingWebhookEvent as SdkBillingWebhookEvent,
   Credit as SdkCredit,
   DeletedDomain as SdkDeletedDomain,
+  DeletedEmailTemplate as SdkDeletedEmailTemplate,
   DeletedLogDrain as SdkDeletedLogDrain,
   DeletedReceivedEmail as SdkDeletedReceivedEmail,
   DeletedRiskLimitBucket as SdkDeletedRiskLimitBucket,
@@ -197,6 +220,9 @@ import type {
   EmailEvent as SdkEmailEvent,
   EmailLink as SdkEmailLink,
   EmailRecipient as SdkEmailRecipient,
+  EmailTemplate as SdkEmailTemplate,
+  EmailTemplateReference as SdkEmailTemplateReference,
+  EmailTemplateVersion as SdkEmailTemplateVersion,
   EmailTracking as SdkEmailTracking,
   EmailWebhookEvent as SdkEmailWebhookEvent,
   WebhookEndpointWithSecret as SdkEndpointWithSecret,
@@ -229,14 +255,19 @@ import type {
   Suppression as SdkSuppression,
   SuppressionCheck as SdkSuppressionCheck,
   SuppressionImport as SdkSuppressionImport,
+  TemplateContent as SdkTemplateContent,
+  TemplateVariable as SdkTemplateVariable,
   TrackingDomain as SdkTrackingDomain,
   TrackingRule as SdkTrackingRule,
   TrackingSettings as SdkTrackingSettings,
   Usage as SdkUsage,
   WebhookAttempt as SdkWebhookAttempt,
   WebhookDelivery as SdkWebhookDelivery,
-  SendEmailParams,
+  SendEmailContentParams,
+  SendEmailTemplateParams,
   TrackingOptions,
+  UpdateEmailTemplateDraftParams,
+  UpdateEmailTemplateParams,
   UpdateLogDrainParams,
   UpdateRiskLimitBucketParams,
   UpdateRiskRuleParams,
@@ -267,23 +298,53 @@ type MutuallyAssignable<A, B> = [A] extends [B]
 
 type Assert<T extends true> = T;
 
+/** `A` is assignable to `B` (one direction only). */
+type Extends<A, B> = [A] extends [B] ? true : false;
+
 type SendInput = z.input<typeof SendEmailRequest>;
+// `react` never reaches the API: the SDK renders it into `html`/`text` first.
+type SendContentBody = Omit<SendEmailContentParams, "react">;
+type SendTemplateBody = Omit<SendEmailTemplateParams, "react">;
+type SendEmailBody = SendContentBody | SendTemplateBody;
 type EmailOutput = z.output<typeof EmailObject>;
 type ApiError = ErrorEnvelopeBody["error"];
 
 export type Contract = [
   // API versions: the SDK knows exactly the API's versions.
   Assert<MutuallyAssignable<ApiVersion, SdkApiVersion>>,
-  // Request: anything the SDK accepts is what the API validates, and vice versa.
-  Assert<MutuallyAssignable<SendInput, SendEmailParams>>,
-  Assert<Equals<keyof SendInput, keyof SendEmailParams>>,
-  Assert<MutuallyAssignable<SendInput["to"], SendEmailParams["to"]>>,
+  // Request: a send has its own content or a template. Every SDK body is valid API input, and
+  // each kind names every API field (the other kind's as `never`).
+  Assert<Extends<SendEmailBody, SendInput>>,
+  Assert<Equals<keyof SendInput, keyof SendContentBody>>,
+  Assert<Equals<keyof SendInput, keyof SendTemplateBody>>,
+  Assert<MutuallyAssignable<NonNullable<SendInput["subject"]>, SendContentBody["subject"]>>,
+  Assert<MutuallyAssignable<NonNullable<SendInput["html"]>, NonNullable<SendContentBody["html"]>>>,
+  Assert<MutuallyAssignable<NonNullable<SendInput["text"]>, NonNullable<SendContentBody["text"]>>>,
+  Assert<
+    MutuallyAssignable<NonNullable<SendInput["template_id"]>, SendTemplateBody["template_id"]>
+  >,
+  Assert<
+    MutuallyAssignable<
+      NonNullable<SendInput["template_version"]>,
+      NonNullable<SendTemplateBody["template_version"]>
+    >
+  >,
+  Assert<
+    MutuallyAssignable<NonNullable<SendInput["locale"]>, NonNullable<SendTemplateBody["locale"]>>
+  >,
+  Assert<
+    MutuallyAssignable<
+      NonNullable<SendInput["variables"]>,
+      NonNullable<SendTemplateBody["variables"]>
+    >
+  >,
+  Assert<MutuallyAssignable<SendInput["to"], SendEmailBody["to"]>>,
   Assert<MutuallyAssignable<NonNullable<SendInput["tracking"]>, TrackingOptions>>,
-  Assert<MutuallyAssignable<NonNullable<SendInput["tags"]>, NonNullable<SendEmailParams["tags"]>>>,
+  Assert<MutuallyAssignable<NonNullable<SendInput["tags"]>, NonNullable<SendEmailBody["tags"]>>>,
   Assert<
     MutuallyAssignable<
       NonNullable<SendInput["attachments"]>[number],
-      NonNullable<SendEmailParams["attachments"]>[number]
+      NonNullable<SendEmailBody["attachments"]>[number]
     >
   >,
   // Response: what the API returns is exactly the SDK's `Email`.
@@ -291,6 +352,9 @@ export type Contract = [
   Assert<MutuallyAssignable<EmailOutput["status"], Email["status"]>>,
   Assert<MutuallyAssignable<EmailOutput["tags"], Email["tags"]>>,
   Assert<MutuallyAssignable<EmailOutput["attachments"][number], Email["attachments"][number]>>,
+  Assert<MutuallyAssignable<EmailOutput["failure"], Email["failure"]>>,
+  Assert<MutuallyAssignable<z.output<typeof EmailSummaryList>, List<EmailSummary>>>,
+  Assert<Equals<keyof z.input<typeof ListEmailsQuery>, keyof ListEmailsParams>>,
   Assert<MutuallyAssignable<z.output<typeof EmailRecipient>, SdkEmailRecipient>>,
   Assert<
     MutuallyAssignable<z.output<typeof EmailRecipient>["status"], SdkEmailRecipient["status"]>
@@ -303,11 +367,43 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof EmailLink>, SdkEmailLink>>,
   Assert<MutuallyAssignable<z.output<typeof EmailLinkList>, List<SdkEmailLink>>>,
   // Batch sends: `sendBatch(emails)` posts `{ emails }` and returns the batch.
-  Assert<
-    MutuallyAssignable<z.input<typeof SendEmailBatchRequest>["emails"][number], SendEmailParams>
-  >,
+  Assert<Extends<SendEmailBody, z.input<typeof SendEmailBatchRequest>["emails"][number]>>,
+  Assert<Equals<z.input<typeof SendEmailBatchRequest>["emails"][number], SendInput>>,
   Assert<Equals<keyof z.input<typeof SendEmailBatchRequest>, "emails">>,
   Assert<MutuallyAssignable<z.output<typeof EmailBatchObject>, EmailBatch>>,
+  // Email templates.
+  Assert<
+    MutuallyAssignable<z.output<typeof EmailObject>["template"], SdkEmailTemplateReference | null>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof EmailTemplateReference>, SdkEmailTemplateReference>>,
+  Assert<MutuallyAssignable<z.input<typeof CreateEmailTemplateRequest>, CreateEmailTemplateParams>>,
+  Assert<MutuallyAssignable<z.input<typeof UpdateEmailTemplateRequest>, UpdateEmailTemplateParams>>,
+  Assert<
+    MutuallyAssignable<
+      z.input<typeof UpdateEmailTemplateDraftRequest>,
+      UpdateEmailTemplateDraftParams
+    >
+  >,
+  Assert<
+    MutuallyAssignable<z.input<typeof PublishEmailTemplateRequest>, PublishEmailTemplateParams>
+  >,
+  // Query numbers are coerced from strings, so only the keys are compared.
+  Assert<Equals<keyof z.input<typeof ListEmailTemplatesQuery>, keyof ListEmailTemplatesParams>>,
+  Assert<
+    Equals<
+      keyof z.input<typeof ListEmailTemplateVersionsQuery>,
+      keyof ListEmailTemplateVersionsParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof EmailTemplateObject>, SdkEmailTemplate>>,
+  Assert<MutuallyAssignable<z.output<typeof EmailTemplateList>, List<SdkEmailTemplate>>>,
+  Assert<MutuallyAssignable<z.output<typeof EmailTemplateVersionObject>, SdkEmailTemplateVersion>>,
+  Assert<
+    MutuallyAssignable<z.output<typeof EmailTemplateVersionList>, List<SdkEmailTemplateVersion>>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof TemplateVariableObject>, SdkTemplateVariable>>,
+  Assert<MutuallyAssignable<z.output<typeof TemplateContentObject>, SdkTemplateContent>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedEmailTemplate>, SdkDeletedEmailTemplate>>,
   // Rescheduling: `reschedule(id, params)` posts the params as they are.
   Assert<MutuallyAssignable<z.input<typeof RescheduleEmailRequest>, RescheduleEmailParams>>,
   Assert<Equals<keyof z.input<typeof RescheduleEmailRequest>, keyof RescheduleEmailParams>>,

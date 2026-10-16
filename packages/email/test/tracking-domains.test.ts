@@ -399,6 +399,34 @@ describe("sending through a tracking domain", () => {
     expect(urls.clicks[0]).toStartWith(`https://${hostname}/t/c/`);
   });
 
+  test("one-click unsubscribe headers use it too", async () => {
+    const { tenant, organizationId, domain } = await setup();
+    const hostname = `links.${domain.name}`;
+    await createTrackingDomain({ organizationId, domainId: domain.id, hostname }, fakeDeps());
+    const provider = new FakeEmailProvider({ log: false });
+    const queue = memoryDispatchQueue();
+    const service = createEmailService({
+      liveProvider: provider,
+      sandboxProvider: provider,
+      trackingBaseUrl: "https://api.coss.test",
+      trackingDomainProvider: "fake",
+      queue,
+    });
+    await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({
+        from: `hello@${domain.name}`,
+        category: "news",
+        tracking: { unsubscribe: true },
+      }),
+    });
+    await queue.drain(service);
+    expect(provider.sent.at(-1)?.headers["List-Unsubscribe"]).toStartWith(
+      `<https://${hostname}/t/u/`,
+    );
+  });
+
   test("otherwise the default tracking host", async () => {
     const { tenant, organizationId, domain } = await setup();
     const hostname = `links.${domain.name}`;

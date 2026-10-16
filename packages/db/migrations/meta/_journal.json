@@ -407,6 +407,62 @@
       "when": 1792022721988,
       "tag": "0057_safe_zombie",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1792069503978,
+      "tag": "0058_broken_harry_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1792082811703,
+      "tag": "0059_right_penance",
+      "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1792083759633,
+      "tag": "0060_famous_tana_nile",
+      "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1792087756161,
+      "tag": "0061_tense_marten_broadcloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1792090698892,
+      "tag": "0062_thankful_stellaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1792097748956,
+      "tag": "0063_colossal_jackal",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1792097757032,
+      "tag": "0064_email_template_key_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1792109024348,
+      "tag": "0065_tough_grandmaster",
+      "breakpoints": true
     }
   ]
 }

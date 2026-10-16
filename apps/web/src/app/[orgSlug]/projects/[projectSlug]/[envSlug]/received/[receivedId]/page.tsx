@@ -20,23 +20,13 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
 import { SpecItem, SpecList } from "@/components/spec-list";
+import { UNTRUSTED_PREVIEW_HEAD } from "@/lib/email-preview";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { type EmailTab, EmailTabs } from "../../emails/[emailId]/email-tabs";
 import { DeleteReceivedEmailButton } from "../received-forms";
 
 export const metadata: Metadata = { title: "Received email" };
-
-/**
- * Prepended to the sender's HTML so the parser places it in <head>. Received HTML is written by
- * anyone on the internet: with `sandbox=""` (no scripts, forms, popups or same-origin access) it
- * may load nothing at all, not even remote images (tracking pixels would tell the sender the
- * email was opened, and from where). Only inline `data:` images and fonts render.
- * NEVER add `allow-scripts` or `allow-same-origin` to the iframe.
- */
-const INBOUND_PREVIEW_HEAD =
-  `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; font-src data:">` +
-  `<meta name="referrer" content="no-referrer">`;
 
 function list(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "—";
@@ -72,7 +62,7 @@ export default async function ReceivedEmailPage({
                 className="h-[600px] w-full rounded-lg border bg-white"
                 referrerPolicy="no-referrer"
                 sandbox=""
-                srcDoc={INBOUND_PREVIEW_HEAD + email.html}
+                srcDoc={UNTRUSTED_PREVIEW_HEAD + email.html}
                 title="Received email preview"
               />
             </PanelBody>
