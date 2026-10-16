@@ -37,7 +37,7 @@ coss whoami   # Acme / Default / Development (sandbox)
   since command lines are visible to other processes on the machine.
 
 `coss logout` removes the saved key and revokes it if `coss login` created it (`--revoke` also
-revokes a key you pasted). Keys are saved in `~/.config/coss/config.json` (`$XDG_CONFIG_HOME`, or
+revokes a key you pasted; `--all` signs every profile out). Keys are saved in `~/.config/coss/config.json` (`$XDG_CONFIG_HOME`, or
 `%APPDATA%` on Windows), readable only by you.
 
 ## Receive webhooks locally
@@ -75,6 +75,8 @@ export async function POST(request: Request) {
   (`webhook.forward`). A failed forward isn't retried: send the email again.
 - Without `--forward-to`, events are only printed (`--print-json` shows their bodies, `--json`
   prints one JSON object per event).
+- `--header "Authorization: Bearer dev-token"` adds a header to every forwarded request
+  (repeatable), for a local server that expects one.
 - Events render in your organization's API version unless you pass `--api-version`.
 - `account.*` and `billing.*` events only reach live environments. Listening to a live
   environment, with its real events, needs `--live`.
@@ -93,7 +95,7 @@ With a development key nothing is delivered, but every event and webhook a real 
 happens. `--simulate delivered|bounced|complained|suppressed` sends to the [mailbox
 simulator](/docs/environments), which produces that outcome in development and production alike;
 `--wait` follows the email until it's known and prints its events, so with `coss listen` running
-you see the matching webhooks arrive.
+you see the matching webhooks arrive. It waits up to 60 seconds (`--timeout <seconds>`).
 
 The default sender for development keys is `coss.com CLI <cli@example.com>`; production keys need
 `--from` on a verified domain. Also: `--subject`, `--text`/`--text-file`, `--html`/`--html-file`,
@@ -111,7 +113,21 @@ coss logs tail --type api.request --status 4xx,5xx --since 15m
 New lines of the environment's [log](/docs/logs) as they arrive: API requests made with its keys,
 email events, webhook attempts and `coss listen` forwards. Filter by `--source`, `--level`,
 `--type`, `--status` and free text (`-q`); `--since` starts with earlier lines, and `--json`
-prints one log object per line for `jq`.
+prints one log object per line for `jq`. It checks for new lines every 2 seconds (`--interval <ms>`,
+at least 500).
+
+## Scripting
+
+Results go to stdout and progress to stderr, so pipes get only the results; `--json` makes them one
+JSON object per line. `coss <command> --help` lists a command's options and `coss --version` prints
+the CLI's. Exit codes:
+
+| Code | |
+| --- | --- |
+| `0` | Done. |
+| `1` | It failed: an API error, a network error, a key that isn't valid. |
+| `2` | Wrong usage: an unknown command or option, or a bad value. |
+| `130` | Stopped with Ctrl-C (how `coss listen` and `coss logs tail` end). |
 
 ## Environment variables
 
