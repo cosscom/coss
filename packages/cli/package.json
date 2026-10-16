@@ -1,6 +1,6 @@
 {
   "name": "coss-cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The coss.com command line: sign in, send test emails, tail your environment's log, and forward webhook events to localhost with `coss listen`.",
   "license": "MIT",
   "homepage": "https://coss.com/docs/cli",
@@ -41,7 +41,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "coss": "^0.3.0"
+    "coss": "^0.4.0"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "0.18.5",

@@ -1,5 +1,28 @@
 # coss-mcp
 
+## 0.2.0
+
+### Minor Changes
+
+- 0005212: One-click unsubscribe (RFC 8058): `unsubscribe` in tracking rules (`coss.email.tracking`) and in a
+  send's `tracking` option, `tracking.unsubscribe` on emails, the `email.unsubscribed` event and the
+  `unsubscribe` suppression reason. The MCP server's send tool takes `tracking.unsubscribe`.
+
+### Patch Changes
+
+- Updated dependencies [5444ed6]
+- Updated dependencies [4439171]
+- Updated dependencies [ad46699]
+- Updated dependencies [9734c4f]
+- Updated dependencies [7734ef4]
+- Updated dependencies [77505e7]
+- Updated dependencies [747e8f9]
+- Updated dependencies [0005212]
+- Updated dependencies [ffc8666]
+- Updated dependencies [0a992f6]
+- Updated dependencies [4ea7298]
+  - coss@0.4.0
+
 ## 0.1.0
 
 ### Minor Changes

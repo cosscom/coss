@@ -1,5 +1,26 @@
 # coss
 
+## 0.4.0
+
+### Minor Changes
+
+- 5444ed6: `coss.apiKey.revoke()` (`DELETE /v1/api_key`): revokes the client's own API key at once.
+- 4439171: Dedicated IPs: `coss.email.dedicatedIps.get()` reads the organization's dedicated IP pool (the Dedicated IPs add-on): its status while SES warms it up, its IPs and their deliveries. `Billing` gains `add_ons` and `features.dedicated_ips`, and the `email.dedicated_ip` meter.
+- ad46699: DMARC: `coss.domains.dmarc.get()` (a domain's published DMARC record, the guided next step from `p=none` to `p=reject` with its readiness checks, and a summary of recent aggregate reports), `coss.domains.dmarc.reports.list()` and `.get()`, and the `domain.dmarc_report_received` webhook event (`DomainWebhookEvent`).
+- 9734c4f: Domains: `bimi`, the result of the last BIMI check (the domain's `default._bimi` record, its logo and certificate URLs, the DMARC policy that applies and what keeps the logo from showing), with the new `DomainBimi`, `BimiStatus` and `BimiIssueCode` types.
+- 7734ef4: Email templates: `coss.email.templates` (create, list, get, update, delete; `getDraft`, `updateDraft`, `publish`; `versions.list`, `versions.get`, `versions.restore`), sending a published template with `template_id`, `variables`, `template_version` and `locale` on `coss.email.send()` and `sendBatch()` (`SendEmailParams` is now `SendEmailContentParams | SendEmailTemplateParams`), and `Email.template`.
+- 77505e7: `coss.environment.get()` (`GET /v1/environment`): the environment, project and organization the API key belongs to (with the organization's pinned API version) and the key itself. Any valid key can read it.
+- 747e8f9: `coss.email.getBatch()` reads a batch sent with `sendBatch` back, with its emails' current statuses in request order.
+- 0005212: One-click unsubscribe (RFC 8058): `unsubscribe` in tracking rules (`coss.email.tracking`) and in a
+  send's `tracking` option, `tracking.unsubscribe` on emails, the `email.unsubscribed` event and the
+  `unsubscribe` suppression reason. The MCP server's send tool takes `tracking.unsubscribe`.
+- ffc8666: React Email: `coss.email.send()` and `sendBatch()` take a `react` component, rendered into `html` (and `text`, unless you pass one) by `@react-email/render`, a new optional peer dependency. The SDK still has no required dependencies.
+- 4ea7298: `coss.webhookListeners` (`create`, `poll`, `delete`; `POST /v1/webhook_listeners`, `POST /v1/webhook_listeners/{id}/poll`, `DELETE /v1/webhook_listeners/{id}`): temporary listeners that receive the environment's events by long poll, so a CLI can forward them to a local server (`coss listen`). Polls hand out each event's body exactly as an endpoint would receive it, and take acknowledgements of earlier deliveries.
+
+### Patch Changes
+
+- 0a992f6: Logs: the `smtp` log source, for messages submitted to the SMTP relay (`smtp.coss.com`).
+
 ## 0.3.0
 
 ### Minor Changes
