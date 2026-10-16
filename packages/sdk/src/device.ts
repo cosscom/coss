@@ -6,7 +6,7 @@
  * The token carries a random id this browser keeps in `localStorage` (`coss_device_id`, no
  * cookies) and coarse facts: time zone, languages, platform, screen size, touch support, and
  * whether the browser is automated (WebDriver, headless). No canvas, WebGL, font or audio
- * fingerprinting: a browser whose storage is cleared looks like a new one. COSS keeps only a keyed
+ * fingerprinting: a browser whose storage is cleared looks like a new one. coss.com keeps only a keyed
  * hash of the id.
  *
  * Collects nothing until called, and never throws: outside a browser the token simply carries

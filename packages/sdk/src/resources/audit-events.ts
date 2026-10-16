@@ -8,7 +8,7 @@ type ReadOptions = Pick<RequestOptions, "signal">;
 
 /**
  * `coss.auditEvents`: the organization's audit log, newest first: changes made by members, API
- * keys and COSS support. Organization-wide, whichever environment the key belongs to.
+ * keys and coss.com support. Organization-wide, whichever environment the key belongs to.
  */
 export class AuditEventsResource {
   readonly #http: HttpClient;

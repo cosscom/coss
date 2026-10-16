@@ -103,7 +103,7 @@ describe("ingesting reports", () => {
       .from(schema.dmarcReportRecord)
       .where(eq(schema.dmarcReportRecord.dmarcReportId, report?.id ?? ""))
       .orderBy(schema.dmarcReportRecord.position);
-    // COSS mail, a forwarder signed with COSS's keys, and an unknown failing source.
+    // coss.com mail, a forwarder signed with coss.com's keys, and an unknown failing source.
     expect(records.map((record) => [record.viaCoss, record.dmarcPass])).toEqual([
       [true, true],
       [true, true],
@@ -236,7 +236,7 @@ describe("ingesting reports", () => {
     expect(charged).toHaveLength(4);
   });
 
-  test("COSS's mail and another sender's from one IP stay separate sources", async () => {
+  test("coss.com's mail and another sender's from one IP stay separate sources", async () => {
     const { row, organizationId } = await setup();
     const address = addressOf(row);
     const selector = row.dkimTokens[0] ?? "coss";
@@ -319,7 +319,7 @@ describe("ingesting reports", () => {
 describe("isViaCoss", () => {
   const target = { name: "acme.test", dkimTokens: ["tok1"], mailFromDomain: "send.acme.test" };
   const none = { dkim: [], spf: [] };
-  test("by COSS's DKIM selectors on the domain, or its MAIL FROM domain", () => {
+  test("by coss.com's DKIM selectors on the domain, or its MAIL FROM domain", () => {
     expect(
       isViaCoss(
         {
@@ -545,7 +545,7 @@ describe("notifications", () => {
     return { row: updated as DomainRow, organizationId, tenant };
   }
 
-  /** A report of only passing COSS mail ending `daysAgo` days ago. */
+  /** A report of only passing coss.com mail ending `daysAgo` days ago. */
   function passing(row: DomainRow, daysAgo: number): Uint8Array {
     const end = new Date(Date.now() - daysAgo * DAY);
     return dmarcReportMessage(
@@ -593,7 +593,7 @@ describe("notifications", () => {
     });
   });
 
-  test("COSS mail failing under an enforcing policy alerts", async () => {
+  test("coss.com mail failing under an enforcing policy alerts", async () => {
     const { row } = await readyDomain();
     await db
       .update(schema.domain)

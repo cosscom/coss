@@ -4,7 +4,7 @@ Read together with the root `AGENTS.md` (conventions, tenancy rule, tests). Path
 repository root.
 
 - **Hooks** (`packages/hooks`, `/v1/hooks/*`, `coss.hooks`, permission `hook`): customer messages are opaque JSON
-  with customer-defined types, kept apart from COSS's own `webhook_*` tables (which render through `@coss/versioning`)
+  with customer-defined types, kept apart from coss.com's own `webhook_*` tables (which render through `@coss/versioning`)
   on the shared delivery engine. Every function takes `organizationId` (+ the environment or application); the API
   addresses applications by id **or** `uid` (`requireHookApplication`). `hook_message`/`hook_delivery`/`hook_attempt`
   are partitioned by UTC day of the **message** (migrations 0050/0051) with **no default partition** (expired days

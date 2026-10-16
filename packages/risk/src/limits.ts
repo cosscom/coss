@@ -1,6 +1,6 @@
 /**
  * Rate limiting as a service: an environment's own buckets (`risk_limit_bucket`) and
- * `checkRiskLimit`, which charges one of them for a key with the GCRA engine COSS limits itself
+ * `checkRiskLimit`, which charges one of them for a key with the GCRA engine coss.com limits itself
  * with (`@coss/ratelimit`'s store, in Valkey). Keys are HMACs (`limit_key`), so the store never
  * holds the customer's identifiers. A store failure answers with the bucket's `on_failure`.
  */

@@ -191,6 +191,6 @@ test("an unmapped tenant prevents disabling SES protection", async () => {
   const { ses, calls } = fakeSes(`${prefix}-org_missing`);
   await expect(
     migrateSesSuppressions(ses, { configurationSet: "test", tenantPrefix: prefix }),
-  ).rejects.toThrow("No COSS database mapping");
+  ).rejects.toThrow("No coss.com database mapping");
   expect(calls.some((c) => c.kind.startsWith("Put"))).toBe(false);
 });

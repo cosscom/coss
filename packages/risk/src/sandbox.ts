@@ -130,7 +130,7 @@ const CONTENT_MARKER = /\[coss-test:([a-z]+)(?::([01](?:\.\d+)?))?\]/g;
 /**
  * Content scores in sandbox environments (no model): `[coss-test:<category>]` in the text scores
  * 0.99 in that category, `[coss-test:<category>:<score>]` exactly `<score>`; the rest score 0.01.
- * The same markers as COSS's own content screening.
+ * The same markers as coss.com's own content screening.
  */
 export function sandboxContentScores(text: string): Record<ContentCategory, number> {
   const scores = Object.fromEntries(

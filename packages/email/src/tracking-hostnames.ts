@@ -1,6 +1,6 @@
 /**
  * The port that serves custom tracking hostnames (e.g. `links.acme.com`) over HTTPS: Cloudflare
- * for SaaS in production (custom hostnames on COSS's zone, each with its own certificate), an
+ * for SaaS in production (custom hostnames on coss.com's zone, each with its own certificate), an
  * in-memory fake in development and tests.
  */
 

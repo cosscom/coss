@@ -31,7 +31,7 @@ const TRACKING_STATUS_HELP: Record<string, string> = {
     "(usually within minutes, at most 72 hours); we check automatically.",
   active: "Open pixels and click links of emails sent from this domain use this hostname.",
   temporary_failure:
-    "The hostname stopped working, so emails use COSS's tracking host until it is back. Check " +
+    "The hostname stopped working, so emails use coss.com's tracking host until it is back. Check " +
     "that the CNAME record is still in place.",
   failed:
     "The hostname couldn't be set up within 72 hours, so setup stopped. Fix the CNAME record, " +

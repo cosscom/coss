@@ -22,7 +22,7 @@ export interface CossMcpServerOptions {
 
 function instructions(mode: KeyMode): string {
   return [
-    "Tools for COSS (coss.com), the developer platform whose email API this application uses.",
+    "Tools for coss.com (coss.com), the developer platform whose email API this application uses.",
     "Everything is scoped to the API key's environment: emails, suppressions, received emails, " +
       "webhook endpoints and logs of other environments (sandbox vs live) are invisible.",
     mode === "sandbox"
@@ -40,11 +40,11 @@ function instructions(mode: KeyMode): string {
     .join("\n");
 }
 
-/** An MCP server exposing COSS's tools over any transport (`coss-mcp` uses stdio). */
+/** An MCP server exposing coss.com's tools over any transport (`coss-mcp` uses stdio). */
 export function createCossMcpServer(options: CossMcpServerOptions): McpServer {
   const mode = keyMode(options.apiKey);
   const server = new McpServer(
-    { name: "coss", title: "COSS", version: VERSION, websiteUrl: "https://coss.com/docs/mcp" },
+    { name: "coss", title: "coss.com", version: VERSION, websiteUrl: "https://coss.com/docs/mcp" },
     { capabilities: { tools: {} }, instructions: instructions(mode) },
   );
   const ctx: ToolContext = {

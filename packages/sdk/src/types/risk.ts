@@ -158,7 +158,7 @@ export interface RiskIpSignals {
   /** ISO 3166-1 alpha-2. */
   country: string | null;
   /**
-   * From COSS's IP privacy data provider; `null` when it isn't available or was not asked
+   * From coss.com's IP privacy data provider; `null` when it isn't available or was not asked
    * (private addresses).
    */
   privacy: RiskIpPrivacy | null;
@@ -551,7 +551,7 @@ export interface DeletedRiskRule {
   deleted: true;
 }
 
-/** Result of `coss.risk.checkEmail()`: what COSS knows about an address. Nothing is stored. */
+/** Result of `coss.risk.checkEmail()`: what coss.com knows about an address. Nothing is stored. */
 export interface RiskEmailCheck {
   object: "risk_email_check";
   email: string;
@@ -591,7 +591,7 @@ export interface RiskContentClassification {
   truncated: boolean;
 }
 
-/** What `on_failure` answers while COSS can't count. */
+/** What `on_failure` answers while coss.com can't count. */
 export type RiskLimitFailureMode = "allow" | "deny";
 
 /** One of your rate limit buckets: each key gets `burst` tokens, refilling `limit` per period. */
@@ -638,7 +638,7 @@ export interface DeletedRiskLimitBucket {
 export interface CheckRiskLimitParams {
   /** The bucket's name. */
   bucket: string;
-  /** Who or what is limited (a user id, an email or IP address…); COSS keeps only a hash. */
+  /** Who or what is limited (a user id, an email or IP address…); coss.com keeps only a hash. */
   key: string;
   /** Tokens this request takes. Default 1. */
   cost?: number;
@@ -658,6 +658,6 @@ export interface RiskLimit {
   reset_ms: number;
   /** When denied: milliseconds until the same request would fit; `null` if it never would. */
   retry_after_ms: number | null;
-  /** COSS couldn't count: `allowed` is the bucket's `on_failure`. */
+  /** coss.com couldn't count: `allowed` is the bucket's `on_failure`. */
   degraded: boolean;
 }

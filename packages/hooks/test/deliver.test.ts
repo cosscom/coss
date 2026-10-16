@@ -140,7 +140,7 @@ describe("runDueHookDeliveries", () => {
 
   test("disables an endpoint that keeps failing, and tells the customer by webhook", async () => {
     const { tenant, application, endpoint, send, scope } = await setup();
-    // The customer's own webhook endpoint (COSS events), subscribed to Hooks' operational events.
+    // The customer's own webhook endpoint (coss.com events), subscribed to Hooks' operational events.
     await createWebhookEndpoint(
       {
         organizationId: tenant.organization.id,

@@ -201,7 +201,7 @@ export const createTrackingDomainRoute = createRoute({
   summary: "Add a custom tracking domain",
   description:
     "Sets up a subdomain of the domain (e.g. `links.acme.com`) to serve open and click tracking. " +
-    "Publish the CNAME record in `tracking.record`; COSS then issues its certificate and checks " +
+    "Publish the CNAME record in `tracking.record`; coss.com then issues its certificate and checks " +
     `it in the background, giving up after 72 hours. ${TRACKING_NOTE} A domain has at most one ` +
     "tracking domain: remove it to use another hostname.",
   security: [{ bearerAuth: [] }],
@@ -274,8 +274,8 @@ export const createReceivingDomainRoute = createRoute({
     "Starts receiving email at the domain itself or a subdomain (e.g. `inbound.acme.com`): email " +
     "sent to any address at that hostname becomes a received email of the API key's environment " +
     "(an `email.received` webhook, `GET /v1/received_emails`). Publish the MX record in " +
-    "`receiving.record`; COSS checks it in the background. Using the domain itself moves all of " +
-    "its mail to COSS. A domain has at most one receiving hostname: remove it to use another one.",
+    "`receiving.record`; coss.com checks it in the background. Using the domain itself moves all of " +
+    "its mail to coss.com. A domain has at most one receiving hostname: remove it to use another one.",
   security: [{ bearerAuth: [] }],
   middleware: [
     requireApiKey({ domain: ["create"] }),

@@ -92,7 +92,7 @@ export interface DeletedReceivedEmail {
   deleted: true;
 }
 
-/** The environment's own domain under COSS's inbound domain: any address at it is received. */
+/** The environment's own domain under coss.com's inbound domain: any address at it is received. */
 export interface InboundAddress {
   object: "inbound_address";
   environment_id: string;

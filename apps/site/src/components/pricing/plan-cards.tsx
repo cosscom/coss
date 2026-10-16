@@ -6,7 +6,7 @@ import { formatPrice } from "@/lib/pricing";
 import { dashboardUrl, SALES_EMAIL } from "@/lib/site";
 
 const TAGLINES: Record<PlanKey, string> = {
-  free: "For trying COSS and side projects.",
+  free: "For trying coss.com and side projects.",
   pro: "For production apps.",
   scale: "For growing teams.",
   enterprise: "For high volume, compliance and custom terms.",

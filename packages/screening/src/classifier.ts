@@ -14,7 +14,7 @@ export type ScreeningCategory = (typeof SCREENING_CATEGORIES)[number];
 /**
  * What a classifier sees: plain text only, already truncated (`prepareText`). `text` is content
  * people post on a customer's platform (a profile bio, a comment, a listing), classified for
- * COSS Risk.
+ * coss.com Risk.
  */
 export type ScreeningContent =
   | { kind: "email"; from: string; subject: string; text: string; links: string[] }

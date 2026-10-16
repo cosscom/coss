@@ -46,7 +46,7 @@ export function SignUpForm({
       email,
       password: String(form.get("password") ?? ""),
       callbackURL: next,
-      // COSS Risk recognizes the browser across sign-ups (`coss/device`, our own SDK).
+      // coss.com Risk recognizes the browser across sign-ups (`coss/device`, our own SDK).
       fetchOptions: { headers: { ...turnstile.headers, [DEVICE_TOKEN_HEADER]: collectDevice() } },
     });
     turnstile.reset();
@@ -81,7 +81,7 @@ export function SignUpForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create your COSS account</CardTitle>
+        <CardTitle>Create your coss.com account</CardTitle>
         <CardDescription>Verify your email before creating your organization.</CardDescription>
       </CardHeader>
       <CardPanel className="flex flex-col gap-4">

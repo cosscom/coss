@@ -213,11 +213,11 @@ export function openApiDocumentConfig(serverUrl: string) {
   return {
     openapi: "3.1.0",
     info: {
-      title: "COSS API",
+      title: "coss.com API",
       // Replaced by the latest `Coss-Version` (`withApiVersionDocs`).
       version: "v1",
       description:
-        "One API key for every COSS product. Errors share one envelope: `Error`. Every request " +
+        "One API key for every coss.com product. Errors share one envelope: `Error`. Every request " +
         "is scoped to the environment the key belongs to; domains and the audit log are " +
         "organization-wide.",
     },
@@ -263,7 +263,7 @@ export function openApiDocumentConfig(serverUrl: string) {
       {
         name: "Hooks messages",
         description:
-          "Send a message once; COSS delivers it to every subscribed endpoint, with retries.",
+          "Send a message once; coss.com delivers it to every subscribed endpoint, with retries.",
       },
       {
         name: "Hooks portal",
@@ -275,7 +275,7 @@ export function openApiDocumentConfig(serverUrl: string) {
       },
       {
         name: "Audit log",
-        description: "Changes to the organization, by members, API keys and COSS support.",
+        description: "Changes to the organization, by members, API keys and coss.com support.",
       },
       {
         name: "Risk",

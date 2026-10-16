@@ -2,7 +2,7 @@
  * Screens one outgoing message, the entry point for every product: decides whether it is
  * sampled, asks the classifier, records the verdict and acts on it. A classifier error records an
  * error verdict. Enforced screening blocks that message (the product holds it and retries it with
- * `retry`, screening it again); shadow screening and COSS's own notification organization send it
+ * `retry`, screening it again); shadow screening and coss.com's own notification organization send it
  * and owe the sample to the next message, once.
  */
 import { db, type Executor, schema } from "@coss/db";
@@ -41,7 +41,7 @@ export type ScreeningDeps = {
   /** Drives the random part of sampling (tests). */
   random?: () => number;
   /**
-   * COSS's own organization (account and notification emails): a block verdict only flags its
+   * coss.com's own organization (account and notification emails): a block verdict only flags its
    * message, so screening never refuses those emails or suspends the organization sending them.
    */
   systemOrganizationId?: string | null;

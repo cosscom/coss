@@ -9,7 +9,7 @@ repository root.
   hourly, as are unhealthy rates below minimum volume. Claims use a separate expiring lease; standing/policy
   revisions invalidate stale evaluations. Checks (`ReputationCheck`) measure; `decide` is the only automatic policy: worst severity wins, a warning
   clears when every check is `ok`, and **a suspension is never lifted automatically — only `reinstateOrganization`
-  (platform admin, note required)**. The worker never suspends COSS's own organization (the
+  (platform admin, note required)**. The worker never suspends coss.com's own organization (the
   `NOTIFICATIONS_ENVIRONMENT_ID`'s, passed as `systemOrganizationId` to the guard and `screenMessage`): `decide`
   turns its `suspend` results into a warning and screening downgrades its blocks to flags. Admins can't suspend it
   either: both admin suspend actions refuse it (`isSystemOrganization`) and the pages hide the buttons. Every change goes through `applyTransition` (guarded update + history row +
@@ -30,7 +30,7 @@ repository root.
   the worker's `reputation-notifications` loop (`runDueReputationNotifications`, system-level) emails a warning or
   suspension to the org's owners and admins with a **verified, unbanned** address, looked up at send time — one email
   per person through a `ReputationNotifier`. The worker wires `emailNotifier` (`@coss/email`): a normal
-  live send from COSS's own environment (`NOTIFICATIONS_ENVIRONMENT_ID`/`NOTIFICATIONS_FROM`, category `account`,
+  live send from coss.com's own environment (`NOTIFICATIONS_ENVIRONMENT_ID`/`NOTIFICATIONS_FROM`, category `account`,
   tracking off), so suppression, events and quotas of that org apply; idempotency key `<notification id>:<user id>`
   (non-expiring for these internal sends; `idempotency_key_reused` counts as sent). Only the org's latest transition
   is announced (a warning overtaken by a suspension or a recovery is `skipped`), as are ones older than 3 days or

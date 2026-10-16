@@ -148,7 +148,7 @@ function CredentialsStep(props: {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Sign in to COSS</CardTitle>
+        <CardTitle>Sign in to coss.com</CardTitle>
         <CardDescription>
           Use your email and password
           {props.providers.map((provider) => `, ${SOCIAL_PROVIDER_LABELS[provider]}`).join("")}, a

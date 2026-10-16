@@ -219,7 +219,7 @@ export default async function DirectorySyncPage({ params }: PageProps<"/[orgSlug
                   {eventLabel(event)}
                   <span className="text-muted-foreground">
                     {" "}
-                    · {event.actorEmail ?? "COSS support"}
+                    · {event.actorEmail ?? "coss.com support"}
                   </span>
                 </span>
                 <span className="font-mono text-muted-foreground text-xs">

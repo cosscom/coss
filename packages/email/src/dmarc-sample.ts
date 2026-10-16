@@ -132,7 +132,7 @@ export function dmarcReportMessage(
 const DAY = 24 * 60 * 60 * 1000;
 
 /**
- * A plausible day of reports about `target`: most mail through COSS (signed with its DKIM keys,
+ * A plausible day of reports about `target`: most mail through coss.com (signed with its DKIM keys,
  * from its MAIL FROM domain), a forwarder, and an unknown source failing DMARC.
  */
 export function sampleDmarcReport(

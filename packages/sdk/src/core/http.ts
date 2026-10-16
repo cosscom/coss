@@ -211,7 +211,7 @@ export class HttpClient {
         : clientError(
             "connection_error",
             "network_error",
-            `Could not reach the COSS API at ${this.#baseUrl}: ${describe(cause)}`,
+            `Could not reach the coss.com API at ${this.#baseUrl}: ${describe(cause)}`,
           );
       return { result: failed(error), retry: true, retryAfterMs: null };
     }
@@ -240,7 +240,7 @@ export class HttpClient {
       const error: CossError = {
         type: "api_error",
         code: "invalid_response",
-        message: `The COSS API returned an HTTP ${response.status} response that is not valid JSON.`,
+        message: `The coss.com API returned an HTTP ${response.status} response that is not valid JSON.`,
         status: response.status,
         request_id: requestId,
       };

@@ -1,6 +1,6 @@
 /**
  * End to end: a sign-up queues a verification email, the worker's job sends it as a live email of
- * COSS's own organization, the provider gets the link, and the stored email keeps no body.
+ * coss.com's own organization, the provider gets the link, and the stored email keeps no body.
  */
 import { afterEach, beforeEach, describe, expect, type Mock, spyOn, test } from "bun:test";
 import { auth } from "@coss/auth";
@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 describe("account emails", () => {
-  test("a sign-up's verification email goes out through COSS's own organization", async () => {
+  test("a sign-up's verification email goes out through coss.com's own organization", async () => {
     const provider = new FakeEmailProvider({ log: false });
     const service = dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider });
     const platform = await createTestTenant();
@@ -30,7 +30,7 @@ describe("account emails", () => {
     const sender = emailNotifier({
       service,
       environment: await notificationEnvironment(platform.production.id),
-      from: `COSS <accounts@${domain.name}>`,
+      from: `coss.com <accounts@${domain.name}>`,
       discardBody: true,
     });
 
@@ -46,7 +46,7 @@ describe("account emails", () => {
     const delivered = provider.sent.find((message) => message.to.includes(to));
     expect(delivered).toMatchObject({
       organizationId: platform.organization.id,
-      subject: "Verify your email address for COSS",
+      subject: "Verify your email address for coss.com",
     });
     expect(delivered?.text).toContain(link);
 

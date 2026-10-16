@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "COSS API",
+    "title": "coss.com API",
     "version": "2026-10-10",
-    "description": "One API key for every COSS product. Errors share one envelope: `Error`. Every request is scoped to the environment the key belongs to; domains and the audit log are organization-wide."
+    "description": "One API key for every coss.com product. Errors share one envelope: `Error`. Every request is scoped to the environment the key belongs to; domains and the audit log are organization-wide."
   },
   "servers": [
     {
@@ -53,7 +53,7 @@
     },
     {
       "name": "Hooks messages",
-      "description": "Send a message once; COSS delivers it to every subscribed endpoint, with retries."
+      "description": "Send a message once; coss.com delivers it to every subscribed endpoint, with retries."
     },
     {
       "name": "Hooks portal",
@@ -65,7 +65,7 @@
     },
     {
       "name": "Audit log",
-      "description": "Changes to the organization, by members, API keys and COSS support."
+      "description": "Changes to the organization, by members, API keys and coss.com support."
     },
     {
       "name": "Risk",
@@ -1035,7 +1035,7 @@
           },
           "clicks": {
             "type": "boolean",
-            "description": "Send HTML links through a COSS redirect and record `email.clicked` events. Links with a `data-coss-no-track` attribute are left alone."
+            "description": "Send HTML links through a coss.com redirect and record `email.clicked` events. Links with a `data-coss-no-track` attribute are left alone."
           },
           "unsubscribe": {
             "type": "boolean",
@@ -3064,7 +3064,7 @@
               "failed",
               "deleting"
             ],
-            "description": "`pending` until the CNAME points at COSS and its certificate is issued, `active` once links and open pixels of emails sent from the domain use it, `temporary_failure` when an active hostname stopped working (emails fall back to the default tracking host meanwhile), `failed` when setup gave up (72 hours) — restart it with the domain's verify endpoint. `deleting` is a removal in progress."
+            "description": "`pending` until the CNAME points at coss.com and its certificate is issued, `active` once links and open pixels of emails sent from the domain use it, `temporary_failure` when an active hostname stopped working (emails fall back to the default tracking host meanwhile), `failed` when setup gave up (72 hours) — restart it with the domain's verify endpoint. `deleting` is a removal in progress."
           },
           "record": {
             "type": "object",
@@ -3218,7 +3218,7 @@
                   "mismatch",
                   "not_checked"
                 ],
-                "description": "What the last DNS check saw: `verified` once the most preferred MX records point at COSS. `not_checked` means DNS has not been consulted yet."
+                "description": "What the last DNS check saw: `verified` once the most preferred MX records point at coss.com. `not_checked` means DNS has not been consulted yet."
               },
               "found": {
                 "type": "array",
@@ -3236,7 +3236,7 @@
               "status",
               "found"
             ],
-            "description": "The MX record to publish, with the result of the last check. Mail for the hostname is received as soon as it reaches COSS; the check only shows what DNS serves."
+            "description": "The MX record to publish, with the result of the last check. Mail for the hostname is received as soon as it reaches coss.com; the check only shows what DNS serves."
           },
           "created_at": {
             "type": "string",
@@ -3286,7 +3286,7 @@
               "invalid",
               "configured"
             ],
-            "description": "`configured` when the BIMI record is valid and DMARC is enforced, `invalid` when a record exists but something is wrong (see `issues`), `missing` when there is no record, and `not_checked` until DNS has been consulted. COSS checks DNS only: mailbox providers still validate the logo and the certificate."
+            "description": "`configured` when the BIMI record is valid and DMARC is enforced, `invalid` when a record exists but something is wrong (see `issues`), `missing` when there is no record, and `not_checked` until DNS has been consulted. coss.com checks DNS only: mailbox providers still validate the logo and the certificate."
           },
           "name": {
             "type": "string",
@@ -3556,7 +3556,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 200,
-            "description": "A subdomain of the domain to serve tracking links from, without a scheme or path. Point it at COSS with the CNAME record the response lists.",
+            "description": "A subdomain of the domain to serve tracking links from, without a scheme or path. Point it at coss.com with the CNAME record the response lists.",
             "examples": [
               "links.acme.com"
             ]
@@ -3579,7 +3579,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 200,
-            "description": "The domain itself or a subdomain of it, without a scheme or path. Point its MX at COSS with the record the response lists. Using the domain itself moves all of its mail to COSS, so a subdomain is usually the better choice.",
+            "description": "The domain itself or a subdomain of it, without a scheme or path. Point its MX at coss.com with the record the response lists. Using the domain itself moves all of its mail to coss.com, so a subdomain is usually the better choice.",
             "examples": [
               "inbound.acme.com"
             ]
@@ -3727,7 +3727,7 @@
                 "type": "null"
               }
             ],
-            "description": "The next step: `publish` a first record, `add_reporting` (send reports to COSS), `complete_rollout` (drop `pct`/`t=y`) or `tighten` to the next policy. `null` at `p=reject`."
+            "description": "The next step: `publish` a first record, `add_reporting` (send reports to coss.com), `complete_rollout` (drop `pct`/`t=y`) or `tighten` to the next policy. `null` at `p=reject`."
           },
           "checks": {
             "type": "array",
@@ -3888,7 +3888,7 @@
               {
                 "id": "coss_pass_rate",
                 "ok": true,
-                "message": "100% of mail sent through COSS passes DMARC (99% needed)."
+                "message": "100% of mail sent through coss.com passes DMARC (99% needed)."
               }
             ],
             "warnings": [],
@@ -4075,7 +4075,7 @@
           },
           "via_coss": {
             "type": "boolean",
-            "description": "Signed with the domain's COSS DKIM keys or sent from its COSS MAIL FROM domain."
+            "description": "Signed with the domain's coss.com DKIM keys or sent from its coss.com MAIL FROM domain."
           }
         },
         "required": [
@@ -4828,7 +4828,7 @@
               "failing",
               null
             ],
-            "description": "`manual`: someone disabled it. `failing`: its deliveries failed every attempt for five days, so COSS disabled it. `null` while enabled."
+            "description": "`manual`: someone disabled it. `failing`: its deliveries failed every attempt for five days, so coss.com disabled it. `null` while enabled."
           },
           "disabled_at": {
             "type": [
@@ -4863,7 +4863,7 @@
           },
           "secret": {
             "type": "string",
-            "description": "The endpoint's `whsec_…` signing secret, used to verify the requests COSS sends. Returned only when the endpoint is created and when its secret is rolled — store it now; it cannot be read back through the API.",
+            "description": "The endpoint's `whsec_…` signing secret, used to verify the requests coss.com sends. Returned only when the endpoint is created and when its secret is rolled — store it now; it cannot be read back through the API.",
             "examples": [
               "whsec_6Jk…"
             ]
@@ -4914,7 +4914,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 2048,
-            "description": "An `https://` URL COSS posts events to.",
+            "description": "An `https://` URL coss.com posts events to.",
             "examples": [
               "https://example.com/webhooks/coss"
             ]
@@ -5097,7 +5097,7 @@
               "failing",
               null
             ],
-            "description": "`manual`: someone disabled it. `failing`: its deliveries failed every attempt for five days, so COSS disabled it. `null` while enabled."
+            "description": "`manual`: someone disabled it. `failing`: its deliveries failed every attempt for five days, so coss.com disabled it. `null` while enabled."
           },
           "disabled_at": {
             "type": [
@@ -5174,7 +5174,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 2048,
-            "description": "An `https://` URL COSS posts events to.",
+            "description": "An `https://` URL coss.com posts events to.",
             "examples": [
               "https://example.com/webhooks/coss"
             ]
@@ -6543,7 +6543,7 @@
               "warning",
               "suspended"
             ],
-            "description": "`good`, `warning` (a rate is approaching the suspension threshold) or `suspended` (live sending is refused until COSS support reinstates the organization)."
+            "description": "`good`, `warning` (a rate is approaching the suspension threshold) or `suspended` (live sending is refused until coss.com support reinstates the organization)."
           },
           "reason": {
             "type": [
@@ -7035,7 +7035,7 @@
           },
           "actor_label": {
             "type": "string",
-            "description": "Who made the change, copied when it was recorded so it outlives them: the user's email, the API key's id, or `COSS support`."
+            "description": "Who made the change, copied when it was recorded so it outlives them: the user's email, the API key's id, or `coss.com support`."
           },
           "action": {
             "type": "string",
@@ -7140,7 +7140,7 @@
           "api_key",
           "system"
         ],
-        "description": "`user`: a member, in the dashboard (`actor_id` is the user's id, `actor_label` their email). `api_key`: a request made with an API key (`actor_id` is the key's id). `system`: COSS itself, including COSS support."
+        "description": "`user`: a member, in the dashboard (`actor_id` is the user's id, `actor_label` their email). `api_key`: a request made with an API key (`actor_id` is the key's id). `system`: coss.com itself, including coss.com support."
       },
       "Billing": {
         "type": "object",
@@ -8461,7 +8461,7 @@
               "failing",
               null
             ],
-            "description": "`manual`: someone disabled it. `failing`: a batch failed every attempt, so COSS disabled it. `null` while enabled."
+            "description": "`manual`: someone disabled it. `failing`: a batch failed every attempt, so coss.com disabled it. `null` while enabled."
           },
           "disabled_at": {
             "type": [
@@ -8480,7 +8480,7 @@
           },
           "secret": {
             "type": "string",
-            "description": "The drain's `whsec_…` signing secret, used to verify the batches COSS sends. Returned only when the drain is created — store it now; it cannot be read back through the API.",
+            "description": "The drain's `whsec_…` signing secret, used to verify the batches coss.com sends. Returned only when the drain is created — store it now; it cannot be read back through the API.",
             "examples": [
               "whsec_6Jk…"
             ]
@@ -8537,7 +8537,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 2048,
-            "description": "An `https://` URL COSS posts batches of log lines to.",
+            "description": "An `https://` URL coss.com posts batches of log lines to.",
             "examples": [
               "https://logs.example.com/coss"
             ]
@@ -8670,7 +8670,7 @@
               "failing",
               null
             ],
-            "description": "`manual`: someone disabled it. `failing`: a batch failed every attempt, so COSS disabled it. `null` while enabled."
+            "description": "`manual`: someone disabled it. `failing`: a batch failed every attempt, so coss.com disabled it. `null` while enabled."
           },
           "disabled_at": {
             "type": [
@@ -8725,7 +8725,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 2048,
-            "description": "An `https://` URL COSS posts batches of log lines to.",
+            "description": "An `https://` URL coss.com posts batches of log lines to.",
             "examples": [
               "https://logs.example.com/coss"
             ]
@@ -9538,7 +9538,7 @@
               "failing",
               null
             ],
-            "description": "`manual`: disabled by you or its user. `failing`: its deliveries failed every attempt for five days, so COSS disabled it. `null` while enabled."
+            "description": "`manual`: disabled by you or its user. `failing`: its deliveries failed every attempt for five days, so coss.com disabled it. `null` while enabled."
           },
           "disabled_at": {
             "type": [
@@ -9798,7 +9798,7 @@
               "failing",
               null
             ],
-            "description": "`manual`: disabled by you or its user. `failing`: its deliveries failed every attempt for five days, so COSS disabled it. `null` while enabled."
+            "description": "`manual`: disabled by you or its user. `failing`: its deliveries failed every attempt for five days, so coss.com disabled it. `null` while enabled."
           },
           "disabled_at": {
             "type": [
@@ -10043,7 +10043,7 @@
               "pending",
               "completed"
             ],
-            "description": "`pending` while COSS is still requeueing deliveries (in the background)."
+            "description": "`pending` while coss.com is still requeueing deliveries (in the background)."
           },
           "requeued": {
             "type": "integer",
@@ -11917,7 +11917,7 @@
                 "type": "null"
               }
             ],
-            "description": "From COSS's IP privacy data provider (VPNs, proxies, relays). `null` when it isn't available or was not asked (private addresses)."
+            "description": "From coss.com's IP privacy data provider (VPNs, proxies, relays). `null` when it isn't available or was not asked (private addresses)."
           }
         },
         "required": [
@@ -13889,7 +13889,7 @@
               "number",
               "null"
             ],
-            "description": "`fraud / (fraud + legitimate)`: how often it was right when you told COSS. `null` without feedback."
+            "description": "`fraud / (fraud + legitimate)`: how often it was right when you told coss.com. `null` without feedback."
           },
           "default_weight": {
             "type": "number"
@@ -13943,7 +13943,7 @@
               "number",
               "null"
             ],
-            "description": "`fraud / (fraud + legitimate)`: how often it was right when you told COSS. `null` without feedback."
+            "description": "`fraud / (fraud + legitimate)`: how often it was right when you told coss.com. `null` without feedback."
           }
         },
         "required": [
@@ -14565,7 +14565,7 @@
                 "type": "null"
               }
             ],
-            "description": "From COSS's IP privacy data provider (VPNs, proxies, relays). `null` when it isn't available or was not asked (private addresses)."
+            "description": "From coss.com's IP privacy data provider (VPNs, proxies, relays). `null` when it isn't available or was not asked (private addresses)."
           },
           "object": {
             "type": "string",
@@ -14670,7 +14670,7 @@
           "scores",
           "truncated"
         ],
-        "description": "Scores only: COSS never decides what they mean for you. Neither the text nor the scores are stored.",
+        "description": "Scores only: coss.com never decides what they mean for you. Neither the text nor the scores are stored.",
         "examples": [
           {
             "object": "risk_content_classification",
@@ -14741,7 +14741,7 @@
           },
           "degraded": {
             "type": "boolean",
-            "description": "COSS couldn't count (its store was unavailable): `allowed` is the bucket's `on_failure`."
+            "description": "coss.com couldn't count (its store was unavailable): `allowed` is the bucket's `on_failure`."
           }
         },
         "required": [
@@ -14779,7 +14779,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 512,
-            "description": "Who or what is limited: a user id, an email address, an IP address… COSS keeps only a keyed hash of it."
+            "description": "Who or what is limited: a user id, an email address, an IP address… coss.com keeps only a keyed hash of it."
           },
           "cost": {
             "type": "integer",
@@ -14836,7 +14836,7 @@
               "allow",
               "deny"
             ],
-            "description": "The answer while COSS can't count (its store is unavailable): `allow` (fail open) or `deny`."
+            "description": "The answer while coss.com can't count (its store is unavailable): `allow` (fail open) or `deny`."
           },
           "created_at": {
             "type": "string",
@@ -14904,7 +14904,7 @@
               "allow",
               "deny"
             ],
-            "description": "The answer while COSS can't count. Defaults to `allow`."
+            "description": "The answer while coss.com can't count. Defaults to `allow`."
           }
         },
         "required": [
@@ -15423,7 +15423,7 @@
           "Emails"
         ],
         "summary": "Send an email",
-        "description": "Queues an email from the API key's environment and returns it with `status: \"queued\"`; it is handed to the delivery provider moments later. Follow it with `GET /v1/emails/{id}` or the `email.sent` / `email.failed` webhooks. Live (`coss_live_…`) keys must send from a verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and never deliver anything; the response has `sandbox: true`. Recipients on the environment's suppression list (for every email, or for the email's `category`) are skipped and get the status `suppressed`. With a future `scheduled_at` the email is stored with the status `scheduled` and sent at that time; the domain and the suppression list are checked again then. Attachments are base64-encoded; only metadata is kept after sending. Recipients count against the organization's send quota (per second and per day; sandbox environments have their own daily quota). With open or click tracking on (the environment's settings, or `tracking`), the HTML body is delivered with a tracking pixel and/or links rewritten to COSS redirects; the stored `html` stays as sent.",
+        "description": "Queues an email from the API key's environment and returns it with `status: \"queued\"`; it is handed to the delivery provider moments later. Follow it with `GET /v1/emails/{id}` or the `email.sent` / `email.failed` webhooks. Live (`coss_live_…`) keys must send from a verified domain of the organization. Sandbox (`coss_test_…`) keys accept any `from` and never deliver anything; the response has `sandbox: true`. Recipients on the environment's suppression list (for every email, or for the email's `category`) are skipped and get the status `suppressed`. With a future `scheduled_at` the email is stored with the status `scheduled` and sent at that time; the domain and the suppression list are checked again then. Attachments are base64-encoded; only metadata is kept after sending. Recipients count against the organization's send quota (per second and per day; sandbox environments have their own daily quota). With open or click tracking on (the environment's settings, or `tracking`), the HTML body is delivered with a tracking pixel and/or links rewritten to coss.com redirects; the stored `html` stays as sent.",
         "security": [
           {
             "bearerAuth": []
@@ -17560,7 +17560,7 @@
           "Emails"
         ],
         "summary": "List an email's tracked links",
-        "description": "The links COSS rewrote for click tracking, in the order they appear in the HTML, with their click counts. Empty unless the email was sent with click tracking.",
+        "description": "The links coss.com rewrote for click tracking, in the order they appear in the HTML, with their click counts. Empty unless the email was sent with click tracking.",
         "security": [
           {
             "bearerAuth": []
@@ -21745,7 +21745,7 @@
           "Domains"
         ],
         "summary": "Add a custom tracking domain",
-        "description": "Sets up a subdomain of the domain (e.g. `links.acme.com`) to serve open and click tracking. Publish the CNAME record in `tracking.record`; COSS then issues its certificate and checks it in the background, giving up after 72 hours. Open pixels and click redirects of emails sent from the domain (or its subdomains without a domain of their own) use the tracking domain while it is `active`, and the default tracking host otherwise. A domain has at most one tracking domain: remove it to use another hostname.",
+        "description": "Sets up a subdomain of the domain (e.g. `links.acme.com`) to serve open and click tracking. Publish the CNAME record in `tracking.record`; coss.com then issues its certificate and checks it in the background, giving up after 72 hours. Open pixels and click redirects of emails sent from the domain (or its subdomains without a domain of their own) use the tracking domain while it is `active`, and the default tracking host otherwise. A domain has at most one tracking domain: remove it to use another hostname.",
         "security": [
           {
             "bearerAuth": []
@@ -22315,7 +22315,7 @@
           "Domains"
         ],
         "summary": "Receive email at a domain",
-        "description": "Starts receiving email at the domain itself or a subdomain (e.g. `inbound.acme.com`): email sent to any address at that hostname becomes a received email of the API key's environment (an `email.received` webhook, `GET /v1/received_emails`). Publish the MX record in `receiving.record`; COSS checks it in the background. Using the domain itself moves all of its mail to COSS. A domain has at most one receiving hostname: remove it to use another one.",
+        "description": "Starts receiving email at the domain itself or a subdomain (e.g. `inbound.acme.com`): email sent to any address at that hostname becomes a received email of the API key's environment (an `email.received` webhook, `GET /v1/received_emails`). Publish the MX record in `receiving.record`; coss.com checks it in the background. Using the domain itself moves all of its mail to coss.com. A domain has at most one receiving hostname: remove it to use another one.",
         "security": [
           {
             "bearerAuth": []
@@ -26025,7 +26025,7 @@
           "Webhook endpoints"
         ],
         "summary": "Open a webhook listener",
-        "description": "Listeners are how `coss listen` forwards events to a local server: COSS can't reach `localhost`, so the CLI pulls them. They belong to the API key's environment, receive events created after they open, and don't count toward the plan's webhook endpoints. A listener closes when it is deleted or after 10 minutes without a poll; an environment has at most 5 open at once. Events reach it unsigned: the CLI signs what it forwards with its own secret.",
+        "description": "Listeners are how `coss listen` forwards events to a local server: coss.com can't reach `localhost`, so the CLI pulls them. They belong to the API key's environment, receive events created after they open, and don't count toward the plan's webhook endpoints. A listener closes when it is deleted or after 10 minutes without a poll; an environment has at most 5 open at once. Events reach it unsigned: the CLI signs what it forwards with its own secret.",
         "security": [
           {
             "bearerAuth": []
@@ -29652,7 +29652,7 @@
           "Reputation"
         ],
         "summary": "Retrieve the organization's sending reputation",
-        "description": "The organization's standing with the COSS reputation guard and the latest rates it measured over live environments. When a rate reaches its suspension threshold, live sending is suspended automatically (`account_suspended`) until COSS support reinstates the organization; sandbox keys keep working. Subscribe to the `account.*` webhook events to be notified of changes.",
+        "description": "The organization's standing with the coss.com reputation guard and the latest rates it measured over live environments. When a rate reaches its suspension threshold, live sending is suspended automatically (`account_suspended`) until coss.com support reinstates the organization; sandbox keys keep working. Subscribe to the `account.*` webhook events to be notified of changes.",
         "security": [
           {
             "bearerAuth": []
@@ -30405,7 +30405,7 @@
           "Audit log"
         ],
         "summary": "List audit events",
-        "description": "The organization's audit log, newest first: changes made by members in the dashboard, by API keys (from any environment) and by COSS support. The audit log is organization-wide, so every key of the organization reads the same events. Filter by action (an entry ending in `.` matches a whole resource, e.g. `domain.`), actor, target, environment or time. Pass the last `id` as `after` to get the next page while `has_more` is true. Reading the audit log is not itself logged.",
+        "description": "The organization's audit log, newest first: changes made by members in the dashboard, by API keys (from any environment) and by coss.com support. The audit log is organization-wide, so every key of the organization reads the same events. Filter by action (an entry ending in `.` matches a whole resource, e.g. `domain.`), actor, target, environment or time. Pass the last `id` as `after` to get the next page while `has_more` is true. Reading the audit log is not itself logged.",
         "security": [
           {
             "bearerAuth": []
@@ -31883,7 +31883,7 @@
           "Billing"
         ],
         "summary": "List credits",
-        "description": "The organization's credits, newest first: each month's plan credit, prepaid commitments and credits from COSS support (in dollars, or free units of a product), with what's left. Only usable ones by default (`status=all` for every one). Pass the last `id` as `after` to get the next page while `has_more` is true.",
+        "description": "The organization's credits, newest first: each month's plan credit, prepaid commitments and credits from coss.com support (in dollars, or free units of a product), with what's left. Only usable ones by default (`status=all` for every one). Pass the last `id` as `after` to get the next page while `has_more` is true.",
         "security": [
           {
             "bearerAuth": []
@@ -32801,7 +32801,7 @@
           "Log drains"
         ],
         "summary": "Update a log drain",
-        "description": "Changes the URL, description, sources or `enabled` flag. Omitted fields keep their current value, and the signing secret stays the same. Disabling a drain drops the lines still waiting for it, and nothing is kept for it while it is disabled; enabling it again (also after COSS disabled it for failing) sends lines logged from then on.",
+        "description": "Changes the URL, description, sources or `enabled` flag. Omitted fields keep their current value, and the signing secret stays the same. Disabling a drain drops the lines still waiting for it, and nothing is kept for it while it is disabled; enabling it again (also after coss.com disabled it for failing) sends lines logged from then on.",
         "security": [
           {
             "bearerAuth": []
@@ -38022,7 +38022,7 @@
           "Hooks endpoints"
         ],
         "summary": "Recover failed deliveries",
-        "description": "Queues every delivery to the endpoint that failed, of messages sent since `since`, for one more attempt each, e.g. after its receiver was down. COSS works through them in the background (oldest first); follow `status` with the returned recovery. The endpoint must be enabled.",
+        "description": "Queues every delivery to the endpoint that failed, of messages sent since `since`, for one more attempt each, e.g. after its receiver was down. coss.com works through them in the background (oldest first); follow `status` with the returned recovery. The endpoint must be enabled.",
         "security": [
           {
             "bearerAuth": []
@@ -39140,7 +39140,7 @@
           "Hooks messages"
         ],
         "summary": "Send a message",
-        "description": "Queues a message to the application: COSS delivers it to each of its enabled endpoints subscribed to `event_type` within seconds, signed with each endpoint's secret, and retries failures with backoff for about a day. Each request's `webhook-id` header is the message's id. Counts against the send quota once per endpoint it goes to (at least once). Live sends are refused while the organization is suspended (`account_suspended`). Hooks resources belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox ones, a `coss_live_…` key only production ones.",
+        "description": "Queues a message to the application: coss.com delivers it to each of its enabled endpoints subscribed to `event_type` within seconds, signed with each endpoint's secret, and retries failures with backoff for about a day. Each request's `webhook-id` header is the message's id. Counts against the send quota once per endpoint it goes to (at least once). Live sends are refused while the organization is suspended (`account_suspended`). Hooks resources belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox ones, a `coss_live_…` key only production ones.",
         "security": [
           {
             "bearerAuth": []
@@ -41389,7 +41389,7 @@
           "Receiving"
         ],
         "summary": "Retrieve the environment's inbound address",
-        "description": "The environment's own domain under COSS's inbound domain: email sent to any address at it (e.g. `support@<domain>`) is received by this environment, with no DNS setup. To receive at your own domain, add a receiving domain instead.",
+        "description": "The environment's own domain under coss.com's inbound domain: email sent to any address at it (e.g. `support@<domain>`) is received by this environment, with no DNS setup. To receive at your own domain, add a receiving domain instead.",
         "security": [
           {
             "bearerAuth": []
@@ -42479,7 +42479,7 @@
           "Risk"
         ],
         "summary": "Assess an event",
-        "description": "Assesses a sign-up, login or other event in the API key's environment and returns a decision (`allow`, `review` or `block`) with a score and the reasons behind it. COSS combines email and IP signals with what it has seen in this environment (velocity, accounts sharing a mailbox, identifiers you reported) and your allow and block lists. Signals that are unavailable at the moment are skipped and listed in `degraded`. Call it from your server, never from the browser, and treat errors as `allow` (fail open) so an outage never locks your users out. `review` decisions also fire a `risk.assessment.review` webhook. Sandbox (`coss_test_…`) keys accept documented test addresses (`192.0.2.x`, `@disposable.test`, `@undeliverable.test`).",
+        "description": "Assesses a sign-up, login or other event in the API key's environment and returns a decision (`allow`, `review` or `block`) with a score and the reasons behind it. coss.com combines email and IP signals with what it has seen in this environment (velocity, accounts sharing a mailbox, identifiers you reported) and your allow and block lists. Signals that are unavailable at the moment are skipped and listed in `degraded`. Call it from your server, never from the browser, and treat errors as `allow` (fail open) so an outage never locks your users out. `review` decisions also fire a `risk.assessment.review` webhook. Sandbox (`coss_test_…`) keys accept documented test addresses (`192.0.2.x`, `@disposable.test`, `@undeliverable.test`).",
         "security": [
           {
             "bearerAuth": []
@@ -43274,7 +43274,7 @@
           "Risk"
         ],
         "summary": "Report an assessment's outcome",
-        "description": "Tells COSS what the assessed user turned out to be. `fraud` and `abuse` make later assessments with the same mailbox, user, IP address or subnet flag it (`history.fraud_*`); `legitimate` takes back what this assessment reported. Resolves an open review. Sending the latest outcome again changes nothing.",
+        "description": "Tells coss.com what the assessed user turned out to be. `fraud` and `abuse` make later assessments with the same mailbox, user, IP address or subnet flag it (`history.fraud_*`); `legitimate` takes back what this assessment reported. Resolves an open review. Sending the latest outcome again changes nothing.",
         "security": [
           {
             "bearerAuth": []
@@ -44526,7 +44526,7 @@
           "Risk"
         ],
         "summary": "Forget a user",
-        "description": "Call this when you delete one of your users: COSS deletes what identifies them in the environment (their mailbox, fraud reports, and the user id, email address, IP address and user agent on their assessments). Decisions and reasons stay. Forgetting a user COSS doesn't know succeeds too.",
+        "description": "Call this when you delete one of your users: coss.com deletes what identifies them in the environment (their mailbox, fraud reports, and the user id, email address, IP address and user agent on their assessments). Decisions and reasons stay. Forgetting a user coss.com doesn't know succeeds too.",
         "security": [
           {
             "bearerAuth": []
@@ -46526,7 +46526,7 @@
         },
         "responses": {
           "200": {
-            "description": "What COSS knows about the address.",
+            "description": "What coss.com knows about the address.",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -46783,7 +46783,7 @@
         },
         "responses": {
           "200": {
-            "description": "What COSS knows about the address.",
+            "description": "What coss.com knows about the address.",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -47279,7 +47279,7 @@
           "Risk"
         ],
         "summary": "Check a rate limit",
-        "description": "Takes `cost` tokens (default 1) from `key`'s share of one of your buckets and says whether to let the request through: a 200 either way, with `allowed`. Denied requests take nothing. Each key has its own bucket of `burst` tokens refilling at `limit` per `period_seconds` (GCRA, the algorithm COSS limits its own API with). COSS keeps only a keyed hash of `key`. While COSS can't count, the bucket's `on_failure` answers and `degraded` is true.",
+        "description": "Takes `cost` tokens (default 1) from `key`'s share of one of your buckets and says whether to let the request through: a 200 either way, with `allowed`. Denied requests take nothing. Each key has its own bucket of `burst` tokens refilling at `limit` per `period_seconds` (GCRA, the algorithm coss.com limits its own API with). coss.com keeps only a keyed hash of `key`. While coss.com can't count, the bucket's `on_failure` answers and `degraded` is true.",
         "security": [
           {
             "bearerAuth": []

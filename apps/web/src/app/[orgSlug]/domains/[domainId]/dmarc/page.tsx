@@ -65,7 +65,7 @@ const STAGE_INDEX: Record<DomainDmarcOutput["stage"], number> = {
 
 const NEXT_TITLE: Record<NonNullable<DomainDmarcOutput["next"]>["kind"], string> = {
   publish: "Publish a DMARC record",
-  add_reporting: "Send DMARC reports to COSS",
+  add_reporting: "Send DMARC reports to coss.com",
   complete_rollout: "Apply the policy to all mail",
   tighten: "Move to a stricter policy",
 };
@@ -133,7 +133,7 @@ function NextStep({ dmarc, domainName }: { dmarc: DomainDmarcOutput; domainName:
         {next.kind === "publish"
           ? "Start by monitoring: p=none changes nothing about delivery, but mailbox providers start sending reports about every source that sends as this domain."
           : next.kind === "add_reporting"
-            ? "Your record doesn't send aggregate reports to COSS yet. This keeps your policy and your other report addresses, and adds COSS's."
+            ? "Your record doesn't send aggregate reports to coss.com yet. This keeps your policy and your other report addresses, and adds coss.com's."
             : next.kind === "complete_rollout"
               ? "Your record applies its policy to only part of the mail (pct or t=y). RFC 9989 removed pct; once the checks below pass, apply it in full."
               : next.policy === "quarantine"
@@ -244,9 +244,9 @@ export default async function DomainDmarcPage({
               <SpecItem label="Policy since">{formatDateTime(dmarc.policy_since)}</SpecItem>
               <SpecItem label="Reports">
                 {dmarc.reporting ? (
-                  <StatusDot tone="success">Sent to COSS</StatusDot>
+                  <StatusDot tone="success">Sent to coss.com</StatusDot>
                 ) : (
-                  <StatusDot tone="neutral">Not sent to COSS</StatusDot>
+                  <StatusDot tone="neutral">Not sent to coss.com</StatusDot>
                 )}
               </SpecItem>
               {dmarc.report_address ? (
@@ -272,11 +272,11 @@ export default async function DomainDmarcPage({
         />
         <Stat
           detail={`${count.format(summary.coss_messages)} messages`}
-          label="Sent through COSS"
+          label="Sent through coss.com"
           value={rate(summary.coss_passing, summary.coss_messages)}
         />
         <Stat
-          detail="failing, not through COSS"
+          detail="failing, not through coss.com"
           label="Unauthenticated"
           value={count.format(Math.max(0, unauthenticated))}
         />
@@ -360,7 +360,7 @@ export default async function DomainDmarcPage({
                     </StatusDot>
                   </TableCell>
                   <TableCell className="text-right">
-                    {source.via_coss ? <Badge variant="outline">COSS</Badge> : null}
+                    {source.via_coss ? <Badge variant="outline">coss.com</Badge> : null}
                   </TableCell>
                 </TableRow>
               ))}

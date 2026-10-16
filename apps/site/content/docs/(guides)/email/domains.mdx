@@ -32,13 +32,13 @@ for (const record of domain?.records ?? []) {
 
 Copy the exact values from the dashboard or the `records` array: the DKIM tokens, the region and
 the DMARC report address are specific to your domain. The DMARC record starts in monitoring mode
-(`p=none`) and sends aggregate reports to COSS; [DMARC](/docs/email/dmarc) explains the reports and
+(`p=none`) and sends aggregate reports to coss.com; [DMARC](/docs/email/dmarc) explains the reports and
 the path to `p=reject`. Showing your logo with [BIMI](/docs/email/bimi) needs `p=quarantine` or
 `p=reject`.
 
 ## Verification
 
-COSS checks the records automatically; the dashboard and each record's `status` show the result of
+coss.com checks the records automatically; the dashboard and each record's `status` show the result of
 the last check, and `can_send` says whether live keys may send from the domain. Verification
 usually takes minutes, but DNS changes can take longer to propagate. If a domain is not verified
 within 72 hours, verification fails. Restarting it (**Verify** in the dashboard, or
@@ -56,5 +56,5 @@ A verified domain can serve open and click tracking links from its own subdomain
 ## Brand logo (BIMI)
 
 With your own VMC or CMC certificate, mailbox providers such as Gmail and Apple Mail can show your
-logo next to your emails. COSS checks the BIMI record and DMARC policy with the domain's other
+logo next to your emails. coss.com checks the BIMI record and DMARC policy with the domain's other
 records and reports the result in the domain's `bimi` field. See [brand logos (BIMI)](/docs/email/bimi).

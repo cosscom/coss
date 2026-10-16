@@ -1,6 +1,6 @@
 /**
  * Plan enforcement, wired by the apps into the product packages (`PlanGate`, `UsageGate`) and the
- * rate limiter (`planRateLimits`). COSS's own organization is never limited.
+ * rate limiter (`planRateLimits`). coss.com's own organization is never limited.
  */
 import { db, type Executor, schema } from "@coss/db";
 import { and, eq, sql } from "drizzle-orm";

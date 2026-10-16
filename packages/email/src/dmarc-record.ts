@@ -1,6 +1,6 @@
 /**
  * DMARC policy records (`_dmarc.<domain>` TXT, RFC 9989): parsing what a domain publishes,
- * COSS's report address, and the record to publish next on the way from `p=none` to `p=reject`.
+ * coss.com's report address, and the record to publish next on the way from `p=none` to `p=reject`.
  * Pure: no database, no DNS.
  */
 
@@ -11,7 +11,7 @@ export type DmarcPolicy = (typeof DMARC_POLICIES)[number];
 const REPORT_LOCAL_PREFIX = "dmarc-";
 const TOKEN = /^[a-z2-9]{16}$/;
 
-/** What a published DMARC record says (tags COSS reads; others are kept in `tags`). */
+/** What a published DMARC record says (tags coss.com reads; others are kept in `tags`). */
 export type DmarcRecord = {
   p: DmarcPolicy | null;
   sp: DmarcPolicy | null;
@@ -56,7 +56,7 @@ function alignmentOf(value: string | undefined): "r" | "s" | null {
 /**
  * Parses a `v=DMARC1` record; `null` when it isn't one, or isn't a valid tag list (a tag listed
  * twice, or a part that isn't `tag=value`, as the BIMI check rules too): receivers may ignore such
- * a record, so COSS never reads a policy from it. Unknown tags are kept, never rejected.
+ * a record, so coss.com never reads a policy from it. Unknown tags are kept, never rejected.
  */
 export function parseDmarcRecord(value: string): DmarcRecord | null {
   const parts = value
@@ -108,7 +108,7 @@ export function asSubdomainPolicy(record: DmarcRecord): DmarcRecord {
 /**
  * The record whose policy applies to a domain, as stored by its last DNS check: its own, else
  * (no record of its own) its organizational domain's as a subdomain sees it. `null`: none, or an
- * invalid record of its own (receivers may ignore it, so COSS assumes no policy).
+ * invalid record of its own (receivers may ignore it, so coss.com assumes no policy).
  */
 export function appliedDmarcRecord(row: {
   dmarcRecord: string | null;
@@ -152,7 +152,7 @@ export function nextPolicy(policy: DmarcPolicy): DmarcPolicy | null {
 
 /**
  * The record to publish for `policy`: the current one with `p` changed, `pct` and `t` dropped (a
- * step applies in full) and COSS's address added to `rua`; everything else the customer published
+ * step applies in full) and coss.com's address added to `rua`; everything else the customer published
  * (other report addresses, `sp`, alignment, failure reporting) is kept. Without a current record,
  * a minimal one.
  */
@@ -175,7 +175,7 @@ export function withPolicy(
 }
 
 /**
- * The current record with COSS's address added to `rua` and nothing else changed: partial
+ * The current record with coss.com's address added to `rua` and nothing else changed: partial
  * enforcement (`pct`, `t`) stays, since dropping it is a step of its own that needs reports first.
  */
 export function withReporting(current: DmarcRecord, reportAddress: string): string {
@@ -189,7 +189,7 @@ function withTags(tags: readonly (readonly [string, string])[]): string {
   return ["v=DMARC1", ...tags.map(([name, value]) => `${name}=${value}`)].join("; ").concat(";");
 }
 
-/** The record COSS recommends to a domain that publishes none: monitoring, reports to COSS. */
+/** The record coss.com recommends to a domain that publishes none: monitoring, reports to coss.com. */
 export function recommendedDmarc(reportAddress: string | null): string {
   return withPolicy(null, "none", reportAddress);
 }

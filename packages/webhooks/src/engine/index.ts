@@ -1,5 +1,5 @@
 /**
- * The delivery engine shared by COSS's own webhooks, log drains and Hooks: holds, lease fencing,
+ * The delivery engine shared by coss.com's own webhooks, log drains and Hooks: holds, lease fencing,
  * retry schedules, the HTTP attempt, endpoint health and a bounded runner. Each product keeps its
  * own tables and SQL; these are the parts that don't depend on either.
  */

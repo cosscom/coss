@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: { default: "COSS", template: "%s · COSS" },
+  title: { default: "coss.com", template: "%s · coss.com" },
   description: "One API key and one SDK for email and more.",
   // Served by the site (it owns coss.com's root files, see ZONE_ROUTES in @coss/auth/slugs).
   icons: { icon: "/icon.svg" },

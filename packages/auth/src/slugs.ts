@@ -33,11 +33,12 @@ export const SITE_ASSET_PREFIX = "/site-assets";
  * entry here (unless an existing prefix covers it) + the route in apps/site.
  */
 export const ZONE_ROUTES = [
-  // apps/site: landing page, pricing, Shipyard's landing page (and its assets), kloq
+  // apps/site: landing page, pricing, about, Shipyard's landing page (and its assets), kloq
   // kit's pages (landing page, demo, tools, comparisons, docs and its shadcn registry), docs (incl.
   // their search at /docs/search.json), legal pages, LLM text files.
   { zone: "site", path: "/", prefix: false },
   { zone: "site", path: "/pricing", prefix: false },
+  { zone: "site", path: "/about", prefix: false },
   { zone: "site", path: "/shipyard", prefix: true },
   { zone: "site", path: "/kloq", prefix: true },
   { zone: "site", path: "/docs", prefix: true },

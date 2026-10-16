@@ -30,7 +30,7 @@ describe("config", () => {
       SANDBOX_KEY,
     );
     await writeFile(configPath(io), "{nope");
-    expect(readConfig(io)).rejects.toThrow("not a valid COSS CLI config");
+    expect(readConfig(io)).rejects.toThrow("not a valid coss.com CLI config");
   });
 
   test("COSS_API_KEY wins over profiles; --profile over COSS_PROFILE over the default", async () => {

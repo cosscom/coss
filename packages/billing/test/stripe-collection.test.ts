@@ -1,7 +1,7 @@
 /**
  * Collection against Stripe's own behaviour (FakeStripeApi): the fake provider always collects,
  * so these cover what only a real rail does (refusing a charge without a payment method, an
- * invoice paid on the hosted page before COSS retries it).
+ * invoice paid on the hosted page before coss.com retries it).
  */
 import { expect, test } from "bun:test";
 import { db, schema } from "@coss/db";

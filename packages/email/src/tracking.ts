@@ -1,5 +1,5 @@
 /**
- * Records opens and clicks from COSS's public tracking endpoints. System-level: the email is
+ * Records opens and clicks from coss.com's public tracking endpoints. System-level: the email is
  * resolved from its unguessable tracking token (never from the caller), and every write is scoped
  * by that email's organization. Hits within the same UTC day (per link) collapse into one event,
  * bounding database and webhook amplification while preserving daily engagement.

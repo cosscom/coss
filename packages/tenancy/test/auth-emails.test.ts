@@ -81,7 +81,7 @@ describe("account emails", () => {
     expect(sent[0]).toMatchObject({
       idempotencyKey: queued?.id,
       to: user.email,
-      subject: "Verify your email address for COSS",
+      subject: "Verify your email address for coss.com",
     });
     expect(sent[0]?.text).toContain(queued?.url ?? "missing");
     expect(sent[0]?.html).toContain("Verify email address");
@@ -147,7 +147,7 @@ describe("account emails", () => {
     const { sent, sender } = recordingSender();
     await runDueAuthEmails({ scope: { to: [user.email] } }, { sender });
     expect(sent).toHaveLength(1);
-    expect(sent[0]?.subject).toBe("Reset your COSS password");
+    expect(sent[0]?.subject).toBe("Reset your coss.com password");
     const token = sent[0]?.text.match(/\/reset-password\/([^?\s]+)/)?.[1];
     if (!token) throw new Error("no reset link in the email");
     const newPassword = `new-${uniqueSuffix()}-password`;
@@ -211,7 +211,7 @@ describe("account emails", () => {
     const { sent, sender } = recordingSender();
     await runDueAuthEmails({ scope: { to: [kept, canceled] } }, { sender });
     expect(sent.map((message) => message.to)).toEqual([kept]);
-    expect(sent[0]?.subject).toBe(`You're invited to join ${tenant.organization.name} on COSS`);
+    expect(sent[0]?.subject).toBe(`You're invited to join ${tenant.organization.name} on coss.com`);
     expect(sent[0]?.text).toContain(`(${tenant.owner.email}) invited you`);
     expect(sent[0]?.text).toContain("as an admin");
     expect(sent[0]?.text).toContain(`/accept-invitation/${invitation.id}`);
@@ -282,7 +282,7 @@ describe("renderAuthEmail", () => {
         expiresAt: "2026-10-13T12:00:00.000Z",
       },
     });
-    expect(message.subject).toBe('You\'re invited to join Acme <b>"Bank"</b> on COSS');
+    expect(message.subject).toBe('You\'re invited to join Acme <b>"Bank"</b> on coss.com');
     expect(message.html).not.toContain("<script>");
     expect(message.html).not.toContain("<b>");
     expect(message.html).toContain("&lt;b&gt;&quot;Bank&quot;&lt;/b&gt;");

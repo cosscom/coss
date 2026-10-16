@@ -1,11 +1,11 @@
 ---
 title: Hooks
-description: Webhooks as a service. Send a message once; COSS delivers it to every endpoint your customers registered.
+description: Webhooks as a service. Send a message once; coss.com delivers it to every endpoint your customers registered.
 icon: Webhook
 ---
 
 Hooks lets your product send webhooks to **your** customers without building the machinery:
-you send a message to one of your customers once, and COSS delivers it to every URL they
+you send a message to one of your customers once, and coss.com delivers it to every URL they
 registered, signed, retried with backoff for about a day, and logged. A ready-made
 [portal](/docs/hooks/portal) lets your customers add endpoints, pick event types, see every
 delivery and retry them, without you building any UI.
@@ -69,7 +69,7 @@ const { data, error } = await coss.hooks.messages.send({
 });
 ```
 
-The send returns `202` right away; COSS delivers the payload to each of the application's enabled
+The send returns `202` right away; coss.com delivers the payload to each of the application's enabled
 endpoints subscribed to `invoice.paid`, usually within a second. Follow it with
 `coss.hooks.messages.listDeliveries()`, or in the dashboard under **Hooks**.
 
@@ -86,7 +86,7 @@ subscriptions; endpoints that already subscribed keep receiving it.
 
 ## Payloads
 
-A payload is any JSON object up to 256 KB. COSS parses it and serializes it again, so keys keep
+A payload is any JSON object up to 256 KB. coss.com parses it and serializes it again, so keys keep
 their order but whitespace doesn't, and numbers beyond 2^53 lose precision: send large integers
 (and amounts you can't round) as strings. Messages, deliveries and attempts are kept for
 <RetentionPeriod of="hook_messages" />.

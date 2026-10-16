@@ -217,7 +217,7 @@ export const AuditActorTypeEnum = z.enum(ORG_AUDIT_ACTOR_TYPES).meta({
   description:
     "`user`: a member, in the dashboard (`actor_id` is the user's id, `actor_label` their " +
     "email). `api_key`: a request made with an API key (`actor_id` is the key's id). `system`: " +
-    "COSS itself, including COSS support.",
+    "coss.com itself, including coss.com support.",
 });
 
 const AUDIT_EVENT_ID_EXAMPLE = "oaudit_01k7c8m4q2f3e9v6t5r1n0p8yz";
@@ -253,7 +253,7 @@ export const AuditEvent = z
     actor_label: z.string().meta({
       description:
         "Who made the change, copied when it was recorded so it outlives them: the user's " +
-        "email, the API key's id, or `COSS support`.",
+        "email, the API key's id, or `coss.com support`.",
     }),
     action: z.string().meta({
       description:

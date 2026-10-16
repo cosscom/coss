@@ -1,5 +1,5 @@
 /**
- * Each environment's address space under COSS's managed inbound domain:
+ * Each environment's address space under coss.com's managed inbound domain:
  * `<anything>@<label>.<INBOUND_MANAGED_DOMAIN>` reaches the environment with no DNS setup.
  */
 import { randomInt } from "node:crypto";

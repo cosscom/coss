@@ -8,7 +8,7 @@
  * - An existing account is linked by address only when the provider verified it and the local
  *   account is verified too (`account.accountLinking` in `options.ts`).
  * - Two-factor users still get the TOTP challenge (`socialTwoFactor`).
- * - Provider tokens are never stored (`withoutProviderTokens`): COSS calls neither API.
+ * - Provider tokens are never stored (`withoutProviderTokens`): coss.com calls neither API.
  * - The account's profile picture becomes the user's when they have none (`providerPicture`):
  *   Better Auth sets it on sign-up only (`updateUserInfoOnLink` stays off for the name).
  */

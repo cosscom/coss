@@ -19,7 +19,7 @@ export function riskHasher(): RiskHasher {
 let deps: RiskDeps | undefined;
 let signUpEnvironment: Promise<RiskAssessEnvironment | null> | undefined;
 
-/** COSS's own environment sign-ups are assessed in (`RISK_SIGNUP_ENVIRONMENT_ID`), looked up once. */
+/** coss.com's own environment sign-ups are assessed in (`RISK_SIGNUP_ENVIRONMENT_ID`), looked up once. */
 function signUpRiskEnvironment(environmentId: string): Promise<RiskAssessEnvironment | null> {
   signUpEnvironment ??= db.query.environment
     .findFirst({
@@ -42,7 +42,7 @@ function signUpRiskEnvironment(environmentId: string): Promise<RiskAssessEnviron
   return signUpEnvironment;
 }
 
-/** The environment COSS's own sign-ups are assessed in, for the admin console; `null` without one. */
+/** The environment coss.com's own sign-ups are assessed in, for the admin console; `null` without one. */
 export async function signUpRiskScope(): Promise<{
   organizationId: string;
   environmentId: string;
@@ -56,7 +56,7 @@ export async function signUpRiskScope(): Promise<{
 }
 
 /**
- * COSS Risk on COSS's own sign-ups (dogfooding): each `/sign-up/email` (and new Google or GitHub
+ * coss.com Risk on coss.com's own sign-ups (dogfooding): each `/sign-up/email` (and new Google or GitHub
  * account) is assessed in `RISK_SIGNUP_ENVIRONMENT_ID`, with the client's address, user agent and
  * `coss/device` token, exactly as a customer would. `null` (nothing assessed) without it.
  */

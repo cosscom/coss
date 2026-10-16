@@ -3,7 +3,7 @@
 # "Deploying to AWS"), so they never reach the Terraform state.
 resource "aws_secretsmanager_secret" "stage" {
   name        = "coss/${var.stage}"
-  description = "COSS ${var.stage}: every task's secret environment variables (JSON)"
+  description = "coss.com ${var.stage}: every task's secret environment variables (JSON)"
 }
 
 # The origin headers are part of the ALB rules and CloudFront's configuration (and so of the

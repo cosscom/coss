@@ -1,4 +1,4 @@
-/** What COSS meters: one meter per billable unit of a product. */
+/** What coss.com meters: one meter per billable unit of a product. */
 
 export const PRODUCTS = ["email", "sms", "video", "scheduling"] as const;
 export type Product = (typeof PRODUCTS)[number];

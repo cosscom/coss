@@ -19,6 +19,7 @@ import { PRODUCTS } from "@/components/home/parts";
 import { PlatformAssembly } from "@/components/home/platform-assembly";
 import { VendorDrawing } from "@/components/home/vendor-drawing";
 import { ShipyardHarbour } from "@/components/shipyard/harbour";
+import { ShipyardNewTask } from "@/components/shipyard/new-task";
 import { SignUpButton } from "@/components/sign-up-button";
 import { CALENDAR } from "@/lib/calendar";
 import { SHIPYARD } from "@/lib/shipyard";
@@ -144,7 +145,7 @@ function OneVendor() {
     <section aria-labelledby="one-vendor-title" className="border-b">
       <SectionHead id="one-vendor-title" title="One vendor, not four">
         Every channel you add usually means another account, another SDK, another dashboard and
-        another invoice. With COSS, the next one is already set up.
+        another invoice. With coss.com, the next one is already set up.
       </SectionHead>
       <div className="grid grid-cols-1 border-t md:grid-cols-2">
         {(["apart", "together"] as const).map((side) => {
@@ -164,7 +165,7 @@ function OneVendor() {
                       : "font-semibold text-2xl text-muted-foreground tracking-[-0.02em]"
                   }
                 >
-                  {together ? "With COSS" : "Four vendors"}
+                  {together ? "With coss.com" : "Four vendors"}
                 </h3>
                 <span className="font-mono text-muted-foreground text-xs">
                   {together ? "1 integration" : "4 integrations"}
@@ -251,7 +252,7 @@ const INTERFACES: [string, string, string | null][] = [
 const SESSION: { kind: "you" | "tool" | "out" | "done"; text: string }[] = [
   {
     kind: "you",
-    text: "Add COSS to this project: read https://coss.com/llms.txt, install the `coss` package…",
+    text: "Add coss.com to this project: read https://coss.com/llms.txt, install the `coss` package…",
   },
   { kind: "tool", text: "Fetch  coss.com/llms.txt" },
   { kind: "tool", text: "Fetch  coss.com/docs/email/sending" },
@@ -271,7 +272,7 @@ function Agents() {
   return (
     <section aria-labelledby="agents-title" className="scroll-mt-14 border-b" id="agents">
       <SectionHead id="agents-title" title="Assembly takes one prompt">
-        COSS is written for the agent doing the work as much as for you: plain-text docs, typed
+        coss.com is written for the agent doing the work as much as for you: plain-text docs, typed
         results, and keys that can't send by accident.
       </SectionHead>
 
@@ -412,7 +413,11 @@ function MoreFromCoss() {
           aria-labelledby="more-shipyard"
           className="flex min-w-0 flex-col border-b lg:border-r lg:border-b-0"
         >
-          <ShipyardHarbour className="h-56 border-b sm:h-72" />
+          {/* The harbour with the app's New task box over it, as the ⌘N moment on its own page. */}
+          <div className="relative h-64 overflow-hidden border-b sm:h-80">
+            <ShipyardHarbour className="h-full" />
+            <ShipyardNewTask className="absolute top-[14%] left-1/2 -translate-x-1/2 [mask-image:linear-gradient(black_72%,transparent)]" />
+          </div>
           <div className="flex flex-col items-start gap-4 px-4 py-8 sm:px-8">
             <h3
               className="flex items-center gap-2.5 font-semibold text-2xl tracking-tight"

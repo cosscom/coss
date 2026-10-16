@@ -1,6 +1,6 @@
 # coss-mcp
 
-The [Model Context Protocol](https://modelcontextprotocol.io) server for [COSS](https://coss.com). Your
+The [Model Context Protocol](https://modelcontextprotocol.io) server for [coss.com](https://coss.com). Your
 coding agent can ask "did the welcome email to jane@example.com get delivered?" and get the answer:
 the email, what happened to each recipient and why, and what to do about it.
 

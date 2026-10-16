@@ -3,7 +3,7 @@ import { type PartId, PRODUCTS } from "./parts";
 
 /*
  * The comparison's two drawings, at one scale: four products from four vendors, each on a base of
- * its own, or the same four seated in one COSS base.
+ * its own, or the same four seated in one coss.com base.
  */
 
 const SOCKET = 104;

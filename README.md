@@ -1,4 +1,4 @@
-# COSS
+# coss.com
 
 One API key, one SDK, every communication primitive:
 
@@ -90,7 +90,7 @@ resets) are printed to the dashboard's server console in development.
   `email.suppressed`) and still deliver to the rest. An entry covers every email (scope `*`) or one **category**
   (the optional `category` of a send, e.g. `marketing`), so it can back an unsubscribe flow. Permanent bounces and
   complaints add `*` entries automatically (except for mailbox simulator addresses), one-click unsubscribes an
-  entry for the email's category. COSS keeps the only list: SES
+  entry for the email's category. coss.com keeps the only list: SES
   suppression is turned off.
 - **Scheduled sends** — pass `scheduled_at` (ISO 8601 with an offset, up to 30 days ahead) and the email is stored
   as `scheduled` (event `email.scheduled`); the worker sends it when it is due, re-checking the domain and the
@@ -101,12 +101,12 @@ resets) are printed to the dashboard's server console in development.
   `List-Unsubscribe-Post` headers pointing at the tracking host (`/t/u/<token>`); the one-click POST suppresses the
   recipient for that category (reason `unsubscribe`) and records `email.unsubscribed`.
 - **Open & click tracking** — off by default. Turn it on per environment (a default plus per-category rules, in the
-  dashboard) or per send (`tracking: { opens, clicks }`). COSS adds an invisible image and rewrites HTML links to its
+  dashboard) or per send (`tracking: { opens, clicks }`). coss.com adds an invisible image and rewrites HTML links to its
   own redirect (`API_PUBLIC_URL/t/…`) when it hands the email to the provider; the stored email keeps the original
   HTML. Opens and clicks show up as `email.opened` / `email.clicked` events, webhooks, counts on the email
   (`tracking`) and per-link click counts. Independent of SES's own tracking, which stays off.
   A verified domain can have a **custom tracking domain** (e.g. `links.acme.com`, a CNAME to `track.cosslinks.com`):
-  emails from it are tracked through that hostname while it is active. COSS registers it as a Cloudflare for SaaS
+  emails from it are tracked through that hostname while it is active. coss.com registers it as a Cloudflare for SaaS
   custom hostname (`TRACKING_DOMAIN_PROVIDER=cloudflare`), which issues its certificate and proxies `/t/*` to the API.
 - **Webhooks** — per environment, signed with [Standard Webhooks](https://www.standardwebhooks.com) headers and
   retried for about a day. Verify them with `verifyWebhook` from the SDK.
@@ -128,7 +128,7 @@ resets) are printed to the dashboard's server console in development.
   live sending at 8% / 0.3% (from 200 / 500 recipients). Suspended organizations get `403 account_suspended` on live
   sends and can't create live keys; sandbox keys keep working. Customers see it in the dashboard (banner +
   **Reputation** page), via `GET /v1/reputation`, through `account.*` webhooks and by email to the organization's
-  owners and admins (sent through COSS itself, see "Deploying to AWS"). Only platform admins reinstate
+  owners and admins (sent through coss.com itself, see "Deploying to AWS"). Only platform admins reinstate
   (`/admin/organizations`), where they can also suspend manually and override thresholds per organization.
 - **Content screening** — right before a sampled live email reaches the provider, the worker asks an AI decision
   model (TypeSafe AI's Jev through the Vercel AI SDK and AI Gateway, swappable with `SCREENING_MODEL`) how likely
@@ -137,7 +137,7 @@ resets) are printed to the dashboard's server console in development.
   organization is suspended (the reputation guard's `content_screening` trigger); at ≥ 0.70 it is sent but the
   organization is warned until the flag ages out of the window. In enforcement mode, classifier errors and
   timeouts (3 s) hold the email: it is tried (and screened) again every minute, and fails as
-  `content_screening_unavailable` only if screening is still down an hour after it was due. COSS's
+  `content_screening_unavailable` only if screening is still down an hour after it was due. coss.com's
   own notification organization always sends so an AI outage cannot stop account recovery. Admins see every verdict on the organization's reputation page and can
   tune thresholds and sampling, switch to shadow mode, or turn screening off per organization (e.g. for
   phishing-simulation senders). Locally `SCREENING_CLASSIFIER=fake` flags content containing `[coss-test:phishing]`
@@ -189,7 +189,7 @@ to the inputs is a miss and CI runs the task itself, so nothing goes unchecked. 
 **One-time setup per machine** (a laptop, or a box agents run on; every worktree on it picks it up):
 
 1. Be a member of the `cal` team on Vercel.
-2. Put the team and the signing key (password manager: "COSS turbo remote cache signing key") in a private file
+2. Put the team and the signing key (password manager: "coss.com turbo remote cache signing key") in a private file
    and load it from your shell profile (open a new shell afterwards). Turbo only reads the shell's environment, never `.env`:
    ```sh
    mkdir -p ~/.config/coss && install -m 600 /dev/null ~/.config/coss/turbo.env
@@ -230,7 +230,7 @@ bun run --cwd apps/mobile ios    # generates ios/, builds, installs and opens th
 bun run --cwd apps/mobile start  # Metro only, once the app is installed
 ```
 
-"Sign in with COSS" opens the dashboard's sign-in in a browser sheet (`demo@coss.local` / `coss-demo-password`
+"Sign in with coss.com" opens the dashboard's sign-in in a browser sheet (`demo@coss.local` / `coss-demo-password`
 after `db:seed`). The app reads `EXPO_PUBLIC_DASHBOARD_URL` (default `http://localhost:3000`); on a physical device
 set it to your Mac's LAN address in `apps/mobile/.env.local`, and run the dashboard with `BETTER_AUTH_URL` on that
 address too. Signed-in devices are listed under Settings → Sessions. See `apps/mobile/AGENTS.md`.
@@ -272,7 +272,7 @@ client IP and per email address.
 
 ## SMTP relay
 
-`apps/smtp` lets anything that only speaks SMTP send through COSS (Supabase Auth, WordPress, Rails, Laravel,
+`apps/smtp` lets anything that only speaks SMTP send through coss.com (Supabase Auth, WordPress, Rails, Laravel,
 Django, nodemailer, older apps): host `smtp.coss.com`, port 465 (TLS) or 587 (STARTTLS) (2465/2587 as
 alternatives), username `coss`, an API key as the password. Each message is mapped onto the same request as
 `POST /v1/emails` (envelope recipients decide who receives it; `To`/`Cc` headers keep their roles and the rest are
@@ -290,7 +290,7 @@ The docs' guide is `/docs/email/smtp`.
 ## Running on Amazon SES
 
 Each organization gets its own SES **tenant** (isolated reputation and pausing), created with its first domain.
-SES suppression is off for tenants and the configuration set: COSS's own suppression lists decide who is skipped. All tenants share one **configuration set**, which publishes delivery events to SNS → SQS,
+SES suppression is off for tenants and the configuration set: coss.com's own suppression lists decide who is skipped. All tenants share one **configuration set**, which publishes delivery events to SNS → SQS,
 where the worker picks them up; an EventBridge rule sends tenant pause/resume events to the same queue.
 
 1. Use a dedicated AWS account (or at least region) per stage: SES identities are account-wide, so the same
@@ -313,23 +313,23 @@ where the worker picks them up; an EventBridge rule sends tenant pause/resume ev
    to update the attached `<name>-worker` policy with SES send permissions before starting the new
    worker. Bootstrap makes the updated policy version the default; existing attachments stay in place.
    If you manage IAM policies separately, apply both worker `ses:SendEmail` grants from
-   `apps/worker/scripts/ses-policies.ts` (identities and the COSS configuration set).
+   `apps/worker/scripts/ses-policies.ts` (identities and the coss.com configuration set).
    Organization deletion needs `ses:DeleteTenant` in the `<name>-worker` policy: rerun bootstrap (or add it)
    before deploying that release, or deletions retry until it is there.
    Bootstrap imports historical SES permanent bounces and complaints into their original live
    environments, and conservatively copies the SES account and tenant lists to every live
    environment of each matching organization (SES lists have no environment attribution).
    Sandbox lists are untouched. The database records completion per tenant in the same transaction;
-   reruns preserve later COSS removals. All imports must succeed before bootstrap disables any SES
+   reruns preserve later coss.com removals. All imports must succeed before bootstrap disables any SES
    suppression. Keep traffic paused if bootstrap fails, correct the error, and rerun it.
    Bootstrap needs `ses:ListSuppressedDestinations` for both account and tenant lists in addition
    to its infrastructure permissions; an unmapped SES tenant stops the transition.
 
-COSS tags the identities it creates `coss_managed=<tenant prefix>` and only ever recreates or deletes identities
+coss.com tags the identities it creates `coss_managed=<tenant prefix>` and only ever recreates or deletes identities
 carrying its own tag (enforced in code and by the IAM policies), so domains verified by hand in the same account
 are left alone. Sending can't be limited by tag (SES authorizes sends against the sender address), so the API
-and worker policies allow `ses:SendEmail` on any identity but only with the COSS configuration set (another set,
-or none, is denied); COSS always sends with the organization's tenant, which SES only allows for identities associated with it.
+and worker policies allow `ses:SendEmail` on any identity but only with the coss.com configuration set (another set,
+or none, is denied); coss.com always sends with the organization's tenant, which SES only allows for identities associated with it.
 
 ### Receiving email on SES
 
@@ -401,9 +401,9 @@ A warning is logged in either case.
 
 ## Billing on Stripe
 
-COSS computes every invoice itself (`@coss/billing`: plans, contracts, usage, credits); Stripe only stores
-customers and payment methods, issues the invoices COSS pushes and collects them. Without Stripe
-(`BILLING_PROVIDER=fake`, the default) every charge succeeds and nothing leaves COSS.
+coss.com computes every invoice itself (`@coss/billing`: plans, contracts, usage, credits); Stripe only stores
+customers and payment methods, issues the invoices coss.com pushes and collects them. Without Stripe
+(`BILLING_PROVIDER=fake`, the default) every charge succeeds and nothing leaves coss.com.
 
 1. Create a restricted key with write access to Customers, Invoices, Invoice Items, Credit Notes, Checkout
    Sessions, Customer Portal and Setup Intents, and read access to Payment Methods and Invoice Payments. Set it as
@@ -413,17 +413,17 @@ customers and payment methods, issues the invoices COSS pushes and collects them
    `checkout.session.completed`, `customer.updated` and `charge.dispute.created`; set its signing secret as
    `STRIPE_WEBHOOK_SECRET` (dashboard only). Locally: `stripe listen --forward-to localhost:3000/api/billing/webhook`.
 3. Customer Portal (Settings → Billing → Customer portal): allow updating payment methods, the billing address
-   and tax IDs; turn off everything about subscriptions and invoices' cancellation (COSS has no Stripe
+   and tax IDs; turn off everything about subscriptions and invoices' cancellation (coss.com has no Stripe
    subscriptions).
-4. Turn off Stripe's automatic collection features that would duplicate COSS's: Smart Retries and failed-payment
-   emails for invoices (COSS retries charges and emails billing contacts itself). Invoice and receipt emails from
+4. Turn off Stripe's automatic collection features that would duplicate coss.com's: Smart Retries and failed-payment
+   emails for invoices (coss.com retries charges and emails billing contacts itself). Invoice and receipt emails from
    Stripe are fine to keep.
 5. Enable the payment method types you offer (cards; ACH Direct Debit, SEPA and Bacs Direct Debit for accounts that
    need them; bank transfers for invoices with payment terms). Each account's allowed and required types are set in
    the admin console. Stripe Tax is used only for accounts set to `stripe_automatic` tax.
 
 Sales deals, credits and invoice adjustments are made in the admin console (`/admin/organizations/<id>/billing`);
-deals invoiced off-Stripe use an account's `manual` provider (COSS emails the invoice; an admin records payments).
+deals invoiced off-Stripe use an account's `manual` provider (coss.com emails the invoice; an admin records payments).
 
 ## Error monitoring on Sentry
 
@@ -537,12 +537,12 @@ Cloudflare DNS (coss.com zone, DNS only)
 - **SES, SNS, SQS, EventBridge:** created by `ses:bootstrap` (see [Running on Amazon SES](#running-on-amazon-ses)),
   run as a one-off task (below).
 - **DNS (Cloudflare, zone `coss.com`):** `coss.com` and `api.coss.com` are DNS-only CNAMEs (flattened at the apex)
-  to their distributions; ACM validation CNAMEs; DKIM and MAIL FROM records of COSS's own sending domain.
+  to their distributions; ACM validation CNAMEs; DKIM and MAIL FROM records of coss.com's own sending domain.
 - **Tracking links (`cosslinks.com`, a self-serve Cloudflare account, not the coss.com zone):** every tracking
   link points at a domain of its own, so a sender's abuse flagged by URL blocklists never lands on coss.com.
   `track.cosslinks.com` is a **proxied** record pointing at the ALB's DNS name (`terraform output alb_dns_name`):
   it is the default tracking origin (`TRACKING_PUBLIC_URL`, api + worker) and the Cloudflare for SaaS fallback
-  origin customers CNAME their tracking domains to (`TRACKING_CNAME_TARGET`). COSS registers each customer domain
+  origin customers CNAME their tracking domains to (`TRACKING_CNAME_TARGET`). coss.com registers each customer domain
   as a custom hostname (HTTP certificate validation) with `CLOUDFLARE_API_TOKEN` (an account token scoped to the
   zone, SSL and Certificates: Edit) and `CLOUDFLARE_ZONE_ID`. A request header transform rule sets
   `X-Tracking-Origin-Verify: <secret>` (Secrets Manager `coss/production/tracking-origin-verify`) on every request
@@ -693,9 +693,9 @@ while a run moves, else every minute).
 **Redeploy** on an earlier run's commit dispatches it with `image_tag` (production stays there until main is
 deployed again; migrations aren't undone). Both record an admin audit event with the admin and their reason.
 
-It reads and dispatches through a GitHub App, **COSS Deploy**, so no person's token is involved. Setting it up once:
+It reads and dispatches through a GitHub App, **coss.com Deploy**, so no person's token is involved. Setting it up once:
 
-1. In the `cosscom` organization: Settings → Developer settings → GitHub Apps → New GitHub App. Name `COSS Deploy`,
+1. In the `cosscom` organization: Settings → Developer settings → GitHub Apps → New GitHub App. Name `coss.com Deploy`,
    homepage `https://coss.com`, webhook off, repository permissions **Actions: read and write** and **Contents:
    read-only** (nothing else), installable on this account only. Create it, note its **App ID**, and generate a
    private key (a `.pem` download).
@@ -728,10 +728,10 @@ Cloudflare) → `valkey:bootstrap` → stage secret values (`put-secret.sh`) →
 CloudFront, WAF) → migrate → `ses-bootstrap` one-off task → test through CloudFront with
 `curl --resolve coss.com:443:<distribution IP>` → DNS in Cloudflare → sign up on the dashboard → `create-admin
 --verify-email` (sign-in needs a verified address, and no verification email can go out yet) →
-create COSS's own organization in the dashboard, add and verify its sending domain (`coss.com`: reserved for
-everyone else, so only a platform admin can add it, from the dashboard; an SES identity for it created outside COSS
-must be deleted first, COSS never adopts one), and set the worker's
-`NOTIFICATIONS_ENVIRONMENT_ID` (its project's live environment, `env_…`) and `NOTIFICATIONS_FROM` (e.g. `COSS
+create coss.com's own organization in the dashboard, add and verify its sending domain (`coss.com`: reserved for
+everyone else, so only a platform admin can add it, from the dashboard; an SES identity for it created outside coss.com
+must be deleted first, coss.com never adopts one), and set the worker's
+`NOTIFICATIONS_ENVIRONMENT_ID` (its project's live environment, `env_…`) and `NOTIFICATIONS_FROM` (e.g. `coss.com
 <notifications@coss.com>`) in `production.tfvars`, apply, and redeploy. Until then the worker logs a warning at
 startup and holds account emails (sign-up verification, password resets, invitations — dropped once their link
 expires: an hour, or the invitation's 48 hours) and reputation notification emails (dropped after 3 days), so nobody
@@ -739,7 +739,7 @@ can verify their address or create a live key; afterwards, ask for a new verific
 They are ordinary live emails of that organization: its dashboard shows their delivery, and its suppressions and
 reputation guard apply. Account emails keep no body once sent (their links are secrets).
 
-Push notifications to the iOS app use the APNs key "COSS push" (`APNS_KEY_ID` `WCQDCU4HUL`) of the Cal.com, Inc.
+Push notifications to the iOS app use the APNs key "coss.com push" (`APNS_KEY_ID` `WCQDCU4HUL`) of the Cal.com, Inc.
 Apple team (`ADWKXDJV75`), which owns `com.coss.ios`: Production environment, restricted to that topic. Its `.p8` is
 the `APNS_PRIVATE_KEY` key of `coss/production` (`put-secret.sh APNS_PRIVATE_KEY --stdin < AuthKey_….p8`); the key
 id, team and topic are plain values in `production.tfvars`. To replace it, create a new key under Certificates,
@@ -810,11 +810,11 @@ webhooks:reencrypt` does step 3 against `DATABASE_URL`.
 
 ## License
 
-COSS is licensed under the [GNU Affero General Public License v3.0](./LICENSE) (`AGPL-3.0-only`), Copyright (c)
+coss.com is licensed under the [GNU Affero General Public License v3.0](./LICENSE) (`AGPL-3.0-only`), Copyright (c)
 2026 Cal.com, Inc. — except:
 
 - `packages/sdk` (the `coss` npm package): [MIT](./packages/sdk/LICENSE), so applications can bundle it freely.
-- `packages/mcp` (the `coss-mcp` npm package, COSS's MCP server): [MIT](./packages/mcp/LICENSE), like the SDK it
+- `packages/mcp` (the `coss-mcp` npm package, coss.com's MCP server): [MIT](./packages/mcp/LICENSE), like the SDK it
   is built on.
 - `packages/cli` (the `coss-cli` npm package, the `coss` command): [MIT](./packages/cli/LICENSE), likewise.
 - `packages/kloq`: [MIT](./packages/kloq/LICENSE), vendored from `cosscom/calendar` (as is the kloq registry the

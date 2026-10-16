@@ -13,7 +13,7 @@ import { getSession } from "@/lib/session";
 import { AuthorizeForm } from "./authorize-form";
 import { appSignInRefusal } from "./refusal";
 
-export const metadata: Metadata = { title: "Sign in to the COSS app" };
+export const metadata: Metadata = { title: "Sign in to the coss.com app" };
 
 function AuthorizeCard(props: { title: string; description: ReactNode; children?: ReactNode }) {
   return (
@@ -64,7 +64,7 @@ export default async function AuthorizeAppPage({ searchParams }: PageProps<"/app
   const next = `/sign-in?next=${encodeURIComponent(here)}`;
   if (refusal) {
     return (
-      <AuthorizeCard description={refusal} title="Sign in to the COSS app">
+      <AuthorizeCard description={refusal} title="Sign in to the coss.com app">
         <SignOutButton redirectTo={next} />
       </AuthorizeCard>
     );
@@ -72,7 +72,7 @@ export default async function AuthorizeAppPage({ searchParams }: PageProps<"/app
   return (
     <AuthorizeCard
       description="Approve the iOS app to see this account's organizations on your phone."
-      title="Sign in to the COSS app"
+      title="Sign in to the coss.com app"
     >
       <div className="flex items-center gap-3 rounded-xl border bg-card px-3 py-2.5 shadow-xs/5">
         <Avatar className="size-9 rounded-lg border bg-background">

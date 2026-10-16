@@ -45,7 +45,7 @@ export const env = createEnv({
     // Days of environment logs kept (@coss/logs); expired days are dropped hourly.
     LOG_RETENTION_DAYS: z.coerce.number().int().min(1).max(31).default(30),
     // Reputation notification emails (warnings, suspensions) to organization owners and admins,
-    // sent from a live environment of COSS's own organization with an address on one of its
+    // sent from a live environment of coss.com's own organization with an address on one of its
     // verified domains. Unset: printed in development, held (not sent) in production.
     NOTIFICATIONS_ENVIRONMENT_ID: z.string().startsWith("env_").optional(),
     NOTIFICATIONS_FROM: z.string().optional(),

@@ -295,7 +295,7 @@ export function ScimGroupRolesForm(props: {
                     current.map((r) => (r.key === row.key ? { ...r, groupName } : r)),
                   );
                 }}
-                placeholder="e.g. COSS Admins"
+                placeholder="e.g. coss.com Admins"
                 required
                 value={row.groupName}
               />

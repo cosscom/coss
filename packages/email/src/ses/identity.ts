@@ -18,8 +18,8 @@ import {
 } from "./api.ts";
 
 /**
- * Tag on every identity COSS creates (value: the tenant prefix). COSS only ever deletes or
- * recreates identities carrying its own tag, so identities managed outside COSS in the same
+ * Tag on every identity coss.com creates (value: the tenant prefix). coss.com only ever deletes or
+ * recreates identities carrying its own tag, so identities managed outside coss.com in the same
  * account (e.g. the company's own domain) are never touched.
  */
 export const MANAGED_TAG = "coss_managed";
@@ -129,7 +129,7 @@ export class SesIdentityProvider implements IdentityProvider {
       dkim = await this.#create(input.domain);
     } catch (error) {
       if (!isSesError(error, "AlreadyExistsException")) throw error;
-      // Never adopt an identity another tenant holds, nor one managed outside COSS. An orphan COSS
+      // Never adopt an identity another tenant holds, nor one managed outside coss.com. An orphan coss.com
       // created (e.g. a released claim) is recreated, so its DKIM keys (and so its DNS records)
       // are new and can only be published by whoever controls DNS now.
       const { ResourceTenants = [] } = await this.#api.listResourceTenants({

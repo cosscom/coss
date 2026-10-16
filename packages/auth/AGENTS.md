@@ -134,7 +134,7 @@ Better Auth (`packages/auth`) and the dashboard actions, mobile API routes, tena
     `scim_group_role` (normalized displayName); inactive/deleted = membership removed and that org's SSO sessions
     deleted. **Owners are never changed**, nobody is added or promoted while the org is suspended (removals apply).
     The plugin deletes *every* session of a globally inactive user; the `session.delete.before` hook vetoes that
-    (`isScimSessionSweep`) during SCIM requests and inside `preservingScimMembers` (COSS's decommission/replay
+    (`isScimSessionSweep`) during SCIM requests and inside `preservingScimMembers` (coss.com's decommission/replay
     calls, which also keep members whose only source was the disconnected directory). While a connection is
     active, `resolveSsoUser` admits only users with an active SCIM user there (matched by email, not the IdP
     subject) and existing owners (`scimBlocksSsoSignIn`). The dashboard refuses manual removal/role changes of

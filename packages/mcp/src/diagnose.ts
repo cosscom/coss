@@ -62,7 +62,7 @@ export interface Diagnosis {
 export interface DiagnosisContext {
   /** Suppression entries of recipient addresses (from `check_suppression`). */
   suppressions?: Record<string, Suppression[]>;
-  /** The From address's domain, as COSS has it; `null` when no domain matched. */
+  /** The From address's domain, as coss.com has it; `null` when no domain matched. */
   domain?: { name: string; status: string; can_send: boolean } | null;
   reputation?: { status: ReputationStatus; reason: string | null } | null;
   billing?: { status: string; holds: { reason: string; since: string }[] } | null;
@@ -73,7 +73,7 @@ const FAILURES: Record<string, { explanation: string; next_steps: string[] }> = 
   all_recipients_suppressed: {
     explanation:
       "Every recipient is on the environment's suppression list (earlier hard bounces, spam " +
-      "complaints, or manual entries), so COSS sent nothing.",
+      "complaints, or manual entries), so coss.com sent nothing.",
     next_steps: [
       "Look at each recipient's suppression entry (check_suppression).",
       "Only remove an entry (remove_suppression) if the address is known to be valid again; sending to addresses that bounced or complained hurts your reputation.",
@@ -93,26 +93,26 @@ const FAILURES: Record<string, { explanation: string; next_steps: string[] }> = 
       "Live sending is suspended for the organization because of its sending reputation.",
     next_steps: [
       "Call get_account_status for the reason and the checks behind it.",
-      "Contact COSS support; a suspension is only lifted by support.",
+      "Contact coss.com support; a suspension is only lifted by support.",
     ],
   },
   sending_paused: {
     explanation:
       "The email provider paused sending for the organization because of its sending reputation.",
-    next_steps: ["Call get_account_status, and contact COSS support."],
+    next_steps: ["Call get_account_status, and contact coss.com support."],
   },
   content_rejected: {
     explanation:
-      "COSS's content screening blocked the email as abusive (for example phishing or spam). " +
+      "coss.com's content screening blocked the email as abusive (for example phishing or spam). " +
       "This can also suspend the organization's live sending.",
     next_steps: [
       "Review the email's content and links.",
-      "Call get_account_status; if this is a false positive, contact COSS support.",
+      "Call get_account_status; if this is a false positive, contact coss.com support.",
     ],
   },
   content_screening_unavailable: {
     explanation:
-      "The email was held because content screening was unavailable, and COSS gave up after an hour.",
+      "The email was held because content screening was unavailable, and coss.com gave up after an hour.",
     next_steps: ["Send the email again."],
   },
   attachments_unavailable: {
@@ -121,7 +121,7 @@ const FAILURES: Record<string, { explanation: string; next_steps: string[] }> = 
   },
   dispatch_failed: {
     explanation:
-      "COSS could not hand the email to the email provider within an hour of when it was due.",
+      "coss.com could not hand the email to the email provider within an hour of when it was due.",
     next_steps: ["Send the email again (with a new idempotency key)."],
   },
   dispatch_interrupted: {
@@ -133,10 +133,10 @@ const FAILURES: Record<string, { explanation: string; next_steps: string[] }> = 
     ],
   },
   provider_error: {
-    explanation: "The email provider refused the email when COSS handed it over.",
+    explanation: "The email provider refused the email when coss.com handed it over.",
     next_steps: [
       "Send it again later.",
-      "If it keeps happening, contact COSS support with the email id.",
+      "If it keeps happening, contact coss.com support with the email id.",
     ],
   },
   provider_failure: {
@@ -149,7 +149,9 @@ const FAILURES: Record<string, { explanation: string; next_steps: string[] }> = 
 
 const UNKNOWN_FAILURE = {
   explanation: "The email could not be sent.",
-  next_steps: ["Check the failure message; send again or contact COSS support with the email id."],
+  next_steps: [
+    "Check the failure message; send again or contact coss.com support with the email id.",
+  ],
 };
 
 const MINUTE = 60_000;
@@ -200,7 +202,7 @@ function diagnoseRecipient(
         ...base,
         outcome: "delivered",
         explanation: email.sandbox
-          ? "Delivered (simulated: sandbox emails never leave COSS)."
+          ? "Delivered (simulated: sandbox emails never leave coss.com)."
           : "The recipient's mail server accepted the email. Whether it shows in the inbox or in spam is up to the receiving provider.",
         ...(event?.data.delivery?.smtp_response
           ? { details: { smtp_response: event.data.delivery.smtp_response, at: event.occurred_at } }
@@ -219,7 +221,7 @@ function diagnoseRecipient(
         ...base,
         outcome: "bounced",
         explanation: permanent
-          ? "Hard bounce: the receiving server permanently rejected the address (it doesn't exist or doesn't accept mail). COSS adds such addresses to the suppression list, so later emails to it are skipped."
+          ? "Hard bounce: the receiving server permanently rejected the address (it doesn't exist or doesn't accept mail). coss.com adds such addresses to the suppression list, so later emails to it are skipped."
           : "Soft bounce: the receiving server refused the email for now (for example a full mailbox or a temporary problem). The address is not suppressed.",
         details: {
           ...(bounce
@@ -244,7 +246,7 @@ function diagnoseRecipient(
         ...base,
         outcome: "complained",
         explanation:
-          "The email was delivered, then the recipient reported it as spam. COSS adds the address to the suppression list, and complaints count against the organization's reputation.",
+          "The email was delivered, then the recipient reported it as spam. coss.com adds the address to the suppression list, and complaints count against the organization's reputation.",
         ...(suppressions?.length ? { details: suppressionNote(suppressions) } : {}),
         next_steps: [
           "Don't email this address again unless the recipient asks you to.",
@@ -257,7 +259,7 @@ function diagnoseRecipient(
         ...base,
         outcome: "suppressed",
         explanation:
-          "COSS skipped this recipient because the address is on the environment's suppression list" +
+          "coss.com skipped this recipient because the address is on the environment's suppression list" +
           (entry ? ` (reason: ${entry.reason}, scope: ${entry.scope}).` : "."),
         details: {
           ...(entry ? { matched_suppression: entry } : {}),
@@ -367,7 +369,9 @@ function summarize(
   const counts = new Map<RecipientOutcome, number>();
   for (const r of recipients) counts.set(r.outcome, (counts.get(r.outcome) ?? 0) + 1);
   const breakdown = [...counts].map(([outcome, n]) => `${n} ${outcome}`).join(", ");
-  const sandbox = email.sandbox ? " Sent with a sandbox key, so nothing actually left COSS." : "";
+  const sandbox = email.sandbox
+    ? " Sent with a sandbox key, so nothing actually left coss.com."
+    : "";
   switch (verdict) {
     case "delivered":
       return `Delivered to ${recipients.length === 1 ? recipients[0]?.address : `all ${recipients.length} recipients`}.${sandbox}`;
@@ -404,7 +408,7 @@ function accountWarnings(email: Email | EmailSummary, context: DiagnosisContext)
   }
   if (context.reputation?.status === "suspended") {
     warnings.push(
-      `Live sending is suspended for the organization (${context.reputation.reason ?? "reputation"}); contact COSS support.`,
+      `Live sending is suspended for the organization (${context.reputation.reason ?? "reputation"}); contact coss.com support.`,
     );
   } else if (context.reputation?.status === "warning") {
     warnings.push(
@@ -473,7 +477,7 @@ export function fromDomain(from: string): string | null {
 
 /**
  * The organization's domain that decides a From domain: the most specific one it is equal to or
- * a subdomain of, as COSS authorizes senders.
+ * a subdomain of, as coss.com authorizes senders.
  */
 export function matchDomain<T extends { name: string }>(domains: T[], name: string): T | null {
   let best: T | null = null;

@@ -249,7 +249,7 @@ export function Module({
   x,
   y,
   z,
-  stamp = "COSS",
+  stamp = "coss.com",
 }: {
   part: Mark;
   call: string;

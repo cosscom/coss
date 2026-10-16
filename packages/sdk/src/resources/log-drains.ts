@@ -104,7 +104,7 @@ export class LogDrainsResource {
 
   /**
    * Changes the URL, description, sources or `enabled` flag. The signing secret stays the same.
-   * Disabling drops the lines still waiting for the drain; enabling it again (also after COSS
+   * Disabling drops the lines still waiting for the drain; enabling it again (also after coss.com
    * disabled it for failing) sends lines logged from then on.
    */
   update(

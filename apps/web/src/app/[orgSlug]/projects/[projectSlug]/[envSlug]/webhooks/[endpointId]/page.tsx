@@ -121,9 +121,9 @@ export default async function WebhookEndpointPage({
         <Alert variant="error">
           <AlertTitle>Disabled after repeated failures</AlertTitle>
           <AlertDescription>
-            Every delivery to this endpoint failed for {DISABLED_AFTER_DAYS} days, so COSS disabled
-            it{endpoint.disabledAt ? ` on ${formatDateTime(endpoint.disabledAt)}` : ""}. Fix the
-            receiver, enable the endpoint again, then recover the deliveries it missed.
+            Every delivery to this endpoint failed for {DISABLED_AFTER_DAYS} days, so coss.com
+            disabled it{endpoint.disabledAt ? ` on ${formatDateTime(endpoint.disabledAt)}` : ""}.
+            Fix the receiver, enable the endpoint again, then recover the deliveries it missed.
           </AlertDescription>
         </Alert>
       ) : null}
@@ -132,7 +132,7 @@ export default async function WebhookEndpointPage({
           <AlertTitle>Failing since {formatDateTime(endpoint.failingSince)}</AlertTitle>
           <AlertDescription>
             Deliveries to this endpoint have been failing every attempt. If none succeeds for{" "}
-            {DISABLED_AFTER_DAYS} days, COSS disables the endpoint.
+            {DISABLED_AFTER_DAYS} days, coss.com disables the endpoint.
           </AlertDescription>
         </Alert>
       ) : null}

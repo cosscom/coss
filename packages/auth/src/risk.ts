@@ -1,11 +1,11 @@
 /**
- * COSS's own sign-ups go through COSS Risk (dogfooding): the dashboard registers an assessor that
- * calls `assessRisk` in COSS's own environment. `@coss/auth` can't depend on risk (risk's tests
+ * coss.com's own sign-ups go through coss.com Risk (dogfooding): the dashboard registers an assessor that
+ * calls `assessRisk` in coss.com's own environment. `@coss/auth` can't depend on risk (risk's tests
  * use tenancy, which depends on auth), so the app injects it, like the membership limit.
  *
  * Fails open: without an assessor, or when it throws or takes longer than `TIMEOUT_MS`, the
  * sign-up goes ahead (the sign-up email guard and Turnstile still apply). Only `block` refuses;
- * `review` decisions wait in COSS's own review queue.
+ * `review` decisions wait in coss.com's own review queue.
  */
 import { APIError } from "better-auth/api";
 

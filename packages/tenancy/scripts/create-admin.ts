@@ -2,7 +2,7 @@
  * Grants the platform admin role to an existing user:
  *   bun run admin:create --email someone@example.com [--verify-email]
  * `--verify-email` also marks their address verified: on a new stage nobody can receive the
- * verification email (and so sign in) until the first admin has set up COSS's own sending domain.
+ * verification email (and so sign in) until the first admin has set up coss.com's own sending domain.
  */
 import { closeDb } from "@coss/db";
 import { promoteToAdmin, TenancyError } from "../src/index.ts";

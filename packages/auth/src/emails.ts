@@ -1,7 +1,7 @@
 /**
  * Account emails: sign-up verification, password resets and invitations. Better Auth's callbacks
  * (`./options.ts`) write an `auth_email` row; the worker sends it later through an
- * `AuthEmailSender` (COSS's own email product, wired by the worker: this package never imports a
+ * `AuthEmailSender` (coss.com's own email product, wired by the worker: this package never imports a
  * product). The links carry secrets, so a row's `url` is cleared once it is settled, and the
  * worker's sender discards the stored body of the email it sends. System-level: rows belong to an
  * address, not to an organization.
@@ -244,20 +244,22 @@ export function renderAuthEmail(
   let blocks: Block[];
   switch (kind) {
     case "verify_email":
-      subject = "Verify your email address for COSS";
+      subject = "Verify your email address for coss.com";
       blocks = [
-        { paragraph: `Confirm that ${input.to} is your email address to finish setting up COSS.` },
+        {
+          paragraph: `Confirm that ${input.to} is your email address to finish setting up coss.com.`,
+        },
         link("Verify email address"),
         {
           paragraph:
-            "The link expires in an hour. If you didn't sign up for COSS, you can ignore this email.",
+            "The link expires in an hour. If you didn't sign up for coss.com, you can ignore this email.",
         },
       ];
       break;
     case "reset_password":
-      subject = "Reset your COSS password";
+      subject = "Reset your coss.com password";
       blocks = [
-        { paragraph: `Someone asked to reset the password of the COSS account ${input.to}.` },
+        { paragraph: `Someone asked to reset the password of the coss.com account ${input.to}.` },
         link("Choose a new password"),
         {
           paragraph:
@@ -271,12 +273,12 @@ export function renderAuthEmail(
       const inviter = oneLine(input.data.inviterName ?? "");
       const inviterEmail = input.data.inviterEmail ?? "";
       const role = input.data.role === "admin" ? "an admin" : "a member";
-      subject = `You're invited to join ${organization} on COSS`;
+      subject = `You're invited to join ${organization} on coss.com`;
       blocks = [
         {
           paragraph:
             `${inviter ? `${inviter} (${inviterEmail})` : inviterEmail} invited you to join the ` +
-            `organization "${organization}" on COSS as ${role}.`,
+            `organization "${organization}" on coss.com as ${role}.`,
         },
         link("View the invitation"),
         {

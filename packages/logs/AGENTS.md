@@ -24,4 +24,4 @@ repository root.
   environment; its reads, like `GET /v1/logs*`, are never request-logged (members can read environment logs, not the
   audit log). The audit log records changes from dashboard actions (`recordAudit`, after
   the change succeeded, best effort), API keys (`recordApiAudit`), Better Auth's invitation routes and platform admins
-  (`supportAudit`: actor "COSS support", never the admin or their reason); new mutations should record one.
+  (`supportAudit`: actor "coss.com support", never the admin or their reason); new mutations should record one.

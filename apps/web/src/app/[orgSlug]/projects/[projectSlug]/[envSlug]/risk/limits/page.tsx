@@ -83,7 +83,7 @@ export default async function RiskLimitsPage({
                 <TableHead>Bucket</TableHead>
                 <TableHead>Rate</TableHead>
                 <TableHead>Burst</TableHead>
-                <TableHead>While COSS can't count</TableHead>
+                <TableHead>While coss.com can't count</TableHead>
                 {canUpdate ? <TableHead className="w-0" /> : null}
               </TableRow>
             </TableHeader>

@@ -71,8 +71,8 @@ const HOUR = 60 * MINUTE;
 
 /**
  * Lower-cased, trailing-dot-free domain name, or a `DomainError` explaining why it is invalid.
- * `allowReserved` admits COSS's and AWS's own domains (`RESERVED_SUFFIXES`): only for platform
- * admins setting up COSS's own organization (its sending domain is coss.com).
+ * `allowReserved` admits coss.com's and AWS's own domains (`RESERVED_SUFFIXES`): only for platform
+ * admins setting up coss.com's own organization (its sending domain is coss.com).
  */
 export function normalizeDomainName(
   input: string,

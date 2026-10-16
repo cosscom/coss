@@ -2,7 +2,7 @@
  * Suppression lists: one per environment. A send skips every recipient with an entry whose scope
  * is `*` or the email's category; permanent bounces and complaints add `*` entries automatically,
  * one-click unsubscribes an entry for the email's category.
- * COSS is the only suppression list: SES tenants are created with suppression turned off.
+ * coss.com is the only suppression list: SES tenants are created with suppression turned off.
  */
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";

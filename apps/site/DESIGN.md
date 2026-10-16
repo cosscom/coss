@@ -1,6 +1,6 @@
 # coss.com design: the parts catalog
 
-The landing page is laid out like an engineering parts catalog. Each COSS product is a **part** with a
+The landing page is laid out like an engineering parts catalog. Each coss.com product is a **part** with a
 catalog entry. The page sells the platform by what it saves a customer (one vendor instead of four), not by listing its features. Agents get one copyable line (`CopyPrompt`) that
 points them at the manual.
 
@@ -43,7 +43,7 @@ is set). Don't add entrance animations to other sections.
 
 ## Copy
 
-- **Assertive and authoritative.** COSS is the foundation apps are built on: write every product as
+- **Assertive and authoritative.** coss.com is the foundation apps are built on: write every product as
   shipped and never mark what's built against what's coming (no "soon", "planned" or "in stock"
   labels, badges or line styles). "New" is the only product badge.
 - Numbers (limits, retries, timeouts) are copied from the source, and SDK calls named in code samples

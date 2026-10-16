@@ -14,15 +14,15 @@ import type { Output } from "../output.ts";
 export const EMAILS_SEND_HELP = `Usage: coss emails send [options]
 
 Sends a test email from the API key's environment. Sandbox keys (coss_test_…) never deliver: they
-go through COSS's simulated provider, with every event and webhook a real send has.
+go through coss.com's simulated provider, with every event and webhook a real send has.
 
 Options:
   --to <address>         Recipient (repeatable, or comma-separated)
   --simulate <outcome>   Send to the mailbox simulator: delivered, bounced, complained, suppressed
-  --from <address>       Sender (default for sandbox keys: COSS CLI <cli@example.com>; live keys
+  --from <address>       Sender (default for sandbox keys: coss.com CLI <cli@example.com>; live keys
                          need an address on a verified domain)
   --cc, --bcc, --reply-to <address>
-  --subject <text>       Default: "Test email from the COSS CLI"
+  --subject <text>       Default: "Test email from the coss.com CLI"
   --text <text>, --text-file <path>
   --html <html>, --html-file <path>
   --template <id|alias>  Send a published template (instead of subject and body)
@@ -35,8 +35,8 @@ Options:
   --json                 Print the email (and with --wait, its events) as JSON
 `;
 
-const SANDBOX_FROM = "COSS CLI <cli@example.com>";
-const DEFAULT_SUBJECT = "Test email from the COSS CLI";
+const SANDBOX_FROM = "coss.com CLI <cli@example.com>";
+const DEFAULT_SUBJECT = "Test email from the coss.com CLI";
 const DEFAULT_TEXT = "Sent with `coss emails send`. https://coss.com/docs/cli";
 
 /** Recipient statuses after which nothing more is expected (unless waiting for a complaint). */

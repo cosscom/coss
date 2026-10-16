@@ -117,7 +117,7 @@ export type ReputationHistoryEvent = {
 
 export type ReputationResponse = {
   standing: ReputationStanding;
-  /** SES paused the organization's sending (independent of COSS's standing). */
+  /** SES paused the organization's sending (independent of coss.com's standing). */
   sending_paused: boolean;
   events: ReputationHistoryEvent[];
 };

@@ -309,7 +309,7 @@ export class RiskLimitBucketsResource {
   }
 }
 
-/** `coss.risk.users`: what COSS remembers about your users. */
+/** `coss.risk.users`: what coss.com remembers about your users. */
 export class RiskUsersResource {
   readonly #http: HttpClient;
 
@@ -319,7 +319,7 @@ export class RiskUsersResource {
   }
 
   /**
-   * Call when you delete a user: COSS deletes what identifies them (their mailbox, fraud reports,
+   * Call when you delete a user: coss.com deletes what identifies them (their mailbox, fraud reports,
    * and the user id, email, IP and user agent on their assessments). Safe to repeat.
    */
   forget(userId: string, options?: ReadOptions): Promise<CossResult<ForgottenRiskUser>> {
@@ -426,7 +426,7 @@ export class RiskResource {
 
   /**
    * Checks an IP address on its own: Tor, cloud, hosting and VPN networks, ASN and country, and
-   * VPN, proxy and relay exits when COSS's privacy data is available.
+   * VPN, proxy and relay exits when coss.com's privacy data is available.
    */
   checkIp(ip: string, options?: ReadOptions): Promise<CossResult<RiskIpCheck>> {
     return this.#http.request<RiskIpCheck>({

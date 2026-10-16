@@ -1,6 +1,6 @@
 /**
  * Custom tracking domains: a sending domain's own hostname (e.g. `links.acme.com`, a CNAME to
- * COSS's tracking host) for the open pixel and click redirects of emails sent from it. The
+ * coss.com's tracking host) for the open pixel and click redirects of emails sent from it. The
  * hostname provider (Cloudflare for SaaS) issues its certificate and proxies `/t/*` to the API;
  * the worker re-checks it like domains. Sends pick the tracking domain of their From domain at
  * dispatch, and fall back to the default tracking host while it is not `active`.

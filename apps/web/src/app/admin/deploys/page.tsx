@@ -54,7 +54,7 @@ const TRIGGER: Record<DeployRun["trigger"], string> = {
 /**
  * Production deploys: the commit production runs, main's commits it doesn't run yet and the
  * Deploy workflow's runs, with "Deploy now" (skip the batch wait) and redeploying an earlier
- * commit. Everything comes from GitHub through the COSS Deploy app (`@/lib/deploys`).
+ * commit. Everything comes from GitHub through the coss.com Deploy app (`@/lib/deploys`).
  */
 export default async function AdminDeploysPage() {
   await requirePlatformAdmin();
@@ -68,7 +68,7 @@ export default async function AdminDeploysPage() {
           <PanelBody flush>
             <EmptyState
               compact
-              description="Set DEPLOY_GITHUB_APP_ID and DEPLOY_GITHUB_APP_PRIVATE_KEY for the COSS Deploy GitHub App (README, “Deploying from the admin console”)."
+              description="Set DEPLOY_GITHUB_APP_ID and DEPLOY_GITHUB_APP_PRIVATE_KEY for the coss.com Deploy GitHub App (README, “Deploying from the admin console”)."
               icon={RocketIcon}
               title="Deploys aren't set up"
             />

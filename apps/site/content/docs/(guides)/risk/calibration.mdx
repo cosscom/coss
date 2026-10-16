@@ -3,9 +3,9 @@ title: Calibration
 description: Learn from your feedback which reasons and rules are right for your traffic.
 ---
 
-Every reason has a default weight: how strongly it suggests fraud across COSS's customers. Your
+Every reason has a default weight: how strongly it suggests fraud across coss.com's customers. Your
 traffic isn't average. Hosting providers may be your customers' office VPNs; prepaid cards may be
-how your users pay. [Feedback](/docs/risk/lists-and-feedback) tells COSS which assessments were
+how your users pay. [Feedback](/docs/risk/lists-and-feedback) tells coss.com which assessments were
 right, and calibration turns it into numbers:
 
 ```ts twoslash
@@ -21,7 +21,7 @@ const { data } = await coss.risk.calibration();
 Over the last 90 days, for every reason that fired and every rule:
 
 - `fraud` and `legitimate` count the assessments with that outcome (`abuse` counts as fraud).
-- `precision` is `fraud / (fraud + legitimate)`: how often it was right when you told COSS.
+- `precision` is `fraud / (fraud + legitimate)`: how often it was right when you told coss.com.
 - `suggested_weight` is the weight that supports: the precision, pulled toward the default while
   there is little feedback (the default counts as 10 assessments), and nothing below 20 assessments
   with feedback.

@@ -1,10 +1,10 @@
 ---
 title: SMTP
-description: Send through COSS from anything that speaks SMTP, with an API key as the password.
+description: Send through coss.com from anything that speaks SMTP, with an API key as the password.
 ---
 
 Apps that can only send over SMTP, such as Supabase Auth, WordPress, Rails, Laravel, Django,
-nodemailer setups and older software, can send through COSS's SMTP relay. A message sent this
+nodemailer setups and older software, can send through coss.com's SMTP relay. A message sent this
 way is turned into the same request as [`POST /v1/emails`](/docs/email/sending). It gets the same
 sender checks, suppressions, quotas, tracking, webhooks and logs.
 
@@ -16,10 +16,10 @@ sender checks, suppressions, quotas, tracking, webhooks and logs.
 | Password | An API key (`coss_live_…` or `coss_test_…`)                |
 
 The key decides where the email goes, exactly as with the API. A sandbox key (`coss_test_…`)
-sends from a [sandbox environment](/docs/environments) and nothing leaves COSS. A live key sends for
+sends from a [sandbox environment](/docs/environments) and nothing leaves coss.com. A live key sends for
 real, from a [verified domain](/docs/email/domains). The key needs the `email:send` permission.
 
-Encryption is required. Use port 465 for TLS from the first byte, or 587 with STARTTLS; COSS
+Encryption is required. Use port 465 for TLS from the first byte, or 587 with STARTTLS; coss.com
 refuses `AUTH` before TLS. If your host blocks outgoing 465 and 587 (some cloud providers do),
 use 2465 or 2587.
 
@@ -160,13 +160,13 @@ DEFAULT_FROM_EMAIL = "Acme <hello@acme.com>"
 ## How a message becomes an email
 
 - **Sender**: the `From` header, which must name exactly one address. With a live key it must be
-  on a verified domain. The envelope sender (`MAIL FROM`) is ignored; COSS uses its own return
+  on a verified domain. The envelope sender (`MAIL FROM`) is ignored; coss.com uses its own return
   path for bounces.
 - **Recipients**: the envelope (`RCPT TO`) decides who receives the message, at most 50 per
   message. Addresses in the `To` and `Cc` headers stay `to` and `cc`, and every other envelope
   recipient becomes `bcc`. A `To` or `Cc` address that isn't an envelope recipient is refused,
-  because COSS can't show a recipient without sending to them. So is a message with no `To`
-  recipient; COSS won't move Bcc'd addresses into `To`.
+  because coss.com can't show a recipient without sending to them. So is a message with no `To`
+  recipient; coss.com won't move Bcc'd addresses into `To`.
 - **Content**: `Subject` is required, plus an HTML part, a text part or both. Attachments keep
   their file names, and parts without one get a generated name. Inline images (`cid:`) stay
   inline. The [attachment limits](/docs/email/sending) apply: 20 files, 25 MB combined, and no
@@ -174,13 +174,13 @@ DEFAULT_FROM_EMAIL = "Acme <hello@acme.com>"
 - **Headers**: up to 15 custom headers are sent on, such as `In-Reply-To`, `References`,
   `List-Unsubscribe` and `X-…`. Transport headers (`Message-ID`, `Date`, `MIME-Version`,
   `Content-*`, `Received`, `DKIM-Signature`) and mail-client headers (`X-Mailer`, `User-Agent`)
-  are dropped. COSS sets its own `Message-ID`, so threads continue through `In-Reply-To` and
+  are dropped. coss.com sets its own `Message-ID`, so threads continue through `In-Reply-To` and
   `References`, not your original id.
 - **Size**: at most 40 MB per message, as advertised by `SIZE`.
 
-### COSS headers
+### coss.com headers
 
-These headers set what the API takes as fields. COSS reads them and doesn't send them on.
+These headers set what the API takes as fields. coss.com reads them and doesn't send them on.
 
 | Header                    | Example                         | Same as                    |
 | ------------------------- | ------------------------------- | -------------------------- |
@@ -193,12 +193,12 @@ These headers set what the API takes as fields. COSS reads them and doesn't send
 `unsubscribe` adds [one-click unsubscribe](/docs/email/unsubscribe) headers, so it needs an
 `X-Coss-Category` and a single recipient, like the API's `tracking.unsubscribe`.
 
-SMTP clients retry when a connection drops before COSS answers. With an
+SMTP clients retry when a connection drops before coss.com answers. With an
 `X-Coss-Idempotency-Key`, a retry gets the first email back instead of sending a second one.
 
 ## Replies
 
-A `250` reply means COSS has accepted the email. It names the email's id, which you can look up
+A `250` reply means coss.com has accepted the email. It names the email's id, which you can look up
 with `coss.email.get()`: `250 2.0.0 OK queued as email_01…`. Delivery then happens just as it
 does for API sends: follow it with [webhooks](/docs/webhooks) or in the dashboard. Every message
 also appears in the environment's [logs](/docs/logs) with source `smtp`, without addresses or

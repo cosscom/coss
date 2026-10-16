@@ -28,9 +28,11 @@ describe("describeUserAgent", () => {
     ).toBe("Chrome on Android");
   });
 
-  test("names the COSS iOS app", () => {
-    expect(describeUserAgent("COSS-iOS/1.0.0")).toBe("COSS app on iOS");
-    expect(describeUserAgent("COSS/3 CFNetwork/3860.100.1 Darwin/25.0.0")).toBe("COSS app on iOS");
+  test("names the coss.com iOS app", () => {
+    expect(describeUserAgent("COSS-iOS/1.0.0")).toBe("coss.com app on iOS");
+    expect(describeUserAgent("coss.com/3 CFNetwork/3860.100.1 Darwin/25.0.0")).toBe(
+      "coss.com app on iOS",
+    );
     expect(describeUserAgent("COSSfoo/1")).toBe("COSSfoo/1");
   });
 

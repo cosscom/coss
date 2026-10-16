@@ -68,7 +68,7 @@ describe("normalizeDomainName", () => {
     expect(() => normalizeDomainName(name)).toThrow(DomainError);
   });
 
-  test("reserved domains only with allowReserved (COSS's own organization)", () => {
+  test("reserved domains only with allowReserved (coss.com's own organization)", () => {
     expect(() => normalizeDomainName("coss.com")).toThrow(DomainError);
     expect(() => normalizeDomainName("mail.coss.com")).toThrow(DomainError);
     expect(normalizeDomainName("coss.com", { allowReserved: true })).toBe("coss.com");

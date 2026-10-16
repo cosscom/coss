@@ -1,5 +1,5 @@
 /**
- * One-click unsubscribes (RFC 8058) from COSS's public `/t/u/:token` endpoint. System-level, like
+ * One-click unsubscribes (RFC 8058) from coss.com's public `/t/u/:token` endpoint. System-level, like
  * opens and clicks: the email is resolved from its unguessable tracking token, and every write is
  * scoped by that email's organization. Only emails sent with `unsubscribe` qualify; they have a
  * category and exactly one recipient, so the unsubscribe always names who asked.

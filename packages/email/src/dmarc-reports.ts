@@ -1,6 +1,6 @@
 /**
  * DMARC aggregate reports: mailbox providers mail them to each domain's report address
- * (`rua=mailto:dmarc-<token>@<managed inbound domain>`), COSS's own receiving hands them here
+ * (`rua=mailto:dmarc-<token>@<managed inbound domain>`), coss.com's own receiving hands them here
  * (`receiveEmail` splits those recipients off before routing), and the dashboard and API read
  * them back with the guided path to enforcement (`dmarc-guidance.ts`).
  *
@@ -125,9 +125,9 @@ function underDomain(name: string, parent: string): boolean {
 }
 
 /**
- * A record is "via COSS" when it was signed with one of the domain's COSS DKIM keys (its selectors
- * are the provider's DKIM tokens) or its envelope sender is the domain's COSS MAIL FROM domain,
- * whatever the result: COSS mail that fails is exactly what the guide must point out.
+ * A record is "via coss.com" when it was signed with one of the domain's coss.com DKIM keys (its selectors
+ * are the provider's DKIM tokens) or its envelope sender is the domain's coss.com MAIL FROM domain,
+ * whatever the result: coss.com mail that fails is exactly what the guide must point out.
  */
 export function isViaCoss(
   record: Pick<DmarcAggregateRecord, "authResults" | "envelopeFrom">,
@@ -403,7 +403,7 @@ function isoWeek(date: Date): string {
 
 /**
  * Queues the owners' emails the new report makes due: the domain became ready for the next
- * policy (once per policy epoch), or mail sent through COSS fails DMARC under an enforcing policy
+ * policy (once per policy epoch), or mail sent through coss.com fails DMARC under an enforcing policy
  * (once per epoch and week).
  */
 async function queueNotifications(
@@ -535,7 +535,7 @@ export async function dmarcTotals(
     })
     .from(dmarcReportRecord)
     .where(recordScope(scope, since))
-    // COSS's mail and another sender's from the same IP (two SES integrations, say) stay apart,
+    // coss.com's mail and another sender's from the same IP (two SES integrations, say) stay apart,
     // so the other's failures still count against readiness.
     .groupBy(dmarcReportRecord.sourceIp, dmarcReportRecord.headerFrom, dmarcReportRecord.viaCoss)
     .orderBy(desc(sql`sum(${dmarcReportRecord.count})`))

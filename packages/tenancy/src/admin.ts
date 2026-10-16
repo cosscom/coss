@@ -33,7 +33,7 @@ export async function promoteToAdmin(
 ): Promise<{ id: string; email: string }> {
   const [row] = await db
     .update(user)
-    // verifyEmail: a new stage's first admin can't receive the verification email until COSS's
+    // verifyEmail: a new stage's first admin can't receive the verification email until coss.com's
     // own organization (which they create) sends mail; the operator vouches for the address.
     .set({ role: "admin", ...(options.verifyEmail ? { emailVerified: true } : {}) })
     .where(sql`lower(${user.email}) = lower(${email.trim()})`)

@@ -24,7 +24,7 @@ const SPF_VALUE = "v=spf1 include:amazonses.com ~all";
 
 /**
  * The records to publish for a domain, all `not_checked`. With a managed inbound domain
- * (`dmarcReportDomain`), the DMARC record sends aggregate reports to the domain's COSS address.
+ * (`dmarcReportDomain`), the DMARC record sends aggregate reports to the domain's coss.com address.
  */
 export function expectedRecords(
   domain: {

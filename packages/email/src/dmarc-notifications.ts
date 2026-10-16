@@ -1,8 +1,8 @@
 /**
  * Emails to an organization's owners and admins about a domain's DMARC: it is ready for the next,
- * stricter policy, or mail sent through COSS fails DMARC under an enforcing one. Ingesting a
+ * stricter policy, or mail sent through coss.com fails DMARC under an enforcing one. Ingesting a
  * report queues a `dmarc_notification` row (`queueNotifications` in `dmarc-reports.ts`); the
- * worker's `dmarc-notifications` loop sends it through a `Notifier` (COSS's own environment, like
+ * worker's `dmarc-notifications` loop sends it through a `Notifier` (coss.com's own environment, like
  * reputation notifications), with the same lease, backoff and age limits. System-level: the scan
  * spans organizations, and every read and write is scoped by the row's own organization.
  */
@@ -232,7 +232,7 @@ export function renderDmarcNotification(input: {
     blocks.push({
       paragraph:
         policy === "quarantine"
-          ? `The DMARC reports for ${name} show its mail authenticates: for ${DMARC_READINESS.windowDays} days, mail sent through COSS has passed DMARC and no other source with real volume fails it. You can now ask mailbox providers to quarantine mail that fails DMARC, so spoofed mail lands in spam.`
+          ? `The DMARC reports for ${name} show its mail authenticates: for ${DMARC_READINESS.windowDays} days, mail sent through coss.com has passed DMARC and no other source with real volume fails it. You can now ask mailbox providers to quarantine mail that fails DMARC, so spoofed mail lands in spam.`
           : `${name} has quarantined mail that fails DMARC for ${DMARC_READINESS.daysAtQuarantine} days without its own mail failing. You can now ask mailbox providers to reject mail that fails DMARC, so spoofed mail is never delivered.`,
     });
     if (record) {
@@ -241,7 +241,7 @@ export function renderDmarcNotification(input: {
     }
     blocks.push({
       paragraph:
-        "COSS keeps reading the reports after the change. Nothing changes until you update DNS.",
+        "coss.com keeps reading the reports after the change. Nothing changes until you update DNS.",
     });
   } else {
     const rate =
@@ -249,7 +249,7 @@ export function renderDmarcNotification(input: {
     const policy = input.detail.policy === "reject" ? "reject" : "quarantine";
     subject = `Mail from ${name} is failing DMARC`;
     blocks.push({
-      paragraph: `DMARC reports show that ${rate === null ? "some" : `only ${(rate * 100).toFixed(1)}% of the`} mail ${name} sends through COSS passes DMARC. Its policy is p=${policy}, so mailbox providers ${policy === "reject" ? "reject" : "move to spam"} the rest.`,
+      paragraph: `DMARC reports show that ${rate === null ? "some" : `only ${(rate * 100).toFixed(1)}% of the`} mail ${name} sends through coss.com passes DMARC. Its policy is p=${policy}, so mailbox providers ${policy === "reject" ? "reject" : "move to spam"} the rest.`,
     });
     blocks.push({
       paragraph:
@@ -258,7 +258,7 @@ export function renderDmarcNotification(input: {
   }
   blocks.push({ link: { label: "View the DMARC reports", url: input.url } });
   blocks.push({
-    paragraph: `You're receiving this because you're an owner or admin of ${oneLine(input.organizationName)} on COSS.`,
+    paragraph: `You're receiving this because you're an owner or admin of ${oneLine(input.organizationName)} on coss.com.`,
   });
   return {
     subject: oneLine(subject),

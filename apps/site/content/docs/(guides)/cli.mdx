@@ -42,7 +42,7 @@ revokes a key you pasted). Keys are saved in `~/.config/coss/config.json` (`$XDG
 
 ## Receive webhooks locally
 
-COSS can't reach `localhost`, so `coss listen` fetches the environment's events and forwards each
+coss.com can't reach `localhost`, so `coss listen` fetches the environment's events and forwards each
 one to your local server, exactly as an [endpoint](/docs/webhooks) would receive it:
 
 ```sh
@@ -95,7 +95,7 @@ simulator](/docs/environments), which produces that outcome in development and p
 `--wait` follows the email until it's known and prints its events, so with `coss listen` running
 you see the matching webhooks arrive.
 
-The default sender for development keys is `COSS CLI <cli@example.com>`; production keys need
+The default sender for development keys is `coss.com CLI <cli@example.com>`; production keys need
 `--from` on a verified domain. Also: `--subject`, `--text`/`--text-file`, `--html`/`--html-file`,
 `--template <id or alias>` with `--var name=value`, `--cc`, `--bcc`, `--reply-to`, `--category`,
 `--tag name=value` and `--json`.

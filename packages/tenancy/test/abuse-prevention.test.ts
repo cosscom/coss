@@ -81,7 +81,7 @@ describe("sign-up email guard", () => {
     expect(user?.canonicalEmail).toBe(`${local}@coss.test`);
 
     // Upper-casing is folded for every domain (Better Auth lower-cases emails too).
-    const again = await post("/sign-up/email", signUpBody(`${local.toUpperCase()}@COSS.test`));
+    const again = await post("/sign-up/email", signUpBody(`${local.toUpperCase()}@coss.com.test`));
     expect(again.status).toBe(422);
   });
 

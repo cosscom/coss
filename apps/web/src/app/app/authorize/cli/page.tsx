@@ -14,14 +14,14 @@ import { getSession } from "@/lib/session";
 import { CliAuthorizeForm, type EnvironmentOption } from "./cli-authorize-form";
 import { cliAuthorizePath, parseCliAuthorizeParams } from "./params";
 
-export const metadata: Metadata = { title: "Sign in to the COSS CLI" };
+export const metadata: Metadata = { title: "Sign in to the coss.com CLI" };
 
 function AuthorizeCard(props: { title?: string; description: ReactNode; children?: ReactNode }) {
   return (
     <AuthFrame>
       <Card>
         <CardHeader>
-          <CardTitle>{props.title ?? "Sign in to the COSS CLI"}</CardTitle>
+          <CardTitle>{props.title ?? "Sign in to the coss.com CLI"}</CardTitle>
           <CardDescription>{props.description}</CardDescription>
         </CardHeader>
         {props.children ? (

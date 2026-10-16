@@ -276,7 +276,8 @@ function CreateEndpointForm(props: AppTarget & { eventTypes: readonly string[] }
       <DialogHeader>
         <DialogTitle>Add an endpoint</DialogTitle>
         <DialogDescription>
-          COSS sends this application's messages to the URL, signed with the endpoint's own secret.
+          coss.com sends this application's messages to the URL, signed with the endpoint's own
+          secret.
         </DialogDescription>
       </DialogHeader>
       <DialogPanel className="flex flex-col gap-4">

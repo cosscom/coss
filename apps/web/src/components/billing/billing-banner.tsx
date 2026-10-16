@@ -19,7 +19,7 @@ export function BillingBanner(props: { state: BillingBannerState; href: string }
             ? "An invoice is overdue. Sending resumes as soon as it is paid."
             : held === "spend_limit"
               ? "This month's usage reached your spend limit. Raise it, or sending resumes next month."
-              : "COSS paused live sending for billing reasons. Contact support."}{" "}
+              : "coss.com paused live sending for billing reasons. Contact support."}{" "}
           Sandbox keys still work. {link}
         </AlertDescription>
       </Alert>

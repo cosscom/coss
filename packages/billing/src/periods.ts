@@ -194,7 +194,7 @@ export async function closeBillingPeriod(input: {
       tx,
     );
     let invoiceId: string | null = null;
-    // Internal accounts (COSS's own) are never invoiced: neither the month nor the next is billable.
+    // Internal accounts (coss.com's own) are never invoiced: neither the month nor the next is billable.
     const billable =
       segments.some((segment) => segment.billable !== false) ||
       (nextSegment !== null && nextSegment.billable !== false);

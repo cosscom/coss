@@ -33,7 +33,7 @@ export type ProviderEvent = {
   provider: string;
   /** The provider's own event name, e.g. SES `Bounce`. */
   providerEventType: string;
-  /** From the `coss_email_id` tag COSS sets on every outbound message. */
+  /** From the `coss_email_id` tag coss.com sets on every outbound message. */
   emailId: string | null;
   providerMessageId: string | null;
   type: EmailEventType;

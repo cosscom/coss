@@ -1,6 +1,6 @@
 ---
 title: Risk assessments
-description: Ask COSS whether a sign-up, login or other event looks like abuse, and why.
+description: Ask coss.com whether a sign-up, login or other event looks like abuse, and why.
 ---
 
 Call `coss.risk.assess()` from your server at the moments abuse happens (a sign-up, a login, a
@@ -13,13 +13,13 @@ message, a checkout) and act on the decision it returns:
 - `block`: refuse it.
 
 Every assessment comes with a `score` (0-1) and the `reasons` behind it, so you can see and explain
-every decision. COSS combines:
+every decision. coss.com combines:
 
 - **Email signals**: syntax, disposable domains, domains that can't receive mail, role accounts
   (`info@`), free providers, typos (`gmail.con`) and domains registered in the last 30 days.
 - **IP signals**: Tor exit nodes, cloud and hosting networks, networks used by VPNs, private
   addresses, the network (ASN) and country; VPN exits, proxies and privacy relays by address where
-  COSS has that data.
+  coss.com has that data.
 - **The browser**: [`coss/device`](/docs/risk/devices) recognizes it across accounts and spots
   automated ones.
 - **Payments**: the card and billing country of a [checkout](/docs/risk/checkout), and cards
@@ -107,7 +107,7 @@ assessment is made without it and the group is listed in `degraded`; it never fa
 
 Each signal is also available on its own, without an assessment or anything stored:
 [email and IP checks](/docs/risk/lookups) and [content classification](/docs/risk/content). And
-[rate limiting](/docs/risk/rate-limits) gives your own endpoints COSS's limiter, with buckets you
+[rate limiting](/docs/risk/rate-limits) gives your own endpoints coss.com's limiter, with buckets you
 define.
 
 ## What is stored

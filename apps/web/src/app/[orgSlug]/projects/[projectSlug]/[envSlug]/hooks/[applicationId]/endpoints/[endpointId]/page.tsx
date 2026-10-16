@@ -103,9 +103,9 @@ export default async function HookEndpointPage({
         <Alert variant="error">
           <AlertTitle>Disabled after repeated failures</AlertTitle>
           <AlertDescription>
-            Every delivery to this endpoint failed for {DISABLED_AFTER_DAYS} days, so COSS disabled
-            it{endpoint.disabledAt ? ` on ${formatDateTime(endpoint.disabledAt)}` : ""}. Enable it
-            again once its receiver works, then recover what it missed.
+            Every delivery to this endpoint failed for {DISABLED_AFTER_DAYS} days, so coss.com
+            disabled it{endpoint.disabledAt ? ` on ${formatDateTime(endpoint.disabledAt)}` : ""}.
+            Enable it again once its receiver works, then recover what it missed.
           </AlertDescription>
         </Alert>
       ) : null}
@@ -113,7 +113,7 @@ export default async function HookEndpointPage({
         <Alert variant="warning">
           <AlertTitle>Failing since {formatDateTime(endpoint.failingSince)}</AlertTitle>
           <AlertDescription>
-            If no delivery succeeds for {DISABLED_AFTER_DAYS} days, COSS disables the endpoint.
+            If no delivery succeeds for {DISABLED_AFTER_DAYS} days, coss.com disables the endpoint.
           </AlertDescription>
         </Alert>
       ) : null}

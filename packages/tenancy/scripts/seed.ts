@@ -115,7 +115,7 @@ async function main(): Promise<void> {
   const passwordNote = user.created ? password : "(unchanged; user already existed)";
   console.info(
     [
-      "Seeded COSS demo data:",
+      "Seeded coss.com demo data:",
       `  user:         ${DEMO_EMAIL} (platform admin)`,
       `  password:     ${passwordNote}`,
       `  organization: ${organization.slug} (verified domain ${DEMO_DOMAIN} for live keys)`,

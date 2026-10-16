@@ -105,7 +105,7 @@ export async function organizationsWithUsageSince(
 }
 
 /**
- * One meter's usage per UTC day across every organization, with `apartFrom`'s (COSS's own) kept
+ * One meter's usage per UTC day across every organization, with `apartFrom`'s (coss.com's own) kept
  * apart: the admin console's platform chart. Platform-level: call only after `requirePlatformAdmin*`.
  */
 export async function platformUsageByDay(

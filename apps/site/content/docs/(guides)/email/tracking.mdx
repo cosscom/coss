@@ -3,8 +3,8 @@ title: Open and click tracking
 description: Count opens and clicks, and serve tracking links from your own domain.
 ---
 
-COSS can record when recipients open an email (a 1×1 image at the end of the HTML) and click its
-links (each `http(s)` link is rewritten to a COSS redirect). Opens and clicks show up on the email
+coss.com can record when recipients open an email (a 1×1 image at the end of the HTML) and click its
+links (each `http(s)` link is rewritten to a coss.com redirect). Opens and clicks show up on the email
 in the dashboard and the API, and as `email.opened` and `email.clicked` webhook events.
 
 ## Turning it on
@@ -59,7 +59,7 @@ headers (`unsubscribe`).
 
 ## Custom tracking domains
 
-By default, tracking links point at COSS's tracking host. A custom tracking domain serves them from
+By default, tracking links point at coss.com's tracking host. A custom tracking domain serves them from
 a subdomain of your sending domain instead, such as `links.acme.com`, so the links in your emails
 match your brand and your From domain, and don't share a reputation with other senders.
 
@@ -78,13 +78,13 @@ const record = domain?.tracking?.record;
 console.log(record?.type, record?.name, record?.value); // CNAME links.acme.com track.cosslinks.com
 ```
 
-Then publish the `CNAME` record at your DNS provider. COSS issues a certificate for the hostname once
+Then publish the `CNAME` record at your DNS provider. coss.com issues a certificate for the hostname once
 the record resolves, and checks it in the background; the tracking domain becomes `active` within
 minutes of the record propagating. Setup gives up after 72 hours; **Check now** in the dashboard
 (or `coss.domains.verify(id)`) starts it over.
 
 - Each domain has at most one tracking domain, and it must be a subdomain of that domain.
 - Emails use the tracking domain of their From domain (or of the closest verified parent domain)
-  while it is `active`. While it isn't, they use COSS's tracking host, so tracking keeps working.
+  while it is `active`. While it isn't, they use coss.com's tracking host, so tracking keeps working.
 - Removing a tracking domain, or its `CNAME` record, breaks the links in emails already sent
   through it. Keep the record in place for as long as those emails matter.

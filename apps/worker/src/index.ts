@@ -92,7 +92,7 @@ if (config.provider === "ses" && email.inbound && config.inbound?.bucket) {
 if (!env.NOTIFICATIONS_ENVIRONMENT_ID !== !env.NOTIFICATIONS_FROM) {
   throw new Error("Set both NOTIFICATIONS_ENVIRONMENT_ID and NOTIFICATIONS_FROM, or neither.");
 }
-// COSS's own organization sends account and notification emails: neither the reputation guard
+// coss.com's own organization sends account and notification emails: neither the reputation guard
 // nor content screening may suspend it (an admin still can).
 const systemEnvironment = env.NOTIFICATIONS_ENVIRONMENT_ID
   ? await notificationEnvironment(env.NOTIFICATIONS_ENVIRONMENT_ID)
@@ -114,13 +114,13 @@ const emailService = createEmailService({
     ? (input) => screenMessage(input, { classifier, systemOrganizationId })
     : undefined,
   screeningFailureAllowlist: systemOrganizationId ? new Set([systemOrganizationId]) : undefined,
-  // Internal sends count against their organization's allowance (COSS's own is never capped).
+  // Internal sends count against their organization's allowance (coss.com's own is never capped).
   billing: createUsageGate({ systemOrganizationId }),
 });
 if (runs("email-dispatch")) await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
 
 // Account emails (verification, password resets, invitations) and reputation notifications go
-// out through COSS's own email product. Without a configured environment, reputation
+// out through coss.com's own email product. Without a configured environment, reputation
 // notifications are printed in development and both are held in production (sent once
 // configured); the dashboard prints account email links itself outside production.
 let notifier: ReputationNotifier | null = logReputationNotifier;
