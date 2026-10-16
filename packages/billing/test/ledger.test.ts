@@ -526,18 +526,18 @@ describe("enforcement", () => {
     await reserve(3_000);
     // Last month's reservation (another period's row) is given back there, not here.
     const lastMonth = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 0));
-    await db.transaction((tx) =>
-      gate.release?.(tx, {
+    await db.transaction(async (tx) => {
+      await gate.release?.(tx, {
         organizationId: org,
         meter: "email.recipients",
         quantity: 100,
         reservedAt: lastMonth,
-      }),
-    );
+      });
+    });
     await expect(reserve(1)).rejects.toMatchObject({ code: "usage_limit_exceeded" });
-    await db.transaction((tx) =>
-      gate.release?.(tx, { organizationId: org, meter: "email.recipients", quantity: 100 }),
-    );
+    await db.transaction(async (tx) => {
+      await gate.release?.(tx, { organizationId: org, meter: "email.recipients", quantity: 100 });
+    });
     await reserve(100);
   });
 

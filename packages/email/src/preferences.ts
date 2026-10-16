@@ -322,7 +322,11 @@ export async function applyPreferences(
       (await applyTopicChoices(tx, row, topics, linkChoices, "preference_center")) > 0;
     const optedOutOfLinkTopic =
       linkTopicChanged && linkChoices.some((choice) => choice.status === "opted_out");
-    if (wasSubscribed && (!change.subscribed || optedOutOfLinkTopic)) {
+    // Leaving marketing, or the link's topic, through the form is an unsubscribe like the
+    // buttons': the email's `email.unsubscribed`, its broadcast's counter, `contact.unsubscribed`.
+    const unsubscribed = wasSubscribed && (!change.subscribed || optedOutOfLinkTopic);
+    if (unsubscribed) {
+      await recordEmailUnsubscribe(tx, link, now);
       await countUnsubscribe(tx, link, scope.organizationId);
     }
     await tx
@@ -332,9 +336,10 @@ export async function applyPreferences(
     await announceContact(
       tx,
       row,
-      wasSubscribed && !change.subscribed ? "contact.unsubscribed" : "contact.updated",
+      unsubscribed ? "contact.unsubscribed" : "contact.updated",
       "preference_center",
       now,
+      unsubscribed && change.subscribed ? link.topic : null,
     );
     return true;
   });

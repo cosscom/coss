@@ -13,7 +13,7 @@
 import type { UsageGate } from "@coss/billing/gate";
 import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, isId, newId } from "@coss/db/id";
-import { requestHash, withIdempotencyKey } from "@coss/db/idempotency";
+import { IDEMPOTENCY_KEY_TTL_MS, requestHash, withIdempotencyKey } from "@coss/db/idempotency";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, asc, desc, eq, inArray, isNull, lt, lte, or, sql } from "drizzle-orm";
@@ -286,6 +286,28 @@ const IDEMPOTENCY_ERRORS = {
 };
 
 /** Creates a draft, or (with `send` or `scheduled_at`) a broadcast that starts sending. */
+/** The broadcast an unexpired idempotency key made from the same request, if any. */
+async function findBroadcastReplay(
+  env: BroadcastEnvironment,
+  idempotencyKey: string,
+  hash: string,
+  now: Date,
+): Promise<BroadcastOutput | null> {
+  const [existing] = await db
+    .select()
+    .from(broadcast)
+    .where(and(inContactEnvironment(broadcast, env), eq(broadcast.idempotencyKey, idempotencyKey)))
+    .limit(1);
+  if (
+    !existing ||
+    existing.requestHash !== hash ||
+    now.getTime() - existing.createdAt.getTime() > IDEMPOTENCY_KEY_TTL_MS
+  ) {
+    return null;
+  }
+  return (await toObjects([existing]))[0] ?? null;
+}
+
 export async function createBroadcast(
   env: BroadcastEnvironment & { apiKeyId: string | null },
   params: CreateBroadcastRequestOutput,
@@ -297,14 +319,25 @@ export async function createBroadcast(
     segmentId: params.segment_id ?? null,
     topic: params.topic ?? null,
   };
-  await checkReferences(env, references);
   const starts = params.send || params.scheduled_at !== undefined;
-  if (starts) await checkSendable(env, params, opts.liveProvider);
+  const idempotencyKey = opts.idempotencyKey || null;
+  const hash = idempotencyKey ? requestHash(params) : null;
+  try {
+    await checkReferences(env, references);
+    if (starts) await checkSendable(env, params, opts.liveProvider);
+  } catch (error) {
+    // A retry of a request that already succeeded still replays, even if a check it passed then
+    // fails now (its audience deleted, the postal address removed, marketing paused).
+    const replay =
+      (error instanceof BroadcastError || error instanceof EmailError) && idempotencyKey && hash
+        ? await findBroadcastReplay(env, idempotencyKey, hash, now)
+        : null;
+    if (replay) return { broadcast: replay, replayed: true };
+    throw error;
+  }
   const scheduledAt = params.scheduled_at ? new Date(params.scheduled_at) : starts ? now : null;
   const projectId = await environmentProject(env);
   if (!projectId) throw new BroadcastError("not_found", "Environment not found.");
-  const idempotencyKey = opts.idempotencyKey || null;
-  const hash = idempotencyKey ? requestHash(params) : null;
   const insert = async (tx: Transaction) => {
     const [row] = await tx
       .insert(broadcast)
@@ -576,24 +609,24 @@ async function dropUnclaimed(
   return { count: dropped.length, firstContactId: contacts[0] ?? null };
 }
 
-/** The cursor to resume from after unsent emails were dropped (before `firstContactId`). */
+/**
+ * The cursor to resume from after unsent emails were dropped: just before `firstContactId`. It
+ * comes from the contacts, not the broadcast's emails, which retention may have purged (a
+ * boundary made from what is left would send the purged ones' contacts again).
+ */
 async function rewoundCursor(
   tx: Transaction,
   row: BroadcastRow,
   firstContactId: string | null,
 ): Promise<string | null> {
   if (!firstContactId) return row.cursor;
-  const [kept] = await tx
-    .select({ contactId: sql<string | null>`max(${email.contactId})` })
-    .from(email)
+  const [before] = await tx
+    .select({ id: sql<string | null>`max(${schema.contact.id})` })
+    .from(schema.contact)
     .where(
-      and(
-        eq(email.organizationId, row.organizationId),
-        eq(email.broadcastId, row.id),
-        lt(email.contactId, firstContactId),
-      ),
+      and(inContactEnvironment(schema.contact, envOf(row)), lt(schema.contact.id, firstContactId)),
     );
-  return kept?.contactId ?? null;
+  return before?.id ?? null;
 }
 
 async function modeOf(row: BroadcastRow): Promise<"live" | "sandbox"> {

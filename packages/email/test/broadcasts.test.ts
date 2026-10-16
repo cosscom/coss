@@ -28,8 +28,9 @@ import { EmailError } from "../src/errors.ts";
 import { DEVELOPMENT_LINK_KEYS, readLinkToken } from "../src/link-tokens.ts";
 import { updateMarketingSettings } from "../src/marketing-settings.ts";
 import { applyPreferences } from "../src/preferences.ts";
+import { type OutboundEmail, type SendResult, ThrottledSendError } from "../src/provider.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
-import { getEmail } from "../src/read.ts";
+import { getEmail, listEmailEvents } from "../src/read.ts";
 import { createEmailService } from "../src/service.ts";
 import { addSuppression } from "../src/suppressions.ts";
 import { memoryDispatchQueue } from "../src/testing.ts";
@@ -304,6 +305,22 @@ describe("broadcasts", () => {
         { liveProvider: "fake", idempotencyKey: "k1" },
       ),
     ).rejects.toMatchObject({ code: "idempotency_key_reused" });
+
+    // A started one replays even once a check it passed fails (here: no postal address).
+    const started = { ...body, send: true };
+    const sent = await createBroadcast(env, started, {
+      liveProvider: "fake",
+      idempotencyKey: "k2",
+    });
+    await updateMarketingSettings(f.env, { mailing_address: null });
+    const retried = await createBroadcast(env, started, {
+      liveProvider: "fake",
+      idempotencyKey: "k2",
+    });
+    expect(retried).toMatchObject({ replayed: true, broadcast: { id: sent.broadcast.id } });
+    await expect(
+      createBroadcast(env, started, { liveProvider: "fake", idempotencyKey: "k3" }),
+    ).rejects.toMatchObject({ code: "mailing_address_required" });
   });
 
   test("pausing drops unsent emails and rewinds; resuming makes them again", async () => {
@@ -338,6 +355,70 @@ describe("broadcasts", () => {
       recipients: 3,
       sent: 3,
     });
+  });
+
+  test("an email the provider throttles while its broadcast is paused is dropped, not retried", async () => {
+    const f = await fixture();
+    const broadcast = await f.create({ send: true });
+    await runDueBroadcasts(f.deps, { scope: f.scope });
+    await db
+      .update(schema.broadcast)
+      .set({ nextRunAt: new Date(0) })
+      .where(eq(schema.broadcast.id, broadcast.id));
+    await runDueBroadcasts(f.deps, { scope: f.scope });
+    expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(3);
+    // The first email is at the provider when the broadcast is paused, and comes back throttled.
+    class PausingProvider extends FakeEmailProvider {
+      override async send(message: OutboundEmail): Promise<SendResult> {
+        await pauseBroadcast(f.env, broadcast.id);
+        throw new ThrottledSendError(`Throttled ${message.emailId}.`);
+      }
+    }
+    const provider = new PausingProvider({ log: false });
+    const service = createEmailService({
+      liveProvider: provider,
+      sandboxProvider: provider,
+      queue: f.queue,
+      trackingBaseUrl: "https://track.test",
+      linkKeys: DEVELOPMENT_LINK_KEYS,
+    });
+    const [first] = f.queue.jobs.splice(0, 1);
+    if (!first) throw new Error("no job");
+    // Its job then finds nothing, like a dropped email's (the dispatch handler ignores it).
+    await expect(service.dispatch(first)).rejects.toMatchObject({ code: "not_found" });
+    // Paused drops the other two; the throttled one is dropped too, and nothing is re-queued.
+    expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(0);
+    expect((await getBroadcast(f.env, broadcast.id))?.stats.recipients).toBe(0);
+    expect(f.queue.jobs.filter((job) => job.emailId === first.emailId)).toHaveLength(0);
+  });
+
+  test("a pause rewinds from the contacts, even once earlier emails were purged", async () => {
+    const f = await fixture();
+    const broadcast = await f.create({ send: true });
+    await runDueBroadcasts(f.deps, { scope: f.scope });
+    await db
+      .update(schema.broadcast)
+      .set({ nextRunAt: new Date(0) })
+      .where(eq(schema.broadcast.id, broadcast.id));
+    await runDueBroadcasts(f.deps, { scope: f.scope });
+    // Ada's email goes out and is later purged by retention; Bob's and Cy's still wait.
+    const emails = await emailsOf(f.tenant.organization.id, broadcast.id);
+    const ada = emails.find((row) => row.to[0] === "ada@example.com");
+    const job = f.queue.jobs.find((entry) => entry.emailId === ada?.id);
+    if (!job) throw new Error("no job for Ada");
+    f.queue.jobs.splice(f.queue.jobs.indexOf(job), 1);
+    await f.service.dispatch(job);
+    await db.delete(schema.email).where(eq(schema.email.id, ada?.id as string));
+
+    await pauseBroadcast(f.env, broadcast.id);
+    await resumeBroadcast(sendEnvironment(f.environment), broadcast.id, { liveProvider: "fake" });
+    await f.runUntil(broadcast.id, "sent");
+    // Ada isn't sent it again.
+    expect(f.provider.sent.map((message) => message.to[0]).sort()).toEqual([
+      "ada@example.com",
+      "bob@example.com",
+      "cy@example.com",
+    ]);
   });
 
   test("canceling stops it for good", async () => {
@@ -463,6 +544,9 @@ describe("broadcasts", () => {
     const unsubscribed = async () => (await getBroadcast(f.env, broadcast.id))?.stats.unsubscribed;
     await applyPreferences(link, { kind: "save", subscribed: true, topics: { news: false } });
     expect(await unsubscribed()).toBe(1);
+    // An unsubscribe like the buttons': the email's event too.
+    const events = await listEmailEvents({ ...f.env, emailId: ada?.id as string });
+    expect(events?.events.filter((event) => event.type === "email.unsubscribed")).toHaveLength(1);
     // Another topic changing, the link's topic still off: no new unsubscribe.
     await applyPreferences(link, {
       kind: "save",

@@ -18,6 +18,7 @@ import {
   purgeSendContent,
 } from "./attachments.ts";
 import { broadcastContentCache, withRenderedBody } from "./broadcast-content.ts";
+import { bumpBroadcastStat } from "./broadcast-stats.ts";
 import { dedicatedPoolSql } from "./dedicated-ips.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
@@ -163,6 +164,7 @@ const IDEMPOTENCY_ERRORS: IdempotencyErrors = {
 const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
 const {
+  broadcast,
   email,
   emailBatch,
   emailLink,
@@ -550,8 +552,57 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
    * Gives back the claim on a marketing email the provider throttled (certainly not sent): it is
    * dispatched again shortly, so a broadcast slows down instead of failing.
    */
-  async function holdForThrottling(row: EmailRow, provider: EmailProvider): Promise<void> {
+  async function holdForThrottling(
+    row: EmailRow,
+    provider: EmailProvider,
+    sandbox: boolean,
+  ): Promise<void> {
     await db.transaction(async (tx) => {
+      if (row.broadcastId) {
+        // Paused or canceled while this email was at the provider: dropped like the emails
+        // nobody claimed (counter and reservation given back; a resume makes it again).
+        // The broadcast is locked first, in the order pausing takes it.
+        const [owner] = await tx
+          .select({ status: broadcast.status })
+          .from(broadcast)
+          .where(
+            and(
+              eq(broadcast.id, row.broadcastId),
+              eq(broadcast.organizationId, row.organizationId),
+            ),
+          )
+          .for("share");
+        if (owner && owner.status !== "sending") {
+          const [dropped] = await tx
+            .delete(email)
+            .where(
+              and(
+                eq(email.id, row.id),
+                eq(email.organizationId, row.organizationId),
+                eq(email.status, "queued"),
+                eq(email.provider, provider.name),
+              ),
+            )
+            .returning({ id: email.id });
+          if (!dropped) return;
+          await bumpBroadcastStat(tx, {
+            broadcastId: row.broadcastId,
+            organizationId: row.organizationId,
+            emailId: row.id,
+            field: "recipients",
+            by: -1,
+          });
+          if (!sandbox) {
+            await opts.billing?.release?.(tx, {
+              organizationId: row.organizationId,
+              meter: "email.recipients",
+              quantity: 1,
+              reservedAt: row.createdAt,
+            });
+          }
+          return;
+        }
+      }
       const [held] = await tx
         .update(email)
         .set({ provider: null })
@@ -651,7 +702,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           };
           events = [failedEvent(row, provider.name, { code: error.code, message: error.message })];
         } else if (error instanceof ThrottledSendError && row.stream === "marketing") {
-          await holdForThrottling(row, provider);
+          await holdForThrottling(row, provider, sandbox);
           return;
         } else if (error instanceof UncertainSendError) {
           // The provider may be delivering it: never fail it here, and never send it again. It
