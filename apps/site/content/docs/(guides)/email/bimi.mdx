@@ -85,7 +85,7 @@ for (const issue of domain?.bimi.issues ?? []) {
 | `dmarc_not_enforced`    | The DMARC policy is `p=none` (or `sp=none` for a subdomain).                    |
 | `dmarc_partial`         | The DMARC policy applies to only part of the mail (`pct` below 100, or `t=y`).  |
 | `record_multiple`       | There is more than one `v=BIMI1` record.                                        |
-| `record_invalid`        | The record doesn't start with `v=BIMI1`.                                        |
+| `record_invalid`        | The record doesn't start with `v=BIMI1`, or lists a tag more than once.          |
 | `logo_missing`          | The record has no logo URL (`l=`).                                              |
 | `logo_not_https`        | The logo URL isn't an `https://` URL.                                           |
 | `certificate_missing`   | The record has no certificate URL (`a=`).                                       |

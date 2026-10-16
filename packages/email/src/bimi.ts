@@ -15,17 +15,24 @@ type Dmarc = { domain: string; policy: DmarcPolicy; partial: boolean };
 
 const DMARC_RECORD = /^v\s*=\s*DMARC1\s*(;|$)/i;
 const BIMI_RECORD = /^v\s*=\s*BIMI1\s*(;|$)/i;
+// Anything claiming to be BIMI (`v=BIMI…`), valid or not; other TXT records at the name are ignored.
+const BIMI_LIKE = /^v\s*=\s*BIMI/i;
 
 class LookupFailed extends Error {}
 
-/** Parses a DMARC/BIMI tag list (`v=BIMI1; l=…; a=…`): keys lower-cased, values trimmed. */
-export function parseTagList(value: string): Map<string, string> {
-  const tags = new Map<string, string>();
+/**
+ * Parses a DMARC/BIMI tag list (`v=BIMI1; l=…; a=…`): keys lower-cased, values trimmed, the
+ * first of a repeated tag kept (`duplicate` says there was one: that makes a BIMI record invalid).
+ */
+export function parseTagList(value: string): Map<string, string> & { duplicate: boolean } {
+  const tags = Object.assign(new Map<string, string>(), { duplicate: false });
   for (const part of value.split(";")) {
     const index = part.indexOf("=");
     if (index < 0) continue;
     const key = part.slice(0, index).trim().toLowerCase();
-    if (key && !tags.has(key)) tags.set(key, part.slice(index + 1).trim());
+    if (!key) continue;
+    if (tags.has(key)) tags.duplicate = true;
+    else tags.set(key, part.slice(index + 1).trim());
   }
   return tags;
 }
@@ -70,6 +77,7 @@ async function dmarcFor(domainName: string, dns: DnsResolver): Promise<Dmarc | n
 /**
  * The domain's BIMI records, else those of the organizational domain, which providers fall back
  * to. Without a public suffix list, that is the nearest parent with any (short of the last label).
+ * Unrelated TXT records at a name don't count as a record there.
  */
 async function bimiRecordsFor(
   domainName: string,
@@ -78,7 +86,7 @@ async function bimiRecordsFor(
   const labels = domainName.split(".");
   for (let start = 0; labels.length - start >= 2; start++) {
     const name = `default._bimi.${labels.slice(start).join(".")}`;
-    const values = await txt(name, dns);
+    const values = (await txt(name, dns)).filter((value) => BIMI_LIKE.test(value));
     if (values.length > 0) return { name, values };
   }
   return { name: `default._bimi.${domainName}`, values: [] };
@@ -116,11 +124,11 @@ export async function checkBimi(domainName: string, dns: DnsResolver | null): Pr
     }
     const records = found.values.filter((value) => BIMI_RECORD.test(value));
     const record = records[0] ?? found.values[0] ?? null;
-    if (records.length !== 1) {
+    const tags = parseTagList(record ?? "");
+    if (records.length !== 1 || tags.duplicate) {
       issues.push(records.length > 1 ? "record_multiple" : "record_invalid");
       return { ...base, status: "invalid", record, logoUrl: null, certificateUrl: null, issues };
     }
-    const tags = parseTagList(records[0] ?? "");
     const logoUrl = tags.get("l") || null;
     const certificateUrl = tags.get("a") || null;
     if (!logoUrl) issues.push("logo_missing");

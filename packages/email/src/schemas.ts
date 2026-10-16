@@ -1437,7 +1437,8 @@ export const BIMI_ISSUE_MESSAGES: Record<BimiIssueCode, string> = {
     "The domain's DMARC policy applies to only part of its mail (pct below 100, or t=y). BIMI needs it to apply to all of it.",
   record_multiple:
     "There is more than one v=BIMI1 record, which mailbox providers treat as no record. Keep one.",
-  record_invalid: "The BIMI record is not valid: it must start with v=BIMI1.",
+  record_invalid:
+    "The BIMI record is not valid: it must start with v=BIMI1 and list each tag only once.",
   logo_missing: "The BIMI record has no logo (l=). Point it at your SVG logo.",
   logo_not_https: "The logo URL (l=) must be an https:// URL.",
   certificate_missing:

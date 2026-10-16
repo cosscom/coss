@@ -19,8 +19,11 @@ describe("parseTagList", () => {
     ]);
   });
 
-  test("keeps the first value of a repeated tag", () => {
-    expect(parseTagList("v=DMARC1; p=reject; p=none").get("p")).toBe("reject");
+  test("keeps the first value of a repeated tag, and says there was one", () => {
+    const tags = parseTagList("v=DMARC1; p=reject; P=none");
+    expect(tags.get("p")).toBe("reject");
+    expect(tags.duplicate).toBe(true);
+    expect(parseTagList("v=DMARC1; p=reject").duplicate).toBe(false);
   });
 });
 
@@ -158,6 +161,34 @@ describe("checkBimi", () => {
     expect(await checkBimi("mail.eu.acme.test", dns)).toMatchObject({
       status: "configured",
       name: "default._bimi.acme.test",
+    });
+  });
+
+  test("unrelated TXT records at the subdomain's name don't stop the fallback", async () => {
+    const dns = fakeDnsResolver({
+      "TXT _dmarc.acme.test": [[ENFORCED]],
+      "TXT default._bimi.mail.acme.test": [["some-verification=abc"]],
+      "TXT default._bimi.acme.test": [[RECORD]],
+    });
+
+    expect(await checkBimi("mail.acme.test", dns)).toMatchObject({
+      status: "configured",
+      name: "default._bimi.acme.test",
+    });
+  });
+
+  test("a record that lists a tag twice is invalid", async () => {
+    const record = `v=BIMI1; l=${LOGO}; l=https://acme.test/other.svg; a=${CERTIFICATE}`;
+    const dns = fakeDnsResolver({
+      "TXT _dmarc.acme.test": [[ENFORCED]],
+      "TXT default._bimi.acme.test": [[record]],
+    });
+
+    expect(await checkBimi("acme.test", dns)).toMatchObject({
+      status: "invalid",
+      record,
+      logoUrl: null,
+      issues: ["record_invalid"],
     });
   });
 
