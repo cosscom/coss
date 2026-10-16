@@ -19,6 +19,7 @@ import { PRODUCTS } from "@/components/home/parts";
 import { PlatformAssembly } from "@/components/home/platform-assembly";
 import { VendorDrawing } from "@/components/home/vendor-drawing";
 import { ShipyardHarbour } from "@/components/shipyard/harbour";
+import { ShipyardNewTask } from "@/components/shipyard/new-task";
 import { SignUpButton } from "@/components/sign-up-button";
 import { CALENDAR } from "@/lib/calendar";
 import { SHIPYARD } from "@/lib/shipyard";
@@ -412,7 +413,11 @@ function MoreFromCoss() {
           aria-labelledby="more-shipyard"
           className="flex min-w-0 flex-col border-b lg:border-r lg:border-b-0"
         >
-          <ShipyardHarbour className="h-56 border-b sm:h-72" />
+          {/* The harbour with the app's New task box over it, as the ⌘N moment on its own page. */}
+          <div className="relative h-64 overflow-hidden border-b sm:h-80">
+            <ShipyardHarbour className="h-full" />
+            <ShipyardNewTask className="absolute top-[14%] left-1/2 -translate-x-1/2 [mask-image:linear-gradient(black_72%,transparent)]" />
+          </div>
           <div className="flex flex-col items-start gap-4 px-4 py-8 sm:px-8">
             <h3
               className="flex items-center gap-2.5 font-semibold text-2xl tracking-tight"
