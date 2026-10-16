@@ -33,8 +33,8 @@ export const RISK_DEGRADED_SIGNALS = [
 export type RiskDegradedSignal = (typeof RISK_DEGRADED_SIGNALS)[number];
 
 /**
- * What content classification scores (the same categories as COSS's own content screening). A
- * score is the model's probability that the content belongs to the category; COSS never turns it
+ * What content classification scores (the same categories as coss.com's own content screening). A
+ * score is the model's probability that the content belongs to the category; coss.com never turns it
  * into a verdict on its own: you set the thresholds.
  */
 export const CONTENT_CATEGORIES = ["spam", "phishing", "malware", "fraud"] as const;
@@ -784,7 +784,7 @@ export const RiskIpSignals = z
       ])
       .meta({
         description:
-          "From COSS's IP privacy data provider (VPNs, proxies, relays). `null` when it isn't available or was not asked (private addresses).",
+          "From coss.com's IP privacy data provider (VPNs, proxies, relays). `null` when it isn't available or was not asked (private addresses).",
       }),
   })
   .meta({ id: "RiskIpSignals" });
@@ -1475,7 +1475,7 @@ export const RiskContentClassification = z
   .meta({
     id: "RiskContentClassification",
     description:
-      "Scores only: COSS never decides what they mean for you. Neither the text nor the scores are stored.",
+      "Scores only: coss.com never decides what they mean for you. Neither the text nor the scores are stored.",
     examples: [
       {
         object: "risk_content_classification",
@@ -1528,7 +1528,7 @@ export const RiskLimitBucket = z
     }),
     on_failure: z.enum(RISK_LIMIT_FAILURE_MODES).meta({
       description:
-        "The answer while COSS can't count (its store is unavailable): `allow` (fail open) or `deny`.",
+        "The answer while coss.com can't count (its store is unavailable): `allow` (fail open) or `deny`.",
     }),
     created_at: z.iso.datetime(),
     updated_at: z.iso.datetime(),
@@ -1545,7 +1545,7 @@ export const CreateRiskLimitBucketRequest = z
       description: "How many requests a key can make at once. Defaults to `limit`.",
     }),
     on_failure: z.enum(RISK_LIMIT_FAILURE_MODES).optional().meta({
-      description: "The answer while COSS can't count. Defaults to `allow`.",
+      description: "The answer while coss.com can't count. Defaults to `allow`.",
     }),
   })
   .meta({
@@ -1586,7 +1586,7 @@ export const CheckRiskLimitRequest = z
     bucket: BucketName.meta({ description: "The bucket's name." }),
     key: z.string().min(1).max(512).meta({
       description:
-        "Who or what is limited: a user id, an email address, an IP address… COSS keeps only a keyed hash of it.",
+        "Who or what is limited: a user id, an email address, an IP address… coss.com keeps only a keyed hash of it.",
     }),
     cost: z.number().int().min(1).max(MAX_RISK_LIMIT).optional().meta({
       description: "Tokens this request takes. Default 1.",
@@ -1617,7 +1617,7 @@ export const RiskLimit = z
     }),
     degraded: z.boolean().meta({
       description:
-        "COSS couldn't count (its store was unavailable): `allowed` is the bucket's `on_failure`.",
+        "coss.com couldn't count (its store was unavailable): `allowed` is the bucket's `on_failure`.",
     }),
   })
   .meta({
@@ -1651,7 +1651,7 @@ const RiskCalibrationCounts = {
   legitimate: z.number().int().meta({ description: "With feedback `legitimate`." }),
   precision: z.number().nullable().meta({
     description:
-      "`fraud / (fraud + legitimate)`: how often it was right when you told COSS. `null` without feedback.",
+      "`fraud / (fraud + legitimate)`: how often it was right when you told coss.com. `null` without feedback.",
   }),
 };
 

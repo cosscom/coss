@@ -105,8 +105,8 @@ export function RiskSettingsForm(props: {
             </SelectPopup>
           </Select>
           <FieldDescription>
-            Assessments verify their captcha token with it. COSS sends the provider the token, your
-            secret and the user's IP address.
+            Assessments verify their captcha token with it. coss.com sends the provider the token,
+            your secret and the user's IP address.
           </FieldDescription>
         </Field>
         {provider === "none" ? null : (

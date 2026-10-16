@@ -30,13 +30,13 @@ export const DMARC_READINESS = {
   recentDays: 3,
   /** Time at a full `quarantine` before `reject`. */
   daysAtQuarantine: 14,
-  /** Share of mail sent through COSS that must pass DMARC. */
+  /** Share of mail sent through coss.com that must pass DMARC. */
   cossPassRate: 0.99,
   /** Share of all reported mail that must pass, by the policy being moved to. */
   passRate: { quarantine: 0.98, reject: 0.99 } satisfies Record<"quarantine" | "reject", number>,
-  /** A source not using COSS that fails DMARC with at least this share of the volume blocks. */
+  /** A source not using coss.com that fails DMARC with at least this share of the volume blocks. */
   sourceShare: 0.01,
-  /** Mail through COSS failing under an enforcing policy alerts only above this volume. */
+  /** Mail through coss.com failing under an enforcing policy alerts only above this volume. */
   alertMinMessages: 50,
 } as const;
 
@@ -78,7 +78,7 @@ export type DmarcCheck = {
 };
 
 export type DmarcNextStep = {
-  /** `publish`: no record of its own yet; `add_reporting`: send reports to COSS; `complete_rollout`: drop
+  /** `publish`: no record of its own yet; `add_reporting`: send reports to coss.com; `complete_rollout`: drop
    * `pct`/`t=y`; `tighten`: the next stricter policy. */
   kind: "publish" | "add_reporting" | "complete_rollout" | "tighten";
   policy: DmarcPolicy;
@@ -92,7 +92,7 @@ export type DmarcGuidance = {
   /** The organizational domain whose record applies, when the domain has none of its own. */
   inheritedFrom: string | null;
   partial: boolean;
-  /** The published record sends aggregate reports to COSS. */
+  /** The published record sends aggregate reports to coss.com. */
   reporting: boolean;
   next: DmarcNextStep | null;
   /** Whether `next` is safe now (always for `publish`/`add_reporting`). */
@@ -128,7 +128,7 @@ function days(ms: number): number {
 
 const STRICTNESS: Record<DmarcPolicy, number> = { none: 0, quarantine: 1, reject: 2 };
 
-/** Sources not using COSS whose failing mail is at least `sourceShare` of the volume. */
+/** Sources not using coss.com whose failing mail is at least `sourceShare` of the volume. */
 export function unauthenticatedSources(totals: DmarcReportTotals): DmarcSourceSummary[] {
   if (totals.messages === 0) return [];
   return totals.sources
@@ -163,7 +163,7 @@ function readinessChecks(
     message: totals.lastReportAt
       ? lastAge <= DMARC_READINESS.recentDays * DAY
         ? "Reports are still arriving."
-        : `No report for ${days(lastAge)} days: check that the record still names COSS's address.`
+        : `No report for ${days(lastAge)} days: check that the record still names coss.com's address.`
       : "Waiting for the first report.",
   });
   if (totals.truncatedReports > 0) {
@@ -188,8 +188,8 @@ function readinessChecks(
     ok: totals.cossMessages > 0 && cossRate >= DMARC_READINESS.cossPassRate,
     message:
       totals.cossMessages > 0
-        ? `${percent(cossRate)} of mail sent through COSS passes DMARC (${percent(DMARC_READINESS.cossPassRate)} needed).`
-        : "No mail sent through COSS appears in the reports yet.",
+        ? `${percent(cossRate)} of mail sent through coss.com passes DMARC (${percent(DMARC_READINESS.cossPassRate)} needed).`
+        : "No mail sent through coss.com appears in the reports yet.",
   });
   const rate = totals.messages > 0 ? totals.passing / totals.messages : 0;
   const needed = DMARC_READINESS.passRate[target];
@@ -207,8 +207,8 @@ function readinessChecks(
     ok: failing.length === 0,
     message:
       failing.length === 0
-        ? "Every source with real volume authenticates (or sends through COSS)."
-        : `${failing.length} ${failing.length === 1 ? "source" : "sources"} not using COSS ${failing.length === 1 ? "fails" : "fail"} DMARC: authorize ${failing.length === 1 ? "it" : "them"} (SPF or DKIM aligned with your domain) or confirm ${failing.length === 1 ? "it isn't" : "they aren't"} yours.`,
+        ? "Every source with real volume authenticates (or sends through coss.com)."
+        : `${failing.length} ${failing.length === 1 ? "source" : "sources"} not using coss.com ${failing.length === 1 ? "fails" : "fail"} DMARC: authorize ${failing.length === 1 ? "it" : "them"} (SPF or DKIM aligned with your domain) or confirm ${failing.length === 1 ? "it isn't" : "they aren't"} yours.`,
   });
   return checks;
 }
@@ -240,7 +240,7 @@ export function dmarcGuidance(input: DmarcGuidanceInput): DmarcGuidance {
     cossRate < DMARC_READINESS.cossPassRate
   ) {
     warnings.push(
-      `Only ${percent(cossRate)} of mail sent through COSS passes DMARC, so receivers ${policy === "reject" ? "reject" : "quarantine"} the rest. Check the domain's DKIM and MAIL FROM records.`,
+      `Only ${percent(cossRate)} of mail sent through coss.com passes DMARC, so receivers ${policy === "reject" ? "reject" : "quarantine"} the rest. Check the domain's DKIM and MAIL FROM records.`,
     );
   }
 
@@ -250,7 +250,7 @@ export function dmarcGuidance(input: DmarcGuidanceInput): DmarcGuidance {
       `This domain has no DMARC record of its own, so ${inherited.domain}'s applies (${policy}${partial ? ", partly" : ""}) and its reports go wherever that record says.`,
     );
     // Its own record with the same policy, partial enforcement and alignment changes nothing for
-    // receivers and sends reports to COSS.
+    // receivers and sends reports to coss.com.
     const own = parseDmarcRecord(
       [
         `v=DMARC1; p=${policy}`,

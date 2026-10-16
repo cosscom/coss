@@ -1,5 +1,5 @@
 /**
- * How long COSS keeps each kind of data: the single source of the worker's purges (each in the
+ * How long coss.com keeps each kind of data: the single source of the worker's purges (each in the
  * package that owns the tables) and of the published policy (docs and dashboard). Client-safe:
  * no dependencies, never imports `@coss/db`.
  */
@@ -191,7 +191,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "risk_assessments",
     label: "Risk assessments",
     description:
-      "Decisions, scores, reasons, signals (ASN, country, counts) and the feedback you sent. Your user id stays until you ask COSS to forget the user.",
+      "Decisions, scores, reasons, signals (ASN, country, counts) and the feedback you sent. Your user id stays until you ask coss.com to forget the user.",
     period: { days: RETENTION_DAYS.riskAssessments, after: "creation" },
   },
   {
@@ -211,7 +211,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
   {
     id: "admin_audit_log",
     label: "Admin audit log",
-    description: "Actions COSS staff take on organizations and users.",
+    description: "Actions coss.com staff take on organizations and users.",
     period: { days: RETENTION_DAYS.adminAuditLog, after: "creation" },
   },
   {

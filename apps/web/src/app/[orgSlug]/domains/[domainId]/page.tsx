@@ -82,7 +82,7 @@ const TRACKING_STATUS_HELP = {
     "(usually within minutes, at most 72 hours); we check automatically.",
   active: "Open pixels and click links of emails sent from this domain use this hostname.",
   temporary_failure:
-    "The hostname stopped working, so emails use COSS's tracking host until it is back. Check " +
+    "The hostname stopped working, so emails use coss.com's tracking host until it is back. Check " +
     "that the CNAME record is still in place.",
   failed:
     "The hostname couldn't be set up within 72 hours, so setup stopped. Fix the CNAME record, " +
@@ -303,7 +303,7 @@ function TrackingDomainPanel(props: {
           <>
             Serve open and click tracking links of emails from {props.domainName} on your own
             subdomain, such as <code className="font-mono">links.{props.domainName}</code>, instead
-            of COSS&apos;s tracking host.
+            of coss.com&apos;s tracking host.
           </>
         }
         title="Tracking domain"
@@ -447,13 +447,13 @@ function ReceivingDomainPanel(props: {
           <Alert variant="warning">
             <AlertDescription>
               Mail for {receiving.hostname} goes to its most preferred MX records, which don&apos;t
-              all point at COSS yet.
+              all point at coss.com yet.
             </AlertDescription>
           </Alert>
         </div>
       ) : null}
       <RecordsTable>
-        <RecordRow purpose="MX: delivers this hostname's email to COSS." record={record} />
+        <RecordRow purpose="MX: delivers this hostname's email to coss.com." record={record} />
       </RecordsTable>
     </Panel>
   );

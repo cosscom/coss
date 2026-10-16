@@ -28,7 +28,7 @@ import { SHIPYARD } from "./shipyard";
 import { DOCS_ROUTE, PRODUCTS } from "./site";
 
 /*
- * The header's menus. Every product COSS ships is one entry here: the desktop mega menu
+ * The header's menus. Every product coss.com ships is one entry here: the desktop mega menu
  * and the mobile drawer both render these lists, so a new product needs nothing else in the header.
  */
 
@@ -211,7 +211,7 @@ export const DEVELOPER_COLUMNS: readonly MenuColumn[] = [
     links: [
       {
         label: "Agent setup",
-        description: "One prompt that sets COSS up.",
+        description: "One prompt that sets coss.com up.",
         icon: Robot01Icon,
         href: "/#agents",
       },

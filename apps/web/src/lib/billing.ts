@@ -35,7 +35,7 @@ export function defaultBillingProvider(): ProviderName {
 }
 
 /**
- * COSS's own organization (it sends account emails, `NOTIFICATIONS_ENVIRONMENT_ID`): never
+ * coss.com's own organization (it sends account emails, `NOTIFICATIONS_ENVIRONMENT_ID`): never
  * limited by a plan. Resolved once per process.
  */
 export function systemOrganizationId(): Promise<string | null> {
@@ -45,7 +45,7 @@ export function systemOrganizationId(): Promise<string | null> {
     .then((environment) => environment.organizationId)
     .catch((error: unknown) => {
       globalForBilling.__cossSystemOrganization = undefined;
-      console.error("[web] Resolving COSS's own organization failed:", error);
+      console.error("[web] Resolving coss.com's own organization failed:", error);
       return null;
     });
   return globalForBilling.__cossSystemOrganization;
@@ -109,7 +109,7 @@ export async function billingBannerState(organizationId: string): Promise<Billin
   return { held, pastDue: account?.status === "past_due", allowance };
 }
 
-/** Whether the organization's plan lets it set up `feature` now (COSS's own always may). */
+/** Whether the organization's plan lets it set up `feature` now (coss.com's own always may). */
 export async function planHas(organizationId: string, feature: FeatureKey): Promise<boolean> {
   if (organizationId === (await systemOrganizationId())) return true;
   return (await entitlementsFor(organizationId)).features[feature];

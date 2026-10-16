@@ -131,7 +131,7 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/users/
       </Panel>
 
       {signUp ? (
-        <Panel description="How COSS Risk assessed this sign-up." title="Sign-up">
+        <Panel description="How coss.com Risk assessed this sign-up." title="Sign-up">
           <PanelBody flush>
             <SpecList columns={2}>
               <SpecItem label="Decision">

@@ -53,7 +53,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader description="Everyone with a COSS account." title="Users" />
+      <PageHeader description="Everyone with a coss.com account." title="Users" />
       <ListFilters
         path="/admin/users"
         placeholder="Search by email, name or user id"

@@ -35,7 +35,7 @@ export default function TrackingScreen() {
       <PageIntro
         description={
           <>
-            COSS can add an invisible image to HTML emails to record opens, send links through a
+            coss.com can add an invisible image to HTML emails to record opens, send links through a
             redirect to record clicks, and add one-click unsubscribe headers, which Gmail, Yahoo and
             Outlook require from bulk senders. Each email's settings are fixed when it is sent: its
             own <Code>tracking</Code> option wins, then the rule for its category, then this

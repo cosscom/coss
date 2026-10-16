@@ -26,7 +26,7 @@ export default function HookApplicationsScreen() {
         options={{ headerRight: () => <WebButton path={`${environmentPath(params)}/hooks`} /> }}
       />
       <PageIntro
-        description="Send a message to one of your applications once: COSS delivers it, signed and retried, to every endpoint its users registered."
+        description="Send a message to one of your applications once: coss.com delivers it, signed and retried, to every endpoint its users registered."
         meta={<ModeBadge params={params} />}
         title="Hooks"
       />

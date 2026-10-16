@@ -197,7 +197,7 @@ describe("messageToSendRequest", () => {
     });
   });
 
-  test("reads COSS's own headers and never sends them on", async () => {
+  test("reads coss.com's own headers and never sends them on", async () => {
     const message = await compose({
       from: "hello@acme.test",
       to: "ada@example.com",
@@ -252,7 +252,7 @@ describe("messageToSendRequest", () => {
     expect(ok.idempotencyKey).toBe("welcome-123");
   });
 
-  test("refuses malformed COSS headers", async () => {
+  test("refuses malformed coss.com headers", async () => {
     for (const [name, value] of [
       ["X-Coss-Tags", "no-equals-sign"],
       ["X-Coss-Tracking", "sometimes"],

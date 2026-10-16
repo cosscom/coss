@@ -170,7 +170,7 @@ function BucketForm(props: Target & { bucket?: RiskLimitBucketOutput; onDone: ()
           <FieldDescription>How many requests a key can make at once.</FieldDescription>
         </Field>
         <Field>
-          <FieldLabel>While COSS can't count</FieldLabel>
+          <FieldLabel>While coss.com can't count</FieldLabel>
           <Select
             defaultValue={bucket?.on_failure ?? "allow"}
             items={FAILURE_MODES}

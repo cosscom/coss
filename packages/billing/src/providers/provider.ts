@@ -1,6 +1,6 @@
 /**
- * Where money moves. COSS computes every invoice; a provider only stores the customer and their
- * payment methods, issues the invoices COSS pushes and collects them. Stripe is the default; the
+ * Where money moves. coss.com computes every invoice; a provider only stores the customer and their
+ * payment methods, issues the invoices coss.com pushes and collects them. Stripe is the default; the
  * manual provider is for deals invoiced off-Stripe (an admin records payments); the fake one is
  * for development and tests. Chosen per billing account.
  */
@@ -46,7 +46,7 @@ export type ProviderInvoiceState = {
   method: string | null;
 };
 
-/** What a provider event means for COSS (the provider reads the object's current state). */
+/** What a provider event means for coss.com (the provider reads the object's current state). */
 export type ProviderOutcome =
   | {
       kind: "invoice_paid";
@@ -76,7 +76,7 @@ export interface BillingProvider {
   readonly name: BillingAccount["provider"];
   /** The account's customer at the provider, created if needed (`null`: the provider has none). */
   ensureCustomer(account: BillingAccount, organization: OrganizationLabel): Promise<string | null>;
-  /** Creates the invoice with its lines, numbered as COSS numbered it, and finalizes it. Idempotent. */
+  /** Creates the invoice with its lines, numbered as coss.com numbered it, and finalizes it. Idempotent. */
   pushInvoice(input: ProviderInvoice): Promise<PushResult>;
   /** Charges the default payment method, or sends the invoice (`send_invoice`). */
   collect(input: ProviderInvoice): Promise<CollectResult>;

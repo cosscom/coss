@@ -56,7 +56,7 @@ function zeroCounts(): PlatformEmailCounts {
 }
 
 /**
- * Emails created in `[since, now)` across every organization, split into COSS's own organization
+ * Emails created in `[since, now)` across every organization, split into coss.com's own organization
  * (`systemOrganizationId`: account and notification emails) and everyone else.
  */
 export async function platformEmailStats(input: {
@@ -136,7 +136,7 @@ export async function listSendersForAdmin(input: {
   now?: Date;
   /** Only this organization (its own page). */
   organizationId?: string;
-  /** Leave this organization out (COSS's own). */
+  /** Leave this organization out (coss.com's own). */
   excludeOrganizationId?: string | null;
   limit?: number;
   scope?: AdminEmailScope;

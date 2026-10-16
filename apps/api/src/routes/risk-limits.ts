@@ -65,8 +65,8 @@ export const checkRiskLimitRoute = createRoute({
     "Takes `cost` tokens (default 1) from `key`'s share of one of your buckets and says whether " +
     "to let the request through: a 200 either way, with `allowed`. Denied requests take nothing. " +
     "Each key has its own bucket of `burst` tokens refilling at `limit` per `period_seconds` " +
-    "(GCRA, the algorithm COSS limits its own API with). COSS keeps only a keyed hash of `key`. " +
-    "While COSS can't count, the bucket's `on_failure` answers and `degraded` is true.",
+    "(GCRA, the algorithm coss.com limits its own API with). coss.com keeps only a keyed hash of `key`. " +
+    "While coss.com can't count, the bucket's `on_failure` answers and `degraded` is true.",
   security: [{ bearerAuth: [] }],
   middleware: [
     requireApiKey({ risk: ["assess"] }),

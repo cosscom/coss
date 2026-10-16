@@ -1,6 +1,6 @@
 ---
 title: Receiving email
-description: Receive email at COSS's inbound address or your own domain, and read it from a webhook or the API.
+description: Receive email at coss.com's inbound address or your own domain, and read it from a webhook or the API.
 ---
 
 Every environment can receive email. Each message that arrives becomes a **received email** of the
@@ -10,7 +10,7 @@ and the API.
 
 ## Addresses
 
-Each environment has its own domain under COSS's inbound domain, such as
+Each environment has its own domain under coss.com's inbound domain, such as
 `k3j9x2m7qp4l.inbound.coss.com`. Email to **any** address at it (`support@…`, `orders+42@…`)
 is received, with no DNS setup:
 
@@ -40,11 +40,11 @@ const record = domain?.receiving?.record;
 console.log(record?.type, record?.priority, record?.value); // MX 10 inbound-smtp.us-east-1.amazonaws.com
 ```
 
-- Pointing the domain itself (`acme.com`) at COSS moves **all** of its mail here, your team's
+- Pointing the domain itself (`acme.com`) at coss.com moves **all** of its mail here, your team's
   mailboxes included. Use a subdomain unless that is what you want.
 - Each domain has at most one receiving hostname. It can't be the `send.` bounce subdomain or the
   domain's tracking domain.
-- Mail is received as soon as it reaches COSS; the MX check only shows what DNS serves.
+- Mail is received as soon as it reaches coss.com; the MX check only shows what DNS serves.
 - Mail to an address nobody receives at is dropped without a bounce.
 
 ## Handling a received email

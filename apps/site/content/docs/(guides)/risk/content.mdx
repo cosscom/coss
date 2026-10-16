@@ -3,8 +3,8 @@ title: Content classification
 description: Score what people post (bios, messages, listings) for spam, phishing, malware and fraud.
 ---
 
-COSS scores text with an AI model, per category: `spam`, `phishing`, `malware` and `fraud`. Each
-score is the model's probability (0-1) that the text belongs to the category. COSS never turns the
+coss.com scores text with an AI model, per category: `spam`, `phishing`, `malware` and `fraud`. Each
+score is the model's probability (0-1) that the text belongs to the category. coss.com never turns the
 scores into a verdict for you: you choose what they mean, with thresholds or rules.
 
 Classify text on its own:
@@ -80,7 +80,7 @@ at what they catch in the dashboard, and adjust.
 ## Privacy
 
 The text goes to the model (a decision model on Vercel's AI Gateway) with zero data retention, and
-COSS keeps it nowhere: not on the assessment, not in [logs](/docs/logs) (they keep only its length),
+coss.com keeps it nowhere: not on the assessment, not in [logs](/docs/logs) (they keep only its length),
 not in webhooks. Only the scores are stored, with the assessment.
 
 ## Testing

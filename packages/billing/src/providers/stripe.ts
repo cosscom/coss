@@ -1,8 +1,8 @@
 /**
  * Stripe as the payment rail: customers and their payment methods (Checkout in setup mode, the
- * Customer Portal), invoices COSS computed (one invoice item per COSS line, numbered as COSS
- * numbered them, finalized with `auto_advance: false` so COSS decides when to charge), charges,
- * and webhooks. Every write carries an idempotency key derived from COSS ids. Server-only.
+ * Customer Portal), invoices coss.com computed (one invoice item per coss.com line, numbered as coss.com
+ * numbered them, finalized with `auto_advance: false` so coss.com decides when to charge), charges,
+ * and webhooks. Every write carries an idempotency key derived from coss.com ids. Server-only.
  */
 import type { PaymentMethodSummary } from "@coss/db/schema";
 import Stripe from "stripe";
@@ -68,11 +68,11 @@ export function summarizePaymentMethod(method: Stripe.PaymentMethod): PaymentMet
 }
 
 /**
- * What a Stripe invoice paid of its own COSS invoice. Stripe marks an invoice below its minimum
+ * What a Stripe invoice paid of its own coss.com invoice. Stripe marks an invoice below its minimum
  * charge paid without charging it and adds the amount, as a customer balance debit, to the next
- * invoice it finalizes. That part belongs to the earlier invoice, which COSS already settled
+ * invoice it finalizes. That part belongs to the earlier invoice, which coss.com already settled
  * (`recordProviderPayment` accepts Stripe's paid state), so it must not count as an overpayment
- * of this one (it would become COSS credit). COSS never credits the Stripe balance (credit notes
+ * of this one (it would become coss.com credit). coss.com never credits the Stripe balance (credit notes
  * refund or are out of band), so a negative starting balance doesn't occur.
  */
 export function paidTowardInvoice(invoice: {
@@ -129,7 +129,7 @@ export class StripeBillingProvider implements BillingProvider {
   ) {
     await this.#stripe.customers.update(customerId, {
       name: account.billingName ?? organizationName,
-      // Without a billing email of COSS's, keep the customer's (set in the Customer Portal).
+      // Without a billing email of coss.com's, keep the customer's (set in the Customer Portal).
       ...(account.billingEmail ? { email: account.billingEmail } : {}),
     });
   }
@@ -147,7 +147,7 @@ export class StripeBillingProvider implements BillingProvider {
             customer,
             currency: invoice.currency,
             collection_method: invoice.collectionMethod,
-            // COSS owns the due date. Relative days change on retries and can violate
+            // coss.com owns the due date. Relative days change on retries and can violate
             // Stripe's requirement that an idempotency key always has identical parameters.
             ...(sendInvoice
               ? { due_date: seconds(invoice.dueAt ?? invoice.finalizedAt ?? invoice.createdAt) }
@@ -223,7 +223,7 @@ export class StripeBillingProvider implements BillingProvider {
       return { state: "sent" };
     }
     // Stripe refuses to charge a customer without a default payment method (an invalid request,
-    // not a declined card), so don't ask: the caller waits or duns. Checked live when COSS has
+    // not a declined card), so don't ask: the caller waits or duns. Checked live when coss.com has
     // none recorded, since the Portal or Checkout may have added one before its event arrived.
     if (account && !account.paymentMethod && !(await this.paymentMethod(account))) {
       return { state: "no_payment_method" };
@@ -317,7 +317,7 @@ export class StripeBillingProvider implements BillingProvider {
       }
     }
     // On a paid invoice, Stripe needs the whole amount accounted for: what isn't refunded is
-    // credit COSS keeps itself (a grant), i.e. out of band for Stripe.
+    // credit coss.com keeps itself (a grant), i.e. out of band for Stripe.
     const current = await this.#stripe.invoices.retrieve(invoice.providerInvoiceId);
     const outOfBand = current.status === "paid" ? note.amountCents - note.refundCents : 0n;
     const created = await this.#stripe.creditNotes.create(

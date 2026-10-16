@@ -23,7 +23,7 @@ export type Segment = {
    * over and aren't settled early.
    */
   superseded: boolean;
-  /** `false` for internal contracts (COSS's own organizations): nothing is ever charged. */
+  /** `false` for internal contracts (coss.com's own organizations): nothing is ever charged. */
   billable?: boolean;
 };
 

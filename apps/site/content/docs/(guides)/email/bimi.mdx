@@ -5,12 +5,12 @@ description: Show your logo next to your emails in Gmail, Apple Mail and other i
 
 BIMI (Brand Indicators for Message Identification) lets mailbox providers show your logo next to
 the emails you send. It is set up entirely in your own DNS: a record that points at your logo and at
-a certificate proving the logo is yours. COSS doesn't host logos or issue certificates. It checks
+a certificate proving the logo is yours. coss.com doesn't host logos or issue certificates. It checks
 your DNS and tells you what is still missing.
 
 ## What you need
 
-1. **A verified domain.** COSS signs your emails with DKIM as your domain, so they pass DMARC once
+1. **A verified domain.** coss.com signs your emails with DKIM as your domain, so they pass DMARC once
    the domain is [verified](/docs/email/domains).
 2. **DMARC at enforcement.** Your domain's DMARC policy must be `p=quarantine` or `p=reject`, and
    apply to all of your mail: no `pct` below 100, no `t=y`. When you send from a subdomain such as
@@ -48,12 +48,12 @@ mailbox providers ignore the domain's logo when there are several.
 
 Mailbox providers look up the record for the domain of the From address. If there is none, they
 use the organizational domain's: emails from `@mail.example.com` show the logo of
-`default._bimi.example.com` unless `mail.example.com` has a record of its own. COSS sends with the
+`default._bimi.example.com` unless `mail.example.com` has a record of its own. coss.com sends with the
 `default` selector.
 
 ## Checking it
 
-COSS checks the BIMI record and the DMARC policy with the rest of the domain's DNS records. That
+coss.com checks the BIMI record and the DMARC policy with the rest of the domain's DNS records. That
 happens every 12 hours once the domain is verified, or right away with **Verify now** on the
 domain's page in the dashboard (**Domains**) or `coss.domains.verify(id)`. The result is on the
 domain's page under **Brand logo (BIMI)**, and in the domain's `bimi` field:
@@ -93,6 +93,6 @@ for (const issue of domain?.bimi.issues ?? []) {
 | `certificate_missing`   | The record has no certificate URL (`a=`).                                       |
 | `certificate_not_https` | The certificate URL isn't an `https://` URL.                                    |
 
-COSS checks DNS only: it never downloads your logo or certificate. A `configured` domain can still
+coss.com checks DNS only: it never downloads your logo or certificate. A `configured` domain can still
 go without a logo if the certificate has expired, doesn't cover the domain, or doesn't match the
 logo. Your certificate authority can check those for you.

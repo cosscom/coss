@@ -15,7 +15,7 @@ import {
 } from "./helpers.ts";
 
 describe("POST /v1/risk/email/check and /v1/risk/ip/check", () => {
-  test("return what COSS knows, in live and sandbox environments", async () => {
+  test("return what coss.com knows, in live and sandbox environments", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp();
     const email = await apiRequest(app, "POST", "/v1/risk/email/check", {

@@ -77,7 +77,7 @@ async function browserLogin(
   if (options.pasteCode) {
     query.set("mode", "code");
     const url = `${dashboardUrl}/app/authorize/cli?${query}`;
-    out.info(`Open this link in a browser where you're signed in to COSS:\n\n  ${url}\n`);
+    out.info(`Open this link in a browser where you're signed in to coss.com:\n\n  ${url}\n`);
     out.info(`Verification code: ${out.style("bold", verificationCode(challenge))}`);
     const code = await io.prompt("Paste the code it shows: ");
     if (!code) throw new CliError("No code entered.");
@@ -137,7 +137,7 @@ export async function login(argv: string[], io: CliIo): Promise<number> {
   if (values.manual) {
     apiKey = (await io.prompt("API key (coss_test_… or coss_live_…): ", { secret: true })).trim();
     if (!API_KEY_FORMAT.test(apiKey)) {
-      throw new CliError("That isn't a COSS API key (coss_test_… or coss_live_…).");
+      throw new CliError("That isn't a coss.com API key (coss_test_… or coss_live_…).");
     }
     login = "manual";
   } else {

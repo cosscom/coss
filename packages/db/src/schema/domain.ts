@@ -357,7 +357,7 @@ export const emailEventType = pgEnum("email_event_type", [
 ]);
 
 /**
- * Normalized delivery events (from SES, the fake provider, or COSS itself). Message-level events
+ * Normalized delivery events (from SES, the fake provider, or coss.com itself). Message-level events
  * (`email.sent`, `email.failed`) have no recipient. `dedupe_key` makes ingestion idempotent.
  */
 export const emailEvent = pgTable(
@@ -594,7 +594,7 @@ export const emailTemplateContent = pgTable(
   ],
 );
 
-/** A link COSS rewrote in a click-tracked email; `position` is its index in the HTML. */
+/** A link coss.com rewrote in a click-tracked email; `position` is its index in the HTML. */
 export const emailLink = pgTable(
   "email_link",
   {
@@ -758,7 +758,7 @@ export function newDmarcReportToken(): string {
 }
 
 /**
- * The last BIMI check of a domain (`packages/email/src/bimi.ts`): DNS only, COSS never fetches
+ * The last BIMI check of a domain (`packages/email/src/bimi.ts`): DNS only, coss.com never fetches
  * the logo or the certificate. Issues are stored as codes; messages are rendered on read.
  */
 export type DomainBimi = {
@@ -862,7 +862,7 @@ export type TrackingDomainRecord = {
 };
 
 /**
- * The custom tracking hostname of a sending domain (e.g. `links.acme.com`, a CNAME to COSS's
+ * The custom tracking hostname of a sending domain (e.g. `links.acme.com`, a CNAME to coss.com's
  * tracking host): open pixels and click redirects of emails sent from that domain use it once the
  * provider (Cloudflare for SaaS) serves it with a certificate. At most one per domain; hostnames
  * are unique across organizations while not `failed`.
@@ -965,7 +965,7 @@ export const receivingDomain = pgTable(
 );
 
 /**
- * An environment's address space under COSS's managed inbound domain:
+ * An environment's address space under coss.com's managed inbound domain:
  * `<anything>@<label>.<INBOUND_MANAGED_DOMAIN>`. Created on first read; the label never changes.
  */
 export const environmentInboundAddress = pgTable(
@@ -1142,7 +1142,7 @@ export type DmarcPublishedPolicy = {
 
 /**
  * A DMARC aggregate report a mailbox provider sent about a domain (to its `rua` address, received
- * through COSS's own receiving). Only the parsed report is kept, never the message.
+ * through coss.com's own receiving). Only the parsed report is kept, never the message.
  */
 export const dmarcReport = pgTable(
   "dmarc_report",
@@ -1217,7 +1217,7 @@ export const dmarcReportRecord = pgTable(
     authResults: jsonb("auth_results").$type<DmarcAuthResults>().notNull(),
     // Overrides the receiver applied (`reason`: type + comment).
     reasons: jsonb("reasons").$type<{ type: string; comment: string | null }[]>().notNull(),
-    // Signed with the domain's COSS DKIM keys or sent from its COSS MAIL FROM domain.
+    // Signed with the domain's coss.com DKIM keys or sent from its coss.com MAIL FROM domain.
     viaCoss: boolean("via_coss").notNull(),
     position: integer("position").notNull(),
   },
@@ -1436,7 +1436,7 @@ export const webhookAttempt = pgTable(
 );
 
 /**
- * A temporary subscriber the CLI (`coss listen`) pulls deliveries from over the API, instead of COSS
+ * A temporary subscriber the CLI (`coss listen`) pulls deliveries from over the API, instead of coss.com
  * POSTing them to a URL. Kept apart from `webhook_endpoint` so nothing that reads endpoints (the
  * worker's delivery loop, plan limits, health, the endpoint API) ever sees one. Alive while it is
  * polled (`expires_at` moves forward); closing it ends it early. Expired rows are purged.
@@ -1930,7 +1930,7 @@ export type OrgAuditActorType = (typeof orgAuditActorType.enumValues)[number];
 
 /**
  * An organization's audit log: who changed what (dashboard members, API keys, Better Auth flows,
- * COSS support). History: no FKs except the organization, and actor/target labels are copied so
+ * coss.com support). History: no FKs except the organization, and actor/target labels are copied so
  * entries stay readable after the rows they name are gone. Kept indefinitely.
  */
 export const orgAuditEvent = pgTable(
@@ -2150,7 +2150,7 @@ export const authEmailStatus = pgEnum("auth_email_status", [
 
 /**
  * Outbox of the account emails Better Auth asks for (sign-up verification, password resets,
- * invitations). Written by `@coss/auth`'s callbacks; the worker sends each one through COSS's own
+ * invitations). Written by `@coss/auth`'s callbacks; the worker sends each one through coss.com's own
  * email product (`@coss/auth/emails`). Not tenant data: an email belongs to an address, not an
  * organization.
  */
@@ -2936,7 +2936,7 @@ export const riskLimitFailureMode = pgEnum("risk_limit_failure_mode", ["allow", 
 
 /**
  * Rate limiting as a service: an environment's own buckets, which `POST /v1/risk/limits` charges
- * per key (GCRA in Valkey, like COSS's own limits; keys are HMACs). `limit` tokens refill per
+ * per key (GCRA in Valkey, like coss.com's own limits; keys are HMACs). `limit` tokens refill per
  * `period_ms`, at most `burst` at once; `on_failure` answers while the store is unavailable.
  */
 export const riskLimitBucket = pgTable(

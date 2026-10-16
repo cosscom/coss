@@ -16,7 +16,7 @@ import {
 const ADDRESS = "dmarc-abcdefghijkmnpqr@inbound.coss.test";
 
 describe("parseDmarcRecord", () => {
-  test("reads the tags COSS uses and keeps the rest", () => {
+  test("reads the tags coss.com uses and keeps the rest", () => {
     const record = parseDmarcRecord(
       "v=DMARC1; p=Quarantine; sp=none; pct=50; rua=mailto:a@x.test, mailto:b@y.test!10m; fo=1",
     );
@@ -104,12 +104,12 @@ describe("report addresses", () => {
 });
 
 describe("withPolicy", () => {
-  test("recommends monitoring with COSS's address", () => {
+  test("recommends monitoring with coss.com's address", () => {
     expect(recommendedDmarc(ADDRESS)).toBe(`v=DMARC1; p=none; rua=mailto:${ADDRESS};`);
     expect(recommendedDmarc(null)).toBe("v=DMARC1; p=none;");
   });
 
-  test("keeps the customer's tags and addresses, drops pct and t, adds COSS once", () => {
+  test("keeps the customer's tags and addresses, drops pct and t, adds coss.com once", () => {
     const current = parseDmarcRecord(
       "v=DMARC1; p=none; pct=50; t=y; rua=mailto:ops@acme.test; adkim=s; fo=1",
     );
@@ -124,7 +124,7 @@ describe("withPolicy", () => {
 });
 
 describe("withReporting", () => {
-  test("adds COSS's address and changes nothing else", () => {
+  test("adds coss.com's address and changes nothing else", () => {
     const current = parseDmarcRecord(
       "v=DMARC1; p=quarantine; pct=25; rua=mailto:ops@acme.test; fo=1",
     );

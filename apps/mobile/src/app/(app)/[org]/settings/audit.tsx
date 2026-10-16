@@ -29,7 +29,7 @@ export default function AuditScreen() {
     >
       <Stack.Screen options={{ headerRight: () => <WebButton path={path} /> }} />
       <PageIntro
-        description="Who changed what in this organization: members in the dashboard, API keys, and COSS support. Newest first; entries can't be edited or deleted."
+        description="Who changed what in this organization: members in the dashboard, API keys, and coss.com support. Newest first; entries can't be edited or deleted."
         title="Audit log"
       />
       {allowed ? (
@@ -54,7 +54,7 @@ export default function AuditScreen() {
                 </Text>
               </View>
               <View style={styles.meta}>
-                {event.actor_type === "system" ? <Badge variant="info">COSS</Badge> : null}
+                {event.actor_type === "system" ? <Badge variant="info">coss.com</Badge> : null}
                 <Text muted numberOfLines={1} style={styles.flex} variant="small">
                   {[event.actor_label, event.target_label].filter(Boolean).join(" → ")}
                 </Text>

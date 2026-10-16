@@ -19,7 +19,7 @@ export interface LogDrain {
   sources: LogDrainSource[];
   /** A disabled drain receives nothing, and lines logged meanwhile are not kept for it. */
   enabled: boolean;
-  /** `manual`, or `failing`: a batch failed every attempt, so COSS disabled it. */
+  /** `manual`, or `failing`: a batch failed every attempt, so coss.com disabled it. */
   disabled_reason: "manual" | "failing" | null;
   /** ISO 8601 timestamp; `null` while enabled. */
   disabled_at: string | null;
@@ -39,7 +39,7 @@ export interface DeletedLogDrain {
 }
 
 export interface CreateLogDrainParams {
-  /** An `https://` URL COSS posts batches to. */
+  /** An `https://` URL coss.com posts batches to. */
   url: string;
   description?: string | null;
   /** Defaults to every source. */

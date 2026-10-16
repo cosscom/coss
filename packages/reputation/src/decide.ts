@@ -21,7 +21,7 @@ export function worstResult(results: CheckResult[]): CheckResult | null {
 /**
  * What the guard does on its own given the checks' results. A suspension is never lifted
  * automatically (only an admin reinstates), and a warning clears once every check is `ok`.
- * With `canSuspend: false` (COSS's own organization) a `suspend` result only warns.
+ * With `canSuspend: false` (coss.com's own organization) a `suspend` result only warns.
  */
 export function decide(
   current: { status: ReputationStatus; reason: string | null },

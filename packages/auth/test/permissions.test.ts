@@ -7,7 +7,7 @@ import {
 } from "../src/permissions.ts";
 
 describe("org roles", () => {
-  test("owner keeps Better Auth defaults and gets full COSS access", () => {
+  test("owner keeps Better Auth defaults and gets full coss.com access", () => {
     expect(
       orgRoles.owner.authorize({
         organization: ["update", "delete"],

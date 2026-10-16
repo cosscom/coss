@@ -1,5 +1,5 @@
 /**
- * Standard Webhooks signatures (https://www.standardwebhooks.com), as COSS signs the requests it
+ * Standard Webhooks signatures (https://www.standardwebhooks.com), as coss.com signs the requests it
  * sends endpoints: `v1,<base64 HMAC-SHA256 of "<id>.<timestamp>.<body>">` keyed by the secret's
  * base64 part. The SDK's `verifyWebhook` checks them.
  */
@@ -21,7 +21,7 @@ export function sign(secret: string, id: string, timestamp: number, body: string
   return `v1,${digest}`;
 }
 
-/** The three headers a COSS webhook carries. */
+/** The three headers a coss.com webhook carries. */
 export function signatureHeaders(input: {
   secret: string;
   id: string;

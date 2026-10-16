@@ -12,22 +12,22 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   + provider) for SES's `Send` event or the stale-claim sweep, never failed on the spot or sent again; a `Send` event
   also repairs `provider_error`. A whole-message `Reject`/`Rendering Failure` after acceptance fails the email (usage
   recorded at `sent` stays). Never adopt an existing SES identity held by another tenant
-  (`IdentityTakenError`), and only recreate/delete identities tagged `coss_managed=<tenant prefix>` (orphans COSS
-  created get fresh DKIM keys; identities managed outside COSS in the same account are never touched). The most specific verified domain across all orgs
+  (`IdentityTakenError`), and only recreate/delete identities tagged `coss_managed=<tenant prefix>` (orphans coss.com
+  created get fresh DKIM keys; identities managed outside coss.com in the same account are never touched). The most specific verified domain across all orgs
   decides who may send from a From domain. Use one AWS account (or region) per stage. IAM policies live in
   `apps/worker/scripts/ses-policies.ts` (applied by `ses:bootstrap`): tag conditions can't apply to `SendEmail`
   (SES authorizes it against the sender address, verified live), only to identity changes.
 - **Suppressions** (`packages/email/src/suppressions.ts`, table `email_suppression`, ids `sup_`): one list per
   environment; an entry's `scope` is `*` (`ALL_CATEGORIES`) or a category, matched against the send's `category`.
-  COSS keeps the only list: SES tenants and the configuration set are created with suppression off
+  coss.com keeps the only list: SES tenants and the configuration set are created with suppression off
   (`TENANT_SUPPRESSION`; `ses:bootstrap` migrates existing tenants before disabling their protection) —
   never turn SES suppression back on, or removing
-  a COSS entry or scoping one to a category stops working. Bootstrap imports historical SES events and
+  a coss.com entry or scoping one to a category stops working. Bootstrap imports historical SES events and
   account/tenant lists into live environments, atomically marking `email_tenant.suppression_migrated_at`
   so reruns preserve removals; pause sends/domain changes and drain events for the upgrade (README).
   Runtime domain setup must not disable an existing tenant's protection. Sends store suppressed recipients as
   `suppressed` with a
-  COSS-source `email.suppressed` event (in the insert transaction) and `deliver` leaves them out of the provider
+  coss.com-source `email.suppressed` event (in the insert transaction) and `deliver` leaves them out of the provider
   message; an email with no recipient left is `failed`/`all_recipients_suppressed` without calling the provider.
   `recordProviderEvent` adds `*` entries for permanent bounces (not SES-suppressed ones) and complaints, never for
   `SIMULATOR_DOMAIN` addresses. The parsed send request omits `category` when absent so older request hashes stay valid.
@@ -37,7 +37,7 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   stream CSV page by page (`suppressionsCsvStream`, `suppression-csv.ts`) and guard formula-like cells with `'`, which
   `parseSuppressionCsv` strips again.
 - **Open/click tracking** (`packages/email/src/tracking*.ts`, tables `email_tracking_rule` (ids `etr_`) and
-  `email_link` (ids `lnk_`)): COSS-owned, provider-independent (SES's own open/click tracking stays off — the
+  `email_link` (ids `lnk_`)): coss.com-owned, provider-independent (SES's own open/click tracking stays off — the
   configuration set must not subscribe to `OPEN`/`CLICK`). Per field, a send's `tracking` wins, then its category's rule,
   then the environment default (the rule with a NULL category), then off; the result is snapshotted on the `email` row
   (`track_opens`/`track_clicks` + a random `tracking_token`) at send. `email.html` always keeps the original:
@@ -112,7 +112,7 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   conditions); api and worker may send with `configuration-set/<prefix>-*`; the SNS topic accepts events from those
   sets (`ses:bootstrap` — re-run it in production before deploying a change to either). Sandbox never uses a pool.
 - **Scheduled sends** (`scheduled_at`, ISO 8601 with an offset, ≤ 30 days ahead; a past time sends now): stored as
-  `scheduled` with a COSS-source `email.scheduled` event and sent by the worker's `dispatchDue` (every 5 s).
+  `scheduled` with a coss.com-source `email.scheduled` event and sent by the worker's `dispatchDue` (every 5 s).
   It claims straight from `scheduled` (compare-and-set to `queued` + `provider`), after
   re-running `authorizeLiveSender` (failure → `failed` + `email.failed`) and, in the claim transaction, the
   suppression list. `cancel` is a compare-and-set `scheduled` → `canceled` (recipients `canceled`, whole-message
@@ -159,7 +159,7 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   replays/errors), so a batch above a bucket's burst (live default: 100 recipients/s) is refused without
   `Retry-After`. The SDK's `sendBatch` never chunks (that would break atomicity under one key).
 - **Attachments** (`packages/email/src/attachments.ts`, table `email_attachment`, ids `att_`): base64 in the send
-  request only (COSS never fetches URLs), ≤ 20 per email and 25 MB decoded combined; filenames need an extension and
+  request only (coss.com never fetches URLs), ≤ 20 per email and 25 MB decoded combined; filenames need an extension and
   SES-refused extensions are rejected at validation. Bytes live in `email_attachment.content` (bytea) only while the
   email is `scheduled` or `queued` — cancellation, sender rejection, delivery, provider-event ingestion and
   the worker sweeps null them in the transaction that moves it to a terminal status. Reads select metadata columns only; API/SDK/dashboard and webhook payloads never
@@ -210,7 +210,7 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `dmarc-<token>@<INBOUND_MANAGED_DOMAIN>` (`dmarcReportAddress`; the bare managed domain, which `managedLabelOf`
   never matches), recommended by `expectedRecords` (`DomainDeps.dmarcReportDomain`, `null` with receiving off).
   Reporters only mail an address on another domain when `<domain>._report._dmarc.<managed domain>` says
-  `v=DMARC1`: COSS publishes the wildcard `*._report._dmarc.inbound.coss.com` (README, receiving). `receiveEmail`
+  `v=DMARC1`: coss.com publishes the wildcard `*._report._dmarc.inbound.coss.com` (README, receiving). `receiveEmail`
   splits report recipients off before routing (`splitDmarcReportRecipients`); they never become received emails.
   Addresses are public, so `ingestDmarcReports` trusts nothing unchecked: a live domain's token, SPF or DKIM `pass`
   on the message, `policy_published.domain` under the domain, a plausible recent period, the org's
@@ -225,7 +225,7 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   changes (policy or partial enforcement) and only when DNS answered. A truncated report in the window blocks
   readiness (check `complete`). Guidance (`dmarcGuidance`, thresholds in `DMARC_READINESS`) is pure and computed on every read:
   none → quarantine → reject, no `pct` ramp. Ingest queues `dmarc_notification` rows (readiness once per policy
-  epoch; COSS mail failing under enforcement once per epoch and week), sent by the worker's `dmarc-notifications`
+  epoch; coss.com mail failing under enforcement once per epoch and week), sent by the worker's `dmarc-notifications`
   loop through the reputation notifier (skipped when the policy changed since; a readiness email
   re-runs the guidance and sends the record built from DNS as it is then, or is skipped when no longer ready). The dashboard's "Send a sample
   report" (`receiveSampleDmarcReport`) exists only with the fake provider. API (`domain:read`):

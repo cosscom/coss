@@ -1,8 +1,8 @@
 /** Audit log wire types (hand-written mirrors of the API's schemas). */
 
 /**
- * `user`: a member, in the dashboard. `api_key`: a request made with an API key. `system`: COSS
- * itself, including COSS support.
+ * `user`: a member, in the dashboard. `api_key`: a request made with an API key. `system`: coss.com
+ * itself, including coss.com support.
  */
 export type AuditActorType = "user" | "api_key" | "system";
 
@@ -15,7 +15,7 @@ export interface AuditEvent {
   actor_type: AuditActorType;
   /** The user's or API key's id; `null` for the system. */
   actor_id: string | null;
-  /** The user's email, the API key's id, or `COSS support` (copied when recorded). */
+  /** The user's email, the API key's id, or `coss.com support` (copied when recorded). */
   actor_label: string;
   /** `<resource>.<verb>`, e.g. `api_key.created`, `domain.deleted`, `member.role_changed`. */
   action: string;

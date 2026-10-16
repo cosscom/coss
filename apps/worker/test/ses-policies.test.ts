@@ -22,7 +22,7 @@ describe("cossPolicies", () => {
     }
   });
 
-  test("the api can only send, with the COSS configuration sets", () => {
+  test("the api can only send, with the coss.com configuration sets", () => {
     // SES authorizes sends against the sender address, which carries no tags (verified live).
     expect(policies.api.Statement).toEqual([
       expect.objectContaining({
@@ -58,7 +58,7 @@ describe("cossPolicies", () => {
     }
   });
 
-  test("the worker can send scheduled emails with only the COSS configuration sets", () => {
+  test("the worker can send scheduled emails with only the coss.com configuration sets", () => {
     const sends = policies.worker.Statement.filter((statement) =>
       statement.Action.includes("ses:SendEmail"),
     );

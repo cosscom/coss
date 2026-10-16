@@ -13,9 +13,9 @@ export const getReputationRoute = createRoute({
   tags: ["Reputation"],
   summary: "Retrieve the organization's sending reputation",
   description:
-    "The organization's standing with the COSS reputation guard and the latest rates it " +
+    "The organization's standing with the coss.com reputation guard and the latest rates it " +
     "measured over live environments. When a rate reaches its suspension threshold, live sending " +
-    "is suspended automatically (`account_suspended`) until COSS support reinstates the " +
+    "is suspended automatically (`account_suspended`) until coss.com support reinstates the " +
     "organization; sandbox keys keep working. Subscribe to the `account.*` webhook events to be " +
     "notified of changes.",
   security: [{ bearerAuth: [] }],

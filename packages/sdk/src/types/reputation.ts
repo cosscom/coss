@@ -25,7 +25,7 @@ export interface ReputationCheck {
 export interface Reputation {
   object: "reputation";
   /**
-   * `suspended` means live sending is refused (`account_suspended`) until COSS support
+   * `suspended` means live sending is refused (`account_suspended`) until coss.com support
    * reinstates the organization; sandbox keys keep working.
    */
   status: ReputationStatus;

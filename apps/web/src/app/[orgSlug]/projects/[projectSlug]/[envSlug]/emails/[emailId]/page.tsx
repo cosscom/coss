@@ -275,7 +275,7 @@ export default async function EmailPage({
   const attachments =
     email.attachments.length > 0 ? (
       <Panel
-        description="Only metadata is kept: COSS discards the content once the email is sent."
+        description="Only metadata is kept: coss.com discards the content once the email is sent."
         title="Attachments"
       >
         <Table variant="card">

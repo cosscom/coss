@@ -39,7 +39,7 @@ export interface DomainRecord {
 }
 
 /**
- * `pending` until the CNAME points at COSS and its certificate is issued, `active` once tracking
+ * `pending` until the CNAME points at coss.com and its certificate is issued, `active` once tracking
  * links of emails sent from the domain use it, `temporary_failure` when an active hostname stopped
  * working (emails fall back to the default tracking host meanwhile), and `failed` when setup gave
  * up (72 hours) — call `domains.verify` to start over. `deleting` is a removal in progress.
@@ -86,7 +86,7 @@ export interface ReceivingDomainRecord {
   /** The mail exchange the record must point at. */
   value: string;
   priority: number;
-  /** `verified` once the most preferred MX records point at COSS. */
+  /** `verified` once the most preferred MX records point at coss.com. */
   status: DomainRecordStatus;
   /** What DNS returned when it did not match. */
   found: string[];
@@ -106,7 +106,7 @@ export interface ReceivingDomain {
 /**
  * `configured` when the BIMI record is valid and DMARC is enforced, `invalid` when a record exists
  * but something is wrong (see `issues`), `missing` when there is no record, and `not_checked` until
- * DNS has been consulted. COSS checks DNS only: mailbox providers still validate the logo and the
+ * DNS has been consulted. coss.com checks DNS only: mailbox providers still validate the logo and the
  * certificate.
  */
 export type BimiStatus = "not_checked" | "missing" | "invalid" | "configured";

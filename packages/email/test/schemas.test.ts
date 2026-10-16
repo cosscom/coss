@@ -254,7 +254,7 @@ describe("SendEmailRequest: headers", () => {
       "x-ses-tenant",
     ]) {
       expect(issues({ ...base, headers: { [name]: "v" } })).toEqual({
-        [`headers.${name}`]: `The "${name}" header is set by COSS and cannot be overridden.`,
+        [`headers.${name}`]: `The "${name}" header is set by coss.com and cannot be overridden.`,
       });
     }
   });

@@ -1,6 +1,6 @@
 /**
  * Learning from feedback: how often each reason and rule was right, by the outcomes customers
- * reported on assessments of the last 90 days, and the reason weights that supports. COSS only
+ * reported on assessments of the last 90 days, and the reason weights that supports. coss.com only
  * suggests: the environment's weights change when the customer applies them (`reason_weights`),
  * like every other decision about their traffic.
  *

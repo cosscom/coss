@@ -16,7 +16,7 @@ export interface ToolContext {
 /** Looks things up; changes nothing. */
 export const READ_ONLY: ToolAnnotations = { readOnlyHint: true, openWorldHint: false };
 
-/** Creates or changes something in COSS; nothing is lost. */
+/** Creates or changes something in coss.com; nothing is lost. */
 export const WRITE: ToolAnnotations = {
   readOnlyHint: false,
   destructiveHint: false,

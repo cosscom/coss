@@ -145,7 +145,7 @@ for (const source of ["log", "audit"] as const) {
               {
                 organizationId: tenant.organization.id,
                 environmentId: tenant.production.id,
-                actor: { type: "system", id: null, label: "COSS" },
+                actor: { type: "system", id: null, label: "coss.com" },
                 action: "test.changed",
               },
               executor,

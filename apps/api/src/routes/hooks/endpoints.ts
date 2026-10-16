@@ -243,7 +243,7 @@ export const recoverHookEndpointRoute = createRoute({
   summary: "Recover failed deliveries",
   description:
     "Queues every delivery to the endpoint that failed, of messages sent since `since`, for one " +
-    "more attempt each, e.g. after its receiver was down. COSS works through them in the " +
+    "more attempt each, e.g. after its receiver was down. coss.com works through them in the " +
     "background (oldest first); follow `status` with the returned recovery. The endpoint must be enabled.",
   security: [{ bearerAuth: [] }],
   middleware: [

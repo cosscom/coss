@@ -172,7 +172,7 @@ describe("reputation notifications", () => {
     });
     const { sent, deps } = recordingNotifier();
     await runDueReputationNotifications({ now, scope: scopeOf(tenant) }, deps);
-    expect(sent[0]?.text).toContain("Reason: COSS review.");
+    expect(sent[0]?.text).toContain("Reason: coss.com review.");
 
     await reinstateOrganization({
       organizationId: orgId,

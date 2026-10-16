@@ -57,7 +57,7 @@ export const checkRiskEmailRoute = createRoute({
     body: { required: true, content: { "application/json": { schema: RiskEmailCheckRequest } } },
   },
   responses: {
-    200: json("What COSS knows about the address.", RiskEmailCheck),
+    200: json("What coss.com knows about the address.", RiskEmailCheck),
     ...jsonBodyErrors,
     ...commonErrors,
   },
@@ -84,7 +84,7 @@ export const checkRiskIpRoute = createRoute({
     body: { required: true, content: { "application/json": { schema: RiskIpCheckRequest } } },
   },
   responses: {
-    200: json("What COSS knows about the address.", RiskIpCheck),
+    200: json("What coss.com knows about the address.", RiskIpCheck),
     ...jsonBodyErrors,
     ...commonErrors,
   },

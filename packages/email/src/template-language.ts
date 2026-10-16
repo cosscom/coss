@@ -1,7 +1,7 @@
 /**
  * The email template language: a small Mustache-like subset, parsed into a tree, checked against the
  * template's declared variables, and rendered with send-time values. No code runs and output size is
- * bounded, so customers' templates and values are safe to render on COSS's servers and in the
+ * bounded, so customers' templates and values are safe to render on coss.com's servers and in the
  * dashboard's live preview. Client-safe (no database, no Node APIs): exported as `@coss/email/templates`.
  *
  *   {{name}}                          a variable (HTML-escaped in `html`, as is in `subject`/`text`)

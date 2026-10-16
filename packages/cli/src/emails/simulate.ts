@@ -1,5 +1,5 @@
 /**
- * The mailbox simulator: addresses whose outcome is known in advance, in sandbox (COSS's fake
+ * The mailbox simulator: addresses whose outcome is known in advance, in sandbox (coss.com's fake
  * provider) and live (Amazon SES), never added to the suppression list. `--simulate` sends to them.
  */
 export const SIMULATOR_DOMAIN = "simulator.amazonses.com";

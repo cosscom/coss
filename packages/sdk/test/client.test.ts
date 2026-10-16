@@ -42,7 +42,7 @@ afterEach(() => {
 
 describe("new Coss()", () => {
   test("throws without an API key", () => {
-    expect(() => new Coss()).toThrow(/Missing COSS API key/);
+    expect(() => new Coss()).toThrow(/Missing coss.com API key/);
     expect(() => new Coss({ apiKey: "  " })).toThrow(/COSS_API_KEY/);
   });
 
@@ -392,7 +392,7 @@ describe("error mapping", () => {
     expect(error).toEqual({
       type: "api_error",
       code: "unexpected_response",
-      message: "The COSS API returned an unexpected HTTP 502 (Bad Gateway) response.",
+      message: "The coss.com API returned an unexpected HTTP 502 (Bad Gateway) response.",
       status: 502,
       request_id: "req_from_header",
     });

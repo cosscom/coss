@@ -17,11 +17,11 @@ const coss = new Coss({
 const { data, error } = await coss.email.send({
   from: `Acme <${process.env.COSS_FROM ?? "onboarding@example.com"}>`,
   to: process.env.COSS_TO ?? "delivered@example.com",
-  subject: "Hello from COSS",
+  subject: "Hello from coss.com",
   html: "<p>It works! This email was sent with the <strong>coss</strong> SDK.</p>",
   text: "It works! This email was sent with the coss SDK.",
   tags: [{ name: "source", value: "sdk-example" }],
-  attachments: [{ filename: "hello.txt", content: btoa("Hello from COSS!") }],
+  attachments: [{ filename: "hello.txt", content: btoa("Hello from coss.com!") }],
 });
 
 if (error) {

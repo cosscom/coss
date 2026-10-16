@@ -1,6 +1,6 @@
 /**
  * Webhook listener wire types: how `coss listen` pulls an environment's events to forward them to
- * a local server (COSS can't post to `localhost`).
+ * a local server (coss.com can't post to `localhost`).
  */
 import type { ApiVersion } from "../api-version.ts";
 import type { WebhookEventType } from "./webhook-endpoint.ts";

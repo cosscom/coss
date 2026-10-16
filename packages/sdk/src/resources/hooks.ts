@@ -337,7 +337,7 @@ export class HookEndpointsResource {
   }
 }
 
-/** `coss.hooks.messages`: send a message once; COSS delivers it to every subscribed endpoint. */
+/** `coss.hooks.messages`: send a message once; coss.com delivers it to every subscribed endpoint. */
 export class HookMessagesResource {
   readonly #http: HttpClient;
 
@@ -473,7 +473,7 @@ export class HookPortalResource {
 
 /**
  * `coss.hooks`: webhooks as a service. Send a message to one of your applications once
- * (`coss.hooks.messages.send`); COSS delivers it to every endpoint its users registered, signed
+ * (`coss.hooks.messages.send`); coss.com delivers it to every endpoint its users registered, signed
  * (Standard Webhooks), with retries, and gives them a portal to manage it all.
  */
 export class HooksResource {

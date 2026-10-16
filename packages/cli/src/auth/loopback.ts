@@ -45,7 +45,10 @@ export async function startLoopback(): Promise<Loopback> {
             )
           : denied
             ? PAGE("Sign-in canceled", "Nothing was changed. You can close this tab.")
-            : PAGE("Signed in to the COSS CLI", "Return to your terminal. You can close this tab."),
+            : PAGE(
+                "Signed in to the coss.com CLI",
+                "Return to your terminal. You can close this tab.",
+              ),
       );
   });
   await new Promise<void>((resolve, reject) => {

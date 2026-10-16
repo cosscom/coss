@@ -66,17 +66,17 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     GITHUB_CLIENT_ID: z.string().optional(),
     GITHUB_CLIENT_SECRET: z.string().optional(),
-    // The admin console's deploys page (src/lib/deploys.ts): the COSS Deploy GitHub App's id and
+    // The admin console's deploys page (src/lib/deploys.ts): the coss.com Deploy GitHub App's id and
     // private key (both or neither, src/instrumentation.ts). Unset: the page explains the setup.
     DEPLOY_GITHUB_APP_ID: z.string().regex(/^\d+$/, "The app's numeric id.").optional(),
     DEPLOY_GITHUB_APP_PRIVATE_KEY: z.string().includes("PRIVATE KEY").optional(),
     // Error and performance monitoring of the dashboard's server and, through /api/monitoring,
     // of browsers on both zones (dashboard and site).
     ...sentryEnvShape,
-    // A live environment of COSS's own organization (the worker sends account emails from it):
+    // A live environment of coss.com's own organization (the worker sends account emails from it):
     // admins can't suspend that organization.
     NOTIFICATIONS_ENVIRONMENT_ID: z.string().startsWith("env_").optional(),
-    // A live environment of COSS's own organization that COSS Risk assesses sign-ups in
+    // A live environment of coss.com's own organization that coss.com Risk assesses sign-ups in
     // (dogfooding: `block` refuses the sign-up, `review` lands in that environment's queue).
     // Unset: sign-ups aren't assessed.
     RISK_SIGNUP_ENVIRONMENT_ID: z.string().startsWith("env_").optional(),

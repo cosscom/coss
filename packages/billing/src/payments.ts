@@ -78,7 +78,7 @@ export async function recordPayment(
   if (!row) throw new Error(`Invoice ${invoice.id} disappeared.`);
   if (due < 0n) {
     // A hosted payment can arrive before a pending credit reaches the provider.
-    // Preserve the excess as COSS credit; the provider credit note is out of band.
+    // Preserve the excess as coss.com credit; the provider credit note is out of band.
     const [organization] = await tx
       .select({ id: schema.organization.id })
       .from(schema.organization)

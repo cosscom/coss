@@ -50,7 +50,7 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     } catch {
       return {
         data: null,
-        error: { code: "network_error", message: "Couldn't reach COSS.", status: null },
+        error: { code: "network_error", message: "Couldn't reach coss.com.", status: null },
       };
     }
     const body: unknown = await response.json().catch(() => null);

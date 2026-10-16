@@ -106,7 +106,7 @@ export default async function LogDrainPage({
         <Alert variant="error">
           <AlertTitle>Disabled after repeated failures</AlertTitle>
           <AlertDescription>
-            A batch failed all {LOG_DRAIN_MAX_ATTEMPTS} attempts, so COSS disabled this drain
+            A batch failed all {LOG_DRAIN_MAX_ATTEMPTS} attempts, so coss.com disabled this drain
             {drain.disabledAt ? ` on ${formatDateTime(drain.disabledAt)}` : ""} and dropped the
             lines waiting for it. Fix the endpoint, then enable the drain again.
           </AlertDescription>

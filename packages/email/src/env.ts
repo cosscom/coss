@@ -28,14 +28,14 @@ export const emailEnvShape = {
   AWS_REGION: z.string().optional(),
   SES_CONFIGURATION_SET: z.string().optional(),
   SES_TENANT_PREFIX: z.string().regex(SES_TENANT_PREFIX_PATTERN).optional(),
-  // Custom tracking domains: Cloudflare for SaaS custom hostnames on COSS's zone in production
+  // Custom tracking domains: Cloudflare for SaaS custom hostnames on coss.com's zone in production
   // (the token and zone id are required with `cloudflare`), an in-memory fake otherwise.
   TRACKING_DOMAIN_PROVIDER: z.enum(TRACKING_DOMAIN_PROVIDERS).default("fake"),
   CLOUDFLARE_API_TOKEN: z.string().optional(),
   CLOUDFLARE_ZONE_ID: z.string().optional(),
   // The zone's fallback origin, which customers point their tracking CNAME at.
   TRACKING_CNAME_TARGET: z.string().optional(),
-  // Receiving: COSS's managed inbound domain (`<label>.<domain>` addresses per environment;
+  // Receiving: coss.com's managed inbound domain (`<label>.<domain>` addresses per environment;
   // default `inbound.coss.test` with the fake provider) and, with SES, the bucket received
   // messages are stored in (both printed by `bun run ses:bootstrap`; unset → no receiving).
   INBOUND_MANAGED_DOMAIN: z.string().optional(),

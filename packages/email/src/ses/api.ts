@@ -1,5 +1,5 @@
 /**
- * The SES v2 operations COSS uses, as a narrow port over `SESv2Client` (tests use a fake).
+ * The SES v2 operations coss.com uses, as a narrow port over `SESv2Client` (tests use a fake).
  * The client never retries on its own: `SendEmail` is not idempotent, so a retry after a timeout
  * could send twice. Callers retry only when SES certainly rejected the request (throttling).
  */
@@ -56,8 +56,8 @@ export type SesConfig = {
 };
 
 /**
- * COSS keeps the only suppression list (`email_suppression`): SES must never suppress an address
- * by itself, or removing a COSS entry (or scoping one to a category) would not let mail through.
+ * coss.com keeps the only suppression list (`email_suppression`): SES must never suppress an address
+ * by itself, or removing a coss.com entry (or scoping one to a category) would not let mail through.
  * Tenants keep their own, empty, list rather than the account-wide one shared by every stage.
  */
 export const TENANT_SUPPRESSION: TenantSuppressionAttributes = {

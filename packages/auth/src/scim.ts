@@ -3,7 +3,7 @@
  * the database); not client-safe.
  *
  * One managed SCIM connection per organization, with `provisioningDomainId` = the organization id.
- * The plugin keeps the directory's Users and Groups; COSS projects them onto the organization:
+ * The plugin keeps the directory's Users and Groups; coss.com projects them onto the organization:
  * - a User may only be provisioned on the organization's SSO domains (`ssoDomainForEmail`, like
  *   SSO sign-in), and an existing account with that address is linked — only when it is verified —
  *   without the directory taking over its email or name (`profile: "preserve"`);
@@ -173,7 +173,7 @@ async function mapScimGroupRole(input: SCIMRoleMappingInput): Promise<string[] |
 }
 
 /**
- * Set while COSS itself replays or disconnects a directory: a user who then has no source left in
+ * Set while coss.com itself replays or disconnects a directory: a user who then has no source left in
  * a live connection was provisioned by the disconnected one and keeps their membership. Outside
  * it, a user without sources was just deleted by the directory and is removed.
  */
@@ -186,9 +186,9 @@ export function preservingScimMembers<T>(fn: () => Promise<T>): Promise<T> {
 
 /**
  * The plugin revokes every session of a user the directory deactivates (or who has no live source
- * left, as after a disconnect), across all their organizations. COSS revokes only the
+ * left, as after a disconnect), across all their organizations. coss.com revokes only the
  * organization's SSO sessions (`reconcileScimMembership`), so the `session.delete.before` hook
- * vetoes bulk session deletes made during SCIM requests and COSS's own SCIM operations.
+ * vetoes bulk session deletes made during SCIM requests and coss.com's own SCIM operations.
  */
 export function isScimSessionSweep(ctx: unknown): boolean {
   return keepUsersWithoutSources.getStore() === true || scimOrganizationIdOf(ctx) !== null;

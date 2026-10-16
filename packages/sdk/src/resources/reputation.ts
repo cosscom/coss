@@ -5,7 +5,7 @@ import type { Reputation } from "../types/reputation.ts";
 type ReadOptions = Pick<RequestOptions, "signal">;
 
 /**
- * `coss.reputation`: the organization's standing with the COSS reputation guard, which suspends
+ * `coss.reputation`: the organization's standing with the coss.com reputation guard, which suspends
  * live sending automatically when bounce or complaint rates cross its thresholds.
  */
 export class ReputationResource {

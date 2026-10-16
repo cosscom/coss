@@ -1,4 +1,4 @@
-/** The catalog's contents: COSS's products. */
+/** The catalog's contents: coss.com's products. */
 
 export type PartId = "email" | "sms" | "video" | "scheduling";
 

@@ -23,7 +23,7 @@ export const WARNING_RECHECK_MS = 60 * MINUTE;
 export type ReputationDeps = {
   checks: ReputationCheck[];
   /**
-   * COSS's own organization (the one sending account and notification emails): the guard only
+   * coss.com's own organization (the one sending account and notification emails): the guard only
    * ever warns it. Suspending it would stop every sign-up, password reset and invitation email.
    */
   systemOrganizationId?: string | null;

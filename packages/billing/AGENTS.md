@@ -4,9 +4,9 @@ Read together with the root `AGENTS.md` (conventions, tenancy rule, tests). Path
 repository root.
 
 - **Billing** (`packages/billing`; tables `billing_*`, ids `bacct_`, `bcon_`, `bcg_`, `bce_`, `bper_`, `inv_`, `invl_`,
-  `bpay_`, `bcn_`, `bpev_`, `bntf_`): COSS owns the catalog, contracts, metering, rating, credits, invoices and
+  `bpay_`, `bcn_`, `bpev_`, `bntf_`): coss.com owns the catalog, contracts, metering, rating, credits, invoices and
   dunning; a `BillingProvider` (per `billing_account.provider`: `fake`, `stripe` or `manual` for off-Stripe deals) only
-  keeps customers and payment methods, issues the invoices COSS pushes (numbered by COSS, `auto_advance: false`) and
+  keeps customers and payment methods, issues the invoices coss.com pushes (numbered by coss.com, `auto_advance: false`) and
   collects them. Never move pricing into Stripe objects (prices, subscriptions, meters).
   - **Catalog** (`./catalog`, client-safe, reviewed like code): `METERS`, dated `RATE_CARDS` (a price change is a new
     card; periods before it keep the old prices), `PLANS` (Free/Pro/Scale/Enterprise: fee = spendable usage credit,
@@ -63,14 +63,14 @@ repository root.
     Checkout; returning collects at once through `collectInvoiceNow`, which also retries a failed or 3-D Secure
     charge), anything else is dunned as `No payment method on file.`. Stripe's invalid-request refusals are read
     back (an invoice already paid on the hosted page is recorded as paid). Stripe carries invoices below its minimum
-    charge to the next one (customer balance); every paid amount COSS reads leaves that debit out
+    charge to the next one (customer balance); every paid amount coss.com reads leaves that debit out
     (`paidTowardInvoice`). `billing-collection` retries failed charges (+3/+5/+7 days), reminds about net-terms
     invoices, sets `past_due`, and after `grace_days` (and, for an automatic charge, once no retry or charge is left
     to come) places a `delinquent` **billing hold** (`billing_hold`, presence = held). A hold makes
     `authorizeLiveSender` refuse
     (`EmailError("billing_hold")`, 402) and holds scheduled sends (`organizationActive`) — never fails them; paying lifts
     it. Holds are independent of reputation suspensions: never fold one into the other. Spend limits place a
-    `spend_limit` hold (worker `billing-usage`), lifted by the next month or a higher limit. COSS's own organization is
+    `spend_limit` hold (worker `billing-usage`), lifted by the next month or a higher limit. coss.com's own organization is
     never held or capped (`systemOrganizationId`).
   - **Provider events**: the dashboard's `/api/billing/webhook` (public) verifies Stripe's signature and only stores the
     event (`billing_provider_event`); the worker's `billing-events` loop re-reads each object from Stripe and moves

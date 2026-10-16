@@ -125,7 +125,7 @@ export const listCreditsRoute = createRoute({
   summary: "List credits",
   description:
     "The organization's credits, newest first: each month's plan credit, prepaid commitments and " +
-    "credits from COSS support (in dollars, or free units of a product), with what's left. Only " +
+    "credits from coss.com support (in dollars, or free units of a product), with what's left. Only " +
     "usable ones by default (`status=all` for every one). Pass the last `id` as `after` to get the " +
     "next page while `has_more` is true.",
   security: [{ bearerAuth: [] }],

@@ -79,7 +79,7 @@ export const getInboundAddressRoute = createRoute({
   tags: [TAG],
   summary: "Retrieve the environment's inbound address",
   description:
-    "The environment's own domain under COSS's inbound domain: email sent to any address at it " +
+    "The environment's own domain under coss.com's inbound domain: email sent to any address at it " +
     "(e.g. `support@<domain>`) is received by this environment, with no DNS setup. To receive at " +
     "your own domain, add a receiving domain instead.",
   security: [{ bearerAuth: [] }],

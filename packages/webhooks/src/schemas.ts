@@ -69,7 +69,7 @@ export const WebhookEndpointObject = z
       .meta({
         description:
           "`manual`: someone disabled it. `failing`: its deliveries failed every attempt for five " +
-          "days, so COSS disabled it. `null` while enabled.",
+          "days, so coss.com disabled it. `null` while enabled.",
       }),
     disabled_at: z.iso.datetime().nullable(),
     failing_since: z.iso
@@ -99,7 +99,7 @@ export type WebhookEndpointObjectOutput = z.output<typeof WebhookEndpointObject>
 export const WebhookEndpointWithSecret = WebhookEndpointObject.extend({
   secret: z.string().meta({
     description:
-      "The endpoint's `whsec_…` signing secret, used to verify the requests COSS sends. " +
+      "The endpoint's `whsec_…` signing secret, used to verify the requests coss.com sends. " +
       "Returned only when the endpoint is created and when its secret is rolled — store it now; " +
       "it cannot be read back through the API.",
     examples: ["whsec_6Jk…"],
@@ -214,7 +214,7 @@ const Url = z
   .min(1, "Enter a full URL, like https://example.com/webhooks/coss.")
   .max(WEBHOOK_URL_MAX_LENGTH, `URLs can be at most ${WEBHOOK_URL_MAX_LENGTH} characters.`)
   .meta({
-    description: "An `https://` URL COSS posts events to.",
+    description: "An `https://` URL coss.com posts events to.",
     examples: ["https://example.com/webhooks/coss"],
   });
 

@@ -83,7 +83,7 @@ function CreateEndpointForm(props: Target & { eventTypes: readonly string[] }) {
       <DialogHeader>
         <DialogTitle>Add a webhook endpoint</DialogTitle>
         <DialogDescription>
-          COSS sends a signed POST request to this URL for each selected event.
+          coss.com sends a signed POST request to this URL for each selected event.
         </DialogDescription>
       </DialogHeader>
       <DialogPanel className="flex flex-col gap-4">

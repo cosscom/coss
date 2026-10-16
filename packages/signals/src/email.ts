@@ -1,7 +1,7 @@
 /**
  * Email address signals: syntax, disposable domains, domains that can't receive mail, the mailbox
  * an address delivers to (`canonicalEmail`), role accounts, free providers and domain typos.
- * Stateless and server-only (DNS); no database access. Used by COSS's own sign-up guard
+ * Stateless and server-only (DNS); no database access. Used by coss.com's own sign-up guard
  * (`@coss/auth`) and by risk assessments (`@coss/risk`).
  */
 import { Resolver } from "node:dns/promises";
@@ -11,7 +11,7 @@ import { FREE_PROVIDER_DOMAINS, POPULAR_DOMAINS, ROLE_LOCAL_PARTS } from "./emai
 
 /** Listed upstream but allowed here (an upstream false positive): keep each with a reason. */
 const ALLOWED_DOMAINS: ReadonlySet<string> = new Set<string>([]);
-/** Seen in abuse of COSS but not (yet) in the upstream list. */
+/** Seen in abuse of coss.com but not (yet) in the upstream list. */
 const EXTRA_DISPOSABLE_DOMAINS: ReadonlySet<string> = new Set<string>([]);
 
 let disposable: ReadonlySet<string> | undefined;

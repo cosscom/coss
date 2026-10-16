@@ -17,6 +17,6 @@ export async function postAuth(path: `/${string}`): Promise<{ error: string | nu
         typeof body?.message === "string" ? body.message : `Request failed (${response.status}).`,
     };
   } catch {
-    return { error: "Couldn't reach COSS. Check your connection and try again." };
+    return { error: "Couldn't reach coss.com. Check your connection and try again." };
   }
 }

@@ -1,6 +1,6 @@
 /**
  * Hooks wire types (webhooks as a service): you send a message to one of your applications once,
- * COSS delivers it to every endpoint its users registered, signed, with retries.
+ * coss.com delivers it to every endpoint its users registered, signed, with retries.
  */
 
 /** One of your customers (or users), with their own endpoints and portal. */
@@ -176,7 +176,7 @@ export interface RecoverHookEndpointParams {
   since: string | Date;
 }
 
-/** A recovery: COSS requeues the matching failed deliveries in the background. */
+/** A recovery: coss.com requeues the matching failed deliveries in the background. */
 export interface HookEndpointRecovery {
   object: "hook_endpoint_recovery";
   id: string;

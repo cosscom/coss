@@ -49,7 +49,7 @@ export default async function AcceptInvitationPage({
     return (
       <InvitationCard
         description="Sign in or create an account with the email address the invitation was sent to."
-        title="You've been invited to COSS"
+        title="You've been invited to coss.com"
       >
         <Button render={<Link href={`/sign-in${next}`} />}>Sign in</Button>
         <Button render={<Link href={`/sign-up${next}`} />} variant="outline">

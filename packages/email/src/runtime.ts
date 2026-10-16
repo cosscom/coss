@@ -46,7 +46,7 @@ export type TrackingRuntimeConfig =
   | { provider: "fake"; cnameTarget?: string }
   | ({ provider: "cloudflare" } & CloudflareConfig);
 
-/** Receiving: COSS's managed inbound domain, and the S3 bucket with SES. */
+/** Receiving: coss.com's managed inbound domain, and the S3 bucket with SES. */
 export type InboundRuntimeConfig = { managedDomain: string; bucket?: string; s3Api?: S3Api };
 
 export type EmailRuntimeConfig = (

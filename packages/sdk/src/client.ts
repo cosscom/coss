@@ -69,7 +69,7 @@ function timeoutMs(value: number | undefined): number {
 }
 
 /**
- * The COSS client. One API key covers every product.
+ * The coss.com client. One API key covers every product.
  *
  * ```ts
  * const coss = new Coss({ apiKey: "coss_test_…" });
@@ -94,7 +94,7 @@ export class Coss {
   readonly logs: LogsResource;
   /** HTTPS endpoints the environment's log is streamed to (`coss.logDrains.create()`). */
   readonly logDrains: LogDrainsResource;
-  /** The organization's audit log: changes by members, API keys and COSS support (`coss.auditEvents.list()`). */
+  /** The organization's audit log: changes by members, API keys and coss.com support (`coss.auditEvents.list()`). */
   readonly auditEvents: AuditEventsResource;
   /** Hooks, webhooks as a service: `coss.hooks.messages.send()` delivers to your users' endpoints. */
   readonly hooks: HooksResource;
@@ -113,8 +113,8 @@ export class Coss {
       !options.dangerouslyAllowBrowser
     ) {
       throw new Error(
-        "Refusing to create a COSS client in a browser-like environment: COSS API keys are secret, " +
-          "and any key sent to the browser can be read by anyone using the page. Call COSS from your " +
+        "Refusing to create a coss.com client in a browser-like environment: coss.com API keys are secret, " +
+          "and any key sent to the browser can be read by anyone using the page. Call coss.com from your " +
           "server instead, or pass `dangerouslyAllowBrowser: true` if you understand the risk.",
       );
     }
@@ -122,7 +122,7 @@ export class Coss {
     const apiKey = options.apiKey?.trim() || readEnv("COSS_API_KEY");
     if (!apiKey) {
       throw new Error(
-        "Missing COSS API key. Pass `apiKey` to `new Coss({ apiKey })` or set the COSS_API_KEY " +
+        "Missing coss.com API key. Pass `apiKey` to `new Coss({ apiKey })` or set the COSS_API_KEY " +
           "environment variable.",
       );
     }

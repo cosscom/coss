@@ -37,7 +37,7 @@ export async function migrateSesSuppressions(
         eq(emailTenant.provider, "ses"),
       );
       const [tenant] = await tx.select().from(emailTenant).where(tenantScope).for("update");
-      if (!tenant) throw new Error(`No COSS database mapping for SES tenant ${tenantName}.`);
+      if (!tenant) throw new Error(`No coss.com database mapping for SES tenant ${tenantName}.`);
       if (tenant.suppressionMigratedAt) return;
       const environments = await tx
         .select()

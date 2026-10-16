@@ -47,7 +47,7 @@ export default async function AdminOrganizationPage({
               <ReinstateButton organizationId={organization.organizationId} />
             ) : isSystem ? (
               <span className="text-muted-foreground text-sm">
-                COSS's own organization: can't be suspended
+                coss.com's own organization: can't be suspended
               </span>
             ) : (
               <SuspendButton organizationId={organization.organizationId} />

@@ -29,7 +29,7 @@ export const listAuditEventsRoute = createRoute({
   summary: "List audit events",
   description:
     "The organization's audit log, newest first: changes made by members in the dashboard, by " +
-    "API keys (from any environment) and by COSS support. The audit log is organization-wide, " +
+    "API keys (from any environment) and by coss.com support. The audit log is organization-wide, " +
     "so every key of the organization reads the same events. Filter by action (an entry ending " +
     "in `.` matches a whole resource, e.g. `domain.`), actor, target, environment or time. Pass " +
     "the last `id` as `after` to get the next page while `has_more` is true. Reading the audit " +

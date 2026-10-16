@@ -70,7 +70,9 @@ export default async function AdminSendingPage({ searchParams }: PageProps<"/adm
         />
         {systemOrganization ? (
           <Button render={<Link href={href({ coss: !includeCoss })} />} size="sm" variant="ghost">
-            {includeCoss ? "Hide COSS's own organization" : "Include COSS's own organization"}
+            {includeCoss
+              ? "Hide coss.com's own organization"
+              : "Include coss.com's own organization"}
           </Button>
         ) : null}
       </div>
@@ -118,7 +120,7 @@ export default async function AdminSendingPage({ searchParams }: PageProps<"/adm
                       </Link>
                       {row.organizationId === systemOrganization ? (
                         <Badge className="ms-2" variant="secondary">
-                          COSS
+                          coss.com
                         </Badge>
                       ) : null}
                       <div

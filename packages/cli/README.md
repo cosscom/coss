@@ -1,6 +1,6 @@
 # coss-cli
 
-The command line for [COSS](https://coss.com): sign in, send test emails, follow your environment's
+The command line for [coss.com](https://coss.com): sign in, send test emails, follow your environment's
 log, and receive its webhook events on your machine.
 
 ```sh
@@ -22,7 +22,7 @@ Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
 | `coss whoami` | The key in use, where it comes from, and its organization, project and environment. |
 | `coss emails send` | A test email: `--to`, or `--simulate delivered\|bounced\|complained\|suppressed` for the mailbox simulator; `--template` with `--var name=value`; `--wait` follows it to its outcome. |
 | `coss logs tail` | New lines of the environment's log as they arrive: API requests, email events, webhook attempts. Filter with `--source`, `--level`, `--type`, `--status`, `-q`; `--since 15m` starts earlier. |
-| `coss listen` | Receives the environment's webhook events and forwards each one to `--forward-to`, signed like COSS signs real deliveries. Verify them with `verifyWebhook` from the `coss` SDK and the signing secret it prints (it stays the same for the profile). |
+| `coss listen` | Receives the environment's webhook events and forwards each one to `--forward-to`, signed like coss.com signs real deliveries. Verify them with `verifyWebhook` from the `coss` SDK and the signing secret it prints (it stays the same for the profile). |
 
 Every command takes `--json` (one JSON object per line), `--profile <name>` and `--help`.
 

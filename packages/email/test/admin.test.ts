@@ -16,7 +16,7 @@ import { params, sendEnvironment, verifiedFrom } from "./helpers.ts";
 const provider = new FakeEmailProvider({ log: false });
 const service = dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider });
 
-/** Two organizations: a customer that sends live and sandbox email, and COSS's own. */
+/** Two organizations: a customer that sends live and sandbox email, and coss.com's own. */
 async function fixture() {
   const customer = await createTestTenant();
   const coss = await createTestTenant();
@@ -55,7 +55,7 @@ async function fixture() {
 }
 
 describe("platformEmailStats", () => {
-  test("counts live and sandbox emails, COSS's own apart", async () => {
+  test("counts live and sandbox emails, coss.com's own apart", async () => {
     const { coss, since, scope } = await fixture();
     const stats = await platformEmailStats({
       since,

@@ -195,7 +195,7 @@ function AgentFeature() {
     >
       {email && <PartDrawing className="mx-auto w-28" product={email} />}
       <span className="flex flex-col gap-1">
-        <span className="font-medium text-sm">Set up COSS with your agent</span>
+        <span className="font-medium text-sm">Set up coss.com with your agent</span>
         <span className="text-muted-foreground text-xs leading-snug">
           One prompt for Claude Code, Cursor or Codex: it installs the SDK and wires up the parts
           you pick.

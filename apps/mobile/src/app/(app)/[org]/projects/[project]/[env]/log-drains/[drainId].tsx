@@ -60,7 +60,7 @@ export default function LogDrainScreen() {
       />
       {!drain.enabled && drain.disabled_reason === "failing" ? (
         <Alert
-          description={`A batch failed all ${LOG_DRAIN_MAX_ATTEMPTS} attempts, so COSS disabled this drain${drain.disabled_at ? ` on ${formatDateTime(drain.disabled_at)}` : ""} and dropped the lines waiting for it. Fix the endpoint, then enable the drain again.`}
+          description={`A batch failed all ${LOG_DRAIN_MAX_ATTEMPTS} attempts, so coss.com disabled this drain${drain.disabled_at ? ` on ${formatDateTime(drain.disabled_at)}` : ""} and dropped the lines waiting for it. Fix the endpoint, then enable the drain again.`}
           title="Disabled after repeated failures"
           tone="error"
         />

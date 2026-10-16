@@ -1,6 +1,6 @@
 # coss
 
-The official TypeScript SDK for COSS: one API key for email, and soon SMS, video, scheduling and more.
+The official TypeScript SDK for coss.com: one API key for email, and soon SMS, video, scheduling and more.
 
 ```sh
 npm install coss
@@ -25,7 +25,7 @@ const coss = new Coss({ apiKey: process.env.COSS_API_KEY });
 const { data, error } = await coss.email.send({
   from: "Acme <onboarding@example.com>",
   to: "delivered@example.com",
-  subject: "Hello from COSS",
+  subject: "Hello from coss.com",
   html: "<p>It works!</p>",
 });
 
@@ -73,7 +73,7 @@ The constructor throws in only two cases, both programmer errors:
 - It runs where a `document` global exists (a browser, or a jsdom or happy-dom test environment)
   without `dangerouslyAllowBrowser: true`.
 
-API keys are secrets, so call COSS from your server.
+API keys are secrets, so call coss.com from your server.
 
 Each method also takes per-request options:
 
@@ -149,7 +149,7 @@ await coss.email.send({
 ```
 
 Emails only return attachment metadata (`id`, `filename`, `content_type`, `content_id`, `size`).
-COSS discards the content once the email is sent. Executables and other file types the delivery
+coss.com discards the content once the email is sent. Executables and other file types the delivery
 provider refuses (`.exe`, `.js`, `.bat`, …) are rejected with a `validation_error`.
 
 ## Domains
@@ -271,7 +271,7 @@ Imported entries have the reason `import`. The dashboard imports and exports the
 ### Open and click tracking
 
 Tracking is off unless the environment turns it on in the dashboard (a default, plus rules per
-category) or a send asks for it. COSS then adds an invisible image to the HTML body and sends its
+category) or a send asks for it. coss.com then adds an invisible image to the HTML body and sends its
 links through a redirect. Links with a `data-coss-no-track` attribute are left as they are.
 
 ```ts
@@ -294,9 +294,9 @@ one. Mail clients that preload images and link scanners can inflate the numbers.
 
 ## Reputation
 
-COSS watches your live bounce and complaint rates. When one gets too high your organization is
+coss.com watches your live bounce and complaint rates. When one gets too high your organization is
 warned, and past the suspension threshold live sending is suspended automatically (sends fail with
-`permission_error` / `account_suspended`; sandbox keys keep working) until COSS support reinstates it.
+`permission_error` / `account_suspended`; sandbox keys keep working) until coss.com support reinstates it.
 
 ```ts
 const { data } = await coss.reputation.get();
@@ -355,7 +355,7 @@ interface CossError {
 | `not_found_error`       | 404               | No such resource in the key's environment                         |
 | `idempotency_error`     | 409 / 422         | `request_in_progress` (retried automatically), or `idempotency_key_reused` with a different body |
 | `rate_limit_error`      | 429               | Too many requests with the key (`rate_limited`), the send quota is used up (`quota_exceeded`), or a domain was checked moments ago (`domain_recently_checked`) |
-| `api_error`             | 5xx, other        | Server error. Also used for responses that are not a COSS error envelope (`unexpected_response`) |
+| `api_error`             | 5xx, other        | Server error. Also used for responses that are not a coss.com error envelope (`unexpected_response`) |
 | `connection_error`      | —                 | Network failure (`network_error`), or you aborted (`aborted`)      |
 | `timeout_error`         | —                 | An attempt exceeded `timeout` (`request_timeout`)                 |
 

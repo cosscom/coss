@@ -63,7 +63,7 @@ function TrackingCheckboxes(props: Setting & { disabled?: boolean }) {
         />
         <span>
           Track clicks{" "}
-          <span className="text-muted-foreground">(sends links through a COSS redirect)</span>
+          <span className="text-muted-foreground">(sends links through a coss.com redirect)</span>
         </span>
       </Label>
       <Label>

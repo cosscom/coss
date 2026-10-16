@@ -21,7 +21,7 @@ import { githubAppJwt, githubAppPrivateKey } from "./github-app";
 
 /**
  * The admin console's deploys page: reads the Deploy workflow's runs and main's commits, and
- * dispatches the workflow, through the COSS Deploy GitHub App (DEPLOY_GITHUB_APP_ID and
+ * dispatches the workflow, through the coss.com Deploy GitHub App (DEPLOY_GITHUB_APP_ID and
  * DEPLOY_GITHUB_APP_PRIVATE_KEY; README, "Deploying from the admin console"). Its installation
  * token can read the repository and run its workflows, nothing else: the workflow itself refuses
  * anything but main, so the most this can do is ship main early or redeploy an earlier commit.

@@ -13,7 +13,7 @@ const NOW = new Date("2026-10-15T12:00:00Z");
 const ADDRESS = "dmarc-abcdefghijkmnpqr@inbound.coss.test";
 const ago = (days: number) => new Date(NOW.getTime() - days * DAY);
 
-/** Healthy reports: 20 days of them, all COSS mail passing, a small forwarder failing. */
+/** Healthy reports: 20 days of them, all coss.com mail passing, a small forwarder failing. */
 const HEALTHY: DmarcReportTotals = {
   messages: 10_000,
   passing: 9_950,
@@ -61,7 +61,7 @@ const NONE = `v=DMARC1; p=none; rua=mailto:${ADDRESS}`;
 const QUARANTINE = `v=DMARC1; p=quarantine; rua=mailto:${ADDRESS}`;
 
 describe("dmarcGuidance", () => {
-  test("no record: publish monitoring with COSS's address", () => {
+  test("no record: publish monitoring with coss.com's address", () => {
     expect(dmarcGuidance(input(null))).toMatchObject({
       stage: "no_record",
       policy: null,
@@ -71,7 +71,7 @@ describe("dmarcGuidance", () => {
     expect(dmarcGuidance(input(null, { checked: false })).stage).toBe("not_checked");
   });
 
-  test("a record without COSS's address: add reporting first, keeping the policy", () => {
+  test("a record without coss.com's address: add reporting first, keeping the policy", () => {
     const guidance = dmarcGuidance(input("v=DMARC1; p=quarantine; rua=mailto:ops@acme.test"));
     expect(guidance).toMatchObject({
       stage: "quarantine",
@@ -230,7 +230,7 @@ describe("dmarcGuidance", () => {
     expect(guidance.checks.map((check) => check.id)).not.toContain("time_at_policy");
   });
 
-  test("reject is the end; warns when COSS mail fails or subdomains are weaker", () => {
+  test("reject is the end; warns when coss.com mail fails or subdomains are weaker", () => {
     const done = dmarcGuidance(input(`v=DMARC1; p=reject; sp=none; rua=mailto:${ADDRESS}`));
     expect(done).toMatchObject({ stage: "reject", next: null, ready: false });
     expect(done.warnings).toEqual([expect.stringContaining("sp=none")]);
@@ -253,7 +253,7 @@ describe("dmarcGuidance", () => {
 });
 
 describe("unauthenticatedSources", () => {
-  test("lists non-COSS sources failing with at least 1% of the volume", () => {
+  test("lists non-coss.com sources failing with at least 1% of the volume", () => {
     expect(unauthenticatedSources(HEALTHY)).toEqual([]);
     const totals = {
       ...HEALTHY,

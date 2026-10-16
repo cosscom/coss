@@ -59,7 +59,7 @@ export default function GlobalError({
     // light and loads the fonts itself.
     <html className={`${fontSans.variable} ${fontMono.variable}`} lang="en">
       <body className="min-h-dvh bg-sidebar font-sans text-foreground antialiased">
-        <title>{versionSkew ? "Updating · COSS" : "Something went wrong · COSS"}</title>
+        <title>{versionSkew ? "Updating · coss.com" : "Something went wrong · coss.com"}</title>
         <main className="flex min-h-dvh p-2">
           <div className="flex flex-1 overflow-hidden rounded-2xl border bg-background">
             {versionSkew ? (
@@ -69,7 +69,7 @@ export default function GlobalError({
                     Reload
                   </Button>
                 }
-                description="COSS was just updated. Reload the page, then try again."
+                description="coss.com was just updated. Reload the page, then try again."
                 icon={RefreshCwIcon}
                 title="A new version is available"
               />

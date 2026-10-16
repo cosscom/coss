@@ -1,7 +1,7 @@
 /**
  * Refreshes `src/disposable-domains.generated.ts` from the CC0 list maintained at
  * https://github.com/disposable-email-domains/disposable-email-domains. Review the diff before
- * committing: a mainstream provider showing up there would lock its users out of COSS's sign-up and
+ * committing: a mainstream provider showing up there would lock its users out of coss.com's sign-up and
  * mark them disposable in risk assessments (add it to `ALLOWED_DOMAINS` in `src/email.ts` instead of
  * editing the generated file).
  *

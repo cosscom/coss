@@ -1,4 +1,4 @@
-# packages/risk — COSS Risk
+# packages/risk — coss.com Risk
 
 Read together with the root `AGENTS.md` (conventions, tenancy rule, tests). Paths are from the
 repository root.
@@ -39,7 +39,7 @@ repository root.
   environments read the markers in `sandboxContentScores`), **outside** the assessment's transaction and after a
   replay pre-check. With an `Idempotency-Key`, a preparation claim (`risk_assessment_preparation`) deduplicates concurrent retries before charging,
   caches only scores for transaction retries, and holds no connection during classification. A crashed
-  preparation fails open after 30 seconds without another charge; preparation rows are purged after 48 hours. COSS never decides from scores:
+  preparation fails open after 30 seconds without another charge; preparation rows are purged after 48 hours. coss.com never decides from scores:
   `content.*` reasons fire only at the environment's `content_thresholds`, and rules test `content.*` fields. The
   text is never stored or logged — the classify route keeps neither request nor response bodies (`CONTENT_REQUESTS` in
   `request-log.ts`) and `redactBody` keeps only string lengths inside `content` objects. Live classifications
@@ -56,7 +56,7 @@ repository root.
   (`RiskDeps.ipPrivacy`, `RISK_IP_PRIVACY`): looked up before the transaction like the datasets, 500 ms, failures are
   `degraded: ["ip_privacy"]`; a provider's answer replaces the network's `ip.vpn_network` guess. **Calibration**
   (`GET /v1/risk/calibration`, the dashboard's Calibration page and rule precision): reasons' and rules' outcomes over
-  90 days with suggested weights (precision pulled toward the default, none below 20 labeled); COSS only suggests,
+  90 days with suggested weights (precision pulled toward the default, none below 20 labeled); coss.com only suggests,
   and `risk_settings.reason_weights` (`scoreReasons(reasons, weights)`) applies what the customer chose.
   **Dogfooding**: `@coss/auth/risk` (`setSignUpRiskAssessor`, injected by the dashboard's `lib/risk.ts`) assesses
   `/sign-up/email` and new social accounts in `RISK_SIGNUP_ENVIRONMENT_ID`, failing open after 3 s; only `block`

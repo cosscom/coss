@@ -80,7 +80,7 @@ export const sendHookMessageRoute = createRoute({
   tags: [TAGS.messages],
   summary: "Send a message",
   description:
-    "Queues a message to the application: COSS delivers it to each of its enabled endpoints " +
+    "Queues a message to the application: coss.com delivers it to each of its enabled endpoints " +
     "subscribed to `event_type` within seconds, signed with each endpoint's secret, and retries " +
     "failures with backoff for about a day. Each request's `webhook-id` header is the message's " +
     "id. Counts against the send quota once per endpoint it goes to (at least once). Live sends " +

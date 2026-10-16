@@ -307,7 +307,7 @@ export function renderNotification(input: {
   if (input.type === "suspended") {
     subject = `Live sending is suspended for ${subjectName}`;
     blocks.push({
-      paragraph: `COSS suspended live sending for ${name}. Reason: ${label}.`,
+      paragraph: `coss.com suspended live sending for ${name}. Reason: ${label}.`,
     });
     if (input.checks.length) blocks.push({ list: input.checks });
     blocks.push({
@@ -325,7 +325,7 @@ export function renderNotification(input: {
       paragraph:
         input.trigger === "content_screening"
           ? `Content screening flagged some of ${name}'s recent emails as possible spam or phishing.`
-          : `${label} for ${name} is approaching the level at which COSS suspends live sending automatically.`,
+          : `${label} for ${name} is approaching the level at which coss.com suspends live sending automatically.`,
     });
     if (input.checks.length) blocks.push({ list: input.checks });
     if (advice) blocks.push({ paragraph: advice });
@@ -336,7 +336,7 @@ export function renderNotification(input: {
   }
   blocks.push({ link: { label: "View your reputation", url: input.url } });
   blocks.push({
-    paragraph: `You're receiving this because you're an owner or admin of ${name} on COSS.`,
+    paragraph: `You're receiving this because you're an owner or admin of ${name} on coss.com.`,
   });
   return { subject, text: toText(blocks), html: toHtml(subject, blocks) };
 }

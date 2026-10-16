@@ -1,15 +1,15 @@
-# AGENTS.md — COSS monorepo
+# AGENTS.md — coss.com monorepo
 
-COSS is a unified developer platform: one API key + one SDK (`coss.email.send()`, later SMS, video,
+coss.com is a unified developer platform: one API key + one SDK (`coss.email.send()`, later SMS, video,
 scheduling…). This repo holds the dashboard, the public API, shared packages and the public SDK.
 Email delivery goes through the provider interface in `packages/email/src/provider.ts` (Amazon SES v2 with one SES
 tenant per organization, or the fake provider); sandbox environments always use the fake provider. Delivery events
 drive per-recipient status and signed customer webhooks. Environments also receive email (an SES receipt rule → S3 +
 SQS → the worker; see `packages/email/AGENTS.md`). A sample of live messages is screened by an AI decision model
 (`@coss/screening`) before it is sent. Plans, contracts, metered usage, credits and invoices are `@coss/billing`
-(COSS rates usage itself; Stripe, behind a provider interface, only collects). Rate limits (per API key, per-org send quotas, dashboard
+(coss.com rates usage itself; Stripe, behind a provider interface, only collects). Rate limits (per API key, per-org send quotas, dashboard
 auth) are counted in Valkey (ElastiCache Serverless in production) by `@coss/ratelimit`. Errors and traces go to
-Sentry (organization `cosscom`) through `@coss/observability`. COSS Risk (`@coss/risk`, `coss.risk.assess()`) assesses customers' sign-ups, logins and other
+Sentry (organization `cosscom`) through `@coss/observability`. coss.com Risk (`@coss/risk`, `coss.risk.assess()`) assesses customers' sign-ups, logins and other
 events: email/IP signals (`@coss/signals`), content scores, plus what each environment remembers (velocity in Valkey,
 duplicate mailboxes, fraud reports, allow/block lists) and its rules become `allow`/`review`/`block` with reasons; the
 signals are also building blocks of their own, next to rate limiting as a service (`coss.risk.limit()`). Human setup docs (incl. running on SES): [README.md](./README.md).
@@ -33,8 +33,8 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `apps/smtp` | `@coss/smtp` | Bun SMTP relay (`smtp.coss.com`; locally :2465 implicit TLS, :2587 STARTTLS) on `smtp-server`: username `coss`, an API key as the password; each message becomes a `POST /v1/emails` request (`@coss/email/smtp`) stored through the same email service, rate limits and quotas. Behind an NLB; terminates TLS itself (exported ACM certificate). See `apps/smtp/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, webhook deliveries, domain re-checks, dedicated IP pools, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events and received emails from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss); `./idempotency` (`withIdempotencyKey`, request hashes); `./partitions` (daily range partitions: create ahead, drop expired). |
-| `packages/signals` | `@coss/signals` | Stateless abuse signals shared by COSS's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
-| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./social`: Google/GitHub sign-in (server-only); `./risk`: the injected sign-up risk assessor (COSS Risk on COSS's own sign-ups); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox; `./mobile`: the iOS app's sign-in (PKCE codes, bearer sessions; server-only). See `packages/auth/AGENTS.md`. |
+| `packages/signals` | `@coss/signals` | Stateless abuse signals shared by coss.com's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
+| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./social`: Google/GitHub sign-in (server-only); `./risk`: the injected sign-up risk assessor (coss.com Risk on coss.com's own sign-ups); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox; `./mobile`: the iOS app's sign-in (PKCE codes, bearer sessions; server-only). See `packages/auth/AGENTS.md`. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). See `packages/tenancy/AGENTS.md`. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS (with the BIMI check), custom tracking domains (Cloudflare for SaaS), dedicated IP pools (SES managed dedicated IPs, `dedicated-ips.ts`), receiving (received emails, receiving domains, managed inbound addresses, the content store), DMARC reports (ingestion, guidance to `p=reject`, owner notifications), templates (drafts, versions, locales, rendering at send), tenants, sweeps; `./templates` (the template language: parse, check, render, variable validation; client-safe, no imports), `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./admin` (the admin console's cross-org reads), `./env` (zod only), `./testing`. See `packages/email/AGENTS.md`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
@@ -184,7 +184,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `INBOUND_MANAGED_DOMAIN`, `SES_INBOUND_BUCKET` | api, web, worker: receiving. The managed inbound domain (`<label>.<domain>` addresses per environment; default `inbound.coss.test` with the fake provider) and, with SES, the bucket received content lives in (both or neither with SES; unset → receiving off). Printed by `ses:bootstrap --managed-domain` |
 | `SES_INBOUND_QUEUE_URL` | worker with SES receiving: the SQS queue of receipt notifications |
 | `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_PRIVATE_KEY`, `APNS_TOPIC`, `APNS_ENVIRONMENTS` | worker: push notifications to the iOS app through APNs with a token-based `.p8` key (its id, the Apple Developer team, the PEM contents — `\n` line breaks accepted — the bundle id, default `com.coss.ios`, and the gateways the key serves, default `production,sandbox`; devices registered for another are skipped). The first three together or none; unset → printed in development, held in production |
-| `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | web reads the id only to refuse admin suspensions of COSS's own organization (`isSystemOrganization`, `apps/web/src/lib/system-organization.ts`); worker: account emails (verification, password reset, invitation) and reputation notification emails go out through COSS's own email product from this live environment (of COSS's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
+| `NOTIFICATIONS_ENVIRONMENT_ID`, `NOTIFICATIONS_FROM` | web reads the id only to refuse admin suspensions of coss.com's own organization (`isSystemOrganization`, `apps/web/src/lib/system-organization.ts`); worker: account emails (verification, password reset, invitation) and reputation notification emails go out through coss.com's own email product from this live environment (of coss.com's own org) and sender (on one of its verified domains). Both or neither; unset → held in production (account email links are printed by the dashboard outside production) |
 | `SMTP_HOSTNAME`, `SMTP_IMPLICIT_TLS_PORT`, `SMTP_STARTTLS_PORT` | smtp: the relay's name (greeting, certificate; production `smtp.coss.com`) and the ports it listens on (default 2465/2587; the NLB maps 465/587 onto them) |
 | `SMTP_TLS_CERTIFICATE_ARN`, `SMTP_TLS_PASSPHRASE` | smtp (production, both required): the exportable ACM certificate the relay exports at start and every 12 hours, and the passphrase that encrypts the exported key in transit. The ARN is set by Terraform (`generated_env`) |
 | `SMTP_TLS_CERT_FILE`, `SMTP_TLS_KEY_FILE` | smtp (development): a certificate from files; neither → a self-signed one made with `openssl` (clients skip verification) |
@@ -201,7 +201,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `BILLING_PROVIDER`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | web + worker: the payment provider of new billing accounts (`fake` default, or `stripe`, which needs the key); the webhook secret only the dashboard (`/api/billing/webhook`). Shape in `@coss/billing/env` |
 | `SCREENING_CLASSIFIER`, `SCREENING_MODEL`, `AI_GATEWAY_API_KEY` | worker: content screening (`off`/`fake`/`ai`; a Vercel AI Gateway decision model id, default `typesafe-ai/jev`; the Gateway key, required with `ai`). The model and key also serve the api's `RISK_CLASSIFIER` |
 | `RISK_IP_PRIVACY`, `IPINFO_PRIVACY_TOKEN` | api (+ web, for its sign-up assessments): risk's VPN/proxy/relay data per address (`off` default; `ipinfo`: IPinfo's privacy detection with a paid plan's token, which sends every assessed public IP to IPinfo — list it as a subprocessor first). Without it, VPNs are only guessed from the network (`ip.vpn_network`) |
-| `RISK_SIGNUP_ENVIRONMENT_ID` | web: a live environment of COSS's own organization that assesses the dashboard's sign-ups (dogfooding; `block` refuses them, `review` waits in its queue). Unset: not assessed |
+| `RISK_SIGNUP_ENVIRONMENT_ID` | web: a live environment of coss.com's own organization that assesses the dashboard's sign-ups (dogfooding; `block` refuses them, `review` waits in its queue). Unset: not assessed |
 | `RISK_CLASSIFIER` | api: risk's content classification in live environments (`off` default: classify answers 503 and assessments skip content; `fake`: the `[coss-test:…]` markers; `ai`: `SCREENING_MODEL` with `AI_GATEWAY_API_KEY`). Sandbox environments always use the markers |
 | `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | api, worker, web: Sentry (each its own project's DSN; web's also serves browsers of both zones); unset → nothing reported. Read before t3-env (`src/instrument.ts`, `src/lib/monitoring-server.ts`, `/api/monitoring`) and validated by it (`sentryEnvShape`) |
 | `SENTRY_RELEASE` | api, worker: the image's commit (Dockerfile build argument); the Next apps' release is `NEXT_DEPLOYMENT_ID`, injected at build |
@@ -211,7 +211,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `TURBO_TOKEN`, `TURBO_TEAM`, `TURBO_REMOTE_CACHE_SIGNATURE_KEY` | turbo itself (Vercel Remote Cache, team `cal`): locally `turbo login` stores the token and `~/.config/coss/turbo.env` (sourced by the shell profile) sets the other two; in CI `secrets.TURBO_TOKEN`, `vars.TURBO_TEAM`, `secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY`. Never in `.env` (turbo doesn't read it) |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | `apps/web`: Server Actions key shared by every dashboard task of a stage (base64, 16/24/32 bytes); read at runtime, required in production |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | `apps/web` (read by `packages/auth/src/social.ts`): sign-in with Google / GitHub, each on when both of its values are set (`src/instrumentation.ts` refuses half a pair). Callbacks `${BETTER_AUTH_URL}/api/auth/callback/{google,github}`. Production: ids plain (tfvars), secrets in the stage secret — put the secrets there **before** the `terraform apply` that adds them, or web tasks can't start |
-| `DEPLOY_GITHUB_APP_ID`, `DEPLOY_GITHUB_APP_PRIVATE_KEY` | `apps/web`: the admin console's Deploys page (`src/lib/deploys.ts`), through the COSS Deploy GitHub App (Actions read/write, Contents read on `cosscom/coss`; README, "Deploying from the admin console"). Both or neither (`src/instrumentation.ts`); unset → the page explains the setup. The key may be one line with `\n` escapes. The app's bot is on `deploy_actor_ids` |
+| `DEPLOY_GITHUB_APP_ID`, `DEPLOY_GITHUB_APP_PRIVATE_KEY` | `apps/web`: the admin console's Deploys page (`src/lib/deploys.ts`), through the coss.com Deploy GitHub App (Actions read/write, Contents read on `cosscom/coss`; README, "Deploying from the admin console"). Both or neither (`src/instrumentation.ts`); unset → the page explains the setup. The key may be one line with `\n` escapes. The app's bot is on `deploy_actor_ids` |
 | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | `apps/web`: Cloudflare Turnstile (both or neither; required in production, checked in `src/instrumentation.ts`). Pages pass the site key to the auth forms; `packages/auth/src/options.ts` adds the `captcha` plugin when the secret is set |
 | `TRUSTED_PROXY_HOPS` | `apps/web`: proxies that append to `X-Forwarded-For` (CloudFront → ALB: `2`; default `0`). `src/proxy.ts` replaces the header with the one client address they vouch for, which Better Auth then uses (it ignores multi-value headers) |
 | `NEXT_DEPLOYMENT_ID` | Next builds (`apps/web`, `apps/site`): the commit, passed by the Dockerfiles; build id + version-skew protection |
@@ -648,7 +648,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   revokes its keys and permanently bans members without another active organization (platform admins, the
   actor and already-banned users are kept), each step audited on its own, so it can be re-run.
   **Deploys** (`/admin/deploys`, `src/lib/deploys.ts`; pure parts in `deploy-runs.ts`) reads GitHub only through
-  the COSS Deploy app's installation token (Actions write, Contents read — never widen it): "Deploy now"
+  the coss.com Deploy app's installation token (Actions write, Contents read — never widen it): "Deploy now"
   dispatches `deploy.yml` for main and cancels push runs still before their deploy job; "Redeploy" dispatches
   `image_tag` for a commit a recent run deployed (re-checked server-side). It parses the runs' job names (`gate`,
   `build (…)`, `deploy`, its `Roll out` step) and the `run-name` of `image_tag` dispatches: change them together.
@@ -682,13 +682,13 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   that reach beyond them:
   - **Email** (`packages/email/AGENTS.md`: SES, suppressions, open/click tracking, one-click unsubscribe, custom
     tracking domains, scheduled and batch sends, attachments, generated text parts, reads, templates, receiving): only the
-    `coss_email_id` tag is ever set on SES messages; `SendEmail` is not idempotent (only throttling is retried); COSS
+    `coss_email_id` tag is ever set on SES messages; `SendEmail` is not idempotent (only throttling is retried); coss.com
     keeps the only suppression list and does its own open/click tracking — never turn SES's on; `email.html` always
     keeps the original (only the provider's copy is instrumented); templates are rendered at send and the `email`
     row stores the result.
   - **SMTP relay** (`apps/smtp/AGENTS.md`): never a raw MIME passthrough — every message goes through
     `EmailService.send` like `POST /v1/emails`; never move Bcc'd addresses into visible headers.
-  - **Billing** (`packages/billing/AGENTS.md`): COSS owns the catalog, contracts, rating and invoices; the provider
+  - **Billing** (`packages/billing/AGENTS.md`): coss.com owns the catalog, contracts, rating and invoices; the provider
     (Stripe) only collects — never move pricing into Stripe objects. Products meter through `@coss/billing/metering`
     and take plan checks injected (`PlanGate`/`UsageGate`). Billing holds and reputation suspensions are independent.
   - **Webhooks** (`packages/webhooks/AGENTS.md`: delivery, the shared engine, endpoint health, secret rolls, log
@@ -697,7 +697,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   - **Hooks** (`packages/hooks/AGENTS.md`): day-partitioned tables with no FKs in or out; portal tokens never in a
     path, query or cookie.
   - **Reputation** (`packages/reputation/AGENTS.md`): a suspension is never lifted automatically (only
-    `reinstateOrganization`); the worker never suspends COSS's own organization.
+    `reinstateOrganization`); the worker never suspends coss.com's own organization.
   - **Content screening** (`packages/screening/AGENTS.md`): an unscreened sample is never sent; verdicts never store
     content and scores are admin-only.
   - **Logs** (`packages/logs/AGENTS.md`): `log_entry` rows only through `appendLogEntries`; bodies only through
@@ -741,7 +741,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   the fake provider simulates `suppressed` (via that address).
 - Content screening only samples (a sender can still get unsampled messages through, until the random sample or
   bounces/complaints catch up) and its scores are uncalibrated model probabilities; thresholds were chosen, not
-  measured against labeled COSS traffic. Injected text in a message can lower its scores. An org-wide suspension from
+  measured against labeled coss.com traffic. Injected text in a message can lower its scores. An org-wide suspension from
   one false positive needs an admin to reinstate.
 - Tracking does not filter bots: mail clients that prefetch images (e.g. Apple Mail Privacy Protection) inflate opens
   and link scanners inflate clicks. Providers send one message to every recipient, so hits on emails with several
@@ -770,7 +770,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   account, then drops what doesn't route (no SMTP-time rejection, no bounces). Over an organization's daily inbound
   limit mail is dropped and only counted. Received `cid:` inline images don't render in the dashboard preview.
   Content written for a message whose row never committed (a crash in between) stays until the lifecycle rule.
-- Account emails go to unverified addresses by design (sign-up verification, invitations) from COSS's own
+- Account emails go to unverified addresses by design (sign-up verification, invitations) from coss.com's own
   organization, so bounces from made-up sign-up addresses count against that organization's reputation like any
   customer's — but the worker never suspends it on its own (`systemOrganizationId`: the guard only warns it and a
   screening block only flags its message), and neither can platform admins (the dashboard reads the same variable).
@@ -781,7 +781,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   before it leaves a 30-day window; its closed hour keeps its rolled-up counts unless a later event forces a recount. A send already past `authorizeLiveSender` when the org is suspended still goes out.
   Customers are told by banner, page, API, webhooks and a notification email to owners/admins — only for warnings
   and suspensions (not recoveries or reinstatements), and only once the worker's `NOTIFICATIONS_*` variables point
-  at a verified sender of COSS's own organization.
+  at a verified sender of coss.com's own organization.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page,
 Universal Link sign-in callbacks, an Android app, App Store (beyond TestFlight) releases of the iOS app, push notifications for other events (or per organization),

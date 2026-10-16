@@ -2,8 +2,8 @@
  * Least-privilege IAM policies for the apps when `EMAIL_PROVIDER=ses`, created by `ses:bootstrap`
  * as customer-managed policies to attach to whatever identity each app runs as.
  *
- * Identities COSS creates are tagged `coss_managed=<tenant prefix>`; destructive identity operations
- * are only allowed on identities with that tag, so domains managed outside COSS in the same account
+ * Identities coss.com creates are tagged `coss_managed=<tenant prefix>`; destructive identity operations
+ * are only allowed on identities with that tag, so domains managed outside coss.com in the same account
  * (e.g. the company's own) can't be changed or deleted by the apps. Sending can't be limited by tag:
  * SES authorizes `SendEmail` against the sender *address* (`identity/hello@acme.com`), which is not
  * a tagged resource. Sends are confined by the configuration set instead (verified live: another

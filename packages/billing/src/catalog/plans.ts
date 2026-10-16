@@ -34,7 +34,7 @@ export const PLANS = {
   free: {
     key: "free",
     name: "Free",
-    description: "For trying COSS and side projects.",
+    description: "For trying coss.com and side projects.",
     rank: 0,
     selfServe: true,
     feeCents: 0n,

@@ -1,6 +1,6 @@
 /**
- * Sends COSS's own emails to its users (reputation notifications, account emails) through the
- * email product itself: from one live environment of COSS's own organization
+ * Sends coss.com's own emails to its users (reputation notifications, account emails) through the
+ * email product itself: from one live environment of coss.com's own organization
  * (`NOTIFICATIONS_ENVIRONMENT_ID`), so they get suppression, delivery events and history like any
  * customer email.
  */

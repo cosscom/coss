@@ -54,10 +54,10 @@ export function ReputationBanner(props: {
       </AlertTitle>
       <AlertDescription>
         {suspended
-          ? `COSS suspended live sending for this organization (${triggerLabel(reason).toLowerCase()}). Sandbox keys still work. Contact support to resume sending.`
+          ? `coss.com suspended live sending for this organization (${triggerLabel(reason).toLowerCase()}). Sandbox keys still work. Contact support to resume sending.`
           : reason === "content_screening"
             ? "Content screening flagged some of your recent emails as possible spam or phishing. Emails it is confident about are blocked and suspend live sending automatically."
-            : `${triggerLabel(reason)} is approaching the level at which COSS suspends live sending automatically.`}{" "}
+            : `${triggerLabel(reason)} is approaching the level at which coss.com suspends live sending automatically.`}{" "}
         <Link className="underline" href={props.href}>
           View reputation
         </Link>
@@ -200,7 +200,7 @@ export function ReputationHistory(props: {
                     ? "Automatic"
                     : props.showInternal
                       ? (event.actorEmail ?? "Admin")
-                      : "COSS"}
+                      : "coss.com"}
                 </TableCell>
                 {props.showInternal ? (
                   <TableCell className="max-w-xs whitespace-normal text-muted-foreground">

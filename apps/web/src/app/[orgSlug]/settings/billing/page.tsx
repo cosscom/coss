@@ -231,7 +231,7 @@ export default async function BillingPage({
               ? "An invoice is overdue. Pay it below and sending resumes right away."
               : holds.some((hold) => hold.reason === "spend_limit")
                 ? "This month's usage reached your spend limit. Raise it below, or sending resumes next month."
-                : "COSS paused live sending for billing reasons. Contact support."}{" "}
+                : "coss.com paused live sending for billing reasons. Contact support."}{" "}
             Sandbox keys keep working.
           </AlertDescription>
         </Alert>

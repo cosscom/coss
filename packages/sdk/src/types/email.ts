@@ -150,7 +150,7 @@ export interface TrackingOptions {
   /** Add an invisible pixel to the HTML body and record `email.opened` events. */
   opens?: boolean;
   /**
-   * Send HTML links through a COSS redirect and record `email.clicked` events. Links with a
+   * Send HTML links through a coss.com redirect and record `email.clicked` events. Links with a
    * `data-coss-no-track` attribute are left alone.
    */
   clicks?: boolean;
@@ -268,7 +268,7 @@ export interface EmailTracking {
   last_clicked_at: string | null;
 }
 
-/** A link COSS rewrote for click tracking. */
+/** A link coss.com rewrote for click tracking. */
 export interface EmailLink {
   object: "email_link";
   id: string;

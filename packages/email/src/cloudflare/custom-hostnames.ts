@@ -1,5 +1,5 @@
 /**
- * Cloudflare for SaaS custom hostnames: each customer tracking hostname is registered on COSS's
+ * Cloudflare for SaaS custom hostnames: each customer tracking hostname is registered on coss.com's
  * zone, Cloudflare validates it over HTTP (once the customer's CNAME points at the fallback
  * origin), issues and renews its certificate, and proxies `/t/*` to the API.
  * https://developers.cloudflare.com/api/resources/custom_hostnames/
@@ -27,7 +27,7 @@ const TIMEOUT_MS = 10_000;
 /** "Duplicate custom hostname found." */
 const DUPLICATE_HOSTNAME_CODES = new Set([1406]);
 
-/** The parts of a custom hostname object COSS reads. */
+/** The parts of a custom hostname object coss.com reads. */
 export type CloudflareCustomHostname = {
   id: string;
   hostname: string;
@@ -74,7 +74,7 @@ const FAILED_SSL_STATUSES = new Set([
   "deleted",
 ]);
 
-/** Maps a custom hostname to COSS's three states, with the most useful explanation. */
+/** Maps a custom hostname to coss.com's three states, with the most useful explanation. */
 export function customHostnameState(
   hostname: CloudflareCustomHostname,
   cnameTarget: string,

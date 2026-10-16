@@ -28,7 +28,7 @@ export const TRIGGER_LABELS: Readonly<Record<string, string>> = {
   complaint_rate: "Complaint rate",
   content_screening: "Content screening",
   hook_failure_rate: "Hooks delivery failures",
-  manual: "COSS review",
+  manual: "coss.com review",
   policy: "Policy",
   evaluation: "Evaluation",
 };
@@ -118,7 +118,7 @@ export type ReputationPolicy = z.output<typeof ReputationPolicy>;
 
 /**
  * Stricter than SES (which reviews accounts at 5% bounces / 0.1% complaints and may pause them
- * at 10% / 0.5%), so COSS acts on an organization before AWS acts on the shared account.
+ * at 10% / 0.5%), so coss.com acts on an organization before AWS acts on the shared account.
  */
 export const DEFAULT_REPUTATION_POLICY: ReputationPolicy = {
   windowDays: 7,
@@ -226,7 +226,7 @@ export const ReputationObject = z
     status: z.enum(REPUTATION_STATUSES).meta({
       description:
         "`good`, `warning` (a rate is approaching the suspension threshold) or `suspended` " +
-        "(live sending is refused until COSS support reinstates the organization).",
+        "(live sending is refused until coss.com support reinstates the organization).",
     }),
     reason: z.string().nullable().meta({
       description: "The trigger behind a `warning` or `suspended` status.",

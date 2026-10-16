@@ -4,7 +4,7 @@ description: Assess payments with what your payment processor knows about the ca
 ---
 
 `checkout` events take a `checkout` object: the amount, and what your payment processor tells you
-about the card. COSS compares the card with the person's IP address and billing address, counts
+about the card. coss.com compares the card with the person's IP address and billing address, counts
 checkouts per card, and remembers cards you report as fraud.
 
 ```ts twoslash
@@ -31,7 +31,7 @@ With Stripe, the card's details are on the PaymentMethod (`card.fingerprint`, `c
 `block` costs nothing.
 
 - **Never send the card number.** `fingerprint` is your processor's own stable id for the card
-  number; COSS keeps only a keyed hash of it, never logs it, and doesn't return it.
+  number; coss.com keeps only a keyed hash of it, never logs it, and doesn't return it.
 - Countries are upper-case ISO 3166-1 alpha-2 codes, currencies upper-case ISO 4217 codes.
   `checkout` is refused on other events.
 
