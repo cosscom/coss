@@ -17,7 +17,7 @@ export const SUPPRESSION_CSV_COLUMNS = [
 /** Guard formula starts and escape literal apostrophes so the prefix is reversible. */
 const GUARDED_START = /^['=+\-@\t\r]/;
 
-function csvField(value: string): string {
+export function csvField(value: string): string {
   const safe = GUARDED_START.test(value) ? `'${value}` : value;
   return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
 }
@@ -33,7 +33,7 @@ export function suppressionCsvRow(suppression: SuppressionOutput): string {
 const BOM = String.fromCharCode(0xfeff);
 
 /** RFC 4180 records with the 1-based line each starts on. Tolerates a BOM and bare `\n`. */
-function csvRecords(text: string): { line: number; fields: string[] }[] {
+export function csvRecords(text: string): { line: number; fields: string[] }[] {
   const input = text.startsWith(BOM) ? text.slice(1) : text;
   const records: { line: number; fields: string[] }[] = [];
   let fields: string[] = [];
@@ -79,13 +79,18 @@ function csvRecords(text: string): { line: number; fields: string[] }[] {
   return records;
 }
 
-const ADDRESS_HEADERS = new Set(["address", "email", "email_address", "email address"]);
+export const ADDRESS_HEADERS: ReadonlySet<string> = new Set([
+  "address",
+  "email",
+  "email_address",
+  "email address",
+]);
 const SCOPE_HEADERS = new Set(["scope", "category"]);
 
 export type SuppressionCsvEntry = { line: number; address: string; scope?: string };
 
 /** Undoes one export guard, including the escape for a literal leading apostrophe. */
-function unguard(value: string): string {
+export function unguard(value: string): string {
   const trimmed = value.trim();
   return trimmed.startsWith("'") && GUARDED_START.test(trimmed.slice(1))
     ? trimmed.slice(1)

@@ -248,3 +248,21 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   report" (`receiveSampleDmarcReport`) exists only with the fake provider. API (`domain:read`):
   `GET /v1/domains/{id}/dmarc`, `…/dmarc/reports[/{report_id}]`, `coss.domains.dmarc`; event
   `domain.dmarc_report_received` (`DOMAIN_EVENT_TYPES`, live environments only, no rows or IPs).
+- **Contacts** (`packages/email/src/{contacts,contact-properties,audiences,segments,topics,audience-resolution,marketing-settings,contact-csv}.ts`,
+  tables `contact` (ids `contact_`), `contact_property` (`cprop_`), `audience` (`aud_`) + `audience_member`, `segment`
+  (`seg_`), `topic` (`topic_`) + `contact_topic`, `marketing_settings`, `contact_counter`; permission `contact`, backfilled
+  by `0073`): one contact per environment and address (bare, lower-cased). **Consent lives on contacts, deliverability
+  in suppressions**: `contact.status` (`subscribed`/`unsubscribed`/`pending`) and `contact_topic` (explicit
+  `opted_in`/`opted_out`; no row = the topic's `default_subscription`) say who wants marketing, while bounces and
+  complaints stay suppressions. A contact's or topic's opt-out is never written as a suppression, and a re-subscribe never deletes one.
+  A topic's `key` is a send's `category` (immutable). Custom properties are typed definitions (`contact_property`,
+  ≤ 50, key and type immutable; dates stored canonical ISO); `mergeProperties` validates every write (unknown key or
+  wrong type → `ContactError`, 422, `param: properties.<key>`). The plan's `contactsPerEnvironment` is enforced by a
+  conditional update of `contact_counter` (`reserveContacts`/`releaseContacts`, same transaction as every insert and
+  delete — never a `count(*)`). Imports never re-subscribe anyone and send no webhooks; single changes send
+  `contact.created/updated/deleted` (contact id, email, status, source — never properties). Segments are JSON filters
+  (`SegmentFilter`, ≤ 20 conditions, one nested level) compiled to SQL at every use (`compileSegmentFilter`: values
+  bound, keys only from definitions, `contains` via `position()`); deleting a property, audience or topic a segment
+  references is refused (`…_in_use`). `resolveRecipients` (keyset by contact id, bounded by `before`) is the only way
+  marketing recipients are chosen: `subscribed`, the topic reaches them, and no `*`/`stream:marketing`/topic
+  suppression. `ContactError` is mapped in `toApiError` (404 for `not_found`, else 422 — never 409).

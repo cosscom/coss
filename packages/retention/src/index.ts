@@ -262,10 +262,17 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { until: "deleted" },
   },
   {
+    id: "contacts",
+    label: "Contacts",
+    description:
+      "Your contacts with their custom properties, audience memberships, topic choices and consent timestamps (when they subscribed, unsubscribed or confirmed). Kept until you delete them.",
+    period: { until: "deleted" },
+  },
+  {
     id: "account",
     label: "Account and configuration",
     description:
-      "Users, organizations, projects, environments, API keys, domains, email templates (with every published version), webhook endpoints, log drains, Hooks applications, event types and endpoints, risk allow and block lists, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, a template, an endpoint, a drain, an application) are removed right away.",
+      "Users, organizations, projects, environments, API keys, domains, email templates (with every published version), webhook endpoints, log drains, Hooks applications, event types and endpoints, risk allow and block lists, contact properties, audiences, segments, topics, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, a template, an endpoint, a drain, an application) are removed right away.",
     period: { until: "closed" },
   },
 ];

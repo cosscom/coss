@@ -12,6 +12,13 @@ import type {
   RescheduleEmailParams,
   SendEmailParams,
 } from "../types/email.ts";
+import {
+  AudiencesResource,
+  ContactsResource,
+  MarketingSettingsResource,
+  SegmentsResource,
+  TopicsResource,
+} from "./contacts.ts";
 import { DedicatedIpsResource } from "./dedicated-ips.ts";
 import { EmailTemplatesResource } from "./email-templates.ts";
 import { listQuery } from "./list-query.ts";
@@ -32,6 +39,16 @@ export class EmailResource {
   readonly templates: EmailTemplatesResource;
   /** The organization's dedicated IPs. */
   readonly dedicatedIps: DedicatedIpsResource;
+  /** The environment's contacts, with custom properties and consent. */
+  readonly contacts: ContactsResource;
+  /** Static lists of contacts. */
+  readonly audiences: AudiencesResource;
+  /** Filters over the contacts. */
+  readonly segments: SegmentsResource;
+  /** What contacts subscribe to. */
+  readonly topics: TopicsResource;
+  /** The sender name and postal address of marketing email. */
+  readonly marketingSettings: MarketingSettingsResource;
 
   /** @internal Use `new Coss().email`. */
   constructor(http: HttpClient) {
@@ -41,6 +58,11 @@ export class EmailResource {
     this.received = new ReceivedEmailsResource(http);
     this.templates = new EmailTemplatesResource(http);
     this.dedicatedIps = new DedicatedIpsResource(http);
+    this.contacts = new ContactsResource(http);
+    this.audiences = new AudiencesResource(http);
+    this.segments = new SegmentsResource(http);
+    this.topics = new TopicsResource(http);
+    this.marketingSettings = new MarketingSettingsResource(http);
   }
 
   /**

@@ -56,7 +56,12 @@ const BILLING_EXAMPLE = {
     scim: false,
     dedicated_ips: false,
   },
-  limits: { domains: 10, members: 10, webhook_endpoints_per_environment: 10 },
+  limits: {
+    domains: 10,
+    members: 10,
+    webhook_endpoints_per_environment: 10,
+    contacts_per_environment: 50_000,
+  },
 } as const;
 
 export const BillingObject = z
@@ -145,6 +150,7 @@ export const BillingObject = z
         domains: z.int().nullable(),
         members: z.int().nullable(),
         webhook_endpoints_per_environment: z.int().nullable(),
+        contacts_per_environment: z.int().nullable(),
       })
       .meta({ description: "Resource limits (`null`: unlimited)." }),
   })
