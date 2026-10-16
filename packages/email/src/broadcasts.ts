@@ -24,7 +24,14 @@ import {
   type RecipientTarget,
   resolveRecipients,
 } from "./audience-resolution.ts";
-import { type BroadcastContent, renderBroadcast, templateKeys } from "./broadcast-render.ts";
+import {
+  type BroadcastContent,
+  MAX_RENDERED_LENGTH,
+  maxRenderedLength,
+  renderBroadcast,
+  renderTemplate,
+  templateKeys,
+} from "./broadcast-render.ts";
 import type {
   BroadcastEventType,
   BroadcastOutput,
@@ -66,7 +73,8 @@ export type BroadcastErrorCode =
   | "topic_not_found"
   | "mailing_address_required"
   | "idempotency_key_reused"
-  | "request_in_progress";
+  | "request_in_progress"
+  | "content_too_large";
 
 /** Expected failures of broadcasts; only `not_found` is a 404, the rest 422 (never 409). */
 export class BroadcastError extends Error {
@@ -286,6 +294,23 @@ const IDEMPOTENCY_ERRORS = {
 };
 
 /** Creates a draft, or (with `send` or `scheduled_at`) a broadcast that starts sending. */
+/**
+ * Refuses content that could render too large for one email (every recipient's is rendered
+ * whole at dispatch): each placeholder counts at its longest possible value.
+ */
+function assertRenderable(content: { html: string | null; text: string | null }): void {
+  for (const field of ["html", "text"] as const) {
+    if (maxRenderedLength(content[field]) > MAX_RENDERED_LENGTH) {
+      throw new BroadcastError(
+        "content_too_large",
+        `The ${field} could render to more than ${MAX_RENDERED_LENGTH / 1_000_000} million ` +
+          "characters with long contact values: use fewer {{{contact.…}}} placeholders.",
+        { param: field },
+      );
+    }
+  }
+}
+
 /** The broadcast an unexpired idempotency key made from the same request, if any. */
 async function findBroadcastReplay(
   env: BroadcastEnvironment,
@@ -314,6 +339,7 @@ export async function createBroadcast(
   opts: { liveProvider: string; idempotencyKey?: string | null; now?: Date },
 ): Promise<{ broadcast: BroadcastOutput; replayed: boolean }> {
   const now = opts.now ?? new Date();
+  assertRenderable({ html: params.html ?? null, text: params.text ?? null });
   const references = {
     audienceId: params.audience_id ?? null,
     segmentId: params.segment_id ?? null,
@@ -430,6 +456,7 @@ export async function updateBroadcast(
       param: "html",
     });
   }
+  assertRenderable({ html, text });
   const [updated] = await db
     .update(broadcast)
     .set({
@@ -1260,7 +1287,8 @@ async function insertEmails(
       from: row.from,
       to: [recipient.address],
       replyTo: row.replyTo,
-      subject: renderBroadcast(contentOf(row), variables).subject,
+      // Only the subject is stored: the body is rendered at dispatch.
+      subject: renderTemplate(row.subject, variables, "subject"),
       html: null,
       text: null,
       category: row.topic,

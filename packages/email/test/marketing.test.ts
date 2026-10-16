@@ -29,10 +29,10 @@ import {
   MAX_HEADERS_WITH_UNSUBSCRIBE,
   SendEmailRequest,
 } from "../src/schemas.ts";
-import type { EmailService } from "../src/service.ts";
+import { createEmailService, type EmailService } from "../src/service.ts";
 import { addSuppression, listSuppressions } from "../src/suppressions.ts";
 import { createEmailTemplate, publishTemplateDraft } from "../src/templates.ts";
-import { dispatchingEmailService } from "../src/testing.ts";
+import { dispatchingEmailService, memoryDispatchQueue } from "../src/testing.ts";
 import { createTopic } from "../src/topics.ts";
 import { params, sendEnvironment, verifiedFrom } from "./helpers.ts";
 
@@ -325,6 +325,40 @@ describe("sending to contacts", () => {
     expect(sent(twice.email.id)?.headers["List-Unsubscribe-Post"]).toBe(
       "List-Unsubscribe=One-Click",
     );
+  });
+
+  test("a queued marketing email isn't sent once marketing is paused", async () => {
+    const { tenant, from } = await fixture();
+    const held = new FakeEmailProvider({ log: false });
+    const queue = memoryDispatchQueue();
+    const queued = createEmailService({
+      liveProvider: held,
+      sandboxProvider: held,
+      queue,
+      trackingBaseUrl: "https://track.test",
+      linkKeys: keys,
+    });
+    const { email } = await queued.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({ from, to: ["fan@example.com"], stream: "marketing", html: "<p>Sale</p>" }),
+    });
+    await db
+      .insert(schema.reputationStanding)
+      .values({ organizationId: tenant.organization.id, marketingPausedAt: new Date() })
+      .onConflictDoUpdate({
+        target: schema.reputationStanding.organizationId,
+        set: { marketingPausedAt: new Date() },
+      });
+    for (const job of queue.jobs.splice(0)) await queued.dispatch(job);
+    expect(held.sent).toHaveLength(0);
+    expect(
+      await getEmail({
+        organizationId: tenant.organization.id,
+        environmentId: tenant.production.id,
+        id: email.id,
+      }),
+    ).toMatchObject({ status: "failed", failure: { code: "marketing_paused" } });
   });
 
   test("a stored template's marketing placeholders are filled at dispatch", async () => {

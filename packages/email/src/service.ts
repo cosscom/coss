@@ -9,6 +9,7 @@ import {
   isReplayOf,
   withIdempotencyKey,
 } from "@coss/db/idempotency";
+import { isMarketingPaused } from "@coss/reputation";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
 import { and, asc, eq, inArray, isNull, lt, lte, not, notExists, sql } from "drizzle-orm";
 import {
@@ -21,7 +22,7 @@ import { broadcastContentCache, withRenderedBody } from "./broadcast-content.ts"
 import { bumpBroadcastStat } from "./broadcast-stats.ts";
 import { dedicatedPoolSql } from "./dedicated-ips.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
-import { authorizeLiveSender } from "./domains.ts";
+import { authorizeLiveSender, marketingPausedError } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
 import { htmlToText } from "./html-text.ts";
@@ -428,6 +429,13 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       isNull(email.provider),
     );
     if (row.stream === "marketing") {
+      if (!sandbox && (await isMarketingPaused(row.organizationId))) {
+        // Paused since it was accepted. A broadcast's email is left to its worker, which pauses
+        // the broadcast and drops it (made again on Resume); any other is failed, as a
+        // scheduled send refused at its claim is.
+        if (!row.broadcastId) await failUnclaimed(row, marketingPausedError());
+        return currentEmail(row);
+      }
       // Marketing email can wait in its queue for a while (a broadcast's backlog): consent is
       // checked again at the claim, as for a scheduled send.
       const claimed = await db.transaction(async (tx) => {
@@ -463,6 +471,35 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     if (!claimed) return currentEmail(row);
     await complete({ ...row, dedicatedPool: claimed.dedicatedPool }, provider, sandbox);
     return currentEmail(row);
+  }
+
+  /** Fails a queued email nobody claimed yet with a sender refusal (`email.failed`). */
+  async function failUnclaimed(row: EmailRow, error: EmailError): Promise<void> {
+    await db.transaction(async (tx) => {
+      const [failed] = await tx
+        .update(email)
+        .set({ status: "failed", errorCode: error.code, errorMessage: error.message })
+        .where(
+          and(
+            eq(email.id, row.id),
+            eq(email.organizationId, row.organizationId),
+            eq(email.status, "queued"),
+            isNull(email.provider),
+          ),
+        )
+        .returning({ id: email.id });
+      if (!failed) return;
+      await purgeSendContent(tx, row);
+      await recordProviderEvent(
+        tx,
+        cossEvent(row, {
+          type: "email.failed",
+          providerEventType: "SenderRejected",
+          sourceId: error.code,
+          data: { failure: { code: error.code, message: error.message } },
+        }),
+      );
+    });
   }
 
   /**

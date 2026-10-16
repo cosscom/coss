@@ -20,6 +20,20 @@ export function templateKeys(...templates: (string | null | undefined)[]): strin
   return [...keys].sort();
 }
 
+/**
+ * The longest one placeholder can render to: a custom string property's 2,000 characters, each
+ * escaped to at most 6 (`&quot;`). A fallback is part of the template's own length.
+ */
+const MAX_VALUE_RENDERED = 2000 * 6;
+/** A broadcast's HTML or text renders to at most this many characters for any contact. */
+export const MAX_RENDERED_LENGTH = 5_000_000;
+
+/** The most `template` can render to, whatever the contact's values. */
+export function maxRenderedLength(template: string | null | undefined): number {
+  if (!template) return 0;
+  return template.length + [...template.matchAll(PLACEHOLDER)].length * MAX_VALUE_RENDERED;
+}
+
 export type RenderMode = "html" | "text" | "subject";
 
 export function renderTemplate(
@@ -28,7 +42,8 @@ export function renderTemplate(
   mode: RenderMode,
 ): string {
   return template.replace(PLACEHOLDER, (_, key: string, fallback: string | undefined) => {
-    const value = variables[key] || fallback || "";
+    // Own keys only: `contact.constructor` must not find `Object.prototype`'s.
+    const value = (Object.hasOwn(variables, key) ? variables[key] : undefined) || fallback || "";
     if (mode === "html") return escapeHtml(value);
     if (mode === "subject") return value.replace(/[\p{Cc}\p{Zl}\p{Zp}]+/gu, " ");
     return value;

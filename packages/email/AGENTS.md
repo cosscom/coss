@@ -300,7 +300,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
 - **Broadcasts** (`packages/email/src/{broadcasts,broadcast-render,broadcast-content,broadcast-stats,broadcast-references,broadcast-schemas}.ts`,
   `apps/api/src/routes/broadcasts.ts`, `coss.email.broadcasts`; tables `broadcast` (ids `bcast_`) + `broadcast_stat`;
   permission `broadcast`, backfilled by `0075`): `draft` → `scheduled` → `sending` ⇄ `paused` → `sent`, or
-  `canceled`/`failed`. Only drafts are edited; deleting needs a draft or a cancel before any email was made. Starting
+  `canceled`/`failed`. Content that could render past `MAX_RENDERED_LENGTH` with the longest contact values is refused
+  (`content_too_large`); placeholders read only the variables' own keys. Only drafts are edited; deleting needs a draft or a cancel before any email was made. Starting
   (create with `send`/`scheduled_at`, or `/send`, `/resume`) checks the postal address and, live,
   `authorizeLiveSender({ stream: "marketing" })`. The worker's `broadcasts` loop (`runDueBroadcasts`, system-level)
   claims each due broadcast with a lease (`lease_until`, bound from a JS `Date`; every write is fenced on it, so a
@@ -324,7 +325,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   starting one (`send`, `scheduled_at`) also `broadcast:send` (`apiKeyHasPermissions`). **Broadcast emails store no body**: the
   rendered subject, `variables` (only the template's `{{{contact.<key>|fallback}}}` keys) and `contact_id`; dispatch
   and every read render the broadcast's frozen content (`withRenderedBody`; dispatch caches it per process), then
-  the marketing footer and tracking apply as for any marketing email; they skip per-email screening, marketing email's consent is checked again at its dispatch claim
+  the marketing footer and tracking apply as for any marketing email; they skip per-email screening, marketing email's consent (and the marketing pause: a paused organization's queued marketing email
+  is failed `marketing_paused`, a broadcast's left to its worker to drop) is checked again at its dispatch claim
   (`skippedRecipients`, as for scheduled sends: a broadcast's queue can be minutes long), and an SES
   throttle (`ThrottledSendError`) hands a marketing email back for a later dispatch instead of failing it. Counters
   (`broadcast_stat`, 16 shards by email id, summed on read; they outlive the emails): `recipients` at fan-out,

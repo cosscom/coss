@@ -5,7 +5,13 @@ import { RETENTION_DAYS } from "@coss/retention";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { and, eq } from "drizzle-orm";
 import { addAudienceContacts, createAudience, deleteAudience } from "../src/audiences.ts";
-import { renderBroadcast, renderTemplate, templateKeys } from "../src/broadcast-render.ts";
+import {
+  MAX_RENDERED_LENGTH,
+  maxRenderedLength,
+  renderBroadcast,
+  renderTemplate,
+  templateKeys,
+} from "../src/broadcast-render.ts";
 import { CreateBroadcastRequest } from "../src/broadcast-schemas.ts";
 import { recipientMoveCounts, recountBroadcastStats } from "../src/broadcast-stats.ts";
 import {
@@ -52,6 +58,22 @@ describe("templates", () => {
     expect(
       renderTemplate("{{{contact.first_name}}}!", { first_name: "A\r\nBcc: x" }, "subject"),
     ).toBe("A Bcc: x!");
+  });
+
+  test("placeholders read only the variables' own keys", () => {
+    expect(renderTemplate("Hi {{{contact.constructor|friend}}}", {}, "subject")).toBe("Hi friend");
+    expect(renderTemplate("{{{contact.tostring}}}", {}, "html")).toBe("");
+  });
+
+  test("content that could render too large for one email is refused", async () => {
+    const f = await fixture();
+    const html = "<p>{{{contact.plan}}}</p>".repeat(Math.ceil(MAX_RENDERED_LENGTH / 12_000) + 1);
+    expect(maxRenderedLength(html)).toBeGreaterThan(MAX_RENDERED_LENGTH);
+    await expect(f.create({ html })).rejects.toMatchObject({ code: "content_too_large" });
+    const draft = await f.create();
+    await expect(updateBroadcast(f.env, draft.id, { html })).rejects.toMatchObject({
+      code: "content_too_large",
+    });
   });
 
   test("the preview line is a hidden preheader right after <body>", () => {
