@@ -1,14 +1,23 @@
 import {
+  authorizeLiveSender,
+  type ConfirmationSendOutcome,
+  confirmationSender,
   contactsCsvStream,
   createContactProperty,
   deleteContact,
   deleteContactProperty,
+  type EmailService,
   getContact,
   getContactProperty,
+  getContactRow,
   getContactTopics,
+  getMarketingSettingsRow,
   importContacts,
+  type LinkKeyRing,
   listContactProperties,
   listContacts,
+  preferenceLinks,
+  sendConfirmation,
   setContactTopics,
   updateContact,
   updateContactProperty,
@@ -16,30 +25,34 @@ import {
 } from "@coss/email";
 import {
   Contact,
+  ContactConfirmation,
   ContactImport,
   ContactList,
   ContactPropertyList,
   ContactPropertyObject,
   ContactTopics,
   CreateContactPropertyRequest,
+  CreatePreferenceLinksRequest,
   DeletedContact,
   DeletedContactProperty,
   ExportContactsQuery,
   ImportContactsRequest,
   ListContactsQuery,
   MAX_CONTACT_IMPORT_ENTRIES,
+  PreferenceLinksObject,
   UpdateContactPropertyRequest,
   UpdateContactRequest,
   UpdateContactTopicsRequest,
   UpsertContactRequest,
 } from "@coss/email/contact-schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import type { Context } from "hono";
 import { z } from "zod";
 import { recordApiAudit } from "../audit.ts";
 import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
-import { rateLimit } from "../middleware/rate-limit.ts";
+import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { billingErrorDoc, commonErrors, errorDoc, jsonDoc, requestIdHeader } from "./docs.ts";
 
@@ -394,23 +407,190 @@ export const deleteContactPropertyRoute = createRoute({
   },
 });
 
+export const resendConfirmationRoute = createRoute({
+  method: "post",
+  path: "/contacts/{id}/confirmation",
+  operationId: "resendContactConfirmation",
+  tags: ["Contacts"],
+  summary: "Resend a contact's confirmation email",
+  description:
+    "Sends a pending contact (double opt-in) its confirmation email again: at most once a day, " +
+    "and three times before it confirms (`status` says what happened).",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ contact: ["update"] }), rateLimit("api.write")],
+  request: { params: ContactParams },
+  responses: {
+    200: jsonDoc("What happened.", ContactConfirmation),
+    ...commonErrors,
+    404: notFoundDoc,
+    422: errorDoc(
+      "The marketing settings have no `confirmation_from` (`confirmation_sender_required`), or " +
+        "it isn't on a verified domain of the organization (`domain_not_verified`).",
+    ),
+  },
+});
+
+export const createPreferenceLinksRoute = createRoute({
+  method: "post",
+  path: "/contacts/{id}/preference_links",
+  operationId: "createPreferenceLinks",
+  tags: ["Contacts"],
+  summary: "Create a contact's preference links",
+  description:
+    "The contact's preference center and unsubscribe links, for emails you build yourself. They " +
+    "never expire. Marketing email sent through coss.com gets them (and one-click unsubscribe " +
+    "headers) automatically.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ contact: ["read"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/contacts/{id}/preference_links"),
+  ],
+  request: {
+    params: ContactParams,
+    body: {
+      required: false,
+      content: { "application/json": { schema: CreatePreferenceLinksRequest } },
+    },
+  },
+  responses: {
+    200: jsonDoc("The links.", PreferenceLinksObject),
+    ...bodyErrors,
+    ...commonErrors,
+    404: notFoundDoc,
+    422: errorDoc("The body failed validation (`validation_error`)."),
+  },
+});
+
 const NOT_FOUND = "No contact with this id or address exists in this API key's environment.";
+
+export type ContactRouteDeps = {
+  /** Sends double opt-in confirmations (they are the customer's own sends). */
+  emailService: Pick<EmailService, "send">;
+  links: { keys: LinkKeyRing; baseUrl?: string };
+  /** The live provider: live confirmations come from a domain it verified. */
+  liveProvider: string;
+};
 const PROPERTY_NOT_FOUND = "No contact property with this id exists in this API key's environment.";
 
-export function createContactRoutes(): OpenAPIHono<AppEnv> {
+export function createContactRoutes(deps: ContactRouteDeps): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
   const envOf = (c: { var: AppEnv["Variables"] }) => ({
     organizationId: c.var.auth.organizationId,
     environmentId: c.var.auth.environmentId,
   });
+  const baseUrlOf = (c: Context<AppEnv>) => deps.links.baseUrl ?? new URL(c.req.url).origin;
+
+  /**
+   * Charges the confirmation limits (the organization's, and the address's across every
+   * organization), sends the confirmation, and gives the charge back unless it was sent.
+   */
+  async function confirm(c: Context<AppEnv>, contactId: string, address: string) {
+    const { auth, rateLimiter } = c.var;
+    const org = {
+      buckets: ["contacts.confirmations.second", "contacts.confirmations.day"] as const,
+      subject: auth.organizationId,
+      organizationId: auth.organizationId,
+    };
+    const byAddress = { buckets: ["contacts.confirmation.address"] as const, subject: address };
+    const decision = await rateLimiter.consume({ ...org, buckets: [...org.buckets] });
+    if (!decision.allowed) {
+      throw rateLimitError(decision, {
+        code: "confirmation_quota_exceeded",
+        message: `Too many confirmation emails (${decision.bucket}). Retry after \`Retry-After\` seconds.`,
+      });
+    }
+    const forAddress = await rateLimiter.consume({ ...byAddress, buckets: [...byAddress.buckets] });
+    if (!forAddress.allowed) {
+      await rateLimiter.refund({ ...org, buckets: [...org.buckets] });
+      return "cooldown" as const;
+    }
+    let outcome: ConfirmationSendOutcome;
+    try {
+      outcome = await sendConfirmation({
+        environment: {
+          organizationId: auth.organizationId,
+          projectId: auth.projectId,
+          environmentId: auth.environmentId,
+          mode: auth.mode,
+        },
+        contactId,
+        emailService: deps.emailService,
+        apiKeyId: auth.apiKeyId,
+        linkKeys: deps.links.keys,
+        baseUrl: baseUrlOf(c),
+      });
+    } catch (error) {
+      outcome = "not_pending";
+      await Promise.all([
+        rateLimiter.refund({ ...org, buckets: [...org.buckets] }),
+        rateLimiter.refund({ ...byAddress, buckets: [...byAddress.buckets] }),
+      ]);
+      throw error;
+    }
+    if (outcome !== "sent") {
+      await Promise.all([
+        rateLimiter.refund({ ...org, buckets: [...org.buckets] }),
+        rateLimiter.refund({ ...byAddress, buckets: [...byAddress.buckets] }),
+      ]);
+    }
+    return outcome;
+  }
 
   router.openapi(upsertContactRoute, async (c) => {
     const params = c.req.valid("json");
-    const result = await upsertContact(envOf(c), params, {
+    const env = envOf(c);
+    const doubleOptIn =
+      params.double_opt_in ?? (await getMarketingSettingsRow(env))?.doubleOptInDefault ?? false;
+    if (doubleOptIn) {
+      // Checked before anything is stored: the confirmation must be sendable.
+      const from = await confirmationSender(env);
+      if (c.var.auth.mode === "live") {
+        await authorizeLiveSender({
+          organizationId: env.organizationId,
+          from,
+          provider: deps.liveProvider,
+        });
+      }
+    }
+    const result = await upsertContact(env, params, {
       source: "api",
       plans: c.var.plans ?? undefined,
+      doubleOptIn,
     });
+    if (doubleOptIn && result.pending) {
+      await confirm(c, result.contact.id, result.contact.email);
+    }
     return c.json(result.contact, result.created ? 201 : 200);
+  });
+
+  router.openapi(resendConfirmationRoute, async (c) => {
+    const row = await getContactRow(envOf(c), c.req.valid("param").id);
+    if (!row) throw notFound(NOT_FOUND);
+    const status = row.status === "pending" ? await confirm(c, row.id, row.address) : "not_pending";
+    return c.json({ object: "contact_confirmation" as const, contact_id: row.id, status }, 200);
+  });
+
+  router.openapi(createPreferenceLinksRoute, async (c) => {
+    const row = await getContactRow(envOf(c), c.req.valid("param").id);
+    if (!row) throw notFound(NOT_FOUND);
+    const body = c.req.valid("json") ?? {};
+    const links = preferenceLinks({
+      baseUrl: baseUrlOf(c),
+      keys: deps.links.keys,
+      environmentId: row.environmentId,
+      address: row.address,
+      topic: body.topic ?? null,
+    });
+    return c.json(
+      {
+        object: "preference_links" as const,
+        contact_id: row.id,
+        preferences_url: links.preferencesUrl,
+        unsubscribe_url: links.unsubscribeUrl,
+      },
+      200,
+    );
   });
 
   router.openapi(listContactsRoute, async (c) => {

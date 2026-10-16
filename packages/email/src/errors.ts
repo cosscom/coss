@@ -17,7 +17,8 @@ export type EmailErrorCode =
   | "template_invalid"
   | "template_alias_taken"
   | "template_limit_reached"
-  | "template_revision_mismatch";
+  | "template_revision_mismatch"
+  | "mailing_address_required";
 
 const STATUS_BY_CODE = {
   idempotency_key_reused: 422,
@@ -43,6 +44,7 @@ const STATUS_BY_CODE = {
   template_limit_reached: 422,
   // Not 409: the SDK would retry it, and another save won't happen by waiting.
   template_revision_mismatch: 422,
+  mailing_address_required: 422,
 } as const satisfies Record<EmailErrorCode, number>;
 
 /** Expected failures of the email service; `status` is the HTTP status the API should use. */
@@ -109,7 +111,8 @@ export type ContactErrorCode =
   | "audience_in_use"
   | "audience_not_found"
   | "topic_not_found"
-  | "invalid_filter";
+  | "invalid_filter"
+  | "confirmation_sender_required";
 
 /**
  * Expected failures of contacts, audiences, segments and topics; messages are safe to show.

@@ -1,4 +1,4 @@
-import { createEmailService, FakeEmailProvider } from "@coss/email";
+import { createEmailService, DEVELOPMENT_LINK_KEYS, FakeEmailProvider } from "@coss/email";
 import { createRiskDeps } from "@coss/risk/runtime";
 import { secretsKeyRing } from "@coss/webhooks";
 import { createApp, renderOpenApiDocument } from "./app.ts";
@@ -26,6 +26,7 @@ export function renderOpenApiSnapshot(): string {
       },
     }),
     webhookDeps: { secretsKeys: secretsKeyRing([Buffer.alloc(32)]), allowInsecureUrls: false },
+    links: { keys: DEVELOPMENT_LINK_KEYS },
     // The development hash key and in-memory counters: no route runs.
     riskDeps: createRiskDeps(
       {},

@@ -327,7 +327,7 @@ describe("coss SDK against the API", () => {
       id: suppressed.data.id,
       failure: {
         code: "all_recipients_suppressed",
-        message: "Every recipient is on the suppression list.",
+        message: "Every recipient is on the suppression list or unsubscribed.",
       },
       recipients: [{ address: "gone@example.com", status: "suppressed" }],
     });

@@ -64,6 +64,8 @@ export const RETENTION_DAYS = {
   hookPortalSessions: 1,
   /** Finished Hooks endpoint recoveries. */
   hookRecoveries: 7,
+  /** Contacts that never confirmed a double opt-in, counted from when it was requested. */
+  pendingContacts: 30,
 } as const satisfies Record<string, number>;
 
 export type RetentionPeriod =
@@ -267,6 +269,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     description:
       "Your contacts with their custom properties, audience memberships, topic choices and consent timestamps (when they subscribed, unsubscribed or confirmed). Kept until you delete them.",
     period: { until: "deleted" },
+  },
+  {
+    id: "pending_contacts",
+    label: "Unconfirmed contacts",
+    description:
+      "Contacts asked to confirm their subscription (double opt-in) who never did, deleted with their memberships and choices.",
+    period: { days: RETENTION_DAYS.pendingContacts, after: "creation" },
   },
   {
     id: "account",

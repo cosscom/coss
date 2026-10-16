@@ -17,7 +17,7 @@ import {
   pgBossDispatchQueue,
   workEmailDispatchQueue,
 } from "@coss/email/dispatch";
-import { createEmailRuntime, emailRuntimeConfig } from "@coss/email/runtime";
+import { createEmailRuntime, emailRuntimeConfig, linkKeysFromEnv } from "@coss/email/runtime";
 import { createS3Api } from "@coss/email/ses";
 import { recordHookDeliveryOutcomes } from "@coss/hooks";
 import { logPushSender, type PushSender } from "@coss/push";
@@ -117,6 +117,8 @@ const emailService = createEmailService({
   screeningFailureAllowlist: systemOrganizationId ? new Set([systemOrganizationId]) : undefined,
   // Internal sends count against their organization's allowance (coss.com's own is never capped).
   billing: createUsageGate({ systemOrganizationId }),
+  // Unsubscribe headers and footers of marketing and topic emails, added at dispatch.
+  linkKeys: linkKeysFromEnv(env),
 });
 if (runs("email-dispatch")) await workEmailDispatchQueue(jobs, monitoredDispatch(emailService));
 // Fewer at once: marketing must leave most of the account's SES send rate to transactional mail.

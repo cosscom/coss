@@ -81,6 +81,7 @@ export const sampleEmail: Email = {
   headers: {},
   tags: [{ name: "category", value: "welcome" }],
   category: null,
+  stream: "transactional",
   status: "sent",
   failure: null,
   recipients: [

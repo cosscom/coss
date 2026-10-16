@@ -7,6 +7,7 @@ import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
 import { createEmailService } from "@coss/email";
 import { ensureEmailDispatchQueues, pgBossDispatchQueue } from "@coss/email/dispatch";
+import { linkKeysFromEnv } from "@coss/email/runtime";
 import { createLogWriter } from "@coss/logs";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { createRiskDeps } from "@coss/risk/runtime";
@@ -32,16 +33,21 @@ const logWriter = createLogWriter();
 const secretsKeys = parseSecretsKeys(env.WEBHOOK_SECRETS_KEY);
 // Ends open long polls (`coss listen`) when draining starts, so they don't hold the drain up.
 const shutdown = new AbortController();
+// Marketing email's links: the preference center is served here, under the tracking host.
+const linkKeys = linkKeysFromEnv(env);
+const trackingUrl = env.TRACKING_PUBLIC_URL ?? publicUrl;
 
 const app = createApp({
   emailService: createEmailService({
     liveProvider: email.liveProvider,
     sandboxProvider: email.sandboxProvider,
     queue: pgBossDispatchQueue(jobs),
-    trackingBaseUrl: env.TRACKING_PUBLIC_URL ?? publicUrl,
+    trackingBaseUrl: trackingUrl,
     trackingDomainProvider: email.trackingHostnames.name,
     billing: createUsageGate(),
+    linkKeys,
   }),
+  links: { keys: linkKeys, baseUrl: trackingUrl },
   domainDeps: email.domainDeps,
   inbound: email.inbound,
   webhookDeps: {

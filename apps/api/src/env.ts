@@ -1,4 +1,4 @@
-import { emailEnvShape } from "@coss/email/env";
+import { emailEnvShape, emailLinkEnvShape } from "@coss/email/env";
 import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
@@ -41,6 +41,11 @@ export const env = createEnv({
     // Encrypts webhook endpoint signing secrets; must be the same value the worker uses.
     ...webhookEnvShape,
     ...emailEnvShape,
+    // Marketing email's links (the preference center is served here). Required in production.
+    EMAIL_LINK_KEYS:
+      process.env.NODE_ENV === "production"
+        ? emailLinkEnvShape.EMAIL_LINK_KEYS.unwrap()
+        : emailLinkEnvShape.EMAIL_LINK_KEYS,
     // Where Hooks portal session links point.
     ...hookEnvShape,
     ...rateLimitEnvShape,

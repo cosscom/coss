@@ -4,9 +4,11 @@
  */
 import { db, schema } from "@coss/db";
 import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
-import { and, asc, inArray, lt, ne, notExists, notInArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, lt, ne, notExists, notInArray, sql } from "drizzle-orm";
+import { releaseContacts } from "./contacts.ts";
 
 const {
+  contact,
   dmarcNotification,
   dmarcReport,
   dmarcReportRecord,
@@ -259,4 +261,45 @@ export async function purgeExpiredDmarcNotifications(opts: PurgeOptions = {}): P
     .where(and(inArray(dmarcNotification.id, due), expired))
     .returning({ id: dmarcNotification.id });
   return deleted.length;
+}
+
+/**
+ * Deletes contacts still `pending` (double opt-in never confirmed) past the retention, and gives
+ * their environments' counters back. Memberships and topic choices cascade.
+ */
+export async function purgeExpiredPendingContacts(opts: PurgeOptions = {}): Promise<number> {
+  const cutoff = retentionCutoff(RETENTION_DAYS.pendingContacts, opts.now);
+  const expired = and(
+    eq(contact.status, "pending"),
+    lt(contact.pendingSince, cutoff),
+    opts.scope ? inArray(contact.organizationId, opts.scope.organizationIds) : undefined,
+  );
+  return db.transaction(async (tx) => {
+    const due = tx
+      .select({ id: contact.id })
+      .from(contact)
+      .where(expired)
+      .orderBy(asc(contact.pendingSince))
+      .limit(opts.limit ?? 1000);
+    const deleted = await tx
+      .delete(contact)
+      .where(and(inArray(contact.id, due), expired))
+      .returning({
+        organizationId: contact.organizationId,
+        environmentId: contact.environmentId,
+      });
+    const perEnvironment = new Map<string, { organizationId: string; count: number }>();
+    for (const row of deleted) {
+      const entry = perEnvironment.get(row.environmentId) ?? {
+        organizationId: row.organizationId,
+        count: 0,
+      };
+      entry.count++;
+      perEnvironment.set(row.environmentId, entry);
+    }
+    for (const [environmentId, { organizationId, count }] of perEnvironment) {
+      await releaseContacts(tx, { organizationId, environmentId }, count);
+    }
+    return deleted.length;
+  });
 }

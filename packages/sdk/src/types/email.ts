@@ -111,6 +111,11 @@ export interface EmailEventData {
   failure?: { code: string; message: string };
   /** Only for `email.suppressed`: the entry that matched the recipient. */
   suppression?: { id: string; scope: string; reason: SuppressionReason };
+  /**
+   * Only for `email.suppressed` without `suppression`: the recipient is a contact who unsubscribed
+   * (from marketing, or from the email's topic, `topic`).
+   */
+  unsubscribe?: { contact_id: string | null; topic: string | null };
   /** Only for `email.opened`. */
   open?: { user_agent: string | null };
   /** Only for `email.clicked`: the original link and its index among the tracked links. */
@@ -198,6 +203,13 @@ export interface SendEmailBaseParams {
   scheduled_at?: string;
   attachments?: EmailAttachmentParams[];
   tracking?: TrackingOptions;
+  /**
+   * `"transactional"` (the default) or `"marketing"`: marketing email has its own sending
+   * reputation, exactly one recipient, needs the environment's postal address, and gets one-click
+   * unsubscribe headers and a footer (place them with `{{{unsubscribe_url}}}`,
+   * `{{{preferences_url}}}` and `{{{mailing_address}}}`).
+   */
+  stream?: EmailStream;
 }
 
 /** A send with its own subject and body. */
@@ -240,6 +252,8 @@ export interface SendEmailTemplateParams extends SendEmailBaseParams {
 
 /** A send: a subject and body (or `react`, which the SDK renders before sending), or a template. */
 export type SendEmailParams = SendEmailContentParams | SendEmailTemplateParams;
+/** Marketing email goes out on its own sending reputation. */
+export type EmailStream = "transactional" | "marketing";
 
 /** Parameters of `coss.email.reschedule`. */
 export interface RescheduleEmailParams {
@@ -307,6 +321,7 @@ export interface Email {
   headers: Record<string, string>;
   tags: EmailTag[];
   category: string | null;
+  stream: EmailStream;
   status: EmailStatus;
   /** Why the email failed; `null` unless `status` is `"failed"`. */
   failure: EmailFailure | null;

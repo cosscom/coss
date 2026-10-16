@@ -6,6 +6,8 @@ export const CONTACT_EVENT_TYPES = [
   "contact.created",
   "contact.updated",
   "contact.deleted",
+  "contact.unsubscribed",
+  "contact.confirmed",
 ] as const;
 
 export type ContactEventType = (typeof CONTACT_EVENT_TYPES)[number];

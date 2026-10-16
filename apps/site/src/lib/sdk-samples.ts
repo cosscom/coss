@@ -318,6 +318,14 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     args: (request) => [pathId(request), tsValue(request.body ?? {})],
   },
   "DELETE /v1/contacts/{id}": { method: "email.contacts.remove", args: (r) => [pathId(r)] },
+  "POST /v1/contacts/{id}/confirmation": {
+    method: "email.contacts.resendConfirmation",
+    args: (r) => [pathId(r)],
+  },
+  "POST /v1/contacts/{id}/preference_links": {
+    method: "email.contacts.createPreferenceLinks",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
   "GET /v1/contacts/{id}/topics": {
     method: "email.contacts.getTopics",
     args: (r) => [pathId(r)],

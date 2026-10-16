@@ -421,6 +421,13 @@
               "null"
             ]
           },
+          "stream": {
+            "type": "string",
+            "enum": [
+              "transactional",
+              "marketing"
+            ]
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -515,6 +522,7 @@
           "headers",
           "tags",
           "category",
+          "stream",
           "status",
           "failure",
           "recipients",
@@ -549,6 +557,7 @@
               }
             ],
             "category": "onboarding",
+            "stream": "transactional",
             "status": "sent",
             "failure": null,
             "recipients": [
@@ -601,7 +610,7 @@
         "examples": [
           {
             "code": "all_recipients_suppressed",
-            "message": "Every recipient is on the suppression list."
+            "message": "Every recipient is on the suppression list or unsubscribed."
           }
         ]
       },
@@ -968,6 +977,14 @@
           },
           "tracking": {
             "$ref": "#/components/schemas/TrackingOptions"
+          },
+          "stream": {
+            "type": "string",
+            "enum": [
+              "transactional",
+              "marketing"
+            ],
+            "description": "`transactional` (the default) or `marketing`. Marketing email goes out on its own sending infrastructure and reputation, so its complaints never hold up transactional mail. It needs the environment's postal address (marketing settings), exactly one recipient, and no `List-Unsubscribe` header: coss.com adds one-click unsubscribe headers and a footer with the address and an unsubscribe link (place them yourself with `{{{unsubscribe_url}}}`, `{{{preferences_url}}}` and `{{{mailing_address}}}`). Contacts who unsubscribed are skipped."
           }
         },
         "required": [
@@ -1103,6 +1120,7 @@
                 "headers": {},
                 "tags": [],
                 "category": "digest",
+                "stream": "transactional",
                 "status": "queued",
                 "failure": null,
                 "recipients": [
@@ -1323,6 +1341,13 @@
               "null"
             ]
           },
+          "stream": {
+            "type": "string",
+            "enum": [
+              "transactional",
+              "marketing"
+            ]
+          },
           "status": {
             "type": "string",
             "enum": [
@@ -1407,6 +1432,7 @@
           "subject",
           "tags",
           "category",
+          "stream",
           "status",
           "failure",
           "recipients",
@@ -1752,6 +1778,28 @@
               "reason"
             ],
             "description": "Only for `email.suppressed`: the entry that matched the recipient."
+          },
+          "unsubscribe": {
+            "type": "object",
+            "properties": {
+              "contact_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "topic": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "contact_id",
+              "topic"
+            ],
+            "description": "Only for `email.suppressed` without `suppression`: the recipient is a contact who unsubscribed (from marketing, or from the email's topic, `topic`)."
           },
           "open": {
             "type": "object",
@@ -5070,10 +5118,12 @@
                 "risk.assessment.reviewed",
                 "contact.created",
                 "contact.updated",
-                "contact.deleted"
+                "contact.deleted",
+                "contact.unsubscribed",
+                "contact.confirmed"
               ]
             },
-            "maxItems": 36,
+            "maxItems": 38,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -5335,10 +5385,12 @@
                 "risk.assessment.reviewed",
                 "contact.created",
                 "contact.updated",
-                "contact.deleted"
+                "contact.deleted",
+                "contact.unsubscribed",
+                "contact.confirmed"
               ]
             },
-            "maxItems": 36,
+            "maxItems": 38,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {
@@ -5849,10 +5901,12 @@
                 "risk.assessment.reviewed",
                 "contact.created",
                 "contact.updated",
-                "contact.deleted"
+                "contact.deleted",
+                "contact.unsubscribed",
+                "contact.confirmed"
               ]
             },
-            "maxItems": 36,
+            "maxItems": 38,
             "description": "Event types to receive. Defaults to every event type."
           },
           "api_version": {
@@ -6875,6 +6929,10 @@
             },
             "maxItems": 100,
             "description": "Choices per topic; topics left out keep the contact's choice."
+          },
+          "double_opt_in": {
+            "type": "boolean",
+            "description": "Ask the contact to confirm first (default: the marketing settings' `double_opt_in_default`): a new or unsubscribed contact becomes `pending` and gets a confirmation email; it is `subscribed` once they click its link. Can't be combined with `status: \"subscribed\"`."
           }
         },
         "required": [
@@ -6894,6 +6952,94 @@
                 "status": "opted_in"
               }
             ]
+          }
+        ]
+      },
+      "ContactConfirmation": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "contact_confirmation"
+            ]
+          },
+          "contact_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "sent",
+              "cooldown",
+              "limit_reached",
+              "not_pending"
+            ],
+            "description": "`sent`; `cooldown` (one confirmation per contact per day); `limit_reached` (three were sent and none confirmed); `not_pending` (the contact isn't waiting to confirm)."
+          }
+        },
+        "required": [
+          "object",
+          "contact_id",
+          "status"
+        ],
+        "examples": [
+          {
+            "object": "contact_confirmation",
+            "contact_id": "contact_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "status": "sent"
+          }
+        ]
+      },
+      "PreferenceLinks": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "preference_links"
+            ]
+          },
+          "contact_id": {
+            "type": "string"
+          },
+          "preferences_url": {
+            "type": "string",
+            "description": "The contact's preference center."
+          },
+          "unsubscribe_url": {
+            "type": "string",
+            "description": "A one-button unsubscribe page."
+          }
+        },
+        "required": [
+          "object",
+          "contact_id",
+          "preferences_url",
+          "unsubscribe_url"
+        ],
+        "examples": [
+          {
+            "object": "preference_links",
+            "contact_id": "contact_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "preferences_url": "https://track.cosslinks.com/t/u/aXyZ…",
+            "unsubscribe_url": "https://track.cosslinks.com/t/u/aXyZ…/unsubscribe"
+          }
+        ]
+      },
+      "CreatePreferenceLinksRequest": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,256}$",
+            "description": "The topic your email is about: its unsubscribe link leaves just that topic."
+          }
+        },
+        "additionalProperties": false,
+        "examples": [
+          {
+            "topic": "newsletter"
           }
         ]
       },
@@ -7175,8 +7321,7 @@
               ],
               "additionalProperties": false
             },
-            "maxItems": 100,
-            "description": "Choices per topic; topics left out keep the contact's choice."
+            "maxItems": 100
           }
         },
         "additionalProperties": false,
@@ -8755,18 +8900,69 @@
               "null"
             ],
             "description": "The postal address every marketing email carries (CAN-SPAM). Marketing emails can't be sent without one."
+          },
+          "double_opt_in_default": {
+            "type": "boolean",
+            "description": "Whether contacts upserted without `double_opt_in` must confirm first."
+          },
+          "confirmation_from": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The sender of confirmation emails (a verified domain's address for live keys)."
+          },
+          "confirmation_subject": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`null`: coss.com's default."
+          },
+          "confirmation_html": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`null`: coss.com's default. Must contain `{{{confirmation_url}}}`."
+          },
+          "confirmation_text": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`null`: coss.com's default. Must contain `{{{confirmation_url}}}`."
+          },
+          "confirmed_redirect_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Where confirming sends the contact (https); `null`: a coss.com confirmation page."
           }
         },
         "required": [
           "object",
           "display_name",
-          "mailing_address"
+          "mailing_address",
+          "double_opt_in_default",
+          "confirmation_from",
+          "confirmation_subject",
+          "confirmation_html",
+          "confirmation_text",
+          "confirmed_redirect_url"
         ],
         "examples": [
           {
             "object": "marketing_settings",
             "display_name": "Acme",
-            "mailing_address": "Acme Inc., 548 Market St, San Francisco, CA 94104, USA"
+            "mailing_address": "Acme Inc., 548 Market St, San Francisco, CA 94104, USA",
+            "double_opt_in_default": true,
+            "confirmation_from": "Acme <news@acme.com>",
+            "confirmation_subject": null,
+            "confirmation_html": null,
+            "confirmation_text": null,
+            "confirmed_redirect_url": "https://acme.com/welcome"
           }
         ]
       },
@@ -8788,6 +8984,45 @@
             ],
             "minLength": 1,
             "maxLength": 500
+          },
+          "double_opt_in_default": {
+            "type": "boolean"
+          },
+          "confirmation_from": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "confirmation_subject": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 998
+          },
+          "confirmation_html": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 200000
+          },
+          "confirmation_text": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 200000
+          },
+          "confirmed_redirect_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2000,
+            "format": "uri"
           }
         },
         "additionalProperties": false,
@@ -32695,6 +32930,536 @@
           },
           "422": {
             "description": "A query parameter failed validation (`validation_error`, see `issues`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/contacts/{id}/confirmation": {
+      "post": {
+        "operationId": "resendContactConfirmation",
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "Resend a contact's confirmation email",
+        "description": "Sends a pending contact (double opt-in) its confirmation email again: at most once a day, and three times before it confirms (`status` says what happened).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The contact's id, or its address (URL-encoded).",
+              "examples": [
+                "contact_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The contact's id, or its address (URL-encoded).",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "What happened.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactConfirmation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No contact with this id or address exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The marketing settings have no `confirmation_from` (`confirmation_sender_required`), or it isn't on a verified domain of the organization (`domain_not_verified`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/contacts/{id}/preference_links": {
+      "post": {
+        "operationId": "createPreferenceLinks",
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "Create a contact's preference links",
+        "description": "The contact's preference center and unsubscribe links, for emails you build yourself. They never expire. Marketing email sent through coss.com gets them (and one-click unsubscribe headers) automatically.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The contact's id, or its address (URL-encoded).",
+              "examples": [
+                "contact_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The contact's id, or its address (URL-encoded).",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePreferenceLinksRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The links.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferenceLinks"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No contact with this id or address exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The request body is larger than 5 MB (`payload_too_large`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body is not sent as `application/json` (`unsupported_media_type`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The body failed validation (`validation_error`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

@@ -23,6 +23,7 @@ import type {
   AudienceContactsAdded,
   AudienceList,
   Contact,
+  ContactConfirmation,
   ContactImport,
   ContactList,
   ContactPropertyList,
@@ -31,6 +32,7 @@ import type {
   ContactWebhookEvent,
   CreateAudienceRequest,
   CreateContactPropertyRequest,
+  CreatePreferenceLinksRequest,
   CreateSegmentRequest,
   CreateTopicRequest,
   DeletedAudience,
@@ -43,6 +45,7 @@ import type {
   ListContactsQuery,
   ListQuery,
   MarketingSettings,
+  PreferenceLinksObject,
   Segment,
   SegmentList,
   Topic,
@@ -213,6 +216,7 @@ import type {
   CreateDomainParams,
   CreateEmailTemplateParams,
   CreateLogDrainParams,
+  CreatePreferenceLinksParams,
   CreateReceivingDomainParams,
   CreateRiskLimitBucketParams,
   CreateRiskListEntryParams,
@@ -267,6 +271,7 @@ import type {
   Billing as SdkBilling,
   BillingWebhookEvent as SdkBillingWebhookEvent,
   Contact as SdkContact,
+  ContactConfirmation as SdkContactConfirmation,
   ContactImport as SdkContactImport,
   ContactProperty as SdkContactProperty,
   ContactTopics as SdkContactTopics,
@@ -316,6 +321,7 @@ import type {
   Log as SdkLog,
   LogDrainWithSecret as SdkLogDrainWithSecret,
   MarketingSettings as SdkMarketingSettings,
+  PreferenceLinks as SdkPreferenceLinks,
   ReceivedEmail as SdkReceivedEmail,
   ReceivedEmailSummary as SdkReceivedEmailSummary,
   ReceivedEmailWebhookEvent as SdkReceivedEmailWebhookEvent,
@@ -839,4 +845,9 @@ export type ContactContract = [
     >
   >,
   Assert<MutuallyAssignable<z.output<typeof ContactWebhookEvent>, SdkContactWebhookEvent>>,
+  Assert<MutuallyAssignable<z.output<typeof ContactConfirmation>, SdkContactConfirmation>>,
+  Assert<
+    MutuallyAssignable<z.input<typeof CreatePreferenceLinksRequest>, CreatePreferenceLinksParams>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof PreferenceLinksObject>, SdkPreferenceLinks>>,
 ];

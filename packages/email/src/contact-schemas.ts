@@ -6,7 +6,7 @@
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { z } from "zod";
 import { CONTACT_EVENT_TYPES } from "./contact-event-types.ts";
-import { Category, SuppressionAddress } from "./schemas.ts";
+import { Category, emailAddressProblem, SuppressionAddress } from "./schemas.ts";
 
 export { CONTACT_EVENT_TYPES, type ContactEventType } from "./contact-event-types.ts";
 
@@ -199,6 +199,20 @@ export const UpsertContactRequest = z
       .max(100)
       .optional()
       .meta({ description: "Choices per topic; topics left out keep the contact's choice." }),
+    double_opt_in: z
+      .boolean()
+      .optional()
+      .meta({
+        description:
+          "Ask the contact to confirm first (default: the marketing settings' " +
+          "`double_opt_in_default`): a new or unsubscribed contact becomes `pending` and gets a " +
+          "confirmation email; it is `subscribed` once they click its link. Can't be combined with " +
+          '`status: "subscribed"`.',
+      }),
+  })
+  .refine((value) => !(value.double_opt_in && value.status === "subscribed"), {
+    path: ["status"],
+    message: 'A double opt-in contact becomes subscribed when it confirms, not with "status".',
   })
   .meta({
     id: "UpsertContactRequest",
@@ -216,7 +230,7 @@ export type UpsertContactRequestOutput = z.output<typeof UpsertContactRequest>;
 export const UpdateContactRequest = z
   .strictObject({
     ...ContactFields,
-    topics: UpsertContactRequest.shape.topics,
+    topics: z.array(TopicChoice).max(100).optional(),
   })
   .meta({
     id: "UpdateContactRequest",
@@ -362,6 +376,50 @@ export const UpdateContactTopicsRequest = z
     id: "UpdateContactTopicsRequest",
     examples: [{ topics: [{ topic: "product", status: "opted_out" }] }],
   });
+
+export const ContactConfirmation = z
+  .object({
+    object: z.literal("contact_confirmation"),
+    contact_id: z.string(),
+    status: z.enum(["sent", "cooldown", "limit_reached", "not_pending"]).meta({
+      description:
+        "`sent`; `cooldown` (one confirmation per contact per day); `limit_reached` (three " +
+        "were sent and none confirmed); `not_pending` (the contact isn't waiting to confirm).",
+    }),
+  })
+  .meta({
+    id: "ContactConfirmation",
+    examples: [{ object: "contact_confirmation", contact_id: CONTACT_ID_EXAMPLE, status: "sent" }],
+  });
+export type ContactConfirmationOutput = z.output<typeof ContactConfirmation>;
+
+export const CreatePreferenceLinksRequest = z
+  .strictObject({
+    topic: Category.optional().meta({
+      description: "The topic your email is about: its unsubscribe link leaves just that topic.",
+    }),
+  })
+  .meta({ id: "CreatePreferenceLinksRequest", examples: [{ topic: "newsletter" }] });
+
+export const PreferenceLinksObject = z
+  .object({
+    object: z.literal("preference_links"),
+    contact_id: z.string(),
+    preferences_url: z.string().meta({ description: "The contact's preference center." }),
+    unsubscribe_url: z.string().meta({ description: "A one-button unsubscribe page." }),
+  })
+  .meta({
+    id: "PreferenceLinks",
+    examples: [
+      {
+        object: "preference_links",
+        contact_id: CONTACT_ID_EXAMPLE,
+        preferences_url: "https://track.cosslinks.com/t/u/aXyZ…",
+        unsubscribe_url: "https://track.cosslinks.com/t/u/aXyZ…/unsubscribe",
+      },
+    ],
+  });
+export type PreferenceLinksOutput = z.output<typeof PreferenceLinksObject>;
 
 // ---------------------------------------------------------------------------------------------
 // Custom properties
@@ -756,7 +814,16 @@ const MARKETING_SETTINGS_EXAMPLE = {
   object: "marketing_settings",
   display_name: "Acme",
   mailing_address: "Acme Inc., 548 Market St, San Francisco, CA 94104, USA",
+  double_opt_in_default: true,
+  confirmation_from: "Acme <news@acme.com>",
+  confirmation_subject: null,
+  confirmation_html: null,
+  confirmation_text: null,
+  confirmed_redirect_url: "https://acme.com/welcome",
 } as const;
+
+/** Where a confirmation email's link goes in customer templates. */
+export const CONFIRMATION_URL_PLACEHOLDER = "{{{confirmation_url}}}";
 
 export const MarketingSettings = z
   .object({
@@ -772,6 +839,26 @@ export const MarketingSettings = z
           "The postal address every marketing email carries (CAN-SPAM). Marketing emails can't " +
           "be sent without one.",
       }),
+    double_opt_in_default: z.boolean().meta({
+      description: "Whether contacts upserted without `double_opt_in` must confirm first.",
+    }),
+    confirmation_from: z.string().nullable().meta({
+      description: "The sender of confirmation emails (a verified domain's address for live keys).",
+    }),
+    confirmation_subject: z
+      .string()
+      .nullable()
+      .meta({ description: "`null`: coss.com's default." }),
+    confirmation_html: z.string().nullable().meta({
+      description: "`null`: coss.com's default. Must contain `{{{confirmation_url}}}`.",
+    }),
+    confirmation_text: z.string().nullable().meta({
+      description: "`null`: coss.com's default. Must contain `{{{confirmation_url}}}`.",
+    }),
+    confirmed_redirect_url: z.string().nullable().meta({
+      description:
+        "Where confirming sends the contact (https); `null`: a coss.com confirmation page.",
+    }),
   })
   .meta({ id: "MarketingSettings", examples: [MARKETING_SETTINGS_EXAMPLE] });
 export type MarketingSettingsOutput = z.output<typeof MarketingSettings>;
@@ -787,6 +874,38 @@ export const UpdateMarketingSettingsRequest = z
       .refine((value) => !/[\p{Cc}\p{Cf}]/u.test(value.replaceAll("\n", "")), {
         message: "Must not contain control or invisible formatting characters.",
       })
+      .nullable()
+      .optional(),
+    double_opt_in_default: z.boolean().optional(),
+    confirmation_from: z
+      .string()
+      .trim()
+      .superRefine((value, ctx) => {
+        const problem = emailAddressProblem(value);
+        if (problem) ctx.addIssue({ code: "custom", message: problem });
+      })
+      .nullable()
+      .optional(),
+    confirmation_subject: z.string().trim().min(1).max(998).nullable().optional(),
+    confirmation_html: z
+      .string()
+      .max(200_000)
+      .refine((value) => value.includes(CONFIRMATION_URL_PLACEHOLDER), {
+        message: `Must contain ${CONFIRMATION_URL_PLACEHOLDER}.`,
+      })
+      .nullable()
+      .optional(),
+    confirmation_text: z
+      .string()
+      .max(200_000)
+      .refine((value) => value.includes(CONFIRMATION_URL_PLACEHOLDER), {
+        message: `Must contain ${CONFIRMATION_URL_PLACEHOLDER}.`,
+      })
+      .nullable()
+      .optional(),
+    confirmed_redirect_url: z
+      .url({ protocol: /^https$/ })
+      .max(2000)
       .nullable()
       .optional(),
   })
@@ -821,6 +940,10 @@ export const ContactWebhookEvent = z
         status: z.enum(CONTACT_STATUSES),
       }),
       source: z.enum(CONTACT_SOURCES),
+      topic: z.string().nullable().meta({
+        description:
+          "`contact.unsubscribed` from one topic (its key); `null`: from marketing altogether.",
+      }),
       occurred_at: Timestamp,
     }),
   })
@@ -836,6 +959,7 @@ export const ContactWebhookEvent = z
         data: {
           contact: { id: CONTACT_ID_EXAMPLE, email: "ada@example.com", status: "subscribed" },
           source: "api",
+          topic: null,
           occurred_at: "2026-10-10T12:00:00.000Z",
         },
       },

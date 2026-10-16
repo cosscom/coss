@@ -175,7 +175,7 @@ describe("/v1/contacts", () => {
     const settings = await call(app, key, "PATCH", "/v1/marketing_settings", {
       mailing_address: "1 Main St, Springfield",
     });
-    expect(await settings.json()).toEqual({
+    expect(await settings.json()).toMatchObject({
       object: "marketing_settings",
       display_name: null,
       mailing_address: "1 Main St, Springfield",

@@ -29,6 +29,14 @@ export const SES_TENANT_PREFIX_PATTERN = /^[A-Za-z0-9_-]{1,23}$/;
  */
 export const SES_CONFIGURATION_SET_PATTERN = /^[A-Za-z0-9_-]{1,54}$/;
 
+/** Comma-separated 32-byte base64 keys (`EMAIL_LINK_KEYS`), checked without decoding them here. */
+const LinkKeys = z
+  .string()
+  .regex(
+    /^\s*[A-Za-z0-9+/]{43}=\s*(,\s*[A-Za-z0-9+/]{43}=\s*)*$/,
+    "EMAIL_LINK_KEYS must be comma-separated 32-byte base64 keys (openssl rand -base64 32).",
+  );
+
 export const emailEnvShape = {
   // Provider for live environments. Sandbox environments always use the fake provider.
   EMAIL_PROVIDER: z.enum(EMAIL_PROVIDERS).default("fake"),
@@ -52,9 +60,19 @@ export const emailEnvShape = {
   SES_INBOUND_BUCKET: z.string().optional(),
 };
 
+/**
+ * The API (preference center, confirmations) and the worker (links added at dispatch) encrypt
+ * marketing email's links: a key ring, newest first (the first encrypts). Required in production;
+ * never drop a key whose links may still be clicked.
+ */
+export const emailLinkEnvShape = {
+  EMAIL_LINK_KEYS: LinkKeys.optional(),
+};
+
 /** Only the worker consumes delivery events and receipt notifications. */
 export const emailWorkerEnvShape = {
   ...emailEnvShape,
+  ...emailLinkEnvShape,
   SES_EVENTS_QUEUE_URL: z.url().optional(),
   SES_INBOUND_QUEUE_URL: z.url().optional(),
 };

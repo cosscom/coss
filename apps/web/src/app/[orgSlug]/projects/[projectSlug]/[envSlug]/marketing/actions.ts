@@ -17,10 +17,18 @@ export async function saveMarketingSettingsAction(
       contact: ["update"],
     });
     const target = await marketingTargetFromForm(context, formData);
-    const raw = formData.get("mailingAddress");
+    const raw = (name: string) => {
+      const value = formData.get(name);
+      return (typeof value === "string" ? value.trim() : "") || null;
+    };
     const parsed = UpdateMarketingSettingsRequest.safeParse({
       display_name: formString(formData, "displayName") || null,
-      mailing_address: (typeof raw === "string" ? raw.trim() : "") || null,
+      mailing_address: raw("mailingAddress"),
+      double_opt_in_default: formData.get("doubleOptInDefault") === "on",
+      confirmation_from: formString(formData, "confirmationFrom") || null,
+      confirmation_subject: formString(formData, "confirmationSubject") || null,
+      confirmation_html: raw("confirmationHtml"),
+      confirmed_redirect_url: formString(formData, "confirmedRedirectUrl") || null,
     });
     if (!parsed.success) {
       const issue = parsed.error.issues[0];

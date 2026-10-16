@@ -277,12 +277,19 @@ export interface HookEndpointWebhookEvent {
 }
 
 /** Contact events (sent to the contact's environment). */
-export type ContactEventType = "contact.created" | "contact.updated" | "contact.deleted";
+export type ContactEventType =
+  | "contact.created"
+  | "contact.updated"
+  | "contact.deleted"
+  | "contact.unsubscribed"
+  | "contact.confirmed";
 
 export interface ContactWebhookEventData {
   /** Who changed; never their properties or names. */
   contact: { id: string; email: string; status: ContactStatus };
   source: ContactSource;
+  /** `contact.unsubscribed` from one topic (its key); `null`: from marketing altogether. */
+  topic: string | null;
   /** ISO 8601 timestamp. */
   occurred_at: string;
 }

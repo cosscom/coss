@@ -751,6 +751,12 @@ describe("marketing settings", () => {
       object: "marketing_settings",
       display_name: null,
       mailing_address: null,
+      double_opt_in_default: false,
+      confirmation_from: null,
+      confirmation_subject: null,
+      confirmation_html: null,
+      confirmation_text: null,
+      confirmed_redirect_url: null,
     });
     await updateMarketingSettings(env, { mailing_address: "1 Main St, Springfield" });
     await updateMarketingSettings(env, { display_name: "Acme" });

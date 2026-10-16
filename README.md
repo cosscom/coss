@@ -614,7 +614,9 @@ One Secrets Manager secret per stage, `coss/production` (JSON), injected through
 `GITHUB_CLIENT_SECRET`, `CLOUDFLARE_API_TOKEN`,
 `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AI_GATEWAY_API_KEY`, `SMTP_TLS_PASSPHRASE` (any random value: it
 only protects the SMTP relay's exported certificate key), `RISK_HASH_KEY` (changing it resets what
-risk assessments remember), `IPINFO_TOKEN` (optional: a free IPinfo account's token for risk's ASN and country
+risk assessments remember), `EMAIL_LINK_KEYS` (marketing email's preference, unsubscribe and confirmation links;
+store it with `put-secret.sh EMAIL_LINK_KEYS --generate` **before** the deploy that adds it, or api and worker tasks
+can't start; see [Rotating `EMAIL_LINK_KEYS`](#rotating-email_link_keys)), `IPINFO_TOKEN` (optional: a free IPinfo account's token for risk's ASN and country
 data) and `IPINFO_PRIVACY_TOKEN` (optional, with `RISK_IP_PRIVACY=ipinfo`: a paid IPinfo plan's token for VPN and
 proxy data per address; IPinfo must be a listed subprocessor first) and `APNS_PRIVATE_KEY` (optional: the iOS app's
 push notifications, see below). Terraform creates only the container; values are
@@ -820,6 +822,20 @@ After a leak of the key, do all four steps right away: with the database alone t
 every endpoint's signing secret can be read. Customers should then [roll their endpoint
 secrets](https://coss.com/docs/webhooks#rolling-the-secret) with no grace period. Locally, `bun run
 webhooks:reencrypt` does step 3 against `DATABASE_URL`.
+
+### Rotating `EMAIL_LINK_KEYS`
+
+Unsubscribe and preference links in marketing email are encrypted with the first key of `EMAIL_LINK_KEYS` and work
+as long as their key is listed: nothing about them is stored, so a dropped key breaks every link made with it.
+Recipients follow links in old emails for years, and the law requires unsubscribe links to work for at least 30 days
+after sending: keep retired keys listed for at least two years.
+
+1. Generate a key (`openssl rand -base64 32`) and **append** it: `EMAIL_LINK_KEYS=<old>,<new>`. Deploy api and
+   worker: both now read links made with either key.
+2. Swap the order, `<new>,<old>`, and deploy again: new links use the new key.
+3. Years later, remove the old key. After a leak, swap right away (step 1 and 2 at once is fine for the reader side)
+   and accept that anyone holding the old key could forge links that change one recipient's preferences in one
+   environment; drop it once that risk outweighs the broken links.
 
 ### Known gaps
 
