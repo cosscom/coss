@@ -273,6 +273,22 @@ describe("contacts", () => {
     );
   });
 
+  test("an import and upserts of its later addresses don't deadlock", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const entries = Array.from({ length: 1200 }, (_, index) => ({
+      email: `bulk${index}@example.com`,
+    }));
+    const results = await Promise.allSettled([
+      importContacts(env, entries, {}),
+      ...Array.from({ length: 20 }, (_, index) =>
+        upsert(env, { email: `bulk${1100 + index}@example.com` }),
+      ),
+    ]);
+    expect(results.filter((result) => result.status === "rejected")).toEqual([]);
+    expect(await contactCount(env)).toBe(1200);
+  });
+
   test("an import over the plan's limit imports nothing", async () => {
     const tenant = await createTestTenant();
     const env = envOf(tenant);

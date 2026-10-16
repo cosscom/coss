@@ -106,6 +106,28 @@ function statusChange(status: "subscribed" | "unsubscribed", now: Date) {
 }
 
 /**
+ * Locks the environment's contact counter, first: every transaction that creates or deletes
+ * contacts takes it before touching contact rows (property definitions come before it), so an
+ * import's batches, single upserts, deletes and purges never wait on each other in a cycle.
+ */
+export async function lockContactCounter(tx: Executor, env: ContactEnvironment): Promise<void> {
+  await tx
+    .insert(contactCounter)
+    .values({ environmentId: env.environmentId, organizationId: env.organizationId })
+    .onConflictDoNothing();
+  await tx
+    .select({ count: contactCounter.count })
+    .from(contactCounter)
+    .where(
+      and(
+        eq(contactCounter.environmentId, env.environmentId),
+        eq(contactCounter.organizationId, env.organizationId),
+      ),
+    )
+    .for("update");
+}
+
+/**
  * Counts `count` more contacts of the environment against the plan's limit, in `tx` (the
  * conditional update is the check). Throws the plan's `BillingError` beyond it.
  */
@@ -320,6 +342,7 @@ export async function upsertContact(
     const projectId = await environmentProject(env, tx);
     if (!projectId) throw new ContactError("not_found", "Environment not found.");
     const definitions = await propertyDefinitions(env, tx, { forWrite: true });
+    await lockContactCounter(tx, env);
     const audienceIds = await requireAudiences(tx, env, params.audience_ids);
     const status = params.status ?? "subscribed";
     const [inserted] = await tx
@@ -427,6 +450,7 @@ export async function deleteContact(
   const match = byIdOrEmail(idOrEmail);
   if (!match) return null;
   return db.transaction(async (tx) => {
+    await lockContactCounter(tx, env);
     const [deleted] = await tx
       .delete(contact)
       .where(and(inContactEnvironment(contact, env), match))
@@ -535,6 +559,9 @@ export async function importContacts(
     const projectId = await environmentProject(env, tx);
     if (!projectId) throw new ContactError("not_found", "Environment not found.");
     const definitions = await propertyDefinitions(env, tx, { forWrite: true });
+    // Before the first batch's inserts: a concurrent upsert of a later batch's address must not
+    // hold that row while waiting for the counter this import holds.
+    await lockContactCounter(tx, env);
     const audienceIds = await requireAudiences(
       tx,
       env,
