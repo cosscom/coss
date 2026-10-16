@@ -41,6 +41,16 @@ function issueMessage(error: { issues: { path: PropertyKey[]; message: string }[
   return `${field ? `${field}: ` : ""}${issue?.message ?? "Invalid value."}`;
 }
 
+/** `true`/`false` (any case) or a finite number as its type; any other text stays text. */
+function typedText(type: "number" | "boolean", text: string): string | number | boolean {
+  if (type === "boolean") {
+    const lower = text.trim().toLowerCase();
+    return lower === "true" ? true : lower === "false" ? false : text;
+  }
+  const number = Number(text);
+  return Number.isFinite(number) ? number : text;
+}
+
 /** The custom property fields of a form (`property:<key>`), typed by their definitions. */
 async function propertiesFromForm(
   env: Parameters<typeof listContactPropertyRows>[0],
@@ -56,10 +66,9 @@ async function propertiesFromForm(
       definition.type === "string" && typeof raw === "string" ? raw : formString(formData, name);
     if (text === "") {
       properties[definition.key] = null;
-    } else if (definition.type === "number") {
-      properties[definition.key] = Number(text);
-    } else if (definition.type === "boolean") {
-      properties[definition.key] = text === "true";
+    } else if (definition.type === "number" || definition.type === "boolean") {
+      // Anything else is passed on as text, so validation names the property.
+      properties[definition.key] = typedText(definition.type, text);
     } else {
       properties[definition.key] = text;
     }
@@ -283,11 +292,7 @@ export async function createContactPropertyAction(
       ...(fallback
         ? {
             fallback:
-              type === "number"
-                ? Number(fallback)
-                : type === "boolean"
-                  ? fallback === "true"
-                  : fallback,
+              type === "number" || type === "boolean" ? typedText(type, fallback) : fallback,
           }
         : {}),
     });
