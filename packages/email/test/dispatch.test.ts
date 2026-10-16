@@ -7,6 +7,7 @@ import { createTestTenant } from "@coss/tenancy/testing";
 import {
   type EmailDispatchJob,
   ensureEmailDispatchQueue,
+  ensureEmailDispatchQueues,
   pgBossDispatchQueue,
   runDispatchJob,
   workEmailDispatchQueue,
@@ -49,6 +50,36 @@ function setup(trackingBaseUrl?: string) {
 const jobsFor = (emailId: string) => producer.findJobs<EmailDispatchJob>(name, { key: emailId });
 
 describe("pg-boss dispatch queue", () => {
+  test("each stream's jobs go to that stream's queue", async () => {
+    const names = {
+      transactional: `email-dispatch-test-${uniqueSuffix()}`,
+      marketing: `email-dispatch-marketing-test-${uniqueSuffix()}`,
+    };
+    await ensureEmailDispatchQueues(producer, names);
+    try {
+      const queue = pgBossDispatchQueue(producer, names);
+      const organizationId = newId("org");
+      const [legacy, transactional, marketing] = [newId("email"), newId("email"), newId("email")];
+      await db.transaction(async (tx) => {
+        // Jobs enqueued before streams existed carry none: transactional.
+        await queue.enqueue(tx, { organizationId, emailId: legacy });
+        await queue.enqueue(tx, {
+          organizationId,
+          emailId: transactional,
+          stream: "transactional",
+        });
+        await queue.enqueue(tx, { organizationId, emailId: marketing, stream: "marketing" });
+      });
+      const ids = async (queueName: string) =>
+        (await producer.findJobs<EmailDispatchJob>(queueName)).map((job) => job.data.emailId);
+      expect((await ids(names.transactional)).sort()).toEqual([legacy, transactional].sort());
+      expect(await ids(names.marketing)).toEqual([marketing]);
+    } finally {
+      await producer.deleteQueue(names.transactional);
+      await producer.deleteQueue(names.marketing);
+    }
+  });
+
   test("cold-cache enqueues complete when transactions occupy the entire app pool", async () => {
     const coldName = `email-dispatch-test-${uniqueSuffix()}`;
     await ensureEmailDispatchQueue(producer, coldName);
@@ -90,7 +121,10 @@ describe("pg-boss dispatch queue", () => {
     expect(email.status).toBe("queued");
     const jobs = await jobsFor(email.id);
     expect(jobs.map((job) => [job.state, job.data])).toEqual([
-      ["created", { organizationId: tenant.organization.id, emailId: email.id }],
+      [
+        "created",
+        { organizationId: tenant.organization.id, emailId: email.id, stream: "transactional" },
+      ],
     ]);
     expect(provider.sent).toHaveLength(0);
   });

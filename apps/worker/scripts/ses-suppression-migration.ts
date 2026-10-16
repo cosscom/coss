@@ -14,7 +14,7 @@ const { emailTenant, emailSuppression, emailEvent, environment } = schema;
 /** Offline upgrade: stop sends/domain changes and drain SES events before running bootstrap. */
 export async function migrateSesSuppressions(
   ses: Pick<SESv2Client, "send">,
-  input: { configurationSet: string; tenantPrefix: string },
+  input: { configurationSets: string[]; tenantPrefix: string },
 ): Promise<number> {
   const prefix = tenantNameFor(input.tenantPrefix, "");
   const tenants: string[] = [];
@@ -29,16 +29,16 @@ export async function migrateSesSuppressions(
 
   // Import every tenant before changing any AWS protection. A missing DB mapping fails closed.
   for (const tenantName of tenants) {
-    const organizationId = tenantName.slice(prefix.length);
     await db.transaction(async (tx) => {
+      // By name (unique), never parsed: stream tenants are `<prefix>-<org>-<stream>`.
       const tenantScope = and(
-        eq(emailTenant.organizationId, organizationId),
         eq(emailTenant.tenantName, tenantName),
         eq(emailTenant.provider, "ses"),
       );
       const [tenant] = await tx.select().from(emailTenant).where(tenantScope).for("update");
       if (!tenant) throw new Error(`No coss.com database mapping for SES tenant ${tenantName}.`);
       if (tenant.suppressionMigratedAt) return;
+      const { organizationId } = tenant;
       const environments = await tx
         .select()
         .from(environment)
@@ -145,11 +145,13 @@ export async function migrateSesSuppressions(
       }),
     );
   }
-  await ses.send(
-    new PutConfigurationSetSuppressionOptionsCommand({
-      ConfigurationSetName: input.configurationSet,
-      ...TENANT_SUPPRESSION,
-    }),
-  );
+  for (const configurationSet of input.configurationSets) {
+    await ses.send(
+      new PutConfigurationSetSuppressionOptionsCommand({
+        ConfigurationSetName: configurationSet,
+        ...TENANT_SUPPRESSION,
+      }),
+    );
+  }
   return tenants.length;
 }

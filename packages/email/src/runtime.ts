@@ -23,7 +23,7 @@ import { FakeDedicatedIpProvider } from "./providers/fake-dedicated-ips.ts";
 import { FakeIdentityProvider } from "./providers/fake-identity.ts";
 import { FakeTrackingHostnameProvider } from "./providers/fake-tracking-hostnames.ts";
 import type { ReceivingConfig } from "./receiving-domains.ts";
-import { createSesApi, type SesApi, type SesConfig } from "./ses/api.ts";
+import { configurationSetsFor, createSesApi, type SesApi, type SesConfig } from "./ses/api.ts";
 import { SesDedicatedIpProvider } from "./ses/dedicated-ips.ts";
 import { SesIdentityProvider } from "./ses/identity.ts";
 import { createS3Api, type S3Api, S3InboundStore } from "./ses/inbound.ts";
@@ -101,7 +101,7 @@ export function emailRuntimeConfig(env: EmailEnv): EmailRuntimeConfig {
     provider: "ses",
     ses: {
       region: AWS_REGION,
-      configurationSet: SES_CONFIGURATION_SET,
+      configurationSets: configurationSetsFor(SES_CONFIGURATION_SET),
       tenantPrefix: SES_TENANT_PREFIX,
     },
     tracking,

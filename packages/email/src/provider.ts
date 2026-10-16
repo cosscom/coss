@@ -1,9 +1,17 @@
 import type { EmailEventDataOutput, EmailEventType } from "./schemas.ts";
 
+/**
+ * Traffic whose reputation must never mix (`email.stream`): each has its own provider
+ * configuration set and tenant, so marketing complaints never pause transactional mail.
+ */
+export const EMAIL_STREAMS = ["transactional", "marketing"] as const;
+export type EmailStream = (typeof EMAIL_STREAMS)[number];
+
 /** A message ready for a delivery provider (internal, camelCase). */
 export type OutboundEmail = {
   emailId: string;
   organizationId: string;
+  stream: EmailStream;
   from: string;
   to: string[];
   cc: string[];
@@ -103,28 +111,35 @@ export type ProviderTenant = { tenantName: string; tenantArn: string | null };
 
 /**
  * Provider-side domain and tenant management (fake or SES). Tenants isolate an organization's
- * reputation; domains are verified identities associated with their organization's tenant.
+ * reputation, one per stream; domains are verified identities associated with every tenant of
+ * their organization (a shared assignment), so either stream can send from them.
  */
 export interface IdentityProvider {
   readonly name: string;
-  /** Creates (or finds) the organization's tenant. Idempotent. */
-  ensureTenant(input: { organizationId: string }): Promise<ProviderTenant>;
+  /** Creates (or finds) the organization's tenant for one stream. Idempotent. */
+  ensureTenant(input: { organizationId: string; stream: EmailStream }): Promise<ProviderTenant>;
   /**
    * Creates the domain identity with Easy DKIM and the custom MAIL FROM subdomain, associated with
-   * the tenant. Throws `IdentityTakenError` when another tenant already holds it.
+   * the organization's tenants. Throws `IdentityTakenError` when a tenant outside `tenants`
+   * already holds it.
    */
   createDomainIdentity(input: {
-    tenant: ProviderTenant;
+    tenants: ProviderTenant[];
     domain: string;
     mailFromDomain: string;
   }): Promise<DomainIdentity>;
+  /**
+   * Associates an existing identity with another of its organization's tenants (a stream added
+   * after the domain). A missing identity is fine (nothing to send from).
+   */
+  associateDomainIdentity(input: { tenant: ProviderTenant; domain: string }): Promise<void>;
   /** `null` when the identity does not exist (any more). */
   getDomainIdentity(domain: string): Promise<DomainIdentityState | null>;
-  /** Removes the identity (and its tenant association). Missing identities are fine. */
-  deleteDomainIdentity(input: { tenant: ProviderTenant; domain: string }): Promise<void>;
+  /** Removes the identity (and its tenant associations). Missing identities are fine. */
+  deleteDomainIdentity(input: { tenants: ProviderTenant[]; domain: string }): Promise<void>;
   /**
-   * Removes the organization's tenant (when its organization is deleted, after its domains).
-   * A missing tenant is fine.
+   * Removes one of the organization's tenants (when its organization is deleted, after its
+   * domains). A missing tenant is fine.
    */
   deleteTenant(tenant: ProviderTenant): Promise<void>;
 }

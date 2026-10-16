@@ -25,6 +25,7 @@ import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
 import { htmlToText } from "./html-text.ts";
 import {
   type EmailProvider,
+  type EmailStream,
   type OutboundAttachment,
   type OutboundEmail,
   type ProviderEvent,
@@ -105,7 +106,12 @@ export type EmailService = {
     input: SendEmailBatchInput,
   ): Promise<{ batch: EmailBatchObjectOutput; replayed: boolean }>;
   /** Hands a queued email to its provider (the worker's dispatch job). Safe to run twice. */
-  dispatch(input: { organizationId: string; emailId: string }): Promise<EmailObjectOutput>;
+  /** `stream` (the job's queue) is informational: the email row decides. */
+  dispatch(input: {
+    organizationId: string;
+    emailId: string;
+    stream?: EmailStream;
+  }): Promise<EmailObjectOutput>;
   /** Cancels a scheduled email; an already canceled one is returned as is. */
   cancel(input: {
     organizationId: string;
@@ -204,6 +210,7 @@ function toOutbound(
   return {
     emailId: row.id,
     organizationId: row.organizationId,
+    stream: row.stream,
     from: row.from,
     to: keep(row.to),
     cc: keep(row.cc),
@@ -440,7 +447,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       if (held) {
         await opts.queue.enqueue(
           tx,
-          { organizationId: row.organizationId, emailId: row.id },
+          { organizationId: row.organizationId, emailId: row.id, stream: row.stream },
           { delaySeconds: SCREENING_RETRY_DELAY_S },
         );
       }
@@ -573,6 +580,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           provider: provider.name,
           organizationId: row.organizationId,
           from: row.from,
+          stream: row.stream,
         });
       } catch (error) {
         if (!(error instanceof EmailError)) throw error;
@@ -923,7 +931,11 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       await recordProviderEvent(tx, suppressedEvent(row, address, entry));
     }
     if (!prepared.scheduled) {
-      await opts.queue.enqueue(tx, { organizationId: row.organizationId, emailId: row.id });
+      await opts.queue.enqueue(tx, {
+        organizationId: row.organizationId,
+        emailId: row.id,
+        stream: row.stream,
+      });
     }
     return { row, billable: recipients.length - suppressed.size };
   }

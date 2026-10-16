@@ -3,6 +3,7 @@ import {
   type DomainIdentity,
   type DomainIdentityState,
   type DomainVerificationStatus,
+  type EmailStream,
   type IdentityProvider,
   IdentityTakenError,
   type MailFromStatus,
@@ -39,7 +40,7 @@ const MAIL_FROM_STATUS: Record<string, MailFromStatus> = {
   FAILED: "failed",
 };
 
-/** SES tenants (one per organization) and domain identities with Easy DKIM + MAIL FROM. */
+/** SES tenants (one per organization and stream) and domain identities with Easy DKIM + MAIL FROM. */
 export class SesIdentityProvider implements IdentityProvider {
   readonly name = "ses";
   readonly #api: SesApi;
@@ -50,8 +51,8 @@ export class SesIdentityProvider implements IdentityProvider {
     this.#config = config;
   }
 
-  #configurationSetArn(account: string): string {
-    return `arn:aws:ses:${this.#config.region}:${account}:configuration-set/${this.#config.configurationSet}`;
+  #configurationSetArn(account: string, stream: EmailStream): string {
+    return `arn:aws:ses:${this.#config.region}:${account}:configuration-set/${this.#config.configurationSets[stream]}`;
   }
 
   #identityArn(account: string, domain: string): string {
@@ -76,8 +77,11 @@ export class SesIdentityProvider implements IdentityProvider {
     }
   }
 
-  async ensureTenant(input: { organizationId: string }): Promise<ProviderTenant> {
-    const tenantName = tenantNameFor(this.#config.tenantPrefix, input.organizationId);
+  async ensureTenant(input: {
+    organizationId: string;
+    stream: EmailStream;
+  }): Promise<ProviderTenant> {
+    const tenantName = tenantNameFor(this.#config.tenantPrefix, input.organizationId, input.stream);
     let tenantArn: string | undefined;
     try {
       const created = await this.#api.createTenant({
@@ -91,15 +95,19 @@ export class SesIdentityProvider implements IdentityProvider {
       // Existing tenants are migrated by ses:bootstrap before their protection is disabled.
     }
     tenantArn ??= await this.#tenantArn({ tenantName, tenantArn: null });
-    // A tenant can only send with configuration sets associated with it.
-    await this.#associate(tenantName, this.#configurationSetArn(accountOf(tenantArn)));
+    // A tenant can only send with configuration sets associated with it: only its stream's.
+    await this.#associate(
+      tenantName,
+      this.#configurationSetArn(accountOf(tenantArn), input.stream),
+    );
     return { tenantName, tenantArn };
   }
 
   async #create(domain: string): Promise<GetEmailIdentityCommandOutput["DkimAttributes"]> {
     const created = await this.#api.createEmailIdentity({
       EmailIdentity: domain,
-      ConfigurationSetName: this.#config.configurationSet,
+      // Only a default: every send names its stream's configuration set.
+      ConfigurationSetName: this.#config.configurationSets.transactional,
       DkimSigningAttributes: { NextSigningKeyLength: "RSA_2048_BIT" },
       Tags: [{ Key: MANAGED_TAG, Value: this.#config.tenantPrefix }],
     });
@@ -118,24 +126,27 @@ export class SesIdentityProvider implements IdentityProvider {
   }
 
   async createDomainIdentity(input: {
-    tenant: ProviderTenant;
+    tenants: ProviderTenant[];
     domain: string;
     mailFromDomain: string;
   }): Promise<DomainIdentity> {
-    const account = accountOf(await this.#tenantArn(input.tenant));
+    const [first] = input.tenants;
+    if (!first) throw new Error(`No tenant to associate ${input.domain} with.`);
+    const own = new Set(input.tenants.map((tenant) => tenant.tenantName));
+    const account = accountOf(await this.#tenantArn(first));
     const identityArn = this.#identityArn(account, input.domain);
     let dkim: GetEmailIdentityCommandOutput["DkimAttributes"];
     try {
       dkim = await this.#create(input.domain);
     } catch (error) {
       if (!isSesError(error, "AlreadyExistsException")) throw error;
-      // Never adopt an identity another tenant holds, nor one managed outside coss.com. An orphan coss.com
-      // created (e.g. a released claim) is recreated, so its DKIM keys (and so its DNS records)
-      // are new and can only be published by whoever controls DNS now.
+      // Never adopt an identity another organization's tenant holds, nor one managed outside
+      // coss.com. An orphan coss.com created (e.g. a released claim) is recreated, so its DKIM keys (and
+      // so its DNS records) are new and can only be published by whoever controls DNS now.
       const { ResourceTenants = [] } = await this.#api.listResourceTenants({
         ResourceArn: identityArn,
       });
-      if (ResourceTenants.some((t) => t.TenantName !== input.tenant.tenantName)) {
+      if (ResourceTenants.some((t) => !own.has(t.TenantName ?? ""))) {
         throw new IdentityTakenError(input.domain);
       }
       if (ResourceTenants.length > 0) {
@@ -153,12 +164,22 @@ export class SesIdentityProvider implements IdentityProvider {
       // Without the MX record, mail still goes out with SES's own MAIL FROM (DKIM keeps DMARC).
       BehaviorOnMxFailure: "USE_DEFAULT_VALUE",
     });
-    await this.#associate(input.tenant.tenantName, identityArn);
+    // A shared assignment: every stream of the organization sends from the domain.
+    for (const tenant of input.tenants) await this.#associate(tenant.tenantName, identityArn);
     return {
       dkimTokens: dkim?.Tokens ?? [],
       dkimHostedZone: dkim?.SigningHostedZone ?? "dkim.amazonses.com",
       region: this.#config.region,
     };
+  }
+
+  async associateDomainIdentity(input: { tenant: ProviderTenant; domain: string }): Promise<void> {
+    const account = accountOf(await this.#tenantArn(input.tenant));
+    try {
+      await this.#associate(input.tenant.tenantName, this.#identityArn(account, input.domain));
+    } catch (error) {
+      if (!isSesError(error, "NotFoundException")) throw error;
+    }
   }
 
   async getDomainIdentity(domain: string): Promise<DomainIdentityState | null> {
@@ -182,21 +203,22 @@ export class SesIdentityProvider implements IdentityProvider {
     };
   }
 
-  async deleteDomainIdentity(input: { tenant: ProviderTenant; domain: string }): Promise<void> {
-    if (!input.tenant.tenantName) return;
-    const identityArn = this.#identityArn(
-      accountOf(await this.#tenantArn(input.tenant)),
-      input.domain,
-    );
-    try {
-      await this.#api.deleteTenantResourceAssociation({
-        TenantName: input.tenant.tenantName,
-        ResourceArn: identityArn,
-      });
-    } catch (error) {
-      if (!isSesError(error, "NotFoundException")) throw error;
+  async deleteDomainIdentity(input: { tenants: ProviderTenant[]; domain: string }): Promise<void> {
+    const tenants = input.tenants.filter((tenant) => tenant.tenantName);
+    const [first] = tenants;
+    if (!first) return;
+    const identityArn = this.#identityArn(accountOf(await this.#tenantArn(first)), input.domain);
+    for (const tenant of tenants) {
+      try {
+        await this.#api.deleteTenantResourceAssociation({
+          TenantName: tenant.tenantName,
+          ResourceArn: identityArn,
+        });
+      } catch (error) {
+        if (!isSesError(error, "NotFoundException")) throw error;
+      }
     }
-    // Only identities this deployment created are deleted; others merely lose the association.
+    // Only identities this deployment created are deleted; others merely lose the associations.
     if (!(await this.#managedByUs(identityArn))) return;
     try {
       await this.#api.deleteEmailIdentity({ EmailIdentity: input.domain });

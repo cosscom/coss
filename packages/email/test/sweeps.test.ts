@@ -164,7 +164,9 @@ describe("sweepUnclaimedEmails", () => {
     const sweep = memoryDispatchQueue();
     const scope = scopeOf(tenant);
     expect(await sweepUnclaimedEmails(sweep, { scope })).toEqual({ failed: 0, requeued: 1 });
-    expect(sweep.jobs).toEqual([{ organizationId: tenant.organization.id, emailId: lost }]);
+    expect(sweep.jobs).toEqual([
+      { organizationId: tenant.organization.id, emailId: lost, stream: "transactional" },
+    ]);
 
     await sweep.drain(service);
     expect(sent.map((message) => message.emailId)).toContain(lost);

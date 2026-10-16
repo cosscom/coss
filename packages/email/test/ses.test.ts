@@ -2,13 +2,14 @@ import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   applyTenantStatus,
   authorizeLiveSender,
   checkDomain,
   createDomain,
   deleteDomain,
+  ensureMissingStreamTenants,
   releaseOrganizationEmailResources,
 } from "../src/domains.ts";
 import { EmailError } from "../src/errors.ts";
@@ -26,12 +27,17 @@ import { sweepStaleClaims } from "../src/sweeps.ts";
 import { dispatchingEmailService, FakeSesApi } from "../src/testing.ts";
 import { params, sendEnvironment } from "./helpers.ts";
 
-const config = { region: "eu-west-1", configurationSet: "coss-test", tenantPrefix: "test" };
+const config = {
+  region: "eu-west-1",
+  configurationSets: { transactional: "coss-test", marketing: "coss-test-marketing" },
+  tenantPrefix: "test",
+};
 
 function outbound(overrides: Partial<OutboundEmail> = {}): OutboundEmail {
   return {
     emailId: "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
     organizationId: "org_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    stream: "transactional",
     from: "Acme <hello@acme.com>",
     to: ["a@example.com"],
     cc: [],
@@ -294,12 +300,110 @@ describe("SES send outcomes (fake SES)", () => {
   });
 });
 
+describe("streams", () => {
+  test("a marketing email goes out with the marketing configuration set and tenant", async () => {
+    const api = new FakeSesApi();
+    await new SesEmailProvider(api, config).send(outbound({ stream: "marketing" }));
+    expect(api.sent[0]).toMatchObject({
+      ConfigurationSetName: "coss-test-marketing",
+      TenantName: "test-org_01k7c8m4q2f3e9v6t5r1n0p8yz-marketing",
+    });
+  });
+
+  test("each stream's tenant is associated with only its configuration set", async () => {
+    const api = new FakeSesApi();
+    const identity = new SesIdentityProvider(api, config);
+    const marketing = await identity.ensureTenant({ organizationId: "org_a", stream: "marketing" });
+    expect(marketing.tenantName).toBe("test-org_a-marketing");
+    const set = (name: string) => `arn:aws:ses:eu-west-1:123456789012:configuration-set/${name}`;
+    expect(api.associations.get(set("coss-test-marketing"))).toEqual(
+      new Set(["test-org_a-marketing"]),
+    );
+    expect(api.associations.get(set("coss-test"))?.has("test-org_a-marketing") ?? false).toBe(
+      false,
+    );
+  });
+
+  test("an identity is shared by the organization's own tenants, never another's", async () => {
+    const api = new FakeSesApi();
+    const identity = new SesIdentityProvider(api, config);
+    const own = [
+      await identity.ensureTenant({ organizationId: "org_a", stream: "transactional" }),
+      await identity.ensureTenant({ organizationId: "org_a", stream: "marketing" }),
+    ];
+    await identity.createDomainIdentity({
+      tenants: own,
+      domain: "acme.com",
+      mailFromDomain: "send.acme.com",
+    });
+    expect(api.associations.get(api.identityArn("acme.com"))).toEqual(
+      new Set(["test-org_a", "test-org_a-marketing"]),
+    );
+    // Provisioning again (a restarted verification) finds only its own tenants: adopted.
+    await identity.createDomainIdentity({
+      tenants: own,
+      domain: "acme.com",
+      mailFromDomain: "send.acme.com",
+    });
+    const other = await identity.ensureTenant({ organizationId: "org_b", stream: "marketing" });
+    await expect(
+      identity.createDomainIdentity({
+        tenants: [other],
+        domain: "acme.com",
+        mailFromDomain: "send.acme.com",
+      }),
+    ).rejects.toBeInstanceOf(IdentityTakenError);
+
+    await identity.deleteDomainIdentity({ tenants: own, domain: "acme.com" });
+    expect(api.associations.get(api.identityArn("acme.com"))?.size).toBe(0);
+  });
+
+  test("the backfill creates missing stream tenants with the organization's identities", async () => {
+    const api = new FakeSesApi();
+    const identity = new SesIdentityProvider(api, config);
+    const deps = { identity, dns: null, tracking: new FakeTrackingHostnameProvider() };
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const name = `streams-${uniqueSuffix()}.com`;
+    await createDomain({ organizationId, name, userId: null }, deps);
+    // An organization set up before streams: only its transactional tenant exists.
+    await db
+      .delete(schema.emailTenant)
+      .where(
+        and(
+          eq(schema.emailTenant.organizationId, organizationId),
+          eq(schema.emailTenant.stream, "marketing"),
+        ),
+      );
+    api.tenants.delete(`test-${organizationId}-marketing`);
+    api.associations.get(api.identityArn(name))?.delete(`test-${organizationId}-marketing`);
+
+    const scope = { organizationIds: [organizationId] };
+    expect(await ensureMissingStreamTenants(identity, { scope })).toBe(1);
+    expect(api.associations.get(api.identityArn(name))).toEqual(
+      new Set([`test-${organizationId}`, `test-${organizationId}-marketing`]),
+    );
+    const rows = await db
+      .select()
+      .from(schema.emailTenant)
+      .where(eq(schema.emailTenant.organizationId, organizationId));
+    const marketing = rows.find((row) => row.stream === "marketing");
+    expect(marketing).toMatchObject({ tenantName: `test-${organizationId}-marketing` });
+    // Born without SES suppression: bootstrap's migration must skip it.
+    expect(marketing?.suppressionMigratedAt).not.toBeNull();
+    expect(await ensureMissingStreamTenants(identity, { scope })).toBe(0);
+  });
+});
+
 describe("SesIdentityProvider", () => {
   test("creates the tenant once, with SES suppression off and the configuration set", async () => {
     const api = new FakeSesApi();
     const identity = new SesIdentityProvider(api, config);
 
-    const tenant = await identity.ensureTenant({ organizationId: "org_a" });
+    const tenant = await identity.ensureTenant({
+      organizationId: "org_a",
+      stream: "transactional",
+    });
     expect(tenant).toEqual({
       tenantName: "test-org_a",
       tenantArn: "arn:aws:ses:eu-west-1:123456789012:tenant/test-org_a/t-1",
@@ -311,7 +415,9 @@ describe("SesIdentityProvider", () => {
       api.associations.get("arn:aws:ses:eu-west-1:123456789012:configuration-set/coss-test"),
     ).toEqual(new Set(["test-org_a"]));
 
-    expect(await identity.ensureTenant({ organizationId: "org_a" })).toEqual(tenant);
+    expect(
+      await identity.ensureTenant({ organizationId: "org_a", stream: "transactional" }),
+    ).toEqual(tenant);
     // Runtime setup must not disable protection before bootstrap migrates the old list.
     expect(api.calls.some((call) => call.operation === "putTenantSuppressionAttributes")).toBe(
       false,
@@ -321,10 +427,13 @@ describe("SesIdentityProvider", () => {
   test("creates domain identities with MAIL FROM, associated with the tenant", async () => {
     const api = new FakeSesApi();
     const identity = new SesIdentityProvider(api, config);
-    const tenant = await identity.ensureTenant({ organizationId: "org_a" });
+    const tenant = await identity.ensureTenant({
+      organizationId: "org_a",
+      stream: "transactional",
+    });
 
     const created = await identity.createDomainIdentity({
-      tenant,
+      tenants: [tenant],
       domain: "acme.com",
       mailFromDomain: "send.acme.com",
     });
@@ -355,27 +464,27 @@ describe("SesIdentityProvider", () => {
     });
     expect(await identity.getDomainIdentity("unknown.com")).toBeNull();
 
-    await identity.deleteDomainIdentity({ tenant, domain: "acme.com" });
+    await identity.deleteDomainIdentity({ tenants: [tenant], domain: "acme.com" });
     expect(api.identities.has("acme.com")).toBe(false);
     expect(api.associations.get(api.identityArn("acme.com"))?.size).toBe(0);
     // Already gone: still fine.
-    await identity.deleteDomainIdentity({ tenant, domain: "acme.com" });
+    await identity.deleteDomainIdentity({ tenants: [tenant], domain: "acme.com" });
   });
 
   test("never adopts another tenant's identity; recreates orphans with new keys", async () => {
     const api = new FakeSesApi();
     const identity = new SesIdentityProvider(api, config);
-    const a = await identity.ensureTenant({ organizationId: "org_a" });
-    const b = await identity.ensureTenant({ organizationId: "org_b" });
+    const a = await identity.ensureTenant({ organizationId: "org_a", stream: "transactional" });
+    const b = await identity.ensureTenant({ organizationId: "org_b", stream: "transactional" });
     await identity.createDomainIdentity({
-      tenant: a,
+      tenants: [a],
       domain: "acme.com",
       mailFromDomain: "send.acme.com",
     });
 
     await expect(
       identity.createDomainIdentity({
-        tenant: b,
+        tenants: [b],
         domain: "acme.com",
         mailFromDomain: "send.acme.com",
       }),
@@ -388,7 +497,7 @@ describe("SesIdentityProvider", () => {
     });
     const oldTokens = api.identities.get("orphan.com")?.tokens;
     const recreated = await identity.createDomainIdentity({
-      tenant: b,
+      tenants: [b],
       domain: "orphan.com",
       mailFromDomain: "send.orphan.com",
     });
@@ -399,7 +508,10 @@ describe("SesIdentityProvider", () => {
   test("never touches identities managed outside coss.com (or by another deployment)", async () => {
     const api = new FakeSesApi();
     const identity = new SesIdentityProvider(api, config);
-    const tenant = await identity.ensureTenant({ organizationId: "org_a" });
+    const tenant = await identity.ensureTenant({
+      organizationId: "org_a",
+      stream: "transactional",
+    });
     // The company's own domain, verified by hand in the same account.
     await api.createEmailIdentity({ EmailIdentity: "company.com" });
     await api.createEmailIdentity({
@@ -410,9 +522,13 @@ describe("SesIdentityProvider", () => {
 
     for (const domain of ["company.com", "staging.com"]) {
       await expect(
-        identity.createDomainIdentity({ tenant, domain, mailFromDomain: `send.${domain}` }),
+        identity.createDomainIdentity({
+          tenants: [tenant],
+          domain,
+          mailFromDomain: `send.${domain}`,
+        }),
       ).rejects.toBeInstanceOf(IdentityTakenError);
-      await identity.deleteDomainIdentity({ tenant, domain });
+      await identity.deleteDomainIdentity({ tenants: [tenant], domain });
     }
     expect(api.identities.get("company.com")?.tokens).toEqual(tokens ?? []);
     expect(api.identities.has("staging.com")).toBe(true);
@@ -455,10 +571,13 @@ describe("releaseOrganizationEmailResources", () => {
     const name = `release-${uniqueSuffix()}.com`;
     await createDomain({ organizationId, name, userId: null }, deps);
     // A failed domain whose name another organization holds by now: its identity isn't ours.
-    const other = await identity.ensureTenant({ organizationId: "org_other" });
+    const other = await identity.ensureTenant({
+      organizationId: "org_other",
+      stream: "transactional",
+    });
     const taken = `taken-${uniqueSuffix()}.com`;
     await identity.createDomainIdentity({
-      tenant: other,
+      tenants: [other],
       domain: taken,
       mailFromDomain: `send.${taken}`,
     });
@@ -515,7 +634,7 @@ describe("releaseOrganizationEmailResources", () => {
   test("never deletes another deployment's tenant", async () => {
     const api = new FakeSesApi();
     const staging = new SesIdentityProvider(api, { ...config, tenantPrefix: "staging" });
-    const tenant = await staging.ensureTenant({ organizationId: "org_a" });
+    const tenant = await staging.ensureTenant({ organizationId: "org_a", stream: "transactional" });
     await new SesIdentityProvider(api, config).deleteTenant(tenant);
     expect(api.tenants.has("staging-org_a")).toBe(true);
     await staging.deleteTenant(tenant);

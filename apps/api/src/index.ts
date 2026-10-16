@@ -6,7 +6,7 @@ import { createPlanGate, createUsageGate, planRateLimits } from "@coss/billing";
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
 import { createEmailService } from "@coss/email";
-import { ensureEmailDispatchQueue, pgBossDispatchQueue } from "@coss/email/dispatch";
+import { ensureEmailDispatchQueues, pgBossDispatchQueue } from "@coss/email/dispatch";
 import { createLogWriter } from "@coss/logs";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { createRiskDeps } from "@coss/risk/runtime";
@@ -23,7 +23,7 @@ const plans = createPlanGate();
 const email = createDefaultEmailRuntime(env, { plans });
 // Sends only enqueue (the worker dispatches).
 const jobs = await startJobBoss();
-await ensureEmailDispatchQueue(jobs);
+await ensureEmailDispatchQueues(jobs);
 const rateLimits = createRateLimitRuntime(env, {
   planRules: (organizationId) => planRateLimits(organizationId),
 });

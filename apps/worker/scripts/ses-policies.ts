@@ -6,18 +6,20 @@
  * are only allowed on identities with that tag, so domains managed outside coss.com in the same account
  * (e.g. the company's own) can't be changed or deleted by the apps. Sending can't be limited by tag:
  * SES authorizes `SendEmail` against the sender *address* (`identity/hello@acme.com`), which is not
- * a tagged resource. Sends are confined by the configuration set instead (verified live: another
+ * a tagged resource. Sends are confined by the configuration sets instead (verified live: another
  * configuration set, or none so the identity's default applies, is denied), and the app always
  * sends with a `<prefix>-…` tenant, which SES only allows with identities associated with it.
- * Dedicated IPs add one configuration set and one managed pool per organization, both named
- * `<prefix>-<organization id>` and tagged `coss_managed`; only the worker manages them.
+ * Each stream has its configuration set (`<name>`, `<name>-marketing`); both are allowed.
+ * Dedicated IPs add one managed pool per organization and a configuration set per stream sending
+ * through it, named `<prefix>-<organization id>[-marketing]` and tagged `coss_managed`; only the
+ * worker manages them.
  */
-import { MANAGED_TAG } from "@coss/email/ses";
+import { configurationSetsFor, MANAGED_TAG } from "@coss/email/ses";
 
 export type PolicyContext = {
   region: string;
   account: string;
-  /** The configuration set (and resource name prefix), e.g. `coss`. */
+  /** The transactional configuration set (and resource name prefix), e.g. `coss`. */
   name: string;
   tenantPrefix: string;
   queueArn: string;
@@ -42,8 +44,10 @@ export function cossPolicies(
   const ses = `arn:aws:ses:${ctx.region}:${ctx.account}`;
   const identities = `${ses}:identity/*`;
   const tenants = `${ses}:tenant/${ctx.tenantPrefix}-*`;
-  const configurationSet = `${ses}:configuration-set/${ctx.name}`;
-  // Organizations' dedicated IP configuration sets and pools (`<prefix>-<organization id>`).
+  const configurationSets = Object.values(configurationSetsFor(ctx.name)).map(
+    (name) => `${ses}:configuration-set/${name}`,
+  );
+  // Organizations' dedicated IP configuration sets and pools (`<prefix>-<organization id>…`).
   const dedicatedSets = `${ses}:configuration-set/${ctx.tenantPrefix}-*`;
   const dedicatedPools = `${ses}:dedicated-ip-pool/${ctx.tenantPrefix}-*`;
   const managed = { StringEquals: { [`aws:ResourceTag/${MANAGED_TAG}`]: ctx.tenantPrefix } };
@@ -80,7 +84,7 @@ export function cossPolicies(
           Sid: "SendWithCossConfigurationSet",
           Effect: "Allow",
           Action: ["ses:SendEmail"],
-          Resource: [configurationSet, dedicatedSets],
+          Resource: [...configurationSets, dedicatedSets],
         },
         ...contentReads,
       ],
@@ -98,7 +102,7 @@ export function cossPolicies(
           Sid: "AssociateTenantResources",
           Effect: "Allow",
           Action: ["ses:CreateTenantResourceAssociation", "ses:DeleteTenantResourceAssociation"],
-          Resource: [tenants, identities, configurationSet],
+          Resource: [tenants, identities, ...configurationSets],
         },
         {
           Sid: "InspectIdentities",
@@ -146,7 +150,7 @@ export function cossPolicies(
           Sid: "SendWithCossConfigurationSet",
           Effect: "Allow",
           Action: ["ses:SendEmail"],
-          Resource: [configurationSet, dedicatedSets],
+          Resource: [...configurationSets, dedicatedSets],
         },
         {
           Sid: "ConsumeSesEvents",
@@ -181,11 +185,11 @@ export function cossPolicies(
           Resource: [tenants],
         },
         {
-          // Dedicated IP sets copy the shared set's event destinations.
+          // Dedicated IP sets copy their stream's shared set's event destinations.
           Sid: "ReadCossEventDestinations",
           Effect: "Allow",
           Action: ["ses:GetConfigurationSetEventDestinations"],
-          Resource: [configurationSet],
+          Resource: configurationSets,
         },
         {
           Sid: "CreateTaggedDedicatedIps",

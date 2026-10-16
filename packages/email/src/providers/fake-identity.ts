@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import type {
   DomainIdentity,
   DomainIdentityState,
+  EmailStream,
   IdentityProvider,
   ProviderTenant,
 } from "../provider.ts";
@@ -20,8 +21,12 @@ export class FakeIdentityProvider implements IdentityProvider {
     this.#verify = opts.verify ?? (() => true);
   }
 
-  async ensureTenant(input: { organizationId: string }): Promise<ProviderTenant> {
-    return { tenantName: `fake-${input.organizationId}`, tenantArn: null };
+  async ensureTenant(input: {
+    organizationId: string;
+    stream: EmailStream;
+  }): Promise<ProviderTenant> {
+    const suffix = input.stream === "transactional" ? "" : `-${input.stream}`;
+    return { tenantName: `fake-${input.organizationId}${suffix}`, tenantArn: null };
   }
 
   async createDomainIdentity(input: { domain: string }): Promise<DomainIdentity> {
@@ -33,6 +38,8 @@ export class FakeIdentityProvider implements IdentityProvider {
     this.#identities.set(input.domain, identity);
     return identity;
   }
+
+  async associateDomainIdentity(): Promise<void> {}
 
   async getDomainIdentity(domain: string): Promise<DomainIdentityState | null> {
     // Identities created by another process (e.g. the dashboard) are unknown here: treat them as

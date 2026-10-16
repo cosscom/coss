@@ -1,8 +1,13 @@
 /**
  * Creates (or updates) the shared AWS infrastructure for `EMAIL_PROVIDER=ses`, idempotently:
  *
- *   SES configuration set ──events──▶ SNS topic ──raw──▶ SQS queue (+ dead-letter queue) ◀── worker
- *   EventBridge rule (tenant sending status) ─────────────▶ same queue
+ *   SES configuration sets ──events──▶ SNS topic ──raw──▶ SQS queue (+ dead-letter queue) ◀── worker
+ *   EventBridge rule (tenant sending status) ──────────────▶ same queue
+ *
+ * One configuration set per stream: `<name>` (transactional) and `<name>-marketing`, each
+ * optionally on a managed dedicated IP pool (`--transactional-pool`, `--marketing-pool`). Every
+ * organization gets one SES tenant per stream; tenants missing for organizations set up before a
+ * stream existed are created here (with their domains' identities associated).
  *
  * and, with `--managed-domain` (receiving):
  *
@@ -24,6 +29,7 @@
  *
  *   AWS_REGION=eu-west-1 bun run ses:bootstrap [--name coss] [--tenant-prefix coss] [--alert-email ops@…]
  *     [--managed-domain inbound.coss.com [--replace-active-rule-set]]
+ *     [--transactional-pool coss-transactional] [--marketing-pool coss-marketing]
  *
  * Needs credentials allowed to manage SES, SNS, SQS, EventBridge and S3 (the default AWS credential
  * chain: env vars, profile or role). Prints the env vars the apps need. Use one AWS account (or at
@@ -66,9 +72,11 @@ import {
 import {
   CreateConfigurationSetCommand,
   CreateConfigurationSetEventDestinationCommand,
+  CreateDedicatedIpPoolCommand,
   CreateEmailIdentityCommand,
   type EventDestinationDefinition,
   GetEmailIdentityCommand,
+  PutConfigurationSetDeliveryOptionsCommand,
   PutConfigurationSetReputationOptionsCommand,
   SESv2Client,
   UpdateConfigurationSetEventDestinationCommand,
@@ -87,9 +95,15 @@ import {
   SQSClient,
 } from "@aws-sdk/client-sqs";
 import { closeDb } from "@coss/db";
-import { SES_TENANT_PREFIX_PATTERN } from "@coss/email/env";
+import { EMAIL_STREAMS, type EmailStream, ensureMissingStreamTenants } from "@coss/email";
+import { SES_CONFIGURATION_SET_PATTERN, SES_TENANT_PREFIX_PATTERN } from "@coss/email/env";
 import { sesInboundMxHost } from "@coss/email/runtime";
-import { LANDING_PREFIX } from "@coss/email/ses";
+import {
+  configurationSetsFor,
+  createSesApi,
+  LANDING_PREFIX,
+  SesIdentityProvider,
+} from "@coss/email/ses";
 import { RETENTION_DAYS } from "@coss/retention";
 import { cossPolicies, type PolicyDocument } from "./ses-policies.ts";
 import { migrateSesSuppressions } from "./ses-suppression-migration.ts";
@@ -113,15 +127,28 @@ const { values } = parseArgs({
     "alert-email": { type: "string" },
     "managed-domain": { type: "string" },
     "replace-active-rule-set": { type: "boolean", default: false },
+    // Managed dedicated IP pools (billed per pool and volume; they warm up over weeks).
+    "transactional-pool": { type: "string" },
+    "marketing-pool": { type: "string" },
   },
 });
 const region = process.env.AWS_REGION;
 const name = values.name;
 const tenantPrefix = values["tenant-prefix"];
 if (!region) throw new Error("Set AWS_REGION (e.g. AWS_REGION=eu-west-1).");
-if (!/^[A-Za-z0-9_-]{1,48}$/.test(name)) throw new Error(`Invalid --name "${name}".`);
+if (!SES_CONFIGURATION_SET_PATTERN.test(name) || name.length > 48) {
+  throw new Error(`Invalid --name "${name}" (1-48 of A-Z a-z 0-9 _ -).`);
+}
 if (!SES_TENANT_PREFIX_PATTERN.test(tenantPrefix)) {
-  throw new Error(`Invalid --tenant-prefix "${tenantPrefix}" (1-32 of A-Z a-z 0-9 _ -).`);
+  throw new Error(`Invalid --tenant-prefix "${tenantPrefix}" (1-23 of A-Z a-z 0-9 _ -).`);
+}
+const configurationSets = configurationSetsFor(name);
+const pools: Partial<Record<EmailStream, string>> = {
+  ...(values["transactional-pool"] ? { transactional: values["transactional-pool"] } : {}),
+  ...(values["marketing-pool"] ? { marketing: values["marketing-pool"] } : {}),
+};
+for (const pool of Object.values(pools)) {
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(pool)) throw new Error(`Invalid IP pool name "${pool}".`);
 }
 
 const managedDomain = values["managed-domain"]?.trim().toLowerCase().replace(/\.$/, "");
@@ -174,7 +201,9 @@ const { TopicArn: topicArn } = await sns.send(
 );
 if (!topicArn) throw new Error("CreateTopic returned no ARN.");
 const account = topicArn.split(":")[4] ?? "";
-const configurationSetArn = `arn:aws:ses:${region}:${account}:configuration-set/${name}`;
+const configurationSetArns = EMAIL_STREAMS.map(
+  (stream) => `arn:aws:ses:${region}:${account}:configuration-set/${configurationSets[stream]}`,
+);
 step(`SNS topic ${topicArn}`);
 await sns.send(
   new SetTopicAttributesCommand({
@@ -191,10 +220,11 @@ await sns.send(
           Resource: topicArn,
           Condition: {
             StringEquals: { "AWS:SourceAccount": account },
-            // The shared set, and organizations' dedicated IP sets (`<tenant prefix>-<org id>`).
+            // The streams' shared sets, and organizations' dedicated IP sets
+            // (`<tenant prefix>-<org id>[-marketing]`).
             ArnLike: {
               "AWS:SourceArn": [
-                configurationSetArn,
+                ...configurationSetArns,
                 `arn:aws:ses:${region}:${account}:configuration-set/${tenantPrefix}-*`,
               ],
             },
@@ -287,48 +317,69 @@ await sns.send(
 );
 step("SNS → SQS subscription (raw message delivery)");
 
-// 5. Configuration set with event publishing to the topic.
-try {
-  await ses.send(
-    new CreateConfigurationSetCommand({
-      ConfigurationSetName: name,
-      ReputationOptions: { ReputationMetricsEnabled: true },
-      SendingOptions: { SendingEnabled: true },
-    }),
-  );
-} catch (error) {
-  if (!isNamed(error, "AlreadyExistsException")) throw error;
-  await ses.send(
-    new PutConfigurationSetReputationOptionsCommand({
-      ConfigurationSetName: name,
-      ReputationMetricsEnabled: true,
-    }),
-  );
-}
+// 5. One configuration set per stream, each with event publishing to the topic and, when asked,
+//    its own managed dedicated IP pool (left as is when the flag is omitted).
 const destination: EventDestinationDefinition = {
   Enabled: true,
   MatchingEventTypes: [...EVENT_TYPES],
   SnsDestination: { TopicArn: topicArn },
 };
-try {
-  await ses.send(
-    new CreateConfigurationSetEventDestinationCommand({
-      ConfigurationSetName: name,
-      EventDestinationName: EVENT_DESTINATION,
-      EventDestination: destination,
-    }),
-  );
-} catch (error) {
-  if (!isNamed(error, "AlreadyExistsException")) throw error;
-  await ses.send(
-    new UpdateConfigurationSetEventDestinationCommand({
-      ConfigurationSetName: name,
-      EventDestinationName: EVENT_DESTINATION,
-      EventDestination: destination,
-    }),
+for (const stream of EMAIL_STREAMS) {
+  const setName = configurationSets[stream];
+  try {
+    await ses.send(
+      new CreateConfigurationSetCommand({
+        ConfigurationSetName: setName,
+        ReputationOptions: { ReputationMetricsEnabled: true },
+        SendingOptions: { SendingEnabled: true },
+      }),
+    );
+  } catch (error) {
+    if (!isNamed(error, "AlreadyExistsException")) throw error;
+    await ses.send(
+      new PutConfigurationSetReputationOptionsCommand({
+        ConfigurationSetName: setName,
+        ReputationMetricsEnabled: true,
+      }),
+    );
+  }
+  try {
+    await ses.send(
+      new CreateConfigurationSetEventDestinationCommand({
+        ConfigurationSetName: setName,
+        EventDestinationName: EVENT_DESTINATION,
+        EventDestination: destination,
+      }),
+    );
+  } catch (error) {
+    if (!isNamed(error, "AlreadyExistsException")) throw error;
+    await ses.send(
+      new UpdateConfigurationSetEventDestinationCommand({
+        ConfigurationSetName: setName,
+        EventDestinationName: EVENT_DESTINATION,
+        EventDestination: destination,
+      }),
+    );
+  }
+  const pool = pools[stream];
+  if (pool) {
+    try {
+      await ses.send(new CreateDedicatedIpPoolCommand({ PoolName: pool, ScalingMode: "MANAGED" }));
+    } catch (error) {
+      if (!isNamed(error, "AlreadyExistsException")) throw error;
+    }
+    await ses.send(
+      new PutConfigurationSetDeliveryOptionsCommand({
+        ConfigurationSetName: setName,
+        SendingPoolName: pool,
+      }),
+    );
+  }
+  step(
+    `SES configuration set ${setName} (${stream}) → ${EVENT_TYPES.join(", ")}` +
+      (pool ? `, dedicated IP pool ${pool}` : ""),
   );
 }
-step(`SES configuration set ${name} → ${EVENT_TYPES.join(", ")}`);
 
 // 5b. Receiving: bucket → topic → queues → receipt rule set (only with --managed-domain).
 const INBOUND_RULE = "catch-all";
@@ -569,14 +620,24 @@ async function ensureReceiving(domain: string, region: string) {
   };
 }
 
-// 6. Commit historical protection to coss.com before disabling any SES lists.
+// 6. Commit historical protection to coss.com before disabling any SES lists, then (6b) create the
+//    stream tenants organizations set up before a stream existed are missing, with their domains'
+//    identities associated (born without SES suppression, so 6 never imports into them).
 let tenantsUpdated: number;
+let tenantsCreated: number;
 try {
-  tenantsUpdated = await migrateSesSuppressions(ses, { configurationSet: name, tenantPrefix });
+  tenantsUpdated = await migrateSesSuppressions(ses, {
+    configurationSets: Object.values(configurationSets),
+    tenantPrefix,
+  });
+  tenantsCreated = await ensureMissingStreamTenants(
+    new SesIdentityProvider(createSesApi(region), { region, configurationSets, tenantPrefix }),
+  );
 } finally {
   await closeDb();
 }
-step(`SES suppression off (configuration set and ${tenantsUpdated} existing tenants)`);
+step(`SES suppression off (configuration sets and ${tenantsUpdated} existing tenants)`);
+step(`SES stream tenants: ${tenantsCreated} created for existing organizations`);
 
 // 7. Least-privilege IAM policies. A changed document becomes the new default version (IAM keeps
 //    at most 5, so the oldest non-default one is dropped first).
@@ -728,7 +789,7 @@ console.info(
     "",
     "EMAIL_PROVIDER=ses",
     `AWS_REGION=${region}`,
-    `SES_CONFIGURATION_SET=${name}`,
+    `SES_CONFIGURATION_SET=${name}   (the marketing stream uses ${configurationSets.marketing})`,
     `SES_TENANT_PREFIX=${tenantPrefix}`,
     `SES_EVENTS_QUEUE_URL=${queue.url}`,
     ...(inbound
