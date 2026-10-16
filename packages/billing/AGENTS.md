@@ -25,9 +25,10 @@ repository root.
   - **Self-serve add-ons** (`startAddOn`, `scheduleAddOnRemoval` in `changes.ts`): adding one is a pending successor
     contract (same plan, plus the add-on) whose invoice charges only the add-on for the rest of the month
     (`composeContractChange` carries an unchanged monthly fee and same-price add-ons instead of re-charging and
-    crediting them; a replaced contract's unused in-advance add-on time is credited, `unused-addon:` keys), confirmed
+    crediting them, so later changes in the month follow `supersedes_id` back to where they were charged —
+    `advancePaid`; a replaced contract's unused in-advance add-on time is credited, `unused-addon:` keys), confirmed
     once paid like an upgrade; refused off its `plans`, while any change is scheduled, or by the caller's
-    `AddOnPreflight` (the dashboard's Dedicated IPs capacity check). Removal is a successor without it at the next
+    `AddOnPreflight` (run in the purchase's transaction; the dashboard's Dedicated IPs capacity check). Removal is a successor without it at the next
     month (`cancelScheduledChange` undoes it). Upgrades and downgrades carry add-ons over; a downgrade to a plan an
     add-on isn't offered on is refused until it is removed. `validateContract` refuses catalog add-ons off their
     plans for every contract kind. `organizationsEntitledTo(feature)` lists organizations whose contract in effect

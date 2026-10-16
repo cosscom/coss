@@ -144,8 +144,16 @@ export async function startUpgrade(input: {
   });
 }
 
-/** Reasons a self-serve add-on can't be bought now (e.g. no capacity left). */
-export type AddOnPreflight = (organizationId: string, addOn: AddOnDefinition) => Promise<string[]>;
+/**
+ * Reasons a self-serve add-on can't be bought now (e.g. no capacity left). It runs in the purchase's
+ * transaction, which commits the pending contract: a lock it takes there covers that contract.
+ */
+export type AddOnPreflight = (
+  tx: Transaction,
+  organizationId: string,
+  addOn: AddOnDefinition,
+  now: Date,
+) => Promise<string[]>;
 
 /**
  * Adds a catalog add-on to the self-serve plan: like an upgrade, a pending contract (the same plan
@@ -167,7 +175,7 @@ export async function startAddOn(input: {
     );
   }
   // Retrying replaces the change still waiting for payment.
-  return startPendingChange(input, "Replaced by an add-on purchase.", async (state) => {
+  return startPendingChange(input, "Replaced by an add-on purchase.", async (state, tx, now) => {
     const current = state.contract;
     if (!current || !addOn.plans.includes(current.terms.plan)) {
       const plans = addOn.plans.map((key) => PLANS[key].name).join(" and ");
@@ -185,7 +193,7 @@ export async function startAddOn(input: {
         "A change to your plan is scheduled. Cancel it before adding to your plan.",
       );
     }
-    const blockers = await input.preflight(input.organizationId, addOn);
+    const blockers = await input.preflight(tx, input.organizationId, addOn, now);
     if (blockers.length) throw new BillingError("invalid_change", blockers.join(" "));
     return selfServeTerms(current.terms.plan, [...(current.terms.addOns ?? []), addOnTerms(addOn)]);
   });
@@ -203,7 +211,7 @@ async function startPendingChange(
     now?: Date;
   },
   replaced: string,
-  terms: (state: BillingState) => Promise<ContractTerms>,
+  terms: (state: BillingState, tx: Transaction, now: Date) => Promise<ContractTerms>,
 ): Promise<{ contract: Contract; invoice: InvoiceRow | null }> {
   const now = input.now ?? new Date();
   return db.transaction(async (tx) => {
@@ -217,7 +225,7 @@ async function startPendingChange(
         "Your plan is managed by your contract. Contact your account manager to change it.",
       );
     }
-    const newTerms = await terms(state);
+    const newTerms = await terms(state, tx, now);
     const at = floorHour(now);
     const contract = await insertContract(
       tx,

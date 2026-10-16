@@ -4,6 +4,7 @@ import { createTestTenant } from "@coss/tenancy/testing";
 import { and, eq, sum } from "drizzle-orm";
 import {
   dedicatedIpPoolObject,
+  dedicatedIpSlotAvailable,
   getDedicatedIpPool,
   READY_MIN_DELIVERIES,
   RELEASE_DELAY_MS,
@@ -230,6 +231,78 @@ describe("reconcileDedicatedIpPools", () => {
     await reconcileDedicatedIpPools({ entitled: [org], now, scope }, deps(pools));
     expect((await getDedicatedIpPool(org))?.status).toBe("warming");
     expect(pools.pools).toEqual([org]);
+  });
+
+  test("an entitlement back after the release started waits for it, then gets a new pool", async () => {
+    const tenant = await tenantWithProviderTenant();
+    const org = tenant.organization.id;
+    const scope = { organizationIds: [org] };
+    const now = new Date();
+    let failing = false;
+    const pools = new FakeDedicatedIpProvider({
+      fail: (operation) => failing && operation === "release",
+    });
+    await reconcileDedicatedIpPools({ entitled: [org], now, scope }, deps(pools));
+    await reconcileDedicatedIpPools({ entitled: [], now, scope }, deps(pools));
+    // The release starts (and fails half-way at the provider) before the entitlement is back.
+    failing = true;
+    const dayLater = new Date(now.getTime() + RELEASE_DELAY_MS);
+    await reconcileDedicatedIpPools({ entitled: [], now: dayLater, scope }, deps(pools));
+    let row = await getDedicatedIpPool(org);
+    expect(row).toMatchObject({ status: "releasing", attempts: 1 });
+    expect(row?.releaseStartedAt).toEqual(dayLater);
+
+    // Restoring it now could leave a warming row whose resources are gone: it finishes first.
+    failing = false;
+    await reconcileDedicatedIpPools({ entitled: [org], now: dayLater, scope }, deps(pools));
+    expect((await getDedicatedIpPool(org))?.status).toBe("releasing");
+    const retry = new Date(dayLater.getTime() + MINUTE);
+    await reconcileDedicatedIpPools({ entitled: [org], now: retry, scope }, deps(pools));
+    expect(await getDedicatedIpPool(org)).toBeNull();
+    expect(pools.pools).toEqual([]);
+    await reconcileDedicatedIpPools({ entitled: [org], now: retry, scope }, deps(pools));
+    row = await getDedicatedIpPool(org);
+    expect(row?.status).toBe("warming");
+    expect(row?.releaseStartedAt).toBeNull();
+    expect(pools.pools).toEqual([org]);
+  });
+
+  test("a purchase fits while pools and claims leave a slot, one purchase at a time", async () => {
+    const a = (await tenantWithProviderTenant()).organization.id;
+    const b = (await tenantWithProviderTenant()).organization.id;
+    const scope = { organizationIds: [a, b] };
+    const pools = new FakeDedicatedIpProvider();
+    await reconcileDedicatedIpPools({ entitled: [a], scope }, deps(pools));
+    const fits = (organizationId: string, claimants: string[], capacity = 2) =>
+      db.transaction((tx) =>
+        dedicatedIpSlotAvailable(tx, organizationId, async () => claimants, { capacity, scope }),
+      );
+    // `a`'s pool and a paid (entitled, not provisioned yet) or unpaid claim fill two slots.
+    expect(await fits(b, [])).toBe(true);
+    expect(await fits(b, ["org_paid_not_provisioned"])).toBe(false);
+    expect(await fits(b, [a, b])).toBe(true);
+    expect(await fits(a, ["org_paid_not_provisioned"])).toBe(true);
+    expect(await fits(b, [], 1)).toBe(false);
+
+    // A second purchase waits for the first's transaction (and then sees what it committed).
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const first = db.transaction(async (tx) => {
+      await dedicatedIpSlotAvailable(tx, b, async () => [], { capacity: 2, scope });
+      await held;
+    });
+    let secondDone = false;
+    const second = fits(b, []).then((result) => {
+      secondDone = true;
+      return result;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(secondDone).toBe(false);
+    release();
+    await first;
+    expect(await second).toBe(true);
   });
 
   test("waits past capacity, and takes the slot once one frees up", async () => {

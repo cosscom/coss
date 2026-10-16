@@ -421,6 +421,29 @@ function sameMonthlyFee(a: Segment["terms"]["fee"], b: Segment["terms"]["fee"]):
   );
 }
 
+/**
+ * Whether a contract change keeps the replaced contract's fee for the month, once paid (the same
+ * plan and monthly fee: only add-ons change), instead of charging it again and crediting it back.
+ */
+export function feeCarriesOver(from: Segment["terms"], to: Segment["terms"]): boolean {
+  return from.plan === to.plan && sameMonthlyFee(from.fee, to.fee);
+}
+
+type AddOnLine = Segment["terms"]["addOns"][number];
+
+/** Whether a monthly in-advance add-on, once paid, carries over to a contract with `after`. */
+export function addOnCarriesOver(before: AddOnLine, after: AddOnLine): boolean {
+  return (
+    before.key === after.key &&
+    after.timing === "advance" &&
+    after.interval === "month" &&
+    before.interval === "month" &&
+    before.timing === "advance" &&
+    before.unitAmountCents * BigInt(before.quantity) ===
+      after.unitAmountCents * BigInt(after.quantity)
+  );
+}
+
 /** The key of a contract's add-on charge for the add-on interval containing `at`. */
 export function addOnChargeKeyAt(
   segment: Segment,
@@ -864,10 +887,7 @@ export function composeContractChange(input: ContractChangeInput): Composition {
   const fromAdvance = from?.advanceCharged ? from.segment : null;
   // The same plan and monthly fee, already paid for this month (e.g. only an add-on changes):
   // the fee carries over instead of being charged again and credited back.
-  const feeCarries =
-    fromAdvance !== null &&
-    fromAdvance.terms.plan === to.terms.plan &&
-    sameMonthlyFee(fromAdvance.terms.fee, to.terms.fee);
+  const feeCarries = fromAdvance !== null && feeCarriesOver(fromAdvance.terms, to.terms);
 
   if (to.terms.fee?.timing === "advance" && !feeCarries) {
     const months = INTERVAL_MONTHS[to.terms.fee.interval];
@@ -877,15 +897,7 @@ export function composeContractChange(input: ContractChangeInput): Composition {
   for (const addOn of to.terms.addOns) {
     if (addOn.timing !== "advance") continue;
     const before = from?.segment.terms.addOns.find((line) => line.key === addOn.key);
-    if (
-      before &&
-      from?.addOnsCharged?.has(addOn.key) &&
-      addOn.interval === "month" &&
-      before.interval === "month" &&
-      before.timing === "advance" &&
-      before.unitAmountCents * BigInt(before.quantity) ===
-        addOn.unitAmountCents * BigInt(addOn.quantity)
-    ) {
+    if (before && from?.addOnsCharged?.has(addOn.key) && addOnCarriesOver(before, addOn)) {
       // Already paid for this month at the same price: it carries over too.
       carried.add(addOn.key);
       continue;

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { db } from "@coss/db";
 import { createTestTenant } from "@coss/tenancy/testing";
 import {
   cancelScheduledChange,
@@ -13,6 +14,7 @@ import { invoiceLines } from "../src/invoices.ts";
 import { billingStateAt } from "../src/resolve.ts";
 import { collectInvoiceNow } from "../src/sync.ts";
 import { createTestContract, testBillingProviders } from "../src/testing.ts";
+import { composeChange } from "../src/upgrades.ts";
 
 const at = (iso: string) => new Date(iso);
 const noBlockers = async () => [];
@@ -71,6 +73,50 @@ describe("self-serve add-ons", () => {
         now,
       }),
     ).rejects.toThrow("already have");
+  });
+
+  test("a later change in the month still sees the fee paid before the add-on", async () => {
+    const f = await onScale(at("2026-10-01T00:00:00Z"));
+    const bought = at("2026-10-12T09:30:00Z");
+    const { contract, invoice } = await startAddOn({
+      organizationId: f.org,
+      key: "dedicated_ips",
+      userId: f.tenant.owner.id,
+      defaultProvider: "fake",
+      preflight: noBlockers,
+      now: bought,
+    });
+    await collectInvoiceNow(invoice?.id ?? "", f.syncDeps, bought);
+    const withAddOn = (await billingStateAt(f.org, bought)).contract;
+    expect(withAddOn?.id).toBe(contract.id);
+    if (!withAddOn) throw new Error("no contract");
+
+    // The add-on contract was never charged the Scale fee under its own key (it carried the
+    // October fee over): an unchanged successor costs nothing, and a costlier one is credited
+    // the unused Scale fee rather than charged it again.
+    const later = at("2026-10-20T00:00:00Z");
+    const same = {
+      ...withAddOn,
+      id: "bcon_test_same",
+      effectiveFrom: later,
+      supersedesId: withAddOn.id,
+    };
+    const unchanged = await db.transaction((tx) => composeChange(tx, withAddOn, same, later));
+    expect(unchanged.lines).toEqual([]);
+
+    const pricier = {
+      ...same,
+      id: "bcon_test_pricier",
+      terms: {
+        ...withAddOn.terms,
+        fee: { amountCents: 100_000n, interval: "month" as const, timing: "advance" as const },
+      },
+    };
+    const raised = await db.transaction((tx) => composeChange(tx, withAddOn, pricier, later));
+    expect(raised.lines.map((line) => line.kind).sort()).toEqual(["plan_fee", "proration"]);
+    expect(raised.lines.find((line) => line.kind === "proration")?.chargeKey).toStartWith(
+      `unused:${withAddOn.id}:`,
+    );
   });
 
   test("refused on Pro, and when the preflight refuses", async () => {

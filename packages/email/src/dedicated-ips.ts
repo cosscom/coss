@@ -7,7 +7,8 @@
  *   traffic to shared IPs while it does;
  * - `warming` ⇄ `ready` follows how much of the last week's deliveries left from the pool's IPs;
  * - an organization no longer entitled goes `releasing` at once (sends are back on shared IPs)
- *   and its pool is released after `RELEASE_DELAY_MS`, unless the entitlement comes back first.
+ *   and its pool is released after `RELEASE_DELAY_MS`, unless the entitlement comes back first
+ *   (once the release has started, a returning entitlement waits for it and gets a new pool).
  * SES allows 50 pools per region, a hard limit: COSS keeps headroom below it.
  */
 import { db, type Executor, schema } from "@coss/db";
@@ -20,6 +21,7 @@ import {
   gte,
   inArray,
   isNotNull,
+  isNull,
   lte,
   ne,
   notInArray,
@@ -63,6 +65,38 @@ export async function getDedicatedIpPool(
     .where(eq(dedicatedIpPool.organizationId, organizationId))
     .limit(1);
   return row ?? null;
+}
+
+/**
+ * Whether a purchase of the Dedicated IPs add-on by `organizationId` still fits within
+ * `MAX_DEDICATED_IP_POOLS`. Call it in the purchase's transaction: it takes the lock new pools are
+ * created under, so purchases (of any organization) and the worker's new rows go one at a time,
+ * and `claimants` (read after the lock: the organizations entitled to dedicated IPs or buying
+ * them, from billing) sees every purchase committed before. A slot is held by an organization
+ * with a pool (being released included) or a claim on one; one that holds one keeps it.
+ */
+export async function dedicatedIpSlotAvailable(
+  tx: Executor,
+  organizationId: string,
+  claimants: () => Promise<readonly string[]>,
+  /** Tests: pools at most, and the organizations whose pools count. */
+  opts: { capacity?: number; scope?: { organizationIds: string[] } } = {},
+): Promise<boolean> {
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${CAPACITY_LOCK}))`);
+  const pools = await tx
+    .select({ organizationId: dedicatedIpPool.organizationId })
+    .from(dedicatedIpPool)
+    .where(
+      and(
+        ne(dedicatedIpPool.status, "waiting"),
+        opts.scope
+          ? inArray(dedicatedIpPool.organizationId, opts.scope.organizationIds)
+          : undefined,
+      ),
+    );
+  const taken = new Set([...pools.map((row) => row.organizationId), ...(await claimants())]);
+  if (taken.has(organizationId)) return true;
+  return taken.size < (opts.capacity ?? MAX_DEDICATED_IP_POOLS);
 }
 
 /** Whether the organization's live sends go through its pool now (with this provider). */
@@ -221,7 +255,7 @@ export async function reconcileDedicatedIpPools(
       statusMessage: null,
     })
     .where(and(lost, ne(dedicatedIpPool.status, "releasing")));
-  // Entitlements that came back before the release: the pool is still there.
+  // Entitlements that came back before the release started: the pool is still there.
   if (entitled.length) {
     await db
       .update(dedicatedIpPool)
@@ -236,6 +270,7 @@ export async function reconcileDedicatedIpPools(
           scoped,
           inArray(dedicatedIpPool.organizationId, entitled),
           eq(dedicatedIpPool.status, "releasing"),
+          isNull(dedicatedIpPool.releaseStartedAt),
         ),
       );
   }
@@ -425,6 +460,16 @@ async function step(row: DedicatedIpPoolRow, now: Date, deps: DedicatedIpDeps): 
       if (row.releaseAfter && row.releaseAfter > now) {
         await db.update(dedicatedIpPool).set({ nextCheckAt: row.releaseAfter }).where(ours);
         return;
+      }
+      // Claimed against a returning entitlement first (both compare-and-set the status), so a
+      // pool can't be restored while its resources are being deleted.
+      if (!row.releaseStartedAt) {
+        const [started] = await db
+          .update(dedicatedIpPool)
+          .set({ releaseStartedAt: now })
+          .where(and(ours, isNull(dedicatedIpPool.releaseStartedAt)))
+          .returning({ id: dedicatedIpPool.id });
+        if (!started) return;
       }
       await releaseDedicatedIpPool(row, deps.dedicatedIps);
       await db.transaction(async (tx) => {

@@ -6,6 +6,7 @@ export {
   type DedicatedIpPoolRow,
   dedicatedIpCapacity,
   dedicatedIpPoolObject,
+  dedicatedIpSlotAvailable,
   dedicatedPoolInUse,
   dedicatedPoolSql,
   dedicatedShare,

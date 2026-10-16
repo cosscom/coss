@@ -688,6 +688,9 @@ export const dedicatedIpPool = pgTable(
     readyAt: timestamp("ready_at", { withTimezone: true }),
     // `releasing`: when the provider resources may be deleted (sends claimed before keep them).
     releaseAfter: timestamp("release_after", { withTimezone: true }),
+    // Set before the provider resources are deleted: from then on a returning entitlement no
+    // longer restores this row (it gets a new pool once the release has finished).
+    releaseStartedAt: timestamp("release_started_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

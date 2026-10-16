@@ -101,10 +101,12 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `ready` (≥ 95% of the last 7 days' deliveries, ≥ 1,000, left from the pool's IPs — `ses:outgoing-ip` of `Delivery`
   events counted per hour and IP in the rollup, only for emails with `dedicated_pool`); not entitled → `releasing`
   at once (sends back on shared IPs) and released `RELEASE_DELAY_MS` (a day) later — association, then
-  configuration set, then pool — unless the entitlement returns first. A send decides at claim
+  configuration set, then pool — unless the entitlement returns first (`release_started_at` is set before the
+  provider calls: a later return waits for the release and gets a new pool). A send decides at claim
   (`dedicatedPoolSql`, stored in `email.dedicated_pool`; `SesEmailProvider` then uses the org's configuration set).
-  SES allows **50 pools per region, a hard limit**: the dashboard's purchase preflight counts pools plus unpaid
-  purchases against the 45. IAM (`ses-policies.ts`): only the worker manages pools/sets (`<prefix>-*`, tag
+  SES allows **50 pools per region, a hard limit**: the dashboard's purchase preflight (`dedicatedIpSlotAvailable`,
+  in the purchase's transaction under the lock new pools are created under) counts organizations with a pool, an
+  entitlement or an unpaid purchase against the 45. IAM (`ses-policies.ts`): only the worker manages pools/sets (`<prefix>-*`, tag
   conditions); api and worker may send with `configuration-set/<prefix>-*`; the SNS topic accepts events from those
   sets (`ses:bootstrap` — re-run it in production before deploying a change to either). Sandbox never uses a pool.
 - **Scheduled sends** (`scheduled_at`, ISO 8601 with an offset, ≤ 30 days ahead; a past time sends now): stored as

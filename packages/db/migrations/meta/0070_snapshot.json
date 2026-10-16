@@ -1,5 +1,5 @@
 {
-  "id": "bb788fa9-5e72-47ac-bcaa-5ee7ad20a15a",
+  "id": "a5a08cd7-cb43-4505-b3e1-ad8268e96299",
   "prevId": "351ccd5b-aed0-483b-8434-b3541ab26c7d",
   "version": "7",
   "dialect": "postgresql",
@@ -5580,6 +5580,12 @@
         },
         "release_after": {
           "name": "release_after",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "release_started_at": {
+          "name": "release_started_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false

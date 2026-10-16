@@ -21,6 +21,7 @@ CREATE TABLE "dedicated_ip_pool" (
 	"provisioned_at" timestamp with time zone,
 	"ready_at" timestamp with time zone,
 	"release_after" timestamp with time zone,
+	"release_started_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "dedicated_ip_pool_organization_unique" UNIQUE("organization_id")
