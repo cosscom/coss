@@ -117,7 +117,9 @@ describe("coss-cli against the API", () => {
       });
       expect(sent.status).toBe(202);
       await dispatch();
-      for (let i = 0; i < 300 && receiver.received.length < 2; i++) await Bun.sleep(10);
+      // Until the CLI has both answers: Ctrl-C mid-forward reports that forward as interrupted.
+      const forwarded = () => cli.stdout().split("[200]").length - 1;
+      for (let i = 0; i < 300 && forwarded() < 2; i++) await Bun.sleep(10);
       cli.controller.abort();
       expect(await listening).toBe(130);
 

@@ -240,6 +240,14 @@ describe("webhook listeners", () => {
           durationMs: 1,
           error: null,
         },
+        // A token past the last valid Date (8640000000000001 ms).
+        {
+          deliveryId: newId("whlisdel"),
+          ackToken: "2d2mh7dt6o1",
+          statusCode: 200,
+          durationMs: 1,
+          error: null,
+        },
       ],
     });
     expect(acked?.acknowledged).toBe(2);

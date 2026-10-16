@@ -203,8 +203,9 @@ function ackTokenOf(lease: Date): string {
 
 function leaseOf(token: string): Date | null {
   if (!/^[0-9a-z]{1,12}$/.test(token)) return null;
-  const ms = Number.parseInt(token, 36);
-  return Number.isSafeInteger(ms) ? new Date(ms) : null;
+  const lease = new Date(Number.parseInt(token, 36));
+  // Past ±8.64e15 ms a Date is invalid, and binding one throws.
+  return Number.isFinite(lease.getTime()) ? lease : null;
 }
 
 /**
