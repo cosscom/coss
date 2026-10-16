@@ -108,5 +108,6 @@ await coss.email.contacts.resendConfirmation(contact?.id ?? "");
 
 Confirmation links expire after 7 days. Contacts that never confirm are deleted
 <RetentionPeriod of="pending_contacts" /> after they were asked (see [data retention](/docs/data-retention)),
-except one who had unsubscribed before: they go back to `unsubscribed`, so their opt-out stays.
+except one who had opted out (unsubscribed before, or left a topic): they go back to
+`unsubscribed`, so their opt-out stays.
 Confirming sends a `contact.confirmed` webhook.
