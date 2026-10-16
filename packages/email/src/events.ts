@@ -17,9 +17,11 @@ import { emailEventLogEntries } from "./event-logs.ts";
 import type { ProviderEvent } from "./provider.ts";
 import { invalidateReputationRollup } from "./reputation-checks.ts";
 import {
+  ALL_CATEGORIES,
   EMAIL_RECIPIENT_STATUSES,
   type EmailEventType,
   type EmailRecipientStatus,
+  MARKETING_STREAM_SCOPE,
   type StoredEmailWebhookEvent,
 } from "./schemas.ts";
 import { autoSuppress } from "./suppressions.ts";
@@ -112,6 +114,7 @@ export async function recordProviderEvent(
       subject: email.subject,
       tags: email.tags,
       category: email.category,
+      stream: email.stream,
       createdAt: email.createdAt,
       dedicatedPool: email.dedicatedPool,
       mode: environment.mode,
@@ -287,7 +290,8 @@ export async function recordProviderEvent(
     if (moved.length > 0) recipientsChanged = true;
   }
 
-  // Permanent bounces and complaints suppress the address for every email of the environment.
+  // Permanent bounces suppress the address for every email of the environment (the mailbox doesn't
+  // exist), and so do complaints, except about marketing: those suppress marketing only.
   // SES-suppressed bounces are not counted: the address was never attempted.
   const suppressReason =
     event.type === "email.complained"
@@ -314,6 +318,10 @@ export async function recordProviderEvent(
         address: row.recipient,
         reason: suppressReason,
         emailId: target.id,
+        scope:
+          suppressReason === "complaint" && target.stream === "marketing"
+            ? MARKETING_STREAM_SCOPE
+            : ALL_CATEGORIES,
       });
     }
   }

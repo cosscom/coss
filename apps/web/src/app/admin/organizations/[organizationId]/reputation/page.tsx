@@ -10,6 +10,7 @@ import { notFound } from "next/navigation";
 import { AdminOrganizationTabs } from "@/components/admin/organization-tabs";
 import { PageHeader } from "@/components/page-header";
 import {
+  MarketingPausedAlert,
   ReputationChecks,
   ReputationHistory,
   StandingBadge,
@@ -19,7 +20,12 @@ import { formatDateTime } from "@/lib/format";
 import { requirePlatformAdmin } from "@/lib/session";
 import { isSystemOrganization } from "@/lib/system-organization";
 import { ContentScreenings } from "./screenings";
-import { PolicyForm, ReinstateButton, SuspendButton } from "./standing-actions";
+import {
+  PolicyForm,
+  ReinstateButton,
+  ReinstateMarketingButton,
+  SuspendButton,
+} from "./standing-actions";
 
 export const metadata: Metadata = { title: "Organization" };
 
@@ -43,15 +49,20 @@ export default async function AdminOrganizationPage({
       <div className="flex flex-col gap-4">
         <PageHeader
           actions={
-            standing?.status === "suspended" ? (
-              <ReinstateButton organizationId={organization.organizationId} />
-            ) : isSystem ? (
-              <span className="text-muted-foreground text-sm">
-                coss.com's own organization: can't be suspended
-              </span>
-            ) : (
-              <SuspendButton organizationId={organization.organizationId} />
-            )
+            <div className="flex gap-2">
+              {standing?.marketingPausedAt ? (
+                <ReinstateMarketingButton organizationId={organization.organizationId} />
+              ) : null}
+              {standing?.status === "suspended" ? (
+                <ReinstateButton organizationId={organization.organizationId} />
+              ) : isSystem ? (
+                <span className="text-muted-foreground text-sm">
+                  coss.com's own organization: can't be suspended
+                </span>
+              ) : (
+                <SuspendButton organizationId={organization.organizationId} />
+              )}
+            </div>
           }
           description={`created ${formatDateTime(organization.createdAt)}`}
           meta={
@@ -73,6 +84,9 @@ export default async function AdminOrganizationPage({
           </p>
         ) : null}
       </div>
+      {standing?.marketingPausedAt ? (
+        <MarketingPausedAlert reason={standing.marketingReason} />
+      ) : null}
       <ReputationChecks standing={standing} />
       <ContentScreenings screenings={screenings} />
       <PolicyForm

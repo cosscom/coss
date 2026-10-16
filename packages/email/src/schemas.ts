@@ -119,6 +119,19 @@ export function base64DecodedSize(value: string): number {
 /** The suppression scope that matches every email, whatever its category. */
 export const ALL_CATEGORIES = "*";
 
+/**
+ * Traffic whose reputation must never mix (`email.stream`): each has its own provider
+ * configuration set and tenant, so marketing complaints never pause transactional mail.
+ */
+export const EMAIL_STREAMS = ["transactional", "marketing"] as const;
+export type EmailStream = (typeof EMAIL_STREAMS)[number];
+
+/**
+ * The suppression scope that matches every marketing-stream email: what a complaint about a
+ * marketing email adds (a category can't contain `:`, so it never collides with one).
+ */
+export const MARKETING_STREAM_SCOPE = "stream:marketing";
+
 /** Headers coss.com (or the provider) owns. `x-ses-*` is matched by prefix. */
 export const RESERVED_HEADERS: ReadonlySet<string> = new Set([
   "from",
@@ -874,13 +887,17 @@ export const SUPPRESSION_REASONS = [
 export type SuppressionReason = (typeof SUPPRESSION_REASONS)[number];
 
 export const SuppressionScope = z
-  .union([z.literal(ALL_CATEGORIES), Category], {
-    error: 'Expected "*" or a category (ASCII letters, numbers, underscores or dashes).',
+  .union([z.literal(ALL_CATEGORIES), z.literal(MARKETING_STREAM_SCOPE), Category], {
+    error:
+      'Expected "*", "stream:marketing" or a category (ASCII letters, numbers, underscores or ' +
+      "dashes).",
   })
   .meta({
     id: "SuppressionScope",
     description:
-      "`*` suppresses every email; a category only suppresses emails with that category.",
+      "`*` suppresses every email; `stream:marketing` only marketing emails (broadcasts and " +
+      "sends with `stream: marketing`; complaints about them add it); a category only emails " +
+      "with that category.",
   });
 
 const SuppressionReasonEnum = z.enum(SUPPRESSION_REASONS).meta({
@@ -1930,6 +1947,14 @@ export const CheckSuppressionQuery = z.strictObject({
   category: Category.optional().meta({
     description: "The category of the email you plan to send. Without it, only `*` entries count.",
   }),
+  stream: z
+    .enum(EMAIL_STREAMS)
+    .optional()
+    .meta({
+      description:
+        "The stream of the email you plan to send (default `transactional`). `marketing` also " +
+        "counts `stream:marketing` entries.",
+    }),
 });
 
 export type CheckSuppressionQueryOutput = z.output<typeof CheckSuppressionQuery>;

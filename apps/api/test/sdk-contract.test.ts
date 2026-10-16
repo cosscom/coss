@@ -1290,6 +1290,7 @@ describe("coss.reputation against the API", () => {
         evaluated_at: null,
         window: null,
         checks: [],
+        marketing: { status: "active", reason: null, paused_at: null },
       },
       error: null,
     });

@@ -25,6 +25,7 @@ const sampleReputation: Reputation = {
       minimum_volume: 200,
     },
   ],
+  marketing: { status: "active", reason: null, paused_at: null },
 };
 
 function client(...handlers: Parameters<typeof mockFetch>) {

@@ -11,6 +11,8 @@ export type CheckContext = {
   now: Date;
   /** Start of the measurement window: `windowDays` ago, but never before the last reinstatement. */
   windowStart: Date;
+  /** The marketing stream's: never before marketing was last reinstated either (default `windowStart`). */
+  marketingWindowStart?: Date;
   policy: ReputationPolicy;
 };
 
@@ -26,9 +28,14 @@ export type CheckResult = {
   minimumVolume: number | null;
 };
 
-/** `evaluate` receives the same `context` object as every other check of one evaluation. */
+/**
+ * `evaluate` receives the same `context` object as every other check of one evaluation. A
+ * `marketing` check never moves the organization's standing: its `suspend` pauses the marketing
+ * stream (`decideMarketing`).
+ */
 export type ReputationCheck = {
   trigger: string;
+  scope?: "organization" | "marketing";
   evaluate(context: CheckContext): Promise<CheckResult>;
 };
 

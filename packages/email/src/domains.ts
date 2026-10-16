@@ -7,7 +7,7 @@ import type { PlanGate } from "@coss/billing/gate";
 import { isOnBillingHold } from "@coss/billing/metering";
 import { db, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
-import { isSuspended } from "@coss/reputation";
+import { isMarketingPaused, isSuspended } from "@coss/reputation";
 import {
   and,
   asc,
@@ -918,6 +918,14 @@ export async function authorizeLiveSender(input: {
     );
   }
   const stream = input.stream ?? "transactional";
+  // The marketing stream's own pause (its bounce or complaint rate); transactional mail goes on.
+  if (stream === "marketing" && (await isMarketingPaused(input.organizationId))) {
+    throw new EmailError(
+      "marketing_paused",
+      "Marketing sending is paused for this organization because of its marketing bounce or " +
+        "complaint rate. Transactional email still works. Contact support to resume.",
+    );
+  }
   const tenant = await getEmailTenant(input.organizationId, stream);
   if (tenant?.sendingStatus === "disabled") {
     throw new EmailError(

@@ -204,6 +204,8 @@ export type {
   VerdictStatus,
 } from "./types/received-email.ts";
 export type {
+  MarketingStanding,
+  MarketingStatus,
   Reputation,
   ReputationCheck,
   ReputationCheckSeverity,

@@ -309,7 +309,8 @@ const { data } = await coss.reputation.get();
 Webhook endpoints receive `email.sent`, `email.delivered`, `email.delivery_delayed`,
 `email.bounced`, `email.complained`, `email.failed`, `email.suppressed`, `email.opened` and
 `email.clicked` events, plus `account.reputation_warning`, `account.reputation_recovered`,
-`account.suspended` and `account.reinstated` for live environments, signed with
+`account.suspended`, `account.reinstated`, `account.marketing_paused` and
+`account.marketing_reinstated` for live environments, signed with
 [Standard Webhooks](https://www.standardwebhooks.com) headers. Verify them with the raw body:
 
 ```ts

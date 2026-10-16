@@ -4,7 +4,7 @@ export {
   type ReputationCheck,
   rateResult,
 } from "./checks.ts";
-export { type AutomaticTransition, decide, worstResult } from "./decide.ts";
+export { type AutomaticTransition, decide, decideMarketing, worstResult } from "./decide.ts";
 export { ReputationError, type ReputationErrorCode } from "./errors.ts";
 export {
   EVALUATION_LEASE_MS,
@@ -39,6 +39,7 @@ export {
   getOrganizationStanding,
   getReputation,
   getReputationStanding,
+  isMarketingPaused,
   isSuspended,
   listOrganizationStandings,
   listReputationEvents,
@@ -50,11 +51,15 @@ export {
   type ReputationEventWithActor,
   type ReputationStandingRow,
   toCheckObject,
+  toMarketingObject,
   toReputationObject,
 } from "./standing.ts";
 export {
   type Actor,
+  applyMarketingTransition,
   applyTransition,
+  type MarketingTransitionType,
+  reinstateMarketing,
   reinstateOrganization,
   suspendOrganization,
   type TransitionType,

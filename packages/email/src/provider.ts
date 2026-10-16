@@ -1,11 +1,6 @@
-import type { EmailEventDataOutput, EmailEventType } from "./schemas.ts";
+import type { EmailEventDataOutput, EmailEventType, EmailStream } from "./schemas.ts";
 
-/**
- * Traffic whose reputation must never mix (`email.stream`): each has its own provider
- * configuration set and tenant, so marketing complaints never pause transactional mail.
- */
-export const EMAIL_STREAMS = ["transactional", "marketing"] as const;
-export type EmailStream = (typeof EMAIL_STREAMS)[number];
+export { EMAIL_STREAMS, type EmailStream } from "./schemas.ts";
 
 /** A message ready for a delivery provider (internal, camelCase). */
 export type OutboundEmail = {

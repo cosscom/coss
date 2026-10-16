@@ -5054,6 +5054,8 @@
                 "account.reputation_recovered",
                 "account.suspended",
                 "account.reinstated",
+                "account.marketing_paused",
+                "account.marketing_reinstated",
                 "hook_endpoint.disabled",
                 "billing.invoice_finalized",
                 "billing.invoice_paid",
@@ -5068,7 +5070,7 @@
                 "risk.assessment.reviewed"
               ]
             },
-            "maxItems": 31,
+            "maxItems": 33,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -5314,6 +5316,8 @@
                 "account.reputation_recovered",
                 "account.suspended",
                 "account.reinstated",
+                "account.marketing_paused",
+                "account.marketing_reinstated",
                 "hook_endpoint.disabled",
                 "billing.invoice_finalized",
                 "billing.invoice_paid",
@@ -5328,7 +5332,7 @@
                 "risk.assessment.reviewed"
               ]
             },
-            "maxItems": 31,
+            "maxItems": 33,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {
@@ -5823,6 +5827,8 @@
                 "account.reputation_recovered",
                 "account.suspended",
                 "account.reinstated",
+                "account.marketing_paused",
+                "account.marketing_reinstated",
                 "hook_endpoint.disabled",
                 "billing.invoice_finalized",
                 "billing.invoice_paid",
@@ -5837,7 +5843,7 @@
                 "risk.assessment.reviewed"
               ]
             },
-            "maxItems": 31,
+            "maxItems": 33,
             "description": "Event types to receive. Defaults to every event type."
           },
           "api_version": {
@@ -6191,6 +6197,12 @@
                 "type": "string",
                 "enum": [
                   "*"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "stream:marketing"
                 ]
               },
               {
@@ -6697,6 +6709,9 @@
             "items": {
               "$ref": "#/components/schemas/ReputationCheck"
             }
+          },
+          "marketing": {
+            "$ref": "#/components/schemas/MarketingStanding"
           }
         },
         "required": [
@@ -6706,7 +6721,8 @@
           "status_changed_at",
           "evaluated_at",
           "window",
-          "checks"
+          "checks",
+          "marketing"
         ]
       },
       "ReputationCheck": {
@@ -6774,6 +6790,39 @@
           "warning_threshold",
           "suspend_threshold",
           "minimum_volume"
+        ]
+      },
+      "MarketingStanding": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused"
+            ],
+            "description": "`active`, or `paused`: the marketing stream's bounce or complaint rate reached its suspension threshold, so marketing sends are refused until coss.com support lifts the pause. Transactional email is unaffected."
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The trigger behind a pause.",
+            "example": "marketing_complaint_rate"
+          },
+          "paused_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "status",
+          "reason",
+          "paused_at"
         ]
       },
       "LogList": {
@@ -27441,6 +27490,12 @@
                 },
                 {
                   "type": "string",
+                  "enum": [
+                    "stream:marketing"
+                  ]
+                },
+                {
+                  "type": "string",
                   "pattern": "^[A-Za-z0-9_-]{1,256}$"
                 }
               ],
@@ -27700,6 +27755,20 @@
             "required": false,
             "description": "The category of the email you plan to send. Without it, only `*` entries count.",
             "name": "category",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "transactional",
+                "marketing"
+              ],
+              "description": "The stream of the email you plan to send (default `transactional`). `marketing` also counts `stream:marketing` entries."
+            },
+            "required": false,
+            "description": "The stream of the email you plan to send (default `transactional`). `marketing` also counts `stream:marketing` entries.",
+            "name": "stream",
             "in": "query"
           },
           {
@@ -28171,6 +28240,12 @@
                   "type": "string",
                   "enum": [
                     "*"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "stream:marketing"
                   ]
                 },
                 {

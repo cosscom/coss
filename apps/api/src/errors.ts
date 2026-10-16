@@ -184,6 +184,7 @@ function fromEmailError(error: EmailError): ApiError {
       });
     case "sending_paused":
     case "account_suspended":
+    case "marketing_paused":
       return new ApiError(error.status, {
         type: "permission_error",
         code: error.code,

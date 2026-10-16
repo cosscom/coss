@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { type CheckResult, rateResult } from "../src/checks.ts";
-import { decide, worstResult } from "../src/decide.ts";
+import { decide, decideMarketing, worstResult } from "../src/decide.ts";
 import { DEFAULT_REPUTATION_POLICY, effectivePolicy } from "../src/schemas.ts";
 
 function result(trigger: string, severity: CheckResult["severity"]): CheckResult {
@@ -61,6 +61,32 @@ describe("decide", () => {
     expect(decide(good, [result("bounce_rate", "ok")])).toBeNull();
     expect(decide(good, [])).toBeNull();
     expect(worstResult([])).toBeNull();
+  });
+});
+
+describe("decideMarketing", () => {
+  const result = (severity: CheckResult["severity"], trigger = "marketing_complaint_rate") =>
+    ({
+      ...rateResult({
+        trigger,
+        label: "x",
+        count: 0,
+        volume: 0,
+        threshold: { warning: 0.1, suspend: 0.2, minimumRecipients: 1 },
+      }),
+      severity,
+    }) as CheckResult;
+
+  test("a suspend result pauses an active marketing stream, naming its trigger", () => {
+    expect(decideMarketing({ paused: false }, [result("ok"), result("suspend")])).toEqual({
+      trigger: "marketing_complaint_rate",
+    });
+  });
+
+  test("warnings, a paused stream and coss.com's own organization never pause", () => {
+    expect(decideMarketing({ paused: false }, [result("warning")])).toBeNull();
+    expect(decideMarketing({ paused: true }, [result("suspend")])).toBeNull();
+    expect(decideMarketing({ paused: false }, [result("suspend")], { canPause: false })).toBeNull();
   });
 });
 

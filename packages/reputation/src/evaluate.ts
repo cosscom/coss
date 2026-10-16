@@ -3,13 +3,13 @@
  * scoped by the standing row's own organization.
  */
 import { db, schema } from "@coss/db";
-import { and, asc, eq, inArray, isNull, lte, or } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type { ReputationCheck } from "./checks.ts";
-import { decide } from "./decide.ts";
+import { decide, decideMarketing } from "./decide.ts";
 import { effectivePolicy, type ReputationPolicy } from "./schemas.ts";
 import type { MetricsSnapshot, ReputationStandingRow } from "./standing.ts";
 import { getReputationStanding } from "./standing.ts";
-import { applyTransition } from "./transitions.ts";
+import { applyMarketingTransition, applyTransition } from "./transitions.ts";
 
 const { reputationStanding } = schema;
 
@@ -63,18 +63,31 @@ export async function evaluateOrganization(
     const windowStart = new Date(
       Math.max(now.getTime() - policy.windowDays * DAY, row?.reinstatedAt?.getTime() ?? 0),
     );
+    const marketingWindowStart = new Date(
+      Math.max(windowStart.getTime(), row?.marketingReinstatedAt?.getTime() ?? 0),
+    );
     // One context object for every check, so checks can share work per evaluation.
-    const context = { organizationId, now, windowStart, policy };
+    const context = { organizationId, now, windowStart, marketingWindowStart, policy };
     const checks = await Promise.all(deps.checks.map((check) => check.evaluate(context)));
     const metrics: MetricsSnapshot = {
       windowStart: windowStart.toISOString(),
       windowEnd: now.toISOString(),
       checks,
     };
+    // Marketing checks only ever pause the marketing stream, never the organization.
+    const isMarketing = (index: number) => deps.checks[index]?.scope === "marketing";
     const current = { status: row?.status ?? "good", reason: row?.reason ?? null };
-    const decision = decide(current, checks, {
-      canSuspend: organizationId !== deps.systemOrganizationId,
-    });
+    const canSuspend = organizationId !== deps.systemOrganizationId;
+    const decision = decide(
+      current,
+      checks.filter((_, index) => !isMarketing(index)),
+      { canSuspend },
+    );
+    const marketingDecision = decideMarketing(
+      { paused: Boolean(row?.marketingPausedAt) },
+      checks.filter((_, index) => isMarketing(index)),
+      { canPause: canSuspend },
+    );
 
     const outcome = await db.transaction(async (tx) => {
       const [latest] = await tx
@@ -103,6 +116,16 @@ export async function evaluateOrganization(
           )
         : false;
       const status = transitioned && decision ? decision.to : current.status;
+      if (marketingDecision) {
+        await applyMarketingTransition(tx, {
+          organizationId,
+          type: "marketing_paused",
+          trigger: marketingDecision.trigger,
+          actor: { kind: "system" },
+          metrics,
+          now,
+        });
+      }
       const belowMinimumUnhealthy = checks.some(
         (check) =>
           check.minimumVolume !== null &&
@@ -123,12 +146,13 @@ export async function evaluateOrganization(
             : latest.nextEvaluationAt
           : scheduledAt;
       const thisOrganization = eq(reputationStanding.organizationId, organizationId);
+      // Transitions bumped the revision too; any value past the one read fences stale workers.
       await tx
         .update(reputationStanding)
         .set({
           metrics,
           lastEvaluatedAt: now,
-          revision: latest.revision + 1,
+          revision: sql`${reputationStanding.revision} + 1`,
           ...(opts.lease ? { evaluationLeaseUntil: null } : {}),
         })
         .where(thisOrganization);

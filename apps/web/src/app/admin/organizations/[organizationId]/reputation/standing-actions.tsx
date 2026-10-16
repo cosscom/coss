@@ -24,6 +24,7 @@ import { Panel, PanelBody, PanelDescription, PanelHeader, PanelTitle } from "@/c
 import type { ActionResult } from "@/lib/action-result";
 import { useActionToast } from "@/lib/toast";
 import {
+  reinstateMarketingAction,
   reinstateOrganizationAction,
   suspendOrganizationAction,
   updatePolicyAction,
@@ -114,6 +115,20 @@ export function ReinstateButton({ organizationId }: { organizationId: string }) 
   );
 }
 
+export function ReinstateMarketingButton({ organizationId }: { organizationId: string }) {
+  return (
+    <NoteDialog
+      action={reinstateMarketingAction}
+      description="Marketing sends (broadcasts, sends with stream marketing) resume immediately. Marketing rates are measured again from now on. The organization's live webhook endpoints receive account.marketing_reinstated."
+      organizationId={organizationId}
+      submit="Resume marketing"
+      success="Marketing sending resumed"
+      title="Resume marketing sending?"
+      trigger="Resume marketing"
+    />
+  );
+}
+
 export function SuspendButton({ organizationId }: { organizationId: string }) {
   return (
     <NoteDialog
@@ -142,6 +157,8 @@ export function PolicyForm(props: {
     windowDays: number;
     bounceRate: Partial<ReputationPolicy["bounceRate"]>;
     complaintRate: Partial<ReputationPolicy["complaintRate"]>;
+    marketingBounceRate: Partial<ReputationPolicy["marketingBounceRate"]>;
+    marketingComplaintRate: Partial<ReputationPolicy["marketingComplaintRate"]>;
     countSimulatorRecipients: boolean;
     contentScreening: Partial<ReputationPolicy["contentScreening"]>;
     hookFailureRate: Partial<ReputationPolicy["hookFailureRate"]>;
@@ -184,6 +201,30 @@ export function PolicyForm(props: {
       "Complaint suspension (%)",
       defaults.complaintRate.suspend,
       overrides.complaintRate?.suspend,
+    ],
+    [
+      "marketingBounceWarning",
+      "Marketing bounce warning (%)",
+      defaults.marketingBounceRate.warning,
+      overrides.marketingBounceRate?.warning,
+    ],
+    [
+      "marketingBounceSuspend",
+      "Marketing bounce pause (%)",
+      defaults.marketingBounceRate.suspend,
+      overrides.marketingBounceRate?.suspend,
+    ],
+    [
+      "marketingComplaintWarning",
+      "Marketing complaint warning (%)",
+      defaults.marketingComplaintRate.warning,
+      overrides.marketingComplaintRate?.warning,
+    ],
+    [
+      "marketingComplaintSuspend",
+      "Marketing complaint pause (%)",
+      defaults.marketingComplaintRate.suspend,
+      overrides.marketingComplaintRate?.suspend,
     ],
     [
       "screeningFlag",
@@ -229,6 +270,18 @@ export function PolicyForm(props: {
       "Complaint minimum recipients",
       defaults.complaintRate.minimumRecipients,
       overrides.complaintRate?.minimumRecipients,
+    ],
+    [
+      "marketingBounceMinimum",
+      "Marketing bounce minimum recipients",
+      defaults.marketingBounceRate.minimumRecipients,
+      overrides.marketingBounceRate?.minimumRecipients,
+    ],
+    [
+      "marketingComplaintMinimum",
+      "Marketing complaint minimum recipients",
+      defaults.marketingComplaintRate.minimumRecipients,
+      overrides.marketingComplaintRate?.minimumRecipients,
     ],
     [
       "screeningFirst",
