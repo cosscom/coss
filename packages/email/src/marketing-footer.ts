@@ -32,7 +32,8 @@ function hasLink(content: string): boolean {
 function fill(content: string, values: Record<string, string>): string {
   let filled = content;
   for (const [placeholder, value] of Object.entries(values)) {
-    filled = filled.replaceAll(placeholder, value);
+    // A callback, so `$&`-style sequences in the value stay literal.
+    filled = filled.replaceAll(placeholder, () => value);
   }
   return filled;
 }

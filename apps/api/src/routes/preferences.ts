@@ -109,7 +109,8 @@ function handler(
 /** The preference form's change: `action=save` (checkboxes) or `action=unsubscribe_all`. */
 function changeOf(form: Record<string, unknown>): PreferenceChange {
   if (form.action === "unsubscribe_all") return { kind: "unsubscribe_all" };
-  const topics: Record<string, boolean> = {};
+  // No prototype: a topic keyed `__proto__` must become an own entry like any other.
+  const topics: Record<string, boolean> = Object.create(null);
   const shown = typeof form.topics === "string" ? form.topics.split(",") : [];
   for (const key of shown.slice(0, MAX_TOPIC_FIELDS)) {
     if (key) topics[key] = form[`topic:${key}`] === "on";

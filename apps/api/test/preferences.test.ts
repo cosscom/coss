@@ -146,6 +146,29 @@ describe("the preference center", () => {
     expect(logged).not.toContain(links.unsubscribe);
   });
 
+  test("a topic keyed __proto__ is saved like any other", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const key = tenant.sandboxKey;
+    await call(app, key, "POST", "/v1/topics", {
+      key: "__proto__",
+      name: "Odd",
+      default_subscription: "opt_in",
+    });
+    await call(app, key, "POST", "/v1/contacts", { email: "odd@example.com" });
+    const links = await linksFor(app, tenant, "odd@example.com");
+    const saved = await form(app, links.preferences, {
+      action: "save",
+      subscribed: "on",
+      topics: "__proto__",
+    });
+    expect(saved.status).toBeLessThan(400);
+    const topics = await call(app, key, "GET", "/v1/contacts/odd%40example.com/topics");
+    expect(await topics.json()).toMatchObject({
+      topics: [{ topic: "__proto__", choice: "opted_out", subscribed: false }],
+    });
+  });
+
   test("a bad token is a plain 404, before anything else", async () => {
     const { app } = createTestApp();
     for (const path of ["/t/u/nope", "/t/u/nope/unsubscribe", "/t/u/confirm/nope"]) {

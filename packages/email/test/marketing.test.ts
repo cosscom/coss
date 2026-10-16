@@ -145,6 +145,12 @@ describe("the marketing footer", () => {
       '<p><a href="https://t.test/u?a=1&amp;b=2">Bye</a> Acme &lt;Inc&gt;<br>1 Main St</p>',
     );
     expect(out.text).toBe("Bye: https://t.test/u?a=1&b=2 Acme <Inc>\n1 Main St");
+    // Replacement patterns in a value stay literal.
+    const dollars = applyMarketingFooter(
+      { html: null, text: "{{{mailing_address}}}" },
+      { ...values, mailingAddress: "A$&B $$ $' 1 Main St" },
+    );
+    expect(dollars.text?.startsWith("A$&B $$ $' 1 Main St")).toBe(true);
   });
 
   test("adds a footer before </body> with whatever is missing", () => {
