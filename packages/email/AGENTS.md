@@ -325,7 +325,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   starting one (`send`, `scheduled_at`) also `broadcast:send` (`apiKeyHasPermissions`). **Broadcast emails store no body**: the
   rendered subject, `variables` (only the template's `{{{contact.<key>|fallback}}}` keys) and `contact_id`; dispatch
   and every read render the broadcast's frozen content (`withRenderedBody`; dispatch caches it per process), then
-  the marketing footer and tracking apply as for any marketing email; they skip per-email screening, marketing email's consent (and the marketing pause: a paused organization's queued marketing email
+  the marketing footer and tracking apply as for any marketing email; they skip per-email screening unless personalized (an email with contact values is sampled like any send:
+  the values could carry any text or link), marketing email's consent (and the marketing pause: a paused organization's queued marketing email
   is failed `marketing_paused`, a broadcast's left to its worker to drop) is checked again at its dispatch claim
   (`skippedRecipients`, as for scheduled sends: a broadcast's queue can be minutes long), and an SES
   throttle (`ThrottledSendError`) hands a marketing email back for a later dispatch instead of failing it. Counters

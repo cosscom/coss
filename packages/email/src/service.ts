@@ -533,8 +533,10 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     row: EmailRow,
     sandbox: boolean,
   ): Promise<typeof CONTENT_REJECTED | typeof SCREENING_UNAVAILABLE | null> {
-    // A broadcast's content was screened once, before its emails were made.
-    if (sandbox || !opts.screen || row.broadcastId) return null;
+    // A broadcast's content was screened once, before its emails were made; one personalized
+    // with contact values (which could carry any text or link) is sampled like any send.
+    const personalized = Object.keys(row.variables ?? {}).length > 0;
+    if (sandbox || !opts.screen || (row.broadcastId && !personalized)) return null;
     try {
       const outcome = await opts.screen({
         organizationId: row.organizationId,

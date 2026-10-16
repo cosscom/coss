@@ -851,6 +851,43 @@ describe("broadcasts", () => {
     });
   });
 
+  test("live: personalized broadcast emails are screened like any send; plain ones aren't", async () => {
+    const f = await fixture({ live: true });
+    const screened: string[] = [];
+    const service = createEmailService({
+      liveProvider: f.provider,
+      sandboxProvider: f.provider,
+      queue: f.queue,
+      trackingBaseUrl: "https://track.test",
+      linkKeys: DEVELOPMENT_LINK_KEYS,
+      screen: async (input) => {
+        screened.push(input.subjectId);
+        return { action: "send", screening: null };
+      },
+    });
+    const deps: BroadcastWorkerDeps = {
+      ...f.deps,
+      screen: async () => ({ action: "send", screening: null }),
+    };
+    const sendAll = async (html: string) => {
+      const broadcast = await f.create({ send: true, html, subject: "News" });
+      for (let step = 0; step < 4; step++) {
+        await db
+          .update(schema.broadcast)
+          .set({ nextRunAt: new Date(0) })
+          .where(eq(schema.broadcast.id, broadcast.id));
+        await runDueBroadcasts(deps, { scope: f.scope });
+        for (const job of f.queue.jobs.splice(0)) await service.dispatch(job);
+      }
+      return (await emailsOf(f.tenant.organization.id, broadcast.id)).map((row) => row.id);
+    };
+    const plain = await sendAll("<p>The same for everyone.</p>");
+    expect(screened.filter((id) => plain.includes(id))).toEqual([]);
+    // Contact values could carry any text or link: their emails go through screening.
+    const personal = await sendAll("<p>{{{contact.plan|free}}}</p>");
+    expect(screened.filter((id) => personal.includes(id)).sort()).toEqual([...personal].sort());
+  });
+
   test("live: a screening block fails it; a held screening retries", async () => {
     const f = await fixture({ live: true });
     let verdict: "error" | "blocked" = "error";
