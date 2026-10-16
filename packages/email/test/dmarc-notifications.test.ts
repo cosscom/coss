@@ -7,10 +7,55 @@ import {
   renderDmarcNotification,
   runDueDmarcNotifications,
 } from "../src/dmarc-notifications.ts";
+import { dmarcReportAddress } from "../src/dmarc-record.ts";
+import { ingestDmarcReports } from "../src/dmarc-reports.ts";
+import { dmarcReportMessage } from "../src/dmarc-sample.ts";
+import type { DomainRow } from "../src/domains.ts";
+import { NO_VERDICTS } from "../src/inbound.ts";
 import type { Notice } from "../src/notifier.ts";
 import { createVerifiedDomain } from "../src/testing.ts";
 
 const RECORD = "v=DMARC1; p=quarantine; rua=mailto:dmarc-abcdefghijkmnpqr@inbound.coss.test;";
+const DAY = 24 * 60 * 60 * 1000;
+const MANAGED = "inbound.coss.test";
+
+/** Reports of only passing COSS mail, 20 and 2 days ago: ready for quarantine. */
+async function healthyReports(row: DomainRow): Promise<void> {
+  const address = dmarcReportAddress(row.dmarcReportToken, MANAGED) as string;
+  for (const daysAgo of [20, 2]) {
+    const end = new Date(Date.now() - daysAgo * DAY);
+    const raw = dmarcReportMessage(
+      {
+        domain: row.name,
+        reportId: `r-${row.id}-${daysAgo}`,
+        begin: new Date(end.getTime() - DAY),
+        end,
+        records: [
+          {
+            sourceIp: "54.240.8.9",
+            count: 500,
+            dkim: "pass",
+            spf: "pass",
+            envelopeFrom: row.mailFromDomain,
+            dkimResults: [{ domain: row.name, selector: row.dkimTokens[0] ?? "", result: "pass" }],
+          },
+        ],
+      },
+      { to: address },
+    );
+    await ingestDmarcReports(
+      {
+        provider: "fake",
+        providerMessageId: `msg-${row.id}-${daysAgo}`,
+        raw: async () => raw,
+        verdicts: { ...NO_VERDICTS, spf: "pass", dkim: "pass" },
+        receivedAt: new Date(),
+      },
+      [row.dmarcReportToken],
+      { managedDomain: MANAGED },
+    );
+  }
+}
 
 function capture() {
   const sent: Notice[] = [];
@@ -27,15 +72,19 @@ function capture() {
   };
 }
 
-async function setup() {
+async function setup(opts: { reports?: boolean } = {}) {
   const tenant = await createTestTenant();
   const organizationId = tenant.organization.id;
-  const since = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000);
-  const row = await createVerifiedDomain(organizationId);
-  await db
+  const since = new Date(Date.now() - 30 * DAY);
+  const created = await createVerifiedDomain(organizationId);
+  const [row] = (await db
     .update(schema.domain)
     .set({ dmarcRecord: "v=DMARC1; p=none", dmarcPolicyChangedAt: since })
-    .where(eq(schema.domain.id, row.id));
+    .where(eq(schema.domain.id, created.id))
+    .returning()) as [DomainRow];
+  if (opts.reports !== false) await healthyReports(row);
+  // Start from exactly one queued readiness email, whatever ingesting queued.
+  await db.delete(schema.dmarcNotification).where(eq(schema.dmarcNotification.domainId, row.id));
   const [notification] = await db
     .insert(schema.dmarcNotification)
     .values({
@@ -87,6 +136,18 @@ describe("runDueDmarcNotifications", () => {
     expect(sent).toHaveLength(0);
     const [settled] = await listDmarcNotifications(organizationId);
     expect(settled).toMatchObject({ status: "skipped" });
+  });
+
+  test("skips readiness that later reports no longer support", async () => {
+    const { scope, organizationId } = await setup({ reports: false });
+    const { sent, deps } = capture();
+    await runDueDmarcNotifications({ scope }, deps);
+    expect(sent).toHaveLength(0);
+    const [settled] = await listDmarcNotifications(organizationId);
+    expect(settled).toMatchObject({
+      status: "skipped",
+      lastError: "No longer ready: later reports changed the checks.",
+    });
   });
 
   test("retries a failed send with backoff", async () => {

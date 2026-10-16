@@ -9,6 +9,7 @@
 import { db, schema } from "@coss/db";
 import { and, asc, eq, inArray, isNotNull, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { DMARC_READINESS } from "./dmarc-guidance.ts";
+import { dmarcStillReadyFor } from "./dmarc-reports.ts";
 import type { Notice, Notifier } from "./notifier.ts";
 
 const { dmarcNotification, domain, member, organization, user } = schema;
@@ -149,11 +150,7 @@ async function notificationContent(
     return { skip: "Too old to send." };
   }
   const [target] = await db
-    .select({
-      name: domain.name,
-      status: domain.status,
-      dmarcPolicyChangedAt: domain.dmarcPolicyChangedAt,
-    })
+    .select()
     .from(domain)
     .where(and(eq(domain.id, row.domainId), eq(domain.organizationId, organizationId)));
   const [org] = await db
@@ -165,6 +162,12 @@ async function notificationContent(
   }
   if (target.dmarcPolicyChangedAt?.getTime() !== row.policyChangedAt?.getTime()) {
     return { skip: "The domain's DMARC policy changed since." };
+  }
+  if (row.kind === "ready_quarantine" || row.kind === "ready_reject") {
+    const policy = row.kind === "ready_quarantine" ? "quarantine" : "reject";
+    if (!(await dmarcStillReadyFor(target, policy, now))) {
+      return { skip: "No longer ready: later reports changed the checks." };
+    }
   }
   // Verified addresses only: anyone can sign up with someone else's address.
   const recipients = await db
