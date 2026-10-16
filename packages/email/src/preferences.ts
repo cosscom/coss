@@ -307,11 +307,21 @@ export async function applyPreferences(
         status: on ? ("opted_in" as const) : ("opted_out" as const),
       }));
     row = await setStatus(tx, row, change.subscribed ? "subscribed" : "unsubscribed", now);
-    const topicsChanged = await applyTopicChoices(tx, row, topics, choices, "preference_center");
+    // The link's topic on its own: only a change of that one is an unsubscribe from its email.
+    const ofLink = (choice: { topic: string }) => choice.topic === link.topic;
+    await applyTopicChoices(
+      tx,
+      row,
+      topics,
+      choices.filter((choice) => !ofLink(choice)),
+      "preference_center",
+    );
+    const linkChoices = choices.filter(ofLink);
+    const linkTopicChanged =
+      linkChoices.length > 0 &&
+      (await applyTopicChoices(tx, row, topics, linkChoices, "preference_center")) > 0;
     const optedOutOfLinkTopic =
-      link.topic !== null &&
-      topicsChanged > 0 &&
-      choices.some((choice) => choice.topic === link.topic && choice.status === "opted_out");
+      linkTopicChanged && linkChoices.some((choice) => choice.status === "opted_out");
     if (wasSubscribed && (!change.subscribed || optedOutOfLinkTopic)) {
       await countUnsubscribe(tx, link, scope.organizationId);
     }

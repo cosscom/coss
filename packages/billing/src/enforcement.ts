@@ -133,7 +133,7 @@ export function createUsageGate(
           and(
             eq(billingQuota.organizationId, input.organizationId),
             eq(billingQuota.meter, input.meter),
-            eq(billingQuota.periodStart, periodOf(new Date()).start),
+            eq(billingQuota.periodStart, periodOf(input.reservedAt ?? new Date()).start),
           ),
         );
     },

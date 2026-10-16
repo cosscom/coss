@@ -542,7 +542,7 @@ async function dropUnclaimed(
         isNull(email.provider),
       ),
     )
-    .returning({ id: email.id, contactId: email.contactId });
+    .returning({ id: email.id, contactId: email.contactId, createdAt: email.createdAt });
   if (dropped.length === 0) return { count: 0, firstContactId: null };
   await bumpBroadcastStats(tx, {
     broadcastId: row.id,
@@ -553,12 +553,21 @@ async function dropUnclaimed(
       -1,
     ),
   });
-  if (mode === "live") {
-    await billing?.release?.(tx, {
-      organizationId: row.organizationId,
-      meter: "email.recipients",
-      quantity: dropped.length,
-    });
+  if (mode === "live" && billing?.release) {
+    // Each email was reserved when it was made: give it back to that (UTC) month.
+    const byMonth = new Map<string, Date[]>();
+    for (const entry of dropped) {
+      const month = entry.createdAt.toISOString().slice(0, 7);
+      byMonth.set(month, [...(byMonth.get(month) ?? []), entry.createdAt]);
+    }
+    for (const dates of byMonth.values()) {
+      await billing.release(tx, {
+        organizationId: row.organizationId,
+        meter: "email.recipients",
+        quantity: dates.length,
+        reservedAt: dates[0] as Date,
+      });
+    }
   }
   const contacts = dropped
     .map((entry) => entry.contactId ?? "")

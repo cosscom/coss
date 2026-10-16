@@ -444,6 +444,39 @@ describe("broadcasts", () => {
     expect(BROADCAST_BACKLOG).toBeGreaterThan(0);
   });
 
+  test("only an opt-out of the link's own topic counts as the broadcast's unsubscribe", async () => {
+    const f = await fixture();
+    await createTopic(f.env, { key: "beta", name: "Beta", default_subscription: "opt_out" });
+    const broadcast = await f.create({ send: true });
+    await f.runUntil(broadcast.id, "sent");
+    const ada = (await emailsOf(f.tenant.organization.id, broadcast.id)).find(
+      (row) => row.to[0] === "ada@example.com",
+    );
+    const header =
+      f.provider.sent.find((entry) => entry.emailId === ada?.id)?.headers["List-Unsubscribe"] ?? "";
+    const link = readLinkToken(
+      DEVELOPMENT_LINK_KEYS,
+      header.slice(header.lastIndexOf("/") + 1, -1),
+      "preferences",
+    );
+    if (!link) throw new Error("no unsubscribe link");
+    const unsubscribed = async () => (await getBroadcast(f.env, broadcast.id))?.stats.unsubscribed;
+    await applyPreferences(link, { kind: "save", subscribed: true, topics: { news: false } });
+    expect(await unsubscribed()).toBe(1);
+    // Another topic changing, the link's topic still off: no new unsubscribe.
+    await applyPreferences(link, {
+      kind: "save",
+      subscribed: true,
+      topics: { news: false, beta: true },
+    });
+    await applyPreferences(link, {
+      kind: "save",
+      subscribed: true,
+      topics: { news: false, beta: false },
+    });
+    expect(await unsubscribed()).toBe(1);
+  });
+
   test("consent is checked again when a queued broadcast email is dispatched", async () => {
     const f = await fixture();
     const broadcast = await f.create({ send: true });
