@@ -79,6 +79,16 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   (the default tracking host, `TRACKING_PUBLIC_URL`, and Cloudflare's fallback origin; zone `cosslinks.com` in a
   self-serve Cloudflare account, never the coss.com zone) → ALB rule `/t/*` + `X-Tracking-Origin-Verify` → api
   (`infra/aws/routing.ts`).
+- **BIMI** (`packages/email/src/bimi.ts`, `domain.bimi` jsonb, wire `Domain.bimi`): a DNS-only check run by
+  `checkDomain` next to `checkRecords` (so the worker's re-checks and verify refresh it). It reads the DMARC policy
+  (RFC 7489: the domain's own `p`, else the organizational domain's `sp ?? p`; the organizational domain — `tldts`'
+  public suffix list, ICANN section — must have an enforced record of its own too; `pct` < 100 or `t=y` is partial;
+  two records, a repeated or malformed tag = no record) and `default._bimi.<domain>`, else the organizational
+  domain's (unrelated TXT records ignored). Statuses `not_checked` (no resolver or a lookup failure — never `missing` on a DNS error), `missing`,
+  `invalid`, `configured`. Rows store issue codes only; `toBimiObject` renders `BIMI_ISSUE_MESSAGES` on read. Never
+  fetch the logo (`l=`) or certificate (`a=`) — they are customer URLs (SSRF) and the VMC/CMC is the customer's to
+  validate; the dashboard never renders the logo either. The docs page (`/docs/email/bimi`) lists the statuses and
+  codes: change them together.
 - **Scheduled sends** (`scheduled_at`, ISO 8601 with an offset, ≤ 30 days ahead; a past time sends now): stored as
   `scheduled` with a COSS-source `email.scheduled` event and sent by the worker's `dispatchDue` (every 5 s).
   It claims straight from `scheduled` (compare-and-set to `queued` + `provider`), after

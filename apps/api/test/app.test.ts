@@ -528,6 +528,7 @@ describe("GET /openapi.json", () => {
         "CreateDomainRequest",
         "Domain",
         "DomainRecord",
+        "DomainBimi",
         "DomainList",
         "DeletedDomain",
         "TrackingDomain",

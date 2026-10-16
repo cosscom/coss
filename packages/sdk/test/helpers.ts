@@ -138,6 +138,15 @@ export const sampleDomain: Domain = {
   failed_at: null,
   tracking: null,
   receiving: null,
+  bimi: {
+    status: "not_checked",
+    name: "default._bimi.acme.com",
+    record: null,
+    logo_url: null,
+    certificate_url: null,
+    dmarc_policy: null,
+    issues: [],
+  },
 };
 
 export const sampleEndpoint: WebhookEndpoint = {

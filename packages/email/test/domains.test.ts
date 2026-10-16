@@ -247,6 +247,7 @@ describe("toDomainObject", () => {
     // A never-checked domain still shows what to publish.
     expect(created.records).toEqual([]);
     expect(object.records).toEqual(expectedRecords(created));
+    expect(object.bimi).toMatchObject({ status: "not_checked", name: `default._bimi.${name}` });
     // Tenancy and provider bookkeeping stay internal.
     expect(Object.keys(object)).not.toContain("organization_id");
     expect(JSON.stringify(object)).not.toContain(tenant.organization.id);
@@ -269,6 +270,36 @@ describe("toDomainObject", () => {
 });
 
 describe("checkDomain", () => {
+  test("stores the BIMI check next to the records, and a restart clears it", async () => {
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const name = uniqueName();
+    const row = await createDomain({ organizationId, name, userId: null }, deps());
+    const dns = fakeDnsResolver({
+      [`TXT _dmarc.${name}`]: [["v=DMARC1; p=quarantine"]],
+      // The organizational domain (coss.test) needs an enforced record of its own too.
+      "TXT _dmarc.coss.test": [["v=DMARC1; p=reject"]],
+      [`TXT default._bimi.${name}`]: [["v=BIMI1; l=https://acme.test/logo.svg"]],
+    });
+
+    const checked = await checkDomain({ organizationId, id: row.id }, { ...deps(), dns });
+
+    expect(checked.bimi).toMatchObject({
+      status: "invalid",
+      name: `default._bimi.${name}`,
+      logoUrl: "https://acme.test/logo.svg",
+      dmarcPolicy: "quarantine",
+      issues: ["certificate_missing"],
+    });
+    expect(toDomainObject(checked).bimi.issues).toEqual([
+      { code: "certificate_missing", message: expect.stringContaining("VMC or CMC") },
+    ]);
+
+    await db.update(schema.domain).set({ status: "failed" }).where(eq(schema.domain.id, row.id));
+    const restarted = await restartDomainVerification({ organizationId, id: row.id }, deps());
+    expect(restarted.bimi).toBeNull();
+  });
+
   test("stores the provider's verdict and schedules the next check", async () => {
     const tenant = await createTestTenant();
     const organizationId = tenant.organization.id;

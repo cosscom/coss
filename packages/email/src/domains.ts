@@ -22,6 +22,7 @@ import {
   notInArray,
   or,
 } from "drizzle-orm";
+import { checkBimi, toBimiObject } from "./bimi.ts";
 import { checkRecords, type DnsResolver, expectedRecords } from "./dns.ts";
 import { DomainError, EmailError } from "./errors.ts";
 import type { InboundContentStore } from "./inbound-store.ts";
@@ -130,6 +131,7 @@ export function toDomainObject(
     failed_at: row.failedAt?.toISOString() ?? null,
     tracking,
     receiving,
+    bimi: toBimiObject(row),
   };
 }
 
@@ -355,6 +357,7 @@ export async function restartDomainVerification(
         provider: deps.identity.name,
         mailFromStatus: "pending",
         records: [],
+        bimi: null,
         verificationStartedAt: new Date(),
         failedAt: null,
       })
@@ -402,7 +405,10 @@ export async function checkDomain(
     dkimHostedZone: state?.dkimHostedZone ?? row.dkimHostedZone,
     region: state?.region ?? row.region,
   };
-  const records = await checkRecords(expectedRecords({ ...row, ...identity }), deps.dns);
+  const [records, bimi] = await Promise.all([
+    checkRecords(expectedRecords({ ...row, ...identity }), deps.dns),
+    checkBimi(row.name, deps.dns),
+  ]);
 
   if (status === "failed" && state) {
     try {
@@ -424,6 +430,7 @@ export async function checkDomain(
       canSend: status === "verified" && (state?.canSend ?? false),
       mailFromStatus: state?.mailFromStatus ?? row.mailFromStatus,
       records,
+      bimi,
       lastCheckedAt: now,
       nextCheckAt: nextCheckAt({ status, verificationStartedAt: row.verificationStartedAt }, now),
       verifiedAt: status === "verified" ? (row.verifiedAt ?? now) : row.verifiedAt,

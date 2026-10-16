@@ -6,6 +6,7 @@
     "smtp",
     "receiving",
     "domains",
+    "bimi",
     "tracking",
     "unsubscribe",
     "delivery",

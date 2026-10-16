@@ -1411,6 +1411,41 @@ export const DOMAIN_RECORD_PURPOSES = ["dkim", "mail_from_mx", "mail_from_spf", 
 
 export const DOMAIN_RECORD_STATUSES = ["verified", "missing", "mismatch", "not_checked"] as const;
 
+export const BIMI_STATUSES = ["not_checked", "missing", "invalid", "configured"] as const;
+
+export const BIMI_ISSUE_CODES = [
+  "dmarc_missing",
+  "dmarc_not_enforced",
+  "dmarc_partial",
+  "record_multiple",
+  "record_invalid",
+  "logo_missing",
+  "logo_not_https",
+  "certificate_missing",
+  "certificate_not_https",
+] as const;
+
+export type BimiIssueCode = (typeof BIMI_ISSUE_CODES)[number];
+
+/** What each BIMI issue means, rendered on read (the domain row stores only the codes). */
+export const BIMI_ISSUE_MESSAGES: Record<BimiIssueCode, string> = {
+  dmarc_missing:
+    "The domain (or its organizational domain) has no valid DMARC record, or more than one. BIMI needs DMARC at p=quarantine or p=reject.",
+  dmarc_not_enforced:
+    "The DMARC policy of the domain or of its organizational domain is p=none (or sp=none for a subdomain). BIMI needs p=quarantine or p=reject.",
+  dmarc_partial:
+    "The DMARC policy of the domain (or of its organizational domain) applies to only part of the mail (pct below 100, or t=y). BIMI needs it to apply to all of it.",
+  record_multiple:
+    "There is more than one v=BIMI1 record, which mailbox providers treat as no record. Keep one.",
+  record_invalid:
+    "The BIMI record is not valid: it must start with v=BIMI1 and list each tag=value only once.",
+  logo_missing: "The BIMI record has no logo (l=). Point it at your SVG logo.",
+  logo_not_https: "The logo URL (l=) must be an https:// URL.",
+  certificate_missing:
+    "The BIMI record has no certificate (a=). Gmail and Apple Mail show logos only with a VMC or CMC.",
+  certificate_not_https: "The certificate URL (a=) must be an https:// URL.",
+};
+
 export const TRACKING_DOMAIN_STATUSES = [
   "pending",
   "active",
@@ -1443,6 +1478,15 @@ const DKIM_RECORD_EXAMPLE = {
   type: "CNAME",
   name: "x7f3k2m9qp4ld8sv6hwz1nyc5rbtgj0e._domainkey.acme.com",
   value: "x7f3k2m9qp4ld8sv6hwz1nyc5rbtgj0e.dkim.amazonses.com",
+} as const;
+const BIMI_EXAMPLE = {
+  status: "configured",
+  name: "default._bimi.acme.com",
+  record: "v=BIMI1; l=https://acme.com/brand/logo.svg; a=https://acme.com/brand/vmc.pem",
+  logo_url: "https://acme.com/brand/logo.svg",
+  certificate_url: "https://acme.com/brand/vmc.pem",
+  dmarc_policy: "reject",
+  issues: [],
 } as const;
 const DOMAIN_EXAMPLE = {
   object: "domain",
@@ -1485,6 +1529,7 @@ const DOMAIN_EXAMPLE = {
   failed_at: null,
   tracking: TRACKING_DOMAIN_EXAMPLE,
   receiving: null,
+  bimi: BIMI_EXAMPLE,
 } as const;
 
 export const DomainRecordObject = z
@@ -1508,6 +1553,48 @@ export const DomainRecordObject = z
   .meta({ id: "DomainRecord", examples: [DKIM_RECORD_EXAMPLE] });
 
 export type DomainRecordObjectOutput = z.output<typeof DomainRecordObject>;
+
+export const DomainBimiObject = z
+  .object({
+    status: z.enum(BIMI_STATUSES).meta({
+      description:
+        "`configured` when the BIMI record is valid and DMARC is enforced, `invalid` when a " +
+        "record exists but something is wrong (see `issues`), `missing` when there is no record, " +
+        "and `not_checked` until DNS has been consulted. COSS checks DNS only: mailbox providers " +
+        "still validate the logo and the certificate.",
+    }),
+    name: z.string().meta({
+      description:
+        "Where the BIMI record was found, or looked up when there is none: " +
+        "`default._bimi.<domain>`, or the organizational domain's when only it has one.",
+    }),
+    record: z.string().nullable().meta({ description: "The `v=BIMI1` record found." }),
+    logo_url: z.string().nullable().meta({ description: "The record's logo URL (`l=`)." }),
+    certificate_url: z
+      .string()
+      .nullable()
+      .meta({ description: "The record's VMC or CMC certificate URL (`a=`)." }),
+    dmarc_policy: z
+      .enum(["none", "quarantine", "reject"])
+      .nullable()
+      .meta({
+        description:
+          "The DMARC policy that applies to the domain (the organizational domain's `sp` when it has no record of its own), " +
+          "`null` without a DMARC record.",
+      }),
+    issues: z
+      .array(z.object({ code: z.enum(BIMI_ISSUE_CODES), message: z.string() }))
+      .meta({ description: "What keeps the domain's logo from showing, as far as DNS tells." }),
+  })
+  .meta({
+    id: "DomainBimi",
+    description:
+      "The result of the last BIMI check: whether mailbox providers can find the domain's brand " +
+      "logo and certificate. The record and the certificate are your own.",
+    examples: [BIMI_EXAMPLE],
+  });
+
+export type DomainBimiObjectOutput = z.output<typeof DomainBimiObject>;
 
 export const TrackingDomainObject = z
   .object({
@@ -1644,6 +1731,7 @@ export const DomainObject = z
     tracking: z.union([TrackingDomainObject, z.null()]),
     // The receiving hostname (`null` when the domain doesn't receive email). A union, like `tracking`.
     receiving: z.union([ReceivingDomainObject, z.null()]),
+    bimi: DomainBimiObject,
   })
   .meta({ id: "Domain", examples: [DOMAIN_EXAMPLE] });
 

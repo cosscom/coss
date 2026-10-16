@@ -2674,6 +2674,9 @@
                 "type": "null"
               }
             ]
+          },
+          "bimi": {
+            "$ref": "#/components/schemas/DomainBimi"
           }
         },
         "required": [
@@ -2691,7 +2694,8 @@
           "verified_at",
           "failed_at",
           "tracking",
-          "receiving"
+          "receiving",
+          "bimi"
         ],
         "examples": [
           {
@@ -2765,7 +2769,16 @@
               "activated_at": "2026-01-15T09:52:00.000Z",
               "failed_at": null
             },
-            "receiving": null
+            "receiving": null,
+            "bimi": {
+              "status": "configured",
+              "name": "default._bimi.acme.com",
+              "record": "v=BIMI1; l=https://acme.com/brand/logo.svg; a=https://acme.com/brand/vmc.pem",
+              "logo_url": "https://acme.com/brand/logo.svg",
+              "certificate_url": "https://acme.com/brand/vmc.pem",
+              "dmarc_policy": "reject",
+              "issues": []
+            }
           }
         ]
       },
@@ -3079,6 +3092,110 @@
           }
         ]
       },
+      "DomainBimi": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_checked",
+              "missing",
+              "invalid",
+              "configured"
+            ],
+            "description": "`configured` when the BIMI record is valid and DMARC is enforced, `invalid` when a record exists but something is wrong (see `issues`), `missing` when there is no record, and `not_checked` until DNS has been consulted. COSS checks DNS only: mailbox providers still validate the logo and the certificate."
+          },
+          "name": {
+            "type": "string",
+            "description": "Where the BIMI record was found, or looked up when there is none: `default._bimi.<domain>`, or the organizational domain's when only it has one."
+          },
+          "record": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The `v=BIMI1` record found."
+          },
+          "logo_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The record's logo URL (`l=`)."
+          },
+          "certificate_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The record's VMC or CMC certificate URL (`a=`)."
+          },
+          "dmarc_policy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "none",
+              "quarantine",
+              "reject",
+              null
+            ],
+            "description": "The DMARC policy that applies to the domain (the organizational domain's `sp` when it has no record of its own), `null` without a DMARC record."
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "dmarc_missing",
+                    "dmarc_not_enforced",
+                    "dmarc_partial",
+                    "record_multiple",
+                    "record_invalid",
+                    "logo_missing",
+                    "logo_not_https",
+                    "certificate_missing",
+                    "certificate_not_https"
+                  ]
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ]
+            },
+            "description": "What keeps the domain's logo from showing, as far as DNS tells."
+          }
+        },
+        "required": [
+          "status",
+          "name",
+          "record",
+          "logo_url",
+          "certificate_url",
+          "dmarc_policy",
+          "issues"
+        ],
+        "description": "The result of the last BIMI check: whether mailbox providers can find the domain's brand logo and certificate. The record and the certificate are your own.",
+        "examples": [
+          {
+            "status": "configured",
+            "name": "default._bimi.acme.com",
+            "record": "v=BIMI1; l=https://acme.com/brand/logo.svg; a=https://acme.com/brand/vmc.pem",
+            "logo_url": "https://acme.com/brand/logo.svg",
+            "certificate_url": "https://acme.com/brand/vmc.pem",
+            "dmarc_policy": "reject",
+            "issues": []
+          }
+        ]
+      },
       "CreateDomainRequest": {
         "type": "object",
         "properties": {
@@ -3201,7 +3318,16 @@
                   "activated_at": "2026-01-15T09:52:00.000Z",
                   "failed_at": null
                 },
-                "receiving": null
+                "receiving": null,
+                "bimi": {
+                  "status": "configured",
+                  "name": "default._bimi.acme.com",
+                  "record": "v=BIMI1; l=https://acme.com/brand/logo.svg; a=https://acme.com/brand/vmc.pem",
+                  "logo_url": "https://acme.com/brand/logo.svg",
+                  "certificate_url": "https://acme.com/brand/vmc.pem",
+                  "dmarc_policy": "reject",
+                  "issues": []
+                }
               }
             ],
             "has_more": false

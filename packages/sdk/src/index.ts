@@ -60,11 +60,14 @@ export type {
   Usage,
 } from "./types/billing.ts";
 export type {
+  BimiIssueCode,
+  BimiStatus,
   CreateDomainParams,
   CreateReceivingDomainParams,
   CreateTrackingDomainParams,
   DeletedDomain,
   Domain,
+  DomainBimi,
   DomainRecord,
   DomainRecordPurpose,
   DomainRecordStatus,

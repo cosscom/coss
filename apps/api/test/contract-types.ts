@@ -29,6 +29,7 @@ import type {
   DeletedReceivedEmail,
   DeletedSuppression,
   DeletedTrackingRule,
+  DomainBimiObject,
   DomainList,
   DomainObject,
   DomainRecordObject,
@@ -214,6 +215,7 @@ import type {
   DeletedTrackingRule as SdkDeletedTrackingRule,
   DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
   Domain as SdkDomain,
+  DomainBimi as SdkDomainBimi,
   DomainRecord as SdkDomainRecord,
   EmailEvent as SdkEmailEvent,
   EmailLink as SdkEmailLink,
@@ -410,6 +412,7 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof DomainObject>, SdkDomain>>,
   Assert<MutuallyAssignable<z.output<typeof DomainObject>["status"], SdkDomain["status"]>>,
   Assert<MutuallyAssignable<z.output<typeof DomainRecordObject>, SdkDomainRecord>>,
+  Assert<MutuallyAssignable<z.output<typeof DomainBimiObject>, SdkDomainBimi>>,
   Assert<MutuallyAssignable<z.output<typeof DomainList>, List<SdkDomain>>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedDomain>, SdkDeletedDomain>>,
   Assert<
