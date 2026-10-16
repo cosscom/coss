@@ -8,6 +8,7 @@ export type {
   BillingInvoicesResource,
   BillingResource,
 } from "./resources/billing.ts";
+export type { DmarcReportsResource, DmarcResource } from "./resources/dmarc.ts";
 export type { DomainsResource } from "./resources/domains.ts";
 export type { EmailResource } from "./resources/email.ts";
 export type {
@@ -59,6 +60,22 @@ export type {
   PlanKey,
   Usage,
 } from "./types/billing.ts";
+export type {
+  DmarcCheck,
+  DmarcCheckId,
+  DmarcNextStep,
+  DmarcNextStepKind,
+  DmarcPolicy,
+  DmarcPolicyPublished,
+  DmarcPublishedRecord,
+  DmarcReport,
+  DmarcReportRecord,
+  DmarcReportSummary,
+  DmarcSource,
+  DmarcStage,
+  DomainDmarc,
+  ListDmarcReportsParams,
+} from "./types/dmarc.ts";
 export type {
   BimiIssueCode,
   BimiStatus,
@@ -261,6 +278,9 @@ export type {
   AccountWebhookEventData,
   BillingEventType,
   BillingWebhookEvent,
+  DomainEventType,
+  DomainWebhookEvent,
+  DomainWebhookEventData,
   EmailWebhookEvent,
   EmailWebhookEventData,
   HookEndpointWebhookEvent,

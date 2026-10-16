@@ -22,8 +22,10 @@ import {
   notInArray,
   or,
 } from "drizzle-orm";
-import { checkBimi, toBimiObject } from "./bimi.ts";
-import { checkRecords, type DnsResolver, expectedRecords } from "./dns.ts";
+import { checkBimi, organizationalDomain, toBimiObject } from "./bimi.ts";
+import { appliedDmarcRecord, dmarcPolicyKey } from "./dmarc-record.ts";
+import { deleteOrganizationDmarcReports } from "./dmarc-reports.ts";
+import { checkDomainDns, type DnsResolver, dmarcRecordAt, expectedRecords } from "./dns.ts";
 import { DomainError, EmailError } from "./errors.ts";
 import type { InboundContentStore } from "./inbound-store.ts";
 import { type IdentityProvider, IdentityTakenError, type ProviderTenant } from "./provider.ts";
@@ -49,6 +51,11 @@ export type DomainDeps = {
   tracking: TrackingHostnameProvider;
   /** The organization's plan (domains, tracking domains); unset: nothing is limited (tests). */
   plans?: PlanGate;
+  /**
+   * The managed inbound domain DMARC reports are received at (`INBOUND_MANAGED_DOMAIN`); unset or
+   * `null`: receiving is off, and the recommended DMARC record names no report address.
+   */
+  dmarcReportDomain?: string | null;
 };
 
 /** Subdomain used as the envelope sender (bounces and complaints come back to it). */
@@ -100,9 +107,15 @@ export function normalizeDomainName(
   return name;
 }
 
-/** The DNS records of a domain: the latest check, or what to publish if never checked. */
-export function domainRecords(row: DomainRow): DomainRecord[] {
-  return row.records.length > 0 ? row.records : expectedRecords(row);
+/**
+ * The DNS records of a domain: the latest check, or what to publish if never checked
+ * (`dmarcReportDomain`: see `DomainDeps`).
+ */
+export function domainRecords(
+  row: DomainRow,
+  dmarcReportDomain: string | null = null,
+): DomainRecord[] {
+  return row.records.length > 0 ? row.records : expectedRecords(row, dmarcReportDomain);
 }
 
 /**
@@ -114,6 +127,7 @@ export function toDomainObject(
   row: DomainRow,
   tracking: TrackingDomainObjectOutput | null = null,
   receiving: ReceivingDomainObjectOutput | null = null,
+  dmarcReportDomain: string | null = null,
 ): DomainObjectOutput {
   return {
     object: "domain",
@@ -124,7 +138,7 @@ export function toDomainObject(
     region: row.region,
     mail_from_domain: row.mailFromDomain,
     mail_from_status: row.mailFromStatus,
-    records: domainRecords(row),
+    records: domainRecords(row, dmarcReportDomain),
     created_at: row.createdAt.toISOString(),
     last_checked_at: row.lastCheckedAt?.toISOString() ?? null,
     verified_at: row.verifiedAt?.toISOString() ?? null,
@@ -405,10 +419,35 @@ export async function checkDomain(
     dkimHostedZone: state?.dkimHostedZone ?? row.dkimHostedZone,
     region: state?.region ?? row.region,
   };
-  const [records, bimi] = await Promise.all([
-    checkRecords(expectedRecords({ ...row, ...identity }), deps.dns),
+  const [{ records, dmarc, dmarcAbsent }, bimi] = await Promise.all([
+    checkDomainDns(
+      expectedRecords({ ...row, ...identity }, deps.dmarcReportDomain ?? null),
+      deps.dns,
+    ),
     checkBimi(row.name, deps.dns),
   ]);
+  // A subdomain with no DMARC record of its own gets its organizational domain's (`undefined`:
+  // that lookup failed, so the stored one stays).
+  const organizational = organizationalDomain(row.name);
+  const inherited =
+    dmarcAbsent && deps.dns && organizational !== row.name
+      ? await dmarcRecordAt(organizational, deps.dns)
+      : null;
+  const dmarcInheritedRecord = inherited === undefined ? row.dmarcInheritedRecord : inherited;
+  // `undefined`: DNS couldn't be asked, so the stored record (and its policy's start) stays.
+  const dmarcState =
+    dmarc === undefined
+      ? {}
+      : {
+          dmarcRecord: dmarc,
+          dmarcInheritedRecord,
+          dmarcPolicyChangedAt:
+            row.dmarcPolicyChangedAt &&
+            dmarcPolicyKey(appliedDmarcRecord(row)) ===
+              dmarcPolicyKey(appliedDmarcRecord({ dmarcRecord: dmarc, dmarcInheritedRecord }))
+              ? row.dmarcPolicyChangedAt
+              : now,
+        };
 
   if (status === "failed" && state) {
     try {
@@ -430,6 +469,7 @@ export async function checkDomain(
       canSend: status === "verified" && (state?.canSend ?? false),
       mailFromStatus: state?.mailFromStatus ?? row.mailFromStatus,
       records,
+      ...dmarcState,
       bimi,
       lastCheckedAt: now,
       nextCheckAt: nextCheckAt({ status, verificationStartedAt: row.verificationStartedAt }, now),
@@ -533,8 +573,8 @@ export async function deleteDomain(
 
 /**
  * Organization deletion (worker, `OrganizationTeardownDeps.releaseProviderResources`): stops the
- * organization's sends, deletes its received emails' content, removes its domains' provider
- * identities and the domains, then its tenant.
+ * organization's sends, deletes its received emails' content and its DMARC reports, removes its
+ * domains' provider identities and the domains, then its tenant.
  * Idempotent; a failure leaves the rest for the retry. `failed` domains have no identity of
  * theirs (the name may be another organization's by now), so only their rows go.
  */
@@ -557,6 +597,8 @@ export async function releaseOrganizationEmailResources(
     await assertLease();
     await deps.inboundStore.deleteOrganization(organizationId);
   }
+  // In batches, before the domains: deleting a domain would cascade into all its report rows.
+  await deleteOrganizationDmarcReports(organizationId, assertLease);
   const tenantRow = await getEmailTenant(organizationId);
   const tenant = tenantRow ? tenantOf(tenantRow) : { tenantName: "", tenantArn: null };
   const rows = await db

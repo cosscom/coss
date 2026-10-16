@@ -12,6 +12,10 @@ export const RETENTION_DAYS = {
   emails: 45,
   /** Received emails with their headers, bodies, raw message and attachments. */
   receivedEmails: 30,
+  /** DMARC aggregate reports about a domain, with their rows. */
+  dmarcReports: 90,
+  /** Settled DMARC notification emails (readiness for a stricter policy, failing mail). */
+  dmarcNotifications: 90,
   /** Webhook messages with their deliveries and attempts (once none is pending). */
   webhookDeliveries: 30,
   /** Log drain batches with their lines and attempt logs (once finished). */
@@ -93,6 +97,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { days: RETENTION_DAYS.receivedEmails, after: "creation" },
   },
   {
+    id: "dmarc_reports",
+    label: "DMARC reports",
+    description:
+      "Aggregate reports mailbox providers send about your domains: the reporting organization, source IP addresses, message counts and authentication results. The report emails themselves are not kept.",
+    period: { days: RETENTION_DAYS.dmarcReports, after: "creation" },
+  },
+  {
     id: "idempotency_keys",
     label: "Idempotency keys",
     description: "A request repeated with the same Idempotency-Key replays the first response.",
@@ -144,6 +155,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     label: "Standing notification emails",
     description: "Records of the emails sent to owners and admins about a warning or suspension.",
     period: { days: RETENTION_DAYS.reputationNotifications, after: "creation" },
+  },
+  {
+    id: "dmarc_notifications",
+    label: "DMARC notification emails",
+    description:
+      "Records of the emails sent to owners and admins when a domain is ready for a stricter DMARC policy, or its mail fails DMARC.",
+    period: { days: RETENTION_DAYS.dmarcNotifications, after: "creation" },
   },
   {
     id: "reputation_history",

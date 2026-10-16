@@ -2,6 +2,7 @@ import type { CossResult } from "../core/errors.ts";
 import type { HttpClient, RequestOptions } from "../core/http.ts";
 import type { CreateDomainParams, DeletedDomain, Domain } from "../types/domain.ts";
 import type { List } from "../types/email.ts";
+import { DmarcResource } from "./dmarc.ts";
 import { ReceivingDomainsResource } from "./receiving-domains.ts";
 import { TrackingDomainsResource } from "./tracking-domains.ts";
 
@@ -17,12 +18,15 @@ export class DomainsResource {
   readonly tracking: TrackingDomainsResource;
   /** Each domain's receiving hostname: start and stop receiving email at it. */
   readonly receiving: ReceivingDomainsResource;
+  /** Each domain's DMARC status, guidance and aggregate reports. */
+  readonly dmarc: DmarcResource;
 
   /** @internal Use `new Coss().domains`. */
   constructor(http: HttpClient) {
     this.#http = http;
     this.tracking = new TrackingDomainsResource(http);
     this.receiving = new ReceivingDomainsResource(http);
+    this.dmarc = new DmarcResource(http);
   }
 
   /**

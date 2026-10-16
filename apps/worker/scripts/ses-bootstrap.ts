@@ -738,6 +738,8 @@ console.info(
           ),
           `  MX 10 ${inbound.domain} → ${inbound.mxHost}`,
           `  MX 10 *.${inbound.domain} → ${inbound.mxHost}`,
+          // Authorizes DMARC aggregate reports for any domain to dmarc-<token>@<managed domain>.
+          `  TXT *._report._dmarc.${inbound.domain} → "v=DMARC1"`,
         ]
       : []),
     "",

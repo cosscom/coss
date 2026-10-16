@@ -1,6 +1,7 @@
 import type { Domain } from "@coss/companion";
 import { domainObject, getDomain } from "@coss/email";
 import { listProjectsWithEnvironments } from "@coss/tenancy";
+import { emailRuntime } from "@/lib/email-runtime";
 import {
   MobileApiError,
   mobileRoute,
@@ -20,7 +21,7 @@ export const GET = mobileRoute(
     const row = await getDomain({ organizationId, id: domainId });
     if (!row) throw new MobileApiError(404, "not_found", "Domain not found.");
     const [domain, projects] = await Promise.all([
-      domainObject(row),
+      domainObject(row, emailRuntime().domainDeps.dmarcReportDomain ?? null),
       listProjectsWithEnvironments({ organizationId }),
     ]);
     const environmentNames = Object.fromEntries(

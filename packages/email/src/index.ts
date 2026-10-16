@@ -3,12 +3,79 @@ export { checkBimi, parseTagList, toBimiObject } from "./bimi.ts";
 // Runtime dispatch code (pg-boss) lives in `@coss/email/dispatch`, which the dashboard never loads.
 export type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 export {
+  DMARC_READINESS,
+  type DmarcCheck,
+  type DmarcGuidance,
+  type DmarcGuidanceInput,
+  type DmarcNextStep,
+  type DmarcReportTotals,
+  type DmarcSourceSummary,
+  type DmarcStage,
+  dmarcGuidance,
+  unauthenticatedSources,
+} from "./dmarc-guidance.ts";
+export {
+  type DmarcNotificationDeps,
+  type DmarcNotificationRow,
+  listDmarcNotifications,
+  renderDmarcNotification,
+  runDueDmarcNotifications,
+} from "./dmarc-notifications.ts";
+export {
+  DMARC_POLICIES,
+  type DmarcPolicy,
+  type DmarcRecord,
+  dmarcPolicyKey,
+  dmarcReportAddress,
+  dmarcReportTokenOf,
+  effectivePolicy,
+  nextPolicy,
+  parseDmarcRecord,
+  partiallyEnforced,
+  recommendedDmarc,
+  ruaIncludes,
+  withPolicy,
+  withReporting,
+} from "./dmarc-record.ts";
+export {
+  type DmarcAggregateReport,
+  DmarcReportError,
+  MAX_DMARC_REPORT_BYTES,
+  MAX_DMARC_REPORT_RECORDS,
+  parseDmarcAggregateReport,
+  unpackDmarcReport,
+} from "./dmarc-report-xml.ts";
+export {
+  type DmarcDay,
+  type DmarcIngestDeps,
+  type DmarcIngestOutcome,
+  type DmarcReportRecordRow,
+  type DmarcReportRow,
+  deleteOrganizationDmarcReports,
+  dmarcDailySeries,
+  dmarcOverview,
+  dmarcTotals,
+  getDmarcReport,
+  ingestDmarcReports,
+  isViaCoss,
+  listDmarcReports,
+  splitDmarcReportRecipients,
+} from "./dmarc-reports.ts";
+export {
+  dmarcReportMessage,
+  dmarcReportXml,
+  receiveSampleDmarcReport,
+  type SampleDmarcRecord,
+  type SampleDmarcReport,
+  sampleDmarcReport,
+} from "./dmarc-sample.ts";
+export {
+  checkDomainDns,
   checkReceivingRecord,
   checkRecords,
   type DnsResolver,
   expectedRecords,
   publicDnsResolver,
-  RECOMMENDED_DMARC,
 } from "./dns.ts";
 export {
   applyTenantStatus,
@@ -160,6 +227,8 @@ export {
 } from "./reputation-checks.ts";
 export {
   purgeEmptyEmailBatches,
+  purgeExpiredDmarcNotifications,
+  purgeExpiredDmarcReports,
   purgeExpiredEmails,
   purgeExpiredFakeInboundObjects,
   purgeExpiredInboundDropCounters,

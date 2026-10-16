@@ -7,6 +7,7 @@ import type { EmailEventType } from "./email.ts";
 import type {
   AccountEventType,
   BillingEventType,
+  DomainEventType,
   HookOperationalEventType,
   ReceivedEmailEventType,
   RiskEventType,
@@ -16,6 +17,7 @@ import type {
 export type WebhookEventType =
   | EmailEventType
   | ReceivedEmailEventType
+  | DomainEventType
   | AccountEventType
   | BillingEventType
   | RiskEventType

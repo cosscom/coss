@@ -9,10 +9,13 @@ import {
   deleteDomain,
   deleteReceivingDomain,
   deleteTrackingDomain,
+  dmarcOverview,
   domainObject,
   domainObjects,
+  getDmarcReport,
   getDomain,
   getReceivingDomain,
+  listDmarcReports,
   listDomains,
   MAX_PENDING_DOMAINS,
   restartDomainVerification,
@@ -23,9 +26,14 @@ import {
   CreateDomainRequest,
   CreateReceivingDomainRequest,
   CreateTrackingDomainRequest,
+  DEFAULT_DMARC_REPORT_LIST_LIMIT,
   DeletedDomain,
+  DmarcReportList,
+  DmarcReportObject,
+  DomainDmarc,
   DomainList,
   DomainObject,
+  ListDmarcReportsQuery,
 } from "@coss/email/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
@@ -323,11 +331,84 @@ export const deleteReceivingDomainRoute = createRoute({
   },
 });
 
+const DMARC_NOTE =
+  "Mailbox providers send DMARC aggregate reports to the domain's `report_address` once its " +
+  "`_dmarc` record names it (`rua=mailto:…`), usually once a day each.";
+
+export const getDomainDmarcRoute = createRoute({
+  method: "get",
+  path: "/domains/{id}/dmarc",
+  operationId: "getDomainDmarc",
+  tags: ["Domains"],
+  summary: "Retrieve a domain's DMARC status",
+  description:
+    "The domain's published DMARC record, where it is on the path from `p=none` to `p=reject`, " +
+    "the record to publish next and whether the last 14 days of aggregate reports say that is " +
+    `safe (\`ready\`, with the \`checks\` behind it), and a summary of those reports. ${DMARC_NOTE}`,
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ domain: ["read"] }), rateLimit("api.read")],
+  request: { params: DomainIdParams },
+  responses: {
+    200: jsonDoc("The domain's DMARC status.", DomainDmarc),
+    ...commonErrors,
+    404: domainNotFound,
+  },
+});
+
+export const listDomainDmarcReportsRoute = createRoute({
+  method: "get",
+  path: "/domains/{id}/dmarc/reports",
+  operationId: "listDomainDmarcReports",
+  tags: ["Domains"],
+  summary: "List a domain's DMARC reports",
+  description:
+    "The aggregate reports received about the domain, newest first, without their rows " +
+    "(retrieve one for those). Pass the last `id` as `after` to get the next page while " +
+    `\`has_more\` is true. ${DMARC_NOTE}`,
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ domain: ["read"] }), rateLimit("api.read")],
+  request: { params: DomainIdParams, query: ListDmarcReportsQuery },
+  responses: {
+    200: jsonDoc("A page of DMARC reports.", DmarcReportList),
+    ...commonErrors,
+    404: domainNotFound,
+    422: errorDoc("A query parameter failed validation (`validation_error`)."),
+  },
+});
+
+export const getDomainDmarcReportRoute = createRoute({
+  method: "get",
+  path: "/domains/{id}/dmarc/reports/{report_id}",
+  operationId: "getDomainDmarcReport",
+  tags: ["Domains"],
+  summary: "Retrieve a DMARC report",
+  description:
+    "One aggregate report with its rows: each source IP, how many messages it sent, whether " +
+    "they passed DMARC (aligned DKIM or SPF) and what the receiver did with them.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ domain: ["read"] }), rateLimit("api.read")],
+  request: {
+    params: DomainIdParams.extend({
+      report_id: z.string().meta({
+        description: "The report's id.",
+        examples: ["dmarcrep_01k7c8m4q2f3e9v6t5r1n0p8yz"],
+      }),
+    }),
+  },
+  responses: {
+    200: jsonDoc("The report.", DmarcReportObject),
+    ...commonErrors,
+    404: errorDoc("No such domain in this organization, or no such report of it (`not_found`)."),
+  },
+});
+
 export function createDomainRoutes(
   deps: DomainDeps,
   inbound: InboundRuntime | null,
 ): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
+  // DMARC reports arrive through receiving, at the managed inbound domain.
+  const dmarcReportDomain = deps.dmarcReportDomain ?? inbound?.managedDomain ?? null;
 
   /** The domain addressed by the path, inside the key's organization. */
   async function requireDomain(organizationId: string, id: string): Promise<DomainRow> {
@@ -350,14 +431,18 @@ export function createDomainRoutes(
       target: { type: "domain", id: row.id, label: row.name },
       environmentScoped: false,
     });
-    return c.json(await domainObject(row), 200);
+    return c.json(await domainObject(row, dmarcReportDomain), 200);
   });
 
   router.openapi(listDomainsRoute, async (c) => {
     const { organizationId } = c.var.auth;
     const rows = await listDomains({ organizationId });
     return c.json(
-      { object: "list" as const, data: await domainObjects(organizationId, rows), has_more: false },
+      {
+        object: "list" as const,
+        data: await domainObjects(organizationId, rows, dmarcReportDomain),
+        has_more: false,
+      },
       200,
     );
   });
@@ -365,7 +450,7 @@ export function createDomainRoutes(
   router.openapi(getDomainRoute, async (c) => {
     const { id } = c.req.valid("param");
     const row = await requireDomain(c.var.auth.organizationId, id);
-    return c.json(await domainObject(row), 200);
+    return c.json(await domainObject(row, dmarcReportDomain), 200);
   });
 
   /**
@@ -393,7 +478,7 @@ export function createDomainRoutes(
     if (row.status === "failed") {
       const restarted = await restartDomainVerification({ organizationId, id: row.id }, deps);
       await verifyTracking(organizationId, row.id);
-      return c.json(await domainObject(restarted), 200);
+      return c.json(await domainObject(restarted, dmarcReportDomain), 200);
     }
     // One provider and DNS round trip per domain every few seconds is enough; the background
     // re-check keeps running either way.
@@ -411,7 +496,7 @@ export function createDomainRoutes(
     }
     const checked = await checkDomain({ organizationId, id: row.id }, deps);
     await verifyTracking(organizationId, row.id);
-    return c.json(await domainObject(checked), 200);
+    return c.json(await domainObject(checked, dmarcReportDomain), 200);
   });
 
   router.openapi(deleteDomainRoute, async (c) => {
@@ -439,7 +524,7 @@ export function createDomainRoutes(
       environmentScoped: false,
       metadata: { hostname },
     });
-    return c.json(await domainObject(row), 200);
+    return c.json(await domainObject(row, dmarcReportDomain), 200);
   });
 
   router.openapi(deleteTrackingDomainRoute, async (c) => {
@@ -452,7 +537,7 @@ export function createDomainRoutes(
       target: { type: "domain", id: row.id, label: row.name },
       environmentScoped: false,
     });
-    return c.json(await domainObject(row), 200);
+    return c.json(await domainObject(row, dmarcReportDomain), 200);
   });
 
   router.openapi(createReceivingDomainRoute, async (c) => {
@@ -478,7 +563,7 @@ export function createDomainRoutes(
       target: { type: "domain", id: row.id, label: row.name },
       metadata: { hostname: created.hostname },
     });
-    return c.json(await domainObject(row), 200);
+    return c.json(await domainObject(row, dmarcReportDomain), 200);
   });
 
   router.openapi(deleteReceivingDomainRoute, async (c) => {
@@ -492,7 +577,36 @@ export function createDomainRoutes(
       environmentScoped: false,
       metadata: { hostname: removed.hostname },
     });
-    return c.json(await domainObject(row), 200);
+    return c.json(await domainObject(row, dmarcReportDomain), 200);
+  });
+
+  router.openapi(getDomainDmarcRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const row = await requireDomain(c.var.auth.organizationId, id);
+    return c.json(await dmarcOverview(row, dmarcReportDomain), 200);
+  });
+
+  router.openapi(listDomainDmarcReportsRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const query = c.req.valid("query");
+    const { organizationId } = c.var.auth;
+    const row = await requireDomain(organizationId, id);
+    const page = await listDmarcReports({
+      organizationId,
+      domainId: row.id,
+      limit: query.limit ?? DEFAULT_DMARC_REPORT_LIST_LIMIT,
+      after: query.after,
+    });
+    return c.json({ object: "list" as const, data: page.data, has_more: page.hasMore }, 200);
+  });
+
+  router.openapi(getDomainDmarcReportRoute, async (c) => {
+    const { id, report_id: reportId } = c.req.valid("param");
+    const { organizationId } = c.var.auth;
+    const row = await requireDomain(organizationId, id);
+    const report = await getDmarcReport({ organizationId, domainId: row.id, id: reportId });
+    if (!report) throw notFound("No DMARC report with this id exists for this domain.");
+    return c.json(report, 200);
   });
 
   return router;

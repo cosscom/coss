@@ -188,7 +188,14 @@ export function createEmailRuntime(
     identity,
     dns,
     trackingHostnames,
-    domainDeps: { identity, dns, tracking: trackingHostnames, plans: extras.plans },
+    domainDeps: {
+      identity,
+      dns,
+      tracking: trackingHostnames,
+      plans: extras.plans,
+      // DMARC reports arrive through receiving, at the managed inbound domain.
+      dmarcReportDomain: inbound?.managedDomain ?? null,
+    },
     inbound,
   };
 }

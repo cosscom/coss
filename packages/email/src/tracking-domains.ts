@@ -140,6 +140,7 @@ export async function listTrackingDomains(input: {
 export async function domainObjects(
   organizationId: string,
   rows: DomainRow[],
+  dmarcReportDomain: string | null = null,
 ): Promise<DomainObjectOutput[]> {
   const domainIds = rows.map((row) => row.id);
   const [tracking, receiving] = await Promise.all([
@@ -153,12 +154,16 @@ export async function domainObjects(
       row,
       tracked ? toTrackingDomainObject(tracked) : null,
       received ? toReceivingDomainObject(received) : null,
+      dmarcReportDomain,
     );
   });
 }
 
-export async function domainObject(row: DomainRow): Promise<DomainObjectOutput> {
-  const [object] = await domainObjects(row.organizationId, [row]);
+export async function domainObject(
+  row: DomainRow,
+  dmarcReportDomain: string | null = null,
+): Promise<DomainObjectOutput> {
+  const [object] = await domainObjects(row.organizationId, [row], dmarcReportDomain);
   if (!object) throw new Error("Domain object missing.");
   return object;
 }
