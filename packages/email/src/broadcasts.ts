@@ -930,12 +930,15 @@ async function finishStep(
   return updated ?? null;
 }
 
+/** Fails the broadcast; the emails nobody claimed yet are dropped with it, as on a cancel. */
 async function failBroadcast(
   row: BroadcastRow,
   lease: Date,
   error: { code: string; message: string },
   now: Date,
+  billing: UsageGate | undefined,
 ): Promise<void> {
+  const mode = await modeOf(row);
   await db.transaction(async (tx) => {
     const failed = await finishStep(tx, row, lease, {
       status: "failed",
@@ -944,7 +947,9 @@ async function failBroadcast(
       completedAt: now,
       nextRunAt: null,
     });
-    if (failed) await announce(tx, failed, "broadcast.failed", now);
+    if (!failed) return;
+    await dropUnclaimed(tx, failed, billing, mode);
+    await announce(tx, failed, "broadcast.failed", now);
   });
 }
 
@@ -985,6 +990,7 @@ async function step(
         message: `${row.from} is not on a verified domain of this organization.`,
       },
       now,
+      deps.billing,
     );
     return;
   }
@@ -1019,7 +1025,13 @@ async function step(
   } catch (error) {
     // Its audience, segment or topic is gone (deleted despite the check, in a race).
     if (!(error instanceof ContactError)) throw error;
-    await failBroadcast(row, lease, { code: "target_unavailable", message: error.message }, now);
+    await failBroadcast(
+      row,
+      lease,
+      { code: "target_unavailable", message: error.message },
+      now,
+      deps.billing,
+    );
   }
 }
 
@@ -1058,6 +1070,7 @@ async function start(
             message: "The broadcast couldn't be screened, so it wasn't sent.",
           },
           now,
+          deps.billing,
         );
       } else {
         await finishStep(db, row, lease, {
@@ -1078,6 +1091,7 @@ async function start(
         lease,
         { code: "content_rejected", message: "The broadcast was blocked by content screening." },
         now,
+        deps.billing,
       );
       return;
     }

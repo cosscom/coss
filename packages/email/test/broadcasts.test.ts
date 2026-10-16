@@ -700,6 +700,38 @@ describe("broadcasts", () => {
     ]);
   });
 
+  test("live: a broadcast that fails drops its queued emails", async () => {
+    const f = await fixture({ live: true });
+    const deps: BroadcastWorkerDeps = {
+      ...f.deps,
+      screen: async () => ({ action: "send", screening: null }),
+    };
+    const broadcast = await f.create({ send: true });
+    const run = async () => {
+      await db
+        .update(schema.broadcast)
+        .set({ nextRunAt: new Date(0) })
+        .where(eq(schema.broadcast.id, broadcast.id));
+      await runDueBroadcasts(deps, { scope: f.scope });
+    };
+    await run();
+    await run();
+    expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(3);
+    // Its From domain stops being verified: the broadcast fails, and its queue goes with it.
+    await db
+      .update(schema.domain)
+      .set({ status: "failed" })
+      .where(eq(schema.domain.organizationId, f.tenant.organization.id));
+    await run();
+    expect(await getBroadcastRow(f.env, broadcast.id)).toMatchObject({
+      status: "failed",
+      errorCode: "domain_not_verified",
+    });
+    expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(0);
+    await f.drain();
+    expect(f.provider.sent).toHaveLength(0);
+  });
+
   test("live: a screening block fails it; a held screening retries", async () => {
     const f = await fixture({ live: true });
     let verdict: "error" | "blocked" = "error";
