@@ -22,6 +22,19 @@ export function broadcastThrottle(
   };
 }
 
+/** Gives back recipients `broadcastThrottle` charged that a fan-out step didn't make. */
+export function broadcastThrottleRefund(
+  limiter: RateLimiter,
+): NonNullable<BroadcastWorkerDeps["refundThrottle"]> {
+  return ({ organizationId, count }) =>
+    limiter.refund({
+      buckets: ["email.marketing.recipients.second", "email.recipients.day"],
+      subject: organizationId,
+      organizationId,
+      cost: count,
+    });
+}
+
 /** The plan's marketing rate, in recipients per second (sizes each batch). */
 export function broadcastPlanRate(opts: {
   systemOrganizationId: () => string | null;

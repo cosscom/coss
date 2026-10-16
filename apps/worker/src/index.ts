@@ -33,7 +33,11 @@ import { type ScreenInput, screenMessage } from "@coss/screening";
 import { createClassifier } from "@coss/screening/runtime";
 import { createWebhookSender, parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
-import { broadcastPlanRate, broadcastThrottle } from "./broadcast-throttle.ts";
+import {
+  broadcastPlanRate,
+  broadcastThrottle,
+  broadcastThrottleRefund,
+} from "./broadcast-throttle.ts";
 import { env } from "./env.ts";
 import { hookThrottle } from "./hooks-throttle.ts";
 import { dmarcReportQuota, inboundQuota, type SesInboundDeps } from "./inbound.ts";
@@ -213,6 +217,7 @@ const loops = startJobs({
     liveProvider: email.liveProvider.name,
     billing: usage,
     throttle: broadcastThrottle(rateLimits.limiter),
+    refundThrottle: broadcastThrottleRefund(rateLimits.limiter),
     planRate: broadcastPlanRate({ systemOrganizationId: () => systemOrganizationId }),
     screen,
   },

@@ -11,6 +11,7 @@ import {
   resumeBroadcast,
   sendBroadcast,
   testBroadcast,
+  testRecipients,
   updateBroadcast,
 } from "@coss/email";
 import {
@@ -25,6 +26,7 @@ import {
   UpdateBroadcastRequest,
 } from "@coss/email/broadcast-schemas";
 import { EmailObject } from "@coss/email/schemas";
+import { emailSendQuota } from "@coss/ratelimit";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { z } from "zod";
@@ -32,7 +34,7 @@ import { recordApiAudit } from "../audit.ts";
 import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
-import { rateLimit } from "../middleware/rate-limit.ts";
+import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, errorDoc, jsonDoc } from "./docs.ts";
 import { idempotencyHeaders, idempotencyHook, idempotentReplayedHeader } from "./idempotency.ts";
@@ -283,6 +285,9 @@ export const testBroadcastRoute = createRoute({
     ...bodyErrors,
     ...commonErrors,
     404: notFoundDoc,
+    429: errorDoc(
+      "The API key's send rate limit (`rate_limited`) or the send quota (`quota_exceeded`) is used up.",
+    ),
     422: errorDoc(
       "The body failed validation, or the emails can't be sent (e.g. `mailing_address_required`, " +
         "`domain_not_verified`).",
@@ -410,8 +415,37 @@ export function createBroadcastRoutes(deps: BroadcastRouteDeps): OpenAPIHono<App
   });
 
   router.openapi(testBroadcastRoute, async (c) => {
-    const ids = await testBroadcast(envOf(c), c.req.valid("param").id, c.req.valid("json"), deps);
-    if (!ids) throw notFound(NOT_FOUND);
+    const body = c.req.valid("json");
+    // Test emails are sends: they count against the send quota like any other, one each.
+    const count = testRecipients(body.to).length;
+    const decision = await c.var.rateLimiter.consume(emailSendQuota(c.var.auth, count));
+    if (!decision.allowed) {
+      throw rateLimitError(decision, {
+        code: "quota_exceeded",
+        message: `The send quota (${decision.bucket}) is used up. Retry after \`Retry-After\` seconds.`,
+      });
+    }
+    // Each email is its own send: what was accepted before a failure stays charged.
+    let sent = 0;
+    const refundUnsent = async () => {
+      if (sent < count) await c.var.rateLimiter.refund(emailSendQuota(c.var.auth, count - sent));
+    };
+    let ids: string[] | null;
+    try {
+      ids = await testBroadcast(envOf(c), c.req.valid("param").id, body, {
+        ...deps,
+        onSent: () => {
+          sent++;
+        },
+      });
+    } catch (error) {
+      await refundUnsent();
+      throw error;
+    }
+    if (!ids) {
+      await refundUnsent();
+      throw notFound(NOT_FOUND);
+    }
     return c.json({ object: "broadcast_test" as const, email_ids: ids }, 200);
   });
 

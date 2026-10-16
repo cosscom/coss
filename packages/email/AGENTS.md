@@ -311,7 +311,7 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `min(500, rate × 5 s)` emails (rate: `rate_per_second` capped by the plan's `email.marketing.recipients.second`),
   waits while `BROADCAST_BACKLOG` of its emails are still queued (the unclaimed sweep would fail a bigger backlog),
   charges `email.marketing.recipients.second` + `email.recipients.day` (live only; a denial puts it off, a batch
-  larger than the bucket is halved), then in one transaction: `resolveRecipients` page → one email + recipient per
+  larger than the bucket is halved; what the step doesn't make is refunded, `refundThrottle`), then in one transaction: `resolveRecipients` page → one email + recipient per
   contact (`ON CONFLICT (broadcast_id, contact_id) DO NOTHING`: reruns never duplicate) → dispatch jobs on the
   marketing queue → `UsageGate.reserve` → `recipients` counter → cursor. It is `sent` once nothing is left to make or
   queued. Pausing or canceling deletes the emails nobody claimed yet (`queued`, no provider), gives back their
@@ -320,7 +320,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `mailing_address_required` wait for Resume; an unverified From fails it. **Broadcast emails store no body**: the
   rendered subject, `variables` (only the template's `{{{contact.<key>|fallback}}}` keys) and `contact_id`; dispatch
   and every read render the broadcast's frozen content (`withRenderedBody`; dispatch caches it per process), then
-  the marketing footer and tracking apply as for any marketing email; they skip per-email screening, and an SES
+  the marketing footer and tracking apply as for any marketing email; they skip per-email screening, marketing email's consent is checked again at its dispatch claim
+  (`skippedRecipients`, as for scheduled sends: a broadcast's queue can be minutes long), and an SES
   throttle (`ThrottledSendError`) hands a marketing email back for a later dispatch instead of failing it. Counters
   (`broadcast_stat`, 16 shards by email id, summed on read; they outlive the emails): `recipients` at fan-out,
   `sent`/`delivered`/`bounced`/`complained`/`failed` from **recipient status moves** in `recordProviderEvent`

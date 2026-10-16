@@ -444,6 +444,73 @@ describe("broadcasts", () => {
     expect(BROADCAST_BACKLOG).toBeGreaterThan(0);
   });
 
+  test("consent is checked again when a queued broadcast email is dispatched", async () => {
+    const f = await fixture();
+    const broadcast = await f.create({ send: true });
+    // Fan out without dispatching, then Bob unsubscribes and Cy is suppressed.
+    for (let step = 0; step < 3; step++) {
+      await db
+        .update(schema.broadcast)
+        .set({ nextRunAt: new Date(0) })
+        .where(eq(schema.broadcast.id, broadcast.id));
+      await runDueBroadcasts(f.deps, { scope: f.scope });
+    }
+    expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(3);
+    await upsertContact(
+      f.env,
+      UpsertContactRequest.parse({ email: "bob@example.com", status: "unsubscribed" }),
+      { source: "api" },
+    );
+    await addSuppression(f.env, { address: "cy@example.com", scope: "*" });
+    await f.drain();
+    expect(f.provider.sent.map((message) => message.to)).toEqual([["ada@example.com"]]);
+    const emails = await emailsOf(f.tenant.organization.id, broadcast.id);
+    expect(emails.filter((row) => row.status === "failed")).toHaveLength(2);
+    const { unsubscribed: _, ...stats } = (await getBroadcast(f.env, broadcast.id))?.stats ?? {};
+    expect(await recountBroadcastStats(f.tenant.organization.id, broadcast.id)).toEqual(
+      stats as Awaited<ReturnType<typeof recountBroadcastStats>>,
+    );
+  });
+
+  test("live: the pace charged for emails a step didn't make is given back", async () => {
+    const f = await fixture({ live: true });
+    const charges: number[] = [];
+    const refunds: number[] = [];
+    const deps: BroadcastWorkerDeps = {
+      ...f.deps,
+      screen: async () => ({ action: "send", screening: null }),
+      throttle: async ({ count }) => {
+        charges.push(count);
+        return { allowed: true, retryAfterMs: null };
+      },
+      refundThrottle: async ({ count }) => {
+        refunds.push(count);
+      },
+      planRate: async () => 10,
+    };
+    const broadcast = await f.create({ send: true });
+    const run = async () => {
+      await db
+        .update(schema.broadcast)
+        .set({ nextRunAt: new Date(0) })
+        .where(eq(schema.broadcast.id, broadcast.id));
+      await runDueBroadcasts(deps, { scope: f.scope });
+    };
+    await run();
+    await run();
+    expect(charges).toEqual([3]);
+    expect(refunds).toEqual([]);
+    // A rewound cursor finds contacts that already have their email: nothing new, all refunded.
+    await db
+      .update(schema.broadcast)
+      .set({ cursor: null })
+      .where(eq(schema.broadcast.id, broadcast.id));
+    await run();
+    expect(charges).toEqual([3, 3]);
+    expect(refunds).toEqual([3]);
+    expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(3);
+  });
+
   test("live: a screening block fails it; a held screening retries", async () => {
     const f = await fixture({ live: true });
     let verdict: "error" | "blocked" = "error";

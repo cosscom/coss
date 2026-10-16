@@ -48,7 +48,7 @@ import { authorizeLiveSender } from "./domains.ts";
 import { ContactError, EmailError } from "./errors.ts";
 import { getMarketingSettingsRow } from "./marketing-settings.ts";
 import { selectEmailsWithMode, toEmailObjects } from "./read.ts";
-import { type EmailObjectOutput, SendEmailRequest } from "./schemas.ts";
+import { addressKey, type EmailObjectOutput, SendEmailRequest } from "./schemas.ts";
 import { emailScreeningContent } from "./screening.ts";
 import type { EmailService, SendEnvironment } from "./service.ts";
 import { topicsByKey } from "./topics.ts";
@@ -725,7 +725,11 @@ export async function testBroadcast(
   env: BroadcastEnvironment & { apiKeyId: string | null },
   id: string,
   input: { to: string[]; contact?: string },
-  deps: { emailService: Pick<EmailService, "send"> },
+  deps: {
+    emailService: Pick<EmailService, "send">;
+    /** Called after each email is accepted (callers charge quotas per email: see `testRecipients`). */
+    onSent?: (emailId: string) => void;
+  },
 ): Promise<string[] | null> {
   const row = await getBroadcastRow(env, id);
   if (!row) return null;
@@ -739,7 +743,7 @@ export async function testBroadcast(
       );
   const content = renderBroadcast(contentOf(row), variables);
   const ids: string[] = [];
-  for (const to of input.to) {
+  for (const to of testRecipients(input.to)) {
     const { email: sent } = await deps.emailService.send({
       environment: env,
       apiKeyId: env.apiKeyId,
@@ -755,8 +759,14 @@ export async function testBroadcast(
       }),
     });
     ids.push(sent.id);
+    deps.onSent?.(sent.id);
   }
   return ids;
+}
+
+/** The addresses a test send goes to: one email per address, however often it is listed. */
+export function testRecipients(to: readonly string[]): string[] {
+  return [...new Map(to.map((value) => [addressKey(value), value])).values()];
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -787,6 +797,8 @@ export type BroadcastWorkerDeps = {
     organizationId: string;
     count: number;
   }) => Promise<{ allowed: boolean; retryAfterMs: number | null }>;
+  /** Gives back what `throttle` charged for recipients a step didn't make emails for. */
+  refundThrottle?: (input: { organizationId: string; count: number }) => Promise<void>;
   /** Content screening (`screenMessage`), once per live broadcast. */
   screen?: (input: ScreenInput) => Promise<ScreenOutcome>;
   /** The plan's marketing rate (recipients per second) of an organization. */
@@ -1075,13 +1087,17 @@ async function fanOut(
     return;
   }
   let recipients = page.recipients;
+  let charged = 0;
   if (mode === "live" && deps.throttle) {
     for (;;) {
       const decision = await deps.throttle({
         organizationId: row.organizationId,
         count: recipients.length,
       });
-      if (decision.allowed) break;
+      if (decision.allowed) {
+        charged = recipients.length;
+        break;
+      }
       // Larger than the bucket (a lower override than the plan's rate): a smaller batch.
       if (decision.retryAfterMs === null && recipients.length > 1) {
         recipients = recipients.slice(0, Math.ceil(recipients.length / 2));
@@ -1096,15 +1112,18 @@ async function fanOut(
   const keys = templateKeys(row.subject, row.html, row.text);
   const definitions = await propertyDefinitions(env);
   const last = recipients.at(-1) as ContactRecipient;
+  // Only the emails a committed step made use the pace: the rest of the charge (contacts that
+  // already had one after a rewind, or a step that didn't commit) is given back.
+  let made = 0;
   try {
-    await db.transaction(async (tx) => {
+    made = await db.transaction(async (tx) => {
       // Fenced: a worker whose lease was taken over inserts nothing.
       const [owned] = await tx
         .select({ id: broadcast.id })
         .from(broadcast)
         .where(and(eq(broadcast.id, row.id), eq(broadcast.leaseUntil, lease)))
         .for("update");
-      if (!owned) return;
+      if (!owned) return 0;
       const inserted = await insertEmails(tx, row, recipients, keys, definitions, now);
       if (mode === "live" && inserted.length > 0) {
         await deps.billing?.reserve(tx, {
@@ -1131,6 +1150,7 @@ async function fanOut(
         materialized: sql`${broadcast.materialized} + ${inserted.length}` as unknown as number,
         nextRunAt: later(BROADCAST_STEP_MS),
       });
+      return inserted.length;
     });
   } catch (error) {
     if ((error as { code?: string }).code === "usage_limit_exceeded") {
@@ -1138,6 +1158,10 @@ async function fanOut(
       return;
     }
     throw error;
+  } finally {
+    if (charged > made) {
+      await deps.refundThrottle?.({ organizationId: row.organizationId, count: charged - made });
+    }
   }
 }
 

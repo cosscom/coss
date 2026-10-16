@@ -39693,7 +39693,7 @@
             }
           },
           "429": {
-            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "description": "The API key's send rate limit (`rate_limited`) or the send quota (`quota_exceeded`) is used up.",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -39702,12 +39702,6 @@
                   "examples": [
                     "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
                   ]
-                }
-              },
-              "Retry-After": {
-                "description": "Seconds to wait before retrying.",
-                "schema": {
-                  "type": "integer"
                 }
               }
             },

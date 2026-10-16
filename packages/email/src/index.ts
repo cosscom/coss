@@ -56,6 +56,7 @@ export {
   runDueBroadcasts,
   sendBroadcast,
   testBroadcast,
+  testRecipients,
   toBroadcastObject,
   updateBroadcast,
 } from "./broadcasts.ts";

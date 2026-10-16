@@ -418,6 +418,34 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     // Claim the email first so concurrent dispatchers (e.g. a retried job) never send it twice.
     // `provider` is only ever set by this claim. A crash after the claim leaves the row `queued`
     // with a provider: the worker's stale-claim sweep resolves it.
+    const unclaimed = and(
+      eq(email.id, row.id),
+      eq(email.organizationId, row.organizationId),
+      eq(email.status, "queued"),
+      isNull(email.provider),
+    );
+    if (row.stream === "marketing") {
+      // Marketing email can wait in its queue for a while (a broadcast's backlog): consent is
+      // checked again at the claim, as for a scheduled send.
+      const claimed = await db.transaction(async (tx) => {
+        const [claimedRow] = await tx
+          .update(email)
+          .set({
+            provider: provider.name,
+            dedicatedPool: sandbox
+              ? false
+              : dedicatedPoolSql(row.organizationId, provider.name, row.stream),
+          })
+          .where(unclaimed)
+          .returning();
+        if (!claimedRow) return undefined;
+        await skipIneligibleRecipients(tx, claimedRow);
+        await freezeBillableRecipients(tx, claimedRow);
+        return claimedRow;
+      });
+      if (claimed) await complete(claimed, provider, sandbox);
+      return currentEmail(row);
+    }
     const [claimed] = await db
       .update(email)
       .set({
@@ -427,18 +455,37 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           ? false
           : dedicatedPoolSql(row.organizationId, provider.name, row.stream),
       })
-      .where(
-        and(
-          eq(email.id, row.id),
-          eq(email.organizationId, row.organizationId),
-          eq(email.status, "queued"),
-          isNull(email.provider),
-        ),
-      )
+      .where(unclaimed)
       .returning({ id: email.id, dedicatedPool: email.dedicatedPool });
     if (!claimed) return currentEmail(row);
     await complete({ ...row, dedicatedPool: claimed.dedicatedPool }, provider, sandbox);
     return currentEmail(row);
+  }
+
+  /**
+   * At a dispatch claim: the email's still-queued recipients suppressed (or, for marketing,
+   * unsubscribed) since the send was accepted become `suppressed`, with their events.
+   */
+  async function skipIneligibleRecipients(tx: Transaction, claimedRow: EmailRow): Promise<void> {
+    const pending = await tx
+      .select({ address: emailRecipient.address })
+      .from(emailRecipient)
+      .where(
+        and(
+          eq(emailRecipient.organizationId, claimedRow.organizationId),
+          eq(emailRecipient.emailId, claimedRow.id),
+          eq(emailRecipient.status, "queued"),
+        ),
+      );
+    const skipped = await skippedRecipients(
+      tx,
+      claimedRow,
+      pending.map((recipient) => recipient.address),
+      { category: claimedRow.category, stream: claimedRow.stream },
+    );
+    for (const [address, skip] of skipped) {
+      await recordProviderEvent(tx, suppressedEvent(claimedRow, address, skip));
+    }
   }
 
   /** Why content screening refuses a live email. Unexpected enforcement failures fail closed. */
@@ -716,27 +763,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         .where(stillDue)
         .returning();
       if (!claimedRow) return undefined;
-      const pending = await tx
-        .select({ address: emailRecipient.address })
-        .from(emailRecipient)
-        .where(
-          and(
-            eq(emailRecipient.organizationId, row.organizationId),
-            eq(emailRecipient.emailId, row.id),
-            eq(emailRecipient.status, "queued"),
-          ),
-        );
       // Again at the claim: an address suppressed (or a contact who unsubscribed) since the
       // send was accepted is skipped too.
-      const skipped = await skippedRecipients(
-        tx,
-        claimedRow,
-        pending.map((recipient) => recipient.address),
-        { category: claimedRow.category, stream: claimedRow.stream },
-      );
-      for (const [address, skip] of skipped) {
-        await recordProviderEvent(tx, suppressedEvent(claimedRow, address, skip));
-      }
+      await skipIneligibleRecipients(tx, claimedRow);
       await freezeBillableRecipients(tx, claimedRow);
       return claimedRow;
     });

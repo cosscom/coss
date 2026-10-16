@@ -1,6 +1,8 @@
 /** Broadcasts through the built SDK against the in-process API, then the worker's fan-out. */
 import { describe, expect, test } from "bun:test";
 import { runDueBroadcasts } from "@coss/email";
+import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
+import { memoryLimiter } from "@coss/ratelimit/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { Coss } from "coss";
 import { createTestApp, type TestApp } from "./helpers.ts";
@@ -127,5 +129,33 @@ describe("coss.email.broadcasts against the API", () => {
       id,
       deleted: true,
     });
+  });
+
+  test("test sends charge the send quota once per address", async () => {
+    const tenant = await createTestTenant();
+    await setRateLimitOverride({
+      organizationId: tenant.organization.id,
+      bucket: "email.sandbox_recipients.day",
+      rule: { limit: 2, periodMs: 86_400_000 },
+    });
+    const { app } = createTestApp({ rateLimiter: memoryLimiter({ overrides: cachedOverrides() }) });
+    const coss = clientFor(app, tenant.sandboxKey);
+    await coss.email.marketingSettings.update({ mailing_address: "1 Main St" });
+    const audience = await coss.email.audiences.create({ name: "Everyone" });
+    const created = await coss.email.broadcasts.create({
+      name: "Quota",
+      audience_id: audience.data?.id as string,
+      from: "news@acme.test",
+      subject: "S",
+      text: "T",
+    });
+    const id = created.data?.id as string;
+    // One address listed twice is one email, charged once.
+    const twice = await coss.email.broadcasts.test(id, { to: ["me@acme.test", "ME@acme.test"] });
+    expect(twice.data?.email_ids).toHaveLength(1);
+    const over = await coss.email.broadcasts.test(id, { to: ["a@acme.test", "b@acme.test"] });
+    expect(over.error).toMatchObject({ status: 429, code: "quota_exceeded" });
+    const last = await coss.email.broadcasts.test(id, { to: ["a@acme.test"] });
+    expect(last.data?.email_ids).toHaveLength(1);
   });
 });
