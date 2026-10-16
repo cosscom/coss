@@ -38,7 +38,14 @@ const SIZES = {
   lg: { main: "px-5", chevron: "w-10 px-0 sm:w-9" },
 } as const;
 
-export function SignUpButton({ size = "default" }: { size?: keyof typeof SIZES }) {
+export function SignUpButton({
+  size = "default",
+  label = "Sign up with GitHub",
+}: {
+  size?: keyof typeof SIZES;
+  /** The main half's text; the attached menu still offers Google and email. */
+  label?: string;
+}) {
   const [pending, setPending] = useState<Provider | null>(null);
   const groupRef = useRef<HTMLDivElement>(null);
 
@@ -56,7 +63,7 @@ export function SignUpButton({ size = "default" }: { size?: keyof typeof SIZES }
         size={size}
       >
         <HugeiconsIcon icon={GithubIcon} strokeWidth={2} />
-        Sign up with GitHub
+        {label}
       </Button>
       <Menu>
         <MenuTrigger

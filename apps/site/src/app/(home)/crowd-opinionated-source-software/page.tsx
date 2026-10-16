@@ -1,5 +1,6 @@
 import { Button } from "@coss/ui/components/button";
 import {
+  AnchorIcon,
   CheckIcon,
   FactoryIcon,
   GlobeIcon,
@@ -11,6 +12,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ComponentType, ReactNode } from "react";
 import { AutoReview } from "@/components/coss-landing/auto-review";
+import { ContributorProfile } from "@/components/coss-landing/contributor-profile";
+import {
+  ClaudeLogo,
+  DevinLogo,
+  FactoryLogo,
+  T3Logo,
+} from "@/components/coss-landing/factory-logos";
 import { Decisions, Factory, Preview, PromptSwap } from "@/components/coss-landing/flow-steps";
 import { Guardrails } from "@/components/coss-landing/guardrails";
 import { LaunchRepos } from "@/components/coss-landing/launch-repos";
@@ -53,7 +61,9 @@ export default function CrowdOpinionatedSourcePage() {
       <Manifesto />
       <Flow />
       <Controls />
+      <Factories />
       <Opinionated />
+      <Hiring />
       <Close />
     </main>
   );
@@ -77,11 +87,16 @@ function Hero() {
             Contribute in English, not code. The maintainers decide, their software factory builds,
             and everyone watches it ship.
           </p>
-          <div className="flex flex-wrap gap-2.5">
-            <SignUpButton />
-            <Button className="px-4" render={<Link href="#prompt-requests" />} variant="outline">
-              How it works
-            </Button>
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap gap-2.5">
+              <SignUpButton label="Migrate from GitHub" />
+              <Button className="px-4" render={<Link href="#prompt-requests" />} variant="outline">
+                How it works
+              </Button>
+            </div>
+            <p className="font-mono text-muted-foreground text-xs">
+              We import stars and contributors, too!
+            </p>
           </div>
         </div>
       </div>
@@ -153,10 +168,18 @@ function PromptRequestCard() {
   );
 }
 
-function SectionHead({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+function SectionHead({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <div className="grid gap-4 px-4 pt-16 pb-10 sm:px-8 sm:pt-24 lg:grid-cols-12 lg:gap-10">
-      <h2 className="font-semibold text-4xl tracking-[-0.03em] sm:text-5xl lg:col-span-5" id={id}>
+      <h2 className="font-semibold text-4xl tracking-[-0.03em] sm:text-5xl lg:col-span-6" id={id}>
         {title}
       </h2>
       <div className="max-w-xl text-lg text-muted-foreground leading-snug lg:col-span-6 lg:col-start-7 lg:pt-2">
@@ -169,9 +192,9 @@ function SectionHead({ id, title, children }: { id: string; title: string; child
 function Video() {
   return (
     <section aria-labelledby="video-title" className="border-b">
-      <SectionHead id="video-title" title="Watch the idea">
+      <SectionHead id="video-title" title="Why open source is dead.">
         Why the next GitHub won't look like GitHub, and what contributing looks like when nobody
-        writes the code by hand.
+        writes the code by hand and when open source code is easier to hack than closed source.
       </SectionHead>
       <div className="drafting-grid border-t px-4 py-10 sm:px-8 sm:py-14">
         <figure className="mx-auto flex w-full max-w-5xl flex-col gap-3">
@@ -280,7 +303,14 @@ const STEPS = [
 function Flow() {
   return (
     <section aria-labelledby="flow-title" className="scroll-mt-14 border-b" id="prompt-requests">
-      <SectionHead id="flow-title" title="Open a Prompt Request, not a pull request">
+      <SectionHead
+        id="flow-title"
+        title={
+          <>
+            Open a <span className="whitespace-nowrap">Prompt Request</span>, not a pull request
+          </>
+        }
+      >
         Contribute in English, not code. A Prompt Request is an idea with a decision attached, and a
         software factory waiting at the other end.
       </SectionHead>
@@ -383,10 +413,100 @@ function Controls() {
   );
 }
 
+const FACTORIES: {
+  name: string;
+  site: string;
+  href?: string;
+  note: string;
+  logo: ComponentType<{ className?: string }>;
+}[] = [
+  {
+    logo: AnchorIcon,
+    name: SHIPYARD.name,
+    site: "coss.com/shipyard",
+    href: SHIPYARD.path,
+    note: "Coding agents on your own boxes",
+  },
+  {
+    logo: DevinLogo,
+    name: "Devin",
+    site: "devin.ai",
+    href: "https://devin.ai",
+    note: "Cognition's autonomous engineer",
+  },
+  {
+    logo: FactoryLogo,
+    name: "Factory",
+    site: "factory.com",
+    href: "https://factory.com",
+    note: "Droids for the whole lifecycle",
+  },
+  {
+    logo: ClaudeLogo,
+    name: "Claude Code",
+    site: "claude.com/claude-code",
+    href: "https://claude.com/claude-code",
+    note: "Anthropic's agentic coding tool",
+  },
+  {
+    logo: T3Logo,
+    name: "T3 Code",
+    site: "github.com/pingdotgg/t3code",
+    href: "https://github.com/pingdotgg/t3code",
+    note: "Open-source control plane for agents",
+  },
+  {
+    logo: FactoryIcon,
+    name: "Any factory",
+    site: "yours",
+    note: "If it takes a prompt and ships a change, it fits",
+  },
+];
+
+function Factories() {
+  return (
+    <section aria-labelledby="factories-title" className="border-b">
+      <SectionHead id="factories-title" title="You bring the factory">
+        We provide the collaboration layer. Prompt Requests, decisions, guardrails and previews live
+        on coss.com; the building happens wherever you already build. Compatible with any software
+        factory.
+      </SectionHead>
+      <ul className="grid border-t sm:grid-cols-2 lg:grid-cols-3">
+        {FACTORIES.map((factory) => {
+          return (
+            <li
+              className="flex flex-col gap-4 border-b px-4 py-6 last:border-b-0 sm:px-8 sm:odd:border-r sm:[&:nth-last-child(-n+2)]:border-b-0 lg:odd:border-r-0 lg:[&:not(:nth-child(3n))]:border-r lg:[&:nth-last-child(-n+3)]:border-b-0"
+              key={factory.name}
+            >
+              <factory.logo className="size-7" />
+              <div className="flex items-baseline justify-between gap-4">
+                <h3 className="font-semibold text-xl tracking-[-0.01em]">
+                  {!factory.href ? (
+                    factory.name
+                  ) : factory.href.startsWith("https://") ? (
+                    <a href={factory.href} rel="noreferrer" target="_blank">
+                      {factory.name}
+                    </a>
+                  ) : (
+                    <Link href={factory.href}>{factory.name}</Link>
+                  )}
+                </h3>
+                <span className="font-mono text-muted-foreground text-xs">{factory.site}</span>
+              </div>
+              <p className="-mt-2.5 text-muted-foreground leading-snug">{factory.note}</p>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 const PRINCIPLES: [string, string][] = [
   ["Who contributes", "Everyone, in English"],
   ["Who decides", "The maintainers"],
   ["Who writes the code", "The software factory"],
+  ["Which factory", "Any: you bring it"],
   ["Who checks it works", "End-to-end tests and AI QA"],
   ["Who sees the result", "Everyone, with a preview URL"],
   ["Whose software it is", "Still the maintainers'"],
@@ -415,6 +535,49 @@ function Opinionated() {
   );
 }
 
+const SHIFTS: { title: string; body: string }[] = [
+  {
+    title: "What, not how",
+    body: "Software engineering is turning into product engineering: deciding what to build, for whom and why. State-of-the-art models take care of the how.",
+  },
+  {
+    title: "The best ideas win",
+    body: "A new era of hiring. It used to reward the best code; now it rewards the best ideas, and the taste to approve the right ones.",
+  },
+  {
+    title: "GitHub for hiring is broken",
+    body: "A contribution graph only shows the how: commits, lines, languages. Since AI, that is the part that tells you nothing. Prompt to Production shows what somebody decided, and what shipped.",
+  },
+];
+
+function Hiring() {
+  return (
+    <section aria-labelledby="hiring-title" className="border-b">
+      <SectionHead id="hiring-title" title="The best ideas win, not the best code">
+        Your coss.com profile is a record of product decisions: the prompts you opened, the ones you
+        approved, and what made it to production. The new résumé of a product engineer.
+      </SectionHead>
+      <div className="drafting-grid flex justify-center border-t px-4 py-12 sm:px-8">
+        <ContributorProfile />
+      </div>
+      <div className="grid grid-cols-1 border-t md:grid-cols-3">
+        {SHIFTS.map((shift, index) => (
+          <article
+            className="flex flex-col gap-3 border-b px-4 py-8 last:border-b-0 sm:px-8 md:border-r md:border-b-0 md:last:border-r-0"
+            key={shift.title}
+          >
+            <span className="font-mono text-muted-foreground text-xs">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <h3 className="font-semibold text-2xl tracking-[-0.02em]">{shift.title}</h3>
+            <p className="max-w-md text-muted-foreground leading-snug">{shift.body}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Close() {
   return (
     <section
@@ -426,14 +589,15 @@ function Close() {
           className="max-w-4xl text-balance font-semibold text-[clamp(2.5rem,6vw,4.75rem)] leading-[0.95] tracking-[-0.035em]"
           id="close-title"
         >
-          Launch your repository on coss.com.
+          Bring the recipe, we provide the oven.
         </h2>
         <p className="max-w-xl text-lg text-muted-foreground">
-          Every repository, private or public, can launch on coss.com today. Bring your guardrails
-          and your opinions; the crowd brings the prompts.
+          An open, collaborative platform for both (previously) open source and closed source
+          projects. Anyone can contribute, without your code or your security ever at risk. Launch
+          your repository, private or public, on coss.com today.
         </p>
         <div className="flex flex-wrap gap-2.5">
-          <SignUpButton size="lg" />
+          <SignUpButton label="Migrate from GitHub" size="lg" />
           <Button
             className="px-5"
             render={<Link href={SHIPYARD.path} />}
