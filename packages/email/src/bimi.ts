@@ -51,7 +51,8 @@ function policyOf(value: string | undefined): DmarcPolicy {
 
 /**
  * The domain's own DMARC record, else the nearest parent's (DMARCbis' tree walk, short of the
- * last label), whose `sp` (else `p`) applies. More than one record at a name means no DMARC.
+ * last label), whose `sp` (else `p`) applies. More than one record at a name, or one that lists
+ * a tag twice (an invalid tag list, as in DKIM), means no DMARC.
  */
 async function dmarcFor(domainName: string, dns: DnsResolver): Promise<Dmarc | null> {
   const labels = domainName.split(".");
@@ -64,6 +65,7 @@ async function dmarcFor(domainName: string, dns: DnsResolver): Promise<Dmarc | n
     const [record] = records;
     if (record === undefined) continue;
     const tags = parseTagList(record);
+    if (tags.duplicate) return null;
     const pct = Number.parseInt(tags.get("pct") ?? "", 10);
     return {
       domain,

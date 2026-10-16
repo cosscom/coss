@@ -1430,7 +1430,7 @@ export type BimiIssueCode = (typeof BIMI_ISSUE_CODES)[number];
 /** What each BIMI issue means, rendered on read (the domain row stores only the codes). */
 export const BIMI_ISSUE_MESSAGES: Record<BimiIssueCode, string> = {
   dmarc_missing:
-    "The domain has no DMARC record (or more than one). BIMI needs DMARC at p=quarantine or p=reject.",
+    "The domain has no valid DMARC record (or more than one). BIMI needs DMARC at p=quarantine or p=reject.",
   dmarc_not_enforced:
     "The domain's DMARC policy is p=none (or sp=none for a subdomain). BIMI needs p=quarantine or p=reject.",
   dmarc_partial:

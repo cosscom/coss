@@ -91,6 +91,19 @@ describe("checkBimi", () => {
     }
   });
 
+  test("a DMARC record that lists a tag twice is invalid", async () => {
+    const dns = fakeDnsResolver({
+      "TXT _dmarc.acme.test": [["v=DMARC1; p=reject; p=none"]],
+      "TXT default._bimi.acme.test": [[RECORD]],
+    });
+
+    expect(await checkBimi("acme.test", dns)).toMatchObject({
+      status: "invalid",
+      dmarcPolicy: null,
+      issues: ["dmarc_missing"],
+    });
+  });
+
   test("two DMARC records at one name mean no DMARC", async () => {
     const dns = fakeDnsResolver({
       "TXT _dmarc.acme.test": [[ENFORCED], ["v=DMARC1; p=none"]],
@@ -279,7 +292,7 @@ describe("toBimiObject", () => {
       },
     });
     expect(object.issues).toEqual([
-      { code: "dmarc_missing", message: expect.stringContaining("no DMARC record") },
+      { code: "dmarc_missing", message: expect.stringContaining("no valid DMARC record") },
     ]);
   });
 });
