@@ -62,6 +62,14 @@ export function planRows(): { label: string; values: string[] }[] {
         return `${second} emails a second, ${day} a day`;
       }),
     },
+    {
+      label: "Marketing rate",
+      values: plans.map((plan) => {
+        if (plan.key === "enterprise") return "Custom";
+        const { limit } = plan.entitlements.rateLimits["email.marketing.recipients.second"];
+        return `${limit.toLocaleString("en-US")} marketing emails a second`;
+      }),
+    },
     ...LIMIT_KEYS.map((key) => ({
       label: LIMIT_LABELS[key],
       values: plans.map((plan) =>

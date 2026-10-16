@@ -128,7 +128,16 @@ and `variables` instead of `subject`, `html` and `text`. Templates can't be comb
 
 `category` says what kind of email this is, such as `"billing"` or `"marketing"` (letters, digits,
 `_` and `-`). Recipients [suppressed](/docs/email/suppressions) for that category, or for every
-email, are skipped. It is stored on the email and included in webhook payloads.
+email, are skipped. It is stored on the email and included in webhook payloads. A category that is
+also a [topic](/docs/email/topics-and-preferences) makes the email that topic's: contacts who opted
+out of it are skipped.
+
+## Streams
+
+`stream` is `"transactional"` (the default) or `"marketing"`. Marketing email goes out on its own
+sending infrastructure and reputation, so its complaints never hold up password resets: it goes to
+one recipient, needs your postal address in the marketing settings, and gets one-click unsubscribe
+headers and a footer from coss.com. See [transactional and marketing email](/docs/email/streams).
 
 ## Sending in batches
 
