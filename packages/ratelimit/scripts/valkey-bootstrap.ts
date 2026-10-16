@@ -209,7 +209,7 @@ if (!cache) {
   await elasticache.send(
     new CreateServerlessCacheCommand({
       ServerlessCacheName: cacheName,
-      Description: "COSS rate limit counters",
+      Description: "coss.com rate limit counters",
       Engine: "valkey",
       MajorEngineVersion: "8",
       SubnetIds: subnetIds,

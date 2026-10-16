@@ -22,7 +22,7 @@ const HOLD_MESSAGES: Record<NonNullable<BillingAlerts["held"]>, string> = {
   delinquent: "An invoice is overdue. Sending resumes as soon as it is paid.",
   spend_limit:
     "This month's usage reached your spend limit. Raise it, or sending resumes next month.",
-  admin: "COSS paused live sending for billing reasons. Contact support.",
+  admin: "coss.com paused live sending for billing reasons. Contact support.",
 };
 
 function Alerts({ data }: { data: OrganizationResponse }) {
@@ -34,7 +34,7 @@ function Alerts({ data }: { data: OrganizationResponse }) {
   if (organization.suspended) {
     alerts.push(
       <Alert
-        description="A COSS administrator suspended this organization, so the dashboard is read-only."
+        description="A coss.com administrator suspended this organization, so the dashboard is read-only."
         key="suspended"
         title="This organization is suspended"
         tone="error"
@@ -44,7 +44,7 @@ function Alerts({ data }: { data: OrganizationResponse }) {
   if (standing.status === "suspended") {
     alerts.push(
       <Alert
-        description={`COSS suspended live sending for this organization (${standing.reason_label?.toLowerCase() ?? "reputation"}). Sandbox keys still work. Contact support to resume sending.`}
+        description={`coss.com suspended live sending for this organization (${standing.reason_label?.toLowerCase() ?? "reputation"}). Sandbox keys still work. Contact support to resume sending.`}
         action={{ label: "View reputation", onPress: openReputation }}
         key="standing"
         title="Live sending is suspended"
@@ -54,7 +54,7 @@ function Alerts({ data }: { data: OrganizationResponse }) {
   } else if (standing.status === "warning") {
     alerts.push(
       <Alert
-        description={`${standing.reason_label ?? "A reputation check"} is approaching the level at which COSS suspends live sending automatically.`}
+        description={`${standing.reason_label ?? "A reputation check"} is approaching the level at which coss.com suspends live sending automatically.`}
         action={{ label: "View reputation", onPress: openReputation }}
         key="standing"
         title="Your sending reputation needs attention"

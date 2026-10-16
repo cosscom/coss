@@ -381,7 +381,7 @@ describe("SesIdentityProvider", () => {
       }),
     ).rejects.toBeInstanceOf(IdentityTakenError);
 
-    // An identity COSS created, left behind without a tenant: recreated with new keys.
+    // An identity coss.com created, left behind without a tenant: recreated with new keys.
     await api.createEmailIdentity({
       EmailIdentity: "orphan.com",
       Tags: [{ Key: "coss_managed", Value: "test" }],
@@ -396,7 +396,7 @@ describe("SesIdentityProvider", () => {
     expect(api.operations()).toContain("deleteEmailIdentity");
   });
 
-  test("never touches identities managed outside COSS (or by another deployment)", async () => {
+  test("never touches identities managed outside coss.com (or by another deployment)", async () => {
     const api = new FakeSesApi();
     const identity = new SesIdentityProvider(api, config);
     const tenant = await identity.ensureTenant({ organizationId: "org_a" });
@@ -708,7 +708,7 @@ describe("parseSesMessage", () => {
     });
   });
 
-  test("ignores what COSS doesn't track and throws on malformed JSON", () => {
+  test("ignores what coss.com doesn't track and throws on malformed JSON", () => {
     expect(parseSesMessage(JSON.stringify({ eventType: "Open", mail: MAIL, open: {} }))).toEqual({
       kind: "ignored",
       reason: "unhandled SES event type Open",
@@ -794,7 +794,7 @@ describe("SES end to end (fake SES)", () => {
       ["b@example.com", "bounced"],
     ]);
 
-    // SES pauses the tenant; COSS refuses live sends until it is re-enabled.
+    // SES pauses the tenant; coss.com refuses live sends until it is re-enabled.
     const [emailTenant] = await db
       .select()
       .from(schema.emailTenant)

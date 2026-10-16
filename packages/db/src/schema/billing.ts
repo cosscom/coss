@@ -378,8 +378,8 @@ export const billingSyncAction = pgEnum("billing_sync_action", [
 ]);
 
 /**
- * An invoice COSS computed. Pushed to the account's provider by the worker (`sync_*`, an outbox)
- * and collected on COSS's own schedule (`next_collection_at`). Outlives the organization.
+ * An invoice coss.com computed. Pushed to the account's provider by the worker (`sync_*`, an outbox)
+ * and collected on coss.com's own schedule (`next_collection_at`). Outlives the organization.
  */
 export const billingInvoice = pgTable(
   "billing_invoice",

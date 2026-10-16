@@ -1,5 +1,5 @@
 /**
- * Every rate limit COSS enforces. A bucket holds `burst` tokens and refills `limit` per `periodMs`
+ * Every rate limit coss.com enforces. A bucket holds `burst` tokens and refills `limit` per `periodMs`
  * (GCRA, see `gcra.ts`): `burst` requests can arrive at once, then the long-run rate applies.
  */
 
@@ -160,7 +160,7 @@ export const BUCKETS = {
     failureMode: "allow",
   },
   // DMARC aggregate reports accepted per organization (one per report message). Report addresses
-  // are published in DNS, so anyone can mail them: this bounds what they can make COSS store.
+  // are published in DNS, so anyone can mail them: this bounds what they can make coss.com store.
   // Fails open like received mail: a store outage must not lose reports.
   "email.dmarc_reports.day": {
     scope: "org",
@@ -396,7 +396,7 @@ export const BUCKETS = {
   // Hooks delivery attempts (charged by the worker; a denied attempt is rescheduled, not failed):
   // per endpoint (its own `rate_limit_per_second` replaces this rule), per organization and
   // destination host (subject `<org>:<host>`), and a global ceiling per destination host so no
-  // set of organizations can turn COSS into a request cannon against one site. They fail open:
+  // set of organizations can turn coss.com into a request cannon against one site. They fail open:
   // the send quotas above already bound what can be queued.
   "hooks.endpoint.attempts": {
     scope: "key",

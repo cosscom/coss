@@ -39,7 +39,7 @@ describe("GET /v1/audit_events", () => {
     });
     await recordOrgAuditEvent({
       organizationId,
-      actor: { type: "system", id: null, label: "COSS support" },
+      actor: { type: "system", id: null, label: "coss.com support" },
       action: "organization.suspended",
     });
     await recordOrgAuditEvent({
@@ -99,7 +99,7 @@ describe("GET /v1/audit_events", () => {
 
   test("a prefix's `_` is matched literally, not as a `LIKE` wildcard", async () => {
     const tenant = await createTestTenant();
-    const actor = { type: "system" as const, id: null, label: "COSS support" };
+    const actor = { type: "system" as const, id: null, label: "coss.com support" };
     for (const action of ["api_key.created", "apixkey.created"]) {
       await recordOrgAuditEvent({ organizationId: tenant.organization.id, actor, action });
     }

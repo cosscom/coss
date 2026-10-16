@@ -19,7 +19,7 @@ const STALE_RECORD = "v=DMARC1; p=quarantine; rua=mailto:stale@acme.test;";
 const DAY = 24 * 60 * 60 * 1000;
 const MANAGED = "inbound.coss.test";
 
-/** Reports of only passing COSS mail, 20 and 2 days ago: ready for quarantine. */
+/** Reports of only passing coss.com mail, 20 and 2 days ago: ready for quarantine. */
 async function healthyReports(row: DomainRow): Promise<void> {
   const address = dmarcReportAddress(row.dmarcReportToken, MANAGED) as string;
   for (const daysAgo of [20, 2]) {
@@ -157,7 +157,7 @@ describe("runDueDmarcNotifications", () => {
     );
   });
 
-  test("skips readiness once the record stops sending reports to COSS", async () => {
+  test("skips readiness once the record stops sending reports to coss.com", async () => {
     const { row, scope, organizationId } = await setup();
     await db
       .update(schema.domain)
@@ -212,7 +212,7 @@ describe("renderDmarcNotification", () => {
       url: "https://coss.test/acme/domains/dom_1/dmarc",
     });
     expect(message.subject).toBe("Mail from acme.test is failing DMARC");
-    expect(message.text).toContain("only 90.0% of the mail acme.test sends through COSS");
+    expect(message.text).toContain("only 90.0% of the mail acme.test sends through coss.com");
     expect(message.html).not.toContain("<script>");
     expect(message.text).toContain("owner or admin of Acme <script> Inc");
   });

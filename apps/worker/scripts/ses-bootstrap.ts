@@ -17,7 +17,7 @@
  *
  * plus least-privilege IAM policies for the api, dashboard and worker (`<name>-api`, …, under the
  * `/coss/` path) and, with `--alert-email`, CloudWatch alarms on the queues sent to that address.
- * Tenants, domain identities and their associations are created by the app at runtime. COSS keeps
+ * Tenants, domain identities and their associations are created by the app at runtime. coss.com keeps
  * its own suppression lists, so SES suppression is turned off for the configuration set and for
  * every existing tenant of this stage, after importing existing suppressions into DATABASE_URL.
  * On upgrades, pause sends/domain changes and drain events before running (see README).
@@ -208,7 +208,7 @@ step(`SQS queue ${queue.url} (dead letters: ${dlq.url})`);
 const { RuleArn: ruleArn } = await events.send(
   new PutRuleCommand({
     Name: `${name}-tenant-status`,
-    Description: "COSS: SES tenant sending status changes",
+    Description: "coss.com: SES tenant sending status changes",
     State: "ENABLED",
     EventPattern: JSON.stringify({
       source: ["aws.ses"],
@@ -537,7 +537,7 @@ async function ensureReceiving(domain: string, region: string) {
     `SES receipt rule set ${ruleSet} (active, rule ${INBOUND_RULE}: scan, S3 ${LANDING_PREFIX})`,
   );
 
-  // The managed domain is COSS's own identity: tagged so the apps' policies can't delete it.
+  // The managed domain is coss.com's own identity: tagged so the apps' policies can't delete it.
   let dkimTokens: string[] = [];
   try {
     const created = await ses.send(
@@ -563,7 +563,7 @@ async function ensureReceiving(domain: string, region: string) {
   };
 }
 
-// 6. Commit historical protection to COSS before disabling any SES lists.
+// 6. Commit historical protection to coss.com before disabling any SES lists.
 let tenantsUpdated: number;
 try {
   tenantsUpdated = await migrateSesSuppressions(ses, { configurationSet: name, tenantPrefix });
@@ -589,7 +589,7 @@ async function ensurePolicy(policyName: string, document: PolicyDocument): Promi
         PolicyName: policyName,
         Path: POLICY_PATH,
         PolicyDocument: json,
-        Description: "COSS email (SES) least-privilege access, managed by ses:bootstrap",
+        Description: "coss.com email (SES) least-privilege access, managed by ses:bootstrap",
       }),
     );
     return `${arn} (created)`;
@@ -659,7 +659,7 @@ if (alertEmail) {
   await alarm({
     AlarmName: `${name}-events-dead-letters`,
     AlarmDescription:
-      "COSS: SES delivery events failed to be recorded 5 times and were dead-lettered. Inspect " +
+      "coss.com: SES delivery events failed to be recorded 5 times and were dead-lettered. Inspect " +
       `${name}-events-dlq, fix the cause, then redrive the messages to ${name}-events.`,
     MetricName: "ApproximateNumberOfMessagesVisible",
     Dimensions: [{ Name: "QueueName", Value: `${name}-events-dlq` }],
@@ -672,7 +672,7 @@ if (alertEmail) {
   await alarm({
     AlarmName: `${name}-events-backlog`,
     AlarmDescription:
-      `COSS: the oldest SES event in ${name}-events is over 15 minutes old; the worker is not ` +
+      `coss.com: the oldest SES event in ${name}-events is over 15 minutes old; the worker is not ` +
       "consuming (down, or missing SQS permissions). Recipient statuses and webhooks are stale.",
     MetricName: "ApproximateAgeOfOldestMessage",
     Dimensions: [{ Name: "QueueName", Value: `${name}-events` }],
@@ -687,7 +687,7 @@ if (alertEmail) {
     await alarm({
       AlarmName: `${name}-inbound-dead-letters`,
       AlarmDescription:
-        "COSS: received emails failed to be recorded 5 times and were dead-lettered (their raw " +
+        "coss.com: received emails failed to be recorded 5 times and were dead-lettered (their raw " +
         `messages stay in landing/ for 21 days). Inspect ${name}-inbound-dlq, fix the cause, then ` +
         `redrive the messages to ${name}-inbound.`,
       MetricName: "ApproximateNumberOfMessagesVisible",
@@ -701,7 +701,7 @@ if (alertEmail) {
     await alarm({
       AlarmName: `${name}-inbound-backlog`,
       AlarmDescription:
-        `COSS: the oldest receipt in ${name}-inbound is over 15 minutes old; the worker is not ` +
+        `coss.com: the oldest receipt in ${name}-inbound is over 15 minutes old; the worker is not ` +
         "consuming it. Received emails and their webhooks are delayed.",
       MetricName: "ApproximateAgeOfOldestMessage",
       Dimensions: [{ Name: "QueueName", Value: `${name}-inbound` }],

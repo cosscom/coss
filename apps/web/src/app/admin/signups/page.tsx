@@ -60,7 +60,7 @@ function Organizations({ user }: { user: AdminUserSummary }) {
 }
 
 /**
- * COSS's own sign-ups as COSS Risk assessed them (`RISK_SIGNUP_ENVIRONMENT_ID`), with the account
+ * coss.com's own sign-ups as coss.com Risk assessed them (`RISK_SIGNUP_ENVIRONMENT_ID`), with the account
  * each one became. Refused sign-ups have no account.
  */
 export default async function AdminSignUpsPage({ searchParams }: PageProps<"/admin/signups">) {
@@ -77,9 +77,9 @@ export default async function AdminSignUpsPage({ searchParams }: PageProps<"/adm
         <Alert variant="warning">
           <AlertTitle>Sign-ups aren't assessed</AlertTitle>
           <AlertDescription>
-            Set RISK_SIGNUP_ENVIRONMENT_ID to a live environment of COSS's own organization to score
-            every sign-up with COSS Risk (disposable and undeliverable addresses, IP reputation,
-            velocity, duplicate mailboxes) and list the decisions here.
+            Set RISK_SIGNUP_ENVIRONMENT_ID to a live environment of coss.com's own organization to
+            score every sign-up with coss.com Risk (disposable and undeliverable addresses, IP
+            reputation, velocity, duplicate mailboxes) and list the decisions here.
           </AlertDescription>
         </Alert>
         <Panel>
@@ -142,7 +142,7 @@ export default async function AdminSignUpsPage({ searchParams }: PageProps<"/adm
   return (
     <div className="flex flex-col gap-6" data-page-width="full">
       <PageHeader
-        description="Every sign-up as COSS Risk assessed it, newest first. Blocked sign-ups were refused and have no account; the address, IP and user agent are kept for 90 days."
+        description="Every sign-up as coss.com Risk assessed it, newest first. Blocked sign-ups were refused and have no account; the address, IP and user agent are kept for 90 days."
         title="Sign-ups"
       />
       <FilterLinks

@@ -1,7 +1,7 @@
 {
   "name": "coss-cli",
   "version": "0.0.0",
-  "description": "The COSS command line: sign in, send test emails, tail your environment's log, and forward webhook events to localhost with `coss listen`.",
+  "description": "The coss.com command line: sign in, send test emails, tail your environment's log, and forward webhook events to localhost with `coss listen`.",
   "license": "MIT",
   "homepage": "https://coss.com/docs/cli",
   "repository": {

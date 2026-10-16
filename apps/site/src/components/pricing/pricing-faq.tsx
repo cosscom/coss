@@ -22,7 +22,7 @@ function questions(): { question: string; answer: ReactNode }[] {
       answer: (
         <>
           On {pro.name} and {PLANS.scale.name}, the fee is credit: it is spent on your usage of any
-          COSS product that month, so a month costs the larger of the fee and your usage. On{" "}
+          coss.com product that month, so a month costs the larger of the fee and your usage. On{" "}
           {pro.name} with {EXAMPLE_EMAILS.toLocaleString("en-US")} emails, usage comes to{" "}
           {formatCents(example.usageCents)}: you pay the {formatPrice(pro.feeCents)} fee at the
           start of the month and the other {formatCents(example.usageCents - pro.feeCents)} with the
@@ -33,7 +33,7 @@ function questions(): { question: string; answer: ReactNode }[] {
     {
       question: "Does unused credit roll over?",
       answer:
-        "No: a month's plan credit is for that month's usage. Credits from COSS support or a prepaid commitment can last longer; your billing settings show each one with what's left and when it expires.",
+        "No: a month's plan credit is for that month's usage. Credits from coss.com support or a prepaid commitment can last longer; your billing settings show each one with what's left and when it expires.",
     },
     {
       question: "What counts as an email?",

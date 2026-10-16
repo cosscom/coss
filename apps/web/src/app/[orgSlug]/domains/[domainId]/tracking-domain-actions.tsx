@@ -80,7 +80,7 @@ function AddTrackingDomainForm(props: Target & { domainName: string; onDone: () 
         <DialogTitle>Add a tracking domain</DialogTitle>
         <DialogDescription>
           Open and click tracking links in emails from {props.domainName} will use this hostname
-          instead of COSS&apos;s, once its CNAME record is published.
+          instead of coss.com&apos;s, once its CNAME record is published.
         </DialogDescription>
       </DialogHeader>
       <DialogPanel className="flex flex-col gap-4">
@@ -152,8 +152,8 @@ export function RemoveTrackingDomainButton(props: Target & { hostname: string })
           <AlertDialogHeader>
             <AlertDialogTitle>Remove {props.hostname}?</AlertDialogTitle>
             <AlertDialogDescription>
-              New emails will use COSS&apos;s tracking host. Tracked links and open pixels in emails
-              already sent through {props.hostname} will stop working.
+              New emails will use coss.com&apos;s tracking host. Tracked links and open pixels in
+              emails already sent through {props.hostname} will stop working.
             </AlertDialogDescription>
             {state && !state.ok ? <FormError message={state.error} /> : null}
           </AlertDialogHeader>

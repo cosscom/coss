@@ -90,7 +90,7 @@ export const createRiskAssessmentRoute = createRoute({
   summary: "Assess an event",
   description:
     "Assesses a sign-up, login or other event in the API key's environment and returns a " +
-    "decision (`allow`, `review` or `block`) with a score and the reasons behind it. COSS " +
+    "decision (`allow`, `review` or `block`) with a score and the reasons behind it. coss.com " +
     "combines email and IP signals with what it has seen in this environment (velocity, " +
     "accounts sharing a mailbox, identifiers you reported) and your allow and block lists. " +
     "Signals that are unavailable at the moment are skipped and listed in `degraded`. " +
@@ -180,7 +180,7 @@ export const createRiskFeedbackRoute = createRoute({
   tags: ["Risk"],
   summary: "Report an assessment's outcome",
   description:
-    "Tells COSS what the assessed user turned out to be. `fraud` and `abuse` make later " +
+    "Tells coss.com what the assessed user turned out to be. `fraud` and `abuse` make later " +
     "assessments with the same mailbox, user, IP address or subnet flag it " +
     "(`history.fraud_*`); `legitimate` takes back what this assessment reported. Resolves an " +
     "open review. Sending the latest outcome again changes nothing.",
@@ -299,9 +299,9 @@ export const forgetRiskUserRoute = createRoute({
   tags: ["Risk"],
   summary: "Forget a user",
   description:
-    "Call this when you delete one of your users: COSS deletes what identifies them in the " +
+    "Call this when you delete one of your users: coss.com deletes what identifies them in the " +
     "environment (their mailbox, fraud reports, and the user id, email address, IP address and " +
-    "user agent on their assessments). Decisions and reasons stay. Forgetting a user COSS " +
+    "user agent on their assessments). Decisions and reasons stay. Forgetting a user coss.com " +
     "doesn't know succeeds too.",
   security: [{ bearerAuth: [] }],
   middleware: [requireApiKey({ risk: ["feedback"] }), rateLimit("api.write")],

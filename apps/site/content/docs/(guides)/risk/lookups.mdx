@@ -5,7 +5,7 @@ description: Look up an email or IP address on its own, without an assessment.
 
 The signals behind assessments are also available alone, for when you want a fact rather than a
 decision: checking an address as someone types it, or enriching your own records. Checks are
-stateless: COSS stores and counts nothing about the address, so they never say an address was seen
+stateless: coss.com stores and counts nothing about the address, so they never say an address was seen
 before (assessments do, through velocity and duplicates).
 
 ## Email
@@ -29,7 +29,7 @@ const { data } = await coss.risk.checkEmail("ada@gnail.com");
   exist, has a null MX or has no record to deliver to; `unknown` when the lookup failed or took
   longer than 800 ms.
 - `domain_age_days` comes from the domain's registry (RDAP), only for organizations' own domains
-  (not free providers or disposable domains). COSS sends the registry only the domain.
+  (not free providers or disposable domains). coss.com sends the registry only the domain.
 - Lookups that failed are listed in `degraded` (`email_dns`, `domain_age`).
 
 ## IP
@@ -52,8 +52,8 @@ const { data } = await coss.risk.checkIp("185.220.101.1");
 - `asn`, `as_name` and `country` come from IPinfo Lite. Network and country data by
   [IPinfo](https://ipinfo.io).
 - `privacy` says whether the address itself is a VPN exit, a proxy (residential proxies included) or
-  a privacy relay (iCloud Private Relay…), and which service, from COSS's IP privacy data provider;
-  `null` where COSS doesn't have that data, and for private addresses. Without it, `hosting_kind:
+  a privacy relay (iCloud Private Relay…), and which service, from coss.com's IP privacy data provider;
+  `null` where coss.com doesn't have that data, and for private addresses. Without it, `hosting_kind:
   "vpn"` is only a guess from the network.
 - `degraded: ["ip_data"]` means some IP data is unavailable at the moment; `ip_privacy`, that the
   privacy data provider failed or took longer than 500 ms.

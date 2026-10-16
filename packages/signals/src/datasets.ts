@@ -1,5 +1,5 @@
 /**
- * Parsers for the public IP feeds behind `IpIntelligence`, and the compact formats COSS stores them
+ * Parsers for the public IP feeds behind `IpIntelligence`, and the compact formats coss.com stores them
  * in. Fetching, validation and storage live with the product that refreshes them
  * (`@coss/risk`'s dataset loop); nothing here touches the network.
  */

@@ -1,4 +1,4 @@
-/** Posting an event to the local URL, as COSS would post it to an endpoint. */
+/** Posting an event to the local URL, as coss.com would post it to an endpoint. */
 import { UsageError } from "../errors.ts";
 import type { CliIo } from "../io.ts";
 import { VERSION } from "../version.ts";

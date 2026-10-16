@@ -10,7 +10,7 @@ export const PREVIEW_HEAD =
   `<meta name="referrer" content="no-referrer">`;
 
 /**
- * The same for HTML written by someone COSS doesn't trust to know who looks at it: received email
+ * The same for HTML written by someone coss.com doesn't trust to know who looks at it: received email
  * (anyone on the internet) and customer email opened by a platform admin (an abuse investigation
  * must not tell the sender). It may load nothing at all, not even remote images: a tracking pixel
  * would tell the sender the email was opened, and from where. Only inline `data:` images and fonts

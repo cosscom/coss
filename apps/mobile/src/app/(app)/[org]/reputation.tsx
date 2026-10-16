@@ -91,7 +91,7 @@ export default function ReputationScreen() {
     <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Reputation">
       <PageIntro
         title="Reputation"
-        description="COSS watches the bounce and complaint rates of your live sending and suspends it automatically when they get too high, to protect deliverability for everyone. Sandbox sending is never affected."
+        description="coss.com watches the bounce and complaint rates of your live sending and suspends it automatically when they get too high, to protect deliverability for everyone. Sandbox sending is never affected."
         meta={
           <Badge variant="outline">
             <StatusDot
@@ -137,7 +137,7 @@ export default function ReputationScreen() {
               <ListRow
                 detail={formatDateTime(event.created_at)}
                 key={event.id}
-                subtitle={`${event.trigger_label} · ${event.actor === "automatic" ? "Automatic" : "COSS"}`}
+                subtitle={`${event.trigger_label} · ${event.actor === "automatic" ? "Automatic" : "coss.com"}`}
                 title={EVENT_LABELS[event.type]}
               />
             ))}

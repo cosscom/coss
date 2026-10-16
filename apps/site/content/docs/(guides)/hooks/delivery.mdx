@@ -1,6 +1,6 @@
 ---
 title: Delivery, retries and limits
-description: How COSS retries, disables failing endpoints, recovers missed messages, and what it limits.
+description: How coss.com retries, disables failing endpoints, recovers missed messages, and what it limits.
 ---
 
 ## Retries
@@ -12,7 +12,7 @@ is `failed`. Retry one by hand with `coss.hooks.deliveries.retry()`, or from the
 
 ## Failing endpoints are disabled
 
-When an endpoint's deliveries keep failing every attempt for 5 days, COSS disables it. Its
+When an endpoint's deliveries keep failing every attempt for 5 days, coss.com disables it. Its
 `disabled_reason` is `failing`, and your own [webhook endpoints](/docs/webhooks) subscribed to
 `hook_endpoint.disabled` are told, so you can let your customer know. Enabling it again (in the
 portal, the dashboard or with `coss.hooks.endpoints.update()`) clears its record.
@@ -29,7 +29,7 @@ declare const endpointId: string;
 const { data: recovery } = await coss.hooks.endpoints.recover("customer_8812", endpointId, {
   since: new Date(Date.now() - 6 * 60 * 60 * 1000),
 });
-// recovery.status is "pending" while COSS requeues them in the background.
+// recovery.status is "pending" while coss.com requeues them in the background.
 ```
 
 ## Limits
@@ -50,7 +50,7 @@ Contact support for higher limits.
 
 ## Reputation
 
-COSS watches the share of live deliveries that fail for good. A very high rate warns your
+coss.com watches the share of live deliveries that fail for good. A very high rate warns your
 organization (see [reputation](/docs/api-reference/reputation/get-reputation)): usually it means
 endpoints that no longer exist, which you should disable or delete. Sending is never suspended
 for it by default.

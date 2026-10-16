@@ -83,7 +83,7 @@ export default async function SingleSignOnPage({ params }: PageProps<"/[orgSlug]
           <AlertDescription>
             {provider.unverifiedDomains.length > 0
               ? `${provider.unverifiedDomains.join(", ")} ${provider.unverifiedDomains.length === 1 ? "is" : "are"} no longer verified. Verify ${provider.unverifiedDomains.length === 1 ? "it" : "them"} again under Domains, or remove ${provider.unverifiedDomains.length === 1 ? "it" : "them"} from the provider and save.`
-              : "COSS support disabled this provider. Check its configuration and save it to turn it back on."}
+              : "coss.com support disabled this provider. Check its configuration and save it to turn it back on."}
             {organization.requireSso
               ? " Members can't open this organization until it works again; owners still can."
               : null}

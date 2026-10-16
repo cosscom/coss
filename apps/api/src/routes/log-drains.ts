@@ -145,7 +145,7 @@ export const updateLogDrainRoute = createRoute({
     "Changes the URL, description, sources or `enabled` flag. Omitted fields keep their current " +
     "value, and the signing secret stays the same. Disabling a drain drops the lines still " +
     "waiting for it, and nothing is kept for it while it is disabled; enabling it again (also " +
-    "after COSS disabled it for failing) sends lines logged from then on.",
+    "after coss.com disabled it for failing) sends lines logged from then on.",
   security: [{ bearerAuth: [] }],
   middleware: [
     requireApiKey({ logDrain: ["update"] }),

@@ -80,7 +80,7 @@ Sandbox keys accept any `from`.
 ## Content
 
 `subject` is required (unless you send a [template](#templates)). Provide `html`, `text`, or both: sending both lets mail clients pick, and
-improves deliverability. When you send only `html`, COSS adds a plain-text part generated from it
+improves deliverability. When you send only `html`, coss.com adds a plain-text part generated from it
 (links are followed by their URL in brackets, images by their alt text, hidden preheaders are left
 out). The email keeps what you sent: its `text` stays `null`. Send your own `text` to control it.
 
@@ -113,13 +113,13 @@ If you retry with your own idempotency key, render the same output again: a diff
 
 ### Templates
 
-You can also keep the content in COSS: send a [template](/docs/email/templates) with `template_id`
+You can also keep the content in coss.com: send a [template](/docs/email/templates) with `template_id`
 and `variables` instead of `subject`, `html` and `text`. Templates can't be combined with `react`.
 
 ## Headers and tags
 
 - `headers`: up to 15 custom headers. Names are case-insensitive, and reserved names such as
-  `subject` are rejected. COSS can add `List-Unsubscribe` headers itself: see
+  `subject` are rejected. coss.com can add `List-Unsubscribe` headers itself: see
   [one-click unsubscribe](/docs/email/unsubscribe).
 - `tags`: up to 50 `name`/`value` pairs (letters, digits, `_` and `-`) for your own filtering. They are
   included in webhook payloads.

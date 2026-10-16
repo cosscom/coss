@@ -274,7 +274,7 @@ async function updateEndpointHealth(
           organizationId: disabled.organizationId,
           projectId: disabled.projectId,
           environmentId: disabled.environmentId,
-          actor: { type: "system", id: null, label: "COSS" },
+          actor: { type: "system", id: null, label: "coss.com" },
           action: "webhook_endpoint.disabled",
           target: { type: "webhook_endpoint", id: disabled.id, label: disabled.url },
           metadata: { reason: "failing", failing_since: change.failingSince.toISOString() },

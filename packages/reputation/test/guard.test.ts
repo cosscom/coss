@@ -168,7 +168,7 @@ describe("runDueReputationEvaluations", () => {
     ]);
   });
 
-  test("COSS's own organization is only ever warned", async () => {
+  test("coss.com's own organization is only ever warned", async () => {
     const tenant = await createTestTenant();
     const orgId = tenant.organization.id;
     const { deps } = controlledCheck("suspend");

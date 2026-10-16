@@ -55,7 +55,7 @@ function* elements(node: ParentNode): Generator<Element> {
 }
 
 /**
- * Rewrites trackable links to COSS's click redirect (in document order, numbered from 0) and adds
+ * Rewrites trackable links to coss.com's click redirect (in document order, numbered from 0) and adds
  * the open pixel before `</body>` (or at the end). Returns the links so their targets can be
  * stored: the redirect only ever sends a recipient to a stored URL.
  */

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { SITE_URL } from "@/lib/site";
 
 /** The one line to hand a coding agent: everything else it reads from the docs. */
-export const AGENT_PROMPT = `Add COSS to this project: read ${SITE_URL}/llms.txt, install the \`coss\` package, and develop with a coss_test_ key.`;
+export const AGENT_PROMPT = `Add coss.com to this project: read ${SITE_URL}/llms.txt, install the \`coss\` package, and develop with a coss_test_ key.`;
 
 export function CopyPrompt() {
   const [copied, setCopied] = useState(false);

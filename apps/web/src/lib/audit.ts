@@ -69,7 +69,7 @@ export async function recordUserAudit(
 
 /**
  * What a platform admin did to an organization, in that organization's own audit log. The actor is
- * "COSS support", never the admin, and the reason (admin-internal) is never copied.
+ * "coss.com support", never the admin, and the reason (admin-internal) is never copied.
  */
 export async function supportAudit(
   organizationId: string,
@@ -79,7 +79,7 @@ export async function supportAudit(
   try {
     await recordOrgAuditEvent({
       organizationId,
-      actor: { type: "system", id: null, label: "COSS support" },
+      actor: { type: "system", id: null, label: "coss.com support" },
       action,
       target,
     });

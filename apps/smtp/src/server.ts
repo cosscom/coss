@@ -364,7 +364,7 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
 
   const shared: SMTPServerOptions = {
     name: options.hostname,
-    banner: "COSS",
+    banner: "coss.com",
     key: options.tls.key,
     cert: options.tls.cert,
     minVersion: "TLSv1.2",

@@ -154,7 +154,7 @@ export async function listRiskAssessments(
 
 /**
  * The environment's assessments of one address (case-insensitive), newest first: the admin
- * console finds a COSS user's sign-up assessment this way (sign-ups are assessed before the user
+ * console finds a coss.com user's sign-up assessment this way (sign-ups are assessed before the user
  * exists, so they carry no user id). Addresses are cleared after `riskPersonalData` days.
  */
 export async function listRiskAssessmentsForEmail(

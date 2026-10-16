@@ -110,7 +110,7 @@ describe("screenMessage", () => {
     expect(event?.note).toContain(subject.subjectId);
   });
 
-  test("never blocks or suspends COSS's own organization: a block only flags", async () => {
+  test("never blocks or suspends coss.com's own organization: a block only flags", async () => {
     const tenant = await createTestTenant();
     const outcome = await screenMessage(input(tenant, "Reset your password [coss-test:phishing]"), {
       classifier: fakeClassifier(),
@@ -123,7 +123,7 @@ describe("screenMessage", () => {
     expect(standing?.nextEvaluationAt).not.toBeNull();
   });
 
-  test("does not block COSS's own organization when its classifier fails", async () => {
+  test("does not block coss.com's own organization when its classifier fails", async () => {
     const tenant = await createTestTenant();
     const outcome = await screenMessage(input(tenant), {
       classifier: fakeClassifier({ fail: true }),

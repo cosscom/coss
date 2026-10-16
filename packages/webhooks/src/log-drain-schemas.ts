@@ -54,7 +54,7 @@ export const LogDrainObject = z
       .nullable()
       .meta({
         description:
-          "`manual`: someone disabled it. `failing`: a batch failed every attempt, so COSS disabled " +
+          "`manual`: someone disabled it. `failing`: a batch failed every attempt, so coss.com disabled " +
           "it. `null` while enabled.",
       }),
     disabled_at: z.iso.datetime().nullable(),
@@ -68,7 +68,7 @@ export type LogDrainObjectOutput = z.output<typeof LogDrainObject>;
 export const LogDrainWithSecret = LogDrainObject.extend({
   secret: z.string().meta({
     description:
-      "The drain's `whsec_…` signing secret, used to verify the batches COSS sends. Returned only " +
+      "The drain's `whsec_…` signing secret, used to verify the batches coss.com sends. Returned only " +
       "when the drain is created — store it now; it cannot be read back through the API.",
     examples: ["whsec_6Jk…"],
   }),
@@ -110,7 +110,7 @@ const Url = z
   .min(1, "Enter a full URL, like https://logs.example.com/coss.")
   .max(LOG_DRAIN_URL_MAX_LENGTH, `URLs can be at most ${LOG_DRAIN_URL_MAX_LENGTH} characters.`)
   .meta({
-    description: "An `https://` URL COSS posts batches of log lines to.",
+    description: "An `https://` URL coss.com posts batches of log lines to.",
     examples: ["https://logs.example.com/coss"],
   });
 

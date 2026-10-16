@@ -116,8 +116,8 @@ function AddReceivingDomainForm(
         {apex ? (
           <Alert variant="warning">
             <AlertDescription>
-              Pointing {props.domainName}&apos;s MX at COSS moves all of its mail here, including
-              your team&apos;s mailboxes. Use a subdomain unless that is what you want.
+              Pointing {props.domainName}&apos;s MX at coss.com moves all of its mail here,
+              including your team&apos;s mailboxes. Use a subdomain unless that is what you want.
             </AlertDescription>
           </Alert>
         ) : null}

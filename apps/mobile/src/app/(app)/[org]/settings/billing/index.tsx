@@ -20,7 +20,7 @@ const HOLDS: Record<string, string> = {
   delinquent: "An invoice is overdue. Sending resumes as soon as it is paid.",
   spend_limit:
     "This month's usage reached your spend limit. Raise it, or sending resumes next month.",
-  admin: "COSS paused live sending for billing reasons. Contact support.",
+  admin: "coss.com paused live sending for billing reasons. Contact support.",
 };
 
 function daysLeft(end: string): number {

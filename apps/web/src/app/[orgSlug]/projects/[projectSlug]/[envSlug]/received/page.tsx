@@ -139,7 +139,7 @@ export default async function ReceivedEmailsPage({
                   <TableCell>
                     <CopyValue display={`*@${address.domain}`} value={address.domain} />
                   </TableCell>
-                  <TableCell className="text-muted-foreground">COSS inbound address</TableCell>
+                  <TableCell className="text-muted-foreground">coss.com inbound address</TableCell>
                 </TableRow>
               ) : null}
               {receivingDomains.map((row) => (

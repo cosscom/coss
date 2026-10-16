@@ -83,7 +83,7 @@ function CreateDrainForm(props: Target) {
       <DialogHeader>
         <DialogTitle>Add a log drain</DialogTitle>
         <DialogDescription>
-          COSS posts batches of log lines to this URL as signed NDJSON, usually within seconds.
+          coss.com posts batches of log lines to this URL as signed NDJSON, usually within seconds.
         </DialogDescription>
       </DialogHeader>
       <DialogPanel className="flex flex-col gap-4">

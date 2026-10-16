@@ -31,14 +31,14 @@ function hintFor(error: CossError): string | undefined {
     case "billing_error":
       return "A billing hold or the plan's limits refused this; call get_account_status.";
     case "rate_limit_error":
-      return "Rate limited by the COSS API. Wait a little before calling again.";
+      return "Rate limited by the coss.com API. Wait a little before calling again.";
     case "invalid_request_error":
       return error.issues?.length
         ? "Fix the parameters listed in `issues` and call again."
         : undefined;
     case "connection_error":
     case "timeout_error":
-      return "The COSS API could not be reached. Check the network and COSS_BASE_URL (unset means https://api.coss.com).";
+      return "The coss.com API could not be reached. Check the network and COSS_BASE_URL (unset means https://api.coss.com).";
     default:
       return undefined;
   }

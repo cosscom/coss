@@ -119,7 +119,7 @@ export function base64DecodedSize(value: string): number {
 /** The suppression scope that matches every email, whatever its category. */
 export const ALL_CATEGORIES = "*";
 
-/** Headers COSS (or the provider) owns. `x-ses-*` is matched by prefix. */
+/** Headers coss.com (or the provider) owns. `x-ses-*` is matched by prefix. */
 export const RESERVED_HEADERS: ReadonlySet<string> = new Set([
   "from",
   "to",
@@ -292,7 +292,7 @@ export const TrackingOptions = z
       .optional()
       .meta({
         description:
-          "Send HTML links through a COSS redirect and record `email.clicked` events. Links with a " +
+          "Send HTML links through a coss.com redirect and record `email.clicked` events. Links with a " +
           "`data-coss-no-track` attribute are left alone.",
       }),
     unsubscribe: z
@@ -317,7 +317,7 @@ export const TrackingOptions = z
 export const LIST_UNSUBSCRIBE_HEADERS = ["list-unsubscribe", "list-unsubscribe-post"] as const;
 
 /**
- * Custom headers an email can have and still get COSS's two unsubscribe headers: providers take
+ * Custom headers an email can have and still get coss.com's two unsubscribe headers: providers take
  * at most `MAX_HEADERS` in all (SES's limit for a simple message).
  */
 export const MAX_HEADERS_WITH_UNSUBSCRIBE = MAX_HEADERS - LIST_UNSUBSCRIBE_HEADERS.length;
@@ -418,7 +418,7 @@ const SendEmailRequestFields = z.strictObject({
             ctx.addIssue({
               code: "custom",
               path: [name],
-              message: `The "${name}" header is set by COSS and cannot be overridden.`,
+              message: `The "${name}" header is set by coss.com and cannot be overridden.`,
             });
           } else if (seen.has(lower)) {
             ctx.addIssue({
@@ -790,7 +790,7 @@ export const EMAIL_EVENT_TYPES = [
   "email.unsubscribed",
 ] as const;
 
-/** Engagement events: recorded by COSS's tracking endpoints, never change a recipient's status. */
+/** Engagement events: recorded by coss.com's tracking endpoints, never change a recipient's status. */
 export const ENGAGEMENT_EVENT_TYPES = [
   "email.opened",
   "email.clicked",
@@ -1566,7 +1566,7 @@ export const DomainBimiObject = z
       description:
         "`configured` when the BIMI record is valid and DMARC is enforced, `invalid` when a " +
         "record exists but something is wrong (see `issues`), `missing` when there is no record, " +
-        "and `not_checked` until DNS has been consulted. COSS checks DNS only: mailbox providers " +
+        "and `not_checked` until DNS has been consulted. coss.com checks DNS only: mailbox providers " +
         "still validate the logo and the certificate.",
     }),
     name: z.string().meta({
@@ -1610,7 +1610,7 @@ export const TrackingDomainObject = z
     }),
     status: z.enum(TRACKING_DOMAIN_STATUSES).meta({
       description:
-        "`pending` until the CNAME points at COSS and its certificate is issued, `active` once " +
+        "`pending` until the CNAME points at coss.com and its certificate is issued, `active` once " +
         "links and open pixels of emails sent from the domain use it, `temporary_failure` when " +
         "an active hostname stopped working (emails fall back to the default tracking host " +
         "meanwhile), `failed` when setup gave up (72 hours) — restart it with the domain's " +
@@ -1682,7 +1682,7 @@ export const ReceivingDomainObject = z
         status: z.enum(DOMAIN_RECORD_STATUSES).meta({
           description:
             "What the last DNS check saw: `verified` once the most preferred MX records point " +
-            "at COSS. `not_checked` means DNS has not been consulted yet.",
+            "at coss.com. `not_checked` means DNS has not been consulted yet.",
         }),
         found: z
           .array(z.string())
@@ -1691,7 +1691,7 @@ export const ReceivingDomainObject = z
       .meta({
         description:
           "The MX record to publish, with the result of the last check. Mail for the hostname " +
-          "is received as soon as it reaches COSS; the check only shows what DNS serves.",
+          "is received as soon as it reaches coss.com; the check only shows what DNS serves.",
       }),
     created_at: z.iso.datetime(),
     last_checked_at: z.iso.datetime().nullable(),
@@ -1800,7 +1800,7 @@ export const CreateTrackingDomainRequest = z
       .meta({
         description:
           "A subdomain of the domain to serve tracking links from, without a scheme or path. " +
-          "Point it at COSS with the CNAME record the response lists.",
+          "Point it at coss.com with the CNAME record the response lists.",
         examples: ["links.acme.com"],
       }),
   })
@@ -2397,8 +2397,8 @@ export const CreateReceivingDomainRequest = z
       .meta({
         description:
           "The domain itself or a subdomain of it, without a scheme or path. Point its MX at " +
-          "COSS with the record the response lists. Using the domain itself moves all of its " +
-          "mail to COSS, so a subdomain is usually the better choice.",
+          "coss.com with the record the response lists. Using the domain itself moves all of its " +
+          "mail to coss.com, so a subdomain is usually the better choice.",
         examples: ["inbound.acme.com"],
       }),
   })
@@ -2552,7 +2552,7 @@ export const DmarcSource = z
     passing: z.number().int().meta({ description: "Messages that passed DMARC." }),
     via_coss: z.boolean().meta({
       description:
-        "Signed with the domain's COSS DKIM keys or sent from its COSS MAIL FROM domain.",
+        "Signed with the domain's coss.com DKIM keys or sent from its coss.com MAIL FROM domain.",
     }),
   })
   .meta({ id: "DmarcSource", examples: [DMARC_SOURCE_EXAMPLE] });
@@ -2560,7 +2560,7 @@ export const DmarcSource = z
 const DMARC_CHECK_EXAMPLE = {
   id: "coss_pass_rate",
   ok: true,
-  message: "100% of mail sent through COSS passes DMARC (99% needed).",
+  message: "100% of mail sent through coss.com passes DMARC (99% needed).",
 };
 
 const DOMAIN_DMARC_EXAMPLE = {
@@ -2646,7 +2646,7 @@ export const DomainDmarc = z
       ])
       .meta({
         description:
-          "The next step: `publish` a first record, `add_reporting` (send reports to COSS), " +
+          "The next step: `publish` a first record, `add_reporting` (send reports to coss.com), " +
           "`complete_rollout` (drop `pct`/`t=y`) or `tighten` to the next policy. `null` at " +
           "`p=reject`.",
       }),

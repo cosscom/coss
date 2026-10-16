@@ -123,7 +123,7 @@ export function buildTestMmdb(
     ...encode("build_epoch"),
     ...encode(1_700_000_000, "uint64"),
     ...encode("description"),
-    ...encode({ en: "COSS test database" }),
+    ...encode({ en: "coss.com test database" }),
   ];
   const marker = [0xab, 0xcd, 0xef, ...new TextEncoder().encode("MaxMind.com")];
   return Uint8Array.from([...tree, ...new Array(16).fill(0), ...data, ...marker, ...metadata]);

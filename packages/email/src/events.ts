@@ -1,6 +1,6 @@
 /**
  * Delivery-event ingestion. System-level: the organization is resolved from the email the event
- * names (the `coss_email_id` tag COSS sets on every message), never from the caller, and every
+ * names (the `coss_email_id` tag coss.com sets on every message), never from the caller, and every
  * write is scoped by that email's organization. Each new event is queued for the environment's
  * webhook endpoints in the same transaction (outbox) and appended to its log (`@coss/logs`).
  */
@@ -28,7 +28,7 @@ const { email, emailEvent, emailRecipient, environment } = schema;
 
 export type EmailEventRow = typeof emailEvent.$inferSelect;
 
-/** Events COSS itself records (e.g. a provider rejecting a send) rather than a provider. */
+/** Events coss.com itself records (e.g. a provider rejecting a send) rather than a provider. */
 export const COSS_EVENT_SOURCE = "coss";
 
 const RANK: Record<EmailRecipientStatus, number> = {

@@ -1,5 +1,5 @@
 /**
- * Billing emails (usage alerts, payment failures, holds, invoices COSS sends itself): queued in
+ * Billing emails (usage alerts, payment failures, holds, invoices coss.com sends itself): queued in
  * the transaction that decides them (`enqueueBillingNotification`, once per `dedupe_key`), sent
  * by the worker through a `BillingNotifier` (the email product, wired by the worker). They go to
  * the account's billing email (and cc), else to the organization's owners and admins.
@@ -315,7 +315,7 @@ async function renderBillingNotification(
         blocks.push({ link: { label: "Confirm the payment", url: invoice.hostedUrl } });
       break;
     case "invoice_issued":
-      subject = `Invoice ${invoiceLabel} from COSS (${name})`;
+      subject = `Invoice ${invoiceLabel} from coss.com (${name})`;
       blocks.push({
         paragraph: `Invoice ${invoiceLabel} for ${due} is due ${invoice?.dueAt?.toISOString().slice(0, 10) ?? "now"}.`,
       });
@@ -353,7 +353,7 @@ async function renderBillingNotification(
   }
   blocks.push({ link: { label: "Open billing", url: billingUrl } });
   blocks.push({
-    paragraph: `You're receiving this because you're the billing contact, an owner or an admin of ${name} on COSS.`,
+    paragraph: `You're receiving this because you're the billing contact, an owner or an admin of ${name} on coss.com.`,
   });
   subject = oneLine(subject);
   return { subject, text: toText(blocks), html: toHtml(subject, blocks) };

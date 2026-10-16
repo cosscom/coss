@@ -1,4 +1,4 @@
-# AGENTS.md — `apps/mobile` (COSS for iOS)
+# AGENTS.md — `apps/mobile` (coss.com for iOS)
 
 Expo (SDK 57, React Native 0.86, Expo Router) companion app for the dashboard. Organization:
 projects, reputation, domains (DNS records), members, billing and invoices, the audit log.
@@ -78,7 +78,7 @@ the notification gives up (the others are delivered).
 session, which ends its registration on the server; offline, the credential is kept in the
 Keychain and revoked on a later start. A 401 only signs out when it answers the current credential.
 Requests send `User-Agent: COSS-iOS/<version>`, which the dashboard's session list names
-"COSS app on iOS" (`describeUserAgent`). A tapped notification opens its `body.path`
+"coss.com app on iOS" (`describeUserAgent`). A tapped notification opens its `body.path`
 (`content.data.path`) in `_layout.tsx`, only when `routeFromNotification` (`src/lib/push-route.ts`,
 an allow-list of the paths `@coss/push` builds) accepts it: a new kind of notification needs its
 path added there. Remote notifications need a physical iPhone or a Simulator on an Apple-silicon

@@ -59,14 +59,14 @@ export default function HookEndpointScreen() {
       />
       {!endpoint.enabled && endpoint.disabled_reason === "failing" ? (
         <Alert
-          description={`Every delivery to this endpoint failed for ${DISABLED_AFTER_DAYS} days, so COSS disabled it${endpoint.disabled_at ? ` on ${formatDateTime(endpoint.disabled_at)}` : ""}. Enable it again once its receiver works, then recover what it missed.`}
+          description={`Every delivery to this endpoint failed for ${DISABLED_AFTER_DAYS} days, so coss.com disabled it${endpoint.disabled_at ? ` on ${formatDateTime(endpoint.disabled_at)}` : ""}. Enable it again once its receiver works, then recover what it missed.`}
           title="Disabled after repeated failures"
           tone="error"
         />
       ) : null}
       {endpoint.enabled && endpoint.failing_since ? (
         <Alert
-          description={`If no delivery succeeds for ${DISABLED_AFTER_DAYS} days, COSS disables the endpoint.`}
+          description={`If no delivery succeeds for ${DISABLED_AFTER_DAYS} days, coss.com disables the endpoint.`}
           title={`Failing since ${formatDateTime(endpoint.failing_since)}`}
           tone="warning"
         />

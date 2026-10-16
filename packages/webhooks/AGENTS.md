@@ -4,7 +4,7 @@ Read together with the root `AGENTS.md` (conventions, tenancy rule, tests). Path
 repository root.
 
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
-  to the checked address; no redirects; 10 s timeout for COSS's own webhooks and log drains, 15 s for Hooks; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
+  to the checked address; no redirects; 10 s timeout for coss.com's own webhooks and log drains, 15 s for Hooks; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
   `WEBHOOK_SECRETS_KEY`, a key ring (`parseSecretsKeys`): stored as `v2:<key id>:<iv>:<ciphertext>:<tag>` (the
   `v2:<key id>` prefix is the AAD; ids are derived from the keys), encrypted with the first key, decrypted with the
@@ -53,7 +53,7 @@ repository root.
   versioned (like `GET /v1/logs`). Permissions: `logDrain` (members read; API keys all, backfilled by `0040`); revealing a
   secret needs `logDrain:update`.
 - **Webhook listeners** (`coss listen`; `webhook_listener` (ids `whlis_`), `webhook_listener_delivery` (`whlisdel_`),
-  `src/listeners.ts`, `/v1/webhook_listeners*`, `coss.webhookListeners`): COSS can't POST to `localhost`, so the CLI
+  `src/listeners.ts`, `/v1/webhook_listeners*`, `coss.webhookListeners`): coss.com can't POST to `localhost`, so the CLI
   pulls. A listener is **not** an endpoint (own tables), so the worker's delivery loop, plan limits, endpoint health,
   recover and the endpoint API never see one; `enqueueWebhookMessage` fans out to the environment's open listeners
   (`expires_at > now()`, `FOR KEY SHARE`) next to its endpoints, and writes the message if either subscribed.

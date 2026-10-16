@@ -74,7 +74,7 @@ export default async function DmarcReportPage({
                       {record.source_ip}
                       {record.via_coss ? (
                         <Badge className="w-fit" variant="outline">
-                          COSS
+                          coss.com
                         </Badge>
                       ) : null}
                     </div>

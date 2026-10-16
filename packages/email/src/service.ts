@@ -191,8 +191,8 @@ function bareAddress(value: string): string {
 }
 
 /**
- * The message for the provider, without the recipients COSS suppressed. An email with only HTML
- * gets a plain-text part generated from it (never stored: the email keeps what was sent to COSS).
+ * The message for the provider, without the recipients coss.com suppressed. An email with only HTML
+ * gets a plain-text part generated from it (never stored: the email keeps what was sent to coss.com).
  */
 function toOutbound(
   row: EmailRow,
@@ -245,7 +245,7 @@ function recipientRows(row: EmailRow): (typeof emailRecipient.$inferInsert)[] {
   return rows;
 }
 
-/** A whole-message event COSS itself records about an email. */
+/** A whole-message event coss.com itself records about an email. */
 function cossEvent(
   row: EmailRow,
   event: Pick<ProviderEvent, "type" | "providerEventType" | "sourceId" | "data">,
@@ -260,7 +260,7 @@ function cossEvent(
   };
 }
 
-/** The event COSS records when the provider rejects a send. */
+/** The event coss.com records when the provider rejects a send. */
 function failedEvent(
   row: EmailRow,
   provider: string,
@@ -274,7 +274,7 @@ function failedEvent(
   });
 }
 
-/** The event COSS records for a recipient it skipped because of a suppression list entry. */
+/** The event coss.com records for a recipient it skipped because of a suppression list entry. */
 function suppressedEvent(row: EmailRow, address: string, entry: SuppressionRow): ProviderEvent {
   return {
     provider: COSS_EVENT_SOURCE,
@@ -289,7 +289,7 @@ function suppressedEvent(row: EmailRow, address: string, entry: SuppressionRow):
   };
 }
 
-/** Recipients of an email that a suppression entry made COSS skip. */
+/** Recipients of an email that a suppression entry made coss.com skip. */
 async function suppressedAddresses(row: EmailRow): Promise<Set<string>> {
   const rows = await db
     .select({ address: emailRecipient.address })

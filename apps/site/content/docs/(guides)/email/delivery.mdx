@@ -11,7 +11,7 @@ description: How an email and each of its recipients move through delivery.
 | -------- | --------------------------------------------- |
 | `scheduled` | Waiting for `scheduled_at` |
 | `canceled` | Canceled before dispatch |
-| `queued` | Accepted by COSS, not yet handed over          |
+| `queued` | Accepted by coss.com, not yet handed over          |
 | `sent`   | Accepted by the provider (`sent_at` is set)    |
 | `failed` | Could not be sent; `failure` says why |
 
@@ -31,10 +31,10 @@ Delivery happens per recipient. `recipients` lists every distinct address across
 [suppression list](/docs/email/suppressions), or the provider reported it as suppressed. An email
 whose recipients are all suppressed fails with `all_recipients_suppressed`.
 
-COSS automatically screens a sample of live emails for spam, phishing and other abuse right before
+coss.com automatically screens a sample of live emails for spam, phishing and other abuse right before
 sending them. An email it is confident about fails with `content_rejected` and live sending is
-suspended until COSS support reviews the account. Sandbox emails are never screened.
-COSS also emails your organization's owners and admins when it warns about your sending reputation
+suspended until coss.com support reviews the account. Sandbox emails are never screened.
+coss.com also emails your organization's owners and admins when it warns about your sending reputation
 or suspends live sending.
 
 ## Finding emails

@@ -9,7 +9,7 @@ import type { CliIo } from "./io.ts";
 import { Output } from "./output.ts";
 import { VERSION } from "./version.ts";
 
-export const HELP: string = `coss ${VERSION}: the COSS command line
+export const HELP: string = `coss ${VERSION}: the coss.com command line
 
 Usage: coss <command> [options]
 

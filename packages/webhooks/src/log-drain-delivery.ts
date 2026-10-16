@@ -238,7 +238,7 @@ async function disableFailingDrain(
       organizationId: disabled.organizationId,
       projectId: disabled.projectId,
       environmentId: disabled.environmentId,
-      actor: { type: "system", id: null, label: "COSS" },
+      actor: { type: "system", id: null, label: "coss.com" },
       action: "log_drain.disabled",
       target: { type: "log_drain", id: disabled.id, label: disabled.url },
       metadata: { reason: "failing", batch_id: batch.id },

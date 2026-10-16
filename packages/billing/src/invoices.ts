@@ -1,6 +1,6 @@
 /**
  * Invoices: created from the engine's lines, finalized (numbered, due), pushed to the account's
- * provider by the worker and collected on COSS's schedule. They outlive the organization.
+ * provider by the worker and collected on coss.com's schedule. They outlive the organization.
  */
 import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { and, asc, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";

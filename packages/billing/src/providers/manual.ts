@@ -1,5 +1,5 @@
 /**
- * Invoicing off-Stripe: nothing leaves COSS. Invoices are sent by COSS's own billing email (the
+ * Invoicing off-Stripe: nothing leaves coss.com. Invoices are sent by coss.com's own billing email (the
  * worker queues `invoice_issued`) with a link to the dashboard's printable invoice; payments
  * (wire, check, …) are recorded by a platform admin.
  */

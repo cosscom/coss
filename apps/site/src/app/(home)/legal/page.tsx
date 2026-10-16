@@ -6,7 +6,7 @@ import { formatLegalDate, legalPages } from "@/lib/legal";
 export const metadata: Metadata = {
   title: "Legal",
   description:
-    "The terms, privacy policy, acceptable use policy and data processing addendum for COSS.",
+    "The terms, privacy policy, acceptable use policy and data processing addendum for coss.com.",
 };
 
 export default function LegalIndexPage() {
@@ -15,7 +15,7 @@ export default function LegalIndexPage() {
       <header className="flex flex-col gap-3">
         <h1 className="font-semibold text-3xl tracking-tight sm:text-4xl">Legal</h1>
         <p className="text-muted-foreground">
-          COSS is operated by Cal.com, Inc. These documents govern your use of it.
+          coss.com is operated by Cal.com, Inc. These documents govern your use of it.
         </p>
       </header>
       <div className="grid gap-4">

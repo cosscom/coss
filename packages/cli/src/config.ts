@@ -66,7 +66,7 @@ export async function readConfig(io: CliIo): Promise<Config> {
       profiles: parsed.profiles,
     };
   } catch {
-    throw new CliError(`${path} is not a valid COSS CLI config. Fix it or delete it.`);
+    throw new CliError(`${path} is not a valid coss.com CLI config. Fix it or delete it.`);
   }
 }
 

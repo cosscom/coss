@@ -350,16 +350,16 @@ const sentryRelease: EnvVar = {
   description: "Sentry release of every event.",
 };
 
-/** COSS's own live environment (worker: sends from it; dashboard: never suspends its org). */
+/** coss.com's own live environment (worker: sends from it; dashboard: never suspends its org). */
 const notificationsEnvironment: EnvVar = {
   name: "NOTIFICATIONS_ENVIRONMENT_ID",
   kind: "plain",
   required: false,
-  value: "env_… (a live environment of COSS's own organization)",
+  value: "env_… (a live environment of coss.com's own organization)",
   description:
     "Sends account emails (sign-up verification, password resets, invitations) and " +
-    "reputation notifications through COSS itself (worker); neither the worker nor admins " +
-    "(dashboard) may suspend its organization. Unset until COSS's organization has a " +
+    "reputation notifications through coss.com itself (worker); neither the worker nor admins " +
+    "(dashboard) may suspend its organization. Unset until coss.com's organization has a " +
     "verified domain: both are held, and nobody can verify their email address.",
 };
 
@@ -397,9 +397,9 @@ export const SERVICES: Service[] = [
         name: "RISK_SIGNUP_ENVIRONMENT_ID",
         kind: "plain",
         required: false,
-        value: "env_… (a live environment of COSS's own organization)",
+        value: "env_… (a live environment of coss.com's own organization)",
         description:
-          "COSS Risk assesses COSS's own sign-ups in this environment (dogfooding): `block` refuses the sign-up, `review` waits in its review queue. Unset: sign-ups aren't assessed.",
+          "coss.com Risk assesses coss.com's own sign-ups in this environment (dogfooding): `block` refuses the sign-up, `review` waits in its review queue. Unset: sign-ups aren't assessed.",
       },
       billingProvider,
       stripeSecretKey,
@@ -474,7 +474,7 @@ export const SERVICES: Service[] = [
         name: "DEPLOY_GITHUB_APP_ID",
         kind: "plain",
         required: false,
-        value: 'the COSS Deploy GitHub App\'s id (README, "Deploying from the admin console")',
+        value: 'the coss.com Deploy GitHub App\'s id (README, "Deploying from the admin console")',
         description:
           "The admin console's deploys page, with DEPLOY_GITHUB_APP_PRIVATE_KEY (both or neither).",
       },
@@ -664,7 +664,7 @@ export const SERVICES: Service[] = [
         name: "NOTIFICATIONS_FROM",
         kind: "plain",
         required: false,
-        value: "COSS <notifications@coss.com>",
+        value: "coss.com <notifications@coss.com>",
         description: "Sender of notification emails, on a verified domain of that organization.",
       },
       {

@@ -15,7 +15,7 @@ repository root.
   `error_code = 'content_screening_unavailable'` as the marker) and it is dispatched again in
   `SCREENING_RETRY_DELAY_S`, its retry screened again at its old position (`retry`, never counted twice), until it is
   sent or the unclaimed sweep fails it `content_screening_unavailable` an hour after it was due (`UNCLAIMED_FAIL_MS`,
-  from `scheduled_at` for scheduled sends) — an unscreened sample is never sent. Shadow mode and COSS's own
+  from `scheduled_at` for scheduled sends) — an unscreened sample is never sent. Shadow mode and coss.com's own
   notification organization send it and owe the sample to the next message, once (an owed or retried sample that
   fails passes nothing on, so an outage doesn't put every message through the classifier). An unexpected `screen`
   throw follows the same default-deny rule (held), with that notification organization as the only allowlist entry.

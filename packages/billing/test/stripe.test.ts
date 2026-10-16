@@ -327,7 +327,7 @@ describe("StripeBillingProvider", () => {
 });
 
 describe("credit notes", () => {
-  test("on a paid invoice, what isn't refunded is out of band (COSS keeps it as credit)", async () => {
+  test("on a paid invoice, what isn't refunded is out of band (coss.com keeps it as credit)", async () => {
     const { api, stripe } = setup();
     const customerId = await stripe.ensureCustomer(account(), {
       id: "org_1",
@@ -389,8 +389,8 @@ test("existing Stripe customers receive the saved contact before invoice creatio
   expect(api.customers.get(customerId)?.email).toBe("latest@acme.test");
   const send = api.requests.findIndex((request) => request.path.endsWith("/send"));
   expect(api.requests[send - 1]?.params.email).toBe("latest@acme.test");
-  // Without a billing email of COSS's, Stripe keeps the customer's own (set in the Customer
-  // Portal): COSS never wipes it.
+  // Without a billing email of coss.com's, Stripe keeps the customer's own (set in the Customer
+  // Portal): coss.com never wipes it.
   const customer = api.customers.get(customerId);
   if (customer) customer.email = "portal@acme.test";
   await stripe.ensureCustomer({ ...saved, billingEmail: null }, organization);
@@ -468,7 +468,7 @@ test("an invoice paid on the hosted page, read back on a retry, leaves a carried
     lines: [line("invl_hosted", 2_500n, "Pro")],
     account: saved,
   });
-  // The customer pays $25.30 on the hosted page before COSS's retry.
+  // The customer pays $25.30 on the hosted page before coss.com's retry.
   const stripeInvoice = api.invoices.get(pushed.providerInvoiceId ?? "");
   if (stripeInvoice)
     Object.assign(stripeInvoice, { status: "paid", amount_paid: 2_530, amount_due: 0 });

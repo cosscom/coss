@@ -34,7 +34,7 @@ function assessor(
   return Object.assign(assess, { calls });
 }
 
-describe("COSS Risk on sign-up", () => {
+describe("coss.com Risk on sign-up", () => {
   test("a block refuses the sign-up without saying why; the request reaches the assessor", async () => {
     const assess = assessor({ decision: "block", assessmentId: "rsk_x" });
     setSignUpRiskAssessor(assess);

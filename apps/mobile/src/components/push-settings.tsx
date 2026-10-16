@@ -78,7 +78,7 @@ export function PushSettingsPanel() {
       <Panel footer={footer} title="Notifications">
         <PanelBody>
           <Text muted variant="small">
-            Notifications are turned off for COSS in iOS Settings.
+            Notifications are turned off for coss.com in iOS Settings.
           </Text>
           <Button
             icon={Settings}

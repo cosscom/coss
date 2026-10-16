@@ -6,7 +6,7 @@ export type DmarcPolicy = "none" | "quarantine" | "reject";
 export type DmarcStage = "not_checked" | "no_record" | "monitoring" | "quarantine" | "reject";
 
 /**
- * `publish` a first record, `add_reporting` (send reports to COSS), `complete_rollout` (drop
+ * `publish` a first record, `add_reporting` (send reports to coss.com), `complete_rollout` (drop
  * `pct`/`t=y`) or `tighten` to the next policy.
  */
 export type DmarcNextStepKind = "publish" | "add_reporting" | "complete_rollout" | "tighten";
@@ -44,7 +44,7 @@ export interface DmarcSource {
   messages: number;
   /** Messages that passed DMARC. */
   passing: number;
-  /** Signed with the domain's COSS DKIM keys or sent from its COSS MAIL FROM domain. */
+  /** Signed with the domain's coss.com DKIM keys or sent from its coss.com MAIL FROM domain. */
   via_coss: boolean;
 }
 

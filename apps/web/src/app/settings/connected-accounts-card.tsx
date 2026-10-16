@@ -15,7 +15,7 @@ export type ConnectedAccountRow = {
   available: boolean;
 };
 
-/** Google and GitHub accounts that sign in to this COSS account. */
+/** Google and GitHub accounts that sign in to this coss.com account. */
 export function ConnectedAccountsCard(props: {
   rows: ConnectedAccountRow[];
   /** The only way to sign in left (no password, one provider): Better Auth keeps it. */

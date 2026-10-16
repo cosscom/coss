@@ -4,7 +4,7 @@ description: Recognize the browser behind sign-ups and logins with coss/device.
 ---
 
 Email addresses and IP addresses are cheap to change; browsers are less so. `coss/device` gives the
-browser behind an event an id, so COSS can tell when one browser signs up account after account,
+browser behind an event an id, so coss.com can tell when one browser signs up account after account,
 and spot automated browsers.
 
 ## In the browser
@@ -61,7 +61,7 @@ far from the IP's country is a useful hint (`device.timezone` in a list, with `i
 ## What it collects
 
 - **An id**: 16 random bytes the browser keeps in `localStorage` (`coss_device_id`). No cookies.
-  COSS stores only a keyed hash of it.
+  coss.com stores only a keyed hash of it.
 - **Coarse facts**: time zone, languages, platform, screen size and touch support.
 - **Automation markers**: `navigator.webdriver` and headless browsers' user agents.
 

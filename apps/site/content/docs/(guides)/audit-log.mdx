@@ -1,6 +1,6 @@
 ---
 title: Audit log
-description: Who changed what in your organization, from the dashboard, the API or COSS support.
+description: Who changed what in your organization, from the dashboard, the API or coss.com support.
 icon: History
 ---
 
@@ -10,7 +10,7 @@ Your organization has one audit log. It records changes, not reads:
 | -------------------- | ---------------------------------------------------------------------------------------- |
 | `user`               | Made by a member in the dashboard: API keys, domains, members, invitations, settings…    |
 | `api_key`            | Made with an API key: domains, webhook endpoints, suppressions, canceled emails…         |
-| `system`             | Made by COSS support, shown as `COSS support` (for example suspending the organization) |
+| `system`             | Made by coss.com support, shown as `coss.com support` (for example suspending the organization) |
 
 Each event has an `action` (`<resource>.<verb>`, e.g. `api_key.created`, `domain.deleted`,
 `member.role_changed`), the target it changed, and the project and environment it happened in

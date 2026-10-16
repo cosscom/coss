@@ -22,7 +22,7 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background p-6 text-center font-sans text-foreground antialiased">
-        <title>Something went wrong · COSS</title>
+        <title>Something went wrong · coss.com</title>
         <h1 className="font-semibold text-2xl">Something went wrong</h1>
         <p className="text-muted-foreground text-sm">
           An unexpected error occurred. Try again, or come back in a few minutes.

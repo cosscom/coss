@@ -15,7 +15,7 @@ import {
 import { requirePlatformAdminAction } from "@/lib/session";
 
 /**
- * Deploys from the admin console: each dispatches the Deploy workflow through the COSS Deploy
+ * Deploys from the admin console: each dispatches the Deploy workflow through the coss.com Deploy
  * GitHub App and records an `admin_audit_event` (GitHub shows the app as the actor).
  */
 

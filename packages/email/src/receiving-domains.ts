@@ -28,7 +28,7 @@ export type ReceivingDomainRecord = ReceivingDomainRow["record"];
 export type ReceivingConfig = {
   /** The provider's inbound mail exchange (`inbound-smtp.<region>.amazonaws.com`). */
   mxHost: string;
-  /** COSS's managed inbound domain (`<label>.<managedDomain>` addresses). */
+  /** coss.com's managed inbound domain (`<label>.<managedDomain>` addresses). */
   managedDomain: string;
 };
 
@@ -39,7 +39,7 @@ const MX_PRIORITY = 10;
 /**
  * Lower-cased, trailing-dot-free receiving hostname for `parent`, or a `DomainError` explaining
  * why it can't be one: the domain itself or a subdomain, outside its MAIL FROM subdomain (whose MX
- * receives bounces) and outside COSS's managed inbound domain.
+ * receives bounces) and outside coss.com's managed inbound domain.
  */
 export function normalizeReceivingHostname(
   input: string,

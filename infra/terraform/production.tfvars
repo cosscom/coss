@@ -17,7 +17,7 @@ external_origin_hosts = {
 ses_name          = "coss"
 github_repository = "cosscom/coss"
 # Who may start the deploy runner (people with write access): keithwillcode, PeerRich, pumfleet,
-# sean-brydon; and coss-com-deploy[bot], the COSS Deploy GitHub App that the admin console deploys with
+# sean-brydon; and coss-com-deploy[bot], the coss.com Deploy GitHub App that the admin console deploys with
 # (README, "Deploying from the admin console"). Add a new maintainer here before their merges can deploy.
 deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778", "343308169"]
 # Optional secrets not stored in coss/production: take a name out once put-secret.sh has set it.
@@ -75,9 +75,9 @@ plain_env = {
     CLIENT_IP_HEADER         = "x-forwarded-for"
     TRUSTED_PROXY_COUNT      = "2"
     BILLING_PROVIDER         = "stripe"
-    # COSS's own organization (`coss`, project `notifications`, live): never suspended by admins.
+    # coss.com's own organization (`coss`, project `notifications`, live): never suspended by admins.
     NOTIFICATIONS_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
-    # COSS Risk assesses COSS's own sign-ups in that same environment (dogfooding).
+    # coss.com Risk assesses coss.com's own sign-ups in that same environment (dogfooding).
     RISK_SIGNUP_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
     SENTRY_DSN                 = "https://4ff9a884d5223a8df7cb0a12b373cee5@o4512237982711808.ingest.de.sentry.io/4512245153333328"
     SENTRY_ENVIRONMENT         = "production"
@@ -147,10 +147,10 @@ plain_env = {
     SCREENING_CLASSIFIER     = "ai"
     SCREENING_MODEL          = "typesafe-ai/jev"
     BILLING_PROVIDER         = "stripe"
-    # Account and reputation emails go out through COSS itself, from its own organization.
+    # Account and reputation emails go out through coss.com itself, from its own organization.
     NOTIFICATIONS_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
-    NOTIFICATIONS_FROM           = "COSS <notifications@coss.com>"
-    # Push notifications to the iOS app: the "COSS push" key (production, topic com.coss.ios).
+    NOTIFICATIONS_FROM           = "coss.com <notifications@coss.com>"
+    # Push notifications to the iOS app: the "coss.com push" key (production, topic com.coss.ios).
     APNS_KEY_ID               = "WCQDCU4HUL"
     APNS_TEAM_ID              = "ADWKXDJV75"
     APNS_TOPIC                = "com.coss.ios"

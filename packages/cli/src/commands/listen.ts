@@ -31,7 +31,7 @@ import type { Output } from "../output.ts";
 export const LISTEN_HELP = `Usage: coss listen [--forward-to <url>] [options]
 
 Receives the environment's webhook events as they happen and forwards each one to a local URL,
-signed like COSS signs the requests it sends endpoints (verify them with the SDK's verifyWebhook
+signed like coss.com signs the requests it sends endpoints (verify them with the SDK's verifyWebhook
 and the signing secret printed at start). Without --forward-to, events are only printed.
 
 Options:

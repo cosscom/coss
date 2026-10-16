@@ -80,8 +80,8 @@ export async function simulateReceivedEmailAction(
       from,
       to: [to],
       subject,
-      text: text || "This is a test email received by COSS.",
-      html: `<p>${(text || "This is a test email received by COSS.")
+      text: text || "This is a test email received by coss.com.",
+      html: `<p>${(text || "This is a test email received by coss.com.")
         .replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
         .replaceAll("\n", "<br>")}</p>`,
     });

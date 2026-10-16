@@ -308,7 +308,7 @@ export const HookEndpointObject = z
       .meta({
         description:
           "`manual`: disabled by you or its user. `failing`: its deliveries failed every attempt for " +
-          "five days, so COSS disabled it. `null` while enabled.",
+          "five days, so coss.com disabled it. `null` while enabled.",
       }),
     disabled_at: z.iso.datetime().nullable(),
     failing_since: z.iso
@@ -447,7 +447,7 @@ export const HookEndpointRecoveryObject = z
     since: z.iso.datetime(),
     until: z.iso.datetime(),
     status: z.enum(["pending", "completed"]).meta({
-      description: "`pending` while COSS is still requeueing deliveries (in the background).",
+      description: "`pending` while coss.com is still requeueing deliveries (in the background).",
     }),
     requeued: z.number().int().meta({ description: "Deliveries requeued so far." }),
     created_at: z.iso.datetime(),

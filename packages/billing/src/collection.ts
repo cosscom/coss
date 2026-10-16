@@ -1,5 +1,5 @@
 /**
- * Dunning, on COSS's schedule (whatever the provider): failed charges are retried
+ * Dunning, on coss.com's schedule (whatever the provider): failed charges are retried
  * (`RETRY_DAYS`), invoices with net terms get reminders before and after their due date, and
  * accounts with overdue invoices become `past_due`, then `delinquent` (held) after their grace
  * days. System-level: spans organizations.

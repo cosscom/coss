@@ -80,7 +80,7 @@ export const sendEmailRoute = createRoute({
     "second and per day; sandbox environments have their own daily quota). " +
     "With open or click tracking on (the environment's settings, or " +
     "`tracking`), the HTML body is delivered with a tracking pixel and/or links rewritten to " +
-    "COSS redirects; the stored `html` stays as sent.",
+    "coss.com redirects; the stored `html` stays as sent.",
   security: [{ bearerAuth: [] }],
   middleware: [
     requireApiKey({ email: ["send"] }),
@@ -381,7 +381,7 @@ export const listEmailLinksRoute = createRoute({
   tags: ["Emails"],
   summary: "List an email's tracked links",
   description:
-    "The links COSS rewrote for click tracking, in the order they appear in the HTML, with " +
+    "The links coss.com rewrote for click tracking, in the order they appear in the HTML, with " +
     "their click counts. Empty unless the email was sent with click tracking.",
   security: [{ bearerAuth: [] }],
   middleware: [requireApiKey({ email: ["read"] }), rateLimit("api.read")],

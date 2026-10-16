@@ -54,7 +54,7 @@ mock.module("@/lib/session", () => ({
   }),
 }));
 const systemOrgId = newId("org");
-const SYSTEM_ORGANIZATION_MESSAGE = "COSS's own organization";
+const SYSTEM_ORGANIZATION_MESSAGE = "coss.com's own organization";
 mock.module("@/lib/system-organization", () => ({
   SYSTEM_ORGANIZATION_MESSAGE,
   isSystemOrganization: async (organizationId: string) => organizationId === systemOrgId,
@@ -236,7 +236,7 @@ describe("SSO recovery", () => {
       expect(target()).toHaveBeenCalledWith(
         expect.objectContaining({ organizationId, reason: "Outage", actor: expect.any(Object) }),
       );
-      // The organization's own audit log names "COSS support", never the reason.
+      // The organization's own audit log names "coss.com support", never the reason.
       expect(supportAudit).toHaveBeenCalledTimes(1);
       expect(JSON.stringify(supportAudit.mock.calls)).not.toContain("Outage");
     });
@@ -360,7 +360,7 @@ const reputation = await import(
   "../src/app/admin/organizations/[organizationId]/reputation/actions"
 );
 
-describe("COSS's own organization", () => {
+describe("coss.com's own organization", () => {
   function form(organizationId: string) {
     const data = new FormData();
     data.set("organizationId", organizationId);

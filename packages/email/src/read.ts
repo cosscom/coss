@@ -63,7 +63,7 @@ function trackingObject(row: TrackingColumns): EmailObjectOutput["tracking"] {
 /**
  * Why a failed email failed, as its `email.failed` event tells it. A provider's own error text is
  * internal (it can name accounts or infrastructure), so `provider_error` gets the event's message;
- * every other stored message is written by COSS for the customer. Emails that haven't failed
+ * every other stored message is written by coss.com for the customer. Emails that haven't failed
  * have none: an error code on a queued email only marks a screening hold.
  */
 export function emailFailure(

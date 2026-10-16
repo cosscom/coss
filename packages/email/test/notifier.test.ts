@@ -197,7 +197,7 @@ describe("emailNotifier", () => {
     const notifier = emailNotifier({
       service,
       environment: await notificationEnvironment(platform.production.id),
-      from: "COSS <notifications@unverified.coss.test>",
+      from: "coss.com <notifications@unverified.coss.test>",
     });
     const customer = await createTestTenant();
     const now = new Date();

@@ -1,6 +1,6 @@
 /**
  * BIMI (brand logos in inboxes): checks what mailbox providers will find in DNS — the domain's
- * `default._bimi` record and whether DMARC is enforced. DNS only: COSS never fetches the logo or
+ * `default._bimi` record and whether DMARC is enforced. DNS only: coss.com never fetches the logo or
  * the VMC/CMC certificate (customers' own; mailbox providers validate them).
  */
 import type { DomainBimi } from "@coss/db/schema";

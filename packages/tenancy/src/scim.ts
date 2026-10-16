@@ -258,7 +258,7 @@ export type ScimEvent = {
   sequence: number;
   type: string;
   actorId: string;
-  /** The actor's address when they are a member of the organization (not COSS support). */
+  /** The actor's address when they are a member of the organization (not coss.com support). */
   actorEmail: string | null;
   credentialId: string | null;
   createdAt: Date;

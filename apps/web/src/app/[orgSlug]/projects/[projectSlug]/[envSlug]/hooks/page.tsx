@@ -43,7 +43,7 @@ export default async function HooksPage({
     <div className="flex flex-col gap-6">
       <PageHeader
         actions={createDialog}
-        description="Send a message to one of your applications once: COSS delivers it, signed and retried, to every endpoint its users registered."
+        description="Send a message to one of your applications once: coss.com delivers it, signed and retried, to every endpoint its users registered."
         meta={<ModeBadge mode={environment.mode} />}
         title="Hooks"
       />

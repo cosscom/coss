@@ -1,6 +1,6 @@
 /**
  * An invitation is only as good as its inviter: Better Auth accepts it as long as it is pending,
- * even after the person who sent it was removed, left or lost the right to invite. COSS refuses
+ * even after the person who sent it was removed, left or lost the right to invite. coss.com refuses
  * those at accept time (authoritative, every path) and cancels them when membership changes, so
  * they don't linger in the members list.
  */

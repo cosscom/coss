@@ -35,7 +35,7 @@ const ListenerIdParams = z.object({
 });
 
 const LISTENER_NOTE =
-  "Listeners are how `coss listen` forwards events to a local server: COSS can't reach " +
+  "Listeners are how `coss listen` forwards events to a local server: coss.com can't reach " +
   "`localhost`, so the CLI pulls them. They belong to the API key's environment, receive events " +
   "created after they open, and don't count toward the plan's webhook endpoints.";
 

@@ -123,7 +123,7 @@ export default async function PlansPage({
                 </ul>
                 {!canManage || !selfServe || isCurrent ? null : !plan.selfServe ? (
                   <Button
-                    render={<a href={`mailto:${SALES_EMAIL}?subject=COSS%20Enterprise`} />}
+                    render={<a href={`mailto:${SALES_EMAIL}?subject=coss.com%20Enterprise`} />}
                     size="sm"
                     variant="outline"
                   >

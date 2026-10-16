@@ -3,7 +3,7 @@ title: MCP server
 description: Let your coding agent look up emails, explain why one wasn't delivered, and fix your setup.
 ---
 
-`coss-mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server for COSS. Add it
+`coss-mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server for coss.com. Add it
 to your coding agent (Claude Code, Cursor, VS Code, Codex, or any MCP client), then ask things like:
 
 - "Did the welcome email to jane@example.com get delivered?"
@@ -13,7 +13,7 @@ to your coding agent (Claude Code, Cursor, VS Code, Codex, or any MCP client), t
 - "Why did my send request fail with a 422?"
 - "What DNS records does acme.com still need?"
 
-The server runs locally on Node.js 22+ through `npx` and calls the COSS API with your API key.
+The server runs locally on Node.js 22+ through `npx` and calls the coss.com API with your API key.
 
 ## Set it up
 
@@ -53,7 +53,7 @@ In `.vscode/mcp.json`; VS Code asks for the key once and stores it securely:
 ```json
 {
   "inputs": [
-    { "type": "promptString", "id": "coss-api-key", "description": "COSS API key", "password": true }
+    { "type": "promptString", "id": "coss-api-key", "description": "coss.com API key", "password": true }
   ],
   "servers": {
     "coss": {
@@ -86,7 +86,7 @@ The server reads its configuration from the environment only:
 | Variable | |
 | --- | --- |
 | `COSS_API_KEY` | Required. The key every tool calls the API with. |
-| `COSS_BASE_URL` | Another API origin, e.g. `http://localhost:3001` when you run COSS yourself. Defaults to `https://api.coss.com`. |
+| `COSS_BASE_URL` | Another API origin, e.g. `http://localhost:3001` when you run coss.com yourself. Defaults to `https://api.coss.com`. |
 
 <Callout type="warn">
 API keys can do everything the API can, so the agent can also send email and change suppressions
@@ -109,7 +109,7 @@ ask before calling them. Give the server a development key unless you need produ
 **Suppressions**: `check_suppression`, `list_suppressions`, `add_suppression`, `remove_suppression`
 (by entry or by address).
 
-**Domains**: `list_domains`, `get_domain` (by id or name, with every DNS record and what COSS
+**Domains**: `list_domains`, `get_domain` (by id or name, with every DNS record and what coss.com
 found), `add_domain`, `verify_domain`.
 
 **Webhooks**: `list_webhook_endpoints`, `list_webhook_deliveries`, `get_webhook_delivery` (every

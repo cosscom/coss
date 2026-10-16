@@ -2,7 +2,7 @@
  * The SMTP relay's message mapping: a submitted MIME message and its envelope become the same
  * `SendEmailRequest` an API send makes, so everything after it (sender authorization,
  * suppressions, quotas, tracking, screening, webhooks) is the API's path. Nothing is passed
- * through raw: the provider still gets a structured message COSS builds.
+ * through raw: the provider still gets a structured message coss.com builds.
  *
  * DB-free and server-only (`@coss/email/smtp`). Failures are SMTP replies whose text is safe to
  * show the client.
@@ -56,7 +56,7 @@ export const SMTP_MAX_MESSAGE_BYTES = 40 * 1024 * 1024;
 /** Matches the API's `Idempotency-Key` rule. */
 const IDEMPOTENCY_KEY_MAX_LENGTH = 256;
 
-/** Headers that steer COSS itself; they are read and never sent on. */
+/** Headers that steer coss.com itself; they are read and never sent on. */
 export const COSS_HEADERS = {
   category: "x-coss-category",
   tags: "x-coss-tags",
@@ -207,7 +207,7 @@ function describeIssue(issue: { path: PropertyKey[]; message: string }): string 
  *
  * Recipients come from the envelope: `To`/`Cc` header addresses are kept as such when they are
  * also envelope recipients, and every other envelope recipient becomes `bcc`. A header recipient
- * that isn't in the envelope is refused (COSS can't show an address without sending to it), as is
+ * that isn't in the envelope is refused (coss.com can't show an address without sending to it), as is
  * a message with no `To` recipient (moving Bcc'd addresses into `To` would disclose them).
  */
 export async function messageToSendRequest(input: {
@@ -225,7 +225,7 @@ export async function messageToSendRequest(input: {
     return contentError("unparsable_message", "The message could not be parsed as MIME.");
   }
 
-  // Header fields, first occurrence wins for the ones COSS reads.
+  // Header fields, first occurrence wins for the ones coss.com reads.
   const topHeaders = email.headers;
   const headerOf = (name: string) => topHeaders.find((header) => header.key === name)?.value;
 
@@ -264,7 +264,7 @@ export async function messageToSendRequest(input: {
   if (to.length === 0) {
     return contentError(
       "no_to_recipient",
-      "The message needs at least one To recipient. COSS does not move Bcc recipients into To.",
+      "The message needs at least one To recipient. coss.com does not move Bcc recipients into To.",
     );
   }
   const bcc = [...envelope].filter(([key]) => !named.has(key)).map(([, address]) => address);
@@ -272,7 +272,7 @@ export async function messageToSendRequest(input: {
   const subject = email.subject === undefined ? "" : unfold(email.subject);
   if (subject === "") return contentError("missing_subject", "The message needs a Subject.");
 
-  // Custom headers: everything COSS or the provider doesn't own, minus client noise.
+  // Custom headers: everything coss.com or the provider doesn't own, minus client noise.
   const headers: Record<string, string> = {};
   for (const header of topHeaders) {
     const name = header.key;
@@ -304,7 +304,7 @@ export async function messageToSendRequest(input: {
     );
   }
 
-  // COSS's own settings.
+  // coss.com's own settings.
   const request: SendEmailRequestInput = {
     from,
     to,

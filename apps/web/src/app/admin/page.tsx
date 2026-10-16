@@ -72,26 +72,26 @@ export default async function AdminOverviewPage() {
       <SectionHeader
         description={
           systemOrganization
-            ? "Live emails of customers. COSS's own account and notification emails are counted apart."
-            : "Live emails. NOTIFICATIONS_ENVIRONMENT_ID isn't set, so COSS's own emails are counted as a customer's."
+            ? "Live emails of customers. coss.com's own account and notification emails are counted apart."
+            : "Live emails. NOTIFICATIONS_ENVIRONMENT_ID isn't set, so coss.com's own emails are counted as a customer's."
         }
         title="Customer sending"
       />
       <StatRow>
         <Stat
-          detail={`COSS: ${formatCompact(day.coss.live.sent)}`}
+          detail={`coss.com: ${formatCompact(day.coss.live.sent)}`}
           href="/admin/sending?window=24h"
           label="Sent · 24 h"
           value={formatCompact(day.customers.live.sent)}
         />
         <Stat
-          detail={`COSS: ${formatCompact(week.coss.live.sent)}`}
+          detail={`coss.com: ${formatCompact(week.coss.live.sent)}`}
           href="/admin/sending?window=7d"
           label="Sent · 7 days"
           value={formatCompact(week.customers.live.sent)}
         />
         <Stat
-          detail={`COSS: ${formatCompact(month.coss.live.sent)}`}
+          detail={`coss.com: ${formatCompact(month.coss.live.sent)}`}
           href="/admin/sending?window=30d"
           label="Sent · 30 days"
           value={formatCompact(month.customers.live.sent)}
@@ -110,10 +110,10 @@ export default async function AdminOverviewPage() {
         <PanelBody>
           <StackedBars
             columns={columns}
-            label="Live recipients sent per day, customers and COSS"
+            label="Live recipients sent per day, customers and coss.com"
             series={[
               { key: "customers", label: "Customers", className: "bg-foreground/72" },
-              { key: "coss", label: "COSS", className: "bg-foreground/24" },
+              { key: "coss", label: "coss.com", className: "bg-foreground/24" },
             ]}
           />
         </PanelBody>

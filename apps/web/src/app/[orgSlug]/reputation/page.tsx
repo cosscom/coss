@@ -23,7 +23,7 @@ export default async function ReputationPage({ params }: PageProps<"/[orgSlug]/r
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        description="COSS watches the bounce and complaint rates of your live sending and suspends it automatically when they get too high, to protect deliverability for everyone. Sandbox sending is never affected."
+        description="coss.com watches the bounce and complaint rates of your live sending and suspends it automatically when they get too high, to protect deliverability for everyone. Sandbox sending is never affected."
         meta={<StandingBadge status={standing?.status ?? "good"} />}
         title="Reputation"
       />

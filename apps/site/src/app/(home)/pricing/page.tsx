@@ -16,7 +16,7 @@ const FREE_EMAILS = (PLANS.free.includedUnits["email.recipients"] ?? 0).toLocale
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: `Start free with ${FREE_EMAILS} emails a month. Paid plans turn their monthly fee into credit for usage of any COSS product.`,
+  description: `Start free with ${FREE_EMAILS} emails a month. Paid plans turn their monthly fee into credit for usage of any coss.com product.`,
 };
 
 function Section({

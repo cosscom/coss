@@ -288,7 +288,7 @@ function assertUserVerified(userVerified: boolean): void {
 }
 
 export const authOptions = {
-  appName: "COSS",
+  appName: "coss.com",
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   trustedOrigins: process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : [],
@@ -326,7 +326,7 @@ export const authOptions = {
     requireEmailVerification: true,
     // `url` is Better Auth's /api/auth/reset-password/:token, which checks the token and redirects
     // to the client's `redirectTo` (the dashboard's /reset-password) with `?token=` or `?error=`.
-    // Account emails are queued (`./emails.ts`) and sent by the worker through COSS itself.
+    // Account emails are queued (`./emails.ts`) and sent by the worker through coss.com itself.
     sendResetPassword: async ({ user, url }) => {
       await enqueueAuthEmail({
         kind: "reset_password",
@@ -502,7 +502,7 @@ export const authOptions = {
       if (ctx.path === "/sign-up/email") {
         if (typeof ctx.body?.email === "string") {
           await assertSignUpEmailAllowed(ctx.body.email);
-          // COSS Risk, when the dashboard registered it (`./risk.ts`): only `block` refuses.
+          // coss.com Risk, when the dashboard registered it (`./risk.ts`): only `block` refuses.
           await assertSignUpNotBlocked({
             email: ctx.body.email,
             headers: ctx.headers ?? ctx.request?.headers ?? null,
@@ -583,12 +583,12 @@ export const authOptions = {
       // Only TOTP (authenticator apps) and backup codes: there is no email/SMS OTP delivery.
       // Enabling needs the password and a verified code; disabling needs the password and a
       // fresh session. Sign-in challenges lock the account for 15 min after 10 failed codes.
-      issuer: "COSS",
+      issuer: "coss.com",
     }),
     // The same challenge after Google and GitHub sign-ins.
     socialTwoFactor(),
     passkey({
-      rpName: "COSS",
+      rpName: "coss.com",
       rpID: dashboardUrl?.hostname,
       origin: dashboardUrl?.origin,
       // Discoverable credentials power the "Sign in with a passkey" button and autofill.
@@ -617,7 +617,7 @@ export const authOptions = {
       permissions: { defaultPermissions: API_KEY_PERMISSIONS },
     }),
     sso({
-      // `domainVerified` gates sign-in and trusted account linking. COSS sets it (from the org's
+      // `domainVerified` gates sign-in and trusted account linking. coss.com sets it (from the org's
       // verified email domains) instead of the plugin's TXT records; `resolveUser` re-checks
       // the domains on every sign-in, so a domain that is deleted or fails stops SSO at once.
       domainVerification: { enabled: true },

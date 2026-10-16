@@ -11,12 +11,12 @@ const base = {
 };
 
 describe("dmarcNoNextStep", () => {
-  test("a fully rejecting domain is done; COSS reads its reports only when they reach it", () => {
+  test("a fully rejecting domain is done; coss.com reads its reports only when they reach it", () => {
     expect(dmarcComplete(base)).toBe(true);
-    expect(dmarcNoNextStep(base, "acme.test")).toContain("COSS keeps reading the reports");
+    expect(dmarcNoNextStep(base, "acme.test")).toContain("coss.com keeps reading the reports");
     const unreported = dmarcNoNextStep({ ...base, reporting: false }, "acme.test");
     expect(unreported).toStartWith("acme.test rejects mail that fails DMARC");
-    expect(unreported).not.toContain("COSS keeps reading");
+    expect(unreported).not.toContain("coss.com keeps reading");
   });
 
   test("an inherited policy short of reject without receiving claims no protection", () => {

@@ -15,7 +15,7 @@ import {
 const { hookEndpoint, logDrain, riskSettings, webhookEndpoint } = schema;
 
 /**
- * Tables of endpoints with a current and a previous (rolled) secret: COSS's own webhook endpoints
+ * Tables of endpoints with a current and a previous (rolled) secret: coss.com's own webhook endpoints
  * and Hooks endpoints. Their secret columns are identical, so one loop covers both.
  */
 const ROLLED_SECRET_TABLES = [

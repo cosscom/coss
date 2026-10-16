@@ -1,5 +1,5 @@
 /**
- * The plain-text alternative COSS generates for a send that has only `html`: an HTML-only message
+ * The plain-text alternative coss.com generates for a send that has only `html`: an HTML-only message
  * scores worse with spam filters, and some clients and screen readers prefer text. It is built
  * for the provider's copy at dispatch (the stored email keeps what the customer sent) from the
  * original HTML, so links point at their real targets rather than click redirects.

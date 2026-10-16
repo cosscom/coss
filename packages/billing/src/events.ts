@@ -129,7 +129,7 @@ async function invoiceByProviderId(
   return row ?? null;
 }
 
-/** Applies one outcome. Unknown invoices (not COSS's) are ignored. */
+/** Applies one outcome. Unknown invoices (not coss.com's) are ignored. */
 export async function applyOutcome(
   outcome: ProviderOutcome,
   provider: BillingAccount["provider"],
@@ -160,7 +160,7 @@ export async function applyOutcome(
     }
     case "invoice_payment_failed": {
       const invoice = await invoiceByProviderId(provider, outcome.providerInvoiceId);
-      // Charges COSS made itself report their failure synchronously; only async ones (a
+      // Charges coss.com made itself report their failure synchronously; only async ones (a
       // direct debit that bounced days later) arrive here.
       if (invoice?.status !== "open" || invoice.paymentState !== "processing") return;
       await applyCollection(invoice, { state: "failed", error: outcome.error }, deps, now);

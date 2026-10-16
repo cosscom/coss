@@ -13,14 +13,14 @@ const MESSAGES: Record<string, string> = {
     "An account already exists for this email address. Sign in with your password instead.",
   DISPOSABLE_EMAIL: "Disposable email addresses can't be used. Use a permanent address.",
   EMAIL_DOMAIN_UNDELIVERABLE: "That account's email domain can't receive email.",
-  email_not_found: "That account has no email address COSS can use.",
+  email_not_found: "That account has no email address coss.com can use.",
   BANNED_USER: "This account has been suspended. Contact support if you think this is a mistake.",
   access_denied: "Sign-in was canceled.",
   state_not_found: "Your sign-in attempt expired. Try again.",
   state_mismatch: "Your sign-in attempt expired. Try again.",
   please_restart_the_process: "Your sign-in attempt expired. Try again.",
   account_already_linked_to_different_user:
-    "That account is already connected to another COSS account.",
+    "That account is already connected to another coss.com account.",
   unable_to_link_account:
     "That account couldn't be connected. Check that its email address is verified with the provider.",
 };

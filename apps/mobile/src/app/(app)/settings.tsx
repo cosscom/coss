@@ -21,7 +21,7 @@ export default function SettingsScreen() {
   const { user } = me.data;
 
   const confirmSignOut = () =>
-    NativeAlert.alert("Sign out of COSS?", "You can sign in again at any time.", [
+    NativeAlert.alert("Sign out of coss.com?", "You can sign in again at any time.", [
       { text: "Cancel", style: "cancel" },
       { text: "Sign out", style: "destructive", onPress: () => void signOut() },
     ]);

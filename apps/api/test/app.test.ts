@@ -149,7 +149,7 @@ describe("GET /openapi.json", () => {
       required: false,
       schema: { type: "string", enum: [...API_VERSIONS] },
     });
-    expect(doc.info).toMatchObject({ title: "COSS API", version: LATEST_API_VERSION });
+    expect(doc.info).toMatchObject({ title: "coss.com API", version: LATEST_API_VERSION });
     expect(doc.servers).toEqual([{ url: "http://api.test" }]);
     expect(Object.keys(doc.paths).sort()).toEqual([
       "/v1/api_key",

@@ -24,7 +24,7 @@ export function toInvoiceSummary(invoice: InvoiceRow): InvoiceSummaryOutput {
     id: invoice.id,
     number: invoice.number,
     kind: invoice.kind,
-    // Drafts never leave COSS: they are numbered (and listed) once finalized.
+    // Drafts never leave coss.com: they are numbered (and listed) once finalized.
     status: invoice.status === "draft" ? "open" : invoice.status,
     currency: "usd",
     period: { start: invoice.periodStart.toISOString(), end: invoice.periodEnd.toISOString() },

@@ -102,7 +102,7 @@ export type WorkerDeps = {
   notifications: ReputationNotificationDeps | null;
   /** Push notifications to the iOS app; `null`: held until APNs is configured. */
   push?: PushDeps | null;
-  /** COSS's own organization (`NOTIFICATIONS_ENVIRONMENT_ID`'s): the guard never suspends it. */
+  /** coss.com's own organization (`NOTIFICATIONS_ENVIRONMENT_ID`'s): the guard never suspends it. */
   systemOrganizationId: string | null;
   /** Only with `EMAIL_PROVIDER=ses`. */
   sesEvents?: { sqs: SqsApi; tenantPrefix: string };

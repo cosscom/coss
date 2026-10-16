@@ -87,7 +87,7 @@ export function errorFromResponse(
     return {
       type: "api_error",
       code: "unexpected_response",
-      message: `The COSS API returned an unexpected HTTP ${status}${reason} response.`,
+      message: `The coss.com API returned an unexpected HTTP ${status}${reason} response.`,
       status,
       request_id: headerRequestId,
     };

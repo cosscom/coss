@@ -1,5 +1,5 @@
 /**
- * Webhook endpoint wire types (endpoint management). The body COSS posts to an endpoint is
+ * Webhook endpoint wire types (endpoint management). The body coss.com posts to an endpoint is
  * `WebhookEvent` in `./webhook.ts`.
  */
 import type { ApiVersion } from "../api-version.ts";
@@ -43,7 +43,7 @@ export interface WebhookEndpoint {
   enabled: boolean;
   /**
    * `manual`: someone disabled it. `failing`: its deliveries failed every attempt for five days,
-   * so COSS disabled it. `null` while enabled.
+   * so coss.com disabled it. `null` while enabled.
    */
   disabled_reason: WebhookEndpointDisabledReason | null;
   /** When it was disabled (ISO 8601); `null` while enabled. */
@@ -74,7 +74,7 @@ export interface WebhookEndpointWithSecret extends WebhookEndpoint {
 
 /** Body of `POST /v1/webhook_endpoints`. */
 export interface CreateWebhookEndpointParams {
-  /** An `https://` URL COSS posts events to. */
+  /** An `https://` URL coss.com posts events to. */
   url: string;
   /** A note for your own reference. */
   description?: string | null;

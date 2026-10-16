@@ -67,7 +67,7 @@ export default async function AuditLogPage({
             Export CSV
           </Button>
         }
-        description="Who changed what: members in the dashboard, API keys and COSS support. Newest first; entries can't be edited or deleted."
+        description="Who changed what: members in the dashboard, API keys and coss.com support. Newest first; entries can't be edited or deleted."
       >
         {resources.length > 0 || actor ? (
           <div className="flex flex-wrap items-center gap-2 border-t px-5 py-3">
@@ -139,12 +139,12 @@ export default async function AuditLogPage({
                         ) : (
                           <span className="flex items-center gap-2">
                             {actorLabel}
-                            <Badge variant="outline">COSS</Badge>
+                            <Badge variant="outline">coss.com</Badge>
                           </span>
                         )}
                         {event.metadata.impersonated_by ? (
                           <span className="text-muted-foreground text-xs">
-                            while impersonated by COSS support
+                            while impersonated by coss.com support
                           </span>
                         ) : null}
                         {event.client_ip ? (

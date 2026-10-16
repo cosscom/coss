@@ -1,5 +1,5 @@
 /**
- * Verifies COSS webhook and log drain requests (Standard Webhooks signatures). Uses only Web
+ * Verifies coss.com webhook and log drain requests (Standard Webhooks signatures). Uses only Web
  * Crypto, so it runs unchanged on Node, Bun, Deno and Workers.
  */
 import type { LogDrainLine } from "./types/log-drain.ts";
@@ -103,7 +103,7 @@ async function verifySignature(
  * const event = await verifyWebhook(await request.text(), request.headers, process.env.COSS_WEBHOOK_SECRET);
  * ```
  *
- * The same check verifies messages your own users receive from COSS Hooks (`coss.hooks`): pass
+ * The same check verifies messages your own users receive from coss.com Hooks (`coss.hooks`): pass
  * the endpoint's secret and name your payload type, e.g. `verifyWebhook<InvoicePaid>(…)`.
  */
 export async function verifyWebhook<T = WebhookEvent>(

@@ -84,7 +84,7 @@ describe("coss login", () => {
     const api = dashboardAndApi();
     const bad = testIo({ fetch: api.fetch, answers: ["not-a-key"] });
     expect(await run(["login", "--manual"], bad)).toBe(1);
-    expect(bad.errors()).toContain("isn't a COSS API key");
+    expect(bad.errors()).toContain("isn't a coss.com API key");
 
     const io = testIo({
       fetch: api.fetch,

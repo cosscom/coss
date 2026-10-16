@@ -8,30 +8,30 @@ authentication: deliver it anyway (`p=none`), move it to spam (`p=quarantine`) o
 (`p=reject`). Providers also send the domain's owner daily **aggregate reports**: every source
 that sent as the domain, how many messages, and whether they passed.
 
-COSS receives those reports for you, shows them on each domain's **DMARC** tab, and tells you when
+coss.com receives those reports for you, shows them on each domain's **DMARC** tab, and tells you when
 it is safe to make the policy stricter.
 
 ## Reports
 
-Every domain has its own report address, named in the DMARC record COSS recommends:
+Every domain has its own report address, named in the DMARC record coss.com recommends:
 
 ```txt
 v=DMARC1; p=none; rua=mailto:dmarc-<token>@inbound.coss.com;
 ```
 
 Publish it as a `TXT` record at `_dmarc.<your domain>`. If you already have a DMARC record, keep
-it and add COSS's address to its `rua` tag (addresses are comma-separated); the dashboard shows
+it and add coss.com's address to its `rua` tag (addresses are comma-separated); the dashboard shows
 the exact record to publish. Mailbox providers send a report about each day's mail, usually within
 a day or two.
 
 A message passes DMARC when DKIM or SPF passes **and** is aligned with the domain in its From
-header. Mail you send through COSS passes on both counts once the domain's DKIM and MAIL FROM
-records are in place. The dashboard marks sources that used the domain's COSS DKIM keys or MAIL
-FROM domain with **COSS**; anything else is another service sending as your domain (a CRM, a help
+header. Mail you send through coss.com passes on both counts once the domain's DKIM and MAIL FROM
+records are in place. The dashboard marks sources that used the domain's coss.com DKIM keys or MAIL
+FROM domain with **coss.com**; anything else is another service sending as your domain (a CRM, a help
 desk, your mail server) or someone spoofing it.
 
 Reports are kept <RetentionPeriod of="dmarc_reports" /> (see [data retention](/docs/data-retention)).
-COSS keeps the parsed reports, never the report emails. A report is accepted only when its email
+coss.com keeps the parsed reports, never the report emails. A report is accepted only when its email
 passes SPF or DKIM and it is about the domain (or a subdomain), and at most 10,000 rows of each
 report are kept.
 
@@ -43,19 +43,19 @@ reports say it is safe:
 1. **Monitor** (`p=none`): nothing changes for delivery; reports start arriving.
 2. **Quarantine** (`p=quarantine`), once:
    - reports have arrived for at least 14 days, and the latest is at most 3 days old;
-   - at least 99% of the mail sent through COSS passes DMARC;
+   - at least 99% of the mail sent through coss.com passes DMARC;
    - at least 98% of all reported mail passes;
-   - no source outside COSS with at least 1% of the volume fails. Authorize such a source (set
+   - no source outside coss.com with at least 1% of the volume fails. Authorize such a source (set
      up DKIM or SPF for it, aligned with your domain) or make sure it isn't yours.
 3. **Reject** (`p=reject`), after 14 days of a full quarantine and with the same checks, at least
    99% of all reported mail passing.
 
-COSS never changes your DNS: when a step is ready, the dashboard shows the record to publish, and
-owners and admins get an email with it. COSS also emails them if mail sent through COSS starts
+coss.com never changes your DNS: when a step is ready, the dashboard shows the record to publish, and
+owners and admins get an email with it. coss.com also emails them if mail sent through coss.com starts
 failing DMARC under `p=quarantine` or `p=reject`, because mailbox providers then drop your own
 mail. A record that still uses `pct` (removed by RFC 9989) or `t=y` applies its policy to only
 part of the mail: the next step is to apply it in full. A record that lists a tag twice, or has a
-part that isn't `tag=value`, may be ignored by receivers, so COSS treats it as no policy and asks
+part that isn't `tag=value`, may be ignored by receivers, so coss.com treats it as no policy and asks
 you to replace it.
 
 A report with more than 10,000 rows is kept only in part, so while one is among the last 14 days,
@@ -64,7 +64,7 @@ the checks can't see every source and don't unlock the next step: review your se
 A subdomain you added as its own domain (`mail.acme.com`) with no record of its own gets its
 organizational domain's (`acme.com`'s `sp`, else `p`), and its reports go where that record says.
 The first step is then to publish its own record with the same policy, partial enforcement and
-alignment, which sends its reports to COSS without changing anything for receivers.
+alignment, which sends its reports to coss.com without changing anything for receivers.
 
 ## API
 

@@ -327,12 +327,12 @@ describe("group → role mappings", () => {
     const userId = await userIdOf(email);
     await setScimGroupRoles({
       organizationId: tenant.organization.id,
-      mappings: [{ groupName: " COSS Admins ", role: "admin" }],
+      mappings: [{ groupName: " coss.com Admins ", role: "admin" }],
     });
 
     const group = await scim(tenant.token, "POST", "/Groups", {
       schemas: [GROUP_SCHEMA],
-      displayName: "COSS Admins",
+      displayName: "coss.com Admins",
       members: [{ value: scimUserId }],
     });
     expect(group.status).toBe(201);

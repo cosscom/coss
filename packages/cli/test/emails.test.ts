@@ -40,9 +40,9 @@ describe("coss emails send", () => {
     const io = testIo({ fetch: api.fetch, env: { COSS_API_KEY: SANDBOX_KEY } });
     expect(await run(["emails", "send", "--to", "a@example.com"], io)).toBe(0);
     expect(api.requests[0]?.body).toEqual({
-      from: "COSS CLI <cli@example.com>",
+      from: "coss.com CLI <cli@example.com>",
       to: ["a@example.com"],
-      subject: "Test email from the COSS CLI",
+      subject: "Test email from the coss.com CLI",
       text: "Sent with `coss emails send`. https://coss.com/docs/cli",
     });
     expect(io.output()).toContain("email_1 queued → a@example.com");

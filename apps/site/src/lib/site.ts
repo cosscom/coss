@@ -1,4 +1,4 @@
-export const SITE_NAME = "COSS";
+export const SITE_NAME = "coss.com";
 export const SITE_URL = "https://coss.com";
 export const SITE_DESCRIPTION =
   "One API key and one SDK for email, SMS, video, scheduling and more.";
@@ -22,7 +22,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
 /** Where Enterprise inquiries go (the pricing page and the billing guide). */
 export const SALES_EMAIL = "sales@coss.com";
 
-/** COSS's API products (the landing, pricing and nav). */
+/** coss.com's API products (the landing, pricing and nav). */
 export const PRODUCTS = [
   { key: "email", name: "Email", description: "Transactional email from your own domains." },
   { key: "sms", name: "SMS", description: "Text messages worldwide." },

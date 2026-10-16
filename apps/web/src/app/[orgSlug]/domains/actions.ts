@@ -56,7 +56,7 @@ export async function addDomainAction(
         organizationId: context.organization.id,
         name: formString(formData, "name"),
         userId: context.session.user.id,
-        // COSS's own organization sends from coss.com, which no one else may claim: platform admins
+        // coss.com's own organization sends from coss.com, which no one else may claim: platform admins
         // may add reserved domains there only (anywhere until it is configured, to bootstrap it).
         allowReserved:
           isPlatformAdmin(context.session) &&

@@ -174,7 +174,7 @@ export default async function AdminOrganizationPage({
             webhook deliveries are held (they resume when lifted), and its dashboard is read-only.
             Members see that it is suspended, never the reason.
             {isSystem && !suspension
-              ? " This is COSS's own organization (it sends account emails), so it can't be suspended."
+              ? " This is coss.com's own organization (it sends account emails), so it can't be suspended."
               : null}
           </PanelDescription>
           <PanelAction className="flex flex-wrap gap-2">

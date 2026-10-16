@@ -22,7 +22,7 @@ const IGNORED_SPANS: NonNullable<Options["ignoreSpans"]> = [
 /**
  * What the SDKs may collect. Their defaults collect nearly everything (request and response
  * bodies — email content —, IPs, cookies, query strings, AI prompts — screened emails —, database
- * parameters, queue payloads, local variables); COSS sends none of it. Users are set explicitly
+ * parameters, queue payloads, local variables); coss.com sends none of it. Users are set explicitly
  * (an id only), never derived from requests.
  */
 export const DATA_COLLECTION: DataCollection = {

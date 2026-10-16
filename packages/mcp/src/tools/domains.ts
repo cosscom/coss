@@ -59,7 +59,7 @@ export function registerDomainTools(ctx: ToolContext): void {
       title: "Get a domain and its DNS records",
       description:
         "A sending domain with every DNS record it needs (DKIM, MAIL FROM MX and SPF, DMARC), " +
-        "what COSS found in DNS for each, and its tracking and receiving setup.",
+        "what coss.com found in DNS for each, and its tracking and receiving setup.",
       inputSchema: z.object({ domain: domainArg }),
       annotations: READ_ONLY,
     },
@@ -90,7 +90,7 @@ export function registerDomainTools(ctx: ToolContext): void {
     {
       title: "Verify a domain now",
       description:
-        "Checks a domain's DNS records now (instead of waiting for COSS's periodic check) and " +
+        "Checks a domain's DNS records now (instead of waiting for coss.com's periodic check) and " +
         "returns the result per record. It can only be checked once in a short while.",
       inputSchema: z.object({ domain: domainArg }),
       annotations: { ...WRITE, idempotentHint: true, openWorldHint: true },

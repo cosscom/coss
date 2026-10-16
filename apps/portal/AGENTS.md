@@ -1,6 +1,6 @@
 # apps/portal — the Hooks portal
 
-The page a COSS customer's users open (or the customer embeds in an iframe) to manage one Hooks
+The page a coss.com customer's users open (or the customer embeds in an iframe) to manage one Hooks
 application's endpoints, pick event types, read the message and delivery log, retry, recover and
 send tests — so customers never build that UI. Next.js 16 (:3003 locally), standalone image
 (`Dockerfile`), its own ECS service on **its own registrable domain** (`PORTAL_HOST` in

@@ -6,7 +6,7 @@ icon: Waypoints
 
 A log drain is an HTTPS endpoint that receives an environment's [log](/docs/logs) as it is
 written: every API request, email event and webhook attempt, plus the changes made to the
-environment (from the organization's audit log). COSS posts them in batches, usually within a few
+environment (from the organization's audit log). coss.com posts them in batches, usually within a few
 seconds, signed like [webhooks](/docs/webhooks).
 
 | Source    | Lines                                                                                          |
@@ -37,7 +37,7 @@ const { data, error } = await coss.logDrains.create({
 Drains belong to the API key's environment, like webhook endpoints. An environment can have up to
 5 drains.
 
-## What COSS sends
+## What coss.com sends
 
 Each request is a `POST` with `Content-Type: application/x-ndjson`: one JSON object per line, each
 line ending with a newline, at most 500 lines or 1 MB per request. Log lines are exactly the
@@ -81,7 +81,7 @@ request is more than five minutes old: answer with a 4xx status then.
   written within about a second of the response, so they can follow the email events a request
   caused: sort by `occurred_at` (audit events: `created_at`) if order matters. Lines logged while a
   batch is being retried wait for it.
-- If a batch fails all 10 attempts (about a day), COSS disables the drain and drops the lines still
+- If a batch fails all 10 attempts (about a day), coss.com disables the drain and drops the lines still
   waiting for it; the audit log records `log_drain.disabled`. Fix the endpoint, then enable the drain
   again: it receives lines logged from then on.
 - Disabling a drain yourself also drops its waiting lines, and nothing is kept for a disabled drain.

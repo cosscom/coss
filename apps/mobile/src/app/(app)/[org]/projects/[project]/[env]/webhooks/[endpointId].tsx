@@ -54,26 +54,30 @@ function DeliveryRow(props: {
   const [retrying, setRetrying] = useState(false);
   const [tone, label] = DELIVERY_STATUS[delivery.status] ?? ["neutral", delivery.status];
   const retry = () =>
-    NativeAlert.alert("Retry this delivery?", "COSS queues it to be sent to the endpoint again.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Retry",
-        onPress: async () => {
-          setRetrying(true);
-          try {
-            await props.onRetry(delivery.id);
-            void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          } catch (error) {
-            NativeAlert.alert(
-              "Couldn't retry",
-              error instanceof ApiRequestError ? error.message : "Try again.",
-            );
-          } finally {
-            setRetrying(false);
-          }
+    NativeAlert.alert(
+      "Retry this delivery?",
+      "coss.com queues it to be sent to the endpoint again.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Retry",
+          onPress: async () => {
+            setRetrying(true);
+            try {
+              await props.onRetry(delivery.id);
+              void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            } catch (error) {
+              NativeAlert.alert(
+                "Couldn't retry",
+                error instanceof ApiRequestError ? error.message : "Try again.",
+              );
+            } finally {
+              setRetrying(false);
+            }
+          },
         },
-      },
-    ]);
+      ],
+    );
   return (
     <View>
       <Pressable onPress={() => setOpen(!open)}>
@@ -254,14 +258,14 @@ export default function WebhookEndpointScreen() {
       />
       {!endpoint.enabled && endpoint.disabled_reason === "failing" ? (
         <Alert
-          description={`Every delivery to this endpoint failed for ${DISABLED_AFTER_DAYS} days, so COSS disabled it${endpoint.disabled_at ? ` on ${formatDateTime(endpoint.disabled_at)}` : ""}. Fix the receiver, enable the endpoint again, then recover the deliveries it missed.`}
+          description={`Every delivery to this endpoint failed for ${DISABLED_AFTER_DAYS} days, so coss.com disabled it${endpoint.disabled_at ? ` on ${formatDateTime(endpoint.disabled_at)}` : ""}. Fix the receiver, enable the endpoint again, then recover the deliveries it missed.`}
           title="Disabled after repeated failures"
           tone="error"
         />
       ) : null}
       {endpoint.enabled && endpoint.failing_since ? (
         <Alert
-          description={`Deliveries to this endpoint have been failing every attempt. If none succeeds for ${DISABLED_AFTER_DAYS} days, COSS disables the endpoint.`}
+          description={`Deliveries to this endpoint have been failing every attempt. If none succeeds for ${DISABLED_AFTER_DAYS} days, coss.com disables the endpoint.`}
           title={`Failing since ${formatDateTime(endpoint.failing_since)}`}
           tone="warning"
         />

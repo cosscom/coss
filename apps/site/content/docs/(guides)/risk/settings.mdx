@@ -61,7 +61,7 @@ await coss.risk.settings.update({
 
 ## Captcha
 
-Pass the token of your captcha widget with assessments and COSS verifies it with the provider:
+Pass the token of your captcha widget with assessments and coss.com verifies it with the provider:
 `captcha.failed` when the provider refuses it. Set the provider and your **secret key** first; the
 secret is stored encrypted and never returned.
 
@@ -81,7 +81,7 @@ const { data } = await coss.risk.assess({
 });
 ```
 
-- Providers: Cloudflare Turnstile (`turnstile`) and hCaptcha (`hcaptcha`). COSS sends them the token,
+- Providers: Cloudflare Turnstile (`turnstile`) and hCaptcha (`hcaptcha`). coss.com sends them the token,
   your secret and the client's IP address.
 - With `required: true`, assessments without a token get `captcha.missing`.
 - Tokens are single-use: verify each one once. A retried assessment (same `Idempotency-Key`) returns

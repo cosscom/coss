@@ -374,7 +374,7 @@ async function updateEndpointHealth(
           organizationId: disabled.organizationId,
           projectId: disabled.projectId,
           environmentId: disabled.environmentId,
-          actor: { type: "system", id: null, label: "COSS" },
+          actor: { type: "system", id: null, label: "coss.com" },
           action: "hook_endpoint.disabled",
           target: { type: "hook_endpoint", id: disabled.id, label: disabled.url },
           metadata: {

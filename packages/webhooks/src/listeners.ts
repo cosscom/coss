@@ -1,5 +1,5 @@
 /**
- * Webhook listeners: how `coss listen` receives an environment's events on a laptop. COSS can't
+ * Webhook listeners: how `coss listen` receives an environment's events on a laptop. coss.com can't
  * POST to `localhost`, so a listener is a temporary subscriber whose deliveries the CLI pulls with
  * long polls, forwards to the local URL (signing them itself, with its own secret) and
  * acknowledges in its next poll. Fan-out is the outbox's (`enqueueWebhookMessage`); the worker
