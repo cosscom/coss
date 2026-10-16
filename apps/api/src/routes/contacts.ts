@@ -45,6 +45,7 @@ import {
   UpdateContactTopicsRequest,
   UpsertContactRequest,
 } from "@coss/email/contact-schemas";
+import { emailSendQuota } from "@coss/ratelimit";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { z } from "zod";
@@ -486,7 +487,8 @@ export function createContactRoutes(deps: ContactRouteDeps): OpenAPIHono<AppEnv>
 
   /**
    * Charges the confirmation limits (the organization's, and the address's across every
-   * organization), sends the confirmation, and gives the charge back unless it was sent.
+   * organization) and the shared send quota (a confirmation is a send like any other), sends the
+   * confirmation, and gives every charge back unless it was sent.
    */
   async function confirm(c: Context<AppEnv>, contactId: string, address: string) {
     const { auth, rateLimiter } = c.var;
@@ -508,6 +510,18 @@ export function createContactRoutes(deps: ContactRouteDeps): OpenAPIHono<AppEnv>
       await rateLimiter.refund({ ...org, buckets: [...org.buckets] });
       return "cooldown" as const;
     }
+    const quota = emailSendQuota(auth, 1);
+    const sendDecision = await rateLimiter.consume(quota);
+    if (!sendDecision.allowed) {
+      await Promise.all([
+        rateLimiter.refund({ ...org, buckets: [...org.buckets] }),
+        rateLimiter.refund({ ...byAddress, buckets: [...byAddress.buckets] }),
+      ]);
+      throw rateLimitError(sendDecision, {
+        code: "quota_exceeded",
+        message: `The send quota (${sendDecision.bucket}) is used up. Retry after \`Retry-After\` seconds.`,
+      });
+    }
     let outcome: ConfirmationSendOutcome;
     try {
       outcome = await sendConfirmation({
@@ -528,6 +542,7 @@ export function createContactRoutes(deps: ContactRouteDeps): OpenAPIHono<AppEnv>
       await Promise.all([
         rateLimiter.refund({ ...org, buckets: [...org.buckets] }),
         rateLimiter.refund({ ...byAddress, buckets: [...byAddress.buckets] }),
+        rateLimiter.refund(quota),
       ]);
       throw error;
     }
@@ -535,6 +550,7 @@ export function createContactRoutes(deps: ContactRouteDeps): OpenAPIHono<AppEnv>
       await Promise.all([
         rateLimiter.refund({ ...org, buckets: [...org.buckets] }),
         rateLimiter.refund({ ...byAddress, buckets: [...byAddress.buckets] }),
+        rateLimiter.refund(quota),
       ]);
     }
     return outcome;

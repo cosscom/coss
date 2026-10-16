@@ -5,7 +5,7 @@
 import { db, schema } from "@coss/db";
 import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
 import { and, asc, eq, inArray, lt, ne, notExists, notInArray, sql } from "drizzle-orm";
-import { releaseContacts } from "./contacts.ts";
+import { lockContactCounter, releaseContacts } from "./contacts.ts";
 
 const {
   contact,
@@ -275,15 +275,36 @@ export async function purgeExpiredPendingContacts(opts: PurgeOptions = {}): Prom
     opts.scope ? inArray(contact.organizationId, opts.scope.organizationIds) : undefined,
   );
   return db.transaction(async (tx) => {
-    const due = tx
-      .select({ id: contact.id })
+    const due = await tx
+      .select({
+        id: contact.id,
+        organizationId: contact.organizationId,
+        environmentId: contact.environmentId,
+      })
       .from(contact)
       .where(expired)
       .orderBy(asc(contact.pendingSince))
       .limit(opts.limit ?? 1000);
+    if (due.length === 0) return 0;
+    // The counters first (in a fixed order), as every contact writer takes them.
+    const environments = new Map(due.map((row) => [row.environmentId, row.organizationId]));
+    for (const environmentId of [...environments.keys()].sort()) {
+      await lockContactCounter(tx, {
+        environmentId,
+        organizationId: environments.get(environmentId) as string,
+      });
+    }
     const deleted = await tx
       .delete(contact)
-      .where(and(inArray(contact.id, due), expired))
+      .where(
+        and(
+          inArray(
+            contact.id,
+            due.map((row) => row.id),
+          ),
+          expired,
+        ),
+      )
       .returning({
         organizationId: contact.organizationId,
         environmentId: contact.environmentId,

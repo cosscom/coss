@@ -13,6 +13,7 @@ import {
   announceContact,
   applyTopicChoices,
   type ContactRow,
+  lockContactCounter,
   reserveContacts,
   topicReaches,
 } from "./contacts.ts";
@@ -161,6 +162,8 @@ async function contactFor(
 ): Promise<{ row: ContactRow; created: boolean }> {
   const existing = await contactOf(scope, address, tx, true);
   if (existing) return { row: existing, created: false };
+  const env = { organizationId: scope.organizationId, environmentId: scope.environmentId };
+  await lockContactCounter(tx, env);
   const [inserted] = await tx
     .insert(contact)
     .values({

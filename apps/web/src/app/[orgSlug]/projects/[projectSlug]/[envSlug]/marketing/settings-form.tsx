@@ -61,8 +61,12 @@ export function MarketingSettingsForm(
           name="doubleOptInDefault"
           value="on"
         />
-        Ask new contacts to confirm by email (unless an API request says otherwise)
+        Ask contacts added through the API to confirm by email (unless the request says otherwise)
       </Label>
+      <p className="text-muted-foreground text-xs">
+        Contacts you add or import in the dashboard are added as you set them: you vouch for their
+        consent.
+      </p>
       <Field>
         <FieldLabel>Confirmation sender</FieldLabel>
         <Input

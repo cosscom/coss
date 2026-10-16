@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { memoryLogWriter } from "@coss/logs/testing";
+import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
+import { memoryLimiter } from "@coss/ratelimit/testing";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { createTestApp, errorOf, type TestApp } from "./helpers.ts";
 
@@ -203,6 +205,33 @@ describe("double opt-in", () => {
     expect(confirmed.status).toBe(303);
     expect(confirmed.headers.get("location")).toBe("https://acme.test/welcome");
     expect(await contactStatus(app, tenant, "new@example.com")).toBe("subscribed");
+  });
+});
+
+describe("confirmation quota", () => {
+  test("a confirmation is charged to the send quota like any send", async () => {
+    const tenant = await createTestTenant();
+    await setRateLimitOverride({
+      organizationId: tenant.organization.id,
+      bucket: "email.sandbox_recipients.day",
+      rule: { limit: 1, periodMs: 86_400_000 },
+    });
+    const { app } = createTestApp({ rateLimiter: memoryLimiter({ overrides: cachedOverrides() }) });
+    const key = tenant.sandboxKey;
+    await call(app, key, "PATCH", "/v1/marketing_settings", {
+      confirmation_from: "Acme <news@acme.test>",
+    });
+    const first = await call(app, key, "POST", "/v1/contacts", {
+      email: "one@example.com",
+      double_opt_in: true,
+    });
+    expect(first.status).toBe(201);
+    const second = await call(app, key, "POST", "/v1/contacts", {
+      email: "two@example.com",
+      double_opt_in: true,
+    });
+    expect(second.status).toBe(429);
+    expect((await errorOf(second)).code).toBe("quota_exceeded");
   });
 });
 
