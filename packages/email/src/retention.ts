@@ -21,6 +21,7 @@ import {
 import { lockContactCounter, releaseContacts } from "./contacts.ts";
 
 const {
+  broadcast,
   contact,
   contactTopic,
   dmarcNotification,
@@ -40,7 +41,8 @@ type PurgeOptions = { now?: Date; limit?: number; scope?: { organizationIds: str
 /**
  * Deletes up to `limit` emails created before the cutoff, oldest first; their recipients, events,
  * links and attachments go with them (cascade). Queued and scheduled emails are kept until they
- * leave those statuses (a scheduled send of a suspended organization may wait past the cutoff).
+ * leave those statuses (a scheduled send of a suspended organization may wait past the cutoff),
+ * and an unfinished broadcast's emails until it finishes.
  * Suppressions naming a deleted email keep its id. Returns the number of emails deleted.
  */
 export async function purgeExpiredEmails(opts: PurgeOptions = {}): Promise<number> {
@@ -48,6 +50,20 @@ export async function purgeExpiredEmails(opts: PurgeOptions = {}): Promise<numbe
   const expired = and(
     lt(email.createdAt, cutoff),
     notInArray(email.status, ["queued", "scheduled"]),
+    // A broadcast's emails stay until it finishes: their rows are what keeps a resume (which
+    // goes over contacts again after a pause or hold) from sending anyone a second one.
+    notExists(
+      db
+        .select({ one: sql`1` })
+        .from(broadcast)
+        .where(
+          and(
+            sql`${broadcast.id} = ${email.broadcastId}`,
+            sql`${broadcast.organizationId} = ${email.organizationId}`,
+            inArray(broadcast.status, ["scheduled", "sending", "paused"]),
+          ),
+        ),
+    ),
     opts.scope ? inArray(email.organizationId, opts.scope.organizationIds) : undefined,
   );
   const due = db

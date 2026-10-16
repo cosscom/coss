@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { liftHold, placeHold } from "@coss/billing";
 import { db, schema } from "@coss/db";
+import { RETENTION_DAYS } from "@coss/retention";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { and, eq } from "drizzle-orm";
 import { addAudienceContacts, createAudience, deleteAudience } from "../src/audiences.ts";
@@ -16,7 +17,6 @@ import {
   getBroadcast,
   getBroadcastRow,
   listBroadcastEmails,
-  MAX_PAUSE_MS,
   pauseBroadcast,
   resumeBroadcast,
   runDueBroadcasts,
@@ -33,6 +33,7 @@ import { applyPreferences } from "../src/preferences.ts";
 import { type OutboundEmail, type SendResult, ThrottledSendError } from "../src/provider.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { getEmail, listEmailEvents } from "../src/read.ts";
+import { purgeExpiredEmails } from "../src/retention.ts";
 import { createEmailService } from "../src/service.ts";
 import { addSuppression } from "../src/suppressions.ts";
 import { memoryDispatchQueue } from "../src/testing.ts";
@@ -403,16 +404,24 @@ describe("broadcasts", () => {
     ]);
   });
 
-  test("a broadcast paused nearly as long as email retention can't resume", async () => {
+  test("an unfinished broadcast's emails outlive email retention; a finished one's don't", async () => {
     const f = await fixture();
     const broadcast = await f.create({ send: true });
+    await runDueBroadcasts(f.deps, { scope: f.scope });
+    await db
+      .update(schema.broadcast)
+      .set({ nextRunAt: new Date(0) })
+      .where(eq(schema.broadcast.id, broadcast.id));
+    await runDueBroadcasts(f.deps, { scope: f.scope });
+    await f.drain();
     await pauseBroadcast(f.env, broadcast.id);
-    const resume = (now: Date) =>
-      resumeBroadcast(sendEnvironment(f.environment), broadcast.id, { liveProvider: "fake", now });
-    await expect(resume(new Date(Date.now() + MAX_PAUSE_MS + 60_000))).rejects.toMatchObject({
-      code: "broadcast_not_sendable",
-    });
-    expect((await resume(new Date()))?.status).toBe("scheduled");
+    const sent = await emailsOf(f.tenant.organization.id, broadcast.id);
+    expect(sent.length).toBe(3);
+    const later = new Date(Date.now() + (RETENTION_DAYS.emails + 1) * 86_400_000);
+    // Paused past retention: kept, so a resume still skips who already got it.
+    expect(await purgeExpiredEmails({ now: later, scope: f.scope })).toBe(0);
+    await cancelBroadcast(f.env, broadcast.id);
+    expect(await purgeExpiredEmails({ now: later, scope: f.scope })).toBe(3);
   });
 
   test("resuming a paused broadcast before its time keeps its schedule", async () => {
@@ -730,6 +739,33 @@ describe("broadcasts", () => {
     expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(0);
     await f.drain();
     expect(f.provider.sent).toHaveLength(0);
+  });
+
+  test("live: screening retries for an hour from its first failure, however late it starts", async () => {
+    const f = await fixture({ live: true });
+    const deps: BroadcastWorkerDeps = {
+      ...f.deps,
+      screen: async () => ({ action: "block", screening: { verdict: "error" } as never }),
+    };
+    const broadcast = await f.create({ send: true });
+    const hoursAgo = (hours: number) => new Date(Date.now() - hours * 60 * 60_000);
+    const run = async (set: Partial<typeof schema.broadcast.$inferInsert> = {}) => {
+      await db
+        .update(schema.broadcast)
+        .set({ nextRunAt: new Date(0), ...set })
+        .where(eq(schema.broadcast.id, broadcast.id));
+      await runDueBroadcasts(deps, { scope: f.scope });
+      return getBroadcastRow(f.env, broadcast.id);
+    };
+    // Starting two hours late (worker down, a hold): the first failure is held, not fatal.
+    expect(await run({ scheduledAt: hoursAgo(2) })).toMatchObject({
+      status: "scheduled",
+      screeningStatus: "held",
+    });
+    expect(await run({ screeningHeldAt: hoursAgo(2) })).toMatchObject({
+      status: "failed",
+      errorCode: "content_screening_unavailable",
+    });
   });
 
   test("live: a screening block fails it; a held screening retries", async () => {

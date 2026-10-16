@@ -316,8 +316,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   marketing queue → `UsageGate.reserve` → `recipients` counter → cursor. It is `sent` once nothing is left to make or
   queued. Pausing or canceling deletes the emails nobody claimed yet (`queued`, no provider), gives back their
   reservation (`UsageGate.release`) and counters; a pause rewinds the cursor before them (from the contacts, never
-  the retained emails). A broadcast paused longer than `MAX_PAUSE_MS` (a day inside email retention) can't resume:
-  its emails' rows, which keep a resume from sending twice, are being purged. The worker pauses on its own:
+  the retained emails). A broadcast's emails are kept past email retention until it finishes
+  (`purgeExpiredEmails`): their rows are what keeps a resume from sending anyone a second one. The worker pauses on its own:
   `billing_hold`/`usage_limit`/`sending_paused` retry each minute (dropping and rewinding the unclaimed emails the
   same way, so a hold stops the queue too), `marketing_paused`/`account_suspended`/
   `mailing_address_required` wait for Resume; an unverified From fails it. Creating a draft needs `broadcast:create`;

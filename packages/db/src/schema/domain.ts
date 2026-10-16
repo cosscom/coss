@@ -957,6 +957,8 @@ export const broadcast = pgTable(
     recipientsEstimated: integer("recipients_estimated"),
     materialized: integer("materialized").notNull().default(0),
     screeningStatus: broadcastScreeningStatus("screening_status").notNull().default("pending"),
+    /** When screening first failed to run (it is retried until an hour after). */
+    screeningHeldAt: timestamp("screening_held_at", { withTimezone: true }),
     leaseUntil: timestamp("lease_until", { withTimezone: true }),
     nextRunAt: timestamp("next_run_at", { withTimezone: true }),
     // Why a `paused` broadcast waits (`billing_hold`, `usage_limit`, `marketing_paused`, …).

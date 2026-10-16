@@ -638,7 +638,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   (`apps/worker/src/retention.ts`, every 10 min, 1,000 rows per step, back-to-back while a step fills its batch) runs
   them in order (emails before their batches). Purges are system-level `DELETE … WHERE id IN (oldest batch)` with
   the condition re-checked, take `{ now, limit, scope }` (always pass `scope` in tests), and rely on cascades for
-  children. Never purge: `queued`/`scheduled` emails, webhook messages with a `pending` delivery (suspended orgs' are held),
+  children. Never purge: `queued`/`scheduled` emails, emails of an unfinished (`scheduled`/`sending`/`paused`) broadcast, webhook messages with a `pending` delivery (suspended orgs' are held),
   an org's latest reputation transition (notifications compare against it), `content_screening_counter` (the
   sampling sequence), suppressions (they outlive their email; the dashboard hides "View email" past the cutoff).
   The exception is Hooks: messages, deliveries and attempts are dropped by whole days with their partitions
