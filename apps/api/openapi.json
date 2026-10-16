@@ -3141,7 +3141,7 @@
               "reject",
               null
             ],
-            "description": "The DMARC policy that applies to the domain (`sp` when it comes from a parent domain), `null` without a DMARC record."
+            "description": "The DMARC policy that applies to the domain (the organizational domain's `sp` when it has no record of its own), `null` without a DMARC record."
           },
           "issues": {
             "type": "array",
