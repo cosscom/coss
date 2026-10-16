@@ -9,6 +9,7 @@ import {
   READY_MIN_DELIVERIES,
   RELEASE_DELAY_MS,
   reconcileDedicatedIpPools,
+  releaseOrganizationDedicatedIps,
 } from "../src/dedicated-ips.ts";
 import { ensureOrgTenant, releaseOrganizationEmailResources } from "../src/domains.ts";
 import { DedicatedIpTakenError, type OutboundEmail } from "../src/provider.ts";
@@ -402,6 +403,48 @@ describe("sending through a dedicated pool", () => {
 });
 
 describe("organization deletion", () => {
+  const requestDeletion = (tenant: Awaited<ReturnType<typeof createTestTenant>>) =>
+    db.insert(schema.organizationDeletion).values({
+      organizationId: tenant.organization.id,
+      organizationName: tenant.organization.name,
+      organizationSlug: tenant.organization.slug,
+      requestedByEmail: "owner@example.com",
+      nextAttemptAt: null,
+    });
+
+  test("an organization being deleted gets no pool, even while its contract lasts", async () => {
+    const tenant = await tenantWithProviderTenant();
+    const org = tenant.organization.id;
+    await requestDeletion(tenant);
+    const pools = new FakeDedicatedIpProvider();
+    await reconcileDedicatedIpPools(
+      { entitled: [org], scope: { organizationIds: [org] } },
+      deps(pools),
+    );
+    expect(await getDedicatedIpPool(org)).toBeNull();
+    expect(pools.pools).toEqual([]);
+  });
+
+  test("a pool created while the teardown ran is released again", async () => {
+    const tenant = await tenantWithProviderTenant();
+    const org = tenant.organization.id;
+    // The deletion is requested and its teardown runs while the worker is creating the pool.
+    class TornDown extends FakeDedicatedIpProvider {
+      override async ensurePool(input: Parameters<FakeDedicatedIpProvider["ensurePool"]>[0]) {
+        await requestDeletion(tenant);
+        await releaseOrganizationDedicatedIps(org, this);
+        await super.ensurePool(input);
+      }
+    }
+    const pools = new TornDown();
+    await reconcileDedicatedIpPools(
+      { entitled: [org], scope: { organizationIds: [org] } },
+      deps(pools),
+    );
+    expect(pools.pools).toEqual([]);
+    expect(await getDedicatedIpPool(org)).toBeNull();
+  });
+
   test("releases the pool before the tenant", async () => {
     const tenant = await createTestTenant();
     const org = tenant.organization.id;

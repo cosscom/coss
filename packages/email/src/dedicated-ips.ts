@@ -32,7 +32,7 @@ import { getEmailTenant } from "./domains.ts";
 import type { DedicatedIpProvider, IdentityProvider } from "./provider.ts";
 import type { DedicatedIpPoolObjectOutput } from "./schemas.ts";
 
-const { dedicatedIpPool, dedicatedIpDeliveryRollup } = schema;
+const { dedicatedIpPool, dedicatedIpDeliveryRollup, organizationDeletion } = schema;
 
 export type DedicatedIpPoolRow = typeof dedicatedIpPool.$inferSelect;
 
@@ -236,7 +236,21 @@ export async function reconcileDedicatedIpPools(
   const scoped = opts.scope
     ? inArray(dedicatedIpPool.organizationId, opts.scope.organizationIds)
     : undefined;
-  const entitled = [...new Set(opts.entitled)];
+  // Organizations being deleted aren't entitled: their teardown releases the pool, and nothing
+  // may provision it again (their contracts last until the organization row goes).
+  const deleting = opts.entitled.length
+    ? await db
+        .select({ organizationId: organizationDeletion.organizationId })
+        .from(organizationDeletion)
+        .where(
+          and(
+            inArray(organizationDeletion.organizationId, [...new Set(opts.entitled)]),
+            eq(organizationDeletion.status, "pending"),
+          ),
+        )
+    : [];
+  const gone = new Set(deleting.map((row) => row.organizationId));
+  const entitled = [...new Set(opts.entitled)].filter((id) => !gone.has(id));
 
   // Lost entitlements: waiting rows just go; others stop sending through the pool now.
   const lost = and(
@@ -400,10 +414,16 @@ async function step(row: DedicatedIpPoolRow, now: Date, deps: DedicatedIpDeps): 
           .where(ours);
         return;
       }
-      await deps.dedicatedIps.ensurePool({
-        organizationId: row.organizationId,
-        tenant: { tenantName: tenantRow.tenantName, tenantArn: tenantRow.tenantArn },
-      });
+      try {
+        await deps.dedicatedIps.ensurePool({
+          organizationId: row.organizationId,
+          tenant: { tenantName: tenantRow.tenantName, tenantArn: tenantRow.tenantArn },
+        });
+      } catch (error) {
+        await undoIfTornDown(row, deps.dedicatedIps);
+        throw error;
+      }
+      if (await undoIfTornDown(row, deps.dedicatedIps)) return;
       await db.transaction(async (tx) => {
         const [updated] = await tx
           .update(dedicatedIpPool)
@@ -491,6 +511,31 @@ async function step(row: DedicatedIpPoolRow, now: Date, deps: DedicatedIpDeps): 
       return;
     }
   }
+}
+
+/**
+ * After provisioning: when the organization is being deleted (its request is committed before its
+ * teardown starts) or its row is gone, the teardown (`releaseOrganizationDedicatedIps`) may have
+ * released the pool before this created it, so what was created is released again. Returns
+ * whether it was.
+ */
+async function undoIfTornDown(
+  row: DedicatedIpPoolRow,
+  provider: DedicatedIpProvider,
+): Promise<boolean> {
+  const [deleting] = await db
+    .select({ id: organizationDeletion.id })
+    .from(organizationDeletion)
+    .where(
+      and(
+        eq(organizationDeletion.organizationId, row.organizationId),
+        eq(organizationDeletion.status, "pending"),
+      ),
+    )
+    .limit(1);
+  if (!deleting && (await getDedicatedIpPool(row.organizationId))) return false;
+  await releaseDedicatedIpPool(row, provider);
+  return true;
 }
 
 async function releaseDedicatedIpPool(

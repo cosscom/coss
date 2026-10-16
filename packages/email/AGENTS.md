@@ -102,7 +102,9 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   events counted per hour and IP in the rollup, only for emails with `dedicated_pool`); not entitled → `releasing`
   at once (sends back on shared IPs) and released `RELEASE_DELAY_MS` (a day) later — association, then
   configuration set, then pool — unless the entitlement returns first (`release_started_at` is set before the
-  provider calls: a later return waits for the release and gets a new pool). A send decides at claim
+  provider calls: a later return waits for the release and gets a new pool). Organizations pending deletion are
+  never entitled, and a provisioning step that finds one (or its row gone) releases what it just created: the
+  teardown may have released before it. A send decides at claim
   (`dedicatedPoolSql`, stored in `email.dedicated_pool`; `SesEmailProvider` then uses the org's configuration set).
   SES allows **50 pools per region, a hard limit**: the dashboard's purchase preflight (`dedicatedIpSlotAvailable`,
   in the purchase's transaction under the lock new pools are created under) counts organizations with a pool, an
