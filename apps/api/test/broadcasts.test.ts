@@ -5,7 +5,12 @@ import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
 import { memoryLimiter } from "@coss/ratelimit/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { Coss } from "coss";
-import { createTestApp, type TestApp } from "./helpers.ts";
+import {
+  apiKeyIdForEnvironment,
+  createTestApp,
+  setKeyPermissions,
+  type TestApp,
+} from "./helpers.ts";
 
 function toRequest(input: string | URL | Request, init?: RequestInit): Request {
   return input instanceof Request ? new Request(input, init) : new Request(String(input), init);
@@ -157,5 +162,27 @@ describe("coss.email.broadcasts against the API", () => {
     expect(over.error).toMatchObject({ status: 429, code: "quota_exceeded" });
     const last = await coss.email.broadcasts.test(id, { to: ["a@acme.test"] });
     expect(last.data?.email_ids).toHaveLength(1);
+  });
+
+  test("a draft needs broadcast:create; starting one needs broadcast:send too", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    await coss.email.marketingSettings.update({ mailing_address: "1 Main St" });
+    const audience = await coss.email.audiences.create({ name: "Everyone" });
+    await setKeyPermissions(await apiKeyIdForEnvironment(tenant.development.id), {
+      broadcast: ["create", "read"],
+    });
+    const body = {
+      name: "Draft",
+      audience_id: audience.data?.id as string,
+      from: "news@acme.test",
+      subject: "S",
+      text: "T",
+    };
+    const draft = await coss.email.broadcasts.create(body);
+    expect(draft.data?.status).toBe("draft");
+    const started = await coss.email.broadcasts.create({ ...body, send: true });
+    expect(started.error).toMatchObject({ status: 403, code: "insufficient_permissions" });
   });
 });

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { liftHold, placeHold } from "@coss/billing";
 import { db, schema } from "@coss/db";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { and, eq } from "drizzle-orm";
@@ -15,6 +16,7 @@ import {
   getBroadcast,
   getBroadcastRow,
   listBroadcastEmails,
+  MAX_PAUSE_MS,
   pauseBroadcast,
   resumeBroadcast,
   runDueBroadcasts,
@@ -401,6 +403,18 @@ describe("broadcasts", () => {
     ]);
   });
 
+  test("a broadcast paused nearly as long as email retention can't resume", async () => {
+    const f = await fixture();
+    const broadcast = await f.create({ send: true });
+    await pauseBroadcast(f.env, broadcast.id);
+    const resume = (now: Date) =>
+      resumeBroadcast(sendEnvironment(f.environment), broadcast.id, { liveProvider: "fake", now });
+    await expect(resume(new Date(Date.now() + MAX_PAUSE_MS + 60_000))).rejects.toMatchObject({
+      code: "broadcast_not_sendable",
+    });
+    expect((await resume(new Date()))?.status).toBe("scheduled");
+  });
+
   test("resuming a paused broadcast before its time keeps its schedule", async () => {
     const f = await fixture();
     const later = new Date(Date.now() + 60 * 60_000);
@@ -645,6 +659,45 @@ describe("broadcasts", () => {
     expect(charges).toEqual([3, 3]);
     expect(refunds).toEqual([3]);
     expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(3);
+  });
+
+  test("live: a billing hold stops the queued emails too, and they go once it is lifted", async () => {
+    const f = await fixture({ live: true });
+    const deps: BroadcastWorkerDeps = {
+      ...f.deps,
+      screen: async () => ({ action: "send", screening: null }),
+    };
+    const broadcast = await f.create({ send: true });
+    const run = async () => {
+      await db
+        .update(schema.broadcast)
+        .set({ nextRunAt: new Date(0) })
+        .where(eq(schema.broadcast.id, broadcast.id));
+      await runDueBroadcasts(deps, { scope: f.scope });
+    };
+    await run();
+    await run();
+    expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(3);
+    await placeHold(db, f.tenant.organization.id, "delinquent", "test");
+    await run();
+    // Held: nothing queued is left to go out, and it says why.
+    expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(0);
+    expect(await getBroadcastRow(f.env, broadcast.id)).toMatchObject({
+      status: "sending",
+      pauseReason: "billing_hold",
+    });
+    await f.drain();
+    expect(f.provider.sent).toHaveLength(0);
+    await liftHold(db, f.tenant.organization.id, "delinquent");
+    for (let step = 0; step < 5; step++) {
+      await run();
+      await f.drain();
+    }
+    expect(f.provider.sent.map((message) => message.to[0]).sort()).toEqual([
+      "ada@example.com",
+      "bob@example.com",
+      "cy@example.com",
+    ]);
   });
 
   test("live: a screening block fails it; a held screening retries", async () => {

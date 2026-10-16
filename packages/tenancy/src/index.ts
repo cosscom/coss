@@ -3,6 +3,7 @@ export {
   type ApiKeyContext,
   type ApiKeyEnvironmentSummary,
   type AuthenticateResult,
+  apiKeyHasPermissions,
   apiKeyNames,
   authenticateApiKey,
   createEnvironmentApiKey,

@@ -14,6 +14,7 @@ import type { UsageGate } from "@coss/billing/gate";
 import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, isId, newId } from "@coss/db/id";
 import { IDEMPOTENCY_KEY_TTL_MS, requestHash, withIdempotencyKey } from "@coss/db/idempotency";
+import { RETENTION_DAYS } from "@coss/retention";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, asc, desc, eq, inArray, isNull, lt, lte, or, sql } from "drizzle-orm";
@@ -723,6 +724,9 @@ async function pauseRow(
   });
 }
 
+/** The longest a broadcast can stay paused and still resume (a day inside email retention). */
+export const MAX_PAUSE_MS = (RETENTION_DAYS.emails - 1) * 86_400_000;
+
 /** Resumes a paused broadcast where it stopped. */
 export async function resumeBroadcast(
   env: BroadcastEnvironment,
@@ -739,6 +743,16 @@ export async function resumeBroadcast(
     throw new BroadcastError(
       "broadcast_not_sendable",
       `A ${row.status} broadcast can't be resumed.`,
+    );
+  }
+  // Resuming makes the contacts after the cursor again, relying on their emails' rows to skip
+  // the ones already sent (the cursor rewinds past some at a pause). Retention deletes those rows
+  // after `RETENTION_DAYS.emails`, so a broadcast paused nearly that long can't resume safely.
+  if (now.getTime() - row.updatedAt.getTime() > MAX_PAUSE_MS) {
+    throw new BroadcastError(
+      "broadcast_not_sendable",
+      `This broadcast was paused for more than ${MAX_PAUSE_MS / 86_400_000} days: the emails it ` +
+        "sent are being deleted (data retention), so resuming could send them again.",
     );
   }
   await checkSendable(env, row, opts.liveProvider);
@@ -975,11 +989,23 @@ async function step(
     return;
   }
   if (blocked) {
-    // Held: self-healing causes are retried in a minute; the rest wait for a Resume.
+    // Held: self-healing causes are retried in a minute; the rest wait for a Resume. Either way
+    // the emails nobody claimed yet are dropped and remade later (a billing hold or a paused
+    // tenant must stop the queue too, not only new fan-out).
     if (SELF_HEALING.has(blocked)) {
-      await finishStep(db, row, lease, {
-        pauseReason: blocked,
-        nextRunAt: new Date(now.getTime() + 60_000),
+      await db.transaction(async (tx) => {
+        const held = await finishStep(tx, row, lease, {
+          pauseReason: blocked,
+          nextRunAt: new Date(now.getTime() + 60_000),
+        });
+        if (!held) return;
+        const { firstContactId } = await dropUnclaimed(tx, held, deps.billing, mode);
+        if (firstContactId) {
+          await tx
+            .update(broadcast)
+            .set({ cursor: await rewoundCursor(tx, held, firstContactId) })
+            .where(eq(broadcast.id, row.id));
+        }
       });
     } else {
       await pauseRow(row, blocked, { billing: deps.billing, now, leaseUntil: lease });

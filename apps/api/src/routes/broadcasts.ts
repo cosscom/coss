@@ -27,11 +27,12 @@ import {
 } from "@coss/email/broadcast-schemas";
 import { EmailObject } from "@coss/email/schemas";
 import { emailSendQuota } from "@coss/ratelimit";
+import { apiKeyHasPermissions } from "@coss/tenancy";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { z } from "zod";
 import { recordApiAudit } from "../audit.ts";
-import { notFound } from "../errors.ts";
+import { ApiError, notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
@@ -102,7 +103,8 @@ export const createBroadcastRoute = createRoute({
     "plan's marketing rate.",
   security: [{ bearerAuth: [] }],
   middleware: [
-    requireApiKey({ broadcast: ["create", "send"] }),
+    // `broadcast:send` only for a broadcast that starts (checked in the handler).
+    requireApiKey({ broadcast: ["create"] }),
     rateLimit("api.write"),
     upgradeRequestBody("POST /v1/broadcasts"),
   ],
@@ -343,6 +345,15 @@ export function createBroadcastRoutes(deps: BroadcastRouteDeps): OpenAPIHono<App
     createBroadcastRoute,
     async (c) => {
       const params = c.req.valid("json");
+      const starts = params.send === true || params.scheduled_at !== undefined;
+      if (starts && !(await apiKeyHasPermissions(c.var.auth.apiKeyId, { broadcast: ["send"] }))) {
+        throw new ApiError(403, {
+          type: "permission_error",
+          code: "insufficient_permissions",
+          message:
+            "Starting a broadcast (`send` or `scheduled_at`) needs the broadcast:send permission.",
+        });
+      }
       const { broadcast, replayed } = await createBroadcast(envOf(c), params, {
         liveProvider: deps.liveProvider,
         idempotencyKey: c.req.valid("header")["Idempotency-Key"],

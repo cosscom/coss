@@ -315,9 +315,13 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   contact (`ON CONFLICT (broadcast_id, contact_id) DO NOTHING`: reruns never duplicate) → dispatch jobs on the
   marketing queue → `UsageGate.reserve` → `recipients` counter → cursor. It is `sent` once nothing is left to make or
   queued. Pausing or canceling deletes the emails nobody claimed yet (`queued`, no provider), gives back their
-  reservation (`UsageGate.release`) and counters; a pause rewinds the cursor before them. The worker pauses on its own:
-  `billing_hold`/`usage_limit`/`sending_paused` retry each minute, `marketing_paused`/`account_suspended`/
-  `mailing_address_required` wait for Resume; an unverified From fails it. **Broadcast emails store no body**: the
+  reservation (`UsageGate.release`) and counters; a pause rewinds the cursor before them (from the contacts, never
+  the retained emails). A broadcast paused longer than `MAX_PAUSE_MS` (a day inside email retention) can't resume:
+  its emails' rows, which keep a resume from sending twice, are being purged. The worker pauses on its own:
+  `billing_hold`/`usage_limit`/`sending_paused` retry each minute (dropping and rewinding the unclaimed emails the
+  same way, so a hold stops the queue too), `marketing_paused`/`account_suspended`/
+  `mailing_address_required` wait for Resume; an unverified From fails it. Creating a draft needs `broadcast:create`;
+  starting one (`send`, `scheduled_at`) also `broadcast:send` (`apiKeyHasPermissions`). **Broadcast emails store no body**: the
   rendered subject, `variables` (only the template's `{{{contact.<key>|fallback}}}` keys) and `contact_id`; dispatch
   and every read render the broadcast's frozen content (`withRenderedBody`; dispatch caches it per process), then
   the marketing footer and tracking apply as for any marketing email; they skip per-email screening, marketing email's consent is checked again at its dispatch claim
