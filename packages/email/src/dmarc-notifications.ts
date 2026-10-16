@@ -9,7 +9,7 @@
 import { db, schema } from "@coss/db";
 import { and, asc, eq, inArray, isNotNull, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { DMARC_READINESS } from "./dmarc-guidance.ts";
-import { dmarcStillReadyFor } from "./dmarc-reports.ts";
+import { dmarcReadyRecord } from "./dmarc-reports.ts";
 import type { Notice, Notifier } from "./notifier.ts";
 
 const { dmarcNotification, domain, member, organization, user } = schema;
@@ -29,6 +29,8 @@ export type DmarcNotificationDeps = {
   notifier: Notifier;
   /** Origin of the dashboard, for links (`BETTER_AUTH_URL`). */
   dashboardUrl: string;
+  /** The managed inbound domain DMARC reports go to (`DomainDeps.dmarcReportDomain`). */
+  dmarcReportDomain?: string | null;
 };
 
 function retryDelayMs(attempt: number): number {
@@ -102,7 +104,7 @@ async function deliver(
       .set({ nextAttemptAt: null, ...values })
       .where(thisRow);
   try {
-    const content = await notificationContent(row, deps.dashboardUrl, now);
+    const content = await notificationContent(row, deps, now);
     if ("skip" in content) {
       await settle({ status: "skipped", lastError: content.skip });
       return;
@@ -142,7 +144,7 @@ type Message = Pick<Notice, "subject" | "text" | "html">;
 
 async function notificationContent(
   row: DmarcNotificationRow,
-  dashboardUrl: string,
+  deps: DmarcNotificationDeps,
   now: Date,
 ): Promise<{ skip: string } | { recipients: Recipient[]; message: Message }> {
   const { organizationId } = row;
@@ -163,11 +165,13 @@ async function notificationContent(
   if (target.dmarcPolicyChangedAt?.getTime() !== row.policyChangedAt?.getTime()) {
     return { skip: "The domain's DMARC policy changed since." };
   }
+  let detail = row.detail;
   if (row.kind === "ready_quarantine" || row.kind === "ready_reject") {
     const policy = row.kind === "ready_quarantine" ? "quarantine" : "reject";
-    if (!(await dmarcStillReadyFor(target, policy, now))) {
-      return { skip: "No longer ready: later reports changed the checks." };
-    }
+    // The record as of now: one queued earlier would undo DNS changes made since.
+    const record = await dmarcReadyRecord(target, policy, deps.dmarcReportDomain ?? null, now);
+    if (!record) return { skip: "No longer ready: later reports or DNS changed the checks." };
+    detail = { ...detail, record };
   }
   // Verified addresses only: anyone can sign up with someone else's address.
   const recipients = await db
@@ -191,8 +195,8 @@ async function notificationContent(
     kind: row.kind,
     domain: target.name,
     organizationName: org.name,
-    detail: row.detail,
-    url: new URL(`/${org.slug}/domains/${row.domainId}/dmarc`, dashboardUrl).toString(),
+    detail,
+    url: new URL(`/${org.slug}/domains/${row.domainId}/dmarc`, deps.dashboardUrl).toString(),
   });
   return { recipients, message };
 }

@@ -428,8 +428,10 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         // Advice, not alarms: nobody is waiting on these.
         intervalMs: 30_000,
         run: async () =>
-          (await runDueDmarcNotifications({ limit: NOTIFICATION_BATCH }, notifications)) ===
-          NOTIFICATION_BATCH,
+          (await runDueDmarcNotifications(
+            { limit: NOTIFICATION_BATCH },
+            { ...notifications, dmarcReportDomain: deps.domains.dmarcReportDomain ?? null },
+          )) === NOTIFICATION_BATCH,
       }),
     );
   }

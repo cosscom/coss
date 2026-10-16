@@ -33,6 +33,7 @@ import { SpecItem, SpecList } from "@/components/spec-list";
 import { Stat, StatRow } from "@/components/stat-row";
 import { StatusDot } from "@/components/status-dot";
 import { SubNav } from "@/components/sub-nav";
+import { dmarcComplete, dmarcNoNextStep } from "@/lib/dmarc-status";
 import { emailRuntime } from "@/lib/email-runtime";
 import { formatDateTime, formatRelative } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
@@ -81,12 +82,13 @@ function single(value: string | string[] | undefined): string | undefined {
   return first?.trim() || undefined;
 }
 
-function Stepper({ stage }: { stage: DomainDmarcOutput["stage"] }) {
-  const current = STAGE_INDEX[stage];
+function Stepper({ dmarc }: { dmarc: DomainDmarcOutput }) {
+  const current = STAGE_INDEX[dmarc.stage];
+  const complete = dmarcComplete(dmarc);
   return (
     <ol className="grid gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
       {STEPS.map((step, index) => {
-        const done = index < current || (index === current && index === 3);
+        const done = index < current || (index === current && index === 3 && complete);
         const active = index === current && !done;
         return (
           <li
@@ -110,14 +112,7 @@ function Stepper({ stage }: { stage: DomainDmarcOutput["stage"] }) {
 
 function NextStep({ dmarc, domainName }: { dmarc: DomainDmarcOutput; domainName: string }) {
   const { next } = dmarc;
-  if (!next) {
-    return (
-      <p className="text-sm">
-        {domainName} rejects mail that fails DMARC, the strongest protection against spoofing. COSS
-        keeps reading the reports and tells owners and admins if its own mail starts failing.
-      </p>
-    );
-  }
+  if (!next) return <p className="text-sm">{dmarcNoNextStep(dmarc, domainName)}</p>;
   const status =
     next.kind === "tighten" || next.kind === "complete_rollout" ? (
       dmarc.ready ? (
@@ -227,7 +222,7 @@ export default async function DomainDmarcPage({
 
       <Panel title="Policy">
         <PanelBody className="flex flex-col gap-6">
-          <Stepper stage={dmarc.stage} />
+          <Stepper dmarc={dmarc} />
           <div className="grid gap-6 lg:grid-cols-5">
             <div className="lg:col-span-3">
               <NextStep dmarc={dmarc} domainName={domain.name} />

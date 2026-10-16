@@ -204,7 +204,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   readiness (check `complete`). Guidance (`dmarcGuidance`, thresholds in `DMARC_READINESS`) is pure and computed on every read:
   none → quarantine → reject, no `pct` ramp. Ingest queues `dmarc_notification` rows (readiness once per policy
   epoch; COSS mail failing under enforcement once per epoch and week), sent by the worker's `dmarc-notifications`
-  loop through the reputation notifier (skipped when the policy changed since). The dashboard's "Send a sample
+  loop through the reputation notifier (skipped when the policy changed since; a readiness email
+  re-runs the guidance and sends the record built from DNS as it is then, or is skipped when no longer ready). The dashboard's "Send a sample
   report" (`receiveSampleDmarcReport`) exists only with the fake provider. API (`domain:read`):
   `GET /v1/domains/{id}/dmarc`, `…/dmarc/reports[/{report_id}]`, `coss.domains.dmarc`; event
   `domain.dmarc_report_received` (`DOMAIN_EVENT_TYPES`, live environments only, no rows or IPs).

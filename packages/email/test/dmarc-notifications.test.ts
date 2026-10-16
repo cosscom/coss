@@ -15,7 +15,7 @@ import { NO_VERDICTS } from "../src/inbound.ts";
 import type { Notice } from "../src/notifier.ts";
 import { createVerifiedDomain } from "../src/testing.ts";
 
-const RECORD = "v=DMARC1; p=quarantine; rua=mailto:dmarc-abcdefghijkmnpqr@inbound.coss.test;";
+const STALE_RECORD = "v=DMARC1; p=quarantine; rua=mailto:stale@acme.test;";
 const DAY = 24 * 60 * 60 * 1000;
 const MANAGED = "inbound.coss.test";
 
@@ -63,6 +63,7 @@ function capture() {
     sent,
     deps: {
       dashboardUrl: "https://coss.test",
+      dmarcReportDomain: MANAGED,
       notifier: {
         async send(notice: Notice) {
           sent.push(notice);
@@ -77,9 +78,10 @@ async function setup(opts: { reports?: boolean } = {}) {
   const organizationId = tenant.organization.id;
   const since = new Date(Date.now() - 30 * DAY);
   const created = await createVerifiedDomain(organizationId);
+  const address = dmarcReportAddress(created.dmarcReportToken, MANAGED) as string;
   const [row] = (await db
     .update(schema.domain)
-    .set({ dmarcRecord: "v=DMARC1; p=none", dmarcPolicyChangedAt: since })
+    .set({ dmarcRecord: `v=DMARC1; p=none; rua=mailto:${address}`, dmarcPolicyChangedAt: since })
     .where(eq(schema.domain.id, created.id))
     .returning()) as [DomainRow];
   if (opts.reports !== false) await healthyReports(row);
@@ -93,13 +95,15 @@ async function setup(opts: { reports?: boolean } = {}) {
       kind: "ready_quarantine",
       dedupeKey: `ready_quarantine:${row.id}:${since.toISOString()}`,
       policyChangedAt: since,
-      detail: { record: RECORD },
+      // Overridden at send time by the record built from the domain's current DNS.
+      detail: { record: STALE_RECORD },
       nextAttemptAt: new Date(),
     })
     .returning();
   return {
     tenant,
     organizationId,
+    address,
     row,
     notification,
     scope: { organizationIds: [organizationId] },
@@ -108,7 +112,7 @@ async function setup(opts: { reports?: boolean } = {}) {
 
 describe("runDueDmarcNotifications", () => {
   test("emails owners the record to publish, once", async () => {
-    const { tenant, row, scope, organizationId } = await setup();
+    const { tenant, row, scope, organizationId, address } = await setup();
     const { sent, deps } = capture();
     expect(await runDueDmarcNotifications({ scope }, deps)).toBe(1);
     expect(sent).toHaveLength(1);
@@ -116,7 +120,8 @@ describe("runDueDmarcNotifications", () => {
       to: tenant.owner.email,
       subject: `${row.name} is ready for DMARC p=quarantine`,
     });
-    expect(sent[0]?.text).toContain(RECORD);
+    expect(sent[0]?.text).toContain(`v=DMARC1; p=quarantine; rua=mailto:${address};`);
+    expect(sent[0]?.text).not.toContain(STALE_RECORD);
     expect(sent[0]?.text).toContain(
       `https://coss.test/${tenant.organization.slug}/domains/${row.id}/dmarc`,
     );
@@ -138,6 +143,33 @@ describe("runDueDmarcNotifications", () => {
     expect(settled).toMatchObject({ status: "skipped" });
   });
 
+  test("builds the record from DNS as it is when sending, not when queued", async () => {
+    const { row, scope, address } = await setup();
+    // Same policy, so the same epoch: another report address and a subdomain policy added.
+    await db
+      .update(schema.domain)
+      .set({ dmarcRecord: `v=DMARC1; p=none; sp=none; rua=mailto:ops@acme.test,mailto:${address}` })
+      .where(eq(schema.domain.id, row.id));
+    const { sent, deps } = capture();
+    expect(await runDueDmarcNotifications({ scope }, deps)).toBe(1);
+    expect(sent[0]?.text).toContain(
+      `v=DMARC1; p=quarantine; sp=none; rua=mailto:ops@acme.test,mailto:${address};`,
+    );
+  });
+
+  test("skips readiness once the record stops sending reports to COSS", async () => {
+    const { row, scope, organizationId } = await setup();
+    await db
+      .update(schema.domain)
+      .set({ dmarcRecord: "v=DMARC1; p=none; rua=mailto:ops@acme.test" })
+      .where(eq(schema.domain.id, row.id));
+    const { sent, deps } = capture();
+    await runDueDmarcNotifications({ scope }, deps);
+    expect(sent).toHaveLength(0);
+    const [settled] = await listDmarcNotifications(organizationId);
+    expect(settled).toMatchObject({ status: "skipped" });
+  });
+
   test("skips readiness that later reports no longer support", async () => {
     const { scope, organizationId } = await setup({ reports: false });
     const { sent, deps } = capture();
@@ -146,7 +178,7 @@ describe("runDueDmarcNotifications", () => {
     const [settled] = await listDmarcNotifications(organizationId);
     expect(settled).toMatchObject({
       status: "skipped",
-      lastError: "No longer ready: later reports changed the checks.",
+      lastError: "No longer ready: later reports or DNS changed the checks.",
     });
   });
 

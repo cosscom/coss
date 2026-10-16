@@ -476,18 +476,21 @@ function guidanceFor(
 }
 
 /**
- * Whether the domain's current reports still make it ready to tighten to `policy`: a queued
- * readiness email re-checks before it goes out, since later reports may have changed the checks.
+ * The record that tightens the domain to `policy`, built from its current DNS and reports, or
+ * null when it is no longer ready: a queued readiness email re-checks before it goes out, since
+ * later reports or DNS changes (another `rua`, `sp`, alignment) may have changed the answer.
  */
-export async function dmarcStillReadyFor(
+export async function dmarcReadyRecord(
   row: DomainRow,
   policy: "quarantine" | "reject",
+  dmarcReportDomain: string | null,
   now: Date = new Date(),
-): Promise<boolean> {
-  // The report address only decides whether reporting is the next step, which readiness
-  // emails (queued from a received report) are past.
-  const { guidance } = guidanceFor(row, null, await dmarcTotals(db, row, now), now);
-  return guidance.ready && guidance.next?.kind === "tighten" && guidance.next.policy === policy;
+): Promise<string | null> {
+  const reportAddress = dmarcReportAddress(row.dmarcReportToken, dmarcReportDomain);
+  const { guidance } = guidanceFor(row, reportAddress, await dmarcTotals(db, row, now), now);
+  return guidance.ready && guidance.next?.kind === "tighten" && guidance.next.policy === policy
+    ? guidance.next.record
+    : null;
 }
 
 // --- Reads --------------------------------------------------------------------------------------
