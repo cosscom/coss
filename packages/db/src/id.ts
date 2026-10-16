@@ -52,6 +52,9 @@ export const ID_PREFIXES = {
   webhookEndpoint: "whep",
   webhookDelivery: "whdel",
   webhookAttempt: "whatt",
+  // `coss listen`: temporary listeners the CLI pulls deliveries from.
+  webhookListener: "whlis",
+  webhookListenerDelivery: "whlisdel",
   // Webhook messages that announce something other than an email event (e.g. `account.suspended`).
   webhookEvent: "evt",
   reputationEvent: "repev",

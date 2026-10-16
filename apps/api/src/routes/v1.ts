@@ -22,6 +22,7 @@ import { createRiskLookupRoutes } from "./risk-lookups.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
 import { createTrackingSettingsRoutes } from "./tracking-settings.ts";
 import { createWebhookEndpointRoutes } from "./webhook-endpoints.ts";
+import { createWebhookListenerRoutes } from "./webhook-listeners.ts";
 
 export type V1Dependencies = {
   emailService: EmailService;
@@ -32,6 +33,9 @@ export type V1Dependencies = {
   /** Receiving (`EmailRuntime.inbound`); `null` when the deployment doesn't receive email. */
   inbound: InboundRuntime | null;
   riskDeps: RiskDeps;
+  /** Aborted when the server shuts down: open long polls answer at once. */
+  shutdownSignal: AbortSignal;
+  listenerPollIntervalMs?: number;
 };
 
 /** Everything under `/v1`. Each product mounts its routes here. */
@@ -42,6 +46,13 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   v1.route("/", createEmailTemplateRoutes());
   v1.route("/", createDomainRoutes(deps.domainDeps, deps.inbound));
   v1.route("/", createWebhookEndpointRoutes(deps.webhookDeps));
+  v1.route(
+    "/",
+    createWebhookListenerRoutes({
+      shutdownSignal: deps.shutdownSignal,
+      pollIntervalMs: deps.listenerPollIntervalMs,
+    }),
+  );
   v1.route("/", createSuppressionRoutes());
   v1.route("/", createTrackingSettingsRoutes());
   v1.route("/", createReputationRoutes());

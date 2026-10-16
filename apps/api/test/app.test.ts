@@ -242,6 +242,9 @@ describe("GET /openapi.json", () => {
       "/v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry",
       "/v1/webhook_endpoints/{id}/recover",
       "/v1/webhook_endpoints/{id}/roll_secret",
+      "/v1/webhook_listeners",
+      "/v1/webhook_listeners/{id}",
+      "/v1/webhook_listeners/{id}/poll",
     ]);
     expect(doc.paths["/v1/emails"]?.post).toMatchObject({
       operationId: "sendEmail",
@@ -446,6 +449,9 @@ describe("GET /openapi.json", () => {
       ["get /v1/webhook_endpoints/{id}/deliveries", "listWebhookDeliveries"],
       ["get /v1/webhook_endpoints/{id}/deliveries/{delivery_id}", "getWebhookDelivery"],
       ["post /v1/webhook_endpoints/{id}/deliveries/{delivery_id}/retry", "retryWebhookDelivery"],
+      ["post /v1/webhook_listeners", "createWebhookListener"],
+      ["post /v1/webhook_listeners/{id}/poll", "pollWebhookListener"],
+      ["delete /v1/webhook_listeners/{id}", "deleteWebhookListener"],
       ["get /v1/tracking_settings", "getTrackingSettings"],
       ["patch /v1/tracking_settings/default", "updateTrackingDefault"],
       ["delete /v1/tracking_settings/default", "deleteTrackingDefault"],

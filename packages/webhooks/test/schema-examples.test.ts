@@ -6,7 +6,9 @@ import { expect, test } from "bun:test";
 import type { z } from "zod";
 import {
   DeletedWebhookEndpoint,
+  DeletedWebhookListener,
   HookEndpointWebhookEvent,
+  PollWebhookListenerRequest,
   RollWebhookEndpointSecretRequest,
   WebhookAttemptObject,
   WebhookDeliveryList,
@@ -14,7 +16,11 @@ import {
   WebhookEndpointList,
   WebhookEndpointObject,
   WebhookEndpointWithSecret,
+  WebhookListenerDeliveryObject,
+  WebhookListenerObject,
+  WebhookListenerPoll,
   webhookEndpointRequests,
+  webhookListenerRequests,
 } from "../src/schemas.ts";
 
 // The event types the public API passes (`EMAIL_EVENT_TYPES`); webhooks can't import @coss/email.
@@ -24,7 +30,19 @@ const { CreateWebhookEndpointRequest, UpdateWebhookEndpointRequest } = webhookEn
   "email.bounced",
 ]);
 
+const { CreateWebhookListenerRequest } = webhookListenerRequests([
+  "email.sent",
+  "email.delivered",
+  "email.bounced",
+]);
+
 const SCHEMAS: Record<string, z.ZodType> = {
+  WebhookListener: WebhookListenerObject,
+  WebhookListenerDelivery: WebhookListenerDeliveryObject,
+  WebhookListenerPoll,
+  DeletedWebhookListener,
+  CreateWebhookListenerRequest,
+  PollWebhookListenerRequest,
   HookEndpointWebhookEvent,
   WebhookEndpoint: WebhookEndpointObject,
   WebhookEndpointWithSecret,

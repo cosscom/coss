@@ -451,3 +451,219 @@ export const HookEndpointWebhookEvent = z
 export type HookEndpointWebhookEventOutput = z.output<typeof HookEndpointWebhookEvent>;
 /** What the outbox stores: delivery adds `api_version` when it renders the event for an endpoint. */
 export type StoredHookEndpointWebhookEvent = Omit<HookEndpointWebhookEventOutput, "api_version">;
+
+/** `coss listen`: the most acknowledgements one poll carries, and the most deliveries it returns. */
+export const MAX_LISTENER_POLL_LIMIT = 50;
+/** The longest a poll waits for deliveries: well under CloudFront's and the ALB's 60 s. */
+export const MAX_LISTENER_WAIT_MS = 25_000;
+export const DEFAULT_LISTENER_WAIT_MS = 20_000;
+export const DEFAULT_LISTENER_POLL_LIMIT = 10;
+
+const LISTENER_ID_EXAMPLE = "whlis_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const LISTENER_DELIVERY_ID_EXAMPLE = "whlisdel_01k7c8n2b5d7f9h1k3m5p7r9tv";
+const LISTENER_EXAMPLE = {
+  object: "webhook_listener",
+  id: LISTENER_ID_EXAMPLE,
+  api_version: LATEST_API_VERSION,
+  event_types: ["email.delivered", "email.bounced"],
+  description: "bailey-mbp → localhost:3000/webhooks",
+  expires_at: "2026-01-15T09:40:00.000Z",
+  created_at: "2026-01-15T09:30:00.000Z",
+};
+const LISTENER_DELIVERY_EXAMPLE = {
+  object: "webhook_listener_delivery",
+  id: LISTENER_DELIVERY_ID_EXAMPLE,
+  ack_token: "mfz3k2a8",
+  event_id: EVENT_ID_EXAMPLE,
+  event_type: "email.delivered",
+  attempt: 1,
+  body: JSON.stringify({
+    id: EVENT_ID_EXAMPLE,
+    object: "event",
+    type: "email.delivered",
+    api_version: LATEST_API_VERSION,
+    created_at: "2026-01-15T09:30:00.000Z",
+    data: { email_id: "email_01k7c8m9x3a5c7e9g1j3l5n7q9", recipient: "user@example.com" },
+  }),
+  created_at: "2026-01-15T09:30:00.000Z",
+};
+
+export const WebhookListenerObject = z
+  .object({
+    object: z.literal("webhook_listener"),
+    id: z.string().meta({ examples: [LISTENER_ID_EXAMPLE] }),
+    api_version: z.string().meta({
+      description: "The API version (`Coss-Version`) the listener's events are rendered in.",
+      examples: [LATEST_API_VERSION],
+    }),
+    event_types: z.array(z.string()).meta({
+      description: "Event types the listener receives. An empty array means every event type.",
+    }),
+    description: z.string().nullable(),
+    expires_at: z.iso.datetime().meta({
+      description:
+        "When the listener closes unless it is polled again; every poll moves it 10 minutes ahead.",
+    }),
+    created_at: z.iso.datetime(),
+  })
+  .meta({ id: "WebhookListener", examples: [LISTENER_EXAMPLE] });
+
+export type WebhookListenerObjectOutput = z.output<typeof WebhookListenerObject>;
+
+export const WebhookListenerDeliveryObject = z
+  .object({
+    object: z.literal("webhook_listener_delivery"),
+    id: z.string().meta({ examples: [LISTENER_DELIVERY_ID_EXAMPLE] }),
+    ack_token: z.string().meta({
+      description: "Send it back with the delivery's acknowledgement in a later poll.",
+    }),
+    event_id: z.string().meta({
+      description:
+        "The event's id: the `id` of the body, and the `webhook-id` header endpoints receive.",
+    }),
+    event_type: z.string().meta({ examples: ["email.delivered"] }),
+    attempt: z.number().int().meta({
+      description:
+        "How many polls have handed it out: more than 1 when an earlier answer was never acknowledged.",
+    }),
+    body: z.string().meta({
+      description:
+        "The event body, exactly as an endpoint with the listener's API version would receive it.",
+    }),
+    created_at: z.iso.datetime(),
+  })
+  .meta({ id: "WebhookListenerDelivery", examples: [LISTENER_DELIVERY_EXAMPLE] });
+
+export type WebhookListenerDeliveryObjectOutput = z.output<typeof WebhookListenerDeliveryObject>;
+
+export const WebhookListenerPoll = z
+  .object({
+    object: z.literal("webhook_listener_poll"),
+    listener: WebhookListenerObject,
+    deliveries: z.array(WebhookListenerDeliveryObject).meta({
+      description:
+        "Events to forward, oldest first. Empty when none arrived while the poll waited. A " +
+        "delivery not acknowledged within two minutes is handed out again.",
+    }),
+    acknowledged: z
+      .number()
+      .int()
+      .meta({ description: "How many of the request's acknowledgements were recorded." }),
+  })
+  .meta({
+    id: "WebhookListenerPoll",
+    examples: [
+      {
+        object: "webhook_listener_poll",
+        listener: LISTENER_EXAMPLE,
+        deliveries: [LISTENER_DELIVERY_EXAMPLE],
+        acknowledged: 0,
+      },
+    ],
+  });
+
+export type WebhookListenerPollOutput = z.output<typeof WebhookListenerPoll>;
+
+export const DeletedWebhookListener = z
+  .object({
+    object: z.literal("webhook_listener"),
+    id: z.string(),
+    deleted: z.literal(true),
+  })
+  .meta({
+    id: "DeletedWebhookListener",
+    examples: [{ object: "webhook_listener", id: LISTENER_ID_EXAMPLE, deleted: true }],
+  });
+
+export type DeletedWebhookListenerOutput = z.output<typeof DeletedWebhookListener>;
+
+export const WebhookListenerAckRequest = z
+  .strictObject({
+    delivery_id: z.string().meta({ examples: [LISTENER_DELIVERY_ID_EXAMPLE] }),
+    ack_token: z.string().max(64).meta({ description: "The delivery's `ack_token`." }),
+    status_code: z.number().int().min(100).max(599).nullable().meta({
+      description:
+        "What the local URL answered; `null` when nothing answered, or when the event was only printed.",
+    }),
+    duration_ms: z.number().int().min(0).max(3_600_000),
+    error: z.string().max(500).nullable().meta({
+      description: "Why forwarding failed (e.g. `connection refused`); `null` if it didn't.",
+    }),
+  })
+  .meta({ id: "WebhookListenerAck" });
+
+export const PollWebhookListenerRequest = z
+  .strictObject({
+    acks: z
+      .array(WebhookListenerAckRequest)
+      .max(MAX_LISTENER_POLL_LIMIT)
+      .optional()
+      .meta({
+        description:
+          "What happened to deliveries handed out earlier. A delivery is finished once acknowledged: " +
+          "a 2xx status (or none, with no error) succeeds; anything else fails. Neither is retried.",
+      }),
+    wait_ms: z
+      .number()
+      .int()
+      .min(0)
+      .max(MAX_LISTENER_WAIT_MS)
+      .optional()
+      .meta({
+        description: `How long to wait for deliveries when none is pending, in milliseconds. Default ${DEFAULT_LISTENER_WAIT_MS}, at most ${MAX_LISTENER_WAIT_MS}.`,
+      }),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_LISTENER_POLL_LIMIT)
+      .optional()
+      .meta({
+        description: `The most deliveries to hand out. Default ${DEFAULT_LISTENER_POLL_LIMIT}, at most ${MAX_LISTENER_POLL_LIMIT}.`,
+      }),
+  })
+  .meta({
+    id: "PollWebhookListenerRequest",
+    examples: [
+      {
+        acks: [
+          {
+            delivery_id: LISTENER_DELIVERY_ID_EXAMPLE,
+            ack_token: "mfz3k2a8",
+            status_code: 200,
+            duration_ms: 12,
+            error: null,
+          },
+        ],
+        wait_ms: DEFAULT_LISTENER_WAIT_MS,
+      },
+    ],
+  });
+
+export type PollWebhookListenerRequestOutput = z.output<typeof PollWebhookListenerRequest>;
+
+/** The create body for one set of subscribable event types (called once per process). */
+export function webhookListenerRequests<const T extends readonly [string, ...string[]]>(
+  eventTypes: T,
+) {
+  const CreateWebhookListenerRequest = z
+    .strictObject({
+      event_types: z
+        .array(z.enum(eventTypes))
+        .max(eventTypes.length)
+        .optional()
+        .meta({ description: "Event types to receive. Defaults to every event type." }),
+      api_version: ApiVersion.optional().meta({
+        description:
+          "The API version events are rendered in. Defaults to the version of the request that creates the listener.",
+      }),
+      description: Description.nullish().meta({
+        description: "Where the events go, for your own reference (shown in the log).",
+      }),
+    })
+    .meta({
+      id: "CreateWebhookListenerRequest",
+      examples: [{ event_types: eventTypes.slice(0, 2), description: "localhost:3000/webhooks" }],
+    });
+  return { CreateWebhookListenerRequest };
+}

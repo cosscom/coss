@@ -14,6 +14,11 @@ const TYPE_ID = /^([a-z][a-z_]*)_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
 
 /** Reads that are not logged: the logs themselves, and the audit log. */
 const UNLOGGED_READS = ["/v1/logs", "/v1/audit_events"];
+/**
+ * `coss listen`'s long polls: one every 20 s per listener would crowd the log it tails, and their
+ * answers are event payloads. Each delivery it forwards is logged as `webhook.forward` instead.
+ */
+const LISTENER_POLL = /^\/v1\/webhook_listeners\/[^/]+\/poll$/;
 
 /**
  * Requests that are not logged: anything outside `/v1`, preflights, and reading the logs or the
@@ -23,6 +28,7 @@ const UNLOGGED_READS = ["/v1/logs", "/v1/audit_events"];
 function skipped(method: string, path: string): boolean {
   if (!path.startsWith("/v1/")) return true;
   if (method === "OPTIONS") return true;
+  if (method === "POST" && LISTENER_POLL.test(path)) return true;
   return (
     // Hono runs GET handlers for HEAD and strips the body after middleware completes.
     (method === "GET" || method === "HEAD") &&

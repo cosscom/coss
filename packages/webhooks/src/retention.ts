@@ -7,7 +7,7 @@ import { ID_PREFIXES, newId } from "@coss/db/id";
 import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
 import { and, asc, eq, inArray, isNull, lt, ne, notExists, sql } from "drizzle-orm";
 
-const { logDrainBatch, logDrainRecord, webhookDelivery, webhookMessage } = schema;
+const { logDrainBatch, logDrainRecord, webhookDelivery, webhookListener, webhookMessage } = schema;
 
 /**
  * Deletes up to `limit` messages created before the cutoff, oldest first, with their deliveries
@@ -110,4 +110,29 @@ export async function purgeExpiredLogDrainBatches(
     .where(and(inArray(logDrainRecord.id, expiredBacklog), isNull(logDrainRecord.batchId)))
     .returning({ id: logDrainRecord.id });
   return [batches.length, backlog.length];
+}
+
+/**
+ * Deletes up to `limit` `coss listen` listeners that expired (or were closed) before the cutoff,
+ * oldest first, with what they were handed (cascade). The events stay as webhook messages.
+ */
+export async function purgeExpiredWebhookListeners(
+  opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } } = {},
+): Promise<number> {
+  const cutoff = retentionCutoff(RETENTION_DAYS.webhookListeners, opts.now);
+  const expired = and(
+    lt(webhookListener.expiresAt, cutoff),
+    opts.scope ? inArray(webhookListener.organizationId, opts.scope.organizationIds) : undefined,
+  );
+  const due = db
+    .select({ id: webhookListener.id })
+    .from(webhookListener)
+    .where(expired)
+    .orderBy(asc(webhookListener.expiresAt))
+    .limit(opts.limit ?? 1000);
+  const deleted = await db
+    .delete(webhookListener)
+    .where(and(inArray(webhookListener.id, due), expired))
+    .returning({ id: webhookListener.id });
+  return deleted.length;
 }

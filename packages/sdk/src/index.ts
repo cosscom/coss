@@ -43,6 +43,7 @@ export type { TrackingResource } from "./resources/tracking.ts";
 export type { TrackingDomainsResource } from "./resources/tracking-domains.ts";
 export type { WebhookDeliveriesResource } from "./resources/webhook-deliveries.ts";
 export type { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
+export type { WebhookListenersResource } from "./resources/webhook-listeners.ts";
 export type { AuditActorType, AuditEvent, ListAuditEventsParams } from "./types/audit-event.ts";
 export type {
   Billing,
@@ -292,6 +293,15 @@ export type {
   WebhookEndpointWithSecret,
   WebhookEventType,
 } from "./types/webhook-endpoint.ts";
+export type {
+  CreateWebhookListenerParams,
+  DeletedWebhookListener,
+  PollWebhookListenerParams,
+  WebhookListener,
+  WebhookListenerAck,
+  WebhookListenerDelivery,
+  WebhookListenerPoll,
+} from "./types/webhook-listener.ts";
 export { VERSION } from "./version.ts";
 export {
   type VerifyWebhookOptions,

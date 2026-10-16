@@ -132,6 +132,7 @@ import type {
   CreateLogDrainRequest,
   DeletedLogDrain,
   DeletedWebhookEndpoint,
+  DeletedWebhookListener,
   HookEndpointWebhookEvent,
   ListLogDrainBatchesQuery,
   ListWebhookDeliveriesQuery,
@@ -141,6 +142,7 @@ import type {
   LogDrainList,
   LogDrainObject,
   LogDrainWithSecret,
+  PollWebhookListenerRequest,
   RecoverWebhookEndpointRequest,
   RecoverWebhookEndpointResult,
   RollWebhookEndpointSecretRequest,
@@ -151,6 +153,8 @@ import type {
   WebhookEndpointList,
   WebhookEndpointObject,
   WebhookEndpointWithSecret,
+  WebhookListenerObject,
+  WebhookListenerPoll,
 } from "@coss/webhooks/schemas";
 import type {
   AssessRiskParams,
@@ -168,6 +172,7 @@ import type {
   CreateSuppressionParams,
   CreateTrackingDomainParams,
   CreateWebhookEndpointParams,
+  CreateWebhookListenerParams,
   Email,
   EmailBatch,
   EmailSummary,
@@ -193,6 +198,7 @@ import type {
   LogDrainBatch,
   LogDrainLine,
   LogDrainSource,
+  PollWebhookListenerParams,
   PublishEmailTemplateParams,
   RecoverWebhookEndpointParams,
   RescheduleEmailParams,
@@ -214,6 +220,7 @@ import type {
   DeletedSuppression as SdkDeletedSuppression,
   DeletedTrackingRule as SdkDeletedTrackingRule,
   DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
+  DeletedWebhookListener as SdkDeletedWebhookListener,
   Domain as SdkDomain,
   DomainBimi as SdkDomainBimi,
   DomainRecord as SdkDomainRecord,
@@ -264,6 +271,8 @@ import type {
   Usage as SdkUsage,
   WebhookAttempt as SdkWebhookAttempt,
   WebhookDelivery as SdkWebhookDelivery,
+  WebhookListener as SdkWebhookListener,
+  WebhookListenerPoll as SdkWebhookListenerPoll,
   SendEmailContentParams,
   SendEmailTemplateParams,
   TrackingOptions,
@@ -286,6 +295,7 @@ import type {
   CreateWebhookEndpointRequest,
   UpdateWebhookEndpointRequest,
 } from "../src/routes/webhook-endpoints.ts";
+import type { CreateWebhookListenerRequest } from "../src/routes/webhook-listeners.ts";
 
 /** Identical types (stricter than mutual assignability: also catches optionality drift). */
 type Equals<A, B> =
@@ -448,6 +458,14 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointWithSecret>, SdkEndpointWithSecret>>,
   Assert<MutuallyAssignable<z.output<typeof WebhookEndpointList>, List<WebhookEndpoint>>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedWebhookEndpoint>, SdkDeletedWebhookEndpoint>>,
+  // Webhook listeners (`coss listen`).
+  Assert<
+    MutuallyAssignable<z.input<typeof CreateWebhookListenerRequest>, CreateWebhookListenerParams>
+  >,
+  Assert<MutuallyAssignable<z.input<typeof PollWebhookListenerRequest>, PollWebhookListenerParams>>,
+  Assert<MutuallyAssignable<z.output<typeof WebhookListenerObject>, SdkWebhookListener>>,
+  Assert<MutuallyAssignable<z.output<typeof WebhookListenerPoll>, SdkWebhookListenerPoll>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedWebhookListener>, SdkDeletedWebhookListener>>,
   // Delivery logs (the SDK sends `limit` as a number).
   Assert<
     MutuallyAssignable<

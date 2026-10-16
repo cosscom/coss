@@ -1,12 +1,19 @@
 /** The webhook outbox: messages are recorded in the same transaction as the event they announce. */
 import { type Executor, schema } from "@coss/db";
-import { and, eq } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 
-const { webhookDelivery, webhookEndpoint, webhookMessage } = schema;
+const {
+  webhookDelivery,
+  webhookEndpoint,
+  webhookListener,
+  webhookListenerDelivery,
+  webhookMessage,
+} = schema;
 
 /**
- * Queues `payload` for every enabled endpoint of the environment subscribed to `type`. Runs inside
- * the caller's transaction; idempotent per message id. Returns the number of deliveries queued.
+ * Queues `payload` for every enabled endpoint of the environment subscribed to `type`, and for its
+ * open `coss listen` listeners. Runs inside the caller's transaction; idempotent per message id.
+ * Returns the number of endpoint deliveries queued.
  */
 export async function enqueueWebhookMessage(
   tx: Executor,
@@ -29,10 +36,24 @@ export async function enqueueWebhookMessage(
         eq(webhookEndpoint.enabled, true),
       ),
     );
-  const subscribed = endpoints.filter(
-    (endpoint) => endpoint.eventTypes.length === 0 || endpoint.eventTypes.includes(message.type),
-  );
-  if (subscribed.length === 0) return 0;
+  // Open at this instant, not at `message.now` (which may be backdated). KEY SHARE keeps the
+  // listener row from being deleted under the insert; closing one only moves `expires_at`.
+  const listeners = await tx
+    .select({ id: webhookListener.id, eventTypes: webhookListener.eventTypes })
+    .from(webhookListener)
+    .where(
+      and(
+        eq(webhookListener.organizationId, message.organizationId),
+        eq(webhookListener.environmentId, message.environmentId),
+        gt(webhookListener.expiresAt, new Date()),
+      ),
+    )
+    .for("key share");
+  const subscribes = (target: { eventTypes: string[] }) =>
+    target.eventTypes.length === 0 || target.eventTypes.includes(message.type);
+  const subscribed = endpoints.filter(subscribes);
+  const listening = listeners.filter(subscribes);
+  if (subscribed.length === 0 && listening.length === 0) return 0;
 
   await tx
     .insert(webhookMessage)
@@ -44,6 +65,21 @@ export async function enqueueWebhookMessage(
       payload: message.payload,
     })
     .onConflictDoNothing();
+  if (listening.length > 0) {
+    await tx
+      .insert(webhookListenerDelivery)
+      .values(
+        listening.map((listener) => ({
+          organizationId: message.organizationId,
+          listenerId: listener.id,
+          messageId: message.id,
+        })),
+      )
+      .onConflictDoNothing({
+        target: [webhookListenerDelivery.messageId, webhookListenerDelivery.listenerId],
+      });
+  }
+  if (subscribed.length === 0) return 0;
   const queued = await tx
     .insert(webhookDelivery)
     .values(

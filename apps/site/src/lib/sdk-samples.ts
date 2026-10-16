@@ -394,6 +394,18 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
       requestOptions(request),
     ],
   },
+  "POST /v1/webhook_listeners": {
+    method: "webhookListeners.create",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "POST /v1/webhook_listeners/{id}/poll": {
+    method: "webhookListeners.poll",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/webhook_listeners/{id}": {
+    method: "webhookListeners.delete",
+    args: (r) => [pathId(r)],
+  },
   "POST /v1/risk/assessments": {
     method: "risk.assess",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],

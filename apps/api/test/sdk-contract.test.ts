@@ -46,6 +46,12 @@ function toRequest(input: string | URL | Request, init?: RequestInit): Request {
   return input instanceof Request ? new Request(input, init) : new Request(String(input), init);
 }
 
+/** The value, which the test expects to be there. */
+function must<T>(value: T | null | undefined): T {
+  if (value === null || value === undefined) throw new Error("expected a value");
+  return value;
+}
+
 function clientFor(app: TestApp, apiKey: string, options: Partial<CossOptions> = {}): Coss {
   return new Coss({
     apiKey,
@@ -1153,6 +1159,55 @@ describe("coss.environment against the API", () => {
       project: { id: tenant.project.id, slug: tenant.project.slug },
       organization: { id: tenant.organization.id, api_version: API_VERSION },
       api_key: { name: "Test sandbox key" },
+    });
+  });
+});
+
+describe("coss.webhookListeners against the API", () => {
+  test("a listener receives the environment's events, which verify once the CLI signs them", async () => {
+    const tenant = await createTestTenant();
+    const { app, dispatch } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const { data: listener } = await coss.webhookListeners.create({
+      event_types: ["email.sent"],
+      description: "contract test",
+    });
+    expect(listener).toMatchObject({ object: "webhook_listener", event_types: ["email.sent"] });
+
+    const sent = await coss.email.send({
+      from: "hello@acme.com",
+      to: "user@example.com",
+      subject: "Hi",
+      text: "Hi",
+    });
+    await dispatch();
+    const { data: answer } = await coss.webhookListeners.poll(must(listener).id, { wait_ms: 0 });
+    expect(answer?.deliveries).toHaveLength(1);
+    const [delivery] = must(answer).deliveries;
+    const event = JSON.parse(must(delivery).body);
+    expect(event).toMatchObject({ type: "email.sent", data: { email_id: sent.data?.id } });
+    expect(event.id).toBe(must(delivery).event_id);
+
+    const { data: acked } = await coss.webhookListeners.poll(must(listener).id, {
+      wait_ms: 0,
+      acks: [
+        {
+          delivery_id: must(delivery).id,
+          ack_token: must(delivery).ack_token,
+          status_code: 200,
+          duration_ms: 3,
+          error: null,
+        },
+      ],
+    });
+    expect(acked?.acknowledged).toBe(1);
+    expect((await coss.webhookListeners.delete(must(listener).id)).data).toEqual({
+      object: "webhook_listener",
+      id: must(listener).id,
+      deleted: true,
+    });
+    expect((await coss.webhookListeners.poll(must(listener).id)).error).toMatchObject({
+      type: "not_found_error",
     });
   });
 });

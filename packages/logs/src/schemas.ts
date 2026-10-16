@@ -74,7 +74,8 @@ export const LogEntry = z
     level: LogLevelEnum,
     type: z.string().meta({
       description:
-        "`api.request`, `webhook.attempt`, or an email event type such as `email.delivered`.",
+        "`api.request`, `webhook.attempt`, `webhook.forward` (an event `coss listen` forwarded), " +
+        "or an email event type such as `email.delivered`.",
     }),
     message: z.string().meta({ description: "A one-line summary." }),
     request_id: z
