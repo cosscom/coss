@@ -336,4 +336,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   away, so the shards always equal `recountBroadcastStats`), `opened`/`clicked` on an email's first open or click,
   `unsubscribed` when its link actually unsubscribed a subscribed contact. An unfinished broadcast's audience, segment
   or topic can't be deleted (`…_in_use`). `BroadcastError` maps to 404 (`not_found`) or 422 (never 409);
-  `broadcast.sending/sent/paused/canceled/failed` webhooks carry the stats, never content.
+  `broadcast.sending/sent/paused/canceled/failed` webhooks carry the stats, never content. Dashboard:
+  `[envSlug]/broadcasts` (list, editor, sandboxed preview with `PREVIEW_HEAD`, stats, controls; `broadcast:*`
+  permissions); its test sends go only to verified members (`listVerifiedMemberEmails`, like template test sends),
+  through the dashboard's email service (`apps/web/src/lib/email-service.ts`), and are charged `emailSendQuota` like
+  the API's `POST /v1/broadcasts/{id}/test`.

@@ -12,6 +12,11 @@
     "tracking",
     "unsubscribe",
     "delivery",
-    "suppressions"
+    "suppressions",
+    "streams",
+    "contacts",
+    "audiences-and-segments",
+    "topics-and-preferences",
+    "broadcasts"
   ]
 }

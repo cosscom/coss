@@ -74,6 +74,16 @@ anyone by following it.
 Removing the suppression lets that category reach the recipient again; unsubscribing again through
 the same email adds it back.
 
+## Topics and marketing email
+
+When an email's category is a [topic](/docs/email/topics-and-preferences), and on every email sent
+with `stream: "marketing"` ([streams](/docs/email/streams)), coss.com adds the preference center's
+headers instead. An unsubscribe then opts the contact out of the topic (or of marketing email) and
+is kept on the [contact](/docs/email/contacts), not as a suppression, so `tracking.unsubscribe`
+makes no difference there.
+
+## Unsubscribe links in the body
+
 Mailbox providers also expect an unsubscribe link in the body of marketing emails. Keep yours: coss.com
 doesn't change the content for unsubscribes, and your link can lead to a preference page that adds
 [suppressions](/docs/email/suppressions#managing-the-list) of its own.

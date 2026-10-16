@@ -4,6 +4,7 @@ import { newId } from "@coss/db/id";
 // Keep this suite DB-free; exercise the actual actions with their external boundaries mocked.
 mock.module("server-only", () => ({}));
 mock.module("@coss/email", () => ({
+  BroadcastError: class extends Error {},
   ContactError: class extends Error {},
   DomainError: class extends Error {},
   EmailError: class extends Error {},

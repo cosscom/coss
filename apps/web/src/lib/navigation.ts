@@ -72,6 +72,7 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
   {
     label: "Marketing",
     items: [
+      { label: "Broadcasts", path: "/broadcasts", icon: SendIcon },
       { label: "Contacts", path: "/contacts", icon: ContactRoundIcon },
       { label: "Audiences", path: "/audiences", icon: UsersRoundIcon },
       { label: "Segments", path: "/segments", icon: FilterIcon },
@@ -202,6 +203,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   messages: "Messages",
   received: "Received",
   suppressions: "Suppressions",
+  broadcasts: "Broadcasts",
   contacts: "Contacts",
   properties: "Properties",
   audiences: "Audiences",

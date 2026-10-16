@@ -1,0 +1,67 @@
+---
+title: Audiences and segments
+description: Static lists of contacts, and filters over them that are always current.
+---
+
+A [broadcast](/docs/email/broadcasts) goes to an **audience** or a **segment**. Either way, only
+contacts who are `subscribed`, reached by the broadcast's topic and not on the suppression list get
+it.
+
+## Audiences
+
+An audience is a list you manage: contacts are added and removed explicitly (a contact can be in any
+number of them).
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: beta } = await coss.email.audiences.create({ name: "Beta testers" });
+if (beta) {
+  await coss.email.audiences.addContacts(beta.id, {
+    contacts: ["ada@example.com", "grace@example.com"],
+  });
+}
+
+// Or when creating the contact.
+await coss.email.contacts.upsert({ email: "linus@example.com", audience_ids: [beta?.id ?? ""] });
+```
+
+## Segments
+
+A segment is a filter, evaluated every time it is used, so it always reflects your contacts as they
+are now. A filter matches `all` or `any` of its conditions, which can test:
+
+| Field | Operators |
+|---|---|
+| `property` | `eq`, `neq`, `in`, `not_in`, `gt`, `gte`, `lt`, `lte`, `contains`, `starts_with`, `exists`, `not_exists` |
+| `email` | `eq`, `ends_with`, `contains` |
+| `audience` | `in`, `not_in` |
+| `topic` | `subscribed`, `not_subscribed` |
+| `created_at` | `before`, `after`, `within_days` |
+
+Conditions can be grouped one level deep, up to 20 in all.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: segment } = await coss.email.segments.create({
+  name: "Pro customers outside beta",
+  filter: {
+    version: 1,
+    match: "all",
+    conditions: [
+      { field: "property", key: "plan", op: "eq", value: "pro" },
+      { field: "audience", op: "not_in", audience_id: "aud_01k7c8m4q2f3e9v6t5r1n0p8yz" },
+    ],
+  },
+});
+
+// Who it matches right now.
+const { data: matches } = await coss.email.segments.listContacts(segment?.id ?? "");
+```
+
+The dashboard's **Segments** page builds filters with a live count of the contacts they match. An
+audience, topic or property a segment uses can't be deleted until the segment stops using it, and
+neither can an audience, segment or topic of a broadcast that hasn't finished.

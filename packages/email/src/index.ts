@@ -69,6 +69,7 @@ export {
   getContactProperty,
   listContactProperties,
   listContactPropertyRows,
+  propertyDefinitions,
   updateContactProperty,
 } from "./contact-properties.ts";
 export {

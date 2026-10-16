@@ -28,3 +28,24 @@ export function ContactStatusBadge({ status }: { status: keyof typeof STATUS }) 
     </Badge>
   );
 }
+
+const BROADCAST_STATUS = {
+  draft: { tone: "neutral", label: "Draft" },
+  scheduled: { tone: "info", label: "Scheduled" },
+  sending: { tone: "info", label: "Sending" },
+  paused: { tone: "warning", label: "Paused" },
+  sent: { tone: "success", label: "Sent" },
+  canceled: { tone: "neutral", label: "Canceled" },
+  failed: { tone: "error", label: "Failed" },
+} as const;
+
+export function BroadcastStatusBadge({ status }: { status: keyof typeof BROADCAST_STATUS }) {
+  const { tone, label } = BROADCAST_STATUS[status];
+  return (
+    <Badge variant="outline">
+      <StatusDot pulse={status === "sending"} tone={tone}>
+        {label}
+      </StatusDot>
+    </Badge>
+  );
+}
