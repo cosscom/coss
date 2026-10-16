@@ -697,9 +697,9 @@ It reads and dispatches through a GitHub App, **COSS Deploy**, so no person's to
    read-only** (nothing else), installable on this account only. Create it, note its **App ID**, and generate a
    private key (a `.pem` download).
 2. Install it on `cosscom`, only on `cosscom/coss`.
-3. Its bot account starts the deploy runner, so it goes on the allow-list: `gh api 'users/coss-deploy[bot]' --jq .id`
-   (the app's slug + `[bot]`) → `deploy_actor_ids` in `production.tfvars`.
-4. `infra/terraform/scripts/put-secret.sh DEPLOY_GITHUB_APP_PRIVATE_KEY --stdin < coss-deploy.*.private-key.pem`,
+3. Its bot account starts the deploy runner, so it goes on the allow-list: `gh api 'users/coss-com-deploy[bot]' --jq .id`
+   (the app's slug + `[bot]`; ours is `coss-com-deploy`, App ID 5340076) → `deploy_actor_ids` in `production.tfvars`.
+4. `infra/terraform/scripts/put-secret.sh DEPLOY_GITHUB_APP_PRIVATE_KEY --stdin < coss-com-deploy.*.private-key.pem`,
    then take it out of `unset_secrets`, set `DEPLOY_GITHUB_APP_ID` under `plain_env.web`, and apply. Delete the
    `.pem`.
 5. Run the Deploy workflow (`gh workflow run deploy.yml`) so the dashboard picks up the new task definition.
