@@ -37,4 +37,5 @@ ALTER TABLE "webhook_listener_delivery" ADD CONSTRAINT "webhook_listener_deliver
 ALTER TABLE "webhook_listener_delivery" ADD CONSTRAINT "webhook_listener_delivery_message_fk" FOREIGN KEY ("message_id","organization_id") REFERENCES "public"."webhook_message"("id","organization_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "webhook_listener_environment_expires_idx" ON "webhook_listener" USING btree ("environment_id","expires_at");--> statement-breakpoint
 CREATE INDEX "webhook_listener_expires_at_idx" ON "webhook_listener" USING btree ("expires_at");--> statement-breakpoint
-CREATE INDEX "webhook_listener_delivery_pending_idx" ON "webhook_listener_delivery" USING btree ("listener_id","created_at","id") WHERE "webhook_listener_delivery"."status" = 'pending';
+CREATE INDEX "webhook_listener_delivery_pending_idx" ON "webhook_listener_delivery" USING btree ("listener_id","created_at","id") WHERE "webhook_listener_delivery"."status" = 'pending';--> statement-breakpoint
+CREATE INDEX "webhook_listener_delivery_listener_idx" ON "webhook_listener_delivery" USING btree ("listener_id");

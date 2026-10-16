@@ -1,5 +1,5 @@
 {
-  "id": "aee6dc00-a620-4f93-96a0-2f495d95a0dd",
+  "id": "cf5a50e1-1d57-4982-b67d-4563af3ad82d",
   "prevId": "11fff249-e736-44b4-83e3-f259a69f352d",
   "version": "7",
   "dialect": "postgresql",
@@ -14393,6 +14393,21 @@
           ],
           "isUnique": false,
           "where": "\"webhook_listener_delivery\".\"status\" = 'pending'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "webhook_listener_delivery_listener_idx": {
+          "name": "webhook_listener_delivery_listener_idx",
+          "columns": [
+            {
+              "expression": "listener_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}

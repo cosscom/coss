@@ -1258,6 +1258,8 @@ export const webhookListenerDelivery = pgTable(
     index("webhook_listener_delivery_pending_idx")
       .on(t.listenerId, t.createdAt, t.id)
       .where(sql`${t.status} = 'pending'`),
+    // The listener's cascade (retention purges listeners with deliveries in every status).
+    index("webhook_listener_delivery_listener_idx").on(t.listenerId),
   ],
 );
 

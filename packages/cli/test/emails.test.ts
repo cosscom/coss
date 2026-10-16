@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { addresses } from "../src/args.ts";
 import { run } from "../src/run.ts";
 import { fakeFetch, LIVE_KEY, SANDBOX_KEY, testIo } from "./helpers.ts";
 
@@ -19,6 +20,21 @@ function email(
 }
 
 describe("coss emails send", () => {
+  test("splits addresses on commas, except inside quoted names and angle brackets", () => {
+    expect(
+      addresses([
+        '"Acme, Inc." <hello@acme.test>, b@example.com',
+        '"Say \\"hi, there\\"" <c@example.com>',
+        "d@example.com",
+      ]),
+    ).toEqual([
+      '"Acme, Inc." <hello@acme.test>',
+      "b@example.com",
+      '"Say \\"hi, there\\"" <c@example.com>',
+      "d@example.com",
+    ]);
+  });
+
   test("sends a default test email, or what the flags say", async () => {
     const api = fakeFetch({ "POST /v1/emails": email("queued", "queued", "a@example.com") });
     const io = testIo({ fetch: api.fetch, env: { COSS_API_KEY: SANDBOX_KEY } });

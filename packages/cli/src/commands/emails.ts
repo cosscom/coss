@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import type { Coss, Email, EmailEvent, EmailRecipientStatus, SendEmailParams } from "coss";
-import { list, parseFlags } from "../args.ts";
+import { addresses, parseFlags } from "../args.ts";
 import { type Context, clientFor, createContext, resolveCredentials } from "../context.ts";
 import {
   isSimulatedOutcome,
@@ -155,7 +155,7 @@ export async function emailsSend(argv: string[], io: CliIo): Promise<number> {
       `--simulate takes ${Object.keys(SIMULATED_OUTCOMES).join(", ")}; got "${simulate}".`,
     );
   }
-  const to = [...list(values.to), ...(simulate ? [SIMULATED_OUTCOMES[simulate]] : [])];
+  const to = [...addresses(values.to), ...(simulate ? [SIMULATED_OUTCOMES[simulate]] : [])];
   if (to.length === 0) throw new UsageError("Pass --to <address> or --simulate <outcome>.");
   const timeoutS = values.timeout === undefined ? 60 : Number(values.timeout);
   if (!Number.isFinite(timeoutS) || timeoutS <= 0) {
@@ -170,9 +170,9 @@ export async function emailsSend(argv: string[], io: CliIo): Promise<number> {
   const base = {
     from: values.from ?? SANDBOX_FROM,
     to,
-    ...(values.cc && { cc: list(values.cc) }),
-    ...(values.bcc && { bcc: list(values.bcc) }),
-    ...(values["reply-to"] && { reply_to: list(values["reply-to"]) }),
+    ...(values.cc && { cc: addresses(values.cc) }),
+    ...(values.bcc && { bcc: addresses(values.bcc) }),
+    ...(values["reply-to"] && { reply_to: addresses(values["reply-to"]) }),
     ...(values.category && { category: values.category }),
     ...(values.tag && {
       tags: pairs(values.tag, "tag").map(([name, value]) => ({ name, value })),
