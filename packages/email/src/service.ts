@@ -640,6 +640,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         claimedRow,
         pending.map((recipient) => recipient.address),
         claimedRow.category,
+        claimedRow.stream,
       );
       for (const [address, entry] of suppressed) {
         await recordProviderEvent(tx, suppressedEvent(claimedRow, address, entry));
@@ -917,6 +918,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       environment,
       recipients.map((recipient) => recipient.address),
       row.category,
+      row.stream,
     );
     await tx.insert(emailRecipient).values(recipients);
     await insertAttachments(tx, row, prepared.attachments);

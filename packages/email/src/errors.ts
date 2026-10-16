@@ -5,6 +5,7 @@ export type EmailErrorCode =
   | "domain_not_verified"
   | "sending_paused"
   | "account_suspended"
+  | "marketing_paused"
   | "billing_hold"
   | "email_not_cancelable"
   | "email_not_reschedulable"
@@ -25,6 +26,7 @@ const STATUS_BY_CODE = {
   domain_not_verified: 422,
   sending_paused: 403,
   account_suspended: 403,
+  marketing_paused: 403,
   // Payment required: an overdue invoice or the spend limit (`@coss/billing`).
   billing_hold: 402,
   // Not 409: the SDK retries those.

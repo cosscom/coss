@@ -344,6 +344,7 @@ export {
   ListSuppressionsQuery,
   type ListSuppressionsQueryOutput,
   MAIL_FROM_STATUSES,
+  MARKETING_STREAM_SCOPE,
   MAX_ATTACHMENTS,
   MAX_ATTACHMENTS_BYTES,
   MAX_BATCH_EMAILS,

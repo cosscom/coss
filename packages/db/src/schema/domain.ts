@@ -1557,6 +1557,12 @@ export const reputationStanding = pgTable(
     statusChangedAt: timestamp("status_changed_at", { withTimezone: true }),
     // Rate windows never reach back past the last reinstatement.
     reinstatedAt: timestamp("reinstated_at", { withTimezone: true }),
+    // The marketing stream's own pause: its bounce or complaint rate stops marketing sends only
+    // (set: paused, by `marketing_reason`). Never lifted automatically, like a suspension; its
+    // rate windows never reach back past `marketing_reinstated_at`.
+    marketingPausedAt: timestamp("marketing_paused_at", { withTimezone: true }),
+    marketingReason: text("marketing_reason"),
+    marketingReinstatedAt: timestamp("marketing_reinstated_at", { withTimezone: true }),
     // Per-organization policy overrides set by platform admins (validated by `@coss/reputation`).
     policyOverrides: jsonb("policy_overrides").$type<Record<string, unknown>>(),
     // The latest evaluation's check results.
@@ -1584,6 +1590,8 @@ export const reputationEventType = pgEnum("reputation_event_type", [
   "suspended",
   "reinstated",
   "policy_updated",
+  "marketing_paused",
+  "marketing_reinstated",
 ]);
 
 export const reputationActor = pgEnum("reputation_actor", ["system", "admin"]);
@@ -1664,8 +1672,8 @@ export const reputationNotification = pgTable(
 );
 
 /**
- * Hourly rollups of an organization's live email reputation counts (`@coss/email`), by the hour
- * the emails were created. Computed lazily by the reputation checks for closed hours; delivery
+ * Hourly rollups of an organization's live email reputation counts (`@coss/email`), by stream and
+ * by the hour the emails were created. Computed lazily by the reputation checks for closed hours; delivery
  * events that change an hour's counts bump `revision`, so a row is current only while
  * `computed_revision = revision`. Mailbox-simulator recipients are counted separately.
  */
@@ -1676,6 +1684,9 @@ export const emailReputationRollup = pgTable(
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
     bucketStart: timestamp("bucket_start", { withTimezone: true }).notNull(),
+    // Rows from before streams are transactional and stay valid (never recounted): no marketing
+    // email could be sent until the stream split, so every one of them counts transactional mail.
+    stream: emailStream("stream").notNull().default("transactional"),
     revision: integer("revision").notNull().default(0),
     // Null until first computed.
     computedRevision: integer("computed_revision"),
@@ -1687,7 +1698,7 @@ export const emailReputationRollup = pgTable(
     simulatorComplaints: integer("simulator_complaints").notNull().default(0),
     updatedAt: updatedAt(),
   },
-  (t) => [primaryKey({ columns: [t.organizationId, t.bucketStart] })],
+  (t) => [primaryKey({ columns: [t.organizationId, t.bucketStart, t.stream] })],
 );
 export const contentScreeningVerdict = pgEnum("content_screening_verdict", [
   "clean",

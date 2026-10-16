@@ -18,6 +18,8 @@ const EVENT_LABELS = {
   warning_cleared: "Warning cleared",
   suspended: "Suspended",
   reinstated: "Reinstated",
+  marketing_paused: "Marketing paused",
+  marketing_reinstated: "Marketing resumed",
 } as const;
 
 /** One measurement against its thresholds (the dashboard's `ReputationChecks` row). */

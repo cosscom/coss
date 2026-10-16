@@ -4,6 +4,22 @@ export type ReputationStatus = "good" | "warning" | "suspended";
 
 export type ReputationCheckSeverity = "ok" | "warning" | "suspend";
 
+/**
+ * `paused`: the marketing stream's bounce or complaint rate reached its suspension threshold, so
+ * marketing sends are refused (`marketing_paused`) until coss.com support lifts the pause.
+ * Transactional email is unaffected.
+ */
+export type MarketingStatus = "active" | "paused";
+
+/** The marketing stream's own standing. */
+export interface MarketingStanding {
+  status: MarketingStatus;
+  /** The trigger behind a pause, e.g. `marketing_complaint_rate`. */
+  reason: string | null;
+  /** ISO 8601 timestamp. */
+  paused_at: string | null;
+}
+
 /** One signal the reputation guard measured, e.g. the bounce rate. */
 export interface ReputationCheck {
   /** What was measured, e.g. `bounce_rate` or `complaint_rate`. */
@@ -38,4 +54,5 @@ export interface Reputation {
   /** The period `checks` cover. */
   window: { start: string; end: string } | null;
   checks: ReputationCheck[];
+  marketing: MarketingStanding;
 }

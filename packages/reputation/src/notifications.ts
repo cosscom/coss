@@ -10,21 +10,26 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull, lte, ne, or, sql } from
 import type { CheckResult } from "./checks.ts";
 import { triggerLabel } from "./schemas.ts";
 import { metricsSnapshot } from "./standing.ts";
-import type { TransitionType } from "./transitions.ts";
+import type { MarketingTransitionType, TransitionType } from "./transitions.ts";
 
 const { member, organization, reputationEvent, reputationNotification, user } = schema;
 
 const MINUTE = 60 * 1000;
 /** Transitions that email the organization. Recoveries and reinstatements only show in the app. */
-export const NOTIFIED_TRANSITIONS: ReadonlySet<TransitionType> = new Set([
+export const NOTIFIED_TRANSITIONS: ReadonlySet<TransitionType | MarketingTransitionType> = new Set([
   "warning_raised",
   "suspended",
+  "marketing_paused",
 ]);
 const TRANSITION_TYPES: TransitionType[] = [
   "warning_raised",
   "warning_cleared",
   "suspended",
   "reinstated",
+];
+const MARKETING_TRANSITION_TYPES: MarketingTransitionType[] = [
+  "marketing_paused",
+  "marketing_reinstated",
 ];
 /** A claimed notification is not picked up by another worker for this long. */
 export const NOTIFICATION_LEASE_MS = 5 * MINUTE;
@@ -71,7 +76,12 @@ export const logReputationNotifier: ReputationNotifier = {
 /** Queues the notification of a transition, in the transition's transaction. */
 export async function enqueueReputationNotification(
   tx: Executor,
-  input: { organizationId: string; reputationEventId: string; type: TransitionType; now: Date },
+  input: {
+    organizationId: string;
+    reputationEventId: string;
+    type: TransitionType | MarketingTransitionType;
+    now: Date;
+  },
 ): Promise<void> {
   if (!NOTIFIED_TRANSITIONS.has(input.type)) return;
   await tx.insert(reputationNotification).values({
@@ -209,13 +219,15 @@ async function notificationContent(
   if (now.getTime() - row.createdAt.getTime() > MAX_NOTIFICATION_AGE_MS) {
     return { skip: "Too old to send." };
   }
+  // Each kind is superseded by its own kind only: a marketing pause stays news after a warning.
+  const marketing = row.type === "marketing_paused";
   const [latest] = await db
     .select({ id: reputationEvent.id })
     .from(reputationEvent)
     .where(
       and(
         eq(reputationEvent.organizationId, organizationId),
-        inArray(reputationEvent.type, TRANSITION_TYPES),
+        inArray(reputationEvent.type, marketing ? MARKETING_TRANSITION_TYPES : TRANSITION_TYPES),
       ),
     )
     .orderBy(desc(reputationEvent.createdAt), desc(reputationEvent.id))
@@ -261,7 +273,7 @@ async function notificationContent(
     (check: CheckResult) => check.severity !== "ok",
   );
   const message = renderNotification({
-    type: row.type === "suspended" ? "suspended" : "warning",
+    type: marketing ? "marketing_paused" : row.type === "suspended" ? "suspended" : "warning",
     organizationName: org.name,
     trigger: event.trigger,
     checks: checks.map((check) => check.message),
@@ -281,6 +293,10 @@ const ADVICE: Record<string, string> = {
   complaint_rate: "Only send to people who asked for your email, and make it easy to unsubscribe.",
   content_screening:
     "Review what your recent emails contain: content screening found possible spam or phishing.",
+  marketing_bounce_rate:
+    "Remove addresses that bounce from your marketing lists, and stop sending to contacts who haven't confirmed their address.",
+  marketing_complaint_rate:
+    "Send marketing only to contacts who opted in, keep the unsubscribe link prominent, and stop sending to people who don't engage.",
   hook_failure_rate:
     "Most Hooks messages fail at your applications' endpoints: check that they are your users' real URLs, and disable or delete the ones that no longer answer.",
 };
@@ -288,7 +304,7 @@ const ADVICE: Record<string, string> = {
 type Block = { paragraph: string } | { list: string[] } | { link: { label: string; url: string } };
 
 export function renderNotification(input: {
-  type: "warning" | "suspended";
+  type: "warning" | "suspended" | "marketing_paused";
   organizationName: string;
   trigger: string;
   /** Messages of the checks that were not ok. */
@@ -304,7 +320,22 @@ export function renderNotification(input: {
   const advice = ADVICE[input.trigger];
   const blocks: Block[] = [];
   let subject: string;
-  if (input.type === "suspended") {
+  if (input.type === "marketing_paused") {
+    subject = `Marketing sending is paused for ${subjectName}`;
+    blocks.push({
+      paragraph: `coss.com paused marketing sending for ${name}. Reason: ${label}.`,
+    });
+    if (input.checks.length) blocks.push({ list: input.checks });
+    blocks.push({
+      paragraph:
+        "Broadcasts and other marketing emails are refused until the pause is lifted. " +
+        "Transactional email (password resets, receipts, notifications) keeps going.",
+    });
+    if (advice) blocks.push({ paragraph: advice });
+    blocks.push({
+      paragraph: "A pause is never lifted automatically. Contact support to resume marketing.",
+    });
+  } else if (input.type === "suspended") {
     subject = `Live sending is suspended for ${subjectName}`;
     blocks.push({
       paragraph: `coss.com suspended live sending for ${name}. Reason: ${label}.`,

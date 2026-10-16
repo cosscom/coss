@@ -39,13 +39,20 @@ export function StandingBadge({ status }: { status: ReputationStandingRow["statu
   );
 }
 
-/** Org-wide banner (layout) while the organization is warned or suspended. */
+/** Org-wide banner (layout) while the organization is warned or suspended, or marketing paused. */
 export function ReputationBanner(props: {
-  standing: Pick<ReputationStandingRow, "status" | "reason">;
+  standing: Pick<
+    ReputationStandingRow,
+    "status" | "reason" | "marketingPausedAt" | "marketingReason"
+  >;
   href: string;
 }) {
   const { status, reason } = props.standing;
-  if (status === "good") return null;
+  if (status === "good") {
+    return props.standing.marketingPausedAt ? (
+      <MarketingPausedAlert href={props.href} reason={props.standing.marketingReason} />
+    ) : null;
+  }
   const suspended = status === "suspended";
   return (
     <Alert variant={suspended ? "error" : "warning"}>
@@ -61,6 +68,25 @@ export function ReputationBanner(props: {
         <Link className="underline" href={props.href}>
           View reputation
         </Link>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
+/** The marketing stream is paused (transactional email keeps going). */
+export function MarketingPausedAlert(props: { reason: string | null; href?: string }) {
+  return (
+    <Alert variant="warning">
+      <AlertTitle>Marketing sending is paused</AlertTitle>
+      <AlertDescription>
+        coss.com paused marketing sending for this organization (
+        {triggerLabel(props.reason).toLowerCase()}): broadcasts and other marketing emails are
+        refused until support lifts the pause. Transactional email keeps going.{" "}
+        {props.href ? (
+          <Link className="underline" href={props.href}>
+            View reputation
+          </Link>
+        ) : null}
       </AlertDescription>
     </Alert>
   );
@@ -134,7 +160,7 @@ export function ReputationChecks({ standing }: { standing: ReputationStandingRow
                     warn {formatRate(check.warningThreshold)} ·{" "}
                     {check.suspendThreshold === null
                       ? "never suspends"
-                      : `suspend ${formatRate(check.suspendThreshold)}`}
+                      : `${check.trigger.startsWith("marketing_") ? "pause marketing" : "suspend"} ${formatRate(check.suspendThreshold)}`}
                     {check.minimumVolume
                       ? ` · from ${check.minimumVolume} ${check.trigger === "hook_failure_rate" ? "deliveries" : "recipients"}`
                       : ""}
@@ -155,6 +181,8 @@ const EVENT_LABELS: Record<ReputationEventWithActor["type"], string> = {
   suspended: "Suspended",
   reinstated: "Reinstated",
   policy_updated: "Policy updated",
+  marketing_paused: "Marketing paused",
+  marketing_reinstated: "Marketing resumed",
 };
 
 /** Standing history. `showInternal` adds who acted and their notes (platform admins only). */

@@ -108,7 +108,10 @@ describe("live bounces → automatic suspension → webhook", () => {
           checks: [
             { trigger: "bounce_rate", severity: "suspend", rate: 0.5, count: 1, volume: 2 },
             { trigger: "complaint_rate", severity: "ok" },
+            { trigger: "marketing_bounce_rate", severity: "ok", volume: 0 },
+            { trigger: "marketing_complaint_rate", severity: "ok", volume: 0 },
           ],
+          marketing: { status: "active", reason: null, paused_at: null },
         },
       });
 

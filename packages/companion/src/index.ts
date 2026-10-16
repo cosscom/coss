@@ -104,7 +104,13 @@ export type OrganizationResponse = {
   projects: MobileProject[];
 };
 
-export type ReputationEventType = "warning_raised" | "warning_cleared" | "suspended" | "reinstated";
+export type ReputationEventType =
+  | "warning_raised"
+  | "warning_cleared"
+  | "suspended"
+  | "reinstated"
+  | "marketing_paused"
+  | "marketing_reinstated";
 
 export type ReputationHistoryEvent = {
   id: string;

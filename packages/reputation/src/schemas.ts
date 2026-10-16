@@ -10,12 +10,22 @@ export type ReputationStatus = (typeof REPUTATION_STATUSES)[number];
 export const CHECK_SEVERITIES = ["ok", "warning", "suspend"] as const;
 export type CheckSeverity = (typeof CHECK_SEVERITIES)[number];
 
+/**
+ * The marketing stream's own standing: `paused` when its bounce or complaint rate reached the
+ * suspension threshold (marketing sends are refused; transactional mail keeps going). Lifted only
+ * by coss.com support, like a suspension.
+ */
+export const MARKETING_STATUSES = ["active", "paused"] as const;
+export type MarketingStatus = (typeof MARKETING_STATUSES)[number];
+
 /** Webhook event types announcing standing changes (delivered to live environments only). */
 export const ACCOUNT_EVENT_TYPES = [
   "account.reputation_warning",
   "account.reputation_recovered",
   "account.suspended",
   "account.reinstated",
+  "account.marketing_paused",
+  "account.marketing_reinstated",
 ] as const;
 export type AccountEventType = (typeof ACCOUNT_EVENT_TYPES)[number];
 
@@ -26,6 +36,8 @@ export type AccountEventType = (typeof ACCOUNT_EVENT_TYPES)[number];
 export const TRIGGER_LABELS: Readonly<Record<string, string>> = {
   bounce_rate: "Bounce rate",
   complaint_rate: "Complaint rate",
+  marketing_bounce_rate: "Marketing bounce rate",
+  marketing_complaint_rate: "Marketing complaint rate",
   content_screening: "Content screening",
   hook_failure_rate: "Hooks delivery failures",
   manual: "coss.com review",
@@ -109,6 +121,9 @@ export const ReputationPolicy = z.strictObject({
   bounceRate: RateThreshold,
   /** Complaints / recipients. */
   complaintRate: RateThreshold,
+  /** The marketing stream's rates: `suspend` pauses marketing sends only. */
+  marketingBounceRate: RateThreshold,
+  marketingComplaintRate: RateThreshold,
   /** Count mailbox-simulator recipients (testing only: SES itself never counts them). */
   countSimulatorRecipients: z.boolean(),
   contentScreening: ContentScreeningPolicy,
@@ -124,6 +139,9 @@ export const DEFAULT_REPUTATION_POLICY: ReputationPolicy = {
   windowDays: 7,
   bounceRate: { warning: 0.04, suspend: 0.08, minimumRecipients: 200 },
   complaintRate: { warning: 0.0008, suspend: 0.003, minimumRecipients: 500 },
+  // Gmail and Yahoo require bulk senders to stay below 0.3% complaints.
+  marketingBounceRate: { warning: 0.04, suspend: 0.08, minimumRecipients: 200 },
+  marketingComplaintRate: { warning: 0.0008, suspend: 0.003, minimumRecipients: 500 },
   countSimulatorRecipients: false,
   contentScreening: {
     enabled: true,
@@ -137,22 +155,20 @@ export const DEFAULT_REPUTATION_POLICY: ReputationPolicy = {
   hookFailureRate: { warning: 0.5, suspend: null, minimumDeliveries: 5000 },
 };
 
+const RateThresholdOverrides = z
+  .strictObject({
+    warning: Rate.optional(),
+    suspend: Rate.optional(),
+    minimumRecipients: z.int().min(1).optional(),
+  })
+  .optional();
+
 export const ReputationPolicyOverrides = z.strictObject({
   windowDays: z.int().min(1).max(30).optional(),
-  bounceRate: z
-    .strictObject({
-      warning: Rate.optional(),
-      suspend: Rate.optional(),
-      minimumRecipients: z.int().min(1).optional(),
-    })
-    .optional(),
-  complaintRate: z
-    .strictObject({
-      warning: Rate.optional(),
-      suspend: Rate.optional(),
-      minimumRecipients: z.int().min(1).optional(),
-    })
-    .optional(),
+  bounceRate: RateThresholdOverrides,
+  complaintRate: RateThresholdOverrides,
+  marketingBounceRate: RateThresholdOverrides,
+  marketingComplaintRate: RateThresholdOverrides,
   countSimulatorRecipients: z.boolean().optional(),
   contentScreening: z
     .strictObject({
@@ -184,6 +200,14 @@ export function effectivePolicy(overrides: unknown): ReputationPolicy {
     ...parsed,
     bounceRate: { ...DEFAULT_REPUTATION_POLICY.bounceRate, ...parsed.bounceRate },
     complaintRate: { ...DEFAULT_REPUTATION_POLICY.complaintRate, ...parsed.complaintRate },
+    marketingBounceRate: {
+      ...DEFAULT_REPUTATION_POLICY.marketingBounceRate,
+      ...parsed.marketingBounceRate,
+    },
+    marketingComplaintRate: {
+      ...DEFAULT_REPUTATION_POLICY.marketingComplaintRate,
+      ...parsed.marketingComplaintRate,
+    },
     contentScreening: {
       ...DEFAULT_REPUTATION_POLICY.contentScreening,
       ...parsed.contentScreening,
@@ -220,6 +244,23 @@ export const ReputationCheckObject = z
   .meta({ id: "ReputationCheck" });
 export type ReputationCheckObjectOutput = z.output<typeof ReputationCheckObject>;
 
+export const MarketingStandingObject = z
+  .object({
+    status: z.enum(MARKETING_STATUSES).meta({
+      description:
+        "`active`, or `paused`: the marketing stream's bounce or complaint rate reached its " +
+        "suspension threshold, so marketing sends are refused until coss.com support lifts the pause. " +
+        "Transactional email is unaffected.",
+    }),
+    reason: z.string().nullable().meta({
+      description: "The trigger behind a pause.",
+      example: "marketing_complaint_rate",
+    }),
+    paused_at: z.iso.datetime().nullable(),
+  })
+  .meta({ id: "MarketingStanding" });
+export type MarketingStandingObjectOutput = z.output<typeof MarketingStandingObject>;
+
 export const ReputationObject = z
   .object({
     object: z.literal("reputation"),
@@ -241,6 +282,7 @@ export const ReputationObject = z
       .nullable()
       .meta({ description: "The period the checks cover (live environments only)." }),
     checks: z.array(ReputationCheckObject),
+    marketing: MarketingStandingObject,
   })
   .meta({ id: "Reputation" });
 export type ReputationObjectOutput = z.output<typeof ReputationObject>;
@@ -265,6 +307,8 @@ export const AccountWebhookEvent = z
       reason: z.string().nullable(),
       occurred_at: z.iso.datetime(),
       checks: z.array(ReputationCheckObject),
+      /** The marketing stream's standing after the change (`account.marketing_*` change it). */
+      marketing: MarketingStandingObject,
     }),
   })
   .meta({ id: "AccountWebhookEvent" });

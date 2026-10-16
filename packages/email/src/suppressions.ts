@@ -14,8 +14,10 @@ import {
   CreateSuppressionRequest,
   type CreateSuppressionRequestOutput,
   DEFAULT_SUPPRESSION_LIST_LIMIT,
+  type EmailStream,
   type ExportSuppressionsQueryOutput,
   type ListSuppressionsQueryOutput,
+  MARKETING_STREAM_SCOPE,
   MAX_SUPPRESSION_LIST_LIMIT,
   type SuppressionCheckOutput,
   type SuppressionImportOutput,
@@ -40,8 +42,15 @@ function inEnvironment(env: SuppressionEnvironment) {
 }
 
 /** Scopes that suppress an email with `category` (`*` alone when it has none). */
-function matchingScopes(category: string | null | undefined): string[] {
-  return category ? [ALL_CATEGORIES, category] : [ALL_CATEGORIES];
+/** The entries that suppress an email of `category` in `stream`. */
+function matchingScopes(
+  category: string | null | undefined,
+  stream: EmailStream = "transactional",
+): string[] {
+  const scopes = [ALL_CATEGORIES];
+  if (stream === "marketing") scopes.push(MARKETING_STREAM_SCOPE);
+  if (category) scopes.push(category);
+  return scopes;
 }
 
 export function toSuppressionObject(row: SuppressionRow): SuppressionOutput {
@@ -327,7 +336,7 @@ export async function checkSuppression(
       and(
         inEnvironment(env),
         eq(emailSuppression.address, query.address),
-        inArray(emailSuppression.scope, matchingScopes(query.category)),
+        inArray(emailSuppression.scope, matchingScopes(query.category, query.stream)),
       ),
     )
     .orderBy(desc(emailSuppression.createdAt), desc(emailSuppression.sequence));
@@ -348,6 +357,7 @@ export async function suppressedRecipients(
   env: SuppressionEnvironment,
   addresses: string[],
   category: string | null,
+  stream: EmailStream = "transactional",
 ): Promise<Map<string, SuppressionRow>> {
   const matches = new Map<string, SuppressionRow>();
   if (addresses.length === 0) return matches;
@@ -358,7 +368,7 @@ export async function suppressedRecipients(
       and(
         inEnvironment(env),
         inArray(emailSuppression.address, addresses),
-        inArray(emailSuppression.scope, matchingScopes(category)),
+        inArray(emailSuppression.scope, matchingScopes(category, stream)),
       ),
     );
   for (const row of rows) {
@@ -369,9 +379,10 @@ export async function suppressedRecipients(
 }
 
 /**
- * Adds a `*` entry after a permanent bounce or a complaint, or one for the email's category after
- * a one-click unsubscribe (no-op if one exists). Mailbox simulator addresses are never suppressed,
- * like SES, so they keep working for tests.
+ * Adds an entry after a permanent bounce or a complaint (no-op if one exists): `*`, or
+ * `stream:marketing` for a complaint about a marketing email (the recipient objected to marketing,
+ * not to their password resets), or one for the email's category after a one-click unsubscribe.
+ * Mailbox simulator addresses are never suppressed, like SES, so they keep working for tests.
  */
 export async function autoSuppress(
   tx: Executor,

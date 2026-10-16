@@ -6,7 +6,7 @@
 import type { BillingHoldReason, Credit, InvoiceSummary, Meter, PlanKey } from "./billing.ts";
 import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
 import type { ReceivedEmailVerdicts } from "./received-email.ts";
-import type { ReputationCheck, ReputationStatus } from "./reputation.ts";
+import type { MarketingStanding, ReputationCheck, ReputationStatus } from "./reputation.ts";
 import type { RiskDecision, RiskEvent, RiskOutcome, RiskReason } from "./risk.ts";
 
 /** What a webhook says about the email; never its content, cc or bcc. */
@@ -107,12 +107,17 @@ export interface DomainWebhookEvent {
   data: DomainWebhookEventData;
 }
 
-/** Changes of the organization's reputation standing (sent to live environments only). */
+/**
+ * Changes of the organization's reputation standing, and of its marketing stream's
+ * (`account.marketing_*`; sent to live environments only).
+ */
 export type AccountEventType =
   | "account.reputation_warning"
   | "account.reputation_recovered"
   | "account.suspended"
-  | "account.reinstated";
+  | "account.reinstated"
+  | "account.marketing_paused"
+  | "account.marketing_reinstated";
 
 export interface AccountWebhookEventData {
   organization_id: string;
@@ -124,6 +129,8 @@ export interface AccountWebhookEventData {
   occurred_at: string;
   /** The measurements behind the change (see `coss.reputation.get()`). */
   checks: ReputationCheck[];
+  /** The marketing stream's standing after the change. */
+  marketing: MarketingStanding;
 }
 
 /** A reputation change. `id` equals the `webhook-id` header. */

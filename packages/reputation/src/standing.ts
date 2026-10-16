@@ -3,6 +3,7 @@ import { db, type Executor, schema } from "@coss/db";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import type { CheckResult } from "./checks.ts";
 import type {
+  MarketingStandingObjectOutput,
   ReputationCheckObjectOutput,
   ReputationObjectOutput,
   ReputationStatus,
@@ -50,6 +51,28 @@ export async function isSuspended(organizationId: string): Promise<boolean> {
   return row?.status === "suspended";
 }
 
+/** Whether the organization's marketing stream is paused (the marketing send gate). */
+export async function isMarketingPaused(organizationId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ pausedAt: reputationStanding.marketingPausedAt })
+    .from(reputationStanding)
+    .where(eq(reputationStanding.organizationId, organizationId))
+    .limit(1);
+  return Boolean(row?.pausedAt);
+}
+
+/** The public marketing standing of a standing row (`null`: never evaluated, `active`). */
+export function toMarketingObject(
+  row: Pick<ReputationStandingRow, "marketingPausedAt" | "marketingReason"> | null,
+): MarketingStandingObjectOutput {
+  const paused = Boolean(row?.marketingPausedAt);
+  return {
+    status: paused ? "paused" : "active",
+    reason: paused ? (row?.marketingReason ?? null) : null,
+    paused_at: row?.marketingPausedAt?.toISOString() ?? null,
+  };
+}
+
 /**
  * Asks the worker to evaluate the organization now, in `tx` (e.g. with a new bounce). Only ever
  * moves `next_evaluation_at` earlier, so a burst of events causes one evaluation.
@@ -94,6 +117,7 @@ export function toReputationObject(row: ReputationStandingRow | null): Reputatio
     evaluated_at: row?.lastEvaluatedAt?.toISOString() ?? null,
     window: snapshot ? { start: snapshot.windowStart, end: snapshot.windowEnd } : null,
     checks: snapshot ? snapshot.checks.map(toCheckObject) : [],
+    marketing: toMarketingObject(row),
   };
 }
 

@@ -67,6 +67,7 @@ export const ADMIN_ACTIONS = [
   "email.view_content",
   "reputation.suspended",
   "reputation.reinstated",
+  "reputation.marketing_reinstated",
   "reputation.policy_updated",
   // Recorded by `changeRateLimitOverride` (@coss/ratelimit).
   "rate_limit.override_set",

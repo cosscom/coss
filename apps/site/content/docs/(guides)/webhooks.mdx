@@ -48,6 +48,8 @@ These concern the whole organization, so every **live** environment's endpoints 
 | `account.reputation_recovered`    | The warning cleared                                                                     |
 | `account.suspended`               | Live sending was suspended                                                              |
 | `account.reinstated`              | The suspension was lifted                                                               |
+| `account.marketing_paused`        | The marketing stream's bounce or complaint rate paused marketing sends (`data.marketing`) |
+| `account.marketing_reinstated`    | The marketing pause was lifted                                                          |
 | `billing.invoice_finalized`       | An invoice was issued (`data.invoice`, without lines)                                   |
 | `billing.invoice_paid`            | An invoice was paid in full                                                             |
 | `billing.invoice_payment_failed`  | Charging an invoice failed (`data.failure.message`); it is retried                      |

@@ -1,4 +1,8 @@
-export type ReputationErrorCode = "not_suspended" | "already_suspended" | "invalid_policy";
+export type ReputationErrorCode =
+  | "not_suspended"
+  | "already_suspended"
+  | "invalid_policy"
+  | "marketing_not_paused";
 
 /** Expected failures of the admin operations; messages are safe to show to the user. */
 export class ReputationError extends Error {
