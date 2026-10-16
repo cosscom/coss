@@ -47,6 +47,7 @@ export function email(overrides: Partial<Email> = {}): Email {
     scheduled_at: null,
     batch_id: null,
     template: null,
+    broadcast_id: null,
     ...overrides,
   };
 }

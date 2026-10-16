@@ -1,9 +1,11 @@
 /**
  * Webhook wire types (hand-written mirrors of the API's `EmailWebhookEvent`,
  * `ReceivedEmailWebhookEvent`, `DomainWebhookEvent`, `AccountWebhookEvent`, `BillingWebhookEvent`,
- * `RiskWebhookEvent`, `HookEndpointWebhookEvent` and `ContactWebhookEvent`).
+ * `RiskWebhookEvent`, `HookEndpointWebhookEvent`, `ContactWebhookEvent` and `BroadcastWebhookEvent`).
  */
+
 import type { BillingHoldReason, Credit, InvoiceSummary, Meter, PlanKey } from "./billing.ts";
+import type { BroadcastStats, BroadcastStatus } from "./broadcast.ts";
 import type { ContactSource, ContactStatus } from "./contact.ts";
 import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
 import type { ReceivedEmailVerdicts } from "./received-email.ts";
@@ -306,6 +308,37 @@ export interface ContactWebhookEvent {
   data: ContactWebhookEventData;
 }
 
+/** Broadcast events (sent to the broadcast's environment). */
+export type BroadcastEventType =
+  | "broadcast.sending"
+  | "broadcast.sent"
+  | "broadcast.paused"
+  | "broadcast.canceled"
+  | "broadcast.failed";
+
+export interface BroadcastWebhookEventData {
+  broadcast: { id: string; name: string; status: BroadcastStatus };
+  /** Set on `broadcast.paused`: see `Broadcast.pause_reason`. */
+  pause_reason: string | null;
+  /** Set on `broadcast.failed`. */
+  error: { code: string; message: string } | null;
+  stats: BroadcastStats;
+  /** ISO 8601 timestamp. */
+  occurred_at: string;
+}
+
+/** A broadcast started, finished, paused, was canceled or failed. */
+export interface BroadcastWebhookEvent {
+  id: string;
+  object: "event";
+  type: BroadcastEventType;
+  /** The API version this event is rendered in: the receiving endpoint's `api_version`. */
+  api_version: string;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  data: BroadcastWebhookEventData;
+}
+
 /** The JSON body of a webhook request; narrow on `type`. */
 export type WebhookEvent =
   | EmailWebhookEvent
@@ -315,4 +348,5 @@ export type WebhookEvent =
   | BillingWebhookEvent
   | RiskWebhookEvent
   | HookEndpointWebhookEvent
-  | ContactWebhookEvent;
+  | ContactWebhookEvent
+  | BroadcastWebhookEvent;

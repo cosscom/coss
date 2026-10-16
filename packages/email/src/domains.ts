@@ -858,6 +858,15 @@ export async function assertOwnsHostname(
   }
 }
 
+/** The refusal of marketing email while the organization's marketing stream is paused. */
+export function marketingPausedError(): EmailError {
+  return new EmailError(
+    "marketing_paused",
+    "Marketing sending is paused for this organization because of its marketing bounce or " +
+      "complaint rate. Transactional email still works. Contact support to resume.",
+  );
+}
+
 /**
  * System-level: refuses a live send unless the From domain is covered by a domain of the
  * organization verified by the live provider, the reputation guard has not suspended the
@@ -920,11 +929,7 @@ export async function authorizeLiveSender(input: {
   const stream = input.stream ?? "transactional";
   // The marketing stream's own pause (its bounce or complaint rate); transactional mail goes on.
   if (stream === "marketing" && (await isMarketingPaused(input.organizationId))) {
-    throw new EmailError(
-      "marketing_paused",
-      "Marketing sending is paused for this organization because of its marketing bounce or " +
-        "complaint rate. Transactional email still works. Contact support to resume.",
-    );
+    throw marketingPausedError();
   }
   const tenant = await getEmailTenant(input.organizationId, stream);
   if (tenant?.sendingStatus === "disabled") {

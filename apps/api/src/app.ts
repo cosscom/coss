@@ -1,4 +1,4 @@
-import type { PlanGate } from "@coss/billing/gate";
+import type { PlanGate, UsageGate } from "@coss/billing/gate";
 import type { DomainDeps, EmailService, LinkKeyRing } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
 import { type LogWriter, noopLogWriter } from "@coss/logs";
@@ -69,6 +69,11 @@ export type CreateAppOptions = {
   rateLimiter?: RateLimiter;
   /** Plan features and limits (`createPlanGate` from `@coss/billing`). Defaults to none (no limits). */
   plans?: PlanGate;
+  /**
+   * Hard usage caps (`createUsageGate`): what a canceled or paused broadcast gives back of its
+   * reservation. Must match the email service's. Defaults to none.
+   */
+  billing?: UsageGate;
   /** The caller's address for per-IP limits (`CLIENT_IP_HEADER`). Defaults to none. */
   clientIp?: ClientIpResolver;
 
@@ -188,6 +193,7 @@ export function createApp(opts: CreateAppOptions) {
       shutdownSignal: opts.shutdownSignal ?? new AbortController().signal,
       listenerPollIntervalMs: opts.listenerPollIntervalMs,
       links: opts.links,
+      billing: opts.billing,
     }),
   );
 

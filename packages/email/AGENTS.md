@@ -297,3 +297,43 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   references is refused (`…_in_use`). `resolveRecipients` (keyset by contact id, bounded by `before`) is the only way
   marketing recipients are chosen: `subscribed`, the topic reaches them, and no `*`/`stream:marketing`/topic
   suppression. `ContactError` is mapped in `toApiError` (404 for `not_found`, else 422 — never 409).
+- **Broadcasts** (`packages/email/src/{broadcasts,broadcast-render,broadcast-content,broadcast-stats,broadcast-references,broadcast-schemas}.ts`,
+  `apps/api/src/routes/broadcasts.ts`, `coss.email.broadcasts`; tables `broadcast` (ids `bcast_`) + `broadcast_stat`;
+  permission `broadcast`, backfilled by `0077`): `draft` → `scheduled` → `sending` ⇄ `paused` → `sent`, or
+  `canceled`/`failed`. Content that could render past `MAX_RENDERED_LENGTH` with the longest contact values is refused
+  (`content_too_large`); placeholders read only the variables' own keys. Only drafts are edited; deleting needs a draft or a cancel before any email was made. Starting
+  (create with `send`/`scheduled_at`, or `/send`, `/resume`) checks the postal address and, live,
+  `authorizeLiveSender({ stream: "marketing" })`. The worker's `broadcasts` loop (`runDueBroadcasts`, system-level)
+  claims each due broadcast with a lease (`lease_until`, bound from a JS `Date`; every write is fenced on it, so a
+  worker whose lease was taken over writes nothing): a `scheduled` one is screened **once** (`ScreenInput.force`,
+  product `broadcast`; an error holds it and retries each minute, failing `content_screening_unavailable` after an
+  hour; a block fails it `content_rejected` and screening suspends the org), then freezes its target
+  (`contact_upper_bound` = a `newId` at start, `recipients_estimated`) and moves to `sending`. Each step makes at most
+  `min(500, rate × 5 s)` emails (rate: `rate_per_second` capped by the plan's `email.marketing.recipients.second`),
+  waits while `BROADCAST_BACKLOG` of its emails are still queued (the unclaimed sweep would fail a bigger backlog),
+  charges `email.marketing.recipients.second` + `email.recipients.day` (live only; a denial puts it off, a batch
+  larger than the bucket is halved; what the step doesn't make is refunded, `refundThrottle`), then in one transaction: `resolveRecipients` page → one email + recipient per
+  contact (`ON CONFLICT (broadcast_id, contact_id) DO NOTHING`: reruns never duplicate) → dispatch jobs on the
+  marketing queue → `UsageGate.reserve` → `recipients` counter → cursor. It is `sent` once nothing is left to make or
+  queued. Pausing or canceling deletes the emails nobody claimed yet (`queued`, no provider), gives back their
+  reservation (`UsageGate.release`) and counters; a pause rewinds the cursor before them (from the contacts, never
+  the retained emails). A broadcast's emails are kept past email retention until it finishes
+  (`purgeExpiredEmails`): their rows are what keeps a resume from sending anyone a second one. The worker pauses on its own:
+  `billing_hold`/`usage_limit`/`sending_paused` retry each minute (dropping and rewinding the unclaimed emails the
+  same way, so a hold stops the queue too), `marketing_paused`/`account_suspended`/
+  `mailing_address_required` wait for Resume; an unverified From fails it. Creating a draft needs `broadcast:create`;
+  starting one (`send`, `scheduled_at`) also `broadcast:send` (`apiKeyHasPermissions`). **Broadcast emails store no body**: the
+  rendered subject, `variables` (only the template's `{{{contact.<key>|fallback}}}` keys) and `contact_id`; dispatch
+  and every read render the broadcast's frozen content (`withRenderedBody`; dispatch caches it per process), then
+  the marketing footer and tracking apply as for any marketing email; they skip per-email screening unless personalized (an email with contact values is sampled like any send:
+  the values could carry any text or link), marketing email's consent (and the marketing pause: a paused organization's queued marketing email
+  is failed `marketing_paused`, a broadcast's left to its worker to drop) is checked again at its dispatch claim
+  (`skippedRecipients`, as for scheduled sends: a broadcast's queue can be minutes long), and an SES
+  throttle (`ThrottledSendError`) hands a marketing email back for a later dispatch instead of failing it. Counters
+  (`broadcast_stat`, 16 shards by email id, summed on read; they outlive the emails): `recipients` at fan-out,
+  `sent`/`delivered`/`bounced`/`complained`/`failed` from **recipient status moves** in `recordProviderEvent`
+  (`recipientMoveCounts`: each status counts toward fixed counters, a move adds the new ones and takes the old ones
+  away, so the shards always equal `recountBroadcastStats`), `opened`/`clicked` on an email's first open or click,
+  `unsubscribed` when its link actually unsubscribed a subscribed contact. An unfinished broadcast's audience, segment
+  or topic can't be deleted (`…_in_use`). `BroadcastError` maps to 404 (`not_found`) or 422 (never 409);
+  `broadcast.sending/sent/paused/canceled/failed` webhooks carry the stats, never content.

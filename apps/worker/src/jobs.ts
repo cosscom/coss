@@ -19,6 +19,7 @@ import {
 } from "@coss/billing";
 import { dropExpiredPartitions, ensurePartitions, HOOK_PARTITIONS } from "@coss/db/partitions";
 import {
+  type BroadcastWorkerDeps,
   type DomainDeps,
   type EmailDispatchQueue,
   type EmailService,
@@ -28,6 +29,7 @@ import {
   recheckDueTrackingDomains,
   reconcileDedicatedIpPools,
   releaseOrganizationEmailResources,
+  runDueBroadcasts,
   runDueDmarcNotifications,
   sweepStaleClaims,
   sweepUnclaimedEmails,
@@ -75,6 +77,7 @@ const REPUTATION_BATCH = 50;
 const NOTIFICATION_BATCH = 20;
 const AUTH_EMAIL_BATCH = 20;
 const SCHEDULED_BATCH = 50;
+const BROADCAST_BATCH = 10;
 const DELETION_BATCH = 5;
 const RETENTION_BATCH = 1000;
 const BILLING_BATCH = 20;
@@ -88,6 +91,8 @@ export type WorkerDeps = {
   domains: DomainDeps;
   /** Dispatches scheduled emails. */
   email: Pick<EmailService, "dispatchDue">;
+  /** Fans broadcasts out into emails, at each organization's marketing rate. */
+  broadcasts: BroadcastWorkerDeps;
   /** Also delivers log drain batches (same signing keys and sender). */
   webhooks: WebhookDeliveryDeps;
   /** Delivers Hooks messages (same signing keys and sender, plus the delivery rate limits). */
@@ -146,6 +151,7 @@ export const WORKER_LOOP_NAMES = [
   "domains",
   "dedicated-ips",
   "scheduled-emails",
+  "broadcasts",
   "stale-claims",
   "reputation",
   "organization-deletions",
@@ -245,6 +251,13 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       run: async () =>
         (await deps.email.dispatchDue({ limit: SCHEDULED_BATCH, signal: deps.signal })) ===
         SCHEDULED_BATCH,
+    }),
+    start({
+      // Broadcasts: starts the due ones and makes each sending one's next batch of emails.
+      name: "broadcasts",
+      intervalMs: 1000,
+      run: async () =>
+        (await runDueBroadcasts(deps.broadcasts, { limit: BROADCAST_BATCH })) === BROADCAST_BATCH,
     }),
     start({
       name: "stale-claims",

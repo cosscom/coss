@@ -9,17 +9,20 @@ import {
   isReplayOf,
   withIdempotencyKey,
 } from "@coss/db/idempotency";
+import { isMarketingPaused } from "@coss/reputation";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
-import { and, asc, eq, inArray, isNull, lte, not, notExists } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lt, lte, not, notExists, sql } from "drizzle-orm";
 import {
   insertAttachments,
   loadOutboundAttachments,
   prepareAttachments,
   purgeSendContent,
 } from "./attachments.ts";
+import { broadcastContentCache, withRenderedBody } from "./broadcast-content.ts";
+import { bumpBroadcastStat } from "./broadcast-stats.ts";
 import { dedicatedPoolSql } from "./dedicated-ips.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
-import { authorizeLiveSender } from "./domains.ts";
+import { authorizeLiveSender, marketingPausedError } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
 import { htmlToText } from "./html-text.ts";
@@ -32,6 +35,7 @@ import {
   type OutboundAttachment,
   type OutboundEmail,
   type ProviderEvent,
+  ThrottledSendError,
   UncertainSendError,
 } from "./provider.ts";
 import {
@@ -161,6 +165,8 @@ const IDEMPOTENCY_ERRORS: IdempotencyErrors = {
 const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
 const {
+  broadcast,
+  contact,
   email,
   emailBatch,
   emailLink,
@@ -389,11 +395,21 @@ const SCREENING_UNAVAILABLE = {
 
 /** A held email is dispatched (and screened) again this long after its screening failed. */
 export const SCREENING_RETRY_DELAY_S = 60;
+/** How long a throttled marketing email waits before it is dispatched again. */
+export const THROTTLE_RETRY_DELAY_S = 30;
 
 export function createEmailService(opts: EmailServiceOptions): EmailService {
   const trackingBaseUrl = opts.trackingBaseUrl?.replace(/\/+$/, "");
   // Sandbox environments never reach a real provider, whatever `liveProvider` is.
   const providerFor = (sandbox: boolean) => (sandbox ? opts.sandboxProvider : opts.liveProvider);
+  const broadcastContent = broadcastContentCache();
+
+  /** A broadcast email with its broadcast's content rendered in (any other email as it is). */
+  async function withBroadcastBody(row: EmailRow): Promise<EmailRow> {
+    if (!row.broadcastId) return row;
+    const content = await broadcastContent(row.organizationId, row.broadcastId);
+    return content ? withRenderedBody(row, new Map([[row.broadcastId, content]])) : row;
+  }
 
   /**
    * Hands a queued email to its provider and records the outcome. Never throws for provider errors.
@@ -406,6 +422,41 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     // Claim the email first so concurrent dispatchers (e.g. a retried job) never send it twice.
     // `provider` is only ever set by this claim. A crash after the claim leaves the row `queued`
     // with a provider: the worker's stale-claim sweep resolves it.
+    const unclaimed = and(
+      eq(email.id, row.id),
+      eq(email.organizationId, row.organizationId),
+      eq(email.status, "queued"),
+      isNull(email.provider),
+    );
+    if (row.stream === "marketing") {
+      if (!sandbox && (await isMarketingPaused(row.organizationId))) {
+        // Paused since it was accepted. A broadcast's email is left to its worker, which pauses
+        // the broadcast and drops it (made again on Resume); any other is failed, as a
+        // scheduled send refused at its claim is.
+        if (!row.broadcastId) await failUnclaimed(row, marketingPausedError());
+        return currentEmail(row);
+      }
+      // Marketing email can wait in its queue for a while (a broadcast's backlog): consent is
+      // checked again at the claim, as for a scheduled send.
+      const claimed = await db.transaction(async (tx) => {
+        const [claimedRow] = await tx
+          .update(email)
+          .set({
+            provider: provider.name,
+            dedicatedPool: sandbox
+              ? false
+              : dedicatedPoolSql(row.organizationId, provider.name, row.stream),
+          })
+          .where(unclaimed)
+          .returning();
+        if (!claimedRow) return undefined;
+        await skipIneligibleRecipients(tx, claimedRow);
+        await freezeBillableRecipients(tx, claimedRow);
+        return claimedRow;
+      });
+      if (claimed) await complete(claimed, provider, sandbox);
+      return currentEmail(row);
+    }
     const [claimed] = await db
       .update(email)
       .set({
@@ -415,18 +466,66 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           ? false
           : dedicatedPoolSql(row.organizationId, provider.name, row.stream),
       })
-      .where(
-        and(
-          eq(email.id, row.id),
-          eq(email.organizationId, row.organizationId),
-          eq(email.status, "queued"),
-          isNull(email.provider),
-        ),
-      )
+      .where(unclaimed)
       .returning({ id: email.id, dedicatedPool: email.dedicatedPool });
     if (!claimed) return currentEmail(row);
     await complete({ ...row, dedicatedPool: claimed.dedicatedPool }, provider, sandbox);
     return currentEmail(row);
+  }
+
+  /** Fails a queued email nobody claimed yet with a sender refusal (`email.failed`). */
+  async function failUnclaimed(row: EmailRow, error: EmailError): Promise<void> {
+    await db.transaction(async (tx) => {
+      const [failed] = await tx
+        .update(email)
+        .set({ status: "failed", errorCode: error.code, errorMessage: error.message })
+        .where(
+          and(
+            eq(email.id, row.id),
+            eq(email.organizationId, row.organizationId),
+            eq(email.status, "queued"),
+            isNull(email.provider),
+          ),
+        )
+        .returning({ id: email.id });
+      if (!failed) return;
+      await purgeSendContent(tx, row);
+      await recordProviderEvent(
+        tx,
+        cossEvent(row, {
+          type: "email.failed",
+          providerEventType: "SenderRejected",
+          sourceId: error.code,
+          data: { failure: { code: error.code, message: error.message } },
+        }),
+      );
+    });
+  }
+
+  /**
+   * At a dispatch claim: the email's still-queued recipients suppressed (or, for marketing,
+   * unsubscribed) since the send was accepted become `suppressed`, with their events.
+   */
+  async function skipIneligibleRecipients(tx: Transaction, claimedRow: EmailRow): Promise<void> {
+    const pending = await tx
+      .select({ address: emailRecipient.address })
+      .from(emailRecipient)
+      .where(
+        and(
+          eq(emailRecipient.organizationId, claimedRow.organizationId),
+          eq(emailRecipient.emailId, claimedRow.id),
+          eq(emailRecipient.status, "queued"),
+        ),
+      );
+    const skipped = await skippedRecipients(
+      tx,
+      claimedRow,
+      pending.map((recipient) => recipient.address),
+      { category: claimedRow.category, stream: claimedRow.stream },
+    );
+    for (const [address, skip] of skipped) {
+      await recordProviderEvent(tx, suppressedEvent(claimedRow, address, skip));
+    }
   }
 
   /** Why content screening refuses a live email. Unexpected enforcement failures fail closed. */
@@ -434,7 +533,10 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     row: EmailRow,
     sandbox: boolean,
   ): Promise<typeof CONTENT_REJECTED | typeof SCREENING_UNAVAILABLE | null> {
-    if (sandbox || !opts.screen) return null;
+    // A broadcast's content was screened once, before its emails were made; one personalized
+    // with contact values (which could carry any text or link) is sampled like any send.
+    const personalized = Object.keys(row.variables ?? {}).length > 0;
+    if (sandbox || !opts.screen || (row.broadcastId && !personalized)) return null;
     try {
       const outcome = await opts.screen({
         organizationId: row.organizationId,
@@ -453,13 +555,99 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
   }
 
   /**
+   * When an email handed back by the provider (throttled, or screening that couldn't run) belongs
+   * to a broadcast paused or canceled meanwhile, drops it like the emails nobody claimed: counter
+   * and reservation given back, a paused one's cursor moved back before its contact so a resume
+   * makes it again. Whether it was dropped (then nothing else may be done with it).
+   */
+  async function dropForStoppedBroadcast(
+    tx: Transaction,
+    row: EmailRow,
+    provider: EmailProvider,
+    sandbox: boolean,
+  ): Promise<boolean> {
+    if (row.broadcastId) {
+      // Locked first, in the order pausing takes it.
+      const [owner] = await tx
+        .select({ status: broadcast.status, cursor: broadcast.cursor })
+        .from(broadcast)
+        .where(
+          and(eq(broadcast.id, row.broadcastId), eq(broadcast.organizationId, row.organizationId)),
+        )
+        .for("update");
+      if (owner && owner.status !== "sending") {
+        const [dropped] = await tx
+          .delete(email)
+          .where(
+            and(
+              eq(email.id, row.id),
+              eq(email.organizationId, row.organizationId),
+              eq(email.status, "queued"),
+              eq(email.provider, provider.name),
+            ),
+          )
+          .returning({ id: email.id });
+        if (!dropped) return true;
+        if (
+          owner.status === "paused" &&
+          row.contactId &&
+          owner.cursor !== null &&
+          owner.cursor >= row.contactId
+        ) {
+          const [before] = await tx
+            .select({ id: sql<string | null>`max(${contact.id})` })
+            .from(contact)
+            .where(
+              and(
+                eq(contact.organizationId, row.organizationId),
+                eq(contact.environmentId, row.environmentId),
+                lt(contact.id, row.contactId),
+              ),
+            );
+          await tx
+            .update(broadcast)
+            .set({ cursor: before?.id ?? null })
+            .where(
+              and(
+                eq(broadcast.id, row.broadcastId),
+                eq(broadcast.organizationId, row.organizationId),
+              ),
+            );
+        }
+        await bumpBroadcastStat(tx, {
+          broadcastId: row.broadcastId,
+          organizationId: row.organizationId,
+          emailId: row.id,
+          field: "recipients",
+          by: -1,
+        });
+        if (!sandbox) {
+          await opts.billing?.release?.(tx, {
+            organizationId: row.organizationId,
+            meter: "email.recipients",
+            quantity: 1,
+            reservedAt: row.createdAt,
+          });
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Gives back the claim on an email whose screening couldn't run (the classifier is down): it is
    * dispatched and screened again in `SCREENING_RETRY_DELAY_S`, and keeps being held until the
    * unclaimed sweep fails it (`content_screening_unavailable`, `UNCLAIMED_FAIL_MS` after it was
    * due). The error code marks it as held, so its retry is screened again (`retry`).
    */
-  async function holdForScreening(row: EmailRow, provider: EmailProvider): Promise<void> {
+  async function holdForScreening(
+    row: EmailRow,
+    provider: EmailProvider,
+    sandbox: boolean,
+  ): Promise<void> {
     await db.transaction(async (tx) => {
+      if (await dropForStoppedBroadcast(tx, row, provider, sandbox)) return;
       const [held] = await tx
         .update(email)
         .set({
@@ -486,8 +674,46 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     });
   }
 
+  /**
+   * Gives back the claim on a marketing email the provider throttled (certainly not sent): it is
+   * dispatched again shortly, so a broadcast slows down instead of failing.
+   */
+  async function holdForThrottling(
+    row: EmailRow,
+    provider: EmailProvider,
+    sandbox: boolean,
+  ): Promise<void> {
+    await db.transaction(async (tx) => {
+      if (await dropForStoppedBroadcast(tx, row, provider, sandbox)) return;
+      const [held] = await tx
+        .update(email)
+        .set({ provider: null })
+        .where(
+          and(
+            eq(email.id, row.id),
+            eq(email.organizationId, row.organizationId),
+            eq(email.status, "queued"),
+            eq(email.provider, provider.name),
+          ),
+        )
+        .returning({ id: email.id });
+      if (held) {
+        await opts.queue.enqueue(
+          tx,
+          { organizationId: row.organizationId, emailId: row.id, stream: row.stream },
+          { delaySeconds: THROTTLE_RETRY_DELAY_S },
+        );
+      }
+    });
+  }
+
   /** Sends an email this process claimed for `provider` and records the outcome. */
-  async function complete(row: EmailRow, provider: EmailProvider, sandbox: boolean): Promise<void> {
+  async function complete(
+    claimed: EmailRow,
+    provider: EmailProvider,
+    sandbox: boolean,
+  ): Promise<void> {
+    const row = await withBroadcastBody(claimed);
     let outcome: Partial<EmailRow>;
     let events: ProviderEvent[];
     const attachments = await loadOutboundAttachments(row);
@@ -496,7 +722,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const screeningError =
       attachments !== null && hasRecipients ? await screeningFailure(row, sandbox) : null;
     if (screeningError === SCREENING_UNAVAILABLE) {
-      await holdForScreening(row, provider);
+      await holdForScreening(row, provider, sandbox);
       return;
     }
     if (attachments === null) {
@@ -557,6 +783,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
             errorMessage: error.message,
           };
           events = [failedEvent(row, provider.name, { code: error.code, message: error.message })];
+        } else if (error instanceof ThrottledSendError && row.stream === "marketing") {
+          await holdForThrottling(row, provider, sandbox);
+          return;
         } else if (error instanceof UncertainSendError) {
           // The provider may be delivering it: never fail it here, and never send it again. It
           // stays claimed; the provider's `Send` event or the stale-claim sweep settles it.
@@ -667,27 +896,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         .where(stillDue)
         .returning();
       if (!claimedRow) return undefined;
-      const pending = await tx
-        .select({ address: emailRecipient.address })
-        .from(emailRecipient)
-        .where(
-          and(
-            eq(emailRecipient.organizationId, row.organizationId),
-            eq(emailRecipient.emailId, row.id),
-            eq(emailRecipient.status, "queued"),
-          ),
-        );
       // Again at the claim: an address suppressed (or a contact who unsubscribed) since the
       // send was accepted is skipped too.
-      const skipped = await skippedRecipients(
-        tx,
-        claimedRow,
-        pending.map((recipient) => recipient.address),
-        { category: claimedRow.category, stream: claimedRow.stream },
-      );
-      for (const [address, skip] of skipped) {
-        await recordProviderEvent(tx, suppressedEvent(claimedRow, address, skip));
-      }
+      await skipIneligibleRecipients(tx, claimedRow);
       await freezeBillableRecipients(tx, claimedRow);
       return claimedRow;
     });

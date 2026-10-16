@@ -7,6 +7,7 @@ import type { EmailEventType } from "./email.ts";
 import type {
   AccountEventType,
   BillingEventType,
+  BroadcastEventType,
   ContactEventType,
   DomainEventType,
   HookOperationalEventType,
@@ -23,7 +24,8 @@ export type WebhookEventType =
   | BillingEventType
   | RiskEventType
   | HookOperationalEventType
-  | ContactEventType;
+  | ContactEventType
+  | BroadcastEventType;
 
 /** Why an endpoint is disabled. */
 export type WebhookEndpointDisabledReason = "manual" | "failing";

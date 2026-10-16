@@ -110,6 +110,7 @@ export const sampleEmail: Email = {
   scheduled_at: null,
   batch_id: null,
   template: null,
+  broadcast_id: null,
 };
 
 export const sampleDomain: Domain = {

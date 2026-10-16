@@ -50,6 +50,7 @@ export const ID_PREFIXES = {
   audience: "aud",
   segment: "seg",
   topic: "topic",
+  broadcast: "bcast",
   domain: "dom",
   trackingDomain: "tdom",
   receivingDomain: "rdom",

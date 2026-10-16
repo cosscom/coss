@@ -342,6 +342,8 @@ export interface Email {
   batch_id: string | null;
   /** The template the email was rendered from, or `null` if it was sent without one. */
   template: EmailTemplateReference | null;
+  /** The broadcast the email is part of; `null` for any other email. */
+  broadcast_id: string | null;
 }
 
 /** An email in a list (`coss.email.list`): everything but its content. */

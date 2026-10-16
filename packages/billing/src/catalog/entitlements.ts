@@ -19,7 +19,11 @@ export const LIMIT_KEYS = [
 export type LimitKey = (typeof LIMIT_KEYS)[number];
 
 /** Rate limit buckets (`@coss/ratelimit`) a plan sets; an organization's override still wins. */
-export const RATE_LIMIT_KEYS = ["email.recipients.second", "email.recipients.day"] as const;
+export const RATE_LIMIT_KEYS = [
+  "email.recipients.second",
+  "email.recipients.day",
+  "email.marketing.recipients.second",
+] as const;
 export type RateLimitKey = (typeof RATE_LIMIT_KEYS)[number];
 
 /** The same shape as `@coss/ratelimit`'s rule (this module has no dependencies). */

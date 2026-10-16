@@ -85,7 +85,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "emails",
     label: "Emails",
     description:
-      "Subject, bodies, addresses, headers, tags, recipient statuses, delivery events, opens, clicks and attachment names. Queued and scheduled emails are kept until they are sent or canceled.",
+      "Subject, bodies, addresses, headers, tags, recipient statuses, delivery events, opens, clicks and attachment names. Queued and scheduled emails are kept until they are sent or canceled, and a broadcast's emails until the broadcast is finished.",
     period: { days: RETENTION_DAYS.emails, after: "creation" },
   },
   {
@@ -276,6 +276,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     description:
       "Contacts asked to confirm their subscription (double opt-in) who never did, deleted with their memberships and choices. One who had opted out (unsubscribed before, or left a topic) is kept, unsubscribed.",
     period: { days: RETENTION_DAYS.pendingContacts, after: "creation" },
+  },
+  {
+    id: "broadcasts",
+    label: "Broadcasts",
+    description:
+      "Broadcasts with their content and their counters (recipients, deliveries, bounces, complaints, opens, clicks, unsubscribes). Kept until you delete them; each email they made is kept like any other email once the broadcast is finished.",
+    period: { until: "deleted" },
   },
   {
     id: "account",

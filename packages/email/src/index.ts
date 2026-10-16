@@ -21,6 +21,45 @@ export {
   updateAudience,
 } from "./audiences.ts";
 export { checkBimi, parseTagList, toBimiObject } from "./bimi.ts";
+export {
+  type BroadcastContent,
+  renderBroadcast,
+  renderTemplate,
+  templateKeys,
+  withPreheader,
+} from "./broadcast-render.ts";
+export {
+  BROADCAST_STAT_SHARDS,
+  broadcastStats,
+  recipientMoveCounts,
+  recountBroadcastStats,
+  shardOf,
+} from "./broadcast-stats.ts";
+export {
+  BROADCAST_BACKLOG,
+  BROADCAST_LEASE_MS,
+  BROADCAST_STEP_MS,
+  BroadcastError,
+  type BroadcastErrorCode,
+  type BroadcastRow,
+  type BroadcastWorkerDeps,
+  cancelBroadcast,
+  createBroadcast,
+  deleteBroadcast,
+  getBroadcast,
+  getBroadcastRow,
+  listBroadcastEmails,
+  listBroadcasts,
+  MAX_BROADCAST_BATCH,
+  pauseBroadcast,
+  resumeBroadcast,
+  runDueBroadcasts,
+  sendBroadcast,
+  testBroadcast,
+  testRecipients,
+  toBroadcastObject,
+  updateBroadcast,
+} from "./broadcasts.ts";
 export { type ContactCsvEntry, parseContactCsv } from "./contact-csv.ts";
 export {
   type ContactEnvironment,
@@ -285,6 +324,7 @@ export {
   type ProviderEvent,
   type ProviderTenant,
   type SendResult,
+  ThrottledSendError,
   UncertainSendError,
 } from "./provider.ts";
 export {

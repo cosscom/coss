@@ -6,6 +6,7 @@
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
+import { assertNoBroadcastUses } from "./broadcast-references.ts";
 import {
   type ContactEnvironment,
   environmentProject,
@@ -206,6 +207,7 @@ export async function deleteTopic(env: ContactEnvironment, id: string): Promise<
         `The segment "${used.name}" filters on this topic: change it first.`,
       );
     }
+    await assertNoBroadcastUses(env, { topic: row.key }, tx);
     const deleted = await tx
       .delete(topic)
       .where(and(inContactEnvironment(topic, env), eq(topic.id, id)))

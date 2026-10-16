@@ -73,6 +73,17 @@ export class UncertainSendError extends Error {
 }
 
 /**
+ * The provider refused the message for its sending rate (SES throttling, after its own retries):
+ * certainly not sent. Marketing emails are handed back and dispatched again a little later.
+ */
+export class ThrottledSendError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = "ThrottledSendError";
+  }
+}
+
+/**
  * Delivery seam (fake or SES). `send` resolves once the provider accepted the message and throws
  * when it did not (`UncertainSendError` when it can't tell); the service records the outcome on
  * the email row.

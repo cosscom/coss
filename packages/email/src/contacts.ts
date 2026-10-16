@@ -330,18 +330,21 @@ async function addMemberships(tx: Executor, row: ContactRow, audienceIds: string
     .onConflictDoNothing();
 }
 
-/** Records the contact's explicit choices (the last one per topic wins), in `tx`. */
+/**
+ * Records the contact's explicit choices (the last one per topic wins), in `tx`. Returns how many
+ * topics changed (a choice equal to the recorded one changes nothing).
+ */
 export async function applyTopicChoices(
   tx: Executor,
   row: Pick<ContactRow, "id" | "organizationId">,
   topics: ReadonlyMap<string, Pick<TopicRow, "id">>,
   choices: { topic: string; status: ContactTopicStatus }[] | undefined,
   source: ContactSource,
-): Promise<void> {
+): Promise<number> {
   const latest = new Map<string, ContactTopicStatus>();
   for (const choice of choices ?? []) latest.set(choice.topic, choice.status);
-  if (latest.size === 0) return;
-  await tx
+  if (latest.size === 0) return 0;
+  const changed = await tx
     .insert(contactTopic)
     .values(
       [...latest].map(([key, status]) => ({
@@ -355,7 +358,10 @@ export async function applyTopicChoices(
     .onConflictDoUpdate({
       target: [contactTopic.contactId, contactTopic.topicId],
       set: { status: sql`excluded.status`, source: sql`excluded.source`, updatedAt: sql`now()` },
-    });
+      setWhere: sql`${contactTopic.status} <> excluded.status`,
+    })
+    .returning({ topicId: contactTopic.topicId });
+  return changed.length;
 }
 
 /**
