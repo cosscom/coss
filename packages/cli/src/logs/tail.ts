@@ -38,10 +38,6 @@ export class LogTail {
     return new Date(this.#newest - OVERLAP_MS);
   }
 
-  has(id: string): boolean {
-    return this.#seen.has(id);
-  }
-
   /** The lines not seen before, oldest first; remembers them. */
   take(lines: readonly Log[]): Log[] {
     const fresh = lines.filter((line) => !this.#seen.has(line.id)).sort(byTime);
@@ -59,14 +55,14 @@ export class LogTail {
 }
 
 /**
- * Every line from `from` on (newest first, paged with `after`), stopping early once a page holds
- * nothing new. `truncated` when the window had more than `MAX_PAGES` pages.
+ * Every line from `from` on (newest first, paged with `after`). The whole window is read, even
+ * past pages already printed: a late line older than them sorts onto a later page. `truncated`
+ * when the window had more than `MAX_PAGES` pages.
  */
 export async function readWindow(
   coss: Coss,
   filters: LogFilters,
   from: Date,
-  isSeen: (line: Log) => boolean,
   signal?: AbortSignal,
 ): Promise<{ lines: Log[]; truncated: boolean; error: CossError | null }> {
   const lines: Log[] = [];
@@ -79,8 +75,7 @@ export async function readWindow(
     if (error) return { lines, truncated: false, error };
     lines.push(...data.data);
     const last = data.data.at(-1);
-    if (!data.has_more || !last || data.data.every(isSeen))
-      return { lines, truncated: false, error: null };
+    if (!data.has_more || !last) return { lines, truncated: false, error: null };
     after = last.id;
   }
   return { lines, truncated: true, error: null };

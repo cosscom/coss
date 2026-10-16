@@ -89,7 +89,7 @@ export async function logsTail(argv: string[], io: CliIo): Promise<number> {
   let failures = 0;
   while (!io.signal.aborted) {
     const from = first && since ? since : tail.windowStart();
-    const window = await readWindow(coss, filters, from, (line) => tail.has(line.id), io.signal);
+    const window = await readWindow(coss, filters, from, io.signal);
     if (window.error) {
       if (io.signal.aborted) break;
       if (

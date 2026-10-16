@@ -342,7 +342,7 @@ describe("webhook listeners", () => {
     const listeners = [];
     for (let i = 0; i < MAX_LISTENERS_PER_ENVIRONMENT; i++)
       listeners.push(await listenerFor(tenant));
-    expect(listenerFor(tenant)).rejects.toMatchObject({ code: "too_many_listeners" });
+    await expect(listenerFor(tenant)).rejects.toMatchObject({ code: "too_many_listeners" });
     // Endpoints are unaffected.
     await createWebhookEndpoint(
       {
@@ -361,7 +361,20 @@ describe("webhook listeners", () => {
       id: must(listeners[0]).id,
     });
     expect(await listenerFor(tenant)).toBeTruthy();
-    expect(listenerFor(tenant, [], "1999-01-01")).rejects.toBeInstanceOf(WebhookError);
+    await expect(listenerFor(tenant, [], "1999-01-01")).rejects.toBeInstanceOf(WebhookError);
+  });
+
+  test("the cap holds when listeners are opened at the same time", async () => {
+    const tenant = await createTestTenant();
+    const results = await Promise.allSettled(
+      Array.from({ length: MAX_LISTENERS_PER_ENVIRONMENT + 3 }, () => listenerFor(tenant)),
+    );
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(
+      MAX_LISTENERS_PER_ENVIRONMENT,
+    );
+    for (const result of results.filter((r) => r.status === "rejected")) {
+      expect(result.reason).toMatchObject({ code: "too_many_listeners" });
+    }
   });
 
   test("retention purges expired listeners with their deliveries, and messages take theirs", async () => {

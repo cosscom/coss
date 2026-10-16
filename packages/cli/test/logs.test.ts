@@ -2,7 +2,14 @@ import { describe, expect, test } from "bun:test";
 import type { Log } from "coss";
 import { LogTail, parseSince } from "../src/logs/tail.ts";
 import { run } from "../src/run.ts";
-import { environmentObject, fakeFetch, NOW, SANDBOX_KEY, testIo } from "./helpers.ts";
+import {
+  environmentObject,
+  fakeFetch,
+  NOW,
+  type Recorded,
+  SANDBOX_KEY,
+  testIo,
+} from "./helpers.ts";
 
 function line(id: string, at: string, overrides: Partial<Log> = {}): Log {
   return {
@@ -89,6 +96,40 @@ describe("coss logs tail", () => {
     expect(query?.get("level")).toBe("error");
     expect(query?.get("q")).toBe("bounce");
     expect(query?.get("limit")).toBe("100");
+  });
+
+  test("reads the whole window, so a late line behind a page already printed still shows", async () => {
+    const page = (n: number, offsetMs: number) =>
+      Array.from({ length: n }, (_, i) =>
+        line(`log_${offsetMs}_${i}`, new Date(NOW.getTime() + offsetMs - i).toISOString()),
+      );
+    const newest = page(100, 5_000);
+    const older = page(3, 2_000);
+    const late = line("log_late", "2026-10-15T12:00:01.000Z");
+    // Each poll answers newest first, 100 a page; the late line arrives after the first poll.
+    let polls = 0;
+    const io = testIo({ env: { COSS_API_KEY: SANDBOX_KEY } });
+    const api = fakeFetch({
+      "GET /v1/environment": environmentObject(),
+      "GET /v1/logs": (request: Recorded) => {
+        const after = request.url.searchParams.get("after");
+        if (!after) {
+          polls++;
+          if (polls > 3) io.controller.abort();
+          return { object: "list", data: newest, has_more: true };
+        }
+        return { object: "list", data: polls >= 3 ? [...older, late] : older, has_more: false };
+      },
+    });
+    io.fetch = api.fetch;
+    expect(await run(["logs", "tail", "--json"], io)).toBe(130);
+    const printed = io
+      .output()
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map((text) => (JSON.parse(text) as { id: string }).id);
+    expect(printed).toEqual(["log_late"]);
   });
 
   test("rejects unknown sources", async () => {

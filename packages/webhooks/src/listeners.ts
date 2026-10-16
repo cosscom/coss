@@ -81,52 +81,58 @@ export async function createWebhookListener(input: {
 }): Promise<WebhookListenerRow> {
   const now = input.now ?? new Date();
   const apiVersion = checkedApiVersion(input.apiVersion, input.versioning ?? apiVersioning);
-  const [env] = await db
-    .select({ projectId: environment.projectId })
-    .from(environment)
-    .where(
-      and(
-        eq(environment.organizationId, input.organizationId),
-        eq(environment.id, input.environmentId),
-      ),
-    )
-    .limit(1);
-  if (!env) throw new WebhookError("not_found", "Environment not found.");
-  const [open] = await db
-    .select({ value: count() })
-    .from(webhookListener)
-    .where(
-      and(
-        eq(webhookListener.organizationId, input.organizationId),
-        eq(webhookListener.environmentId, input.environmentId),
-        gt(webhookListener.expiresAt, now),
-      ),
+  return db.transaction(async (tx) => {
+    // Concurrent opens in one environment take turns, so the cap counts each other's rows.
+    await tx.execute(
+      sql`select pg_advisory_xact_lock(hashtextextended(${`webhook-listener:${input.environmentId}`}, 0))`,
     );
-  if ((open?.value ?? 0) >= MAX_LISTENERS_PER_ENVIRONMENT) {
-    throw new WebhookError(
-      "too_many_listeners",
-      `An environment can have at most ${MAX_LISTENERS_PER_ENVIRONMENT} open listeners. Stop ` +
-        "another `coss listen`, or wait for an abandoned one to expire (10 minutes).",
-    );
-  }
-  const [listener] = await db
-    .insert(webhookListener)
-    .values({
-      organizationId: input.organizationId,
-      projectId: env.projectId,
-      environmentId: input.environmentId,
-      apiVersion,
-      eventTypes: [...new Set(input.eventTypes)].sort(),
-      description: input.description?.trim() || null,
-      createdByApiKeyId: input.apiKeyId ?? null,
-      lastPolledAt: now,
-      expiresAt: new Date(now.getTime() + LISTENER_IDLE_TTL_MS),
-      createdAt: now,
-      updatedAt: now,
-    })
-    .returning();
-  if (!listener) throw new Error("Webhook listener insert returned no row.");
-  return listener;
+    const [env] = await tx
+      .select({ projectId: environment.projectId })
+      .from(environment)
+      .where(
+        and(
+          eq(environment.organizationId, input.organizationId),
+          eq(environment.id, input.environmentId),
+        ),
+      )
+      .limit(1);
+    if (!env) throw new WebhookError("not_found", "Environment not found.");
+    const [open] = await tx
+      .select({ value: count() })
+      .from(webhookListener)
+      .where(
+        and(
+          eq(webhookListener.organizationId, input.organizationId),
+          eq(webhookListener.environmentId, input.environmentId),
+          gt(webhookListener.expiresAt, now),
+        ),
+      );
+    if ((open?.value ?? 0) >= MAX_LISTENERS_PER_ENVIRONMENT) {
+      throw new WebhookError(
+        "too_many_listeners",
+        `An environment can have at most ${MAX_LISTENERS_PER_ENVIRONMENT} open listeners. Stop ` +
+          "another `coss listen`, or wait for an abandoned one to expire (10 minutes).",
+      );
+    }
+    const [listener] = await tx
+      .insert(webhookListener)
+      .values({
+        organizationId: input.organizationId,
+        projectId: env.projectId,
+        environmentId: input.environmentId,
+        apiVersion,
+        eventTypes: [...new Set(input.eventTypes)].sort(),
+        description: input.description?.trim() || null,
+        createdByApiKeyId: input.apiKeyId ?? null,
+        lastPolledAt: now,
+        expiresAt: new Date(now.getTime() + LISTENER_IDLE_TTL_MS),
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning();
+    if (!listener) throw new Error("Webhook listener insert returned no row.");
+    return listener;
+  });
 }
 
 /** Keeps an open listener alive; `null` when it is unknown, expired or closed. */
