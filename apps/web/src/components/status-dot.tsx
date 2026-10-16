@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 
 export type StatusTone = "success" | "warning" | "error" | "info" | "neutral";
 
-const DOT: Record<StatusTone, string> = {
+/** Each tone's background colour (the dot's, also for bars). */
+export const STATUS_TONE_BACKGROUND: Record<StatusTone, string> = {
   success: "bg-success",
   warning: "bg-warning",
   error: "bg-destructive",
@@ -24,7 +25,7 @@ export function StatusDot(props: {
         aria-hidden
         className={cn(
           "size-1.5 shrink-0 rounded-full",
-          DOT[props.tone],
+          STATUS_TONE_BACKGROUND[props.tone],
           props.pulse && "motion-safe:animate-pulse",
         )}
       />
