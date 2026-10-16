@@ -10,7 +10,7 @@ import {
   withIdempotencyKey,
 } from "@coss/db/idempotency";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
-import { and, asc, eq, inArray, isNull, lte, not, notExists } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lt, lte, not, notExists, sql } from "drizzle-orm";
 import {
   insertAttachments,
   loadOutboundAttachments,
@@ -165,6 +165,7 @@ const ERROR_MESSAGE_MAX_LENGTH = 1000;
 
 const {
   broadcast,
+  contact,
   email,
   emailBatch,
   emailLink,
@@ -560,10 +561,11 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     await db.transaction(async (tx) => {
       if (row.broadcastId) {
         // Paused or canceled while this email was at the provider: dropped like the emails
-        // nobody claimed (counter and reservation given back; a resume makes it again).
-        // The broadcast is locked first, in the order pausing takes it.
+        // nobody claimed (counter and reservation given back; a paused one's cursor moves back
+        // before its contact, so a resume makes it again). The broadcast is locked first, in the
+        // order pausing takes it.
         const [owner] = await tx
-          .select({ status: broadcast.status })
+          .select({ status: broadcast.status, cursor: broadcast.cursor })
           .from(broadcast)
           .where(
             and(
@@ -571,7 +573,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
               eq(broadcast.organizationId, row.organizationId),
             ),
           )
-          .for("share");
+          .for("update");
         if (owner && owner.status !== "sending") {
           const [dropped] = await tx
             .delete(email)
@@ -585,6 +587,32 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
             )
             .returning({ id: email.id });
           if (!dropped) return;
+          if (
+            owner.status === "paused" &&
+            row.contactId &&
+            owner.cursor !== null &&
+            owner.cursor >= row.contactId
+          ) {
+            const [before] = await tx
+              .select({ id: sql<string | null>`max(${contact.id})` })
+              .from(contact)
+              .where(
+                and(
+                  eq(contact.organizationId, row.organizationId),
+                  eq(contact.environmentId, row.environmentId),
+                  lt(contact.id, row.contactId),
+                ),
+              );
+            await tx
+              .update(broadcast)
+              .set({ cursor: before?.id ?? null })
+              .where(
+                and(
+                  eq(broadcast.id, row.broadcastId),
+                  eq(broadcast.organizationId, row.organizationId),
+                ),
+              );
+          }
           await bumpBroadcastStat(tx, {
             broadcastId: row.broadcastId,
             organizationId: row.organizationId,

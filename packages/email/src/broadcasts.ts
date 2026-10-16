@@ -747,7 +747,8 @@ export async function resumeBroadcast(
     .set({
       status: row.startedAt ? "sending" : "scheduled",
       pauseReason: null,
-      nextRunAt: now,
+      // Not started yet: it still waits for its scheduled time.
+      nextRunAt: !row.startedAt && row.scheduledAt && row.scheduledAt > now ? row.scheduledAt : now,
       leaseUntil: null,
     })
     .where(and(eq(broadcast.id, row.id), eq(broadcast.status, "paused")))

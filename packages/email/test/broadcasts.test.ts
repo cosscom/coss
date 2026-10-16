@@ -390,6 +390,25 @@ describe("broadcasts", () => {
     expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(0);
     expect((await getBroadcast(f.env, broadcast.id))?.stats.recipients).toBe(0);
     expect(f.queue.jobs.filter((job) => job.emailId === first.emailId)).toHaveLength(0);
+
+    // Resumed, every recipient gets it, the throttled one included.
+    await resumeBroadcast(sendEnvironment(f.environment), broadcast.id, { liveProvider: "fake" });
+    await f.runUntil(broadcast.id, "sent");
+    expect(f.provider.sent.map((message) => message.to[0]).sort()).toEqual([
+      "ada@example.com",
+      "bob@example.com",
+      "cy@example.com",
+    ]);
+  });
+
+  test("resuming a paused broadcast before its time keeps its schedule", async () => {
+    const f = await fixture();
+    const later = new Date(Date.now() + 60 * 60_000);
+    const broadcast = await f.create({ scheduled_at: later.toISOString() });
+    await pauseBroadcast(f.env, broadcast.id);
+    await resumeBroadcast(sendEnvironment(f.environment), broadcast.id, { liveProvider: "fake" });
+    const row = await getBroadcastRow(f.env, broadcast.id);
+    expect(row).toMatchObject({ status: "scheduled", nextRunAt: later });
   });
 
   test("a pause rewinds from the contacts, even once earlier emails were purged", async () => {
