@@ -1399,7 +1399,7 @@
                 "Values": [
                   "/",
                   "/pricing",
-                  "/shipyard"
+                  "/about"
                 ]
               }
             },
@@ -1422,9 +1422,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/shipyard",
                   "/shipyard/*",
-                  "/kloq",
-                  "/kloq/*"
+                  "/kloq"
                 ]
               }
             },
@@ -1447,9 +1447,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/kloq/*",
                   "/docs",
-                  "/docs/*",
-                  "/legal"
+                  "/docs/*"
                 ]
               }
             },
@@ -1472,9 +1472,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/legal",
                   "/legal/*",
-                  "/llms.txt",
-                  "/llms-full.txt"
+                  "/llms.txt"
                 ]
               }
             },
@@ -1497,9 +1497,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/llms-full.txt",
                   "/site-assets",
-                  "/site-assets/*",
-                  "/icon.svg"
+                  "/site-assets/*"
                 ]
               }
             },
@@ -1522,9 +1522,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/icon.svg",
                   "/favicon.ico",
-                  "/robots.txt",
-                  "/sitemap.xml"
+                  "/robots.txt"
                 ]
               }
             },
@@ -1547,6 +1547,7 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/sitemap.xml",
                   "/.well-known",
                   "/.well-known/*"
                 ]
@@ -1643,6 +1644,12 @@
             "origin": "alb",
             "cache": "origin",
             "reason": "site zone (/pricing)"
+          },
+          {
+            "pathPattern": "/about",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/about)"
           },
           {
             "pathPattern": "/shipyard",
@@ -1778,6 +1785,7 @@
     },
     "invalidateAfterDeploy": [
       "/pricing",
+      "/about",
       "/shipyard",
       "/shipyard/*",
       "/kloq",

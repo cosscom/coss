@@ -44,7 +44,12 @@ export function SiteFooter() {
     <footer className="relative mt-8 py-8 text-muted-foreground before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-border/64">
       <div className="container flex w-full flex-col gap-4 px-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
         <Colophon />
-        <LegalLinks className="flex flex-wrap gap-x-6 gap-y-2 text-sm" />
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+          <Link className="hover:text-foreground" href="/about">
+            About
+          </Link>
+          <LegalLinks className="contents" />
+        </div>
       </div>
     </footer>
   );
