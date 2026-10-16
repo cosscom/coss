@@ -345,7 +345,7 @@ export default async function DomainDmarcPage({
             </TableHeader>
             <TableBody>
               {summary.sources.map((source) => (
-                <TableRow key={`${source.source_ip} ${source.header_from}`}>
+                <TableRow key={`${source.source_ip} ${source.header_from} ${source.via_coss}`}>
                   <TableCell className="font-mono text-xs">{source.source_ip}</TableCell>
                   <TableCell className="font-mono text-xs">{source.header_from}</TableCell>
                   <TableCell className="text-right tabular-nums">

@@ -6,11 +6,13 @@ import { LATEST_API_VERSION } from "@coss/versioning";
 import { createWebhookEndpoint } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
 import { and, eq } from "drizzle-orm";
+import { unauthenticatedSources } from "../src/dmarc-guidance.ts";
 import { dmarcReportAddress } from "../src/dmarc-record.ts";
 import {
   deleteOrganizationDmarcReports,
   dmarcDailySeries,
   dmarcOverview,
+  dmarcTotals,
   getDmarcReport,
   ingestDmarcReports,
   isViaCoss,
@@ -199,14 +201,76 @@ describe("ingesting reports", () => {
     expect(again[0]?.kind).toBe("duplicate");
     expect(charged).toHaveLength(2);
     expect(charged[0]).toStartWith(`${organizationId}:`);
+    // Over the budget, nothing is even read: the budget bounds the parsing work too.
     allow = false;
+    let reads = 0;
     const over = await ingestDmarcReports(
-      message(dmarcReportMessage(reportFor(row), { to: address }), [address]),
+      message(dmarcReportMessage(reportFor(row), { to: address }), [address], {
+        raw: async () => {
+          reads++;
+          return raw;
+        },
+      }),
       [row.dmarcReportToken],
       { managedDomain: MANAGED, quota },
     );
     expect(over[0]?.kind).toBe("over_limit");
+    expect(reads).toBe(0);
     expect(await reportsOf(row.id)).toHaveLength(1);
+    // An invalid report is charged as well.
+    allow = true;
+    const invalid = buildTestMessage({
+      from: "x@y.test",
+      to: [address],
+      subject: "hi",
+      text: "hi",
+    });
+    expect(
+      (
+        await ingestDmarcReports(message(invalid, [address]), [row.dmarcReportToken], {
+          managedDomain: MANAGED,
+          quota,
+        })
+      )[0]?.kind,
+    ).toBe("invalid");
+    expect(charged).toHaveLength(4);
+  });
+
+  test("COSS's mail and another sender's from one IP stay separate sources", async () => {
+    const { row, organizationId } = await setup();
+    const address = addressOf(row);
+    const selector = row.dkimTokens[0] ?? "coss";
+    const report = reportFor(row, {
+      records: [
+        {
+          sourceIp: "54.240.8.9",
+          count: 985,
+          dkim: "pass",
+          spf: "pass",
+          envelopeFrom: row.mailFromDomain,
+          dkimResults: [{ domain: row.name, selector, result: "pass" }],
+        },
+        {
+          sourceIp: "54.240.8.9",
+          count: 15,
+          dkim: "fail",
+          spf: "fail",
+          envelopeFrom: "other-esp.example",
+          spfResults: [{ domain: "other-esp.example", scope: "mfrom", result: "pass" }],
+        },
+      ],
+    });
+    await ingestDmarcReports(
+      message(dmarcReportMessage(report, { to: address }), [address]),
+      [row.dmarcReportToken],
+      { managedDomain: MANAGED },
+    );
+    const totals = await dmarcTotals(db, { id: row.id, organizationId });
+    expect(totals.sources.map((source) => [source.viaCoss, source.messages])).toEqual([
+      [true, 985],
+      [false, 15],
+    ]);
+    expect(unauthenticatedSources(totals)).toHaveLength(1);
   });
 
   test("announces the report to every live environment", async () => {

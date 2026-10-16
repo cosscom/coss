@@ -132,6 +132,14 @@ describe("parseXml", () => {
     ).toThrow("document type declarations are not allowed");
   });
 
+  test("refuses characters XML forbids (PostgreSQL can't store NUL)", () => {
+    expect(() => parseXml("<a>x\u0000y</a>")).toThrow(DmarcReportError);
+    expect(() => parseXml("<a>x\u0001y</a>")).toThrow(DmarcReportError);
+    expect(() => parseXml("<a>&#0;</a>")).toThrow(DmarcReportError);
+    expect(() => parseXml("<a>&#x1;</a>")).toThrow(DmarcReportError);
+    expect(parseXml("<a>tab\there&#x9;</a>").text).toBe("tab\there\t");
+  });
+
   test("refuses malformed documents", () => {
     expect(() => parseXml("<a><b></a>")).toThrow(DmarcReportError);
     expect(() => parseXml("<a>")).toThrow(DmarcReportError);

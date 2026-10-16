@@ -158,6 +158,21 @@ export type XmlElement = { name: string; children: XmlElement[]; text: string };
 
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
 
+/** Characters XML 1.0 allows (`Char`); others (NUL above all, which PostgreSQL can't store) aren't. */
+function isXmlChar(code: number): boolean {
+  return (
+    code === 0x9 ||
+    code === 0xa ||
+    code === 0xd ||
+    (code >= 0x20 && code <= 0xd7ff) ||
+    (code >= 0xe000 && code <= 0xfffd) ||
+    (code >= 0x10000 && code <= 0x10ffff)
+  );
+}
+
+// biome-ignore lint/suspicious/noControlCharactersInRegex: matching them is the point.
+const FORBIDDEN_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/;
+
 function decodeText(value: string): string {
   return value.replace(/&(#x[0-9a-f]+|#\d+|\w+);/gi, (match, entity: string) => {
     if (entity[0] === "#") {
@@ -165,9 +180,12 @@ function decodeText(value: string): string {
         entity[1] === "x" || entity[1] === "X"
           ? Number.parseInt(entity.slice(2), 16)
           : Number.parseInt(entity.slice(1), 10);
-      return Number.isFinite(code) && code > 0 && code <= 0x10ffff
-        ? String.fromCodePoint(code)
-        : "";
+      if (!Number.isFinite(code) || !isXmlChar(code)) {
+        throw new DmarcReportError(
+          "The report is not valid XML: a character reference XML forbids.",
+        );
+      }
+      return String.fromCodePoint(code);
     }
     return ENTITIES[entity] ?? match;
   });
@@ -185,6 +203,7 @@ export function parseXml(input: string): XmlElement {
   const fail = (message: string): never => {
     throw new DmarcReportError(`The report is not valid XML: ${message}`);
   };
+  if (FORBIDDEN_CHARS.test(input)) fail("a character XML forbids");
   while (i < input.length) {
     const lt = input.indexOf("<", i);
     const top = stack[stack.length - 1] as XmlElement;

@@ -221,6 +221,18 @@ export async function ingestDmarcReports(
       drop({ ...base, kind: "unauthenticated" }, "the message passed neither SPF nor DKIM");
       continue;
     }
+    // Charged before anything is unpacked or parsed: the budget bounds the work too, and an
+    // invalid report counts against it.
+    if (
+      deps.quota &&
+      !(await deps.quota.consume(
+        target.organizationId,
+        JSON.stringify(["dmarc", target.id, message.provider, message.providerMessageId]),
+      ))
+    ) {
+      drop({ ...base, kind: "over_limit" }, "the organization's daily report limit is reached");
+      continue;
+    }
     report ??= await reportOf(await message.raw());
     if (report instanceof DmarcReportError) {
       drop({ ...base, kind: "invalid" }, report.message);
@@ -243,16 +255,6 @@ export async function ingestDmarcReports(
       end < received - RETENTION_DAYS.dmarcReports * DAY
     ) {
       drop({ ...base, kind: "out_of_range" }, "its period is implausible or too old");
-      continue;
-    }
-    if (
-      deps.quota &&
-      !(await deps.quota.consume(
-        target.organizationId,
-        JSON.stringify(["dmarc", target.id, message.provider, message.providerMessageId]),
-      ))
-    ) {
-      drop({ ...base, kind: "over_limit" }, "the organization's daily report limit is reached");
       continue;
     }
     const recorded = await recordReport(target, report, message, deps.managedDomain);
@@ -511,11 +513,13 @@ export async function dmarcTotals(
       headerFrom: dmarcReportRecord.headerFrom,
       messages,
       passing,
-      viaCoss: sql<boolean>`bool_or(${dmarcReportRecord.viaCoss})`,
+      viaCoss: dmarcReportRecord.viaCoss,
     })
     .from(dmarcReportRecord)
     .where(recordScope(scope, since))
-    .groupBy(dmarcReportRecord.sourceIp, dmarcReportRecord.headerFrom)
+    // COSS's mail and another sender's from the same IP (two SES integrations, say) stay apart,
+    // so the other's failures still count against readiness.
+    .groupBy(dmarcReportRecord.sourceIp, dmarcReportRecord.headerFrom, dmarcReportRecord.viaCoss)
     .orderBy(desc(sql`sum(${dmarcReportRecord.count})`))
     .limit(1000);
   const ofDomain = and(
