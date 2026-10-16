@@ -9,6 +9,7 @@ import {
   type ContactEnvironment,
   environmentProject,
   inContactEnvironment,
+  lockSegmentReferences,
 } from "./contact-properties.ts";
 import {
   type AudienceOutput,
@@ -139,27 +140,30 @@ export async function updateAudience(
  */
 export async function deleteAudience(env: ContactEnvironment, id: string): Promise<boolean> {
   if (!isId("aud", id)) return false;
-  const [used] = await db
-    .select({ name: segment.name })
-    .from(segment)
-    .where(
-      and(
-        inContactEnvironment(segment, env),
-        sql`jsonb_path_exists(${segment.filter}, '$.** ? (@.audience_id == $id)', jsonb_build_object('id', ${id}::text))`,
-      ),
-    )
-    .limit(1);
-  if (used) {
-    throw new ContactError(
-      "audience_in_use",
-      `The segment "${used.name}" filters on this audience: change it first.`,
-    );
-  }
-  const deleted = await db
-    .delete(audience)
-    .where(and(inContactEnvironment(audience, env), eq(audience.id, id)))
-    .returning({ id: audience.id });
-  return deleted.length > 0;
+  return db.transaction(async (tx) => {
+    await lockSegmentReferences(tx, env);
+    const [used] = await tx
+      .select({ name: segment.name })
+      .from(segment)
+      .where(
+        and(
+          inContactEnvironment(segment, env),
+          sql`jsonb_path_exists(${segment.filter}, '$.** ? (@.audience_id == $id)', jsonb_build_object('id', ${id}::text))`,
+        ),
+      )
+      .limit(1);
+    if (used) {
+      throw new ContactError(
+        "audience_in_use",
+        `The segment "${used.name}" filters on this audience: change it first.`,
+      );
+    }
+    const deleted = await tx
+      .delete(audience)
+      .where(and(inContactEnvironment(audience, env), eq(audience.id, id)))
+      .returning({ id: audience.id });
+    return deleted.length > 0;
+  });
 }
 
 /**

@@ -14,6 +14,7 @@ import {
   coercePropertyValue,
   environmentProject,
   inContactEnvironment,
+  lockSegmentReferences,
   propertyDefinitions,
 } from "./contact-properties.ts";
 import {
@@ -155,7 +156,7 @@ function propertySql(
       const text = sql`lower(${contact.properties} ->> ${key}::text)`;
       return op === "contains"
         ? sql`position(${value}::text in ${text}) > 0`
-        : sql`left(${text}, ${value.length}::int) = ${value}::text`;
+        : sql`left(${text}, char_length(${value}::text)) = ${value}::text`;
     }
     case "gt":
     case "gte":
@@ -339,16 +340,20 @@ export async function createSegment(
   params: { name: string; filter: SegmentFilterOutput },
 ): Promise<SegmentOutput> {
   const filter = SegmentFilter.parse(params.filter);
-  await compileSegmentFilter(env, filter);
-  const projectId = await environmentProject(env);
-  if (!projectId) throw new ContactError("not_found", "Environment not found.");
-  const [row] = await db
-    .insert(segment)
-    .values({ ...env, projectId, name: params.name, filter })
-    .onConflictDoNothing({ target: [segment.environmentId, segment.name] })
-    .returning();
-  if (!row) throw nameTaken(params.name);
-  return toSegmentObject(row);
+  return db.transaction(async (tx) => {
+    // Checked and saved under the lock deletions of what it references take.
+    await lockSegmentReferences(tx, env);
+    await compileSegmentFilter(env, filter);
+    const projectId = await environmentProject(env, tx);
+    if (!projectId) throw new ContactError("not_found", "Environment not found.");
+    const [row] = await tx
+      .insert(segment)
+      .values({ ...env, projectId, name: params.name, filter })
+      .onConflictDoNothing({ target: [segment.environmentId, segment.name] })
+      .returning();
+    if (!row) throw nameTaken(params.name);
+    return toSegmentObject(row);
+  });
 }
 
 export async function updateSegment(
@@ -357,19 +362,26 @@ export async function updateSegment(
   params: { name?: string; filter?: SegmentFilterOutput },
 ): Promise<SegmentOutput | null> {
   if (!isId("seg", id)) return null;
-  if (params.filter) await compileSegmentFilter(env, params.filter);
   const changes = {
     ...(params.name === undefined ? {} : { name: params.name }),
     ...(params.filter === undefined ? {} : { filter: params.filter }),
   };
   if (Object.keys(changes).length === 0) return getSegment(env, id);
+  const { filter } = params;
   try {
-    const [row] = await db
-      .update(segment)
-      .set(changes)
-      .where(and(inContactEnvironment(segment, env), eq(segment.id, id)))
-      .returning();
-    return row ? toSegmentObject(row) : null;
+    return await db.transaction(async (tx) => {
+      if (filter) {
+        // Checked and saved under the lock deletions of what it references take.
+        await lockSegmentReferences(tx, env);
+        await compileSegmentFilter(env, filter);
+      }
+      const [row] = await tx
+        .update(segment)
+        .set(changes)
+        .where(and(inContactEnvironment(segment, env), eq(segment.id, id)))
+        .returning();
+      return row ? toSegmentObject(row) : null;
+    });
   } catch (error) {
     if (isUniqueViolation(error) && params.name) throw nameTaken(params.name);
     throw error;

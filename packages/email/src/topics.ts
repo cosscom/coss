@@ -10,6 +10,7 @@ import {
   type ContactEnvironment,
   environmentProject,
   inContactEnvironment,
+  lockSegmentReferences,
 } from "./contact-properties.ts";
 import {
   DEFAULT_CONTACT_LIST_LIMIT,
@@ -166,25 +167,28 @@ export async function updateTopic(
 export async function deleteTopic(env: ContactEnvironment, id: string): Promise<boolean> {
   const row = await topicRow(env, id);
   if (!row) return false;
-  const [used] = await db
-    .select({ name: segment.name })
-    .from(segment)
-    .where(
-      and(
-        inContactEnvironment(segment, env),
-        sql`jsonb_path_exists(${segment.filter}, '$.** ? (@.field == "topic" && @.topic == $key)', jsonb_build_object('key', ${row.key}::text))`,
-      ),
-    )
-    .limit(1);
-  if (used) {
-    throw new ContactError(
-      "topic_in_use",
-      `The segment "${used.name}" filters on this topic: change it first.`,
-    );
-  }
-  const deleted = await db
-    .delete(topic)
-    .where(and(inContactEnvironment(topic, env), eq(topic.id, id)))
-    .returning({ id: topic.id });
-  return deleted.length > 0;
+  return db.transaction(async (tx) => {
+    await lockSegmentReferences(tx, env);
+    const [used] = await tx
+      .select({ name: segment.name })
+      .from(segment)
+      .where(
+        and(
+          inContactEnvironment(segment, env),
+          sql`jsonb_path_exists(${segment.filter}, '$.** ? (@.field == "topic" && @.topic == $key)', jsonb_build_object('key', ${row.key}::text))`,
+        ),
+      )
+      .limit(1);
+    if (used) {
+      throw new ContactError(
+        "topic_in_use",
+        `The segment "${used.name}" filters on this topic: change it first.`,
+      );
+    }
+    const deleted = await tx
+      .delete(topic)
+      .where(and(inContactEnvironment(topic, env), eq(topic.id, id)))
+      .returning({ id: topic.id });
+    return deleted.length > 0;
+  });
 }

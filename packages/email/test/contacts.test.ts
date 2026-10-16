@@ -510,6 +510,15 @@ describe("segments", () => {
     expect(
       await matching(env, one({ field: "property", key: "plan", op: "starts_with", value: "fr" })),
     ).toEqual(["grace"]);
+    // Prefixes count characters, not UTF-16 units.
+    await upsert(env, { email: "party@acme.com", properties: { plan: "\u{1F389}sale" } });
+    expect(
+      await matching(
+        env,
+        one({ field: "property", key: "plan", op: "starts_with", value: "\u{1F389}" }),
+      ),
+    ).toEqual(["party"]);
+    await deleteContact(env, "party@acme.com", { source: "api" });
     expect(
       await matching(env, one({ field: "property", key: "seats", op: "gte", value: 3 })),
     ).toEqual(["ada", "alan"]);

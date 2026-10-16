@@ -402,13 +402,14 @@ export async function updateContact(
   if (!match) return null;
   const topics = await requireTopics(env, params.topics);
   return db.transaction(async (tx) => {
+    // Definitions before the contact, in the order every writer (and a deletion) locks them.
+    const definitions = await propertyDefinitions(env, tx, { forWrite: true });
     const [existing] = await tx
       .select()
       .from(contact)
       .where(and(inContactEnvironment(contact, env), match))
       .for("update");
     if (!existing) return null;
-    const definitions = await propertyDefinitions(env, tx, { forWrite: true });
     const row = await updateRow(tx, existing, params, definitions, now);
     await applyTopicChoices(tx, row, topics, params.topics, opts.source);
     await announceContact(tx, row, "contact.updated", opts.source, now);

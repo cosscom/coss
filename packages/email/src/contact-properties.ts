@@ -171,6 +171,15 @@ export function mergeProperties(
  * their transaction: the definitions they validate against are locked (`FOR SHARE`) until they
  * commit, so a deletion waits for them and strips the values they wrote.
  */
+/**
+ * Serializes, per environment, saving a segment's filter with deleting what filters reference
+ * (properties, audiences, topics): each checks the other under this lock, in its transaction, so
+ * a segment can never be left naming something deleted.
+ */
+export async function lockSegmentReferences(tx: Executor, env: ContactEnvironment): Promise<void> {
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`segrefs:${env.environmentId}`}))`);
+}
+
 export async function propertyDefinitions(
   env: ContactEnvironment,
   executor: Executor = db,
@@ -259,24 +268,25 @@ export async function updateContactProperty(
 export async function deleteContactProperty(env: ContactEnvironment, id: string): Promise<boolean> {
   const row = await propertyRow(env, id);
   if (!row) return false;
-  const [used] = await db
-    .select({ name: segment.name })
-    .from(segment)
-    .where(
-      and(
-        inContactEnvironment(segment, env),
-        sql`jsonb_path_exists(${segment.filter}, '$.** ? (@.field == "property" && @.key == $key)', jsonb_build_object('key', ${row.key}::text))`,
-      ),
-    )
-    .limit(1);
-  if (used) {
-    throw new ContactError(
-      "property_in_use",
-      `The segment "${used.name}" filters on "${row.key}": change it first.`,
-    );
-  }
   return db.transaction(async (tx) => {
+    await lockSegmentReferences(tx, env);
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`cprop:${env.environmentId}`}))`);
+    const [used] = await tx
+      .select({ name: segment.name })
+      .from(segment)
+      .where(
+        and(
+          inContactEnvironment(segment, env),
+          sql`jsonb_path_exists(${segment.filter}, '$.** ? (@.field == "property" && @.key == $key)', jsonb_build_object('key', ${row.key}::text))`,
+        ),
+      )
+      .limit(1);
+    if (used) {
+      throw new ContactError(
+        "property_in_use",
+        `The segment "${used.name}" filters on "${row.key}": change it first.`,
+      );
+    }
     const [deleted] = await tx
       .delete(contactProperty)
       .where(and(inContactEnvironment(contactProperty, env), eq(contactProperty.id, id)))
