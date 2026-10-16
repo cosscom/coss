@@ -120,8 +120,8 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run build
 
-  # Changes to the public packages' sources (packages/sdk/src, except generated version.ts, and
-  # packages/mcp/src) need a changeset: `bun run changeset`, or `bun run changeset --empty` when
+  # Changes to the public packages' sources (packages/sdk/src, except generated version.ts,
+  # packages/mcp/src and packages/cli/src) need a changeset: `bun run changeset`, or `bun run changeset --empty` when
   # nothing user-facing changed. Everything else in the repo is private and never versioned.
   changeset:
     if: github.event_name == 'pull_request'

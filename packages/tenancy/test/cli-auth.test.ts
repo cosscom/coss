@@ -47,6 +47,8 @@ describe("CLI sign-in", () => {
       false,
       false,
     ]);
+    // The CLI prints the same code (packages/cli/test/sign.test.ts pins it too).
+    expect(cliVerificationCode("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")).toBe("DZ93-GPCX");
     const code = cliVerificationCode(codeChallengeFor(VERIFIER));
     expect(code).toMatch(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/);
     expect(cliVerificationCode(codeChallengeFor(VERIFIER))).toBe(code);

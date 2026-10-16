@@ -17,8 +17,8 @@ signals are also building blocks of their own, next to rate limiting as a servic
 ## License
 
 `AGPL-3.0-only` (root `LICENSE`), except `packages/sdk` (MIT, its own `LICENSE`: customers bundle it), `packages/mcp`
-(MIT, published with the SDK), `packages/kloq` (MIT, vendored) and the fonts (OFL). New code is AGPL unless it lives in
-one of those; never copy AGPL code into the SDK or the MCP server. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
+and `packages/cli` (MIT, published with the SDK), `packages/kloq` (MIT, vendored) and the fonts (OFL). New code is AGPL
+unless it lives in one of those; never copy AGPL code into the SDK, the MCP server or the CLI. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
 text it shows is a gist that must match `CLA.md`: change both together, as a new version).
 
 ## Layout
@@ -53,6 +53,7 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens), `globals.css` (the dashboard's stylesheet) and `./fonts` (`next/font/local`: Cal Sans as `fontSans`/`fontHeading` and, upright only, `fontCalSans`; Paper Mono as `fontMono`). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. `coss/device` is its browser-only entry (risk's device tokens). |
 | `packages/mcp` | `coss-mcp` | **Public** MCP server (`npx coss-mcp`, stdio, Node): tools for coding agents built only on the published `coss` SDK — find emails and diagnose delivery (`diagnose.ts`, pure), send, suppressions, domains, webhook deliveries, received emails, logs, account status. See "MCP server" below. |
+| `packages/cli` | `coss-cli` | **Public** CLI (`npm i -g coss-cli`, command `coss`, Node): `login` (browser PKCE or `--manual`), `logout`, `whoami`, `emails send`, `logs tail`, `listen` (forwards webhook events to localhost), built only on the published `coss` SDK. See "CLI" below. |
 | `packages/kloq` | `kloq` | The kloq library (the `cosscom/calendar` repository's `packages/kloq/src`, tests left out): the `<Kloq>` calendar, its themes, settings dialog, design mode and stylesheet. Vendored (excluded from Biome, `noUncheckedIndexedAccess` off); also what `/kloq/r/kloq.json` serves as source. Used only by `apps/site`. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests, and the production Terraform + deploy scripts that apply it. See `infra/AGENTS.md`. |
@@ -66,10 +67,10 @@ billing enqueues `billing.*` events through it — and email imports only `./met
 `smtp → tenancy, email, ratelimit, logs, billing, observability, db`;
 `web → auth, tenancy, email, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, push, companion, db, ui`; `mobile → companion` (types only; a dev dependency), `retention` (bundled by Metro: keep it dependency-free); `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, hooks, ratelimit, screening, billing` (`slugs`, `env` only);
-`worker → auth (`./emails` only), email, hooks, reputation, screening, webhooks, ratelimit, logs, risk, push, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui`, `kloq` and `companion` depend on no workspace (`site → kloq`); `mcp` depends only on the published `coss` (a semver
-range, not `workspace:`).
+`worker → auth (`./emails` only), email, hooks, reputation, screening, webhooks, ratelimit, logs, risk, push, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui`, `kloq` and `companion` depend on no workspace (`site → kloq`); `mcp` and `cli` depend only on the published `coss` (a
+semver range, not `workspace:`).
 Dev-only: `email`/`webhooks`/`hooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`risk`/`push`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
-`api`/`worker`/`site → coss` and `api → coss-mcp` (SDK and MCP contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
+`api`/`worker`/`site → coss` and `api → coss-mcp`, `coss-cli` (SDK, MCP and CLI contract tests and the docs' Twoslash snippets — turbo builds the SDK before their
 `typecheck`/`test`, and before the site's `dev`/`build`). `web → coss` is a runtime dependency: the sign-up form sends
 `coss/device`'s token (turbo builds the SDK before the dashboard's `dev`/`build` too).
 
@@ -93,9 +94,9 @@ bun run auth:generate       # regenerate packages/db/src/schema/auth.ts after ch
                             #   then bun run db:generate && bun run db:migrate
 bun run signals:update-disposable  # refresh the vendored disposable-domain list (review the diff before committing)
 bun run openapi:generate    # rewrite apps/api/openapi.json after changing API routes (a test fails when stale)
-bun run changeset           # describe an SDK or MCP server change (CI requires one when packages/{sdk,mcp}/src
-                            #   changes; --empty if none)
-bun run version-packages    # apply changesets: bump the SDK's (and coss-mcp's) package.json, src/version.ts,
+bun run changeset           # describe an SDK, MCP server or CLI change (CI requires one when
+                            #   packages/{sdk,mcp,cli}/src changes; --empty if none)
+bun run version-packages    # apply changesets: bump the SDK's (and coss-mcp's, coss-cli's) package.json, src/version.ts,
                             #   CHANGELOG.md, bun.lock
                             #   (CI's Release workflow opens a "Version packages" PR doing this; merging it publishes to npm)
 bun run db:seed             # idempotent demo data; mints a new development (coss_test_) key on every run
@@ -216,7 +217,8 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `NEXT_DEPLOYMENT_ID` | Next builds (`apps/web`, `apps/site`): the commit, passed by the Dockerfiles; build id + version-skew protection |
 | `PORT`, `HOSTNAME`, `KEEP_ALIVE_TIMEOUT` | set by the Next images (standalone `server.js`) |
 | `SEED_PASSWORD` | `db:seed` demo password (only when the user is first created) |
-| `COSS_API_KEY`, `COSS_BASE_URL` | SDK defaults / `packages/sdk/examples` only (the example also reads `COSS_FROM`, `COSS_TO`) |
+| `COSS_API_KEY`, `COSS_BASE_URL` | SDK defaults / `packages/sdk/examples` only (the example also reads `COSS_FROM`, `COSS_TO`); also the MCP server's and the CLI's (where they win over a saved profile) |
+| `COSS_DASHBOARD_URL`, `COSS_PROFILE` | the CLI only (`packages/cli`): the dashboard `coss login` opens (default `https://coss.com`), and which saved profile commands use |
 
 Adding one: `.env.example`, the app's t3-env schema, **`turbo.json` `globalPassThroughEnv`** (strict env mode drops
 undeclared vars from tasks — CI and image builds have no `.env`), the service in `infra/aws/services.ts` (a test fails
@@ -259,6 +261,11 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   with a JSON body end their `middleware` with `upgradeRequestBody("<METHOD> /v1/<path template>")` (after the body
   limit, before validation). Error envelopes, CSV and `/t/*` are never versioned. The OpenAPI `Coss-Version`
   parameter/header and `info.version` are added by `withApiVersionDocs` (`src/openapi-versions.ts`).
+- Long polls (`POST /v1/webhook_listeners/{id}/poll`, `coss listen`) wait at most 25 s (CloudFront's and the ALB's
+  60 s) and end on `AbortSignal.any([c.req.raw.signal, shutdownSignal])`: `src/index.ts` aborts `shutdownSignal`
+  on SIGTERM before draining, so they never hold a deploy up. They aren't request-logged (`request-log.ts`) or
+  traced (`@coss/observability`). `GET /v1/environment` and `DELETE /v1/api_key` take any valid key
+  (`requireApiKey({})`): a key can always describe and revoke itself.
 - CORS: only `/v1/*`, only `API_CORS_ORIGINS`, never `credentials` — the API authenticates with bearer keys and must
   never accept the dashboard's session cookie (that would need CSRF protection on every endpoint).
 
@@ -286,7 +293,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - Every request sends `Coss-Version`: `API_VERSION` (`src/api-version.ts`, a hand mirror of `API_VERSIONS`; the
   contract tests keep them equal), overridable with the `apiVersion` client option. The SDK's wire types describe
   `API_VERSION` only.
-- Releases: Changesets 3 (`.changeset/`, the SDK and `coss-mcp` — every other workspace is private and never versioned).
+- Releases: Changesets 3 (`.changeset/`, the SDK, `coss-mcp` and `coss-cli` — every other workspace is private and never versioned).
   `bun run version-packages` also rewrites `src/version.ts` (`scripts/sync-version.ts`) and refreshes `bun.lock`
   (it records workspace versions; CI installs with `--frozen-lockfile`).
 - **Publishing** (`.github/workflows/release.yml`): merging the "Version packages" PR publishes `coss` to npm
@@ -314,6 +321,33 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   range that changesets moves when the SDK's version leaves it. The release job publishes it after `coss`.
 - Tests: `packages/mcp/test` (in-memory client, fake `fetch`) and `apps/api/test/mcp-contract.test.ts` (built
   server against the in-process app; turbo builds it first).
+
+## CLI (`packages/cli`, published as `coss-cli`, command `coss`)
+
+- `run(argv, io)` (`src/run.ts`) dispatches commands (`src/commands/*.ts`); everything outside the process (env,
+  streams, `fetch`, clock, browser, prompts, config dir, the Ctrl-C signal) comes through `CliIo` (`src/io.ts`), so
+  tests run commands in process. `src/cli.ts` is the bin (`nodeIo()`). Results go to stdout (`--json`: one object per
+  line), progress and warnings to stderr. Usage errors exit 2, failures 1, Ctrl-C 130.
+- Calls only the public SDK (`clientFor` always passes `apiKey`, `baseUrl` and `fetch`, so the SDK never reads
+  `process.env` itself) — never workspace packages (AGPL) or the database; anything a command needs must exist in the
+  public API first. No flag takes an API key (command lines are visible to other processes): `COSS_API_KEY`, else
+  the profile (`--profile`, `COSS_PROFILE`, the saved default) in `config.json` (`src/config.ts`: XDG/APPDATA/
+  `~/.config/coss`, 0600, written atomically). Login remembers a non-default `COSS_BASE_URL`/`COSS_DASHBOARD_URL`.
+- `login`: the dashboard's CLI sign-in (`packages/auth/AGENTS.md`, "CLI sign-in") — PKCE with a 127.0.0.1 loopback
+  server (`src/auth/loopback.ts`), or `mode=code` (pasted) with `--no-browser` and over SSH; `verificationCode`
+  (`src/auth/pkce.ts`) must equal `cliVerificationCode` (`@coss/auth/cli`; both tests pin `DZ93-GPCX`). Keys it
+  created (`login: "browser"`) are revoked by `logout` and by the next login of the profile (`coss.apiKey.revoke()`).
+- `listen`: opens a webhook listener (`packages/webhooks/AGENTS.md`), long-polls (`wait_ms` 20 s, SDK timeout 35 s,
+  no SDK retries), forwards each body byte for byte to `--forward-to`, signed with the profile's stable `whsec_`
+  `listen_secret` (`src/listen/sign.ts`, Standard Webhooks, written from the spec) and `webhook-id` = the event id,
+  and acks results in the next poll; Ctrl-C acks what was forwarded and deletes the listener. Live environments
+  need `--live`.
+- `logs tail` polls `GET /v1/logs` like the dashboard's live mode (re-reads from a minute before the newest line,
+  prints unseen ids oldest first, `src/logs/tail.ts`); `emails send --simulate` uses the mailbox simulator addresses
+  (`src/emails/simulate.ts`, must match `packages/email/src/providers/fake.ts`).
+- Dependencies are explicit versions, `coss` a caret range (like the MCP server); the release job publishes it after
+  `coss`. Tests: `packages/cli/test` (fake `fetch`, real loopback and receiver servers) and
+  `apps/api/test/cli-contract.test.ts` (built CLI against the in-process app; turbo builds it first).
 
 ## Dashboard (`apps/web`)
 
@@ -581,7 +615,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   enforces them: `purgeExpiredEmails`/`purgeEmptyEmailBatches`/`purgeExpiredReputationRollups`/
   `purgeExpiredReceivedEmails`/`purgeExpiredFakeInboundObjects`/`purgeExpiredInboundDropCounters` (`@coss/email`;
   received content in S3 expires by the bucket's lifecycle rule, retention + 1 day),
-  `purgeExpiredWebhookMessages` (`@coss/webhooks`), `purgeExpiredScreenings` (`@coss/screening`),
+  `purgeExpiredWebhookMessages`/`purgeExpiredWebhookListeners` (`@coss/webhooks`), `purgeExpiredScreenings` (`@coss/screening`),
   `purgeExpiredReputationNotifications`/`purgeExpiredReputationEvents` (`@coss/reputation`),
   `purgeExpiredRiskPersonalData`/`purgeExpiredRiskMemory`/`purgeExpiredRiskAssessments` (`@coss/risk`),
   `purgeExpiredPushNotifications` (`@coss/push`),

@@ -813,6 +813,7 @@ COSS is licensed under the [GNU Affero General Public License v3.0](./LICENSE) (
 - `packages/sdk` (the `coss` npm package): [MIT](./packages/sdk/LICENSE), so applications can bundle it freely.
 - `packages/mcp` (the `coss-mcp` npm package, COSS's MCP server): [MIT](./packages/mcp/LICENSE), like the SDK it
   is built on.
+- `packages/cli` (the `coss-cli` npm package, the `coss` command): [MIT](./packages/cli/LICENSE), likewise.
 - `packages/kloq`: [MIT](./packages/kloq/LICENSE), vendored from `cosscom/calendar` (as is the kloq registry the
   site serves).
 - The fonts in `packages/ui/src/fonts`: [SIL Open Font License 1.1](./packages/ui/src/fonts/OFL.txt).
