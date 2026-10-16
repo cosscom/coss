@@ -5,7 +5,6 @@
   "type": "module",
   "exports": {
     "./components/*": "./src/components/*.tsx",
-    "./components/chat/hooks/*": "./src/components/chat/hooks/*.ts",
     "./fonts": "./src/fonts/index.ts",
     "./hooks/*": "./src/hooks/*.ts",
     "./lib/*": "./src/lib/*.ts",

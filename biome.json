@@ -19,9 +19,6 @@
       "!!packages/ui/src/hooks",
       "!!packages/ui/src/lib",
       "!!packages/kloq/src",
-      "!!apps/hub/src/components/charts",
-      "!!apps/hub/src/components/shimmering-text.tsx",
-      "!!apps/hub/src/lib/utils.ts",
       "!!apps/site/src/lib/calendar/registry/generated.json",
       "!!apps/site/src/components/calendar/registry/what-lands.json",
       "!!integrations"
