@@ -218,10 +218,11 @@ export async function ensureOrgTenant(
   organizationId: string,
   identity: IdentityProvider,
   stream: EmailStream = "transactional",
+  opts: { provisioning?: string } = {},
 ): Promise<ProviderTenant> {
   const existing = await getEmailTenant(organizationId, stream);
   if (existing?.provider === identity.name) return tenantOf(existing);
-  return (await storeOrgTenant(organizationId, identity, stream)).tenant;
+  return (await storeOrgTenant(organizationId, identity, stream, opts)).tenant;
 }
 
 /**
@@ -236,9 +237,10 @@ async function storeOrgTenant(
   organizationId: string,
   identity: IdentityProvider,
   stream: EmailStream,
+  opts: { provisioning?: string } = {},
 ): Promise<{ tenant: ProviderTenant; created: boolean }> {
   const tenant = await identity.ensureTenant({ organizationId, stream });
-  await associateOrgDomains(organizationId, identity, tenant);
+  await associateOrgDomains(organizationId, identity, tenant, opts);
   const [stored] = await db
     .insert(emailTenant)
     .values({
@@ -263,6 +265,8 @@ async function associateOrgDomains(
   organizationId: string,
   identity: IdentityProvider,
   tenant: ProviderTenant,
+  /** The domain being provisioned (a restart keeps its old tokens): its ownership check comes first. */
+  opts: { provisioning?: string } = {},
 ): Promise<void> {
   const domains = await db
     .select({ name: domain.name })
@@ -273,6 +277,7 @@ async function associateOrgDomains(
         eq(domain.provider, identity.name),
         notInArray(domain.status, ["failed", "deleting"]),
         sql`cardinality(${domain.dkimTokens}) > 0`,
+        opts.provisioning ? ne(domain.name, opts.provisioning) : undefined,
       ),
     );
   for (const row of domains) {
@@ -284,10 +289,11 @@ async function associateOrgDomains(
 export async function ensureOrgTenants(
   organizationId: string,
   identity: IdentityProvider,
+  opts: { provisioning?: string } = {},
 ): Promise<ProviderTenant[]> {
   const tenants: ProviderTenant[] = [];
   for (const stream of EMAIL_STREAMS) {
-    tenants.push(await ensureOrgTenant(organizationId, identity, stream));
+    tenants.push(await ensureOrgTenant(organizationId, identity, stream, opts));
   }
   return tenants;
 }
@@ -388,7 +394,9 @@ async function provision(
   onFailure: "delete" | "fail",
 ): Promise<DomainRow> {
   try {
-    const tenants = await ensureOrgTenants(row.organizationId, deps.identity);
+    const tenants = await ensureOrgTenants(row.organizationId, deps.identity, {
+      provisioning: row.name,
+    });
     const identity = await deps.identity.createDomainIdentity({
       tenants,
       domain: row.name,

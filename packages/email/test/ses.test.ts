@@ -11,6 +11,7 @@ import {
   deleteDomain,
   ensureMissingStreamTenants,
   releaseOrganizationEmailResources,
+  restartDomainVerification,
 } from "../src/domains.ts";
 import { EmailError } from "../src/errors.ts";
 import { ingestProviderEvents } from "../src/events.ts";
@@ -413,6 +414,47 @@ describe("streams", () => {
     );
     expect(created.dkimTokens).not.toEqual(oldTokens);
     expect(api.operations()).toContain("deleteEmailIdentity");
+  });
+
+  test("restarting a domain another organization took never associates it first", async () => {
+    const api = new FakeSesApi();
+    const identity = new SesIdentityProvider(api, config);
+    const deps = { identity, dns: null, tracking: new FakeTrackingHostnameProvider() };
+    const a = await createTestTenant();
+    const b = await createTestTenant();
+    const name = `restart-${uniqueSuffix()}.com`;
+    const created = await createDomain(
+      { organizationId: a.organization.id, name, userId: null },
+      deps,
+    );
+    // A's claim failed and its associations are gone; it has no marketing tenant (pre-streams).
+    await db
+      .update(schema.domain)
+      .set({ status: "failed" })
+      .where(eq(schema.domain.id, created.id));
+    api.associations.get(api.identityArn(name))?.clear();
+    await db
+      .delete(schema.emailTenant)
+      .where(
+        and(
+          eq(schema.emailTenant.organizationId, a.organization.id),
+          eq(schema.emailTenant.stream, "marketing"),
+        ),
+      );
+    api.tenants.delete(`test-${a.organization.id}-marketing`);
+    // B claims the name; its claim fails too while B's tenants still hold the identity. Then A
+    // restarts its failed domain (which keeps its old DKIM tokens).
+    const taken = await createDomain(
+      { organizationId: b.organization.id, name, userId: null },
+      deps,
+    );
+    await db.update(schema.domain).set({ status: "failed" }).where(eq(schema.domain.id, taken.id));
+    await expect(
+      restartDomainVerification({ organizationId: a.organization.id, id: created.id }, deps),
+    ).rejects.toMatchObject({ code: "domain_taken" });
+    expect([...(api.associations.get(api.identityArn(name)) ?? [])].sort()).toEqual(
+      [`test-${b.organization.id}`, `test-${b.organization.id}-marketing`].sort(),
+    );
   });
 
   test("a stream tenant created later gets every existing domain, and a half-made one is kept", async () => {
