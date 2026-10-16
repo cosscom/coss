@@ -34,6 +34,24 @@ export function inboundQuota(limiter: RateLimiter): InboundQuota {
   };
 }
 
+/**
+ * Each organization's daily DMARC report budget (`email.dmarc_reports.day`), charged once per
+ * domain and report message.
+ */
+export function dmarcReportQuota(limiter: RateLimiter): InboundQuota {
+  return {
+    async consume(organizationId, messageKey) {
+      const decision = await limiter.consume({
+        buckets: ["email.dmarc_reports.day"],
+        subject: organizationId,
+        organizationId,
+        idempotency: { key: messageKey, ttlMs: 21 * 24 * 60 * 60 * 1000 },
+      });
+      return decision.allowed;
+    },
+  };
+}
+
 /** Records one notification; true when it can be deleted (recorded, duplicate or irrelevant). */
 export async function handleSesReceipt(body: string, deps: SesInboundDeps): Promise<boolean> {
   let parsed: ReturnType<typeof parseSesReceipt>;

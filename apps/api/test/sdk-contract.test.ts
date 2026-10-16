@@ -8,7 +8,12 @@ import { createCreditGrant, runDueBillingPeriods } from "@coss/billing";
 import { createTestContract, recordTestUsage } from "@coss/billing/testing";
 import { db } from "@coss/db";
 import { newId } from "@coss/db/id";
-import { buildTestMessage, receiveFakeEmail } from "@coss/email";
+import {
+  buildTestMessage,
+  dmarcReportAddress,
+  receiveFakeEmail,
+  receiveSampleDmarcReport,
+} from "@coss/email";
 import { createVerifiedDomain, trackingUrls } from "@coss/email/testing";
 import { createLogWriter } from "@coss/logs";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
@@ -36,6 +41,7 @@ import {
   createTestApp,
   domainFrom,
   REQUEST_ID,
+  TEST_INBOUND_DOMAIN,
   type TestApp,
   TRACKING_BASE_URL,
   uniqueDomainName,
@@ -853,6 +859,31 @@ describe("coss.domains.tracking against the API", () => {
 
     const removed = await coss.domains.tracking.delete(domain.id);
     expect(removed.data).toMatchObject({ id: domain.id, tracking: null });
+  });
+});
+
+describe("coss.domains.dmarc against the API", () => {
+  test("a domain's DMARC status and reports through the SDK", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.liveKey);
+    const domain = await createVerifiedDomain(tenant.organization.id);
+    await receiveSampleDmarcReport(domain, TEST_INBOUND_DOMAIN);
+
+    const status = await coss.domains.dmarc.get(domain.id);
+    expect(status.error).toBeNull();
+    expect(status.data).toMatchObject({
+      object: "domain_dmarc",
+      report_address: dmarcReportAddress(domain.dmarcReportToken, TEST_INBOUND_DOMAIN),
+      report_summary: { reports: 1 },
+    });
+    const list = await coss.domains.dmarc.reports.list(domain.id, { limit: 10 });
+    expect(list.data?.data).toHaveLength(1);
+    const reportId = list.data?.data[0]?.id ?? "";
+    const report = await coss.domains.dmarc.reports.get(domain.id, reportId);
+    expect(report.data?.records).toHaveLength(3);
+    const missing = await coss.domains.dmarc.reports.get(domain.id, "dmarcrep_missing");
+    expect(missing.error).toMatchObject({ code: "not_found", status: 404 });
   });
 });
 

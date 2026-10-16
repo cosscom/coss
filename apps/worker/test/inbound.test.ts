@@ -1,13 +1,19 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
-import { buildTestMessage, inboundAddressFor } from "@coss/email";
+import {
+  buildTestMessage,
+  dmarcReportAddress,
+  dmarcReportMessage,
+  inboundAddressFor,
+  sampleDmarcReport,
+} from "@coss/email";
 import { S3InboundStore } from "@coss/email/ses";
-import { FakeS3Api, sesReceiptNotification } from "@coss/email/testing";
+import { createVerifiedDomain, FakeS3Api, sesReceiptNotification } from "@coss/email/testing";
 import { memoryLimiter } from "@coss/ratelimit/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { eq } from "drizzle-orm";
-import { inboundQuota, pollSesInbound } from "../src/inbound.ts";
+import { dmarcReportQuota, inboundQuota, pollSesInbound } from "../src/inbound.ts";
 import type { QueueMessage, SqsApi } from "../src/sqs.ts";
 
 const MANAGED = "inbound.coss.test";
@@ -174,5 +180,61 @@ describe("inboundQuota", () => {
     expect(await quota.consume(tenant.organization.id, "message-1")).toBe(true);
     expect(await quota.consume(tenant.organization.id, "message-1")).toBe(true);
     expect(await quota.consume(tenant.organization.id, "message-2")).toBe(false);
+  });
+
+  test("a DMARC report to a domain's report address becomes a report, not a received email", async () => {
+    const tenant = await createTestTenant();
+    const domain = await createVerifiedDomain(tenant.organization.id);
+    const to = dmarcReportAddress(domain.dmarcReportToken, MANAGED) as string;
+    const s3 = new FakeS3Api();
+    const messageId = `dmarc-${uniqueSuffix()}`;
+    const objectKey = `landing/${messageId}`;
+    await s3.putObject(
+      BUCKET,
+      objectKey,
+      // `sesReceiptNotification` receives at 2026-10-12T10:00Z: the report covers the day before.
+      dmarcReportMessage(
+        {
+          ...sampleDmarcReport(domain, { now: new Date("2026-10-12T10:00:00Z") }),
+          reportId: messageId,
+        },
+        { to },
+      ),
+      "message/rfc822",
+    );
+    const queue = fakeQueue([
+      sesReceiptNotification({
+        messageId,
+        source: "noreply-dmarc-support@google.com",
+        recipients: [to],
+        bucketName: BUCKET,
+        objectKey,
+      }),
+    ]);
+    await pollSesInbound({
+      sqs: queue.sqs,
+      s3,
+      bucket: BUCKET,
+      inbound: {
+        store: new S3InboundStore(s3, BUCKET),
+        managedDomain: MANAGED,
+        quota: inboundQuota(memoryLimiter()),
+        dmarcQuota: dmarcReportQuota(memoryLimiter()),
+      },
+    });
+    expect(queue.deleted).toEqual(["m0"]);
+    expect(s3.objects.has(`${BUCKET}/${objectKey}`)).toBe(false);
+    const reports = await db
+      .select()
+      .from(schema.dmarcReport)
+      .where(eq(schema.dmarcReport.domainId, domain.id));
+    expect(reports.map((report) => [report.reportId, report.provider])).toEqual([
+      [messageId, "ses"],
+    ]);
+    const received = await db
+      .select()
+      .from(schema.receivedEmail)
+      .where(eq(schema.receivedEmail.organizationId, tenant.organization.id));
+    expect(received).toHaveLength(0);
   });
 });

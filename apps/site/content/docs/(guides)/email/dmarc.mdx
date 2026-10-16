@@ -1,0 +1,108 @@
+---
+title: DMARC
+description: Read your domains' DMARC reports and move safely from p=none to p=reject.
+---
+
+DMARC tells mailbox providers what to do with mail that claims to be from your domain but fails
+authentication: deliver it anyway (`p=none`), move it to spam (`p=quarantine`) or refuse it
+(`p=reject`). Providers also send the domain's owner daily **aggregate reports**: every source
+that sent as the domain, how many messages, and whether they passed.
+
+COSS receives those reports for you, shows them on each domain's **DMARC** tab, and tells you when
+it is safe to make the policy stricter.
+
+## Reports
+
+Every domain has its own report address, named in the DMARC record COSS recommends:
+
+```txt
+v=DMARC1; p=none; rua=mailto:dmarc-<token>@inbound.coss.com;
+```
+
+Publish it as a `TXT` record at `_dmarc.<your domain>`. If you already have a DMARC record, keep
+it and add COSS's address to its `rua` tag (addresses are comma-separated); the dashboard shows
+the exact record to publish. Mailbox providers send a report about each day's mail, usually within
+a day or two.
+
+A message passes DMARC when DKIM or SPF passes **and** is aligned with the domain in its From
+header. Mail you send through COSS passes on both counts once the domain's DKIM and MAIL FROM
+records are in place. The dashboard marks sources that used the domain's COSS DKIM keys or MAIL
+FROM domain with **COSS**; anything else is another service sending as your domain (a CRM, a help
+desk, your mail server) or someone spoofing it.
+
+Reports are kept <RetentionPeriod of="dmarc_reports" /> (see [data retention](/docs/data-retention)).
+COSS keeps the parsed reports, never the report emails. A report is accepted only when its email
+passes SPF or DKIM and it is about the domain (or a subdomain), and at most 10,000 rows of each
+report are kept.
+
+## From monitoring to reject
+
+The **DMARC** tab walks through three steps. Each stricter step unlocks once the last 14 days of
+reports say it is safe:
+
+1. **Monitor** (`p=none`): nothing changes for delivery; reports start arriving.
+2. **Quarantine** (`p=quarantine`), once:
+   - reports have arrived for at least 14 days, and the latest is at most 3 days old;
+   - at least 99% of the mail sent through COSS passes DMARC;
+   - at least 98% of all reported mail passes;
+   - no source outside COSS with at least 1% of the volume fails. Authorize such a source (set
+     up DKIM or SPF for it, aligned with your domain) or make sure it isn't yours.
+3. **Reject** (`p=reject`), after 14 days of a full quarantine and with the same checks, at least
+   99% of all reported mail passing.
+
+COSS never changes your DNS: when a step is ready, the dashboard shows the record to publish, and
+owners and admins get an email with it. COSS also emails them if mail sent through COSS starts
+failing DMARC under `p=quarantine` or `p=reject`, because mailbox providers then drop your own
+mail. A record that still uses `pct` (removed by RFC 9989) or `t=y` applies its policy to only
+part of the mail: the next step is to apply it in full. A record that lists a tag twice, or has a
+part that isn't `tag=value`, may be ignored by receivers, so COSS treats it as no policy and asks
+you to replace it.
+
+A report with more than 10,000 rows is kept only in part, so while one is among the last 14 days,
+the checks can't see every source and don't unlock the next step: review your senders yourself.
+
+A subdomain you added as its own domain (`mail.acme.com`) with no record of its own gets its
+organizational domain's (`acme.com`'s `sp`, else `p`), and its reports go where that record says.
+The first step is then to publish its own record with the same policy, partial enforcement and
+alignment, which sends its reports to COSS without changing anything for receivers.
+
+## API
+
+Read a domain's DMARC status, with the next step and the checks behind it:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: dmarc } = await coss.domains.dmarc.get("dom_01k7c8m4q2f3e9v6t5r1n0p8yz");
+
+if (dmarc?.next && dmarc.ready) {
+  console.log(`Publish at _dmarc: ${dmarc.next.record}`);
+}
+for (const check of dmarc?.checks ?? []) {
+  console.log(check.ok ? "✓" : "✗", check.message);
+}
+```
+
+List the reports and read one with its rows:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+const domainId = "dom_01k7c8m4q2f3e9v6t5r1n0p8yz";
+// ---cut---
+const { data: page } = await coss.domains.dmarc.reports.list(domainId, { limit: 10 });
+const { data: report } = await coss.domains.dmarc.reports.get(domainId, page?.data[0]?.id ?? "");
+
+for (const row of report?.records ?? []) {
+  console.log(row.source_ip, row.count, row.dmarc_pass ? "pass" : "fail");
+}
+```
+
+A `domain.dmarc_report_received` [webhook](/docs/webhooks) announces each report as it arrives,
+to every live environment's endpoints.
+
+## Limitations
+
+- Reports cover mail providers saw, not every message: some providers don't send reports, and a
+  report covers the day before it arrives.

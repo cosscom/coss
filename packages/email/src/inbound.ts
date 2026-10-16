@@ -11,6 +11,9 @@
  * the `email.received` webhook in one transaction. A notification delivered twice records the
  * message once (unique provider message id per environment); content written for a duplicate is
  * deleted again. A message with a virus verdict keeps only its envelope and verdicts (`blocked`).
+ *
+ * Recipients that are DMARC report addresses (`dmarc-<token>@<managed domain>`) are split off
+ * first and ingested as reports (`dmarc-reports.ts`); they never become received emails.
  */
 import { randomBytes } from "node:crypto";
 import { db, schema } from "@coss/db";
@@ -18,6 +21,7 @@ import { ID_PREFIXES, newId } from "@coss/db/id";
 import { appendLogEntries } from "@coss/logs";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, inArray, ne, sql } from "drizzle-orm";
+import { ingestDmarcReports, splitDmarcReportRecipients } from "./dmarc-reports.ts";
 import { domainSuffixes } from "./domains.ts";
 import { managedLabelOf } from "./inbound-address.ts";
 import {
@@ -86,6 +90,8 @@ export type InboundDeps = {
   store: InboundContentStore;
   managedDomain: string;
   quota?: InboundQuota | null;
+  /** Each organization's daily DMARC report budget (the worker wires `email.dmarc_reports.day`). */
+  dmarcQuota?: InboundQuota | null;
 };
 
 export type ReceiveOutcome =
@@ -278,6 +284,26 @@ function describeSender(parsed: ParsedInboundMessage | null, mailFrom: string): 
  * infrastructure failures (database, content store), so the provider notification is retried.
  */
 export async function receiveEmail(
+  message: InboundMessage,
+  deps: InboundDeps,
+): Promise<ReceiveOutcome[]> {
+  const { tokens, rest } = splitDmarcReportRecipients(message.recipients, deps.managedDomain);
+  let loaded: Promise<Uint8Array> | null = null;
+  const loadRaw = () => {
+    loaded ??= message.raw();
+    return loaded;
+  };
+  const outcomes = await receiveRouted({ ...message, recipients: rest, raw: loadRaw }, deps);
+  if (tokens.length > 0) {
+    await ingestDmarcReports({ ...message, raw: loadRaw }, tokens, {
+      managedDomain: deps.managedDomain,
+      quota: deps.dmarcQuota,
+    });
+  }
+  return outcomes;
+}
+
+async function receiveRouted(
   message: InboundMessage,
   deps: InboundDeps,
 ): Promise<ReceiveOutcome[]> {

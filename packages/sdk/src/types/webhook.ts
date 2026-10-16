@@ -1,7 +1,7 @@
 /**
  * Webhook wire types (hand-written mirrors of the API's `EmailWebhookEvent`,
- * `ReceivedEmailWebhookEvent`, `AccountWebhookEvent`, `BillingWebhookEvent`, `RiskWebhookEvent`
- * and `HookEndpointWebhookEvent`).
+ * `ReceivedEmailWebhookEvent`, `DomainWebhookEvent`, `AccountWebhookEvent`, `BillingWebhookEvent`,
+ * `RiskWebhookEvent` and `HookEndpointWebhookEvent`).
  */
 import type { BillingHoldReason, Credit, InvoiceSummary, Meter, PlanKey } from "./billing.ts";
 import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
@@ -72,6 +72,39 @@ export interface ReceivedEmailWebhookEvent {
   /** ISO 8601 timestamp. */
   created_at: string;
   data: ReceivedEmailWebhookEventData;
+}
+
+/** Events about the organization's domains (sent to live environments only). */
+export type DomainEventType = "domain.dmarc_report_received";
+
+/** What a webhook says about a DMARC report; never its rows or source addresses. */
+export interface DomainWebhookEventData {
+  organization_id: string;
+  domain_id: string;
+  domain: string;
+  /** Retrieve the report (its rows) with `coss.domains.dmarc.reports.get`. */
+  dmarc_report_id: string;
+  /** The reporting organization (`org_name`). */
+  reporter: string;
+  /** ISO 8601 timestamps of the period the report covers. */
+  period_start: string;
+  period_end: string;
+  messages: number;
+  passing: number;
+  /** ISO 8601 timestamp. */
+  occurred_at: string;
+}
+
+/** A DMARC aggregate report about a domain arrived. `id` equals the `webhook-id` header. */
+export interface DomainWebhookEvent {
+  id: string;
+  object: "event";
+  type: DomainEventType;
+  /** The API version this event is rendered in: the receiving endpoint's `api_version`. */
+  api_version: string;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  data: DomainWebhookEventData;
 }
 
 /** Changes of the organization's reputation standing (sent to live environments only). */
@@ -239,6 +272,7 @@ export interface HookEndpointWebhookEvent {
 export type WebhookEvent =
   | EmailWebhookEvent
   | ReceivedEmailWebhookEvent
+  | DomainWebhookEvent
   | AccountWebhookEvent
   | BillingWebhookEvent
   | RiskWebhookEvent

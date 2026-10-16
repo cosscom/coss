@@ -159,6 +159,17 @@ export const BUCKETS = {
     overridable: true,
     failureMode: "allow",
   },
+  // DMARC aggregate reports accepted per organization (one per report message). Report addresses
+  // are published in DNS, so anyone can mail them: this bounds what they can make COSS store.
+  // Fails open like received mail: a store outage must not lose reports.
+  "email.dmarc_reports.day": {
+    scope: "org",
+    limit: 2_000,
+    periodMs: DAY,
+    burst: 2_000,
+    overridable: true,
+    failureMode: "allow",
+  },
   // Invitations sent (and resent) per organization: each one emails an address the org chose.
   "dashboard.invitations": {
     scope: "org",

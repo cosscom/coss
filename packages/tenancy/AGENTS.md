@@ -14,7 +14,7 @@ repository root.
   worker's `organization-deletions` loop (`runDueOrganizationDeletions`, leased, 1 → 60 min backoff, never gives up)
   claims one request at a time, heartbeats during provider cleanup and renews under a claim row lock for every
   data batch (attempt-count ownership checks fence out stale workers). It repeats the revocation, calls `releaseProviderResources` (`releaseOrganizationEmailResources`: domains to
-  `deleting`, the received emails' content store (`orgs/<org>/` in S3), tracking hostnames, identities, domain rows, then the SES tenant via `DeleteTenant`, prefix-checked), deletes bulky data
+  `deleting`, the received emails' content store (`orgs/<org>/` in S3), DMARC reports (in batches, before their domains), tracking hostnames, identities, domain rows, then the SES tenant via `DeleteTenant`, prefix-checked), deletes bulky data
   (including SCIM directory records, environment logs, received emails, log drain records/batches and the org audit log) in batches of `DELETION_BATCH_SIZE` along indexed columns, then deletes the organization row
   (cascading the rest) and marks the row `completed` in one transaction. A new table with a lot of rows per
   organization belongs in `deleteOrganizationData`; anything held outside Postgres (a new provider resource)

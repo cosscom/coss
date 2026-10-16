@@ -3,7 +3,7 @@
 Read together with the root `AGENTS.md` (conventions, tenancy rule, tests). Paths are from the
 repository root.
 
-Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, attachments, text parts, templates), reads and receiving.
+Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, attachments, text parts, templates), reads, receiving and DMARC reports.
 
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
   back by that tag, and ingestion also checks provider + message id). `SendEmail` is not idempotent: the SES client has
@@ -182,3 +182,30 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `Domain.receiving`. The managed domain's SES identity is tagged `coss_inbound`, never `coss_managed` (the apps'
   IAM policies may delete those). The dashboard's **Send a test email** (`receiveFakeEmail`) is for sandbox
   environments, or any while the dashboard runs the fake provider, and only to the environment's own addresses.
+- **DMARC reports** (`packages/email/src/dmarc-{record,report-xml,reports,guidance,notifications,sample}.ts`; tables
+  `dmarc_report` (ids `dmarcrep_`), `dmarc_report_record` (`dmarcrec_`), `dmarc_notification` (`dmarcntf_`), and
+  `domain.dmarc_report_token`/`dmarc_record`/`dmarc_policy_changed_at`): each domain's `rua` address is
+  `dmarc-<token>@<INBOUND_MANAGED_DOMAIN>` (`dmarcReportAddress`; the bare managed domain, which `managedLabelOf`
+  never matches), recommended by `expectedRecords` (`DomainDeps.dmarcReportDomain`, `null` with receiving off).
+  Reporters only mail an address on another domain when `<domain>._report._dmarc.<managed domain>` says
+  `v=DMARC1`: COSS publishes the wildcard `*._report._dmarc.inbound.coss.com` (README, receiving). `receiveEmail`
+  splits report recipients off before routing (`splitDmarcReportRecipients`); they never become received emails.
+  Addresses are public, so `ingestDmarcReports` trusts nothing unchecked: a live domain's token, SPF or DKIM `pass`
+  on the message, `policy_published.domain` under the domain, a plausible recent period, the org's
+  `email.dmarc_reports.day` budget (fails open, like inbound mail), at most `MAX_DMARC_REPORT_RECORDS` rows;
+  `(domain, reporter, report id)` is unique. Only the parsed report is stored, never the message. Unpacking is
+  `node:zlib` with `maxOutputLength` (gzip, and zip by hand) and XML is read by a small parser that refuses DTDs:
+  never swap in an XML library that resolves entities. `via_coss` (the domain's DKIM selectors or MAIL FROM domain)
+  is decided at ingest. `checkDomain` stores the one published `v=DMARC1` value (two records count as none), and
+  for a subdomain with no `v=DMARC1` record at all its organizational domain's (`dmarc_inherited_record`, applied
+  as `sp ?? p`, `appliedDmarcRecord`); `parseDmarcRecord` refuses a repeated tag or a part that isn't `tag=value`
+  (no policy, like BIMI). It moves `dmarc_policy_changed_at` only when `dmarcPolicyKey` of the applied record
+  changes (policy or partial enforcement) and only when DNS answered. A truncated report in the window blocks
+  readiness (check `complete`). Guidance (`dmarcGuidance`, thresholds in `DMARC_READINESS`) is pure and computed on every read:
+  none → quarantine → reject, no `pct` ramp. Ingest queues `dmarc_notification` rows (readiness once per policy
+  epoch; COSS mail failing under enforcement once per epoch and week), sent by the worker's `dmarc-notifications`
+  loop through the reputation notifier (skipped when the policy changed since; a readiness email
+  re-runs the guidance and sends the record built from DNS as it is then, or is skipped when no longer ready). The dashboard's "Send a sample
+  report" (`receiveSampleDmarcReport`) exists only with the fake provider. API (`domain:read`):
+  `GET /v1/domains/{id}/dmarc`, `…/dmarc/reports[/{report_id}]`, `coss.domains.dmarc`; event
+  `domain.dmarc_report_received` (`DOMAIN_EVENT_TYPES`, live environments only, no rows or IPs).
