@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Part\Multipart\MixedPart;
+use Symfony\Component\Mime\Part\TextPart;
 use Symfony\Component\Mime\RawMessage;
 
 /**
@@ -58,6 +60,16 @@ final class RefusalTest extends TestCase
         });
 
         $this->assertRefused('the X-Campaign header is given more than once', fn () => Mail::to('ada@example.com')->send($mailable));
+    }
+
+    public function test_an_explicit_mime_body(): void
+    {
+        $mailable = (new WelcomeMail)->withSymfonyMessage(fn (Email $message) => $message->setBody(new MixedPart(
+            new TextPart('replacement'),
+            new TextPart('BEGIN:VCALENDAR', 'utf-8', 'calendar'),
+        )));
+
+        $this->assertRefused('it has a MIME body set with setBody()', fn () => Mail::to('ada@example.com')->send($mailable));
     }
 
     public function test_a_raw_message(): void

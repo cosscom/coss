@@ -135,7 +135,8 @@ try {
 ```
 
 What coss.com can't send throws an `UnsupportedMessageException` before anything is sent, instead
-of being dropped: raw MIME messages, a `Sender` or `Return-Path` other than the From address, an
+of being dropped: raw MIME messages, a body set with `setBody()` (including signed messages), a
+`Sender` or `Return-Path` other than the From address, an
 envelope whose recipients differ from To, Cc and Bcc, more than one From address, a header given
 more than once, and more than one tag. A missing API key throws a `MissingApiKeyException`. Both are
 logic errors rather than transport errors, so a `failover` mailer doesn't hide them by sending

@@ -84,10 +84,15 @@ module Coss
         id.empty? ? nil : id
       end
 
-      # `value` as a valid UTF-8 string (invalid bytes replaced).
+      # `value` as a valid UTF-8 string: text in another known encoding is transcoded, bytes of
+      # unknown encoding (binary) are read as UTF-8, and invalid bytes are replaced.
       def utf8(value)
         string = value.to_s
-        string = string.dup.force_encoding(Encoding::UTF_8) unless string.encoding == Encoding::UTF_8
+        if string.encoding == Encoding::BINARY
+          string = string.dup.force_encoding(Encoding::UTF_8)
+        elsif string.encoding != Encoding::UTF_8
+          string = string.encode(Encoding::UTF_8, invalid: :replace, undef: :replace)
+        end
         string.valid_encoding? ? string : string.scrub
       end
 

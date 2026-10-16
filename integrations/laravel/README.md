@@ -146,7 +146,7 @@ try {
 
 What coss.com can't send fails the send with a
 `Coss\Laravel\Exceptions\UnsupportedMessageException` instead of being dropped: raw MIME
-messages, a `Sender` header or `Return-Path` other than the From address, an envelope whose
+messages, a body set with `setBody()` (including signed messages), a `Sender` header or `Return-Path` other than the From address, an envelope whose
 recipients differ from To + Cc + Bcc, a header given more than once, more than one From
 address, and more than one tag. (`Mail::alwaysTo()` rewrites the message itself, so it works.)
 

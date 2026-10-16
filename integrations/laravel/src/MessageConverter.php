@@ -16,6 +16,8 @@ use Symfony\Component\Mime\Header\MailboxListHeader;
 use Symfony\Component\Mime\Header\ParameterizedHeader;
 use Symfony\Component\Mime\Header\PathHeader;
 use Symfony\Component\Mime\Header\UnstructuredHeader;
+use Symfony\Component\Mime\Message;
+use Symfony\Component\Mime\Part\AbstractPart;
 use Symfony\Component\Mime\Part\DataPart;
 
 /**
@@ -42,6 +44,16 @@ final class MessageConverter
      */
     public static function convert(Email $email, ?Envelope $envelope = null): array
     {
+        // `setBody()` (a signed message, or a MIME tree built by hand) replaces what text(),
+        // html() and attach() set, and Email::getBody() returns it; mapping those fields would
+        // send something other than the message.
+        if (self::explicitBody($email) !== null) {
+            throw UnsupportedMessageException::because(
+                'it has a MIME body set with setBody() (or a signed body)',
+                'use text(), html(), attach() and embed() instead'
+            );
+        }
+
         $from = $email->getFrom();
         if (count($from) !== 1) {
             throw UnsupportedMessageException::because(
@@ -309,5 +321,11 @@ final class MessageConverter
                 'coss.com sends to the message\'s recipients; put them in To, Cc or Bcc'
             );
         }
+    }
+
+    /** The body set with `Message::setBody()`, which Email::getBody() prefers over its fields. */
+    private static function explicitBody(Email $email): ?AbstractPart
+    {
+        return (new \ReflectionProperty(Message::class, 'body'))->getValue($email);
     }
 }

@@ -126,6 +126,23 @@ class MessageMapperTest < Minitest::Test
     assert_refused(mail, "Sender")
   end
 
+  def test_text_in_another_encoding_is_transcoded
+    mail = base_mail
+    mail.subject = "café".encode("ISO-8859-1")
+    mail.body = "Grüße".encode("ISO-8859-1")
+    mail["X-Note"] = "naïve".encode("ISO-8859-1")
+    body = request(mail)
+
+    assert_equal "café", body["subject"]
+    assert_equal "Grüße", body["text"]
+    assert_equal({ "X-Note" => Coss::Rails::Mime.encode_header_value("naïve") }, body["headers"])
+  end
+
+  def test_binary_strings_are_read_as_utf8
+    assert_equal "café", Coss::Rails::Mime.utf8("café".b)
+    assert_equal "caf\uFFFD", Coss::Rails::Mime.utf8("caf\xE9".b)
+  end
+
   def test_a_sender_naming_the_from_address_is_dropped
     mail = base_mail
     mail.body = "Hi"
