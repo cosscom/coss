@@ -620,24 +620,26 @@ async function ensureReceiving(domain: string, region: string) {
   };
 }
 
-// 6. Commit historical protection to coss.com before disabling any SES lists, then (6b) create the
-//    stream tenants organizations set up before a stream existed are missing, with their domains'
-//    identities associated (born without SES suppression, so 6 never imports into them).
+// 6. Create the stream tenants organizations set up before a stream existed are missing, with
+//    their domains' identities associated (born without SES suppression and stored as migrated,
+//    so 6b never imports into them), then (6b) commit historical protection to coss.com before
+//    disabling any SES lists. In this order a tenant a failed run created without its row gets
+//    the row on the rerun, before the migration requires every tenant to have one.
 let tenantsUpdated: number;
 let tenantsCreated: number;
 try {
+  tenantsCreated = await ensureMissingStreamTenants(
+    new SesIdentityProvider(createSesApi(region), { region, configurationSets, tenantPrefix }),
+  );
   tenantsUpdated = await migrateSesSuppressions(ses, {
     configurationSets: Object.values(configurationSets),
     tenantPrefix,
   });
-  tenantsCreated = await ensureMissingStreamTenants(
-    new SesIdentityProvider(createSesApi(region), { region, configurationSets, tenantPrefix }),
-  );
 } finally {
   await closeDb();
 }
-step(`SES suppression off (configuration sets and ${tenantsUpdated} existing tenants)`);
 step(`SES stream tenants: ${tenantsCreated} created for existing organizations`);
+step(`SES suppression off (configuration sets and ${tenantsUpdated} existing tenants)`);
 
 // 7. Least-privilege IAM policies. A changed document becomes the new default version (IAM keeps
 //    at most 5, so the oldest non-default one is dropped first).

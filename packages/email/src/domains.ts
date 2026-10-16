@@ -21,6 +21,7 @@ import {
   ne,
   notInArray,
   or,
+  sql,
 } from "drizzle-orm";
 import { checkBimi, organizationalDomain, toBimiObject } from "./bimi.ts";
 import { releaseOrganizationDedicatedIps } from "./dedicated-ips.ts";
@@ -220,8 +221,35 @@ export async function ensureOrgTenant(
 ): Promise<ProviderTenant> {
   const existing = await getEmailTenant(organizationId, stream);
   if (existing?.provider === identity.name) return tenantOf(existing);
+  return (await storeOrgTenant(organizationId, identity, stream)).tenant;
+}
+
+/**
+ * Creates (or adopts) one stream's provider tenant and stores its row. The organization's domain
+ * identities are associated with it first, so a stored tenant can always send from every domain
+ * (a stream added after an organization's first domain, at provisioning or by the backfill).
+ * Identities that don't exist yet are skipped: `createDomainIdentity` associates them.
+ */
+async function storeOrgTenant(
+  organizationId: string,
+  identity: IdentityProvider,
+  stream: EmailStream,
+): Promise<{ tenant: ProviderTenant; created: boolean }> {
   const tenant = await identity.ensureTenant({ organizationId, stream });
-  await db
+  const domains = await db
+    .select({ name: domain.name })
+    .from(domain)
+    .where(
+      and(
+        eq(domain.organizationId, organizationId),
+        eq(domain.provider, identity.name),
+        notInArray(domain.status, ["failed", "deleting"]),
+      ),
+    );
+  for (const row of domains) {
+    await identity.associateDomainIdentity({ tenant, domain: row.name });
+  }
+  const [stored] = await db
     .insert(emailTenant)
     .values({
       organizationId,
@@ -235,8 +263,9 @@ export async function ensureOrgTenant(
     .onConflictDoUpdate({
       target: [emailTenant.organizationId, emailTenant.stream],
       set: { provider: identity.name, ...tenant },
-    });
-  return tenant;
+    })
+    .returning({ created: sql<boolean>`xmax = 0` });
+  return { tenant, created: Boolean(stored?.created) };
 }
 
 /** Every stream's tenant of the organization, created on first use (transactional first). */
@@ -253,9 +282,9 @@ export async function ensureOrgTenants(
 
 /**
  * Creates the tenants of streams added after an organization's first domain (`ses:bootstrap`
- * after an upgrade): each missing stream's tenant is associated with the organization's domain
- * identities before its row is stored, so a stored tenant can always send from them. Idempotent;
- * returns the number of tenants created. `scope` limits it to some organizations (tests).
+ * after an upgrade), each associated with the organization's domain identities before its row is
+ * stored (`storeOrgTenant`). Idempotent; returns the number of tenants created. `scope` limits it
+ * to some organizations (tests).
  */
 export async function ensureMissingStreamTenants(
   identity: IdentityProvider,
@@ -276,32 +305,7 @@ export async function ensureMissingStreamTenants(
     const existing = await listEmailTenants(organizationId);
     for (const stream of EMAIL_STREAMS) {
       if (existing.some((row) => row.stream === stream)) continue;
-      const tenant = await identity.ensureTenant({ organizationId, stream });
-      const domains = await db
-        .select({ name: domain.name })
-        .from(domain)
-        .where(
-          and(
-            eq(domain.organizationId, organizationId),
-            eq(domain.provider, identity.name),
-            notInArray(domain.status, ["failed", "deleting"]),
-          ),
-        );
-      for (const row of domains) {
-        await identity.associateDomainIdentity({ tenant, domain: row.name });
-      }
-      const [inserted] = await db
-        .insert(emailTenant)
-        .values({
-          organizationId,
-          stream,
-          provider: identity.name,
-          ...tenant,
-          suppressionMigratedAt: stream === "transactional" ? null : new Date(),
-        })
-        .onConflictDoNothing()
-        .returning({ stream: emailTenant.stream });
-      if (inserted) created++;
+      if ((await storeOrgTenant(organizationId, identity, stream)).created) created++;
     }
   }
   return created;

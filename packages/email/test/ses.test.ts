@@ -393,6 +393,42 @@ describe("streams", () => {
     expect(marketing?.suppressionMigratedAt).not.toBeNull();
     expect(await ensureMissingStreamTenants(identity, { scope })).toBe(0);
   });
+
+  test("a stream tenant created later gets every existing domain, and a half-made one is kept", async () => {
+    const api = new FakeSesApi();
+    const identity = new SesIdentityProvider(api, config);
+    const deps = { identity, dns: null, tracking: new FakeTrackingHostnameProvider() };
+    const tenant = await createTestTenant();
+    const organizationId = tenant.organization.id;
+    const first = `streams-${uniqueSuffix()}.com`;
+    await createDomain({ organizationId, name: first, userId: null }, deps);
+    const dropMarketingRow = () =>
+      db
+        .delete(schema.emailTenant)
+        .where(
+          and(
+            eq(schema.emailTenant.organizationId, organizationId),
+            eq(schema.emailTenant.stream, "marketing"),
+          ),
+        );
+    // Set up before streams: no marketing tenant, and the first domain only on the transactional one.
+    await dropMarketingRow();
+    api.tenants.delete(`test-${organizationId}-marketing`);
+    api.associations.get(api.identityArn(first))?.delete(`test-${organizationId}-marketing`);
+
+    // A new domain creates the marketing tenant, which gets the older domain too.
+    const second = `streams-${uniqueSuffix()}.com`;
+    await createDomain({ organizationId, name: second, userId: null }, deps);
+    const both = new Set([`test-${organizationId}`, `test-${organizationId}-marketing`]);
+    expect(api.associations.get(api.identityArn(first))).toEqual(both);
+    expect(api.associations.get(api.identityArn(second))).toEqual(both);
+
+    // A run that created the SES tenant but failed before its row: the backfill stores it.
+    await dropMarketingRow();
+    const scope = { organizationIds: [organizationId] };
+    expect(await ensureMissingStreamTenants(identity, { scope })).toBe(1);
+    expect(api.associations.get(api.identityArn(first))).toEqual(both);
+  });
 });
 
 describe("SesIdentityProvider", () => {
