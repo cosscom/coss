@@ -33,7 +33,7 @@ __all__ = ["EmailBackend"]
 DEFAULT_ATTACHMENT_MIME_TYPE = "application/octet-stream"
 
 _COSS_KEYS = ("category", "tags", "scheduled_at", "tracking", "idempotency_key")
-_TRACKING_KEYS = ("opens", "clicks")
+_TRACKING_KEYS = ("opens", "clicks", "unsubscribe")
 
 # Address headers in `extra_headers` that Django itself treats specially.
 _ADDRESS_HEADERS = {"from", "to", "cc", "bcc", "reply-to", "sender", "return-path"}
@@ -467,7 +467,7 @@ def _tracking(value: Any) -> dict[str, bool]:
     for key, flag in value.items():
         if key not in _TRACKING_KEYS or not isinstance(flag, bool):
             raise ValueError(
-                'coss_django: message.coss["tracking"] takes "opens" and "clicks", '
+                'coss_django: message.coss["tracking"] takes "opens", "clicks" and "unsubscribe", '
                 "each True or False."
             )
         tracking[key] = flag

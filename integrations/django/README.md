@@ -100,7 +100,7 @@ message.coss = {
     "category": "receipts",  # suppressions per category
     "tags": {"plan": "pro", "order": "42"},  # or [{"name": "plan", "value": "pro"}]
     "scheduled_at": datetime.now(timezone.utc) + timedelta(hours=1),  # or an ISO 8601 string
-    "tracking": {"opens": True, "clicks": False},
+    "tracking": {"opens": True, "clicks": False},  # and "unsubscribe" (one-click)
     "idempotency_key": "order-42",  # a retry with the same key never sends twice
 }
 message.send()

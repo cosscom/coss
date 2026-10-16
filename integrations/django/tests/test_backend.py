@@ -389,7 +389,7 @@ def test_coss_options(api: Api) -> None:
         "category": "receipts",
         "tags": [{"name": "plan", "value": "pro"}],
         "scheduled_at": datetime(2026, 11, 1, 10, 0, 0, 123, tzinfo=ZoneInfo("Europe/Berlin")),
-        "tracking": {"clicks": False},
+        "tracking": {"clicks": False, "unsubscribe": False},
         "idempotency_key": "order-42",
     }
     email.send()
@@ -397,7 +397,7 @@ def test_coss_options(api: Api) -> None:
     assert sent["category"] == "receipts"
     assert sent["tags"] == [{"name": "plan", "value": "pro"}]
     assert sent["scheduled_at"] == "2026-11-01T09:00:00Z"
-    assert sent["tracking"] == {"clicks": False}
+    assert sent["tracking"] == {"clicks": False, "unsubscribe": False}
     assert api.transport.requests[0]["headers"]["Idempotency-Key"] == "order-42"
 
 

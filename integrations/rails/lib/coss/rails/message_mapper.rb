@@ -158,9 +158,12 @@ module Coss
       # Mail only sets a multipart Content-Type when it encodes the message, so a message with
       # parts counts as multipart whatever its header says so far.
       def leaves(part)
-        return part.parts.flat_map { |child| leaves(child) } unless part.parts.empty?
+        return (part.multipart? ? [] : [part]) if part.parts.empty?
 
-        part.multipart? ? [] : [part]
+        # A multipart attachment (an attached multipart/mixed tree) would otherwise be taken
+        # apart below and its text sent as the email's body.
+        refuse!("a multipart attachment", "attach its files one by one") if !part.equal?(@mail) && attachment?(part)
+        part.parts.flat_map { |child| leaves(child) }
       end
 
       def attachment?(part)

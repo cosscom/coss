@@ -143,6 +143,16 @@ class MessageMapperTest < Minitest::Test
     assert_equal "caf\uFFFD", Coss::Rails::Mime.utf8("caf\xE9".b)
   end
 
+  def test_a_multipart_attachment_is_refused
+    mail = base_mail
+    mail.html_part = Mail::Part.new(content_type: "text/html; charset=UTF-8", body: "<p>Hi</p>")
+    bundle = Mail::Part.new(content_type: "multipart/mixed", content_disposition: 'attachment; filename="bundle"')
+    bundle.add_part(Mail::Part.new(content_type: "text/plain; charset=UTF-8", body: "inside the attachment"))
+    mail.add_part(bundle)
+
+    assert_refused(mail, "multipart attachment")
+  end
+
   def test_a_sender_naming_the_from_address_is_dropped
     mail = base_mail
     mail.body = "Hi"
