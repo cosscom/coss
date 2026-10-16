@@ -341,7 +341,7 @@
     },
     "packages/cli": {
       "name": "coss-cli",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "bin": {
         "coss": "dist/cli.js",
       },
@@ -474,7 +474,7 @@
     },
     "packages/mcp": {
       "name": "coss-mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "bin": {
         "coss-mcp": "dist/cli.js",
       },
@@ -611,7 +611,7 @@
     },
     "packages/sdk": {
       "name": "coss",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "devDependencies": {
         "@arethetypeswrong/core": "0.18.5",
         "@react-email/render": "2.1.0",
