@@ -206,15 +206,21 @@ type RunWithJobs = { run: GitHubRun; jobs: GitHubJob[]; phase: DeployPhase };
  */
 const finishedJobs = new Map<string, GitHubJob[]>();
 
-/** A run's jobs (its latest attempt's) and what it is doing. */
-async function withJobs(run: GitHubRun): Promise<RunWithJobs> {
-  const key = `${run.id}:${run.run_attempt ?? 1}`;
+/**
+ * A run's jobs and what it is doing: its latest attempt's, or an earlier `attempt`'s (finished,
+ * so cached; its phase is then read against the latest attempt's status).
+ */
+async function withJobs(run: GitHubRun, attempt?: number): Promise<RunWithJobs> {
+  const latest = run.run_attempt ?? 1;
+  const key = `${run.id}:${attempt ?? latest}`;
   let jobs = finishedJobs.get(key);
   if (!jobs) {
     ({ jobs } = await github<{ jobs: GitHubJob[] }>(
-      `${REPO}/actions/runs/${run.id}/jobs?per_page=30`,
+      attempt === undefined
+        ? `${REPO}/actions/runs/${run.id}/jobs?per_page=30`
+        : `${REPO}/actions/runs/${run.id}/attempts/${attempt}/jobs?per_page=30`,
     ));
-    if (run.status === "completed") {
+    if (run.status === "completed" || (attempt !== undefined && attempt < latest)) {
       finishedJobs.set(key, jobs);
       if (finishedJobs.size > 100) {
         finishedJobs.delete(finishedJobs.keys().next().value as string);
@@ -228,7 +234,7 @@ async function recentRuns(): Promise<RunWithJobs[]> {
   const { workflow_runs: runs } = await github<{ workflow_runs: GitHubRun[] }>(
     `${REPO}/actions/workflows/${DEPLOY_WORKFLOW}/runs?branch=${DEPLOY_BRANCH}&per_page=${RUNS_SHOWN}`,
   );
-  return Promise.all(runs.map(withJobs));
+  return Promise.all(runs.map((run) => withJobs(run)));
 }
 
 async function mainSha(): Promise<string> {
@@ -511,8 +517,9 @@ export type DeployRunDetail = {
   changes: DeployChanges;
 };
 
-/** Runs read back when looking for the rollout before a run. */
+/** Runs, and a run's own earlier attempts, read back when looking for the rollout before it. */
 const EARLIER_RUNS_READ = 30;
+const EARLIER_ATTEMPTS_READ = 3;
 
 /**
  * One Deploy run with its jobs, steps, failed jobs' logs and the changes it ships. `null` when
@@ -574,7 +581,7 @@ export async function getDeployRun(id: number): Promise<DeployRunDetail | null> 
 /**
  * The commit production ran just before `entry`'s rollout started (or, for a run that never got
  * there, when it ended; an active one: now): the rollout that finished last before then, whatever
- * order the runs were created in. Also the latest production job start among the runs read (the
+ * order the runs were created in, this run's earlier attempts included. Also the latest production job start among the runs read (the
  * batch estimate).
  */
 async function previousRollout(
@@ -605,7 +612,14 @@ async function previousRollout(
     ).values(),
   ].sort((a, b) => lastChange(b) - lastChange(a));
 
-  const read: RunWithJobs[] = [];
+  // This run's own earlier attempts first: re-running the jobs that failed after a rollout (the
+  // CDN invalidation, the routing check) rolls the same commit out again.
+  const attempts = run.run_attempt ?? 1;
+  const read: RunWithJobs[] = await Promise.all(
+    Array.from({ length: Math.min(attempts - 1, EARLIER_ATTEMPTS_READ) }, (_, index) =>
+      withJobs(run, attempts - 1 - index),
+    ),
+  );
   // Latest change first, one by one: a run's rollout finished before its last change, so once the
   // best rollout so far is later than a run's last change, no run after it can beat it.
   for (const candidate of candidates) {
