@@ -820,8 +820,16 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       }
       return message;
     }
-    // Links are personal: an email to several people gets none (marketing has exactly one).
-    if (recipients.length !== 1) return message;
+    // Links are personal: an email to several people gets none. Marketing has exactly one
+    // (validated at send, by address: `to` and `cc` may repeat it) and never goes without them.
+    const addresses = new Set(recipients.map(bareAddress));
+    if (addresses.size !== 1) {
+      if (!marketing) return message;
+      throw new DispatchRefusal(
+        "invalid_recipients",
+        "A marketing email goes to exactly one recipient.",
+      );
+    }
     // A topic email keeps the customer's own List-Unsubscribe headers, and goes without ours when
     // they wouldn't fit the provider's header limit (marketing validated both at send).
     const own = Object.keys(row.headers);
@@ -836,7 +844,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       baseUrl: await linkBaseUrl(row),
       keys: opts.linkKeys,
       environmentId: row.environmentId,
-      address: bareAddress(recipients[0] as string),
+      address: [...addresses][0] as string,
       emailId: row.id,
       topic: topic?.key ?? null,
     });

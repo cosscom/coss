@@ -207,7 +207,7 @@ export const UpsertContactRequest = z
           "Ask the contact to confirm first (default: the marketing settings' " +
           "`double_opt_in_default`): a new or unsubscribed contact becomes `pending` and gets a " +
           "confirmation email; it is `subscribed` once they click its link. Can't be combined with " +
-          '`status: "subscribed"`.',
+          '`status: "subscribed"`, nor can the default (pass `false` to subscribe directly).',
       }),
   })
   .refine((value) => !(value.double_opt_in && value.status === "subscribed"), {

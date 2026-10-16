@@ -98,9 +98,9 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   only. Marketing sends (`stream: "marketing"`) need exactly one recipient and the environment's postal address (422
   `mailing_address_required` at send; a `DispatchRefusal` fails the email if it vanished by dispatch, as does a missing
   key ring, `marketing_unavailable`). Double opt-in: `upsertContact({ doubleOptIn })` makes new or unsubscribed
-  contacts `pending`; the API checks `confirmation_from` (and, live, `authorizeLiveSender`) first, charges
+  contacts `pending` and refuses `status: "subscribed"` (`double_opt_in_status`, for the environment's default too); the API checks `confirmation_from` (and, live, `authorizeLiveSender`) first, charges
   `contacts.confirmations.*` + the cross-org `contacts.confirmation.address` bucket, then `sendConfirmation` (the
-  customer's own send, `discardBody`, idempotency key `contact-confirmation:<id>:<n>`, ≤ 1/day, ≤ 3 before
+  customer's own send, `discardBody`, idempotency key `contact-confirmation:<id>:<n>`, a reused one counts as sent: each attempt mints a new link, ≤ 1/day, ≤ 3 before
   confirming); `confirmContact` only confirms a contact pending since before the link. Unconfirmed contacts are purged
   after `RETENTION_DAYS.pendingContacts` (`purgeExpiredPendingContacts`, counters given back).
 - **Custom tracking domains** (`packages/email/src/tracking-domains.ts`, table `tracking_domain`, ids `tdom_`):

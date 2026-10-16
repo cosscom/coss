@@ -112,7 +112,8 @@ export type ContactErrorCode =
   | "audience_not_found"
   | "topic_not_found"
   | "invalid_filter"
-  | "confirmation_sender_required";
+  | "confirmation_sender_required"
+  | "double_opt_in_status";
 
 /**
  * Expected failures of contacts, audiences, segments and topics; messages are safe to show.

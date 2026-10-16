@@ -6,6 +6,8 @@ import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { and, eq } from "drizzle-orm";
 import { UpsertContactRequest } from "../src/contact-schemas.ts";
 import { contactCount, getContact, upsertContact } from "../src/contacts.ts";
+import { sendConfirmation } from "../src/double-opt-in.ts";
+import { EmailError } from "../src/errors.ts";
 import {
   confirmationLink,
   DEVELOPMENT_LINK_KEYS,
@@ -21,6 +23,7 @@ import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { getEmail, listEmailEvents } from "../src/read.ts";
 import { purgeExpiredPendingContacts } from "../src/retention.ts";
 import { MAX_HEADERS_WITH_UNSUBSCRIBE, SendEmailRequest } from "../src/schemas.ts";
+import type { EmailService } from "../src/service.ts";
 import { addSuppression, listSuppressions } from "../src/suppressions.ts";
 import { dispatchingEmailService } from "../src/testing.ts";
 import { createTopic } from "../src/topics.ts";
@@ -251,6 +254,23 @@ describe("sending to contacts", () => {
       const skipped = await marketing(address);
       expect((await getEmail({ ...env, id: skipped.email.id }))?.status).toBe("failed");
     }
+
+    // One recipient listed twice is still one recipient: it gets the footer and headers too.
+    const twice = await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({
+        from,
+        to: ["fan@example.com"],
+        cc: ["Fan <FAN@example.com>"],
+        stream: "marketing",
+        html: "<p>Sale!</p>",
+      }),
+    });
+    expect(sent(twice.email.id)?.html).toContain("1 Main St, Springfield");
+    expect(sent(twice.email.id)?.headers["List-Unsubscribe-Post"]).toBe(
+      "List-Unsubscribe=One-Click",
+    );
   });
 
   test("marketing needs the postal address, at send and at dispatch", async () => {
@@ -453,6 +473,60 @@ describe("the preference center", () => {
     expect(await confirmContact({ ...confirmation, issuedAt: new Date(Date.now() - 60_000) })).toBe(
       "invalid",
     );
+  });
+
+  test("double opt-in never lets status subscribe a contact directly", async () => {
+    const { env } = await fixture();
+    await upsertContact(
+      env,
+      UpsertContactRequest.parse({ email: "g@example.com", status: "unsubscribed" }),
+      { source: "api" },
+    );
+    // The environment's default applies like the flag: the schema can't see it.
+    await expect(
+      upsertContact(
+        env,
+        UpsertContactRequest.parse({ email: "g@example.com", status: "subscribed" }),
+        { source: "api", doubleOptIn: true },
+      ),
+    ).rejects.toMatchObject({ code: "double_opt_in_status" });
+    expect((await getContact(env, "g@example.com"))?.status).toBe("unsubscribed");
+  });
+
+  test("a confirmation keeps a custom subject, and a reused key counts as sent", async () => {
+    const { tenant, env } = await fixture();
+    await updateMarketingSettings(env, {
+      confirmation_from: "news@acme.test",
+      confirmation_subject: "Please confirm",
+    });
+    const { contact } = await upsertContact(
+      env,
+      UpsertContactRequest.parse({ email: "h@example.com" }),
+      { source: "api", doubleOptIn: true },
+    );
+    const sends: { subject: string | null; html: string | null }[] = [];
+    const confirm = (fail: boolean) =>
+      sendConfirmation({
+        environment: sendEnvironment(tenant.production),
+        contactId: contact.id,
+        apiKeyId: null,
+        linkKeys: keys,
+        baseUrl: "https://track.example",
+        emailService: {
+          async send(input) {
+            sends.push(input.params);
+            if (fail) throw new EmailError("idempotency_key_reused", "Reused.");
+            return {} as Awaited<ReturnType<EmailService["send"]>>;
+          },
+        },
+      });
+    expect(await confirm(true)).toBe("sent");
+    expect(sends[0]?.subject).toBe("Please confirm");
+    expect(sends[0]?.html).toContain("/t/u/confirm/");
+    const row = await getContact(env, "h@example.com");
+    expect(row?.status).toBe("pending");
+    // Recorded: the next one waits for the cooldown.
+    expect(await confirm(false)).toBe("cooldown");
   });
 
   test("unconfirmed contacts are purged after the retention, giving the count back", async () => {

@@ -9,7 +9,7 @@ import { db, schema } from "@coss/db";
 import { and, eq, sql } from "drizzle-orm";
 import { type ContactEnvironment, inContactEnvironment } from "./contact-properties.ts";
 import { CONFIRMATION_URL_PLACEHOLDER } from "./contact-schemas.ts";
-import { ContactError } from "./errors.ts";
+import { ContactError, EmailError } from "./errors.ts";
 import { confirmationLink, type LinkKeyRing } from "./link-tokens.ts";
 import { escapeHtml } from "./marketing-footer.ts";
 import { getMarketingSettingsRow } from "./marketing-settings.ts";
@@ -106,18 +106,26 @@ export async function sendConfirmation(input: {
   const params = SendEmailRequest.parse({
     from,
     to: target.address,
+    ...(html || text
+      ? { html: html ?? undefined, text: text ?? undefined }
+      : { html: fallback.html, text: fallback.text }),
     subject: settings?.confirmationSubject ?? fallback.subject,
-    ...(html || text ? { html: html ?? undefined, text: text ?? undefined } : fallback),
     tracking: { opens: false, clicks: false },
   });
   const number = target.confirmationCount + 1;
-  await input.emailService.send({
-    environment: input.environment,
-    apiKeyId: input.apiKeyId,
-    params,
-    idempotencyKey: `contact-confirmation:${target.id}:${number}`,
-    discardBody: true,
-  });
+  try {
+    await input.emailService.send({
+      environment: input.environment,
+      apiKeyId: input.apiKeyId,
+      params,
+      idempotencyKey: `contact-confirmation:${target.id}:${number}`,
+      discardBody: true,
+    });
+  } catch (error) {
+    // Each attempt mints a new link, so a concurrent request or a retry after the count below
+    // failed reuses the key with another body: that confirmation was sent, so record it.
+    if (!(error instanceof EmailError && error.code === "idempotency_key_reused")) throw error;
+  }
   // Compare-and-set on the count: two concurrent requests record (and so send) one.
   await db
     .update(contact)

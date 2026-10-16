@@ -376,6 +376,15 @@ export async function upsertContact(
   },
 ): Promise<{ contact: ContactOutput; created: boolean; pending: boolean }> {
   const now = opts.now ?? new Date();
+  // The environment's default too, not only the explicit flag the schema refuses this with.
+  if (opts.doubleOptIn && params.status === "subscribed") {
+    throw new ContactError(
+      "double_opt_in_status",
+      'With double opt-in, a contact becomes subscribed when it confirms, not with "status" ' +
+        "(pass double_opt_in: false to subscribe it directly).",
+      { param: "status" },
+    );
+  }
   const topics = await requireTopics(env, params.topics);
   const limit = await contactLimitOf(env, opts);
   try {

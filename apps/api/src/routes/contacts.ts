@@ -112,7 +112,8 @@ export const upsertContactRoute = createRoute({
     422: errorDoc(
       "The body failed validation (`validation_error`), names an unknown property, audience or " +
         "topic (`unknown_property`, `audience_not_found`, `topic_not_found`) or a value of the " +
-        "wrong type (`invalid_property`).",
+        'wrong type (`invalid_property`), or sets `status: "subscribed"` while double opt-in ' +
+        "applies (`double_opt_in_status`).",
     ),
   },
 });

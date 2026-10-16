@@ -6932,7 +6932,7 @@
           },
           "double_opt_in": {
             "type": "boolean",
-            "description": "Ask the contact to confirm first (default: the marketing settings' `double_opt_in_default`): a new or unsubscribed contact becomes `pending` and gets a confirmation email; it is `subscribed` once they click its link. Can't be combined with `status: \"subscribed\"`."
+            "description": "Ask the contact to confirm first (default: the marketing settings' `double_opt_in_default`): a new or unsubscribed contact becomes `pending` and gets a confirmation email; it is `subscribed` once they click its link. Can't be combined with `status: \"subscribed\"`, nor can the default (pass `false` to subscribe directly)."
           }
         },
         "required": [
@@ -32666,7 +32666,7 @@
             }
           },
           "422": {
-            "description": "The body failed validation (`validation_error`), names an unknown property, audience or topic (`unknown_property`, `audience_not_found`, `topic_not_found`) or a value of the wrong type (`invalid_property`).",
+            "description": "The body failed validation (`validation_error`), names an unknown property, audience or topic (`unknown_property`, `audience_not_found`, `topic_not_found`) or a value of the wrong type (`invalid_property`), or sets `status: \"subscribed\"` while double opt-in applies (`double_opt_in_status`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
