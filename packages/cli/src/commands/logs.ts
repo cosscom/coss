@@ -83,7 +83,9 @@ export async function logsTail(argv: string[], io: CliIo): Promise<number> {
     out.info(`Tailing the log of ${describeEnvironment(environment)}. Press Ctrl-C to stop.`);
   }
 
-  const tail = new LogTail(since ?? now);
+  // Lines from here on are news. Taken after the lookup, whose own request line is older.
+  const started = io.now();
+  const tail = new LogTail(since ?? started);
   let first = true;
   let warnedTruncated = false;
   let failures = 0;
@@ -100,12 +102,12 @@ export async function logsTail(argv: string[], io: CliIo): Promise<number> {
     }
     failures = 0;
     const fresh = tail.take(window.lines);
-    // Without --since, what was already there when the tail started isn't news.
-    if (!(first && !since)) {
-      for (const line of fresh) {
-        if (out.json) out.data(line);
-        else out.line(formatLog(out, line));
-      }
+    for (const line of fresh) {
+      // Without --since, what was already there when the tail started isn't news (lines that
+      // arrive later are, even with an earlier time).
+      if (first && !since && Date.parse(line.occurred_at) < started.getTime()) continue;
+      if (out.json) out.data(line);
+      else out.line(formatLog(out, line));
     }
     if (window.truncated && !warnedTruncated) {
       warnedTruncated = true;

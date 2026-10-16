@@ -64,7 +64,8 @@ describe("LogTail", () => {
 describe("coss logs tail", () => {
   test("prints only lines that arrive after it starts, with the filters", async () => {
     const pages = [
-      [line("log_old", "2026-10-15T11:59:50.000Z")],
+      // One line was there already; one landed while the tail was starting.
+      [line("log_old", "2026-10-15T11:59:50.000Z"), line("log_racing", "2026-10-15T12:00:00.500Z")],
       [
         line("log_new", "2026-10-15T12:00:03.000Z", {
           source: "api",
@@ -91,6 +92,7 @@ describe("coss logs tail", () => {
       await run(["logs", "tail", "--source", "api,email", "--level", "error", "-q", "bounce"], io),
     ).toBe(130);
     expect(io.output()).not.toContain("log_old");
+    expect(io.output()).toContain("delivered log_racing");
     expect(io.output()).toContain("api.request POST /v1/emails 202 12ms");
     const query = api.requests.find((r) => r.url.pathname === "/v1/logs")?.url.searchParams;
     expect(query?.get("source")).toBe("api,email");
@@ -104,9 +106,10 @@ describe("coss logs tail", () => {
       Array.from({ length: n }, (_, i) =>
         line(`log_${offsetMs}_${i}`, new Date(NOW.getTime() + offsetMs - i).toISOString()),
       );
-    const newest = page(100, 5_000);
-    const older = page(3, 2_000);
-    const late = line("log_late", "2026-10-15T12:00:01.000Z");
+    // Everything is older than the tail's start; the late line also arrives after it.
+    const newest = page(100, -5_000);
+    const older = page(3, -10_000);
+    const late = line("log_late", "2026-10-15T11:59:52.000Z");
     // Each poll answers newest first, 100 a page; the late line arrives after the first poll.
     let polls = 0;
     const io = testIo({ env: { COSS_API_KEY: SANDBOX_KEY } });
