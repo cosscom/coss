@@ -249,10 +249,13 @@ export function dmarcGuidance(input: DmarcGuidanceInput): DmarcGuidance {
     warnings.push(
       `This domain has no DMARC record of its own, so ${inherited.domain}'s applies (${policy}${partial ? ", partly" : ""}) and its reports go wherever that record says.`,
     );
-    // Its own record at the same policy changes nothing for receivers and sends reports to COSS.
+    // Its own record with the same policy, partial enforcement and alignment changes nothing for
+    // receivers and sends reports to COSS.
     const own = parseDmarcRecord(
       [
         `v=DMARC1; p=${policy}`,
+        applied.adkim ? `adkim=${applied.adkim}` : null,
+        applied.aspf ? `aspf=${applied.aspf}` : null,
         applied.pct !== null ? `pct=${applied.pct}` : null,
         applied.t ? `t=${applied.t}` : null,
       ]

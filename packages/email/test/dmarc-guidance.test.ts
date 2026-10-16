@@ -101,7 +101,7 @@ describe("dmarcGuidance", () => {
 
   test("a subdomain without a record: its organizational domain's applies, kept as its own", () => {
     const parent = parseDmarcRecord(
-      "v=DMARC1; p=reject; sp=quarantine; pct=50; rua=mailto:o@x.test",
+      "v=DMARC1; p=reject; sp=quarantine; adkim=s; aspf=s; pct=50; fo=1; rua=mailto:o@x.test",
     );
     const guidance = dmarcGuidance(
       input(null, { inherited: parent ? { domain: "acme.test", record: parent } : null }),
@@ -116,7 +116,7 @@ describe("dmarcGuidance", () => {
       next: {
         kind: "publish",
         policy: "quarantine",
-        record: `v=DMARC1; p=quarantine; pct=50; rua=mailto:${ADDRESS};`,
+        record: `v=DMARC1; p=quarantine; adkim=s; aspf=s; pct=50; rua=mailto:${ADDRESS};`,
       },
     });
     // Its own record (even one of none) wins.
