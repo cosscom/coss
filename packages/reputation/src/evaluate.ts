@@ -134,8 +134,14 @@ export async function evaluateOrganization(
           check.warningThreshold !== null &&
           check.rate >= check.warningThreshold,
       );
+      // A marketing warning leaves the standing `good`, but its rate can still cross the pause
+      // threshold as older sends leave the window: re-check it like a warning.
+      const marketingWarned =
+        !row?.marketingPausedAt &&
+        !marketingDecision &&
+        checks.some((check, index) => isMarketing(index) && check.severity !== "ok");
       const scheduledAt =
-        status === "warning" || (status === "good" && belowMinimumUnhealthy)
+        status === "warning" || (status === "good" && (belowMinimumUnhealthy || marketingWarned))
           ? new Date(now.getTime() + WARNING_RECHECK_MS)
           : null;
       // The claim consumed its due marker. Any pending marker now is newer evidence.

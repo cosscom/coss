@@ -168,6 +168,22 @@ describe("runDueReputationEvaluations", () => {
     ]);
   });
 
+  test("a marketing warning keeps the standing good but is re-checked hourly", async () => {
+    const tenant = await createTestTenant();
+    const orgId = tenant.organization.id;
+    const { state, check } = controlledCheck("warning");
+    const deps = { checks: [{ ...check, scope: "marketing" as const }] };
+    const now = new Date();
+    const outcome = await evaluateOrganization(orgId, deps, { now });
+    expect(outcome).toMatchObject({ status: "good", transitioned: false });
+    expect((await getReputationStanding(orgId))?.nextEvaluationAt).toEqual(
+      new Date(now.getTime() + WARNING_RECHECK_MS),
+    );
+    state.severity = "ok";
+    await evaluateOrganization(orgId, deps, { now });
+    expect((await getReputationStanding(orgId))?.nextEvaluationAt).toBeNull();
+  });
+
   test("coss.com's own organization is only ever warned", async () => {
     const tenant = await createTestTenant();
     const orgId = tenant.organization.id;
