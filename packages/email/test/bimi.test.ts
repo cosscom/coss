@@ -142,7 +142,7 @@ describe("checkBimi", () => {
   test("a subdomain's own DMARC record wins over the parent's", async () => {
     const dns = fakeDnsResolver({
       "TXT _dmarc.mail.acme.test": [["v=DMARC1; p=quarantine; sp=none"]],
-      "TXT _dmarc.acme.test": [["v=DMARC1; p=none"]],
+      "TXT _dmarc.acme.test": [["v=DMARC1; p=reject; sp=none"]],
       "TXT default._bimi.mail.acme.test": [[RECORD]],
     });
 
@@ -150,6 +150,39 @@ describe("checkBimi", () => {
       status: "configured",
       dmarcPolicy: "quarantine",
     });
+  });
+
+  test("the organizational domain's own policy must be enforced too", async () => {
+    // A stricter subdomain record doesn't make up for p=none at the organizational domain.
+    const own = fakeDnsResolver({
+      "TXT _dmarc.mail.acme.test": [["v=DMARC1; p=reject"]],
+      "TXT _dmarc.acme.test": [["v=DMARC1; p=none"]],
+      "TXT default._bimi.mail.acme.test": [[RECORD]],
+    });
+    expect(await checkBimi("mail.acme.test", own)).toMatchObject({
+      status: "invalid",
+      dmarcPolicy: "reject",
+      issues: ["dmarc_not_enforced"],
+    });
+
+    // Nor does an enforced subdomain policy (sp) under p=none.
+    const inherited = fakeDnsResolver({
+      "TXT _dmarc.acme.test": [["v=DMARC1; p=none; sp=reject"]],
+      "TXT default._bimi.mail.acme.test": [[RECORD]],
+    });
+    expect(await checkBimi("mail.acme.test", inherited)).toMatchObject({
+      status: "invalid",
+      dmarcPolicy: "reject",
+      issues: ["dmarc_not_enforced"],
+    });
+
+    // The topmost parent with a record counts as the organizational domain.
+    const deep = fakeDnsResolver({
+      "TXT _dmarc.eu.acme.test": [["v=DMARC1; p=reject"]],
+      "TXT _dmarc.acme.test": [["v=DMARC1; p=none"]],
+      "TXT default._bimi.mail.eu.acme.test": [[RECORD]],
+    });
+    expect((await checkBimi("mail.eu.acme.test", deep)).issues).toEqual(["dmarc_not_enforced"]);
   });
 
   test("without a record of its own, a subdomain uses the organizational domain's", async () => {

@@ -50,30 +50,49 @@ function policyOf(value: string | undefined): DmarcPolicy {
 }
 
 /**
- * The domain's own DMARC record, else the nearest parent's (DMARCbis' tree walk, short of the
- * last label), whose `sp` (else `p`) applies. More than one record at a name, or one that lists
- * a tag twice (an invalid tag list, as in DKIM), means no DMARC.
+ * The DMARC tags at `_dmarc.<domain>`: `undefined` without a record, `null` for an invalid one
+ * (more than one record, or a tag listed twice: an invalid tag list, as in DKIM).
  */
-async function dmarcFor(domainName: string, dns: DnsResolver): Promise<Dmarc | null> {
+async function dmarcTagsAt(
+  domain: string,
+  dns: DnsResolver,
+): Promise<Map<string, string> | null | undefined> {
+  const records = (await txt(`_dmarc.${domain}`, dns)).filter((value) => DMARC_RECORD.test(value));
+  const [record] = records;
+  if (record === undefined) return undefined;
+  const tags = parseTagList(record);
+  return records.length > 1 || tags.duplicate ? null : tags;
+}
+
+/**
+ * The DMARC policy that applies to a domain — its own record's `p`, else the nearest parent's
+ * `sp` (else `p`), DMARCbis' tree walk short of the last label; an invalid record ends the walk
+ * with no DMARC — and the organizational domain's own `p`, which BIMI needs enforced too. Without
+ * a public suffix list, the organizational domain is the topmost parent with a valid record.
+ */
+async function dmarcFor(
+  domainName: string,
+  dns: DnsResolver,
+): Promise<{ applies: Dmarc | null; organizational: DmarcPolicy | null }> {
   const labels = domainName.split(".");
+  let applies: Dmarc | null | undefined;
+  let organizational: DmarcPolicy | null = null;
   for (let start = 0; labels.length - start >= 2; start++) {
     const domain = labels.slice(start).join(".");
-    const records = (await txt(`_dmarc.${domain}`, dns)).filter((value) =>
-      DMARC_RECORD.test(value),
-    );
-    if (records.length > 1) return null;
-    const [record] = records;
-    if (record === undefined) continue;
-    const tags = parseTagList(record);
-    if (tags.duplicate) return null;
-    const pct = Number.parseInt(tags.get("pct") ?? "", 10);
-    return {
-      domain,
-      policy: policyOf(start === 0 ? tags.get("p") : (tags.get("sp") ?? tags.get("p"))),
-      partial: (Number.isFinite(pct) && pct < 100) || tags.get("t")?.toLowerCase() === "y",
-    };
+    const tags = await dmarcTagsAt(domain, dns);
+    if (tags === undefined) continue;
+    if (applies === undefined) {
+      if (tags === null) return { applies: null, organizational: null };
+      const pct = Number.parseInt(tags.get("pct") ?? "", 10);
+      applies = {
+        domain,
+        policy: policyOf(start === 0 ? tags.get("p") : (tags.get("sp") ?? tags.get("p"))),
+        partial: (Number.isFinite(pct) && pct < 100) || tags.get("t")?.toLowerCase() === "y",
+      };
+    }
+    if (tags) organizational = policyOf(tags.get("p"));
   }
-  return null;
+  return { applies: applies ?? null, organizational };
 }
 
 /**
@@ -106,11 +125,12 @@ function isHttpsUrl(value: string): boolean {
 export async function checkBimi(domainName: string, dns: DnsResolver | null): Promise<DomainBimi> {
   if (!dns) return notChecked(domainName);
   try {
-    const dmarc = await dmarcFor(domainName, dns);
+    const { applies: dmarc, organizational } = await dmarcFor(domainName, dns);
     const issues: Issue[] = [];
     if (!dmarc) issues.push("dmarc_missing");
-    else if (dmarc.policy === "none") issues.push("dmarc_not_enforced");
-    else if (dmarc.partial) issues.push("dmarc_partial");
+    else if (dmarc.policy === "none" || organizational === "none") {
+      issues.push("dmarc_not_enforced");
+    } else if (dmarc.partial) issues.push("dmarc_partial");
 
     const found = await bimiRecordsFor(domainName, dns);
     const base = { name: found.name, dmarcPolicy: dmarc?.policy ?? null };

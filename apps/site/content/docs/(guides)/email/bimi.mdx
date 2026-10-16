@@ -15,7 +15,8 @@ your DNS and tells you what is still missing.
 2. **DMARC at enforcement.** Your domain's DMARC policy must be `p=quarantine` or `p=reject`, and
    apply to all of your mail: no `pct` below 100, no `t=y`. A domain without a DMARC record of its
    own uses its parent's, and its `sp` (subdomain policy) applies when set, so `sp=none` there
-   doesn't count either. Before you tighten the policy, read your DMARC reports (`rua=`) to make sure
+   doesn't count either. For a subdomain, the organizational domain's own policy (`p`, on
+   `example.com` for `mail.example.com`) must be at enforcement too. Before you tighten the policy, read your DMARC reports (`rua=`) to make sure
    every service that sends as your domain passes DMARC. Then move from `p=none` to `quarantine` to
    `reject`.
 3. **Your logo as an SVG** in the SVG Tiny Portable/Secure (SVG Tiny PS) profile. It should be
@@ -82,7 +83,7 @@ for (const issue of domain?.bimi.issues ?? []) {
 | Issue                   | Meaning                                                                         |
 | ----------------------- | ------------------------------------------------------------------------------- |
 | `dmarc_missing`         | The domain has no valid DMARC record (one listing a tag twice is invalid), or more than one. |
-| `dmarc_not_enforced`    | The DMARC policy is `p=none` (or `sp=none` for a subdomain).                    |
+| `dmarc_not_enforced`    | The DMARC policy is `p=none` (or `sp=none` for a subdomain), or the organizational domain's `p` is `none`. |
 | `dmarc_partial`         | The DMARC policy applies to only part of the mail (`pct` below 100, or `t=y`).  |
 | `record_multiple`       | There is more than one `v=BIMI1` record.                                        |
 | `record_invalid`        | The record doesn't start with `v=BIMI1`, or lists a tag more than once.          |
