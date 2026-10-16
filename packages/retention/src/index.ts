@@ -26,6 +26,8 @@ export const RETENTION_DAYS = {
   logDrainBacklog: 3,
   /** Hourly reputation counts: the longest reputation window (30 days) plus a day. */
   reputationRollups: 31,
+  /** Hourly delivery counts per dedicated IP (warm-up progress looks at the last 7 days). */
+  dedicatedIpRollups: 31,
   /** Content screening verdicts. */
   contentScreenings: 90,
   /** Settled reputation notification emails. */
@@ -158,6 +160,12 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     description:
       "Hourly bounce, complaint and Hooks delivery failure counts behind your account standing.",
     period: { days: RETENTION_DAYS.reputationRollups, after: "creation" },
+  },
+  {
+    id: "dedicated_ip_statistics",
+    label: "Dedicated IP statistics",
+    description: "Hourly delivery counts per sending IP of your dedicated IPs.",
+    period: { days: RETENTION_DAYS.dedicatedIpRollups, after: "creation" },
   },
   {
     id: "reputation_notifications",

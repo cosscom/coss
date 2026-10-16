@@ -1743,6 +1743,70 @@ export const DomainObject = z
 
 export type DomainObjectOutput = z.output<typeof DomainObject>;
 
+export const DEDICATED_IP_POOL_STATUSES = [
+  "not_enabled",
+  "waiting",
+  "provisioning",
+  "warming",
+  "ready",
+  "releasing",
+] as const;
+
+const DEDICATED_IP_POOL_EXAMPLE = {
+  object: "dedicated_ip_pool",
+  status: "warming",
+  ips: [{ ip: "198.51.100.10", delivered_7d: 18_420 }],
+  dedicated_share: 0.72,
+  message: null,
+  created_at: "2026-10-12T09:31:00.000Z",
+  ready_at: null,
+} as const;
+
+export const DedicatedIpPoolObject = z
+  .object({
+    object: z.literal("dedicated_ip_pool"),
+    status: z.enum(DEDICATED_IP_POOL_STATUSES).meta({
+      description:
+        "`not_enabled` without the Dedicated IPs add-on. `provisioning` while the pool is set " +
+        "up (`waiting` when none is free yet), then `warming`: live emails go through the pool " +
+        "while it warms up its IPs, sending what they can't take yet from shared IPs. `ready` " +
+        "once at least 95% of the last 7 days' deliveries (at least 1,000) left from your " +
+        "dedicated IPs. `releasing` after the add-on ends: emails are back on shared IPs, and " +
+        "the pool is released a day later.",
+    }),
+    ips: z
+      .array(
+        z.object({
+          ip: z.string().meta({ description: "An IPv4 address of the pool." }),
+          delivered_7d: z.int().meta({ description: "Deliveries from it in the last 7 days." }),
+        }),
+      )
+      .meta({ description: "The pool's IPs; the provider adds and removes them with volume." }),
+    dedicated_share: z
+      .number()
+      .nullable()
+      .meta({
+        description:
+          "Share (0–1) of the last 7 days' deliveries that left from the pool's IPs (`null`: " +
+          "fewer than 1,000).",
+      }),
+    message: z
+      .string()
+      .nullable()
+      .meta({ description: "What is holding the pool up, if anything." }),
+    created_at: z.iso.datetime().nullable(),
+    ready_at: z.iso.datetime().nullable().meta({ description: "When it was first `ready`." }),
+  })
+  .meta({
+    id: "DedicatedIpPool",
+    description:
+      "Your organization's dedicated IPs (the Dedicated IPs add-on): a pool managed and warmed " +
+      "up automatically.",
+    examples: [DEDICATED_IP_POOL_EXAMPLE],
+  });
+
+export type DedicatedIpPoolObjectOutput = z.output<typeof DedicatedIpPoolObject>;
+
 export const DomainList = z
   .object({
     object: z.literal("list"),

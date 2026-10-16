@@ -36,6 +36,10 @@
       "description": "The organization's verified sending domains."
     },
     {
+      "name": "Dedicated IPs",
+      "description": "The organization's own sending IPs, warmed up automatically (an add-on)."
+    },
+    {
       "name": "Webhook endpoints",
       "description": "URLs that receive the environment's delivery events, signed."
     },
@@ -4773,6 +4777,105 @@
           }
         ]
       },
+      "DedicatedIpPool": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "dedicated_ip_pool"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_enabled",
+              "waiting",
+              "provisioning",
+              "warming",
+              "ready",
+              "releasing"
+            ],
+            "description": "`not_enabled` without the Dedicated IPs add-on. `provisioning` while the pool is set up (`waiting` when none is free yet), then `warming`: live emails go through the pool while it warms up its IPs, sending what they can't take yet from shared IPs. `ready` once at least 95% of the last 7 days' deliveries (at least 1,000) left from your dedicated IPs. `releasing` after the add-on ends: emails are back on shared IPs, and the pool is released a day later."
+          },
+          "ips": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ip": {
+                  "type": "string",
+                  "description": "An IPv4 address of the pool."
+                },
+                "delivered_7d": {
+                  "type": "integer",
+                  "description": "Deliveries from it in the last 7 days."
+                }
+              },
+              "required": [
+                "ip",
+                "delivered_7d"
+              ]
+            },
+            "description": "The pool's IPs; the provider adds and removes them with volume."
+          },
+          "dedicated_share": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Share (0–1) of the last 7 days' deliveries that left from the pool's IPs (`null`: fewer than 1,000)."
+          },
+          "message": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "What is holding the pool up, if anything."
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "ready_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When it was first `ready`."
+          }
+        },
+        "required": [
+          "object",
+          "status",
+          "ips",
+          "dedicated_share",
+          "message",
+          "created_at",
+          "ready_at"
+        ],
+        "description": "Your organization's dedicated IPs (the Dedicated IPs add-on): a pool managed and warmed up automatically.",
+        "examples": [
+          {
+            "object": "dedicated_ip_pool",
+            "status": "warming",
+            "ips": [
+              {
+                "ip": "198.51.100.10",
+                "delivered_7d": 18420
+              }
+            ],
+            "dedicated_share": 0.72,
+            "message": null,
+            "created_at": "2026-10-12T09:31:00.000Z",
+            "ready_at": null
+          }
+        ]
+      },
       "WebhookEndpointWithSecret": {
         "type": "object",
         "properties": {
@@ -7307,6 +7410,7 @@
                   "type": "string",
                   "enum": [
                     "email.recipients",
+                    "email.dedicated_ip",
                     "sms.segments",
                     "video.participant_minutes",
                     "scheduling.bookings"
@@ -7400,6 +7504,44 @@
               "last4"
             ]
           },
+          "add_ons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "e.g. `dedicated_ips`."
+                },
+                "name": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer"
+                },
+                "unit_amount": {
+                  "type": "integer",
+                  "description": "The price per unit and interval, in cents."
+                },
+                "interval": {
+                  "type": "string",
+                  "enum": [
+                    "month",
+                    "quarter",
+                    "year"
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "name",
+                "quantity",
+                "unit_amount",
+                "interval"
+              ]
+            },
+            "description": "Add-ons of the contract in effect, charged on top of the plan."
+          },
           "features": {
             "type": "object",
             "properties": {
@@ -7417,6 +7559,9 @@
               },
               "scim": {
                 "type": "boolean"
+              },
+              "dedicated_ips": {
+                "type": "boolean"
               }
             },
             "required": [
@@ -7424,7 +7569,8 @@
               "audit_log",
               "log_drains",
               "sso",
-              "scim"
+              "scim",
+              "dedicated_ips"
             ]
           },
           "limits": {
@@ -7472,6 +7618,7 @@
           "credit_remaining",
           "spend_limit",
           "payment_method",
+          "add_ons",
           "features",
           "limits"
         ],
@@ -7516,12 +7663,14 @@
               "brand": "visa",
               "last4": "4242"
             },
+            "add_ons": [],
             "features": {
               "tracking_domains": true,
               "audit_log": true,
               "log_drains": false,
               "sso": false,
-              "scim": false
+              "scim": false,
+              "dedicated_ips": false
             },
             "limits": {
               "domains": 10,
@@ -7589,6 +7738,7 @@
             "type": "string",
             "enum": [
               "email.recipients",
+              "email.dedicated_ip",
               "sms.segments",
               "video.participant_minutes",
               "scheduling.bookings"
@@ -8140,6 +8290,7 @@
             ],
             "enum": [
               "email.recipients",
+              "email.dedicated_ip",
               "sms.segments",
               "video.participant_minutes",
               "scheduling.bookings",
@@ -8309,6 +8460,7 @@
             ],
             "enum": [
               "email.recipients",
+              "email.dedicated_ip",
               "sms.segments",
               "video.participant_minutes",
               "scheduling.bookings",
@@ -8325,6 +8477,7 @@
               "type": "string",
               "enum": [
                 "email.recipients",
+                "email.dedicated_ip",
                 "sms.segments",
                 "video.participant_minutes",
                 "scheduling.bookings"
@@ -23526,6 +23679,190 @@
         }
       }
     },
+    "/v1/dedicated_ips": {
+      "get": {
+        "operationId": "getDedicatedIpPool",
+        "tags": [
+          "Dedicated IPs"
+        ],
+        "summary": "Retrieve the organization's dedicated IPs",
+        "description": "The organization's dedicated IP pool (the Dedicated IPs add-on, bought on the dashboard's billing page): its status, its IPs and how much of the last week's mail they delivered. Organization-wide, like domains: every environment's key sees the same pool; only live emails go through it. Without the add-on the status is `not_enabled`.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The organization's dedicated IPs.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DedicatedIpPool"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
+      }
+    },
     "/v1/webhook_endpoints": {
       "post": {
         "operationId": "createWebhookEndpoint",
@@ -31212,6 +31549,7 @@
               "type": "string",
               "enum": [
                 "email.recipients",
+                "email.dedicated_ip",
                 "sms.segments",
                 "video.participant_minutes",
                 "scheduling.bookings"

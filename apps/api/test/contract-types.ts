@@ -24,6 +24,7 @@ import type {
   CreateReceivingDomainRequest,
   CreateSuppressionRequest,
   CreateTrackingDomainRequest,
+  DedicatedIpPoolObject,
   DeletedDomain,
   DeletedEmailTemplate,
   DeletedReceivedEmail,
@@ -217,6 +218,7 @@ import type {
   Billing as SdkBilling,
   BillingWebhookEvent as SdkBillingWebhookEvent,
   Credit as SdkCredit,
+  DedicatedIpPool as SdkDedicatedIpPool,
   DeletedApiKey as SdkDeletedApiKey,
   DeletedDomain as SdkDeletedDomain,
   DeletedEmailTemplate as SdkDeletedEmailTemplate,
@@ -583,6 +585,8 @@ export type Contract = [
   // The API key's environment.
   Assert<MutuallyAssignable<z.output<typeof EnvironmentObject>, SdkEnvironment>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedApiKey>, SdkDeletedApiKey>>,
+  // Dedicated IPs.
+  Assert<MutuallyAssignable<z.output<typeof DedicatedIpPoolObject>, SdkDedicatedIpPool>>,
   // Reputation.
   Assert<MutuallyAssignable<z.output<typeof ReputationObject>, SdkReputation>>,
   Assert<MutuallyAssignable<z.output<typeof ReputationCheckObject>, SdkReputationCheck>>,

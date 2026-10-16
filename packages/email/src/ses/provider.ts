@@ -67,7 +67,10 @@ function attachments(message: OutboundEmail): Attachment[] {
   }));
 }
 
-/** Sends through SES v2 with the organization's tenant and the shared configuration set. */
+/**
+ * Sends through SES v2 with the organization's tenant and the shared configuration set (or, for
+ * `dedicatedPool` messages, the organization's own one).
+ */
 export class SesEmailProvider implements EmailProvider {
   readonly name = "ses";
   readonly #api: SesApi;
@@ -100,7 +103,10 @@ export class SesEmailProvider implements EmailProvider {
           ...(message.attachments.length ? { Attachments: attachments(message) } : {}),
         },
       },
-      ConfigurationSetName: this.#config.configurationSet,
+      // The organization's own configuration set sends through its dedicated IP pool.
+      ConfigurationSetName: message.dedicatedPool
+        ? tenantNameFor(this.#config.tenantPrefix, message.organizationId)
+        : this.#config.configurationSet,
       TenantName: tenantNameFor(this.#config.tenantPrefix, message.organizationId),
       EmailTags: [{ Name: EMAIL_ID_TAG, Value: message.emailId }],
     };

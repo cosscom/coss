@@ -13,7 +13,13 @@ import { and, asc, eq, gt, inArray, isNotNull, isNull, lte, ne, or } from "drizz
 import { lockBillingAccount, type ProviderName } from "./accounts.ts";
 import { announcePlanChange } from "./announce.ts";
 import { type AdminActor, auditBillingChange } from "./audit.ts";
-import { INTERVAL_MONTHS } from "./catalog/add-ons.ts";
+import {
+  ADD_ONS,
+  type AddOnDefinition,
+  type AddOnKey,
+  catalogAddOn,
+  INTERVAL_MONTHS,
+} from "./catalog/add-ons.ts";
 import { PLANS, type PlanKey } from "./catalog/plans.ts";
 import {
   type Contract,
@@ -36,8 +42,9 @@ import { BillingError } from "./errors.ts";
 import { type InvoiceRow, lockInvoice } from "./invoices.ts";
 import { enqueueBillingNotification } from "./notifications.ts";
 import { afterSettled, voidInvoice, voidInvoiceInTransaction } from "./payments.ts";
-import { billingStateAt, FREE_TERMS } from "./resolve.ts";
+import { type BillingState, billingStateAt, FREE_TERMS } from "./resolve.ts";
 import {
+  addOnTerms,
   type ContractTerms,
   type ContractTermsInput,
   parseContractTerms,
@@ -108,7 +115,8 @@ async function refuseWhileManagedContractScheduled(
 
 /**
  * Starts a self-serve upgrade: a pending contract and its prorated invoice. The caller collects
- * the invoice right away (`collectInvoiceNow`); paying it confirms the contract.
+ * the invoice right away (`collectInvoiceNow`); paying it confirms the contract. Add-ons carry
+ * over.
  */
 export async function startUpgrade(input: {
   organizationId: string;
@@ -117,7 +125,6 @@ export async function startUpgrade(input: {
   defaultProvider: ProviderName;
   now?: Date;
 }): Promise<{ contract: Contract; invoice: InvoiceRow | null }> {
-  const now = input.now ?? new Date();
   const target = PLANS[input.plan];
   if (!target.selfServe || input.plan === "free") {
     throw new BillingError(
@@ -126,10 +133,91 @@ export async function startUpgrade(input: {
     );
   }
   // Retrying an upgrade replaces the one still waiting for payment.
+  return startPendingChange(input, "Replaced by a new upgrade.", async (state) => {
+    if (rank(input.plan) <= rank(state.terms.plan)) {
+      throw new BillingError(
+        "invalid_change",
+        `You're already on ${PLANS[state.terms.plan].name}; that isn't an upgrade.`,
+      );
+    }
+    return selfServeTerms(input.plan, state.contract?.terms.addOns);
+  });
+}
+
+/**
+ * Reasons a self-serve add-on can't be bought now (e.g. no capacity left). It runs in the purchase's
+ * transaction, which commits the pending contract: a lock it takes there covers that contract.
+ */
+export type AddOnPreflight = (
+  tx: Transaction,
+  organizationId: string,
+  addOn: AddOnDefinition,
+  now: Date,
+) => Promise<string[]>;
+
+/**
+ * Adds a catalog add-on to the self-serve plan: like an upgrade, a pending contract (the same plan
+ * with the add-on) and an invoice for the rest of the add-on's interval; paying it confirms it.
+ */
+export async function startAddOn(input: {
+  organizationId: string;
+  key: AddOnKey;
+  userId: string | null;
+  defaultProvider: ProviderName;
+  preflight: AddOnPreflight;
+  now?: Date;
+}): Promise<{ contract: Contract; invoice: InvoiceRow | null }> {
+  const addOn: AddOnDefinition = ADD_ONS[input.key];
+  if (!addOn.selfServe) {
+    throw new BillingError(
+      "self_serve_unavailable",
+      `${addOn.name} isn't available from the dashboard. Contact sales.`,
+    );
+  }
+  // Retrying replaces the change still waiting for payment.
+  return startPendingChange(input, "Replaced by an add-on purchase.", async (state, tx, now) => {
+    const current = state.contract;
+    if (!current || !addOn.plans.includes(current.terms.plan)) {
+      const plans = addOn.plans.map((key) => PLANS[key].name).join(" and ");
+      throw new BillingError(
+        "invalid_change",
+        `${addOn.name} can be added on the ${plans} plans. Upgrade first.`,
+      );
+    }
+    if ((current.terms.addOns ?? []).some((line) => line.key === addOn.key)) {
+      throw new BillingError("invalid_change", `You already have ${addOn.name}.`);
+    }
+    if (state.scheduled) {
+      throw new BillingError(
+        "invalid_change",
+        "A change to your plan is scheduled. Cancel it before adding to your plan.",
+      );
+    }
+    const blockers = await input.preflight(tx, input.organizationId, addOn, now);
+    if (blockers.length) throw new BillingError("invalid_change", blockers.join(" "));
+    return selfServeTerms(current.terms.plan, [...(current.terms.addOns ?? []), addOnTerms(addOn)]);
+  });
+}
+
+/**
+ * A pending self-serve contract replacing the current one now, and its prorated invoice: `terms`
+ * decides the new terms from the state (and refuses what isn't allowed).
+ */
+async function startPendingChange(
+  input: {
+    organizationId: string;
+    userId: string | null;
+    defaultProvider: ProviderName;
+    now?: Date;
+  },
+  replaced: string,
+  terms: (state: BillingState, tx: Transaction, now: Date) => Promise<ContractTerms>,
+): Promise<{ contract: Contract; invoice: InvoiceRow | null }> {
+  const now = input.now ?? new Date();
   return db.transaction(async (tx) => {
     const account = await lockBillingAccount(tx, input.organizationId, input.defaultProvider);
     await refuseWhileManagedContractScheduled(tx, input.organizationId, now);
-    await dropPendingUpgrade(tx, input.organizationId, "Replaced by a new upgrade.", now);
+    await dropPendingUpgrade(tx, input.organizationId, replaced, now);
     const state = await billingStateAt(input.organizationId, now, tx);
     if (state.contract && state.contract.kind !== "self_serve") {
       throw new BillingError(
@@ -137,12 +225,7 @@ export async function startUpgrade(input: {
         "Your plan is managed by your contract. Contact your account manager to change it.",
       );
     }
-    if (rank(input.plan) <= rank(state.terms.plan)) {
-      throw new BillingError(
-        "invalid_change",
-        `You're already on ${PLANS[state.terms.plan].name}; that isn't an upgrade.`,
-      );
-    }
+    const newTerms = await terms(state, tx, now);
     const at = floorHour(now);
     const contract = await insertContract(
       tx,
@@ -151,7 +234,7 @@ export async function startUpgrade(input: {
         accountId: account.id,
         kind: "self_serve",
         status: "pending",
-        terms: selfServeTerms(input.plan),
+        terms: newTerms,
         effectiveFrom: at,
         createdByUserId: input.userId,
         // Within the month it starts in: once that month closes without it, a later payment
@@ -177,6 +260,76 @@ export async function startUpgrade(input: {
       else await confirmContract(tx, contract, now);
     }
     return { contract, invoice };
+  });
+}
+
+/**
+ * The self-serve terms the next period starts from: a scheduled self-serve contract's, else the
+ * current contract's (`null`: the plan already ends).
+ */
+function nextTerms(state: BillingState): ContractTerms | null {
+  if (state.scheduled) return state.scheduled.contract?.terms ?? null;
+  return state.contract?.terms ?? null;
+}
+
+/** Add-ons of `terms` the plan `plan` can't carry (catalog add-ons not offered on it). */
+function ineligibleAddOns(terms: ContractTerms, plan: PlanKey): string[] {
+  return (terms.addOns ?? []).flatMap((line) => {
+    const addOn = catalogAddOn(line.key);
+    return addOn && !addOn.plans.includes(plan) ? [addOn.name] : [];
+  });
+}
+
+/**
+ * Removes a catalog add-on at the end of the billing period (like a downgrade): it stays in effect
+ * until then, and `cancelScheduledChange` keeps it.
+ */
+export async function scheduleAddOnRemoval(input: {
+  organizationId: string;
+  key: AddOnKey;
+  defaultProvider: ProviderName;
+  userId: string | null;
+  now?: Date;
+}): Promise<{ at: Date }> {
+  const now = input.now ?? new Date();
+  const addOn: AddOnDefinition = ADD_ONS[input.key];
+  return db.transaction(async (tx) => {
+    await lockBillingAccount(tx, input.organizationId, input.defaultProvider);
+    await refuseWhileManagedContractScheduled(tx, input.organizationId, now);
+    await dropPendingUpgrade(tx, input.organizationId, "Replaced by an add-on removal.", now);
+    const state = await billingStateAt(input.organizationId, now, tx);
+    const current = state.contract;
+    if (current && current.kind !== "self_serve") {
+      throw new BillingError(
+        "self_serve_unavailable",
+        "Your plan is managed by your contract. Contact your account manager to change it.",
+      );
+    }
+    const base = nextTerms(state);
+    if (!current || !base || !(base.addOns ?? []).some((line) => line.key === addOn.key)) {
+      throw new BillingError(
+        "invalid_change",
+        `${addOn.name} isn't part of your plan next month already.`,
+      );
+    }
+    const at = nextPeriod(periodOf(now)).start;
+    await insertContract(
+      tx,
+      {
+        organizationId: input.organizationId,
+        accountId: current.accountId,
+        kind: "self_serve",
+        status: "confirmed",
+        terms: selfServeTerms(
+          base.plan,
+          (base.addOns ?? []).filter((line) => line.key !== addOn.key),
+        ),
+        effectiveFrom: at,
+        createdByUserId: input.userId,
+      },
+      now,
+    );
+    return { at };
   });
 }
 
@@ -216,6 +369,15 @@ export async function scheduleDowngrade(input: {
     if (rank(input.plan) >= rank(current.terms.plan)) {
       throw new BillingError("invalid_change", "That isn't a downgrade.");
     }
+    // Add-ons carry over (a scheduled removal stays removed); ending the plan ends them too.
+    const base = nextTerms(state) ?? current.terms;
+    const ineligible = input.plan === "free" ? [] : ineligibleAddOns(base, input.plan);
+    if (ineligible.length) {
+      throw new BillingError(
+        "downgrade_blocked",
+        `Before switching to ${PLANS[input.plan].name}: remove the ${ineligible.join(" and ")} add-on first.`,
+      );
+    }
     const at = nextPeriod(periodOf(now)).start;
     await announcePlanChange(
       tx,
@@ -240,7 +402,7 @@ export async function scheduleDowngrade(input: {
           accountId: current.accountId,
           kind: "self_serve",
           status: "confirmed",
-          terms: selfServeTerms(input.plan),
+          terms: selfServeTerms(input.plan, base.addOns),
           effectiveFrom: at,
           createdByUserId: input.userId,
         },
@@ -275,6 +437,9 @@ export async function cancelScheduledChange(input: {
     }
     if (state.scheduled.contract) await cancelContract(tx, state.scheduled.contract.id, now);
     await clearContractEnd(tx, state.contract.id);
+    // An add-on removal changed no plan: nothing to announce.
+    if (state.scheduled.contract && state.scheduled.terms.plan === state.contract.terms.plan)
+      return;
     await announcePlanChange(
       tx,
       input.organizationId,
@@ -379,6 +544,20 @@ export function validateContract(
       "Quarterly and yearly fees need a contract that starts on the first of a month.",
     );
   }
+  const addOns = input.terms.addOns ?? [];
+  if (addOns.some((addOn) => addOn.interval !== "month") && !isMonthStart(start)) {
+    throw new BillingError(
+      "invalid_contract",
+      "Quarterly and yearly add-ons need a contract that starts on the first of a month.",
+    );
+  }
+  const ineligible = ineligibleAddOns(input.terms, input.terms.plan);
+  if (ineligible.length) {
+    throw new BillingError(
+      "invalid_contract",
+      `${ineligible.join(" and ")} can't be added to the ${PLANS[input.terms.plan].name} plan.`,
+    );
+  }
   if (input.termEnd) {
     if (input.termEnd <= start)
       throw new BillingError("invalid_contract", "The term must end after it starts.");
@@ -404,6 +583,14 @@ export function validateContract(
         "invalid_contract",
         `The term (${months} months) isn't a whole number of fee ${fee.interval}s.`,
       );
+    }
+    for (const addOn of addOns) {
+      if (months % INTERVAL_MONTHS[addOn.interval] !== 0) {
+        throw new BillingError(
+          "invalid_contract",
+          `The term (${months} months) isn't a whole number of ${addOn.interval}s for add-on ${addOn.key}.`,
+        );
+      }
     }
   } else if (input.terms.commitments?.some((commitment) => commitment.period === "term")) {
     throw new BillingError("invalid_contract", "Commitments over the term need a term end.");

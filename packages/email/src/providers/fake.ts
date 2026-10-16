@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import type { EmailProvider, OutboundEmail, ProviderEvent, SendResult } from "../provider.ts";
 import { parseEmailAddress } from "../schemas.ts";
+import { FAKE_DEDICATED_IP } from "./fake-dedicated-ips.ts";
 
 const MAX_KEPT = 100;
 
@@ -44,6 +45,7 @@ export function simulatedEvents(
     type: "email.delivered",
     recipients: [recipient],
     data: { delivery: { smtp_response: "250 2.6.0 Message received" } },
+    ...(message.dedicatedPool ? { sendingIp: FAKE_DEDICATED_IP } : {}),
   });
   for (const recipient of uniqueRecipients(message)) {
     const at = recipient.lastIndexOf("@");

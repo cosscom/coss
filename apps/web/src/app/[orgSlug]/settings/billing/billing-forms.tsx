@@ -24,10 +24,12 @@ import { FormError } from "@/components/form-error";
 import { SettingsFooter, SettingsRow } from "@/components/settings";
 import { useActionToast } from "@/lib/toast";
 import {
+  addAddOnAction,
   addPaymentMethodAction,
   cancelScheduledChangeAction,
   downgradePlanAction,
   managePaymentMethodsAction,
+  removeAddOnAction,
   updateSpendControlsAction,
   upgradePlanAction,
 } from "./actions";
@@ -45,6 +47,31 @@ export function UpgradeButton(props: { orgSlug: string; plan: string; label: str
       <Button loading={pending} size="sm" type="submit">
         {props.label}
       </Button>
+      <ChargeOutcome state={state} />
+    </form>
+  );
+}
+
+/** Adds an add-on now (prorated); reports a payment that needs confirming or failed. */
+export function AddOnButton(props: { orgSlug: string; addOn: string; label: string }) {
+  const [state, formAction, pending] = useActionState(addAddOnAction, null);
+  return (
+    <form action={formAction} className="flex flex-col gap-2">
+      <input name="orgSlug" type="hidden" value={props.orgSlug} />
+      <input name="addOn" type="hidden" value={props.addOn} />
+      <div>
+        <Button loading={pending} size="sm" type="submit">
+          {props.label}
+        </Button>
+      </div>
+      <ChargeOutcome state={state} />
+    </form>
+  );
+}
+
+function ChargeOutcome({ state }: { state: Awaited<ReturnType<typeof upgradePlanAction>> | null }) {
+  return (
+    <>
       {state?.ok && state.data.status === "requires_action" ? (
         <Alert variant="warning">
           <AlertDescription>
@@ -59,11 +86,52 @@ export function UpgradeButton(props: { orgSlug: string; plan: string; label: str
       ) : null}
       {state?.ok && state.data.status === "processing" ? (
         <p className="text-muted-foreground text-xs">
-          The payment is processing; the plan changes once it clears.
+          The payment is processing; the change applies once it clears.
         </p>
       ) : null}
       {state && !state.ok ? <FormError message={state.error} /> : null}
-    </form>
+    </>
+  );
+}
+
+/** Removes an add-on at the end of the billing period, after confirming. */
+export function RemoveAddOnButton(props: {
+  orgSlug: string;
+  addOn: string;
+  name: string;
+  description: string;
+}) {
+  const [state, formAction, pending] = useActionState(removeAddOnAction, null);
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger render={<Button size="sm" variant="outline" />}>
+        Remove
+      </AlertDialogTrigger>
+      <AlertDialogPopup>
+        <form action={formAction} className="contents">
+          <input name="orgSlug" type="hidden" value={props.orgSlug} />
+          <input name="addOn" type="hidden" value={props.addOn} />
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {props.name}?</AlertDialogTitle>
+            <AlertDialogDescription>{props.description}</AlertDialogDescription>
+            {state?.ok ? (
+              <p className="text-muted-foreground text-sm">
+                Scheduled. You can undo it until then.
+              </p>
+            ) : null}
+            {state && !state.ok ? <FormError message={state.error} /> : null}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogClose render={<Button variant="ghost" />}>Close</AlertDialogClose>
+            {state?.ok ? null : (
+              <Button loading={pending} type="submit" variant="destructive">
+                Remove at the end of the month
+              </Button>
+            )}
+          </AlertDialogFooter>
+        </form>
+      </AlertDialogPopup>
+    </AlertDialog>
   );
 }
 

@@ -7,6 +7,7 @@ export type PlanKey = "free" | "pro" | "scale" | "enterprise";
 
 export type Meter =
   | "email.recipients"
+  | "email.dedicated_ip"
   | "sms.segments"
   | "video.participant_minutes"
   | "scheduling.bookings";
@@ -51,12 +52,23 @@ export interface Billing {
   /** Usage beyond the credit past which live sending is held (cents); `null`: none. */
   spend_limit: number | null;
   payment_method: { type: string; brand: string | null; last4: string | null } | null;
+  /** Add-ons of the contract in effect, charged on top of the plan. */
+  add_ons: {
+    /** e.g. `dedicated_ips`. */
+    key: string;
+    name: string;
+    quantity: number;
+    /** The price per unit and interval (cents). */
+    unit_amount: number;
+    interval: "month" | "quarter" | "year";
+  }[];
   features: {
     tracking_domains: boolean;
     audit_log: boolean;
     log_drains: boolean;
     sso: boolean;
     scim: boolean;
+    dedicated_ips: boolean;
   };
   /** Resource limits (`null`: unlimited). */
   limits: {

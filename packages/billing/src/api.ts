@@ -114,12 +114,20 @@ export async function billingObject(
           last4: account.paymentMethod.last4 ?? null,
         }
       : null,
+    add_ons: state.terms.addOns.map((addOn) => ({
+      key: addOn.key,
+      name: addOn.name,
+      quantity: addOn.quantity,
+      unit_amount: toNumber(addOn.unitAmountCents),
+      interval: addOn.interval,
+    })),
     features: {
       tracking_domains: entitlements.features.trackingDomains,
       audit_log: entitlements.features.auditLog,
       log_drains: entitlements.features.logDrains,
       sso: entitlements.features.sso,
       scim: entitlements.features.scim,
+      dedicated_ips: entitlements.features.dedicatedIps,
     },
     limits: {
       domains: entitlements.limits.domains,

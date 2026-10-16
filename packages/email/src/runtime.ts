@@ -17,12 +17,14 @@ import {
   type EmailProviderName,
 } from "./env.ts";
 import { FakeInboundStore, type InboundContentStore } from "./inbound-store.ts";
-import type { EmailProvider, IdentityProvider } from "./provider.ts";
+import type { DedicatedIpProvider, EmailProvider, IdentityProvider } from "./provider.ts";
 import { FakeEmailProvider } from "./providers/fake.ts";
+import { FakeDedicatedIpProvider } from "./providers/fake-dedicated-ips.ts";
 import { FakeIdentityProvider } from "./providers/fake-identity.ts";
 import { FakeTrackingHostnameProvider } from "./providers/fake-tracking-hostnames.ts";
 import type { ReceivingConfig } from "./receiving-domains.ts";
 import { createSesApi, type SesApi, type SesConfig } from "./ses/api.ts";
+import { SesDedicatedIpProvider } from "./ses/dedicated-ips.ts";
 import { SesIdentityProvider } from "./ses/identity.ts";
 import { createS3Api, type S3Api, S3InboundStore } from "./ses/inbound.ts";
 import { SesEmailProvider } from "./ses/provider.ts";
@@ -118,6 +120,8 @@ export type EmailRuntime = {
   /** `null` with the fake provider: its domains verify without DNS. */
   dns: DnsResolver | null;
   trackingHostnames: TrackingHostnameProvider;
+  /** Dedicated IP pools (the Dedicated IPs add-on), of the live provider. */
+  dedicatedIps: DedicatedIpProvider;
   domainDeps: DomainDeps;
   /** Receiving (`null`: off, so receiving endpoints answer `receiving_unavailable`). */
   inbound: InboundRuntime | null;
@@ -148,16 +152,19 @@ export function createEmailRuntime(
   let liveProvider: EmailProvider;
   let identity: IdentityProvider;
   let dns: DnsResolver | null;
+  let dedicatedIps: DedicatedIpProvider;
   switch (config.provider) {
     case "fake":
       liveProvider = new FakeEmailProvider({ log: config.log });
       identity = new FakeIdentityProvider();
+      dedicatedIps = new FakeDedicatedIpProvider();
       dns = null;
       break;
     case "ses": {
       const api = config.sesApi ?? createSesApi(config.ses.region);
       liveProvider = new SesEmailProvider(api, config.ses);
       identity = new SesIdentityProvider(api, config.ses);
+      dedicatedIps = new SesDedicatedIpProvider(api, config.ses);
       dns = config.dns === undefined ? publicDnsResolver() : config.dns;
       break;
     }
@@ -188,10 +195,12 @@ export function createEmailRuntime(
     identity,
     dns,
     trackingHostnames,
+    dedicatedIps,
     domainDeps: {
       identity,
       dns,
       tracking: trackingHostnames,
+      dedicatedIps,
       plans: extras.plans,
       // DMARC reports arrive through receiving, at the managed inbound domain.
       dmarcReportDomain: inbound?.managedDomain ?? null,

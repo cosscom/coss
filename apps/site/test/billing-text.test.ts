@@ -21,4 +21,13 @@ describe("renderBillingComponents", () => {
     expect(text).toContain("| Scheduling | $0.10 per booking | |");
     expect(text.split("\n")[0]?.split("|").length).toBe(PLAN_KEYS.length + 3);
   });
+
+  test("renders add-ons, and where a plan can have one", () => {
+    const text = renderBillingComponents("<PlanTable />\n\n<UsageRates />\n\n<AddOns />");
+    expect(text).toContain("| Dedicated IPs | — | — | Add-on | Add-on |");
+    expect(text).toContain("| Dedicated IPs | $50/month | Scale, Enterprise |");
+    expect(text).toContain(
+      "| Email via dedicated IPs | $0.10 per 1,000 recipients | With the Dedicated IPs add-on, on top of Email |",
+    );
+  });
 });

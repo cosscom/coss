@@ -15,6 +15,8 @@ export type OutboundEmail = {
   headers: Record<string, string>;
   tags: { name: string; value: string }[];
   attachments: OutboundAttachment[];
+  /** Send through the organization's dedicated IP pool (see `DedicatedIpProvider`). */
+  dedicatedPool?: boolean;
 };
 
 export type OutboundAttachment = {
@@ -44,6 +46,8 @@ export type ProviderEvent = {
   data: EmailEventDataOutput;
   /** Only for `email.bounced`: the address was suppressed rather than attempted. */
   suppressed?: boolean;
+  /** Only for `email.delivered`: the IP the message left from (SES `ses:outgoing-ip`). */
+  sendingIp?: string;
 };
 
 export type SendResult = {
@@ -130,5 +134,31 @@ export class IdentityTakenError extends Error {
   constructor(domain: string) {
     super(`The domain ${domain} is already in use.`);
     this.name = "IdentityTakenError";
+  }
+}
+
+/**
+ * Provider-managed dedicated IP pools (fake or SES managed dedicated IPs), one per organization,
+ * warmed up by the provider. Every method is idempotent.
+ */
+export interface DedicatedIpProvider {
+  readonly name: string;
+  /**
+   * Creates (or completes) the organization's pool and what sends through it (an SES
+   * configuration set associated with the tenant). Throws `DedicatedIpTakenError` when a
+   * resource of that name exists but wasn't created by COSS.
+   */
+  ensurePool(input: { organizationId: string; tenant: ProviderTenant }): Promise<void>;
+  /** The pool's IPs now (empty until the provider assigns the first; `[]` without a pool). */
+  poolIps(organizationId: string): Promise<string[]>;
+  /** Removes the pool and what sends through it. Missing resources are fine. */
+  releasePool(input: { organizationId: string; tenant: ProviderTenant | null }): Promise<void>;
+}
+
+/** A pool or configuration set of the organization's name exists, but COSS didn't create it. */
+export class DedicatedIpTakenError extends Error {
+  constructor(resource: string) {
+    super(`${resource} already exists and isn't managed by COSS.`);
+    this.name = "DedicatedIpTakenError";
   }
 }

@@ -24,6 +24,8 @@ async function featureUsage(organizationId: string): Promise<Record<FeatureKey, 
     trackingDomains: tracking ? 1 : 0,
     // The audit log keeps recording on every plan; losing access to it removes nothing.
     auditLog: 0,
+    // An add-on: billing itself refuses a downgrade to a plan it isn't offered on.
+    dedicatedIps: 0,
   };
 }
 
@@ -33,6 +35,7 @@ const REMOVE: Record<FeatureKey, string> = {
   logDrains: "Delete your log drains.",
   trackingDomains: "Remove your custom tracking domains (Domains).",
   auditLog: "",
+  dedicatedIps: "",
 };
 
 /**

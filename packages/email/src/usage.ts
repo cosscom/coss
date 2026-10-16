@@ -1,4 +1,7 @@
-/** Email metering: a live email is billed once, for its recipients, when it becomes `sent`. */
+/**
+ * Email metering: a live email is billed once, for its recipients, when it becomes `sent` (and
+ * once more on `email.dedicated_ip` when it went through the organization's dedicated IPs).
+ */
 import { recordUsage } from "@coss/billing/metering";
 import { type Executor, schema } from "@coss/db";
 import { and, count, eq, isNull, ne, type SQL, sql } from "drizzle-orm";
@@ -41,7 +44,11 @@ export async function recordEmailUsage(
         isNull(email.usageRecordedAt),
       ),
     )
-    .returning({ environmentId: email.environmentId, billable: email.billableRecipients });
+    .returning({
+      environmentId: email.environmentId,
+      billable: email.billableRecipients,
+      dedicatedPool: email.dedicatedPool,
+    });
   if (!row) return;
   let quantity = row.billable;
   if (quantity === null) {
@@ -64,4 +71,12 @@ export async function recordEmailUsage(
     meter: "email.recipients",
     quantity,
   });
+  if (row.dedicatedPool) {
+    await recordUsage(tx, {
+      organizationId: target.organizationId,
+      environmentId: row.environmentId,
+      meter: "email.dedicated_ip",
+      quantity,
+    });
+  }
 }

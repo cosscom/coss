@@ -18,6 +18,7 @@ import {
   MailIcon,
   MonitorSmartphoneIcon,
   MousePointerClickIcon,
+  NetworkIcon,
   PanelsTopLeftIcon,
   RocketIcon,
   ScaleIcon,
@@ -97,6 +98,7 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
 export const ORGANIZATION_NAV: NavItem[] = [
   { label: "Projects", path: "", icon: FoldersIcon, exact: true },
   { label: "Domains", path: "/domains", icon: GlobeIcon },
+  { label: "Dedicated IPs", path: "/dedicated-ips", icon: NetworkIcon },
   { label: "Members", path: "/members", icon: UsersIcon },
   { label: "Reputation", path: "/reputation", icon: GaugeIcon },
   { label: "Settings", path: "/settings", icon: SettingsIcon },
@@ -197,6 +199,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   "log-drains": "Log drains",
   domains: "Domains",
   dmarc: "DMARC",
+  "dedicated-ips": "Dedicated IPs",
   members: "Members",
   reputation: "Reputation",
   settings: "Settings",

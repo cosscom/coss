@@ -49,6 +49,9 @@ export const RATE_CARDS: readonly RateCard[] = [
           ],
         },
       },
+      // $0.10 per 1,000 recipients sent through dedicated IPs (first priced when the meter was added;
+      // it had no usage before).
+      "email.dedicated_ip": { default: flatRate(100_000n) },
       // US only; other countries are priced per contract.
       "sms.segments": { byDimension: { "country=US": flatRate(13_500_000n) } },
       // $1.50 per 1,000 participant-minutes.

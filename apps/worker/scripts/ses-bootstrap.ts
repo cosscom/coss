@@ -191,7 +191,13 @@ await sns.send(
           Resource: topicArn,
           Condition: {
             StringEquals: { "AWS:SourceAccount": account },
-            ArnLike: { "AWS:SourceArn": configurationSetArn },
+            // The shared set, and organizations' dedicated IP sets (`<tenant prefix>-<org id>`).
+            ArnLike: {
+              "AWS:SourceArn": [
+                configurationSetArn,
+                `arn:aws:ses:${region}:${account}:configuration-set/${tenantPrefix}-*`,
+              ],
+            },
           },
         },
       ],

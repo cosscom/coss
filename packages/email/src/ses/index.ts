@@ -7,6 +7,7 @@ export {
   TENANT_SUPPRESSION,
   tenantNameFor,
 } from "./api.ts";
+export { SesDedicatedIpProvider } from "./dedicated-ips.ts";
 export { MANAGED_TAG, SesIdentityProvider } from "./identity.ts";
 export {
   createS3Api,

@@ -107,6 +107,9 @@ export function parseSesEvent(record: Json): ParsedSesMessage {
       const data: EmailEventDataOutput = {
         delivery: { smtp_response: string(delivery.smtpResponse) },
       };
+      // The IP the message left from (counted for dedicated IP warm-up).
+      const outgoingIp = tags?.["ses:outgoing-ip"];
+      const sendingIp = Array.isArray(outgoingIp) ? string(outgoingIp[0]) : null;
       return {
         kind: "events",
         events: [
@@ -117,6 +120,7 @@ export function parseSesEvent(record: Json): ParsedSesMessage {
             occurredAt,
             sourceId: occurredAt.toISOString(),
             data,
+            ...(sendingIp ? { sendingIp } : {}),
           },
         ],
       };

@@ -3,6 +3,7 @@
  * own tier math, so the page and the invoices agree) and the usage rate tables. Client-safe.
  */
 import {
+  ADD_ONS,
   METER_KEYS,
   METERS,
   type MeterKey,
@@ -150,7 +151,11 @@ export function rateTables(): RateTable[] {
         ? `per ${definition.unit}`
         : `per ${definition.displayPer.toLocaleString("en-US")} ${definition.units}`;
     const note =
-      definition.requires === "commitment" ? "Committed volume on Enterprise contracts" : null;
+      definition.requires === "commitment"
+        ? "Committed volume on Enterprise contracts"
+        : meter === "email.dedicated_ip"
+          ? `With the ${ADD_ONS.dedicated_ips.name} add-on (${formatPrice(ADD_ONS.dedicated_ips.unitAmountCents)}/month), on top of email`
+          : null;
     const base = {
       meter,
       product: definition.label,

@@ -12,6 +12,7 @@ import { markReputationDue } from "@coss/reputation";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { purgeSendContent } from "./attachments.ts";
+import { countDedicatedDeliveries } from "./dedicated-ips.ts";
 import { emailEventLogEntries } from "./event-logs.ts";
 import type { ProviderEvent } from "./provider.ts";
 import { invalidateReputationRollup } from "./reputation-checks.ts";
@@ -112,6 +113,7 @@ export async function recordProviderEvent(
       tags: email.tags,
       category: email.category,
       createdAt: email.createdAt,
+      dedicatedPool: email.dedicatedPool,
       mode: environment.mode,
     })
     .from(email)
@@ -181,6 +183,19 @@ export async function recordProviderEvent(
   if (inserted.length === 0) return [];
   // The environment's log gets the same events, in the same transaction.
   await appendLogEntries(tx, emailEventLogEntries(target, event, inserted));
+  if (
+    event.type === "email.delivered" &&
+    event.sendingIp &&
+    target.dedicatedPool &&
+    target.mode === "live"
+  ) {
+    await countDedicatedDeliveries(tx, {
+      organizationId: target.organizationId,
+      sendingIp: event.sendingIp,
+      occurredAt: event.occurredAt,
+      delivered: inserted.length,
+    });
+  }
   // Whether the event changed the reputation counts of the email's hour (recipient statuses).
   let recipientsChanged = false;
 

@@ -30,6 +30,17 @@ export const METERS = {
     dimensions: [],
     requires: "plan",
   },
+  // Email sent through an organization's dedicated IPs (the Dedicated IPs add-on), on top of
+  // `email.recipients`.
+  "email.dedicated_ip": {
+    product: "email",
+    label: "Email via dedicated IPs",
+    unit: "recipient",
+    units: "recipients",
+    displayPer: 1000,
+    dimensions: [],
+    requires: "plan",
+  },
   "sms.segments": {
     product: "sms",
     label: "SMS",

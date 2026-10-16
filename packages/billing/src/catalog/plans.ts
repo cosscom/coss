@@ -48,6 +48,7 @@ export const PLANS = {
         logDrains: false,
         sso: false,
         scim: false,
+        dedicatedIps: false,
       },
       limits: { domains: 1, members: 3, webhookEndpointsPerEnvironment: 2 },
       rateLimits: {
@@ -74,6 +75,7 @@ export const PLANS = {
         logDrains: false,
         sso: false,
         scim: false,
+        dedicatedIps: false,
       },
       limits: { domains: 10, members: 10, webhookEndpointsPerEnvironment: 10 },
       rateLimits: {
@@ -100,7 +102,14 @@ export const PLANS = {
     overage: "billed",
     termMonths: null,
     entitlements: {
-      features: { trackingDomains: true, auditLog: true, logDrains: true, sso: true, scim: false },
+      features: {
+        trackingDomains: true,
+        auditLog: true,
+        logDrains: true,
+        sso: true,
+        scim: false,
+        dedicatedIps: false,
+      },
       limits: { domains: 100, members: null, webhookEndpointsPerEnvironment: 10 },
       rateLimits: {
         "email.recipients.second": perSecond(50, 200),
@@ -126,7 +135,14 @@ export const PLANS = {
     overage: "billed",
     termMonths: 12,
     entitlements: {
-      features: { trackingDomains: true, auditLog: true, logDrains: true, sso: true, scim: true },
+      features: {
+        trackingDomains: true,
+        auditLog: true,
+        logDrains: true,
+        sso: true,
+        scim: true,
+        dedicatedIps: false,
+      },
       limits: { domains: null, members: null, webhookEndpointsPerEnvironment: 10 },
       rateLimits: {
         "email.recipients.second": perSecond(100, 500),

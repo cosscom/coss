@@ -162,6 +162,13 @@ export class FakeSesApi implements SesApi {
   readonly associations = new Map<string, Set<string>>();
   /** Queue errors (by operation) to throw on the next calls. */
   readonly failures = new Map<string, Error[]>();
+  /** Dedicated IP pools by name, with the IPs SES assigned. */
+  readonly pools = new Map<string, { scalingMode: string; ips: string[] }>();
+  /** Configuration sets by name: their pool and event destinations. */
+  readonly configurationSets = new Map<
+    string,
+    { poolName: string | null; destinations: Map<string, unknown> }
+  >();
 
   constructor(region = "eu-west-1") {
     this.region = region;
@@ -182,6 +189,34 @@ export class FakeSesApi implements SesApi {
 
   identityArn(domain: string): string {
     return `arn:aws:ses:${this.region}:${this.account}:identity/${domain}`;
+  }
+
+  configurationSetArn(name: string): string {
+    return `arn:aws:ses:${this.region}:${this.account}:configuration-set/${name}`;
+  }
+
+  poolArn(name: string): string {
+    return `arn:aws:ses:${this.region}:${this.account}:dedicated-ip-pool/${name}`;
+  }
+
+  /** What `ses:bootstrap` creates: the shared configuration set publishing events to SNS. */
+  bootstrap(configurationSet: string): void {
+    this.configurationSets.set(configurationSet, {
+      poolName: null,
+      destinations: new Map([
+        [
+          "coss-events",
+          {
+            Name: "coss-events",
+            Enabled: true,
+            MatchingEventTypes: ["SEND", "DELIVERY", "BOUNCE", "COMPLAINT"],
+            SnsDestination: {
+              TopicArn: `arn:aws:sns:${this.region}:${this.account}:coss-ses-events`,
+            },
+          },
+        ],
+      ]),
+    });
   }
 
   async sendEmail(input: SendEmailCommandInput) {
@@ -291,9 +326,116 @@ export class FakeSesApi implements SesApi {
 
   async listTagsForResource(input: { ResourceArn: string }) {
     this.#record("listTagsForResource", input);
-    const domain = input.ResourceArn.split("identity/")[1] ?? "";
-    if (!this.identities.has(domain)) throw sesError("NotFoundException");
+    const [kind, name = ""] = (input.ResourceArn.split(":")[5] ?? "").split("/");
+    const exists =
+      kind === "identity"
+        ? this.identities.has(name)
+        : kind === "dedicated-ip-pool"
+          ? this.pools.has(name)
+          : kind === "configuration-set"
+            ? this.configurationSets.has(name)
+            : false;
+    if (!exists) throw sesError("NotFoundException");
     return { Tags: this.tags.get(input.ResourceArn) ?? [], $metadata: {} };
+  }
+
+  async createDedicatedIpPool(input: {
+    PoolName?: string;
+    ScalingMode?: string;
+    Tags?: { Key?: string; Value?: string }[];
+  }) {
+    this.#record("createDedicatedIpPool", input);
+    const name = input.PoolName ?? "";
+    if (this.pools.has(name)) throw sesError("AlreadyExistsException");
+    this.pools.set(name, { scalingMode: input.ScalingMode ?? "STANDARD", ips: [] });
+    this.tags.set(
+      this.poolArn(name),
+      (input.Tags ?? []).map((tag) => ({ Key: tag.Key ?? "", Value: tag.Value ?? "" })),
+    );
+    return {};
+  }
+
+  async deleteDedicatedIpPool(input: { PoolName: string }) {
+    this.#record("deleteDedicatedIpPool", input);
+    const inUse = [...this.configurationSets.values()].some(
+      (set) => set.poolName === input.PoolName,
+    );
+    if (inUse) throw sesError("ConcurrentModificationException", "The pool is in use.");
+    if (!this.pools.delete(input.PoolName)) throw sesError("NotFoundException");
+    this.tags.delete(this.poolArn(input.PoolName));
+    return {};
+  }
+
+  async getDedicatedIps(input: { PoolName: string; NextToken?: string; PageSize?: number }) {
+    this.#record("getDedicatedIps", input);
+    const pool = this.pools.get(input.PoolName);
+    if (!pool) throw sesError("NotFoundException");
+    return {
+      DedicatedIps: pool.ips.map((Ip) => ({
+        Ip,
+        WarmupStatus: "NOT_APPLICABLE" as const,
+        WarmupPercentage: -1,
+        PoolName: input.PoolName,
+      })),
+      $metadata: {},
+    };
+  }
+
+  async createConfigurationSet(input: {
+    ConfigurationSetName?: string;
+    DeliveryOptions?: { SendingPoolName?: string };
+    Tags?: { Key?: string; Value?: string }[];
+  }) {
+    this.#record("createConfigurationSet", input);
+    const name = input.ConfigurationSetName ?? "";
+    if (this.configurationSets.has(name)) throw sesError("AlreadyExistsException");
+    const poolName = input.DeliveryOptions?.SendingPoolName ?? null;
+    if (poolName && !this.pools.has(poolName)) throw sesError("NotFoundException");
+    this.configurationSets.set(name, { poolName, destinations: new Map() });
+    this.tags.set(
+      this.configurationSetArn(name),
+      (input.Tags ?? []).map((tag) => ({ Key: tag.Key ?? "", Value: tag.Value ?? "" })),
+    );
+    return {};
+  }
+
+  async deleteConfigurationSet(input: { ConfigurationSetName: string }) {
+    this.#record("deleteConfigurationSet", input);
+    if (this.associations.get(this.configurationSetArn(input.ConfigurationSetName))?.size) {
+      throw sesError("ConflictException", "The configuration set is associated with a tenant.");
+    }
+    if (!this.configurationSets.delete(input.ConfigurationSetName)) {
+      throw sesError("NotFoundException");
+    }
+    this.tags.delete(this.configurationSetArn(input.ConfigurationSetName));
+    return {};
+  }
+
+  async getConfigurationSetEventDestinations(input: { ConfigurationSetName: string }) {
+    this.#record("getConfigurationSetEventDestinations", input);
+    const set = this.configurationSets.get(input.ConfigurationSetName);
+    if (!set) throw sesError("NotFoundException");
+    return {
+      EventDestinations: [...set.destinations.values()] as {
+        Name: string;
+        MatchingEventTypes: [];
+      }[],
+      $metadata: {},
+    };
+  }
+
+  async createConfigurationSetEventDestination(input: {
+    ConfigurationSetName?: string;
+    EventDestinationName?: string;
+    EventDestination?: object;
+  }) {
+    this.#record("createConfigurationSetEventDestination", input);
+    const set = this.configurationSets.get(input.ConfigurationSetName ?? "");
+    if (!set) throw sesError("NotFoundException");
+    const name = input.EventDestinationName ?? "";
+    if (set.destinations.has(name)) throw sesError("AlreadyExistsException");
+    set.destinations.set(name, { Name: name, ...input.EventDestination });
+    return {};
   }
 
   async putEmailIdentityMailFromAttributes(input: {

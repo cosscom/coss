@@ -160,6 +160,7 @@ describe("GET /openapi.json", () => {
       "/v1/billing/invoices",
       "/v1/billing/invoices/{id}",
       "/v1/billing/usage",
+      "/v1/dedicated_ips",
       "/v1/domains",
       "/v1/domains/{id}",
       "/v1/domains/{id}/dmarc",

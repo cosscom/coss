@@ -1,5 +1,24 @@
 export type { EmailAttachmentMetadata } from "./attachments.ts";
 export { checkBimi, parseTagList, toBimiObject } from "./bimi.ts";
+export {
+  countDedicatedDeliveries,
+  type DedicatedIpDeps,
+  type DedicatedIpPoolRow,
+  dedicatedIpCapacity,
+  dedicatedIpPoolObject,
+  dedicatedIpSlotAvailable,
+  dedicatedPoolInUse,
+  dedicatedPoolSql,
+  dedicatedShare,
+  deliveriesByIp,
+  getDedicatedIpPool,
+  MAX_DEDICATED_IP_POOLS,
+  READY_MIN_DELIVERIES,
+  READY_SHARE,
+  RELEASE_DELAY_MS,
+  reconcileDedicatedIpPools,
+  releaseOrganizationDedicatedIps,
+} from "./dedicated-ips.ts";
 // Runtime dispatch code (pg-boss) lives in `@coss/email/dispatch`, which the dashboard never loads.
 export type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 export {
@@ -148,6 +167,8 @@ export {
 } from "./inbound-store.ts";
 export { emailNotifier, type Notice, type Notifier, notificationEnvironment } from "./notifier.ts";
 export {
+  type DedicatedIpProvider,
+  DedicatedIpTakenError,
   type DomainIdentity,
   type DomainIdentityState,
   type DomainVerificationStatus,
@@ -169,6 +190,7 @@ export {
   simulatedEvents,
   uniqueRecipients,
 } from "./providers/fake.ts";
+export { FakeDedicatedIpProvider } from "./providers/fake-dedicated-ips.ts";
 export { FakeIdentityProvider } from "./providers/fake-identity.ts";
 export { FakeTrackingHostnameProvider } from "./providers/fake-tracking-hostnames.ts";
 export {
@@ -227,6 +249,7 @@ export {
 } from "./reputation-checks.ts";
 export {
   purgeEmptyEmailBatches,
+  purgeExpiredDedicatedIpRollups,
   purgeExpiredDmarcNotifications,
   purgeExpiredDmarcReports,
   purgeExpiredEmails,
@@ -253,7 +276,10 @@ export {
   type CreateSuppressionRequestOutput,
   CreateTrackingDomainRequest,
   type CreateTrackingDomainRequestInput,
+  DEDICATED_IP_POOL_STATUSES,
   DEFAULT_RECEIVED_EMAIL_LIST_LIMIT,
+  DedicatedIpPoolObject,
+  type DedicatedIpPoolObjectOutput,
   DeletedDomain,
   type DeletedDomainOutput,
   DeletedReceivedEmail,

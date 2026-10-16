@@ -317,6 +317,7 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
   },
   "GET /v1/domains": { method: "domains.list", args: () => [] },
+  "GET /v1/dedicated_ips": { method: "email.dedicatedIps.get", args: () => [] },
   "GET /v1/domains/{id}": { method: "domains.get", args: (r) => [pathId(r)] },
   "POST /v1/domains/{id}/verify": {
     method: "domains.verify",

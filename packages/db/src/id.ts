@@ -47,6 +47,7 @@ export const ID_PREFIXES = {
   domain: "dom",
   trackingDomain: "tdom",
   receivingDomain: "rdom",
+  dedicatedIpPool: "dip",
   receivedEmail: "rcvd",
   receivedEmailAttachment: "rcvdatt",
   dmarcReport: "dmarcrep",

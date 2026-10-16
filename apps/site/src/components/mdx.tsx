@@ -18,7 +18,7 @@ import { AlertCircleIcon, InfoIcon, LightbulbIcon, TriangleAlertIcon } from "luc
 import type { MDXComponents } from "mdx/types";
 import type { ComponentProps, ReactNode } from "react";
 import { ApiChangelog } from "./api-changelog";
-import { PlanTable, UsageRates } from "./billing";
+import { AddOns, PlanTable, UsageRates } from "./billing";
 import { DocsTable, DocsTd, DocsTh, DocsTr } from "./docs-table";
 import { RetentionPeriod, RetentionTable } from "./retention";
 import { RiskReasonTable, RiskRuleFieldTable, RiskThreshold } from "./risk-reasons";
@@ -128,6 +128,7 @@ export function getMDXComponents(components?: MDXComponents) {
     ),
     CodeBlockTabsList,
     CodeBlockTabsTrigger,
+    AddOns,
     PlanTable,
     RetentionPeriod,
     RetentionTable,

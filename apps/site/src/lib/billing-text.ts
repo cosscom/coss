@@ -1,4 +1,8 @@
 import {
+  ADD_ON_KEYS,
+  ADD_ONS,
+  type AddOnDefinition,
+  addOnGranting,
   FEATURE_KEYS,
   FEATURE_LABELS,
   LIMIT_KEYS,
@@ -68,7 +72,13 @@ export function planRows(): { label: string; values: string[] }[] {
     })),
     ...FEATURE_KEYS.map((key) => ({
       label: FEATURE_LABELS[key],
-      values: plans.map((plan) => (plan.entitlements.features[key] ? "Yes" : "—")),
+      values: plans.map((plan) =>
+        plan.entitlements.features[key]
+          ? "Yes"
+          : addOnGranting(key)?.plans.includes(plan.key)
+            ? "Add-on"
+            : "—",
+      ),
     })),
   ];
 }
@@ -101,7 +111,13 @@ export function rateRows(): { product: string; rate: string; note: string }[] {
     const definition = METERS[meter];
     const rates = card.rates[meter];
     if (!rates) return [];
-    const note = definition.requires === "commitment" ? "Committed volume, Enterprise only" : "";
+    const addOn = meter === "email.dedicated_ip" ? ADD_ONS.dedicated_ips : null;
+    const note =
+      definition.requires === "commitment"
+        ? "Committed volume, Enterprise only"
+        : addOn
+          ? `With the ${addOn.name} add-on, on top of Email`
+          : "";
     if (rates.default) {
       return [
         {
@@ -116,6 +132,19 @@ export function rateRows(): { product: string; rate: string; note: string }[] {
       rate: describeRate(rate, definition.displayPer, definition.unit),
       note,
     }));
+  });
+}
+
+/** The add-ons sold on top of a plan. */
+export function addOnRows(): { name: string; price: string; plans: string; description: string }[] {
+  return ADD_ON_KEYS.map((key) => {
+    const addOn: AddOnDefinition = ADD_ONS[key];
+    return {
+      name: addOn.name,
+      price: `${formatPrice(addOn.unitAmountCents)}/${addOn.interval}`,
+      plans: addOn.plans.map((plan) => PLANS[plan].name).join(", "),
+      description: addOn.description,
+    };
   });
 }
 
@@ -134,5 +163,15 @@ export function renderBillingComponents(markdown: string): string {
       (row) => `| ${row.product} | ${row.rate} |${row.note ? ` ${row.note} ` : " "}|`,
     ),
   ].join("\n");
-  return markdown.replaceAll("<PlanTable />", planTable).replaceAll("<UsageRates />", rateTable);
+  const addOnTable = [
+    "| Add-on | Price | Plans | |",
+    "| --- | --- | --- | --- |",
+    ...addOnRows().map(
+      (row) => `| ${row.name} | ${row.price} | ${row.plans} | ${row.description} |`,
+    ),
+  ].join("\n");
+  return markdown
+    .replaceAll("<PlanTable />", planTable)
+    .replaceAll("<UsageRates />", rateTable)
+    .replaceAll("<AddOns />", addOnTable);
 }

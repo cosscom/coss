@@ -7,6 +7,7 @@ import { schema, type Transaction } from "@coss/db";
 import { and, eq, gt, ne, sql } from "drizzle-orm";
 import { type BillingAccount, lockBillingAccount, organizationLabel } from "./accounts.ts";
 import { announcePlanChange } from "./announce.ts";
+import { advancePaid } from "./carried.ts";
 import {
   type Contract,
   cancelContract,
@@ -14,7 +15,7 @@ import {
   contractAt,
   contractPendingOn,
 } from "./contracts.ts";
-import { composeContractChange, feeChargeKeyAt } from "./engine/compose.ts";
+import { composeContractChange } from "./engine/compose.ts";
 import type { Composition, Segment } from "./engine/types.ts";
 import { BillingError } from "./errors.ts";
 import { existingGrantKeys, insertComposedGrants } from "./grants.ts";
@@ -44,11 +45,14 @@ export async function composeChange(
   if (fromSegment) fromSegment.contractEnd = at;
   const toSegment = segmentFrom(to, at, false);
   if (!toSegment) throw new Error("A contract change needs a contract to change to.");
-  const feeKey = fromSegment ? feeChargeKeyAt({ ...fromSegment, contractEnd: null }, at) : null;
-  const advanceCharged = feeKey ? (await existingChargeKeys([feeKey], tx)).size > 0 : false;
+  // What the replaced contract was charged in advance for `at`'s interval.
+  const paid = from ? await advancePaid(tx, from, at) : null;
   const input = {
     at,
-    from: fromSegment ? { segment: fromSegment, advanceCharged } : null,
+    from:
+      fromSegment && paid
+        ? { segment: fromSegment, advanceCharged: paid.fee, addOnsCharged: paid.addOns }
+        : null,
     to: toSegment,
   };
   const draft = composeContractChange(input);

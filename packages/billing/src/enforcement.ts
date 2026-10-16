@@ -3,7 +3,8 @@
  * rate limiter (`planRateLimits`). coss.com's own organization is never limited.
  */
 import { db, type Executor, schema } from "@coss/db";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, gt, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { ADD_ON_KEYS, ADD_ONS, type AddOnKey, addOnGranting } from "./catalog/add-ons.ts";
 import {
   type Entitlements,
   FEATURE_LABELS,
@@ -15,10 +16,11 @@ import {
 } from "./catalog/entitlements.ts";
 import { METERS, type MeterKey } from "./catalog/meters.ts";
 import { PLAN_KEYS, PLANS, type PlanKey } from "./catalog/plans.ts";
-import { meterAvailability } from "./engine/terms.ts";
+import { meterAvailability, resolveTermsAt } from "./engine/terms.ts";
 import { BillingError } from "./errors.ts";
 import type { PlanGate, UsageGate } from "./gate.ts";
 import { billingStateAt, creatableEntitlements } from "./resolve.ts";
+import { parseContractTerms } from "./schemas.ts";
 import { periodOf } from "./time.ts";
 
 const { billingQuota } = schema;
@@ -29,6 +31,14 @@ export function planWith(predicate: (entitlements: Entitlements) => boolean): Pl
 }
 
 export function featureUnavailable(feature: FeatureKey): BillingError {
+  const addOn = addOnGranting(feature);
+  if (addOn) {
+    const plans = addOn.plans.map((key) => PLANS[key].name).join(" and ");
+    return new BillingError(
+      "plan_feature_unavailable",
+      `${FEATURE_LABELS[feature]} require the ${addOn.name} add-on (on the ${plans} plans).`,
+    );
+  }
   const plan = PLANS[planWith((e) => e.features[feature])].name;
   return new BillingError(
     "plan_feature_unavailable",
@@ -184,4 +194,75 @@ export async function planRateLimits(
   const rules: Record<string, RateLimitRule> = {};
   for (const key of RATE_LIMIT_KEYS) rules[key] = terms.entitlements.rateLimits[key];
   return rules;
+}
+
+/**
+ * Organizations whose contract in effect at `now` grants `feature` (from its plan, overrides or
+ * catalog add-ons). For system-level reconciliation, e.g. provisioning dedicated IPs.
+ */
+export async function organizationsEntitledTo(
+  feature: FeatureKey,
+  opts: { now?: Date; scope?: { organizationIds: string[] } } = {},
+  executor: Executor = db,
+): Promise<string[]> {
+  const now = opts.now ?? new Date();
+  const contract = schema.billingContract;
+  const plans = PLAN_KEYS.filter((key) => PLANS[key].entitlements.features[feature]);
+  const addOns = ADD_ON_KEYS.filter((key) =>
+    (ADD_ONS[key].features as readonly FeatureKey[]).includes(feature),
+  );
+  if (plans.includes("free")) throw new Error(`Every organization has ${feature}.`);
+  // Candidates by SQL, decided by resolving their terms (an override can turn a feature off).
+  const rows = await executor
+    .select({ organizationId: contract.organizationId, terms: contract.terms })
+    .from(contract)
+    .where(
+      and(
+        eq(contract.status, "confirmed"),
+        lte(contract.effectiveFrom, now),
+        or(isNull(contract.effectiveUntil), gt(contract.effectiveUntil, now)),
+        opts.scope ? inArray(contract.organizationId, opts.scope.organizationIds) : undefined,
+        or(
+          plans.length ? inArray(contract.plan, plans) : undefined,
+          sql`${contract.terms} -> 'entitlements' -> 'features' ->> ${feature} = 'true'`,
+          ...addOns.map(
+            (key) => sql`${contract.terms} -> 'addOns' @> ${JSON.stringify([{ key }])}::jsonb`,
+          ),
+        ),
+      ),
+    );
+  const entitled = rows.filter(
+    (row) => resolveTermsAt(parseContractTerms(row.terms), now).entitlements.features[feature],
+  );
+  return [...new Set(entitled.map((row) => row.organizationId))];
+}
+
+/**
+ * Organizations with a pending (unpaid) change that adds catalog add-on `key` to a contract that
+ * doesn't have it yet: purchases that capacity must be kept for.
+ */
+export async function organizationsBuyingAddOn(
+  key: AddOnKey,
+  now: Date = new Date(),
+  executor: Executor = db,
+): Promise<string[]> {
+  const contract = schema.billingContract;
+  const rows = await executor
+    .select({ organizationId: contract.organizationId })
+    .from(contract)
+    .where(
+      and(
+        eq(contract.status, "pending"),
+        gt(contract.pendingExpiresAt, now),
+        sql`${contract.terms} -> 'addOns' @> ${JSON.stringify([{ key }])}::jsonb`,
+      ),
+    );
+  const buying: string[] = [];
+  for (const { organizationId } of rows) {
+    const state = await billingStateAt(organizationId, now, executor);
+    if (!(state.contract?.terms.addOns ?? []).some((line) => line.key === key)) {
+      buying.push(organizationId);
+    }
+  }
+  return [...new Set(buying)];
 }

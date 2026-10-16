@@ -19,6 +19,7 @@ import {
   sql,
 } from "drizzle-orm";
 import { type BillingAccount, lockBillingAccount, organizationLabel } from "./accounts.ts";
+import { carriedKeys } from "./carried.ts";
 import type { MeterKey } from "./catalog/meters.ts";
 import { contractAt, contractsOverlapping } from "./contracts.ts";
 import { composePeriodInvoice } from "./engine/compose.ts";
@@ -138,6 +139,12 @@ export async function composeMonth(
       executor,
     ),
   };
+  // The next month's fee or add-ons an earlier contract paid (a change in its first hour).
+  if (nextContract) {
+    const carried = await carriedKeys(nextContract, next.start, executor);
+    for (const key of carried.chargeKeys) billed.chargeKeys.add(key);
+    for (const key of carried.grantKeys) billed.grantKeys.add(key);
+  }
   const composition =
     billed.chargeKeys.size || billed.grantKeys.size
       ? composePeriodInvoice({

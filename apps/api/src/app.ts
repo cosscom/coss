@@ -243,6 +243,10 @@ export function openApiDocumentConfig(serverUrl: string) {
       },
       { name: "Domains", description: "The organization's verified sending domains." },
       {
+        name: "Dedicated IPs",
+        description: "The organization's own sending IPs, warmed up automatically (an add-on).",
+      },
+      {
         name: "Webhook endpoints",
         description: "URLs that receive the environment's delivery events, signed.",
       },

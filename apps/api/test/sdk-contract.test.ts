@@ -11,8 +11,12 @@ import { newId } from "@coss/db/id";
 import {
   buildTestMessage,
   dmarcReportAddress,
+  ensureOrgTenant,
+  FakeDedicatedIpProvider,
+  FakeIdentityProvider,
   receiveFakeEmail,
   receiveSampleDmarcReport,
+  reconcileDedicatedIpPools,
 } from "@coss/email";
 import { createVerifiedDomain, trackingUrls } from "@coss/email/testing";
 import { createLogWriter } from "@coss/logs";
@@ -1240,6 +1244,33 @@ describe("coss.webhookListeners against the API", () => {
     expect((await coss.webhookListeners.poll(must(listener).id)).error).toMatchObject({
       type: "not_found_error",
     });
+  });
+});
+
+describe("coss.email.dedicatedIps against the API", () => {
+  test("get reads the organization's pool, from any environment's key", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const live = clientFor(app, tenant.liveKey);
+    expect(await live.email.dedicatedIps.get()).toEqual({
+      data: {
+        object: "dedicated_ip_pool",
+        status: "not_enabled",
+        ips: [],
+        dedicated_share: null,
+        message: null,
+        created_at: null,
+        ready_at: null,
+      },
+      error: null,
+    });
+    await ensureOrgTenant(tenant.organization.id, new FakeIdentityProvider());
+    await reconcileDedicatedIpPools(
+      { entitled: [tenant.organization.id], scope: { organizationIds: [tenant.organization.id] } },
+      { identity: new FakeIdentityProvider(), dedicatedIps: new FakeDedicatedIpProvider() },
+    );
+    const { data } = await clientFor(app, tenant.sandboxKey).email.dedicatedIps.get();
+    expect(data).toMatchObject({ status: "warming", ips: [] });
   });
 });
 

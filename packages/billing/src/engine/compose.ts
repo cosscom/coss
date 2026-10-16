@@ -410,6 +410,102 @@ export function feeChargeKeyAt(segment: Segment, at: Date): string | null {
   return `fee:${segment.contractId}:${intervalAt(segment, at, INTERVAL_MONTHS[fee.interval]).start.toISOString()}`;
 }
 
+function sameMonthlyFee(a: Segment["terms"]["fee"], b: Segment["terms"]["fee"]): boolean {
+  return (
+    a !== null &&
+    b !== null &&
+    a.interval === "month" &&
+    b.interval === "month" &&
+    a.timing === b.timing &&
+    a.amountCents === b.amountCents
+  );
+}
+
+/** The key of a monthly fee's usage credit for the month containing `at`. */
+export function feeCreditKeyAt(segment: Segment, at: Date): string {
+  return `feecredit:${segment.contractId}:${monthStart(at).toISOString()}`;
+}
+
+/** `gross` less a segment's discounts on `scope` in effect, as its charges were discounted. */
+function netOfDiscounts(segment: Segment, scope: "fees" | "add_ons", gross: bigint): bigint {
+  let net = gross;
+  for (const discount of activeDiscounts(segment, (candidate) => candidate === scope)) {
+    const off = percentOf(gross, discount.percent);
+    net -= off > net ? net : off;
+  }
+  return net;
+}
+
+/**
+ * `segment` as it was when its advance charge for the `months`-month interval containing `at` was
+ * made (at the interval's start, or the contract's if later): the discounts in effect then.
+ */
+function asCharged(segment: Segment, at: Date, months: number): Segment {
+  const { start } = intervalAt(segment, at, months);
+  return {
+    ...segment,
+    interval: {
+      start: start < segment.contractStart ? segment.contractStart : start,
+      end: segment.interval.end,
+    },
+  };
+}
+
+/** The percentages of a segment's discounts on `scope` in effect (what its charges pay). */
+function discountPercents(segment: Segment, scope: "fees" | "add_ons"): string {
+  return activeDiscounts(segment, (candidate) => candidate === scope)
+    .map((discount) => discount.percent)
+    .join(",");
+}
+
+/**
+ * Whether a contract change keeps the replaced contract's fee for the month, once paid (the same
+ * plan, monthly fee and fee discounts: only add-ons change), instead of charging it again and
+ * crediting it back.
+ */
+export function feeCarriesOver(from: Segment, to: Segment): boolean {
+  return (
+    from.terms.plan === to.terms.plan &&
+    sameMonthlyFee(from.terms.fee, to.terms.fee) &&
+    discountPercents(asCharged(from, to.interval.start, 1), "fees") === discountPercents(to, "fees")
+  );
+}
+
+type AddOnLine = Segment["terms"]["addOns"][number];
+
+/**
+ * Whether a monthly in-advance add-on of `from`, once paid, carries over to `to`'s `after` (the
+ * same price and add-on discounts).
+ */
+export function addOnCarriesOver(
+  from: Segment,
+  before: AddOnLine,
+  to: Segment,
+  after: AddOnLine,
+): boolean {
+  return (
+    discountPercents(asCharged(from, to.interval.start, 1), "add_ons") ===
+      discountPercents(to, "add_ons") &&
+    before.key === after.key &&
+    after.timing === "advance" &&
+    after.interval === "month" &&
+    before.interval === "month" &&
+    before.timing === "advance" &&
+    before.unitAmountCents * BigInt(before.quantity) ===
+      after.unitAmountCents * BigInt(after.quantity)
+  );
+}
+
+/** The key of a contract's add-on charge for the add-on interval containing `at`. */
+export function addOnChargeKeyAt(
+  segment: Segment,
+  addOn: Segment["terms"]["addOns"][number],
+  at: Date,
+): string {
+  const interval = intervalAt(segment, at, INTERVAL_MONTHS[addOn.interval]);
+  return `addon:${segment.contractId}:${addOn.key}:${interval.start.toISOString()}`;
+}
+
 function contractRange(segment: Segment): Interval {
   return { start: segment.contractStart, end: segment.contractEnd ?? FAR_FUTURE };
 }
@@ -819,8 +915,11 @@ function applyCredits(draft: Draft, grants: readonly GrantBalance[], period: Int
 export type ContractChangeInput = {
   /** When the new contract takes effect (hour-aligned). */
   at: Date;
-  /** The contract being replaced (`null`: Free), and whether its advance fee for `at`'s interval was charged. */
-  from: { segment: Segment; advanceCharged: boolean } | null;
+  /**
+   * The contract being replaced (`null`: Free), whether its advance fee for `at`'s interval was
+   * charged, and the keys of its add-ons whose advance charge for `at`'s interval was.
+   */
+  from: { segment: Segment; advanceCharged: boolean; addOnsCharged?: ReadonlySet<string> } | null;
   /** The new contract, starting at `at`. */
   to: Segment;
   billed?: AlreadyBilled;
@@ -838,22 +937,42 @@ export function composeContractChange(input: ContractChangeInput): Composition {
   const month: Interval = { start: monthStart(at), end: addMonths(monthStart(at), 1) };
   const from = input.from;
   const fromAdvance = from?.advanceCharged ? from.segment : null;
+  // The same plan and monthly fee, already paid for this month (e.g. only an add-on changes):
+  // the fee carries over instead of being charged again and credited back.
+  const feeCarries = fromAdvance !== null && feeCarriesOver(fromAdvance, to);
 
-  if (to.terms.fee?.timing === "advance") {
+  if (to.terms.fee?.timing === "advance" && !feeCarries) {
     const months = INTERVAL_MONTHS[to.terms.fee.interval];
     feeCharge(draft, to, intervalAt(to, at, months), to.terms.fee.amountCents, "advance");
   }
+  const carried = new Set<string>();
   for (const addOn of to.terms.addOns) {
-    if (addOn.timing === "advance")
-      addOnCharge(draft, to, intervalAt(to, at, INTERVAL_MONTHS[addOn.interval]), addOn);
+    if (addOn.timing !== "advance") continue;
+    const before = from?.segment.terms.addOns.find((line) => line.key === addOn.key);
+    if (
+      before &&
+      from?.addOnsCharged?.has(addOn.key) &&
+      addOnCarriesOver(from.segment, before, to, addOn)
+    ) {
+      // Already paid for this month at the same price: it carries over too.
+      carried.add(addOn.key);
+      continue;
+    }
+    addOnCharge(draft, to, intervalAt(to, at, INTERVAL_MONTHS[addOn.interval]), addOn);
   }
-  if (fromAdvance?.terms.fee?.timing === "advance") {
+  if (fromAdvance?.terms.fee?.timing === "advance" && !feeCarries) {
     const months = INTERVAL_MONTHS[fromAdvance.terms.fee.interval];
     const interval = intervalAt(fromAdvance, at, months);
     // The replaced contract now ends at `at`; what it was charged for after that is unused.
     const unused = intersect(interval, { start: at, end: FAR_FUTURE });
     if (unused) {
-      const amount = prorate(fromAdvance.terms.fee.amountCents, hoursIn(unused), hoursIn(interval));
+      // What it was charged: the fee less the replaced contract's fee discounts at the time.
+      const paid = netOfDiscounts(
+        asCharged(fromAdvance, at, months),
+        "fees",
+        fromAdvance.terms.fee.amountCents,
+      );
+      const amount = prorate(paid, hoursIn(unused), hoursIn(interval));
       if (amount > 0n) {
         draft.charge(
           {
@@ -869,6 +988,34 @@ export function composeContractChange(input: ContractChangeInput): Composition {
       }
     }
   }
+  if (from) {
+    for (const addOn of from.segment.terms.addOns) {
+      if (addOn.timing !== "advance" || carried.has(addOn.key)) continue;
+      if (!from.addOnsCharged?.has(addOn.key)) continue;
+      const interval = intervalAt(from.segment, at, INTERVAL_MONTHS[addOn.interval]);
+      const unused = intersect(interval, { start: at, end: FAR_FUTURE });
+      if (!unused) continue;
+      // What it was charged: its price less the replaced contract's add-on discounts at the time.
+      const paid = netOfDiscounts(
+        asCharged(from.segment, at, INTERVAL_MONTHS[addOn.interval]),
+        "add_ons",
+        addOn.unitAmountCents * BigInt(addOn.quantity),
+      );
+      const amount = prorate(paid, hoursIn(unused), hoursIn(interval));
+      if (amount <= 0n) continue;
+      draft.charge(
+        {
+          kind: "proration",
+          description: `Unused time on ${addOn.name}`,
+          amountCents: -amount,
+          period: unused,
+          contractId: from.segment.contractId,
+          chargeKey: `unused-addon:${from.segment.contractId}:${addOn.key}:${at.toISOString()}`,
+        },
+        from.segment,
+      );
+    }
+  }
 
   const net = draft.lines.reduce((sum, line) => sum + line.amountCents, 0n);
   if (net < 0n) {
@@ -880,7 +1027,8 @@ export function composeContractChange(input: ContractChangeInput): Composition {
   }
 
   // Credit: the new contract's monthly credit for the rest of the month, less what the replaced
-  // contract's (already granted) credit covers for the same time.
+  // contract's (already granted) credit covers for the same time. Also when the fee carries over:
+  // its credit may not have been spendable before.
   if (to.terms.fee && to.terms.feeCredit.spendable) {
     const rest: Interval = { start: at, end: month.end };
     const fraction = (fee: bigint) => prorate(fee, hoursIn(rest), hoursIn(month));

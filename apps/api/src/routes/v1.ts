@@ -6,6 +6,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import type { AppEnv } from "../types.ts";
 import { createAuditEventRoutes } from "./audit-events.ts";
 import { createBillingRoutes } from "./billing.ts";
+import { createDedicatedIpRoutes } from "./dedicated-ips.ts";
 import { createDomainRoutes } from "./domains.ts";
 import { createEmailTemplateRoutes } from "./email-templates.ts";
 import { createEmailRoutes } from "./emails.ts";
@@ -45,6 +46,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   v1.route("/", createEmailRoutes(deps.emailService));
   v1.route("/", createEmailTemplateRoutes());
   v1.route("/", createDomainRoutes(deps.domainDeps, deps.inbound));
+  v1.route("/", createDedicatedIpRoutes());
   v1.route("/", createWebhookEndpointRoutes(deps.webhookDeps));
   v1.route(
     "/",
