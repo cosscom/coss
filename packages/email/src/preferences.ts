@@ -254,7 +254,8 @@ export async function applyPreferences(
     const scope = await scopeOf(link, tx);
     if (!scope) return false;
     const env = { organizationId: scope.organizationId, environmentId: scope.environmentId };
-    const topics = await topicsByKey(env);
+    // Through the transaction: a second pool connection could wait on a full pool forever.
+    const topics = await topicsByKey(env, undefined, tx);
     const { row: found, created } = await contactFor(tx, scope, link.address, now);
     let row = found;
     if (created) await announceContact(tx, row, "contact.created", "preference_center", now);
