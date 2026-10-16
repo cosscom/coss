@@ -27,7 +27,7 @@ await coss.email.contacts.updateTopics("ada@example.com", {
 
 With `default_subscription: "opt_in"`, every subscribed contact gets the topic's email unless they
 opted out; with `opt_out`, only contacts who opted in do. `private` topics never show in the
-preference center.
+preference center. An environment has at most 100 topics.
 
 ## The preference center
 
