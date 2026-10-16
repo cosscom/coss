@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: SITE_URL },
     { url: `${SITE_URL}/pricing` },
     { url: `${SITE_URL}/about` },
+    { url: `${SITE_URL}/crowd-opinionated-source-software` },
     { url: `${SITE_URL}${SHIPYARD.path}` },
     ...shipyardSource.getPages().map((page) => ({ url: `${SITE_URL}${page.url}` })),
     { url: `${SITE_URL}${CALENDAR.path}` },
