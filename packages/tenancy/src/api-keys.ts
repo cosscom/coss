@@ -9,8 +9,15 @@ import { getEnvironmentById } from "./environments.ts";
 import { TenancyError } from "./errors.ts";
 import type { EnvironmentMode } from "./types.ts";
 
-const { apikey, environment, environmentApiKey, organizationApiVersion, organizationSuspension } =
-  schema;
+const {
+  apikey,
+  environment,
+  environmentApiKey,
+  organization,
+  organizationApiVersion,
+  organizationSuspension,
+  project,
+} = schema;
 
 export type EnvironmentApiKeySummary = {
   id: string;
@@ -158,6 +165,77 @@ export async function apiKeyNames(input: {
     .from(apikey)
     .where(and(inArray(apikey.id, ids), eq(apikey.referenceId, input.organizationId)));
   return Object.fromEntries(rows.map((row) => [row.id, row.name ?? row.id]));
+}
+
+/** What an authenticated key belongs to (`GET /v1/environment`): names and slugs, no secrets. */
+export type ApiKeyEnvironmentSummary = {
+  environment: { id: string; name: string; slug: string; mode: EnvironmentMode };
+  project: { id: string; name: string; slug: string };
+  organization: { id: string; name: string; slug: string };
+  apiKey: { id: string; name: string | null; start: string | null };
+};
+
+/**
+ * The environment, project and organization a key is bound to, scoped by the organization (from
+ * the authenticated context). `null` when the key or its binding is gone.
+ */
+export async function getApiKeyEnvironmentSummary(input: {
+  organizationId: string;
+  environmentId: string;
+  apiKeyId: string;
+}): Promise<ApiKeyEnvironmentSummary | null> {
+  const [row] = await db
+    .select({
+      environmentId: environment.id,
+      environmentName: environment.name,
+      environmentSlug: environment.slug,
+      mode: environment.mode,
+      projectId: project.id,
+      projectName: project.name,
+      projectSlug: project.slug,
+      organizationId: organization.id,
+      organizationName: organization.name,
+      organizationSlug: organization.slug,
+      apiKeyId: apikey.id,
+      apiKeyName: apikey.name,
+      apiKeyStart: apikey.start,
+    })
+    .from(environmentApiKey)
+    .innerJoin(apikey, eq(apikey.id, environmentApiKey.apiKeyId))
+    .innerJoin(environment, eq(environment.id, environmentApiKey.environmentId))
+    .innerJoin(
+      project,
+      and(
+        eq(project.id, environment.projectId),
+        eq(project.organizationId, environment.organizationId),
+      ),
+    )
+    .innerJoin(organization, eq(organization.id, environment.organizationId))
+    .where(
+      and(
+        eq(environmentApiKey.apiKeyId, input.apiKeyId),
+        eq(environment.id, input.environmentId),
+        eq(environment.organizationId, input.organizationId),
+        eq(apikey.referenceId, input.organizationId),
+      ),
+    )
+    .limit(1);
+  if (!row) return null;
+  return {
+    environment: {
+      id: row.environmentId,
+      name: row.environmentName,
+      slug: row.environmentSlug,
+      mode: row.mode,
+    },
+    project: { id: row.projectId, name: row.projectName, slug: row.projectSlug },
+    organization: {
+      id: row.organizationId,
+      name: row.organizationName,
+      slug: row.organizationSlug,
+    },
+    apiKey: { id: row.apiKeyId, name: row.apiKeyName, start: row.apiKeyStart },
+  };
 }
 
 /** Ownership check before revoking/inspecting a key from the dashboard. */

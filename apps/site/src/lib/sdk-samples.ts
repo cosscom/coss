@@ -166,6 +166,7 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "hooks.portal.createSession",
     args: (request) => [withApplication(request), requestOptions(request)],
   },
+  "GET /v1/environment": { method: "environment.get", args: () => [] },
   "GET /v1/reputation": { method: "reputation.get", args: () => [] },
   "GET /v1/billing": { method: "billing.get", args: () => [] },
   "GET /v1/billing/usage": { method: "billing.usage", args: (request) => [queryParams(request)] },

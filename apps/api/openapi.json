@@ -12,6 +12,10 @@
   ],
   "tags": [
     {
+      "name": "Environment",
+      "description": "The environment, project and organization an API key belongs to."
+    },
+    {
       "name": "Emails",
       "description": "Send transactional email and follow its delivery."
     },
@@ -77,6 +81,222 @@
       }
     },
     "schemas": {
+      "Environment": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "environment"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "The environment's id."
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "live",
+              "sandbox"
+            ],
+            "description": "`live` delivers email; `sandbox` (`coss_test_` keys) never does."
+          },
+          "project": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The project's id."
+              },
+              "name": {
+                "type": "string",
+                "description": "The project's name."
+              },
+              "slug": {
+                "type": "string",
+                "description": "The project's slug, as in dashboard URLs."
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "slug"
+            ],
+            "additionalProperties": false
+          },
+          "organization": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The organization's id."
+              },
+              "name": {
+                "type": "string",
+                "description": "The organization's name."
+              },
+              "slug": {
+                "type": "string",
+                "description": "The organization's slug, as in dashboard URLs."
+              },
+              "api_version": {
+                "type": "string",
+                "description": "The organization's pinned API version: what requests without a `Coss-Version` header and new webhook endpoints get."
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "slug",
+              "api_version"
+            ],
+            "additionalProperties": false
+          },
+          "api_key": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The key's id."
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "start": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The key's first characters, as shown in the dashboard."
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "start"
+            ],
+            "additionalProperties": false,
+            "description": "The API key making this request."
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "name",
+          "slug",
+          "mode",
+          "project",
+          "organization",
+          "api_key"
+        ],
+        "additionalProperties": false,
+        "description": "The environment an API key belongs to, with its project and organization.",
+        "examples": [
+          {
+            "object": "environment",
+            "id": "env_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "name": "Development",
+            "slug": "development",
+            "mode": "sandbox",
+            "project": {
+              "id": "proj_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "name": "Default",
+              "slug": "default"
+            },
+            "organization": {
+              "id": "org_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "name": "Acme",
+              "slug": "acme",
+              "api_version": "2026-10-10"
+            },
+            "api_key": {
+              "id": "key_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "name": "Backend",
+              "start": "coss_test_Ab"
+            }
+          }
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "not_found_error",
+                  "idempotency_error",
+                  "rate_limit_error",
+                  "billing_error",
+                  "api_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "description": "Machine-readable reason, e.g. `invalid_api_key`."
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable explanation. May change."
+              },
+              "param": {
+                "type": "string",
+                "description": "The request field or header the error relates to."
+              },
+              "issues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Dot-separated field path, e.g. `to.1`."
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "message"
+                  ]
+                },
+                "description": "Every problem: of the request (`validation_error`) or of a template (`invalid_template_variables`, `template_invalid`)."
+              },
+              "request_id": {
+                "type": "string",
+                "examples": [
+                  "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "code",
+              "message",
+              "request_id"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
       "Email": {
         "type": "object",
         "properties": {
@@ -538,76 +758,6 @@
             "version": 2,
             "locale": "en"
           }
-        ]
-      },
-      "Error": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": [
-                  "invalid_request_error",
-                  "authentication_error",
-                  "permission_error",
-                  "not_found_error",
-                  "idempotency_error",
-                  "rate_limit_error",
-                  "billing_error",
-                  "api_error"
-                ]
-              },
-              "code": {
-                "type": "string",
-                "description": "Machine-readable reason, e.g. `invalid_api_key`."
-              },
-              "message": {
-                "type": "string",
-                "description": "Human-readable explanation. May change."
-              },
-              "param": {
-                "type": "string",
-                "description": "The request field or header the error relates to."
-              },
-              "issues": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "path": {
-                      "type": "string",
-                      "description": "Dot-separated field path, e.g. `to.1`."
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "path",
-                    "message"
-                  ]
-                },
-                "description": "Every problem: of the request (`validation_error`) or of a template (`invalid_template_variables`, `template_invalid`)."
-              },
-              "request_id": {
-                "type": "string",
-                "examples": [
-                  "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
-                ]
-              }
-            },
-            "required": [
-              "type",
-              "code",
-              "message",
-              "request_id"
-            ]
-          }
-        },
-        "required": [
-          "error"
         ]
       },
       "SendEmailRequest": {
@@ -13301,6 +13451,190 @@
     }
   },
   "paths": {
+    "/v1/environment": {
+      "get": {
+        "operationId": "getEnvironment",
+        "tags": [
+          "Environment"
+        ],
+        "summary": "Retrieve the API key's environment",
+        "description": "Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key and show where it sends.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The API key's environment.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Environment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
+      }
+    },
     "/v1/emails": {
       "post": {
         "operationId": "sendEmail",

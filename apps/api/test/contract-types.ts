@@ -226,6 +226,7 @@ import type {
   EmailTracking as SdkEmailTracking,
   EmailWebhookEvent as SdkEmailWebhookEvent,
   WebhookEndpointWithSecret as SdkEndpointWithSecret,
+  Environment as SdkEnvironment,
   ForgottenRiskUser as SdkForgottenRiskUser,
   HookEndpointWebhookEvent as SdkHookEndpointWebhookEvent,
   InboundAddress as SdkInboundAddress,
@@ -280,6 +281,7 @@ import type {
 } from "coss";
 import type { z } from "zod";
 import type { ErrorEnvelopeBody } from "../src/errors.ts";
+import type { EnvironmentObject } from "../src/routes/environment.ts";
 import type {
   CreateWebhookEndpointRequest,
   UpdateWebhookEndpointRequest,
@@ -532,6 +534,8 @@ export type Contract = [
     >
   >,
   Assert<MutuallyAssignable<z.output<typeof BillingWebhookEvent>, SdkBillingWebhookEvent>>,
+  // The API key's environment.
+  Assert<MutuallyAssignable<z.output<typeof EnvironmentObject>, SdkEnvironment>>,
   // Reputation.
   Assert<MutuallyAssignable<z.output<typeof ReputationObject>, SdkReputation>>,
   Assert<MutuallyAssignable<z.output<typeof ReputationCheckObject>, SdkReputationCheck>>,

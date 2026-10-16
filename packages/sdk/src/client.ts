@@ -4,6 +4,7 @@ import { AuditEventsResource } from "./resources/audit-events.ts";
 import { BillingResource } from "./resources/billing.ts";
 import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
+import { EnvironmentResource } from "./resources/environment.ts";
 import { HooksResource } from "./resources/hooks.ts";
 import { LogDrainsResource } from "./resources/log-drains.ts";
 import { LogsResource } from "./resources/logs.ts";
@@ -75,6 +76,8 @@ function timeoutMs(value: number | undefined): number {
  */
 export class Coss {
   readonly email: EmailResource;
+  /** The API key's environment, project and organization (`coss.environment.get()`). */
+  readonly environment: EnvironmentResource;
   /** Sending domains of the organization (`coss.domains.create`, `.verify`, …). */
   readonly domains: DomainsResource;
   /** Webhook endpoints of the API key's environment. */
@@ -128,6 +131,7 @@ export class Coss {
       apiVersion: options.apiVersion?.trim() || API_VERSION,
     });
     this.email = new EmailResource(http);
+    this.environment = new EnvironmentResource(http);
     this.domains = new DomainsResource(http);
     this.webhookEndpoints = new WebhookEndpointsResource(http);
     this.reputation = new ReputationResource(http);

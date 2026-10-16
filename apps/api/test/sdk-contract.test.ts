@@ -1140,6 +1140,23 @@ describe("coss.webhookEndpoints.rollSecret against the API", () => {
   });
 });
 
+describe("coss.environment against the API", () => {
+  test("get names the key's environment, project and organization", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const { data, error } = await clientFor(app, tenant.sandboxKey).environment.get();
+    expect(error).toBeNull();
+    expect(data).toMatchObject({
+      object: "environment",
+      id: tenant.development.id,
+      mode: "sandbox",
+      project: { id: tenant.project.id, slug: tenant.project.slug },
+      organization: { id: tenant.organization.id, api_version: API_VERSION },
+      api_key: { name: "Test sandbox key" },
+    });
+  });
+});
+
 describe("coss.reputation against the API", () => {
   test("get mirrors the standing, and a suspended live send is a permission_error", async () => {
     const tenant = await createTestTenant();

@@ -1,11 +1,13 @@
 export { promoteToAdmin } from "./admin.ts";
 export {
   type ApiKeyContext,
+  type ApiKeyEnvironmentSummary,
   type AuthenticateResult,
   apiKeyNames,
   authenticateApiKey,
   createEnvironmentApiKey,
   type EnvironmentApiKeySummary,
+  getApiKeyEnvironmentSummary,
   getKeyBinding,
   type KeyPermissions,
   LAST_USED_RESOLUTION_MS,

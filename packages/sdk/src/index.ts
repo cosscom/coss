@@ -14,6 +14,7 @@ export type {
   EmailTemplatesResource,
   EmailTemplateVersionsResource,
 } from "./resources/email-templates.ts";
+export type { EnvironmentResource } from "./resources/environment.ts";
 export type {
   HookApplicationsResource,
   HookDeliveriesResource,
@@ -124,6 +125,7 @@ export type {
   UpdateEmailTemplateDraftParams,
   UpdateEmailTemplateParams,
 } from "./types/email-template.ts";
+export type { Environment, NamedResource } from "./types/environment.ts";
 export type {
   CreateHookApplicationParams,
   CreateHookEndpointParams,

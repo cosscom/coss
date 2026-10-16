@@ -214,6 +214,10 @@ export function openApiDocumentConfig(serverUrl: string) {
     },
     servers: [{ url: serverUrl }],
     tags: [
+      {
+        name: "Environment",
+        description: "The environment, project and organization an API key belongs to.",
+      },
       { name: "Emails", description: "Send transactional email and follow its delivery." },
       {
         name: "Email templates",

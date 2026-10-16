@@ -9,6 +9,7 @@ import { createBillingRoutes } from "./billing.ts";
 import { createDomainRoutes } from "./domains.ts";
 import { createEmailTemplateRoutes } from "./email-templates.ts";
 import { createEmailRoutes } from "./emails.ts";
+import { createEnvironmentRoutes } from "./environment.ts";
 import { createHookRoutes } from "./hooks/index.ts";
 import { createLogDrainRoutes } from "./log-drains.ts";
 import { createLogRoutes } from "./logs.ts";
@@ -36,6 +37,7 @@ export type V1Dependencies = {
 /** Everything under `/v1`. Each product mounts its routes here. */
 export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   const v1 = new OpenAPIHono<AppEnv>();
+  v1.route("/", createEnvironmentRoutes());
   v1.route("/", createEmailRoutes(deps.emailService));
   v1.route("/", createEmailTemplateRoutes());
   v1.route("/", createDomainRoutes(deps.domainDeps, deps.inbound));
