@@ -2,6 +2,7 @@ import { describe, expect, mock, test } from "bun:test";
 
 mock.module("server-only", () => ({}));
 mock.module("@coss/email", () => ({
+  BroadcastError: class extends Error {},
   ContactError: class extends Error {},
   DomainError: class extends Error {},
   EmailError: class extends Error {},

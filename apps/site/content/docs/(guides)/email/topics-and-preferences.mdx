@@ -1,0 +1,113 @@
+---
+title: Topics and preferences
+description: What contacts subscribe to, the hosted preference center, one-click unsubscribe and double opt-in.
+---
+
+## Topics
+
+A topic is something contacts can subscribe to, like a newsletter or product updates. Its `key` is
+also a [category](/docs/email/sending#categories): a broadcast or email with that category is about
+the topic.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.email.topics.create({
+  key: "newsletter",
+  name: "Newsletter",
+  description: "Monthly product news.",
+  default_subscription: "opt_in",
+});
+
+await coss.email.contacts.updateTopics("ada@example.com", {
+  topics: [{ topic: "newsletter", status: "opted_out" }],
+});
+```
+
+With `default_subscription: "opt_in"`, every subscribed contact gets the topic's email unless they
+opted out; with `opt_out`, only contacts who opted in do. `private` topics never show in the
+preference center. An environment has at most 100 topics.
+
+## The preference center
+
+Every marketing email links to a page coss.com hosts on its tracking domain (or your [custom tracking
+domain](/docs/email/tracking)), where the recipient sees their public topics, changes their choices
+or unsubscribes from everything. The links name no address and expire never; opening them changes
+nothing, only submitting the page does.
+
+Marketing email also carries `List-Unsubscribe` and `List-Unsubscribe-Post` headers, so mail clients
+show their own unsubscribe button (one click, [RFC 8058](https://www.rfc-editor.org/rfc/rfc8058)).
+A broadcast's links leave just its topic; others leave marketing email altogether. Unsubscribing
+sends a `contact.unsubscribed` webhook (with `topic` when it was one topic) and records an
+`email.unsubscribed` event on the email it came from.
+
+A transactional email whose `category` is a topic's key gets the same headers when it has a single
+recipient (and no `List-Unsubscribe` header of your own). They lead to the preference center rather
+than to the [per-category one-click unsubscribe](/docs/email/unsubscribe): unsubscribing opts the
+contact out of the topic instead of adding a suppression.
+
+Put the links in your content with `{{{unsubscribe_url}}}` and `{{{preferences_url}}}`, and your
+postal address with `{{{mailing_address}}}`. Without them, coss.com adds a footer with all three.
+To link to the page from elsewhere (your app's settings), mint links for a contact:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: links } = await coss.email.contacts.createPreferenceLinks("ada@example.com", {
+  topic: "newsletter",
+});
+// links?.preferences_url, links?.unsubscribe_url
+```
+
+## Your postal address
+
+The CAN-SPAM Act requires a valid physical postal address in every commercial email. Set it once in
+the marketing settings; marketing email can't be sent without one.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.email.marketingSettings.update({
+  display_name: "Acme",
+  mailing_address: "Acme Inc.\n548 Market St\nSan Francisco, CA 94104, USA",
+});
+```
+
+## Double opt-in
+
+With double opt-in, a new contact stays `pending` until they click the link in a confirmation email,
+which proves they own the address. Turn it on for every contact created through the API
+(`double_opt_in_default`) or per request (`double_opt_in`); contacts you add or import in the
+dashboard, and imports, are added as you set them. Confirmations come from `confirmation_from` (on a verified domain for live
+environments), use coss.com's default email or yours (it must contain `{{{confirmation_url}}}`), and
+can send the contact to `confirmed_redirect_url` afterwards. While double opt-in applies,
+`status: "subscribed"` is refused (`double_opt_in_status`); pass `double_opt_in: false` for someone
+who already confirmed elsewhere.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.email.marketingSettings.update({
+  confirmation_from: "Acme <news@acme.com>",
+  confirmed_redirect_url: "https://acme.com/welcome",
+});
+
+const { data: contact } = await coss.email.contacts.upsert({
+  email: "new@example.com",
+  double_opt_in: true,
+});
+// contact?.status === "pending"
+
+// Sent again at most once a day, three times in all.
+await coss.email.contacts.resendConfirmation(contact?.id ?? "");
+```
+
+Confirmation links expire after 7 days. Contacts that never confirm are deleted
+<RetentionPeriod of="pending_contacts" /> after they were asked (see [data retention](/docs/data-retention)),
+except one who had opted out (unsubscribed before, or left a topic): they go back to
+`unsubscribed`, so their opt-out stays.
+Confirming sends a `contact.confirmed` webhook.

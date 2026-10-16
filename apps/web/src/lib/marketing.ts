@@ -52,13 +52,19 @@ export async function auditMarketing(
 }
 
 /** A marketing page's environment, for members allowed to read contacts (404 otherwise). */
-export async function marketingPage(params: {
-  orgSlug: string;
-  projectSlug: string;
-  envSlug: string;
-}) {
+export async function marketingPage(
+  params: {
+    orgSlug: string;
+    projectSlug: string;
+    envSlug: string;
+  },
+  /** Broadcast pages need `broadcast:read` instead. */
+  resource: "contact" | "broadcast" = "contact",
+) {
   const context = await requireOrgMember(params.orgSlug);
-  if (!context.can({ contact: ["read"] })) notFound();
+  if (!context.can(resource === "broadcast" ? { broadcast: ["read"] } : { contact: ["read"] })) {
+    notFound();
+  }
   const found = await getEnvironment({
     organizationId: context.organization.id,
     projectSlug: params.projectSlug,

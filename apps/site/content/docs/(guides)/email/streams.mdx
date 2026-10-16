@@ -1,0 +1,52 @@
+---
+title: Transactional and marketing email
+description: Two streams, so marketing complaints never hold up password resets.
+---
+
+coss.com sends email in two streams. **Transactional** email is what a user expects because of
+something they did: sign-in links, receipts, password resets. **Marketing** email is what you send
+to many people at once: newsletters, announcements, [broadcasts](/docs/email/broadcasts).
+
+Each stream has its own sending configuration and its own reputation. Marketing mail gets more
+complaints and bounces than transactional mail; keeping them apart means a newsletter that annoys
+people can pause marketing email, never your password resets. With [dedicated
+IPs](/docs/email/dedicated-ips), both streams leave from your organization's own IPs, still each
+with its own configuration and reputation.
+
+## Sending marketing email
+
+Broadcasts are always marketing email. To send a single marketing email yourself, pass
+`stream: "marketing"`:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.email.send({
+  from: "Acme <news@acme.com>",
+  to: "ada@example.com",
+  subject: "You're invited",
+  html: "<p>Join us on Thursday.</p>",
+  stream: "marketing",
+  category: "events",
+});
+```
+
+A marketing email goes to one recipient, needs your postal address in the marketing settings, and
+may not set `List-Unsubscribe` headers itself: coss.com adds them, with an unsubscribe link and your
+address (see [topics and preferences](/docs/email/topics-and-preferences)). Contacts who
+unsubscribed, or opted out of the email's topic (its `category`), are skipped; addresses that aren't
+contacts are sent to (you vouch for their consent).
+
+Transactional email ignores marketing consent: someone who unsubscribed from your newsletter still
+gets their receipts. Only an explicit opt-out of the topic matching a transactional email's
+`category` skips it.
+
+## Reputation
+
+coss.com measures bounce and complaint rates per stream. When marketing email crosses its thresholds,
+**marketing email is paused** for the organization (an `account.marketing_paused` webhook and an
+email to owners and admins), and transactional email keeps going. A complaint about a marketing
+email suppresses that address for marketing email only; a permanent bounce suppresses it for
+everything. A pause is lifted by coss.com support after a review; [delivery](/docs/email/delivery)
+covers what happens to transactional email.
