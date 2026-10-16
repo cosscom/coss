@@ -4,7 +4,7 @@ import { db, schema } from "@coss/db";
 import { RETENTION_DAYS } from "@coss/retention";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { and, eq } from "drizzle-orm";
-import { UpsertContactRequest } from "../src/contact-schemas.ts";
+import { MAX_TOPICS, UpsertContactRequest } from "../src/contact-schemas.ts";
 import { contactCount, getContact, upsertContact } from "../src/contacts.ts";
 import { sendConfirmation } from "../src/double-opt-in.ts";
 import { EmailError } from "../src/errors.ts";
@@ -405,6 +405,21 @@ describe("the preference center", () => {
     emailId: null,
     topic,
     issuedAt: new Date(),
+  });
+
+  test("an environment's topics are capped, so the preference form carries them all", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    for (let index = 0; index < MAX_TOPICS; index++) {
+      await createTopic(env, {
+        key: `t${index}`,
+        name: `T${index}`,
+        default_subscription: "opt_in",
+      });
+    }
+    await expect(
+      createTopic(env, { key: "one_more", name: "One more", default_subscription: "opt_in" }),
+    ).rejects.toMatchObject({ code: "too_many_topics" });
   });
 
   test("shows public topics (and the link's own), with the recipient's state", async () => {

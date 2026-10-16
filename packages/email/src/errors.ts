@@ -107,6 +107,7 @@ export type ContactErrorCode =
   | "property_in_use"
   | "name_taken"
   | "topic_exists"
+  | "too_many_topics"
   | "topic_in_use"
   | "audience_in_use"
   | "audience_not_found"

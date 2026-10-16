@@ -12,6 +12,8 @@ export { CONTACT_EVENT_TYPES, type ContactEventType } from "./contact-event-type
 
 /** Custom properties per environment. */
 export const MAX_CONTACT_PROPERTIES = 50;
+/** Topics per environment: the preference page shows them all, and its form carries every one. */
+export const MAX_TOPICS = 100;
 /** Serialized size of one contact's custom properties. */
 export const MAX_CONTACT_PROPERTIES_BYTES = 16 * 1024;
 /** Contacts per `POST /v1/contacts/import` request (the SDK and the dashboard batch). */

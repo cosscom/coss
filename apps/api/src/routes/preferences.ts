@@ -28,14 +28,17 @@ import {
   readLinkToken,
   unsubscribePage,
 } from "@coss/email";
+import { MAX_TOPICS } from "@coss/email/contact-schemas";
 import { type Context, Hono, type Next } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import type { AppEnv } from "../types.ts";
 
-/** Preference forms are a few checkboxes. */
-const BODY_LIMIT_BYTES = 16 * 1024;
-/** Topics one form can change. */
-const MAX_TOPIC_FIELDS = 100;
+/**
+ * A preference form lists and checks at most `MAX_TOPICS` topics (an environment's cap, so the
+ * page never shows more than the form carries), each key up to 256 characters: 64 KB fits them.
+ */
+const BODY_LIMIT_BYTES = 64 * 1024;
+const MAX_TOPIC_FIELDS = MAX_TOPICS;
 
 const NO_STORE = "no-store, private";
 
