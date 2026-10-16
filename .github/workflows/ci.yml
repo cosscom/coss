@@ -131,7 +131,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { driver: laravel, versions: "PHP 8.5, latest", php: "8.5", e2e: true }
+          - { driver: laravel, versions: "PHP 8.5, latest", php: "8.5", e2e: true, lint: true }
           - { driver: laravel, versions: "PHP 8.2, lowest", php: "8.2", composer: "--prefer-lowest" }
           - { driver: rails, versions: "Ruby 3.4, Rails 8.1", ruby: "3.4", rails: "8.1", e2e: true }
           - { driver: rails, versions: "Ruby 3.2, Rails 7.2", ruby: "3.2", rails: "7.2" }
@@ -186,7 +186,8 @@ jobs:
         working-directory: integrations/laravel
         run: |
           composer update --no-interaction --no-progress --prefer-stable ${{ matrix.composer }}
-          composer lint
+          # Pint's rules change between versions, so only the newest dependencies lint.
+          if [ "${{ matrix.lint }}" = "true" ]; then composer lint; fi
           composer test
 
       - if: matrix.driver == 'rails'
