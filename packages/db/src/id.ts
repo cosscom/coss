@@ -44,6 +44,13 @@ export const ID_PREFIXES = {
   emailTemplate: "etpl",
   emailTemplateVersion: "etplv",
   emailTemplateContent: "etplc",
+  // Contacts (marketing): the lists broadcasts go to, with consent per topic.
+  contact: "contact",
+  contactProperty: "cprop",
+  audience: "aud",
+  segment: "seg",
+  topic: "topic",
+  broadcast: "bcast",
   domain: "dom",
   trackingDomain: "tdom",
   receivingDomain: "rdom",

@@ -187,7 +187,7 @@ describe("dispatch with content screening", () => {
     expect(await eventsOf(email.id)).toEqual([]);
     expect(liveProvider.sent).toHaveLength(0);
     expect(service.queue.jobs).toEqual([
-      { organizationId: tenant.organization.id, emailId: email.id },
+      { organizationId: tenant.organization.id, emailId: email.id, stream: "transactional" },
     ]);
 
     classifier = fakeClassifier();

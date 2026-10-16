@@ -17,6 +17,8 @@ import {
 
 export * from "./template-schemas.ts";
 
+import { BROADCAST_EVENT_TYPES, CONTACT_EVENT_TYPES } from "./contact-event-types.ts";
+
 export const MAX_RECIPIENTS = 50;
 export const MAX_HEADERS = 15;
 export const MAX_TAGS = 50;
@@ -119,6 +121,19 @@ export function base64DecodedSize(value: string): number {
 /** The suppression scope that matches every email, whatever its category. */
 export const ALL_CATEGORIES = "*";
 
+/**
+ * Traffic whose reputation must never mix (`email.stream`): each has its own provider
+ * configuration set and tenant, so marketing complaints never pause transactional mail.
+ */
+export const EMAIL_STREAMS = ["transactional", "marketing"] as const;
+export type EmailStream = (typeof EMAIL_STREAMS)[number];
+
+/**
+ * The suppression scope that matches every marketing-stream email: what a complaint about a
+ * marketing email adds (a category can't contain `:`, so it never collides with one).
+ */
+export const MARKETING_STREAM_SCOPE = "stream:marketing";
+
 /** Headers coss.com (or the provider) owns. `x-ses-*` is matched by prefix. */
 export const RESERVED_HEADERS: ReadonlySet<string> = new Set([
   "from",
@@ -192,8 +207,8 @@ export function emailAddressProblem(value: string): string | null {
   return null;
 }
 
-/** Normalized address used to count distinct recipients. */
-function addressKey(value: string): string {
+/** Normalized address used to count distinct recipients (bare, lower-cased). */
+export function addressKey(value: string): string {
   return parseEmailAddress(value).address.toLowerCase();
 }
 
@@ -235,7 +250,8 @@ const TagPart = z
 
 const Tag = z.strictObject({ name: TagPart, value: TagPart });
 
-const Category = z
+/** A send's `category` (and a topic's `key`). */
+export const Category = z
   .string()
   .regex(CATEGORY, "Must be 1-256 characters: ASCII letters, numbers, underscores or dashes.");
 
@@ -510,6 +526,18 @@ const SendEmailRequestFields = z.strictObject({
       description: `Up to ${MAX_ATTACHMENTS} files, at most ${MAX_ATTACHMENTS_BYTES / 1024 / 1024} MB combined.`,
     }),
   tracking: TrackingOptions.optional(),
+  stream: z
+    .enum(EMAIL_STREAMS)
+    .optional()
+    .meta({
+      description:
+        "`transactional` (the default) or `marketing`. Marketing email goes out on its own sending " +
+        "infrastructure and reputation, so its complaints never hold up transactional mail. It " +
+        "needs the environment's postal address (marketing settings), exactly one recipient, and no " +
+        "`List-Unsubscribe` header: coss.com adds one-click unsubscribe headers and a footer with the " +
+        "address and an unsubscribe link (place them yourself with `{{{unsubscribe_url}}}`, " +
+        "`{{{preferences_url}}}` and `{{{mailing_address}}}`). Contacts who unsubscribed are skipped.",
+    }),
 });
 
 export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) => {
@@ -559,7 +587,8 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
   if (value.scheduled_at !== undefined && tooFarAhead(value.scheduled_at)) {
     ctx.addIssue({ code: "custom", path: ["scheduled_at"], message: TOO_FAR_AHEAD_MESSAGE });
   }
-  if (value.tracking?.unsubscribe === true) {
+  // Marketing email always gets its own unsubscribe headers (the preference center's).
+  if (value.tracking?.unsubscribe === true && value.stream !== "marketing") {
     const path = ["tracking", "unsubscribe"];
     if (value.category === undefined) {
       ctx.addIssue({
@@ -592,6 +621,35 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
         message:
           `One-click unsubscribe adds ${LIST_UNSUBSCRIBE_HEADERS.length} headers: send at most ` +
           `${MAX_HEADERS_WITH_UNSUBSCRIBE} of your own.`,
+      });
+    }
+  }
+  if (value.stream === "marketing") {
+    // Unsubscribe links are personal: one recipient per marketing email.
+    if (withinFieldLimits && unique.size !== 1) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["to"],
+        message: "A marketing email has exactly one recipient (across to, cc and bcc).",
+      });
+    }
+    const names = Object.keys(value.headers ?? {});
+    for (const name of names) {
+      if ((LIST_UNSUBSCRIBE_HEADERS as readonly string[]).includes(name.toLowerCase())) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["headers", name],
+          message: "coss.com sets the unsubscribe headers of marketing email itself.",
+        });
+      }
+    }
+    if (names.length > MAX_HEADERS_WITH_UNSUBSCRIBE) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["headers"],
+        message:
+          `Marketing email gets ${LIST_UNSUBSCRIBE_HEADERS.length} unsubscribe headers: send at ` +
+          `most ${MAX_HEADERS_WITH_UNSUBSCRIBE} of your own.`,
       });
     }
   }
@@ -638,6 +696,8 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
           })),
         }
       : {}),
+    // Absent when not given (transactional), for the same reason.
+    ...(value.stream === undefined ? {} : { stream: value.stream }),
     // Absent when not given, for the same reason.
     ...(value.tracking === undefined
       ? {}
@@ -811,7 +871,8 @@ export type DomainEventType = (typeof DOMAIN_EVENT_TYPES)[number];
 /**
  * Every type a webhook endpoint can subscribe to: email events, received emails, the
  * organization's domain events (`domain.*`), reputation changes (`account.*`) and billing events
- * (`billing.*`), all three delivered to live environments only, and risk reviews (`risk.*`).
+ * (`billing.*`), all three delivered to live environments only, risk reviews (`risk.*`) and
+ * contact changes (`contact.*`).
  */
 export const WEBHOOK_EVENT_TYPES = [
   ...EMAIL_EVENT_TYPES,
@@ -821,6 +882,8 @@ export const WEBHOOK_EVENT_TYPES = [
   ...HOOK_OPERATIONAL_EVENT_TYPES,
   ...BILLING_EVENT_TYPES,
   ...RISK_EVENT_TYPES,
+  ...CONTACT_EVENT_TYPES,
+  ...BROADCAST_EVENT_TYPES,
 ] as const;
 // Examples shown in the API reference; test/schema-examples.test.ts parses each with its schema.
 const EMAIL_ID_EXAMPLE = "email_01k7c8m4q2f3e9v6t5r1n0p8yz";
@@ -874,13 +937,17 @@ export const SUPPRESSION_REASONS = [
 export type SuppressionReason = (typeof SUPPRESSION_REASONS)[number];
 
 export const SuppressionScope = z
-  .union([z.literal(ALL_CATEGORIES), Category], {
-    error: 'Expected "*" or a category (ASCII letters, numbers, underscores or dashes).',
+  .union([z.literal(ALL_CATEGORIES), z.literal(MARKETING_STREAM_SCOPE), Category], {
+    error:
+      'Expected "*", "stream:marketing" or a category (ASCII letters, numbers, underscores or ' +
+      "dashes).",
   })
   .meta({
     id: "SuppressionScope",
     description:
-      "`*` suppresses every email; a category only suppresses emails with that category.",
+      "`*` suppresses every email; `stream:marketing` only marketing emails (broadcasts and " +
+      "sends with `stream: marketing`; complaints about them add it); a category only emails " +
+      "with that category.",
   });
 
 const SuppressionReasonEnum = z.enum(SUPPRESSION_REASONS).meta({
@@ -915,6 +982,17 @@ export const EmailEventData = z
       .object({ id: z.string(), scope: z.string(), reason: SuppressionReasonEnum })
       .optional()
       .meta({ description: "Only for `email.suppressed`: the entry that matched the recipient." }),
+    unsubscribe: z
+      .object({
+        contact_id: z.string().nullable(),
+        topic: z.string().nullable(),
+      })
+      .optional()
+      .meta({
+        description:
+          "Only for `email.suppressed` without `suppression`: the recipient is a contact who " +
+          "unsubscribed (from marketing, or from the email's topic, `topic`).",
+      }),
     open: z
       .object({ user_agent: z.string().nullable() })
       .optional()
@@ -1136,7 +1214,10 @@ export const EmailFailure = z
   .meta({
     id: "EmailFailure",
     examples: [
-      { code: "all_recipients_suppressed", message: "Every recipient is on the suppression list." },
+      {
+        code: "all_recipients_suppressed",
+        message: "Every recipient is on the suppression list or unsubscribed.",
+      },
     ],
   });
 
@@ -1155,6 +1236,7 @@ export const EmailObject = z
     headers: z.record(z.string(), z.string()),
     tags: z.array(z.object({ name: z.string(), value: z.string() })),
     category: z.string().nullable(),
+    stream: z.enum(EMAIL_STREAMS),
     status: z.enum(EMAIL_STATUSES).meta({
       description:
         "Whether the email was handed to the delivery provider. `scheduled` emails wait for " +
@@ -1185,6 +1267,10 @@ export const EmailObject = z
     template: z.union([EmailTemplateReference, z.null()]).meta({
       description: "The template the email was rendered from; `null` if it was sent without one.",
     }),
+    broadcast_id: z
+      .string()
+      .nullable()
+      .meta({ description: "The broadcast the email is part of; `null` for any other email." }),
   })
   .meta({
     id: "Email",
@@ -1203,6 +1289,7 @@ export const EmailObject = z
         headers: {},
         tags: [{ name: "template", value: "welcome" }],
         category: "onboarding",
+        stream: "transactional",
         status: "sent",
         failure: null,
         recipients: [RECIPIENT_EXAMPLE],
@@ -1214,6 +1301,7 @@ export const EmailObject = z
         scheduled_at: null,
         batch_id: null,
         template: null,
+        broadcast_id: null,
       },
     ],
   });
@@ -1381,6 +1469,7 @@ export const EmailBatchObject = z
             headers: {},
             tags: [],
             category: "digest",
+            stream: "transactional",
             status: "queued",
             failure: null,
             recipients: [
@@ -1394,6 +1483,7 @@ export const EmailBatchObject = z
             scheduled_at: null,
             batch_id: BATCH_EXAMPLE_ID,
             template: null,
+            broadcast_id: null,
           },
         ],
         created_at: "2026-10-10T12:00:00.000Z",
@@ -1871,7 +1961,8 @@ export const CreateTrackingDomainRequest = z
   .meta({ id: "CreateTrackingDomainRequest", examples: [{ hostname: "links.acme.com" }] });
 
 export type CreateTrackingDomainRequestInput = z.input<typeof CreateTrackingDomainRequest>;
-const SuppressionAddress = z
+/** An address of a list entry: validated, then stored bare and lower-cased. */
+export const SuppressionAddress = z
   .string()
   .superRefine((value, ctx) => {
     const problem = emailAddressProblem(value);
@@ -1930,6 +2021,14 @@ export const CheckSuppressionQuery = z.strictObject({
   category: Category.optional().meta({
     description: "The category of the email you plan to send. Without it, only `*` entries count.",
   }),
+  stream: z
+    .enum(EMAIL_STREAMS)
+    .optional()
+    .meta({
+      description:
+        "The stream of the email you plan to send (default `transactional`). `marketing` also " +
+        "counts `stream:marketing` entries.",
+    }),
 });
 
 export type CheckSuppressionQueryOutput = z.output<typeof CheckSuppressionQuery>;

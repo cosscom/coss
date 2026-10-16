@@ -64,6 +64,8 @@ export const RETENTION_DAYS = {
   hookPortalSessions: 1,
   /** Finished Hooks endpoint recoveries. */
   hookRecoveries: 7,
+  /** Contacts that never confirmed a double opt-in, counted from when it was requested. */
+  pendingContacts: 30,
 } as const satisfies Record<string, number>;
 
 export type RetentionPeriod =
@@ -83,7 +85,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "emails",
     label: "Emails",
     description:
-      "Subject, bodies, addresses, headers, tags, recipient statuses, delivery events, opens, clicks and attachment names. Queued and scheduled emails are kept until they are sent or canceled.",
+      "Subject, bodies, addresses, headers, tags, recipient statuses, delivery events, opens, clicks and attachment names. Queued and scheduled emails are kept until they are sent or canceled, and a broadcast's emails until the broadcast is finished.",
     period: { days: RETENTION_DAYS.emails, after: "creation" },
   },
   {
@@ -262,10 +264,31 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { until: "deleted" },
   },
   {
+    id: "contacts",
+    label: "Contacts",
+    description:
+      "Your contacts with their custom properties, audience memberships, topic choices and consent timestamps (when they subscribed, unsubscribed or confirmed). Kept until you delete them.",
+    period: { until: "deleted" },
+  },
+  {
+    id: "pending_contacts",
+    label: "Unconfirmed contacts",
+    description:
+      "Contacts asked to confirm their subscription (double opt-in) who never did, deleted with their memberships and choices. One who had opted out (unsubscribed before, or left a topic) is kept, unsubscribed.",
+    period: { days: RETENTION_DAYS.pendingContacts, after: "creation" },
+  },
+  {
+    id: "broadcasts",
+    label: "Broadcasts",
+    description:
+      "Broadcasts with their content and their counters (recipients, deliveries, bounces, complaints, opens, clicks, unsubscribes). Kept until you delete them; each email they made is kept like any other email once the broadcast is finished.",
+    period: { until: "deleted" },
+  },
+  {
     id: "account",
     label: "Account and configuration",
     description:
-      "Users, organizations, projects, environments, API keys, domains, email templates (with every published version), webhook endpoints, log drains, Hooks applications, event types and endpoints, risk allow and block lists, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, a template, an endpoint, a drain, an application) are removed right away.",
+      "Users, organizations, projects, environments, API keys, domains, email templates (with every published version), webhook endpoints, log drains, Hooks applications, event types and endpoints, risk allow and block lists, contact properties, audiences, segments, topics, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, a template, an endpoint, a drain, an application) are removed right away.",
     period: { until: "closed" },
   },
 ];

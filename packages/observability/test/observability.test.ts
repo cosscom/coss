@@ -42,6 +42,10 @@ describe("scrubbing", () => {
     expect(scrubUrl("https://track.cosslinks.com/t/u/tok_secret")).toBe(
       "https://track.cosslinks.com/t/u/[token]",
     );
+    expect(scrubUrl("https://track.cosslinks.com/t/u/aSecret/unsubscribe")).toBe(
+      "https://track.cosslinks.com/t/u/[token]/unsubscribe",
+    );
+    expect(scrubUrl("/t/u/confirm/aSecret")).toBe("/t/u/confirm/[token]");
     expect(scrubUrl("GET /api/auth/reset-password/abc?callbackURL=x")).toBe(
       "GET /api/auth/reset-password/[token]",
     );

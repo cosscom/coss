@@ -1,5 +1,6 @@
 export {
   accountOf,
+  configurationSetsFor,
   createSesApi,
   isSesError,
   type SesApi,

@@ -75,6 +75,7 @@ export interface Billing {
     domains: number | null;
     members: number | null;
     webhook_endpoints_per_environment: number | null;
+    contacts_per_environment: number | null;
   };
 }
 

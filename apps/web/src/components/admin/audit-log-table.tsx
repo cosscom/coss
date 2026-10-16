@@ -30,6 +30,7 @@ const ACTION_LABELS: Record<string, { label: string; variant: "error" | "success
   "email.view_content": { label: "Viewed email content", variant: "info" },
   "reputation.suspended": { label: "Suspended live sending", variant: "error" },
   "reputation.reinstated": { label: "Reinstated live sending", variant: "success" },
+  "reputation.marketing_reinstated": { label: "Resumed marketing sending", variant: "success" },
   "reputation.policy_updated": { label: "Changed reputation policy", variant: "info" },
   "api_key.revoke": { label: "Revoked API key", variant: "error" },
   "rate_limit.override_set": { label: "Changed a rate limit", variant: "info" },

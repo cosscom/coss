@@ -31,7 +31,12 @@ const DUE_AT = sql`greatest(${email.createdAt}, coalesce(${email.scheduledAt}, $
 /** Unclaimed `queued` emails due before `before`, optionally since `since`, oldest first. */
 function unclaimedBefore(before: Date, limit: number, scope: Scope | undefined, since?: Date) {
   return db
-    .select({ id: email.id, organizationId: email.organizationId, errorCode: email.errorCode })
+    .select({
+      id: email.id,
+      organizationId: email.organizationId,
+      stream: email.stream,
+      errorCode: email.errorCode,
+    })
     .from(email)
     .where(
       and(
@@ -120,7 +125,11 @@ export async function sweepUnclaimedEmails(
   );
   for (const candidate of unclaimed) {
     await db.transaction((tx) =>
-      queue.enqueue(tx, { organizationId: candidate.organizationId, emailId: candidate.id }),
+      queue.enqueue(tx, {
+        organizationId: candidate.organizationId,
+        emailId: candidate.id,
+        stream: candidate.stream,
+      }),
     );
   }
   return { failed, requeued: unclaimed.length };

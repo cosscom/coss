@@ -12,14 +12,17 @@ import { markReputationDue } from "@coss/reputation";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { purgeSendContent } from "./attachments.ts";
+import { bumpRecipientMoves } from "./broadcast-stats.ts";
 import { countDedicatedDeliveries } from "./dedicated-ips.ts";
 import { emailEventLogEntries } from "./event-logs.ts";
 import type { ProviderEvent } from "./provider.ts";
 import { invalidateReputationRollup } from "./reputation-checks.ts";
 import {
+  ALL_CATEGORIES,
   EMAIL_RECIPIENT_STATUSES,
   type EmailEventType,
   type EmailRecipientStatus,
+  MARKETING_STREAM_SCOPE,
   type StoredEmailWebhookEvent,
 } from "./schemas.ts";
 import { autoSuppress } from "./suppressions.ts";
@@ -112,6 +115,8 @@ export async function recordProviderEvent(
       subject: email.subject,
       tags: email.tags,
       category: email.category,
+      stream: email.stream,
+      broadcastId: email.broadcastId,
       createdAt: email.createdAt,
       dedicatedPool: email.dedicatedPool,
       mode: environment.mode,
@@ -222,11 +227,17 @@ export async function recordProviderEvent(
       )
       .returning({ id: email.id });
     if (repaired) {
-      await tx
+      const reset = await tx
         .update(emailRecipient)
         .set({ status: "queued" })
-        .where(and(scope, eq(emailRecipient.status, "failed")));
+        .where(and(scope, eq(emailRecipient.status, "failed")))
+        .returning({ id: emailRecipient.id });
       recipientsChanged = true;
+      await countBroadcastMoves(
+        tx,
+        target,
+        reset.map(() => ({ from: "failed" as const, to: "queued" as const })),
+      );
     }
     const [sent] = await tx
       .update(email)
@@ -269,6 +280,20 @@ export async function recordProviderEvent(
       : inserted.flatMap((row) => (row.recipient ? [row.recipient] : []));
   const below = status ? statusesBelow(status) : [];
   if (status && affected.length > 0 && below.length > 0) {
+    // A broadcast's counters follow its recipients' moves, so they need the statuses moved from.
+    const before = target.broadcastId
+      ? await tx
+          .select({ address: emailRecipient.address, status: emailRecipient.status })
+          .from(emailRecipient)
+          .where(
+            and(
+              scope,
+              inArray(emailRecipient.address, affected),
+              inArray(emailRecipient.status, below),
+            ),
+          )
+          .for("update")
+      : [];
     const moved = await tx
       .update(emailRecipient)
       .set({
@@ -283,11 +308,21 @@ export async function recordProviderEvent(
           inArray(emailRecipient.status, below),
         ),
       )
-      .returning({ id: emailRecipient.id });
+      .returning({ id: emailRecipient.id, address: emailRecipient.address });
     if (moved.length > 0) recipientsChanged = true;
+    const previous = new Map(before.map((row) => [row.address, row.status]));
+    await countBroadcastMoves(
+      tx,
+      target,
+      moved.flatMap((row) => {
+        const from = previous.get(row.address);
+        return from ? [{ from, to: status }] : [];
+      }),
+    );
   }
 
-  // Permanent bounces and complaints suppress the address for every email of the environment.
+  // Permanent bounces suppress the address for every email of the environment (the mailbox doesn't
+  // exist), and so do complaints, except about marketing: those suppress marketing only.
   // SES-suppressed bounces are not counted: the address was never attempted.
   const suppressReason =
     event.type === "email.complained"
@@ -314,6 +349,10 @@ export async function recordProviderEvent(
         address: row.recipient,
         reason: suppressReason,
         emailId: target.id,
+        scope:
+          suppressReason === "complaint" && target.stream === "marketing"
+            ? MARKETING_STREAM_SCOPE
+            : ALL_CATEGORIES,
       });
     }
   }
@@ -346,6 +385,20 @@ export async function recordProviderEvent(
     });
   }
   return inserted;
+}
+
+async function countBroadcastMoves(
+  tx: Executor,
+  target: { id: string; organizationId: string; broadcastId: string | null },
+  moves: { from: EmailRecipientStatus; to: EmailRecipientStatus }[],
+): Promise<void> {
+  if (!target.broadcastId || moves.length === 0) return;
+  await bumpRecipientMoves(tx, {
+    broadcastId: target.broadcastId,
+    organizationId: target.organizationId,
+    emailId: target.id,
+    moves,
+  });
 }
 
 /** Records events in order, each in its own transaction. Returns how many rows were new. */

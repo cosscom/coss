@@ -498,6 +498,62 @@
       "when": 1792129177367,
       "tag": "0070_dashing_marvel_zombies",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1792162487761,
+      "tag": "0071_rare_zemo",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1792162629540,
+      "tag": "0072_dedicated_ip_marketing",
+      "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1792162810138,
+      "tag": "0073_broad_zarek",
+      "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1792162849498,
+      "tag": "0074_flat_absorbing_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1792162850467,
+      "tag": "0075_contact_key_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1792162901525,
+      "tag": "0076_luxuriant_black_tom",
+      "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1792162902529,
+      "tag": "0077_broadcast_key_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1792162951427,
+      "tag": "0078_special_the_renegades",
+      "breakpoints": true
     }
   ]
 }

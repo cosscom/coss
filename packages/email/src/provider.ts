@@ -1,9 +1,12 @@
-import type { EmailEventDataOutput, EmailEventType } from "./schemas.ts";
+import type { EmailEventDataOutput, EmailEventType, EmailStream } from "./schemas.ts";
+
+export { EMAIL_STREAMS, type EmailStream } from "./schemas.ts";
 
 /** A message ready for a delivery provider (internal, camelCase). */
 export type OutboundEmail = {
   emailId: string;
   organizationId: string;
+  stream: EmailStream;
   from: string;
   to: string[];
   cc: string[];
@@ -70,6 +73,17 @@ export class UncertainSendError extends Error {
 }
 
 /**
+ * The provider refused the message for its sending rate (SES throttling, after its own retries):
+ * certainly not sent. Marketing emails are handed back and dispatched again a little later.
+ */
+export class ThrottledSendError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = "ThrottledSendError";
+  }
+}
+
+/**
  * Delivery seam (fake or SES). `send` resolves once the provider accepted the message and throws
  * when it did not (`UncertainSendError` when it can't tell); the service records the outcome on
  * the email row.
@@ -103,28 +117,35 @@ export type ProviderTenant = { tenantName: string; tenantArn: string | null };
 
 /**
  * Provider-side domain and tenant management (fake or SES). Tenants isolate an organization's
- * reputation; domains are verified identities associated with their organization's tenant.
+ * reputation, one per stream; domains are verified identities associated with every tenant of
+ * their organization (a shared assignment), so either stream can send from them.
  */
 export interface IdentityProvider {
   readonly name: string;
-  /** Creates (or finds) the organization's tenant. Idempotent. */
-  ensureTenant(input: { organizationId: string }): Promise<ProviderTenant>;
+  /** Creates (or finds) the organization's tenant for one stream. Idempotent. */
+  ensureTenant(input: { organizationId: string; stream: EmailStream }): Promise<ProviderTenant>;
   /**
    * Creates the domain identity with Easy DKIM and the custom MAIL FROM subdomain, associated with
-   * the tenant. Throws `IdentityTakenError` when another tenant already holds it.
+   * the organization's tenants. Throws `IdentityTakenError` when a tenant outside `tenants`
+   * already holds it.
    */
   createDomainIdentity(input: {
-    tenant: ProviderTenant;
+    tenants: ProviderTenant[];
     domain: string;
     mailFromDomain: string;
   }): Promise<DomainIdentity>;
+  /**
+   * Associates an existing identity with another of its organization's tenants (a stream added
+   * after the domain). A missing identity is fine (nothing to send from).
+   */
+  associateDomainIdentity(input: { tenant: ProviderTenant; domain: string }): Promise<void>;
   /** `null` when the identity does not exist (any more). */
   getDomainIdentity(domain: string): Promise<DomainIdentityState | null>;
-  /** Removes the identity (and its tenant association). Missing identities are fine. */
-  deleteDomainIdentity(input: { tenant: ProviderTenant; domain: string }): Promise<void>;
+  /** Removes the identity (and its tenant associations). Missing identities are fine. */
+  deleteDomainIdentity(input: { tenants: ProviderTenant[]; domain: string }): Promise<void>;
   /**
-   * Removes the organization's tenant (when its organization is deleted, after its domains).
-   * A missing tenant is fine.
+   * Removes one of the organization's tenants (when its organization is deleted, after its
+   * domains). A missing tenant is fine.
    */
   deleteTenant(tenant: ProviderTenant): Promise<void>;
 }
@@ -144,15 +165,25 @@ export class IdentityTakenError extends Error {
 export interface DedicatedIpProvider {
   readonly name: string;
   /**
-   * Creates (or completes) the organization's pool and what sends through it (an SES
-   * configuration set associated with the tenant). Throws `DedicatedIpTakenError` when a
-   * resource of that name exists but wasn't created by COSS.
+   * Creates (or completes) the organization's pool and, for each stream in `tenants`, what sends
+   * that stream's mail through it (an SES configuration set associated with the stream's
+   * tenant). Throws `DedicatedIpTakenError` when a resource of that name exists but wasn't
+   * created by coss.com.
    */
-  ensurePool(input: { organizationId: string; tenant: ProviderTenant }): Promise<void>;
+  ensurePool(input: {
+    organizationId: string;
+    tenants: Partial<Record<EmailStream, ProviderTenant>>;
+  }): Promise<void>;
   /** The pool's IPs now (empty until the provider assigns the first; `[]` without a pool). */
   poolIps(organizationId: string): Promise<string[]>;
-  /** Removes the pool and what sends through it. Missing resources are fine. */
-  releasePool(input: { organizationId: string; tenant: ProviderTenant | null }): Promise<void>;
+  /**
+   * Removes the pool and what sends through it, for every stream (`tenants`: the organization's
+   * tenants that still exist). Missing resources are fine.
+   */
+  releasePool(input: {
+    organizationId: string;
+    tenants: Partial<Record<EmailStream, ProviderTenant>>;
+  }): Promise<void>;
 }
 
 /** A pool or configuration set of the organization's name exists, but COSS didn't create it. */

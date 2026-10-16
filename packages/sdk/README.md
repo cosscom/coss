@@ -292,6 +292,79 @@ Opens and clicks arrive as `email.opened` and `email.clicked` events (in `listEv
 webhooks), with `data.open` / `data.click`. They name a recipient only when the email had exactly
 one. Mail clients that preload images and link scanners can inflate the numbers.
 
+## Marketing email
+
+Contacts belong to an environment. Each has an `email`, names, a `status` (`subscribed`,
+`unsubscribed`, or `pending` while waiting for a double opt-in confirmation), custom properties you
+define first, and a choice per topic. Audiences are static lists of contacts; segments are saved
+filters over them.
+
+```ts
+await coss.email.contacts.properties.create({ key: "plan", type: "string", fallback: "free" });
+
+// Creates the contact for this address, or updates it (201 vs 200).
+const { data: contact } = await coss.email.contacts.upsert({
+  email: "ada@example.com",
+  first_name: "Ada",
+  properties: { plan: "pro" },
+  topics: [{ topic: "newsletter", status: "opted_in" }],
+  // Stays `pending` until they click the confirmation email's link (sent from the marketing
+  // settings' `confirmation_from`).
+  double_opt_in: true,
+});
+
+// Up to 1,000 per request; the SDK sends larger lists in batches.
+await coss.email.contacts.import({
+  contacts: [{ email: "joe@example.com", properties: { plan: "free" } }],
+  audience_id: "aud_01k…",
+});
+const { data: csv } = await coss.email.contacts.export();
+```
+
+A single marketing email goes to one recipient with `stream: "marketing"`. It needs your postal
+address (`coss.email.marketingSettings.update({ mailing_address: "…" })`), and coss.com adds
+one-click unsubscribe headers and a footer. Contacts who unsubscribed, or opted out of the email's
+topic (its `category`), are skipped.
+
+```ts
+await coss.email.send({
+  from: "Acme <news@acme.com>",
+  to: "ada@example.com",
+  subject: "You're invited",
+  html: "<p>Join us on Thursday.</p>",
+  stream: "marketing",
+  category: "events",
+});
+```
+
+### Broadcasts
+
+A broadcast sends one email to every eligible contact of an audience or a segment, each filled in
+with their own values (`{{{contact.<key>|fallback}}}`), at your plan's marketing rate or slower.
+
+```ts
+const { data: broadcast } = await coss.email.broadcasts.create({
+  name: "October newsletter",
+  segment_id: "seg_01k…",
+  topic: "newsletter",
+  from: "Acme <news@acme.com>",
+  subject: "What's new, {{{contact.first_name|there}}}",
+  html: "<p>Hi {{{contact.first_name|there}}}, …</p>",
+});
+await coss.email.broadcasts.test(broadcast.id, { to: ["me@acme.com"] });
+await coss.email.broadcasts.send(broadcast.id, { scheduled_at: "2026-11-01T09:00:00Z" });
+
+const { data: sent } = await coss.email.broadcasts.get(broadcast.id);
+// sent.stats: { recipients, sent, delivered, bounced, complained, opened, clicked, unsubscribed, … }
+await coss.email.broadcasts.pause(broadcast.id); // then resume() or cancel()
+```
+
+Guides: [contacts](https://coss.com/docs/email/contacts),
+[audiences and segments](https://coss.com/docs/email/audiences-and-segments),
+[topics and preferences](https://coss.com/docs/email/topics-and-preferences),
+[broadcasts](https://coss.com/docs/email/broadcasts) and
+[streams](https://coss.com/docs/email/streams).
+
 ## Reputation
 
 coss.com watches your live bounce and complaint rates. When one gets too high your organization is
@@ -309,7 +382,8 @@ const { data } = await coss.reputation.get();
 Webhook endpoints receive `email.sent`, `email.delivered`, `email.delivery_delayed`,
 `email.bounced`, `email.complained`, `email.failed`, `email.suppressed`, `email.opened` and
 `email.clicked` events, plus `account.reputation_warning`, `account.reputation_recovered`,
-`account.suspended` and `account.reinstated` for live environments, signed with
+`account.suspended`, `account.reinstated`, `account.marketing_paused` and
+`account.marketing_reinstated` for live environments, signed with
 [Standard Webhooks](https://www.standardwebhooks.com) headers. Verify them with the raw body:
 
 ```ts

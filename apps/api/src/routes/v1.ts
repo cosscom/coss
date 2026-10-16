@@ -1,11 +1,15 @@
-import type { DomainDeps, EmailService } from "@coss/email";
+import type { UsageGate } from "@coss/billing/gate";
+import type { DomainDeps, EmailService, LinkKeyRing } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
 import type { RiskDeps } from "@coss/risk";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import type { AppEnv } from "../types.ts";
+import { createAudienceRoutes } from "./audiences.ts";
 import { createAuditEventRoutes } from "./audit-events.ts";
 import { createBillingRoutes } from "./billing.ts";
+import { createBroadcastRoutes } from "./broadcasts.ts";
+import { createContactRoutes } from "./contacts.ts";
 import { createDedicatedIpRoutes } from "./dedicated-ips.ts";
 import { createDomainRoutes } from "./domains.ts";
 import { createEmailTemplateRoutes } from "./email-templates.ts";
@@ -20,7 +24,9 @@ import { createRiskRoutes } from "./risk.ts";
 import { createRiskConfigRoutes } from "./risk-config.ts";
 import { createRiskLimitRoutes } from "./risk-limits.ts";
 import { createRiskLookupRoutes } from "./risk-lookups.ts";
+import { createSegmentRoutes } from "./segments.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
+import { createTopicRoutes } from "./topics.ts";
 import { createTrackingSettingsRoutes } from "./tracking-settings.ts";
 import { createWebhookEndpointRoutes } from "./webhook-endpoints.ts";
 import { createWebhookListenerRoutes } from "./webhook-listeners.ts";
@@ -37,6 +43,10 @@ export type V1Dependencies = {
   /** Aborted when the server shuts down: open long polls answer at once. */
   shutdownSignal: AbortSignal;
   listenerPollIntervalMs?: number;
+  /** Marketing email's links: the key ring and their origin (`TRACKING_PUBLIC_URL`). */
+  links: { keys: LinkKeyRing; baseUrl?: string };
+  /** What canceled and paused broadcasts give back of their usage reservation. */
+  billing?: UsageGate;
 };
 
 /** Everything under `/v1`. Each product mounts its routes here. */
@@ -57,6 +67,27 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   );
   v1.route("/", createSuppressionRoutes());
   v1.route("/", createTrackingSettingsRoutes());
+  v1.route(
+    "/",
+    createContactRoutes({
+      emailService: deps.emailService,
+      links: deps.links,
+      // The live provider's name (identities and sends share it): live confirmations must come
+      // from a domain it verified.
+      liveProvider: deps.domainDeps.identity.name,
+    }),
+  );
+  v1.route(
+    "/",
+    createBroadcastRoutes({
+      emailService: deps.emailService,
+      liveProvider: deps.domainDeps.identity.name,
+      billing: deps.billing,
+    }),
+  );
+  v1.route("/", createAudienceRoutes());
+  v1.route("/", createSegmentRoutes());
+  v1.route("/", createTopicRoutes());
   v1.route("/", createReputationRoutes());
   v1.route("/", createLogRoutes());
   v1.route("/", createAuditEventRoutes());

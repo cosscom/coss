@@ -81,6 +81,7 @@ export const sampleEmail: Email = {
   headers: {},
   tags: [{ name: "category", value: "welcome" }],
   category: null,
+  stream: "transactional",
   status: "sent",
   failure: null,
   recipients: [
@@ -109,6 +110,7 @@ export const sampleEmail: Email = {
   scheduled_at: null,
   batch_id: null,
   template: null,
+  broadcast_id: null,
 };
 
 export const sampleDomain: Domain = {

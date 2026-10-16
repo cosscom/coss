@@ -7,7 +7,11 @@ import {
   purgeExpiredReputationEvents,
   purgeExpiredReputationNotifications,
 } from "../src/retention.ts";
-import { reinstateOrganization, suspendOrganization } from "../src/transitions.ts";
+import {
+  applyMarketingTransition,
+  reinstateOrganization,
+  suspendOrganization,
+} from "../src/transitions.ts";
 
 const { reputationEvent, reputationNotification } = schema;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -88,6 +92,34 @@ describe("purgeExpiredReputationEvents", () => {
       .from(reputationNotification)
       .where(eq(reputationNotification.reputationEventId, suspended.id));
     expect(notifications).toEqual([]);
+  });
+});
+
+describe("purgeExpiredReputationEvents with marketing transitions", () => {
+  test("a later standing change never supersedes the latest marketing transition", async () => {
+    const { organization } = await createTestTenant();
+    const organizationId = organization.id;
+    const old = daysAgo(RETENTION_DAYS.reputationHistory + 100);
+    const paused = await db.transaction((tx) =>
+      applyMarketingTransition(tx, {
+        organizationId,
+        type: "marketing_paused",
+        trigger: "marketing_complaint_rate",
+        actor: { kind: "system" },
+        now: old,
+      }),
+    );
+    if (!paused) throw new Error("not paused");
+    await suspendOrganization({
+      organizationId,
+      trigger: "bounce_rate",
+      actor: { kind: "system" },
+      now: daysAgo(RETENTION_DAYS.reputationHistory + 50),
+    });
+    expect(
+      await purgeExpiredReputationEvents({ scope: { organizationIds: [organizationId] } }),
+    ).toBe(0);
+    expect(await eventIds(organizationId)).toContain(paused.id);
   });
 });
 

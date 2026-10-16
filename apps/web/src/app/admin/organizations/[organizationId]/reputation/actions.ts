@@ -3,6 +3,7 @@
 import {
   getOrganizationStanding,
   type ReputationPolicyOverrides,
+  reinstateMarketing,
   reinstateOrganization,
   suspendOrganization,
   updateReputationPolicy,
@@ -43,6 +44,24 @@ export async function reinstateOrganizationAction(
       note: requiredNote(formData),
     });
     await supportAudit(organizationId, "sending.reinstated");
+    refresh();
+    return null;
+  });
+}
+
+export async function reinstateMarketingAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const admin = await requirePlatformAdminAction();
+    const organizationId = await organizationFromForm(formData);
+    await reinstateMarketing({
+      organizationId,
+      adminUserId: admin.session.user.id,
+      note: requiredNote(formData),
+    });
+    await supportAudit(organizationId, "sending.marketing_reinstated");
     refresh();
     return null;
   });
@@ -110,6 +129,16 @@ export async function updatePolicyAction(
         suspend: percentField(formData, "complaintSuspend"),
         minimumRecipients: integerField(formData, "complaintMinimum"),
       },
+      marketingBounceRate: {
+        warning: percentField(formData, "marketingBounceWarning"),
+        suspend: percentField(formData, "marketingBounceSuspend"),
+        minimumRecipients: integerField(formData, "marketingBounceMinimum"),
+      },
+      marketingComplaintRate: {
+        warning: percentField(formData, "marketingComplaintWarning"),
+        suspend: percentField(formData, "marketingComplaintSuspend"),
+        minimumRecipients: integerField(formData, "marketingComplaintMinimum"),
+      },
       countSimulatorRecipients: formData.get("countSimulatorRecipients") === "on" || undefined,
       contentScreening: {
         // Both default to on, so only switching them off is an override.
@@ -148,6 +177,8 @@ function withoutEmpty(overrides: ReputationPolicyOverrides): ReputationPolicyOve
   for (const key of [
     "bounceRate",
     "complaintRate",
+    "marketingBounceRate",
+    "marketingComplaintRate",
     "contentScreening",
     "hookFailureRate",
   ] as const) {

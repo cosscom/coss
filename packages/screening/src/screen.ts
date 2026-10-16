@@ -60,6 +60,11 @@ export type ScreenInput = {
    * again (it was a sample), at its earlier position, without being counted twice.
    */
   retry?: boolean;
+  /**
+   * Screen it whatever the sampling says: one message about to reach many recipients (a
+   * broadcast, screened once for all of them).
+   */
+  force?: boolean;
 };
 
 export type ScreenOutcome = {
@@ -84,7 +89,9 @@ export async function screenMessage(
 
   const earlier = input.retry ? await earlierSample(input, now()) : null;
   const { sequence, owed } = earlier ?? (await countMessage(input.organizationId, input.product));
-  if (!earlier && !owed && !shouldScreen(sequence, policy, deps.random)) return SEND;
+  if (!earlier && !owed && !input.force && !shouldScreen(sequence, policy, deps.random)) {
+    return SEND;
+  }
   const isSystemOrganization = input.organizationId === deps.systemOrganizationId;
 
   const started = performance.now();

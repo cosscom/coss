@@ -13,7 +13,10 @@ export interface Suppression {
   id: string;
   /** The bare, lower-cased address. */
   address: string;
-  /** `"*"` (every email) or a category: only emails sent with that `category` skip the address. */
+  /**
+   * `"*"` (every email), `"stream:marketing"` (marketing emails; complaints about them add it) or
+   * a category: only emails sent with that `category` skip the address.
+   */
   scope: string;
   reason: SuppressionReason;
   /** The email whose bounce or complaint added this entry. */
@@ -45,6 +48,8 @@ export interface CheckSuppressionParams {
   address: string;
   /** The category of the email you plan to send. Without it, only `"*"` entries count. */
   category?: string;
+  /** The stream of the email you plan to send; `marketing` also counts `"stream:marketing"`. */
+  stream?: "transactional" | "marketing";
 }
 
 /** Whether a send would skip an address. */

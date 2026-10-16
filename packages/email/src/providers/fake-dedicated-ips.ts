@@ -1,4 +1,9 @@
-import type { DedicatedIpProvider, ProviderTenant } from "../provider.ts";
+import {
+  type DedicatedIpProvider,
+  EMAIL_STREAMS,
+  type EmailStream,
+  type ProviderTenant,
+} from "../provider.ts";
 
 /** The IP fake pools get by default, and that the fake provider delivers dedicated mail from. */
 export const FAKE_DEDICATED_IP = "198.51.100.10";
@@ -10,6 +15,7 @@ export const FAKE_DEDICATED_IP = "198.51.100.10";
 export class FakeDedicatedIpProvider implements DedicatedIpProvider {
   readonly name = "fake";
   readonly #pools = new Set<string>();
+  readonly #streams = new Map<string, Set<EmailStream>>();
   readonly #ips: (organizationId: string) => string[];
   readonly #fail?: (operation: "ensure" | "release", organizationId: string) => boolean;
 
@@ -28,11 +34,23 @@ export class FakeDedicatedIpProvider implements DedicatedIpProvider {
     return [...this.#pools];
   }
 
-  async ensurePool(input: { organizationId: string; tenant: ProviderTenant }): Promise<void> {
+  /** The streams whose mail an organization's pool in this instance carries (tests). */
+  streamsOf(organizationId: string): EmailStream[] {
+    const streams = this.#streams.get(organizationId);
+    return EMAIL_STREAMS.filter((stream) => streams?.has(stream));
+  }
+
+  async ensurePool(input: {
+    organizationId: string;
+    tenants: Partial<Record<EmailStream, ProviderTenant>>;
+  }): Promise<void> {
     if (this.#fail?.("ensure", input.organizationId)) {
       throw new Error(`Fake pool for ${input.organizationId} failed.`);
     }
     this.#pools.add(input.organizationId);
+    const streams = this.#streams.get(input.organizationId) ?? new Set<EmailStream>();
+    for (const stream of EMAIL_STREAMS) if (input.tenants[stream]) streams.add(stream);
+    this.#streams.set(input.organizationId, streams);
   }
 
   async poolIps(organizationId: string): Promise<string[]> {
@@ -46,5 +64,6 @@ export class FakeDedicatedIpProvider implements DedicatedIpProvider {
       throw new Error(`Fake pool release for ${input.organizationId} failed.`);
     }
     this.#pools.delete(input.organizationId);
+    this.#streams.delete(input.organizationId);
   }
 }

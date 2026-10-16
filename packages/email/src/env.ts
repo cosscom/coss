@@ -17,8 +17,25 @@ export type TrackingDomainProviderName = (typeof TRACKING_DOMAIN_PROVIDERS)[numb
 /** The host customers CNAME their tracking domain to, unless `TRACKING_CNAME_TARGET` says otherwise. */
 export const DEFAULT_TRACKING_CNAME_TARGET = "track.cosslinks.com";
 
-/** SES tenant names are `<prefix>-<organization id>` and at most 64 characters. */
-export const SES_TENANT_PREFIX_PATTERN = /^[A-Za-z0-9_-]{1,32}$/;
+/**
+ * SES tenant names are `<prefix>-<organization id>[-marketing]` and at most 64 characters, so the
+ * prefix leaves room for a 30-character organization id and the stream suffix.
+ */
+export const SES_TENANT_PREFIX_PATTERN = /^[A-Za-z0-9_-]{1,23}$/;
+
+/**
+ * SES configuration set names are at most 64 characters, and the marketing stream's is
+ * `<SES_CONFIGURATION_SET>-marketing`.
+ */
+export const SES_CONFIGURATION_SET_PATTERN = /^[A-Za-z0-9_-]{1,54}$/;
+
+/** Comma-separated 32-byte base64 keys (`EMAIL_LINK_KEYS`), checked without decoding them here. */
+const LinkKeys = z
+  .string()
+  .regex(
+    /^\s*[A-Za-z0-9+/]{43}=\s*(,\s*[A-Za-z0-9+/]{43}=\s*)*$/,
+    "EMAIL_LINK_KEYS must be comma-separated 32-byte base64 keys (openssl rand -base64 32).",
+  );
 
 export const emailEnvShape = {
   // Provider for live environments. Sandbox environments always use the fake provider.
@@ -26,7 +43,8 @@ export const emailEnvShape = {
   // Required with EMAIL_PROVIDER=ses (printed by `bun run ses:bootstrap`). AWS credentials come
   // from the default provider chain (env vars, profile, or the instance/task role).
   AWS_REGION: z.string().optional(),
-  SES_CONFIGURATION_SET: z.string().optional(),
+  // The transactional stream's; the marketing stream's is `<name>-marketing`.
+  SES_CONFIGURATION_SET: z.string().regex(SES_CONFIGURATION_SET_PATTERN).optional(),
   SES_TENANT_PREFIX: z.string().regex(SES_TENANT_PREFIX_PATTERN).optional(),
   // Custom tracking domains: Cloudflare for SaaS custom hostnames on coss.com's zone in production
   // (the token and zone id are required with `cloudflare`), an in-memory fake otherwise.
@@ -42,9 +60,19 @@ export const emailEnvShape = {
   SES_INBOUND_BUCKET: z.string().optional(),
 };
 
+/**
+ * The API (preference center, confirmations) and the worker (links added at dispatch) encrypt
+ * marketing email's links: a key ring, newest first (the first encrypts). Required in production;
+ * never drop a key whose links may still be clicked.
+ */
+export const emailLinkEnvShape = {
+  EMAIL_LINK_KEYS: LinkKeys.optional(),
+};
+
 /** Only the worker consumes delivery events and receipt notifications. */
 export const emailWorkerEnvShape = {
   ...emailEnvShape,
+  ...emailLinkEnvShape,
   SES_EVENTS_QUEUE_URL: z.url().optional(),
   SES_INBOUND_QUEUE_URL: z.url().optional(),
 };

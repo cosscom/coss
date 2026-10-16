@@ -1,12 +1,15 @@
 /**
  * Webhook wire types (hand-written mirrors of the API's `EmailWebhookEvent`,
  * `ReceivedEmailWebhookEvent`, `DomainWebhookEvent`, `AccountWebhookEvent`, `BillingWebhookEvent`,
- * `RiskWebhookEvent` and `HookEndpointWebhookEvent`).
+ * `RiskWebhookEvent`, `HookEndpointWebhookEvent`, `ContactWebhookEvent` and `BroadcastWebhookEvent`).
  */
+
 import type { BillingHoldReason, Credit, InvoiceSummary, Meter, PlanKey } from "./billing.ts";
+import type { BroadcastStats, BroadcastStatus } from "./broadcast.ts";
+import type { ContactSource, ContactStatus } from "./contact.ts";
 import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
 import type { ReceivedEmailVerdicts } from "./received-email.ts";
-import type { ReputationCheck, ReputationStatus } from "./reputation.ts";
+import type { MarketingStanding, ReputationCheck, ReputationStatus } from "./reputation.ts";
 import type { RiskDecision, RiskEvent, RiskOutcome, RiskReason } from "./risk.ts";
 
 /** What a webhook says about the email; never its content, cc or bcc. */
@@ -107,12 +110,17 @@ export interface DomainWebhookEvent {
   data: DomainWebhookEventData;
 }
 
-/** Changes of the organization's reputation standing (sent to live environments only). */
+/**
+ * Changes of the organization's reputation standing, and of its marketing stream's
+ * (`account.marketing_*`; sent to live environments only).
+ */
 export type AccountEventType =
   | "account.reputation_warning"
   | "account.reputation_recovered"
   | "account.suspended"
-  | "account.reinstated";
+  | "account.reinstated"
+  | "account.marketing_paused"
+  | "account.marketing_reinstated";
 
 export interface AccountWebhookEventData {
   organization_id: string;
@@ -124,6 +132,8 @@ export interface AccountWebhookEventData {
   occurred_at: string;
   /** The measurements behind the change (see `coss.reputation.get()`). */
   checks: ReputationCheck[];
+  /** The marketing stream's standing after the change. */
+  marketing: MarketingStanding;
 }
 
 /** A reputation change. `id` equals the `webhook-id` header. */
@@ -268,6 +278,67 @@ export interface HookEndpointWebhookEvent {
   data: HookEndpointWebhookEventData;
 }
 
+/** Contact events (sent to the contact's environment). */
+export type ContactEventType =
+  | "contact.created"
+  | "contact.updated"
+  | "contact.deleted"
+  | "contact.unsubscribed"
+  | "contact.confirmed";
+
+export interface ContactWebhookEventData {
+  /** Who changed; never their properties or names. */
+  contact: { id: string; email: string; status: ContactStatus };
+  source: ContactSource;
+  /** `contact.unsubscribed` from one topic (its key); `null`: from marketing altogether. */
+  topic: string | null;
+  /** ISO 8601 timestamp. */
+  occurred_at: string;
+}
+
+/** A contact was created, updated or deleted. `id` equals the `webhook-id` header. */
+export interface ContactWebhookEvent {
+  id: string;
+  object: "event";
+  type: ContactEventType;
+  /** The API version this event is rendered in: the receiving endpoint's `api_version`. */
+  api_version: string;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  data: ContactWebhookEventData;
+}
+
+/** Broadcast events (sent to the broadcast's environment). */
+export type BroadcastEventType =
+  | "broadcast.sending"
+  | "broadcast.sent"
+  | "broadcast.paused"
+  | "broadcast.canceled"
+  | "broadcast.failed";
+
+export interface BroadcastWebhookEventData {
+  broadcast: { id: string; name: string; status: BroadcastStatus };
+  /** Set on `broadcast.paused`: see `Broadcast.pause_reason`. */
+  pause_reason: string | null;
+  /** Set on `broadcast.failed`. */
+  error: { code: string; message: string } | null;
+  stats: BroadcastStats;
+  /** ISO 8601 timestamp. */
+  occurred_at: string;
+}
+
+/** A broadcast started, finished, paused, was canceled or failed. */
+export interface BroadcastWebhookEvent {
+  id: string;
+  object: "event";
+  type: BroadcastEventType;
+  /** The API version this event is rendered in: the receiving endpoint's `api_version`. */
+  api_version: string;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  data: BroadcastWebhookEventData;
+}
+
 /** The JSON body of a webhook request; narrow on `type`. */
 export type WebhookEvent =
   | EmailWebhookEvent
@@ -276,4 +347,6 @@ export type WebhookEvent =
   | AccountWebhookEvent
   | BillingWebhookEvent
   | RiskWebhookEvent
-  | HookEndpointWebhookEvent;
+  | HookEndpointWebhookEvent
+  | ContactWebhookEvent
+  | BroadcastWebhookEvent;

@@ -26,6 +26,17 @@ repository root.
   `authorizeLiveSender` checks `isSuspended` **first** (`EmailError("account_suspended")`, 403 `permission_error`; an
   idempotent replay still returns) and `liveKeyRestriction` refuses new live keys. It is independent of the SES tenant
   pause (`email_tenant.sending_status`, `sending_paused`), which SES itself lifts — never fold one into the other.
+- **Marketing reputation** (per stream): `emailReputationChecks` count each stream on its own
+  (`email_reputation_rollup` is keyed by stream too; `countSlices`/`sendingCounts` take one). Transactional checks
+  decide the standing as before; marketing checks (`marketing_bounce_rate`, `marketing_complaint_rate`, `scope:
+  "marketing"`, thresholds `ReputationPolicy.marketingBounceRate`/`marketingComplaintRate`) never move it:
+  `decideMarketing` turns a `suspend` result into a marketing pause (`reputation_standing.marketing_paused_at`,
+  `applyMarketingTransition`: history row `marketing_paused`, notification, `account.marketing_paused` webhooks, one
+  transaction). `authorizeLiveSender({ stream: "marketing" })` then refuses with `marketing_paused` (403); transactional
+  mail goes on. Never lifted automatically: only `reinstateMarketing` (admin, note required), after which marketing
+  rates are measured from then on (`marketingWindowStart`). coss.com's own organization is never paused. A complaint about
+  a marketing email adds a `stream:marketing` suppression (`MARKETING_STREAM_SCOPE`), not `*`; permanent bounces stay `*`.
+  Every `account.*` payload and `GET /v1/reputation` carry `marketing` (`toMarketingObject`).
 - **Reputation notifications** (table `reputation_notification`, ids `repntf_`; `packages/reputation/src/notifications.ts`):
   the worker's `reputation-notifications` loop (`runDueReputationNotifications`, system-level) emails a warning or
   suspension to the org's owners and admins with a **verified, unbanned** address, looked up at send time — one email

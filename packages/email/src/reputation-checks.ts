@@ -1,6 +1,8 @@
 /**
  * The email signals of the reputation guard: permanent bounce and complaint rates of an
- * organization's live sending. Like SES, the rates are per recipient over the recipients the
+ * organization's live sending, per stream. Transactional rates decide the organization's
+ * standing; marketing rates only pause the marketing stream (`scope: "marketing"`), so a
+ * newsletter's complaints never stop password resets. Like SES, the rates are per recipient over the recipients the
  * provider was handed (suppressed, failed, canceled and still-queued recipients don't count), and
  * mailbox-simulator addresses are left out unless the policy says otherwise.
  *
@@ -14,6 +16,7 @@ import { db, type Executor, schema } from "@coss/db";
 import { type CheckContext, type ReputationCheck, rateResult } from "@coss/reputation";
 import { RETENTION_DAYS } from "@coss/retention";
 import { and, eq, gte, lt, sql } from "drizzle-orm";
+import type { EmailStream } from "./provider.ts";
 import { SIMULATOR_DOMAIN } from "./providers/fake.ts";
 
 const { email, emailEvent, emailRecipient, emailReputationRollup, environment } = schema;
@@ -64,15 +67,16 @@ function add(total: SliceCounts, counts: SliceCounts) {
 }
 
 /**
- * Counts of the organization's live emails sent in `[from, to)` (`[from, to]` with `inclusive`),
- * keyed by the start of their UTC hour.
+ * Counts of the organization's live emails of one stream (default: transactional) sent in
+ * `[from, to)` (`[from, to]` with `inclusive`), keyed by the start of their UTC hour.
  */
 export async function countSlices(
   organizationId: string,
   from: Date,
   to: Date,
-  opts: { inclusive?: boolean } = {},
+  opts: { inclusive?: boolean; stream?: EmailStream } = {},
 ): Promise<Map<number, SliceCounts>> {
+  const stream = opts.stream ?? "transactional";
   const recipientEvent = (condition: ReturnType<typeof sql>) => sql`exists (
     select 1 from ${emailEvent}
     where ${emailEvent.emailId} = ${emailRecipient.emailId}
@@ -106,6 +110,7 @@ export async function countSlices(
       on ${environment.id} = ${email.environmentId}
       and ${environment.organizationId} = ${email.organizationId}
     where ${email.organizationId} = ${organizationId}
+      and ${email.stream} = ${stream}
       and ${SEND_TIME} >= ${from.toISOString()}::timestamptz
       and ${SEND_TIME} ${upper} ${to.toISOString()}::timestamptz
       and ${environment.mode} = 'live'
@@ -137,7 +142,7 @@ async function countLive(
   organizationId: string,
   from: Date,
   to: Date,
-  opts: { inclusive?: boolean } = {},
+  opts: { inclusive?: boolean; stream: EmailStream },
 ): Promise<SliceCounts> {
   const total = zero();
   for (const slice of (await countSlices(organizationId, from, to, opts)).values()) {
@@ -151,7 +156,12 @@ async function countLive(
  * hours that are missing or invalidated. A recount stores its result only if no event bumped the
  * hour meanwhile (the revision is read before counting); otherwise the next evaluation recounts.
  */
-async function countRolledUp(organizationId: string, from: number, to: number) {
+async function countRolledUp(
+  organizationId: string,
+  from: number,
+  to: number,
+  stream: EmailStream,
+) {
   const thisOrganization = eq(emailReputationRollup.organizationId, organizationId);
   await db
     .delete(emailReputationRollup)
@@ -165,7 +175,7 @@ async function countRolledUp(organizationId: string, from: number, to: number) {
   for (let hour = from; hour < to; hour += HOUR) hours.push(hour);
   await db
     .insert(emailReputationRollup)
-    .values(hours.map((hour) => ({ organizationId, bucketStart: new Date(hour) })))
+    .values(hours.map((hour) => ({ organizationId, bucketStart: new Date(hour), stream })))
     .onConflictDoNothing();
   const rows = await db
     .select()
@@ -173,6 +183,7 @@ async function countRolledUp(organizationId: string, from: number, to: number) {
     .where(
       and(
         thisOrganization,
+        eq(emailReputationRollup.stream, stream),
         gte(emailReputationRollup.bucketStart, new Date(from)),
         lt(emailReputationRollup.bucketStart, new Date(to)),
       ),
@@ -193,7 +204,7 @@ async function countRolledUp(organizationId: string, from: number, to: number) {
     const start = staleHours[index] as number;
     let end = start + HOUR;
     while (staleHours[++index] === end) end += HOUR;
-    const slices = await countSlices(organizationId, new Date(start), new Date(end));
+    const slices = await countSlices(organizationId, new Date(start), new Date(end), { stream });
     for (let hour = start; hour < end; hour += HOUR) {
       recounted.set(hour, slices.get(hour) ?? zero());
     }
@@ -221,6 +232,7 @@ async function countRolledUp(organizationId: string, from: number, to: number) {
       simulator_recipients, simulator_bounces, simulator_complaints
     )
     where ${emailReputationRollup.organizationId} = ${organizationId}
+      and ${emailReputationRollup.stream} = ${stream}
       and ${emailReputationRollup.bucketStart} = v.bucket_start
       and ${emailReputationRollup.revision} = v.revision
   `);
@@ -228,9 +240,19 @@ async function countRolledUp(organizationId: string, from: number, to: number) {
   return total;
 }
 
-/** Recipient counts of the organization's live emails sent in `[windowStart, now]`. */
-export async function sendingCounts(context: CheckContext): Promise<SendingCounts> {
-  const { organizationId, windowStart, now, policy } = context;
+/**
+ * Recipient counts of the organization's live emails of one stream sent in the window
+ * (`[windowStart, now]`; marketing's starts at `marketingWindowStart`).
+ */
+export async function sendingCounts(
+  context: CheckContext,
+  stream: EmailStream = "transactional",
+): Promise<SendingCounts> {
+  const { organizationId, now, policy } = context;
+  const windowStart =
+    stream === "marketing"
+      ? (context.marketingWindowStart ?? context.windowStart)
+      : context.windowStart;
   const start = windowStart.getTime();
   const firstHour = ceilHour(start);
   // Capped by the real clock: an hour that hasn't happened yet must never be frozen.
@@ -238,13 +260,16 @@ export async function sendingCounts(context: CheckContext): Promise<SendingCount
 
   const total = zero();
   if (firstHour >= closedEnd) {
-    add(total, await countLive(organizationId, windowStart, now, { inclusive: true }));
+    add(total, await countLive(organizationId, windowStart, now, { inclusive: true, stream }));
   } else {
     if (start < firstHour) {
-      add(total, await countLive(organizationId, windowStart, new Date(firstHour)));
+      add(total, await countLive(organizationId, windowStart, new Date(firstHour), { stream }));
     }
-    add(total, await countRolledUp(organizationId, firstHour, closedEnd));
-    add(total, await countLive(organizationId, new Date(closedEnd), now, { inclusive: true }));
+    add(total, await countRolledUp(organizationId, firstHour, closedEnd, stream));
+    add(
+      total,
+      await countLive(organizationId, new Date(closedEnd), now, { inclusive: true, stream }),
+    );
   }
   const simulator = policy.countSimulatorRecipients;
   return {
@@ -268,7 +293,7 @@ export async function invalidateReputationRollup(
   now: Date = new Date(),
 ): Promise<void> {
   const [row] = await tx
-    .select({ at: SEND_TIME })
+    .select({ at: SEND_TIME, stream: email.stream })
     .from(email)
     .where(and(eq(email.id, emailId), eq(email.organizationId, organizationId)))
     .limit(1);
@@ -278,55 +303,70 @@ export async function invalidateReputationRollup(
   if (bucket < now.getTime() - ROLLUP_RETENTION_MS) return;
   await tx
     .insert(emailReputationRollup)
-    .values({ organizationId, bucketStart: new Date(bucket), revision: 1 })
+    .values({ organizationId, bucketStart: new Date(bucket), stream: row.stream, revision: 1 })
     .onConflictDoUpdate({
-      target: [emailReputationRollup.organizationId, emailReputationRollup.bucketStart],
+      target: [
+        emailReputationRollup.organizationId,
+        emailReputationRollup.bucketStart,
+        emailReputationRollup.stream,
+      ],
       set: { revision: sql`${emailReputationRollup.revision} + 1` },
     });
 }
 
 /**
- * Both rate checks, sharing one count per evaluation (the guard evaluates its checks for one
- * organization at a time, with one context object).
+ * Both rate checks of a stream, sharing one count per evaluation (the guard evaluates its checks
+ * for one organization at a time, with one context object).
  */
-function emailChecks(): ReputationCheck[] {
+function emailChecks(stream: EmailStream): ReputationCheck[] {
   const counts = new WeakMap<CheckContext, Promise<SendingCounts>>();
   const countsFor = (context: CheckContext) => {
     let pending = counts.get(context);
     if (!pending) {
-      pending = sendingCounts(context);
+      pending = sendingCounts(context, stream);
       counts.set(context, pending);
     }
     return pending;
   };
+  const marketing = stream === "marketing";
+  const prefix = marketing ? "marketing_" : "";
+  const scope = marketing ? "marketing" : "organization";
   return [
     {
-      trigger: "bounce_rate",
+      trigger: `${prefix}bounce_rate`,
+      scope,
       async evaluate(context) {
         const { recipients, bounces } = await countsFor(context);
         return rateResult({
-          trigger: "bounce_rate",
-          label: "Bounce rate",
+          trigger: `${prefix}bounce_rate`,
+          label: marketing ? "Marketing bounce rate" : "Bounce rate",
           count: bounces,
           volume: recipients,
-          threshold: context.policy.bounceRate,
+          threshold: marketing ? context.policy.marketingBounceRate : context.policy.bounceRate,
         });
       },
     },
     {
-      trigger: "complaint_rate",
+      trigger: `${prefix}complaint_rate`,
+      scope,
       async evaluate(context) {
         const { recipients, complaints } = await countsFor(context);
         return rateResult({
-          trigger: "complaint_rate",
-          label: "Complaint rate",
+          trigger: `${prefix}complaint_rate`,
+          label: marketing ? "Marketing complaint rate" : "Complaint rate",
           count: complaints,
           volume: recipients,
-          threshold: context.policy.complaintRate,
+          threshold: marketing
+            ? context.policy.marketingComplaintRate
+            : context.policy.complaintRate,
         });
       },
     },
   ];
 }
 
-export const emailReputationChecks: ReputationCheck[] = emailChecks();
+/** Every stream's rate checks: transactional ones decide the standing, marketing ones its pause. */
+export const emailReputationChecks: ReputationCheck[] = [
+  ...emailChecks("transactional"),
+  ...emailChecks("marketing"),
+];

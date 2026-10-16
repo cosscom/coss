@@ -1,5 +1,5 @@
-import type { PlanGate } from "@coss/billing/gate";
-import type { DomainDeps, EmailService } from "@coss/email";
+import type { PlanGate, UsageGate } from "@coss/billing/gate";
+import type { DomainDeps, EmailService, LinkKeyRing } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
 import { type LogWriter, noopLogWriter } from "@coss/logs";
 import {
@@ -22,6 +22,7 @@ import { apiVersion } from "./middleware/api-version.ts";
 import { requestId } from "./middleware/request-id.ts";
 import { requestLog } from "./middleware/request-log.ts";
 import { withApiVersionDocs } from "./openapi-versions.ts";
+import { createPreferenceRoutes } from "./routes/preferences.ts";
 import { createTrackingRoutes, TRACKING_PATH_PREFIX } from "./routes/tracking.ts";
 import { createV1Router } from "./routes/v1.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
@@ -50,6 +51,12 @@ export type CreateAppOptions = {
    */
   riskDeps: RiskDeps;
   /**
+   * Marketing email's links (preference center, unsubscribe, double opt-in): the key ring
+   * (`EMAIL_LINK_KEYS`) and the origin they point at (`TRACKING_PUBLIC_URL`, else the request's).
+   * Required for the same reason: links minted with another key never open.
+   */
+  links: { keys: LinkKeyRing; baseUrl?: string };
+  /**
    * Public origin advertised in the OpenAPI document (`API_PUBLIC_URL`).
    */
   publicUrl?: string;
@@ -62,6 +69,11 @@ export type CreateAppOptions = {
   rateLimiter?: RateLimiter;
   /** Plan features and limits (`createPlanGate` from `@coss/billing`). Defaults to none (no limits). */
   plans?: PlanGate;
+  /**
+   * Hard usage caps (`createUsageGate`): what a canceled or paused broadcast gives back of its
+   * reservation. Must match the email service's. Defaults to none.
+   */
+  billing?: UsageGate;
   /** The caller's address for per-IP limits (`CLIENT_IP_HEADER`). Defaults to none. */
   clientIp?: ClientIpResolver;
 
@@ -164,7 +176,9 @@ export function createApp(opts: CreateAppOptions) {
 
   app.get("/health", (c) => c.json({ ok: true }));
 
-  // Public and unauthenticated (fetched by mail clients); not part of the OpenAPI document.
+  // Public and unauthenticated (fetched by mail clients); not part of the OpenAPI document. The
+  // preference center first: `/t` would otherwise answer its paths with a 404.
+  app.route("/t/u", createPreferenceRoutes(opts.links.keys));
   app.route("/t", createTrackingRoutes());
 
   app.route(
@@ -178,6 +192,8 @@ export function createApp(opts: CreateAppOptions) {
       inbound,
       shutdownSignal: opts.shutdownSignal ?? new AbortController().signal,
       listenerPollIntervalMs: opts.listenerPollIntervalMs,
+      links: opts.links,
+      billing: opts.billing,
     }),
   );
 

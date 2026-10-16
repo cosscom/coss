@@ -5,6 +5,7 @@ export type EmailErrorCode =
   | "domain_not_verified"
   | "sending_paused"
   | "account_suspended"
+  | "marketing_paused"
   | "billing_hold"
   | "email_not_cancelable"
   | "email_not_reschedulable"
@@ -16,7 +17,8 @@ export type EmailErrorCode =
   | "template_invalid"
   | "template_alias_taken"
   | "template_limit_reached"
-  | "template_revision_mismatch";
+  | "template_revision_mismatch"
+  | "mailing_address_required";
 
 const STATUS_BY_CODE = {
   idempotency_key_reused: 422,
@@ -25,6 +27,7 @@ const STATUS_BY_CODE = {
   domain_not_verified: 422,
   sending_paused: 403,
   account_suspended: 403,
+  marketing_paused: 403,
   // Payment required: an overdue invoice or the spend limit (`@coss/billing`).
   billing_hold: 402,
   // Not 409: the SDK retries those.
@@ -41,6 +44,7 @@ const STATUS_BY_CODE = {
   template_limit_reached: 422,
   // Not 409: the SDK would retry it, and another save won't happen by waiting.
   template_revision_mismatch: 422,
+  mailing_address_required: 422,
 } as const satisfies Record<EmailErrorCode, number>;
 
 /** Expected failures of the email service; `status` is the HTTP status the API should use. */
@@ -91,5 +95,41 @@ export class DomainError extends Error {
     super(message);
     this.name = "DomainError";
     this.code = code;
+  }
+}
+
+export type ContactErrorCode =
+  | "not_found"
+  | "unknown_property"
+  | "invalid_property"
+  | "too_many_properties"
+  | "property_exists"
+  | "property_in_use"
+  | "name_taken"
+  | "topic_exists"
+  | "too_many_topics"
+  | "topic_in_use"
+  | "audience_in_use"
+  | "segment_in_use"
+  | "audience_not_found"
+  | "topic_not_found"
+  | "invalid_filter"
+  | "confirmation_sender_required"
+  | "double_opt_in_status";
+
+/**
+ * Expected failures of contacts, audiences, segments and topics; messages are safe to show.
+ * `param` is the request field at fault. Only `not_found` is a 404; the rest are 422 (not 409:
+ * the SDK retries those, and these conflicts never resolve on their own).
+ */
+export class ContactError extends Error {
+  readonly code: ContactErrorCode;
+  readonly param: string | undefined;
+
+  constructor(code: ContactErrorCode, message: string, opts?: { param?: string }) {
+    super(message);
+    this.name = "ContactError";
+    this.code = code;
+    this.param = opts?.param;
   }
 }

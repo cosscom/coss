@@ -10,15 +10,18 @@ is never handed to the mail provider. If no recipient is left, the email fails w
 
 ## Scopes
 
-An entry's `scope` is `*` (every email) or a [category](/docs/email/sending#categories). A send with
-`category: "marketing"` skips addresses suppressed for `*` or `marketing`; a send without a category
-only skips `*` entries.
+An entry's `scope` is `*` (every email), `stream:marketing` (only [marketing email](/docs/email/streams):
+broadcasts and sends with `stream: "marketing"`) or a [category](/docs/email/sending#categories). A
+send with `category: "news"` skips addresses suppressed for `*` or `news` (and, if it is marketing
+email, `stream:marketing`); a transactional send without a category only skips `*` entries.
 
 ## Automatic entries
 
 A permanent bounce or a complaint adds a `*` entry for that address, with `reason` `bounce` or
-`complaint` and the `email_id` that caused it. A [one-click unsubscribe](/docs/email/unsubscribe)
-adds an entry scoped to the email's category, with `reason` `unsubscribe`. Mailbox simulator addresses
+`complaint` and the `email_id` that caused it. A complaint about a marketing email adds a
+`stream:marketing` entry instead, so that person still gets your receipts and password resets. A [one-click unsubscribe](/docs/email/unsubscribe)
+adds an entry scoped to the email's category, with `reason` `unsubscribe`. Unsubscribes from marketing
+email are recorded on the [contact](/docs/email/topics-and-preferences) instead, never as entries. Mailbox simulator addresses
 (`@simulator.amazonses.com`) are never suppressed, so they keep working for tests.
 
 ## Managing the list

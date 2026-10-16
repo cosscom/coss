@@ -133,6 +133,7 @@ export async function billingObject(
       domains: entitlements.limits.domains,
       members: entitlements.limits.members,
       webhook_endpoints_per_environment: entitlements.limits.webhookEndpointsPerEnvironment,
+      contacts_per_environment: entitlements.limits.contactsPerEnvironment,
     },
   };
 }

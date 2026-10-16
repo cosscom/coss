@@ -1,5 +1,20 @@
 # coss
 
+## 0.6.0
+
+### Minor Changes
+
+- 0d7a859: Broadcasts: `coss.email.broadcasts` (`create`, `list`, `get`, `update`, `remove`, `send`, `cancel`, `pause`, `resume`, `test`, `listEmails`) send one marketing email to an audience or a segment, with `{{{contact.<key>|fallback}}}` templates, scheduling, throttling at the plan's marketing rate and per-broadcast `stats`. Adds the `broadcast.sending`, `broadcast.sent`, `broadcast.paused`, `broadcast.canceled` and `broadcast.failed` webhook events and `broadcast_id` on emails.
+- 9cfbbfa: Contacts: `coss.email.contacts` (upsert, list, get, update, remove, import, export, topics), custom contact properties (`coss.email.contacts.properties`), audiences (`coss.email.audiences`), segments (`coss.email.segments`), topics (`coss.email.topics`) and marketing settings (`coss.email.marketingSettings`), the `contact.*` webhook events, and `contacts_per_environment` in the billing limits.
+- 9682942: Email streams: `marketing` on the reputation (`Reputation.marketing`, the marketing stream's own standing) and on `account.*` webhook events, the new `account.marketing_paused` and `account.marketing_reinstated` events, the `stream:marketing` suppression scope, and `stream` on `coss.email.suppressions.check()`.
+- 1d2d0f6: Marketing email: `stream: "marketing"` on sends (one-click unsubscribe headers and a CAN-SPAM footer added by coss.com) and `stream` on emails, double opt-in (`double_opt_in` on `coss.email.contacts.upsert()`, `resendConfirmation()`, confirmation settings in `coss.email.marketingSettings`), `coss.email.contacts.createPreferenceLinks()`, the `contact.unsubscribed` and `contact.confirmed` events (with `topic`), and `unsubscribe` on `email.suppressed` event data.
+
+## 0.5.0
+
+### Minor Changes
+
+- 990da3c: Integrations: `coss/nodemailer` (a Nodemailer transport, `cossTransport()` and `withCoss()`), `coss/better-auth` (`cossEmail()`: Better Auth's verification, password reset, change-email, delete-account, magic link, one-time code and invitation emails) and `coss/authjs` (an Auth.js email provider). They send through `coss.email.send`, throw a `CossSendError` on failure, and add no dependencies: Nodemailer, Better Auth and `@auth/core` are optional peer dependencies.
+
 ## 0.4.0
 
 ### Minor Changes

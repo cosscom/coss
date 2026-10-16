@@ -408,6 +408,22 @@ export async function authenticateApiKey(
 }
 
 /**
+ * Whether the key holds `required` now: for a permission a route needs only for some requests
+ * (`requireApiKey` checks what every request needs).
+ */
+export async function apiKeyHasPermissions(
+  apiKeyId: string,
+  required: KeyPermissions,
+): Promise<boolean> {
+  const [row] = await db
+    .select({ permissions: apikey.permissions })
+    .from(apikey)
+    .where(eq(apikey.id, apiKeyId))
+    .limit(1);
+  return row ? hasPermissions(parsePermissions(row.permissions), required) : false;
+}
+
+/**
  * Records usage for the dashboard. The guard repeats the staleness check in SQL so concurrent
  * requests at a minute boundary write once (the others re-check after the row lock and skip).
  * Best effort: "last used" is informational, so a failed write never fails the request.

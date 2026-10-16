@@ -263,6 +263,17 @@ const webhookKey: EnvVar = {
   description: "Encrypts webhook signing secrets. Same value for web, api and worker.",
 };
 
+const emailLinkKeys: EnvVar = {
+  name: "EMAIL_LINK_KEYS",
+  kind: "secret",
+  required: true,
+  value:
+    "openssl rand -base64 32 (one per stage). A comma-separated list while rotating: the first " +
+    "encrypts, every one decrypts. Never drop a key whose links may still be clicked",
+  description:
+    "Encrypts the preference center, unsubscribe and confirmation links of marketing email. Same value for api and worker.",
+};
+
 const riskHashKey: EnvVar = {
   name: "RISK_HASH_KEY",
   kind: "secret",
@@ -577,6 +588,7 @@ export const SERVICES: Service[] = [
       ...email,
       trackingPublicUrl,
       webhookKey,
+      emailLinkKeys,
       portalPublicUrl,
       riskHashKey,
       ...riskClassifier,
@@ -642,6 +654,7 @@ export const SERVICES: Service[] = [
       },
       ...screening,
       webhookKey,
+      emailLinkKeys,
       billingProvider,
       stripeSecretKey,
       // Hooks delivery attempts are rate limited per endpoint and destination host.

@@ -1,0 +1,92 @@
+---
+title: Contacts
+description: The people your marketing email goes to, with custom properties and their consent.
+---
+
+Each environment keeps its own contacts: one per email address, with a first and last name, custom
+properties, and their consent to marketing email. Contacts are what [audiences and
+segments](/docs/email/audiences-and-segments) select and what [broadcasts](/docs/email/broadcasts)
+are sent to. How many an environment may keep depends on the plan (see [Billing](/docs/billing)).
+
+## Consent
+
+A contact's `status` says whether they want marketing email:
+
+| Status | Meaning |
+|---|---|
+| `subscribed` | Gets marketing email (the default for a new contact). |
+| `unsubscribed` | Never gets marketing email. Transactional email (receipts, password resets) still reaches them. |
+| `pending` | Waits for a [double opt-in](/docs/email/topics-and-preferences#double-opt-in) confirmation. |
+
+Consent is separate from the [suppression list](/docs/email/suppressions): bounces and complaints stay
+suppressions, and unsubscribing never adds one. Re-subscribing a contact never removes a suppression
+either, so an address that bounced stays protected.
+
+## Creating and updating
+
+`upsert` creates the contact with that address, or updates the existing one: names and properties
+are merged (`null` removes a property), and `status` only changes when you pass it.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: contact } = await coss.email.contacts.upsert({
+  email: "ada@example.com",
+  first_name: "Ada",
+  properties: { plan: "pro", seats: 12 },
+});
+
+// By id or by address.
+await coss.email.contacts.update("ada@example.com", { properties: { seats: 15 } });
+await coss.email.contacts.update("ada@example.com", { status: "unsubscribed" });
+```
+
+## Custom properties
+
+Define a property before you set it. Its `key` and `type` (`string`, `number`, `boolean` or `date`)
+can't change; values of the wrong type are refused with a `422` naming the property. A `fallback` is
+used in templates when a contact has no value.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.email.contacts.properties.create({ key: "plan", type: "string", fallback: "free" });
+await coss.email.contacts.properties.create({ key: "trial_ends", type: "date" });
+```
+
+An environment has at most 50 properties. A property a segment filters on can't be deleted. Keys
+that name a built-in field or a column the CSV import reads as one (`email`, `first_name`,
+`status`, `created_at`, `given_name`, `subscribed` and the like) are reserved.
+
+## Importing and exporting
+
+`import` takes any number of contacts and sends them 1,000 per request. Each one is validated on its
+own (invalid ones are reported by position), existing contacts are updated, and an import never
+re-subscribes someone who unsubscribed. Imports send no webhooks.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: result } = await coss.email.contacts.import({
+  contacts: [
+    { email: "ada@example.com", first_name: "Ada", properties: { plan: "pro" } },
+    { email: "grace@example.com" },
+  ],
+});
+// result?.created, result?.updated, result?.kept_unsubscribed, result?.invalid
+
+// Every contact as CSV (here only subscribed ones).
+const { data: csv } = await coss.email.contacts.export({ status: "subscribed" });
+```
+
+The dashboard's **Contacts** page imports a CSV file of up to 10,000 rows (an `email` column, plus
+`first_name`, `last_name`, `status` and one column per property) and downloads the same export.
+
+## Events
+
+Single changes send `contact.created`, `contact.updated`, `contact.deleted`, `contact.unsubscribed`
+and `contact.confirmed` [webhooks](/docs/webhooks) with the contact's id, address and status (never
+its properties).

@@ -36,6 +36,7 @@ describe("GET /v1/reputation", () => {
         evaluated_at: null,
         window: null,
         checks: [],
+        marketing: { status: "active", reason: null, paused_at: null },
       });
     }
   });

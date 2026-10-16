@@ -32,7 +32,11 @@ describe("pollSesEvents", () => {
     const api = new FakeSesApi();
     const runtime = createEmailRuntime({
       provider: "ses",
-      ses: { region: "eu-west-1", configurationSet: "coss", tenantPrefix },
+      ses: {
+        region: "eu-west-1",
+        configurationSets: { transactional: "coss", marketing: "coss-marketing" },
+        tenantPrefix,
+      },
       sesApi: api,
       dns: null,
       log: false,

@@ -7,6 +7,7 @@ import {
   type EmailAttachmentMetadata,
   toAttachmentObject,
 } from "./attachments.ts";
+import { broadcastContents, withRenderedBody } from "./broadcast-content.ts";
 import type {
   EmailBatchObjectOutput,
   EmailEventOutput,
@@ -107,6 +108,7 @@ export function toEmailObject(
     headers: row.headers,
     tags: row.tags,
     category: row.category,
+    stream: row.stream,
     status: row.status,
     failure: emailFailure(row),
     recipients: opts.recipients.map(toRecipientObject),
@@ -118,6 +120,7 @@ export function toEmailObject(
     scheduled_at: row.scheduledAt?.toISOString() ?? null,
     batch_id: row.batchId,
     template: templateReference(row),
+    broadcast_id: row.broadcastId,
   };
 }
 
@@ -186,12 +189,16 @@ export async function toEmailObjects(
   rows: { email: EmailRow; sandbox: boolean }[],
 ): Promise<EmailObjectOutput[]> {
   const ids = rows.map((row) => row.email.id);
-  const [recipients, attachments] = await Promise.all([
+  const [recipients, attachments, contents] = await Promise.all([
     recipientsByEmail(organizationId, ids),
     attachmentsByEmail(organizationId, ids),
+    broadcastContents(
+      organizationId,
+      rows.flatMap((row) => (row.email.broadcastId ? [row.email.broadcastId] : [])),
+    ),
   ]);
   return rows.map((row) =>
-    toEmailObject(row.email, {
+    toEmailObject(withRenderedBody(row.email, contents), {
       sandbox: row.sandbox,
       recipients: recipients.get(row.email.id) ?? [],
       attachments: attachments.get(row.email.id) ?? [],
@@ -477,6 +484,7 @@ export async function listEmailSummariesPage(
     .select({
       id: email.id,
       from: email.from,
+      stream: email.stream,
       to: email.to,
       cc: email.cc,
       bcc: email.bcc,
@@ -501,6 +509,7 @@ export async function listEmailSummariesPage(
       sentAt: email.sentAt,
       scheduledAt: email.scheduledAt,
       batchId: email.batchId,
+      broadcastId: email.broadcastId,
       templateId: email.templateId,
       templateVersion: email.templateVersion,
       templateLocale: email.templateLocale,
@@ -534,6 +543,7 @@ export async function listEmailSummariesPage(
       subject: row.subject,
       tags: row.tags,
       category: row.category,
+      stream: row.stream,
       status: row.status,
       failure: emailFailure(row),
       recipients: (recipients.get(row.id) ?? []).map(toRecipientObject),
@@ -543,6 +553,7 @@ export async function listEmailSummariesPage(
       sent_at: row.sentAt?.toISOString() ?? null,
       scheduled_at: row.scheduledAt?.toISOString() ?? null,
       batch_id: row.batchId,
+      broadcast_id: row.broadcastId,
       template: templateReference(row),
     })),
     hasMore: rows.length > limit,

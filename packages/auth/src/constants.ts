@@ -24,6 +24,8 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   domain: ["create", "read", "verify", "delete"],
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],
+  contact: ["create", "read", "update", "delete"],
+  broadcast: ["create", "read", "update", "delete", "send"],
   reputation: ["read"],
   log: ["read"],
   // The organization's audit log. Only owners and admins create keys, and they can read it.

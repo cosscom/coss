@@ -1,5 +1,93 @@
 export type { EmailAttachmentMetadata } from "./attachments.ts";
+export {
+  type ContactRecipient,
+  contactVariables,
+  countRecipients,
+  type RecipientOptions,
+  type RecipientTarget,
+  resolveRecipients,
+  variablesFor,
+} from "./audience-resolution.ts";
+export {
+  type AudienceRow,
+  addAudienceContacts,
+  contactAudienceIds,
+  createAudience,
+  deleteAudience,
+  getAudience,
+  listAudienceContacts,
+  listAudiences,
+  removeAudienceContact,
+  updateAudience,
+} from "./audiences.ts";
 export { checkBimi, parseTagList, toBimiObject } from "./bimi.ts";
+export {
+  type BroadcastContent,
+  renderBroadcast,
+  renderTemplate,
+  templateKeys,
+  withPreheader,
+} from "./broadcast-render.ts";
+export {
+  BROADCAST_STAT_SHARDS,
+  broadcastStats,
+  recipientMoveCounts,
+  recountBroadcastStats,
+  shardOf,
+} from "./broadcast-stats.ts";
+export {
+  BROADCAST_BACKLOG,
+  BROADCAST_LEASE_MS,
+  BROADCAST_STEP_MS,
+  BroadcastError,
+  type BroadcastErrorCode,
+  type BroadcastRow,
+  type BroadcastWorkerDeps,
+  cancelBroadcast,
+  createBroadcast,
+  deleteBroadcast,
+  getBroadcast,
+  getBroadcastRow,
+  listBroadcastEmails,
+  listBroadcasts,
+  MAX_BROADCAST_BATCH,
+  pauseBroadcast,
+  resumeBroadcast,
+  runDueBroadcasts,
+  sendBroadcast,
+  testBroadcast,
+  testRecipients,
+  toBroadcastObject,
+  updateBroadcast,
+} from "./broadcasts.ts";
+export { type ContactCsvEntry, parseContactCsv } from "./contact-csv.ts";
+export {
+  type ContactEnvironment,
+  type ContactPropertyRow,
+  createContactProperty,
+  deleteContactProperty,
+  getContactProperty,
+  listContactProperties,
+  listContactPropertyRows,
+  propertyDefinitions,
+  updateContactProperty,
+} from "./contact-properties.ts";
+export {
+  type ContactDeps,
+  type ContactRow,
+  contactCount,
+  contactsCsvStream,
+  deleteContact,
+  getContact,
+  getContactRow,
+  getContactTopics,
+  importContacts,
+  listContacts,
+  setContactTopics,
+  toContactObject,
+  updateContact,
+  upsertContact,
+} from "./contacts.ts";
 export {
   countDedicatedDeliveries,
   type DedicatedIpDeps,
@@ -108,10 +196,13 @@ export {
   deleteDomain,
   domainRecords,
   type EmailTenantRow,
+  ensureMissingStreamTenants,
   ensureOrgTenant,
+  ensureOrgTenants,
   getDomain,
   getEmailTenant,
   listDomains,
+  listEmailTenants,
   MAIL_FROM_SUBDOMAIN,
   MAX_PENDING_DOMAINS,
   nextCheckAt,
@@ -122,8 +213,17 @@ export {
   toDomainObject,
   VERIFICATION_WINDOW_MS,
 } from "./domains.ts";
+export {
+  CONFIRMATION_COOLDOWN_MS,
+  type ConfirmationOutcome as ConfirmationSendOutcome,
+  confirmationSender,
+  MAX_CONFIRMATIONS,
+  sendConfirmation,
+} from "./double-opt-in.ts";
 export { EMAIL_CSV_COLUMNS, emailCsvRow, emailsCsvStream } from "./email-csv.ts";
 export {
+  ContactError,
+  type ContactErrorCode,
   DomainError,
   type DomainErrorCode,
   EmailError,
@@ -165,14 +265,58 @@ export {
   organizationPrefix,
   receivedEmailPrefix,
 } from "./inbound-store.ts";
+export {
+  CONFIRMATION_LINK_TTL_MS,
+  confirmationLink,
+  DEVELOPMENT_LINK_KEYS,
+  type LinkKeyRing,
+  type LinkKind,
+  type LinkPayload,
+  linkKeyRing,
+  MAX_LINK_TOKEN_LENGTH,
+  mintLinkToken,
+  PREFERENCES_PATH_PREFIX,
+  type PreferenceLinks,
+  parseLinkKeys,
+  preferenceLinks,
+  readLinkToken,
+} from "./link-tokens.ts";
+export {
+  applyMarketingFooter,
+  MAILING_ADDRESS_PLACEHOLDER,
+  PREFERENCES_PLACEHOLDER,
+  UNSUBSCRIBE_PLACEHOLDER,
+} from "./marketing-footer.ts";
+export {
+  getMarketingSettings,
+  getMarketingSettingsRow,
+  type MarketingSettingsRow,
+  updateMarketingSettings,
+} from "./marketing-settings.ts";
 export { emailNotifier, type Notice, type Notifier, notificationEnvironment } from "./notifier.ts";
+export {
+  confirmationPage,
+  preferencesPage,
+  unsubscribePage,
+} from "./preference-center-html.ts";
+export {
+  applyPreferences,
+  type ConfirmationOutcome,
+  confirmContact,
+  loadPreferences,
+  maskAddress,
+  type PreferenceChange,
+  type PreferenceContext,
+} from "./preferences.ts";
 export {
   type DedicatedIpProvider,
   DedicatedIpTakenError,
   type DomainIdentity,
   type DomainIdentityState,
   type DomainVerificationStatus,
+  EMAIL_STREAMS,
   type EmailProvider,
+  type EmailStream,
   type IdentityProvider,
   IdentityTakenError,
   type MailFromStatus,
@@ -181,6 +325,7 @@ export {
   type ProviderEvent,
   type ProviderTenant,
   type SendResult,
+  ThrottledSendError,
   UncertainSendError,
 } from "./provider.ts";
 export {
@@ -255,6 +400,7 @@ export {
   purgeExpiredEmails,
   purgeExpiredFakeInboundObjects,
   purgeExpiredInboundDropCounters,
+  purgeExpiredPendingContacts,
   purgeExpiredReceivedEmails,
   purgeExpiredReputationRollups,
 } from "./retention.ts";
@@ -339,6 +485,7 @@ export {
   ListSuppressionsQuery,
   type ListSuppressionsQueryOutput,
   MAIL_FROM_STATUSES,
+  MARKETING_STREAM_SCOPE,
   MAX_ATTACHMENTS,
   MAX_ATTACHMENTS_BYTES,
   MAX_BATCH_EMAILS,
@@ -398,6 +545,17 @@ export {
   WEBHOOK_EVENT_TYPES,
 } from "./schemas.ts";
 export { emailScreeningContent, htmlTextAndLinks } from "./screening.ts";
+export {
+  compileSegmentFilter,
+  createSegment,
+  deleteSegment,
+  getSegment,
+  listSegments,
+  previewSegmentContacts,
+  type SegmentRow,
+  updateSegment,
+} from "./segments.ts";
+export { type Skip, skippedRecipients } from "./send-eligibility.ts";
 export {
   cancelScheduledEmail,
   createEmailService,
@@ -462,6 +620,16 @@ export {
   toEmailTemplateVersionObject,
   updateEmailTemplate,
 } from "./templates.ts";
+export {
+  createTopic,
+  deleteTopic,
+  getTopic,
+  listTopicRows,
+  listTopics,
+  type TopicRow,
+  topicsByKey,
+  updateTopic,
+} from "./topics.ts";
 export { isTrackingToken, newTrackingToken, recordClick, recordOpen } from "./tracking.ts";
 export {
   checkTrackingDomain,

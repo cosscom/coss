@@ -42,3 +42,18 @@ export function decide(
     ? { to: "good", type: "warning_cleared", trigger: current.reason ?? "evaluation" }
     : null;
 }
+
+/**
+ * Whether the marketing checks pause the marketing stream: on any `suspend` result while it is
+ * active. A pause is never lifted automatically (only an admin reinstates marketing), and coss.com's
+ * own organization (`canPause: false`) is never paused.
+ */
+export function decideMarketing(
+  current: { paused: boolean },
+  results: CheckResult[],
+  opts: { canPause?: boolean } = {},
+): { trigger: string } | null {
+  if (current.paused || opts.canPause === false) return null;
+  const worst = worstResult(results);
+  return worst?.severity === "suspend" ? { trigger: worst.trigger } : null;
+}

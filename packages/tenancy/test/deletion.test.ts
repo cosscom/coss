@@ -83,6 +83,13 @@ async function seedOrganizationData(tenant: TestTenant) {
       reason: "manual" as const,
     })),
   );
+  await db.insert(schema.contact).values(
+    Array.from({ length: 3 }, (_, index) => ({
+      ...scope,
+      address: `contact-${index}@example.test`,
+      source: "api" as const,
+    })),
+  );
   const [endpoint] = await db
     .insert(schema.webhookEndpoint)
     .values({
@@ -294,6 +301,7 @@ describe("runDueOrganizationDeletions", () => {
       schema.emailRecipient,
       schema.emailEvent,
       schema.emailSuppression,
+      schema.contact,
       schema.webhookDelivery,
       schema.contentScreening,
       schema.domain,

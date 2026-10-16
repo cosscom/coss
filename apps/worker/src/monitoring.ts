@@ -1,5 +1,5 @@
 import { EmailError, type EmailService } from "@coss/email";
-import { EMAIL_DISPATCH_QUEUE } from "@coss/email/dispatch";
+import { EMAIL_DISPATCH_QUEUES } from "@coss/email/dispatch";
 import * as Sentry from "@sentry/bun";
 
 /**
@@ -14,7 +14,7 @@ export function monitoredDispatch(
     dispatch: (input) =>
       Sentry.withIsolationScope((scope) => {
         scope.setTags({
-          queue: EMAIL_DISPATCH_QUEUE,
+          queue: EMAIL_DISPATCH_QUEUES[input.stream ?? "transactional"],
           organization_id: input.organizationId,
           email_id: input.emailId,
         });

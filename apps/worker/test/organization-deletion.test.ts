@@ -25,7 +25,7 @@ describe("organization deletion", () => {
     const api = new FakeSesApi();
     const identity = new SesIdentityProvider(api, {
       region: "eu-west-1",
-      configurationSet: "coss-test",
+      configurationSets: { transactional: "coss-test", marketing: "coss-test-marketing" },
       tenantPrefix: "test",
     });
     const tracking = new FakeTrackingHostnameProvider();

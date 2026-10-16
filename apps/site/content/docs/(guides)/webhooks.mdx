@@ -33,6 +33,16 @@ const secret = endpoint?.secret;
 | `email.suppressed`       | A recipient was skipped because it is suppressed        |
 | `email.unsubscribed`     | A recipient used [one-click unsubscribe](/docs/email/unsubscribe) |
 | `email.received`         | An email arrived at one of the environment's [receiving addresses](/docs/email/receiving) |
+| `contact.created`        | A [contact](/docs/email/contacts) was added (one at a time: imports send no events) |
+| `contact.updated`        | A contact's names, status, properties or topics changed |
+| `contact.deleted`        | A contact was deleted                                   |
+| `contact.unsubscribed`   | A contact unsubscribed from all marketing email, or from one topic (`topic`), through the [preference center](/docs/email/topics-and-preferences) or one-click unsubscribe |
+| `contact.confirmed`      | A contact confirmed their address ([double opt-in](/docs/email/topics-and-preferences#double-opt-in)) |
+| `broadcast.sending`      | A [broadcast](/docs/email/broadcasts) started sending   |
+| `broadcast.sent`         | A broadcast finished: every eligible contact was processed and none of its emails is still waiting (failures are in its `stats`) |
+| `broadcast.paused`       | A broadcast was paused, by you or by coss.com (`pause_reason`) |
+| `broadcast.canceled`     | A scheduled, sending or paused broadcast was canceled   |
+| `broadcast.failed`       | A broadcast stopped for good (`error`)                  |
 | `risk.assessment.review` | A [risk assessment](/docs/risk) decided `review`        |
 | `risk.assessment.reviewed` | Feedback resolved a `review`                          |
 
@@ -48,6 +58,8 @@ These concern the whole organization, so every **live** environment's endpoints 
 | `account.reputation_recovered`    | The warning cleared                                                                     |
 | `account.suspended`               | Live sending was suspended                                                              |
 | `account.reinstated`              | The suspension was lifted                                                               |
+| `account.marketing_paused`        | The marketing stream's bounce or complaint rate paused marketing sends (`data.marketing`) |
+| `account.marketing_reinstated`    | The marketing pause was lifted                                                          |
 | `billing.invoice_finalized`       | An invoice was issued (`data.invoice`, without lines)                                   |
 | `billing.invoice_paid`            | An invoice was paid in full                                                             |
 | `billing.invoice_payment_failed`  | Charging an invoice failed (`data.failure.message`); it is retried                      |

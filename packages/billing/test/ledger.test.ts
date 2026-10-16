@@ -515,6 +515,32 @@ describe("enforcement", () => {
     ).rejects.toThrow("needs a contract");
   });
 
+  test("released units go back to the month they were reserved in", async () => {
+    const tenant = await createTestTenant();
+    const gate = createUsageGate();
+    const org = tenant.organization.id;
+    const reserve = (quantity: number) =>
+      db.transaction((tx) =>
+        gate.reserve(tx, { organizationId: org, meter: "email.recipients", quantity }),
+      );
+    await reserve(3_000);
+    // Last month's reservation (another period's row) is given back there, not here.
+    const lastMonth = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 0));
+    await db.transaction(async (tx) => {
+      await gate.release?.(tx, {
+        organizationId: org,
+        meter: "email.recipients",
+        quantity: 100,
+        reservedAt: lastMonth,
+      });
+    });
+    await expect(reserve(1)).rejects.toMatchObject({ code: "usage_limit_exceeded" });
+    await db.transaction(async (tx) => {
+      await gate.release?.(tx, { organizationId: org, meter: "email.recipients", quantity: 100 });
+    });
+    await reserve(100);
+  });
+
   test("the plan gate: features and limits", async () => {
     const tenant = await createTestTenant();
     const org = tenant.organization.id;

@@ -7,6 +7,7 @@
 import { randomBytes } from "node:crypto";
 import { db, schema } from "@coss/db";
 import { and, eq, ne, sql } from "drizzle-orm";
+import { bumpBroadcastStat } from "./broadcast-stats.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
 import type { ProviderEvent } from "./provider.ts";
 
@@ -110,14 +111,24 @@ export async function recordOpen(hit: Hit): Promise<boolean> {
     const inserted = await recordProviderEvent(tx, event);
     if (inserted.length === 0) return false;
     const at = now.toISOString();
-    await tx
+    const [counted] = await tx
       .update(email)
       .set({
         openCount: sql`${email.openCount} + 1`,
         firstOpenedAt: sql`coalesce(${email.firstOpenedAt}, ${at}::timestamptz)`,
         lastOpenedAt: sql`greatest(${email.lastOpenedAt}, ${at}::timestamptz)`,
       })
-      .where(and(eq(email.id, target.id), eq(email.organizationId, target.organizationId)));
+      .where(and(eq(email.id, target.id), eq(email.organizationId, target.organizationId)))
+      .returning({ count: email.openCount, broadcastId: email.broadcastId });
+    // A broadcast counts each email's first open.
+    if (counted?.broadcastId && counted.count === 1) {
+      await bumpBroadcastStat(tx, {
+        broadcastId: counted.broadcastId,
+        organizationId: target.organizationId,
+        emailId: target.id,
+        field: "opened",
+      });
+    }
     return true;
   });
 }
@@ -172,10 +183,19 @@ export async function recordClick(
         firstClickedAt: sql`coalesce(${email.firstClickedAt}, ${at}::timestamptz)`,
         lastClickedAt: sql`greatest(${email.lastClickedAt}, ${at}::timestamptz)`,
       };
-      await tx
+      const [clicked] = await tx
         .update(email)
         .set(counted)
-        .where(and(eq(email.id, target.id), eq(email.organizationId, target.organizationId)));
+        .where(and(eq(email.id, target.id), eq(email.organizationId, target.organizationId)))
+        .returning({ count: email.clickCount, broadcastId: email.broadcastId });
+      if (clicked?.broadcastId && clicked.count === 1) {
+        await bumpBroadcastStat(tx, {
+          broadcastId: clicked.broadcastId,
+          organizationId: target.organizationId,
+          emailId: target.id,
+          field: "clicked",
+        });
+      }
       await tx
         .update(emailLink)
         .set({

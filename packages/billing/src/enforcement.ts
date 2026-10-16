@@ -121,6 +121,22 @@ export function createUsageGate(
         plan: state.terms.plan,
       });
     },
+    async release(tx, input) {
+      if (input.quantity <= 0) return;
+      await tx
+        .update(billingQuota)
+        .set({
+          reserved: sql`greatest(${billingQuota.reserved} - ${input.quantity}, 0)`,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(billingQuota.organizationId, input.organizationId),
+            eq(billingQuota.meter, input.meter),
+            eq(billingQuota.periodStart, periodOf(input.reservedAt ?? new Date()).start),
+          ),
+        );
+    },
   };
 }
 

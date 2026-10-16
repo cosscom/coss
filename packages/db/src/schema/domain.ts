@@ -110,6 +110,12 @@ export const emailStatus = pgEnum("email_status", [
 
 export type EmailTag = { name: string; value: string };
 
+/**
+ * Separates traffic whose reputation must never mix: each stream has its own SES configuration
+ * set and tenant per organization, so marketing complaints never pause password resets.
+ */
+export const emailStream = pgEnum("email_stream", ["transactional", "marketing"]);
+
 // One `POST /v1/emails/batch` request. Holds the batch's idempotency key; its emails' keys are NULL.
 export const emailBatch = pgTable(
   "email_batch",
@@ -165,6 +171,8 @@ export const email = pgTable(
     tags: jsonb("tags").$type<EmailTag[]>().notNull().default([]),
     // Matched against category-scoped suppressions and tracking rules.
     category: text("category"),
+    // Decides the provider's configuration set and tenant (and the dispatch queue).
+    stream: emailStream("stream").notNull().default("transactional"),
     // Open/click tracking, resolved once at send (per-send override, category rule, environment
     // default). The token names the email in its public `/t/*` URLs; set only when tracking or
     // one-click unsubscribe is on.
@@ -189,6 +197,12 @@ export const email = pgTable(
     // Set for emails sent by `POST /v1/emails/batch`; the index is the email's position in it.
     batchId: text("batch_id"),
     batchIndex: integer("batch_index"),
+    // Broadcast emails: their content is the broadcast's, rendered with `variables` (the
+    // contact's template values, frozen when the email was made) at dispatch and on read, so
+    // `html`/`text` stay NULL. One per broadcast and contact.
+    broadcastId: text("broadcast_id"),
+    contactId: text("contact_id"),
+    variables: jsonb("variables").$type<Record<string, string>>(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     sentAt: timestamp("sent_at", { withTimezone: true }),
@@ -219,6 +233,12 @@ export const email = pgTable(
       foreignColumns: [emailBatch.id, emailBatch.organizationId],
     }),
     index("email_batch_idx").on(t.batchId, t.batchIndex).where(sql`${t.batchId} is not null`),
+    uniqueIndex("email_broadcast_contact_unique")
+      .on(t.broadcastId, t.contactId)
+      .where(sql`${t.broadcastId} is not null`),
+    index("email_broadcast_status_idx")
+      .on(t.broadcastId, t.status)
+      .where(sql`${t.broadcastId} is not null`),
     // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
     unique("email_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
@@ -594,6 +614,407 @@ export const emailTemplateContent = pgTable(
   ],
 );
 
+export const contactStatus = pgEnum("contact_status", ["subscribed", "unsubscribed", "pending"]);
+export const contactSource = pgEnum("contact_source", [
+  "api",
+  "dashboard",
+  "import",
+  "preference_center",
+]);
+export const contactPropertyType = pgEnum("contact_property_type", [
+  "string",
+  "number",
+  "boolean",
+  "date",
+]);
+export const topicDefaultSubscription = pgEnum("topic_default_subscription", ["opt_in", "opt_out"]);
+export const topicVisibility = pgEnum("topic_visibility", ["public", "private"]);
+export const contactTopicStatus = pgEnum("contact_topic_status", ["opted_in", "opted_out"]);
+
+/**
+ * An environment's contacts: who marketing email goes to, and whether they consented. One per
+ * address (bare, lower-cased). `status` is consent to marketing as a whole (`pending`: waiting
+ * for a double opt-in confirmation); `contact_topic` holds consent per topic. Deliverability
+ * (bounces, complaints) stays in `email_suppression`.
+ */
+export const contact = pgTable(
+  "contact",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.contact)),
+    sequence: bigint("sequence", { mode: "number" }).generatedAlwaysAsIdentity(),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    address: text("address").notNull(),
+    firstName: text("first_name"),
+    lastName: text("last_name"),
+    status: contactStatus("status").notNull().default("subscribed"),
+    // Custom properties, validated against `contact_property` (`@coss/email` contacts.ts).
+    properties: jsonb("properties").$type<Record<string, unknown>>().notNull().default({}),
+    source: contactSource("source").notNull(),
+    // The consent trail.
+    subscribedAt: timestamp("subscribed_at", { withTimezone: true }),
+    unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
+    pendingSince: timestamp("pending_since", { withTimezone: true }),
+    confirmationSentAt: timestamp("confirmation_sent_at", { withTimezone: true }),
+    confirmationCount: integer("confirmation_count").notNull().default(0),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "contact_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("contact_environment_address_unique").on(t.environmentId, t.address),
+    unique("contact_id_organization_unique").on(t.id, t.organizationId),
+    index("contact_environment_sequence_idx").on(
+      t.environmentId,
+      t.createdAt.desc(),
+      t.sequence.desc(),
+    ),
+    // Recipient resolution walks an environment's contacts by id (`@coss/email` audience-resolution.ts).
+    index("contact_environment_id_idx").on(t.environmentId, t.id),
+    // Segment filters on properties (`properties @> …`).
+    index("contact_properties_idx").using("gin", t.properties.op("jsonb_path_ops")),
+    // Pending contacts expire (retention purge).
+    index("contact_pending_since_idx").on(t.pendingSince).where(sql`${t.status} = 'pending'`),
+  ],
+);
+
+/** How many contacts an environment has: the plan limit is checked against it, not a count(*). */
+export const contactCounter = pgTable(
+  "contact_counter",
+  {
+    environmentId: text("environment_id").primaryKey(),
+    organizationId: text("organization_id").notNull(),
+    count: integer("count").notNull().default(0),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "contact_counter_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    check("contact_counter_count_check", sql`${t.count} >= 0`),
+  ],
+);
+
+/** A custom contact property of an environment (typed; `fallback` fills templates without one). */
+export const contactProperty = pgTable(
+  "contact_property",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.contactProperty)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    key: text("key").notNull(),
+    type: contactPropertyType("type").notNull(),
+    fallback: jsonb("fallback").$type<string | number | boolean | null>(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "contact_property_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("contact_property_environment_key_unique").on(t.environmentId, t.key),
+  ],
+);
+
+/** A static list of contacts (members added and removed explicitly). */
+export const audience = pgTable(
+  "audience",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.audience)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    name: text("name").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "audience_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("audience_environment_name_unique").on(t.environmentId, t.name),
+    unique("audience_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
+export const audienceMember = pgTable(
+  "audience_member",
+  {
+    audienceId: text("audience_id").notNull(),
+    contactId: text("contact_id").notNull(),
+    organizationId: text("organization_id").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.audienceId, t.contactId] }),
+    foreignKey({
+      name: "audience_member_audience_fk",
+      columns: [t.audienceId, t.organizationId],
+      foreignColumns: [audience.id, audience.organizationId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "audience_member_contact_fk",
+      columns: [t.contactId, t.organizationId],
+      foreignColumns: [contact.id, contact.organizationId],
+    }).onDelete("cascade"),
+    index("audience_member_contact_idx").on(t.contactId),
+  ],
+);
+
+/** A filter over an environment's contacts, evaluated whenever it is used (`@coss/email` segments.ts). */
+export const segment = pgTable(
+  "segment",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.segment)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    name: text("name").notNull(),
+    filter: jsonb("filter").$type<Record<string, unknown>>().notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "segment_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("segment_environment_name_unique").on(t.environmentId, t.name),
+  ],
+);
+
+/**
+ * A subscription topic of an environment, built on categories: `key` is the `category` of the
+ * emails about it. `opt_in` topics reach every subscribed contact unless they opted out; `opt_out`
+ * topics only those who opted in. `private` ones never show in the preference center.
+ */
+export const topic = pgTable(
+  "topic",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.topic)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    key: text("key").notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    defaultSubscription: topicDefaultSubscription("default_subscription").notNull(),
+    visibility: topicVisibility("visibility").notNull().default("public"),
+    position: integer("position").notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "topic_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("topic_environment_key_unique").on(t.environmentId, t.key),
+    unique("topic_id_organization_unique").on(t.id, t.organizationId),
+  ],
+);
+
+/** A contact's explicit choice for one topic (no row: the topic's default applies). */
+export const contactTopic = pgTable(
+  "contact_topic",
+  {
+    contactId: text("contact_id").notNull(),
+    topicId: text("topic_id").notNull(),
+    organizationId: text("organization_id").notNull(),
+    status: contactTopicStatus("status").notNull(),
+    source: contactSource("source").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.contactId, t.topicId] }),
+    foreignKey({
+      name: "contact_topic_contact_fk",
+      columns: [t.contactId, t.organizationId],
+      foreignColumns: [contact.id, contact.organizationId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "contact_topic_topic_fk",
+      columns: [t.topicId, t.organizationId],
+      foreignColumns: [topic.id, topic.organizationId],
+    }).onDelete("cascade"),
+    index("contact_topic_topic_status_idx").on(t.topicId, t.status, t.contactId),
+  ],
+);
+
+/**
+ * An environment's marketing settings: the name and postal address marketing emails carry
+ * (CAN-SPAM), and double opt-in confirmations.
+ */
+export const marketingSettings = pgTable(
+  "marketing_settings",
+  {
+    environmentId: text("environment_id").primaryKey(),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    displayName: text("display_name"),
+    // Required before any marketing email goes out.
+    mailingAddress: text("mailing_address"),
+    confirmationFrom: text("confirmation_from"),
+    confirmationSubject: text("confirmation_subject"),
+    confirmationHtml: text("confirmation_html"),
+    confirmationText: text("confirmation_text"),
+    confirmedRedirectUrl: text("confirmed_redirect_url"),
+    doubleOptInDefault: boolean("double_opt_in_default").notNull().default(false),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "marketing_settings_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+  ],
+);
+
+export const broadcastStatus = pgEnum("broadcast_status", [
+  "draft",
+  "scheduled",
+  "sending",
+  "paused",
+  "sent",
+  "canceled",
+  "failed",
+]);
+
+export const broadcastScreeningStatus = pgEnum("broadcast_screening_status", [
+  "pending",
+  "passed",
+  "held",
+  "blocked",
+]);
+
+/**
+ * A marketing email to an audience or a segment (`@coss/email` broadcasts.ts). Its content is
+ * frozen when it starts sending; the worker then makes one email per eligible contact in throttled
+ * batches (`cursor`: the last contact id done, `contact_upper_bound`: contacts created after the
+ * start are left out), leased like a delivery (`lease_until`).
+ */
+export const broadcast = pgTable(
+  "broadcast",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.broadcast)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    // No FK: Better Auth hard-deletes expired keys, and the broadcast must survive that.
+    apiKeyId: text("api_key_id"),
+    name: text("name").notNull(),
+    status: broadcastStatus("status").notNull().default("draft"),
+    audienceId: text("audience_id"),
+    segmentId: text("segment_id"),
+    // The topic (its key: the emails' category) the broadcast is about, if any.
+    topic: text("topic"),
+    from: text("from").notNull(),
+    replyTo: text("reply_to").array().notNull().default(sql`'{}'::text[]`),
+    subject: text("subject").notNull(),
+    previewText: text("preview_text"),
+    html: text("html"),
+    text: text("text"),
+    trackOpens: boolean("track_opens").notNull().default(false),
+    trackClicks: boolean("track_clicks").notNull().default(false),
+    // Recipients per second; null: the plan's marketing rate.
+    ratePerSecond: integer("rate_per_second"),
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    canceledAt: timestamp("canceled_at", { withTimezone: true }),
+    contactUpperBound: text("contact_upper_bound"),
+    cursor: text("cursor"),
+    recipientsEstimated: integer("recipients_estimated"),
+    materialized: integer("materialized").notNull().default(0),
+    screeningStatus: broadcastScreeningStatus("screening_status").notNull().default("pending"),
+    /** When screening first failed to run (it is retried until an hour after). */
+    screeningHeldAt: timestamp("screening_held_at", { withTimezone: true }),
+    leaseUntil: timestamp("lease_until", { withTimezone: true }),
+    nextRunAt: timestamp("next_run_at", { withTimezone: true }),
+    // Why a `paused` broadcast waits (`billing_hold`, `usage_limit`, `marketing_paused`, …).
+    pauseReason: text("pause_reason"),
+    errorCode: text("error_code"),
+    errorMessage: text("error_message"),
+    idempotencyKey: text("idempotency_key"),
+    requestHash: text("request_hash"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "broadcast_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    check("broadcast_target_check", sql`(${t.audienceId} is null) <> (${t.segmentId} is null)`),
+    unique("broadcast_id_organization_unique").on(t.id, t.organizationId),
+    unique("broadcast_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
+    index("broadcast_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
+    // The worker's due scan.
+    index("broadcast_due_idx").on(t.nextRunAt).where(sql`${t.status} in ('scheduled', 'sending')`),
+  ],
+);
+
+/**
+ * A broadcast's counters, split into shards (by email) so event ingestion never queues on one hot
+ * row. Reads sum the shards.
+ */
+export const broadcastStat = pgTable(
+  "broadcast_stat",
+  {
+    broadcastId: text("broadcast_id").notNull(),
+    shard: integer("shard").notNull(),
+    organizationId: text("organization_id").notNull(),
+    recipients: integer("recipients").notNull().default(0),
+    sent: integer("sent").notNull().default(0),
+    delivered: integer("delivered").notNull().default(0),
+    bounced: integer("bounced").notNull().default(0),
+    complained: integer("complained").notNull().default(0),
+    failed: integer("failed").notNull().default(0),
+    opened: integer("opened").notNull().default(0),
+    clicked: integer("clicked").notNull().default(0),
+    unsubscribed: integer("unsubscribed").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ columns: [t.broadcastId, t.shard] }),
+    foreignKey({
+      name: "broadcast_stat_broadcast_fk",
+      columns: [t.broadcastId, t.organizationId],
+      foreignColumns: [broadcast.id, broadcast.organizationId],
+    }).onDelete("cascade"),
+  ],
+);
+
 /** A link coss.com rewrote in a click-tracked email; `position` is its index in the HTML. */
 export const emailLink = pgTable(
   "email_link",
@@ -628,24 +1049,31 @@ export const tenantSendingStatus = pgEnum("tenant_sending_status", [
 ]);
 
 /**
- * The provider-side tenant of an organization (an SES tenant: isolated reputation, suppression
- * list and pausing). Created with the organization's first domain.
+ * The provider-side tenants of an organization, one per stream (an SES tenant: isolated
+ * reputation, suppression list and pausing). Created with the organization's first domain.
  */
-export const emailTenant = pgTable("email_tenant", {
-  organizationId: text("organization_id")
-    .primaryKey()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  provider: text("provider").notNull(),
-  tenantName: text("tenant_name").notNull().unique("email_tenant_name_unique"),
-  tenantArn: text("tenant_arn"),
-  sendingStatus: tenantSendingStatus("sending_status").notNull().default("enabled"),
-  // Bootstrap commits the imported lists and this marker together before disabling SES suppression.
-  suppressionMigratedAt: timestamp("suppression_migrated_at", { withTimezone: true }),
-  statusCause: text("status_cause"),
-  statusUpdatedAt: timestamp("status_updated_at", { withTimezone: true }),
-  createdAt: createdAt(),
-  updatedAt: updatedAt(),
-});
+export const emailTenant = pgTable(
+  "email_tenant",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    // One tenant per stream: SES pauses (and rates) each on its own.
+    stream: emailStream("stream").notNull().default("transactional"),
+    provider: text("provider").notNull(),
+    tenantName: text("tenant_name").notNull().unique("email_tenant_name_unique"),
+    tenantArn: text("tenant_arn"),
+    sendingStatus: tenantSendingStatus("sending_status").notNull().default("enabled"),
+    // Bootstrap commits the imported lists and this marker together before disabling SES
+    // suppression.
+    suppressionMigratedAt: timestamp("suppression_migrated_at", { withTimezone: true }),
+    statusCause: text("status_cause"),
+    statusUpdatedAt: timestamp("status_updated_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ columns: [t.organizationId, t.stream] })],
+);
 
 export const dedicatedIpPoolStatus = pgEnum("dedicated_ip_pool_status", [
   // Over COSS's pool capacity: nothing is created until a slot frees up.
@@ -660,8 +1088,8 @@ export const dedicatedIpPoolStatus = pgEnum("dedicated_ip_pool_status", [
 
 /**
  * An organization's dedicated IP pool (the Dedicated IPs add-on): a provider-managed pool (SES
- * managed dedicated IPs, warmed up automatically) and the configuration set that sends through
- * it. Reconciled by the worker against billing; the row is deleted once the pool is released.
+ * managed dedicated IPs, warmed up automatically) and a configuration set per stream that sends
+ * through it. Reconciled by the worker against billing; the row is deleted once the pool is released.
  */
 export const dedicatedIpPool = pgTable(
   "dedicated_ip_pool",
@@ -691,6 +1119,10 @@ export const dedicatedIpPool = pgTable(
     // Set before the provider resources are deleted: from then on a returning entitlement no
     // longer restores this row (it gets a new pool once the release has finished).
     releaseStartedAt: timestamp("release_started_at", { withTimezone: true }),
+    // When the marketing stream's configuration set on the pool was set up (null: marketing
+    // sends stay on shared IPs). Pools made before the streams split, or while the organization
+    // had no marketing tenant yet, get it at a later check.
+    marketingConfiguredAt: timestamp("marketing_configured_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -1538,6 +1970,12 @@ export const reputationStanding = pgTable(
     statusChangedAt: timestamp("status_changed_at", { withTimezone: true }),
     // Rate windows never reach back past the last reinstatement.
     reinstatedAt: timestamp("reinstated_at", { withTimezone: true }),
+    // The marketing stream's own pause: its bounce or complaint rate stops marketing sends only
+    // (set: paused, by `marketing_reason`). Never lifted automatically, like a suspension; its
+    // rate windows never reach back past `marketing_reinstated_at`.
+    marketingPausedAt: timestamp("marketing_paused_at", { withTimezone: true }),
+    marketingReason: text("marketing_reason"),
+    marketingReinstatedAt: timestamp("marketing_reinstated_at", { withTimezone: true }),
     // Per-organization policy overrides set by platform admins (validated by `@coss/reputation`).
     policyOverrides: jsonb("policy_overrides").$type<Record<string, unknown>>(),
     // The latest evaluation's check results.
@@ -1565,6 +2003,8 @@ export const reputationEventType = pgEnum("reputation_event_type", [
   "suspended",
   "reinstated",
   "policy_updated",
+  "marketing_paused",
+  "marketing_reinstated",
 ]);
 
 export const reputationActor = pgEnum("reputation_actor", ["system", "admin"]);
@@ -1645,8 +2085,8 @@ export const reputationNotification = pgTable(
 );
 
 /**
- * Hourly rollups of an organization's live email reputation counts (`@coss/email`), by the hour
- * the emails were created. Computed lazily by the reputation checks for closed hours; delivery
+ * Hourly rollups of an organization's live email reputation counts (`@coss/email`), by stream and
+ * by the hour the emails were created. Computed lazily by the reputation checks for closed hours; delivery
  * events that change an hour's counts bump `revision`, so a row is current only while
  * `computed_revision = revision`. Mailbox-simulator recipients are counted separately.
  */
@@ -1657,6 +2097,9 @@ export const emailReputationRollup = pgTable(
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
     bucketStart: timestamp("bucket_start", { withTimezone: true }).notNull(),
+    // Rows from before streams are transactional and stay valid (never recounted): no marketing
+    // email could be sent until the stream split, so every one of them counts transactional mail.
+    stream: emailStream("stream").notNull().default("transactional"),
     revision: integer("revision").notNull().default(0),
     // Null until first computed.
     computedRevision: integer("computed_revision"),
@@ -1668,7 +2111,7 @@ export const emailReputationRollup = pgTable(
     simulatorComplaints: integer("simulator_complaints").notNull().default(0),
     updatedAt: updatedAt(),
   },
-  (t) => [primaryKey({ columns: [t.organizationId, t.bucketStart] })],
+  (t) => [primaryKey({ columns: [t.organizationId, t.bucketStart, t.stream] })],
 );
 export const contentScreeningVerdict = pgEnum("content_screening_verdict", [
   "clean",

@@ -10,11 +10,20 @@ export const FEATURE_KEYS = [
 ] as const;
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
 
-export const LIMIT_KEYS = ["domains", "members", "webhookEndpointsPerEnvironment"] as const;
+export const LIMIT_KEYS = [
+  "domains",
+  "members",
+  "webhookEndpointsPerEnvironment",
+  "contactsPerEnvironment",
+] as const;
 export type LimitKey = (typeof LIMIT_KEYS)[number];
 
 /** Rate limit buckets (`@coss/ratelimit`) a plan sets; an organization's override still wins. */
-export const RATE_LIMIT_KEYS = ["email.recipients.second", "email.recipients.day"] as const;
+export const RATE_LIMIT_KEYS = [
+  "email.recipients.second",
+  "email.recipients.day",
+  "email.marketing.recipients.second",
+] as const;
 export type RateLimitKey = (typeof RATE_LIMIT_KEYS)[number];
 
 /** The same shape as `@coss/ratelimit`'s rule (this module has no dependencies). */
@@ -46,6 +55,7 @@ export const LIMIT_LABELS: Record<LimitKey, string> = {
   domains: "Domains",
   members: "Team members",
   webhookEndpointsPerEnvironment: "Webhook endpoints per environment",
+  contactsPerEnvironment: "Contacts per environment",
 };
 
 const SECOND = 1000;

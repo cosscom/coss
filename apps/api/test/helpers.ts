@@ -3,6 +3,7 @@ import { pool } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
 import {
   createEmailService,
+  DEVELOPMENT_LINK_KEYS,
   type DomainDeps,
   type EmailService,
   FakeEmailProvider,
@@ -80,13 +81,16 @@ export function createTestApp(
       trackingBaseUrl: TRACKING_BASE_URL,
       trackingDomainProvider: tracking.name,
       billing: opts.billing,
+      linkKeys: DEVELOPMENT_LINK_KEYS,
     });
   const app = createApp({
     emailService,
     domainDeps: opts.domainDeps ?? { identity, dns: null, tracking, plans: opts.plans },
     inbound,
     webhookDeps: { ...testManagementDeps, plans: opts.plans },
+    links: { keys: DEVELOPMENT_LINK_KEYS, baseUrl: TRACKING_BASE_URL },
     plans: opts.plans,
+    billing: opts.billing,
     riskDeps: opts.riskDeps ?? testRiskDeps(),
     rateLimiter: opts.rateLimiter,
     clientIp: opts.clientIp,

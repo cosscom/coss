@@ -134,6 +134,16 @@ export const BUCKETS = {
     overridable: true,
     failureMode: "deny",
   },
+  // Broadcasts' pace per organization (the worker's fan-out charges it with the daily bucket), so
+  // marketing never takes the whole send rate. Plans set it.
+  "email.marketing.recipients.second": {
+    scope: "org",
+    limit: 2,
+    periodMs: SECOND,
+    burst: 10,
+    overridable: true,
+    failureMode: "deny",
+  },
   "email.recipients.day": {
     scope: "org",
     limit: 10_000,
@@ -366,6 +376,48 @@ export const BUCKETS = {
     limit: 30,
     periodMs: SECOND,
     burst: 100,
+    overridable: false,
+    failureMode: "deny",
+  },
+  // The preference center (`/t/u/*`): per link and per client IP. Fail open: an unsubscribe must
+  // never depend on Valkey (and a bad link costs one decryption, before any database work).
+  "preferences.token": {
+    scope: "key",
+    limit: 5,
+    periodMs: SECOND,
+    burst: 20,
+    overridable: false,
+    failureMode: "allow",
+  },
+  "preferences.ip": {
+    scope: "ip",
+    limit: 20,
+    periodMs: SECOND,
+    burst: 60,
+    overridable: false,
+    failureMode: "allow",
+  },
+  // Double opt-in confirmations are the customer's own sends, capped per organization, and per
+  // address across every organization so nobody can be mail-bombed through many senders.
+  "contacts.confirmations.second": {
+    scope: "org",
+    limit: 2,
+    periodMs: SECOND,
+    burst: 20,
+    overridable: true,
+    failureMode: "deny",
+  },
+  "contacts.confirmations.day": {
+    scope: "org",
+    limit: 1000,
+    periodMs: DAY,
+    overridable: true,
+    failureMode: "deny",
+  },
+  "contacts.confirmation.address": {
+    scope: "email",
+    limit: 3,
+    periodMs: DAY,
     overridable: false,
     failureMode: "deny",
   },

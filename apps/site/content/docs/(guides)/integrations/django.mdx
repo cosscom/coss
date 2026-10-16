@@ -1,0 +1,120 @@
+---
+title: Django
+description: A Django email backend that sends send_mail, EmailMessage and every other Django email through coss.com, with categories, tags, scheduling and tracking per message.
+---
+
+`coss-django` is a Django email backend (Django 5.2 to 6.1, Python 3.10+). Switch the backend and
+keep `send_mail`, `EmailMessage`, `mail_admins`, password reset emails and every other Django email
+as they are.
+
+```sh
+pip install coss-django
+```
+
+```python
+# settings.py
+EMAIL_BACKEND = "coss_django.EmailBackend"
+COSS_API_KEY = os.environ["COSS_API_KEY"]
+DEFAULT_FROM_EMAIL = "Acme <hello@acme.com>"
+```
+
+Django 6.1 configures email with `MAILERS` instead (`EMAIL_BACKEND` still works, with a deprecation
+warning). Put the same options in `OPTIONS`:
+
+```python
+MAILERS = {
+    "default": {
+        "BACKEND": "coss_django.EmailBackend",
+        "OPTIONS": {"api_key": os.environ["COSS_API_KEY"]},
+    },
+}
+```
+
+With a live key, the From address must use a [verified domain](/docs/email/domains). A sandbox key
+(`coss_test_…`) sends from any address and delivers nothing.
+
+| Setting            | Backend option | Default                                                       |
+| ------------------ | -------------- | ------------------------------------------------------------- |
+| `COSS_API_KEY`     | `api_key`      | The `COSS_API_KEY` environment variable                       |
+| `COSS_BASE_URL`    | `base_url`     | The `COSS_BASE_URL` environment variable, else `https://api.coss.com` |
+| `COSS_TIMEOUT`     | `timeout`      | `30` (seconds per attempt)                                    |
+| `COSS_MAX_RETRIES` | `max_retries`  | `2` (retries of network errors, timeouts, 409, 429 and 5xx)   |
+
+Backend options (`MAILERS` `OPTIONS`, or `get_connection(..., api_key=…)` before 6.1) win over
+the settings. A missing API key fails the first send with `ImproperlyConfigured`, never startup.
+Retries reuse the message's `Idempotency-Key`, so a retried send is never sent twice.
+
+## Sending
+
+```python
+from django.core.mail import EmailMultiAlternatives
+
+message = EmailMultiAlternatives(
+    subject="Your receipt",
+    body="Thanks for your order!",
+    to=["Ada Lovelace <ada@example.com>"],
+    reply_to=["support@acme.com"],
+)
+message.attach_alternative("<p>Thanks for your order!</p>", "text/html")
+message.attach_file("receipt.pdf")
+message.send()
+
+message.coss_email["id"]  # "email_01k…", the email in the dashboard and the API
+```
+
+Each message is one request. `send_messages()` returns how many coss.com accepted, and
+`message.coss_email` holds the email as the API returned it. An attachment with a `Content-ID`
+is sent inline, for `<img src="cid:…">`. A `Reply-To` header replaces `reply_to`, as Django
+documents. Headers coss.com sets itself (`Message-ID`, `Date`, `Content-Type` and similar) are
+dropped.
+
+## coss.com options
+
+Set `coss` on a message for a category, tags, a send time, tracking or your own idempotency key:
+
+```python
+from datetime import timedelta
+
+from django.utils import timezone
+
+message.coss = {
+    "category": "receipts",
+    "tags": {"plan": "pro"},
+    "scheduled_at": timezone.now() + timedelta(hours=1),
+    "tracking": {"opens": True, "clicks": False},
+    "idempotency_key": "order-42",
+}
+message.send()
+```
+
+A naive `scheduled_at` is taken to be in Django's current time zone. Without an
+`idempotency_key`, each message gets a random key. Set your own to make a send safe to repeat: a
+second send with the same key returns the first email instead of sending again.
+
+## Errors
+
+When coss.com refuses an email or can't be reached (after the retries), the send raises
+`coss_django.CossError`:
+
+```python
+from coss_django import CossError
+
+try:
+    message.send()
+except CossError as error:
+    error.code  # "domain_not_verified"
+    error.type  # "invalid_request_error", …, "connection_error", "timeout_error"
+    error.status  # 422, or None without a response
+    error.request_id  # "req_…": quote it to support
+    error.param  # "from"
+    error.issues  # [{"path": "to", "message": "…"}] for validation errors
+```
+
+With `fail_silently=True`, these errors and a missing API key are swallowed, and the message isn't
+counted. What coss.com can't send raises `ValueError` before anything is sent, even with
+`fail_silently` (like a bad header with Django's SMTP backend): alternatives other than one
+`text/html` part, a `Sender` or `Return-Path` other than `from_email`, `From`, `To` or `Cc` headers
+naming other addresses than the message's own, no `to` address (only `cc` or `bcc`), a header given
+twice, and multipart attachments.
+
+Django's test runner swaps in its in-memory backend, so your tests never call coss.com.

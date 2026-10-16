@@ -6,11 +6,15 @@ import {
   evaluateOrganization,
   getReputationStanding,
   isSuspended,
+  listReputationEvents,
+  listReputationNotifications,
   type ReputationPolicy,
+  reinstateMarketing,
   suspendOrganization,
 } from "@coss/reputation";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { and, eq, inArray } from "drizzle-orm";
+import { authorizeLiveSender } from "../src/domains.ts";
 import { EmailError } from "../src/errors.ts";
 import { ingestProviderEvents } from "../src/events.ts";
 import type { ProviderEvent } from "../src/provider.ts";
@@ -21,7 +25,7 @@ import {
   ROLLUP_SETTLE_MS,
   sendingCounts,
 } from "../src/reputation-checks.ts";
-import { addSuppression } from "../src/suppressions.ts";
+import { addSuppression, suppressedRecipients } from "../src/suppressions.ts";
 import { dispatchingEmailService } from "../src/testing.ts";
 import { params, sendEnvironment, verifiedFrom } from "./helpers.ts";
 
@@ -75,6 +79,7 @@ function context(tenant: TestTenant, policy: Partial<ReputationPolicy> = {}): Ch
     organizationId: tenant.organization.id,
     now,
     windowStart: new Date(now.getTime() - 86_400_000),
+    marketingWindowStart: new Date(now.getTime() - 86_400_000),
     policy: { ...DEFAULT_REPUTATION_POLICY, ...policy },
   };
 }
@@ -155,6 +160,8 @@ describe("email reputation checks", () => {
     expect(outcome.metrics.checks.map((check) => [check.trigger, check.count])).toEqual([
       ["bounce_rate", 1],
       ["complaint_rate", 0],
+      ["marketing_bounce_rate", 0],
+      ["marketing_complaint_rate", 0],
     ]);
 
     await db
@@ -293,6 +300,7 @@ describe("hourly rollups", () => {
       now,
       // Mid-hour, so the window has a partial head hour.
       windowStart: new Date(hourStart(now.getTime() - 7 * 86_400_000) + HOUR / 2),
+      marketingWindowStart: new Date(hourStart(now.getTime() - 7 * 86_400_000) + HOUR / 2),
       policy: { ...DEFAULT_REPUTATION_POLICY, ...policy },
     };
   }
@@ -427,6 +435,7 @@ describe("hourly rollups", () => {
       now,
       // e.g. a reinstatement at :30
       windowStart: new Date(hour + 30 * 60_000),
+      marketingWindowStart: new Date(hour + 30 * 60_000),
       policy: DEFAULT_REPUTATION_POLICY,
     };
     expect(await sendingCounts(ctx)).toEqual({ recipients: 1, bounces: 0, complaints: 0 });
@@ -454,5 +463,127 @@ describe("hourly rollups", () => {
       bounces: 0,
       complaints: 0,
     });
+  });
+});
+
+describe("the marketing stream", () => {
+  /** A live send recorded as marketing (the public `stream` field ships with broadcasts). */
+  async function marketingSend(tenant: TestTenant, from: string, to: string[]) {
+    const sent = await liveSend(tenant, from, to);
+    await db.update(schema.email).set({ stream: "marketing" }).where(eq(schema.email.id, sent.id));
+    return sent;
+  }
+
+  test("transactional rates leave marketing emails out, and the other way round", async () => {
+    const tenant = await createTestTenant();
+    const from = await verifiedFrom(tenant.organization.id);
+    await liveSend(tenant, from, recipients(3, "tx"));
+    const sent = await marketingSend(tenant, from, recipients(4, "mkt"));
+    await ingestProviderEvents([bounce(sent, "mkt0@example.com", "permanent")]);
+
+    expect(await sendingCounts(context(tenant))).toEqual({
+      recipients: 3,
+      bounces: 0,
+      complaints: 0,
+    });
+    expect(await sendingCounts(context(tenant), "marketing")).toEqual({
+      recipients: 4,
+      bounces: 1,
+      complaints: 0,
+    });
+  });
+
+  test("a marketing breach pauses marketing only, until an admin reinstates it", async () => {
+    const tenant = await createTestTenant();
+    const orgId = tenant.organization.id;
+    const from = await verifiedFrom(orgId);
+    const sent = await marketingSend(tenant, from, recipients(10));
+    await ingestProviderEvents([bounce(sent, "user0@example.com", "permanent")]);
+    await db
+      .update(schema.reputationStanding)
+      .set({ policyOverrides: { marketingBounceRate: { minimumRecipients: 10 } } })
+      .where(eq(schema.reputationStanding.organizationId, orgId));
+
+    const now = new Date(Date.now() + 1000);
+    const outcome = await evaluateOrganization(orgId, { checks: emailReputationChecks }, { now });
+    // The organization's standing is untouched: only marketing stops.
+    expect(outcome.status).toBe("good");
+    const standing = await getReputationStanding(orgId);
+    expect(standing?.marketingPausedAt).not.toBeNull();
+    expect(standing?.marketingReason).toBe("marketing_bounce_rate");
+    expect((await listReputationEvents(orgId)).map((event) => event.type)).toEqual([
+      "marketing_paused",
+    ]);
+    expect((await listReputationNotifications(orgId)).map((row) => row.type)).toEqual([
+      "marketing_paused",
+    ]);
+
+    await authorizeLiveSender({ organizationId: orgId, from, provider: "fake" });
+    await expect(
+      authorizeLiveSender({ organizationId: orgId, from, provider: "fake", stream: "marketing" }),
+    ).rejects.toMatchObject({ code: "marketing_paused" });
+
+    // Never lifted by the guard, even with healthy rates.
+    await db
+      .update(schema.reputationStanding)
+      .set({ policyOverrides: null })
+      .where(eq(schema.reputationStanding.organizationId, orgId));
+    await evaluateOrganization(orgId, { checks: emailReputationChecks });
+    expect((await getReputationStanding(orgId))?.marketingPausedAt).not.toBeNull();
+
+    await reinstateMarketing({ organizationId: orgId, adminUserId: tenant.owner.id, note: "ok" });
+    const reinstated = await getReputationStanding(orgId);
+    expect(reinstated?.marketingPausedAt).toBeNull();
+    expect(reinstated?.marketingReinstatedAt).not.toBeNull();
+    await authorizeLiveSender({
+      organizationId: orgId,
+      from,
+      provider: "fake",
+      stream: "marketing",
+    });
+    await expect(
+      reinstateMarketing({ organizationId: orgId, adminUserId: tenant.owner.id, note: "again" }),
+    ).rejects.toMatchObject({ code: "marketing_not_paused" });
+  });
+
+  test("coss.com's own organization is never paused", async () => {
+    const tenant = await createTestTenant();
+    const orgId = tenant.organization.id;
+    const from = await verifiedFrom(orgId);
+    const sent = await marketingSend(tenant, from, recipients(10));
+    await ingestProviderEvents([bounce(sent, "user0@example.com", "permanent")]);
+    await db
+      .update(schema.reputationStanding)
+      .set({ policyOverrides: { marketingBounceRate: { minimumRecipients: 10 } } })
+      .where(eq(schema.reputationStanding.organizationId, orgId));
+    await evaluateOrganization(orgId, {
+      checks: emailReputationChecks,
+      systemOrganizationId: orgId,
+    });
+    expect((await getReputationStanding(orgId))?.marketingPausedAt).toBeNull();
+  });
+
+  test("a complaint about marketing suppresses marketing only; a bounce suppresses everything", async () => {
+    const tenant = await createTestTenant();
+    const from = await verifiedFrom(tenant.organization.id);
+    const sent = await marketingSend(tenant, from, ["fan@example.com", "gone@example.com"]);
+    await ingestProviderEvents([
+      complaint(sent, "fan@example.com"),
+      bounce(sent, "gone@example.com", "permanent"),
+    ]);
+    const rows = await db
+      .select({ address: schema.emailSuppression.address, scope: schema.emailSuppression.scope })
+      .from(schema.emailSuppression)
+      .where(eq(schema.emailSuppression.environmentId, tenant.production.id));
+    expect(rows.sort((a, b) => a.address.localeCompare(b.address))).toEqual([
+      { address: "fan@example.com", scope: "stream:marketing" },
+      { address: "gone@example.com", scope: "*" },
+    ]);
+    const env = sendEnvironment(tenant.production);
+    const addresses = ["fan@example.com", "gone@example.com"];
+    const transactional = await suppressedRecipients(db, env, addresses, null);
+    expect([...transactional.keys()]).toEqual(["gone@example.com"]);
+    const marketing = await suppressedRecipients(db, env, addresses, null, "marketing");
+    expect([...marketing.keys()].sort()).toEqual(addresses);
   });
 });

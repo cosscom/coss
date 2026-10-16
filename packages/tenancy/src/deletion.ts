@@ -17,6 +17,7 @@ const {
   apikey,
   billingUsage,
   contentScreening,
+  contact,
   email,
   emailBatch,
   emailSuppression,
@@ -365,7 +366,7 @@ async function deletePartitionedInBatches(
 /**
  * Deletes the organization's bulky data (emails with their recipients, events, attachments and
  * links; received emails; webhook messages with their deliveries; Hooks messages, deliveries and
- * attempts; suppressions; screenings) in batches, one
+ * attempts; suppressions; contacts; screenings) in batches, one
  * environment at a time, along indexed columns. Everything else is small and goes with the
  * organization row. Returns false when `signal` aborted first.
  */
@@ -473,6 +474,12 @@ async function deleteOrganizationData(
           eq(emailSuppression.environmentId, environmentId),
           eq(emailSuppression.organizationId, organizationId),
         ),
+      ],
+      // Contacts (their audience memberships and topic choices cascade).
+      [
+        contact,
+        contact.id,
+        and(eq(contact.environmentId, environmentId), eq(contact.organizationId, organizationId)),
       ],
       // Risk assessments (their feedback cascades) and what the environment remembers.
       ...[riskAssessment, riskIdentity, riskReport, riskListEntry, riskUserNetwork].map(

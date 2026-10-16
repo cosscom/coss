@@ -7,7 +7,7 @@ import { db, type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { enqueuePush } from "@coss/push";
 import { enqueueWebhookMessage } from "@coss/webhooks";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ReputationError } from "./errors.ts";
 import { enqueueReputationNotification, NOTIFIED_TRANSITIONS } from "./notifications.ts";
@@ -23,7 +23,9 @@ import {
   type MetricsSnapshot,
   metricsSnapshot,
   type ReputationEventRow,
+  type ReputationStandingRow,
   toCheckObject,
+  toMarketingObject,
 } from "./standing.ts";
 
 const { adminAuditEvent, environment, reputationEvent, reputationStanding, user } = schema;
@@ -57,13 +59,69 @@ async function auditAdminChange(
 }
 
 export type TransitionType = "warning_raised" | "warning_cleared" | "suspended" | "reinstated";
+/** The marketing stream's own transitions; they never change the organization's status. */
+export type MarketingTransitionType = "marketing_paused" | "marketing_reinstated";
 
-const WEBHOOK_TYPE: Record<TransitionType, AccountEventType> = {
+const WEBHOOK_TYPE: Record<TransitionType | MarketingTransitionType, AccountEventType> = {
   warning_raised: "account.reputation_warning",
   warning_cleared: "account.reputation_recovered",
   suspended: "account.suspended",
   reinstated: "account.reinstated",
+  marketing_paused: "account.marketing_paused",
+  marketing_reinstated: "account.marketing_reinstated",
 };
+
+/**
+ * Announces a change to every live environment's endpoints (sandbox environments never send real
+ * mail), in `tx`. `standing` is the row after the change.
+ */
+async function announce(
+  tx: Executor,
+  input: {
+    organizationId: string;
+    type: TransitionType | MarketingTransitionType;
+    from: ReputationStatus;
+    standing: Pick<
+      ReputationStandingRow,
+      "status" | "reason" | "marketingPausedAt" | "marketingReason"
+    >;
+    metrics?: MetricsSnapshot | null;
+    now: Date;
+  },
+): Promise<void> {
+  const { organizationId, now, standing } = input;
+  const environments = await tx
+    .select({ id: environment.id })
+    .from(environment)
+    .where(and(eq(environment.organizationId, organizationId), eq(environment.mode, "live")));
+  for (const { id: environmentId } of environments) {
+    // Message ids are global: one per environment.
+    const id = newId(ID_PREFIXES.webhookEvent);
+    const payload: StoredAccountWebhookEvent = {
+      id,
+      object: "event",
+      type: WEBHOOK_TYPE[input.type],
+      created_at: now.toISOString(),
+      data: {
+        organization_id: organizationId,
+        status: standing.status,
+        previous_status: input.from,
+        reason: standing.status === "good" ? null : standing.reason,
+        occurred_at: now.toISOString(),
+        checks: (input.metrics?.checks ?? []).map(toCheckObject),
+        marketing: toMarketingObject(standing),
+      },
+    };
+    await enqueueWebhookMessage(tx, {
+      id,
+      organizationId,
+      environmentId,
+      type: payload.type,
+      payload,
+      now,
+    });
+  }
+}
 
 export type Actor = { kind: "system" } | { kind: "admin"; userId: string };
 
@@ -103,7 +161,7 @@ export async function applyTransition(
         eq(reputationStanding.status, input.from),
       ),
     )
-    .returning({ organizationId: reputationStanding.organizationId });
+    .returning();
   if (!updated) return null;
 
   const [event] = await tx
@@ -145,37 +203,124 @@ export async function applyTransition(
     });
   }
 
-  // Standing is organization-wide; announce it to every live environment's endpoints. Sandbox
-  // environments never send real mail, so they are left out.
-  const environments = await tx
-    .select({ id: environment.id })
-    .from(environment)
-    .where(and(eq(environment.organizationId, organizationId), eq(environment.mode, "live")));
-  for (const { id: environmentId } of environments) {
-    // Message ids are global: one per environment.
-    const id = newId(ID_PREFIXES.webhookEvent);
-    const payload: StoredAccountWebhookEvent = {
-      id,
-      object: "event",
-      type: WEBHOOK_TYPE[input.type],
-      created_at: now.toISOString(),
-      data: {
-        organization_id: organizationId,
-        status: input.to,
-        previous_status: input.from,
-        reason: input.to === "good" ? null : input.trigger,
-        occurred_at: now.toISOString(),
-        checks: (input.metrics?.checks ?? []).map(toCheckObject),
-      },
-    };
-    await enqueueWebhookMessage(tx, {
-      id,
+  // Standing is organization-wide; announce it to every live environment's endpoints.
+  await announce(tx, {
+    organizationId,
+    type: input.type,
+    from: input.from,
+    standing: updated,
+    metrics: input.metrics,
+    now,
+  });
+  return event;
+}
+
+/**
+ * Pauses (`marketing_paused`) or lifts the pause of (`marketing_reinstated`) the organization's
+ * marketing stream in `tx`, with the same history row, admin audit, notification (pauses) and
+ * webhooks as a standing change. The organization's status is left as it is. Returns `null` when
+ * marketing was already in the target state (another worker or admin got there first).
+ */
+export async function applyMarketingTransition(
+  tx: Executor,
+  input: {
+    organizationId: string;
+    type: MarketingTransitionType;
+    trigger: string;
+    actor: Actor;
+    note?: string | null;
+    metrics?: MetricsSnapshot | null;
+    now?: Date;
+  },
+): Promise<ReputationEventRow | null> {
+  const now = input.now ?? new Date();
+  const { organizationId } = input;
+  const pause = input.type === "marketing_paused";
+  await tx.insert(reputationStanding).values({ organizationId }).onConflictDoNothing();
+  const [updated] = await tx
+    .update(reputationStanding)
+    .set({
+      revision: sql`${reputationStanding.revision} + 1`,
+      marketingPausedAt: pause ? now : null,
+      marketingReason: pause ? input.trigger : null,
+      ...(pause ? {} : { marketingReinstatedAt: now }),
+    })
+    .where(
+      and(
+        eq(reputationStanding.organizationId, organizationId),
+        pause
+          ? isNull(reputationStanding.marketingPausedAt)
+          : isNotNull(reputationStanding.marketingPausedAt),
+      ),
+    )
+    .returning();
+  if (!updated) return null;
+
+  const [event] = await tx
+    .insert(reputationEvent)
+    .values({
       organizationId,
-      environmentId,
-      type: payload.type,
-      payload,
+      type: input.type,
+      trigger: input.trigger,
+      actor: input.actor.kind,
+      actorUserId: input.actor.kind === "admin" ? input.actor.userId : null,
+      note: input.note ?? null,
+      metrics: input.metrics ?? null,
+      createdAt: now,
+    })
+    .returning();
+  if (!event) throw new Error("Inserting the reputation event returned no row.");
+  if (input.actor.kind === "admin") {
+    await auditAdminChange(tx, {
+      organizationId,
+      userId: input.actor.userId,
+      action: `reputation.${input.type}`,
+      note: input.note,
       now,
     });
+  }
+  await enqueueReputationNotification(tx, {
+    organizationId,
+    reputationEventId: event.id,
+    type: input.type,
+    now,
+  });
+  await announce(tx, {
+    organizationId,
+    type: input.type,
+    from: updated.status,
+    standing: updated,
+    metrics: input.metrics,
+    now,
+  });
+  return event;
+}
+
+/**
+ * Admin only: lifts the marketing stream's pause. Marketing rates are measured from now on, so
+ * the data that caused the pause can't immediately cause another one.
+ */
+export async function reinstateMarketing(input: {
+  organizationId: string;
+  adminUserId: string;
+  note: string;
+  now?: Date;
+}): Promise<ReputationEventRow> {
+  const event = await db.transaction(async (tx) => {
+    const current = await getReputationStanding(input.organizationId, tx);
+    if (!current?.marketingPausedAt) return null;
+    return applyMarketingTransition(tx, {
+      organizationId: input.organizationId,
+      type: "marketing_reinstated",
+      trigger: current.marketingReason ?? "manual",
+      actor: { kind: "admin", userId: input.adminUserId },
+      note: input.note,
+      metrics: metricsSnapshot(current.metrics),
+      now: input.now,
+    });
+  });
+  if (!event) {
+    throw new ReputationError("marketing_not_paused", "Marketing sending is not paused.");
   }
   return event;
 }

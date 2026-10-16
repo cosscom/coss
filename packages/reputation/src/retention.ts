@@ -36,8 +36,9 @@ export async function purgeExpiredReputationNotifications(
 }
 
 /**
- * Deletes expired policy updates and superseded standing transitions. An organization's latest
- * transition stays (notifications compare against it) however old it is. Cascades to notifications.
+ * Deletes expired policy updates and superseded transitions. An organization's latest standing
+ * transition and latest marketing transition stay (notifications compare against them) however old
+ * they are. Cascades to notifications.
  */
 export async function purgeExpiredReputationEvents(opts: PurgeOptions = {}): Promise<number> {
   const cutoff = retentionCutoff(RETENTION_DAYS.reputationHistory, opts.now);
@@ -48,7 +49,12 @@ export async function purgeExpiredReputationEvents(opts: PurgeOptions = {}): Pro
       sql`exists (
       select 1 from ${reputationEvent} as later
       where later.organization_id = ${reputationEvent.organizationId}
-        and later.type in ('warning_raised', 'warning_cleared', 'suspended', 'reinstated')
+        and (
+          (later.type in ('warning_raised', 'warning_cleared', 'suspended', 'reinstated')
+            and ${reputationEvent.type} in ('warning_raised', 'warning_cleared', 'suspended', 'reinstated'))
+          or (later.type in ('marketing_paused', 'marketing_reinstated')
+            and ${reputationEvent.type} in ('marketing_paused', 'marketing_reinstated'))
+        )
         and (later.created_at, later.id) > (${reputationEvent.createdAt}, ${reputationEvent.id})
     )`,
     ),

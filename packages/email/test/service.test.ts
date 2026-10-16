@@ -84,7 +84,9 @@ describe("send", () => {
       idempotencyKey: null,
       requestHash: null,
     });
-    expect(queue.jobs).toEqual([{ organizationId: tenant.organization.id, emailId: email.id }]);
+    expect(queue.jobs).toEqual([
+      { organizationId: tenant.organization.id, emailId: email.id, stream: "transactional" },
+    ]);
     expect(sandboxProvider.sent).toHaveLength(0);
 
     await queue.drain(service);

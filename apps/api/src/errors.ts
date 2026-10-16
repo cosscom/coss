@@ -4,7 +4,7 @@
  */
 
 import { BillingError } from "@coss/billing";
-import { DomainError, EmailError } from "@coss/email";
+import { BroadcastError, ContactError, DomainError, EmailError } from "@coss/email";
 import { HookError } from "@coss/hooks";
 import { RiskError } from "@coss/risk";
 import { WebhookError } from "@coss/webhooks";
@@ -184,6 +184,7 @@ function fromEmailError(error: EmailError): ApiError {
       });
     case "sending_paused":
     case "account_suspended":
+    case "marketing_paused":
       return new ApiError(error.status, {
         type: "permission_error",
         code: error.code,
@@ -215,6 +216,8 @@ function fromEmailError(error: EmailError): ApiError {
         ...(error.param && { param: error.param }),
         ...(error.issues && { issues: error.issues }),
       });
+    case "mailing_address_required":
+      return invalidRequest(error.code, error.message, error.param ?? "stream");
   }
 }
 
@@ -255,6 +258,32 @@ function fromDomainError(error: DomainError): ApiError {
     case "provider_error":
       // The delivery provider, not the caller, is at fault: retryable.
       return new ApiError(502, { type: "api_error", code: error.code, message: error.message });
+  }
+}
+
+function fromContactError(error: ContactError): ApiError {
+  if (error.code === "not_found") {
+    return new ApiError(404, { type: "not_found_error", code: error.code, message: error.message });
+  }
+  // Conflicts (`property_exists`, `name_taken`, `…_in_use`) are 422, not 409: the SDK retries
+  // those, and they never resolve on their own.
+  return invalidRequest(error.code, error.message, error.param);
+}
+
+function fromBroadcastError(error: BroadcastError): ApiError {
+  switch (error.code) {
+    case "not_found":
+      return new ApiError(404, {
+        type: "not_found_error",
+        code: error.code,
+        message: error.message,
+      });
+    case "request_in_progress":
+    case "idempotency_key_reused":
+      return fromIdempotencyError({ code: error.code, message: error.message });
+    default:
+      // State conflicts (`broadcast_not_editable`, …) are 422: the SDK retries 409s.
+      return invalidRequest(error.code, error.message, error.param);
   }
 }
 
@@ -359,6 +388,8 @@ export function toApiError(error: unknown): ApiError | null {
   if (error instanceof EmailError) return fromEmailError(error);
   if (error instanceof HookError) return fromHookError(error);
   if (error instanceof DomainError) return fromDomainError(error);
+  if (error instanceof ContactError) return fromContactError(error);
+  if (error instanceof BroadcastError) return fromBroadcastError(error);
   if (error instanceof WebhookError) return fromWebhookError(error);
   if (error instanceof RiskError) return fromRiskError(error);
   // A 5xx exception is a server fault: left to the caller to log and answer with a generic 500.

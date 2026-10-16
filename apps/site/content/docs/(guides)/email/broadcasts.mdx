@@ -1,0 +1,113 @@
+---
+title: Broadcasts
+description: One marketing email to an audience or a segment, scheduled, paced and measured.
+---
+
+A broadcast is one email sent to every eligible contact of an [audience or a
+segment](/docs/email/audiences-and-segments): contacts who are `subscribed`, reached by its
+[topic](/docs/email/topics-and-preferences) and not on the [suppression list](/docs/email/suppressions).
+Each contact gets their own email, filled in with their values, with an unsubscribe link and your
+postal address. Broadcasts always go out as [marketing email](/docs/email/streams).
+
+## Writing one
+
+The subject, HTML and text can use `{{{contact.<key>|fallback}}}` for the contact's `email`,
+`first_name`, `last_name` and [custom properties](/docs/email/contacts#custom-properties). Values are
+HTML-escaped in the HTML; a contact without a value gets the fallback (or the property's own
+fallback). `{{{unsubscribe_url}}}`, `{{{preferences_url}}}` and `{{{mailing_address}}}` place the
+footer's parts yourself; without them coss.com adds a footer.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: broadcast } = await coss.email.broadcasts.create({
+  name: "October newsletter",
+  segment_id: "seg_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  topic: "newsletter",
+  from: "Acme <news@acme.com>",
+  subject: "What's new, {{{contact.first_name|there}}}",
+  preview_text: "Three things we shipped this month",
+  html: `<p>Hi {{{contact.first_name|there}}},</p>
+<p>…</p>
+<p><a href="{{{unsubscribe_url}}}">Unsubscribe</a> · {{{mailing_address}}}</p>`,
+  tracking: { opens: true, clicks: true },
+});
+```
+
+It starts as a `draft`, which you can change, preview in the dashboard and send to yourself:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+const id = "bcast_01k7c8m4q2f3e9v6t5r1n0p8yz";
+// ---cut---
+// Up to 5 addresses, filled in as one of your contacts (or with the fallbacks).
+await coss.email.broadcasts.test(id, { to: ["me@acme.com"], contact: "ada@example.com" });
+```
+
+## Sending
+
+Send it now, or schedule it up to 30 days ahead (pass `send` or `scheduled_at` to `create` to skip
+the draft). Its content and its recipients are fixed when it starts: contacts added afterwards don't
+get it, and contacts who unsubscribe before it reaches them are skipped.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+const id = "bcast_01k7c8m4q2f3e9v6t5r1n0p8yz";
+// ---cut---
+await coss.email.broadcasts.send(id, { scheduled_at: "2026-10-20T09:00:00Z" });
+
+// Later: pause it, resume it where it stopped, or cancel it for good.
+await coss.email.broadcasts.pause(id);
+await coss.email.broadcasts.resume(id);
+await coss.email.broadcasts.cancel(id);
+```
+
+A broadcast needs your postal address in the marketing settings and, in production environments, a
+From address on a [verified domain](/docs/email/domains). In production environments its content
+is screened once before it starts.
+
+Broadcasts are sent at your plan's marketing rate (recipients per second; see the plans in
+[Billing](/docs/billing)), or slower with `rate_per_second`, and count toward the daily recipient
+limit like other email. Pausing or canceling drops the emails not yet handed to the mail provider
+(the ones already on their way still arrive). coss.com pauses a broadcast itself when sending can't go on:
+
+| `pause_reason` | Resumes |
+|---|---|
+| `paused` | When you resume it. |
+| `billing_hold`, `usage_limit`, `sending_paused` | By itself, once the hold, the allowance or the pause is lifted. |
+| `marketing_paused`, `account_suspended`, `mailing_address_required` | When you resume it, after the cause is gone. |
+
+While a hold lasts, emails not yet handed to the mail provider are dropped too, and made again once
+it resumes. A broadcast's emails are kept until it is finished, even past the usual
+[retention](/docs/data-retention), so resuming never sends anyone a second one.
+
+## Statuses and stats
+
+`draft` → `scheduled` → `sending` (⇄ `paused`) → `sent`, or `canceled`, or `failed` (see `error`, e.g.
+`content_rejected`). Every broadcast carries its counters, per email:
+
+| Stat | Counts |
+|---|---|
+| `recipients` | Emails made (one per reached contact). |
+| `sent`, `delivered`, `bounced`, `complained`, `failed` | Emails by what happened to them. |
+| `opened`, `clicked` | Emails opened or clicked at least once (with tracking on). |
+| `unsubscribed` | Contacts its links unsubscribed. |
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+const id = "bcast_01k7c8m4q2f3e9v6t5r1n0p8yz";
+// ---cut---
+const { data } = await coss.email.broadcasts.get(id);
+const openRate = data && data.stats.delivered > 0 ? data.stats.opened / data.stats.delivered : 0;
+
+// Its emails, one per contact (each is an ordinary email with a `broadcast_id`).
+const { data: emails } = await coss.email.broadcasts.listEmails(id);
+```
+
+The `broadcast.sending`, `broadcast.sent`, `broadcast.paused`, `broadcast.canceled` and
+`broadcast.failed` [webhooks](/docs/webhooks) carry the same stats. A broadcast's emails are kept
+like any other email (see [data retention](/docs/data-retention)); its stats are kept with it.

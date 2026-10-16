@@ -295,6 +295,157 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.templates.versions.restore",
     args: (request) => [pathId(request), numberParam(request, "version")],
   },
+  "POST /v1/contacts": {
+    method: "email.contacts.upsert",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "GET /v1/contacts": {
+    method: "email.contacts.list",
+    args: (request) => [queryParams(request)],
+  },
+  // Before `/v1/contacts/{id}`, which would also match these paths.
+  "POST /v1/contacts/import": {
+    method: "email.contacts.import",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "GET /v1/contacts/export": {
+    method: "email.contacts.export",
+    args: (request) => [queryParams(request)],
+  },
+  "GET /v1/contacts/{id}": { method: "email.contacts.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/contacts/{id}": {
+    method: "email.contacts.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/contacts/{id}": { method: "email.contacts.remove", args: (r) => [pathId(r)] },
+  "POST /v1/contacts/{id}/confirmation": {
+    method: "email.contacts.resendConfirmation",
+    args: (r) => [pathId(r)],
+  },
+  "POST /v1/contacts/{id}/preference_links": {
+    method: "email.contacts.createPreferenceLinks",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "GET /v1/contacts/{id}/topics": {
+    method: "email.contacts.getTopics",
+    args: (r) => [pathId(r)],
+  },
+  "PATCH /v1/contacts/{id}/topics": {
+    method: "email.contacts.updateTopics",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "GET /v1/contact_properties": { method: "email.contacts.properties.list", args: () => [] },
+  "POST /v1/contact_properties": {
+    method: "email.contacts.properties.create",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "GET /v1/contact_properties/{id}": {
+    method: "email.contacts.properties.get",
+    args: (r) => [pathId(r)],
+  },
+  "PATCH /v1/contact_properties/{id}": {
+    method: "email.contacts.properties.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/contact_properties/{id}": {
+    method: "email.contacts.properties.remove",
+    args: (r) => [pathId(r)],
+  },
+  "GET /v1/broadcasts": {
+    method: "email.broadcasts.list",
+    args: (request) => [queryParams(request)],
+  },
+  "POST /v1/broadcasts": {
+    method: "email.broadcasts.create",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/broadcasts/{id}": { method: "email.broadcasts.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/broadcasts/{id}": {
+    method: "email.broadcasts.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/broadcasts/{id}": { method: "email.broadcasts.remove", args: (r) => [pathId(r)] },
+  "POST /v1/broadcasts/{id}/send": {
+    method: "email.broadcasts.send",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "POST /v1/broadcasts/{id}/cancel": {
+    method: "email.broadcasts.cancel",
+    args: (r) => [pathId(r)],
+  },
+  "POST /v1/broadcasts/{id}/pause": { method: "email.broadcasts.pause", args: (r) => [pathId(r)] },
+  "POST /v1/broadcasts/{id}/resume": {
+    method: "email.broadcasts.resume",
+    args: (r) => [pathId(r)],
+  },
+  "POST /v1/broadcasts/{id}/test": {
+    method: "email.broadcasts.test",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "GET /v1/broadcasts/{id}/emails": {
+    method: "email.broadcasts.listEmails",
+    args: (request) => [pathId(request), queryParams(request)],
+  },
+  "GET /v1/audiences": {
+    method: "email.audiences.list",
+    args: (request) => [queryParams(request)],
+  },
+  "POST /v1/audiences": {
+    method: "email.audiences.create",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "GET /v1/audiences/{id}": { method: "email.audiences.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/audiences/{id}": {
+    method: "email.audiences.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/audiences/{id}": { method: "email.audiences.remove", args: (r) => [pathId(r)] },
+  "GET /v1/audiences/{id}/contacts": {
+    method: "email.audiences.listContacts",
+    args: (request) => [pathId(request), queryParams(request)],
+  },
+  "POST /v1/audiences/{id}/contacts": {
+    method: "email.audiences.addContacts",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/audiences/{id}/contacts/{contact_id}": {
+    method: "email.audiences.removeContact",
+    args: (request) => [pathId(request), pathParam(request, "contact_id")],
+  },
+  "GET /v1/segments": {
+    method: "email.segments.list",
+    args: (request) => [queryParams(request)],
+  },
+  "POST /v1/segments": {
+    method: "email.segments.create",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "GET /v1/segments/{id}": { method: "email.segments.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/segments/{id}": {
+    method: "email.segments.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/segments/{id}": { method: "email.segments.remove", args: (r) => [pathId(r)] },
+  "GET /v1/segments/{id}/contacts": {
+    method: "email.segments.listContacts",
+    args: (request) => [pathId(request), queryParams(request)],
+  },
+  "GET /v1/topics": { method: "email.topics.list", args: (request) => [queryParams(request)] },
+  "POST /v1/topics": {
+    method: "email.topics.create",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "GET /v1/topics/{id}": { method: "email.topics.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/topics/{id}": {
+    method: "email.topics.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/topics/{id}": { method: "email.topics.remove", args: (r) => [pathId(r)] },
+  "GET /v1/marketing_settings": { method: "email.marketingSettings.get", args: () => [] },
+  "PATCH /v1/marketing_settings": {
+    method: "email.marketingSettings.update",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
   "GET /v1/tracking_settings": { method: "email.tracking.get", args: () => [] },
   "PATCH /v1/tracking_settings/default": {
     method: "email.tracking.updateDefault",

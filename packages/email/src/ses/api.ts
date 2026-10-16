@@ -46,14 +46,23 @@ import {
   type SendEmailCommandOutput,
   type TenantSuppressionAttributes,
 } from "@aws-sdk/client-sesv2";
+import type { EmailStream } from "../provider.ts";
 
 export type SesConfig = {
   region: string;
-  /** The shared configuration set (event publishing), created by `ses:bootstrap`. */
-  configurationSet: string;
+  /**
+   * The shared configuration set of each stream (event publishing, optionally a dedicated IP
+   * pool), created by `ses:bootstrap`: `<name>` and `<name>-marketing`.
+   */
+  configurationSets: Record<EmailStream, string>;
   /** Prefixes tenant names, `<prefix>-<organization id>`; separates stages in one account. */
   tenantPrefix: string;
 };
+
+/** Each stream's configuration set, derived from the transactional one (`SES_CONFIGURATION_SET`). */
+export function configurationSetsFor(name: string): Record<EmailStream, string> {
+  return { transactional: name, marketing: `${name}-marketing` };
+}
 
 /**
  * coss.com keeps the only suppression list (`email_suppression`): SES must never suppress an address
@@ -148,11 +157,19 @@ export function isSesError(error: unknown, name: string): boolean {
 }
 
 /**
- * `<prefix>-<organization id>`: at most 64 characters of [A-Za-z0-9_-]. Also names the
- * organization's dedicated IP pool and the configuration set that sends through it.
+ * `<prefix>-<organization id>` (transactional) or `<prefix>-<organization id>-marketing`: at most
+ * 64 characters of [A-Za-z0-9_-] (the prefix is at most 23, `SES_TENANT_PREFIX_PATTERN`). Also
+ * names the organization's dedicated IP pool (the transactional name) and the configuration set of
+ * each stream that sends through it.
  */
-export function tenantNameFor(prefix: string, organizationId: string): string {
-  return `${prefix}-${organizationId}`;
+export function tenantNameFor(
+  prefix: string,
+  organizationId: string,
+  stream: EmailStream = "transactional",
+): string {
+  return stream === "transactional"
+    ? `${prefix}-${organizationId}`
+    : `${prefix}-${organizationId}-${stream}`;
 }
 
 /** The account id from any SES ARN (`arn:aws:ses:<region>:<account>:…`). */

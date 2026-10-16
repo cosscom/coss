@@ -1,0 +1,1 @@
+ALTER TABLE "broadcast" ADD COLUMN "screening_held_at" timestamp with time zone;
