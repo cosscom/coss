@@ -336,7 +336,8 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - `login`: the dashboard's CLI sign-in (`packages/auth/AGENTS.md`, "CLI sign-in") — PKCE with a 127.0.0.1 loopback
   server (`src/auth/loopback.ts`), or `mode=code` (pasted) with `--no-browser` and over SSH; `verificationCode`
   (`src/auth/pkce.ts`) must equal `cliVerificationCode` (`@coss/auth/cli`; both tests pin `DZ93-GPCX`). Keys it
-  created (`login: "browser"`) are revoked by `logout` and by the next login of the profile (`coss.apiKey.revoke()`).
+  created (`login: "browser"`) are revoked by `logout` and by the next login of the profile (`coss.apiKey.revoke()`, at the
+  profile's saved origin, never `COSS_BASE_URL`'s). Polling commands retry only transient errors (`isTransient`).
 - `listen`: opens a webhook listener (`packages/webhooks/AGENTS.md`), long-polls (`wait_ms` 20 s, SDK timeout 35 s,
   no SDK retries), forwards each body byte for byte to `--forward-to`, signed with the profile's stable `whsec_`
   `listen_secret` (`src/listen/sign.ts`, Standard Webhooks, written from the spec) and `webhook-id` = the event id,

@@ -40,6 +40,14 @@ export function apiBaseUrl(io: CliIo, profile: Profile | null): string {
   return trimmed(io.env.COSS_BASE_URL) ?? profile?.base_url ?? DEFAULT_BASE_URL;
 }
 
+/**
+ * Where a saved profile's key lives, whatever `COSS_BASE_URL` says now: revoking a key anywhere
+ * else would answer 401 and look like it worked.
+ */
+export function savedApiBaseUrl(profile: Profile): string {
+  return profile.base_url ?? DEFAULT_BASE_URL;
+}
+
 export function dashboardBaseUrl(io: CliIo, profile: Profile | null): string {
   return trimmed(io.env.COSS_DASHBOARD_URL) ?? profile?.dashboard_url ?? DEFAULT_DASHBOARD_URL;
 }

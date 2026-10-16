@@ -3,6 +3,7 @@ import type { Log } from "coss";
 import { LogTail, parseSince } from "../src/logs/tail.ts";
 import { run } from "../src/run.ts";
 import {
+  apiError,
   environmentObject,
   fakeFetch,
   NOW,
@@ -130,6 +131,23 @@ describe("coss logs tail", () => {
       .filter(Boolean)
       .map((text) => (JSON.parse(text) as { id: string }).id);
     expect(printed).toEqual(["log_late"]);
+  });
+
+  test("stops on an error retrying can't fix", async () => {
+    const io = testIo({ env: { COSS_API_KEY: SANDBOX_KEY } });
+    const answers = [
+      apiError(503, "api_error", "unavailable"),
+      apiError(422, "invalid_request_error", "validation_error", "status: Invalid input"),
+    ];
+    const api = fakeFetch({
+      "GET /v1/environment": environmentObject(),
+      "GET /v1/logs": () => answers.shift() ?? io.controller.abort(),
+    });
+    io.fetch = api.fetch;
+    expect(await run(["logs", "tail", "--status", "nope"], io)).toBe(1);
+    expect(io.errors()).toContain("status: Invalid input");
+    // The 503 is retried (by the SDK); the 422 ends the tail.
+    expect(api.requests.filter((r) => r.url.pathname === "/v1/logs")).toHaveLength(2);
   });
 
   test("rejects unknown sources", async () => {

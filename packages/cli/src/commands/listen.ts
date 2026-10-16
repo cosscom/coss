@@ -17,7 +17,7 @@ import {
   describeEnvironment,
   resolveCredentials,
 } from "../context.ts";
-import { apiError, CliError, UsageError } from "../errors.ts";
+import { apiError, CliError, isTransient, UsageError } from "../errors.ts";
 import type { CliIo } from "../io.ts";
 import {
   type ForwardResult,
@@ -184,9 +184,7 @@ async function run(context: Context, values: Record<string, unknown>): Promise<n
           pending = [];
           continue;
         }
-        if (error.type === "authentication_error" || error.type === "permission_error") {
-          throw apiError("Listening stopped", error);
-        }
+        if (!isTransient(error)) throw apiError("Listening stopped", error);
         failures++;
         if (failures === 1) out.warn(`Lost the connection (${error.message}); retrying…`);
         await io.sleep(Math.min(1000 * 2 ** failures, 30_000), io.signal);

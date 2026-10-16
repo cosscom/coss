@@ -13,6 +13,7 @@ import {
   DEFAULT_DASHBOARD_URL,
   dashboardBaseUrl,
   describeEnvironment,
+  savedApiBaseUrl,
 } from "../context.ts";
 import { apiError, CliError } from "../errors.ts";
 import type { CliIo } from "../io.ts";
@@ -152,7 +153,7 @@ export async function login(argv: string[], io: CliIo): Promise<number> {
   const environment = await environmentOf(coss);
   // A key the CLI created for this profile before is replaced: revoke it (best effort).
   if (previous?.login === "browser" && previous.api_key !== apiKey) {
-    await clientFor(io, { apiKey: previous.api_key, baseUrl: apiBaseUrl(io, previous) })
+    await clientFor(io, { apiKey: previous.api_key, baseUrl: savedApiBaseUrl(previous) })
       .apiKey.revoke()
       .catch(() => undefined);
   }

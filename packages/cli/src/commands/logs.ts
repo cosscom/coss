@@ -1,7 +1,7 @@
 import type { LogLevel, LogSource } from "coss";
 import { list, parseFlags } from "../args.ts";
 import { clientFor, createContext, describeEnvironment, resolveCredentials } from "../context.ts";
-import { apiError, UsageError } from "../errors.ts";
+import { apiError, isTransient, UsageError } from "../errors.ts";
 import type { CliIo } from "../io.ts";
 import { formatLog } from "../logs/format.ts";
 import { type LogFilters, LogTail, parseSince, readWindow } from "../logs/tail.ts";
@@ -92,12 +92,7 @@ export async function logsTail(argv: string[], io: CliIo): Promise<number> {
     const window = await readWindow(coss, filters, from, io.signal);
     if (window.error) {
       if (io.signal.aborted) break;
-      if (
-        window.error.type === "authentication_error" ||
-        window.error.type === "permission_error"
-      ) {
-        throw apiError("Couldn't read the log", window.error);
-      }
+      if (!isTransient(window.error)) throw apiError("Couldn't read the log", window.error);
       failures++;
       if (failures === 1) out.warn(`Couldn't read the log (${window.error.message}); retrying…`);
       await io.sleep(Math.min(intervalMs * 2 ** failures, 30_000), io.signal);

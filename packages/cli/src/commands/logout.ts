@@ -1,6 +1,6 @@
 import { parseFlags } from "../args.ts";
 import { type Profile, profileName, readConfig, writeConfig } from "../config.ts";
-import { apiBaseUrl, clientFor, createContext } from "../context.ts";
+import { clientFor, createContext, savedApiBaseUrl } from "../context.ts";
 import { CliError } from "../errors.ts";
 import type { CliIo } from "../io.ts";
 
@@ -40,7 +40,7 @@ export async function logout(argv: string[], io: CliIo): Promise<number> {
     if (profile.login === "browser" || values.revoke) {
       const { error } = await clientFor(io, {
         apiKey: profile.api_key,
-        baseUrl: apiBaseUrl(io, profile),
+        baseUrl: savedApiBaseUrl(profile),
       }).apiKey.revoke();
       // Already revoked elsewhere is fine; anything else is worth saying, but logout goes on.
       revoked = !error || error.type === "authentication_error";

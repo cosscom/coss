@@ -116,8 +116,11 @@ describe("coss login", () => {
       answers: ["code"],
     });
     expect(await run(["login"], browser)).toBe(0);
+    // The key is revoked where it was created, whatever COSS_BASE_URL says now.
+    browser.env.COSS_BASE_URL = "http://localhost:3001";
     expect(await run(["logout"], browser)).toBe(0);
-    expect(api.requests.filter((r) => r.method === "DELETE")).toHaveLength(1);
+    const deletes = api.requests.filter((r) => r.method === "DELETE");
+    expect(deletes.map((r) => r.url.origin)).toEqual(["https://api.coss.com"]);
     expect(browser.output()).toContain("(key revoked)");
   });
 
