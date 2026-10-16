@@ -82,7 +82,7 @@ describe("policy keys", () => {
 
 describe("report addresses", () => {
   test("round-trip through the token", () => {
-    const address = dmarcReportAddress("abcdefghijkmnpqr", "Inbound.coss.com.test");
+    const address = dmarcReportAddress("abcdefghijkmnpqr", "Inbound.COSS.test");
     expect(address).toBe(ADDRESS);
     expect(dmarcReportTokenOf(ADDRESS, "inbound.coss.test")).toBe("abcdefghijkmnpqr");
     expect(dmarcReportTokenOf(ADDRESS.toUpperCase(), "inbound.coss.test")).toBe("abcdefghijkmnpqr");
