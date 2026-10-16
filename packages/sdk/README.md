@@ -391,6 +391,29 @@ To make a send safe across process restarts too, pass your own key, derived from
 cancel a call. Aborting stops the request in flight and any pending retry, and returns
 `{ type: "connection_error", code: "aborted" }`.
 
+## Integrations
+
+To send from libraries you already use, import the matching entry. They need no other package
+than the library itself, and they throw a `CossSendError` when coss.com refuses an email.
+
+```ts
+// Nodemailer
+import nodemailer from "nodemailer";
+import { cossTransport } from "coss/nodemailer";
+const transporter = nodemailer.createTransport(cossTransport());
+
+// Better Auth: verification, password reset, magic link, one-time code and invitation emails
+import { cossEmail } from "coss/better-auth";
+const email = cossEmail({ from: "Acme <auth@acme.com>", appName: "Acme" });
+// betterAuth({ emailVerification: { sendVerificationEmail: email.sendVerificationEmail }, … })
+
+// Auth.js (NextAuth.js v5): the email provider
+import Coss from "coss/authjs";
+// NextAuth({ adapter, providers: [Coss({ from: "Acme <auth@acme.com>" })] })
+```
+
+Guides: [coss.com/docs/integrations](https://coss.com/docs/integrations).
+
 ## Runtime support
 
 The SDK works on Node.js ≥ 22, Bun, Deno and Cloudflare Workers. It only needs the standard `fetch`,

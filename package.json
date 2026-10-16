@@ -17,6 +17,7 @@
     ],
     "catalog": {
       "@arethetypeswrong/core": "0.18.5",
+      "@auth/core": "0.41.3",
       "@aws-sdk/client-acm": "3.1141.0",
       "@aws-sdk/client-cloudwatch": "3.1141.0",
       "@aws-sdk/client-elasticache": "3.1141.0",
@@ -55,6 +56,7 @@
       "iovalkey": "0.4.0",
       "lucide-react": "1.54.0",
       "next": "16.4.0",
+      "next-auth": "5.0.0-beta.32",
       "nodemailer": "10.0.13",
       "pg": "8.23.1",
       "pg-boss": "12.33.7",

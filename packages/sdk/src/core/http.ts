@@ -24,6 +24,8 @@ export interface HttpClientOptions {
   maxRetries: number;
   /** Sent as `Coss-Version` with every request. */
   apiVersion: string;
+  /** Appended to the `User-Agent`, e.g. `nodemailer` for `coss/nodemailer`. */
+  integration?: string;
   /** Waits between retries; must resolve early when `signal` aborts. Overridable for tests. */
   sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
 }
@@ -118,6 +120,7 @@ export class HttpClient {
   readonly #timeout: number;
   readonly #maxRetries: number;
   readonly #apiVersion: string;
+  readonly #userAgent: string;
   readonly #sleep: (ms: number, signal?: AbortSignal) => Promise<void>;
 
   constructor(options: HttpClientOptions) {
@@ -127,6 +130,9 @@ export class HttpClient {
     this.#timeout = options.timeout;
     this.#maxRetries = options.maxRetries;
     this.#apiVersion = options.apiVersion;
+    this.#userAgent = options.integration
+      ? `coss-typescript/${VERSION} (${options.integration})`
+      : `coss-typescript/${VERSION}`;
     this.#sleep = options.sleep ?? sleep;
   }
 
@@ -144,7 +150,7 @@ export class HttpClient {
           ? "*/*"
           : "application/json",
       Authorization: `Bearer ${this.#apiKey}`,
-      "User-Agent": `coss-typescript/${VERSION}`,
+      "User-Agent": this.#userAgent,
       "Coss-Version": this.#apiVersion,
     };
     let body: string | undefined;

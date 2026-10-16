@@ -23,7 +23,10 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
+    "./authjs": "./dist/authjs.js",
+    "./better-auth": "./dist/better-auth.js",
     "./device": "./dist/device.js",
+    "./nodemailer": "./dist/nodemailer.js",
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -32,18 +35,33 @@
     "test": "bun test"
   },
   "peerDependencies": {
-    "@react-email/render": "^1.0.0 || ^2.0.0"
+    "@auth/core": ">=0.37.0",
+    "@react-email/render": "^1.0.0 || ^2.0.0",
+    "better-auth": ">=1.0.0",
+    "nodemailer": ">=6.9.0"
   },
   "peerDependenciesMeta": {
+    "@auth/core": {
+      "optional": true
+    },
     "@react-email/render": {
+      "optional": true
+    },
+    "better-auth": {
+      "optional": true
+    },
+    "nodemailer": {
       "optional": true
     }
   },
   "devDependencies": {
     "@arethetypeswrong/core": "0.18.5",
+    "@auth/core": "0.41.3",
     "@react-email/render": "2.1.0",
     "@types/bun": "1.4.2",
     "@types/react": "19.3.0",
+    "better-auth": "1.7.7",
+    "nodemailer": "10.0.13",
     "publint": "0.3.25",
     "react": "19.3.0",
     "react-dom": "19.3.0",

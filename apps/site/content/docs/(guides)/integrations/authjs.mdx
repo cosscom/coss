@@ -1,0 +1,53 @@
+---
+title: Auth.js
+description: An Auth.js (NextAuth.js) email provider that sends magic sign-in links through coss.com.
+---
+
+`coss/authjs` is an email provider for [Auth.js](https://authjs.dev) (NextAuth.js v5 and the other
+`@auth/*` frameworks). It sends Auth.js's magic sign-in links through coss.com.
+
+```package-install
+coss next-auth@beta
+```
+
+```ts twoslash
+import NextAuth from "next-auth";
+import type { Adapter } from "next-auth/adapters";
+import Coss from "coss/authjs";
+declare const adapter: Adapter;
+// ---cut---
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter, // email sign-in stores its tokens, so it needs a database adapter
+  providers: [Coss({ from: "Acme <auth@acme.com>" })],
+});
+```
+
+Set `AUTH_COSS_KEY` (Auth.js's naming for a provider's key) or `COSS_API_KEY`, or pass `apiKey`.
+Sign in with `signIn("coss", { email })`.
+
+## Options
+
+```ts twoslash
+import Coss from "coss/authjs";
+// ---cut---
+Coss({
+  from: "Acme <auth@acme.com>",
+  maxAge: 24 * 60 * 60, // how long a link works, in seconds (the default)
+  name: "Email", // the button label on Auth.js's sign-in page
+  render: ({ url, host }) => ({
+    subject: `Sign in to ${host}`,
+    html: `<a href="${url}">Sign in</a>`,
+    text: `Sign in to ${host}: ${url}`,
+  }),
+});
+```
+
+Without `render`, the email is Auth.js's own sign-in email, in your [theme](https://authjs.dev/reference/core#theme)'s
+brand color.
+
+## Behaviour
+
+- Links go out with `category: "account"` and open and click tracking off.
+- The idempotency key is a hash of the link's token, so a retried request sends the link once.
+- When coss.com refuses the email, `sendVerificationRequest` throws a `CossSendError`, which fails the
+  sign-in attempt.

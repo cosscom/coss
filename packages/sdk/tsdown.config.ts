@@ -1,8 +1,15 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  // `coss/device` runs in browsers only; everything else is `coss`.
-  entry: ["src/index.ts", "src/device.ts"],
+  // `coss/device` runs in browsers only; the integrations (`coss/nodemailer`, `coss/better-auth`,
+  // `coss/authjs`) are their own entries so `coss` never carries them.
+  entry: [
+    "src/index.ts",
+    "src/device.ts",
+    "src/nodemailer.ts",
+    "src/better-auth.ts",
+    "src/authjs.ts",
+  ],
   format: "esm",
   // No Node built-ins or shims: the output must run unchanged on Node, Bun, Deno and Workers.
   platform: "neutral",

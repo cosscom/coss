@@ -51,7 +51,7 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/companion` | `@coss/companion` | Wire types of the dashboard's iOS app API (`/api/mobile/v1/*`): plain TypeScript types, zero deps, client-safe. |
 | `packages/retention` | `@coss/retention` | The data retention policy: `RETENTION_POLICY` (published by the docs and the dashboard) and `RETENTION_DAYS` (enforced by each package's purge, run by the worker). Zero deps, client-safe. |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens), `globals.css` (the dashboard's stylesheet) and `./fonts` (`next/font/local`: Cal Sans as `fontSans`/`fontHeading` and, upright only, `fontCalSans`; Paper Mono as `fontMono`). |
-| `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. `coss/device` is its browser-only entry (risk's device tokens). |
+| `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. `coss/device` is its browser-only entry (risk's device tokens); `coss/nodemailer`, `coss/better-auth` and `coss/authjs` are the integrations (docs: `/docs/integrations`). |
 | `packages/mcp` | `coss-mcp` | **Public** MCP server (`npx coss-mcp`, stdio, Node): tools for coding agents built only on the published `coss` SDK — find emails and diagnose delivery (`diagnose.ts`, pure), send, suppressions, domains, webhook deliveries, received emails, logs, account status. See "MCP server" below. |
 | `packages/cli` | `coss-cli` | **Public** CLI (`npm i -g coss-cli`, command `coss`, Node): `login` (browser PKCE or `--manual`), `logout`, `whoami`, `emails send`, `logs tail`, `listen` (forwards webhook events to localhost), built only on the published `coss` SDK. See "CLI" below. |
 | `packages/kloq` | `kloq` | The kloq library (the `cosscom/calendar` repository's `packages/kloq/src`, tests left out): the `<Kloq>` calendar, its themes, settings dialog, design mode and stylesheet. Vendored (excluded from Biome, `noUncheckedIndexedAccess` off); also what `/kloq/r/kloq.json` serves as source. Used only by `apps/site`. |
@@ -283,6 +283,18 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   **optional peer** loaded with a literal `import()` inside try/catch (bundlers include it when installed, only
   warn when not) — never make it a dependency or import React types (`ReactEmailElement` is structural). `react`
   is SDK-only: `contract-types.ts` compares `Omit<SendEmailParams, "react">` with the API's schema.
+- **Integrations** (`src/nodemailer.ts`, `src/better-auth.ts`, `src/authjs.ts`; shared code in `src/core/integration.ts`
+  + `src/core/mime.ts`): each is its own tsdown entry and describes its host library **structurally** (no import
+  from it in `src/`, so no runtime or type dependency; the libraries are optional `peerDependencies` and pinned
+  devDependencies). `test/integration-types.ts` (typecheck only) assigns them to the libraries' real types, so
+  drift fails `typecheck`; `apps/api/test/integrations-contract.test.ts` runs the built ones against the app. They
+  throw `CossSendError` (the libraries report failures by throwing), create their client lazily (a missing key
+  fails the first send, not a build), tag `User-Agent` via the internal `INTEGRATION` symbol (never a
+  `CossOptions` field), drop the API's reserved headers (`isReservedHeader` mirrors `RESERVED_HEADERS`; the
+  contract test sends every one) and refuse what coss.com can't send (raw MIME, custom envelopes, `sender`, AMP)
+  rather than dropping it. Auth emails (Better Auth, Auth.js) always send `category: "account"` with tracking
+  off — click tracking would route secret links through `/t/c/…` — and derive idempotency keys only from
+  single-use tokens (hashed), never from OTP codes or invitation ids, which are legitimately resent.
 - Error types are listed in three places: `ERROR_TYPES` (`apps/api/src/errors.ts`) and `CossErrorType` +
   `API_ERROR_TYPES` (`packages/sdk/src/core/errors.ts`).
 - The api contract tests import the SDK's built `dist`: turbo builds it first, but outside turbo run
@@ -792,7 +804,7 @@ would drop an org's SSO provider or last owner), email change,
 email/SMS two-factor codes, sign-in providers other than Google and GitHub, "trust this device" for 2FA, renaming passkeys, webhooks and notification emails for dedicated IP status changes, standard (manually
 warmed) dedicated IPs or more than one pool per organization, an automatic direct-debit policy (only per-account
 required payment methods), multi-currency, metering for SMS/video/scheduling (their meters
-and rates exist; the products don't), and
+and rates exist; the products don't), the Laravel, Rails and Django mail drivers (only the JS integrations exist), and
 these Hooks features: channels, payload transformations, custom endpoint headers, sending one message to several
 applications, strict ordering, portal custom domains, per-destination rate-limit overrides, Hooks attempts in
 environment logs and log drains.
