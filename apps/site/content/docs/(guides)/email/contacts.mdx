@@ -56,7 +56,9 @@ await coss.email.contacts.properties.create({ key: "plan", type: "string", fallb
 await coss.email.contacts.properties.create({ key: "trial_ends", type: "date" });
 ```
 
-An environment has at most 50 properties. A property a segment filters on can't be deleted.
+An environment has at most 50 properties. A property a segment filters on can't be deleted. Keys
+that name a built-in field or a column the CSV import reads as one (`email`, `first_name`,
+`status`, `created_at`, `given_name`, `subscribed` and the like) are reserved.
 
 ## Importing and exporting
 

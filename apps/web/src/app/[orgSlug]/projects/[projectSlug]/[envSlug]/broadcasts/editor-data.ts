@@ -11,11 +11,23 @@ import { BUCKETS } from "@coss/ratelimit";
 import { planRules } from "@/lib/billing";
 import type { BroadcastDraft } from "./broadcast-editor";
 
+/** Every item of a keyset-paged list (the editor's pickers offer them all). */
+async function allPages<T extends { id: string }>(
+  page: (query: { limit: number; after?: string }) => Promise<{ data: T[]; has_more: boolean }>,
+): Promise<T[]> {
+  const items: T[] = [];
+  for (;;) {
+    const next = await page({ limit: 100, after: items.at(-1)?.id });
+    items.push(...next.data);
+    if (!next.has_more) return items;
+  }
+}
+
 /** What the editor offers: the environment's audiences, segments, topics and variables. */
 export async function broadcastEditorData(env: ContactEnvironment) {
   const [audiences, segments, topics, properties, rules] = await Promise.all([
-    listAudiences(env, { limit: 100 }),
-    listSegments(env, { limit: 100 }),
+    allPages((query) => listAudiences(env, query)),
+    allPages((query) => listSegments(env, query)),
     listTopicRows(env),
     listContactPropertyRows(env),
     planRules(env.organizationId),
@@ -23,8 +35,8 @@ export async function broadcastEditorData(env: ContactEnvironment) {
   const rule =
     rules["email.marketing.recipients.second"] ?? BUCKETS["email.marketing.recipients.second"];
   return {
-    audiences: audiences.data.map((audience) => ({ value: audience.id, label: audience.name })),
-    segments: segments.data.map((segment) => ({ value: segment.id, label: segment.name })),
+    audiences: audiences.map((audience) => ({ value: audience.id, label: audience.name })),
+    segments: segments.map((segment) => ({ value: segment.id, label: segment.name })),
     topics: topics.map((topic) => ({ value: topic.key, label: topic.name })),
     variables: ["email", "first_name", "last_name", ...properties.map((property) => property.key)],
     planRate: Math.max(1, Math.floor((rule.limit * 1000) / rule.periodMs)),

@@ -9,6 +9,7 @@ import {
   resumeBroadcast,
   sendBroadcast,
   testBroadcast,
+  testRecipients,
   updateBroadcast,
 } from "@coss/email";
 import {
@@ -251,28 +252,38 @@ export async function testBroadcastAction(
     if (parsed.data.to.some((address) => !members.has(address.toLowerCase()))) {
       throw new ActionError("Test sends can only go to verified members of this organization.");
     }
-    // Test emails count against the send quota, as they do through the API.
+    // Test emails count against the send quota, one per address, as they do through the API.
     const { limiter } = rateLimitRuntime();
-    const cost = new Set(parsed.data.to.map((to) => to.toLowerCase())).size;
-    const quota = emailSendQuota({ ...target.env, mode: target.send.mode }, cost);
-    const decision = await limiter.consume(quota);
+    const auth = { ...target.env, mode: target.send.mode };
+    const count = testRecipients(parsed.data.to).length;
+    const decision = await limiter.consume(emailSendQuota(auth, count));
     if (!decision.allowed) {
       throw new ActionError("The send quota is used up for now. Try again in a moment.");
     }
+    // Each email is its own send: what was accepted before a failure stays charged.
+    let sent = 0;
+    const refundUnsent = async () => {
+      if (sent < count) await limiter.refund(emailSendQuota(auth, count - sent));
+    };
     let ids: string[] | null;
     try {
       ids = await testBroadcast(
         { ...target.env, ...target.send, apiKeyId: null },
         formString(formData, "broadcastId"),
         parsed.data,
-        { emailService: await emailService() },
+        {
+          emailService: await emailService(),
+          onSent: () => {
+            sent++;
+          },
+        },
       );
     } catch (error) {
-      await limiter.refund(quota);
+      await refundUnsent();
       throw error;
     }
     if (!ids) {
-      await limiter.refund(quota);
+      await refundUnsent();
       throw new ActionError("Broadcast not found.");
     }
     return { count: ids.length };
