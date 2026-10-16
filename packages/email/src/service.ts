@@ -849,8 +849,11 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       topic: topic?.key ?? null,
     });
     // These replace the per-category unsubscribe headers `instrument` may have added: the
-    // preference center is the topic's (and marketing's) unsubscribe.
-    const next = { ...message, headers: { ...message.headers, ...links.headers } };
+    // preference center is the topic's (and marketing's) unsubscribe. (None fit a header only for
+    // a very long address: the body links and any headers `instrument` added remain.)
+    const next = links.headers
+      ? { ...message, headers: { ...message.headers, ...links.headers } }
+      : message;
     if (!marketing) return next;
     const mailingAddress = (await getMarketingSettingsRow(env))?.mailingAddress;
     if (!mailingAddress) {

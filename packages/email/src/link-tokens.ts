@@ -167,11 +167,19 @@ export function readLinkToken(
 /** Where the preference center lives: under the tracking host, so customer domains serve it. */
 export const PREFERENCES_PATH_PREFIX = "/t/u/";
 
+/** The longest header value SES sends (as for customer headers, `HEADER_VALUE` in `schemas.ts`). */
+export const MAX_HEADER_VALUE_LENGTH = 995;
+
 export type PreferenceLinks = {
   preferencesUrl: string;
   unsubscribeUrl: string;
-  /** RFC 2369 + RFC 8058: mailbox providers show an unsubscribe button and POST to it. */
-  headers: { "List-Unsubscribe": string; "List-Unsubscribe-Post": string };
+  /**
+   * RFC 2369 + RFC 8058: mailbox providers show an unsubscribe button and POST to it. Its link
+   * leaves out the email (stats only) and then the topic (a one-click unsubscribe from all
+   * marketing then) when the full one is too long for a header; `null` when even that is (a very
+   * long address), so only the body links remain.
+   */
+  headers: { "List-Unsubscribe": string; "List-Unsubscribe-Post": string } | null;
 };
 
 /**
@@ -186,22 +194,34 @@ export function preferenceLinks(input: {
   emailId?: string | null;
   topic?: string | null;
 }): PreferenceLinks {
-  const token = mintLinkToken(input.keys, {
-    kind: "preferences",
-    environmentId: input.environmentId,
-    address: input.address.toLowerCase(),
-    emailId: input.emailId ?? null,
-    topic: input.topic ?? null,
-  });
   const base = input.baseUrl.replace(/\/+$/, "");
-  const preferencesUrl = `${base}${PREFERENCES_PATH_PREFIX}${token}`;
+  const urlOf = (payload: { emailId: string | null; topic: string | null }) =>
+    `${base}${PREFERENCES_PATH_PREFIX}${mintLinkToken(input.keys, {
+      kind: "preferences",
+      environmentId: input.environmentId,
+      address: input.address.toLowerCase(),
+      ...payload,
+    })}`;
+  const full = { emailId: input.emailId ?? null, topic: input.topic ?? null };
+  const preferencesUrl = urlOf(full);
+  let headerUrl: string | null = preferencesUrl;
+  for (const payload of [
+    { ...full, emailId: null },
+    { emailId: null, topic: null },
+  ]) {
+    if (`<${headerUrl}>`.length <= MAX_HEADER_VALUE_LENGTH) break;
+    headerUrl = urlOf(payload);
+  }
+  if (`<${headerUrl}>`.length > MAX_HEADER_VALUE_LENGTH) headerUrl = null;
   return {
     preferencesUrl,
     unsubscribeUrl: `${preferencesUrl}/unsubscribe`,
-    headers: {
-      "List-Unsubscribe": `<${preferencesUrl}>`,
-      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-    },
+    headers: headerUrl
+      ? {
+          "List-Unsubscribe": `<${headerUrl}>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        }
+      : null,
   };
 }
 

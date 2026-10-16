@@ -12,6 +12,7 @@ import {
   confirmationLink,
   DEVELOPMENT_LINK_KEYS,
   linkKeyRing,
+  MAX_HEADER_VALUE_LENGTH,
   MAX_LINK_TOKEN_LENGTH,
   mintLinkToken,
   preferenceLinks,
@@ -123,6 +124,36 @@ describe("link tokens", () => {
       "List-Unsubscribe": `<${links.preferencesUrl}>`,
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
     });
+  });
+
+  test("the header's link drops the email, then the topic, to fit; else there is none", () => {
+    const headerPayload = (links: ReturnType<typeof preferenceLinks>) => {
+      const value = links.headers?.["List-Unsubscribe"] ?? "";
+      expect(value.length).toBeLessThanOrEqual(MAX_HEADER_VALUE_LENGTH);
+      return readLinkToken(keys, value.slice(1, -1).split("/").at(-1) as string, "preferences");
+    };
+    const longest = {
+      // A 253-character custom tracking hostname, a 254-character address, a 256-character topic.
+      baseUrl: `https://${"t".repeat(63)}.${"t".repeat(63)}.${"t".repeat(63)}.${"t".repeat(61)}`,
+      keys,
+      environmentId: payload.environmentId,
+      address: `${"a".repeat(64)}@${"b".repeat(63)}.${"c".repeat(63)}.${"d".repeat(61)}`,
+      emailId: "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    };
+    const fits = preferenceLinks({ ...longest, topic: "news" });
+    expect(headerPayload(fits)).toMatchObject({ emailId: longest.emailId, topic: "news" });
+
+    const long = preferenceLinks({ ...longest, topic: "t".repeat(256) });
+    // The body links keep everything; the header unsubscribes from all marketing instead.
+    expect(
+      readLinkToken(keys, long.preferencesUrl.split("/").at(-1) as string, "preferences"),
+    ).toMatchObject({ emailId: longest.emailId, topic: "t".repeat(256) });
+    expect(headerPayload(long)).toMatchObject({ emailId: null, topic: null });
+
+    // Multi-byte characters make even the address alone too long for a header.
+    const wide = preferenceLinks({ ...longest, address: `${"ü".repeat(64)}@${"ü".repeat(189)}` });
+    expect(wide.headers).toBeNull();
+    expect(wide.preferencesUrl).toStartWith(`${longest.baseUrl}/t/u/a`);
   });
 });
 
