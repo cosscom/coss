@@ -7,6 +7,24 @@ import { SignUpButton } from "@/components/sign-up-button";
 import { CALENDAR } from "@/lib/calendar";
 import { SHIPYARD } from "@/lib/shipyard";
 
+/** Products of the platform beyond the catalog's four parts, in the same shape. */
+const MORE_PRODUCTS = [
+  {
+    id: "hooks",
+    name: "Hooks",
+    call: "coss.hooks",
+    summary:
+      "Webhooks as a service: send a message once, coss.com delivers it to every endpoint your customers registered.",
+  },
+  {
+    id: "risk",
+    name: "Risk",
+    call: "coss.risk",
+    summary:
+      "Whether a sign-up, login or other event looks like abuse, and why, with rate limiting for your own endpoints.",
+  },
+] as const;
+
 const DESCRIPTION =
   "Supabase made the database something you get by signing up. coss.com does the same for the application layer: email, SMS, video, scheduling, behind one API key and one SDK.";
 
@@ -79,7 +97,7 @@ export default function AboutPage() {
           all.
         </p>
         <ul className="flex flex-col divide-y border-y text-base">
-          {PRODUCTS.map((product) => (
+          {[...PRODUCTS, ...MORE_PRODUCTS].map((product) => (
             <li className="grid gap-1 py-3 sm:grid-cols-[11rem_1fr] sm:gap-4" key={product.id}>
               <span className="flex flex-col">
                 <span className="font-medium text-foreground">{product.name}</span>
@@ -90,9 +108,9 @@ export default function AboutPage() {
           ))}
         </ul>
         <p>
-          Behind the products sit the pieces every one of them needs: domains, suppressions, risk
-          and rate limiting, delivery logs and drains, signed webhooks, metered billing. Those are
-          built once and shared, not reinvented per product.
+          Behind the products sit the pieces every one of them needs: verified domains, receiving,
+          suppressions, DMARC and reputation, delivery logs and drains, signed webhooks, audit log,
+          metered billing. Those are built once and shared, not reinvented per product.
         </p>
       </Section>
 
