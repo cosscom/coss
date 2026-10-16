@@ -13,6 +13,7 @@ import {
   deployRunPhase,
   elapsedMs,
   failureLogExcerpt,
+  findPreviousRollout,
   firstParentChain,
   type GitHubCommit,
   type GitHubJob,
@@ -517,9 +518,8 @@ export type DeployRunDetail = {
   changes: DeployChanges;
 };
 
-/** Runs, and a run's own earlier attempts, read back when looking for the rollout before it. */
+/** Runs read back when looking for the rollout before a run. */
 const EARLIER_RUNS_READ = 30;
-const EARLIER_ATTEMPTS_READ = 3;
 
 /**
  * One Deploy run with its jobs, steps, failed jobs' logs and the changes it ships. `null` when
@@ -581,7 +581,7 @@ export async function getDeployRun(id: number): Promise<DeployRunDetail | null> 
 /**
  * The commit production ran just before `entry`'s rollout started (or, for a run that never got
  * there, when it ended; an active one: now): the rollout that finished last before then, whatever
- * order the runs were created in, this run's earlier attempts included. Also the latest production job start among the runs read (the
+ * order the runs were created in, earlier attempts of runs that were re-run included. Also the latest production job start among the runs read (the
  * batch estimate).
  */
 async function previousRollout(
@@ -606,36 +606,18 @@ async function previousRollout(
   ]);
   const candidates = [
     ...new Map(
-      [...after.workflow_runs, ...before.workflow_runs]
-        .filter((candidate) => candidate.id !== run.id)
-        .map((candidate) => [candidate.id, candidate]),
+      [...after.workflow_runs, ...before.workflow_runs].map((candidate) => [
+        candidate.id,
+        candidate,
+      ]),
     ).values(),
-  ].sort((a, b) => lastChange(b) - lastChange(a));
+  ];
 
-  // This run's own earlier attempts first: re-running the jobs that failed after a rollout (the
-  // CDN invalidation, the routing check) rolls the same commit out again.
-  const attempts = run.run_attempt ?? 1;
-  const read: RunWithJobs[] = await Promise.all(
-    Array.from({ length: Math.min(attempts - 1, EARLIER_ATTEMPTS_READ) }, (_, index) =>
-      withJobs(run, attempts - 1 - index),
-    ),
-  );
-  // Latest change first, one by one: a run's rollout finished before its last change, so once the
-  // best rollout so far is later than a run's last change, no run after it can beat it.
-  for (const candidate of candidates) {
-    const best = latestRolloutBefore(read, reference);
-    if (best && lastChange(candidate) < best.at.getTime()) break;
-    read.push(await withJobs(candidate));
-  }
-  const best = latestRolloutBefore(read, reference);
+  const { best, read } = await findPreviousRollout(run, candidates, reference, withJobs);
   return {
     commit: best ? deployedCommit(best.entry.run, best.entry.jobs) : null,
     lastDeployAt: lastDeployStart(read),
   };
-}
-
-function lastChange(run: GitHubRun): number {
-  return Date.parse(run.updated_at ?? run.created_at);
 }
 
 async function runChanges(

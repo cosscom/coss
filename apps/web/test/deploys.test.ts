@@ -9,6 +9,7 @@ import {
   deployRunPhase,
   elapsedMs,
   failureLogExcerpt,
+  findPreviousRollout,
   firstParentChain,
   type GitHubCommit,
   type GitHubJob,
@@ -336,6 +337,76 @@ describe("rollout order", () => {
     expect(latestRolloutBefore(entries, new Date("2026-10-15T14:00:00Z"))?.entry.id).toBe("rerun");
     expect(latestRolloutBefore(entries, new Date("2026-10-15T12:30:00Z"))?.entry.id).toBe("newer");
     expect(latestRolloutBefore(entries, new Date("2026-10-15T12:01:00Z"))).toBeNull();
+  });
+});
+
+describe("findPreviousRollout", () => {
+  const at = (minute: number) => new Date(Date.UTC(2026, 9, 15, 12, minute)).toISOString();
+  /** A deploy job that rolled out from `minute` to `minute + 2`, or one that never got there. */
+  const jobsAt = (minute: number | null): GitHubJob[] =>
+    minute === null
+      ? [job("gate", "completed", "failure")]
+      : [
+          {
+            ...job("deploy", "completed", "success"),
+            steps: [
+              {
+                name: "Roll out",
+                status: "completed",
+                conclusion: "success",
+                started_at: at(minute),
+                completed_at: at(minute + 2),
+              },
+            ],
+          },
+        ];
+  /** Runs by id: each attempt's rollout minute (`null`: none), the latest last. */
+  function fixture(attempts: Record<number, (number | null)[]>) {
+    const runs = Object.entries(attempts).map(([id, minutes]) =>
+      run({
+        id: Number(id),
+        run_attempt: minutes.length,
+        created_at: at(Number(id)),
+        updated_at: at((minutes.at(-1) ?? Number(id)) + 3),
+      }),
+    );
+    const loads: string[] = [];
+    const load = async (of: GitHubRun, attempt?: number) => {
+      const number = attempt ?? of.run_attempt ?? 1;
+      loads.push(`${of.id}:${number}`);
+      return { run: of, attempt: number, jobs: jobsAt(attempts[of.id]?.[number - 1] ?? null) };
+    };
+    return { runs, load, loads };
+  }
+  const found = (result: { best: { entry: { run: GitHubRun; attempt: number } } | null }) =>
+    result.best ? `${result.best.entry.run.id}:${result.best.entry.attempt}` : null;
+
+  test("the latest rollout before the reference, reading as few runs as it can", async () => {
+    const { runs, load, loads } = fixture({ 1: [1], 10: [10], 20: [null], 30: [30] });
+    const viewed = runs.find((candidate) => candidate.id === 30) as GitHubRun;
+    const result = await findPreviousRollout(viewed, runs, new Date(at(30)), load);
+    expect(found(result)).toBe("10:1");
+    // Run 1's last change is before run 10's rollout: never read.
+    expect(loads).toEqual(["20:1", "10:1"]);
+  });
+
+  test("an earlier run re-run after the viewed one rolled out: its first attempt counts", async () => {
+    // Run 10 rolled out at 10, run 20 at 20, then run 10 was re-run and rolled out at 40.
+    const { runs, load } = fixture({ 1: [1], 10: [10, 40], 20: [20] });
+    const viewed = runs.find((candidate) => candidate.id === 20) as GitHubRun;
+    expect(found(await findPreviousRollout(viewed, runs, new Date(at(20)), load))).toBe("10:1");
+  });
+
+  test("the viewed run's own earlier rollout (its failed later steps were re-run)", async () => {
+    const { runs, load } = fixture({ 1: [1], 10: [10, 15] });
+    const viewed = runs.find((candidate) => candidate.id === 10) as GitHubRun;
+    expect(found(await findPreviousRollout(viewed, runs, new Date(at(15)), load))).toBe("10:1");
+  });
+
+  test("none before the reference", async () => {
+    const { runs, load } = fixture({ 10: [null], 20: [20] });
+    const viewed = runs.find((candidate) => candidate.id === 20) as GitHubRun;
+    expect(found(await findPreviousRollout(viewed, runs, new Date(at(20)), load))).toBeNull();
   });
 });
 

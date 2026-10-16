@@ -160,6 +160,54 @@ export function latestRolloutBefore<T extends { jobs: GitHubJob[] }>(
   return best;
 }
 
+/** A run's earlier attempts read when looking for a rollout (re-runs are rarely more). */
+export const EARLIER_ATTEMPTS_READ = 3;
+
+/**
+ * The rollout production ran just before `reference` (when `run`'s own rollout started, or would
+ * have): of `run`'s earlier attempts and `candidates` (other runs), the one that finished rolling
+ * out last before it. `load` reads a run's jobs, of its latest attempt or an earlier `attempt`.
+ *
+ * Candidates go latest change first: a rollout finishes before its run's last change, so once the
+ * best rollout found is later than a candidate's last change, nothing after it can beat it. A
+ * candidate whose latest attempt didn't roll out before `reference` (it failed, or was re-run
+ * after it) has its earlier attempts read too: re-running the jobs that failed after a rollout
+ * (the CDN invalidation, the routing check) rolls the same commit out again.
+ */
+export async function findPreviousRollout<T extends { run: GitHubRun; jobs: GitHubJob[] }>(
+  run: GitHubRun,
+  candidates: GitHubRun[],
+  reference: Date,
+  load: (run: GitHubRun, attempt?: number) => Promise<T>,
+): Promise<{ best: { entry: T; at: Date } | null; read: T[] }> {
+  const earlierAttempts = async (of: GitHubRun): Promise<T[]> => {
+    const entries: T[] = [];
+    const latest = of.run_attempt ?? 1;
+    for (
+      let attempt = latest - 1;
+      attempt >= Math.max(1, latest - EARLIER_ATTEMPTS_READ);
+      attempt--
+    ) {
+      entries.push(await load(of, attempt));
+    }
+    return entries;
+  };
+  const lastChange = (of: GitHubRun) => Date.parse(of.updated_at ?? of.created_at);
+
+  const read = await earlierAttempts(run);
+  const ordered = candidates
+    .filter((candidate) => candidate.id !== run.id)
+    .sort((a, b) => lastChange(b) - lastChange(a));
+  for (const candidate of ordered) {
+    const best = latestRolloutBefore(read, reference);
+    if (best && lastChange(candidate) < best.at.getTime()) break;
+    const latest = await load(candidate);
+    read.push(latest);
+    if (!latestRolloutBefore([latest], reference)) read.push(...(await earlierAttempts(candidate)));
+  }
+  return { best: latestRolloutBefore(read, reference), read };
+}
+
 /** The run name of a dispatch that deploys an earlier commit's images (deploy.yml's `run-name`). */
 export function imageTagRunName(sha: string): string {
   return `Deploy ${sha}`;
