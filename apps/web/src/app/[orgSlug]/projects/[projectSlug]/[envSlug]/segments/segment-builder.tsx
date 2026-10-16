@@ -123,18 +123,21 @@ function emptyRow(field: ConditionField = "email"): Row {
   };
 }
 
-function rowOf(condition: SegmentConditionOutput): Row {
+function rowOf(condition: SegmentConditionOutput, types: ReadonlyMap<string, PropertyType>): Row {
   const row = emptyRow(condition.field);
   row.op = condition.op;
   switch (condition.field) {
-    case "property":
+    case "property": {
       row.key = condition.key;
+      const value = condition.value === undefined ? "" : String(condition.value);
+      // Only a date property's midnight is shown as the day (`typed` adds it back).
       row.value = Array.isArray(condition.value)
         ? condition.value.join(", ")
-        : condition.value === undefined
-          ? ""
-          : String(condition.value).replace(/T00:00:00\.000Z$/, "");
+        : types.get(condition.key) === "date"
+          ? value.replace(/T00:00:00\.000Z$/, "")
+          : value;
       break;
+    }
     case "email":
       row.value = condition.value;
       break;
@@ -260,16 +263,16 @@ export function SegmentEditor(
       (item) => "conditions" in item || !representable(item as SegmentConditionOutput),
     ) ?? false;
   const [match, setMatch] = useState<"all" | "any">(props.filter?.match ?? "all");
-  const [rows, setRows] = useState<Row[]>(() =>
-    props.filter && !nested
-      ? props.filter.conditions.map((item) => rowOf(item as SegmentConditionOutput))
-      : [emptyRow()],
-  );
-  const [json, setJson] = useState(() => JSON.stringify(props.filter, null, 2));
   const types = useMemo(
     () => new Map(props.properties.map((property) => [property.key, property.type])),
     [props.properties],
   );
+  const [rows, setRows] = useState<Row[]>(() =>
+    props.filter && !nested
+      ? props.filter.conditions.map((item) => rowOf(item as SegmentConditionOutput, types))
+      : [emptyRow()],
+  );
+  const [json, setJson] = useState(() => JSON.stringify(props.filter, null, 2));
   const filterJson = nested
     ? json
     : JSON.stringify({ version: 1, match, conditions: rows.map((row) => conditionOf(row, types)) });
