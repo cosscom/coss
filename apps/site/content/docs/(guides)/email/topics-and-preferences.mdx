@@ -79,8 +79,9 @@ await coss.email.marketingSettings.update({
 ## Double opt-in
 
 With double opt-in, a new contact stays `pending` until they click the link in a confirmation email,
-which proves they own the address. Turn it on for every new contact (`double_opt_in_default`) or per
-request (`double_opt_in`). Confirmations come from `confirmation_from` (on a verified domain for live
+which proves they own the address. Turn it on for every contact created through the API
+(`double_opt_in_default`) or per request (`double_opt_in`); contacts you add or import in the
+dashboard, and imports, are added as you set them. Confirmations come from `confirmation_from` (on a verified domain for live
 environments), use coss.com's default email or yours (it must contain `{{{confirmation_url}}}`), and
 can send the contact to `confirmed_redirect_url` afterwards. While double opt-in applies,
 `status: "subscribed"` is refused (`double_opt_in_status`); pass `double_opt_in: false` for someone
