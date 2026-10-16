@@ -172,13 +172,13 @@ describe("contacts", () => {
     expect(refused && "reason" in refused ? refused.reason : null).toBeInstanceOf(BillingError);
     expect(await contactCount(env)).toBe(3);
     const rows = await db
-      .select({ id: schema.contact.id })
+      .select({ id: schema.contact.id, address: schema.contact.address })
       .from(schema.contact)
       .where(eq(schema.contact.environmentId, env.environmentId));
     expect(rows).toHaveLength(3);
 
-    // Updating an existing contact never counts.
-    await upsertContact(env, UpsertContactRequest.parse({ email: "c0@example.com" }), {
+    // Updating an existing contact never counts (any three of the six won the race).
+    await upsertContact(env, UpsertContactRequest.parse({ email: rows[0]?.address }), {
       ...api,
       plans,
     });
