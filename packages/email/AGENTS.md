@@ -81,9 +81,10 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   (`infra/aws/routing.ts`).
 - **BIMI** (`packages/email/src/bimi.ts`, `domain.bimi` jsonb, wire `Domain.bimi`): a DNS-only check run by
   `checkDomain` next to `checkRecords` (so the worker's re-checks and verify refresh it). It reads the DMARC policy
-  (the domain's own `p`, else the nearest parent's `sp ?? p`; `pct` < 100 or `t=y` is partial; two records = none)
-  and `default._bimi.<domain>`, else the nearest parent's (no public suffix list: a tree walk short of the last
-  label). Statuses `not_checked` (no resolver or a lookup failure — never `missing` on a DNS error), `missing`,
+  (RFC 7489: the domain's own `p`, else the organizational domain's `sp ?? p`; the organizational domain — `tldts`'
+  public suffix list, ICANN section — must have an enforced record of its own too; `pct` < 100 or `t=y` is partial;
+  two records, a repeated or malformed tag = no record) and `default._bimi.<domain>`, else the organizational
+  domain's (unrelated TXT records ignored). Statuses `not_checked` (no resolver or a lookup failure — never `missing` on a DNS error), `missing`,
   `invalid`, `configured`. Rows store issue codes only; `toBimiObject` renders `BIMI_ISSUE_MESSAGES` on read. Never
   fetch the logo (`l=`) or certificate (`a=`) — they are customer URLs (SSRF) and the VMC/CMC is the customer's to
   validate; the dashboard never renders the logo either. The docs page (`/docs/email/bimi`) lists the statuses and

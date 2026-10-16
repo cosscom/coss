@@ -138,8 +138,8 @@ export interface DomainBimi {
   /** The record's VMC or CMC certificate URL (`a=`). */
   certificate_url: string | null;
   /**
-   * The DMARC policy that applies to the domain (`sp` when it comes from a parent domain), `null`
-   * without a DMARC record.
+   * The DMARC policy that applies to the domain (the organizational domain's `sp` when it has no
+   * record of its own), `null` without a DMARC record.
    */
   dmarc_policy: "none" | "quarantine" | "reject" | null;
   issues: { code: BimiIssueCode; message: string }[];

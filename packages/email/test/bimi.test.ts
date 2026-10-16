@@ -209,13 +209,40 @@ describe("checkBimi", () => {
       issues: ["dmarc_not_enforced"],
     });
 
-    // The topmost parent with a record counts as the organizational domain.
+    // Records of intermediate domains don't count: the organizational domain's does.
     const deep = fakeDnsResolver({
       "TXT _dmarc.eu.acme.test": [["v=DMARC1; p=reject"]],
       "TXT _dmarc.acme.test": [["v=DMARC1; p=none"]],
       "TXT default._bimi.mail.eu.acme.test": [[RECORD]],
     });
     expect((await checkBimi("mail.eu.acme.test", deep)).issues).toEqual(["dmarc_not_enforced"]);
+  });
+
+  test("the organizational domain needs a DMARC record of its own", async () => {
+    const dns = fakeDnsResolver({
+      "TXT _dmarc.mail.acme.test": [[ENFORCED]],
+      "TXT default._bimi.mail.acme.test": [[RECORD]],
+    });
+
+    expect(await checkBimi("mail.acme.test", dns)).toMatchObject({
+      status: "invalid",
+      dmarcPolicy: "reject",
+      issues: ["dmarc_missing"],
+    });
+  });
+
+  test("the organizational domain comes from the public suffix list", async () => {
+    // co.uk is a public suffix: acme.co.uk is the organizational domain of mail.acme.co.uk.
+    const dns = fakeDnsResolver({
+      "TXT _dmarc.acme.co.uk": [["v=DMARC1; p=quarantine"]],
+      "TXT default._bimi.acme.co.uk": [[RECORD]],
+    });
+
+    expect(await checkBimi("mail.acme.co.uk", dns)).toMatchObject({
+      status: "configured",
+      name: "default._bimi.acme.co.uk",
+      dmarcPolicy: "quarantine",
+    });
   });
 
   test("the organizational domain's policy must apply to all of its mail", async () => {
@@ -247,6 +274,7 @@ describe("checkBimi", () => {
   test("the organizational domain's record applies even when the subdomain has its own DMARC", async () => {
     const dns = fakeDnsResolver({
       "TXT _dmarc.mail.eu.acme.test": [[ENFORCED]],
+      "TXT _dmarc.acme.test": [[ENFORCED]],
       "TXT default._bimi.acme.test": [[RECORD]],
     });
 

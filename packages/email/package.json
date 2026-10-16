@@ -35,6 +35,7 @@
     "parse5": "8.0.1",
     "pg-boss": "catalog:",
     "postal-mime": "4.0.6",
+    "tldts": "7.4.16",
     "zod": "catalog:"
   },
   "devDependencies": {

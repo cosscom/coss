@@ -277,6 +277,8 @@ describe("checkDomain", () => {
     const row = await createDomain({ organizationId, name, userId: null }, deps());
     const dns = fakeDnsResolver({
       [`TXT _dmarc.${name}`]: [["v=DMARC1; p=quarantine"]],
+      // The organizational domain (coss.test) needs an enforced record of its own too.
+      "TXT _dmarc.coss.test": [["v=DMARC1; p=reject"]],
       [`TXT default._bimi.${name}`]: [["v=BIMI1; l=https://acme.test/logo.svg"]],
     });
 

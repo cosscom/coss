@@ -1432,7 +1432,7 @@ export const BIMI_ISSUE_MESSAGES: Record<BimiIssueCode, string> = {
   dmarc_missing:
     "The domain (or its organizational domain) has no valid DMARC record, or more than one. BIMI needs DMARC at p=quarantine or p=reject.",
   dmarc_not_enforced:
-    "The DMARC policy is p=none for the domain, as its parent's subdomain policy (sp), or for its organizational domain. BIMI needs p=quarantine or p=reject.",
+    "The DMARC policy of the domain or of its organizational domain is p=none (or sp=none for a subdomain). BIMI needs p=quarantine or p=reject.",
   dmarc_partial:
     "The DMARC policy of the domain (or of its organizational domain) applies to only part of the mail (pct below 100, or t=y). BIMI needs it to apply to all of it.",
   record_multiple:
@@ -1579,7 +1579,7 @@ export const DomainBimiObject = z
       .nullable()
       .meta({
         description:
-          "The DMARC policy that applies to the domain (`sp` when it comes from a parent domain), " +
+          "The DMARC policy that applies to the domain (the organizational domain's `sp` when it has no record of its own), " +
           "`null` without a DMARC record.",
       }),
     issues: z

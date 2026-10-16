@@ -4,6 +4,7 @@
  * the VMC/CMC certificate (customers' own; mailbox providers validate them).
  */
 import type { DomainBimi } from "@coss/db/schema";
+import { getDomain } from "tldts";
 import { type DnsResolver, lookup } from "./dns.ts";
 import { BIMI_ISSUE_MESSAGES, type DomainBimiObjectOutput } from "./schemas.ts";
 
@@ -77,49 +78,45 @@ function dmarcOf(domain: string, tags: Map<string, string>, policy: string | und
   };
 }
 
-/**
- * The DMARC policy that applies to a domain — its own record's `p`, else the nearest parent's
- * `sp` (else `p`), DMARCbis' tree walk short of the last label; an invalid record ends the walk
- * with no DMARC — and the organizational domain's own `p`, which BIMI needs fully enforced too
- * (`invalid` when its record is). Without a public suffix list, the organizational domain is the
- * topmost parent with a record.
- */
-async function dmarcFor(
-  domainName: string,
-  dns: DnsResolver,
-): Promise<{ applies: Dmarc | null; organizational: Dmarc | "invalid" | null }> {
-  const labels = domainName.split(".");
-  let applies: Dmarc | null | undefined;
-  let organizational: Dmarc | "invalid" | null = null;
-  for (let start = 0; labels.length - start >= 2; start++) {
-    const domain = labels.slice(start).join(".");
-    const tags = await dmarcTagsAt(domain, dns);
-    if (tags === undefined) continue;
-    if (applies === undefined) {
-      if (tags === null) return { applies: null, organizational: null };
-      applies = dmarcOf(
-        domain,
-        tags,
-        start === 0 ? tags.get("p") : (tags.get("sp") ?? tags.get("p")),
-      );
-    }
-    organizational = tags ? dmarcOf(domain, tags, tags.get("p")) : "invalid";
-  }
-  return { applies: applies ?? null, organizational };
+/** The organizational domain (RFC 7489): the registrable domain, by the public suffix list. */
+function organizationalDomain(domainName: string): string {
+  return getDomain(domainName) ?? domainName;
 }
 
 /**
- * The domain's BIMI records, else those of the organizational domain, which providers fall back
- * to. Without a public suffix list, that is the nearest parent with any (short of the last label).
+ * The DMARC policy that applies to a domain as receivers find it (RFC 7489): its own record's
+ * `p`, else the organizational domain's `sp` (else `p`); an invalid record of its own means no
+ * DMARC. Also the organizational domain's own policy, which BIMI needs fully enforced too.
+ * `null` for no valid record.
+ */
+async function dmarcFor(
+  domainName: string,
+  organizational: string,
+  dns: DnsResolver,
+): Promise<{ applies: Dmarc | null; organizational: Dmarc | null }> {
+  const own = await dmarcTagsAt(domainName, dns);
+  const ownDmarc = own ? dmarcOf(domainName, own, own.get("p")) : null;
+  if (domainName === organizational) return { applies: ownDmarc, organizational: ownDmarc };
+  const parent = await dmarcTagsAt(organizational, dns);
+  const parentDmarc = parent ? dmarcOf(organizational, parent, parent.get("p")) : null;
+  if (own !== undefined) return { applies: ownDmarc, organizational: parentDmarc };
+  return {
+    applies: parent ? dmarcOf(organizational, parent, parent.get("sp") ?? parent.get("p")) : null,
+    organizational: parentDmarc,
+  };
+}
+
+/**
+ * The domain's BIMI records, else the organizational domain's, which providers fall back to.
  * Unrelated TXT records at a name don't count as a record there.
  */
 async function bimiRecordsFor(
   domainName: string,
+  organizational: string,
   dns: DnsResolver,
 ): Promise<{ name: string; values: string[] }> {
-  const labels = domainName.split(".");
-  for (let start = 0; labels.length - start >= 2; start++) {
-    const name = `default._bimi.${labels.slice(start).join(".")}`;
+  for (const domain of new Set([domainName, organizational])) {
+    const name = `default._bimi.${domain}`;
     const values = (await txt(name, dns)).filter((value) => BIMI_LIKE.test(value));
     if (values.length > 0) return { name, values };
   }
@@ -138,15 +135,15 @@ function isHttpsUrl(value: string): boolean {
 export async function checkBimi(domainName: string, dns: DnsResolver | null): Promise<DomainBimi> {
   if (!dns) return notChecked(domainName);
   try {
-    const { applies: dmarc, organizational } = await dmarcFor(domainName, dns);
+    const orgDomain = organizationalDomain(domainName);
+    const { applies: dmarc, organizational } = await dmarcFor(domainName, orgDomain, dns);
     const issues: Issue[] = [];
-    const organizationalPolicy = organizational === "invalid" ? null : organizational;
-    if (!dmarc || organizational === "invalid") issues.push("dmarc_missing");
-    else if (dmarc.policy === "none" || organizationalPolicy?.policy === "none") {
+    if (!dmarc || !organizational) issues.push("dmarc_missing");
+    else if (dmarc.policy === "none" || organizational.policy === "none") {
       issues.push("dmarc_not_enforced");
-    } else if (dmarc.partial || organizationalPolicy?.partial) issues.push("dmarc_partial");
+    } else if (dmarc.partial || organizational.partial) issues.push("dmarc_partial");
 
-    const found = await bimiRecordsFor(domainName, dns);
+    const found = await bimiRecordsFor(domainName, orgDomain, dns);
     const base = { name: found.name, dmarcPolicy: dmarc?.policy ?? null };
     if (found.values.length === 0) {
       return {

@@ -13,12 +13,13 @@ your DNS and tells you what is still missing.
 1. **A verified domain.** COSS signs your emails with DKIM as your domain, so they pass DMARC once
    the domain is [verified](/docs/email/domains).
 2. **DMARC at enforcement.** Your domain's DMARC policy must be `p=quarantine` or `p=reject`, and
-   apply to all of your mail: no `pct` below 100, no `t=y`. A domain without a DMARC record of its
-   own uses its parent's, and its `sp` (subdomain policy) applies when set, so `sp=none` there
-   doesn't count either. For a subdomain, the organizational domain's own policy (`p`, on
-   `example.com` for `mail.example.com`) must be at enforcement too, for all of its mail. Before you tighten the policy, read your DMARC reports (`rua=`) to make sure
-   every service that sends as your domain passes DMARC. Then move from `p=none` to `quarantine` to
-   `reject`.
+   apply to all of your mail: no `pct` below 100, no `t=y`. When you send from a subdomain such as
+   `mail.example.com`, the organizational domain (`example.com`, the domain you registered) needs a
+   DMARC record at enforcement of its own as well. A subdomain without a DMARC record of its own
+   uses the organizational domain's, where its `sp` (subdomain policy) applies when set, so
+   `sp=none` doesn't count either. Before you tighten the policy, read your DMARC reports (`rua=`)
+   to make sure every service that sends as your domain passes DMARC. Then move from `p=none` to
+   `quarantine` to `reject`.
 3. **Your logo as an SVG** in the SVG Tiny Portable/Secure (SVG Tiny PS) profile. It should be
    square, with a solid background, and served over HTTPS. Mailbox providers suggest keeping it under
    32 KB.
