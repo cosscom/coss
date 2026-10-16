@@ -42,6 +42,11 @@ function skipped(method: string, path: string): boolean {
  * member reads the environment's log and its drains. Error envelopes are still kept.
  */
 const CONTENT_RESPONSES = ["/v1/received_emails"];
+/**
+ * Responses that are capabilities: preference links change a contact's consent and need
+ * `contact:update`, which reading the log (every member, every drain) doesn't.
+ */
+const CAPABILITY_RESPONSES = [/^\/v1\/contacts\/[^/]+\/preference_links$/];
 
 /**
  * Stateless lookup identifiers and classification text must not enter request logs. Lookup
@@ -57,6 +62,7 @@ function keepsRequestBody(path: string): boolean {
 function keepsResponseBody(path: string, status: number): boolean {
   if (CONTENT_REQUESTS.includes(path)) return false;
   if (status >= 400) return true;
+  if (CAPABILITY_RESPONSES.some((pattern) => pattern.test(path))) return false;
   return !CONTENT_RESPONSES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 

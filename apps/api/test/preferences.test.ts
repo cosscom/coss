@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { memoryLogWriter } from "@coss/logs/testing";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { createTestApp, errorOf, type TestApp } from "./helpers.ts";
 
@@ -128,6 +129,19 @@ describe("the preference center", () => {
     const done = await form(app, unsubscribe, {});
     expect(done.status).toBe(200);
     expect(await done.text()).toContain("unsubscribed");
+  });
+
+  test("request logs never keep preference links (they change consent)", async () => {
+    const tenant = await createTestTenant();
+    const writer = memoryLogWriter();
+    const { app } = createTestApp({ logWriter: writer });
+    await call(app, tenant.sandboxKey, "POST", "/v1/contacts", { email: "log@example.com" });
+    const links = await linksFor(app, tenant, "log@example.com");
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(writer.entries.length).toBeGreaterThanOrEqual(2);
+    const logged = JSON.stringify(writer.entries);
+    expect(logged).not.toContain(links.preferences);
+    expect(logged).not.toContain(links.unsubscribe);
   });
 
   test("a bad token is a plain 404, before anything else", async () => {
