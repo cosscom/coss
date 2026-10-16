@@ -538,6 +538,16 @@ export type DomainRecord = {
   found: string[];
 };
 
+const DMARC_REPORT_TOKEN_ALPHABET = "abcdefghijkmnpqrstuvwxyz23456789";
+
+/** The random part of a domain's DMARC report address (`dmarc-<token>@<managed inbound domain>`). */
+export function newDmarcReportToken(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  // 32 symbols divide 256 evenly, so `% 32` keeps every symbol equally likely.
+  return Array.from(bytes, (byte) => DMARC_REPORT_TOKEN_ALPHABET[byte % 32]).join("");
+}
+
 /**
  * A sending domain of an organization (an SES domain identity with Easy DKIM and a custom MAIL
  * FROM subdomain). Names are unique across organizations while not `failed`: DKIM tokens belong
@@ -571,6 +581,15 @@ export const domain = pgTable(
     nextCheckAt: timestamp("next_check_at", { withTimezone: true }),
     verifiedAt: timestamp("verified_at", { withTimezone: true }),
     failedAt: timestamp("failed_at", { withTimezone: true }),
+    // Routes DMARC aggregate reports (`rua=mailto:dmarc-<token>@<managed inbound domain>`) here.
+    dmarcReportToken: text("dmarc_report_token")
+      .notNull()
+      .$defaultFn(() => newDmarcReportToken()),
+    // The `v=DMARC1` record found at `_dmarc.<name>` by the latest DNS check (null: none found).
+    dmarcRecord: text("dmarc_record"),
+    // When a DNS check first saw the current policy (`p=`, including "no record"); readiness for
+    // the next policy counts from here.
+    dmarcPolicyChangedAt: timestamp("dmarc_policy_changed_at", { withTimezone: true }),
     createdByUserId: text("created_by_user_id").references(() => user.id, {
       onDelete: "set null",
     }),
@@ -578,6 +597,7 @@ export const domain = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [
+    unique("domain_dmarc_report_token_unique").on(t.dmarcReportToken),
     uniqueIndex("domain_name_active_unique").on(t.name).where(sql`${t.status} <> 'failed'`),
     index("domain_organization_idx").on(t.organizationId),
     index("domain_next_check_at_idx").on(t.nextCheckAt).where(sql`${t.nextCheckAt} is not null`),
@@ -867,6 +887,165 @@ export const inboundDropCounter = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [primaryKey({ name: "inbound_drop_counter_pk", columns: [t.organizationId, t.day] })],
+);
+
+/** The policy a DMARC report says the domain published (`policy_published`). */
+export type DmarcPublishedPolicy = {
+  domain: string;
+  p: string | null;
+  sp: string | null;
+  np: string | null;
+  adkim: string | null;
+  aspf: string | null;
+  pct: number | null;
+  testing: string | null;
+};
+
+/**
+ * A DMARC aggregate report a mailbox provider sent about a domain (to its `rua` address, received
+ * through COSS's own receiving). Only the parsed report is kept, never the message.
+ */
+export const dmarcReport = pgTable(
+  "dmarc_report",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.dmarcReport)),
+    organizationId: text("organization_id").notNull(),
+    domainId: text("domain_id").notNull(),
+    reporterOrg: text("reporter_org").notNull(),
+    reporterEmail: text("reporter_email"),
+    // The reporter's own id of the report (unique per reporter).
+    reportId: text("report_id").notNull(),
+    periodBegin: timestamp("period_begin", { withTimezone: true }).notNull(),
+    periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+    policyPublished: jsonb("policy_published").$type<DmarcPublishedPolicy>().notNull(),
+    messageCount: integer("message_count").notNull(),
+    passCount: integer("pass_count").notNull(),
+    // True when the report had more records than are kept (`MAX_DMARC_REPORT_RECORDS`).
+    truncated: boolean("truncated").notNull().default(false),
+    provider: text("provider").notNull(),
+    providerMessageId: text("provider_message_id").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "dmarc_report_domain_fk",
+      columns: [t.domainId, t.organizationId],
+      foreignColumns: [domain.id, domain.organizationId],
+    }).onDelete("cascade"),
+    // Reporters resend reports, and SQS redelivers notifications: each report is recorded once.
+    unique("dmarc_report_reporter_unique").on(t.domainId, t.reporterOrg, t.reportId),
+    unique("dmarc_report_id_organization_unique").on(t.id, t.organizationId),
+    index("dmarc_report_domain_period_idx").on(t.domainId, t.periodEnd),
+    // Lists page newest first by id.
+    index("dmarc_report_domain_id_idx").on(t.domainId, t.id.desc()),
+    // The worker's retention purge and organization deletion.
+    index("dmarc_report_created_at_idx").on(t.createdAt),
+    index("dmarc_report_organization_idx").on(t.organizationId),
+  ],
+);
+
+/** One authentication result a DMARC report lists for a record. */
+export type DmarcAuthResults = {
+  dkim: { domain: string; selector: string | null; result: string }[];
+  spf: { domain: string; scope: string | null; result: string }[];
+};
+
+/** One row of a DMARC report: messages from one source IP with one outcome. */
+export const dmarcReportRecord = pgTable(
+  "dmarc_report_record",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.dmarcReportRecord)),
+    organizationId: text("organization_id").notNull(),
+    domainId: text("domain_id").notNull(),
+    dmarcReportId: text("dmarc_report_id").notNull(),
+    // The report's period, copied so summaries need no join.
+    periodBegin: timestamp("period_begin", { withTimezone: true }).notNull(),
+    periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+    sourceIp: text("source_ip").notNull(),
+    count: integer("count").notNull(),
+    // What the receiver did: none | quarantine | reject.
+    disposition: text("disposition").notNull(),
+    // Aligned results (`policy_evaluated`): pass | fail.
+    dkim: text("dkim").notNull(),
+    spf: text("spf").notNull(),
+    dmarcPass: boolean("dmarc_pass").notNull(),
+    headerFrom: text("header_from").notNull(),
+    envelopeFrom: text("envelope_from"),
+    authResults: jsonb("auth_results").$type<DmarcAuthResults>().notNull(),
+    // Overrides the receiver applied (`reason`: type + comment).
+    reasons: jsonb("reasons").$type<{ type: string; comment: string | null }[]>().notNull(),
+    // Signed with the domain's COSS DKIM keys or sent from its COSS MAIL FROM domain.
+    viaCoss: boolean("via_coss").notNull(),
+    position: integer("position").notNull(),
+  },
+  (t) => [
+    foreignKey({
+      name: "dmarc_report_record_report_fk",
+      columns: [t.dmarcReportId, t.organizationId],
+      foreignColumns: [dmarcReport.id, dmarcReport.organizationId],
+    }).onDelete("cascade"),
+    index("dmarc_report_record_report_idx").on(t.dmarcReportId, t.position),
+    index("dmarc_report_record_domain_period_idx").on(t.domainId, t.periodEnd),
+    index("dmarc_report_record_organization_idx").on(t.organizationId),
+  ],
+);
+
+export const dmarcNotificationKind = pgEnum("dmarc_notification_kind", [
+  "ready_quarantine",
+  "ready_reject",
+  "pass_rate_dropped",
+]);
+
+export const dmarcNotificationStatus = pgEnum("dmarc_notification_status", [
+  "pending",
+  "sent",
+  "skipped",
+  "failed",
+]);
+
+/**
+ * Outbox of the emails that tell an organization's owners and admins that a domain is ready for
+ * a stricter DMARC policy, or that mail is failing DMARC under an enforcing one. Written when a
+ * report is ingested; the worker sends it (`runDueDmarcNotifications`).
+ */
+export const dmarcNotification = pgTable(
+  "dmarc_notification",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.dmarcNotification)),
+    organizationId: text("organization_id").notNull(),
+    domainId: text("domain_id").notNull(),
+    kind: dmarcNotificationKind("kind").notNull(),
+    // One notification per kind, domain and policy epoch (and week, for pass rate drops).
+    dedupeKey: text("dedupe_key").notNull().unique("dmarc_notification_dedupe_unique"),
+    // The domain's `dmarc_policy_changed_at` when queued: a later policy change skips it.
+    policyChangedAt: timestamp("policy_changed_at", { withTimezone: true }),
+    // The record to publish next (readiness) or the pass rate (drops), for the email.
+    detail: jsonb("detail").$type<Record<string, unknown>>().notNull().default({}),
+    status: dmarcNotificationStatus("status").notNull().default("pending"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    // When the worker should (re)try; also the claim's lease. Null once settled.
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }),
+    recipients: text("recipients").array().notNull().default(sql`'{}'::text[]`),
+    lastError: text("last_error"),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "dmarc_notification_domain_fk",
+      columns: [t.domainId, t.organizationId],
+      foreignColumns: [domain.id, domain.organizationId],
+    }).onDelete("cascade"),
+    index("dmarc_notification_due_idx").on(t.nextAttemptAt).where(sql`${t.status} = 'pending'`),
+    index("dmarc_notification_created_at_idx").on(t.createdAt),
+  ],
 );
 
 /** A customer URL that receives signed event notifications for one environment. */

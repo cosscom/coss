@@ -8,6 +8,7 @@ import {
   ACCOUNT_NAV,
   ADMIN_NAV,
   activeNavItem,
+  DOMAIN_NAV,
   type NavItem,
   ORGANIZATION_SETTINGS_NAV,
 } from "@/lib/navigation";
@@ -16,6 +17,7 @@ import {
 const NAVS = {
   account: ACCOUNT_NAV,
   admin: ADMIN_NAV,
+  domain: DOMAIN_NAV,
   organizationSettings: ORGANIZATION_SETTINGS_NAV,
 } as const satisfies Record<string, NavItem[]>;
 

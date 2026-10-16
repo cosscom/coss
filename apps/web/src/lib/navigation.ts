@@ -105,6 +105,12 @@ export const ORGANIZATION_SETTINGS_NAV: NavItem[] = [
   { label: "Audit log", path: "/audit", icon: HistoryIcon },
 ];
 
+/** The tabs of a domain (under `/acme/domains/dom_…`). */
+export const DOMAIN_NAV: NavItem[] = [
+  { label: "Overview", path: "", icon: GlobeIcon, exact: true },
+  { label: "DMARC", path: "/dmarc", icon: ShieldIcon },
+];
+
 /** Account settings (under `/settings`). */
 export const ACCOUNT_NAV: NavItem[] = [
   { label: "Profile", path: "", icon: UserIcon, exact: true },
@@ -177,6 +183,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   logs: "Logs",
   "log-drains": "Log drains",
   domains: "Domains",
+  dmarc: "DMARC",
   members: "Members",
   reputation: "Reputation",
   settings: "Settings",

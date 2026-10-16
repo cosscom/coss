@@ -28,10 +28,12 @@ for (const record of domain?.records ?? []) {
 | DKIM (three records) | `CNAME` | `<token>._domainkey.example.com`  | `<token>.dkim.amazonses.com`             |
 | MAIL FROM            | `MX`    | `send.example.com`                | `feedback-smtp.<region>.amazonses.com` (priority 10) |
 | MAIL FROM SPF        | `TXT`   | `send.example.com`                | `v=spf1 include:amazonses.com ~all`      |
-| DMARC (recommended)  | `TXT`   | `_dmarc.example.com`              | `v=DMARC1; p=none;`                      |
+| DMARC (recommended)  | `TXT`   | `_dmarc.example.com`              | `v=DMARC1; p=none; rua=mailto:dmarc-<token>@inbound.coss.com;` |
 
-Copy the exact values from the dashboard or the `records` array: the DKIM tokens and region are
-specific to your domain.
+Copy the exact values from the dashboard or the `records` array: the DKIM tokens, the region and
+the DMARC report address are specific to your domain. The DMARC record starts in monitoring mode
+and sends aggregate reports to COSS; [DMARC](/docs/email/dmarc) explains the reports and the path
+to `p=reject`.
 
 ## Verification
 

@@ -4,9 +4,12 @@
  */
 import { db, schema } from "@coss/db";
 import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
-import { and, asc, inArray, lt, notExists, notInArray, sql } from "drizzle-orm";
+import { and, asc, inArray, lt, ne, notExists, notInArray, sql } from "drizzle-orm";
 
 const {
+  dmarcNotification,
+  dmarcReport,
+  dmarcReportRecord,
   email,
   emailBatch,
   emailReputationRollup,
@@ -166,5 +169,62 @@ export async function purgeExpiredInboundDropCounters(opts: PurgeOptions = {}): 
     .delete(inboundDropCounter)
     .where(expired)
     .returning({ organizationId: inboundDropCounter.organizationId });
+  return deleted.length;
+}
+
+/**
+ * Deletes expired DMARC reports (created before the cutoff): up to `limit` of their records
+ * first, then, once none are left, up to `limit` reports. A report holds up to 10,000 records,
+ * so letting the cascade delete them would make one step unbounded. Returns the rows deleted.
+ */
+export async function purgeExpiredDmarcReports(opts: PurgeOptions = {}): Promise<number> {
+  const cutoff = retentionCutoff(RETENTION_DAYS.dmarcReports, opts.now);
+  const limit = opts.limit ?? 1000;
+  const expired = and(
+    lt(dmarcReport.createdAt, cutoff),
+    opts.scope ? inArray(dmarcReport.organizationId, opts.scope.organizationIds) : undefined,
+  );
+  const expiredReports = db.select({ id: dmarcReport.id }).from(dmarcReport).where(expired);
+  const dueRecords = db
+    .select({ id: dmarcReportRecord.id })
+    .from(dmarcReportRecord)
+    .where(inArray(dmarcReportRecord.dmarcReportId, expiredReports))
+    .limit(limit);
+  const records = await db
+    .delete(dmarcReportRecord)
+    .where(inArray(dmarcReportRecord.id, dueRecords))
+    .returning({ id: dmarcReportRecord.id });
+  if (records.length >= limit) return records.length;
+  const due = db
+    .select({ id: dmarcReport.id })
+    .from(dmarcReport)
+    .where(expired)
+    .orderBy(asc(dmarcReport.createdAt))
+    .limit(limit - records.length);
+  const reports = await db
+    .delete(dmarcReport)
+    .where(and(inArray(dmarcReport.id, due), expired))
+    .returning({ id: dmarcReport.id });
+  return records.length + reports.length;
+}
+
+/** Deletes settled DMARC notifications created before the cutoff, oldest first. */
+export async function purgeExpiredDmarcNotifications(opts: PurgeOptions = {}): Promise<number> {
+  const cutoff = retentionCutoff(RETENTION_DAYS.dmarcNotifications, opts.now);
+  const expired = and(
+    lt(dmarcNotification.createdAt, cutoff),
+    ne(dmarcNotification.status, "pending"),
+    opts.scope ? inArray(dmarcNotification.organizationId, opts.scope.organizationIds) : undefined,
+  );
+  const due = db
+    .select({ id: dmarcNotification.id })
+    .from(dmarcNotification)
+    .where(expired)
+    .orderBy(asc(dmarcNotification.createdAt))
+    .limit(opts.limit ?? 1000);
+  const deleted = await db
+    .delete(dmarcNotification)
+    .where(and(inArray(dmarcNotification.id, due), expired))
+    .returning({ id: dmarcNotification.id });
   return deleted.length;
 }

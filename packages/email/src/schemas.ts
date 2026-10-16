@@ -656,14 +656,20 @@ export const RECEIVED_EMAIL_EVENT_TYPES = ["email.received"] as const;
 
 export type ReceivedEmailEventType = (typeof RECEIVED_EMAIL_EVENT_TYPES)[number];
 
+/** Events about the organization's domains (delivered to live environments only). */
+export const DOMAIN_EVENT_TYPES = ["domain.dmarc_report_received"] as const;
+
+export type DomainEventType = (typeof DOMAIN_EVENT_TYPES)[number];
+
 /**
  * Every type a webhook endpoint can subscribe to: email events, received emails, the
- * organization's reputation changes (`account.*`) and billing events (`billing.*`), both
- * delivered to live environments only, and risk reviews (`risk.*`).
+ * organization's domain events (`domain.*`), reputation changes (`account.*`) and billing events
+ * (`billing.*`), all three delivered to live environments only, and risk reviews (`risk.*`).
  */
 export const WEBHOOK_EVENT_TYPES = [
   ...EMAIL_EVENT_TYPES,
   ...RECEIVED_EMAIL_EVENT_TYPES,
+  ...DOMAIN_EVENT_TYPES,
   ...ACCOUNT_EVENT_TYPES,
   ...HOOK_OPERATIONAL_EVENT_TYPES,
   ...BILLING_EVENT_TYPES,
@@ -2046,3 +2052,416 @@ export const ReceivedEmailWebhookEvent = z
 export type ReceivedEmailWebhookEventOutput = z.output<typeof ReceivedEmailWebhookEvent>;
 /** What the outbox stores: delivery adds `api_version` when it renders the event for an endpoint. */
 export type StoredReceivedEmailWebhookEvent = Omit<ReceivedEmailWebhookEventOutput, "api_version">;
+
+// --- DMARC ---------------------------------------------------------------------------------------
+
+export const DMARC_POLICY_VALUES = ["none", "quarantine", "reject"] as const;
+export const DMARC_STAGES = [
+  "not_checked",
+  "no_record",
+  "monitoring",
+  "quarantine",
+  "reject",
+] as const;
+export const DMARC_CHECK_IDS = [
+  "coverage",
+  "recent",
+  "time_at_policy",
+  "coss_pass_rate",
+  "pass_rate",
+  "sources",
+] as const;
+export const DMARC_NEXT_STEP_KINDS = [
+  "publish",
+  "add_reporting",
+  "complete_rollout",
+  "tighten",
+] as const;
+export const DMARC_DISPOSITIONS = ["none", "quarantine", "reject"] as const;
+export const DMARC_ALIGNED_RESULTS = ["pass", "fail"] as const;
+export const MAX_DMARC_REPORT_LIST_LIMIT = 100;
+export const DEFAULT_DMARC_REPORT_LIST_LIMIT = 20;
+
+const DMARC_REPORT_ADDRESS_EXAMPLE = "dmarc-k3x9m2pq7rtw4nbc@inbound.coss.com";
+const DMARC_REPORT_ID_EXAMPLE = "dmarcrep_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const DmarcPolicyValue = z.enum(DMARC_POLICY_VALUES);
+const DMARC_PUBLISHED_RECORD_EXAMPLE = {
+  value: `v=DMARC1; p=none; rua=mailto:${DMARC_REPORT_ADDRESS_EXAMPLE};`,
+  p: "none",
+  sp: null,
+  np: null,
+  adkim: null,
+  aspf: null,
+  pct: null,
+  t: null,
+  rua: [`mailto:${DMARC_REPORT_ADDRESS_EXAMPLE}`],
+};
+const Alignment = z.enum(["r", "s"]);
+
+export const DmarcPublishedRecord = z
+  .object({
+    value: z.string().meta({ description: "The `v=DMARC1` TXT record as published." }),
+    p: z.union([DmarcPolicyValue, z.null()]),
+    sp: z.union([DmarcPolicyValue, z.null()]),
+    np: z.union([DmarcPolicyValue, z.null()]),
+    adkim: z.union([Alignment, z.null()]),
+    aspf: z.union([Alignment, z.null()]),
+    pct: z.union([z.number().int(), z.null()]).meta({
+      description: "Removed by RFC 9989 but still honored by many receivers.",
+    }),
+    t: z.union([z.enum(["y", "n"]), z.null()]),
+    rua: z.array(z.string()).meta({ description: "Aggregate report addresses." }),
+  })
+  .meta({
+    id: "DmarcPublishedRecord",
+    description: "The DMARC record found at `_dmarc.<domain>` by the latest DNS check.",
+    examples: [DMARC_PUBLISHED_RECORD_EXAMPLE],
+  });
+
+const DMARC_SOURCE_EXAMPLE = {
+  source_ip: "54.240.8.12",
+  header_from: "acme.com",
+  messages: 1840,
+  passing: 1840,
+  via_coss: true,
+};
+
+export const DmarcSource = z
+  .object({
+    source_ip: z.string(),
+    header_from: z.string().meta({ description: "The domain in the messages' From header." }),
+    messages: z.number().int(),
+    passing: z.number().int().meta({ description: "Messages that passed DMARC." }),
+    via_coss: z.boolean().meta({
+      description:
+        "Signed with the domain's COSS DKIM keys or sent from its COSS MAIL FROM domain.",
+    }),
+  })
+  .meta({ id: "DmarcSource", examples: [DMARC_SOURCE_EXAMPLE] });
+
+const DMARC_CHECK_EXAMPLE = {
+  id: "coss_pass_rate",
+  ok: true,
+  message: "100% of mail sent through COSS passes DMARC (99% needed).",
+};
+
+const DOMAIN_DMARC_EXAMPLE = {
+  object: "domain_dmarc",
+  domain_id: DOMAIN_ID_EXAMPLE,
+  report_address: DMARC_REPORT_ADDRESS_EXAMPLE,
+  record: DMARC_PUBLISHED_RECORD_EXAMPLE,
+  policy: "none",
+  policy_since: "2026-09-20T08:00:00.000Z",
+  stage: "monitoring",
+  partial: false,
+  reporting: true,
+  ready: true,
+  next: {
+    kind: "tighten",
+    policy: "quarantine",
+    record: `v=DMARC1; p=quarantine; rua=mailto:${DMARC_REPORT_ADDRESS_EXAMPLE};`,
+  },
+  checks: [DMARC_CHECK_EXAMPLE],
+  warnings: [],
+  report_summary: {
+    period_start: "2026-09-26T00:00:00.000Z",
+    period_end: "2026-10-10T00:00:00.000Z",
+    reports: 28,
+    messages: 1846,
+    passing: 1840,
+    coss_messages: 1840,
+    coss_passing: 1840,
+    first_report_at: "2026-09-21T00:00:00.000Z",
+    last_report_at: "2026-10-09T23:59:59.000Z",
+    sources: [DMARC_SOURCE_EXAMPLE],
+  },
+};
+
+export const DomainDmarc = z
+  .object({
+    object: z.literal("domain_dmarc"),
+    domain_id: z.string(),
+    report_address: z.union([z.string(), z.null()]).meta({
+      description:
+        "Where the domain's DMARC aggregate reports go (`rua=mailto:…`). `null` when this " +
+        "deployment doesn't receive email.",
+    }),
+    // The published record (`null`: none found, or DNS not checked yet). A union, not `.nullable()`.
+    record: z.union([DmarcPublishedRecord, z.null()]),
+    policy: z.union([DmarcPolicyValue, z.null()]).meta({
+      description: "The policy receivers apply (`p`, or `none` when the record has none).",
+    }),
+    policy_since: z.union([z.iso.datetime(), z.null()]).meta({
+      description: "When a DNS check first saw the current policy.",
+    }),
+    stage: z.enum(DMARC_STAGES).meta({
+      description:
+        "Where the domain is on the path to enforcement: `not_checked` (DNS not checked yet), " +
+        "`no_record`, `monitoring` (`p=none`), `quarantine` or `reject`.",
+    }),
+    partial: z.boolean().meta({
+      description: "The policy applies only partly (`pct` below 100, or `t=y`).",
+    }),
+    reporting: z
+      .boolean()
+      .meta({ description: "The published record sends aggregate reports to `report_address`." }),
+    ready: z.boolean().meta({ description: "Whether `next` is safe to publish now." }),
+    next: z
+      .union([
+        z.object({
+          kind: z.enum(DMARC_NEXT_STEP_KINDS),
+          policy: DmarcPolicyValue,
+          record: z
+            .string()
+            .meta({ description: "The TXT record to publish at `_dmarc.<domain>`." }),
+        }),
+        z.null(),
+      ])
+      .meta({
+        description:
+          "The next step: `publish` a first record, `add_reporting` (send reports to COSS), " +
+          "`complete_rollout` (drop `pct`/`t=y`) or `tighten` to the next policy. `null` at " +
+          "`p=reject`.",
+      }),
+    checks: z
+      .array(
+        z.object({
+          id: z.enum(DMARC_CHECK_IDS),
+          ok: z.boolean(),
+          message: z.string(),
+        }),
+      )
+      .meta({
+        description: "The readiness checks gating `next`, from the last 14 days of reports.",
+      }),
+    warnings: z.array(z.string()),
+    report_summary: z.object({
+      period_start: z.iso.datetime(),
+      period_end: z.iso.datetime(),
+      reports: z.number().int(),
+      messages: z.number().int(),
+      passing: z.number().int(),
+      coss_messages: z.number().int(),
+      coss_passing: z.number().int(),
+      first_report_at: z.union([z.iso.datetime(), z.null()]),
+      last_report_at: z.union([z.iso.datetime(), z.null()]),
+      sources: z
+        .array(DmarcSource)
+        .meta({ description: "The 50 sources with the most messages in the period." }),
+    }),
+  })
+  .meta({ id: "DomainDmarc", examples: [DOMAIN_DMARC_EXAMPLE] });
+
+export type DomainDmarcOutput = z.output<typeof DomainDmarc>;
+
+const DMARC_POLICY_PUBLISHED_EXAMPLE = {
+  domain: "acme.com",
+  p: "none",
+  sp: null,
+  np: null,
+  adkim: "r",
+  aspf: "r",
+  pct: 100,
+  testing: null,
+};
+
+const DMARC_REPORT_SUMMARY_EXAMPLE = {
+  object: "dmarc_report",
+  id: DMARC_REPORT_ID_EXAMPLE,
+  domain_id: DOMAIN_ID_EXAMPLE,
+  reporter: { org_name: "google.com", email: "noreply-dmarc-support@google.com" },
+  report_id: "13845021974128475",
+  period_start: "2026-10-09T00:00:00.000Z",
+  period_end: "2026-10-09T23:59:59.000Z",
+  policy_published: DMARC_POLICY_PUBLISHED_EXAMPLE,
+  messages: 1204,
+  passing: 1200,
+  truncated: false,
+  received_at: "2026-10-10T03:12:44.000Z",
+};
+
+export const DmarcReportSummary = z
+  .object({
+    object: z.literal("dmarc_report"),
+    id: z.string(),
+    domain_id: z.string(),
+    reporter: z.object({ org_name: z.string(), email: z.union([z.string(), z.null()]) }),
+    report_id: z.string().meta({ description: "The reporter's own id of the report." }),
+    period_start: z.iso.datetime(),
+    period_end: z.iso.datetime(),
+    policy_published: z
+      .object({
+        domain: z.string(),
+        p: z.union([z.string(), z.null()]),
+        sp: z.union([z.string(), z.null()]),
+        np: z.union([z.string(), z.null()]),
+        adkim: z.union([z.string(), z.null()]),
+        aspf: z.union([z.string(), z.null()]),
+        pct: z.union([z.number().int(), z.null()]),
+        testing: z.union([z.string(), z.null()]),
+      })
+      .meta({ description: "The policy the reporter found when it evaluated the mail." }),
+    messages: z.number().int(),
+    passing: z.number().int(),
+    truncated: z.boolean().meta({
+      description:
+        "The report listed more rows than are kept (10,000); totals cover the kept rows.",
+    }),
+    received_at: z.iso.datetime(),
+  })
+  .meta({ id: "DmarcReportSummary", examples: [DMARC_REPORT_SUMMARY_EXAMPLE] });
+
+export type DmarcReportSummaryOutput = z.output<typeof DmarcReportSummary>;
+
+const DMARC_RECORD_EXAMPLE = {
+  source_ip: "54.240.8.12",
+  count: 1200,
+  disposition: "none",
+  dkim: "pass",
+  spf: "pass",
+  dmarc_pass: true,
+  header_from: "acme.com",
+  envelope_from: "send.acme.com",
+  via_coss: true,
+  auth_results: {
+    dkim: [{ domain: "acme.com", selector: "x7f3k2m9qp4ld8sv6hwz1nyc5rbtgj0e", result: "pass" }],
+    spf: [{ domain: "send.acme.com", scope: "mfrom", result: "pass" }],
+  },
+  reasons: [],
+};
+
+export const DmarcReportRecord = z
+  .object({
+    source_ip: z.string(),
+    count: z.number().int(),
+    disposition: z
+      .enum(DMARC_DISPOSITIONS)
+      .meta({ description: "What the receiver did with the messages." }),
+    dkim: z.enum(DMARC_ALIGNED_RESULTS).meta({ description: "Aligned DKIM result." }),
+    spf: z.enum(DMARC_ALIGNED_RESULTS).meta({ description: "Aligned SPF result." }),
+    dmarc_pass: z.boolean(),
+    header_from: z.string(),
+    envelope_from: z.union([z.string(), z.null()]),
+    via_coss: z.boolean(),
+    auth_results: z.object({
+      dkim: z.array(
+        z.object({
+          domain: z.string(),
+          selector: z.union([z.string(), z.null()]),
+          result: z.string(),
+        }),
+      ),
+      spf: z.array(
+        z.object({
+          domain: z.string(),
+          scope: z.union([z.string(), z.null()]),
+          result: z.string(),
+        }),
+      ),
+    }),
+    reasons: z.array(z.object({ type: z.string(), comment: z.union([z.string(), z.null()]) })),
+  })
+  .meta({ id: "DmarcReportRecord", examples: [DMARC_RECORD_EXAMPLE] });
+
+export const DmarcReportObject = DmarcReportSummary.extend({
+  records: z.array(DmarcReportRecord),
+}).meta({
+  id: "DmarcReport",
+  examples: [{ ...DMARC_REPORT_SUMMARY_EXAMPLE, records: [DMARC_RECORD_EXAMPLE] }],
+});
+
+export type DmarcReportObjectOutput = z.output<typeof DmarcReportObject>;
+
+export const DmarcReportList = z
+  .object({
+    object: z.literal("list"),
+    data: z.array(DmarcReportSummary),
+    has_more: z.boolean(),
+  })
+  .meta({
+    id: "DmarcReportList",
+    examples: [{ object: "list", data: [DMARC_REPORT_SUMMARY_EXAMPLE], has_more: false }],
+  });
+
+export type DmarcReportListOutput = z.output<typeof DmarcReportList>;
+
+export const ListDmarcReportsQuery = z
+  .strictObject({
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_DMARC_REPORT_LIST_LIMIT)
+      .optional()
+      .meta({
+        description: `1-${MAX_DMARC_REPORT_LIST_LIMIT}, default ${DEFAULT_DMARC_REPORT_LIST_LIMIT}.`,
+      }),
+    after: z
+      .string()
+      .max(64)
+      .optional()
+      .meta({ description: "Cursor: the `id` of the last report of the previous page." }),
+  })
+  .meta({ description: "Reports are returned newest first." });
+
+export type ListDmarcReportsQueryOutput = z.output<typeof ListDmarcReportsQuery>;
+
+/**
+ * Body of a `domain.dmarc_report_received` webhook request: a summary of the report (never its
+ * rows or source addresses; read those with the report's id).
+ */
+export const DomainWebhookEvent = z
+  .object({
+    id: z.string().meta({
+      description: "The event id, and the `webhook-id` header.",
+      examples: ["evt_01k7c8m4r0c2b8w9y3d5f6g7j1"],
+    }),
+    object: z.literal("event"),
+    type: z.enum(DOMAIN_EVENT_TYPES),
+    api_version: z.string().meta({
+      description:
+        "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+      examples: [LATEST_API_VERSION],
+    }),
+    created_at: z.iso.datetime(),
+    data: z.object({
+      organization_id: z.string(),
+      domain_id: z.string(),
+      domain: z.string(),
+      dmarc_report_id: z.string(),
+      reporter: z.string().meta({ description: "The reporting organization (`org_name`)." }),
+      period_start: z.iso.datetime(),
+      period_end: z.iso.datetime(),
+      messages: z.number().int(),
+      passing: z.number().int(),
+      occurred_at: z.iso.datetime(),
+    }),
+  })
+  .meta({
+    id: "DomainWebhookEvent",
+    examples: [
+      {
+        id: "evt_01k7c8m4r0c2b8w9y3d5f6g7j1",
+        object: "event",
+        type: "domain.dmarc_report_received",
+        api_version: LATEST_API_VERSION,
+        created_at: "2026-10-10T03:12:45.000Z",
+        data: {
+          organization_id: "org_01k7c8m4q2f3e9v6t5r1n0p8yz",
+          domain_id: DOMAIN_ID_EXAMPLE,
+          domain: "acme.com",
+          dmarc_report_id: DMARC_REPORT_ID_EXAMPLE,
+          reporter: "google.com",
+          period_start: "2026-10-09T00:00:00.000Z",
+          period_end: "2026-10-09T23:59:59.000Z",
+          messages: 1204,
+          passing: 1200,
+          occurred_at: "2026-10-10T03:12:44.000Z",
+        },
+      },
+    ],
+  });
+
+export type DomainWebhookEventOutput = z.output<typeof DomainWebhookEvent>;
+/** What the outbox stores: delivery adds `api_version` when it renders the event for an endpoint. */
+export type StoredDomainWebhookEvent = Omit<DomainWebhookEventOutput, "api_version">;

@@ -34,7 +34,7 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/signals` | `@coss/signals` | Stateless abuse signals shared by COSS's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./social`: Google/GitHub sign-in (server-only); `./risk`: the injected sign-up risk assessor (COSS Risk on COSS's own sign-ups); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). |
-| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), receiving (received emails, receiving domains, managed inbound addresses, the content store), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
+| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS, custom tracking domains (Cloudflare for SaaS), receiving (received emails, receiving domains, managed inbound addresses, the content store), DMARC reports (ingestion, guidance to `p=reject`, owner notifications), tenants, sweeps; `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./env` (zod only), `./testing`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption, endpoint auto-disable and recovery; log drains (management, signed NDJSON batch delivery, retention); `./engine` (the delivery engine shared by every product: holds, lease fencing, retry outcomes, the HTTP attempt, endpoint health, a bounded runner); `./schemas`, `./env` (zod only). |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). |
@@ -625,8 +625,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   themselves (scoping every write by the row's own org): `recordProviderEvent`/`ingestProviderEvents` (from the email
   id tag), `applyTenantStatus` (prefix-checked tenant name), `authorizeLiveSender` (reads domain names across orgs),
   `recordOpen`/`recordClick` (from the email's tracking token), `trackingBaseUrlFor` (dispatch; reads domain names
-  across orgs like `authorizeLiveSender`), `receiveEmail`/`routeRecipients` (receiving; from the envelope recipients), `reencryptWebhookSecrets` (operator script), `authenticateHookPortalSession` (from the session), and the worker scans `runDueWebhookDeliveries`, `runDueLogDrainDeliveries`, `runDueHookDeliveries`, `parkHeldHookDeliveries`, `runDueHookRecoveries`, the Hooks purges, `recheckDueDomains`,
-  `recheckDueTrackingDomains`, `recheckDueReceivingDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `runDueOrganizationDeletions`, `EmailService.dispatchDue`
+  across orgs like `authorizeLiveSender`), `receiveEmail`/`routeRecipients` (receiving; from the envelope recipients), `ingestDmarcReports` (from the report address's token), `reencryptWebhookSecrets` (operator script), `authenticateHookPortalSession` (from the session), and the worker scans `runDueWebhookDeliveries`, `runDueLogDrainDeliveries`, `runDueHookDeliveries`, `parkHeldHookDeliveries`, `runDueHookRecoveries`, the Hooks purges, `recheckDueDomains`,
+  `recheckDueTrackingDomains`, `recheckDueReceivingDomains`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `runDueOrganizationDeletions`, `runDueDmarcNotifications`, `EmailService.dispatchDue`
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
@@ -833,7 +833,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   periods — the docs page (`/docs/data-retention`, `<RetentionTable />`/`<RetentionPeriod of>` MDX components, also
   rendered into `/llms*.txt`) and the dashboard's settings card render them, and each owning package's purge
   enforces them: `purgeExpiredEmails`/`purgeEmptyEmailBatches`/`purgeExpiredReputationRollups`/
-  `purgeExpiredReceivedEmails`/`purgeExpiredFakeInboundObjects`/`purgeExpiredInboundDropCounters` (`@coss/email`;
+  `purgeExpiredReceivedEmails`/`purgeExpiredFakeInboundObjects`/`purgeExpiredInboundDropCounters`/
+  `purgeExpiredDmarcReports`/`purgeExpiredDmarcNotifications` (`@coss/email`;
   received content in S3 expires by the bucket's lifecycle rule, retention + 1 day),
   `purgeExpiredWebhookMessages` (`@coss/webhooks`), `purgeExpiredScreenings` (`@coss/screening`),
   `purgeExpiredReputationNotifications`/`purgeExpiredReputationEvents` (`@coss/reputation`),
@@ -879,6 +880,29 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `Domain.receiving`. The managed domain's SES identity is tagged `coss_inbound`, never `coss_managed` (the apps'
   IAM policies may delete those). The dashboard's **Send a test email** (`receiveFakeEmail`) is for sandbox
   environments, or any while the dashboard runs the fake provider, and only to the environment's own addresses.
+- **DMARC reports** (`packages/email/src/dmarc-{record,report-xml,reports,guidance,notifications,sample}.ts`; tables
+  `dmarc_report` (ids `dmarcrep_`), `dmarc_report_record` (`dmarcrec_`), `dmarc_notification` (`dmarcntf_`), and
+  `domain.dmarc_report_token`/`dmarc_record`/`dmarc_policy_changed_at`): each domain's `rua` address is
+  `dmarc-<token>@<INBOUND_MANAGED_DOMAIN>` (`dmarcReportAddress`; the bare managed domain, which `managedLabelOf`
+  never matches), recommended by `expectedRecords` (`DomainDeps.dmarcReportDomain`, `null` with receiving off).
+  Reporters only mail an address on another domain when `<domain>._report._dmarc.<managed domain>` says
+  `v=DMARC1`: COSS publishes the wildcard `*._report._dmarc.inbound.coss.com` (README, receiving). `receiveEmail`
+  splits report recipients off before routing (`splitDmarcReportRecipients`); they never become received emails.
+  Addresses are public, so `ingestDmarcReports` trusts nothing unchecked: a live domain's token, SPF or DKIM `pass`
+  on the message, `policy_published.domain` under the domain, a plausible recent period, the org's
+  `email.dmarc_reports.day` budget (fails open, like inbound mail), at most `MAX_DMARC_REPORT_RECORDS` rows;
+  `(domain, reporter, report id)` is unique. Only the parsed report is stored, never the message. Unpacking is
+  `node:zlib` with `maxOutputLength` (gzip, and zip by hand) and XML is read by a small parser that refuses DTDs:
+  never swap in an XML library that resolves entities. `via_coss` (the domain's DKIM selectors or MAIL FROM domain)
+  is decided at ingest. `checkDomain` stores the one published `v=DMARC1` value (two records count as none) and
+  moves `dmarc_policy_changed_at` only when `dmarcPolicyKey` changes (policy or partial enforcement) and only when
+  DNS answered. Guidance (`dmarcGuidance`, thresholds in `DMARC_READINESS`) is pure and computed on every read:
+  none → quarantine → reject, no `pct` ramp. Ingest queues `dmarc_notification` rows (readiness once per policy
+  epoch; COSS mail failing under enforcement once per epoch and week), sent by the worker's `dmarc-notifications`
+  loop through the reputation notifier (skipped when the policy changed since). The dashboard's "Send a sample
+  report" (`receiveSampleDmarcReport`) exists only with the fake provider. API (`domain:read`):
+  `GET /v1/domains/{id}/dmarc`, `…/dmarc/reports[/{report_id}]`, `coss.domains.dmarc`; event
+  `domain.dmarc_report_received` (`DOMAIN_EVENT_TYPES`, live environments only, no rows or IPs).
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout for COSS's own webhooks and log drains, 15 s for Hooks; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
   for non-production only. Payloads never include bodies, headers, cc or bcc. Secrets are AES-256-GCM encrypted with
@@ -1058,7 +1082,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   worker's `organization-deletions` loop (`runDueOrganizationDeletions`, leased, 1 → 60 min backoff, never gives up)
   claims one request at a time, heartbeats during provider cleanup and renews under a claim row lock for every
   data batch (attempt-count ownership checks fence out stale workers). It repeats the revocation, calls `releaseProviderResources` (`releaseOrganizationEmailResources`: domains to
-  `deleting`, the received emails' content store (`orgs/<org>/` in S3), tracking hostnames, identities, domain rows, then the SES tenant via `DeleteTenant`, prefix-checked), deletes bulky data
+  `deleting`, the received emails' content store (`orgs/<org>/` in S3), DMARC reports (in batches, before their domains), tracking hostnames, identities, domain rows, then the SES tenant via `DeleteTenant`, prefix-checked), deletes bulky data
   (including SCIM directory records, environment logs, received emails, log drain records/batches and the org audit log) in batches of `DELETION_BATCH_SIZE` along indexed columns, then deletes the organization row
   (cascading the rest) and marks the row `completed` in one transaction. A new table with a lot of rows per
   organization belongs in `deleteOrganizationData`; anything held outside Postgres (a new provider resource)

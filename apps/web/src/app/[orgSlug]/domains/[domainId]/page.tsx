@@ -32,6 +32,7 @@ import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
 import { SendingPausedAlert } from "@/components/sending-paused-alert";
 import { SpecItem, SpecList } from "@/components/spec-list";
+import { SubNav } from "@/components/sub-nav";
 import { planHas } from "@/lib/billing";
 import { emailRuntime } from "@/lib/email-runtime";
 import { formatDateTime } from "@/lib/format";
@@ -55,7 +56,8 @@ const PURPOSE: Record<DomainRecord["purpose"], string> = {
   dkim: "DKIM: proves emails from this domain are really from you.",
   mail_from_mx: "MAIL FROM: receives bounces and complaints.",
   mail_from_spf: "SPF: authorizes the provider to send for the MAIL FROM subdomain.",
-  dmarc: "DMARC (recommended): tells mailbox providers what to do with unauthenticated mail.",
+  dmarc:
+    "DMARC (recommended): tells mailbox providers what to do with unauthenticated mail, and sends you reports (DMARC tab).",
 };
 
 const STATUS_HELP = {
@@ -165,7 +167,7 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
       ),
     )
   ).flat();
-  const records = domainRecords(domain);
+  const records = domainRecords(domain, emailRuntime().domainDeps.dmarcReportDomain ?? null);
   const canCreate = can({ domain: ["create"] });
   const canVerify = can({ domain: ["verify"] });
   const canDelete = can({ domain: ["delete"] });
@@ -186,6 +188,11 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
         description={STATUS_HELP[domain.status]}
         meta={<DomainStatusBadge status={domain.status} />}
         title={<span className="font-mono tracking-[-0.03em]">{domain.name}</span>}
+      />
+      <SubNav
+        base={`/${organization.slug}/domains/${domain.id}`}
+        className="border-b"
+        nav="domain"
       />
 
       {tenant?.sendingStatus === "disabled" ? (

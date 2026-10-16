@@ -311,8 +311,11 @@ route is dropped.
    `<name>-inbound-dead-letters` and `<name>-inbound-backlog`. An account/region has only one *active* rule set:
    if another one is active, bootstrap stops unless you pass `--replace-active-rule-set` (mail its rules handle
    stops being handled).
-3. Publish the records it prints in the coss.com zone on Cloudflare: the managed domain's three DKIM `CNAME`s and
-   `MX 10 inbound-smtp.<region>.amazonaws.com` for both `inbound.coss.com` and `*.inbound.coss.com`.
+3. Publish the records it prints in the coss.com zone on Cloudflare: the managed domain's three DKIM `CNAME`s,
+   `MX 10 inbound-smtp.<region>.amazonaws.com` for both `inbound.coss.com` and `*.inbound.coss.com`, and
+   `TXT "v=DMARC1"` at `*._report._dmarc.inbound.coss.com`. That last one lets mailbox providers send DMARC
+   aggregate reports to `dmarc-<token>@inbound.coss.com` for customers' domains (RFC 7489's external destination
+   check); without it they send none.
 4. Set `INBOUND_MANAGED_DOMAIN` and `SES_INBOUND_BUCKET` for the API, dashboard and worker, and
    `SES_INBOUND_QUEUE_URL` (plus `VALKEY_URL`, for the daily inbound limit) for the worker. Rerun bootstrap first on
    upgrades: the updated `<name>-*` policies grant the S3 and SQS access.

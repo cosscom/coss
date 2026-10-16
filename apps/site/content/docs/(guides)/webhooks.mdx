@@ -42,6 +42,7 @@ These concern the whole organization, so every **live** environment's endpoints 
 
 | Type                              | Sent when                                                                               |
 | --------------------------------- | --------------------------------------------------------------------------------------- |
+| `domain.dmarc_report_received`    | A [DMARC](/docs/email/dmarc) aggregate report about a domain arrived (a summary, no rows) |
 | `account.reputation_warning`      | A reputation check (bounces, complaints, content) crossed its warning threshold         |
 | `account.reputation_recovered`    | The warning cleared                                                                     |
 | `account.suspended`               | Live sending was suspended                                                              |

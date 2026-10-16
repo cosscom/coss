@@ -294,6 +294,15 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "domains.receiving.delete",
     args: (r) => [pathId(r)],
   },
+  "GET /v1/domains/{id}/dmarc": { method: "domains.dmarc.get", args: (r) => [pathId(r)] },
+  "GET /v1/domains/{id}/dmarc/reports": {
+    method: "domains.dmarc.reports.list",
+    args: (request) => [pathId(request), queryParams(request)],
+  },
+  "GET /v1/domains/{id}/dmarc/reports/{report_id}": {
+    method: "domains.dmarc.reports.get",
+    args: (request) => [pathId(request), pathParam(request, "report_id")],
+  },
   "GET /v1/received_emails": {
     method: "email.received.list",
     args: (request) => [queryParams(request)],

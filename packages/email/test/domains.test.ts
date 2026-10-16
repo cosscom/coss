@@ -109,7 +109,7 @@ describe("createDomain", () => {
       sendingStatus: "enabled",
     });
 
-    const records = expectedRecords(row);
+    const records = expectedRecords(row, null);
     expect(records.map((r) => [r.purpose, r.type, r.name, r.required])).toEqual([
       ["dkim", "CNAME", `${row.dkimTokens[0]}._domainkey.${name}`, true],
       ["dkim", "CNAME", `${row.dkimTokens[1]}._domainkey.${name}`, true],
@@ -246,7 +246,7 @@ describe("toDomainObject", () => {
     });
     // A never-checked domain still shows what to publish.
     expect(created.records).toEqual([]);
-    expect(object.records).toEqual(expectedRecords(created));
+    expect(object.records).toEqual(expectedRecords(created, null));
     // Tenancy and provider bookkeeping stay internal.
     expect(Object.keys(object)).not.toContain("organization_id");
     expect(JSON.stringify(object)).not.toContain(tenant.organization.id);
@@ -358,13 +358,17 @@ describe("checkDomain", () => {
 
 describe("checkRecords", () => {
   test("reports verified, missing and mismatched records", async () => {
-    const records = expectedRecords({
-      name: "acme.test",
-      dkimTokens: ["aaa"],
-      dkimHostedZone: "dkim.amazonses.com",
-      mailFromDomain: "send.acme.test",
-      region: "eu-west-1",
-    });
+    const records = expectedRecords(
+      {
+        name: "acme.test",
+        dkimTokens: ["aaa"],
+        dkimHostedZone: "dkim.amazonses.com",
+        mailFromDomain: "send.acme.test",
+        region: "eu-west-1",
+        dmarcReportToken: "abcdefghijkmnpqr",
+      },
+      null,
+    );
     const dns = fakeDnsResolver({
       "CNAME aaa._domainkey.acme.test": ["AAA.dkim.amazonses.com."],
       "MX send.acme.test": [
@@ -390,13 +394,17 @@ describe("checkRecords", () => {
   });
 
   test("lookup errors leave records unchecked", async () => {
-    const records = expectedRecords({
-      name: "acme.test",
-      dkimTokens: [],
-      dkimHostedZone: null,
-      mailFromDomain: "send.acme.test",
-      region: null,
-    });
+    const records = expectedRecords(
+      {
+        name: "acme.test",
+        dkimTokens: [],
+        dkimHostedZone: null,
+        mailFromDomain: "send.acme.test",
+        region: null,
+        dmarcReportToken: "abcdefghijkmnpqr",
+      },
+      null,
+    );
     const failing = {
       resolveCname: async () => {
         throw Object.assign(new Error("timeout"), { code: "ETIMEOUT" });

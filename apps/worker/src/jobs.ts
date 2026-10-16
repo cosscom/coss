@@ -26,6 +26,7 @@ import {
   recheckDueReceivingDomains,
   recheckDueTrackingDomains,
   releaseOrganizationEmailResources,
+  runDueDmarcNotifications,
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
@@ -93,7 +94,10 @@ export type WorkerDeps = {
   ipinfoToken: string | null;
   /** Sends account emails (verification, password resets, invitations); `null`: held. */
   authEmails: AuthEmailDeps | null;
-  /** Emails owners and admins about warnings and suspensions; `null`: held until configured. */
+  /**
+   * Emails owners and admins about warnings and suspensions, and about their domains' DMARC
+   * (ready for a stricter policy, failing mail); `null`: held until configured.
+   */
   notifications: ReputationNotificationDeps | null;
   /** COSS's own organization (`NOTIFICATIONS_ENVIRONMENT_ID`'s): the guard never suspends it. */
   systemOrganizationId: string | null;
@@ -122,8 +126,8 @@ export type WorkerDeps = {
 
 /**
  * Every loop (and pg-boss's email dispatch), by name, for `WORKER_LOOPS`. The conditional ones
- * (`billing-notifications`, `auth-emails`, `reputation-notifications`, `ses-events`, `ses-inbound`)
- * also need their configuration.
+ * (`billing-notifications`, `auth-emails`, `reputation-notifications`, `dmarc-notifications`,
+ * `ses-events`, `ses-inbound`) also need their configuration.
  */
 export const WORKER_LOOP_NAMES = [
   "email-dispatch",
@@ -149,6 +153,7 @@ export const WORKER_LOOP_NAMES = [
   "billing-notifications",
   "auth-emails",
   "reputation-notifications",
+  "dmarc-notifications",
   "ses-events",
   "ses-inbound",
 ] as const;
@@ -412,6 +417,14 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         intervalMs: 5000,
         run: async () =>
           (await runDueReputationNotifications({ limit: NOTIFICATION_BATCH }, notifications)) ===
+          NOTIFICATION_BATCH,
+      }),
+      start({
+        name: "dmarc-notifications",
+        // Advice, not alarms: nobody is waiting on these.
+        intervalMs: 30_000,
+        run: async () =>
+          (await runDueDmarcNotifications({ limit: NOTIFICATION_BATCH }, notifications)) ===
           NOTIFICATION_BATCH,
       }),
     );

@@ -27,9 +27,14 @@ import type {
   DeletedReceivedEmail,
   DeletedSuppression,
   DeletedTrackingRule,
+  DmarcReportList,
+  DmarcReportObject,
+  DmarcReportSummary,
+  DomainDmarc,
   DomainList,
   DomainObject,
   DomainRecordObject,
+  DomainWebhookEvent,
   EmailBatchObject,
   EmailEvent,
   EmailEventList,
@@ -41,6 +46,7 @@ import type {
   ExportSuppressionsQuery,
   ImportSuppressionsRequest,
   InboundAddressObject,
+  ListDmarcReportsQuery,
   ListReceivedEmailsQuery,
   ListSuppressionsQuery,
   ReceivedEmailList,
@@ -157,6 +163,7 @@ import type {
   List,
   ListAuditEventsParams,
   ListCreditsParams,
+  ListDmarcReportsParams,
   ListInvoicesParams,
   ListLogDrainBatchesParams,
   ListLogsParams,
@@ -190,8 +197,12 @@ import type {
   DeletedSuppression as SdkDeletedSuppression,
   DeletedTrackingRule as SdkDeletedTrackingRule,
   DeletedWebhookEndpoint as SdkDeletedWebhookEndpoint,
+  DmarcReport as SdkDmarcReport,
+  DmarcReportSummary as SdkDmarcReportSummary,
   Domain as SdkDomain,
+  DomainDmarc as SdkDomainDmarc,
   DomainRecord as SdkDomainRecord,
+  DomainWebhookEvent as SdkDomainWebhookEvent,
   EmailEvent as SdkEmailEvent,
   EmailLink as SdkEmailLink,
   EmailRecipient as SdkEmailRecipient,
@@ -386,12 +397,28 @@ export type Contract = [
     MutuallyAssignable<
       | z.output<typeof EmailWebhookEvent>
       | z.output<typeof ReceivedEmailWebhookEvent>
+      | z.output<typeof DomainWebhookEvent>
       | z.output<typeof AccountWebhookEvent>
       | z.output<typeof HookEndpointWebhookEvent>
       | z.output<typeof BillingWebhookEvent>
       | z.output<typeof RiskWebhookEvent>,
       WebhookEvent
     >
+  >,
+  // DMARC: a domain's status and reports, and the `domain.*` webhook event.
+  Assert<MutuallyAssignable<z.output<typeof DomainDmarc>, SdkDomainDmarc>>,
+  Assert<MutuallyAssignable<z.output<typeof DmarcReportSummary>, SdkDmarcReportSummary>>,
+  Assert<MutuallyAssignable<z.output<typeof DmarcReportObject>, SdkDmarcReport>>,
+  Assert<MutuallyAssignable<z.output<typeof DmarcReportList>, List<SdkDmarcReportSummary>>>,
+  Assert<
+    MutuallyAssignable<
+      Omit<z.input<typeof ListDmarcReportsQuery>, "limit"> & { limit?: number },
+      ListDmarcReportsParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof DomainWebhookEvent>, SdkDomainWebhookEvent>>,
+  Assert<
+    MutuallyAssignable<z.output<typeof DomainWebhookEvent>["data"], SdkDomainWebhookEvent["data"]>
   >,
   // Receiving: received emails (the SDK sends `limit` as a number), the inbound address and
   // receiving domains.

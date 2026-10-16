@@ -2028,6 +2028,1170 @@
           }
         ]
       },
+      "DomainDmarc": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "domain_dmarc"
+            ]
+          },
+          "domain_id": {
+            "type": "string"
+          },
+          "report_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the domain's DMARC aggregate reports go (`rua=mailto:…`). `null` when this deployment doesn't receive email."
+          },
+          "record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DmarcPublishedRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "quarantine",
+                  "reject"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The policy receivers apply (`p`, or `none` when the record has none)."
+          },
+          "policy_since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When a DNS check first saw the current policy."
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "not_checked",
+              "no_record",
+              "monitoring",
+              "quarantine",
+              "reject"
+            ],
+            "description": "Where the domain is on the path to enforcement: `not_checked` (DNS not checked yet), `no_record`, `monitoring` (`p=none`), `quarantine` or `reject`."
+          },
+          "partial": {
+            "type": "boolean",
+            "description": "The policy applies only partly (`pct` below 100, or `t=y`)."
+          },
+          "reporting": {
+            "type": "boolean",
+            "description": "The published record sends aggregate reports to `report_address`."
+          },
+          "ready": {
+            "type": "boolean",
+            "description": "Whether `next` is safe to publish now."
+          },
+          "next": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "publish",
+                      "add_reporting",
+                      "complete_rollout",
+                      "tighten"
+                    ]
+                  },
+                  "policy": {
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "quarantine",
+                      "reject"
+                    ]
+                  },
+                  "record": {
+                    "type": "string",
+                    "description": "The TXT record to publish at `_dmarc.<domain>`."
+                  }
+                },
+                "required": [
+                  "kind",
+                  "policy",
+                  "record"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The next step: `publish` a first record, `add_reporting` (send reports to COSS), `complete_rollout` (drop `pct`/`t=y`) or `tighten` to the next policy. `null` at `p=reject`."
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "enum": [
+                    "coverage",
+                    "recent",
+                    "time_at_policy",
+                    "coss_pass_rate",
+                    "pass_rate",
+                    "sources"
+                  ]
+                },
+                "ok": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "ok",
+                "message"
+              ]
+            },
+            "description": "The readiness checks gating `next`, from the last 14 days of reports."
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "report_summary": {
+            "type": "object",
+            "properties": {
+              "period_start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "period_end": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "reports": {
+                "type": "integer"
+              },
+              "messages": {
+                "type": "integer"
+              },
+              "passing": {
+                "type": "integer"
+              },
+              "coss_messages": {
+                "type": "integer"
+              },
+              "coss_passing": {
+                "type": "integer"
+              },
+              "first_report_at": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "last_report_at": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DmarcSource"
+                },
+                "description": "The 50 sources with the most messages in the period."
+              }
+            },
+            "required": [
+              "period_start",
+              "period_end",
+              "reports",
+              "messages",
+              "passing",
+              "coss_messages",
+              "coss_passing",
+              "first_report_at",
+              "last_report_at",
+              "sources"
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "domain_id",
+          "report_address",
+          "record",
+          "policy",
+          "policy_since",
+          "stage",
+          "partial",
+          "reporting",
+          "ready",
+          "next",
+          "checks",
+          "warnings",
+          "report_summary"
+        ],
+        "examples": [
+          {
+            "object": "domain_dmarc",
+            "domain_id": "dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "report_address": "dmarc-k3x9m2pq7rtw4nbc@inbound.coss.com",
+            "record": {
+              "value": "v=DMARC1; p=none; rua=mailto:dmarc-k3x9m2pq7rtw4nbc@inbound.coss.com;",
+              "p": "none",
+              "sp": null,
+              "np": null,
+              "adkim": null,
+              "aspf": null,
+              "pct": null,
+              "t": null,
+              "rua": [
+                "mailto:dmarc-k3x9m2pq7rtw4nbc@inbound.coss.com"
+              ]
+            },
+            "policy": "none",
+            "policy_since": "2026-09-20T08:00:00.000Z",
+            "stage": "monitoring",
+            "partial": false,
+            "reporting": true,
+            "ready": true,
+            "next": {
+              "kind": "tighten",
+              "policy": "quarantine",
+              "record": "v=DMARC1; p=quarantine; rua=mailto:dmarc-k3x9m2pq7rtw4nbc@inbound.coss.com;"
+            },
+            "checks": [
+              {
+                "id": "coss_pass_rate",
+                "ok": true,
+                "message": "100% of mail sent through COSS passes DMARC (99% needed)."
+              }
+            ],
+            "warnings": [],
+            "report_summary": {
+              "period_start": "2026-09-26T00:00:00.000Z",
+              "period_end": "2026-10-10T00:00:00.000Z",
+              "reports": 28,
+              "messages": 1846,
+              "passing": 1840,
+              "coss_messages": 1840,
+              "coss_passing": 1840,
+              "first_report_at": "2026-09-21T00:00:00.000Z",
+              "last_report_at": "2026-10-09T23:59:59.000Z",
+              "sources": [
+                {
+                  "source_ip": "54.240.8.12",
+                  "header_from": "acme.com",
+                  "messages": 1840,
+                  "passing": 1840,
+                  "via_coss": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "DmarcPublishedRecord": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "The `v=DMARC1` TXT record as published."
+          },
+          "p": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "quarantine",
+                  "reject"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sp": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "quarantine",
+                  "reject"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "np": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "quarantine",
+                  "reject"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "adkim": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "r",
+                  "s"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "aspf": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "r",
+                  "s"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pct": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Removed by RFC 9989 but still honored by many receivers."
+          },
+          "t": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "y",
+                  "n"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rua": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Aggregate report addresses."
+          }
+        },
+        "required": [
+          "value",
+          "p",
+          "sp",
+          "np",
+          "adkim",
+          "aspf",
+          "pct",
+          "t",
+          "rua"
+        ],
+        "description": "The DMARC record found at `_dmarc.<domain>` by the latest DNS check.",
+        "examples": [
+          {
+            "value": "v=DMARC1; p=none; rua=mailto:dmarc-k3x9m2pq7rtw4nbc@inbound.coss.com;",
+            "p": "none",
+            "sp": null,
+            "np": null,
+            "adkim": null,
+            "aspf": null,
+            "pct": null,
+            "t": null,
+            "rua": [
+              "mailto:dmarc-k3x9m2pq7rtw4nbc@inbound.coss.com"
+            ]
+          }
+        ]
+      },
+      "DmarcSource": {
+        "type": "object",
+        "properties": {
+          "source_ip": {
+            "type": "string"
+          },
+          "header_from": {
+            "type": "string",
+            "description": "The domain in the messages' From header."
+          },
+          "messages": {
+            "type": "integer"
+          },
+          "passing": {
+            "type": "integer",
+            "description": "Messages that passed DMARC."
+          },
+          "via_coss": {
+            "type": "boolean",
+            "description": "Signed with the domain's COSS DKIM keys or sent from its COSS MAIL FROM domain."
+          }
+        },
+        "required": [
+          "source_ip",
+          "header_from",
+          "messages",
+          "passing",
+          "via_coss"
+        ],
+        "examples": [
+          {
+            "source_ip": "54.240.8.12",
+            "header_from": "acme.com",
+            "messages": 1840,
+            "passing": 1840,
+            "via_coss": true
+          }
+        ]
+      },
+      "DmarcReportList": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DmarcReportSummary"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "object",
+          "data",
+          "has_more"
+        ],
+        "examples": [
+          {
+            "object": "list",
+            "data": [
+              {
+                "object": "dmarc_report",
+                "id": "dmarcrep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "domain_id": "dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "reporter": {
+                  "org_name": "google.com",
+                  "email": "noreply-dmarc-support@google.com"
+                },
+                "report_id": "13845021974128475",
+                "period_start": "2026-10-09T00:00:00.000Z",
+                "period_end": "2026-10-09T23:59:59.000Z",
+                "policy_published": {
+                  "domain": "acme.com",
+                  "p": "none",
+                  "sp": null,
+                  "np": null,
+                  "adkim": "r",
+                  "aspf": "r",
+                  "pct": 100,
+                  "testing": null
+                },
+                "messages": 1204,
+                "passing": 1200,
+                "truncated": false,
+                "received_at": "2026-10-10T03:12:44.000Z"
+              }
+            ],
+            "has_more": false
+          }
+        ]
+      },
+      "DmarcReportSummary": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "dmarc_report"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "domain_id": {
+            "type": "string"
+          },
+          "reporter": {
+            "type": "object",
+            "properties": {
+              "org_name": {
+                "type": "string"
+              },
+              "email": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "org_name",
+              "email"
+            ]
+          },
+          "report_id": {
+            "type": "string",
+            "description": "The reporter's own id of the report."
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "policy_published": {
+            "type": "object",
+            "properties": {
+              "domain": {
+                "type": "string"
+              },
+              "p": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sp": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "np": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "adkim": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "aspf": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "pct": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "testing": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "domain",
+              "p",
+              "sp",
+              "np",
+              "adkim",
+              "aspf",
+              "pct",
+              "testing"
+            ],
+            "description": "The policy the reporter found when it evaluated the mail."
+          },
+          "messages": {
+            "type": "integer"
+          },
+          "passing": {
+            "type": "integer"
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "The report listed more rows than are kept (10,000); totals cover the kept rows."
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "domain_id",
+          "reporter",
+          "report_id",
+          "period_start",
+          "period_end",
+          "policy_published",
+          "messages",
+          "passing",
+          "truncated",
+          "received_at"
+        ],
+        "examples": [
+          {
+            "object": "dmarc_report",
+            "id": "dmarcrep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "domain_id": "dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "reporter": {
+              "org_name": "google.com",
+              "email": "noreply-dmarc-support@google.com"
+            },
+            "report_id": "13845021974128475",
+            "period_start": "2026-10-09T00:00:00.000Z",
+            "period_end": "2026-10-09T23:59:59.000Z",
+            "policy_published": {
+              "domain": "acme.com",
+              "p": "none",
+              "sp": null,
+              "np": null,
+              "adkim": "r",
+              "aspf": "r",
+              "pct": 100,
+              "testing": null
+            },
+            "messages": 1204,
+            "passing": 1200,
+            "truncated": false,
+            "received_at": "2026-10-10T03:12:44.000Z"
+          }
+        ]
+      },
+      "DmarcReport": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "dmarc_report"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "domain_id": {
+            "type": "string"
+          },
+          "reporter": {
+            "type": "object",
+            "properties": {
+              "org_name": {
+                "type": "string"
+              },
+              "email": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "org_name",
+              "email"
+            ]
+          },
+          "report_id": {
+            "type": "string",
+            "description": "The reporter's own id of the report."
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "policy_published": {
+            "type": "object",
+            "properties": {
+              "domain": {
+                "type": "string"
+              },
+              "p": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sp": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "np": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "adkim": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "aspf": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "pct": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "testing": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "domain",
+              "p",
+              "sp",
+              "np",
+              "adkim",
+              "aspf",
+              "pct",
+              "testing"
+            ],
+            "description": "The policy the reporter found when it evaluated the mail."
+          },
+          "messages": {
+            "type": "integer"
+          },
+          "passing": {
+            "type": "integer"
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "The report listed more rows than are kept (10,000); totals cover the kept rows."
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DmarcReportRecord"
+            }
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "domain_id",
+          "reporter",
+          "report_id",
+          "period_start",
+          "period_end",
+          "policy_published",
+          "messages",
+          "passing",
+          "truncated",
+          "received_at",
+          "records"
+        ],
+        "examples": [
+          {
+            "object": "dmarc_report",
+            "id": "dmarcrep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "domain_id": "dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "reporter": {
+              "org_name": "google.com",
+              "email": "noreply-dmarc-support@google.com"
+            },
+            "report_id": "13845021974128475",
+            "period_start": "2026-10-09T00:00:00.000Z",
+            "period_end": "2026-10-09T23:59:59.000Z",
+            "policy_published": {
+              "domain": "acme.com",
+              "p": "none",
+              "sp": null,
+              "np": null,
+              "adkim": "r",
+              "aspf": "r",
+              "pct": 100,
+              "testing": null
+            },
+            "messages": 1204,
+            "passing": 1200,
+            "truncated": false,
+            "received_at": "2026-10-10T03:12:44.000Z",
+            "records": [
+              {
+                "source_ip": "54.240.8.12",
+                "count": 1200,
+                "disposition": "none",
+                "dkim": "pass",
+                "spf": "pass",
+                "dmarc_pass": true,
+                "header_from": "acme.com",
+                "envelope_from": "send.acme.com",
+                "via_coss": true,
+                "auth_results": {
+                  "dkim": [
+                    {
+                      "domain": "acme.com",
+                      "selector": "x7f3k2m9qp4ld8sv6hwz1nyc5rbtgj0e",
+                      "result": "pass"
+                    }
+                  ],
+                  "spf": [
+                    {
+                      "domain": "send.acme.com",
+                      "scope": "mfrom",
+                      "result": "pass"
+                    }
+                  ]
+                },
+                "reasons": []
+              }
+            ]
+          }
+        ]
+      },
+      "DmarcReportRecord": {
+        "type": "object",
+        "properties": {
+          "source_ip": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "none",
+              "quarantine",
+              "reject"
+            ],
+            "description": "What the receiver did with the messages."
+          },
+          "dkim": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail"
+            ],
+            "description": "Aligned DKIM result."
+          },
+          "spf": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail"
+            ],
+            "description": "Aligned SPF result."
+          },
+          "dmarc_pass": {
+            "type": "boolean"
+          },
+          "header_from": {
+            "type": "string"
+          },
+          "envelope_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "via_coss": {
+            "type": "boolean"
+          },
+          "auth_results": {
+            "type": "object",
+            "properties": {
+              "dkim": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "domain": {
+                      "type": "string"
+                    },
+                    "selector": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "result": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "domain",
+                    "selector",
+                    "result"
+                  ]
+                }
+              },
+              "spf": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "domain": {
+                      "type": "string"
+                    },
+                    "scope": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "result": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "domain",
+                    "scope",
+                    "result"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "dkim",
+              "spf"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "comment": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "type",
+                "comment"
+              ]
+            }
+          }
+        },
+        "required": [
+          "source_ip",
+          "count",
+          "disposition",
+          "dkim",
+          "spf",
+          "dmarc_pass",
+          "header_from",
+          "envelope_from",
+          "via_coss",
+          "auth_results",
+          "reasons"
+        ],
+        "examples": [
+          {
+            "source_ip": "54.240.8.12",
+            "count": 1200,
+            "disposition": "none",
+            "dkim": "pass",
+            "spf": "pass",
+            "dmarc_pass": true,
+            "header_from": "acme.com",
+            "envelope_from": "send.acme.com",
+            "via_coss": true,
+            "auth_results": {
+              "dkim": [
+                {
+                  "domain": "acme.com",
+                  "selector": "x7f3k2m9qp4ld8sv6hwz1nyc5rbtgj0e",
+                  "result": "pass"
+                }
+              ],
+              "spf": [
+                {
+                  "domain": "send.acme.com",
+                  "scope": "mfrom",
+                  "result": "pass"
+                }
+              ]
+            },
+            "reasons": []
+          }
+        ]
+      },
       "WebhookEndpointWithSecret": {
         "type": "object",
         "properties": {
@@ -2200,6 +3364,7 @@
                 "email.clicked",
                 "email.rescheduled",
                 "email.received",
+                "domain.dmarc_report_received",
                 "account.reputation_warning",
                 "account.reputation_recovered",
                 "account.suspended",
@@ -2218,7 +3383,7 @@
                 "risk.assessment.reviewed"
               ]
             },
-            "maxItems": 29,
+            "maxItems": 30,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -2458,6 +3623,7 @@
                 "email.clicked",
                 "email.rescheduled",
                 "email.received",
+                "domain.dmarc_report_received",
                 "account.reputation_warning",
                 "account.reputation_recovered",
                 "account.suspended",
@@ -2476,7 +3642,7 @@
                 "risk.assessment.reviewed"
               ]
             },
-            "maxItems": 29,
+            "maxItems": 30,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {
@@ -15924,6 +17090,717 @@
           },
           "404": {
             "description": "No domain with this id exists in this organization, or it does not receive email (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/domains/{id}/dmarc": {
+      "get": {
+        "operationId": "getDomainDmarc",
+        "tags": [
+          "Domains"
+        ],
+        "summary": "Retrieve a domain's DMARC status",
+        "description": "The domain's published DMARC record, where it is on the path from `p=none` to `p=reject`, the record to publish next and whether the last 14 days of aggregate reports say that is safe (`ready`, with the `checks` behind it), and a summary of those reports. Mailbox providers send DMARC aggregate reports to the domain's `report_address` once its `_dmarc` record names it (`rua=mailto:…`), usually once a day each.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The domain's id.",
+              "examples": [
+                "dom_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The domain's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The domain's DMARC status.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainDmarc"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No domain with this id exists in this organization (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/domains/{id}/dmarc/reports": {
+      "get": {
+        "operationId": "listDomainDmarcReports",
+        "tags": [
+          "Domains"
+        ],
+        "summary": "List a domain's DMARC reports",
+        "description": "The aggregate reports received about the domain, newest first, without their rows (retrieve one for those). Pass the last `id` as `after` to get the next page while `has_more` is true. Mailbox providers send DMARC aggregate reports to the domain's `report_address` once its `_dmarc` record names it (`rua=mailto:…`), usually once a day each.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The domain's id.",
+              "examples": [
+                "dom_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The domain's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "1-100, default 20."
+            },
+            "required": false,
+            "description": "1-100, default 20.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "Cursor: the `id` of the last report of the previous page."
+            },
+            "required": false,
+            "description": "Cursor: the `id` of the last report of the previous page.",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of DMARC reports.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DmarcReportList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No domain with this id exists in this organization (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter failed validation (`validation_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/domains/{id}/dmarc/reports/{report_id}": {
+      "get": {
+        "operationId": "getDomainDmarcReport",
+        "tags": [
+          "Domains"
+        ],
+        "summary": "Retrieve a DMARC report",
+        "description": "One aggregate report with its rows: each source IP, how many messages it sent, whether they passed DMARC (aligned DKIM or SPF) and what the receiver did with them.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The domain's id.",
+              "examples": [
+                "dom_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The domain's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "The report's id.",
+              "examples": [
+                "dmarcrep_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The report's id.",
+            "name": "report_id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The report.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DmarcReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such domain in this organization, or no such report of it (`not_found`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

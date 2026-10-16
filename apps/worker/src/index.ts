@@ -27,7 +27,7 @@ import { createWebhookSender, parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
 import { env } from "./env.ts";
 import { hookThrottle } from "./hooks-throttle.ts";
-import { inboundQuota, type SesInboundDeps } from "./inbound.ts";
+import { dmarcReportQuota, inboundQuota, type SesInboundDeps } from "./inbound.ts";
 import { startJobs, WORKER_LOOP_NAMES } from "./jobs.ts";
 import { monitoredDispatch } from "./monitoring.ts";
 import { createShutdown } from "./shutdown.ts";
@@ -83,6 +83,7 @@ if (config.provider === "ses" && email.inbound && config.inbound?.bucket) {
       store: email.inbound.store,
       managedDomain: email.inbound.managedDomain,
       quota: inboundQuota(rateLimits.limiter),
+      dmarcQuota: dmarcReportQuota(rateLimits.limiter),
     },
   };
 }
