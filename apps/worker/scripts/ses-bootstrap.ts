@@ -791,7 +791,8 @@ console.info(
     "",
     "EMAIL_PROVIDER=ses",
     `AWS_REGION=${region}`,
-    `SES_CONFIGURATION_SET=${name}   (the marketing stream uses ${configurationSets.marketing})`,
+    `# The marketing stream uses ${configurationSets.marketing}, derived from this.`,
+    `SES_CONFIGURATION_SET=${name}`,
     `SES_TENANT_PREFIX=${tenantPrefix}`,
     `SES_EVENTS_QUEUE_URL=${queue.url}`,
     ...(inbound

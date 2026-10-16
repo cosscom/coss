@@ -394,6 +394,27 @@ describe("streams", () => {
     expect(await ensureMissingStreamTenants(identity, { scope })).toBe(0);
   });
 
+  test("an organization's first domain on an orphaned identity still gets new keys", async () => {
+    const api = new FakeSesApi();
+    const identity = new SesIdentityProvider(api, config);
+    const deps = { identity, dns: null, tracking: new FakeTrackingHostnameProvider() };
+    const tenant = await createTestTenant();
+    const name = `orphan-${uniqueSuffix()}.com`;
+    // Left behind by coss.com (e.g. a deleted organization's), tagged as ours.
+    await api.createEmailIdentity({
+      EmailIdentity: name,
+      Tags: [{ Key: "coss_managed", Value: "test" }],
+    });
+    const oldTokens = api.identities.get(name)?.tokens;
+    // Creating this organization's tenants must not associate it before the ownership check.
+    const created = await createDomain(
+      { organizationId: tenant.organization.id, name, userId: null },
+      deps,
+    );
+    expect(created.dkimTokens).not.toEqual(oldTokens);
+    expect(api.operations()).toContain("deleteEmailIdentity");
+  });
+
   test("a stream tenant created later gets every existing domain, and a half-made one is kept", async () => {
     const api = new FakeSesApi();
     const identity = new SesIdentityProvider(api, config);

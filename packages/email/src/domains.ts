@@ -228,7 +228,9 @@ export async function ensureOrgTenant(
  * Creates (or adopts) one stream's provider tenant and stores its row. The organization's domain
  * identities are associated with it first, so a stored tenant can always send from every domain
  * (a stream added after an organization's first domain, at provisioning or by the backfill).
- * Identities that don't exist yet are skipped: `createDomainIdentity` associates them.
+ * Only identities provisioned for this organization (their DKIM tokens are stored): a domain still
+ * being claimed goes through `createDomainIdentity`'s ownership checks, which an association made
+ * here would get around (an orphaned identity's old keys would look like the organization's own).
  */
 async function storeOrgTenant(
   organizationId: string,
@@ -244,6 +246,7 @@ async function storeOrgTenant(
         eq(domain.organizationId, organizationId),
         eq(domain.provider, identity.name),
         notInArray(domain.status, ["failed", "deleting"]),
+        sql`cardinality(${domain.dkimTokens}) > 0`,
       ),
     );
   for (const row of domains) {
