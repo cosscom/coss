@@ -37,10 +37,10 @@ function cliIo(app: TestApp, opts: { answers?: string[]; sleep?: () => Promise<v
       },
     },
     stdinIsTTY: false,
-    fetch: (async (input: string | URL | Request, init?: RequestInit) =>
+    fetch: async (input, init) =>
       String(input instanceof Request ? input.url : input).startsWith("http://api.test")
         ? app.fetch(toRequest(input, init))
-        : fetch(input, init)) as typeof fetch,
+        : fetch(input, init),
     now: () => new Date(),
     sleep: async (ms, signal) => {
       if (opts.sleep) return opts.sleep();

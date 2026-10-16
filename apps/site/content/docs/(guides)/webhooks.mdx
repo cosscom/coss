@@ -97,7 +97,7 @@ body. With the SDK, use [`verifyWebhook`](/docs/sdk/webhooks).
 ## Testing locally
 
 Your development server isn't reachable from the internet, so register no endpoint for it: run
-[`coss listen --forward-to localhost:3000/webhooks`](/docs/cli#listen), which receives the
+[`coss listen --forward-to localhost:3000/webhooks`](/docs/cli#receive-webhooks-locally), which receives the
 environment's events and forwards them to your server, signed with a secret of its own that you
 verify the same way.
 

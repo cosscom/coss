@@ -103,10 +103,8 @@ describe("coss listen", () => {
       },
     });
     // The API is fake; the local receiver is real.
-    io.fetch = ((input, init) =>
-      String(input).startsWith(local.url)
-        ? fetch(input, init)
-        : api.fetch(input, init)) as typeof fetch;
+    io.fetch = (input, init) =>
+      String(input).startsWith(local.url) ? fetch(input, init) : api.fetch(input, init);
     expect(await run(["login", "--manual"], io)).toBe(0);
 
     expect(
@@ -182,12 +180,12 @@ describe("coss listen", () => {
         deleted: true,
       },
     });
-    io.fetch = (async (input, init) => {
+    io.fetch = async (input, init) => {
       if (String(input).startsWith("http://127.0.0.1:9/")) {
         throw Object.assign(new TypeError("fetch failed"), { cause: { code: "ECONNREFUSED" } });
       }
       return api.fetch(input, init);
-    }) as typeof fetch;
+    };
     expect(await run(["listen", "--forward-to", "127.0.0.1:9/hooks"], io)).toBe(130);
     expect(created).toBe(2);
     expect(io.errors()).toContain("listener had expired");

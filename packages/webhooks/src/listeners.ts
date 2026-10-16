@@ -261,8 +261,15 @@ export async function ackWebhookListenerDeliveries(
   const byId = new Map(messages.map((message) => [message.id, message]));
   await appendLogEntries(
     tx,
-    finished.map(({ row, ack }) =>
-      forwardLogEntry({ listener, delivery: row, ack, message: byId.get(row.messageId), now }),
+    // A millisecond apart, in the order the CLI forwarded them: log ids sort by time.
+    finished.map(({ row, ack }, index) =>
+      forwardLogEntry({
+        listener,
+        delivery: row,
+        ack,
+        message: byId.get(row.messageId),
+        now: new Date(now.getTime() + index),
+      }),
     ),
   );
   return finished.length;

@@ -12,13 +12,16 @@ export interface OutputStream {
   isTTY?: boolean;
 }
 
+/** `fetch` as the CLI calls it (the SDK's `FetchLike` too). */
+export type Fetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+
 export interface CliIo {
   env: Record<string, string | undefined>;
   stdout: OutputStream;
   stderr: OutputStream;
   /** Whether stdin is a terminal (prompts can be answered). */
   stdinIsTTY: boolean;
-  fetch: typeof fetch;
+  fetch: Fetch;
   now(): Date;
   /** Resolves after `ms`, or as soon as `signal` aborts. */
   sleep(ms: number, signal?: AbortSignal): Promise<void>;
@@ -148,7 +151,12 @@ export function nodeIo(): CliIo {
     openBrowser,
     async prompt(question, options = {}) {
       process.stderr.write(question);
-      if (!process.stdin.isTTY) return readPipedLine();
+      if (!process.stdin.isTTY) {
+        const line = await readPipedLine();
+        // Nothing was echoed: end the prompt's line.
+        process.stderr.write("\n");
+        return line;
+      }
       return readTerminalLine(options.secret === true);
     },
     hostname: () => hostname(),

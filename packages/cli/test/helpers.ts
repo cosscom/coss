@@ -1,19 +1,19 @@
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { CliIo } from "../src/io.ts";
+import type { CliIo, Fetch } from "../src/io.ts";
 
 export const SANDBOX_KEY = `coss_test_${"a".repeat(64)}`;
 export const LIVE_KEY = `coss_live_${"b".repeat(64)}`;
 export const NOW = new Date("2026-10-15T12:00:00.000Z");
 
 export type Recorded = { method: string; url: URL; body: unknown; headers: Headers };
-type Handler = (request: Recorded) => Response | Promise<Response> | unknown;
+type Handler = ((request: Recorded) => unknown) | object;
 
 /** A `fetch` answering "METHOD /path" routes (JSON), recording every request. */
 export function fakeFetch(routes: Record<string, Handler>) {
   const requests: Recorded[] = [];
-  const fetch = (async (input: string | URL | Request, init: RequestInit = {}) => {
+  const fetch: Fetch = async (input, init = {}) => {
     const url = new URL(input instanceof Request ? input.url : String(input));
     const method = init.method ?? "GET";
     const text = typeof init.body === "string" ? init.body : null;
@@ -41,7 +41,7 @@ export function fakeFetch(routes: Record<string, Handler>) {
     }
     const result = typeof handler === "function" ? await handler(recorded) : handler;
     return result instanceof Response ? result : Response.json(result);
-  }) as typeof fetch;
+  };
   return { fetch, requests };
 }
 
@@ -74,9 +74,9 @@ export function testIo(overrides: Partial<CliIo> & { answers?: string[] } = {}):
       },
     },
     stdinIsTTY: false,
-    fetch: (async () => {
+    fetch: async () => {
       throw new Error("no network in tests");
-    }) as typeof fetch,
+    },
     now: () => NOW,
     sleep: (ms, signal) =>
       new Promise((resolve) => {
