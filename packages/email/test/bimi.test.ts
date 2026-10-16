@@ -110,6 +110,33 @@ describe("checkBimi", () => {
     });
   });
 
+  test("a DMARC record with a part that isn't a tag is invalid", async () => {
+    const dns = fakeDnsResolver({
+      "TXT _dmarc.acme.test": [["v=DMARC1; p=reject; broken"]],
+      "TXT default._bimi.acme.test": [[RECORD]],
+    });
+
+    expect(await checkBimi("acme.test", dns)).toMatchObject({
+      status: "invalid",
+      dmarcPolicy: null,
+      issues: ["dmarc_missing"],
+    });
+  });
+
+  test("an invalid DMARC record at the organizational domain means no DMARC there", async () => {
+    const dns = fakeDnsResolver({
+      "TXT _dmarc.mail.acme.test": [["v=DMARC1; p=reject"]],
+      "TXT _dmarc.acme.test": [["v=DMARC1; p=reject"], ["v=DMARC1; p=quarantine"]],
+      "TXT default._bimi.mail.acme.test": [[RECORD]],
+    });
+
+    expect(await checkBimi("mail.acme.test", dns)).toMatchObject({
+      status: "invalid",
+      dmarcPolicy: "reject",
+      issues: ["dmarc_missing"],
+    });
+  });
+
   test("two DMARC records at one name mean no DMARC", async () => {
     const dns = fakeDnsResolver({
       "TXT _dmarc.acme.test": [[ENFORCED], ["v=DMARC1; p=none"]],

@@ -82,7 +82,7 @@ for (const issue of domain?.bimi.issues ?? []) {
 
 | Issue                   | Meaning                                                                         |
 | ----------------------- | ------------------------------------------------------------------------------- |
-| `dmarc_missing`         | The domain has no valid DMARC record (one listing a tag twice is invalid), or more than one. |
+| `dmarc_missing`         | The domain, or its organizational domain, has no valid DMARC record (one with a repeated or malformed tag is invalid), or more than one. |
 | `dmarc_not_enforced`    | The DMARC policy is `p=none` (or `sp=none` for a subdomain), or the organizational domain's `p` is `none`. |
 | `dmarc_partial`         | The DMARC policy (or the organizational domain's) applies to only part of the mail (`pct` below 100, or `t=y`). |
 | `record_multiple`       | There is more than one `v=BIMI1` record.                                        |
