@@ -299,7 +299,7 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   suppression. `ContactError` is mapped in `toApiError` (404 for `not_found`, else 422 — never 409).
 - **Broadcasts** (`packages/email/src/{broadcasts,broadcast-render,broadcast-content,broadcast-stats,broadcast-references,broadcast-schemas}.ts`,
   `apps/api/src/routes/broadcasts.ts`, `coss.email.broadcasts`; tables `broadcast` (ids `bcast_`) + `broadcast_stat`;
-  permission `broadcast`, backfilled by `0075`): `draft` → `scheduled` → `sending` ⇄ `paused` → `sent`, or
+  permission `broadcast`, backfilled by `0077`): `draft` → `scheduled` → `sending` ⇄ `paused` → `sent`, or
   `canceled`/`failed`. Content that could render past `MAX_RENDERED_LENGTH` with the longest contact values is refused
   (`content_too_large`); placeholders read only the variables' own keys. Only drafts are edited; deleting needs a draft or a cancel before any email was made. Starting
   (create with `send`/`scheduled_at`, or `/send`, `/resume`) checks the postal address and, live,
