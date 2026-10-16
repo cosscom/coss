@@ -508,6 +508,27 @@ describe("contract changes", () => {
     ]);
   });
 
+  test("a fee whose discount changes doesn't carry over", () => {
+    const discounted = segment(
+      { version: 1, plan: "scale", discounts: [{ scope: "fees", percent: 50 }] },
+      { contractEnd: OCT_12, superseded: true },
+    );
+    const full = segment(
+      { version: 1, plan: "scale" },
+      { contractId: "bcon_b", contractStart: OCT_12, interval: { start: OCT_12, end: OCT.end } },
+    );
+    const change = composeContractChange({
+      at: OCT_12,
+      from: { segment: discounted, advanceCharged: true },
+      to: full,
+    });
+    // The rest of the month at the full fee, less the half of it that was paid.
+    expect(amounts(change.lines)).toEqual([
+      ["plan_fee", 16_129n],
+      ["proration", -8_065n],
+    ]);
+  });
+
   test("an add-on carried at the same price isn't charged again", () => {
     const pro = segment(
       { version: 1, plan: "pro", addOns: [DEDICATED_IPS] },

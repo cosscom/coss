@@ -81,20 +81,20 @@ async function advancePaid(
       paid.addOns.add(key);
       addOns.delete(key);
     }
-    // Carried charges come only from a contract this one replaced within `at`'s month.
-    const month = monthStart(at).getTime();
+    // Carried charges come only from a contract this one replaced in `at`'s month (its first
+    // hour included: a change then starts at the month's start).
     const started = contract.effectiveFrom.getTime();
-    if ((!fee && !addOns.size) || !contract.supersedesId || started <= month) break;
-    if (monthStart(contract.effectiveFrom).getTime() !== month) break;
+    if ((!fee && !addOns.size) || !contract.supersedesId) break;
+    if (monthStart(contract.effectiveFrom).getTime() !== monthStart(at).getTime()) break;
     const previous = await getContract(contract.organizationId, contract.supersedesId, tx);
     if (previous?.effectiveUntil?.getTime() !== started) break;
     const before = segmentFrom(previous, at, true);
     if (!before) break;
-    fee = fee && feeCarriesOver(before.terms, segment.terms);
+    fee = fee && feeCarriesOver(before, segment);
     const carried = new Map<string, Segment["terms"]["addOns"][number]>();
     for (const [key, addOn] of addOns) {
       const line = before.terms.addOns.find((candidate) => candidate.key === key);
-      if (line && addOnCarriesOver(line, addOn)) carried.set(key, line);
+      if (line && addOnCarriesOver(before, line, segment, addOn)) carried.set(key, line);
     }
     addOns = carried;
     contract = previous;

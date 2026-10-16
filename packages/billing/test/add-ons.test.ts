@@ -11,6 +11,7 @@ import {
 } from "../src/changes.ts";
 import { organizationsBuyingAddOn, organizationsEntitledTo } from "../src/enforcement.ts";
 import { invoiceLines } from "../src/invoices.ts";
+import { runDueBillingPeriods } from "../src/periods.ts";
 import { billingStateAt } from "../src/resolve.ts";
 import { collectInvoiceNow } from "../src/sync.ts";
 import { createTestContract, testBillingProviders } from "../src/testing.ts";
@@ -117,6 +118,36 @@ describe("self-serve add-ons", () => {
     expect(raised.lines.find((line) => line.kind === "proration")?.chargeKey).toStartWith(
       `unused:${withAddOn.id}:`,
     );
+  });
+
+  test("a change in the month's first hour carries the fee the month close charged", async () => {
+    const f = await onScale(at("2026-09-10T00:00:00Z"));
+    // October's Scale fee is charged by September's close, before the add-on is bought.
+    await runDueBillingPeriods({ now: at("2026-10-01T00:20:00Z"), scope: f.scope });
+    const bought = at("2026-10-01T00:40:00Z");
+    const { contract, invoice } = await startAddOn({
+      organizationId: f.org,
+      key: "dedicated_ips",
+      userId: f.tenant.owner.id,
+      defaultProvider: "fake",
+      preflight: noBlockers,
+      now: bought,
+    });
+    expect(contract.effectiveFrom).toEqual(at("2026-10-01T00:00:00Z"));
+    expect((await invoiceLines(invoice?.id ?? "")).map((line) => line.kind)).toEqual(["add_on"]);
+    await collectInvoiceNow(invoice?.id ?? "", f.syncDeps, bought);
+    const withAddOn = (await billingStateAt(f.org, bought)).contract;
+    if (!withAddOn) throw new Error("no contract");
+
+    const later = at("2026-10-20T00:00:00Z");
+    const same = {
+      ...withAddOn,
+      id: "bcon_test_same",
+      effectiveFrom: later,
+      supersedesId: withAddOn.id,
+    };
+    const unchanged = await db.transaction((tx) => composeChange(tx, withAddOn, same, later));
+    expect(unchanged.lines).toEqual([]);
   });
 
   test("refused on Pro, and when the preflight refuses", async () => {
