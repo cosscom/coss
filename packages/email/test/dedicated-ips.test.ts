@@ -290,20 +290,32 @@ describe("reconcileDedicatedIpPools", () => {
     const held = new Promise<void>((resolve) => {
       release = resolve;
     });
+    let locked = () => {};
+    const firstLocked = new Promise<void>((resolve) => {
+      locked = resolve;
+    });
     const first = db.transaction(async (tx) => {
       await dedicatedIpSlotAvailable(tx, b, async () => [], { capacity: 2, scope });
+      locked();
       await held;
     });
-    let secondDone = false;
-    const second = fits(b, []).then((result) => {
-      secondDone = true;
-      return result;
-    });
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    expect(secondDone).toBe(false);
-    release();
-    await first;
-    expect(await second).toBe(true);
+    // The lock is platform-wide: a failure below must not leave it held for every later test.
+    try {
+      await firstLocked;
+      let secondDone = false;
+      const second = fits(b, []).then((result) => {
+        secondDone = true;
+        return result;
+      });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(secondDone).toBe(false);
+      release();
+      await first;
+      expect(await second).toBe(true);
+    } finally {
+      release();
+      await first;
+    }
   });
 
   test("waits past capacity, and takes the slot once one frees up", async () => {
