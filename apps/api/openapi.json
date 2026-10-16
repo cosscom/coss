@@ -7029,25 +7029,20 @@
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "minLength": 1,
-                  "maxLength": 256
+                  ]
                 },
                 "last_name": {
                   "type": [
                     "string",
                     "null"
-                  ],
-                  "minLength": 1,
-                  "maxLength": 256
+                  ]
                 },
                 "properties": {
                   "type": "object",
                   "additionalProperties": {
                     "anyOf": [
                       {
-                        "type": "string",
-                        "maxLength": 2000
+                        "type": "string"
                       },
                       {
                         "type": "number"
@@ -7060,13 +7055,7 @@
                       }
                     ]
                   },
-                  "description": "Custom properties by key (define them first, see contact properties). Merged into the contact's existing properties; `null` removes one.",
-                  "examples": [
-                    {
-                      "plan": "pro",
-                      "seats": 5
-                    }
-                  ]
+                  "description": "Custom properties by key, checked against their definitions."
                 },
                 "status": {
                   "type": "string",

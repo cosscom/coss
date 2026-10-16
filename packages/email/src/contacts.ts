@@ -540,6 +540,14 @@ export async function importContacts(
       opts.audienceId ? [opts.audienceId] : undefined,
     );
     const rows = [...valid.values()];
+    const reject = (params: UpsertContactRequestOutput, error: ContactError) =>
+      invalid.push({
+        index: entries.findLastIndex(
+          (entry) => typeof entry.email === "string" && addressKey(entry.email) === params.email,
+        ),
+        email: params.email,
+        message: error.message,
+      });
     // Property errors are per entry too: validate before writing anything.
     const prepared: { params: UpsertContactRequestOutput; properties: Record<string, unknown> }[] =
       [];
@@ -548,13 +556,7 @@ export async function importContacts(
         prepared.push({ params, properties: mergeProperties({}, params.properties, definitions) });
       } catch (error) {
         if (!(error instanceof ContactError)) throw error;
-        invalid.push({
-          index: entries.findIndex(
-            (entry) => typeof entry.email === "string" && addressKey(entry.email) === params.email,
-          ),
-          email: params.email,
-          message: error.message,
-        });
+        reject(params, error);
       }
     }
     for (let start = 0; start < prepared.length; start += IMPORT_BATCH) {
@@ -599,16 +601,23 @@ export async function importContacts(
         const row = existing.get(params.email);
         if (!row) continue;
         const resubscribes = params.status === "subscribed" && row.status !== "subscribed";
-        if (resubscribes) keptUnsubscribed++;
-        touched.push(
-          await updateRow(
+        let next: ContactRow;
+        try {
+          // Merged with the stored properties, which can push them over the size limit.
+          next = await updateRow(
             tx,
             row,
             { ...params, status: resubscribes ? undefined : params.status },
             definitions,
             now,
-          ),
-        );
+          );
+        } catch (error) {
+          if (!(error instanceof ContactError)) throw error;
+          reject(params, error);
+          continue;
+        }
+        if (resubscribes) keptUnsubscribed++;
+        touched.push(next);
         updated++;
       }
       if (audienceIds.length > 0 && touched.length > 0) {

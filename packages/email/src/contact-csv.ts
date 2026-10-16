@@ -49,6 +49,16 @@ const FIRST_NAME_HEADERS = new Set(["first_name", "firstname", "given_name"]);
 const LAST_NAME_HEADERS = new Set(["last_name", "lastname", "family_name", "surname"]);
 const STATUS_HEADERS = new Set(["status", "subscribed"]);
 const IGNORED_HEADERS = new Set(["created_at", "id", "updated_at"]);
+/** Every header read as a built-in column; each is a reserved property key. */
+export const BUILT_IN_CSV_HEADERS: readonly string[] = [
+  ...[...ADDRESS_HEADERS].filter((name) => !name.includes(" ")),
+  ...FIRST_NAME_HEADERS,
+  ...LAST_NAME_HEADERS,
+  ...STATUS_HEADERS,
+  ...IGNORED_HEADERS,
+  ...LEADING,
+  ...TRAILING,
+];
 
 export type ContactCsvEntry = { line: number; entry: ContactImportEntryInput };
 

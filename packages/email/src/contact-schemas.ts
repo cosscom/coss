@@ -43,13 +43,26 @@ export type ContactTopicStatus = (typeof CONTACT_TOPIC_STATUSES)[number];
 
 /** `^[a-z][a-z0-9_]{0,49}$`: usable as `{{{contact.<key>}}}` in templates. */
 export const CONTACT_PROPERTY_KEY = /^[a-z][a-z0-9_]{0,49}$/;
-/** Keys of the built-in fields, which custom properties can't take. */
+/**
+ * Keys custom properties can't take: the built-in fields and every column name a contact CSV
+ * reads as one (`contact-csv.ts`), so an export always imports back into the same fields.
+ */
 export const RESERVED_PROPERTY_KEYS: ReadonlySet<string> = new Set([
   "email",
+  "address",
+  "email_address",
   "first_name",
+  "firstname",
+  "given_name",
   "last_name",
-  "id",
+  "lastname",
+  "family_name",
+  "surname",
   "status",
+  "subscribed",
+  "id",
+  "created_at",
+  "updated_at",
 ]);
 
 const Timestamp = z.iso.datetime();
@@ -228,9 +241,20 @@ export type ListContactsQueryOutput = z.output<typeof ListContactsQuery>;
 export const ExportContactsQuery = ListContactsQuery.pick({ status: true, audience_id: true });
 export type ExportContactsQueryOutput = z.output<typeof ExportContactsQuery>;
 
+/**
+ * One import entry. Only its shape is checked with the request: `importContacts` validates each
+ * entry on its own (as `UpsertContactRequest`), so a bad one is reported in `invalid` instead of
+ * refusing the whole import.
+ */
 export const ContactImportEntry = z.strictObject({
   email: z.string().meta({ description: "The contact's address (validated on its own)." }),
-  ...ContactFields,
+  first_name: z.string().nullable().optional(),
+  last_name: z.string().nullable().optional(),
+  properties: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+    .optional()
+    .meta({ description: "Custom properties by key, checked against their definitions." }),
+  status: ContactFields.status,
 });
 export type ContactImportEntryInput = z.input<typeof ContactImportEntry>;
 

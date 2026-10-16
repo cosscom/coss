@@ -12,14 +12,23 @@ import {
   listAudienceContacts,
   removeAudienceContact,
 } from "../src/audiences.ts";
-import { contactCsvHeader, contactCsvRow, parseContactCsv } from "../src/contact-csv.ts";
+import {
+  BUILT_IN_CSV_HEADERS,
+  contactCsvHeader,
+  contactCsvRow,
+  parseContactCsv,
+} from "../src/contact-csv.ts";
 import {
   createContactProperty,
   deleteContactProperty,
   listContactProperties,
 } from "../src/contact-properties.ts";
 import type { SegmentFilterOutput } from "../src/contact-schemas.ts";
-import { UpsertContactRequest } from "../src/contact-schemas.ts";
+import {
+  ImportContactsRequest,
+  RESERVED_PROPERTY_KEYS,
+  UpsertContactRequest,
+} from "../src/contact-schemas.ts";
 import {
   contactCount,
   deleteContact,
@@ -236,6 +245,34 @@ describe("contacts", () => {
     expect(await contactCount(env)).toBe(2);
   });
 
+  test("each import entry is validated on its own, merged properties included", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const keys = Array.from({ length: 9 }, (_, index) => `p${index}`);
+    for (const key of keys) await createContactProperty(env, { key, type: "string" });
+    const long = "x".repeat(2000);
+    // 14 KB stored: two more long values push the merged properties past 16 KB.
+    await upsert(env, {
+      email: "full@example.com",
+      properties: Object.fromEntries(keys.slice(0, 7).map((key) => [key, long])),
+    });
+    const entries = [
+      { email: "fine@example.com", first_name: "Fine" },
+      { email: "named@example.com", first_name: "" },
+      { email: "full@example.com", properties: { p7: long, p8: long } },
+      { email: "later@example.com" },
+    ];
+    // The request accepts entries a single upsert would refuse; the import reports them.
+    expect(ImportContactsRequest.safeParse({ contacts: entries }).success).toBe(true);
+    const result = await importContacts(env, entries, {});
+    expect(result).toMatchObject({ created: 2, updated: 0 });
+    expect(result.invalid.map((row) => row.index)).toEqual([1, 2]);
+    expect(await getContact(env, "later@example.com")).not.toBeNull();
+    expect(Object.keys((await getContact(env, "full@example.com"))?.properties ?? {})).toHaveLength(
+      7,
+    );
+  });
+
   test("an import over the plan's limit imports nothing", async () => {
     const tenant = await createTestTenant();
     const env = envOf(tenant);
@@ -247,6 +284,12 @@ describe("contacts", () => {
       ),
     ).rejects.toBeInstanceOf(BillingError);
     expect(await contactCount(env)).toBe(0);
+  });
+
+  test("no custom property can take a column name the CSV reads as a built-in field", () => {
+    for (const header of BUILT_IN_CSV_HEADERS) {
+      expect(RESERVED_PROPERTY_KEYS.has(header)).toBe(true);
+    }
   });
 
   test("CSV exports import again unchanged, and other tools' headers are understood", async () => {
