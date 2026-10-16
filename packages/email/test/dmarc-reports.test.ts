@@ -292,11 +292,20 @@ describe("reading reports", () => {
     const now = new Date();
     for (let day = 3; day >= 1; day--) {
       const end = new Date(Math.floor(now.getTime() / DAY) * DAY - (day - 1) * DAY - 1);
+      const sample = reportFor(row, { begin: new Date(end.getTime() + 1 - DAY), end });
+      // Distinct source IPs (the sample's are random): nine sources in all.
+      const records = sample.records.map((record, index) => ({
+        ...record,
+        sourceIp: `192.0.2.${day * 10 + index}`,
+      }));
       await ingestDmarcReports(
         message(
-          dmarcReportMessage(reportFor(row, { begin: new Date(end.getTime() + 1 - DAY), end }), {
-            to: addressOf(row),
-          }),
+          dmarcReportMessage(
+            { ...sample, records },
+            {
+              to: addressOf(row),
+            },
+          ),
           [addressOf(row)],
         ),
         [row.dmarcReportToken],
@@ -409,6 +418,51 @@ describe("the DNS check", () => {
     );
     expect(unchecked.dmarcRecord).toBeNull();
     expect(unchecked.dmarcPolicyChangedAt).toEqual(twice.dmarcPolicyChangedAt);
+  });
+
+  test("a subdomain without a record of its own gets its organizational domain's", async () => {
+    const tenant = await createTestTenant();
+    const parent = `p-${uniqueSuffix()}.test`;
+    const row = await createVerifiedDomain(tenant.organization.id, { name: `mail.${parent}` });
+    const check = (records: Record<string, string[][]>, now: Date) =>
+      checkDomain(
+        { organizationId: tenant.organization.id, id: row.id, now },
+        {
+          identity: new FakeIdentityProvider(),
+          dns: fakeDnsResolver(records),
+          tracking: new FakeTrackingHostnameProvider(),
+          dmarcReportDomain: MANAGED,
+        },
+      );
+    const t0 = new Date();
+    const inherited = await check(
+      { [`TXT _dmarc.${parent}`]: [["v=DMARC1; p=reject; sp=quarantine"]] },
+      t0,
+    );
+    expect(inherited).toMatchObject({
+      dmarcRecord: null,
+      dmarcInheritedRecord: "v=DMARC1; p=reject; sp=quarantine",
+      dmarcPolicyChangedAt: t0,
+    });
+    const overview = await dmarcOverview(inherited, MANAGED, t0);
+    expect(overview).toMatchObject({
+      stage: "quarantine",
+      policy: "quarantine",
+      inherited_from: parent,
+      record: null,
+      next: { kind: "publish", policy: "quarantine" },
+    });
+
+    // Its own record at the same policy: the epoch stays and the inherited one is dropped.
+    const t1 = new Date(t0.getTime() + 1000);
+    const own = await check(
+      {
+        [`TXT _dmarc.${row.name}`]: [[`v=DMARC1; p=quarantine; rua=mailto:${addressOf(row)}`]],
+        [`TXT _dmarc.${parent}`]: [["v=DMARC1; p=reject; sp=quarantine"]],
+      },
+      t1,
+    );
+    expect(own).toMatchObject({ dmarcInheritedRecord: null, dmarcPolicyChangedAt: t0 });
   });
 });
 

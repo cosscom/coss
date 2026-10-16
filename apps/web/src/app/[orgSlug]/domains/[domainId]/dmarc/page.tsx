@@ -238,6 +238,10 @@ export default async function DomainDmarcPage({
                   <span className="break-all">{dmarc.record.value}</span>
                 ) : dmarc.stage === "not_checked" ? (
                   <span className="text-muted-foreground">Not checked yet</span>
+                ) : dmarc.inherited_from ? (
+                  <span className="text-muted-foreground">
+                    None of its own: {dmarc.inherited_from}'s applies
+                  </span>
                 ) : (
                   <span className="text-muted-foreground">None found</span>
                 )}

@@ -22,10 +22,10 @@ import {
   notInArray,
   or,
 } from "drizzle-orm";
-import { checkBimi, toBimiObject } from "./bimi.ts";
-import { dmarcPolicyKey, parseDmarcRecord } from "./dmarc-record.ts";
+import { checkBimi, organizationalDomain, toBimiObject } from "./bimi.ts";
+import { appliedDmarcRecord, dmarcPolicyKey } from "./dmarc-record.ts";
 import { deleteOrganizationDmarcReports } from "./dmarc-reports.ts";
-import { checkDomainDns, type DnsResolver, expectedRecords } from "./dns.ts";
+import { checkDomainDns, type DnsResolver, dmarcRecordAt, expectedRecords } from "./dns.ts";
 import { DomainError, EmailError } from "./errors.ts";
 import type { InboundContentStore } from "./inbound-store.ts";
 import { type IdentityProvider, IdentityTakenError, type ProviderTenant } from "./provider.ts";
@@ -419,23 +419,32 @@ export async function checkDomain(
     dkimHostedZone: state?.dkimHostedZone ?? row.dkimHostedZone,
     region: state?.region ?? row.region,
   };
-  const [{ records, dmarc }, bimi] = await Promise.all([
+  const [{ records, dmarc, dmarcAbsent }, bimi] = await Promise.all([
     checkDomainDns(
       expectedRecords({ ...row, ...identity }, deps.dmarcReportDomain ?? null),
       deps.dns,
     ),
     checkBimi(row.name, deps.dns),
   ]);
+  // A subdomain with no DMARC record of its own gets its organizational domain's (`undefined`:
+  // that lookup failed, so the stored one stays).
+  const organizational = organizationalDomain(row.name);
+  const inherited =
+    dmarcAbsent && deps.dns && organizational !== row.name
+      ? await dmarcRecordAt(organizational, deps.dns)
+      : null;
+  const dmarcInheritedRecord = inherited === undefined ? row.dmarcInheritedRecord : inherited;
   // `undefined`: DNS couldn't be asked, so the stored record (and its policy's start) stays.
   const dmarcState =
     dmarc === undefined
       ? {}
       : {
           dmarcRecord: dmarc,
+          dmarcInheritedRecord,
           dmarcPolicyChangedAt:
             row.dmarcPolicyChangedAt &&
-            dmarcPolicyKey(row.dmarcRecord === null ? null : parseDmarcRecord(row.dmarcRecord)) ===
-              dmarcPolicyKey(dmarc === null ? null : parseDmarcRecord(dmarc))
+            dmarcPolicyKey(appliedDmarcRecord(row)) ===
+              dmarcPolicyKey(appliedDmarcRecord({ dmarcRecord: dmarc, dmarcInheritedRecord }))
               ? row.dmarcPolicyChangedAt
               : now,
         };

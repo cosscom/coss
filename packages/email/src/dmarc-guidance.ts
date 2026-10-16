@@ -6,10 +6,12 @@
  * shows at the next check without any stored stage.
  */
 import {
+  asSubdomainPolicy,
   type DmarcPolicy,
   type DmarcRecord,
   effectivePolicy,
   nextPolicy,
+  parseDmarcRecord,
   partiallyEnforced,
   ruaIncludes,
   withPolicy,
@@ -56,18 +58,27 @@ export type DmarcReportTotals = {
   /** Earliest period start / latest period end of any kept report. */
   firstReportAt: Date | null;
   lastReportAt: Date | null;
+  /** Reports in the window cut at `MAX_DMARC_REPORT_RECORDS` rows (their totals are partial). */
+  truncatedReports: number;
 };
 
 export type DmarcStage = "not_checked" | "no_record" | "monitoring" | "quarantine" | "reject";
 
 export type DmarcCheck = {
-  id: "coverage" | "recent" | "time_at_policy" | "coss_pass_rate" | "pass_rate" | "sources";
+  id:
+    | "coverage"
+    | "recent"
+    | "complete"
+    | "time_at_policy"
+    | "coss_pass_rate"
+    | "pass_rate"
+    | "sources";
   ok: boolean;
   message: string;
 };
 
 export type DmarcNextStep = {
-  /** `publish`: no record yet; `add_reporting`: send reports to COSS; `complete_rollout`: drop
+  /** `publish`: no record of its own yet; `add_reporting`: send reports to COSS; `complete_rollout`: drop
    * `pct`/`t=y`; `tighten`: the next stricter policy. */
   kind: "publish" | "add_reporting" | "complete_rollout" | "tighten";
   policy: DmarcPolicy;
@@ -76,7 +87,10 @@ export type DmarcNextStep = {
 
 export type DmarcGuidance = {
   stage: DmarcStage;
+  /** The policy receivers apply: the domain's own, else its organizational domain's. */
   policy: DmarcPolicy | null;
+  /** The organizational domain whose record applies, when the domain has none of its own. */
+  inheritedFrom: string | null;
   partial: boolean;
   /** The published record sends aggregate reports to COSS. */
   reporting: boolean;
@@ -88,8 +102,12 @@ export type DmarcGuidance = {
 };
 
 export type DmarcGuidanceInput = {
-  /** The published record (`null`: none). */
+  /** The domain's own published record (`null`: none, or an invalid one). */
   record: DmarcRecord | null;
+  /** The domain publishes a `v=DMARC1` record that isn't a valid tag list. */
+  invalid: boolean;
+  /** Its organizational domain's record, when it publishes none of its own (`dmarcInheritedRecord`). */
+  inherited: { domain: string; record: DmarcRecord } | null;
   /** Whether DNS was ever checked (the fake provider never checks). */
   checked: boolean;
   /** Since when the current policy is published (`domain.dmarc_policy_changed_at`). */
@@ -148,6 +166,13 @@ function readinessChecks(
         : `No report for ${days(lastAge)} days: check that the record still names COSS's address.`
       : "Waiting for the first report.",
   });
+  if (totals.truncatedReports > 0) {
+    checks.push({
+      id: "complete",
+      ok: false,
+      message: `${totals.truncatedReports} recent ${totals.truncatedReports === 1 ? "report was" : "reports were"} too large to keep in full, so these checks can't see every source: review the senders in your reports yourself before tightening.`,
+    });
+  }
   if (target === "reject") {
     const since = input.policySince && current === "quarantine" ? input.policySince : null;
     const age = since ? now.getTime() - since.getTime() : 0;
@@ -190,10 +215,18 @@ function readinessChecks(
 
 export function dmarcGuidance(input: DmarcGuidanceInput): DmarcGuidance {
   const { record, reportAddress } = input;
-  const policy = effectivePolicy(record);
-  const partial = record ? partiallyEnforced(record) : false;
+  // Receivers fall back to the organizational domain only when a domain publishes no record.
+  const inherited = !record && !input.invalid ? input.inherited : null;
+  const applied = record ?? (inherited ? asSubdomainPolicy(inherited.record) : null);
+  const policy = effectivePolicy(applied);
+  const partial = applied ? partiallyEnforced(applied) : false;
   const reporting = Boolean(record && reportAddress && ruaIncludes(record, reportAddress));
   const warnings: string[] = [];
+  if (input.invalid) {
+    warnings.push(
+      "The published DMARC record isn't valid (a tag is listed twice, or a part isn't tag=value), so receivers may ignore it: replace it with the record below.",
+    );
+  }
   if (record?.sp && policy && STRICTNESS[record.sp] < STRICTNESS[policy]) {
     warnings.push(
       `Subdomains get a weaker policy (sp=${record.sp}) than the domain (p=${policy}): mail spoofing a subdomain is treated less strictly.`,
@@ -211,7 +244,32 @@ export function dmarcGuidance(input: DmarcGuidanceInput): DmarcGuidance {
     );
   }
 
-  const base = { policy, partial, reporting, warnings };
+  const base = { policy, inheritedFrom: inherited?.domain ?? null, partial, reporting, warnings };
+  if (inherited && applied && policy) {
+    warnings.push(
+      `This domain has no DMARC record of its own, so ${inherited.domain}'s applies (${policy}${partial ? ", partly" : ""}) and its reports go wherever that record says.`,
+    );
+    // Its own record at the same policy changes nothing for receivers and sends reports to COSS.
+    const own = parseDmarcRecord(
+      [
+        `v=DMARC1; p=${policy}`,
+        applied.pct !== null ? `pct=${applied.pct}` : null,
+        applied.t ? `t=${applied.t}` : null,
+      ]
+        .filter(Boolean)
+        .join("; "),
+    );
+    return {
+      ...base,
+      stage: policy === "none" ? "monitoring" : policy,
+      next:
+        own && reportAddress
+          ? { kind: "publish", policy, record: withReporting(own, reportAddress) }
+          : null,
+      ready: Boolean(own && reportAddress),
+      checks: [],
+    };
+  }
   if (!record || !policy) {
     return {
       ...base,

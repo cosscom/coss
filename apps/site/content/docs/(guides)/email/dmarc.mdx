@@ -54,7 +54,17 @@ COSS never changes your DNS: when a step is ready, the dashboard shows the recor
 owners and admins get an email with it. COSS also emails them if mail sent through COSS starts
 failing DMARC under `p=quarantine` or `p=reject`, because mailbox providers then drop your own
 mail. A record that still uses `pct` (removed by RFC 9989) or `t=y` applies its policy to only
-part of the mail: the next step is to apply it in full.
+part of the mail: the next step is to apply it in full. A record that lists a tag twice, or has a
+part that isn't `tag=value`, may be ignored by receivers, so COSS treats it as no policy and asks
+you to replace it.
+
+A report with more than 10,000 rows is kept only in part, so while one is among the last 14 days,
+the checks can't see every source and don't unlock the next step: review your senders yourself.
+
+A subdomain you added as its own domain (`mail.acme.com`) with no record of its own gets its
+organizational domain's (`acme.com`'s `sp`, else `p`), and its reports go where that record says.
+The first step is then to publish its own record at the same policy, which sends its reports to
+COSS without changing anything for receivers.
 
 ## API
 
@@ -94,8 +104,5 @@ to every live environment's endpoints.
 
 ## Limitations
 
-- COSS checks the DMARC record at `_dmarc.<domain>` only. A subdomain you added as its own domain
-  (`mail.acme.com`) that relies on its parent's record shows as having none; publish one for it or
-  manage the parent's.
 - Reports cover mail providers saw, not every message: some providers don't send reports, and a
   report covers the day before it arrives.

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  appliedDmarcRecord,
   dmarcPolicyKey,
   dmarcReportAddress,
   dmarcReportTokenOf,
@@ -33,6 +34,25 @@ describe("parseDmarcRecord", () => {
     expect(parseDmarcRecord("v=spf1 include:amazonses.com ~all")).toBeNull();
     expect(parseDmarcRecord("p=reject; v=DMARC1")).toBeNull();
     expect(parseDmarcRecord("")).toBeNull();
+  });
+
+  test("a repeated tag or a part that isn't tag=value makes the record invalid", () => {
+    expect(parseDmarcRecord("v=DMARC1; p=reject; p=none")).toBeNull();
+    expect(parseDmarcRecord("v=DMARC1; P=reject; p=reject")).toBeNull();
+    expect(parseDmarcRecord("v=DMARC1; p=reject; rua")).toBeNull();
+    expect(parseDmarcRecord("v=DMARC1; p=reject; =x")).toBeNull();
+    expect(parseDmarcRecord("v=DMARC1; p=reject; v=DMARC1")).toBeNull();
+    expect(parseDmarcRecord("v=DMARC1; p=reject;;  ;")?.p).toBe("reject");
+  });
+
+  test("a subdomain without a record gets its organizational domain's sp, else p", () => {
+    const applied = (dmarcRecord: string | null, dmarcInheritedRecord: string | null) =>
+      dmarcPolicyKey(appliedDmarcRecord({ dmarcRecord, dmarcInheritedRecord }));
+    expect(applied(null, "v=DMARC1; p=reject; sp=quarantine")).toBe("quarantine");
+    expect(applied(null, "v=DMARC1; p=reject; pct=10")).toBe("reject:partial");
+    expect(applied("v=DMARC1; p=none", "v=DMARC1; p=reject")).toBe("none");
+    expect(applied("v=DMARC1; p=none; p=none", "v=DMARC1; p=reject")).toBe("none-published");
+    expect(applied(null, null)).toBe("none-published");
   });
 
   test("an invalid or missing p counts as none", () => {

@@ -144,30 +144,45 @@ export async function checkRecords(
   return (await checkDomainDns(records, dns)).records;
 }
 
+/** The one `v=DMARC1` value among TXT answers; `null` for none, or several (receivers ignore both). */
+function dmarcOf(answers: string[]): string | null {
+  const values = answers.map((value) => value.trim()).filter((value) => DMARC_RECORD.test(value));
+  return values.length === 1 ? (values[0] ?? null) : null;
+}
+
 /**
  * `checkRecords`, plus the domain's DMARC record as published: its one `v=DMARC1` value, `null`
  * when it has none (or several, which receivers ignore), `undefined` when DNS could not be asked.
+ * `dmarcAbsent` says there was no `v=DMARC1` record at all, the only case in which receivers fall
+ * back to the organizational domain's record.
  */
 export async function checkDomainDns(
   records: DomainRecord[],
   dns: DnsResolver | null,
-): Promise<{ records: DomainRecord[]; dmarc: string | null | undefined }> {
+): Promise<{ records: DomainRecord[]; dmarc: string | null | undefined; dmarcAbsent: boolean }> {
   if (!dns) {
     return {
       records: records.map((record) => ({ ...record, status: "not_checked", found: [] })),
       dmarc: undefined,
+      dmarcAbsent: false,
     };
   }
   const checks = await Promise.all(records.map((record) => checkRecord(record, dns)));
-  const dmarcCheck = checks.find((check) => check.record.purpose === "dmarc");
-  let dmarc: string | null | undefined;
-  if (dmarcCheck && dmarcCheck.answers !== null) {
-    const values = dmarcCheck.answers
-      .map((value) => value.trim())
-      .filter((value) => DMARC_RECORD.test(value));
-    dmarc = values.length === 1 ? (values[0] ?? null) : null;
-  }
-  return { records: checks.map((check) => check.record), dmarc };
+  const answers = checks.find((check) => check.record.purpose === "dmarc")?.answers ?? null;
+  return {
+    records: checks.map((check) => check.record),
+    dmarc: answers === null ? undefined : dmarcOf(answers),
+    dmarcAbsent: answers !== null && !answers.some((value) => DMARC_RECORD.test(value.trim())),
+  };
+}
+
+/** The DMARC record at `_dmarc.<name>`, as `checkDomainDns` reads it (`undefined`: lookup failed). */
+export async function dmarcRecordAt(
+  name: string,
+  dns: DnsResolver,
+): Promise<string | null | undefined> {
+  const answers = await lookup(() => dns.resolveTxt(`_dmarc.${name}`));
+  return answers === null ? undefined : dmarcOf(answers.map((chunks) => chunks.join("")));
 }
 
 /** Checks a tracking domain's CNAME; without a resolver it stays `not_checked`. */

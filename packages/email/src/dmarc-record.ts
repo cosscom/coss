@@ -53,7 +53,11 @@ function alignmentOf(value: string | undefined): "r" | "s" | null {
   return lower === "r" || lower === "s" ? lower : null;
 }
 
-/** Parses a `v=DMARC1` record; `null` when it isn't one. Unknown tags are kept, never rejected. */
+/**
+ * Parses a `v=DMARC1` record; `null` when it isn't one, or isn't a valid tag list (a tag listed
+ * twice, or a part that isn't `tag=value`, as the BIMI check rules too): receivers may ignore such
+ * a record, so COSS never reads a policy from it. Unknown tags are kept, never rejected.
+ */
 export function parseDmarcRecord(value: string): DmarcRecord | null {
   const parts = value
     .split(";")
@@ -64,8 +68,9 @@ export function parseDmarcRecord(value: string): DmarcRecord | null {
   const tags: [string, string][] = [];
   for (const part of parts.slice(1)) {
     const eq = part.indexOf("=");
-    if (eq <= 0) continue;
-    tags.push([part.slice(0, eq).trim().toLowerCase(), part.slice(eq + 1).trim()]);
+    const name = eq < 0 ? "" : part.slice(0, eq).trim().toLowerCase();
+    if (!name || name === "v" || tags.some(([key]) => key === name)) return null;
+    tags.push([name, part.slice(eq + 1).trim()]);
   }
   const tag = (name: string) => tags.find(([key]) => key === name)?.[1];
   const pct = tag("pct");
@@ -90,6 +95,28 @@ export function parseDmarcRecord(value: string): DmarcRecord | null {
 /** The policy receivers apply to the domain (a missing or invalid `p` counts as `none`). */
 export function effectivePolicy(record: DmarcRecord | null): DmarcPolicy | null {
   return record ? (record.p ?? "none") : null;
+}
+
+/**
+ * What an organizational domain's record applies to a subdomain without a record of its own
+ * (RFC 7489 §6.6.3): its `sp`, else its `p`; partial enforcement carries over.
+ */
+export function asSubdomainPolicy(record: DmarcRecord): DmarcRecord {
+  return { ...record, p: record.sp ?? record.p };
+}
+
+/**
+ * The record whose policy applies to a domain, as stored by its last DNS check: its own, else
+ * (no record of its own) its organizational domain's as a subdomain sees it. `null`: none, or an
+ * invalid record of its own (receivers may ignore it, so COSS assumes no policy).
+ */
+export function appliedDmarcRecord(row: {
+  dmarcRecord: string | null;
+  dmarcInheritedRecord: string | null;
+}): DmarcRecord | null {
+  if (row.dmarcRecord !== null) return parseDmarcRecord(row.dmarcRecord);
+  const inherited = row.dmarcInheritedRecord ? parseDmarcRecord(row.dmarcInheritedRecord) : null;
+  return inherited ? asSubdomainPolicy(inherited) : null;
 }
 
 /** Whether the record enforces only partly (`pct` below 100, or RFC 9989's `t=y`). */

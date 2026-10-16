@@ -748,8 +748,11 @@ export const domain = pgTable(
       .$defaultFn(() => newDmarcReportToken()),
     // The `v=DMARC1` record found at `_dmarc.<name>` by the latest DNS check (null: none found).
     dmarcRecord: text("dmarc_record"),
-    // When a DNS check first saw the current policy (`p=`, including "no record"); readiness for
-    // the next policy counts from here.
+    // A subdomain without a record of its own: its organizational domain's `v=DMARC1` record,
+    // whose `sp` (else `p`) receivers apply to it (null otherwise).
+    dmarcInheritedRecord: text("dmarc_inherited_record"),
+    // When a DNS check first saw the policy that applies (own or inherited, including none);
+    // readiness for the next policy counts from here.
     dmarcPolicyChangedAt: timestamp("dmarc_policy_changed_at", { withTimezone: true }),
     createdByUserId: text("created_by_user_id").references(() => user.id, {
       onDelete: "set null",

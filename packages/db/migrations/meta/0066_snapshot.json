@@ -1,5 +1,5 @@
 {
-  "id": "1538fb0e-ef5b-4b4a-b540-3f81aa863385",
+  "id": "42f8176a-c358-47db-aae0-00be7a427008",
   "prevId": "11fff249-e736-44b4-83e3-f259a69f352d",
   "version": "7",
   "dialect": "postgresql",
@@ -6124,6 +6124,12 @@
         },
         "dmarc_record": {
           "name": "dmarc_record",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dmarc_inherited_record": {
+          "name": "dmarc_inherited_record",
           "type": "text",
           "primaryKey": false,
           "notNull": false

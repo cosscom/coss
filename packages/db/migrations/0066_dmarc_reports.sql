@@ -62,6 +62,7 @@ CREATE TABLE "dmarc_report_record" (
 --> statement-breakpoint
 ALTER TABLE "domain" ADD COLUMN "dmarc_report_token" text;--> statement-breakpoint
 ALTER TABLE "domain" ADD COLUMN "dmarc_record" text;--> statement-breakpoint
+ALTER TABLE "domain" ADD COLUMN "dmarc_inherited_record" text;--> statement-breakpoint
 ALTER TABLE "domain" ADD COLUMN "dmarc_policy_changed_at" timestamp with time zone;--> statement-breakpoint
 ALTER TABLE "dmarc_notification" ADD CONSTRAINT "dmarc_notification_domain_fk" FOREIGN KEY ("domain_id","organization_id") REFERENCES "public"."domain"("id","organization_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "dmarc_report" ADD CONSTRAINT "dmarc_report_domain_fk" FOREIGN KEY ("domain_id","organization_id") REFERENCES "public"."domain"("id","organization_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

@@ -3459,7 +3459,18 @@
                 "type": "null"
               }
             ],
-            "description": "The policy receivers apply (`p`, or `none` when the record has none)."
+            "description": "The policy receivers apply: the record's `p` (`none` when it has none), or for a subdomain without a record of its own, its organizational domain's `sp` (else `p`)."
+          },
+          "inherited_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The organizational domain whose DMARC record applies, when this domain publishes none of its own."
           },
           "policy_since": {
             "anyOf": [
@@ -3545,6 +3556,7 @@
                   "enum": [
                     "coverage",
                     "recent",
+                    "complete",
                     "time_at_policy",
                     "coss_pass_rate",
                     "pass_rate",
@@ -3648,6 +3660,7 @@
           "report_address",
           "record",
           "policy",
+          "inherited_from",
           "policy_since",
           "stage",
           "partial",
@@ -3677,6 +3690,7 @@
               ]
             },
             "policy": "none",
+            "inherited_from": null,
             "policy_since": "2026-09-20T08:00:00.000Z",
             "stage": "monitoring",
             "partial": false,

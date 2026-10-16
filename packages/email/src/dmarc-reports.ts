@@ -31,11 +31,17 @@ import {
   notInArray,
   sql,
 } from "drizzle-orm";
-import { DMARC_READINESS, type DmarcReportTotals, dmarcGuidance } from "./dmarc-guidance.ts";
+import { organizationalDomain } from "./bimi.ts";
 import {
+  DMARC_READINESS,
+  type DmarcGuidance,
+  type DmarcReportTotals,
+  dmarcGuidance,
+} from "./dmarc-guidance.ts";
+import {
+  type DmarcRecord,
   dmarcReportAddress,
   dmarcReportTokenOf,
-  effectivePolicy,
   parseDmarcRecord,
 } from "./dmarc-record.ts";
 import {
@@ -405,15 +411,12 @@ async function queueNotifications(
   now: Date,
 ): Promise<void> {
   const totals = await dmarcTotals(tx, target, now);
-  const record = target.dmarcRecord ? parseDmarcRecord(target.dmarcRecord) : null;
-  const guidance = dmarcGuidance({
-    record,
-    checked: target.dmarcPolicyChangedAt !== null,
-    policySince: target.dmarcPolicyChangedAt,
-    reportAddress: dmarcReportAddress(target.dmarcReportToken, managedDomain),
+  const { guidance } = guidanceFor(
+    target,
+    dmarcReportAddress(target.dmarcReportToken, managedDomain),
     totals,
     now,
-  });
+  );
   const epoch = target.dmarcPolicyChangedAt?.toISOString() ?? "unchecked";
   const rows: (typeof dmarcNotification.$inferInsert)[] = [];
   const base = {
@@ -431,7 +434,7 @@ async function queueNotifications(
       detail: { record: guidance.next.record },
     });
   }
-  const policy = effectivePolicy(record);
+  const policy = guidance.policy;
   const cossRate = totals.cossMessages > 0 ? totals.cossPassing / totals.cossMessages : 1;
   if (
     (policy === "quarantine" || policy === "reject") &&
@@ -446,6 +449,28 @@ async function queueNotifications(
     });
   }
   if (rows.length > 0) await tx.insert(dmarcNotification).values(rows).onConflictDoNothing();
+}
+
+/** A domain's guidance from its last DNS check (own record, else inherited) and its totals. */
+function guidanceFor(
+  row: DomainRow,
+  reportAddress: string | null,
+  totals: DmarcReportTotals,
+  now: Date,
+): { guidance: DmarcGuidance; record: DmarcRecord | null } {
+  const record = row.dmarcRecord ? parseDmarcRecord(row.dmarcRecord) : null;
+  const inherited = row.dmarcInheritedRecord ? parseDmarcRecord(row.dmarcInheritedRecord) : null;
+  const guidance = dmarcGuidance({
+    record,
+    invalid: row.dmarcRecord !== null && record === null,
+    inherited: inherited ? { domain: organizationalDomain(row.name), record: inherited } : null,
+    checked: row.dmarcPolicyChangedAt !== null,
+    policySince: row.dmarcPolicyChangedAt,
+    reportAddress,
+    totals,
+    now,
+  });
+  return { guidance, record };
 }
 
 // --- Reads --------------------------------------------------------------------------------------
@@ -502,7 +527,10 @@ export async function dmarcTotals(
     .from(dmarcReport)
     .where(ofDomain);
   const [reports] = await executor
-    .select({ value: count() })
+    .select({
+      value: count(),
+      truncated: sql<string>`count(*) filter (where ${dmarcReport.truncated})`,
+    })
     .from(dmarcReport)
     .where(and(ofDomain, gte(dmarcReport.periodEnd, since)));
   return {
@@ -519,6 +547,7 @@ export async function dmarcTotals(
     })),
     firstReportAt: span?.first ?? null,
     lastReportAt: span?.last ?? null,
+    truncatedReports: Number(reports?.truncated ?? 0),
     reports: reports?.value ?? 0,
     since,
   };
@@ -531,16 +560,8 @@ export async function dmarcOverview(
   now: Date = new Date(),
 ): Promise<DomainDmarcOutput> {
   const totals = await dmarcTotals(db, row, now);
-  const record = row.dmarcRecord ? parseDmarcRecord(row.dmarcRecord) : null;
   const reportAddress = dmarcReportAddress(row.dmarcReportToken, dmarcReportDomain);
-  const guidance = dmarcGuidance({
-    record,
-    checked: row.dmarcPolicyChangedAt !== null,
-    policySince: row.dmarcPolicyChangedAt,
-    reportAddress,
-    totals,
-    now,
-  });
+  const { guidance, record } = guidanceFor(row, reportAddress, totals, now);
   return {
     object: "domain_dmarc",
     domain_id: row.id,
@@ -560,6 +581,7 @@ export async function dmarcOverview(
           }
         : null,
     policy: guidance.policy,
+    inherited_from: guidance.inheritedFrom,
     policy_since: row.dmarcPolicyChangedAt?.toISOString() ?? null,
     stage: guidance.stage,
     partial: guidance.partial,

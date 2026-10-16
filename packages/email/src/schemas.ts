@@ -2483,6 +2483,7 @@ export const DMARC_STAGES = [
 export const DMARC_CHECK_IDS = [
   "coverage",
   "recent",
+  "complete",
   "time_at_policy",
   "coss_pass_rate",
   "pass_rate",
@@ -2568,6 +2569,7 @@ const DOMAIN_DMARC_EXAMPLE = {
   report_address: DMARC_REPORT_ADDRESS_EXAMPLE,
   record: DMARC_PUBLISHED_RECORD_EXAMPLE,
   policy: "none",
+  inherited_from: null,
   policy_since: "2026-09-20T08:00:00.000Z",
   stage: "monitoring",
   partial: false,
@@ -2603,10 +2605,18 @@ export const DomainDmarc = z
         "Where the domain's DMARC aggregate reports go (`rua=mailto:…`). `null` when this " +
         "deployment doesn't receive email.",
     }),
-    // The published record (`null`: none found, or DNS not checked yet). A union, not `.nullable()`.
+    // The domain's own valid record (`null`: none found or invalid, or DNS not checked yet). A
+    // union, not `.nullable()`.
     record: z.union([DmarcPublishedRecord, z.null()]),
     policy: z.union([DmarcPolicyValue, z.null()]).meta({
-      description: "The policy receivers apply (`p`, or `none` when the record has none).",
+      description:
+        "The policy receivers apply: the record's `p` (`none` when it has none), or for a " +
+        "subdomain without a record of its own, its organizational domain's `sp` (else `p`).",
+    }),
+    inherited_from: z.union([z.string(), z.null()]).meta({
+      description:
+        "The organizational domain whose DMARC record applies, when this domain publishes none " +
+        "of its own.",
     }),
     policy_since: z.union([z.iso.datetime(), z.null()]).meta({
       description: "When a DNS check first saw the current policy.",

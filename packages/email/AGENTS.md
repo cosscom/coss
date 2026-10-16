@@ -196,9 +196,12 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `(domain, reporter, report id)` is unique. Only the parsed report is stored, never the message. Unpacking is
   `node:zlib` with `maxOutputLength` (gzip, and zip by hand) and XML is read by a small parser that refuses DTDs:
   never swap in an XML library that resolves entities. `via_coss` (the domain's DKIM selectors or MAIL FROM domain)
-  is decided at ingest. `checkDomain` stores the one published `v=DMARC1` value (two records count as none) and
-  moves `dmarc_policy_changed_at` only when `dmarcPolicyKey` changes (policy or partial enforcement) and only when
-  DNS answered. Guidance (`dmarcGuidance`, thresholds in `DMARC_READINESS`) is pure and computed on every read:
+  is decided at ingest. `checkDomain` stores the one published `v=DMARC1` value (two records count as none), and
+  for a subdomain with no `v=DMARC1` record at all its organizational domain's (`dmarc_inherited_record`, applied
+  as `sp ?? p`, `appliedDmarcRecord`); `parseDmarcRecord` refuses a repeated tag or a part that isn't `tag=value`
+  (no policy, like BIMI). It moves `dmarc_policy_changed_at` only when `dmarcPolicyKey` of the applied record
+  changes (policy or partial enforcement) and only when DNS answered. A truncated report in the window blocks
+  readiness (check `complete`). Guidance (`dmarcGuidance`, thresholds in `DMARC_READINESS`) is pure and computed on every read:
   none → quarantine → reject, no `pct` ramp. Ingest queues `dmarc_notification` rows (readiness once per policy
   epoch; COSS mail failing under enforcement once per epoch and week), sent by the worker's `dmarc-notifications`
   loop through the reputation notifier (skipped when the policy changed since). The dashboard's "Send a sample

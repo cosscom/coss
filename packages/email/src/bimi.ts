@@ -79,7 +79,7 @@ function dmarcOf(domain: string, tags: Map<string, string>, policy: string | und
 }
 
 /** The organizational domain (RFC 7489): the registrable domain, by the public suffix list. */
-function organizationalDomain(domainName: string): string {
+export function organizationalDomain(domainName: string): string {
   return getDomain(domainName) ?? domainName;
 }
 

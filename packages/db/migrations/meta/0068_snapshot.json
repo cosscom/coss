@@ -1,6 +1,6 @@
 {
-  "id": "cb33dd22-49e9-48db-83d0-64afe5cf2f93",
-  "prevId": "5987f755-873f-4c84-aa73-279d64a2f924",
+  "id": "32625ec9-3b5c-45e3-99ff-a87282caa3c6",
+  "prevId": "1d7a1c38-8105-4bd7-803d-507190adc25c",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -6124,6 +6124,12 @@
         },
         "dmarc_record": {
           "name": "dmarc_record",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dmarc_inherited_record": {
+          "name": "dmarc_inherited_record",
           "type": "text",
           "primaryKey": false,
           "notNull": false

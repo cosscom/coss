@@ -37,11 +37,17 @@ const HEALTHY: DmarcReportTotals = {
   ],
   firstReportAt: ago(20),
   lastReportAt: ago(1),
+  truncatedReports: 0,
 };
 
-function input(record: string | null, overrides: Partial<DmarcGuidanceInput> = {}) {
+function input(
+  record: string | null,
+  overrides: Partial<DmarcGuidanceInput> = {},
+): DmarcGuidanceInput {
   return {
     record: record === null ? null : parseDmarcRecord(record),
+    invalid: false,
+    inherited: null,
     checked: true,
     policySince: ago(30),
     reportAddress: ADDRESS,
@@ -91,6 +97,57 @@ describe("dmarcGuidance", () => {
         record: `v=DMARC1; p=reject; pct=1; t=y; rua=mailto:${ADDRESS};`,
       },
     });
+  });
+
+  test("a subdomain without a record: its organizational domain's applies, kept as its own", () => {
+    const parent = parseDmarcRecord(
+      "v=DMARC1; p=reject; sp=quarantine; pct=50; rua=mailto:o@x.test",
+    );
+    const guidance = dmarcGuidance(
+      input(null, { inherited: parent ? { domain: "acme.test", record: parent } : null }),
+    );
+    expect(guidance).toMatchObject({
+      stage: "quarantine",
+      policy: "quarantine",
+      inheritedFrom: "acme.test",
+      partial: true,
+      reporting: false,
+      ready: true,
+      next: {
+        kind: "publish",
+        policy: "quarantine",
+        record: `v=DMARC1; p=quarantine; pct=50; rua=mailto:${ADDRESS};`,
+      },
+    });
+    // Its own record (even one of none) wins.
+    expect(
+      dmarcGuidance(
+        input(NONE, { inherited: parent ? { domain: "acme.test", record: parent } : null }),
+      ),
+    ).toMatchObject({ stage: "monitoring", inheritedFrom: null });
+  });
+
+  test("an invalid record of its own counts as no policy, inherited or not", () => {
+    const parent = parseDmarcRecord("v=DMARC1; p=reject");
+    const guidance = dmarcGuidance(
+      input(null, {
+        invalid: true,
+        inherited: parent ? { domain: "acme.test", record: parent } : null,
+      }),
+    );
+    expect(guidance).toMatchObject({
+      stage: "no_record",
+      policy: null,
+      inheritedFrom: null,
+      next: { kind: "publish", policy: "none" },
+    });
+    expect(guidance.warnings[0]).toContain("isn't valid");
+  });
+
+  test("a truncated report in the window blocks the next step", () => {
+    const guidance = dmarcGuidance(input(NONE, { totals: { ...HEALTHY, truncatedReports: 1 } }));
+    expect(guidance.ready).toBe(false);
+    expect(guidance.checks.find((check) => check.id === "complete")?.ok).toBe(false);
   });
 
   test("monitoring with healthy reports: ready for quarantine", () => {

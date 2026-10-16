@@ -14,6 +14,7 @@ export type DmarcNextStepKind = "publish" | "add_reporting" | "complete_rollout"
 export type DmarcCheckId =
   | "coverage"
   | "recent"
+  | "complete"
   | "time_at_policy"
   | "coss_pass_rate"
   | "pass_rate"
@@ -68,9 +69,12 @@ export interface DomainDmarc {
   domain_id: string;
   /** Where the domain's aggregate reports go; `null` when the deployment doesn't receive email. */
   report_address: string | null;
-  /** `null`: no record found, or DNS not checked yet. */
+  /** The domain's own record. `null`: none found (or an invalid one), or DNS not checked yet. */
   record: DmarcPublishedRecord | null;
+  /** The policy receivers apply: the domain's own, else its organizational domain's (`sp`, else `p`). */
   policy: DmarcPolicy | null;
+  /** The organizational domain whose record applies, when the domain publishes none of its own. */
+  inherited_from: string | null;
   /** ISO 8601 timestamp: when a DNS check first saw the current policy. */
   policy_since: string | null;
   stage: DmarcStage;
