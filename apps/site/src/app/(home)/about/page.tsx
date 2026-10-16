@@ -33,7 +33,7 @@ export default function AboutPage() {
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4 py-16 sm:py-24">
       <header className="flex max-w-3xl flex-col gap-5">
         <h1 className="text-balance font-semibold text-[clamp(2.5rem,6vw,4.5rem)] leading-[0.95] tracking-[-0.035em]">
-          Supabase, without the database.
+          Supabase but for non-db shit.
         </h1>
         <p className="text-pretty text-muted-foreground text-xl leading-snug">
           Supabase does God's work for developers: it took Postgres, the hardest part of every stack
