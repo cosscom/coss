@@ -128,6 +128,26 @@ describe("checkTemplate", () => {
     ).toEqual([]);
   });
 
+  test("the marketing footer's placeholders need no declaration and survive rendering", () => {
+    const source = "Bye: {{{unsubscribe_url}}} {{{preferences_url}}} {{{mailing_address}}}";
+    expect(check(source, "text")).toEqual([]);
+    expect(render(source, {}, "text")).toBe(source);
+    expect(render('<a href="{{unsubscribe_url}}">x</a>', {}, "html")).toBe(
+      '<a href="{{{unsubscribe_url}}}">x</a>',
+    );
+    // A declared variable of that name is an ordinary variable.
+    expect(
+      renderTemplate(
+        parse("{{{mailing_address}}}"),
+        { mailing_address: "Here" },
+        {
+          field: "html",
+          variables: [{ name: "mailing_address", type: "string", required: false }],
+        },
+      ),
+    ).toBe("Here");
+  });
+
   test("reports undeclared names, list fields outside their loop and misuse of lists", () => {
     expect(
       check("{{last_name}}{{name}}{{items}}{{#each trial}}{{/each}}{{#each items}}{{x}}{{/each}}"),

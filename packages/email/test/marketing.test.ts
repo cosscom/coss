@@ -23,9 +23,14 @@ import { applyPreferences, confirmContact, loadPreferences } from "../src/prefer
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { getEmail, listEmailEvents } from "../src/read.ts";
 import { purgeExpiredPendingContacts } from "../src/retention.ts";
-import { MAX_HEADERS_WITH_UNSUBSCRIBE, SendEmailRequest } from "../src/schemas.ts";
+import {
+  CreateEmailTemplateRequest,
+  MAX_HEADERS_WITH_UNSUBSCRIBE,
+  SendEmailRequest,
+} from "../src/schemas.ts";
 import type { EmailService } from "../src/service.ts";
 import { addSuppression, listSuppressions } from "../src/suppressions.ts";
+import { createEmailTemplate, publishTemplateDraft } from "../src/templates.ts";
 import { dispatchingEmailService } from "../src/testing.ts";
 import { createTopic } from "../src/topics.ts";
 import { params, sendEnvironment, verifiedFrom } from "./helpers.ts";
@@ -283,6 +288,41 @@ describe("sending to contacts", () => {
     expect(sent(twice.email.id)?.headers["List-Unsubscribe-Post"]).toBe(
       "List-Unsubscribe=One-Click",
     );
+  });
+
+  test("a stored template's marketing placeholders are filled at dispatch", async () => {
+    const { tenant, env, from } = await fixture();
+    const live = { organizationId: env.organizationId, environmentId: tenant.production.id };
+    const template = await createEmailTemplate(
+      live,
+      CreateEmailTemplateRequest.parse({
+        name: "Newsletter",
+        contents: [
+          {
+            locale: "en",
+            subject: "News",
+            html: '<p>Hi</p><a href="{{{unsubscribe_url}}}">Leave</a> {{{mailing_address}}}',
+          },
+        ],
+      }),
+    );
+    await publishTemplateDraft(live, template.id);
+    const { email } = await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({
+        from,
+        to: ["fan@example.com"],
+        stream: "marketing",
+        subject: undefined,
+        text: undefined,
+        template_id: template.id,
+      }),
+    });
+    const html = sent(email.id)?.html ?? "";
+    expect(html).not.toContain("{{{");
+    expect(html).toContain("/t/u/");
+    expect(html).toContain("1 Main St, Springfield");
   });
 
   test("marketing needs the postal address, at send and at dispatch", async () => {

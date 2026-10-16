@@ -95,7 +95,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   one-click unsubscribe's per-category headers (the customer's own header, or more than
   `MAX_HEADERS_WITH_UNSUBSCRIBE` of them, wins on transactional email; marketing refuses both at validation and never
   snapshots `email.unsubscribe`); marketing also gets `applyMarketingFooter` (placeholders
-  `{{{unsubscribe_url}}}`, `{{{preferences_url}}}`, `{{{mailing_address}}}`, else a footer) on the provider's copy
+  `{{{unsubscribe_url}}}`, `{{{preferences_url}}}`, `{{{mailing_address}}}`, else a footer; stored templates
+  keep them undeclared, `MARKETING_PLACEHOLDERS`) on the provider's copy
   only. Marketing sends (`stream: "marketing"`) need exactly one recipient and the environment's postal address (422
   `mailing_address_required` at send; a `DispatchRefusal` fails the email if it vanished by dispatch, as does a missing
   key ring, `marketing_unavailable`). Double opt-in: `upsertContact({ doubleOptIn })` makes new or unsubscribed

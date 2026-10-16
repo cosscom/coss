@@ -298,6 +298,17 @@ export function parseTemplate(source: string): ParsedTemplate {
 }
 
 /**
+ * Names a template may use without declaring them: the marketing footer's placeholders, kept as
+ * `{{{name}}}` (in any field) for dispatch to fill with the recipient's links and the postal
+ * address (`applyMarketingFooter`). A declared variable of the same name wins.
+ */
+export const MARKETING_PLACEHOLDERS: ReadonlySet<string> = new Set([
+  "unsubscribe_url",
+  "preferences_url",
+  "mailing_address",
+]);
+
+/**
  * What's wrong with a parsed template given the declared variables: undeclared names, raw output
  * outside `html`, lists printed or looped wrongly. Names inside `{{#each}}` resolve to the list
  * item's fields first, then to the top-level variables.
@@ -315,6 +326,14 @@ export function checkTemplate(
       const at = { line: node.line, column: node.column };
       const itemField = item?.fields?.find((candidate) => candidate.name === node.name);
       const variable = itemField ? null : declared.get(node.name);
+      if (
+        node.kind === "variable" &&
+        !itemField &&
+        !variable &&
+        MARKETING_PLACEHOLDERS.has(node.name)
+      ) {
+        continue;
+      }
       if (!itemField && !variable) {
         problems.push({
           message: `"${node.name}" is not a declared variable${item ? ` or a field of "${item.name}"` : ""}.`,
@@ -445,6 +464,12 @@ export function renderTemplate(
     }
     return Object.hasOwn(values, name) ? values[name] : undefined;
   };
+  const declaredNames = new Set(opts.variables.map((variable) => variable.name));
+  // An undeclared marketing placeholder (not a list item's field) is kept for dispatch.
+  const isPassthrough = (name: string, scope: Scope) =>
+    MARKETING_PLACEHOLDERS.has(name) &&
+    !declaredNames.has(name) &&
+    !(scope && (scope.fields ? scope.fields.has(name) : Object.hasOwn(scope.item, name)));
   const visit = (list: TemplateNode[], item: Scope) => {
     for (const node of list) {
       step();
@@ -453,6 +478,10 @@ export function renderTemplate(
           emit(node.value);
           break;
         case "variable": {
+          if (isPassthrough(node.name, item)) {
+            emit(`{{{${node.name}}}}`);
+            break;
+          }
           const text = display(lookup(node.name, item));
           emit(escapeOutput && !node.raw ? escapeHtml(text) : text);
           break;
