@@ -39,7 +39,7 @@ const secret = endpoint?.secret;
 | `contact.unsubscribed`   | A contact unsubscribed from all marketing email, or from one topic (`topic`), through the [preference center](/docs/email/topics-and-preferences) or one-click unsubscribe |
 | `contact.confirmed`      | A contact confirmed their address ([double opt-in](/docs/email/topics-and-preferences#double-opt-in)) |
 | `broadcast.sending`      | A [broadcast](/docs/email/broadcasts) started sending   |
-| `broadcast.sent`         | Every email of a broadcast was handed to the mail provider |
+| `broadcast.sent`         | A broadcast finished: every eligible contact was processed and none of its emails is still waiting (failures are in its `stats`) |
 | `broadcast.paused`       | A broadcast was paused, by you or by coss.com (`pause_reason`) |
 | `broadcast.canceled`     | A scheduled, sending or paused broadcast was canceled   |
 | `broadcast.failed`       | A broadcast stopped for good (`error`)                  |
