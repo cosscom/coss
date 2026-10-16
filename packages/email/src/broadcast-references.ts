@@ -2,7 +2,7 @@
  * What unfinished broadcasts refer to: their audience, segment or topic can't be deleted until
  * they are sent or canceled (a broadcast would otherwise fail halfway).
  */
-import { db, schema } from "@coss/db";
+import { db, type Executor, schema } from "@coss/db";
 import { and, eq, inArray } from "drizzle-orm";
 import type { ContactEnvironment } from "./contact-properties.ts";
 import { ContactError } from "./errors.ts";
@@ -15,6 +15,8 @@ const UNFINISHED = ["draft", "scheduled", "sending", "paused"] as const;
 export async function assertNoBroadcastUses(
   env: ContactEnvironment,
   reference: { audienceId: string } | { segmentId: string } | { topic: string },
+  /** The caller's transaction, if any: a second pool connection could wait on a full pool. */
+  executor: Executor = db,
 ): Promise<void> {
   const [kind, condition] =
     "audienceId" in reference
@@ -22,7 +24,7 @@ export async function assertNoBroadcastUses(
       : "segmentId" in reference
         ? (["segment", eq(broadcast.segmentId, reference.segmentId)] as const)
         : (["topic", eq(broadcast.topic, reference.topic)] as const);
-  const [used] = await db
+  const [used] = await executor
     .select({ name: broadcast.name })
     .from(broadcast)
     .where(

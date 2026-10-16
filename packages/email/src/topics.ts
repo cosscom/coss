@@ -207,7 +207,7 @@ export async function deleteTopic(env: ContactEnvironment, id: string): Promise<
         `The segment "${used.name}" filters on this topic: change it first.`,
       );
     }
-    await assertNoBroadcastUses(env, { topic: row.key });
+    await assertNoBroadcastUses(env, { topic: row.key }, tx);
     const deleted = await tx
       .delete(topic)
       .where(and(inContactEnvironment(topic, env), eq(topic.id, id)))

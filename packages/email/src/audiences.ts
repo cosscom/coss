@@ -159,7 +159,7 @@ export async function deleteAudience(env: ContactEnvironment, id: string): Promi
         `The segment "${used.name}" filters on this audience: change it first.`,
       );
     }
-    await assertNoBroadcastUses(env, { audienceId: id });
+    await assertNoBroadcastUses(env, { audienceId: id }, tx);
     const deleted = await tx
       .delete(audience)
       .where(and(inContactEnvironment(audience, env), eq(audience.id, id)))
