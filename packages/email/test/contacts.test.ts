@@ -358,6 +358,27 @@ describe("contacts", () => {
     expect(() => parseContactCsv("name,company\nx,y\n", types)).toThrow("email");
   });
 
+  test("string properties keep their spaces through a CSV export and import", () => {
+    const types = new Map([["note", "string" as const]]);
+    const csv =
+      contactCsvHeader(["note"]) +
+      contactCsvRow(
+        {
+          object: "contact",
+          id: "contact_01k7c8m4q2f3e9v6t5r1n0p8yz",
+          email: "ada@example.com",
+          first_name: null,
+          last_name: null,
+          status: "subscribed",
+          properties: { note: "  hello " },
+          created_at: "2026-10-16T00:00:00.000Z",
+          updated_at: "2026-10-16T00:00:00.000Z",
+        } as unknown as Parameters<typeof contactCsvRow>[0],
+        ["note"],
+      );
+    expect(parseContactCsv(csv, types).entries[0]?.entry.properties).toEqual({ note: "  hello " });
+  });
+
   test("a CSV status the import can't set is reported, never imported as subscribed", async () => {
     const tenant = await createTestTenant();
     const env = envOf(tenant);

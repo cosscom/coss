@@ -79,14 +79,16 @@ export async function getContactRow(
   env: ContactEnvironment,
   idOrEmail: string,
   executor: Executor = db,
+  opts: { forUpdate?: boolean } = {},
 ): Promise<ContactRow | null> {
   const match = byIdOrEmail(idOrEmail);
   if (!match) return null;
-  const [row] = await executor
+  const query = executor
     .select()
     .from(contact)
     .where(and(inContactEnvironment(contact, env), match))
     .limit(1);
+  const [row] = opts.forUpdate ? await query.for("update") : await query;
   return row ?? null;
 }
 
@@ -791,7 +793,8 @@ export async function setContactTopics(
   const now = opts.now ?? new Date();
   const topics = await requireTopics(env, choices);
   const done = await db.transaction(async (tx) => {
-    const row = await getContactRow(env, idOrEmail, tx);
+    // The contact before its topic choices, in the order every other consent writer locks them.
+    const row = await getContactRow(env, idOrEmail, tx, { forUpdate: true });
     if (!row) return false;
     await applyTopicChoices(tx, row, topics, choices, opts.source);
     await tx

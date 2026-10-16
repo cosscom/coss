@@ -11,7 +11,7 @@ import type {
   ContactPropertyType,
 } from "./contact-schemas.ts";
 import { emailAddressProblem } from "./schemas.ts";
-import { ADDRESS_HEADERS, csvField, csvRecords, unguard } from "./suppression-csv.ts";
+import { ADDRESS_HEADERS, csvField, csvRecords, unguard, unguardExact } from "./suppression-csv.ts";
 
 const LEADING = ["email", "first_name", "last_name", "status"] as const;
 const TRAILING = ["created_at", "id"] as const;
@@ -133,7 +133,10 @@ export function parseContactCsv(
     const entry: ContactImportEntryInput = { email: "" };
     const values: Record<string, string | number | boolean> = {};
     columns.forEach((column, index) => {
-      const text = unguard(record.fields[index] ?? "");
+      const raw = record.fields[index] ?? "";
+      const key = column?.startsWith("property:") ? column.slice("property:".length) : null;
+      // A string property keeps its spaces (exports write them as they are); the rest is trimmed.
+      const text = key && properties.get(key) === "string" ? unguardExact(raw) : unguard(raw);
       if (column === null || column === "skip" || text === "") return;
       if (column === "email") entry.email = text;
       else if (column === "first_name") entry.first_name = text;
@@ -142,8 +145,7 @@ export function parseContactCsv(
         // An unknown status (an export's `pending`, another tool's `cleaned`) is passed on, so
         // the import reports the row: left out, it would import the contact as subscribed.
         entry.status = (statusValue(text) ?? text) as ContactImportEntryInput["status"];
-      } else {
-        const key = column.slice("property:".length);
+      } else if (key) {
         values[key] = propertyValue(properties.get(key) as ContactPropertyType, text);
       }
     });

@@ -90,6 +90,11 @@ const SCOPE_HEADERS = new Set(["scope", "category"]);
 export type SuppressionCsvEntry = { line: number; address: string; scope?: string };
 
 /** Undoes one export guard, including the escape for a literal leading apostrophe. */
+/** Like `unguard`, without trimming: for values whose spaces are part of them. */
+export function unguardExact(value: string): string {
+  return value.startsWith("'") && GUARDED_START.test(value.slice(1)) ? value.slice(1) : value;
+}
+
 export function unguard(value: string): string {
   const trimmed = value.trim();
   return trimmed.startsWith("'") && GUARDED_START.test(trimmed.slice(1))
