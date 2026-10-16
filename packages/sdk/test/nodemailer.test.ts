@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import nodemailer from "nodemailer";
+import nodemailer, { type SendMailOptions } from "nodemailer";
 import { VERSION } from "../src/index.ts";
 import { CossSendError, cossTransport, withCoss } from "../src/nodemailer.ts";
 import { apiError, json, mockFetch, sampleEmail } from "./helpers.ts";
@@ -218,12 +218,25 @@ describe("cossTransport", () => {
   test("refuses what coss.com can't send instead of dropping it", async () => {
     const { transport, calls } = transporter(json(202, sampleEmail));
     const base = { from: "hello@acme.com", to: "ada@example.com", subject: "Hi", text: "x" };
-    for (const [extra, pattern] of [
+    const refused: [SendMailOptions, RegExp][] = [
       [{ raw: "From: a\r\n\r\nbody" }, /raw/],
       [{ envelope: { from: "bounce@acme.com", to: "x@example.com" } }, /envelope/],
       [{ sender: "other@acme.com" }, /sender/],
       [{ amp: "<!doctype html><html ⚡4email></html>" }, /AMP/],
-    ] as const) {
+      [
+        {
+          attachments: [
+            {
+              filename: "x.txt",
+              content: "fallback",
+              raw: "Content-Type: text/plain\r\n\r\nactual",
+            },
+          ],
+        },
+        /attachments with `raw` MIME/,
+      ],
+    ];
+    for (const [extra, pattern] of refused) {
       const error = await transport.sendMail({ ...base, ...extra }).catch((err: unknown) => err);
       expect(error).toBeInstanceOf(Error);
       expect((error as Error).message).toMatch(pattern);

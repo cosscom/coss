@@ -103,7 +103,6 @@ interface Content {
   filename?: string | false;
   contentType?: string;
   cid?: string;
-  raw?: unknown;
 }
 
 /** `mail.data` after `normalize()`: addresses parsed, content resolved, headers flattened. */
@@ -175,6 +174,10 @@ export function cossTransport(options: CossTransportOptions = {}): CossTransport
     unsupported(raw.watchHtml, "`watchHtml`", "send `html` and `text`");
     if (Array.isArray(raw.alternatives) && raw.alternatives.length > 0) {
       unsupported(true, "`alternatives`", "send `html`, `text` and attachments");
+    }
+    // normalize() rebuilds attachments without `raw`, so it is only visible here.
+    if (Array.isArray(raw.attachments) && raw.attachments.some(hasRawMime)) {
+      unsupported(true, "attachments with `raw` MIME", "give `content`, `path` or `href`");
     }
     const ownHeaders = messageHeaders(raw.headers);
 
@@ -248,6 +251,11 @@ function unsupported(value: unknown, what: string, instead: string): void {
   throw new Error(`coss/nodemailer: ${what} can't be sent through coss.com; ${instead}.`);
 }
 
+function hasRawMime(attachment: unknown): boolean {
+  if (!attachment || typeof attachment !== "object" || !("raw" in attachment)) return false;
+  return attachment.raw !== undefined && attachment.raw !== null && attachment.raw !== false;
+}
+
 function required<T>(value: T | undefined, field: string): T {
   if (value === undefined) throw new Error(`coss/nodemailer: the message has no \`${field}\`.`);
   return value;
@@ -303,9 +311,6 @@ function addresses(list: Address[] | null | undefined): string[] {
 }
 
 function attachment(file: Content, index: number): EmailAttachmentParams {
-  if (file.raw !== undefined && file.raw !== null) {
-    throw new Error("coss/nodemailer: attachments with `raw` MIME can't be sent through coss.com.");
-  }
   const params: EmailAttachmentParams = {
     filename: typeof file.filename === "string" ? file.filename : `attachment-${index + 1}`,
     content: base64Content(file),
