@@ -79,7 +79,7 @@ export async function sendConfirmation(input: {
     .innerJoin(organization, eq(organization.id, contact.organizationId))
     .where(and(inContactEnvironment(contact, env), eq(contact.id, input.contactId)))
     .limit(1);
-  if (!row || row.contact.status !== "pending") return "not_pending";
+  if (row?.contact.status !== "pending") return "not_pending";
   const target = row.contact;
   if (target.confirmationCount >= MAX_CONFIRMATIONS) return "limit_reached";
   if (

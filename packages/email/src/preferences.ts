@@ -9,6 +9,7 @@
  */
 import { db, type Executor, schema } from "@coss/db";
 import { and, eq, sql } from "drizzle-orm";
+import { broadcastOfEmail, bumpBroadcastStat } from "./broadcast-stats.ts";
 import {
   announceContact,
   applyTopicChoices,
@@ -259,10 +260,11 @@ export async function applyPreferences(
     let row = found;
     if (created) await announceContact(tx, row, "contact.created", "preference_center", now);
 
+    const wasSubscribed = row.status === "subscribed";
     if (change.kind === "unsubscribe") {
       const topic = link.topic ? topics.get(link.topic) : undefined;
       if (topic) {
-        await applyTopicChoices(
+        const changed = await applyTopicChoices(
           tx,
           row,
           topics,
@@ -271,11 +273,13 @@ export async function applyPreferences(
         );
         await announceContact(tx, row, "contact.unsubscribed", "preference_center", now, topic.key);
         await recordEmailUnsubscribe(tx, link, now);
+        if (changed > 0 && wasSubscribed) await countUnsubscribe(tx, link, scope.organizationId);
         return true;
       }
       row = await setStatus(tx, row, "unsubscribed", now);
       await announceContact(tx, row, "contact.unsubscribed", "preference_center", now);
       await recordEmailUnsubscribe(tx, link, now);
+      if (wasSubscribed) await countUnsubscribe(tx, link, scope.organizationId);
       return true;
     }
 
@@ -290,6 +294,7 @@ export async function applyPreferences(
       );
       await announceContact(tx, row, "contact.unsubscribed", "preference_center", now);
       await recordEmailUnsubscribe(tx, link, now);
+      if (wasSubscribed) await countUnsubscribe(tx, link, scope.organizationId);
       return true;
     }
 
@@ -301,9 +306,15 @@ export async function applyPreferences(
         topic: key,
         status: on ? ("opted_in" as const) : ("opted_out" as const),
       }));
-    const wasSubscribed = row.status === "subscribed";
     row = await setStatus(tx, row, change.subscribed ? "subscribed" : "unsubscribed", now);
-    await applyTopicChoices(tx, row, topics, choices, "preference_center");
+    const topicsChanged = await applyTopicChoices(tx, row, topics, choices, "preference_center");
+    const optedOutOfLinkTopic =
+      link.topic !== null &&
+      topicsChanged > 0 &&
+      choices.some((choice) => choice.topic === link.topic && choice.status === "opted_out");
+    if (wasSubscribed && (!change.subscribed || optedOutOfLinkTopic)) {
+      await countUnsubscribe(tx, link, scope.organizationId);
+    }
     await tx
       .update(contact)
       .set({ updatedAt: now })
@@ -317,6 +328,21 @@ export async function applyPreferences(
     );
     return true;
   });
+}
+
+/**
+ * A broadcast counts the subscribed contacts its emails' links unsubscribed (from everything, or
+ * from the broadcast's topic). Links of other emails count nothing.
+ */
+async function countUnsubscribe(
+  tx: Executor,
+  link: LinkPayload,
+  organizationId: string,
+): Promise<void> {
+  if (!link.emailId) return;
+  const owner = await broadcastOfEmail(tx, link.emailId);
+  if (!owner || owner.organizationId !== organizationId) return;
+  await bumpBroadcastStat(tx, { ...owner, emailId: link.emailId, field: "unsubscribed" });
 }
 
 /** How a confirmation link fared. */

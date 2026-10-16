@@ -12,6 +12,7 @@ import type {
   RescheduleEmailParams,
   SendEmailParams,
 } from "../types/email.ts";
+import { BroadcastsResource } from "./broadcasts.ts";
 import {
   AudiencesResource,
   ContactsResource,
@@ -49,6 +50,8 @@ export class EmailResource {
   readonly topics: TopicsResource;
   /** The sender name and postal address of marketing email. */
   readonly marketingSettings: MarketingSettingsResource;
+  /** Marketing emails to an audience or a segment. */
+  readonly broadcasts: BroadcastsResource;
 
   /** @internal Use `new Coss().email`. */
   constructor(http: HttpClient) {
@@ -63,6 +66,7 @@ export class EmailResource {
     this.segments = new SegmentsResource(http);
     this.topics = new TopicsResource(http);
     this.marketingSettings = new MarketingSettingsResource(http);
+    this.broadcasts = new BroadcastsResource(http);
   }
 
   /**

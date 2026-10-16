@@ -17,6 +17,7 @@ import {
   prepareAttachments,
   purgeSendContent,
 } from "./attachments.ts";
+import { broadcastContentCache, withRenderedBody } from "./broadcast-content.ts";
 import { dedicatedPoolSql } from "./dedicated-ips.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
@@ -32,6 +33,7 @@ import {
   type OutboundAttachment,
   type OutboundEmail,
   type ProviderEvent,
+  ThrottledSendError,
   UncertainSendError,
 } from "./provider.ts";
 import {
@@ -389,11 +391,21 @@ const SCREENING_UNAVAILABLE = {
 
 /** A held email is dispatched (and screened) again this long after its screening failed. */
 export const SCREENING_RETRY_DELAY_S = 60;
+/** How long a throttled marketing email waits before it is dispatched again. */
+export const THROTTLE_RETRY_DELAY_S = 30;
 
 export function createEmailService(opts: EmailServiceOptions): EmailService {
   const trackingBaseUrl = opts.trackingBaseUrl?.replace(/\/+$/, "");
   // Sandbox environments never reach a real provider, whatever `liveProvider` is.
   const providerFor = (sandbox: boolean) => (sandbox ? opts.sandboxProvider : opts.liveProvider);
+  const broadcastContent = broadcastContentCache();
+
+  /** A broadcast email with its broadcast's content rendered in (any other email as it is). */
+  async function withBroadcastBody(row: EmailRow): Promise<EmailRow> {
+    if (!row.broadcastId) return row;
+    const content = await broadcastContent(row.organizationId, row.broadcastId);
+    return content ? withRenderedBody(row, new Map([[row.broadcastId, content]])) : row;
+  }
 
   /**
    * Hands a queued email to its provider and records the outcome. Never throws for provider errors.
@@ -434,7 +446,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     row: EmailRow,
     sandbox: boolean,
   ): Promise<typeof CONTENT_REJECTED | typeof SCREENING_UNAVAILABLE | null> {
-    if (sandbox || !opts.screen) return null;
+    // A broadcast's content was screened once, before its emails were made.
+    if (sandbox || !opts.screen || row.broadcastId) return null;
     try {
       const outcome = await opts.screen({
         organizationId: row.organizationId,
@@ -486,8 +499,41 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     });
   }
 
+  /**
+   * Gives back the claim on a marketing email the provider throttled (certainly not sent): it is
+   * dispatched again shortly, so a broadcast slows down instead of failing.
+   */
+  async function holdForThrottling(row: EmailRow, provider: EmailProvider): Promise<void> {
+    await db.transaction(async (tx) => {
+      const [held] = await tx
+        .update(email)
+        .set({ provider: null })
+        .where(
+          and(
+            eq(email.id, row.id),
+            eq(email.organizationId, row.organizationId),
+            eq(email.status, "queued"),
+            eq(email.provider, provider.name),
+          ),
+        )
+        .returning({ id: email.id });
+      if (held) {
+        await opts.queue.enqueue(
+          tx,
+          { organizationId: row.organizationId, emailId: row.id, stream: row.stream },
+          { delaySeconds: THROTTLE_RETRY_DELAY_S },
+        );
+      }
+    });
+  }
+
   /** Sends an email this process claimed for `provider` and records the outcome. */
-  async function complete(row: EmailRow, provider: EmailProvider, sandbox: boolean): Promise<void> {
+  async function complete(
+    claimed: EmailRow,
+    provider: EmailProvider,
+    sandbox: boolean,
+  ): Promise<void> {
+    const row = await withBroadcastBody(claimed);
     let outcome: Partial<EmailRow>;
     let events: ProviderEvent[];
     const attachments = await loadOutboundAttachments(row);
@@ -557,6 +603,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
             errorMessage: error.message,
           };
           events = [failedEvent(row, provider.name, { code: error.code, message: error.message })];
+        } else if (error instanceof ThrottledSendError && row.stream === "marketing") {
+          await holdForThrottling(row, provider);
+          return;
         } else if (error instanceof UncertainSendError) {
           // The provider may be delivering it: never fail it here, and never send it again. It
           // stays claimed; the provider's `Send` event or the stale-claim sweep settles it.

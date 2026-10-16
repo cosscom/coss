@@ -16,7 +16,7 @@ import {
 import { EmailError } from "../src/errors.ts";
 import { ingestProviderEvents } from "../src/events.ts";
 import type { OutboundEmail } from "../src/provider.ts";
-import { IdentityTakenError, UncertainSendError } from "../src/provider.ts";
+import { IdentityTakenError, ThrottledSendError, UncertainSendError } from "../src/provider.ts";
 import { FakeTrackingHostnameProvider } from "../src/providers/fake-tracking-hostnames.ts";
 import { getEmail } from "../src/read.ts";
 import { createEmailRuntime } from "../src/runtime.ts";
@@ -165,7 +165,7 @@ describe("SesEmailProvider", () => {
     expect(api.operations()).toEqual(["sendEmail", "sendEmail", "sendEmail"]);
 
     api.fail("sendEmail", "TooManyRequestsException", 3);
-    await expect(provider.send(outbound())).rejects.toThrow("TooManyRequestsException");
+    await expect(provider.send(outbound())).rejects.toThrow(ThrottledSendError);
     api.fail("sendEmail", "MessageRejected");
     await expect(provider.send(outbound())).rejects.toThrow("MessageRejected");
     expect(api.operations()).toHaveLength(7);

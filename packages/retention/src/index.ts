@@ -278,6 +278,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { days: RETENTION_DAYS.pendingContacts, after: "creation" },
   },
   {
+    id: "broadcasts",
+    label: "Broadcasts",
+    description:
+      "Broadcasts with their content and their counters (recipients, deliveries, bounces, complaints, opens, clicks, unsubscribes). Kept until you delete them; each email they made is kept like any other email.",
+    period: { until: "deleted" },
+  },
+  {
     id: "account",
     label: "Account and configuration",
     description:

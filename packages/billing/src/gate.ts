@@ -36,4 +36,12 @@ export interface UsageGate {
     tx: Executor,
     input: { organizationId: string; meter: MeterKey; quantity: number },
   ): Promise<void>;
+  /**
+   * Gives back units reserved this period that will never be used (e.g. a canceled broadcast's
+   * unsent emails), in `tx`. Never below zero.
+   */
+  release?(
+    tx: Executor,
+    input: { organizationId: string; meter: MeterKey; quantity: number },
+  ): Promise<void>;
 }

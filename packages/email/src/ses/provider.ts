@@ -3,6 +3,7 @@ import {
   type EmailProvider,
   type OutboundEmail,
   type SendResult,
+  ThrottledSendError,
   UncertainSendError,
 } from "../provider.ts";
 import { parseEmailAddress } from "../schemas.ts";
@@ -120,6 +121,9 @@ export class SesEmailProvider implements EmailProvider {
         if (isSesError(error, "TooManyRequestsException") && attempt < THROTTLE_RETRIES) {
           await this.#sleep(200 * 2 ** attempt);
           continue;
+        }
+        if (isSesError(error, "TooManyRequestsException")) {
+          throw new ThrottledSendError("SES is throttling sends.", { cause: error });
         }
         if (isRejection(error)) throw error;
         throw new UncertainSendError(

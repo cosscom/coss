@@ -9,6 +9,7 @@ export type {
   BillingInvoicesResource,
   BillingResource,
 } from "./resources/billing.ts";
+export type { BroadcastsResource } from "./resources/broadcasts.ts";
 export type {
   AudiencesResource,
   ContactPropertiesResource,
@@ -72,6 +73,20 @@ export type {
   PlanKey,
   Usage,
 } from "./types/billing.ts";
+export type {
+  Broadcast,
+  BroadcastEmailList,
+  BroadcastStats,
+  BroadcastStatus,
+  BroadcastTest,
+  CreateBroadcastParams,
+  DeletedBroadcast,
+  ListBroadcastEmailsParams,
+  ListBroadcastsParams,
+  SendBroadcastParams,
+  TestBroadcastParams,
+  UpdateBroadcastParams,
+} from "./types/broadcast.ts";
 export type {
   AddAudienceContactsParams,
   Audience,
@@ -342,6 +357,9 @@ export type {
   AccountWebhookEventData,
   BillingEventType,
   BillingWebhookEvent,
+  BroadcastEventType,
+  BroadcastWebhookEvent,
+  BroadcastWebhookEventData,
   ContactEventType,
   ContactWebhookEvent,
   ContactWebhookEventData,

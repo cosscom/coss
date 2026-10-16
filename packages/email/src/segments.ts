@@ -8,6 +8,7 @@
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, desc, eq, inArray, lt, not, or, type SQL, sql } from "drizzle-orm";
+import { assertNoBroadcastUses } from "./broadcast-references.ts";
 import {
   type ContactEnvironment,
   type ContactPropertyRow,
@@ -392,6 +393,7 @@ export async function updateSegment(
 
 export async function deleteSegment(env: ContactEnvironment, id: string): Promise<boolean> {
   if (!isId("seg", id)) return false;
+  await assertNoBroadcastUses(env, { segmentId: id });
   const deleted = await db
     .delete(segment)
     .where(and(inContactEnvironment(segment, env), eq(segment.id, id)))

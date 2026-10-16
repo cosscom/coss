@@ -134,6 +134,16 @@ export const BUCKETS = {
     overridable: true,
     failureMode: "deny",
   },
+  // Broadcasts' pace per organization (the worker's fan-out charges it with the daily bucket), so
+  // marketing never takes the whole send rate. Plans set it.
+  "email.marketing.recipients.second": {
+    scope: "org",
+    limit: 2,
+    periodMs: SECOND,
+    burst: 10,
+    overridable: true,
+    failureMode: "deny",
+  },
   "email.recipients.day": {
     scope: "org",
     limit: 10_000,

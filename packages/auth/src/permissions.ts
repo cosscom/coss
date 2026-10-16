@@ -28,6 +28,7 @@ export const orgStatements = {
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],
   contact: ["create", "read", "update", "delete"],
+  broadcast: ["create", "read", "update", "delete", "send"],
   // `require` turns the organization's SSO requirement on/off: owners only, because owners keep
   // password (break-glass) access while it is on.
   sso: ["read", "update", "require"],
@@ -66,6 +67,7 @@ const fullCossAccess = {
   webhook: ["create", "read", "update", "delete"],
   suppression: ["create", "read", "delete"],
   contact: ["create", "read", "update", "delete"],
+  broadcast: ["create", "read", "update", "delete", "send"],
   reputation: ["read"],
   log: ["read"],
   logDrain: ["create", "read", "update", "delete"],
@@ -85,6 +87,7 @@ const readOnlyCossAccess = {
   webhook: ["read"],
   suppression: ["read"],
   contact: ["read"],
+  broadcast: ["read"],
   reputation: ["read"],
   log: ["read"],
   logDrain: ["read"],

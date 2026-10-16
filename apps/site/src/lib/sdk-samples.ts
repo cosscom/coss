@@ -351,6 +351,41 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.contacts.properties.remove",
     args: (r) => [pathId(r)],
   },
+  "GET /v1/broadcasts": {
+    method: "email.broadcasts.list",
+    args: (request) => [queryParams(request)],
+  },
+  "POST /v1/broadcasts": {
+    method: "email.broadcasts.create",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/broadcasts/{id}": { method: "email.broadcasts.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/broadcasts/{id}": {
+    method: "email.broadcasts.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/broadcasts/{id}": { method: "email.broadcasts.remove", args: (r) => [pathId(r)] },
+  "POST /v1/broadcasts/{id}/send": {
+    method: "email.broadcasts.send",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "POST /v1/broadcasts/{id}/cancel": {
+    method: "email.broadcasts.cancel",
+    args: (r) => [pathId(r)],
+  },
+  "POST /v1/broadcasts/{id}/pause": { method: "email.broadcasts.pause", args: (r) => [pathId(r)] },
+  "POST /v1/broadcasts/{id}/resume": {
+    method: "email.broadcasts.resume",
+    args: (r) => [pathId(r)],
+  },
+  "POST /v1/broadcasts/{id}/test": {
+    method: "email.broadcasts.test",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
+  "GET /v1/broadcasts/{id}/emails": {
+    method: "email.broadcasts.listEmails",
+    args: (request) => [pathId(request), queryParams(request)],
+  },
   "GET /v1/audiences": {
     method: "email.audiences.list",
     args: (request) => [queryParams(request)],

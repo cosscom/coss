@@ -17,7 +17,7 @@ import {
 
 export * from "./template-schemas.ts";
 
-import { CONTACT_EVENT_TYPES } from "./contact-event-types.ts";
+import { BROADCAST_EVENT_TYPES, CONTACT_EVENT_TYPES } from "./contact-event-types.ts";
 
 export const MAX_RECIPIENTS = 50;
 export const MAX_HEADERS = 15;
@@ -883,6 +883,7 @@ export const WEBHOOK_EVENT_TYPES = [
   ...BILLING_EVENT_TYPES,
   ...RISK_EVENT_TYPES,
   ...CONTACT_EVENT_TYPES,
+  ...BROADCAST_EVENT_TYPES,
 ] as const;
 // Examples shown in the API reference; test/schema-examples.test.ts parses each with its schema.
 const EMAIL_ID_EXAMPLE = "email_01k7c8m4q2f3e9v6t5r1n0p8yz";
@@ -1266,6 +1267,10 @@ export const EmailObject = z
     template: z.union([EmailTemplateReference, z.null()]).meta({
       description: "The template the email was rendered from; `null` if it was sent without one.",
     }),
+    broadcast_id: z
+      .string()
+      .nullable()
+      .meta({ description: "The broadcast the email is part of; `null` for any other email." }),
   })
   .meta({
     id: "Email",
@@ -1296,6 +1301,7 @@ export const EmailObject = z
         scheduled_at: null,
         batch_id: null,
         template: null,
+        broadcast_id: null,
       },
     ],
   });
@@ -1477,6 +1483,7 @@ export const EmailBatchObject = z
             scheduled_at: null,
             batch_id: BATCH_EXAMPLE_ID,
             template: null,
+            broadcast_id: null,
           },
         ],
         created_at: "2026-10-10T12:00:00.000Z",

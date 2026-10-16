@@ -1,3 +1,4 @@
+import type { UsageGate } from "@coss/billing/gate";
 import type { DomainDeps, EmailService, LinkKeyRing } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
 import type { RiskDeps } from "@coss/risk";
@@ -7,6 +8,7 @@ import type { AppEnv } from "../types.ts";
 import { createAudienceRoutes } from "./audiences.ts";
 import { createAuditEventRoutes } from "./audit-events.ts";
 import { createBillingRoutes } from "./billing.ts";
+import { createBroadcastRoutes } from "./broadcasts.ts";
 import { createContactRoutes } from "./contacts.ts";
 import { createDedicatedIpRoutes } from "./dedicated-ips.ts";
 import { createDomainRoutes } from "./domains.ts";
@@ -43,6 +45,8 @@ export type V1Dependencies = {
   listenerPollIntervalMs?: number;
   /** Marketing email's links: the key ring and their origin (`TRACKING_PUBLIC_URL`). */
   links: { keys: LinkKeyRing; baseUrl?: string };
+  /** What canceled and paused broadcasts give back of their usage reservation. */
+  billing?: UsageGate;
 };
 
 /** Everything under `/v1`. Each product mounts its routes here. */
@@ -71,6 +75,14 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
       // The live provider's name (identities and sends share it): live confirmations must come
       // from a domain it verified.
       liveProvider: deps.domainDeps.identity.name,
+    }),
+  );
+  v1.route(
+    "/",
+    createBroadcastRoutes({
+      emailService: deps.emailService,
+      liveProvider: deps.domainDeps.identity.name,
+      billing: deps.billing,
     }),
   );
   v1.route("/", createAudienceRoutes());

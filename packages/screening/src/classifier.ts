@@ -5,7 +5,7 @@
  */
 
 /** Products whose messages are screened; each keeps its own sampling counter. */
-export const SCREENING_PRODUCTS = ["email", "sms"] as const;
+export const SCREENING_PRODUCTS = ["email", "sms", "broadcast"] as const;
 export type ScreeningProduct = (typeof SCREENING_PRODUCTS)[number];
 
 export const SCREENING_CATEGORIES = ["spam", "phishing", "malware", "fraud"] as const;

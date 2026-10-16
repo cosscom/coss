@@ -197,6 +197,12 @@ export const email = pgTable(
     // Set for emails sent by `POST /v1/emails/batch`; the index is the email's position in it.
     batchId: text("batch_id"),
     batchIndex: integer("batch_index"),
+    // Broadcast emails: their content is the broadcast's, rendered with `variables` (the
+    // contact's template values, frozen when the email was made) at dispatch and on read, so
+    // `html`/`text` stay NULL. One per broadcast and contact.
+    broadcastId: text("broadcast_id"),
+    contactId: text("contact_id"),
+    variables: jsonb("variables").$type<Record<string, string>>(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     sentAt: timestamp("sent_at", { withTimezone: true }),
@@ -227,6 +233,12 @@ export const email = pgTable(
       foreignColumns: [emailBatch.id, emailBatch.organizationId],
     }),
     index("email_batch_idx").on(t.batchId, t.batchIndex).where(sql`${t.batchId} is not null`),
+    uniqueIndex("email_broadcast_contact_unique")
+      .on(t.broadcastId, t.contactId)
+      .where(sql`${t.broadcastId} is not null`),
+    index("email_broadcast_status_idx")
+      .on(t.broadcastId, t.status)
+      .where(sql`${t.broadcastId} is not null`),
     // NULL keys are distinct, so requests without an Idempotency-Key never conflict.
     unique("email_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
     index("email_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
@@ -882,6 +894,121 @@ export const marketingSettings = pgTable(
       name: "marketing_settings_environment_fk",
       columns: [t.environmentId, t.organizationId],
       foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+  ],
+);
+
+export const broadcastStatus = pgEnum("broadcast_status", [
+  "draft",
+  "scheduled",
+  "sending",
+  "paused",
+  "sent",
+  "canceled",
+  "failed",
+]);
+
+export const broadcastScreeningStatus = pgEnum("broadcast_screening_status", [
+  "pending",
+  "passed",
+  "held",
+  "blocked",
+]);
+
+/**
+ * A marketing email to an audience or a segment (`@coss/email` broadcasts.ts). Its content is
+ * frozen when it starts sending; the worker then makes one email per eligible contact in throttled
+ * batches (`cursor`: the last contact id done, `contact_upper_bound`: contacts created after the
+ * start are left out), leased like a delivery (`lease_until`).
+ */
+export const broadcast = pgTable(
+  "broadcast",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.broadcast)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    // No FK: Better Auth hard-deletes expired keys, and the broadcast must survive that.
+    apiKeyId: text("api_key_id"),
+    name: text("name").notNull(),
+    status: broadcastStatus("status").notNull().default("draft"),
+    audienceId: text("audience_id"),
+    segmentId: text("segment_id"),
+    // The topic (its key: the emails' category) the broadcast is about, if any.
+    topic: text("topic"),
+    from: text("from").notNull(),
+    replyTo: text("reply_to").array().notNull().default(sql`'{}'::text[]`),
+    subject: text("subject").notNull(),
+    previewText: text("preview_text"),
+    html: text("html"),
+    text: text("text"),
+    trackOpens: boolean("track_opens").notNull().default(false),
+    trackClicks: boolean("track_clicks").notNull().default(false),
+    // Recipients per second; null: the plan's marketing rate.
+    ratePerSecond: integer("rate_per_second"),
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    canceledAt: timestamp("canceled_at", { withTimezone: true }),
+    contactUpperBound: text("contact_upper_bound"),
+    cursor: text("cursor"),
+    recipientsEstimated: integer("recipients_estimated"),
+    materialized: integer("materialized").notNull().default(0),
+    screeningStatus: broadcastScreeningStatus("screening_status").notNull().default("pending"),
+    leaseUntil: timestamp("lease_until", { withTimezone: true }),
+    nextRunAt: timestamp("next_run_at", { withTimezone: true }),
+    // Why a `paused` broadcast waits (`billing_hold`, `usage_limit`, `marketing_paused`, …).
+    pauseReason: text("pause_reason"),
+    errorCode: text("error_code"),
+    errorMessage: text("error_message"),
+    idempotencyKey: text("idempotency_key"),
+    requestHash: text("request_hash"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "broadcast_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    check("broadcast_target_check", sql`(${t.audienceId} is null) <> (${t.segmentId} is null)`),
+    unique("broadcast_id_organization_unique").on(t.id, t.organizationId),
+    unique("broadcast_environment_idempotency_key_unique").on(t.environmentId, t.idempotencyKey),
+    index("broadcast_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
+    // The worker's due scan.
+    index("broadcast_due_idx").on(t.nextRunAt).where(sql`${t.status} in ('scheduled', 'sending')`),
+  ],
+);
+
+/**
+ * A broadcast's counters, split into shards (by email) so event ingestion never queues on one hot
+ * row. Reads sum the shards.
+ */
+export const broadcastStat = pgTable(
+  "broadcast_stat",
+  {
+    broadcastId: text("broadcast_id").notNull(),
+    shard: integer("shard").notNull(),
+    organizationId: text("organization_id").notNull(),
+    recipients: integer("recipients").notNull().default(0),
+    sent: integer("sent").notNull().default(0),
+    delivered: integer("delivered").notNull().default(0),
+    bounced: integer("bounced").notNull().default(0),
+    complained: integer("complained").notNull().default(0),
+    failed: integer("failed").notNull().default(0),
+    opened: integer("opened").notNull().default(0),
+    clicked: integer("clicked").notNull().default(0),
+    unsubscribed: integer("unsubscribed").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ columns: [t.broadcastId, t.shard] }),
+    foreignKey({
+      name: "broadcast_stat_broadcast_fk",
+      columns: [t.broadcastId, t.organizationId],
+      foreignColumns: [broadcast.id, broadcast.organizationId],
     }).onDelete("cascade"),
   ],
 );

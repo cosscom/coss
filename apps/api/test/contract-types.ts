@@ -18,6 +18,18 @@ import type {
   UsageQuery,
 } from "@coss/billing/wire";
 import type {
+  Broadcast,
+  BroadcastList,
+  BroadcastTest,
+  BroadcastWebhookEvent,
+  CreateBroadcastRequest,
+  DeletedBroadcast,
+  ListBroadcastsQuery,
+  SendBroadcastRequest,
+  TestBroadcastRequest,
+  UpdateBroadcastRequest,
+} from "@coss/email/broadcast-schemas";
+import type {
   AddAudienceContactsRequest,
   Audience,
   AudienceContactsAdded,
@@ -212,6 +224,7 @@ import type {
   CheckSuppressionParams,
   CossErrorIssue,
   CossErrorType,
+  CreateBroadcastParams,
   CreateContactPropertyParams,
   CreateDomainParams,
   CreateEmailTemplateParams,
@@ -236,6 +249,7 @@ import type {
   ImportSuppressionsParams,
   List,
   ListAuditEventsParams,
+  ListBroadcastsParams,
   ListContactsParams,
   ListCreditsParams,
   ListDmarcReportsParams,
@@ -270,6 +284,9 @@ import type {
   AuditEvent as SdkAuditEvent,
   Billing as SdkBilling,
   BillingWebhookEvent as SdkBillingWebhookEvent,
+  Broadcast as SdkBroadcast,
+  BroadcastTest as SdkBroadcastTest,
+  BroadcastWebhookEvent as SdkBroadcastWebhookEvent,
   Contact as SdkContact,
   ContactConfirmation as SdkContactConfirmation,
   ContactImport as SdkContactImport,
@@ -280,6 +297,7 @@ import type {
   DedicatedIpPool as SdkDedicatedIpPool,
   DeletedApiKey as SdkDeletedApiKey,
   DeletedAudience as SdkDeletedAudience,
+  DeletedBroadcast as SdkDeletedBroadcast,
   DeletedContact as SdkDeletedContact,
   DeletedContactProperty as SdkDeletedContactProperty,
   DeletedDomain as SdkDeletedDomain,
@@ -353,11 +371,14 @@ import type {
   Usage as SdkUsage,
   WebhookAttempt as SdkWebhookAttempt,
   WebhookDelivery as SdkWebhookDelivery,
+  SendBroadcastParams,
   WebhookListener as SdkWebhookListener,
   WebhookListenerPoll as SdkWebhookListenerPoll,
   SendEmailContentParams,
   SendEmailTemplateParams,
+  TestBroadcastParams,
   TrackingOptions,
+  UpdateBroadcastParams,
   UpdateContactParams,
   UpdateContactPropertyParams,
   UpdateContactTopicsParams,
@@ -599,7 +620,8 @@ export type Contract = [
       | z.output<typeof HookEndpointWebhookEvent>
       | z.output<typeof BillingWebhookEvent>
       | z.output<typeof RiskWebhookEvent>
-      | z.output<typeof ContactWebhookEvent>,
+      | z.output<typeof ContactWebhookEvent>
+      | z.output<typeof BroadcastWebhookEvent>,
       WebhookEvent
     >
   >,
@@ -850,4 +872,24 @@ export type ContactContract = [
     MutuallyAssignable<z.input<typeof CreatePreferenceLinksRequest>, CreatePreferenceLinksParams>
   >,
   Assert<MutuallyAssignable<z.output<typeof PreferenceLinksObject>, SdkPreferenceLinks>>,
+];
+
+export type BroadcastContract = [
+  Assert<MutuallyAssignable<z.output<typeof Broadcast>, SdkBroadcast>>,
+  Assert<MutuallyAssignable<z.output<typeof BroadcastList>, List<SdkBroadcast>>>,
+  Assert<MutuallyAssignable<z.input<typeof CreateBroadcastRequest>, CreateBroadcastParams>>,
+  Assert<Equals<keyof z.input<typeof CreateBroadcastRequest>, keyof CreateBroadcastParams>>,
+  Assert<MutuallyAssignable<z.input<typeof UpdateBroadcastRequest>, UpdateBroadcastParams>>,
+  Assert<MutuallyAssignable<z.input<typeof SendBroadcastRequest>, SendBroadcastParams>>,
+  Assert<MutuallyAssignable<z.input<typeof TestBroadcastRequest>, TestBroadcastParams>>,
+  // `limit` is coerced from the query string; the SDK sends a number.
+  Assert<
+    MutuallyAssignable<
+      Omit<z.output<typeof ListBroadcastsQuery>, "limit">,
+      Omit<ListBroadcastsParams, "limit">
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof BroadcastTest>, SdkBroadcastTest>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedBroadcast>, SdkDeletedBroadcast>>,
+  Assert<MutuallyAssignable<z.output<typeof BroadcastWebhookEvent>, SdkBroadcastWebhookEvent>>,
 ];

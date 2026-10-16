@@ -59,6 +59,7 @@ export const PLANS = {
       rateLimits: {
         "email.recipients.second": perSecond(2, 50),
         "email.recipients.day": perDay(3_000),
+        "email.marketing.recipients.second": perSecond(2, 10),
       },
     },
     highlights: ["3,000 emails per month", "1 domain", "3 team members"],
@@ -91,6 +92,7 @@ export const PLANS = {
       rateLimits: {
         "email.recipients.second": perSecond(14, 100),
         "email.recipients.day": perDay(100_000),
+        "email.marketing.recipients.second": perSecond(10, 50),
       },
     },
     highlights: [
@@ -129,6 +131,7 @@ export const PLANS = {
       rateLimits: {
         "email.recipients.second": perSecond(50, 200),
         "email.recipients.day": perDay(1_000_000),
+        "email.marketing.recipients.second": perSecond(50, 250),
       },
     },
     highlights: [
@@ -167,6 +170,7 @@ export const PLANS = {
       rateLimits: {
         "email.recipients.second": perSecond(100, 500),
         "email.recipients.day": perDay(5_000_000),
+        "email.marketing.recipients.second": perSecond(100, 500),
       },
     },
     highlights: [

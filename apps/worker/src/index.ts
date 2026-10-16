@@ -6,7 +6,12 @@
 // First: monitoring reports failures while starting, too.
 import "./instrument.ts";
 import type { AuthEmailSender } from "@coss/auth/emails";
-import { type BillingNotifier, createUsageGate, logBillingNotifier } from "@coss/billing";
+import {
+  type BillingNotifier,
+  createUsageGate,
+  logBillingNotifier,
+  planRateLimits,
+} from "@coss/billing";
 import { createBillingRuntime } from "@coss/billing/runtime";
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
@@ -24,10 +29,11 @@ import { logPushSender, type PushSender } from "@coss/push";
 import { type ApnsSender, createApnsSender } from "@coss/push/apns";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
-import { screenMessage } from "@coss/screening";
+import { type ScreenInput, screenMessage } from "@coss/screening";
 import { createClassifier } from "@coss/screening/runtime";
 import { createWebhookSender, parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
+import { broadcastPlanRate, broadcastThrottle } from "./broadcast-throttle.ts";
 import { env } from "./env.ts";
 import { hookThrottle } from "./hooks-throttle.ts";
 import { dmarcReportQuota, inboundQuota, type SesInboundDeps } from "./inbound.ts";
@@ -64,12 +70,20 @@ if (config.provider === "ses") {
 }
 // Rate limits counted in Valkey: receiving's daily inbound limit per organization, and Hooks
 // delivery attempts per endpoint and destination host. Then (SES) the receipt notification queue.
-const rateLimits = createRateLimitRuntime({
-  VALKEY_URL: env.VALKEY_URL,
-  VALKEY_CLUSTER: env.VALKEY_CLUSTER,
-  RATE_LIMIT_KEY_PREFIX: env.RATE_LIMIT_KEY_PREFIX,
-  TRUSTED_PROXY_COUNT: 1,
-});
+// Plan rules: broadcasts are paced by the organization's plan (`email.marketing.recipients.second`).
+let planSystemOrganizationId: string | null = null;
+const rateLimits = createRateLimitRuntime(
+  {
+    VALKEY_URL: env.VALKEY_URL,
+    VALKEY_CLUSTER: env.VALKEY_CLUSTER,
+    RATE_LIMIT_KEY_PREFIX: env.RATE_LIMIT_KEY_PREFIX,
+    TRUSTED_PROXY_COUNT: 1,
+  },
+  {
+    planRules: (organizationId) =>
+      planRateLimits(organizationId, { systemOrganizationId: planSystemOrganizationId }),
+  },
+);
 await rateLimits.ready();
 let sesInbound: SesInboundDeps | undefined;
 if (config.provider === "ses" && email.inbound && config.inbound?.bucket) {
@@ -99,10 +113,15 @@ const systemEnvironment = env.NOTIFICATIONS_ENVIRONMENT_ID
   ? await notificationEnvironment(env.NOTIFICATIONS_ENVIRONMENT_ID)
   : null;
 const systemOrganizationId = systemEnvironment?.organizationId ?? null;
+planSystemOrganizationId = systemOrganizationId;
 // Email dispatch runs on pg-boss (its own pool, woken by NOTIFY when a send commits).
 const jobs = await startJobBoss({ worker: true });
 await ensureEmailDispatchQueues(jobs);
 const dispatchQueue = pgBossDispatchQueue(jobs);
+const screen = classifier
+  ? (input: ScreenInput) => screenMessage(input, { classifier, systemOrganizationId })
+  : undefined;
+const usage = createUsageGate({ systemOrganizationId });
 const emailService = createEmailService({
   liveProvider: email.liveProvider,
   sandboxProvider: email.sandboxProvider,
@@ -111,12 +130,10 @@ const emailService = createEmailService({
     env.TRACKING_PUBLIC_URL ?? env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
   // Emails from a domain with an active custom tracking domain are tracked through it.
   trackingDomainProvider: email.trackingHostnames.name,
-  screen: classifier
-    ? (input) => screenMessage(input, { classifier, systemOrganizationId })
-    : undefined,
+  screen,
   screeningFailureAllowlist: systemOrganizationId ? new Set([systemOrganizationId]) : undefined,
   // Internal sends count against their organization's allowance (coss.com's own is never capped).
-  billing: createUsageGate({ systemOrganizationId }),
+  billing: usage,
   // Unsubscribe headers and footers of marketing and topic emails, added at dispatch.
   linkKeys: linkKeysFromEnv(env),
 });
@@ -191,6 +208,14 @@ const loops = startJobs({
   signal: controller.signal,
   domains: email.domainDeps,
   email: emailService,
+  broadcasts: {
+    queue: dispatchQueue,
+    liveProvider: email.liveProvider.name,
+    billing: usage,
+    throttle: broadcastThrottle(rateLimits.limiter),
+    planRate: broadcastPlanRate({ systemOrganizationId: () => systemOrganizationId }),
+    screen,
+  },
   authEmails: authEmailSender && { sender: authEmailSender },
   notifications: notifier && {
     notifier,

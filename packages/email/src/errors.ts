@@ -110,6 +110,7 @@ export type ContactErrorCode =
   | "too_many_topics"
   | "topic_in_use"
   | "audience_in_use"
+  | "segment_in_use"
   | "audience_not_found"
   | "topic_not_found"
   | "invalid_filter"

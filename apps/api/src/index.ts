@@ -37,6 +37,7 @@ const shutdown = new AbortController();
 const linkKeys = linkKeysFromEnv(env);
 const trackingUrl = env.TRACKING_PUBLIC_URL ?? publicUrl;
 
+const usage = createUsageGate();
 const app = createApp({
   emailService: createEmailService({
     liveProvider: email.liveProvider,
@@ -44,9 +45,10 @@ const app = createApp({
     queue: pgBossDispatchQueue(jobs),
     trackingBaseUrl: trackingUrl,
     trackingDomainProvider: email.trackingHostnames.name,
-    billing: createUsageGate(),
+    billing: usage,
     linkKeys,
   }),
+  billing: usage,
   links: { keys: linkKeys, baseUrl: trackingUrl },
   domainDeps: email.domainDeps,
   inbound: email.inbound,

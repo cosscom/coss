@@ -90,6 +90,7 @@ export function createTestApp(
     webhookDeps: { ...testManagementDeps, plans: opts.plans },
     links: { keys: DEVELOPMENT_LINK_KEYS, baseUrl: TRACKING_BASE_URL },
     plans: opts.plans,
+    billing: opts.billing,
     riskDeps: opts.riskDeps ?? testRiskDeps(),
     rateLimiter: opts.rateLimiter,
     clientIp: opts.clientIp,
