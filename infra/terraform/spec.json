@@ -1422,9 +1422,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/crowd-opinionated-source-software",
                   "/shipyard",
-                  "/shipyard/*",
-                  "/kloq"
+                  "/shipyard/*"
                 ]
               }
             },
@@ -1447,9 +1447,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/kloq",
                   "/kloq/*",
-                  "/docs",
-                  "/docs/*"
+                  "/docs"
                 ]
               }
             },
@@ -1472,9 +1472,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/docs/*",
                   "/legal",
-                  "/legal/*",
-                  "/llms.txt"
+                  "/legal/*"
                 ]
               }
             },
@@ -1497,9 +1497,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/llms.txt",
                   "/llms-full.txt",
-                  "/site-assets",
-                  "/site-assets/*"
+                  "/site-assets"
                 ]
               }
             },
@@ -1522,9 +1522,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/site-assets/*",
                   "/icon.svg",
-                  "/favicon.ico",
-                  "/robots.txt"
+                  "/favicon.ico"
                 ]
               }
             },
@@ -1547,9 +1547,9 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
+                  "/robots.txt",
                   "/sitemap.xml",
-                  "/.well-known",
-                  "/.well-known/*"
+                  "/.well-known"
                 ]
               }
             },
@@ -1566,6 +1566,29 @@
         },
         {
           "priority": 110,
+          "targetGroup": "site",
+          "conditions": [
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
+                  "/.well-known/*"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 120,
           "targetGroup": "web",
           "conditions": [
             {
@@ -1650,6 +1673,12 @@
             "origin": "alb",
             "cache": "origin",
             "reason": "site zone (/about)"
+          },
+          {
+            "pathPattern": "/crowd-opinionated-source-software",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/crowd-opinionated-source-software)"
           },
           {
             "pathPattern": "/shipyard",
@@ -1786,6 +1815,7 @@
     "invalidateAfterDeploy": [
       "/pricing",
       "/about",
+      "/crowd-opinionated-source-software",
       "/shipyard",
       "/shipyard/*",
       "/kloq",
