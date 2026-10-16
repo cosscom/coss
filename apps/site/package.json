@@ -47,7 +47,10 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "better-auth": "catalog:",
     "coss": "workspace:*",
+    "next-auth": "catalog:",
+    "nodemailer": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"

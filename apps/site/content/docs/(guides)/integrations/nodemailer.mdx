@@ -1,0 +1,99 @@
+---
+title: Nodemailer
+description: A Nodemailer transport that sends through coss.com, with attachments, inline images and per-message coss.com settings.
+---
+
+`coss/nodemailer` is a [Nodemailer](https://nodemailer.com) transport. Swap it in for your SMTP
+settings and keep your `sendMail` calls as they are. Unlike the [SMTP relay](/docs/email/smtp), it
+sends over HTTPS, so it also works where outgoing SMTP ports are blocked, and it can set a
+category, tags, a send time and tracking per message.
+
+```package-install
+coss nodemailer
+```
+
+```ts twoslash
+import nodemailer from "nodemailer";
+import { cossTransport } from "coss/nodemailer";
+
+const transporter = nodemailer.createTransport(cossTransport());
+
+const info = await transporter.sendMail({
+  from: '"Acme" <hello@acme.com>',
+  to: "ada@example.com",
+  subject: "Your receipt",
+  text: "Thanks for your order.",
+  html: "<p>Thanks for your order.</p>",
+});
+
+console.log(info.messageId);
+//               ^?
+```
+
+`info.messageId` is the coss.com email id (`email_…`). Look it up with `coss.email.get(id)` or in the
+dashboard. `info.email` is the email as the API returned it. Sending is asynchronous: the email is
+`queued` when `sendMail` resolves, and the [`email.sent`](/docs/email/delivery) event or webhook
+tells you when it's out.
+
+## Options
+
+```ts twoslash
+import { cossTransport } from "coss/nodemailer";
+// ---cut---
+cossTransport({
+  apiKey: process.env.COSS_API_KEY, // the default
+  category: "transactional",
+  tags: [{ name: "app", value: "web" }],
+  tracking: { opens: true, clicks: true },
+});
+```
+
+`category`, `tags` and `tracking` apply to every message unless the message sets its own. Pass
+`client` to reuse a `Coss` client, or `baseUrl` and `fetch` to configure the one the transport
+creates.
+
+`transporter.verify()` checks that an API key is configured. It doesn't send anything.
+
+## Per-message coss.com settings
+
+Wrap a message in `withCoss` to set the fields only coss.com has: its
+[category](/docs/email/suppressions), tags, a send time, tracking, or your own idempotency key.
+
+```ts twoslash
+import nodemailer from "nodemailer";
+import { cossTransport, withCoss } from "coss/nodemailer";
+const transporter = nodemailer.createTransport(cossTransport());
+// ---cut---
+await transporter.sendMail(
+  withCoss(
+    { from: "hello@acme.com", to: "ada@example.com", subject: "Tomorrow", text: "See you!" },
+    {
+      category: "reminders",
+      tags: [{ name: "plan", value: "pro" }],
+      scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      idempotencyKey: "reminder-order-42",
+    },
+  ),
+);
+```
+
+A message's tags are merged with the transport's (the message's win on the same name).
+`idempotencyKey` makes retries of the same `sendMail` call safe: the API sends once per key within
+24 hours. Without one, each `sendMail` call gets a random key, which the client's own automatic
+retries still reuse.
+
+## What's supported
+
+| Nodemailer field                          | Sent as                                                    |
+| ----------------------------------------- | ---------------------------------------------------------- |
+| `from`, `to`, `cc`, `bcc`, `replyTo`      | Addresses (groups flattened)                                |
+| `subject`, `text`, `html`                 | As is (streams, buffers, files and URLs are read first)    |
+| `attachments`                             | Base64 attachments; `cid` makes one inline                 |
+| `icalEvent`                               | An `invite.ics` attachment (`text/calendar`)                |
+| `headers`, `list`, `inReplyTo`, `references`, `priority` | Custom headers                            |
+| `messageId`, `date`                       | Dropped: coss.com sets these headers                           |
+| `raw`, `envelope`, `sender`, `amp`, `watchHtml`, `alternatives` | Refused with an error                |
+| A header with several values               | Refused with an error: coss.com sends each header once    |
+
+Nodemailer's `disableFileAccess` and `disableUrlAccess` still apply: attachments are read by
+Nodemailer before coss.com sees them.

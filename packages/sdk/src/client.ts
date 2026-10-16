@@ -37,6 +37,12 @@ export interface CossOptions {
   dangerouslyAllowBrowser?: boolean;
 }
 
+/**
+ * @internal Names the integration (`coss/nodemailer`, …) that created a client, for its
+ * `User-Agent`. A symbol rather than a `CossOptions` field so it stays out of the public options.
+ */
+export const INTEGRATION: unique symbol = Symbol("coss.integration");
+
 const DEFAULT_BASE_URL = "https://api.coss.com";
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_RETRIES = 2;
@@ -135,6 +141,7 @@ export class Coss {
       timeout: timeoutMs(options.timeout),
       maxRetries: retries(options.maxRetries),
       apiVersion: options.apiVersion?.trim() || API_VERSION,
+      integration: (options as { [INTEGRATION]?: string })[INTEGRATION],
     });
     this.email = new EmailResource(http);
     this.environment = new EnvironmentResource(http);

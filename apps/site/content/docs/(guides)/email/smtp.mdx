@@ -46,11 +46,15 @@ await transport.sendMail({
 });
 ```
 
+Or keep the same `sendMail` calls with [`coss/nodemailer`](/docs/integrations/nodemailer), a
+transport that sends over HTTPS instead of SMTP.
+
 </Tab>
 <Tab value="Better Auth">
 
 Better Auth sends its emails through functions you write. Use the nodemailer transport above
-in them, or the [TypeScript SDK](/docs/sdk), which needs no SMTP at all.
+in them, or [`coss/better-auth`](/docs/integrations/better-auth), which writes them for you and
+needs no SMTP at all.
 
 ```ts
 import { betterAuth } from "better-auth";

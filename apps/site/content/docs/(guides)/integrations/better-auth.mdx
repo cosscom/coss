@@ -1,0 +1,132 @@
+---
+title: Better Auth
+description: Send Better Auth's verification, password reset, magic link, one-time code and invitation emails through coss.com.
+---
+
+[Better Auth](https://better-auth.com) asks you for a function per email it sends. `cossEmail`
+gives you all of them, with plain default templates you can replace one by one.
+
+```package-install
+coss better-auth
+```
+
+```ts twoslash
+import { betterAuth } from "better-auth";
+import { cossEmail } from "coss/better-auth";
+
+const email = cossEmail({
+  from: "Acme <auth@acme.com>",
+  appName: "Acme",
+});
+
+export const auth = betterAuth({
+  emailVerification: {
+    sendOnSignUp: true,
+    sendVerificationEmail: email.sendVerificationEmail,
+  },
+  emailAndPassword: {
+    enabled: true,
+    sendResetPassword: email.sendResetPassword,
+  },
+  user: {
+    changeEmail: {
+      enabled: true,
+      sendChangeEmailConfirmation: email.sendChangeEmailConfirmation,
+    },
+    deleteUser: {
+      enabled: true,
+      sendDeleteAccountVerification: email.sendDeleteAccountVerification,
+    },
+  },
+});
+```
+
+## Plugins
+
+The plugins that send email take the matching callback:
+
+```ts twoslash
+import { betterAuth } from "better-auth";
+import { emailOTP, magicLink, organization } from "better-auth/plugins";
+import { cossEmail } from "coss/better-auth";
+// ---cut---
+const email = cossEmail({
+  from: "Acme <auth@acme.com>",
+  appName: "Acme",
+  // Better Auth passes no link for invitations, so tell coss.com where invitees accept them.
+  invitationUrl: ({ id }) => `https://acme.com/accept-invitation/${id}`,
+});
+
+export const auth = betterAuth({
+  plugins: [
+    magicLink({ sendMagicLink: email.sendMagicLink }),
+    emailOTP({ sendVerificationOTP: email.sendVerificationOTP }),
+    organization({ sendInvitationEmail: email.sendInvitationEmail }),
+  ],
+});
+```
+
+| Callback                        | Better Auth option                             | Default subject                     |
+| ------------------------------- | ---------------------------------------------- | ----------------------------------- |
+| `sendVerificationEmail`         | `emailVerification.sendVerificationEmail`      | Verify your email address           |
+| `sendResetPassword`             | `emailAndPassword.sendResetPassword`           | Reset your password                 |
+| `sendChangeEmailConfirmation`   | `user.changeEmail.sendChangeEmailConfirmation` | Confirm your new email address      |
+| `sendDeleteAccountVerification` | `user.deleteUser.sendDeleteAccountVerification`| Confirm account deletion            |
+| `sendMagicLink`                 | `magicLink({ sendMagicLink })`                 | Sign in to _appName_                |
+| `sendVerificationOTP`           | `emailOTP({ sendVerificationOTP })`            | Depends on the code's purpose       |
+| `sendInvitationEmail`           | `organization({ sendInvitationEmail })`        | Join _organization_ on _appName_    |
+
+## Templates
+
+Replace any template with your own. Each one gets the data Better Auth passed plus your `appName`,
+and returns a subject and both bodies:
+
+```ts twoslash
+import { cossEmail } from "coss/better-auth";
+// ---cut---
+const email = cossEmail({
+  from: "Acme <auth@acme.com>",
+  templates: {
+    resetPassword: ({ user, url }) => ({
+      subject: "Reset your Acme password",
+      html: `<p>Hi ${user.name ?? "there"}, <a href="${url}">choose a new password</a>.</p>`,
+      text: `Hi ${user.name ?? "there"}, choose a new password: ${url}`,
+    }),
+  },
+});
+```
+
+Escape anything user-controlled (names, organization names) in your own HTML. The default templates
+already do.
+
+`email.send({ to, subject, html, text })` sends any other email with the same sender and
+defaults, and returns the email. Use it for things like a welcome email from a Better Auth hook.
+
+## Behaviour
+
+- Emails go out with `category: "account"` and open and click tracking off. Pass `category` to
+  change the category.
+- Each email with a link derives its idempotency key from a hash of the link's token, so a callback
+  that runs twice for the same token sends once. Codes and invitations can be legitimately resent
+  with the same value, so they get a fresh key per send.
+- Callbacks throw a `CossSendError` when coss.com refuses the email.
+
+Better Auth recommends not awaiting email sends, so response times don't reveal whether an account
+exists (a timing attack). On serverless platforms, hand the promise to `waitUntil` so the send
+still finishes:
+
+```ts twoslash
+import { betterAuth } from "better-auth";
+import { cossEmail } from "coss/better-auth";
+const email = cossEmail({ from: "auth@acme.com" });
+declare function waitUntil(promise: Promise<unknown>): void;
+// ---cut---
+export const auth = betterAuth({
+  emailAndPassword: {
+    enabled: true,
+    sendResetPassword: async (data) => {
+      waitUntil(email.sendResetPassword(data));
+    },
+  },
+});
+```
