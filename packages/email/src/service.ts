@@ -555,13 +555,99 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
   }
 
   /**
+   * When an email handed back by the provider (throttled, or screening that couldn't run) belongs
+   * to a broadcast paused or canceled meanwhile, drops it like the emails nobody claimed: counter
+   * and reservation given back, a paused one's cursor moved back before its contact so a resume
+   * makes it again. Whether it was dropped (then nothing else may be done with it).
+   */
+  async function dropForStoppedBroadcast(
+    tx: Transaction,
+    row: EmailRow,
+    provider: EmailProvider,
+    sandbox: boolean,
+  ): Promise<boolean> {
+    if (row.broadcastId) {
+      // Locked first, in the order pausing takes it.
+      const [owner] = await tx
+        .select({ status: broadcast.status, cursor: broadcast.cursor })
+        .from(broadcast)
+        .where(
+          and(eq(broadcast.id, row.broadcastId), eq(broadcast.organizationId, row.organizationId)),
+        )
+        .for("update");
+      if (owner && owner.status !== "sending") {
+        const [dropped] = await tx
+          .delete(email)
+          .where(
+            and(
+              eq(email.id, row.id),
+              eq(email.organizationId, row.organizationId),
+              eq(email.status, "queued"),
+              eq(email.provider, provider.name),
+            ),
+          )
+          .returning({ id: email.id });
+        if (!dropped) return true;
+        if (
+          owner.status === "paused" &&
+          row.contactId &&
+          owner.cursor !== null &&
+          owner.cursor >= row.contactId
+        ) {
+          const [before] = await tx
+            .select({ id: sql<string | null>`max(${contact.id})` })
+            .from(contact)
+            .where(
+              and(
+                eq(contact.organizationId, row.organizationId),
+                eq(contact.environmentId, row.environmentId),
+                lt(contact.id, row.contactId),
+              ),
+            );
+          await tx
+            .update(broadcast)
+            .set({ cursor: before?.id ?? null })
+            .where(
+              and(
+                eq(broadcast.id, row.broadcastId),
+                eq(broadcast.organizationId, row.organizationId),
+              ),
+            );
+        }
+        await bumpBroadcastStat(tx, {
+          broadcastId: row.broadcastId,
+          organizationId: row.organizationId,
+          emailId: row.id,
+          field: "recipients",
+          by: -1,
+        });
+        if (!sandbox) {
+          await opts.billing?.release?.(tx, {
+            organizationId: row.organizationId,
+            meter: "email.recipients",
+            quantity: 1,
+            reservedAt: row.createdAt,
+          });
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Gives back the claim on an email whose screening couldn't run (the classifier is down): it is
    * dispatched and screened again in `SCREENING_RETRY_DELAY_S`, and keeps being held until the
    * unclaimed sweep fails it (`content_screening_unavailable`, `UNCLAIMED_FAIL_MS` after it was
    * due). The error code marks it as held, so its retry is screened again (`retry`).
    */
-  async function holdForScreening(row: EmailRow, provider: EmailProvider): Promise<void> {
+  async function holdForScreening(
+    row: EmailRow,
+    provider: EmailProvider,
+    sandbox: boolean,
+  ): Promise<void> {
     await db.transaction(async (tx) => {
+      if (await dropForStoppedBroadcast(tx, row, provider, sandbox)) return;
       const [held] = await tx
         .update(email)
         .set({
@@ -598,78 +684,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     sandbox: boolean,
   ): Promise<void> {
     await db.transaction(async (tx) => {
-      if (row.broadcastId) {
-        // Paused or canceled while this email was at the provider: dropped like the emails
-        // nobody claimed (counter and reservation given back; a paused one's cursor moves back
-        // before its contact, so a resume makes it again). The broadcast is locked first, in the
-        // order pausing takes it.
-        const [owner] = await tx
-          .select({ status: broadcast.status, cursor: broadcast.cursor })
-          .from(broadcast)
-          .where(
-            and(
-              eq(broadcast.id, row.broadcastId),
-              eq(broadcast.organizationId, row.organizationId),
-            ),
-          )
-          .for("update");
-        if (owner && owner.status !== "sending") {
-          const [dropped] = await tx
-            .delete(email)
-            .where(
-              and(
-                eq(email.id, row.id),
-                eq(email.organizationId, row.organizationId),
-                eq(email.status, "queued"),
-                eq(email.provider, provider.name),
-              ),
-            )
-            .returning({ id: email.id });
-          if (!dropped) return;
-          if (
-            owner.status === "paused" &&
-            row.contactId &&
-            owner.cursor !== null &&
-            owner.cursor >= row.contactId
-          ) {
-            const [before] = await tx
-              .select({ id: sql<string | null>`max(${contact.id})` })
-              .from(contact)
-              .where(
-                and(
-                  eq(contact.organizationId, row.organizationId),
-                  eq(contact.environmentId, row.environmentId),
-                  lt(contact.id, row.contactId),
-                ),
-              );
-            await tx
-              .update(broadcast)
-              .set({ cursor: before?.id ?? null })
-              .where(
-                and(
-                  eq(broadcast.id, row.broadcastId),
-                  eq(broadcast.organizationId, row.organizationId),
-                ),
-              );
-          }
-          await bumpBroadcastStat(tx, {
-            broadcastId: row.broadcastId,
-            organizationId: row.organizationId,
-            emailId: row.id,
-            field: "recipients",
-            by: -1,
-          });
-          if (!sandbox) {
-            await opts.billing?.release?.(tx, {
-              organizationId: row.organizationId,
-              meter: "email.recipients",
-              quantity: 1,
-              reservedAt: row.createdAt,
-            });
-          }
-          return;
-        }
-      }
+      if (await dropForStoppedBroadcast(tx, row, provider, sandbox)) return;
       const [held] = await tx
         .update(email)
         .set({ provider: null })
@@ -707,7 +722,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const screeningError =
       attachments !== null && hasRecipients ? await screeningFailure(row, sandbox) : null;
     if (screeningError === SCREENING_UNAVAILABLE) {
-      await holdForScreening(row, provider);
+      await holdForScreening(row, provider, sandbox);
       return;
     }
     if (attachments === null) {

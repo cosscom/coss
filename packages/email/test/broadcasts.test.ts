@@ -507,6 +507,40 @@ describe("broadcasts", () => {
     ]);
   });
 
+  test("an email whose screening can't run while its broadcast is paused is dropped", async () => {
+    const f = await fixture({ live: true });
+    const broadcast = await f.create({ send: true });
+    const deps: BroadcastWorkerDeps = {
+      ...f.deps,
+      screen: async () => ({ action: "send", screening: null }),
+    };
+    for (let step = 0; step < 2; step++) {
+      await db
+        .update(schema.broadcast)
+        .set({ nextRunAt: new Date(0) })
+        .where(eq(schema.broadcast.id, broadcast.id));
+      await runDueBroadcasts(deps, { scope: f.scope });
+    }
+    // Personalized, so each email is screened: the classifier is down while it gets paused.
+    const service = createEmailService({
+      liveProvider: f.provider,
+      sandboxProvider: f.provider,
+      queue: f.queue,
+      trackingBaseUrl: "https://track.test",
+      linkKeys: DEVELOPMENT_LINK_KEYS,
+      screen: async () => {
+        await pauseBroadcast(f.env, broadcast.id);
+        return { action: "block", screening: { verdict: "error" } as never };
+      },
+    });
+    const [first] = f.queue.jobs.splice(0, 1);
+    if (!first) throw new Error("no job");
+    await expect(service.dispatch(first)).rejects.toMatchObject({ code: "not_found" });
+    expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(0);
+    expect(f.queue.jobs.filter((job) => job.emailId === first.emailId)).toHaveLength(0);
+    expect(f.provider.sent).toHaveLength(0);
+  });
+
   test("canceling stops it for good", async () => {
     const f = await fixture();
     const broadcast = await f.create({ send: true });
