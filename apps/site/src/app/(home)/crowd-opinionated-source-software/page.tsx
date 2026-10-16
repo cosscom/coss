@@ -17,7 +17,7 @@ import { LaunchRepos } from "@/components/coss-landing/launch-repos";
 import { MaintainerRules } from "@/components/coss-landing/maintainer-rules";
 import { NextGithub } from "@/components/coss-landing/next-github";
 import { Opinionated as OpinionatedFunnel } from "@/components/coss-landing/opinionated";
-import { PromptComposer } from "@/components/coss-landing/prompt-composer";
+import { PromptRequestChat } from "@/components/coss-landing/prompt-request-chat";
 import { SelfHealing } from "@/components/coss-landing/self-healing";
 import { UnreadDiff } from "@/components/coss-landing/unread-diff";
 import { Exposure, Volume } from "@/components/coss-landing/why-oss-died";
@@ -285,7 +285,7 @@ function Flow() {
         software factory waiting at the other end.
       </SectionHead>
       <div className="drafting-grid flex justify-center border-t px-4 py-12 sm:px-8">
-        <PromptComposer />
+        <PromptRequestChat />
       </div>
       <ol className="grid border-t md:grid-cols-2 lg:grid-cols-4">
         {STEPS.map((step, index) => (
