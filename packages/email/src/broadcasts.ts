@@ -26,6 +26,7 @@ import {
 } from "./audience-resolution.ts";
 import {
   type BroadcastContent,
+  boundedSubject,
   MAX_RENDERED_LENGTH,
   maxRenderedLength,
   renderBroadcast,
@@ -55,7 +56,12 @@ import { authorizeLiveSender } from "./domains.ts";
 import { ContactError, EmailError } from "./errors.ts";
 import { getMarketingSettingsRow } from "./marketing-settings.ts";
 import { selectEmailsWithMode, toEmailObjects } from "./read.ts";
-import { addressKey, type EmailObjectOutput, SendEmailRequest } from "./schemas.ts";
+import {
+  addressKey,
+  type EmailObjectOutput,
+  SendEmailRequest,
+  SUBJECT_MAX_LENGTH,
+} from "./schemas.ts";
 import { emailScreeningContent } from "./screening.ts";
 import type { EmailService, SendEnvironment } from "./service.ts";
 import { topicsByKey } from "./topics.ts";
@@ -821,7 +827,7 @@ export async function testBroadcast(
         from: row.from,
         to,
         ...(row.replyTo.length ? { reply_to: row.replyTo } : {}),
-        subject: `[Test] ${content.subject}`.slice(0, 998),
+        subject: boundedSubject(`[Test] ${content.subject}`, SUBJECT_MAX_LENGTH),
         ...(content.html ? { html: content.html } : {}),
         ...(content.text ? { text: content.text } : {}),
         stream: "marketing",
@@ -1287,8 +1293,11 @@ async function insertEmails(
       from: row.from,
       to: [recipient.address],
       replyTo: row.replyTo,
-      // Only the subject is stored: the body is rendered at dispatch.
-      subject: renderTemplate(row.subject, variables, "subject"),
+      // Only the subject is stored (the body is rendered at dispatch), within a send's limit.
+      subject: boundedSubject(
+        renderTemplate(row.subject, variables, "subject"),
+        SUBJECT_MAX_LENGTH,
+      ),
       html: null,
       text: null,
       category: row.topic,

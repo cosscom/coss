@@ -6,6 +6,7 @@ import { createTestTenant } from "@coss/tenancy/testing";
 import { and, eq } from "drizzle-orm";
 import { addAudienceContacts, createAudience, deleteAudience } from "../src/audiences.ts";
 import {
+  boundedSubject,
   MAX_RENDERED_LENGTH,
   maxRenderedLength,
   renderBroadcast,
@@ -58,6 +59,12 @@ describe("templates", () => {
     expect(
       renderTemplate("{{{contact.first_name}}}!", { first_name: "A\r\nBcc: x" }, "subject"),
     ).toBe("A Bcc: x!");
+  });
+
+  test("a rendered subject is cut to a send's limit, never inside a character", () => {
+    expect(boundedSubject("x".repeat(1200), 998)).toHaveLength(998);
+    expect(boundedSubject(`${"x".repeat(997)}\u{1F389}`, 998)).toBe("x".repeat(997));
+    expect(boundedSubject("short", 998)).toBe("short");
   });
 
   test("placeholders read only the variables' own keys", () => {

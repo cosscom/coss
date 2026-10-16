@@ -50,6 +50,16 @@ export function renderTemplate(
   });
 }
 
+/**
+ * A rendered subject cut to `max` UTF-16 units (a send's limit), never between a surrogate pair:
+ * contact values can make it longer than its template.
+ */
+export function boundedSubject(subject: string, max: number): string {
+  if (subject.length <= max) return subject;
+  const cut = subject.slice(0, max);
+  return /[\uD800-\uDBFF]$/.test(cut) ? cut.slice(0, -1) : cut;
+}
+
 /** The preview line as a hidden preheader right after `<body…>` (or at the start). */
 export function withPreheader(html: string, previewText: string | null | undefined): string {
   if (!previewText) return html;
