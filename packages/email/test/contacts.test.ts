@@ -595,6 +595,17 @@ describe("segments", () => {
     ).rejects.toMatchObject({ code: "invalid_filter" });
   });
 
+  test("more concurrent segment saves than pool connections all finish", async () => {
+    const { env, audience } = await fixture();
+    const saves = Array.from({ length: 15 }, (_, index) =>
+      createSegment(env, {
+        name: `Concurrent ${index}`,
+        filter: one({ field: "audience", op: "in", audience_id: audience.id }),
+      }),
+    );
+    expect(await Promise.all(saves)).toHaveLength(15);
+  });
+
   test("audiences and topics a segment uses can't be deleted until it changes", async () => {
     const { env, audience } = await fixture();
     const topic = await createTopic(env, {

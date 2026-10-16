@@ -3,7 +3,7 @@
  * the emails about it). Consent per topic lives in `contact_topic`; no row means the topic's
  * default (`opt_in`: subscribed, `opt_out`: not).
  */
-import { db, schema } from "@coss/db";
+import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import {
@@ -39,8 +39,11 @@ export function toTopicObject(row: TopicRow): TopicOutput {
 }
 
 /** Every topic of the environment, in preference-center order. */
-export async function listTopicRows(env: ContactEnvironment): Promise<TopicRow[]> {
-  return db
+export async function listTopicRows(
+  env: ContactEnvironment,
+  executor: Executor = db,
+): Promise<TopicRow[]> {
+  return executor
     .select()
     .from(topic)
     .where(inContactEnvironment(topic, env))
@@ -87,9 +90,10 @@ export async function getTopic(env: ContactEnvironment, id: string): Promise<Top
 export async function topicsByKey(
   env: ContactEnvironment,
   keys?: string[],
+  executor: Executor = db,
 ): Promise<Map<string, TopicRow>> {
   if (keys && keys.length === 0) return new Map();
-  const rows = await listTopicRows(env);
+  const rows = await listTopicRows(env, executor);
   const wanted = keys ? new Set(keys) : null;
   return new Map(rows.filter((row) => !wanted || wanted.has(row.key)).map((row) => [row.key, row]));
 }

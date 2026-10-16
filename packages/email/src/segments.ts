@@ -5,7 +5,7 @@
  * `position()`, never `LIKE`. A filter is validated against the environment when saved (and
  * again when compiled); deleting what a segment references is refused.
  */
-import { db, schema } from "@coss/db";
+import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, desc, eq, inArray, lt, not, or, type SQL, sql } from "drizzle-orm";
 import {
@@ -54,15 +54,16 @@ type FilterContext = {
 async function filterContext(
   env: ContactEnvironment,
   filter: SegmentFilterOutput,
+  executor: Executor,
 ): Promise<FilterContext> {
   const audienceIds = conditionsOf(filter)
     .flatMap(({ condition }) => (condition.field === "audience" ? [condition.audience_id] : []))
     .filter((id) => isId("aud", id));
   const [properties, topics, audiences] = await Promise.all([
-    propertyDefinitions(env),
-    topicsByKey(env),
+    propertyDefinitions(env, executor),
+    topicsByKey(env, undefined, executor),
     audienceIds.length
-      ? db
+      ? executor
           .select({ id: audience.id })
           .from(audience)
           .where(and(inContactEnvironment(audience, env), inArray(audience.id, audienceIds)))
@@ -251,8 +252,9 @@ function combine(match: "all" | "any", parts: SQL[]): SQL {
 export async function compileSegmentFilter(
   env: ContactEnvironment,
   filter: SegmentFilterOutput,
+  executor: Executor = db,
 ): Promise<SQL> {
-  const context = await filterContext(env, filter);
+  const context = await filterContext(env, filter, executor);
   return combine(
     filter.match,
     filter.conditions.map((item, index) =>
@@ -343,7 +345,7 @@ export async function createSegment(
   return db.transaction(async (tx) => {
     // Checked and saved under the lock deletions of what it references take.
     await lockSegmentReferences(tx, env);
-    await compileSegmentFilter(env, filter);
+    await compileSegmentFilter(env, filter, tx);
     const projectId = await environmentProject(env, tx);
     if (!projectId) throw new ContactError("not_found", "Environment not found.");
     const [row] = await tx
@@ -373,7 +375,7 @@ export async function updateSegment(
       if (filter) {
         // Checked and saved under the lock deletions of what it references take.
         await lockSegmentReferences(tx, env);
-        await compileSegmentFilter(env, filter);
+        await compileSegmentFilter(env, filter, tx);
       }
       const [row] = await tx
         .update(segment)
