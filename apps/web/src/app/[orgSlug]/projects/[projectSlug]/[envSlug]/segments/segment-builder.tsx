@@ -173,7 +173,11 @@ function representable(condition: SegmentConditionOutput): boolean {
 
 function typed(type: PropertyType, text: string): string | number | boolean {
   if (type === "number") return Number(text);
-  if (type === "boolean") return text.trim() === "true";
+  if (type === "boolean") {
+    // `true`/`false` in any case; anything else goes on as text, so the server refuses it.
+    const lower = text.trim().toLowerCase();
+    return lower === "true" ? true : lower === "false" ? false : text;
+  }
   if (type === "date") return /^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T00:00:00.000Z` : text;
   return text;
 }
