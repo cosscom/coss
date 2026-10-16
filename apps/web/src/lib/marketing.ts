@@ -1,5 +1,5 @@
 import "server-only";
-import type { ContactEnvironment } from "@coss/email";
+import { type ContactEnvironment, listAudiences } from "@coss/email";
 import { getEnvironment } from "@coss/tenancy";
 import { notFound } from "next/navigation";
 import { ActionError, formString } from "./actions";
@@ -76,4 +76,20 @@ export async function marketingPage(params: {
     base: `/${organization.slug}/projects/${project.slug}/${environment.slug}`,
     target: { orgSlug: organization.slug, projectSlug: project.slug, envSlug: environment.slug },
   };
+}
+
+/**
+ * Every audience of the environment, following the cursors (the dashboard's pickers offer them
+ * all), in `listAudiences`' shape.
+ */
+export async function listAllAudiences(env: ContactEnvironment) {
+  const first = await listAudiences(env, { limit: 100 });
+  const data = [...first.data];
+  let more = first.has_more;
+  while (more) {
+    const next = await listAudiences(env, { limit: 100, after: data.at(-1)?.id });
+    data.push(...next.data);
+    more = next.has_more;
+  }
+  return { object: "list" as const, data, has_more: false };
 }

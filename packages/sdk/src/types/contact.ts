@@ -76,8 +76,13 @@ export interface ExportContactsParams {
   audience_id?: string;
 }
 
-export interface ImportContactEntry extends ContactFields {
+export interface ImportContactEntry extends Omit<ContactFields, "status"> {
   email: string;
+  /**
+   * `subscribed` or `unsubscribed`; anything else (like an export's `pending`) is reported in
+   * the import's `invalid` instead of refusing the request.
+   */
+  status?: "subscribed" | "unsubscribed" | (string & {});
 }
 
 export interface ImportContactsParams {

@@ -144,7 +144,7 @@ export function parseContactCsv(
       else if (column === "status") {
         // An unknown status (an export's `pending`, another tool's `cleaned`) is passed on, so
         // the import reports the row: left out, it would import the contact as subscribed.
-        entry.status = (statusValue(text) ?? text) as ContactImportEntryInput["status"];
+        entry.status = statusValue(text) ?? text;
       } else if (key) {
         values[key] = propertyValue(properties.get(key) as ContactPropertyType, text);
       }

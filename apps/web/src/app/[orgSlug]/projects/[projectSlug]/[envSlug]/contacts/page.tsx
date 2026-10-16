@@ -1,4 +1,4 @@
-import { contactCount, listAudiences, listContacts } from "@coss/email";
+import { contactCount, listContacts } from "@coss/email";
 import { CONTACT_STATUSES, ListContactsQuery } from "@coss/email/contact-schemas";
 import { Button } from "@coss/ui/components/button";
 import {
@@ -21,7 +21,7 @@ import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
 import { SearchForm } from "@/components/search-form";
 import { formatDateTime } from "@/lib/format";
-import { marketingPage } from "@/lib/marketing";
+import { listAllAudiences, marketingPage } from "@/lib/marketing";
 import { AddContactDialog, ImportContactsDialog } from "./contact-dialogs";
 
 export const metadata: Metadata = { title: "Contacts" };
@@ -53,7 +53,7 @@ export default async function ContactsPage({
   const [contacts, total, audiences] = await Promise.all([
     query.success ? listContacts(env, query.data) : null,
     contactCount(env),
-    listAudiences(env, { limit: 100 }),
+    listAllAudiences(env),
   ]);
   const listPath = `${base}/contacts`;
   const filters = {

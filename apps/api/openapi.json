@@ -7059,11 +7059,7 @@
                 },
                 "status": {
                   "type": "string",
-                  "enum": [
-                    "subscribed",
-                    "unsubscribed"
-                  ],
-                  "description": "Sets the contact's consent. Omitted, a new contact is `subscribed` and an existing one keeps its status."
+                  "description": "`subscribed` or `unsubscribed` (anything else, like an export's `pending`, is reported in `invalid`). Omitted, a new contact is `subscribed` and an existing one keeps its status."
                 }
               },
               "required": [

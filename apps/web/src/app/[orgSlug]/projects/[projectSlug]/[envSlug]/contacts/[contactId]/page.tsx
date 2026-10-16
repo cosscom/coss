@@ -2,7 +2,6 @@ import {
   contactAudienceIds,
   getContactRow,
   getContactTopics,
-  listAudiences,
   listContactPropertyRows,
   toContactObject,
 } from "@coss/email";
@@ -22,7 +21,7 @@ import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
 import { SpecItem, SpecList } from "@/components/spec-list";
 import { formatDateTime } from "@/lib/format";
-import { marketingPage } from "@/lib/marketing";
+import { listAllAudiences, marketingPage } from "@/lib/marketing";
 import { DeleteContactButton } from "../contact-dialogs";
 import { AudienceMembershipButton, ContactForm, TopicChoiceButton } from "./contact-forms";
 
@@ -39,7 +38,7 @@ export default async function ContactPage({
   const [definitions, topics, audiences, memberships] = await Promise.all([
     listContactPropertyRows(env),
     getContactTopics(env, contact.id),
-    listAudiences(env, { limit: 100 }),
+    listAllAudiences(env),
     contactAudienceIds(env, contact.id),
   ]);
   const canEdit = context.can({ contact: ["update"] });

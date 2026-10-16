@@ -1,16 +1,12 @@
 import "server-only";
-import {
-  type ContactEnvironment,
-  listAudiences,
-  listContactPropertyRows,
-  listTopicRows,
-} from "@coss/email";
+import { type ContactEnvironment, listContactPropertyRows, listTopicRows } from "@coss/email";
+import { listAllAudiences } from "@/lib/marketing";
 
 /** What the segment builder offers: properties, audiences and topics of the environment. */
 export async function segmentEditorData(env: ContactEnvironment) {
   const [properties, audiences, topics] = await Promise.all([
     listContactPropertyRows(env),
-    listAudiences(env, { limit: 100 }),
+    listAllAudiences(env),
     listTopicRows(env),
   ]);
   return {

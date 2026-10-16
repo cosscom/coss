@@ -256,7 +256,14 @@ export const ContactImportEntry = z.strictObject({
     .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
     .optional()
     .meta({ description: "Custom properties by key, checked against their definitions." }),
-  status: ContactFields.status,
+  status: z
+    .string()
+    .optional()
+    .meta({
+      description:
+        "`subscribed` or `unsubscribed` (anything else, like an export's `pending`, is reported in " +
+        "`invalid`). Omitted, a new contact is `subscribed` and an existing one keeps its status.",
+    }),
 });
 export type ContactImportEntryInput = z.input<typeof ContactImportEntry>;
 

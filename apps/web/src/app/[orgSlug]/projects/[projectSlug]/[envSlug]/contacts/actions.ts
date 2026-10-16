@@ -50,7 +50,10 @@ async function propertiesFromForm(
   for (const definition of await listContactPropertyRows(env)) {
     const name = `property:${definition.key}`;
     if (!formData.has(name)) continue;
-    const text = formString(formData, name);
+    // A string property keeps its spaces (as through the API and CSV); the others are trimmed.
+    const raw = formData.get(name);
+    const text =
+      definition.type === "string" && typeof raw === "string" ? raw : formString(formData, name);
     if (text === "") {
       properties[definition.key] = null;
     } else if (definition.type === "number") {

@@ -264,6 +264,10 @@ describe("contacts", () => {
     ];
     // The request accepts entries a single upsert would refuse; the import reports them.
     expect(ImportContactsRequest.safeParse({ contacts: entries }).success).toBe(true);
+    expect(
+      ImportContactsRequest.safeParse({ contacts: [{ email: "a@example.com", status: "cleaned" }] })
+        .success,
+    ).toBe(true);
     const result = await importContacts(env, entries, {});
     expect(result).toMatchObject({ created: 2, updated: 0 });
     expect(result.invalid.map((row) => row.index)).toEqual([1, 2]);
