@@ -68,6 +68,8 @@ export class ContactPropertiesResource {
     return this.#http.request({
       method: "POST",
       path: "/v1/contact_properties",
+      // Not deduplicated by the API: a retry after a lost response would answer "taken".
+      retry: false,
       body: params,
       signal: options?.signal,
     });
@@ -271,6 +273,8 @@ export class AudiencesResource {
     return this.#http.request({
       method: "POST",
       path: "/v1/audiences",
+      // Not deduplicated by the API: a retry after a lost response would answer "taken".
+      retry: false,
       body: params,
       signal: options?.signal,
     });
@@ -366,6 +370,8 @@ export class SegmentsResource {
     return this.#http.request({
       method: "POST",
       path: "/v1/segments",
+      // Not deduplicated by the API: a retry after a lost response would answer "taken".
+      retry: false,
       body: params,
       signal: options?.signal,
     });
@@ -437,6 +443,8 @@ export class TopicsResource {
     return this.#http.request({
       method: "POST",
       path: "/v1/topics",
+      // Not deduplicated by the API: a retry after a lost response would answer "taken".
+      retry: false,
       body: params,
       signal: options?.signal,
     });

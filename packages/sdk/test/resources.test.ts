@@ -372,3 +372,25 @@ describe("coss.webhookEndpoints.deliveries", () => {
     expect(result.error?.status).toBe(503);
   });
 });
+
+describe("marketing creates", () => {
+  test("properties, audiences, segments and topics are posted once, never retried", async () => {
+    const calls = [
+      (coss: Coss) => coss.email.contacts.properties.create({ key: "plan", type: "string" }),
+      (coss: Coss) => coss.email.audiences.create({ name: "Everyone" }),
+      (coss: Coss) =>
+        coss.email.segments.create({
+          name: "Pro",
+          filter: { version: 1, match: "all", conditions: [] },
+        }),
+      (coss: Coss) =>
+        coss.email.topics.create({ key: "news", name: "News", default_subscription: "opt_in" }),
+    ];
+    for (const create of calls) {
+      const { coss, calls: made } = client(json(503, {}), json(200, {}));
+      const result = await create(coss);
+      expect(result.error).toMatchObject({ status: 503 });
+      expect(made).toHaveLength(1);
+    }
+  });
+});
