@@ -10,7 +10,8 @@ import {
   startUpgrade,
 } from "../src/changes.ts";
 import { organizationsBuyingAddOn, organizationsEntitledTo } from "../src/enforcement.ts";
-import { invoiceLines } from "../src/invoices.ts";
+import { listGrants } from "../src/grants.ts";
+import { invoiceLines, listInvoices } from "../src/invoices.ts";
 import { runDueBillingPeriods } from "../src/periods.ts";
 import { billingStateAt } from "../src/resolve.ts";
 import { collectInvoiceNow } from "../src/sync.ts";
@@ -148,6 +149,30 @@ describe("self-serve add-ons", () => {
     };
     const unchanged = await db.transaction((tx) => composeChange(tx, withAddOn, same, later));
     expect(unchanged.lines).toEqual([]);
+  });
+
+  test("the month close doesn't charge a fee carried by a change in the month's first hour", async () => {
+    // Upgraded and the add-on bought before September closes: both start at October's start.
+    const f = await onScale(at("2026-10-01T00:05:00Z"));
+    const bought = at("2026-10-01T00:10:00Z");
+    const { invoice } = await startAddOn({
+      organizationId: f.org,
+      key: "dedicated_ips",
+      userId: f.tenant.owner.id,
+      defaultProvider: "fake",
+      preflight: noBlockers,
+      now: bought,
+    });
+    await collectInvoiceNow(invoice?.id ?? "", f.syncDeps, bought);
+    await runDueBillingPeriods({ now: at("2026-10-01T00:20:00Z"), scope: f.scope });
+
+    const lines = (
+      await Promise.all((await listInvoices(f.org)).map((row) => invoiceLines(row.id)))
+    ).flat();
+    expect(lines.filter((line) => line.kind === "plan_fee")).toHaveLength(1);
+    expect(lines.filter((line) => line.kind === "add_on")).toHaveLength(1);
+    const credit = (await listGrants(f.org)).filter((grant) => grant.source === "fee");
+    expect(credit).toHaveLength(1);
   });
 
   test("refused on Pro, and when the preflight refuses", async () => {

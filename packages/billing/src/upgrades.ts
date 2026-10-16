@@ -7,21 +7,15 @@ import { schema, type Transaction } from "@coss/db";
 import { and, eq, gt, ne, sql } from "drizzle-orm";
 import { type BillingAccount, lockBillingAccount, organizationLabel } from "./accounts.ts";
 import { announcePlanChange } from "./announce.ts";
+import { advancePaid } from "./carried.ts";
 import {
   type Contract,
   cancelContract,
   confirmContract,
   contractAt,
   contractPendingOn,
-  getContract,
 } from "./contracts.ts";
-import {
-  addOnCarriesOver,
-  addOnChargeKeyAt,
-  composeContractChange,
-  feeCarriesOver,
-  feeChargeKeyAt,
-} from "./engine/compose.ts";
+import { composeContractChange } from "./engine/compose.ts";
 import type { Composition, Segment } from "./engine/types.ts";
 import { BillingError } from "./errors.ts";
 import { existingGrantKeys, insertComposedGrants } from "./grants.ts";
@@ -29,7 +23,7 @@ import { createInvoice, existingChargeKeys, finalizeInvoice, type InvoiceRow } f
 import { parsePendingGrants, pendingGrantsSnapshot } from "./pending.ts";
 import { snapshot } from "./periods.ts";
 import { contractSegment } from "./resolve.ts";
-import { type Interval, monthStart, periodOf } from "./time.ts";
+import { type Interval, periodOf } from "./time.ts";
 
 const { billingContract, billingCreditGrant } = schema;
 
@@ -38,69 +32,6 @@ function segmentFrom(contract: Contract | null, at: Date, superseded: boolean): 
   if (!contract) return null;
   const period = periodOf(at);
   return contractSegment(contract, { start: at, end: period.end }, superseded);
-}
-
-/** How many contracts back `advancePaid` follows `supersedes_id` (each one a change in the month). */
-const MAX_CARRIED_CONTRACTS = 50;
-
-/**
- * Whether `from`'s advance fee, and which of its advance add-ons, were paid for `at`'s interval:
- * charged under its own keys, or carried over from the contract it replaced in that month (an
- * add-on change carries the unchanged fee and same-price add-ons instead of charging them again,
- * so their charge keys stay the earlier contract's), following `supersedes_id` back.
- */
-async function advancePaid(
-  tx: Transaction,
-  from: Contract,
-  at: Date,
-): Promise<{ fee: boolean; addOns: Set<string> }> {
-  const paid = { fee: false, addOns: new Set<string>() };
-  let contract = from;
-  let segment = segmentFrom(contract, at, true);
-  if (!segment) return paid;
-  // Still looking for: the fee, and add-ons by key (as `from` has them).
-  let fee = segment.terms.fee !== null;
-  let addOns = new Map(segment.terms.addOns.map((addOn) => [addOn.key, addOn]));
-  for (let hop = 0; hop < MAX_CARRIED_CONTRACTS; hop++) {
-    const open: Segment = { ...segment, contractEnd: null };
-    const feeKey = fee ? feeChargeKeyAt(open, at) : null;
-    const addOnKeys = new Map<string, string>();
-    for (const addOn of open.terms.addOns) {
-      if (addOns.has(addOn.key)) addOnKeys.set(addOnChargeKeyAt(open, addOn, at), addOn.key);
-    }
-    const charged = await existingChargeKeys(
-      [...(feeKey ? [feeKey] : []), ...addOnKeys.keys()],
-      tx,
-    );
-    if (feeKey && charged.has(feeKey)) {
-      paid.fee = true;
-      fee = false;
-    }
-    for (const [chargeKey, key] of addOnKeys) {
-      if (!charged.has(chargeKey)) continue;
-      paid.addOns.add(key);
-      addOns.delete(key);
-    }
-    // Carried charges come only from a contract this one replaced in `at`'s month (its first
-    // hour included: a change then starts at the month's start).
-    const started = contract.effectiveFrom.getTime();
-    if ((!fee && !addOns.size) || !contract.supersedesId) break;
-    if (monthStart(contract.effectiveFrom).getTime() !== monthStart(at).getTime()) break;
-    const previous = await getContract(contract.organizationId, contract.supersedesId, tx);
-    if (previous?.effectiveUntil?.getTime() !== started) break;
-    const before = segmentFrom(previous, at, true);
-    if (!before) break;
-    fee = fee && feeCarriesOver(before, segment);
-    const carried = new Map<string, Segment["terms"]["addOns"][number]>();
-    for (const [key, addOn] of addOns) {
-      const line = before.terms.addOns.find((candidate) => candidate.key === key);
-      if (line && addOnCarriesOver(before, line, segment, addOn)) carried.set(key, line);
-    }
-    addOns = carried;
-    contract = previous;
-    segment = before;
-  }
-  return paid;
 }
 
 /** The prorated charges and credit of `to` replacing `from` at `at`, less what was already billed. */

@@ -421,6 +421,11 @@ function sameMonthlyFee(a: Segment["terms"]["fee"], b: Segment["terms"]["fee"]):
   );
 }
 
+/** The key of a monthly fee's usage credit for the month containing `at`. */
+export function feeCreditKeyAt(segment: Segment, at: Date): string {
+  return `feecredit:${segment.contractId}:${monthStart(at).toISOString()}`;
+}
+
 /** `gross` less a segment's discounts on `scope` in effect, as its charges were discounted. */
 function netOfDiscounts(segment: Segment, scope: "fees" | "add_ons", gross: bigint): bigint {
   let net = gross;
