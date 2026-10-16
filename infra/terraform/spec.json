@@ -653,6 +653,13 @@
           "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
         },
         {
+          "name": "EMAIL_LINK_KEYS",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage). A comma-separated list while rotating: the first encrypts, every one decrypts. Never drop a key whose links may still be clicked",
+          "description": "Encrypts the preference center, unsubscribe and confirmation links of marketing email. Same value for api and worker."
+        },
+        {
           "name": "PORTAL_PUBLIC_URL",
           "kind": "plain",
           "required": false,
@@ -922,6 +929,13 @@
           "required": true,
           "value": "openssl rand -base64 32 (one per stage; losing it makes endpoint secrets unreadable). A comma-separated list while rotating: the first encrypts, every one decrypts",
           "description": "Encrypts webhook signing secrets. Same value for web, api and worker."
+        },
+        {
+          "name": "EMAIL_LINK_KEYS",
+          "kind": "secret",
+          "required": true,
+          "value": "openssl rand -base64 32 (one per stage). A comma-separated list while rotating: the first encrypts, every one decrypts. Never drop a key whose links may still be clicked",
+          "description": "Encrypts the preference center, unsubscribe and confirmation links of marketing email. Same value for api and worker."
         },
         {
           "name": "BILLING_PROVIDER",

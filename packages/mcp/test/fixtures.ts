@@ -25,6 +25,7 @@ export function email(overrides: Partial<Email> = {}): Email {
     headers: {},
     tags: [],
     category: null,
+    stream: "transactional",
     status: "sent",
     failure: null,
     recipients: [recipient("ada@example.com", "delivered")],

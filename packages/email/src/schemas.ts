@@ -526,6 +526,18 @@ const SendEmailRequestFields = z.strictObject({
       description: `Up to ${MAX_ATTACHMENTS} files, at most ${MAX_ATTACHMENTS_BYTES / 1024 / 1024} MB combined.`,
     }),
   tracking: TrackingOptions.optional(),
+  stream: z
+    .enum(EMAIL_STREAMS)
+    .optional()
+    .meta({
+      description:
+        "`transactional` (the default) or `marketing`. Marketing email goes out on its own sending " +
+        "infrastructure and reputation, so its complaints never hold up transactional mail. It " +
+        "needs the environment's postal address (marketing settings), exactly one recipient, and no " +
+        "`List-Unsubscribe` header: coss.com adds one-click unsubscribe headers and a footer with the " +
+        "address and an unsubscribe link (place them yourself with `{{{unsubscribe_url}}}`, " +
+        "`{{{preferences_url}}}` and `{{{mailing_address}}}`). Contacts who unsubscribed are skipped.",
+    }),
 });
 
 export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) => {
@@ -575,7 +587,8 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
   if (value.scheduled_at !== undefined && tooFarAhead(value.scheduled_at)) {
     ctx.addIssue({ code: "custom", path: ["scheduled_at"], message: TOO_FAR_AHEAD_MESSAGE });
   }
-  if (value.tracking?.unsubscribe === true) {
+  // Marketing email always gets its own unsubscribe headers (the preference center's).
+  if (value.tracking?.unsubscribe === true && value.stream !== "marketing") {
     const path = ["tracking", "unsubscribe"];
     if (value.category === undefined) {
       ctx.addIssue({
@@ -608,6 +621,35 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
         message:
           `One-click unsubscribe adds ${LIST_UNSUBSCRIBE_HEADERS.length} headers: send at most ` +
           `${MAX_HEADERS_WITH_UNSUBSCRIBE} of your own.`,
+      });
+    }
+  }
+  if (value.stream === "marketing") {
+    // Unsubscribe links are personal: one recipient per marketing email.
+    if (withinFieldLimits && unique.size !== 1) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["to"],
+        message: "A marketing email has exactly one recipient (across to, cc and bcc).",
+      });
+    }
+    const names = Object.keys(value.headers ?? {});
+    for (const name of names) {
+      if ((LIST_UNSUBSCRIBE_HEADERS as readonly string[]).includes(name.toLowerCase())) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["headers", name],
+          message: "coss.com sets the unsubscribe headers of marketing email itself.",
+        });
+      }
+    }
+    if (names.length > MAX_HEADERS_WITH_UNSUBSCRIBE) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["headers"],
+        message:
+          `Marketing email gets ${LIST_UNSUBSCRIBE_HEADERS.length} unsubscribe headers: send at ` +
+          `most ${MAX_HEADERS_WITH_UNSUBSCRIBE} of your own.`,
       });
     }
   }
@@ -654,6 +696,8 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
           })),
         }
       : {}),
+    // Absent when not given (transactional), for the same reason.
+    ...(value.stream === undefined ? {} : { stream: value.stream }),
     // Absent when not given, for the same reason.
     ...(value.tracking === undefined
       ? {}
@@ -937,6 +981,17 @@ export const EmailEventData = z
       .object({ id: z.string(), scope: z.string(), reason: SuppressionReasonEnum })
       .optional()
       .meta({ description: "Only for `email.suppressed`: the entry that matched the recipient." }),
+    unsubscribe: z
+      .object({
+        contact_id: z.string().nullable(),
+        topic: z.string().nullable(),
+      })
+      .optional()
+      .meta({
+        description:
+          "Only for `email.suppressed` without `suppression`: the recipient is a contact who " +
+          "unsubscribed (from marketing, or from the email's topic, `topic`).",
+      }),
     open: z
       .object({ user_agent: z.string().nullable() })
       .optional()
@@ -1158,7 +1213,10 @@ export const EmailFailure = z
   .meta({
     id: "EmailFailure",
     examples: [
-      { code: "all_recipients_suppressed", message: "Every recipient is on the suppression list." },
+      {
+        code: "all_recipients_suppressed",
+        message: "Every recipient is on the suppression list or unsubscribed.",
+      },
     ],
   });
 
@@ -1177,6 +1235,7 @@ export const EmailObject = z
     headers: z.record(z.string(), z.string()),
     tags: z.array(z.object({ name: z.string(), value: z.string() })),
     category: z.string().nullable(),
+    stream: z.enum(EMAIL_STREAMS),
     status: z.enum(EMAIL_STATUSES).meta({
       description:
         "Whether the email was handed to the delivery provider. `scheduled` emails wait for " +
@@ -1225,6 +1284,7 @@ export const EmailObject = z
         headers: {},
         tags: [{ name: "template", value: "welcome" }],
         category: "onboarding",
+        stream: "transactional",
         status: "sent",
         failure: null,
         recipients: [RECIPIENT_EXAMPLE],
@@ -1403,6 +1463,7 @@ export const EmailBatchObject = z
             headers: {},
             tags: [],
             category: "digest",
+            stream: "transactional",
             status: "queued",
             failure: null,
             recipients: [

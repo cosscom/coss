@@ -74,6 +74,37 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `POST` with `List-Unsubscribe=One-Click` (`recordUnsubscribe`) records `email.unsubscribed` (once per email, never
   changes the recipient's status) and adds a suppression scoped to the category (`reason` `unsubscribe`, re-added
   on every POST), in one transaction; never a redirect.
+- **Preference center and consent at send** (`packages/email/src/{link-tokens,preferences,preference-center-html,double-opt-in,send-eligibility,marketing-footer}.ts`,
+  `apps/api/src/routes/preferences.ts`): links are stateless AES-256-GCM tokens (`mintLinkToken`/`readLinkToken`,
+  `EMAIL_LINK_KEYS`; kind `preferences` or `confirmation` bound as AAD; confirmations expire after 7 days, preference
+  links never) carrying environment, address, email and topic — nothing is stored at send, links survive the email
+  purge, and the address never appears in a URL. Holding a link is a consent capability: minting one
+  (`POST /v1/contacts/{id}/preference_links`) needs `contact:update`. `/t/u/:token` (page; a POST of exactly `List-Unsubscribe=One-Click`
+  is RFC 8058), `/t/u/:token/unsubscribe`, `/t/u/confirm/:token`: plain Hono under the tracking host (any `Host`),
+  outside `/v1`, mounted before `/t` (a 32-character tracking token on `/t/u/:token` is one-click unsubscribe's
+  and falls through to `/t`; the two token shapes never overlap); **no GET or HEAD ever changes anything** (scanners fetch every link); a bad
+  token is a plain 404 before any database work; pages have no script and a nonce'd style (strict CSP,
+  `frame-ancestors 'none'`); `preferences.*` buckets fail open (an opt-out must never depend on Valkey). A
+  non-contact who changes anything becomes an `unsubscribed` contact (`source: preference_center`, counted but never
+  refused by the plan limit). `skippedRecipients` (both send paths: acceptance and the scheduled claim) applies
+  consent: transactional email skips only explicit opt-outs of its category's topic (a password reset ignores
+  `contact.status`); marketing email skips contacts that aren't `subscribed` or that its topic doesn't reach, plus
+  `stream:marketing` suppressions — recorded as `email.suppressed` with `data.unsubscribe`. At dispatch (`complete()`,
+  after tracking so the footer's links are never redirects) marketing email, and single-recipient email whose
+  category is a topic, get `List-Unsubscribe` + `List-Unsubscribe-Post` pointing at the preference center, replacing
+  one-click unsubscribe's per-category headers (the customer's own header, or more than
+  `MAX_HEADERS_WITH_UNSUBSCRIBE` of them, wins on transactional email; marketing refuses both at validation and never
+  snapshots `email.unsubscribe`); marketing also gets `applyMarketingFooter` (placeholders
+  `{{{unsubscribe_url}}}`, `{{{preferences_url}}}`, `{{{mailing_address}}}`, else a footer; stored templates
+  keep them undeclared, `MARKETING_PLACEHOLDERS`) on the provider's copy
+  only. Marketing sends (`stream: "marketing"`) need exactly one recipient and the environment's postal address (422
+  `mailing_address_required` at send; a `DispatchRefusal` fails the email if it vanished by dispatch, as does a missing
+  key ring, `marketing_unavailable`). Double opt-in: `upsertContact({ doubleOptIn })` makes new or unsubscribed
+  contacts `pending` and refuses `status: "subscribed"` (`double_opt_in_status`, for the environment's default too); the API checks `confirmation_from` (and, live, `authorizeLiveSender`) first, charges
+  `contacts.confirmations.*` + the cross-org `contacts.confirmation.address` bucket, then `sendConfirmation` (the
+  customer's own send, `discardBody`, idempotency key `contact-confirmation:<id>:<n>`, a reused one counts as sent: each attempt mints a new link, ≤ 1/day, ≤ 3 before
+  confirming); `confirmContact` only confirms a contact pending since before the link. Unconfirmed contacts are purged
+  after `RETENTION_DAYS.pendingContacts` (`purgeExpiredPendingContacts`, counters given back).
 - **Custom tracking domains** (`packages/email/src/tracking-domains.ts`, table `tracking_domain`, ids `tdom_`):
   at most one per sending domain, a strict subdomain of it outside its MAIL FROM subdomain, and the hostname's most
   specific domain across orgs must be that domain. Served by a `TrackingHostnameProvider` (`DomainDeps.tracking`):

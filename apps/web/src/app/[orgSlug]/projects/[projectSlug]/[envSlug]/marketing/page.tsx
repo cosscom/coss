@@ -23,7 +23,12 @@ export default async function MarketingSettingsPage({
           <MarketingSettingsForm
             {...target}
             canEdit={context.can({ contact: ["update"] })}
+            confirmationFrom={settings?.confirmationFrom ?? null}
+            confirmationHtml={settings?.confirmationHtml ?? null}
+            confirmationSubject={settings?.confirmationSubject ?? null}
+            confirmedRedirectUrl={settings?.confirmedRedirectUrl ?? null}
             displayName={settings?.displayName ?? null}
+            doubleOptInDefault={settings?.doubleOptInDefault ?? false}
             mailingAddress={settings?.mailingAddress ?? null}
           />
         </PanelBody>

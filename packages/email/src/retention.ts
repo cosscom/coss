@@ -4,9 +4,25 @@
  */
 import { db, schema } from "@coss/db";
 import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
-import { and, asc, inArray, lt, ne, notExists, notInArray, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  eq,
+  exists,
+  inArray,
+  isNotNull,
+  lt,
+  ne,
+  notExists,
+  notInArray,
+  or,
+  sql,
+} from "drizzle-orm";
+import { lockContactCounter, releaseContacts } from "./contacts.ts";
 
 const {
+  contact,
+  contactTopic,
   dmarcNotification,
   dmarcReport,
   dmarcReportRecord,
@@ -259,4 +275,87 @@ export async function purgeExpiredDmarcNotifications(opts: PurgeOptions = {}): P
     .where(and(inArray(dmarcNotification.id, due), expired))
     .returning({ id: dmarcNotification.id });
   return deleted.length;
+}
+
+/**
+ * Deletes contacts still `pending` (double opt-in never confirmed) past the retention, and gives
+ * their environments' counters back (memberships and topic choices cascade); one that had
+ * unsubscribed before is set back to `unsubscribed` instead. Returns how many it handled.
+ */
+export async function purgeExpiredPendingContacts(opts: PurgeOptions = {}): Promise<number> {
+  const cutoff = retentionCutoff(RETENTION_DAYS.pendingContacts, opts.now);
+  const expired = and(
+    eq(contact.status, "pending"),
+    lt(contact.pendingSince, cutoff),
+    opts.scope ? inArray(contact.organizationId, opts.scope.organizationIds) : undefined,
+  );
+  return db.transaction(async (tx) => {
+    const due = await tx
+      .select({
+        id: contact.id,
+        organizationId: contact.organizationId,
+        environmentId: contact.environmentId,
+      })
+      .from(contact)
+      .where(expired)
+      .orderBy(asc(contact.pendingSince))
+      .limit(opts.limit ?? 1000);
+    if (due.length === 0) return 0;
+    // The counters first (in a fixed order), as every contact writer takes them.
+    const environments = new Map(due.map((row) => [row.environmentId, row.organizationId]));
+    for (const environmentId of [...environments.keys()].sort()) {
+      await lockContactCounter(tx, {
+        environmentId,
+        organizationId: environments.get(environmentId) as string,
+      });
+    }
+    const ids = due.map((row) => row.id);
+    // Someone who had opted out (unsubscribed before being asked again, or left a topic) is kept,
+    // `unsubscribed`: opt-outs live only on the contact, and deleting it would let email reach
+    // them again.
+    const restored = await tx
+      .update(contact)
+      .set({ status: "unsubscribed", pendingSince: null, updatedAt: new Date() })
+      .where(
+        and(
+          inArray(contact.id, ids),
+          expired,
+          or(
+            isNotNull(contact.unsubscribedAt),
+            exists(
+              tx
+                .select({ one: sql`1` })
+                .from(contactTopic)
+                .where(
+                  and(
+                    sql`${contactTopic.contactId} = ${contact.id}`,
+                    eq(contactTopic.status, "opted_out"),
+                  ),
+                ),
+            ),
+          ),
+        ),
+      )
+      .returning({ id: contact.id });
+    const deleted = await tx
+      .delete(contact)
+      .where(and(inArray(contact.id, ids), expired))
+      .returning({
+        organizationId: contact.organizationId,
+        environmentId: contact.environmentId,
+      });
+    const perEnvironment = new Map<string, { organizationId: string; count: number }>();
+    for (const row of deleted) {
+      const entry = perEnvironment.get(row.environmentId) ?? {
+        organizationId: row.organizationId,
+        count: 0,
+      };
+      entry.count++;
+      perEnvironment.set(row.environmentId, entry);
+    }
+    for (const [environmentId, { organizationId, count }] of perEnvironment) {
+      await releaseContacts(tx, { organizationId, environmentId }, count);
+    }
+    return deleted.length + restored.length;
+  });
 }

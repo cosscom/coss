@@ -216,6 +216,8 @@ function fromEmailError(error: EmailError): ApiError {
         ...(error.param && { param: error.param }),
         ...(error.issues && { issues: error.issues }),
       });
+    case "mailing_address_required":
+      return invalidRequest(error.code, error.message, error.param ?? "stream");
   }
 }
 

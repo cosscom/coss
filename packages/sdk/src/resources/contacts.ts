@@ -6,10 +6,12 @@ import type {
   AudienceContactsAdded,
   AudienceParams,
   Contact,
+  ContactConfirmation,
   ContactImport,
   ContactProperty,
   ContactTopics,
   CreateContactPropertyParams,
+  CreatePreferenceLinksParams,
   CreateSegmentParams,
   CreateTopicParams,
   DeletedAudience,
@@ -22,6 +24,7 @@ import type {
   ListContactsParams,
   ListParams,
   MarketingSettings,
+  PreferenceLinks,
   RemovedAudienceContact,
   Segment,
   Topic,
@@ -232,6 +235,35 @@ export class ContactsResource {
     return this.#http.request({
       method: "GET",
       path: `/v1/contacts/${path(idOrEmail)}/topics`,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Sends a pending contact (double opt-in) its confirmation email again: at most once a day and
+   * three times before it confirms (`status` says what happened).
+   */
+  resendConfirmation(
+    idOrEmail: string,
+    options?: ReadOptions,
+  ): Promise<CossResult<ContactConfirmation>> {
+    return this.#http.request({
+      method: "POST",
+      path: `/v1/contacts/${path(idOrEmail)}/confirmation`,
+      signal: options?.signal,
+    });
+  }
+
+  /** The contact's preference center and unsubscribe links, for emails you build yourself. */
+  createPreferenceLinks(
+    idOrEmail: string,
+    params: CreatePreferenceLinksParams = {},
+    options?: ReadOptions,
+  ): Promise<CossResult<PreferenceLinks>> {
+    return this.#http.request({
+      method: "POST",
+      path: `/v1/contacts/${path(idOrEmail)}/preference_links`,
+      body: params,
       signal: options?.signal,
     });
   }

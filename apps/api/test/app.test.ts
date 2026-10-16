@@ -170,6 +170,8 @@ describe("GET /openapi.json", () => {
       "/v1/contacts/export",
       "/v1/contacts/import",
       "/v1/contacts/{id}",
+      "/v1/contacts/{id}/confirmation",
+      "/v1/contacts/{id}/preference_links",
       "/v1/contacts/{id}/topics",
       "/v1/dedicated_ips",
       "/v1/domains",

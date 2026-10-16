@@ -23,6 +23,9 @@ import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
 import { htmlToText } from "./html-text.ts";
+import { type LinkKeyRing, preferenceLinks } from "./link-tokens.ts";
+import { applyMarketingFooter } from "./marketing-footer.ts";
+import { getMarketingSettingsRow } from "./marketing-settings.ts";
 import {
   type EmailProvider,
   type EmailStream,
@@ -49,8 +52,9 @@ import {
   uniqueRecipientCount,
 } from "./schemas.ts";
 import { emailScreeningContent } from "./screening.ts";
-import { type SuppressionRow, suppressedRecipients } from "./suppressions.ts";
+import { type Skip, skippedRecipients } from "./send-eligibility.ts";
 import { renderTemplateForSend, type TemplateVersionCache } from "./templates.ts";
+import { topicsByKey } from "./topics.ts";
 import { newTrackingToken } from "./tracking.ts";
 import { trackingBaseUrlFor } from "./tracking-domains.ts";
 import { instrumentHtml, unsubscribeUrl } from "./tracking-html.ts";
@@ -284,7 +288,7 @@ function failedEvent(
 }
 
 /** The event coss.com records for a recipient it skipped because of a suppression list entry. */
-function suppressedEvent(row: EmailRow, address: string, entry: SuppressionRow): ProviderEvent {
+function suppressedEvent(row: EmailRow, address: string, skip: Skip): ProviderEvent {
   return {
     provider: COSS_EVENT_SOURCE,
     providerEventType: "Suppressed",
@@ -293,8 +297,18 @@ function suppressedEvent(row: EmailRow, address: string, entry: SuppressionRow):
     type: "email.suppressed",
     recipients: [address],
     occurredAt: new Date(),
-    sourceId: entry.id,
-    data: { suppression: { id: entry.id, scope: entry.scope, reason: entry.reason } },
+    sourceId:
+      skip.kind === "suppressed" ? skip.entry.id : `unsubscribed:${skip.contactId ?? address}`,
+    data:
+      skip.kind === "suppressed"
+        ? {
+            suppression: {
+              id: skip.entry.id,
+              scope: skip.entry.scope,
+              reason: skip.entry.reason,
+            },
+          }
+        : { unsubscribe: { contact_id: skip.contactId, topic: skip.topic } },
   };
 }
 
@@ -345,7 +359,23 @@ export type EmailServiceOptions = {
    * accepts a live send. Unset: nothing is capped (tests, scripts).
    */
   billing?: UsageGate;
+  /**
+   * Encrypts the unsubscribe and preference links added to marketing and topic emails at
+   * dispatch (`EMAIL_LINK_KEYS`). Without it, marketing emails fail at dispatch and topic emails
+   * go without the headers.
+   */
+  linkKeys?: LinkKeyRing;
 };
+
+/** A dispatch that must fail the email without calling the provider (a configuration gap). */
+class DispatchRefusal extends Error {
+  readonly code: string;
+
+  constructor(code: string, message: string) {
+    super(message);
+    this.code = code;
+  }
+}
 
 const CONTENT_REJECTED = {
   code: "content_rejected",
@@ -491,7 +521,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         status: "failed",
         provider: provider.name,
         errorCode: "all_recipients_suppressed",
-        errorMessage: "Every recipient is on the suppression list.",
+        errorMessage: "Every recipient is on the suppression list or unsubscribed.",
       };
       events = [];
     } else if (screeningError) {
@@ -504,7 +534,10 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       events = [failedEvent(row, provider.name, screeningError)];
     } else {
       try {
-        const result = await provider.send(await instrument(row, message));
+        // Tracking first: the footer's unsubscribe link must never be a tracked redirect.
+        const result = await provider.send(
+          await withMarketing(row, await instrument(row, message)),
+        );
         outcome = {
           status: "sent",
           provider: provider.name,
@@ -516,20 +549,29 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         };
         events = result.events ?? [];
       } catch (error) {
-        if (error instanceof UncertainSendError) {
+        if (error instanceof DispatchRefusal) {
+          outcome = {
+            status: "failed",
+            provider: provider.name,
+            errorCode: error.code,
+            errorMessage: error.message,
+          };
+          events = [failedEvent(row, provider.name, { code: error.code, message: error.message })];
+        } else if (error instanceof UncertainSendError) {
           // The provider may be delivering it: never fail it here, and never send it again. It
           // stays claimed; the provider's `Send` event or the stale-claim sweep settles it.
           console.error(`[email] provider "${provider.name}" may have sent ${row.id}:`, error);
           return;
+        } else {
+          console.error(`[email] provider "${provider.name}" failed to send ${row.id}:`, error);
+          outcome = {
+            status: "failed",
+            provider: provider.name,
+            errorCode: "provider_error",
+            errorMessage: errorMessage(error),
+          };
+          events = [failedEvent(row, provider.name)];
         }
-        console.error(`[email] provider "${provider.name}" failed to send ${row.id}:`, error);
-        outcome = {
-          status: "failed",
-          provider: provider.name,
-          errorCode: "provider_error",
-          errorMessage: errorMessage(error),
-        };
-        events = [failedEvent(row, provider.name)];
       }
     }
 
@@ -635,15 +677,16 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
             eq(emailRecipient.status, "queued"),
           ),
         );
-      const suppressed = await suppressedRecipients(
+      // Again at the claim: an address suppressed (or a contact who unsubscribed) since the
+      // send was accepted is skipped too.
+      const skipped = await skippedRecipients(
         tx,
         claimedRow,
         pending.map((recipient) => recipient.address),
-        claimedRow.category,
-        claimedRow.stream,
+        { category: claimedRow.category, stream: claimedRow.stream },
       );
-      for (const [address, entry] of suppressed) {
-        await recordProviderEvent(tx, suppressedEvent(claimedRow, address, entry));
+      for (const [address, skip] of skipped) {
+        await recordProviderEvent(tx, suppressedEvent(claimedRow, address, skip));
       }
       await freezeBillableRecipients(tx, claimedRow);
       return claimedRow;
@@ -698,7 +741,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
    */
   async function instrument(row: EmailRow, message: OutboundEmail): Promise<OutboundEmail> {
     const token = row.trackingToken;
-    const tracksHtml = row.html !== null && (row.trackOpens || row.trackClicks);
+    const tracksHtml = Boolean(message.html) && (row.trackOpens || row.trackClicks);
     if (!token || (!tracksHtml && !row.unsubscribe)) return message;
     if (!trackingBaseUrl) throw new Error("Tracking requires the email service's trackingBaseUrl.");
     // Resolved now, as the links are written: a tracking domain that stopped working (or was
@@ -721,8 +764,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           },
         }
       : message;
-    if (row.html === null || (!row.trackOpens && !row.trackClicks)) return instrumented;
-    const { html, links } = instrumentHtml(row.html, {
+    if (!message.html || (!row.trackOpens && !row.trackClicks)) return instrumented;
+    const { html, links } = instrumentHtml(message.html, {
       baseUrl,
       token,
       opens: row.trackOpens,
@@ -742,6 +785,89 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         .onConflictDoNothing({ target: [emailLink.emailId, emailLink.position] });
     }
     return { ...instrumented, html };
+  }
+
+  /** The origin of the email's links: its custom tracking domain when active, else the default. */
+  async function linkBaseUrl(row: EmailRow): Promise<string> {
+    if (!trackingBaseUrl) throw new Error("Links require the email service's trackingBaseUrl.");
+    const custom = opts.trackingDomainProvider
+      ? await trackingBaseUrlFor({
+          organizationId: row.organizationId,
+          from: row.from,
+          provider: opts.trackingDomainProvider,
+        })
+      : null;
+    return custom ?? trackingBaseUrl;
+  }
+
+  /**
+   * Marketing email, and single-recipient email about a topic, gets one-click unsubscribe headers
+   * (RFC 8058) for its recipient; marketing email also its footer (postal address, unsubscribe
+   * and preference links; `marketing-footer.ts`). On the provider's copy only.
+   */
+  async function withMarketing(row: EmailRow, message: OutboundEmail): Promise<OutboundEmail> {
+    const marketing = row.stream === "marketing";
+    const env = { organizationId: row.organizationId, environmentId: row.environmentId };
+    const topic = row.category ? (await topicsByKey(env, [row.category])).get(row.category) : null;
+    if (!marketing && !topic) return message;
+    const recipients = [...message.to, ...message.cc, ...message.bcc];
+    if (!opts.linkKeys) {
+      if (marketing) {
+        throw new DispatchRefusal(
+          "marketing_unavailable",
+          "Marketing email can't be sent: this deployment has no EMAIL_LINK_KEYS.",
+        );
+      }
+      return message;
+    }
+    // Links are personal: an email to several people gets none. Marketing has exactly one
+    // (validated at send, by address: `to` and `cc` may repeat it) and never goes without them.
+    const addresses = new Set(recipients.map(bareAddress));
+    if (addresses.size !== 1) {
+      if (!marketing) return message;
+      throw new DispatchRefusal(
+        "invalid_recipients",
+        "A marketing email goes to exactly one recipient.",
+      );
+    }
+    // A topic email keeps the customer's own List-Unsubscribe headers, and goes without ours when
+    // they wouldn't fit the provider's header limit (marketing validated both at send).
+    const own = Object.keys(row.headers);
+    if (
+      !marketing &&
+      (LIST_UNSUBSCRIBE_HEADERS.some((name) => own.includes(name)) ||
+        own.length > MAX_HEADERS_WITH_UNSUBSCRIBE)
+    ) {
+      return message;
+    }
+    const links = preferenceLinks({
+      baseUrl: await linkBaseUrl(row),
+      keys: opts.linkKeys,
+      environmentId: row.environmentId,
+      address: [...addresses][0] as string,
+      emailId: row.id,
+      topic: topic?.key ?? null,
+    });
+    // These replace the per-category unsubscribe headers `instrument` may have added: the
+    // preference center is the topic's (and marketing's) unsubscribe. (None fit a header only for
+    // a very long address: the body links and any headers `instrument` added remain.)
+    const next = links.headers
+      ? { ...message, headers: { ...message.headers, ...links.headers } }
+      : message;
+    if (!marketing) return next;
+    const mailingAddress = (await getMarketingSettingsRow(env))?.mailingAddress;
+    if (!mailingAddress) {
+      throw new DispatchRefusal(
+        "mailing_address_required",
+        "The environment's postal address was removed before this marketing email went out.",
+      );
+    }
+    const content = applyMarketingFooter(next, {
+      unsubscribeUrl: links.unsubscribeUrl,
+      preferencesUrl: links.preferencesUrl,
+      mailingAddress,
+    });
+    return { ...next, ...content };
   }
 
   async function dispatch(input: {
@@ -840,15 +966,27 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     // The unsubscribe is scoped to the category and names one recipient (one provider message
     // goes to every recipient), the customer's own List-Unsubscribe headers win, and the two
     // headers must still fit the provider's header limit. An explicit `tracking.unsubscribe` that
-    // can't be honored was already refused by validation.
+    // can't be honored was already refused by validation. Marketing email gets the preference
+    // center's headers instead (`withMarketing`).
     const unsubscribe =
       tracking.unsubscribe &&
+      params.stream !== "marketing" &&
       params.category !== undefined &&
       uniqueRecipientCount(params) === 1 &&
       !LIST_UNSUBSCRIBE_HEADERS.some((name) => name in params.headers) &&
       Object.keys(params.headers).length <= MAX_HEADERS_WITH_UNSUBSCRIBE;
     if ((tracking.opens || tracking.clicks || unsubscribe) && !trackingBaseUrl) {
       throw new Error("Tracking requires the email service's trackingBaseUrl.");
+    }
+    const stream = params.stream ?? "transactional";
+    // CAN-SPAM: every marketing email carries the sender's postal address.
+    if (stream === "marketing" && !(await getMarketingSettingsRow(environment))?.mailingAddress) {
+      throw new EmailError(
+        "mailing_address_required",
+        "Marketing email needs this environment's postal address: set it in the marketing " +
+          "settings (PATCH /v1/marketing_settings) first.",
+        { param: "stream" },
+      );
     }
 
     return {
@@ -872,6 +1010,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         headers: params.headers,
         tags: params.tags,
         category: params.category ?? null,
+        stream,
         trackOpens: tracking.opens,
         trackClicks: tracking.clicks,
         unsubscribe,
@@ -913,12 +1052,11 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       .returning();
     if (!row) return undefined;
     const recipients = recipientRows(row);
-    const suppressed = await suppressedRecipients(
+    const suppressed = await skippedRecipients(
       tx,
       environment,
       recipients.map((recipient) => recipient.address),
-      row.category,
-      row.stream,
+      { category: row.category, stream: row.stream },
     );
     await tx.insert(emailRecipient).values(recipients);
     await insertAttachments(tx, row, prepared.attachments);
@@ -990,6 +1128,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           provider: opts.liveProvider.name,
           organizationId: environment.organizationId,
           from: params.from,
+          stream: params.stream ?? "transactional",
         });
       } catch (error) {
         // A retry of a request that already succeeded still replays, even if the domain changed since.
@@ -1073,17 +1212,20 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
 
     if (!sandbox) {
       // Every sender is checked before anything is stored: the batch is accepted as a whole.
-      const senders = new Map<string, number>();
+      const senders = new Map<string, { from: string; stream: EmailStream; index: number }>();
       items.forEach((params, index) => {
-        if (!senders.has(params.from)) senders.set(params.from, index);
+        const stream = params.stream ?? "transactional";
+        const key = `${stream}\0${params.from}`;
+        if (!senders.has(key)) senders.set(key, { from: params.from, stream, index });
       });
       try {
-        for (const [from, index] of senders) {
+        for (const { from, stream, index } of senders.values()) {
           try {
             await authorizeLiveSender({
               provider: opts.liveProvider.name,
               organizationId: environment.organizationId,
               from,
+              stream,
             });
           } catch (error) {
             if (error instanceof EmailError && error.code === "domain_not_verified") {

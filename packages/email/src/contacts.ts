@@ -240,6 +240,7 @@ export async function announceContact(
   type: ContactEventType,
   source: ContactSource,
   now: Date,
+  topic: string | null = null,
 ): Promise<void> {
   const id = newId(ID_PREFIXES.webhookEvent);
   const payload: StoredContactWebhookEvent = {
@@ -250,6 +251,7 @@ export async function announceContact(
     data: {
       contact: { id: row.id, email: row.address, status: row.status },
       source,
+      topic,
       occurred_at: now.toISOString(),
     },
   };
@@ -363,9 +365,26 @@ export async function applyTopicChoices(
 export async function upsertContact(
   env: ContactEnvironment,
   params: UpsertContactRequestOutput,
-  opts: ContactDeps & { source: ContactSource; now?: Date },
-): Promise<{ contact: ContactOutput; created: boolean }> {
+  opts: ContactDeps & {
+    source: ContactSource;
+    now?: Date;
+    /**
+     * Double opt-in: a new contact, or one that unsubscribed, becomes `pending` until it confirms
+     * (the caller sends the confirmation, `double-opt-in.ts`). A subscribed one is left alone.
+     */
+    doubleOptIn?: boolean;
+  },
+): Promise<{ contact: ContactOutput; created: boolean; pending: boolean }> {
   const now = opts.now ?? new Date();
+  // The environment's default too, not only the explicit flag the schema refuses this with.
+  if (opts.doubleOptIn && params.status === "subscribed") {
+    throw new ContactError(
+      "double_opt_in_status",
+      'With double opt-in, a contact becomes subscribed when it confirms, not with "status" ' +
+        "(pass double_opt_in: false to subscribe it directly).",
+      { param: "status" },
+    );
+  }
   const topics = await requireTopics(env, params.topics);
   const limit = await contactLimitOf(env, opts);
   try {
@@ -376,6 +395,15 @@ export async function upsertContact(
       await lockContactCounter(tx, env);
       const audienceIds = await requireAudiences(tx, env, params.audience_ids);
       const status = params.status ?? "subscribed";
+      const pendingFields =
+        opts.doubleOptIn && status === "subscribed"
+          ? {
+              status: "pending" as const,
+              pendingSince: now,
+              subscribedAt: null,
+              unsubscribedAt: null,
+            }
+          : statusChange(status, now);
       const [inserted] = await tx
         .insert(contact)
         .values({
@@ -386,7 +414,7 @@ export async function upsertContact(
           lastName: params.last_name ?? null,
           properties: mergeProperties({}, params.properties, definitions),
           source: opts.source,
-          ...statusChange(status, now),
+          ...pendingFields,
           createdAt: now,
           updatedAt: now,
         })
@@ -404,6 +432,15 @@ export async function upsertContact(
           .for("update");
         if (!existing) throw new Error("The contact disappeared during the upsert; retry.");
         row = await updateRow(tx, existing, params, definitions, now);
+        // Re-consent: someone who unsubscribed must confirm again before getting marketing.
+        if (opts.doubleOptIn && row.status === "unsubscribed" && params.status === undefined) {
+          const [pending] = await tx
+            .update(contact)
+            .set({ status: "pending", pendingSince: now, confirmationCount: 0, updatedAt: now })
+            .where(and(eq(contact.id, row.id), eq(contact.organizationId, row.organizationId)))
+            .returning();
+          if (pending) row = pending;
+        }
       }
       await addMemberships(tx, row, audienceIds);
       await applyTopicChoices(tx, row, topics, params.topics, opts.source);
@@ -414,7 +451,11 @@ export async function upsertContact(
         opts.source,
         now,
       );
-      return { contact: toContactObject(row), created: Boolean(inserted) };
+      return {
+        contact: toContactObject(row),
+        created: Boolean(inserted),
+        pending: row.status === "pending",
+      };
     });
   } catch (error) {
     throw await contactLimitError(error, env, opts);

@@ -107,6 +107,7 @@ export function toEmailObject(
     headers: row.headers,
     tags: row.tags,
     category: row.category,
+    stream: row.stream,
     status: row.status,
     failure: emailFailure(row),
     recipients: opts.recipients.map(toRecipientObject),
@@ -477,6 +478,7 @@ export async function listEmailSummariesPage(
     .select({
       id: email.id,
       from: email.from,
+      stream: email.stream,
       to: email.to,
       cc: email.cc,
       bcc: email.bcc,
@@ -534,6 +536,7 @@ export async function listEmailSummariesPage(
       subject: row.subject,
       tags: row.tags,
       category: row.category,
+      stream: row.stream,
       status: row.status,
       failure: emailFailure(row),
       recipients: (recipients.get(row.id) ?? []).map(toRecipientObject),

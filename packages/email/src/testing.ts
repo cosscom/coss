@@ -14,6 +14,7 @@ import type { CloudflareCustomHostname } from "./cloudflare/custom-hostnames.ts"
 import type { EmailDispatchJob, EmailDispatchQueue } from "./dispatch.ts";
 import type { DnsResolver } from "./dns.ts";
 import type { DomainRow } from "./domains.ts";
+import { DEVELOPMENT_LINK_KEYS } from "./link-tokens.ts";
 import type { EmailProvider } from "./provider.ts";
 import { createEmailService, type EmailService, type EmailServiceOptions } from "./service.ts";
 import type { SesApi } from "./ses/api.ts";
@@ -53,9 +54,15 @@ export function dispatchingEmailService(opts: {
   trackingBaseUrl?: string;
   trackingDomainProvider?: string;
   billing?: EmailServiceOptions["billing"];
+  /** Defaults to the development keys. */
+  linkKeys?: EmailServiceOptions["linkKeys"];
 }): EmailService & { queue: MemoryDispatchQueue } {
   const queue = memoryDispatchQueue();
-  const service = createEmailService({ ...opts, queue });
+  const service = createEmailService({
+    linkKeys: DEVELOPMENT_LINK_KEYS,
+    ...opts,
+    queue,
+  });
   return {
     queue,
     dispatch: service.dispatch,

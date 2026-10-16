@@ -15,6 +15,7 @@ import {
 import {
   DEFAULT_CONTACT_LIST_LIMIT,
   type ListQueryOutput,
+  MAX_TOPICS,
   type TopicOutput,
 } from "./contact-schemas.ts";
 import { ContactError } from "./errors.ts";
@@ -109,28 +110,44 @@ export async function createTopic(
     position?: number;
   },
 ): Promise<TopicOutput> {
-  const projectId = await environmentProject(env);
-  if (!projectId) throw new ContactError("not_found", "Environment not found.");
-  const [row] = await db
-    .insert(topic)
-    .values({
-      ...env,
-      projectId,
-      key: params.key,
-      name: params.name,
-      description: params.description ?? null,
-      defaultSubscription: params.default_subscription,
-      visibility: params.visibility ?? "public",
-      position: params.position ?? 0,
-    })
-    .onConflictDoNothing({ target: [topic.environmentId, topic.key] })
-    .returning();
-  if (!row) {
-    throw new ContactError("topic_exists", `A topic with the key "${params.key}" already exists.`, {
-      param: "key",
-    });
-  }
-  return toTopicObject(row);
+  return db.transaction(async (tx) => {
+    const projectId = await environmentProject(env, tx);
+    if (!projectId) throw new ContactError("not_found", "Environment not found.");
+    // Serializes creations per environment, so the cap can't be raced past.
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`topic:${env.environmentId}`}))`);
+    const [count] = await tx
+      .select({ value: sql<number>`count(*)::int` })
+      .from(topic)
+      .where(inContactEnvironment(topic, env));
+    if ((count?.value ?? 0) >= MAX_TOPICS) {
+      throw new ContactError(
+        "too_many_topics",
+        `An environment can have at most ${MAX_TOPICS} topics.`,
+      );
+    }
+    const [row] = await tx
+      .insert(topic)
+      .values({
+        ...env,
+        projectId,
+        key: params.key,
+        name: params.name,
+        description: params.description ?? null,
+        defaultSubscription: params.default_subscription,
+        visibility: params.visibility ?? "public",
+        position: params.position ?? 0,
+      })
+      .onConflictDoNothing({ target: [topic.environmentId, topic.key] })
+      .returning();
+    if (!row) {
+      throw new ContactError(
+        "topic_exists",
+        `A topic with the key "${params.key}" already exists.`,
+        { param: "key" },
+      );
+    }
+    return toTopicObject(row);
+  });
 }
 
 /** The key is fixed: emails already sent with that category point at it. */

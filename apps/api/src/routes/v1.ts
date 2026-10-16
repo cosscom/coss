@@ -1,4 +1,4 @@
-import type { DomainDeps, EmailService } from "@coss/email";
+import type { DomainDeps, EmailService, LinkKeyRing } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
 import type { RiskDeps } from "@coss/risk";
 import type { WebhookManagementDeps } from "@coss/webhooks";
@@ -41,6 +41,8 @@ export type V1Dependencies = {
   /** Aborted when the server shuts down: open long polls answer at once. */
   shutdownSignal: AbortSignal;
   listenerPollIntervalMs?: number;
+  /** Marketing email's links: the key ring and their origin (`TRACKING_PUBLIC_URL`). */
+  links: { keys: LinkKeyRing; baseUrl?: string };
 };
 
 /** Everything under `/v1`. Each product mounts its routes here. */
@@ -61,7 +63,16 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   );
   v1.route("/", createSuppressionRoutes());
   v1.route("/", createTrackingSettingsRoutes());
-  v1.route("/", createContactRoutes());
+  v1.route(
+    "/",
+    createContactRoutes({
+      emailService: deps.emailService,
+      links: deps.links,
+      // The live provider's name (identities and sends share it): live confirmations must come
+      // from a domain it verified.
+      liveProvider: deps.domainDeps.identity.name,
+    }),
+  );
   v1.route("/", createAudienceRoutes());
   v1.route("/", createSegmentRoutes());
   v1.route("/", createTopicRoutes());

@@ -173,6 +173,13 @@ export {
   toDomainObject,
   VERIFICATION_WINDOW_MS,
 } from "./domains.ts";
+export {
+  CONFIRMATION_COOLDOWN_MS,
+  type ConfirmationOutcome as ConfirmationSendOutcome,
+  confirmationSender,
+  MAX_CONFIRMATIONS,
+  sendConfirmation,
+} from "./double-opt-in.ts";
 export { EMAIL_CSV_COLUMNS, emailCsvRow, emailsCsvStream } from "./email-csv.ts";
 export {
   ContactError,
@@ -219,12 +226,48 @@ export {
   receivedEmailPrefix,
 } from "./inbound-store.ts";
 export {
+  CONFIRMATION_LINK_TTL_MS,
+  confirmationLink,
+  DEVELOPMENT_LINK_KEYS,
+  type LinkKeyRing,
+  type LinkKind,
+  type LinkPayload,
+  linkKeyRing,
+  MAX_LINK_TOKEN_LENGTH,
+  mintLinkToken,
+  PREFERENCES_PATH_PREFIX,
+  type PreferenceLinks,
+  parseLinkKeys,
+  preferenceLinks,
+  readLinkToken,
+} from "./link-tokens.ts";
+export {
+  applyMarketingFooter,
+  MAILING_ADDRESS_PLACEHOLDER,
+  PREFERENCES_PLACEHOLDER,
+  UNSUBSCRIBE_PLACEHOLDER,
+} from "./marketing-footer.ts";
+export {
   getMarketingSettings,
   getMarketingSettingsRow,
   type MarketingSettingsRow,
   updateMarketingSettings,
 } from "./marketing-settings.ts";
 export { emailNotifier, type Notice, type Notifier, notificationEnvironment } from "./notifier.ts";
+export {
+  confirmationPage,
+  preferencesPage,
+  unsubscribePage,
+} from "./preference-center-html.ts";
+export {
+  applyPreferences,
+  type ConfirmationOutcome,
+  confirmContact,
+  loadPreferences,
+  maskAddress,
+  type PreferenceChange,
+  type PreferenceContext,
+} from "./preferences.ts";
 export {
   type DedicatedIpProvider,
   DedicatedIpTakenError,
@@ -316,6 +359,7 @@ export {
   purgeExpiredEmails,
   purgeExpiredFakeInboundObjects,
   purgeExpiredInboundDropCounters,
+  purgeExpiredPendingContacts,
   purgeExpiredReceivedEmails,
   purgeExpiredReputationRollups,
 } from "./retention.ts";
@@ -470,6 +514,7 @@ export {
   type SegmentRow,
   updateSegment,
 } from "./segments.ts";
+export { type Skip, skippedRecipients } from "./send-eligibility.ts";
 export {
   cancelScheduledEmail,
   createEmailService,

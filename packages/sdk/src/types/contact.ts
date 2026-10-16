@@ -54,6 +54,11 @@ export interface UpsertContactParams extends ContactFields {
   audience_ids?: string[];
   /** Choices per topic; topics left out keep the contact's choice. */
   topics?: ContactTopicChoice[];
+  /**
+   * Ask the contact to confirm first (default: the marketing settings' `double_opt_in_default`):
+   * it stays `pending` until they click the confirmation email's link.
+   */
+  double_opt_in?: boolean;
 }
 
 export interface UpdateContactParams extends ContactFields {
@@ -121,6 +126,30 @@ export interface ContactTopics {
 
 export interface UpdateContactTopicsParams {
   topics: ContactTopicChoice[];
+}
+
+/** What `resendConfirmation` did. */
+export interface ContactConfirmation {
+  object: "contact_confirmation";
+  contact_id: string;
+  /**
+   * `sent`; `cooldown` (one per contact per day); `limit_reached` (three were sent and none
+   * confirmed); `not_pending` (the contact isn't waiting to confirm).
+   */
+  status: "sent" | "cooldown" | "limit_reached" | "not_pending";
+}
+
+export interface CreatePreferenceLinksParams {
+  /** The topic your email is about: its unsubscribe link leaves just that topic. */
+  topic?: string;
+}
+
+/** A contact's preference center and unsubscribe links (they never expire). */
+export interface PreferenceLinks {
+  object: "preference_links";
+  contact_id: string;
+  preferences_url: string;
+  unsubscribe_url: string;
 }
 
 export type ContactPropertyType = "string" | "number" | "boolean" | "date";
@@ -323,9 +352,25 @@ export interface MarketingSettings {
   display_name: string | null;
   /** The postal address every marketing email carries (CAN-SPAM). */
   mailing_address: string | null;
+  /** Whether contacts upserted without `double_opt_in` must confirm first. */
+  double_opt_in_default: boolean;
+  /** The sender of confirmation emails. */
+  confirmation_from: string | null;
+  /** `null`: coss.com's defaults. HTML and text must contain `{{{confirmation_url}}}`. */
+  confirmation_subject: string | null;
+  confirmation_html: string | null;
+  confirmation_text: string | null;
+  /** Where confirming sends the contact (https); `null`: a coss.com confirmation page. */
+  confirmed_redirect_url: string | null;
 }
 
 export interface UpdateMarketingSettingsParams {
   display_name?: string | null;
   mailing_address?: string | null;
+  double_opt_in_default?: boolean;
+  confirmation_from?: string | null;
+  confirmation_subject?: string | null;
+  confirmation_html?: string | null;
+  confirmation_text?: string | null;
+  confirmed_redirect_url?: string | null;
 }

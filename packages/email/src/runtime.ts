@@ -17,6 +17,7 @@ import {
   type EmailProviderName,
 } from "./env.ts";
 import { FakeInboundStore, type InboundContentStore } from "./inbound-store.ts";
+import { DEVELOPMENT_LINK_KEYS, type LinkKeyRing, parseLinkKeys } from "./link-tokens.ts";
 import type { DedicatedIpProvider, EmailProvider, IdentityProvider } from "./provider.ts";
 import { FakeEmailProvider } from "./providers/fake.ts";
 import { FakeDedicatedIpProvider } from "./providers/fake-dedicated-ips.ts";
@@ -130,6 +131,21 @@ export type EmailRuntime = {
 export type InboundRuntime = ReceivingConfig & { store: InboundContentStore };
 
 /** SES's inbound mail exchange of a region. */
+/**
+ * The key ring of marketing email's links (`EMAIL_LINK_KEYS`): required in production, the fixed
+ * development keys otherwise (links minted with them only work where they are used).
+ */
+export function linkKeysFromEnv(
+  env: { EMAIL_LINK_KEYS?: string | undefined },
+  production: boolean = process.env.NODE_ENV === "production",
+): LinkKeyRing {
+  if (env.EMAIL_LINK_KEYS) return parseLinkKeys(env.EMAIL_LINK_KEYS);
+  if (production) {
+    throw new Error("EMAIL_LINK_KEYS is required in production (openssl rand -base64 32).");
+  }
+  return DEVELOPMENT_LINK_KEYS;
+}
+
 export function sesInboundMxHost(region: string): string {
   return `inbound-smtp.${region}.amazonaws.com`;
 }

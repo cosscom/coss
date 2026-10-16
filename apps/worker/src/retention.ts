@@ -16,6 +16,7 @@ import {
   purgeExpiredEmails,
   purgeExpiredFakeInboundObjects,
   purgeExpiredInboundDropCounters,
+  purgeExpiredPendingContacts,
   purgeExpiredReceivedEmails,
   purgeExpiredReputationRollups,
 } from "@coss/email";
@@ -64,6 +65,7 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   // Records of expired reports first, then the reports (bounded steps, no big cascade).
   { name: "dmarc reports", purge: purgeExpiredDmarcReports },
   { name: "dmarc notifications", purge: purgeExpiredDmarcNotifications },
+  { name: "unconfirmed contacts", purge: purgeExpiredPendingContacts },
   { name: "webhook messages", purge: purgeExpiredWebhookMessages },
   { name: "webhook listeners", purge: purgeExpiredWebhookListeners },
   { name: "log drain batches and backlog", purge: purgeExpiredLogDrainBatches },
