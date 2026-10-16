@@ -131,6 +131,10 @@ describe("checkTemplate", () => {
   test("the marketing footer's placeholders need no declaration and survive rendering", () => {
     const source = "Bye: {{{unsubscribe_url}}} {{{preferences_url}}} {{{mailing_address}}}";
     expect(check(source, "text")).toEqual([]);
+    // Dispatch fills bodies only: a subject must declare them.
+    expect(check("{{mailing_address}}", "subject")).toEqual([
+      '"mailing_address" is not a declared variable.',
+    ]);
     expect(render(source, {}, "text")).toBe(source);
     expect(render('<a href="{{unsubscribe_url}}">x</a>', {}, "html")).toBe(
       '<a href="{{{unsubscribe_url}}}">x</a>',

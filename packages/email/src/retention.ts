@@ -4,7 +4,7 @@
  */
 import { db, schema } from "@coss/db";
 import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
-import { and, asc, eq, inArray, lt, ne, notExists, notInArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, lt, ne, notExists, notInArray, sql } from "drizzle-orm";
 import { lockContactCounter, releaseContacts } from "./contacts.ts";
 
 const {
@@ -265,7 +265,8 @@ export async function purgeExpiredDmarcNotifications(opts: PurgeOptions = {}): P
 
 /**
  * Deletes contacts still `pending` (double opt-in never confirmed) past the retention, and gives
- * their environments' counters back. Memberships and topic choices cascade.
+ * their environments' counters back (memberships and topic choices cascade); one that had
+ * unsubscribed before is set back to `unsubscribed` instead. Returns how many it handled.
  */
 export async function purgeExpiredPendingContacts(opts: PurgeOptions = {}): Promise<number> {
   const cutoff = retentionCutoff(RETENTION_DAYS.pendingContacts, opts.now);
@@ -294,17 +295,17 @@ export async function purgeExpiredPendingContacts(opts: PurgeOptions = {}): Prom
         organizationId: environments.get(environmentId) as string,
       });
     }
+    const ids = due.map((row) => row.id);
+    // Someone who had unsubscribed before being asked again goes back to `unsubscribed`: their
+    // opt-out lives only on the contact, and deleting it would let marketing reach them again.
+    const restored = await tx
+      .update(contact)
+      .set({ status: "unsubscribed", pendingSince: null, updatedAt: new Date() })
+      .where(and(inArray(contact.id, ids), expired, isNotNull(contact.unsubscribedAt)))
+      .returning({ id: contact.id });
     const deleted = await tx
       .delete(contact)
-      .where(
-        and(
-          inArray(
-            contact.id,
-            due.map((row) => row.id),
-          ),
-          expired,
-        ),
-      )
+      .where(and(inArray(contact.id, ids), expired))
       .returning({
         organizationId: contact.organizationId,
         environmentId: contact.environmentId,
@@ -321,6 +322,6 @@ export async function purgeExpiredPendingContacts(opts: PurgeOptions = {}): Prom
     for (const [environmentId, { organizationId, count }] of perEnvironment) {
       await releaseContacts(tx, { organizationId, environmentId }, count);
     }
-    return deleted.length;
+    return deleted.length + restored.length;
   });
 }

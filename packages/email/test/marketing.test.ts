@@ -620,5 +620,31 @@ describe("the preference center", () => {
     expect(await purgeExpiredPendingContacts({ scope })).toBe(1);
     expect(await getContact(env, "e@example.com")).toBeNull();
     expect(await contactCount(env)).toBe(1);
+
+    // Asked again after unsubscribing, and never confirmed: unsubscribed again, not deleted.
+    await upsertContact(
+      env,
+      UpsertContactRequest.parse({ email: "g@example.com", status: "unsubscribed" }),
+      { source: "api" },
+    );
+    await upsertContact(env, UpsertContactRequest.parse({ email: "g@example.com" }), {
+      source: "api",
+      doubleOptIn: true,
+    });
+    expect((await getContact(env, "g@example.com"))?.status).toBe("pending");
+    await db
+      .update(schema.contact)
+      .set({
+        pendingSince: new Date(Date.now() - (RETENTION_DAYS.pendingContacts + 1) * 86_400_000),
+      })
+      .where(
+        and(
+          eq(schema.contact.environmentId, env.environmentId),
+          eq(schema.contact.address, "g@example.com"),
+        ),
+      );
+    expect(await purgeExpiredPendingContacts({ scope })).toBe(1);
+    expect((await getContact(env, "g@example.com"))?.status).toBe("unsubscribed");
+    expect(await contactCount(env)).toBe(2);
   });
 });
