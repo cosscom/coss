@@ -11,6 +11,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { SignUpButton } from "@/components/sign-up-button";
+import { YouTubeEmbed } from "@/components/youtube-embed";
 import { SHIPYARD } from "@/lib/shipyard";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -37,6 +38,7 @@ export default function CrowdOpinionatedSourcePage() {
     // One ruled sheet between the shell's rails, like the landing page.
     <main className="mx-auto w-full max-w-[1440px] flex-1">
       <Hero />
+      <Video />
       <Manifesto />
       <Flow />
       <Controls />
@@ -149,6 +151,25 @@ function SectionHead({ id, title, children }: { id: string; title: string; child
         {children}
       </div>
     </div>
+  );
+}
+
+function Video() {
+  return (
+    <section aria-labelledby="video-title" className="border-b">
+      <SectionHead id="video-title" title="Watch the idea">
+        Why the next GitHub won't look like GitHub, and what contributing looks like when nobody
+        writes the code by hand.
+      </SectionHead>
+      <div className="drafting-grid border-t px-4 py-10 sm:px-8 sm:py-14">
+        <figure className="mx-auto flex w-full max-w-5xl flex-col gap-3">
+          <YouTubeEmbed id="JYEPLpgCRck" title="Crowd opinionated source software" />
+          <figcaption className="font-mono text-muted-foreground text-xs">
+            Plays from YouTube (privacy-enhanced mode) once you press play.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
   );
 }
 
