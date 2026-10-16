@@ -185,8 +185,7 @@ async function contactFor(
       tx,
       { organizationId: scope.organizationId, environmentId: scope.environmentId },
       1,
-      {},
-      { bypassLimit: true },
+      null,
     );
     return { row: inserted, created: true };
   }

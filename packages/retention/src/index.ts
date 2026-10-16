@@ -274,7 +274,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "pending_contacts",
     label: "Unconfirmed contacts",
     description:
-      "Contacts asked to confirm their subscription (double opt-in) who never did, deleted with their memberships and choices. One who had unsubscribed before is kept, unsubscribed.",
+      "Contacts asked to confirm their subscription (double opt-in) who never did, deleted with their memberships and choices. One who had opted out (unsubscribed before, or left a topic) is kept, unsubscribed.",
     period: { days: RETENTION_DAYS.pendingContacts, after: "creation" },
   },
   {

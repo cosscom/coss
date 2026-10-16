@@ -4,11 +4,25 @@
  */
 import { db, schema } from "@coss/db";
 import { RETENTION_DAYS, retentionCutoff } from "@coss/retention";
-import { and, asc, eq, inArray, isNotNull, lt, ne, notExists, notInArray, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  eq,
+  exists,
+  inArray,
+  isNotNull,
+  lt,
+  ne,
+  notExists,
+  notInArray,
+  or,
+  sql,
+} from "drizzle-orm";
 import { lockContactCounter, releaseContacts } from "./contacts.ts";
 
 const {
   contact,
+  contactTopic,
   dmarcNotification,
   dmarcReport,
   dmarcReportRecord,
@@ -296,12 +310,32 @@ export async function purgeExpiredPendingContacts(opts: PurgeOptions = {}): Prom
       });
     }
     const ids = due.map((row) => row.id);
-    // Someone who had unsubscribed before being asked again goes back to `unsubscribed`: their
-    // opt-out lives only on the contact, and deleting it would let marketing reach them again.
+    // Someone who had opted out (unsubscribed before being asked again, or left a topic) is kept,
+    // `unsubscribed`: opt-outs live only on the contact, and deleting it would let email reach
+    // them again.
     const restored = await tx
       .update(contact)
       .set({ status: "unsubscribed", pendingSince: null, updatedAt: new Date() })
-      .where(and(inArray(contact.id, ids), expired, isNotNull(contact.unsubscribedAt)))
+      .where(
+        and(
+          inArray(contact.id, ids),
+          expired,
+          or(
+            isNotNull(contact.unsubscribedAt),
+            exists(
+              tx
+                .select({ one: sql`1` })
+                .from(contactTopic)
+                .where(
+                  and(
+                    sql`${contactTopic.contactId} = ${contact.id}`,
+                    eq(contactTopic.status, "opted_out"),
+                  ),
+                ),
+            ),
+          ),
+        ),
+      )
       .returning({ id: contact.id });
     const deleted = await tx
       .delete(contact)

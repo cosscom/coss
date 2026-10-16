@@ -646,5 +646,28 @@ describe("the preference center", () => {
     expect(await purgeExpiredPendingContacts({ scope })).toBe(1);
     expect((await getContact(env, "g@example.com"))?.status).toBe("unsubscribed");
     expect(await contactCount(env)).toBe(2);
+
+    // Never confirmed but left a topic (a topic email's link): kept, its opt-out with it.
+    await upsertContact(
+      env,
+      UpsertContactRequest.parse({
+        email: "h@example.com",
+        topics: [{ topic: "news", status: "opted_out" }],
+      }),
+      { source: "api", doubleOptIn: true },
+    );
+    await db
+      .update(schema.contact)
+      .set({
+        pendingSince: new Date(Date.now() - (RETENTION_DAYS.pendingContacts + 1) * 86_400_000),
+      })
+      .where(
+        and(
+          eq(schema.contact.environmentId, env.environmentId),
+          eq(schema.contact.address, "h@example.com"),
+        ),
+      );
+    expect(await purgeExpiredPendingContacts({ scope })).toBe(1);
+    expect((await getContact(env, "h@example.com"))?.status).toBe("unsubscribed");
   });
 });
