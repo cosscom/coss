@@ -449,6 +449,11 @@ describe("streams", () => {
     const scope = { organizationIds: [organizationId] };
     expect(await ensureMissingStreamTenants(identity, { scope })).toBe(1);
     expect(api.associations.get(api.identityArn(first))).toEqual(both);
+
+    // A domain the old release associated with the transactional tenant only: the rerun adds it.
+    api.associations.get(api.identityArn(second))?.delete(`test-${organizationId}-marketing`);
+    expect(await ensureMissingStreamTenants(identity, { scope })).toBe(0);
+    expect(api.associations.get(api.identityArn(second))).toEqual(both);
   });
 });
 

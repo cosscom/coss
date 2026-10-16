@@ -238,20 +238,7 @@ async function storeOrgTenant(
   stream: EmailStream,
 ): Promise<{ tenant: ProviderTenant; created: boolean }> {
   const tenant = await identity.ensureTenant({ organizationId, stream });
-  const domains = await db
-    .select({ name: domain.name })
-    .from(domain)
-    .where(
-      and(
-        eq(domain.organizationId, organizationId),
-        eq(domain.provider, identity.name),
-        notInArray(domain.status, ["failed", "deleting"]),
-        sql`cardinality(${domain.dkimTokens}) > 0`,
-      ),
-    );
-  for (const row of domains) {
-    await identity.associateDomainIdentity({ tenant, domain: row.name });
-  }
+  await associateOrgDomains(organizationId, identity, tenant);
   const [stored] = await db
     .insert(emailTenant)
     .values({
@@ -271,6 +258,28 @@ async function storeOrgTenant(
   return { tenant, created: Boolean(stored?.created) };
 }
 
+/** Associates the organization's provisioned domain identities with `tenant` (idempotent). */
+async function associateOrgDomains(
+  organizationId: string,
+  identity: IdentityProvider,
+  tenant: ProviderTenant,
+): Promise<void> {
+  const domains = await db
+    .select({ name: domain.name })
+    .from(domain)
+    .where(
+      and(
+        eq(domain.organizationId, organizationId),
+        eq(domain.provider, identity.name),
+        notInArray(domain.status, ["failed", "deleting"]),
+        sql`cardinality(${domain.dkimTokens}) > 0`,
+      ),
+    );
+  for (const row of domains) {
+    await identity.associateDomainIdentity({ tenant, domain: row.name });
+  }
+}
+
 /** Every stream's tenant of the organization, created on first use (transactional first). */
 export async function ensureOrgTenants(
   organizationId: string,
@@ -286,7 +295,9 @@ export async function ensureOrgTenants(
 /**
  * Creates the tenants of streams added after an organization's first domain (`ses:bootstrap`
  * after an upgrade), each associated with the organization's domain identities before its row is
- * stored (`storeOrgTenant`). Idempotent; returns the number of tenants created. `scope` limits it
+ * stored (`storeOrgTenant`), and associates existing stream tenants with domains added since (the
+ * old release, between the upgrade's bootstrap and its deploy, associated new domains with the
+ * transactional tenant only). Idempotent; returns the number of tenants created. `scope` limits it
  * to some organizations (tests).
  */
 export async function ensureMissingStreamTenants(
@@ -307,7 +318,11 @@ export async function ensureMissingStreamTenants(
   for (const { organizationId } of organizations) {
     const existing = await listEmailTenants(organizationId);
     for (const stream of EMAIL_STREAMS) {
-      if (existing.some((row) => row.stream === stream)) continue;
+      const row = existing.find((tenant) => tenant.stream === stream);
+      if (row?.provider === identity.name) {
+        await associateOrgDomains(organizationId, identity, tenantOf(row));
+        continue;
+      }
       if ((await storeOrgTenant(organizationId, identity, stream)).created) created++;
     }
   }

@@ -330,8 +330,11 @@ off for tenants and configuration sets: coss.com's own suppression lists decide 
    **Upgrading to streams:** apply the migration, run bootstrap *before* deploying (it creates the
    `<name>-marketing` configuration set, lets SES publish its events to the topic, adds it to the
    IAM policies and creates every existing organization's marketing tenant with its domains'
-   identities associated), deploy, then run bootstrap once more: it creates the marketing tenants of
-   organizations whose first domain was added by the old release meanwhile. Tenants double, so ask
+   identities associated), deploy, then run bootstrap once more: it associates domains the old
+   release added meanwhile with the marketing tenants too. Keep domain changes paused from the
+   migration until the deploy (as above): the migration re-keys `email_tenant` by stream, so the old
+   release can't store an organization's first tenant, and adding a first domain fails until the new
+   release runs (retrying afterwards works). Tenants double, so ask
    AWS for a higher SES tenant quota first if you are near it. The tenant prefix is now at most 23
    characters (`<prefix>-<organization id>-marketing` must fit SES's 64).
 4. Optionally, put a stream on a managed dedicated IP pool: `--transactional-pool <pool>` and/or

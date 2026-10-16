@@ -13,7 +13,9 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   organization (a shared assignment: `createDomainIdentity({ tenants })` refuses only tenants outside that set).
   `authorizeLiveSender({ stream })` checks that stream's tenant pause. A tenant missing for an organization set up
   before its stream is created by `ensureMissingStreamTenants` (run by `ses:bootstrap`), which associates the
-  identities before storing the row; marketing tenants are stored `suppression_migrated_at` set (born without SES
+  identities before storing the row (only identities provisioned for the organization: a domain still being claimed
+  goes through `createDomainIdentity`'s ownership checks first) and re-associates existing stream tenants with
+  domains added since; marketing tenants are stored `suppression_migrated_at` set (born without SES
   suppression), so bootstrap's suppression migration never imports into them. Every write path that enqueues a
   dispatch job passes the email's `stream`.
 - **SES:** only the `coss_email_id` tag is ever set on SES messages — never forward customer tags (events are mapped
