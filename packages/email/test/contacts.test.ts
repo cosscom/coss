@@ -341,6 +341,23 @@ describe("contacts", () => {
     expect(parseContactCsv("a@example.com\nb@example.com\n", types).entries).toHaveLength(2);
     expect(() => parseContactCsv("name,company\nx,y\n", types)).toThrow("email");
   });
+
+  test("a CSV status the import can't set is reported, never imported as subscribed", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const { entries } = parseContactCsv(
+      "email,status\r\npending@example.com,pending\r\nfan@example.com,yes\r\n",
+      new Map(),
+    );
+    const result = await importContacts(
+      env,
+      entries.map(({ entry }) => entry),
+      {},
+    );
+    expect(result).toMatchObject({ created: 1 });
+    expect(result.invalid).toMatchObject([{ index: 0, email: "pending@example.com" }]);
+    expect(await getContact(env, "pending@example.com")).toBeNull();
+  });
 });
 
 describe("properties", () => {

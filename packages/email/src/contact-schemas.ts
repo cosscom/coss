@@ -172,7 +172,9 @@ const ContactFields = {
   last_name: PersonName.nullable().optional(),
   properties: ContactProperties.optional(),
   status: z
-    .enum(["subscribed", "unsubscribed"])
+    .enum(["subscribed", "unsubscribed"], {
+      error: 'Must be "subscribed" or "unsubscribed" (pending contacts confirm by double opt-in).',
+    })
     .optional()
     .meta({
       description:

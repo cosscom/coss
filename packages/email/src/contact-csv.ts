@@ -80,7 +80,7 @@ function propertyValue(type: ContactPropertyType, text: string): string | number
   }
 }
 
-/** `subscribed`/`unsubscribed` (also `true`/`false`, `yes`/`no`); anything else is left out. */
+/** `subscribed`/`unsubscribed` (also `true`/`false`, `yes`/`no`); anything else is `undefined`. */
 function statusValue(text: string): "subscribed" | "unsubscribed" | undefined {
   const lower = text.toLowerCase();
   if (["subscribed", "true", "yes", "1"].includes(lower)) return "subscribed";
@@ -139,8 +139,9 @@ export function parseContactCsv(
       else if (column === "first_name") entry.first_name = text;
       else if (column === "last_name") entry.last_name = text;
       else if (column === "status") {
-        const status = statusValue(text);
-        if (status) entry.status = status;
+        // An unknown status (an export's `pending`, another tool's `cleaned`) is passed on, so
+        // the import reports the row: left out, it would import the contact as subscribed.
+        entry.status = (statusValue(text) ?? text) as ContactImportEntryInput["status"];
       } else {
         const key = column.slice("property:".length);
         values[key] = propertyValue(properties.get(key) as ContactPropertyType, text);

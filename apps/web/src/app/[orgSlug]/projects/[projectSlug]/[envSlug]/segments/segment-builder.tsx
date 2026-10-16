@@ -151,6 +151,23 @@ function rowOf(condition: SegmentConditionOutput): Row {
   return row;
 }
 
+/**
+ * Whether the builder's fields hold the condition exactly (saving it unchanged gives it back):
+ * `created_at` dates only to the day, and lists as comma-separated text.
+ */
+function representable(condition: SegmentConditionOutput): boolean {
+  if (condition.field === "created_at" && condition.op !== "within_days") {
+    return /T00:00:00(\.0+)?Z$/.test(String(condition.value));
+  }
+  if (condition.field === "property" && Array.isArray(condition.value)) {
+    return condition.value.every(
+      (item) =>
+        typeof item !== "string" || (item !== "" && item === item.trim() && !item.includes(",")),
+    );
+  }
+  return true;
+}
+
 function typed(type: PropertyType, text: string): string | number | boolean {
   if (type === "number") return Number(text);
   if (type === "boolean") return text.trim() === "true";
@@ -223,7 +240,8 @@ function SmallSelect(props: {
 
 /**
  * Edits a segment: its name and filter. Flat filters (one level of conditions) get the builder;
- * filters with nested groups (made through the API) are edited as JSON.
+ * filters with nested groups or values it can't hold exactly (made through the API) are edited as
+ * JSON.
  */
 export function SegmentEditor(
   props: MarketingFormTarget & {
@@ -236,7 +254,11 @@ export function SegmentEditor(
     canEdit: boolean;
   },
 ) {
-  const nested = props.filter?.conditions.some((item) => "conditions" in item) ?? false;
+  // Nested groups, or values the builder would change, are edited as JSON.
+  const nested =
+    props.filter?.conditions.some(
+      (item) => "conditions" in item || !representable(item as SegmentConditionOutput),
+    ) ?? false;
   const [match, setMatch] = useState<"all" | "any">(props.filter?.match ?? "all");
   const [rows, setRows] = useState<Row[]>(() =>
     props.filter && !nested
@@ -284,8 +306,8 @@ export function SegmentEditor(
               value={json}
             />
             <FieldDescription>
-              This filter has nested groups, which the builder doesn't show. See the API reference
-              for its shape.
+              This filter has nested groups or values (exact times, list items with commas) the
+              builder doesn't show. See the API reference for its shape.
             </FieldDescription>
           </Field>
         ) : (
