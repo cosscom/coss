@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { BillingError } from "@coss/billing";
+import { BillingError, createPlanGate } from "@coss/billing";
 import type { PlanGate } from "@coss/billing/gate";
 import { db, schema } from "@coss/db";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
@@ -191,6 +191,21 @@ describe("contacts", () => {
     });
   });
 
+  test("more concurrent creates than pool connections finish under a plan limit", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    // The real gate reads the plan from the database (the fake one wouldn't need a connection).
+    const plans = createPlanGate();
+    const creates = Array.from({ length: 15 }, (_, index) =>
+      upsertContact(env, UpsertContactRequest.parse({ email: `pool${index}@example.com` }), {
+        ...api,
+        plans,
+      }),
+    );
+    expect(await Promise.all(creates)).toHaveLength(15);
+    expect(await contactCount(env)).toBe(15);
+  });
+
   test("lists newest first with a keyset cursor, filtered by status and audience", async () => {
     const tenant = await createTestTenant();
     const env = envOf(tenant);
@@ -310,6 +325,8 @@ describe("contacts", () => {
     for (const header of BUILT_IN_CSV_HEADERS) {
       expect(RESERVED_PROPERTY_KEYS.has(header)).toBe(true);
     }
+    // Nor a name every object inherits.
+    expect(RESERVED_PROPERTY_KEYS.has("constructor")).toBe(true);
   });
 
   test("CSV exports import again unchanged, and other tools' headers are understood", async () => {

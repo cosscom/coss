@@ -129,22 +129,39 @@ export async function lockContactCounter(tx: Executor, env: ContactEnvironment):
     .for("update");
 }
 
+/** A reservation `reserveContacts` refused: over the plan's limit (see `contactLimitError`). */
+class ContactLimitReached extends Error {
+  constructor(
+    readonly current: number,
+    readonly count: number,
+  ) {
+    super("The plan's contact limit was reached.");
+  }
+}
+
 /**
- * Counts `count` more contacts of the environment against the plan's limit, in `tx` (the
- * conditional update is the check). Throws the plan's `BillingError` beyond it.
+ * The plan's `contactsPerEnvironment` (`null`: unlimited), read before a transaction opens: a
+ * lookup inside one would need a second pool connection while holding the first.
+ */
+export async function contactLimitOf(
+  env: ContactEnvironment,
+  deps: ContactDeps,
+): Promise<number | null> {
+  return deps.plans ? deps.plans.limit(env.organizationId, "contactsPerEnvironment") : null;
+}
+
+/**
+ * Counts `count` more contacts of the environment against `limit` (from `contactLimitOf`), in
+ * `tx`: the conditional update is the check. Beyond it, throws a refusal for
+ * `contactLimitError` to turn into the plan's `BillingError` once the transaction is over.
  */
 export async function reserveContacts(
   tx: Executor,
   env: ContactEnvironment,
   count: number,
-  deps: ContactDeps,
-  opts: { bypassLimit?: boolean } = {},
+  limit: number | null,
 ): Promise<void> {
   if (count <= 0) return;
-  const limit =
-    deps.plans && !opts.bypassLimit
-      ? await deps.plans.limit(env.organizationId, "contactsPerEnvironment")
-      : null;
   await tx
     .insert(contactCounter)
     .values({ environmentId: env.environmentId, organizationId: env.organizationId })
@@ -165,13 +182,23 @@ export async function reserveContacts(
     .select({ count: contactCounter.count })
     .from(contactCounter)
     .where(scope);
+  throw new ContactLimitReached(current?.count ?? 0, count);
+}
+
+/** `error`, or the plan's `BillingError` for a refused reservation (call outside the transaction). */
+export async function contactLimitError(
+  error: unknown,
+  env: ContactEnvironment,
+  deps: ContactDeps,
+): Promise<unknown> {
+  if (!(error instanceof ContactLimitReached)) return error;
   await deps.plans?.requireCapacity(
     env.organizationId,
     "contactsPerEnvironment",
-    current?.count ?? 0,
-    count,
+    error.current,
+    error.count,
   );
-  throw new Error("The contact limit changed during the check; retry.");
+  return new Error("The contact limit changed during the check; retry.");
 }
 
 /** Gives `count` contacts back to the environment's counter (deletes, purges), in `tx`. */
@@ -340,53 +367,58 @@ export async function upsertContact(
 ): Promise<{ contact: ContactOutput; created: boolean }> {
   const now = opts.now ?? new Date();
   const topics = await requireTopics(env, params.topics);
-  return db.transaction(async (tx) => {
-    const projectId = await environmentProject(env, tx);
-    if (!projectId) throw new ContactError("not_found", "Environment not found.");
-    const definitions = await propertyDefinitions(env, tx, { forWrite: true });
-    await lockContactCounter(tx, env);
-    const audienceIds = await requireAudiences(tx, env, params.audience_ids);
-    const status = params.status ?? "subscribed";
-    const [inserted] = await tx
-      .insert(contact)
-      .values({
-        ...env,
-        projectId,
-        address: params.email,
-        firstName: params.first_name ?? null,
-        lastName: params.last_name ?? null,
-        properties: mergeProperties({}, params.properties, definitions),
-        source: opts.source,
-        ...statusChange(status, now),
-        createdAt: now,
-        updatedAt: now,
-      })
-      .onConflictDoNothing({ target: [contact.environmentId, contact.address] })
-      .returning();
-    let row: ContactRow;
-    if (inserted) {
-      await reserveContacts(tx, env, 1, opts);
-      row = inserted;
-    } else {
-      const [existing] = await tx
-        .select()
-        .from(contact)
-        .where(and(inContactEnvironment(contact, env), eq(contact.address, params.email)))
-        .for("update");
-      if (!existing) throw new Error("The contact disappeared during the upsert; retry.");
-      row = await updateRow(tx, existing, params, definitions, now);
-    }
-    await addMemberships(tx, row, audienceIds);
-    await applyTopicChoices(tx, row, topics, params.topics, opts.source);
-    await announceContact(
-      tx,
-      row,
-      inserted ? "contact.created" : "contact.updated",
-      opts.source,
-      now,
-    );
-    return { contact: toContactObject(row), created: Boolean(inserted) };
-  });
+  const limit = await contactLimitOf(env, opts);
+  try {
+    return await db.transaction(async (tx) => {
+      const projectId = await environmentProject(env, tx);
+      if (!projectId) throw new ContactError("not_found", "Environment not found.");
+      const definitions = await propertyDefinitions(env, tx, { forWrite: true });
+      await lockContactCounter(tx, env);
+      const audienceIds = await requireAudiences(tx, env, params.audience_ids);
+      const status = params.status ?? "subscribed";
+      const [inserted] = await tx
+        .insert(contact)
+        .values({
+          ...env,
+          projectId,
+          address: params.email,
+          firstName: params.first_name ?? null,
+          lastName: params.last_name ?? null,
+          properties: mergeProperties({}, params.properties, definitions),
+          source: opts.source,
+          ...statusChange(status, now),
+          createdAt: now,
+          updatedAt: now,
+        })
+        .onConflictDoNothing({ target: [contact.environmentId, contact.address] })
+        .returning();
+      let row: ContactRow;
+      if (inserted) {
+        await reserveContacts(tx, env, 1, limit);
+        row = inserted;
+      } else {
+        const [existing] = await tx
+          .select()
+          .from(contact)
+          .where(and(inContactEnvironment(contact, env), eq(contact.address, params.email)))
+          .for("update");
+        if (!existing) throw new Error("The contact disappeared during the upsert; retry.");
+        row = await updateRow(tx, existing, params, definitions, now);
+      }
+      await addMemberships(tx, row, audienceIds);
+      await applyTopicChoices(tx, row, topics, params.topics, opts.source);
+      await announceContact(
+        tx,
+        row,
+        inserted ? "contact.created" : "contact.updated",
+        opts.source,
+        now,
+      );
+      return { contact: toContactObject(row), created: Boolean(inserted) };
+    });
+  } catch (error) {
+    throw await contactLimitError(error, env, opts);
+  }
 }
 
 async function updateRow(
@@ -557,115 +589,125 @@ export async function importContacts(
   let created = 0;
   let updated = 0;
   let keptUnsubscribed = 0;
-  await db.transaction(async (tx) => {
-    const projectId = await environmentProject(env, tx);
-    if (!projectId) throw new ContactError("not_found", "Environment not found.");
-    const definitions = await propertyDefinitions(env, tx, { forWrite: true });
-    // Before the first batch's inserts: a concurrent upsert of a later batch's address must not
-    // hold that row while waiting for the counter this import holds.
-    await lockContactCounter(tx, env);
-    const audienceIds = await requireAudiences(
-      tx,
-      env,
-      opts.audienceId ? [opts.audienceId] : undefined,
-    );
-    const rows = [...valid.values()];
-    const reject = (params: UpsertContactRequestOutput, error: ContactError) =>
-      invalid.push({
-        index: entries.findLastIndex(
-          (entry) => typeof entry.email === "string" && addressKey(entry.email) === params.email,
-        ),
-        email: params.email,
-        message: error.message,
-      });
-    // Property errors are per entry too: validate before writing anything.
-    const prepared: { params: UpsertContactRequestOutput; properties: Record<string, unknown> }[] =
-      [];
-    for (const params of rows) {
-      try {
-        prepared.push({ params, properties: mergeProperties({}, params.properties, definitions) });
-      } catch (error) {
-        if (!(error instanceof ContactError)) throw error;
-        reject(params, error);
-      }
-    }
-    for (let start = 0; start < prepared.length; start += IMPORT_BATCH) {
-      const batch = prepared.slice(start, start + IMPORT_BATCH);
-      const inserted = await tx
-        .insert(contact)
-        .values(
-          batch.map(({ params, properties }) => ({
-            ...env,
-            projectId,
-            address: params.email,
-            firstName: params.first_name ?? null,
-            lastName: params.last_name ?? null,
-            properties,
-            source,
-            ...statusChange(params.status ?? "subscribed", now),
-            createdAt: now,
-            updatedAt: now,
-          })),
-        )
-        .onConflictDoNothing({ target: [contact.environmentId, contact.address] })
-        .returning();
-      created += inserted.length;
-      await reserveContacts(tx, env, inserted.length, opts);
-      const insertedAddresses = new Set(inserted.map((row) => row.address));
-      const touched: ContactRow[] = [...inserted];
-      const existingRows = await tx
-        .select()
-        .from(contact)
-        .where(
-          and(
-            inContactEnvironment(contact, env),
-            inArray(
-              contact.address,
-              batch.map(({ params }) => params.email).filter((a) => !insertedAddresses.has(a)),
-            ),
+  const limit = await contactLimitOf(env, opts);
+  try {
+    await db.transaction(async (tx) => {
+      const projectId = await environmentProject(env, tx);
+      if (!projectId) throw new ContactError("not_found", "Environment not found.");
+      const definitions = await propertyDefinitions(env, tx, { forWrite: true });
+      // Before the first batch's inserts: a concurrent upsert of a later batch's address must not
+      // hold that row while waiting for the counter this import holds.
+      await lockContactCounter(tx, env);
+      const audienceIds = await requireAudiences(
+        tx,
+        env,
+        opts.audienceId ? [opts.audienceId] : undefined,
+      );
+      const rows = [...valid.values()];
+      const reject = (params: UpsertContactRequestOutput, error: ContactError) =>
+        invalid.push({
+          index: entries.findLastIndex(
+            (entry) => typeof entry.email === "string" && addressKey(entry.email) === params.email,
           ),
-        )
-        .for("update");
-      const existing = new Map(existingRows.map((row) => [row.address, row]));
-      for (const { params } of batch) {
-        const row = existing.get(params.email);
-        if (!row) continue;
-        const resubscribes = params.status === "subscribed" && row.status !== "subscribed";
-        let next: ContactRow;
+          email: params.email,
+          message: error.message,
+        });
+      // Property errors are per entry too: validate before writing anything.
+      const prepared: {
+        params: UpsertContactRequestOutput;
+        properties: Record<string, unknown>;
+      }[] = [];
+      for (const params of rows) {
         try {
-          // Merged with the stored properties, which can push them over the size limit.
-          next = await updateRow(
-            tx,
-            row,
-            { ...params, status: resubscribes ? undefined : params.status },
-            definitions,
-            now,
-          );
+          prepared.push({
+            params,
+            properties: mergeProperties({}, params.properties, definitions),
+          });
         } catch (error) {
           if (!(error instanceof ContactError)) throw error;
           reject(params, error);
-          continue;
         }
-        if (resubscribes) keptUnsubscribed++;
-        touched.push(next);
-        updated++;
       }
-      if (audienceIds.length > 0 && touched.length > 0) {
-        await tx
-          .insert(audienceMember)
+      for (let start = 0; start < prepared.length; start += IMPORT_BATCH) {
+        const batch = prepared.slice(start, start + IMPORT_BATCH);
+        const inserted = await tx
+          .insert(contact)
           .values(
-            touched.flatMap((row) =>
-              audienceIds.map((audienceId) => ({
-                audienceId,
-                contactId: row.id,
-                organizationId: row.organizationId,
-              })),
+            batch.map(({ params, properties }) => ({
+              ...env,
+              projectId,
+              address: params.email,
+              firstName: params.first_name ?? null,
+              lastName: params.last_name ?? null,
+              properties,
+              source,
+              ...statusChange(params.status ?? "subscribed", now),
+              createdAt: now,
+              updatedAt: now,
+            })),
+          )
+          .onConflictDoNothing({ target: [contact.environmentId, contact.address] })
+          .returning();
+        created += inserted.length;
+        await reserveContacts(tx, env, inserted.length, limit);
+        const insertedAddresses = new Set(inserted.map((row) => row.address));
+        const touched: ContactRow[] = [...inserted];
+        const existingRows = await tx
+          .select()
+          .from(contact)
+          .where(
+            and(
+              inContactEnvironment(contact, env),
+              inArray(
+                contact.address,
+                batch.map(({ params }) => params.email).filter((a) => !insertedAddresses.has(a)),
+              ),
             ),
           )
-          .onConflictDoNothing();
+          .for("update");
+        const existing = new Map(existingRows.map((row) => [row.address, row]));
+        for (const { params } of batch) {
+          const row = existing.get(params.email);
+          if (!row) continue;
+          const resubscribes = params.status === "subscribed" && row.status !== "subscribed";
+          let next: ContactRow;
+          try {
+            // Merged with the stored properties, which can push them over the size limit.
+            next = await updateRow(
+              tx,
+              row,
+              { ...params, status: resubscribes ? undefined : params.status },
+              definitions,
+              now,
+            );
+          } catch (error) {
+            if (!(error instanceof ContactError)) throw error;
+            reject(params, error);
+            continue;
+          }
+          if (resubscribes) keptUnsubscribed++;
+          touched.push(next);
+          updated++;
+        }
+        if (audienceIds.length > 0 && touched.length > 0) {
+          await tx
+            .insert(audienceMember)
+            .values(
+              touched.flatMap((row) =>
+                audienceIds.map((audienceId) => ({
+                  audienceId,
+                  contactId: row.id,
+                  organizationId: row.organizationId,
+                })),
+              ),
+            )
+            .onConflictDoNothing();
+        }
       }
-    }
-  });
+    });
+  } catch (error) {
+    throw await contactLimitError(error, env, opts);
+  }
   invalid.sort((a, b) => a.index - b.index);
   return {
     object: "contact_import",

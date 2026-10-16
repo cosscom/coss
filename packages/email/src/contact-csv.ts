@@ -27,7 +27,7 @@ export function contactCsvRow(contact: ContactOutput, keys: string[]): string {
     contact.last_name ?? "",
     contact.status,
     ...keys.map((key) => {
-      const value = contact.properties[key];
+      const value = Object.hasOwn(contact.properties, key) ? contact.properties[key] : undefined;
       return value === undefined ? "" : String(value);
     }),
     contact.created_at,

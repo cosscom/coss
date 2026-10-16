@@ -63,6 +63,8 @@ export const RESERVED_PROPERTY_KEYS: ReadonlySet<string> = new Set([
   "id",
   "created_at",
   "updated_at",
+  // The one `Object.prototype` name the key format allows: lookups must never find it.
+  "constructor",
 ]);
 
 const Timestamp = z.iso.datetime();

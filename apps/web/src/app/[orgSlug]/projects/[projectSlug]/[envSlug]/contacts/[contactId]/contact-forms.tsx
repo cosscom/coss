@@ -78,7 +78,9 @@ export function ContactForm(
       {props.definitions.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2">
           {props.definitions.map((definition) => {
-            const value = props.properties[definition.key];
+            const value = Object.hasOwn(props.properties, definition.key)
+              ? props.properties[definition.key]
+              : undefined;
             return (
               <Field key={definition.key}>
                 <FieldLabel>

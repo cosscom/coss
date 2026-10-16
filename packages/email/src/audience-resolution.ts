@@ -154,7 +154,8 @@ export function contactVariables(
     last_name: recipient.lastName ?? "",
   };
   for (const [key, definition] of definitions) {
-    const value = (recipient.properties as Record<string, unknown>)[key] ?? definition.fallback;
+    const properties = recipient.properties as Record<string, unknown>;
+    const value = (Object.hasOwn(properties, key) ? properties[key] : null) ?? definition.fallback;
     variables[key] = value === null || value === undefined ? "" : String(value);
   }
   return variables;
