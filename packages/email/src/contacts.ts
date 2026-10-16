@@ -319,7 +319,7 @@ export async function upsertContact(
   return db.transaction(async (tx) => {
     const projectId = await environmentProject(env, tx);
     if (!projectId) throw new ContactError("not_found", "Environment not found.");
-    const definitions = await propertyDefinitions(env, tx);
+    const definitions = await propertyDefinitions(env, tx, { forWrite: true });
     const audienceIds = await requireAudiences(tx, env, params.audience_ids);
     const status = params.status ?? "subscribed";
     const [inserted] = await tx
@@ -408,7 +408,7 @@ export async function updateContact(
       .where(and(inContactEnvironment(contact, env), match))
       .for("update");
     if (!existing) return null;
-    const definitions = await propertyDefinitions(env, tx);
+    const definitions = await propertyDefinitions(env, tx, { forWrite: true });
     const row = await updateRow(tx, existing, params, definitions, now);
     await applyTopicChoices(tx, row, topics, params.topics, opts.source);
     await announceContact(tx, row, "contact.updated", opts.source, now);
@@ -533,7 +533,7 @@ export async function importContacts(
   await db.transaction(async (tx) => {
     const projectId = await environmentProject(env, tx);
     if (!projectId) throw new ContactError("not_found", "Environment not found.");
-    const definitions = await propertyDefinitions(env, tx);
+    const definitions = await propertyDefinitions(env, tx, { forWrite: true });
     const audienceIds = await requireAudiences(
       tx,
       env,

@@ -166,11 +166,23 @@ export function mergeProperties(
   return merged;
 }
 
+/**
+ * The environment's property definitions by key. Contact writers pass `{ forWrite: true }` in
+ * their transaction: the definitions they validate against are locked (`FOR SHARE`) until they
+ * commit, so a deletion waits for them and strips the values they wrote.
+ */
 export async function propertyDefinitions(
   env: ContactEnvironment,
   executor: Executor = db,
+  opts: { forWrite?: boolean } = {},
 ): Promise<Map<string, ContactPropertyRow>> {
-  return new Map((await listContactPropertyRows(env, executor)).map((row) => [row.key, row]));
+  const query = executor
+    .select()
+    .from(contactProperty)
+    .where(inContactEnvironment(contactProperty, env))
+    .orderBy(asc(contactProperty.key));
+  const rows = opts.forWrite ? await query.for("share") : await query;
+  return new Map(rows.map((row) => [row.key, row]));
 }
 
 function storedFallback(
@@ -237,11 +249,12 @@ export async function updateContactProperty(
   return updated ? toContactPropertyObject(updated) : null;
 }
 
-const STRIP_BATCH = 5000;
-
 /**
- * Deletes the property and removes its values from every contact (in batches). Refused while a
- * segment filters on it. Returns whether it existed.
+ * Deletes the property and removes its values from every contact, in one transaction: a failure
+ * leaves both, and the key can't be created again (the creation lock) until its old values are
+ * gone. Contact writers hold the definition until they commit (`propertyDefinitions`), so their
+ * values are stripped too, and later ones refuse the key. Refused while a segment filters on it.
+ * Returns whether it existed.
  */
 export async function deleteContactProperty(env: ContactEnvironment, id: string): Promise<boolean> {
   const row = await propertyRow(env, id);
@@ -262,21 +275,19 @@ export async function deleteContactProperty(env: ContactEnvironment, id: string)
       `The segment "${used.name}" filters on "${row.key}": change it first.`,
     );
   }
-  await db
-    .delete(contactProperty)
-    .where(and(inContactEnvironment(contactProperty, env), eq(contactProperty.id, id)));
-  for (;;) {
-    const stripped = await db.execute(sql`
-      update ${contact} set properties = properties - ${row.key}::text, updated_at = now()
-      where ${contact.id} in (
-        select ${contact.id} from ${contact}
-        where ${contact.organizationId} = ${env.organizationId}
-          and ${contact.environmentId} = ${env.environmentId}
-          and ${contact.properties} ? ${row.key}::text
-        limit ${STRIP_BATCH}
-      )
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`cprop:${env.environmentId}`}))`);
+    const [deleted] = await tx
+      .delete(contactProperty)
+      .where(and(inContactEnvironment(contactProperty, env), eq(contactProperty.id, id)))
+      .returning({ key: contactProperty.key });
+    if (!deleted) return false;
+    await tx.execute(sql`
+      update ${contact} set properties = properties - ${deleted.key}::text, updated_at = now()
+      where ${contact.organizationId} = ${env.organizationId}
+        and ${contact.environmentId} = ${env.environmentId}
+        and ${contact.properties} ? ${deleted.key}::text
     `);
-    if ((stripped.rowCount ?? 0) < STRIP_BATCH) break;
-  }
-  return true;
+    return true;
+  });
 }
