@@ -29,7 +29,7 @@ import {
   sql,
 } from "drizzle-orm";
 import { getEmailTenant } from "./domains.ts";
-import type { DedicatedIpProvider, IdentityProvider } from "./provider.ts";
+import type { DedicatedIpProvider, IdentityProvider, ProviderTenant } from "./provider.ts";
 import type { DedicatedIpPoolObjectOutput } from "./schemas.ts";
 
 const { dedicatedIpPool, dedicatedIpDeliveryRollup, organizationDeletion } = schema;
@@ -414,16 +414,14 @@ async function step(row: DedicatedIpPoolRow, now: Date, deps: DedicatedIpDeps): 
           .where(ours);
         return;
       }
+      const tenant = { tenantName: tenantRow.tenantName, tenantArn: tenantRow.tenantArn };
       try {
-        await deps.dedicatedIps.ensurePool({
-          organizationId: row.organizationId,
-          tenant: { tenantName: tenantRow.tenantName, tenantArn: tenantRow.tenantArn },
-        });
+        await deps.dedicatedIps.ensurePool({ organizationId: row.organizationId, tenant });
       } catch (error) {
-        await undoIfTornDown(row, deps.dedicatedIps);
+        await undoIfTornDown(row, tenant, deps.dedicatedIps);
         throw error;
       }
-      if (await undoIfTornDown(row, deps.dedicatedIps)) return;
+      if (await undoIfTornDown(row, tenant, deps.dedicatedIps)) return;
       await db.transaction(async (tx) => {
         const [updated] = await tx
           .update(dedicatedIpPool)
@@ -521,6 +519,8 @@ async function step(row: DedicatedIpPoolRow, now: Date, deps: DedicatedIpDeps): 
  */
 async function undoIfTornDown(
   row: DedicatedIpPoolRow,
+  /** The tenant it was created for: the teardown may have deleted its row by now. */
+  tenant: ProviderTenant,
   provider: DedicatedIpProvider,
 ): Promise<boolean> {
   const [deleting] = await db
@@ -534,22 +534,25 @@ async function undoIfTornDown(
     )
     .limit(1);
   if (!deleting && (await getDedicatedIpPool(row.organizationId))) return false;
-  await releaseDedicatedIpPool(row, provider);
+  await releaseDedicatedIpPool(row, provider, tenant);
   return true;
 }
 
 async function releaseDedicatedIpPool(
   row: Pick<DedicatedIpPoolRow, "organizationId" | "provider" | "provisionedAt" | "status">,
   provider: DedicatedIpProvider,
+  /** Known already (else read from the organization's tenant row). */
+  known?: ProviderTenant,
 ): Promise<void> {
   if (row.provider !== provider.name) return;
-  const tenantRow = await getEmailTenant(row.organizationId);
+  const tenantRow = known ? null : await getEmailTenant(row.organizationId);
   await provider.releasePool({
     organizationId: row.organizationId,
     tenant:
-      tenantRow && tenantRow.provider === provider.name
+      known ??
+      (tenantRow && tenantRow.provider === provider.name
         ? { tenantName: tenantRow.tenantName, tenantArn: tenantRow.tenantArn }
-        : null,
+        : null),
   });
 }
 

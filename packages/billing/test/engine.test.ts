@@ -488,6 +488,33 @@ describe("contract changes", () => {
     ]);
   });
 
+  test("unused add-on time is credited at the discount it was charged with, though expired", () => {
+    const pro = segment(
+      {
+        version: 1,
+        plan: "pro",
+        addOns: [{ ...DEDICATED_IPS, key: "support" }],
+        discounts: [{ scope: "add_ons", percent: 100, until: "2026-10-10T00:00:00Z" }],
+      },
+      // As `composeChange` builds it: from the change on.
+      { contractEnd: OCT_12, superseded: true, interval: { start: OCT_12, end: OCT.end } },
+    );
+    const scale = segment(
+      { version: 1, plan: "scale" },
+      { contractId: "bcon_b", contractStart: OCT_12, interval: { start: OCT_12, end: OCT.end } },
+    );
+    const change = composeContractChange({
+      at: OCT_12,
+      from: { segment: pro, advanceCharged: true, addOnsCharged: new Set(["support"]) },
+      to: scale,
+    });
+    // October's add-on cost nothing: nothing of it is credited.
+    expect(amounts(change.lines)).toEqual([
+      ["plan_fee", 16_129n],
+      ["proration", -1_613n],
+    ]);
+  });
+
   test("a carried fee whose credit becomes spendable grants the rest of the month's credit", () => {
     const scale = segment(
       { version: 1, plan: "scale", feeCredit: { spendable: false, pool: "month" } },

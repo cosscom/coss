@@ -436,6 +436,21 @@ function netOfDiscounts(segment: Segment, scope: "fees" | "add_ons", gross: bigi
   return net;
 }
 
+/**
+ * `segment` as it was when its advance charge for the `months`-month interval containing `at` was
+ * made (at the interval's start, or the contract's if later): the discounts in effect then.
+ */
+function asCharged(segment: Segment, at: Date, months: number): Segment {
+  const { start } = intervalAt(segment, at, months);
+  return {
+    ...segment,
+    interval: {
+      start: start < segment.contractStart ? segment.contractStart : start,
+      end: segment.interval.end,
+    },
+  };
+}
+
 /** The percentages of a segment's discounts on `scope` in effect (what its charges pay). */
 function discountPercents(segment: Segment, scope: "fees" | "add_ons"): string {
   return activeDiscounts(segment, (candidate) => candidate === scope)
@@ -452,7 +467,7 @@ export function feeCarriesOver(from: Segment, to: Segment): boolean {
   return (
     from.terms.plan === to.terms.plan &&
     sameMonthlyFee(from.terms.fee, to.terms.fee) &&
-    discountPercents(from, "fees") === discountPercents(to, "fees")
+    discountPercents(asCharged(from, to.interval.start, 1), "fees") === discountPercents(to, "fees")
   );
 }
 
@@ -469,7 +484,8 @@ export function addOnCarriesOver(
   after: AddOnLine,
 ): boolean {
   return (
-    discountPercents(from, "add_ons") === discountPercents(to, "add_ons") &&
+    discountPercents(asCharged(from, to.interval.start, 1), "add_ons") ===
+      discountPercents(to, "add_ons") &&
     before.key === after.key &&
     after.timing === "advance" &&
     after.interval === "month" &&
@@ -950,8 +966,12 @@ export function composeContractChange(input: ContractChangeInput): Composition {
     // The replaced contract now ends at `at`; what it was charged for after that is unused.
     const unused = intersect(interval, { start: at, end: FAR_FUTURE });
     if (unused) {
-      // What it was charged: the fee less the replaced contract's fee discounts.
-      const paid = netOfDiscounts(fromAdvance, "fees", fromAdvance.terms.fee.amountCents);
+      // What it was charged: the fee less the replaced contract's fee discounts at the time.
+      const paid = netOfDiscounts(
+        asCharged(fromAdvance, at, months),
+        "fees",
+        fromAdvance.terms.fee.amountCents,
+      );
       const amount = prorate(paid, hoursIn(unused), hoursIn(interval));
       if (amount > 0n) {
         draft.charge(
@@ -975,9 +995,9 @@ export function composeContractChange(input: ContractChangeInput): Composition {
       const interval = intervalAt(from.segment, at, INTERVAL_MONTHS[addOn.interval]);
       const unused = intersect(interval, { start: at, end: FAR_FUTURE });
       if (!unused) continue;
-      // What it was charged: its price less the replaced contract's add-on discounts.
+      // What it was charged: its price less the replaced contract's add-on discounts at the time.
       const paid = netOfDiscounts(
-        from.segment,
+        asCharged(from.segment, at, INTERVAL_MONTHS[addOn.interval]),
         "add_ons",
         addOn.unitAmountCents * BigInt(addOn.quantity),
       );

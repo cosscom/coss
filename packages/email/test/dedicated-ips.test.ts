@@ -445,6 +445,32 @@ describe("organization deletion", () => {
     expect(await getDedicatedIpPool(org)).toBeNull();
   });
 
+  test("a pool created after the teardown deleted the tenant is still released", async () => {
+    const tenant = await createTestTenant();
+    const org = tenant.organization.id;
+    const { api, identity } = sesFixture();
+    await ensureOrgTenant(org, identity);
+    // The whole teardown (tenant included) runs while the worker is creating the pool.
+    class TornDown extends SesDedicatedIpProvider {
+      override async ensurePool(input: Parameters<SesDedicatedIpProvider["ensurePool"]>[0]) {
+        await requestDeletion(tenant);
+        await releaseOrganizationEmailResources(org, {
+          identity,
+          tracking: new FakeTrackingHostnameProvider(),
+          dedicatedIps: this,
+        });
+        await super.ensurePool(input);
+      }
+    }
+    const pools = new TornDown(api, config);
+    await reconcileDedicatedIpPools(
+      { entitled: [org], scope: { organizationIds: [org] } },
+      { identity, dedicatedIps: pools },
+    ).catch(() => 0);
+    expect(api.pools.size).toBe(0);
+    expect(await getDedicatedIpPool(org)).toBeNull();
+  });
+
   test("releases the pool before the tenant", async () => {
     const tenant = await createTestTenant();
     const org = tenant.organization.id;
