@@ -22,16 +22,19 @@ class LookupFailed extends Error {}
 
 /**
  * Parses a DMARC/BIMI tag list (`v=BIMI1; l=…; a=…`): keys lower-cased, values trimmed, the
- * first of a repeated tag kept (`duplicate` says there was one: that makes a BIMI record invalid).
+ * first of a repeated tag kept. `duplicate` says a tag was repeated and `malformed` that a
+ * non-empty part wasn't a `tag=value` (either makes a BIMI record invalid).
  */
-export function parseTagList(value: string): Map<string, string> & { duplicate: boolean } {
-  const tags = Object.assign(new Map<string, string>(), { duplicate: false });
+export function parseTagList(
+  value: string,
+): Map<string, string> & { duplicate: boolean; malformed: boolean } {
+  const tags = Object.assign(new Map<string, string>(), { duplicate: false, malformed: false });
   for (const part of value.split(";")) {
+    if (!part.trim()) continue;
     const index = part.indexOf("=");
-    if (index < 0) continue;
-    const key = part.slice(0, index).trim().toLowerCase();
-    if (!key) continue;
-    if (tags.has(key)) tags.duplicate = true;
+    const key = index < 0 ? "" : part.slice(0, index).trim().toLowerCase();
+    if (!key) tags.malformed = true;
+    else if (tags.has(key)) tags.duplicate = true;
     else tags.set(key, part.slice(index + 1).trim());
   }
   return tags;
@@ -155,7 +158,7 @@ export async function checkBimi(domainName: string, dns: DnsResolver | null): Pr
     const records = found.values.filter((value) => BIMI_RECORD.test(value));
     const record = records[0] ?? found.values[0] ?? null;
     const tags = parseTagList(record ?? "");
-    if (records.length !== 1 || tags.duplicate) {
+    if (records.length !== 1 || tags.duplicate || tags.malformed) {
       issues.push(records.length > 1 ? "record_multiple" : "record_invalid");
       return { ...base, status: "invalid", record, logoUrl: null, certificateUrl: null, issues };
     }

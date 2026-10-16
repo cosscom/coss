@@ -10,13 +10,19 @@ const RECORD = `v=BIMI1; l=${LOGO}; a=${CERTIFICATE}`;
 const ENFORCED = "v=DMARC1; p=reject; rua=mailto:dmarc@acme.test";
 
 describe("parseTagList", () => {
-  test("lower-cases keys, trims values and ignores empty or malformed parts", () => {
-    const tags = parseTagList(" V=BIMI1 ;L = https://a.test/l.svg;; junk ;a=;");
+  test("lower-cases keys, trims values and skips empty parts", () => {
+    const tags = parseTagList(" V=BIMI1 ;L = https://a.test/l.svg;;  ;a=;");
     expect([...tags]).toEqual([
       ["v", "BIMI1"],
       ["l", "https://a.test/l.svg"],
       ["a", ""],
     ]);
+    expect(tags.malformed).toBe(false);
+  });
+
+  test("says when a part isn't a tag", () => {
+    expect(parseTagList("v=BIMI1; junk").malformed).toBe(true);
+    expect(parseTagList("v=BIMI1; =value").malformed).toBe(true);
   });
 
   test("keeps the first value of a repeated tag, and says there was one", () => {
@@ -233,6 +239,20 @@ describe("checkBimi", () => {
     expect(await checkBimi("mail.acme.test", dns)).toMatchObject({
       status: "configured",
       name: "default._bimi.acme.test",
+    });
+  });
+
+  test("a record with a part that isn't a tag is invalid", async () => {
+    const record = `${RECORD}; broken`;
+    const dns = fakeDnsResolver({
+      "TXT _dmarc.acme.test": [[ENFORCED]],
+      "TXT default._bimi.acme.test": [[record]],
+    });
+
+    expect(await checkBimi("acme.test", dns)).toMatchObject({
+      status: "invalid",
+      record,
+      issues: ["record_invalid"],
     });
   });
 
