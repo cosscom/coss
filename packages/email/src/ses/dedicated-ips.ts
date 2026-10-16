@@ -1,6 +1,8 @@
 import {
   type DedicatedIpProvider,
   DedicatedIpTakenError,
+  EMAIL_STREAMS,
+  type EmailStream,
   type ProviderTenant,
 } from "../provider.ts";
 import { accountOf, isSesError, type SesApi, type SesConfig, tenantNameFor } from "./api.ts";
@@ -8,11 +10,11 @@ import { MANAGED_TAG } from "./identity.ts";
 
 /**
  * SES managed dedicated IPs: one managed pool per organization (SES leases, scales and warms up
- * its IPs, spilling to the shared pool while it does) and a configuration set of the same name
- * that sends through it. The set copies the shared set's event destinations (so its events reach
- * the worker like every other) and is associated with the organization's tenant, which may only
- * send with sets associated with it. Both carry `coss_managed=<prefix>`: COSS never adopts or
- * deletes a pool or set it didn't create.
+ * its IPs, spilling to the shared pool while it does) and, per stream, a configuration set named
+ * like the stream's tenant that sends through it. Each set copies its stream's shared set's event
+ * destinations (so its events reach the worker like every other) and is associated with the
+ * stream's tenant, which may only send with sets associated with it. All carry
+ * `coss_managed=<prefix>`: coss.com never adopts or deletes a pool or set it didn't create.
  */
 export class SesDedicatedIpProvider implements DedicatedIpProvider {
   readonly name = "ses";
@@ -24,8 +26,14 @@ export class SesDedicatedIpProvider implements DedicatedIpProvider {
     this.#config = config;
   }
 
+  /** The pool's name (also the transactional set's). */
   #name(organizationId: string): string {
     return tenantNameFor(this.#config.tenantPrefix, organizationId);
+  }
+
+  /** The configuration set of a stream (named like the stream's tenant). */
+  #setName(organizationId: string, stream: EmailStream): string {
+    return tenantNameFor(this.#config.tenantPrefix, organizationId, stream);
   }
 
   #arn(account: string, resource: "dedicated-ip-pool" | "configuration-set", name: string) {
@@ -60,10 +68,16 @@ export class SesDedicatedIpProvider implements DedicatedIpProvider {
     }
   }
 
-  async ensurePool(input: { organizationId: string; tenant: ProviderTenant }): Promise<void> {
-    const tenantArn = await this.#tenantArn(input.tenant);
-    if (!tenantArn) throw new Error(`SES tenant ${input.tenant.tenantName} doesn't exist.`);
-    const account = accountOf(tenantArn);
+  async ensurePool(input: {
+    organizationId: string;
+    tenants: Partial<Record<EmailStream, ProviderTenant>>;
+  }): Promise<void> {
+    const streams = EMAIL_STREAMS.filter((stream) => input.tenants[stream]);
+    const first = streams[0] && input.tenants[streams[0]];
+    if (!first) throw new Error(`No SES tenant to set up dedicated IPs for.`);
+    const firstArn = await this.#tenantArn(first);
+    if (!firstArn) throw new Error(`SES tenant ${first.tenantName} doesn't exist.`);
+    const account = accountOf(firstArn);
     const name = this.#name(input.organizationId);
     const tags = this.#tags(input.organizationId);
 
@@ -72,26 +86,46 @@ export class SesDedicatedIpProvider implements DedicatedIpProvider {
       `Dedicated IP pool ${name}`,
       () => this.#api.createDedicatedIpPool({ PoolName: name, ScalingMode: "MANAGED", Tags: tags }),
     );
-    const configurationSetArn = this.#arn(account, "configuration-set", name);
-    await this.#create(configurationSetArn, `Configuration set ${name}`, () =>
+    for (const stream of streams) {
+      const tenant = input.tenants[stream];
+      if (!tenant) continue;
+      if (!(await this.#tenantArn(tenant))) {
+        throw new Error(`SES tenant ${tenant.tenantName} doesn't exist.`);
+      }
+      await this.#ensureSet(account, name, stream, input.organizationId, tenant, tags);
+    }
+  }
+
+  /** The stream's configuration set on the pool, with its events, associated with its tenant. */
+  async #ensureSet(
+    account: string,
+    pool: string,
+    stream: EmailStream,
+    organizationId: string,
+    tenant: ProviderTenant,
+    tags: { Key: string; Value: string }[],
+  ): Promise<void> {
+    const setName = this.#setName(organizationId, stream);
+    const configurationSetArn = this.#arn(account, "configuration-set", setName);
+    await this.#create(configurationSetArn, `Configuration set ${setName}`, () =>
       this.#api.createConfigurationSet({
-        ConfigurationSetName: name,
-        DeliveryOptions: { SendingPoolName: name },
+        ConfigurationSetName: setName,
+        DeliveryOptions: { SendingPoolName: pool },
         ReputationOptions: { ReputationMetricsEnabled: true },
         SendingOptions: { SendingEnabled: true },
-        // COSS keeps the only suppression list (see `TENANT_SUPPRESSION`).
+        // coss.com keeps the only suppression list (see `TENANT_SUPPRESSION`).
         SuppressionOptions: { SuppressedReasons: [] },
         Tags: tags,
       }),
     );
     const { EventDestinations = [] } = await this.#api.getConfigurationSetEventDestinations({
-      ConfigurationSetName: this.#config.configurationSet,
+      ConfigurationSetName: this.#config.configurationSets[stream],
     });
     for (const destination of EventDestinations) {
       if (!destination.Name) continue;
       try {
         await this.#api.createConfigurationSetEventDestination({
-          ConfigurationSetName: name,
+          ConfigurationSetName: setName,
           EventDestinationName: destination.Name,
           EventDestination: {
             Enabled: destination.Enabled,
@@ -108,7 +142,7 @@ export class SesDedicatedIpProvider implements DedicatedIpProvider {
     }
     try {
       await this.#api.createTenantResourceAssociation({
-        TenantName: input.tenant.tenantName,
+        TenantName: tenant.tenantName,
         ResourceArn: configurationSetArn,
       });
     } catch (error) {
@@ -139,29 +173,38 @@ export class SesDedicatedIpProvider implements DedicatedIpProvider {
 
   async releasePool(input: {
     organizationId: string;
-    tenant: ProviderTenant | null;
+    tenants: Partial<Record<EmailStream, ProviderTenant>>;
   }): Promise<void> {
     const name = this.#name(input.organizationId);
-    // Resources are named by the tenant's account; without a tenant nothing was ever created.
-    const tenant = input.tenant;
-    const tenantArn = tenant && (await this.#tenantArn(tenant));
-    if (!tenant || !tenantArn) return;
-    const account = accountOf(tenantArn);
-    const configurationSetArn = this.#arn(account, "configuration-set", name);
-    // SES refuses to delete a configuration set that is still associated with a tenant.
-    try {
-      await this.#api.deleteTenantResourceAssociation({
-        TenantName: tenant.tenantName,
-        ResourceArn: configurationSetArn,
-      });
-    } catch (error) {
-      if (!isSesError(error, "NotFoundException")) throw error;
+    // Resources are named by the tenants' account; without a tenant nothing was ever created.
+    let account: string | null = null;
+    for (const stream of EMAIL_STREAMS) {
+      const tenant = input.tenants[stream];
+      const tenantArn = tenant && (await this.#tenantArn(tenant));
+      if (tenantArn) account ??= accountOf(tenantArn);
     }
-    if (await this.#managedByUs(configurationSetArn)) {
-      try {
-        await this.#api.deleteConfigurationSet({ ConfigurationSetName: name });
-      } catch (error) {
-        if (!isSesError(error, "NotFoundException")) throw error;
+    if (!account) return;
+    for (const stream of EMAIL_STREAMS) {
+      const setName = this.#setName(input.organizationId, stream);
+      const configurationSetArn = this.#arn(account, "configuration-set", setName);
+      // SES refuses to delete a configuration set that is still associated with a tenant.
+      const tenant = input.tenants[stream];
+      if (tenant) {
+        try {
+          await this.#api.deleteTenantResourceAssociation({
+            TenantName: tenant.tenantName,
+            ResourceArn: configurationSetArn,
+          });
+        } catch (error) {
+          if (!isSesError(error, "NotFoundException")) throw error;
+        }
+      }
+      if (await this.#managedByUs(configurationSetArn)) {
+        try {
+          await this.#api.deleteConfigurationSet({ ConfigurationSetName: setName });
+        } catch (error) {
+          if (!isSesError(error, "NotFoundException")) throw error;
+        }
       }
     }
     if (await this.#managedByUs(this.#arn(account, "dedicated-ip-pool", name))) {

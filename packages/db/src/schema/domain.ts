@@ -675,8 +675,8 @@ export const dedicatedIpPoolStatus = pgEnum("dedicated_ip_pool_status", [
 
 /**
  * An organization's dedicated IP pool (the Dedicated IPs add-on): a provider-managed pool (SES
- * managed dedicated IPs, warmed up automatically) and the configuration set that sends through
- * it. Reconciled by the worker against billing; the row is deleted once the pool is released.
+ * managed dedicated IPs, warmed up automatically) and a configuration set per stream that sends
+ * through it. Reconciled by the worker against billing; the row is deleted once the pool is released.
  */
 export const dedicatedIpPool = pgTable(
   "dedicated_ip_pool",
@@ -706,6 +706,10 @@ export const dedicatedIpPool = pgTable(
     // Set before the provider resources are deleted: from then on a returning entitlement no
     // longer restores this row (it gets a new pool once the release has finished).
     releaseStartedAt: timestamp("release_started_at", { withTimezone: true }),
+    // When the marketing stream's configuration set on the pool was set up (null: marketing
+    // sends stay on shared IPs). Pools made before the streams split, or while the organization
+    // had no marketing tenant yet, get it at a later check.
+    marketingConfiguredAt: timestamp("marketing_configured_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

@@ -381,7 +381,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       .set({
         provider: provider.name,
         billableRecipients: billableRecipientsSql(row),
-        dedicatedPool: sandbox ? false : dedicatedPoolSql(row.organizationId, provider.name),
+        dedicatedPool: sandbox
+          ? false
+          : dedicatedPoolSql(row.organizationId, provider.name, row.stream),
       })
       .where(
         and(
@@ -616,7 +618,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         .set({
           status: "queued",
           provider: provider.name,
-          dedicatedPool: sandbox ? false : dedicatedPoolSql(row.organizationId, provider.name),
+          dedicatedPool: sandbox
+            ? false
+            : dedicatedPoolSql(row.organizationId, provider.name, row.stream),
         })
         .where(stillDue)
         .returning();

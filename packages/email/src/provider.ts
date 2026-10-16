@@ -159,15 +159,25 @@ export class IdentityTakenError extends Error {
 export interface DedicatedIpProvider {
   readonly name: string;
   /**
-   * Creates (or completes) the organization's pool and what sends through it (an SES
-   * configuration set associated with the tenant). Throws `DedicatedIpTakenError` when a
-   * resource of that name exists but wasn't created by COSS.
+   * Creates (or completes) the organization's pool and, for each stream in `tenants`, what sends
+   * that stream's mail through it (an SES configuration set associated with the stream's
+   * tenant). Throws `DedicatedIpTakenError` when a resource of that name exists but wasn't
+   * created by coss.com.
    */
-  ensurePool(input: { organizationId: string; tenant: ProviderTenant }): Promise<void>;
+  ensurePool(input: {
+    organizationId: string;
+    tenants: Partial<Record<EmailStream, ProviderTenant>>;
+  }): Promise<void>;
   /** The pool's IPs now (empty until the provider assigns the first; `[]` without a pool). */
   poolIps(organizationId: string): Promise<string[]>;
-  /** Removes the pool and what sends through it. Missing resources are fine. */
-  releasePool(input: { organizationId: string; tenant: ProviderTenant | null }): Promise<void>;
+  /**
+   * Removes the pool and what sends through it, for every stream (`tenants`: the organization's
+   * tenants that still exist). Missing resources are fine.
+   */
+  releasePool(input: {
+    organizationId: string;
+    tenants: Partial<Record<EmailStream, ProviderTenant>>;
+  }): Promise<void>;
 }
 
 /** A pool or configuration set of the organization's name exists, but COSS didn't create it. */

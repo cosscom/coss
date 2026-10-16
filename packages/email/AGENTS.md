@@ -105,20 +105,24 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
 - **Dedicated IPs** (`packages/email/src/dedicated-ips.ts`, `ses/dedicated-ips.ts`, tables `dedicated_ip_pool` (ids
   `dip_`) and `dedicated_ip_delivery_rollup`; the `dedicated_ips` add-on): one SES **managed** dedicated IP pool per
   organization (SES leases, scales and warms its IPs up per mailbox provider, spilling what they can't take yet to
-  shared IPs) and a configuration set sending through it, both named `tenantNameFor(prefix, org)`, tagged
-  `coss_managed=<prefix>`, the set associated with the org's tenant and carrying copies of the shared set's event
-  destinations. Never adopt or delete a pool or set without that tag (`DedicatedIpTakenError`). Billing decides,
+  shared IPs) and, per stream, a configuration set sending through it: the pool and the transactional set are named
+  `tenantNameFor(prefix, org)`, the marketing set `tenantNameFor(prefix, org, "marketing")`; all tagged
+  `coss_managed=<prefix>`, each set associated with its stream's tenant and carrying copies of its stream's shared
+  set's event destinations. Both streams share the pool's IPs (events and reputation stay per stream); marketing
+  joins once its set exists (`marketing_configured_at`, set at provisioning when the marketing tenant exists, else
+  by a later `warming`/`ready` check), and until then marketing sends stay on shared IPs. Never adopt or delete a pool or set without that tag (`DedicatedIpTakenError`). Billing decides,
   the worker's `dedicated-ips` loop (`reconcileDedicatedIpPools` with `organizationsEntitledTo("dedicatedIps")`)
   follows: entitled → `provisioning` (needs the org's tenant, i.e. a domain: the worker never creates tenants; past
   `MAX_DEDICATED_IP_POOLS` = 45 → `waiting`, a `console.error`) → `warming` (live sends use the pool from here) ⇄
   `ready` (≥ 95% of the last 7 days' deliveries, ≥ 1,000, left from the pool's IPs — `ses:outgoing-ip` of `Delivery`
   events counted per hour and IP in the rollup, only for emails with `dedicated_pool`); not entitled → `releasing`
   at once (sends back on shared IPs) and released `RELEASE_DELAY_MS` (a day) later — association, then
-  configuration set, then pool — unless the entitlement returns first (`release_started_at` is set before the
+  configuration set of each stream, then pool — unless the entitlement returns first (`release_started_at` is set before the
   provider calls: a later return waits for the release and gets a new pool). Organizations pending deletion are
   never entitled, and a provisioning step that finds one (or its row gone) releases what it just created: the
   teardown may have released before it. A send decides at claim
-  (`dedicatedPoolSql`, stored in `email.dedicated_pool`; `SesEmailProvider` then uses the org's configuration set).
+  (`dedicatedPoolSql(org, provider, stream)`, stored in `email.dedicated_pool`; `SesEmailProvider` then uses the
+  org's configuration set of the email's stream).
   SES allows **50 pools per region, a hard limit**: the dashboard's purchase preflight (`dedicatedIpSlotAvailable`,
   in the purchase's transaction under the lock new pools are created under) counts organizations with a pool, an
   entitlement or an unpaid purchase against the 45. IAM (`ses-policies.ts`): only the worker manages pools/sets (`<prefix>-*`, tag

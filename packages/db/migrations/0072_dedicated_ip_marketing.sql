@@ -1,0 +1,1 @@
+ALTER TABLE "dedicated_ip_pool" ADD COLUMN "marketing_configured_at" timestamp with time zone;

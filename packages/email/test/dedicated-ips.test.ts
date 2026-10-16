@@ -1,10 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { createTestTenant } from "@coss/tenancy/testing";
-import { and, eq, sum } from "drizzle-orm";
+import { and, eq, sql, sum } from "drizzle-orm";
 import {
   dedicatedIpPoolObject,
   dedicatedIpSlotAvailable,
+  dedicatedPoolInUse,
+  dedicatedPoolSql,
   getDedicatedIpPool,
   READY_MIN_DELIVERIES,
   RELEASE_DELAY_MS,
@@ -12,7 +14,7 @@ import {
   releaseOrganizationDedicatedIps,
 } from "../src/dedicated-ips.ts";
 import { ensureOrgTenant, releaseOrganizationEmailResources } from "../src/domains.ts";
-import { DedicatedIpTakenError, type OutboundEmail } from "../src/provider.ts";
+import { DedicatedIpTakenError, type EmailStream, type OutboundEmail } from "../src/provider.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { FakeDedicatedIpProvider } from "../src/providers/fake-dedicated-ips.ts";
 import { FakeIdentityProvider } from "../src/providers/fake-identity.ts";
@@ -25,13 +27,18 @@ import { SesEmailProvider } from "../src/ses/provider.ts";
 import { dispatchingEmailService, FakeSesApi } from "../src/testing.ts";
 import { params, sendEnvironment, verifiedFrom } from "./helpers.ts";
 
-const config = { region: "eu-west-1", configurationSet: "coss-test", tenantPrefix: "test" };
+const config = {
+  region: "eu-west-1",
+  configurationSets: { transactional: "coss-test", marketing: "coss-test-marketing" },
+  tenantPrefix: "test",
+};
 const ORG = "org_01k7c8m4q2f3e9v6t5r1n0p8yz";
 const MINUTE = 60 * 1000;
 
 function sesFixture() {
   const api = new FakeSesApi();
-  api.bootstrap(config.configurationSet);
+  api.bootstrap(config.configurationSets.transactional);
+  api.bootstrap(config.configurationSets.marketing);
   return {
     api,
     identity: new SesIdentityProvider(api, config),
@@ -40,19 +47,25 @@ function sesFixture() {
 }
 
 describe("SesDedicatedIpProvider", () => {
-  test("creates a managed pool and a configuration set sending through it, idempotently", async () => {
+  test("creates a managed pool and a configuration set per stream sending through it, idempotently", async () => {
     const { api, identity, pools } = sesFixture();
-    const tenant = await identity.ensureTenant({ organizationId: ORG });
-    await pools.ensurePool({ organizationId: ORG, tenant });
+    const tenants = {
+      transactional: await identity.ensureTenant({ organizationId: ORG, stream: "transactional" }),
+      marketing: await identity.ensureTenant({ organizationId: ORG, stream: "marketing" }),
+    };
+    await pools.ensurePool({ organizationId: ORG, tenants });
     const name = `test-${ORG}`;
     expect(api.pools.get(name)?.scalingMode).toBe("MANAGED");
-    const set = api.configurationSets.get(name);
-    expect(set?.poolName).toBe(name);
-    // The shared set's event destination, so its events reach the worker too.
-    expect([...(set?.destinations.keys() ?? [])]).toEqual(["coss-events"]);
-    expect(api.associations.get(api.configurationSetArn(name))).toEqual(new Set([name]));
+    for (const setName of [name, `${name}-marketing`]) {
+      const set = api.configurationSets.get(setName);
+      expect(set?.poolName).toBe(name);
+      // The stream's shared set's event destination, so its events reach the worker too.
+      expect([...(set?.destinations.keys() ?? [])]).toEqual(["coss-events"]);
+      // Associated with the stream's own tenant (named like the set).
+      expect(api.associations.get(api.configurationSetArn(setName))).toEqual(new Set([setName]));
+    }
 
-    await pools.ensurePool({ organizationId: ORG, tenant });
+    await pools.ensurePool({ organizationId: ORG, tenants });
     expect(api.pools.size).toBe(1);
 
     api.pools.get(name)?.ips.push("203.0.113.7", "203.0.113.5");
@@ -62,19 +75,39 @@ describe("SesDedicatedIpProvider", () => {
 
   test("never adopts a pool COSS didn't create", async () => {
     const { api, identity, pools } = sesFixture();
-    const tenant = await identity.ensureTenant({ organizationId: ORG });
+    const transactional = await identity.ensureTenant({
+      organizationId: ORG,
+      stream: "transactional",
+    });
     await api.createDedicatedIpPool({ PoolName: `test-${ORG}`, ScalingMode: "STANDARD" });
-    await expect(pools.ensurePool({ organizationId: ORG, tenant })).rejects.toBeInstanceOf(
-      DedicatedIpTakenError,
-    );
+    await expect(
+      pools.ensurePool({ organizationId: ORG, tenants: { transactional } }),
+    ).rejects.toBeInstanceOf(DedicatedIpTakenError);
   });
 
-  test("releases the association, then the configuration set, then the pool", async () => {
+  test("adds the marketing stream to an existing pool later", async () => {
     const { api, identity, pools } = sesFixture();
-    const tenant = await identity.ensureTenant({ organizationId: ORG });
-    await pools.ensurePool({ organizationId: ORG, tenant });
+    const transactional = await identity.ensureTenant({
+      organizationId: ORG,
+      stream: "transactional",
+    });
+    await pools.ensurePool({ organizationId: ORG, tenants: { transactional } });
+    expect(api.configurationSets.has(`test-${ORG}-marketing`)).toBe(false);
+    const marketing = await identity.ensureTenant({ organizationId: ORG, stream: "marketing" });
+    await pools.ensurePool({ organizationId: ORG, tenants: { marketing } });
+    expect(api.pools.size).toBe(1);
+    expect(api.configurationSets.get(`test-${ORG}-marketing`)?.poolName).toBe(`test-${ORG}`);
+  });
+
+  test("releases each stream's association and configuration set, then the pool", async () => {
+    const { api, identity, pools } = sesFixture();
+    const tenants = {
+      transactional: await identity.ensureTenant({ organizationId: ORG, stream: "transactional" }),
+      marketing: await identity.ensureTenant({ organizationId: ORG, stream: "marketing" }),
+    };
+    await pools.ensurePool({ organizationId: ORG, tenants });
     const before = api.calls.length;
-    await pools.releasePool({ organizationId: ORG, tenant });
+    await pools.releasePool({ organizationId: ORG, tenants });
     expect(
       api.calls
         .slice(before)
@@ -83,21 +116,25 @@ describe("SesDedicatedIpProvider", () => {
     ).toEqual([
       "deleteTenantResourceAssociation",
       "deleteConfigurationSet",
+      "deleteTenantResourceAssociation",
+      "deleteConfigurationSet",
       "deleteDedicatedIpPool",
     ]);
     expect(api.pools.size).toBe(0);
     expect(api.configurationSets.has(`test-${ORG}`)).toBe(false);
+    expect(api.configurationSets.has(`test-${ORG}-marketing`)).toBe(false);
     // Again: nothing left, nothing fails.
-    await pools.releasePool({ organizationId: ORG, tenant });
-    await pools.releasePool({ organizationId: ORG, tenant: null });
+    await pools.releasePool({ organizationId: ORG, tenants });
+    await pools.releasePool({ organizationId: ORG, tenants: {} });
   });
 
-  test("dedicated sends use the organization's configuration set", async () => {
+  test("dedicated sends use the organization's configuration set of the stream", async () => {
     const api = new FakeSesApi();
     const provider = new SesEmailProvider(api, config);
     const message: OutboundEmail = {
       emailId: "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
       organizationId: ORG,
+      stream: "transactional",
       from: "hello@acme.com",
       to: ["a@example.com"],
       cc: [],
@@ -112,11 +149,20 @@ describe("SesDedicatedIpProvider", () => {
     };
     await provider.send(message);
     await provider.send({ ...message, dedicatedPool: true });
+    await provider.send({ ...message, stream: "marketing" });
+    await provider.send({ ...message, stream: "marketing", dedicatedPool: true });
     expect(api.sent.map((input) => input.ConfigurationSetName)).toEqual([
       "coss-test",
       `test-${ORG}`,
+      "coss-test-marketing",
+      `test-${ORG}-marketing`,
     ]);
-    expect(api.sent.map((input) => input.TenantName)).toEqual([`test-${ORG}`, `test-${ORG}`]);
+    expect(api.sent.map((input) => input.TenantName)).toEqual([
+      `test-${ORG}`,
+      `test-${ORG}`,
+      `test-${ORG}-marketing`,
+      `test-${ORG}-marketing`,
+    ]);
   });
 
   test("delivery events carry the IP they left from", () => {
@@ -149,7 +195,61 @@ async function tenantWithProviderTenant() {
   return tenant;
 }
 
+/** Both checks a send's claim may use: the SQL in the claim and the read. */
+async function poolInUse(organizationId: string, stream: EmailStream): Promise<boolean> {
+  const result = await db.execute<{ in_use: boolean }>(
+    sql`select ${dedicatedPoolSql(organizationId, "fake", stream)} as in_use`,
+  );
+  const inUse = result.rows[0]?.in_use ?? false;
+  expect(await dedicatedPoolInUse(organizationId, "fake", stream)).toBe(inUse);
+  return inUse;
+}
+
 describe("reconcileDedicatedIpPools", () => {
+  test("both streams send through the pool, each through its own configuration set", async () => {
+    const tenant = await tenantWithProviderTenant();
+    const org = tenant.organization.id;
+    await ensureOrgTenant(org, identity, "marketing");
+    const pools = new FakeDedicatedIpProvider();
+    await reconcileDedicatedIpPools(
+      { entitled: [org], scope: { organizationIds: [org] } },
+      deps(pools),
+    );
+    expect((await getDedicatedIpPool(org))?.marketingConfiguredAt).not.toBeNull();
+    expect(pools.streamsOf(org)).toEqual(["transactional", "marketing"]);
+    expect(await poolInUse(org, "transactional")).toBe(true);
+    expect(await poolInUse(org, "marketing")).toBe(true);
+  });
+
+  test("marketing joins a pool made without it once the organization's marketing tenant exists", async () => {
+    const tenant = await tenantWithProviderTenant();
+    const org = tenant.organization.id;
+    const scope = { organizationIds: [org] };
+    const pools = new FakeDedicatedIpProvider();
+    const now = new Date();
+    await reconcileDedicatedIpPools({ entitled: [org], now, scope }, deps(pools));
+    expect(await getDedicatedIpPool(org)).toMatchObject({
+      status: "warming",
+      marketingConfiguredAt: null,
+    });
+    expect(pools.streamsOf(org)).toEqual(["transactional"]);
+    // Marketing stays on shared IPs: its configuration set on the pool doesn't exist yet.
+    expect(await poolInUse(org, "transactional")).toBe(true);
+    expect(await poolInUse(org, "marketing")).toBe(false);
+
+    // Without a marketing tenant the refresh leaves it so.
+    await reconcileDedicatedIpPools({ entitled: [org], now, scope }, deps(pools));
+    expect((await getDedicatedIpPool(org))?.marketingConfiguredAt).toBeNull();
+
+    // The backfill creates the marketing tenant; the next check adds marketing's set.
+    await ensureOrgTenant(org, identity, "marketing");
+    const later = new Date(now.getTime() + 61 * MINUTE);
+    await reconcileDedicatedIpPools({ entitled: [org], now: later, scope }, deps(pools));
+    expect((await getDedicatedIpPool(org))?.marketingConfiguredAt).toEqual(later);
+    expect(pools.streamsOf(org)).toEqual(["transactional", "marketing"]);
+    expect(await poolInUse(org, "marketing")).toBe(true);
+  });
+
   test("waits for the organization's first domain", async () => {
     const tenant = await createTestTenant();
     const org = tenant.organization.id;
