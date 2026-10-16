@@ -37,9 +37,11 @@ export default function AboutPage() {
         </h1>
         <p className="text-pretty text-muted-foreground text-xl leading-snug">
           Supabase does God's work for developers: it took Postgres, the hardest part of every stack
-          to run well, and turned it into something you get by signing up. coss.com does the same
-          for everything that sits above the database. Email, SMS, video, scheduling: one API key,
-          one SDK, one bill.
+          to run well, and turned it into something you get by signing up.{" "}
+          <strong className="font-semibold text-foreground">
+            coss.com does the same for everything that sits above the database.
+          </strong>{" "}
+          Email, SMS, video, scheduling: one API key, one SDK, one bill.
         </p>
       </header>
 
