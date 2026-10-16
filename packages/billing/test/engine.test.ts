@@ -461,6 +461,53 @@ describe("contract changes", () => {
     expect(change.lines[2]?.chargeKey).toBe(`unused-addon:bcon_a:support:${OCT_12.toISOString()}`);
   });
 
+  test("unused add-on time is credited at the discounted price it was charged", () => {
+    const pro = segment(
+      {
+        version: 1,
+        plan: "pro",
+        addOns: [{ ...DEDICATED_IPS, key: "support" }],
+        discounts: [{ scope: "add_ons", percent: 50 }],
+      },
+      { contractEnd: OCT_12, superseded: true },
+    );
+    const scale = segment(
+      { version: 1, plan: "scale" },
+      { contractId: "bcon_b", contractStart: OCT_12, interval: { start: OCT_12, end: OCT.end } },
+    );
+    const change = composeContractChange({
+      at: OCT_12,
+      from: { segment: pro, advanceCharged: true, addOnsCharged: new Set(["support"]) },
+      to: scale,
+    });
+    // 20 of 31 days of the $25 it cost.
+    expect(amounts(change.lines)).toEqual([
+      ["plan_fee", 16_129n],
+      ["proration", -1_613n],
+      ["proration", -1_613n],
+    ]);
+  });
+
+  test("a carried fee whose credit becomes spendable grants the rest of the month's credit", () => {
+    const scale = segment(
+      { version: 1, plan: "scale", feeCredit: { spendable: false, pool: "month" } },
+      { contractEnd: OCT_12, superseded: true },
+    );
+    const spendable = segment(
+      { version: 1, plan: "scale" },
+      { contractId: "bcon_b", contractStart: OCT_12, interval: { start: OCT_12, end: OCT.end } },
+    );
+    const change = composeContractChange({
+      at: OCT_12,
+      from: { segment: scale, advanceCharged: true },
+      to: spendable,
+    });
+    expect(change.lines).toEqual([]);
+    expect(change.grants).toMatchObject([
+      { amount: 16_129n, effectiveAt: OCT_12, expiresAt: OCT.end },
+    ]);
+  });
+
   test("an add-on carried at the same price isn't charged again", () => {
     const pro = segment(
       { version: 1, plan: "pro", addOns: [DEDICATED_IPS] },

@@ -933,11 +933,14 @@ export function composeContractChange(input: ContractChangeInput): Composition {
       const interval = intervalAt(from.segment, at, INTERVAL_MONTHS[addOn.interval]);
       const unused = intersect(interval, { start: at, end: FAR_FUTURE });
       if (!unused) continue;
-      const amount = prorate(
-        addOn.unitAmountCents * BigInt(addOn.quantity),
-        hoursIn(unused),
-        hoursIn(interval),
-      );
+      // What it was charged: its price less the replaced contract's add-on discounts.
+      const gross = addOn.unitAmountCents * BigInt(addOn.quantity);
+      let paid = gross;
+      for (const discount of activeDiscounts(from.segment, (scope) => scope === "add_ons")) {
+        const off = percentOf(gross, discount.percent);
+        paid -= off > paid ? paid : off;
+      }
+      const amount = prorate(paid, hoursIn(unused), hoursIn(interval));
       if (amount <= 0n) continue;
       draft.charge(
         {
@@ -963,8 +966,9 @@ export function composeContractChange(input: ContractChangeInput): Composition {
   }
 
   // Credit: the new contract's monthly credit for the rest of the month, less what the replaced
-  // contract's (already granted) credit covers for the same time.
-  if (to.terms.fee && to.terms.feeCredit.spendable && !feeCarries) {
+  // contract's (already granted) credit covers for the same time. Also when the fee carries over:
+  // its credit may not have been spendable before.
+  if (to.terms.fee && to.terms.feeCredit.spendable) {
     const rest: Interval = { start: at, end: month.end };
     const fraction = (fee: bigint) => prorate(fee, hoursIn(rest), hoursIn(month));
     const gained = fraction(monthlyFeeCents(to.terms.fee));
