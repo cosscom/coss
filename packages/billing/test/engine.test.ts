@@ -20,6 +20,14 @@ const OCT: Interval = {
 };
 const NOV = nextPeriod(OCT);
 const OCT_12 = new Date("2026-10-12T00:00:00Z");
+const DEDICATED_IPS = {
+  key: "dedicated_ips",
+  name: "Dedicated IPs",
+  unitAmountCents: "5000",
+  quantity: 1,
+  interval: "month",
+  timing: "advance",
+} as const;
 
 function terms(input: ContractTermsInput) {
   return resolveTerms(parseContractTerms(input), card);
@@ -105,6 +113,7 @@ describe("terms", () => {
     const free = terms({ version: 1, plan: "free" });
     expect(free.usageCaps).toEqual({
       "email.recipients": 3000,
+      "email.dedicated_ip": 0,
       "sms.segments": 0,
       "video.participant_minutes": 0,
       "scheduling.bookings": 0,
@@ -412,6 +421,64 @@ describe("contract changes", () => {
     ]);
     expect(change.totalCents).toBe(14_516n);
     expect(change.grants[0]?.amount).toBe(14_516n);
+  });
+
+  test("an add-on-only change charges the add-on and carries the fee", () => {
+    const scale = segment({ version: 1, plan: "scale" }, { contractEnd: OCT_12, superseded: true });
+    const withIps = segment(
+      { version: 1, plan: "scale", addOns: [DEDICATED_IPS] },
+      { contractId: "bcon_b", contractStart: OCT_12, interval: { start: OCT_12, end: OCT.end } },
+    );
+    const change = composeContractChange({
+      at: OCT_12,
+      from: { segment: scale, advanceCharged: true },
+      to: withIps,
+    });
+    // 20 of 31 days of $50.
+    expect(amounts(change.lines)).toEqual([["add_on", 3_226n]]);
+    expect(change.grants).toEqual([]);
+  });
+
+  test("the replaced contract's unused add-on time is credited", () => {
+    const pro = segment(
+      { version: 1, plan: "pro", addOns: [{ ...DEDICATED_IPS, key: "support" }] },
+      { contractEnd: OCT_12, superseded: true },
+    );
+    const scale = segment(
+      { version: 1, plan: "scale" },
+      { contractId: "bcon_b", contractStart: OCT_12, interval: { start: OCT_12, end: OCT.end } },
+    );
+    const change = composeContractChange({
+      at: OCT_12,
+      from: { segment: pro, advanceCharged: true, addOnsCharged: new Set(["support"]) },
+      to: scale,
+    });
+    expect(amounts(change.lines)).toEqual([
+      ["plan_fee", 16_129n],
+      ["proration", -1_613n],
+      ["proration", -3_226n],
+    ]);
+    expect(change.lines[2]?.chargeKey).toBe(`unused-addon:bcon_a:support:${OCT_12.toISOString()}`);
+  });
+
+  test("an add-on carried at the same price isn't charged again", () => {
+    const pro = segment(
+      { version: 1, plan: "pro", addOns: [DEDICATED_IPS] },
+      { contractEnd: OCT_12, superseded: true },
+    );
+    const scale = segment(
+      { version: 1, plan: "scale", addOns: [DEDICATED_IPS] },
+      { contractId: "bcon_b", contractStart: OCT_12, interval: { start: OCT_12, end: OCT.end } },
+    );
+    const change = composeContractChange({
+      at: OCT_12,
+      from: { segment: pro, advanceCharged: true, addOnsCharged: new Set(["dedicated_ips"]) },
+      to: scale,
+    });
+    expect(amounts(change.lines)).toEqual([
+      ["plan_fee", 16_129n],
+      ["proration", -1_613n],
+    ]);
   });
 
   test("a cheaper contract mid-period refunds nothing", () => {

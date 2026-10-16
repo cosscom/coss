@@ -9,6 +9,8 @@
  * a tagged resource. Sends are confined by the configuration set instead (verified live: another
  * configuration set, or none so the identity's default applies, is denied), and the app always
  * sends with a `<prefix>-…` tenant, which SES only allows with identities associated with it.
+ * Dedicated IPs add one configuration set and one managed pool per organization, both named
+ * `<prefix>-<organization id>` and tagged `coss_managed`; only the worker manages them.
  */
 import { MANAGED_TAG } from "@coss/email/ses";
 
@@ -41,8 +43,12 @@ export function cossPolicies(
   const identities = `${ses}:identity/*`;
   const tenants = `${ses}:tenant/${ctx.tenantPrefix}-*`;
   const configurationSet = `${ses}:configuration-set/${ctx.name}`;
+  // Organizations' dedicated IP configuration sets and pools (`<prefix>-<organization id>`).
+  const dedicatedSets = `${ses}:configuration-set/${ctx.tenantPrefix}-*`;
+  const dedicatedPools = `${ses}:dedicated-ip-pool/${ctx.tenantPrefix}-*`;
   const managed = { StringEquals: { [`aws:ResourceTag/${MANAGED_TAG}`]: ctx.tenantPrefix } };
-  const tagsNewIdentities = {
+  // Identities, dedicated IP pools and their configuration sets are created with the tag.
+  const tagsNewResources = {
     StringEquals: { [`aws:RequestTag/${MANAGED_TAG}`]: ctx.tenantPrefix },
   };
 
@@ -74,7 +80,7 @@ export function cossPolicies(
           Sid: "SendWithCossConfigurationSet",
           Effect: "Allow",
           Action: ["ses:SendEmail"],
-          Resource: [configurationSet],
+          Resource: [configurationSet, dedicatedSets],
         },
         ...contentReads,
       ],
@@ -105,7 +111,7 @@ export function cossPolicies(
           Effect: "Allow",
           Action: ["ses:CreateEmailIdentity", "ses:TagResource"],
           Resource: [identities],
-          Condition: tagsNewIdentities,
+          Condition: tagsNewResources,
         },
         {
           Sid: "ChangeCossIdentities",
@@ -140,7 +146,7 @@ export function cossPolicies(
           Sid: "SendWithCossConfigurationSet",
           Effect: "Allow",
           Action: ["ses:SendEmail"],
-          Resource: [configurationSet],
+          Resource: [configurationSet, dedicatedSets],
         },
         {
           Sid: "ConsumeSesEvents",
@@ -173,6 +179,43 @@ export function cossPolicies(
           Effect: "Allow",
           Action: ["ses:GetTenant", "ses:DeleteTenant"],
           Resource: [tenants],
+        },
+        {
+          // Dedicated IP sets copy the shared set's event destinations.
+          Sid: "ReadCossEventDestinations",
+          Effect: "Allow",
+          Action: ["ses:GetConfigurationSetEventDestinations"],
+          Resource: [configurationSet],
+        },
+        {
+          Sid: "CreateTaggedDedicatedIps",
+          Effect: "Allow",
+          Action: ["ses:CreateDedicatedIpPool", "ses:CreateConfigurationSet", "ses:TagResource"],
+          Resource: [dedicatedPools, dedicatedSets],
+          Condition: tagsNewResources,
+        },
+        {
+          Sid: "InspectDedicatedIps",
+          Effect: "Allow",
+          Action: ["ses:GetDedicatedIps", "ses:ListTagsForResource"],
+          Resource: [dedicatedPools, dedicatedSets],
+        },
+        {
+          Sid: "AssociateDedicatedIpSets",
+          Effect: "Allow",
+          Action: ["ses:CreateTenantResourceAssociation", "ses:DeleteTenantResourceAssociation"],
+          Resource: [tenants, dedicatedSets],
+        },
+        {
+          Sid: "ChangeCossDedicatedIps",
+          Effect: "Allow",
+          Action: [
+            "ses:CreateConfigurationSetEventDestination",
+            "ses:DeleteConfigurationSet",
+            "ses:DeleteDedicatedIpPool",
+          ],
+          Resource: [dedicatedPools, dedicatedSets],
+          Condition: managed,
         },
         ...(ctx.inbound && bucket
           ? [

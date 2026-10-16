@@ -1,6 +1,9 @@
 "use client";
 
 import {
+  ADD_ON_KEYS,
+  ADD_ONS,
+  type AddOnDefinition,
   FEATURE_KEYS,
   FEATURE_LABELS,
   type FeatureKey,
@@ -920,6 +923,37 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
             >
               Add an add-on
             </Button>
+            {ADD_ON_KEYS.filter((key) => !state.addOns.some((row) => row.key === key)).map(
+              (key) => {
+                const addOn: AddOnDefinition = ADD_ONS[key];
+                return (
+                  <Button
+                    key={key}
+                    onClick={() =>
+                      update({
+                        addOns: [
+                          ...state.addOns,
+                          {
+                            uid: uid(),
+                            key,
+                            name: addOn.name,
+                            price: (Number(addOn.unitAmountCents) / 100).toFixed(2),
+                            quantity: "1",
+                            interval: addOn.interval,
+                            timing: addOn.timing,
+                          },
+                        ],
+                      })
+                    }
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    Add {addOn.name}
+                  </Button>
+                );
+              },
+            )}
           </div>
         </PanelBody>
       </Panel>

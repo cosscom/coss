@@ -9,6 +9,7 @@ export type {
   BillingInvoicesResource,
   BillingResource,
 } from "./resources/billing.ts";
+export type { DedicatedIpsResource } from "./resources/dedicated-ips.ts";
 export type { DmarcReportsResource, DmarcResource } from "./resources/dmarc.ts";
 export type { DomainsResource } from "./resources/domains.ts";
 export type { EmailResource } from "./resources/email.ts";
@@ -63,6 +64,7 @@ export type {
   PlanKey,
   Usage,
 } from "./types/billing.ts";
+export type { DedicatedIpPool, DedicatedIpPoolStatus } from "./types/dedicated-ip.ts";
 export type {
   DmarcCheck,
   DmarcCheckId,

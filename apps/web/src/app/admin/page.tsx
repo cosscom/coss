@@ -1,4 +1,5 @@
 import { platformUsageByDay } from "@coss/billing";
+import { dedicatedIpCapacity } from "@coss/email";
 import { platformEmailStats } from "@coss/email/admin";
 import { listOrganizationStandings } from "@coss/reputation";
 import { countScreeningsForAdmin } from "@coss/screening";
@@ -34,22 +35,33 @@ export default async function AdminOverviewPage() {
   const systemOrganization = await systemOrganizationId();
   const stats = (since: Date) =>
     platformEmailStats({ since, now, systemOrganizationId: systemOrganization });
-  const [overview, { events }, day, week, month, usage, screenings, warned, sendingSuspended] =
-    await Promise.all([
-      getAdminOverview(now),
-      listAdminAuditEvents({ limit: 10 }),
-      stats(ago(1)),
-      stats(ago(7)),
-      stats(ago(30)),
-      platformUsageByDay({
-        meter: "email.recipients",
-        interval: { start: chartStart, end: now },
-        apartFrom: systemOrganization,
-      }),
-      countScreeningsForAdmin({ since: ago(7), now }),
-      listOrganizationStandings({ status: "warning", limit: 200 }),
-      listOrganizationStandings({ status: "suspended", limit: 200 }),
-    ]);
+  const [
+    overview,
+    { events },
+    day,
+    week,
+    month,
+    usage,
+    screenings,
+    warned,
+    sendingSuspended,
+    pools,
+  ] = await Promise.all([
+    getAdminOverview(now),
+    listAdminAuditEvents({ limit: 10 }),
+    stats(ago(1)),
+    stats(ago(7)),
+    stats(ago(30)),
+    platformUsageByDay({
+      meter: "email.recipients",
+      interval: { start: chartStart, end: now },
+      apartFrom: systemOrganization,
+    }),
+    countScreeningsForAdmin({ since: ago(7), now }),
+    listOrganizationStandings({ status: "warning", limit: 200 }),
+    listOrganizationStandings({ status: "suspended", limit: 200 }),
+    dedicatedIpCapacity(),
+  ]);
 
   const columns = Array.from({ length: CHART_DAYS }, (_, index) => {
     const start = new Date(chartStart.getTime() + index * DAY_MS);
@@ -148,7 +160,7 @@ export default async function AdminOverviewPage() {
       </StatRow>
 
       <SectionHeader title="Accounts" />
-      <StatRow>
+      <StatRow className="lg:grid-cols-5">
         <Stat
           detail={`24 h: ${formatCompact(overview.newUsersDay)} · total ${formatCompact(overview.users)}`}
           href="/admin/signups"
@@ -171,6 +183,12 @@ export default async function AdminOverviewPage() {
           href="/admin/organizations?status=suspended"
           label="Suspended organizations"
           value={formatCompact(overview.suspendedOrganizations)}
+        />
+        <Stat
+          className="max-lg:col-span-2"
+          detail={pools.waiting ? `${pools.waiting} waiting` : "SES allows 50 per region"}
+          label="Dedicated IP pools"
+          value={`${pools.used} / ${pools.capacity}`}
         />
       </StatRow>
 

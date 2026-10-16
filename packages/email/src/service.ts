@@ -17,6 +17,7 @@ import {
   prepareAttachments,
   purgeSendContent,
 } from "./attachments.ts";
+import { dedicatedPoolSql } from "./dedicated-ips.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender } from "./domains.ts";
 import { EmailError } from "./errors.ts";
@@ -214,6 +215,7 @@ function toOutbound(
     headers: row.headers,
     tags: row.tags,
     attachments,
+    dedicatedPool: row.dedicatedPool,
   };
 }
 
@@ -369,7 +371,11 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     // with a provider: the worker's stale-claim sweep resolves it.
     const [claimed] = await db
       .update(email)
-      .set({ provider: provider.name, billableRecipients: billableRecipientsSql(row) })
+      .set({
+        provider: provider.name,
+        billableRecipients: billableRecipientsSql(row),
+        dedicatedPool: sandbox ? false : dedicatedPoolSql(row.organizationId, provider.name),
+      })
       .where(
         and(
           eq(email.id, row.id),
@@ -378,9 +384,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           isNull(email.provider),
         ),
       )
-      .returning({ id: email.id });
+      .returning({ id: email.id, dedicatedPool: email.dedicatedPool });
     if (!claimed) return currentEmail(row);
-    await complete(row, provider, sandbox);
+    await complete({ ...row, dedicatedPool: claimed.dedicatedPool }, provider, sandbox);
     return currentEmail(row);
   }
 
@@ -599,7 +605,11 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const claimed = await db.transaction(async (tx) => {
       const [claimedRow] = await tx
         .update(email)
-        .set({ status: "queued", provider: provider.name })
+        .set({
+          status: "queued",
+          provider: provider.name,
+          dedicatedPool: sandbox ? false : dedicatedPoolSql(row.organizationId, provider.name),
+        })
         .where(stillDue)
         .returning();
       if (!claimedRow) return undefined;

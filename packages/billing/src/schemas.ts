@@ -5,7 +5,7 @@
  * (`stringifyWithBigInt`) and parsed back by these schemas. Client-safe: zod only.
  */
 import { z } from "zod";
-import type { BillingInterval } from "./catalog/add-ons.ts";
+import type { AddOnDefinition, BillingInterval } from "./catalog/add-ons.ts";
 import { FEATURE_KEYS, LIMIT_KEYS, RATE_LIMIT_KEYS } from "./catalog/entitlements.ts";
 import { METER_KEYS } from "./catalog/meters.ts";
 import { PLAN_KEYS } from "./catalog/plans.ts";
@@ -239,9 +239,27 @@ export type AddOn = z.output<typeof addOnSchema>;
 export type Fee = z.output<typeof feeSchema>;
 export type FeeCredit = z.output<typeof feeCreditSchema>;
 
-/** Terms a self-serve contract stores: everything else follows the plan. */
-export function selfServeTerms(plan: ContractTerms["plan"]): ContractTerms {
-  return { version: 1, plan };
+/**
+ * Terms a self-serve contract stores: everything else follows the plan, plus the catalog add-ons
+ * bought (priced as they were when bought).
+ */
+export function selfServeTerms(
+  plan: ContractTerms["plan"],
+  addOns: readonly AddOn[] = [],
+): ContractTerms {
+  return addOns.length ? { version: 1, plan, addOns: [...addOns] } : { version: 1, plan };
+}
+
+/** The contract line of a catalog add-on (one unit, at today's list price). */
+export function addOnTerms(addOn: AddOnDefinition): AddOn {
+  return {
+    key: addOn.key,
+    name: addOn.name,
+    unitAmountCents: addOn.unitAmountCents,
+    quantity: 1,
+    interval: addOn.interval,
+    timing: addOn.timing,
+  };
 }
 
 /** Parses stored or submitted terms; throws a `ZodError` when invalid. */

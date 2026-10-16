@@ -1,5 +1,9 @@
 import {
+  ADD_ON_KEYS,
+  ADD_ONS,
+  type AddOnDefinition,
   billingOverview,
+  catalogAddOn,
   collectInvoiceNow,
   completePaymentSetup,
   listGrants,
@@ -50,8 +54,10 @@ import {
 } from "@/lib/billing-format";
 import { requireOrgMember } from "@/lib/session";
 import {
+  AddOnButton,
   CancelScheduledChangeButton,
   PaymentMethodButtons,
+  RemoveAddOnButton,
   SpendControlsForm,
 } from "./billing-forms";
 
@@ -59,7 +65,7 @@ export const metadata: Metadata = { title: "Billing" };
 
 const NOTICES: Record<string, { variant: "success" | "warning" | "error" | "info"; text: string }> =
   {
-    upgraded: { variant: "success", text: "Your plan was upgraded. Thanks!" },
+    upgraded: { variant: "success", text: "Your plan was updated. Thanks!" },
     processing: {
       variant: "info",
       text: "Your payment is processing. Your plan changes as soon as it clears.",
@@ -175,6 +181,20 @@ export default async function BillingPage({
   const pendingInvoice = pending
     ? invoices.find((invoice) => invoice.id === pending.pendingInvoiceId)
     : undefined;
+  // A scheduled change or pending upgrade that keeps the plan only changes add-ons.
+  const planChangeScheduled = state.scheduled && state.scheduled.terms.plan !== state.terms.plan;
+  const pendingPlanChange = pending && pending.terms.plan !== state.terms.plan;
+  const addOns = state.terms.addOns;
+  const nextAddOns = state.scheduled ? state.scheduled.terms.addOns : addOns;
+  const pendingAddOns = (pending?.terms.addOns ?? []).filter(
+    (line) => !addOns.some((current) => current.key === line.key),
+  );
+  const addOnRows = [
+    ...ADD_ON_KEYS.map((key) => ({ key, catalog: ADD_ONS[key] as AddOnDefinition })),
+    ...addOns
+      .filter((line) => !catalogAddOn(line.key))
+      .map((line) => ({ key: line.key, catalog: null })),
+  ];
 
   // Usage this month, per meter (dimensions together), with the estimated charge.
   const meters = new Map<MeterKey, { quantity: number; covered: number; cents: bigint }>();
@@ -275,7 +295,7 @@ export default async function BillingPage({
             {contract.autoRenew ? ", renewing automatically" : ""}.
           </SettingsNote>
         ) : null}
-        {state.scheduled ? (
+        {state.scheduled && planChangeScheduled ? (
           <SettingsRow
             description={`On ${formatDate(state.scheduled.at)}.`}
             label={`Changes to the ${PLANS[state.scheduled.terms.plan].name} plan`}
@@ -287,7 +307,7 @@ export default async function BillingPage({
             ) : null}
           </SettingsRow>
         ) : null}
-        {pending ? (
+        {pending && pendingPlanChange ? (
           <SettingsNote className="text-foreground">
             The upgrade to {PLANS[pending.terms.plan].name} is waiting for its payment
             {pendingInvoice?.hostedUrl ? (
@@ -313,6 +333,88 @@ export default async function BillingPage({
             Your plan is managed by your contract. Contact your account manager to change it.
           </SettingsNote>
         )}
+      </SettingsSection>
+
+      <SettingsSection
+        description="Charged monthly on top of your plan (prorated when added mid-month)."
+        title="Add-ons"
+      >
+        {addOnRows.map(({ key, catalog }) => {
+          const line = addOns.find((current) => current.key === key);
+          const name = catalog?.name ?? line?.name ?? key;
+          const ends = line && !nextAddOns.some((next) => next.key === key);
+          const waiting = pendingAddOns.find((next) => next.key === key);
+          const eligible = catalog?.plans.includes(state.terms.plan) ?? false;
+          const price = line
+            ? `${formatCents(line.unitAmountCents * BigInt(line.quantity))} per ${line.interval}`
+            : catalog
+              ? `${formatCents(catalog.unitAmountCents)} per ${catalog.interval}`
+              : "";
+          const manageable = canManage && selfServe && catalog?.selfServe;
+          return (
+            <SettingsRow
+              description={
+                <>
+                  {price}
+                  {catalog ? `. ${catalog.description}` : "."}
+                  {waiting ? (
+                    <span className="block text-foreground">
+                      Waiting for its payment
+                      {pendingInvoice?.hostedUrl ? (
+                        <>
+                          {" "}
+                          (
+                          <a
+                            className="underline underline-offset-4"
+                            href={pendingInvoice.hostedUrl}
+                            rel="noreferrer"
+                            target="_blank"
+                          >
+                            pay the invoice
+                          </a>
+                          )
+                        </>
+                      ) : null}
+                      .
+                    </span>
+                  ) : null}
+                  {!line && catalog && !eligible ? (
+                    <span className="block text-foreground">
+                      Available on the {catalog.plans.map((plan) => PLANS[plan].name).join(" and ")}{" "}
+                      plans.
+                    </span>
+                  ) : null}
+                </>
+              }
+              key={key}
+              label={
+                <>
+                  {name}
+                  {line ? (
+                    <Badge variant="outline">
+                      {ends && state.scheduled
+                        ? `Ends ${formatDate(state.scheduled.at)}`
+                        : "Active"}
+                    </Badge>
+                  ) : null}
+                </>
+              }
+            >
+              {manageable && line && !ends ? (
+                <RemoveAddOnButton
+                  addOn={key}
+                  description={`${name} stays until the end of this billing month${state.scheduled ? "" : ` (${formatDate(period.end)})`}, then stops. You can undo it until then.`}
+                  name={name}
+                  orgSlug={organization.slug}
+                />
+              ) : manageable && ends && !planChangeScheduled ? (
+                <CancelScheduledChangeButton label="Keep it" orgSlug={organization.slug} />
+              ) : manageable && !line && eligible && !waiting && !state.scheduled ? (
+                <AddOnButton addOn={key} label="Add" orgSlug={organization.slug} />
+              ) : null}
+            </SettingsRow>
+          );
+        })}
       </SettingsSection>
 
       <SettingsSection

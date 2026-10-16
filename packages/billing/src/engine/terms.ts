@@ -1,6 +1,6 @@
 /** Resolves contract terms against their plan and the list prices into what the engine applies. */
-import { type BillingInterval, INTERVAL_MONTHS } from "../catalog/add-ons.ts";
-import { type Entitlements, mergeEntitlements } from "../catalog/entitlements.ts";
+import { type BillingInterval, catalogAddOn, INTERVAL_MONTHS } from "../catalog/add-ons.ts";
+import { type Entitlements, type FeatureKey, mergeEntitlements } from "../catalog/entitlements.ts";
 import { METER_KEYS, METERS, type MeterKey } from "../catalog/meters.ts";
 import { PLANS, type PlanKey } from "../catalog/plans.ts";
 import { type MeterRates, type RateCard, rateCardAt } from "../catalog/rates.ts";
@@ -82,9 +82,21 @@ export function resolveTerms(terms: ContractTerms, rateCard: RateCard): Effectiv
     discounts: terms.discounts ?? [],
     commitments: terms.commitments ?? [],
     addOns: terms.addOns ?? [],
-    entitlements: mergeEntitlements(plan.entitlements, terms.entitlements),
+    entitlements: withAddOnFeatures(
+      mergeEntitlements(plan.entitlements, terms.entitlements),
+      terms.addOns ?? [],
+    ),
     usageCaps,
   };
+}
+
+/** What catalog add-ons grant on top (a contract's custom add-ons grant nothing). */
+function withAddOnFeatures(base: Entitlements, addOns: readonly AddOn[]): Entitlements {
+  const granted: FeatureKey[] = addOns.flatMap((addOn) => catalogAddOn(addOn.key)?.features ?? []);
+  if (!granted.length) return base;
+  const features = { ...base.features };
+  for (const feature of granted) features[feature] = true;
+  return { ...base, features };
 }
 
 /** Terms at a moment, against the list prices in effect then. */

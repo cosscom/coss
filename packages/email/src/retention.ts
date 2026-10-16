@@ -10,6 +10,7 @@ const {
   dmarcNotification,
   dmarcReport,
   dmarcReportRecord,
+  dedicatedIpDeliveryRollup,
   email,
   emailBatch,
   emailReputationRollup,
@@ -108,6 +109,37 @@ export async function purgeExpiredReputationRollups(opts: PurgeOptions = {}): Pr
       ),
     )
     .returning({ organizationId: emailReputationRollup.organizationId });
+  return deleted.length;
+}
+
+/** Deletes up to `limit` hourly dedicated IP delivery counts past their retention, oldest first. */
+export async function purgeExpiredDedicatedIpRollups(opts: PurgeOptions = {}): Promise<number> {
+  const cutoff = retentionCutoff(RETENTION_DAYS.dedicatedIpRollups, opts.now);
+  const expired = and(
+    lt(dedicatedIpDeliveryRollup.hour, cutoff),
+    opts.scope
+      ? inArray(dedicatedIpDeliveryRollup.organizationId, opts.scope.organizationIds)
+      : undefined,
+  );
+  const due = db
+    .select({
+      organizationId: dedicatedIpDeliveryRollup.organizationId,
+      hour: dedicatedIpDeliveryRollup.hour,
+      sendingIp: dedicatedIpDeliveryRollup.sendingIp,
+    })
+    .from(dedicatedIpDeliveryRollup)
+    .where(expired)
+    .orderBy(asc(dedicatedIpDeliveryRollup.hour))
+    .limit(opts.limit ?? 1000);
+  const deleted = await db
+    .delete(dedicatedIpDeliveryRollup)
+    .where(
+      and(
+        sql`(${dedicatedIpDeliveryRollup.organizationId}, ${dedicatedIpDeliveryRollup.hour}, ${dedicatedIpDeliveryRollup.sendingIp}) in ${due}`,
+        expired,
+      ),
+    )
+    .returning({ organizationId: dedicatedIpDeliveryRollup.organizationId });
   return deleted.length;
 }
 

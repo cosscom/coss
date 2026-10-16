@@ -1,4 +1,8 @@
 import {
+  ADD_ON_KEYS,
+  ADD_ONS,
+  type AddOnDefinition,
+  addOnGranting,
   billingStateAt,
   FEATURE_KEYS,
   FEATURE_LABELS,
@@ -180,6 +184,8 @@ export default async function PlansPage({
                     <TableCell key={key}>
                       {PLANS[key].entitlements.features[feature] ? (
                         <CheckIcon aria-label="Yes" className="size-4" />
+                      ) : addOnGranting(feature)?.plans.includes(key) ? (
+                        <span className="text-xs">Add-on</span>
                       ) : (
                         <MinusIcon aria-label="No" className="size-4 text-muted-foreground" />
                       )}
@@ -198,6 +204,22 @@ export default async function PlansPage({
               </TableRow>
             </TableBody>
           </SettingsTable>
+        </SettingsSection>
+
+        <SettingsSection
+          description="Charged on top of a plan. Add them on the billing page."
+          title="Add-ons"
+        >
+          {ADD_ON_KEYS.map((key) => {
+            const addOn: AddOnDefinition = ADD_ONS[key];
+            return (
+              <SettingsRow
+                description={`${formatCents(addOn.unitAmountCents)} per ${addOn.interval}, on the ${addOn.plans.map((plan) => PLANS[plan].name).join(" and ")} plans. ${addOn.description}`}
+                key={key}
+                label={addOn.name}
+              />
+            );
+          })}
         </SettingsSection>
 
         <SettingsSection

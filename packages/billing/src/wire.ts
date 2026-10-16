@@ -47,7 +47,15 @@ const BILLING_EXAMPLE = {
   credit_remaining: 0,
   spend_limit: null,
   payment_method: { type: "card", brand: "visa", last4: "4242" },
-  features: { tracking_domains: true, audit_log: true, log_drains: false, sso: false, scim: false },
+  add_ons: [],
+  features: {
+    tracking_domains: true,
+    audit_log: true,
+    log_drains: false,
+    sso: false,
+    scim: false,
+    dedicated_ips: false,
+  },
   limits: { domains: 10, members: 10, webhook_endpoints_per_environment: 10 },
 } as const;
 
@@ -113,12 +121,24 @@ export const BillingObject = z
     payment_method: z
       .object({ type: z.string(), brand: z.string().nullable(), last4: z.string().nullable() })
       .nullable(),
+    add_ons: z
+      .array(
+        z.object({
+          key: z.string().meta({ description: "e.g. `dedicated_ips`." }),
+          name: z.string(),
+          quantity: z.int(),
+          unit_amount: Cents.meta({ description: "The price per unit and interval, in cents." }),
+          interval: z.enum(["month", "quarter", "year"]),
+        }),
+      )
+      .meta({ description: "Add-ons of the contract in effect, charged on top of the plan." }),
     features: z.object({
       tracking_domains: z.boolean(),
       audit_log: z.boolean(),
       log_drains: z.boolean(),
       sso: z.boolean(),
       scim: z.boolean(),
+      dedicated_ips: z.boolean(),
     }),
     limits: z
       .object({

@@ -5,6 +5,7 @@ import {
   type BillingProviders,
   expirePendingUpgrades,
   finalizeOrganizationBilling,
+  organizationsEntitledTo,
   type ProviderName,
   reconcileOpenInvoices,
   runBillingUsageChecks,
@@ -25,6 +26,7 @@ import {
   recheckDueDomains,
   recheckDueReceivingDomains,
   recheckDueTrackingDomains,
+  reconcileDedicatedIpPools,
   releaseOrganizationEmailResources,
   runDueDmarcNotifications,
   sweepStaleClaims,
@@ -67,6 +69,7 @@ const HOOK_PARK_BATCH = 5000;
 const HOOK_RECOVERY_BATCH = 1000;
 const LOG_DRAIN_BATCH = 10;
 const DOMAIN_BATCH = 25;
+const DEDICATED_IP_BATCH = 25;
 const SWEEP_BATCH = 100;
 const REPUTATION_BATCH = 50;
 const NOTIFICATION_BATCH = 20;
@@ -139,6 +142,7 @@ export const WORKER_LOOP_NAMES = [
   "hooks-maintenance",
   "log-drains",
   "domains",
+  "dedicated-ips",
   "scheduled-emails",
   "stale-claims",
   "reputation",
@@ -214,6 +218,23 @@ export function startJobs(deps: WorkerDeps): Loop[] {
           ? await recheckDueReceivingDomains(opts, deps.inbound, deps.domains.dns)
           : 0;
         return domains === DOMAIN_BATCH || tracking === DOMAIN_BATCH || receiving === DOMAIN_BATCH;
+      },
+    }),
+    start({
+      // Dedicated IP pools follow billing (the Dedicated IPs add-on): provisioned, checked for
+      // warm-up progress, and released a day after the add-on ends.
+      name: "dedicated-ips",
+      intervalMs: 60_000,
+      run: async () => {
+        const dedicatedIps = deps.domains.dedicatedIps;
+        if (!dedicatedIps) return false;
+        const entitled = await organizationsEntitledTo("dedicatedIps");
+        return (
+          (await reconcileDedicatedIpPools(
+            { entitled, limit: DEDICATED_IP_BATCH, signal: deps.signal },
+            { identity: deps.domains.identity, dedicatedIps },
+          )) === DEDICATED_IP_BATCH
+        );
       },
     }),
     start({

@@ -22,7 +22,7 @@ describe("cossPolicies", () => {
     }
   });
 
-  test("the api can only send, with the COSS configuration set", () => {
+  test("the api can only send, with the COSS configuration sets", () => {
     // SES authorizes sends against the sender address, which carries no tags (verified live).
     expect(policies.api.Statement).toEqual([
       expect.objectContaining({
@@ -31,7 +31,10 @@ describe("cossPolicies", () => {
       }),
       expect.objectContaining({
         Action: ["ses:SendEmail"],
-        Resource: ["arn:aws:ses:us-east-2:123456789012:configuration-set/coss"],
+        Resource: [
+          "arn:aws:ses:us-east-2:123456789012:configuration-set/coss",
+          "arn:aws:ses:us-east-2:123456789012:configuration-set/coss-*",
+        ],
       }),
     ]);
   });
@@ -55,7 +58,7 @@ describe("cossPolicies", () => {
     }
   });
 
-  test("the worker can send scheduled emails with only the COSS configuration set", () => {
+  test("the worker can send scheduled emails with only the COSS configuration sets", () => {
     const sends = policies.worker.Statement.filter((statement) =>
       statement.Action.includes("ses:SendEmail"),
     );
@@ -70,11 +73,44 @@ describe("cossPolicies", () => {
         Sid: "SendWithCossConfigurationSet",
         Effect: "Allow",
         Action: ["ses:SendEmail"],
-        Resource: ["arn:aws:ses:us-east-2:123456789012:configuration-set/coss"],
+        Resource: [
+          "arn:aws:ses:us-east-2:123456789012:configuration-set/coss",
+          "arn:aws:ses:us-east-2:123456789012:configuration-set/coss-*",
+        ],
       },
     ]);
     // Sender addresses aren't tagged resources; send grants must have no tag condition.
     for (const statement of sends) expect(statement.Condition).toBeUndefined();
+  });
+
+  test("only the worker manages dedicated IPs, created tagged and changed only when tagged", () => {
+    const dedicated = (app: keyof typeof policies) =>
+      policies[app].Statement.flatMap((statement) => statement.Action).filter((action) =>
+        /DedicatedIp|ConfigurationSet(?!EventDestinations)/.test(action),
+      );
+    expect(dedicated("api")).toEqual([]);
+    expect(dedicated("dashboard")).toEqual([]);
+    for (const statement of policies.worker.Statement) {
+      const creates = statement.Action.some((action) =>
+        ["ses:CreateDedicatedIpPool", "ses:CreateConfigurationSet"].includes(action),
+      );
+      const deletes = statement.Action.some((action) =>
+        ["ses:DeleteDedicatedIpPool", "ses:DeleteConfigurationSet"].includes(action),
+      );
+      if (creates) {
+        expect(statement.Condition).toEqual({
+          StringEquals: { "aws:RequestTag/coss_managed": "coss" },
+        });
+      }
+      if (deletes) {
+        expect(statement.Condition).toEqual({
+          StringEquals: { "aws:ResourceTag/coss_managed": "coss" },
+        });
+      }
+      for (const resource of statement.Resource) {
+        if (resource.includes(":dedicated-ip-pool/")) expect(resource).toEndWith("/coss-*");
+      }
+    }
   });
 
   test("the worker reads only the events queue and cannot create identities", () => {

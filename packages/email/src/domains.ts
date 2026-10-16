@@ -23,12 +23,18 @@ import {
   or,
 } from "drizzle-orm";
 import { checkBimi, organizationalDomain, toBimiObject } from "./bimi.ts";
+import { releaseOrganizationDedicatedIps } from "./dedicated-ips.ts";
 import { appliedDmarcRecord, dmarcPolicyKey } from "./dmarc-record.ts";
 import { deleteOrganizationDmarcReports } from "./dmarc-reports.ts";
 import { checkDomainDns, type DnsResolver, dmarcRecordAt, expectedRecords } from "./dns.ts";
 import { DomainError, EmailError } from "./errors.ts";
 import type { InboundContentStore } from "./inbound-store.ts";
-import { type IdentityProvider, IdentityTakenError, type ProviderTenant } from "./provider.ts";
+import {
+  type DedicatedIpProvider,
+  type IdentityProvider,
+  IdentityTakenError,
+  type ProviderTenant,
+} from "./provider.ts";
 import {
   DOMAIN_NAME_MAX_LENGTH,
   type DomainObjectOutput,
@@ -49,6 +55,8 @@ export type DomainDeps = {
   dns: DnsResolver | null;
   /** Serves custom tracking hostnames (`tracking-domains.ts`). */
   tracking: TrackingHostnameProvider;
+  /** Dedicated IP pools (`dedicated-ips.ts`); unset: none are released with the organization. */
+  dedicatedIps?: DedicatedIpProvider;
   /** The organization's plan (domains, tracking domains); unset: nothing is limited (tests). */
   plans?: PlanGate;
   /**
@@ -574,13 +582,13 @@ export async function deleteDomain(
 /**
  * Organization deletion (worker, `OrganizationTeardownDeps.releaseProviderResources`): stops the
  * organization's sends, deletes its received emails' content and its DMARC reports, removes its
- * domains' provider identities and the domains, then its tenant.
+ * domains' provider identities and the domains, its dedicated IP pool, then its tenant.
  * Idempotent; a failure leaves the rest for the retry. `failed` domains have no identity of
  * theirs (the name may be another organization's by now), so only their rows go.
  */
 export async function releaseOrganizationEmailResources(
   organizationId: string,
-  deps: Pick<DomainDeps, "identity" | "tracking"> & {
+  deps: Pick<DomainDeps, "identity" | "tracking" | "dedicatedIps"> & {
     /** Received emails' content store (`EmailRuntime.inbound`); its rows go with the data. */
     inboundStore?: InboundContentStore | null;
   },
@@ -618,6 +626,9 @@ export async function releaseOrganizationEmailResources(
       .delete(domain)
       .where(and(eq(domain.id, row.id), eq(domain.organizationId, organizationId)));
   }
+  // Before the tenant: SES won't delete a configuration set still associated with one.
+  await assertLease();
+  await releaseOrganizationDedicatedIps(organizationId, deps.dedicatedIps);
   if (tenantRow) {
     await assertLease();
     if (tenantRow.provider === deps.identity.name) await deps.identity.deleteTenant(tenant);

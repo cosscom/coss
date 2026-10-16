@@ -10,6 +10,7 @@ import {
 } from "@coss/billing";
 import {
   purgeEmptyEmailBatches,
+  purgeExpiredDedicatedIpRollups,
   purgeExpiredDmarcNotifications,
   purgeExpiredDmarcReports,
   purgeExpiredEmails,
@@ -55,6 +56,7 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "emails", purge: purgeExpiredEmails },
   { name: "email batches", purge: purgeEmptyEmailBatches },
   { name: "reputation rollups", purge: purgeExpiredReputationRollups },
+  { name: "dedicated IP rollups", purge: purgeExpiredDedicatedIpRollups },
   { name: "received emails", purge: purgeExpiredReceivedEmails },
   // The fake content store's stand-in for the S3 bucket's lifecycle rule.
   { name: "fake received email content", purge: purgeExpiredFakeInboundObjects },

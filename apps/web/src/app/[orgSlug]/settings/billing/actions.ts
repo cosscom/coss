@@ -1,15 +1,20 @@
 "use server";
 
 import {
+  ADD_ONS,
   cancelScheduledChange,
   collectInvoiceNow,
   getBillingAccount,
+  type InvoiceRow,
+  isAddOnKey,
   isPlanKey,
   PLANS,
   parseDollarsToCents,
   paymentPortalSession,
   paymentSetupSession,
+  scheduleAddOnRemoval,
   scheduleDowngrade,
+  startAddOn,
   startUpgrade,
   updateSpendControls,
 } from "@coss/billing";
@@ -21,6 +26,7 @@ import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
 import { billingRuntime, systemOrganizationId } from "@/lib/billing";
 import { downgradeBlockers } from "@/lib/billing-preflight";
+import { addOnPreflight } from "@/lib/dedicated-ips";
 import { requireOrgPermission } from "@/lib/session";
 
 function billingUrl(orgSlug: string, query?: Record<string, string>): string {
@@ -34,10 +40,51 @@ export type UpgradeOutcome =
   | { status: "requires_action"; url: string | null };
 
 /**
- * Upgrades now: a prorated invoice for the rest of the month, charged at once. Without a payment
- * method, the customer first adds one on the provider's page and comes back (`?setup=`), where
- * the billing page collects the invoice.
+ * Collects the prorated invoice of a change that takes effect once paid (an upgrade, an add-on).
+ * Without a payment method, the customer first adds one on the provider's page and comes back
+ * (`?setup=`), where the billing page collects the invoice: `checkout` is that page.
  */
+async function collectChange(
+  organization: { id: string; slug: string },
+  invoice: InvoiceRow | null,
+): Promise<{ outcome: UpgradeOutcome; checkout: string | null }> {
+  const runtime = billingRuntime();
+  if (!invoice || invoice.status === "paid")
+    return { outcome: { status: "active" }, checkout: null };
+  const account = await getBillingAccount(organization.id);
+  if (!account?.paymentMethod) {
+    const setup = await paymentSetupSession({
+      organizationId: organization.id,
+      defaultProvider: runtime.defaultProvider,
+      providers: runtime.providers,
+      returnUrl: billingUrl(organization.slug, { upgrade: invoice.id }),
+      cancelUrl: billingUrl(organization.slug),
+    });
+    if (setup) return { outcome: { status: "processing" }, checkout: setup.url };
+  }
+  const collected = await collectInvoiceNow(invoice.id, {
+    providers: runtime.providers,
+    dashboardUrl: env.BETTER_AUTH_URL,
+    systemOrganizationId: await systemOrganizationId(),
+  });
+  switch (collected?.state) {
+    case "paid":
+      return { outcome: { status: "active" }, checkout: null };
+    case "requires_action":
+      return {
+        outcome: { status: "requires_action", url: collected.hostedUrl },
+        checkout: null,
+      };
+    case "failed":
+      throw new ActionError(
+        `The payment failed: ${collected.error} Update your payment method and try again.`,
+      );
+    default:
+      return { outcome: { status: "processing" }, checkout: null };
+  }
+}
+
+/** Upgrades now: a prorated invoice for the rest of the month, charged at once. */
 export async function upgradePlanAction(
   _previous: ActionResult<UpgradeOutcome> | null,
   formData: FormData,
@@ -49,12 +96,11 @@ export async function upgradePlanAction(
     });
     const plan = formString(formData, "plan");
     if (!isPlanKey(plan)) throw new ActionError("Choose a plan.");
-    const runtime = billingRuntime();
     const { contract, invoice } = await startUpgrade({
       organizationId: organization.id,
       plan,
       userId: session.user.id,
-      defaultProvider: runtime.defaultProvider,
+      defaultProvider: billingRuntime().defaultProvider,
     });
     await recordAudit(session, {
       organizationId: organization.id,
@@ -62,46 +108,76 @@ export async function upgradePlanAction(
       target: { type: "billing_contract", id: contract.id, label: PLANS[plan].name },
       metadata: { plan, invoice_id: invoice?.id ?? null },
     });
-    if (!invoice || invoice.status === "paid") {
-      refresh();
-      return { status: "active" };
-    }
-    const account = await getBillingAccount(organization.id);
-    if (!account?.paymentMethod) {
-      const setup = await paymentSetupSession({
-        organizationId: organization.id,
-        defaultProvider: runtime.defaultProvider,
-        providers: runtime.providers,
-        returnUrl: billingUrl(organization.slug, { upgrade: invoice.id }),
-        cancelUrl: billingUrl(organization.slug),
-      });
-      if (setup) {
-        checkout = setup.url;
-        return { status: "processing" };
-      }
-    }
-    const collected = await collectInvoiceNow(invoice.id, {
-      providers: runtime.providers,
-      dashboardUrl: env.BETTER_AUTH_URL,
-      systemOrganizationId: await systemOrganizationId(),
-    });
+    const collected = await collectChange(organization, invoice);
+    checkout = collected.checkout;
     refresh();
-    switch (collected?.state) {
-      case "paid":
-        return { status: "active" };
-      case "requires_action":
-        return { status: "requires_action", url: collected.hostedUrl };
-      case "failed":
-        throw new ActionError(
-          `The payment failed: ${collected.error} Update your payment method and try again.`,
-        );
-      default:
-        return { status: "processing" };
-    }
+    return collected.outcome;
   });
   // Outside `runAction`: `redirect()` throws to navigate.
   if (checkout) redirect(checkout);
   return result;
+}
+
+/** Adds a catalog add-on now: a prorated invoice for the rest of the month, charged at once. */
+export async function addAddOnAction(
+  _previous: ActionResult<UpgradeOutcome> | null,
+  formData: FormData,
+): Promise<ActionResult<UpgradeOutcome>> {
+  let checkout = null as string | null;
+  const result = await runAction(async (): Promise<UpgradeOutcome> => {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
+      billing: ["update"],
+    });
+    const key = formString(formData, "addOn");
+    if (!isAddOnKey(key)) throw new ActionError("Choose an add-on.");
+    const { contract, invoice } = await startAddOn({
+      organizationId: organization.id,
+      key,
+      userId: session.user.id,
+      defaultProvider: billingRuntime().defaultProvider,
+      preflight: addOnPreflight,
+    });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "billing.add_on_added",
+      target: { type: "billing_contract", id: contract.id, label: ADD_ONS[key].name },
+      metadata: { add_on: key, invoice_id: invoice?.id ?? null },
+    });
+    const collected = await collectChange(organization, invoice);
+    checkout = collected.checkout;
+    refresh();
+    return collected.outcome;
+  });
+  if (checkout) redirect(checkout);
+  return result;
+}
+
+/** Removes a catalog add-on at the end of the billing period. */
+export async function removeAddOnAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const { organization, session } = await requireOrgPermission(formString(formData, "orgSlug"), {
+      billing: ["update"],
+    });
+    const key = formString(formData, "addOn");
+    if (!isAddOnKey(key)) throw new ActionError("Choose an add-on.");
+    const { at } = await scheduleAddOnRemoval({
+      organizationId: organization.id,
+      key,
+      defaultProvider: billingRuntime().defaultProvider,
+      userId: session.user.id,
+    });
+    await recordAudit(session, {
+      organizationId: organization.id,
+      action: "billing.add_on_removal_scheduled",
+      target: { type: "billing_add_on", id: key, label: ADD_ONS[key].name },
+      metadata: { add_on: key, effective_at: at.toISOString() },
+    });
+    refresh();
+    return null;
+  });
 }
 
 /** Downgrades (or cancels to Free) at the end of the billing period. */

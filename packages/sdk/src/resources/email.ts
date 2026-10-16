@@ -14,6 +14,7 @@ import type {
 } from "../types/email.ts";
 import { EmailTemplatesResource } from "./email-templates.ts";
 import { listQuery } from "./list-query.ts";
+import { DedicatedIpsResource } from "./dedicated-ips.ts";
 import { ReceivedEmailsResource } from "./received-emails.ts";
 import { SuppressionResource } from "./suppressions.ts";
 import { TrackingResource } from "./tracking.ts";
@@ -29,6 +30,8 @@ export class EmailResource {
   readonly received: ReceivedEmailsResource;
   /** The environment's email templates. */
   readonly templates: EmailTemplatesResource;
+  /** The organization's dedicated IPs. */
+  readonly dedicatedIps: DedicatedIpsResource;
 
   /** @internal Use `new Coss().email`. */
   constructor(http: HttpClient) {
@@ -37,6 +40,7 @@ export class EmailResource {
     this.tracking = new TrackingResource(http);
     this.received = new ReceivedEmailsResource(http);
     this.templates = new EmailTemplatesResource(http);
+    this.dedicatedIps = new DedicatedIpsResource(http);
   }
 
   /**

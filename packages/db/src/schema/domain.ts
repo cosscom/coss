@@ -203,6 +203,9 @@ export const email = pgTable(
     templateId: text("template_id"),
     templateVersion: integer("template_version"),
     templateLocale: text("template_locale"),
+    // Handed to the provider through the organization's dedicated IP pool (set at claim): metered
+    // as `email.dedicated_ip` too, and its deliveries counted per sending IP.
+    dedicatedPool: boolean("dedicated_pool").notNull().default(false),
   },
   (t) => [
     foreignKey({
@@ -643,6 +646,75 @@ export const emailTenant = pgTable("email_tenant", {
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
+
+export const dedicatedIpPoolStatus = pgEnum("dedicated_ip_pool_status", [
+  // Over COSS's pool capacity: nothing is created until a slot frees up.
+  "waiting",
+  "provisioning",
+  // Live sends go through the pool; the provider is still warming its IPs up (or has none yet).
+  "warming",
+  "ready",
+  // No longer paid for: sends are back on shared IPs, the pool is released after a grace period.
+  "releasing",
+]);
+
+/**
+ * An organization's dedicated IP pool (the Dedicated IPs add-on): a provider-managed pool (SES
+ * managed dedicated IPs, warmed up automatically) and the configuration set that sends through
+ * it. Reconciled by the worker against billing; the row is deleted once the pool is released.
+ */
+export const dedicatedIpPool = pgTable(
+  "dedicated_ip_pool",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.dedicatedIpPool)),
+    organizationId: text("organization_id")
+      .notNull()
+      .unique("dedicated_ip_pool_organization_unique")
+      .references(() => organization.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(),
+    status: dedicatedIpPoolStatus("status").notNull(),
+    // The pool's IPs as the provider last listed them.
+    ips: jsonb("ips").$type<string[]>().notNull().default([]),
+    // Share of the last 7 days' deliveries that left from the pool's IPs (null: too few).
+    dedicatedShare: real("dedicated_share"),
+    statusMessage: text("status_message"),
+    // Failed provider calls in a row (provisioning and release back off on them).
+    attempts: integer("attempts").notNull().default(0),
+    nextCheckAt: timestamp("next_check_at", { withTimezone: true }),
+    lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
+    provisionedAt: timestamp("provisioned_at", { withTimezone: true }),
+    readyAt: timestamp("ready_at", { withTimezone: true }),
+    // `releasing`: when the provider resources may be deleted (sends claimed before keep them).
+    releaseAfter: timestamp("release_after", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("dedicated_ip_pool_next_check_at_idx")
+      .on(t.nextCheckAt)
+      .where(sql`${t.nextCheckAt} is not null`),
+  ],
+);
+
+/** Deliveries of dedicated-pool emails per UTC hour and sending IP (from the provider's events). */
+export const dedicatedIpDeliveryRollup = pgTable(
+  "dedicated_ip_delivery_rollup",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    hour: timestamp("hour", { withTimezone: true }).notNull(),
+    sendingIp: text("sending_ip").notNull(),
+    delivered: integer("delivered").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ columns: [t.organizationId, t.hour, t.sendingIp] }),
+    // The retention purge (oldest first, across organizations).
+    index("dedicated_ip_delivery_rollup_hour_idx").on(t.hour),
+  ],
+);
 
 export const domainStatus = pgEnum("domain_status", [
   "pending",

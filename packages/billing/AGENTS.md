@@ -10,16 +10,28 @@ repository root.
   collects them. Never move pricing into Stripe objects (prices, subscriptions, meters).
   - **Catalog** (`./catalog`, client-safe, reviewed like code): `METERS`, dated `RATE_CARDS` (a price change is a new
     card; periods before it keep the old prices), `PLANS` (Free/Pro/Scale/Enterprise: fee = spendable usage credit,
-    included units, `overage: blocked | billed`, entitlements incl. plan rate limits), `ADD_ONS` (empty until named).
-    The docs' `/docs/billing` (`<PlanTable />`, `<UsageRates />`) and the dashboard render it.
+    included units, `overage: blocked | billed`, entitlements incl. plan rate limits), `ADD_ONS` (catalog add-ons: price, interval,
+    the `plans` they're offered on and the `features` they grant while a contract in effect lists their key —
+    `resolveTerms` adds them; custom contract add-ons grant nothing; today only `dedicated_ips`).
+    The docs' `/docs/billing` (`<PlanTable />`, `<UsageRates />`, `<AddOns />`) and the dashboard render it.
   - **Contracts** (`billing_contract`, `terms` jsonb = `ContractTerms` v1, zod, bigints as strings): a confirmed
     contract is in effect while `effective_from <= t < effective_until`; **time decides, never a loop**; none in effect
     = Free (no rows). Every change takes `lockBillingAccount` first, which keeps contracts from overlapping. Self-serve
-    contracts store only `{ version: 1, plan }`; sales contracts pin what they override (fee, rates/tiers, discounts,
+    contracts store only `{ version: 1, plan, addOns? }` (catalog add-ons, priced when bought); sales contracts pin what they override (fee, rates/tiers, discounts,
     commitments, add-ons, entitlements, caps). A future contract starts on the 1st of a month (UTC); one starting now
     (or backdated within the open month) is invoiced for the rest of it at once. Self-serve plan changes are refused on
     `sales`/`internal` contracts and while one is scheduled (`scheduledManagedContract`); a self-serve contract never
     cancels a scheduled managed one (`supersedeAt` ends it where that one starts).
+  - **Self-serve add-ons** (`startAddOn`, `scheduleAddOnRemoval` in `changes.ts`): adding one is a pending successor
+    contract (same plan, plus the add-on) whose invoice charges only the add-on for the rest of the month
+    (`composeContractChange` carries an unchanged monthly fee and same-price add-ons instead of re-charging and
+    crediting them; a replaced contract's unused in-advance add-on time is credited, `unused-addon:` keys), confirmed
+    once paid like an upgrade; refused off its `plans`, while any change is scheduled, or by the caller's
+    `AddOnPreflight` (the dashboard's Dedicated IPs capacity check). Removal is a successor without it at the next
+    month (`cancelScheduledChange` undoes it). Upgrades and downgrades carry add-ons over; a downgrade to a plan an
+    add-on isn't offered on is refused until it is removed. `validateContract` refuses catalog add-ons off their
+    plans for every contract kind. `organizationsEntitledTo(feature)` lists organizations whose contract in effect
+    grants a feature (the worker's reconciliation).
   - **Money**: unit prices are bigint **nanos**, every stored amount bigint **cents**; a line is rounded once
     (half away from zero) and an invoice's total is the sum of its lines. USD only (`currency` column).
   - **Metering** (`billing_usage`, hourly counters by org/environment/meter/dimension, 8 shards, no FK to the
@@ -27,7 +39,8 @@ repository root.
     transaction's (`date_trunc('hour', transaction_timestamp(), 'UTC')`), so a month is closed only after
     `USAGE_SETTLE_MS`. Email is metered at `sent` (all four paths: `complete`, both `recordProviderEvent` transitions,
     `sweepStaleClaims`) for its `billable_recipients` (non-suppressed, frozen at claim), once
-    (`usage_recorded_at` compare-and-set); sandbox never.
+    (`usage_recorded_at` compare-and-set), and on `email.dedicated_ip` too when it went through the organization's
+    dedicated IPs (`email.dedicated_pool`); sandbox never.
   - **Rating** (`./engine`, pure, most tests): graduated or volume tiers carried across the month's contract segments
     (or the term, `tierWindow: term`); included units and unit grants take the period's first positions (Free's
     allowance per period, never prorated); dollar grants drawn down most specific scope first, then soonest expiry;

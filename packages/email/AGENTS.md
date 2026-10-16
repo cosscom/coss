@@ -89,6 +89,24 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   fetch the logo (`l=`) or certificate (`a=`) — they are customer URLs (SSRF) and the VMC/CMC is the customer's to
   validate; the dashboard never renders the logo either. The docs page (`/docs/email/bimi`) lists the statuses and
   codes: change them together.
+- **Dedicated IPs** (`packages/email/src/dedicated-ips.ts`, `ses/dedicated-ips.ts`, tables `dedicated_ip_pool` (ids
+  `dip_`) and `dedicated_ip_delivery_rollup`; the `dedicated_ips` add-on): one SES **managed** dedicated IP pool per
+  organization (SES leases, scales and warms its IPs up per mailbox provider, spilling what they can't take yet to
+  shared IPs) and a configuration set sending through it, both named `tenantNameFor(prefix, org)`, tagged
+  `coss_managed=<prefix>`, the set associated with the org's tenant and carrying copies of the shared set's event
+  destinations. Never adopt or delete a pool or set without that tag (`DedicatedIpTakenError`). Billing decides,
+  the worker's `dedicated-ips` loop (`reconcileDedicatedIpPools` with `organizationsEntitledTo("dedicatedIps")`)
+  follows: entitled → `provisioning` (needs the org's tenant, i.e. a domain: the worker never creates tenants; past
+  `MAX_DEDICATED_IP_POOLS` = 45 → `waiting`, a `console.error`) → `warming` (live sends use the pool from here) ⇄
+  `ready` (≥ 95% of the last 7 days' deliveries, ≥ 1,000, left from the pool's IPs — `ses:outgoing-ip` of `Delivery`
+  events counted per hour and IP in the rollup, only for emails with `dedicated_pool`); not entitled → `releasing`
+  at once (sends back on shared IPs) and released `RELEASE_DELAY_MS` (a day) later — association, then
+  configuration set, then pool — unless the entitlement returns first. A send decides at claim
+  (`dedicatedPoolSql`, stored in `email.dedicated_pool`; `SesEmailProvider` then uses the org's configuration set).
+  SES allows **50 pools per region, a hard limit**: the dashboard's purchase preflight counts pools plus unpaid
+  purchases against the 45. IAM (`ses-policies.ts`): only the worker manages pools/sets (`<prefix>-*`, tag
+  conditions); api and worker may send with `configuration-set/<prefix>-*`; the SNS topic accepts events from those
+  sets (`ses:bootstrap` — re-run it in production before deploying a change to either). Sandbox never uses a pool.
 - **Scheduled sends** (`scheduled_at`, ISO 8601 with an offset, ≤ 30 days ahead; a past time sends now): stored as
   `scheduled` with a COSS-source `email.scheduled` event and sent by the worker's `dispatchDue` (every 5 s).
   It claims straight from `scheduled` (compare-and-set to `queued` + `provider`), after

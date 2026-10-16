@@ -63,7 +63,14 @@ describe("route segments vs. organization slugs", () => {
   });
 
   test("static segments under [orgSlug] are known", () => {
-    const allowed = new Set(["projects", "members", "domains", "settings", "reputation"]);
+    const allowed = new Set([
+      "projects",
+      "members",
+      "domains",
+      "dedicated-ips",
+      "settings",
+      "reputation",
+    ]);
     const segments = staticSegments(path.join(APP_DIR, "[orgSlug]"));
     expect(segments.length).toBeGreaterThan(0);
     for (const segment of segments) {

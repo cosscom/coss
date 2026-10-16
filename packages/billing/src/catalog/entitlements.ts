@@ -1,6 +1,13 @@
 /** What a plan unlocks: features, resource limits and send rates. Contracts can override each. */
 
-export const FEATURE_KEYS = ["trackingDomains", "auditLog", "logDrains", "sso", "scim"] as const;
+export const FEATURE_KEYS = [
+  "trackingDomains",
+  "auditLog",
+  "logDrains",
+  "sso",
+  "scim",
+  "dedicatedIps",
+] as const;
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
 
 export const LIMIT_KEYS = ["domains", "members", "webhookEndpointsPerEnvironment"] as const;
@@ -32,6 +39,7 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   logDrains: "Log drains",
   sso: "Single sign-on (SAML, OIDC)",
   scim: "Directory sync (SCIM)",
+  dedicatedIps: "Dedicated IPs",
 };
 
 export const LIMIT_LABELS: Record<LimitKey, string> = {

@@ -1,5 +1,5 @@
 import { PLAN_KEYS, PLANS } from "@coss/billing/catalog";
-import { planRows, rateRows } from "@/lib/billing-text";
+import { addOnRows, planRows, rateRows } from "@/lib/billing-text";
 import { DocsTable, DocsTd, DocsTh, DocsTr } from "./docs-table";
 
 /** The plans side by side (from `@coss/billing/catalog`, which billing enforces). */
@@ -45,6 +45,32 @@ export function UsageRates() {
             <DocsTd>{row.product}</DocsTd>
             <DocsTd>{row.rate}</DocsTd>
             <DocsTd>{row.note}</DocsTd>
+          </DocsTr>
+        ))}
+      </tbody>
+    </DocsTable>
+  );
+}
+
+/** The add-ons sold on top of a plan. */
+export function AddOns() {
+  return (
+    <DocsTable>
+      <thead>
+        <DocsTr>
+          <DocsTh>Add-on</DocsTh>
+          <DocsTh>Price</DocsTh>
+          <DocsTh>Plans</DocsTh>
+          <DocsTh />
+        </DocsTr>
+      </thead>
+      <tbody>
+        {addOnRows().map((row) => (
+          <DocsTr key={row.name}>
+            <DocsTd>{row.name}</DocsTd>
+            <DocsTd>{row.price}</DocsTd>
+            <DocsTd>{row.plans}</DocsTd>
+            <DocsTd>{row.description}</DocsTd>
           </DocsTr>
         ))}
       </tbody>

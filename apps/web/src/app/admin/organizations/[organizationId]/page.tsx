@@ -1,5 +1,10 @@
 import { usageByDay } from "@coss/billing";
-import { getEmailTenant, listDomains } from "@coss/email";
+import {
+  dedicatedIpCapacity,
+  dedicatedIpPoolObject,
+  getEmailTenant,
+  listDomains,
+} from "@coss/email";
 import { listSendersForAdmin } from "@coss/email/admin";
 import {
   BUCKET_NAMES,
@@ -121,6 +126,8 @@ export default async function AdminOrganizationPage({
     [sending],
     usage,
     takedown,
+    dedicatedIps,
+    capacity,
   ] = await Promise.all([
     listOrganizationMembers({ organizationId: organization.id }),
     listOrganizationApiKeysForAdmin(organization.id),
@@ -133,6 +140,8 @@ export default async function AdminOrganizationPage({
     listSendersForAdmin({ since: sendingSince, now, organizationId: organization.id }),
     usageByDay(organization.id, { start: chartStart, end: now }),
     planOrganizationTakedown(organization.id),
+    dedicatedIpPoolObject(organization.id),
+    dedicatedIpCapacity(),
   ]);
   const isSystem = await isSystemOrganization(organization.id);
   const banned = takedown.members.filter((member) => member.keptBecause === null);
@@ -341,6 +350,24 @@ export default async function AdminOrganizationPage({
             ]}
           />
         </PanelBody>
+      </Panel>
+
+      <Panel>
+        <PanelHeader>
+          <PanelTitle className="flex items-center gap-2">
+            Dedicated IPs
+            {dedicatedIps.status === "not_enabled" ? null : (
+              <Badge variant="outline">{dedicatedIps.status}</Badge>
+            )}
+          </PanelTitle>
+          <PanelDescription>
+            {dedicatedIps.status === "not_enabled"
+              ? "No dedicated IP pool (the Dedicated IPs add-on, on a contract or bought self-serve)."
+              : `${dedicatedIps.ips.length} IP${dedicatedIps.ips.length === 1 ? "" : "s"}${dedicatedIps.ips.length ? ` (${dedicatedIps.ips.map((ip) => ip.ip).join(", ")})` : ""}; ${dedicatedIps.dedicated_share === null ? "too few deliveries to measure" : `${Math.round(dedicatedIps.dedicated_share * 100)}% of the last 7 days' deliveries from them`}.${dedicatedIps.message ? ` ${dedicatedIps.message}` : ""}`}{" "}
+            Pools in use across COSS: {capacity.used} of {capacity.capacity}
+            {capacity.waiting ? `, ${capacity.waiting} waiting` : ""}.
+          </PanelDescription>
+        </PanelHeader>
       </Panel>
 
       <Panel>

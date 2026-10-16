@@ -1,0 +1,65 @@
+---
+title: Dedicated IPs
+description: Send live email from your own IPs, warmed up automatically.
+---
+
+By default, live email leaves from IPs shared with other senders, whose reputation is kept high
+for everyone. With the **Dedicated IPs** add-on, your organization's live email leaves from IPs
+only it uses, so your deliverability depends on your sending alone. They are Amazon SES managed
+dedicated IPs: SES leases them, adds and removes IPs as your volume changes, and warms each one
+up per mailbox provider.
+
+Dedicated IPs suit steady volume: SES assigns the first IP once you send a few hundred emails a
+day over a few days, and may hand it back if volume stays low (your email then leaves from shared
+IPs again, with nothing held back). Below that, shared IPs deliver better.
+
+## Turning them on
+
+Add **Dedicated IPs** on the dashboard's billing page (owners; on the plans listed in
+[Add-ons](/docs/billing#add-ons)). Once the payment clears, COSS sets up your pool, usually
+within a couple of minutes, and live emails go through it from then on. Your organization needs
+at least one sending domain. Sandbox emails are never affected.
+
+The add-on's monthly price is charged up front, prorated for the first month, and email sent
+through your dedicated IPs is also metered (see [usage rates](/docs/billing#usage)).
+
+## Warm-up
+
+New IPs have no reputation, and mailbox providers accept only a little mail from them at first.
+SES ramps each IP up per provider as it builds trust: while it does, what an IP can't take yet
+leaves from shared IPs, so warm-up never delays your email. The **Dedicated IPs** page in the
+dashboard shows how far along it is:
+
+| Status         | Meaning |
+| -------------- | ------- |
+| `provisioning` | The pool is being set up; email still leaves from shared IPs. |
+| `waiting`      | Every pool is taken right now; COSS support has been told. |
+| `warming`      | Live email goes through your pool while its IPs warm up. |
+| `ready`        | At least 95% of the last 7 days' deliveries (at least 1,000) left from your IPs. |
+| `releasing`    | The add-on ended: email is back on shared IPs, and the pool is released a day later. |
+
+A pool can go back from `ready` to `warming`, for example when a sudden rise in volume makes SES
+add an IP. Read the same status from the API:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: pool } = await coss.email.dedicatedIps.get();
+
+console.log(pool?.status, pool?.dedicated_share);
+for (const ip of pool?.ips ?? []) console.log(ip.ip, ip.delivered_7d);
+```
+
+## Keeping a good reputation
+
+A dedicated IP's reputation is yours alone, good or bad. Keep bounce and complaint rates low
+(the [Reputation](/docs/email/delivery) guard watches them either way), send to people who asked
+for your email, and change volume gradually. If one of your IPs is listed on a blocklist, ask that
+list for its removal: SES doesn't rotate managed IPs.
+
+## Removing them
+
+Remove the add-on on the billing page: it ends with the billing month. Live email then goes back
+to shared IPs at once, and the pool is released a day later; adding it back before then keeps the
+same IPs.

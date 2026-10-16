@@ -4,6 +4,12 @@
  * could send twice. Callers retry only when SES certainly rejected the request (throttling).
  */
 import {
+  CreateConfigurationSetCommand,
+  type CreateConfigurationSetCommandInput,
+  CreateConfigurationSetEventDestinationCommand,
+  type CreateConfigurationSetEventDestinationCommandInput,
+  CreateDedicatedIpPoolCommand,
+  type CreateDedicatedIpPoolCommandInput,
   CreateEmailIdentityCommand,
   type CreateEmailIdentityCommandInput,
   type CreateEmailIdentityCommandOutput,
@@ -12,10 +18,16 @@ import {
   type CreateTenantCommandOutput,
   CreateTenantResourceAssociationCommand,
   type CreateTenantResourceAssociationCommandInput,
+  DeleteConfigurationSetCommand,
+  DeleteDedicatedIpPoolCommand,
   DeleteEmailIdentityCommand,
   DeleteTenantCommand,
   DeleteTenantResourceAssociationCommand,
   type DeleteTenantResourceAssociationCommandInput,
+  GetConfigurationSetEventDestinationsCommand,
+  type GetConfigurationSetEventDestinationsCommandOutput,
+  GetDedicatedIpsCommand,
+  type GetDedicatedIpsCommandOutput,
   GetEmailIdentityCommand,
   type GetEmailIdentityCommandOutput,
   GetTenantCommand,
@@ -77,6 +89,21 @@ export interface SesApi {
   putEmailIdentityMailFromAttributes(
     input: PutEmailIdentityMailFromAttributesCommandInput,
   ): Promise<unknown>;
+  createDedicatedIpPool(input: CreateDedicatedIpPoolCommandInput): Promise<unknown>;
+  deleteDedicatedIpPool(input: { PoolName: string }): Promise<unknown>;
+  getDedicatedIps(input: {
+    PoolName: string;
+    NextToken?: string;
+    PageSize?: number;
+  }): Promise<GetDedicatedIpsCommandOutput>;
+  createConfigurationSet(input: CreateConfigurationSetCommandInput): Promise<unknown>;
+  deleteConfigurationSet(input: { ConfigurationSetName: string }): Promise<unknown>;
+  getConfigurationSetEventDestinations(input: {
+    ConfigurationSetName: string;
+  }): Promise<GetConfigurationSetEventDestinationsCommandOutput>;
+  createConfigurationSetEventDestination(
+    input: CreateConfigurationSetEventDestinationCommandInput,
+  ): Promise<unknown>;
 }
 
 export function createSesApi(region: string): SesApi {
@@ -103,6 +130,15 @@ export function createSesApi(region: string): SesApi {
     deleteEmailIdentity: (input) => client.send(new DeleteEmailIdentityCommand(input)),
     putEmailIdentityMailFromAttributes: (input) =>
       client.send(new PutEmailIdentityMailFromAttributesCommand(input)),
+    createDedicatedIpPool: (input) => client.send(new CreateDedicatedIpPoolCommand(input)),
+    deleteDedicatedIpPool: (input) => client.send(new DeleteDedicatedIpPoolCommand(input)),
+    getDedicatedIps: (input) => client.send(new GetDedicatedIpsCommand(input)),
+    createConfigurationSet: (input) => client.send(new CreateConfigurationSetCommand(input)),
+    deleteConfigurationSet: (input) => client.send(new DeleteConfigurationSetCommand(input)),
+    getConfigurationSetEventDestinations: (input) =>
+      client.send(new GetConfigurationSetEventDestinationsCommand(input)),
+    createConfigurationSetEventDestination: (input) =>
+      client.send(new CreateConfigurationSetEventDestinationCommand(input)),
   };
 }
 
@@ -111,7 +147,10 @@ export function isSesError(error: unknown, name: string): boolean {
   return (error as { name?: string } | null)?.name === name;
 }
 
-/** `<prefix>-<organization id>`: at most 64 characters of [A-Za-z0-9_-]. */
+/**
+ * `<prefix>-<organization id>`: at most 64 characters of [A-Za-z0-9_-]. Also names the
+ * organization's dedicated IP pool and the configuration set that sends through it.
+ */
 export function tenantNameFor(prefix: string, organizationId: string): string {
   return `${prefix}-${organizationId}`;
 }

@@ -14,7 +14,7 @@ import {
   contractAt,
   contractPendingOn,
 } from "./contracts.ts";
-import { composeContractChange, feeChargeKeyAt } from "./engine/compose.ts";
+import { addOnChargeKeyAt, composeContractChange, feeChargeKeyAt } from "./engine/compose.ts";
 import type { Composition, Segment } from "./engine/types.ts";
 import { BillingError } from "./errors.ts";
 import { existingGrantKeys, insertComposedGrants } from "./grants.ts";
@@ -44,11 +44,21 @@ export async function composeChange(
   if (fromSegment) fromSegment.contractEnd = at;
   const toSegment = segmentFrom(to, at, false);
   if (!toSegment) throw new Error("A contract change needs a contract to change to.");
-  const feeKey = fromSegment ? feeChargeKeyAt({ ...fromSegment, contractEnd: null }, at) : null;
-  const advanceCharged = feeKey ? (await existingChargeKeys([feeKey], tx)).size > 0 : false;
+  // What the replaced contract was charged in advance for `at`'s interval.
+  const open: Segment | null = fromSegment ? { ...fromSegment, contractEnd: null } : null;
+  const feeKey = open ? feeChargeKeyAt(open, at) : null;
+  const addOnKeys = new Map<string, string>();
+  for (const addOn of open?.terms.addOns ?? []) {
+    if (open) addOnKeys.set(addOnChargeKeyAt(open, addOn, at), addOn.key);
+  }
+  const charged = await existingChargeKeys([...(feeKey ? [feeKey] : []), ...addOnKeys.keys()], tx);
+  const advanceCharged = feeKey ? charged.has(feeKey) : false;
+  const addOnsCharged = new Set(
+    [...addOnKeys].flatMap(([chargeKey, key]) => (charged.has(chargeKey) ? [key] : [])),
+  );
   const input = {
     at,
-    from: fromSegment ? { segment: fromSegment, advanceCharged } : null,
+    from: fromSegment ? { segment: fromSegment, advanceCharged, addOnsCharged } : null,
     to: toSegment,
   };
   const draft = composeContractChange(input);
