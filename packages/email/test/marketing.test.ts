@@ -12,6 +12,7 @@ import {
   confirmationLink,
   DEVELOPMENT_LINK_KEYS,
   linkKeyRing,
+  MAX_LINK_TOKEN_LENGTH,
   mintLinkToken,
   preferenceLinks,
   readLinkToken,
@@ -56,6 +57,17 @@ describe("link tokens", () => {
     });
   });
 
+  test("the longest address and topic still make a link that reads back", () => {
+    const longest = {
+      ...payload,
+      address: `${"\u{1F600}".repeat(60)}${"a".repeat(130)}@${"b".repeat(60)}.com`.slice(0, 254),
+      topic: "t".repeat(256),
+    };
+    const token = mintLinkToken(keys, longest);
+    expect(token.length).toBeLessThanOrEqual(MAX_LINK_TOKEN_LENGTH);
+    expect(readLinkToken(keys, token, "preferences")?.topic).toBe(longest.topic);
+  });
+
   test("tampering, the other kind, an unknown key and junk all fail", () => {
     const token = mintLinkToken(keys, payload);
     for (let index = 13; index < token.length; index += 7) {
@@ -64,7 +76,7 @@ describe("link tokens", () => {
     }
     expect(readLinkToken(keys, token, "confirmation")).toBeNull();
     expect(readLinkToken(linkKeyRing([randomBytes(32)]), token, "preferences")).toBeNull();
-    expect(readLinkToken(keys, "x".repeat(1000), "preferences")).toBeNull();
+    expect(readLinkToken(keys, "x".repeat(MAX_LINK_TOKEN_LENGTH + 1), "preferences")).toBeNull();
     expect(readLinkToken(keys, "", "preferences")).toBeNull();
   });
 

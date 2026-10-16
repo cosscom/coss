@@ -18,8 +18,14 @@ const VERSION = "a";
 const KEY_ID_LENGTH = 11;
 const IV_BYTES = 12;
 const TAG_BYTES = 16;
-/** Longer tokens are refused before any decryption. */
-export const MAX_LINK_TOKEN_LENGTH = 700;
+/**
+ * The largest payload, in bytes: a 254-character address (up to 4 bytes a character, or 2 once
+ * JSON-escaped), a 256-character topic, the ids, the time and the JSON around them.
+ */
+const MAX_PAYLOAD_BYTES = 254 * 4 + 256 + 200;
+/** Longer tokens are refused before any decryption; every valid payload fits. */
+export const MAX_LINK_TOKEN_LENGTH =
+  VERSION.length + KEY_ID_LENGTH + Math.ceil(((IV_BYTES + MAX_PAYLOAD_BYTES + TAG_BYTES) * 4) / 3);
 /** Confirmation links expire; preference links never do. */
 export const CONFIRMATION_LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 

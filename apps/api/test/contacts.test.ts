@@ -198,6 +198,18 @@ describe("/v1/contacts", () => {
     const res = await call(app, tenant.sandboxKey, "GET", "/v1/contacts");
     expect(res.status).toBe(403);
     expect((await errorOf(res)).type).toBe("permission_error");
+
+    // Preference links change consent: reading contacts isn't enough to make them.
+    await setKeyPermissions(await apiKeyIdForEnvironment(tenant.development.id), {
+      contact: ["read"],
+    });
+    const links = await call(
+      app,
+      tenant.sandboxKey,
+      "POST",
+      "/v1/contacts/a%40example.com/preference_links",
+    );
+    expect(links.status).toBe(403);
   });
 
   test("a contact change is a webhook", async () => {

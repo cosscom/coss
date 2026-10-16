@@ -78,7 +78,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `apps/api/src/routes/preferences.ts`): links are stateless AES-256-GCM tokens (`mintLinkToken`/`readLinkToken`,
   `EMAIL_LINK_KEYS`; kind `preferences` or `confirmation` bound as AAD; confirmations expire after 7 days, preference
   links never) carrying environment, address, email and topic — nothing is stored at send, links survive the email
-  purge, and the address never appears in a URL. `/t/u/:token` (page; a POST of exactly `List-Unsubscribe=One-Click`
+  purge, and the address never appears in a URL. Holding a link is a consent capability: minting one
+  (`POST /v1/contacts/{id}/preference_links`) needs `contact:update`. `/t/u/:token` (page; a POST of exactly `List-Unsubscribe=One-Click`
   is RFC 8058), `/t/u/:token/unsubscribe`, `/t/u/confirm/:token`: plain Hono under the tracking host (any `Host`),
   outside `/v1`, mounted before `/t` (a 32-character tracking token on `/t/u/:token` is one-click unsubscribe's
   and falls through to `/t`; the two token shapes never overlap); **no GET or HEAD ever changes anything** (scanners fetch every link); a bad

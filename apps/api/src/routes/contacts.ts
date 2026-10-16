@@ -440,10 +440,12 @@ export const createPreferenceLinksRoute = createRoute({
   description:
     "The contact's preference center and unsubscribe links, for emails you build yourself. They " +
     "never expire. Marketing email sent through coss.com gets them (and one-click unsubscribe " +
-    "headers) automatically.",
+    "headers) automatically. Needs `contact:update`: whoever has the links can change the " +
+    "contact's consent.",
   security: [{ bearerAuth: [] }],
   middleware: [
-    requireApiKey({ contact: ["read"] }),
+    // The links change consent, so making them is a write, not a read.
+    requireApiKey({ contact: ["update"] }),
     rateLimit("api.write"),
     upgradeRequestBody("POST /v1/contacts/{id}/preference_links"),
   ],
