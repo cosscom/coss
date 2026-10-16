@@ -72,7 +72,6 @@ export type {
   PlanKey,
   Usage,
 } from "./types/billing.ts";
-export type { DedicatedIpPool, DedicatedIpPoolStatus } from "./types/dedicated-ip.ts";
 export type {
   AddAudienceContactsParams,
   Audience,
@@ -117,6 +116,7 @@ export type {
   UpdateTopicParams,
   UpsertContactParams,
 } from "./types/contact.ts";
+export type { DedicatedIpPool, DedicatedIpPoolStatus } from "./types/dedicated-ip.ts";
 export type {
   DmarcCheck,
   DmarcCheckId,
