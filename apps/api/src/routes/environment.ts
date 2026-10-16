@@ -1,7 +1,8 @@
-import { getApiKeyEnvironmentSummary } from "@coss/tenancy";
+import { getApiKeyEnvironmentSummary, revokeEnvironmentApiKey } from "@coss/tenancy";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
+import { recordApiAudit } from "../audit.ts";
 import { ApiError } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { rateLimit } from "../middleware/rate-limit.ts";
@@ -83,6 +84,34 @@ export const getEnvironmentRoute = createRoute({
   },
 });
 
+export const DeletedApiKey = z
+  .strictObject({
+    object: z.literal("api_key"),
+    id: z.string(),
+    deleted: z.literal(true),
+  })
+  .meta({
+    id: "DeletedApiKey",
+    examples: [{ object: "api_key", id: "key_01k7c8m4q2f3e9v6t5r1n0p8yz", deleted: true }],
+  });
+
+export const revokeApiKeyRoute = createRoute({
+  method: "delete",
+  path: "/api_key",
+  operationId: "revokeApiKey",
+  tags: ["Environment"],
+  summary: "Revoke the API key",
+  description:
+    "Revokes the API key making this request, at once: every later request with it fails with " +
+    "`invalid_api_key`. `coss logout --revoke` uses it. Other keys are revoked in the dashboard.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({}), rateLimit("api.write")],
+  responses: {
+    200: jsonDoc("The key was revoked.", DeletedApiKey),
+    ...commonErrors,
+  },
+});
+
 export function createEnvironmentRoutes(): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
 
@@ -112,6 +141,23 @@ export function createEnvironmentRoutes(): OpenAPIHono<AppEnv> {
       },
       200,
     );
+  });
+
+  router.openapi(revokeApiKeyRoute, async (c) => {
+    const { organizationId, apiKeyId } = c.var.auth;
+    const revoked = await revokeEnvironmentApiKey({ organizationId, apiKeyId });
+    if (!revoked) {
+      throw new ApiError(401, {
+        type: "authentication_error",
+        code: "invalid_api_key",
+        message: "The API key is invalid, revoked or expired.",
+      });
+    }
+    await recordApiAudit(c, {
+      action: "api_key.revoked",
+      target: { type: "api_key", id: revoked.id, label: revoked.name },
+    });
+    return c.json({ object: "api_key" as const, id: revoked.id, deleted: true as const }, 200);
   });
 
   return router;

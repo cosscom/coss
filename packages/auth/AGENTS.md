@@ -170,6 +170,21 @@ Better Auth (`packages/auth`) and the dashboard actions, mobile API routes, tena
   report a risk outcome, also from the review queue) repeat the dashboard action's
   checks (`requireMobileWrite`: role, then suspension; the environment owns the endpoint) and record the same audit
   event with `recordAudit`; a new one must too.
+- **CLI sign-in** (`coss login`; `@coss/auth/cli`, `packages/tenancy/src/cli-auth.ts`, `apps/web/src/app/app/authorize/cli`,
+  `apps/web/src/app/api/cli/v1/token/route.ts`): the CLI opens `/app/authorize/cli?code_challenge&state&host` plus
+  either `port` (its loopback server; the redirect is built as `http://127.0.0.1:<port>/callback` from the port
+  alone, never a URL from the request, RFC 8252) or `mode=code` (a remote machine: the page shows the code to paste).
+  The page lists environments of organizations where the member may create keys and the session meets `orgAccess`
+  (others are named, not listed), shows `cliVerificationCode(challenge)` — the same code the terminal prints, so
+  a user approving a link someone else started can tell — and refuses impersonation. `authorizeCli` repeats the
+  key action's checks (`requireOrgPermission(apiKey:create)`, `liveKeyRestriction`) and stores a one-time code
+  bound to the S256 challenge (`cli-auth:` identifiers in `verification`, 60 s, 5 min for display codes): it records
+  what was approved, never a key. `POST /api/cli/v1/token` (public, `cli.token.ip`) consumes it once
+  (`redeemCliAuthorization`: ban, membership by slug + id, role, suspension, `orgAccess` with the approving
+  session's `ssoProviderId` and the user's current `twoFactorEnabled`, the environment, verified email for live),
+  checks reputation suspension for live keys, then creates the key (`createEnvironmentApiKey`) and records
+  `api_key.created` with `via: "cli"` (`recordUserAudit`, no session). Keys revoke themselves with
+  `DELETE /v1/api_key` (`revokeEnvironmentApiKey`, audited by the key), which `coss logout --revoke` calls.
 - **Account emails** (table `auth_email`, ids `authml_`; `packages/auth/src/emails.ts`): Better Auth's
   `sendVerificationEmail`/`sendResetPassword`/`sendInvitationEmail` only queue a row (`enqueueAuthEmail`, outside
   Better Auth's transaction — so `user_id` has no FK, and a missing user is retried for 5 minutes before it is

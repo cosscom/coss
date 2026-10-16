@@ -152,6 +152,7 @@ describe("GET /openapi.json", () => {
     expect(doc.info).toMatchObject({ title: "COSS API", version: LATEST_API_VERSION });
     expect(doc.servers).toEqual([{ url: "http://api.test" }]);
     expect(Object.keys(doc.paths).sort()).toEqual([
+      "/v1/api_key",
       "/v1/audit_events",
       "/v1/audit_events/{id}",
       "/v1/billing",

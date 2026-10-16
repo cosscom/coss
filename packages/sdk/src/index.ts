@@ -2,6 +2,7 @@ export { API_VERSION, API_VERSIONS, type ApiVersion } from "./api-version.ts";
 export { Coss, type CossOptions } from "./client.ts";
 export type { CossError, CossErrorIssue, CossErrorType, CossResult } from "./core/errors.ts";
 export type { FetchLike, RequestOptions } from "./core/http.ts";
+export type { ApiKeyResource } from "./resources/api-key.ts";
 export type { AuditEventsResource } from "./resources/audit-events.ts";
 export type {
   BillingCreditsResource,
@@ -126,7 +127,7 @@ export type {
   UpdateEmailTemplateDraftParams,
   UpdateEmailTemplateParams,
 } from "./types/email-template.ts";
-export type { Environment, NamedResource } from "./types/environment.ts";
+export type { DeletedApiKey, Environment, NamedResource } from "./types/environment.ts";
 export type {
   CreateHookApplicationParams,
   CreateHookEndpointParams,

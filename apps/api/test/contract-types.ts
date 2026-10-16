@@ -210,6 +210,7 @@ import type {
   Billing as SdkBilling,
   BillingWebhookEvent as SdkBillingWebhookEvent,
   Credit as SdkCredit,
+  DeletedApiKey as SdkDeletedApiKey,
   DeletedDomain as SdkDeletedDomain,
   DeletedEmailTemplate as SdkDeletedEmailTemplate,
   DeletedLogDrain as SdkDeletedLogDrain,
@@ -290,7 +291,7 @@ import type {
 } from "coss";
 import type { z } from "zod";
 import type { ErrorEnvelopeBody } from "../src/errors.ts";
-import type { EnvironmentObject } from "../src/routes/environment.ts";
+import type { DeletedApiKey, EnvironmentObject } from "../src/routes/environment.ts";
 import type {
   CreateWebhookEndpointRequest,
   UpdateWebhookEndpointRequest,
@@ -554,6 +555,7 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof BillingWebhookEvent>, SdkBillingWebhookEvent>>,
   // The API key's environment.
   Assert<MutuallyAssignable<z.output<typeof EnvironmentObject>, SdkEnvironment>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedApiKey>, SdkDeletedApiKey>>,
   // Reputation.
   Assert<MutuallyAssignable<z.output<typeof ReputationObject>, SdkReputation>>,
   Assert<MutuallyAssignable<z.output<typeof ReputationCheckObject>, SdkReputationCheck>>,

@@ -238,6 +238,27 @@ export async function getApiKeyEnvironmentSummary(input: {
   };
 }
 
+/**
+ * Deletes a key of the organization that is bound to an environment, without a member session:
+ * the key revoking itself (`DELETE /v1/api_key`). Its binding cascades. `null` when it is gone.
+ */
+export async function revokeEnvironmentApiKey(input: {
+  organizationId: string;
+  apiKeyId: string;
+}): Promise<{ id: string; name: string | null } | null> {
+  const [deleted] = await db
+    .delete(apikey)
+    .where(
+      and(
+        eq(apikey.id, input.apiKeyId),
+        eq(apikey.referenceId, input.organizationId),
+        inArray(apikey.id, db.select({ id: environmentApiKey.apiKeyId }).from(environmentApiKey)),
+      ),
+    )
+    .returning({ id: apikey.id, name: apikey.name });
+  return deleted ?? null;
+}
+
 /** Ownership check before revoking/inspecting a key from the dashboard. */
 export async function getKeyBinding(input: { organizationId: string; keyId: string }): Promise<{
   apiKeyId: string;

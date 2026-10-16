@@ -1,9 +1,18 @@
 // iOS app sign-in: PKCE (S256) codes from /app/authorize, exchanged for /api/mobile sessions.
-import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 import { db, schema } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { and, eq, gt } from "drizzle-orm";
 import { auth } from "./auth.ts";
+import {
+  AUTHORIZATION_CODE,
+  CODE_VERIFIER,
+  codeChallengeFor,
+  codeIdentifier,
+  sameString,
+} from "./pkce.ts";
+
+export { codeChallengeFor, isAuthorizationState, isCodeChallenge } from "./pkce.ts";
 
 const { session: sessionTable, user: userTable, verification } = schema;
 
@@ -11,10 +20,6 @@ export const MOBILE_REDIRECT_URI = "coss://auth/callback";
 export const MOBILE_CODE_TTL_MS = 60 * 1000;
 
 const IDENTIFIER_PREFIX = "mobile-auth:";
-const CODE_VERIFIER = /^[A-Za-z0-9\-._~]{43,128}$/;
-const CODE_CHALLENGE = /^[A-Za-z0-9_-]{43}$/;
-const STATE = /^[A-Za-z0-9\-._~]{16,128}$/;
-const CODE = /^[A-Za-z0-9_-]{43}$/;
 // The app's credential: `cm1.` + the session token + "." + a mobile-only HMAC. Never Better
 // Auth's signed cookie value, which would also sign in to the whole dashboard from a browser.
 const MOBILE_TOKEN = /^cm1\.([A-Za-z0-9]{32})\.([A-Za-z0-9_-]{43})$/;
@@ -22,20 +27,8 @@ const MOBILE_SIGNATURE_CONTEXT = "coss-mobile-session:";
 
 type CodePayload = { userId: string; codeChallenge: string; ssoProviderId: string | null };
 
-export function isCodeChallenge(value: unknown): value is string {
-  return typeof value === "string" && CODE_CHALLENGE.test(value);
-}
-
-export function isAuthorizationState(value: unknown): value is string {
-  return typeof value === "string" && STATE.test(value);
-}
-
-export function codeChallengeFor(codeVerifier: string): string {
-  return createHash("sha256").update(codeVerifier).digest("base64url");
-}
-
 function identifierFor(code: string): string {
-  return `${IDENTIFIER_PREFIX}${createHash("sha256").update(code).digest("base64url")}`;
+  return codeIdentifier(IDENTIFIER_PREFIX, code);
 }
 
 export function mobileCallbackUrl(code: string, state: string): string {
@@ -54,12 +47,6 @@ export async function createMobileAuthorizationCode(
     expiresAt: new Date(now.getTime() + MOBILE_CODE_TTL_MS),
   });
   return code;
-}
-
-function sameString(a: string, b: string): boolean {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
-  return left.length === right.length && timingSafeEqual(left, right);
 }
 
 function parsePayload(value: string): CodePayload | null {
@@ -104,7 +91,7 @@ export async function exchangeMobileAuthorizationCode(
   input: MobileExchangeInput,
   now = new Date(),
 ): Promise<{ token: string; userId: string } | null> {
-  if (!CODE.test(input.code) || !CODE_VERIFIER.test(input.codeVerifier)) return null;
+  if (!AUTHORIZATION_CODE.test(input.code) || !CODE_VERIFIER.test(input.codeVerifier)) return null;
   const [row] = await db
     .delete(verification)
     .where(

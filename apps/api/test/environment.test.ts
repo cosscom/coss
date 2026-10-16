@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { listOrgAuditEvents } from "@coss/logs";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { API_VERSIONS, LATEST_API_VERSION } from "@coss/versioning";
 import { EnvironmentObject } from "../src/routes/environment.ts";
@@ -75,5 +76,33 @@ describe("GET /v1/environment", () => {
     const invalid = await getEnvironment(app, `coss_test_${"x".repeat(64)}`);
     expect(invalid.status).toBe(401);
     expect(await errorOf(invalid)).toMatchObject({ code: "invalid_api_key" });
+  });
+});
+
+describe("DELETE /v1/api_key", () => {
+  test("revokes the calling key, and only that key", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const keyId = await apiKeyIdForEnvironment(tenant.development.id);
+    const res = await app.request("/v1/api_key", {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${tenant.sandboxKey}` },
+    });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ object: "api_key", id: keyId, deleted: true });
+
+    const after = await getEnvironment(app, tenant.sandboxKey);
+    expect(after.status).toBe(401);
+    expect(await errorOf(after)).toMatchObject({ code: "invalid_api_key" });
+    // The other environment's key still works.
+    expect((await getEnvironment(app, tenant.liveKey)).status).toBe(200);
+
+    const { events } = await listOrgAuditEvents({ organizationId: tenant.organization.id });
+    expect(events.find((event) => event.action === "api_key.revoked")).toMatchObject({
+      actor_type: "api_key",
+      actor_id: keyId,
+      target_id: keyId,
+      target_label: "Test sandbox key",
+    });
   });
 });

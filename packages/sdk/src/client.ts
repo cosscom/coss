@@ -1,5 +1,6 @@
 import { API_VERSION, type ApiVersion } from "./api-version.ts";
 import { type FetchLike, HttpClient } from "./core/http.ts";
+import { ApiKeyResource } from "./resources/api-key.ts";
 import { AuditEventsResource } from "./resources/audit-events.ts";
 import { BillingResource } from "./resources/billing.ts";
 import { DomainsResource } from "./resources/domains.ts";
@@ -79,6 +80,8 @@ export class Coss {
   readonly email: EmailResource;
   /** The API key's environment, project and organization (`coss.environment.get()`). */
   readonly environment: EnvironmentResource;
+  /** The client's own API key (`coss.apiKey.revoke()`). */
+  readonly apiKey: ApiKeyResource;
   /** Sending domains of the organization (`coss.domains.create`, `.verify`, …). */
   readonly domains: DomainsResource;
   /** Webhook endpoints of the API key's environment. */
@@ -135,6 +138,7 @@ export class Coss {
     });
     this.email = new EmailResource(http);
     this.environment = new EnvironmentResource(http);
+    this.apiKey = new ApiKeyResource(http);
     this.domains = new DomainsResource(http);
     this.webhookEndpoints = new WebhookEndpointsResource(http);
     this.webhookListeners = new WebhookListenersResource(http);

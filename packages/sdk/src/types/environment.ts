@@ -29,3 +29,10 @@ export interface Environment {
     start: string | null;
   };
 }
+
+/** `DELETE /v1/api_key`: the key revoked itself. */
+export interface DeletedApiKey {
+  object: "api_key";
+  id: string;
+  deleted: true;
+}

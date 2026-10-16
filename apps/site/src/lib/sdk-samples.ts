@@ -167,6 +167,7 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     args: (request) => [withApplication(request), requestOptions(request)],
   },
   "GET /v1/environment": { method: "environment.get", args: () => [] },
+  "DELETE /v1/api_key": { method: "apiKey.revoke", args: () => [] },
   "GET /v1/reputation": { method: "reputation.get", args: () => [] },
   "GET /v1/billing": { method: "billing.get", args: () => [] },
   "GET /v1/billing/usage": { method: "billing.usage", args: (request) => [queryParams(request)] },
