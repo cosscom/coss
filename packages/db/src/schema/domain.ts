@@ -1684,6 +1684,8 @@ export const emailReputationRollup = pgTable(
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
     bucketStart: timestamp("bucket_start", { withTimezone: true }).notNull(),
+    // Rows from before streams are transactional and stay valid (never recounted): no marketing
+    // email could be sent until the stream split, so every one of them counts transactional mail.
     stream: emailStream("stream").notNull().default("transactional"),
     revision: integer("revision").notNull().default(0),
     // Null until first computed.
