@@ -64,33 +64,41 @@ async function dmarcTagsAt(
   return records.length > 1 || tags.duplicate ? null : tags;
 }
 
+function dmarcOf(domain: string, tags: Map<string, string>, policy: string | undefined): Dmarc {
+  const pct = Number.parseInt(tags.get("pct") ?? "", 10);
+  return {
+    domain,
+    policy: policyOf(policy),
+    partial: (Number.isFinite(pct) && pct < 100) || tags.get("t")?.toLowerCase() === "y",
+  };
+}
+
 /**
  * The DMARC policy that applies to a domain — its own record's `p`, else the nearest parent's
  * `sp` (else `p`), DMARCbis' tree walk short of the last label; an invalid record ends the walk
- * with no DMARC — and the organizational domain's own `p`, which BIMI needs enforced too. Without
+ * with no DMARC — and the organizational domain's own `p`, which BIMI needs fully enforced too. Without
  * a public suffix list, the organizational domain is the topmost parent with a valid record.
  */
 async function dmarcFor(
   domainName: string,
   dns: DnsResolver,
-): Promise<{ applies: Dmarc | null; organizational: DmarcPolicy | null }> {
+): Promise<{ applies: Dmarc | null; organizational: Dmarc | null }> {
   const labels = domainName.split(".");
   let applies: Dmarc | null | undefined;
-  let organizational: DmarcPolicy | null = null;
+  let organizational: Dmarc | null = null;
   for (let start = 0; labels.length - start >= 2; start++) {
     const domain = labels.slice(start).join(".");
     const tags = await dmarcTagsAt(domain, dns);
     if (tags === undefined) continue;
     if (applies === undefined) {
       if (tags === null) return { applies: null, organizational: null };
-      const pct = Number.parseInt(tags.get("pct") ?? "", 10);
-      applies = {
+      applies = dmarcOf(
         domain,
-        policy: policyOf(start === 0 ? tags.get("p") : (tags.get("sp") ?? tags.get("p"))),
-        partial: (Number.isFinite(pct) && pct < 100) || tags.get("t")?.toLowerCase() === "y",
-      };
+        tags,
+        start === 0 ? tags.get("p") : (tags.get("sp") ?? tags.get("p")),
+      );
     }
-    if (tags) organizational = policyOf(tags.get("p"));
+    if (tags) organizational = dmarcOf(domain, tags, tags.get("p"));
   }
   return { applies: applies ?? null, organizational };
 }
@@ -128,9 +136,9 @@ export async function checkBimi(domainName: string, dns: DnsResolver | null): Pr
     const { applies: dmarc, organizational } = await dmarcFor(domainName, dns);
     const issues: Issue[] = [];
     if (!dmarc) issues.push("dmarc_missing");
-    else if (dmarc.policy === "none" || organizational === "none") {
+    else if (dmarc.policy === "none" || organizational?.policy === "none") {
       issues.push("dmarc_not_enforced");
-    } else if (dmarc.partial) issues.push("dmarc_partial");
+    } else if (dmarc.partial || organizational?.partial) issues.push("dmarc_partial");
 
     const found = await bimiRecordsFor(domainName, dns);
     const base = { name: found.name, dmarcPolicy: dmarc?.policy ?? null };

@@ -1434,7 +1434,7 @@ export const BIMI_ISSUE_MESSAGES: Record<BimiIssueCode, string> = {
   dmarc_not_enforced:
     "The DMARC policy is p=none for the domain, as its parent's subdomain policy (sp), or for its organizational domain. BIMI needs p=quarantine or p=reject.",
   dmarc_partial:
-    "The domain's DMARC policy applies to only part of its mail (pct below 100, or t=y). BIMI needs it to apply to all of it.",
+    "The DMARC policy of the domain (or of its organizational domain) applies to only part of the mail (pct below 100, or t=y). BIMI needs it to apply to all of it.",
   record_multiple:
     "There is more than one v=BIMI1 record, which mailbox providers treat as no record. Keep one.",
   record_invalid:

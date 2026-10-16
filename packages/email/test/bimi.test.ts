@@ -185,6 +185,19 @@ describe("checkBimi", () => {
     expect((await checkBimi("mail.eu.acme.test", deep)).issues).toEqual(["dmarc_not_enforced"]);
   });
 
+  test("the organizational domain's policy must apply to all of its mail", async () => {
+    const dns = fakeDnsResolver({
+      "TXT _dmarc.mail.acme.test": [["v=DMARC1; p=reject"]],
+      "TXT _dmarc.acme.test": [["v=DMARC1; p=reject; pct=10"]],
+      "TXT default._bimi.mail.acme.test": [[RECORD]],
+    });
+
+    expect(await checkBimi("mail.acme.test", dns)).toMatchObject({
+      status: "invalid",
+      issues: ["dmarc_partial"],
+    });
+  });
+
   test("without a record of its own, a subdomain uses the organizational domain's", async () => {
     const dns = fakeDnsResolver({
       "TXT _dmarc.acme.test": [[ENFORCED]],
