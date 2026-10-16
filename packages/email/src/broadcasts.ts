@@ -232,9 +232,10 @@ export async function listBroadcastEmails(
 async function checkReferences(
   env: ContactEnvironment,
   input: { audienceId: string | null; segmentId: string | null; topic: string | null },
+  executor: Executor = db,
 ): Promise<void> {
   if (input.audienceId) {
-    const [row] = await db
+    const [row] = await executor
       .select({ id: audience.id })
       .from(audience)
       .where(and(inContactEnvironment(audience, env), eq(audience.id, input.audienceId)))
@@ -246,7 +247,7 @@ async function checkReferences(
     }
   }
   if (input.segmentId) {
-    const [row] = await db
+    const [row] = await executor
       .select({ id: segment.id })
       .from(segment)
       .where(and(inContactEnvironment(segment, env), eq(segment.id, input.segmentId)))
@@ -257,7 +258,7 @@ async function checkReferences(
       });
     }
   }
-  if (input.topic && !(await topicsByKey(env, [input.topic])).has(input.topic)) {
+  if (input.topic && !(await topicsByKey(env, [input.topic], executor)).has(input.topic)) {
     throw new BroadcastError("topic_not_found", `No topic with the key "${input.topic}" exists.`, {
       param: "topic",
     });
@@ -465,7 +466,7 @@ export async function updateBroadcast(
       );
     }
     const topic = params.topic === undefined ? row.topic : params.topic;
-    await checkReferences(env, { audienceId: finalAudience, segmentId, topic });
+    await checkReferences(env, { audienceId: finalAudience, segmentId, topic }, tx);
     const html = params.html === undefined ? row.html : params.html;
     const text = params.text === undefined ? row.text : params.text;
     if (!html && !text) {
@@ -1194,6 +1195,7 @@ async function fanOut(
       await db.transaction(async (tx) => {
         const sent = await finishStep(tx, row, lease, {
           status: "sent",
+          pauseReason: null,
           completedAt: now,
           nextRunAt: null,
         });
@@ -1229,53 +1231,62 @@ async function fanOut(
   }
   const keys = templateKeys(row.subject, row.html, row.text);
   const definitions = await propertyDefinitions(env);
-  const last = recipients.at(-1) as ContactRecipient;
   // Only the emails a committed step made use the pace: the rest of the charge (contacts that
   // already had one after a rewind, or a step that didn't commit) is given back.
   let made = 0;
   try {
-    made = await db.transaction(async (tx) => {
-      // Fenced: a worker whose lease was taken over inserts nothing.
-      const [owned] = await tx
-        .select({ id: broadcast.id })
-        .from(broadcast)
-        .where(and(eq(broadcast.id, row.id), eq(broadcast.leaseUntil, lease)))
-        .for("update");
-      if (!owned) return 0;
-      const inserted = await insertEmails(tx, row, recipients, keys, definitions, now);
-      if (mode === "live" && inserted.length > 0) {
-        await deps.billing?.reserve(tx, {
-          organizationId: row.organizationId,
-          meter: "email.recipients",
-          quantity: inserted.length,
+    for (;;) {
+      const last = recipients.at(-1) as ContactRecipient;
+      try {
+        made = await db.transaction(async (tx) => {
+          // Fenced: a worker whose lease was taken over inserts nothing.
+          const [owned] = await tx
+            .select({ id: broadcast.id })
+            .from(broadcast)
+            .where(and(eq(broadcast.id, row.id), eq(broadcast.leaseUntil, lease)))
+            .for("update");
+          if (!owned) return 0;
+          const inserted = await insertEmails(tx, row, recipients, keys, definitions, now);
+          if (mode === "live" && inserted.length > 0) {
+            await deps.billing?.reserve(tx, {
+              organizationId: row.organizationId,
+              meter: "email.recipients",
+              quantity: inserted.length,
+            });
+          }
+          for (const created of inserted) {
+            await deps.queue.enqueue(tx, {
+              organizationId: row.organizationId,
+              emailId: created.id,
+              stream: "marketing",
+            });
+          }
+          await bumpBroadcastStats(tx, {
+            broadcastId: row.id,
+            organizationId: row.organizationId,
+            field: "recipients",
+            counts: shardCounts(inserted.map((created) => created.id)),
+          });
+          await finishStep(tx, row, lease, {
+            cursor: last.id,
+            pauseReason: null,
+            materialized: sql`${broadcast.materialized} + ${inserted.length}` as unknown as number,
+            nextRunAt: later(BROADCAST_STEP_MS),
+          });
+          return inserted.length;
         });
+        break;
+      } catch (error) {
+        if ((error as { code?: string }).code !== "usage_limit_exceeded") throw error;
+        // Less allowance left than the batch: a smaller one may still fit.
+        if (recipients.length > 1) {
+          recipients = recipients.slice(0, Math.ceil(recipients.length / 2));
+          continue;
+        }
+        await finishStep(db, row, lease, { pauseReason: "usage_limit", nextRunAt: later(60_000) });
+        return;
       }
-      for (const created of inserted) {
-        await deps.queue.enqueue(tx, {
-          organizationId: row.organizationId,
-          emailId: created.id,
-          stream: "marketing",
-        });
-      }
-      await bumpBroadcastStats(tx, {
-        broadcastId: row.id,
-        organizationId: row.organizationId,
-        field: "recipients",
-        counts: shardCounts(inserted.map((created) => created.id)),
-      });
-      await finishStep(tx, row, lease, {
-        cursor: last.id,
-        materialized: sql`${broadcast.materialized} + ${inserted.length}` as unknown as number,
-        nextRunAt: later(BROADCAST_STEP_MS),
-      });
-      return inserted.length;
-    });
-  } catch (error) {
-    if ((error as { code?: string }).code === "usage_limit_exceeded") {
-      await finishStep(db, row, lease, { pauseReason: "usage_limit", nextRunAt: later(60_000) });
-      return;
     }
-    throw error;
   } finally {
     if (charged > made) {
       await deps.refundThrottle?.({ organizationId: row.organizationId, count: charged - made });

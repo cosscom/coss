@@ -720,6 +720,38 @@ describe("broadcasts", () => {
     expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(3);
   });
 
+  test("live: a batch larger than the allowance left is cut down to what fits", async () => {
+    const f = await fixture({ live: true });
+    let left = 2;
+    const deps: BroadcastWorkerDeps = {
+      ...f.deps,
+      screen: async () => ({ action: "send", screening: null }),
+      billing: {
+        async reserve(_tx, { quantity }) {
+          if (quantity > left) {
+            throw Object.assign(new Error("Over the allowance."), { code: "usage_limit_exceeded" });
+          }
+          left -= quantity;
+        },
+      },
+    };
+    const broadcast = await f.create({ send: true });
+    const run = async () => {
+      await db
+        .update(schema.broadcast)
+        .set({ nextRunAt: new Date(0) })
+        .where(eq(schema.broadcast.id, broadcast.id));
+      await runDueBroadcasts(deps, { scope: f.scope });
+    };
+    await run();
+    await run();
+    // Three recipients, room for two: two are made, then the third waits for more allowance.
+    expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(2);
+    await run();
+    expect(await emailsOf(f.tenant.organization.id, broadcast.id)).toHaveLength(2);
+    expect((await getBroadcastRow(f.env, broadcast.id))?.pauseReason).toBe("usage_limit");
+  });
+
   test("live: a billing hold stops the queued emails too, and they go once it is lifted", async () => {
     const f = await fixture({ live: true });
     const deps: BroadcastWorkerDeps = {
@@ -757,6 +789,7 @@ describe("broadcasts", () => {
       "bob@example.com",
       "cy@example.com",
     ]);
+    expect((await getBroadcastRow(f.env, broadcast.id))?.pauseReason).toBeNull();
   });
 
   test("live: a broadcast that fails drops its queued emails", async () => {
