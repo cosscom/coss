@@ -125,6 +125,41 @@ export function deployRunPhase(run: GitHubRun, jobs: GitHubJob[]): DeployPhase {
   return "skipped";
 }
 
+/**
+ * When a run's rollout started and, if it succeeded, finished (its deploy job's `Roll out` step).
+ * Production's commit changes at `finishedAt`: runs are ordered by it, not by when they were
+ * created (an older run re-run later rolls out after newer ones).
+ */
+export function rolloutTimes(jobs: GitHubJob[]): {
+  startedAt: Date | null;
+  finishedAt: Date | null;
+} {
+  const step = jobs
+    .find((job) => job.name === "deploy")
+    ?.steps?.find((candidate) => candidate.name === ROLLOUT_STEP);
+  const at = (value: string | null | undefined) => {
+    const time = value ? Date.parse(value) : Number.NaN;
+    return Number.isNaN(time) ? null : new Date(time);
+  };
+  return {
+    startedAt: at(step?.started_at),
+    finishedAt: step?.conclusion === "success" ? at(step.completed_at ?? step.started_at) : null,
+  };
+}
+
+/** Of `entries`, the one whose rollout finished last before `before` (production's commit then). */
+export function latestRolloutBefore<T extends { jobs: GitHubJob[] }>(
+  entries: T[],
+  before: Date,
+): { entry: T; at: Date } | null {
+  let best: { entry: T; at: Date } | null = null;
+  for (const entry of entries) {
+    const at = rolloutTimes(entry.jobs).finishedAt;
+    if (at && at < before && (!best || at > best.at)) best = { entry, at };
+  }
+  return best;
+}
+
 /** The run name of a dispatch that deploys an earlier commit's images (deploy.yml's `run-name`). */
 export function imageTagRunName(sha: string): string {
   return `Deploy ${sha}`;

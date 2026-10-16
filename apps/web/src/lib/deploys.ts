@@ -20,7 +20,9 @@ import {
   isImageTagRun,
   type LogLine,
   latestProductionJobAt,
+  latestRolloutBefore,
   ROLLED_OUT_PHASES,
+  rolloutTimes,
   type StepState,
   stepState,
 } from "./deploy-runs";
@@ -349,7 +351,10 @@ async function readDeployOverview(): Promise<DeployOverview> {
   const [runs, ciBySha, main] = await Promise.all([recentRuns(), ciRunsBySha(), mainSha()]);
 
   // The build's commit (NEXT_DEPLOYMENT_ID, inlined by `next build`); unset in development.
-  const lastDeployed = runs.find((entry) => ROLLED_OUT_PHASES.includes(entry.phase));
+  // The latest rollout to finish, not the latest run created (a re-run of an older run can be).
+  const lastDeployed =
+    latestRolloutBefore(runs, new Date(8.64e15))?.entry ??
+    runs.find((entry) => ROLLED_OUT_PHASES.includes(entry.phase));
   const live =
     process.env.NEXT_DEPLOYMENT_ID ||
     (lastDeployed ? deployedCommit(lastDeployed.run, lastDeployed.jobs) : null);
@@ -524,12 +529,9 @@ export async function getDeployRun(id: number): Promise<DeployRunDetail | null> 
   if (run.path !== `.github/workflows/${DEPLOY_WORKFLOW}` || run.head_branch !== DEPLOY_BRANCH) {
     return null;
   }
-  const [entry, earlier, ciBySha] = await Promise.all([
-    withJobs(run),
-    previousRollout(run),
-    ciRunsBySha(),
-  ]);
+  const [entry, ciBySha] = await Promise.all([withJobs(run), ciRunsBySha()]);
   const now = new Date();
+  const earlier = await previousRollout(entry, now);
   const detail = deployRun(entry, earlier.lastDeployAt, now);
   const active = DEPLOY_PHASES[entry.phase].active;
 
@@ -570,25 +572,56 @@ export async function getDeployRun(id: number): Promise<DeployRunDetail | null> 
 }
 
 /**
- * The commit production ran before `run` rolled out (or would roll out): the latest earlier run
- * that rolled out. Also the latest production job start among the runs read (the batch estimate).
+ * The commit production ran just before `entry`'s rollout started (or, for a run that never got
+ * there, when it ended; an active one: now): the rollout that finished last before then, whatever
+ * order the runs were created in. Also the latest production job start among the runs read (the
+ * batch estimate).
  */
 async function previousRollout(
-  run: GitHubRun,
+  entry: RunWithJobs,
+  now: Date,
 ): Promise<{ commit: string | null; lastDeployAt: Date | null }> {
-  const { workflow_runs: runs } = await github<{ workflow_runs: GitHubRun[] }>(
-    `${REPO}/actions/workflows/${DEPLOY_WORKFLOW}/runs?branch=${DEPLOY_BRANCH}&per_page=${EARLIER_RUNS_READ}&created=${encodeURIComponent(`<${run.created_at}`)}`,
-  );
+  const { run } = entry;
+  const reference =
+    rolloutTimes(entry.jobs).startedAt ??
+    (DEPLOY_PHASES[entry.phase].active ? now : new Date(run.updated_at ?? run.created_at));
+  const list = (created: string) =>
+    github<{ workflow_runs: GitHubRun[] }>(
+      `${REPO}/actions/workflows/${DEPLOY_WORKFLOW}/runs?branch=${DEPLOY_BRANCH}&per_page=${EARLIER_RUNS_READ}&created=${encodeURIComponent(created)}`,
+    );
+  // Runs created before this one, and those created after it but before the reference (they may
+  // have rolled out first).
+  const [before, after] = await Promise.all([
+    list(`<${run.created_at}`),
+    reference.getTime() > Date.parse(run.created_at)
+      ? list(`${run.created_at}..${reference.toISOString()}`)
+      : Promise.resolve({ workflow_runs: [] }),
+  ]);
+  const candidates = [
+    ...new Map(
+      [...after.workflow_runs, ...before.workflow_runs]
+        .filter((candidate) => candidate.id !== run.id)
+        .map((candidate) => [candidate.id, candidate]),
+    ).values(),
+  ].sort((a, b) => lastChange(b) - lastChange(a));
+
   const read: RunWithJobs[] = [];
-  // One by one, newest first: the previous rollout is usually one of the first few.
-  for (const candidate of runs) {
-    const entry = await withJobs(candidate);
-    read.push(entry);
-    if (ROLLED_OUT_PHASES.includes(entry.phase)) {
-      return { commit: deployedCommit(entry.run, entry.jobs), lastDeployAt: lastDeployStart(read) };
-    }
+  // Latest change first, one by one: a run's rollout finished before its last change, so once the
+  // best rollout so far is later than a run's last change, no run after it can beat it.
+  for (const candidate of candidates) {
+    const best = latestRolloutBefore(read, reference);
+    if (best && lastChange(candidate) < best.at.getTime()) break;
+    read.push(await withJobs(candidate));
   }
-  return { commit: null, lastDeployAt: lastDeployStart(read) };
+  const best = latestRolloutBefore(read, reference);
+  return {
+    commit: best ? deployedCommit(best.entry.run, best.entry.jobs) : null,
+    lastDeployAt: lastDeployStart(read),
+  };
+}
+
+function lastChange(run: GitHubRun): number {
+  return Date.parse(run.updated_at ?? run.created_at);
 }
 
 async function runChanges(
@@ -632,12 +665,9 @@ async function failureLog(jobId: number): Promise<LogLine[] | null> {
     });
     const location = redirect.headers.get("location");
     if (!location) return null;
-    const download = await fetch(location, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (!download.ok || !download.body) return null;
-    const excerpt = failureLogExcerpt(await readTail(download.body, LOG_TAIL_BYTES));
+    const text = await downloadTail(location, LOG_TAIL_BYTES);
+    if (text === null) return null;
+    const excerpt = failureLogExcerpt(text);
     logExcerpts.set(jobId, excerpt);
     if (logExcerpts.size > 50) logExcerpts.delete(logExcerpts.keys().next().value as number);
     return excerpt;
@@ -647,19 +677,30 @@ async function failureLog(jobId: number): Promise<LogLine[] | null> {
   }
 }
 
-/** A stream's last `max` bytes or so as text, from a line start. */
-async function readTail(body: ReadableStream<Uint8Array>, max: number): Promise<string> {
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  let cut = false;
-  for await (const chunk of body) {
-    chunks.push(chunk);
-    size += chunk.length;
-    while (chunks.length > 1 && size - (chunks[0]?.length ?? 0) >= max) {
-      size -= chunks.shift()?.length ?? 0;
-      cut = true;
+/**
+ * A log's last `max` bytes or so as text, from a line start, downloading only those: the size
+ * from a one-byte range, then the range after `size - max` (the store ignores suffix ranges).
+ * `null` if the store answers otherwise and the log is too big to read whole.
+ */
+async function downloadTail(url: string, max: number): Promise<string | null> {
+  const get = (range: string) =>
+    fetch(url, { headers: { range }, cache: "no-store", signal: AbortSignal.timeout(15_000) });
+  const probe = await get("bytes=0-0");
+  const size = Number(/\/(\d+)$/.exec(probe.headers.get("content-range") ?? "")?.[1]);
+  if (probe.status === 206 && Number.isFinite(size)) {
+    await probe.body?.cancel();
+    const start = Math.max(0, size - max);
+    const tail = await get(`bytes=${start}-`);
+    if (tail.status !== 206 && !(tail.ok && start === 0)) {
+      await tail.body?.cancel();
+      return null;
     }
+    const text = await tail.text();
+    return start > 0 ? text.slice(text.indexOf("\n") + 1) : text;
   }
-  const text = Buffer.concat(chunks).toString("utf8");
-  return cut ? text.slice(text.indexOf("\n") + 1) : text;
+  // No ranges: the whole log came back, read only if small.
+  const length = probe.headers.get("content-length");
+  if (probe.ok && length !== null && Number(length) <= max) return probe.text();
+  await probe.body?.cancel();
+  return null;
 }

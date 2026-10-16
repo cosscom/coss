@@ -16,6 +16,8 @@ import {
   imageTagRunName,
   isImageTagRun,
   latestProductionJobAt,
+  latestRolloutBefore,
+  rolloutTimes,
   stepState,
 } from "../src/lib/deploy-runs";
 import { formatElapsed } from "../src/lib/format";
@@ -282,6 +284,58 @@ describe("run details", () => {
       "two",
       "three",
     ]);
+  });
+});
+
+describe("rollout order", () => {
+  const rolledOut = (
+    startedAt: string,
+    completedAt: string,
+    conclusion = "success",
+  ): GitHubJob => ({
+    ...job("deploy", "completed", conclusion),
+    steps: [
+      { name: "Migrate", status: "completed", conclusion: "success" },
+      {
+        name: "Roll out",
+        status: "completed",
+        conclusion,
+        started_at: startedAt,
+        completed_at: completedAt,
+      },
+    ],
+  });
+
+  test("rolloutTimes", () => {
+    expect(rolloutTimes([rolledOut("2026-10-15T12:00:00Z", "2026-10-15T12:02:00Z")])).toEqual({
+      startedAt: new Date("2026-10-15T12:00:00Z"),
+      finishedAt: new Date("2026-10-15T12:02:00Z"),
+    });
+    // A failed rollout started, but production didn't move.
+    expect(
+      rolloutTimes([rolledOut("2026-10-15T12:00:00Z", "2026-10-15T12:02:00Z", "failure")]),
+    ).toEqual({ startedAt: new Date("2026-10-15T12:00:00Z"), finishedAt: null });
+    expect(rolloutTimes([job("build (web)", "completed", "success")])).toEqual({
+      startedAt: null,
+      finishedAt: null,
+    });
+  });
+
+  test("latestRolloutBefore orders by when rollouts finished, not when runs were created", () => {
+    // `rerun` was created first but re-run (and rolled out) after `newer`.
+    const newer = {
+      id: "newer",
+      jobs: [rolledOut("2026-10-15T12:00:00Z", "2026-10-15T12:02:00Z")],
+    };
+    const rerun = {
+      id: "rerun",
+      jobs: [rolledOut("2026-10-15T13:00:00Z", "2026-10-15T13:02:00Z")],
+    };
+    const failed = { id: "failed", jobs: [job("gate", "completed", "failure")] };
+    const entries = [newer, failed, rerun];
+    expect(latestRolloutBefore(entries, new Date("2026-10-15T14:00:00Z"))?.entry.id).toBe("rerun");
+    expect(latestRolloutBefore(entries, new Date("2026-10-15T12:30:00Z"))?.entry.id).toBe("newer");
+    expect(latestRolloutBefore(entries, new Date("2026-10-15T12:01:00Z"))).toBeNull();
   });
 });
 
