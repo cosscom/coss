@@ -222,8 +222,13 @@ async function setStatus(
  * An unsubscribe through an email's own link is also that email's `email.unsubscribed` event (once
  * per email, like one-click unsubscribe's), while the email still exists.
  */
-async function recordEmailUnsubscribe(tx: Executor, link: LinkPayload, now: Date): Promise<void> {
-  if (!link.emailId) return;
+/** Whether this was the email's first `email.unsubscribed` (the broadcast counts only that). */
+async function recordEmailUnsubscribe(
+  tx: Executor,
+  link: LinkPayload,
+  now: Date,
+): Promise<boolean> {
+  if (!link.emailId) return false;
   const [found] = await tx
     .select({ id: schema.email.id })
     .from(schema.email)
@@ -231,8 +236,8 @@ async function recordEmailUnsubscribe(tx: Executor, link: LinkPayload, now: Date
       and(eq(schema.email.id, link.emailId), eq(schema.email.environmentId, link.environmentId)),
     )
     .limit(1);
-  if (!found) return;
-  await recordProviderEvent(tx, {
+  if (!found) return false;
+  const recorded = await recordProviderEvent(tx, {
     provider: COSS_EVENT_SOURCE,
     providerEventType: "Unsubscribe",
     emailId: found.id,
@@ -243,6 +248,7 @@ async function recordEmailUnsubscribe(tx: Executor, link: LinkPayload, now: Date
     sourceId: "unsubscribe",
     data: {},
   });
+  return recorded.length > 0;
 }
 
 export async function applyPreferences(
@@ -272,14 +278,16 @@ export async function applyPreferences(
           "preference_center",
         );
         await announceContact(tx, row, "contact.unsubscribed", "preference_center", now, topic.key);
-        await recordEmailUnsubscribe(tx, link, now);
-        if (changed > 0 && wasSubscribed) await countUnsubscribe(tx, link, scope.organizationId);
+        const first = await recordEmailUnsubscribe(tx, link, now);
+        if (first && changed > 0 && wasSubscribed) {
+          await countUnsubscribe(tx, link, scope.organizationId);
+        }
         return true;
       }
       row = await setStatus(tx, row, "unsubscribed", now);
       await announceContact(tx, row, "contact.unsubscribed", "preference_center", now);
-      await recordEmailUnsubscribe(tx, link, now);
-      if (wasSubscribed) await countUnsubscribe(tx, link, scope.organizationId);
+      const first = await recordEmailUnsubscribe(tx, link, now);
+      if (first && wasSubscribed) await countUnsubscribe(tx, link, scope.organizationId);
       return true;
     }
 
@@ -293,8 +301,8 @@ export async function applyPreferences(
         "preference_center",
       );
       await announceContact(tx, row, "contact.unsubscribed", "preference_center", now);
-      await recordEmailUnsubscribe(tx, link, now);
-      if (wasSubscribed) await countUnsubscribe(tx, link, scope.organizationId);
+      const first = await recordEmailUnsubscribe(tx, link, now);
+      if (first && wasSubscribed) await countUnsubscribe(tx, link, scope.organizationId);
       return true;
     }
 
@@ -326,8 +334,10 @@ export async function applyPreferences(
     // buttons': the email's `email.unsubscribed`, its broadcast's counter, `contact.unsubscribed`.
     const unsubscribed = wasSubscribed && (!change.subscribed || optedOutOfLinkTopic);
     if (unsubscribed) {
-      await recordEmailUnsubscribe(tx, link, now);
-      await countUnsubscribe(tx, link, scope.organizationId);
+      // Counted once per email, however often its link is used.
+      if (await recordEmailUnsubscribe(tx, link, now)) {
+        await countUnsubscribe(tx, link, scope.organizationId);
+      }
     }
     await tx
       .update(contact)

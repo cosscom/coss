@@ -298,6 +298,21 @@ describe("broadcasts", () => {
     expect(await deleteAudience(f.env, f.audience.id)).toBe(true);
   });
 
+  test("concurrent draft edits each keep their change", async () => {
+    const f = await fixture();
+    const draft = await f.create();
+    for (let round = 0; round < 5; round++) {
+      await Promise.all([
+        updateBroadcast(f.env, draft.id, { name: `Name ${round}` }),
+        updateBroadcast(f.env, draft.id, { html: `<p>Body ${round}</p>` }),
+      ]);
+      expect(await getBroadcast(f.env, draft.id)).toMatchObject({
+        name: `Name ${round}`,
+        html: `<p>Body ${round}</p>`,
+      });
+    }
+  });
+
   test("its audience can't be deleted while it is unfinished", async () => {
     const f = await fixture();
     const draft = await f.create();
@@ -629,6 +644,12 @@ describe("broadcasts", () => {
       subscribed: true,
       topics: { news: false, beta: false },
     });
+    expect(await unsubscribed()).toBe(1);
+    // Unsubscribing from everything through the same email, or again after re-subscribing,
+    // is still that email's one unsubscribe.
+    await applyPreferences(link, { kind: "unsubscribe_all" });
+    await applyPreferences(link, { kind: "save", subscribed: true, topics: { news: true } });
+    await applyPreferences(link, { kind: "unsubscribe" });
     expect(await unsubscribed()).toBe(1);
   });
 

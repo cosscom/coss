@@ -435,64 +435,77 @@ export async function updateBroadcast(
   id: string,
   params: UpdateBroadcastRequestOutput,
 ): Promise<BroadcastOutput | null> {
-  const row = await getBroadcastRow(env, id);
-  if (!row) return null;
-  if (row.status !== "draft") {
-    throw new BroadcastError("broadcast_not_editable", "Only a draft broadcast can be changed.");
-  }
-  const audienceId = params.audience_id === undefined ? row.audienceId : params.audience_id;
-  const segmentId =
-    params.segment_id === undefined
-      ? params.audience_id
-        ? null
-        : row.segmentId
-      : params.segment_id;
-  const finalAudience = params.segment_id ? null : audienceId;
-  if (Boolean(finalAudience) === Boolean(segmentId)) {
-    throw new BroadcastError("invalid_target", "Give exactly one of audience_id and segment_id.", {
-      param: "audience_id",
-    });
-  }
-  const topic = params.topic === undefined ? row.topic : params.topic;
-  await checkReferences(env, { audienceId: finalAudience, segmentId, topic });
-  const html = params.html === undefined ? row.html : params.html;
-  const text = params.text === undefined ? row.text : params.text;
-  if (!html && !text) {
-    throw new BroadcastError("broadcast_not_editable", "A broadcast needs html, text, or both.", {
-      param: "html",
-    });
-  }
-  assertRenderable({ html, text });
-  const [updated] = await db
-    .update(broadcast)
-    .set({
-      ...(params.name === undefined ? {} : { name: params.name }),
-      audienceId: finalAudience,
-      segmentId,
-      topic,
-      ...(params.from === undefined ? {} : { from: params.from }),
-      ...(params.reply_to === undefined ? {} : { replyTo: params.reply_to }),
-      ...(params.subject === undefined ? {} : { subject: params.subject }),
-      ...(params.preview_text === undefined ? {} : { previewText: params.preview_text }),
-      html,
-      text,
-      ...(params.tracking?.opens === undefined ? {} : { trackOpens: params.tracking.opens }),
-      ...(params.tracking?.clicks === undefined ? {} : { trackClicks: params.tracking.clicks }),
-      ...(params.rate_per_second === undefined ? {} : { ratePerSecond: params.rate_per_second }),
-    })
-    // Compare-and-set: a draft that started sending meanwhile is left alone.
-    .where(
-      and(
-        inContactEnvironment(broadcast, env),
-        eq(broadcast.id, id),
-        eq(broadcast.status, "draft"),
-      ),
-    )
-    .returning();
-  if (!updated) {
-    throw new BroadcastError("broadcast_not_editable", "Only a draft broadcast can be changed.");
-  }
-  return (await toObjects([updated]))[0] ?? null;
+  if (!isId("bcast", id)) return null;
+  // Read and merged under the row's lock: a concurrent edit's fields are never written back.
+  const updated = await db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(broadcast)
+      .where(and(inContactEnvironment(broadcast, env), eq(broadcast.id, id)))
+      .for("update");
+    if (!row) return null;
+    if (row.status !== "draft") {
+      throw new BroadcastError("broadcast_not_editable", "Only a draft broadcast can be changed.");
+    }
+    const audienceId = params.audience_id === undefined ? row.audienceId : params.audience_id;
+    const segmentId =
+      params.segment_id === undefined
+        ? params.audience_id
+          ? null
+          : row.segmentId
+        : params.segment_id;
+    const finalAudience = params.segment_id ? null : audienceId;
+    if (Boolean(finalAudience) === Boolean(segmentId)) {
+      throw new BroadcastError(
+        "invalid_target",
+        "Give exactly one of audience_id and segment_id.",
+        {
+          param: "audience_id",
+        },
+      );
+    }
+    const topic = params.topic === undefined ? row.topic : params.topic;
+    await checkReferences(env, { audienceId: finalAudience, segmentId, topic });
+    const html = params.html === undefined ? row.html : params.html;
+    const text = params.text === undefined ? row.text : params.text;
+    if (!html && !text) {
+      throw new BroadcastError("broadcast_not_editable", "A broadcast needs html, text, or both.", {
+        param: "html",
+      });
+    }
+    assertRenderable({ html, text });
+    const [saved] = await tx
+      .update(broadcast)
+      .set({
+        ...(params.name === undefined ? {} : { name: params.name }),
+        audienceId: finalAudience,
+        segmentId,
+        topic,
+        ...(params.from === undefined ? {} : { from: params.from }),
+        ...(params.reply_to === undefined ? {} : { replyTo: params.reply_to }),
+        ...(params.subject === undefined ? {} : { subject: params.subject }),
+        ...(params.preview_text === undefined ? {} : { previewText: params.preview_text }),
+        html,
+        text,
+        ...(params.tracking?.opens === undefined ? {} : { trackOpens: params.tracking.opens }),
+        ...(params.tracking?.clicks === undefined ? {} : { trackClicks: params.tracking.clicks }),
+        ...(params.rate_per_second === undefined ? {} : { ratePerSecond: params.rate_per_second }),
+      })
+      // Compare-and-set: a draft that started sending meanwhile is left alone.
+      .where(
+        and(
+          inContactEnvironment(broadcast, env),
+          eq(broadcast.id, id),
+          eq(broadcast.status, "draft"),
+        ),
+      )
+      .returning();
+    if (!saved) {
+      throw new BroadcastError("broadcast_not_editable", "Only a draft broadcast can be changed.");
+    }
+    return saved;
+  });
+  return updated ? ((await toObjects([updated]))[0] ?? null) : null;
 }
 
 /** Deletes a draft, or a broadcast canceled before any of its emails were made. */
