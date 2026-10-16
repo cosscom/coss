@@ -114,6 +114,7 @@ With `fail_silently=True`, these errors and a missing API key are swallowed, and
 counted. What coss.com can't send raises `ValueError` before anything is sent, even with
 `fail_silently` (like a bad header with Django's SMTP backend): alternatives other than one
 `text/html` part, a `Sender` or `Return-Path` other than `from_email`, `From`, `To` or `Cc` headers
-naming other addresses than the message's own, a header given twice, and multipart attachments.
+naming other addresses than the message's own, no `to` address (only `cc` or `bcc`), a header given
+twice, and multipart attachments.
 
 Django's test runner swaps in its in-memory backend, so your tests never call coss.com.

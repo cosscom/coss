@@ -143,7 +143,8 @@ What coss.com can't send raises `ValueError` before anything is sent, `fail_sile
   headers that name other addresses than the message's `from_email`, `to` or `cc` (Django sends
   those to the SMTP server separately; coss.com sends one message to the addresses it shows —
   matching headers are fine, and their display names are used);
-- a subject with a line break, a header given twice, and multipart attachments.
+- a subject with a line break, no `to` address (only `cc` or `bcc`), a header given twice, and
+  multipart attachments.
 
 A `Reply-To` header replaces `reply_to`, as Django documents. Headers coss.com sets itself
 (`Message-ID`, `Date`, `Content-Type`, …) are dropped; non-ASCII header values are sent as RFC 2047

@@ -122,10 +122,11 @@ def test_messages_without_recipients_are_skipped(api: Api) -> None:
     assert EmailBackend().send_messages([]) == 0
 
 
-def test_bcc_only(api: Api) -> None:
-    message(to=[], bcc=["hidden@example.com"]).send()
-    assert "to" not in body(api)
-    assert body(api)["bcc"] == ["hidden@example.com"]
+def test_no_to_address_is_refused(api: Api) -> None:
+    for fields in ({"bcc": ["hidden@example.com"]}, {"cc": ["carol@example.com"]}):
+        with pytest.raises(ValueError, match="without a To address"):
+            quietly(message(to=[], **fields).send, fail_silently=True)
+    assert api.transport.requests == []
 
 
 # Failures ---------------------------------------------------------------------------------------

@@ -87,7 +87,8 @@ delivery method, whether `deliver_now` raises it.
   `coss.com could not send the email: <message> (<code>)`.
 - `Coss::Rails::UnsupportedMessageError`: the message uses something coss.com can't send, so it
   isn't sent at all: a `Sender` header, Return-Path or SMTP envelope (`smtp_envelope_from`,
-  `smtp_envelope_to`) other than the From address and recipients, a header given more than once, or a part that is
+  `smtp_envelope_to`) other than the From address and recipients, no To address, a header given
+  more than once, or a part that is
   neither the text body, the one HTML body nor an attachment (e.g. a `text/calendar`
   alternative; attach invites instead).
 - `Coss::Rails::ConfigurationError`: no API key.

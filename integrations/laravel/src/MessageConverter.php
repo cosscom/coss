@@ -62,6 +62,12 @@ final class MessageConverter
             );
         }
         $fromAddress = $from[0];
+        if ($email->getTo() === []) {
+            throw UnsupportedMessageException::because(
+                'it has no To address',
+                'coss.com needs at least one and never moves Cc or Bcc addresses into To'
+            );
+        }
 
         $body = ['from' => self::address($fromAddress)];
         foreach (['to' => $email->getTo(), 'cc' => $email->getCc(), 'bcc' => $email->getBcc(), 'reply_to' => $email->getReplyTo()] as $field => $addresses) {

@@ -20,7 +20,12 @@ module Coss
         refuse_unsupported_envelope!
         options = Options.normalize(@mail.coss_options || {})
 
-        body = { "from" => from, "to" => addresses(:to) }
+        to = addresses(:to)
+        if to.empty?
+          refuse!("a message without a To address",
+                  "coss.com needs at least one and never moves Cc or Bcc addresses into To")
+        end
+        body = { "from" => from, "to" => to }
         %i[cc bcc reply_to].each { |field| put(body, field.to_s, addresses(field)) }
         body["subject"] = Mime.utf8(@mail.subject.to_s)
         html, text, attachments = contents

@@ -143,6 +143,12 @@ class MessageMapperTest < Minitest::Test
     assert_equal "caf\uFFFD", Coss::Rails::Mime.utf8("caf\xE9".b)
   end
 
+  def test_a_message_without_a_to_address_is_refused
+    mail = Mail.new(from: "hello@acme.test", bcc: "hidden@example.com", subject: "Hi", body: "Hi")
+
+    assert_refused(mail, "without a To address")
+  end
+
   def test_a_multipart_attachment_is_refused
     mail = base_mail
     mail.html_part = Mail::Part.new(content_type: "text/html; charset=UTF-8", body: "<p>Hi</p>")

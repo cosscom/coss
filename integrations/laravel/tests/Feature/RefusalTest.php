@@ -72,6 +72,14 @@ final class RefusalTest extends TestCase
         $this->assertRefused('it has a MIME body set with setBody()', fn () => Mail::to('ada@example.com')->send($mailable));
     }
 
+    public function test_no_to_address(): void
+    {
+        $transport = Mail::mailer('coss')->getSymfonyTransport();
+        $email = (new Email)->from('hello@acme.test')->bcc('hidden@example.com')->subject('Hi')->text('Hi');
+
+        $this->assertRefused('it has no To address', fn () => $transport->send($email));
+    }
+
     public function test_a_raw_message(): void
     {
         $transport = Mail::mailer('coss')->getSymfonyTransport();

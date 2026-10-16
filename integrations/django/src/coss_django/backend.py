@@ -163,11 +163,15 @@ def _message_params(message: Any) -> tuple[dict[str, Any], str | None]:
             f"Header values can't contain newlines (got {subject!r} for header 'Subject')"
         )
 
+    if not to:
+        raise _refuse(
+            "a message without a To address",
+            "coss.com needs at least one and never moves cc or bcc addresses into to",
+        )
+
     html, text = _bodies(message)
 
-    params: dict[str, Any] = {"from": _format(from_addresses)[0]}
-    if to:
-        params["to"] = _format(to)
+    params: dict[str, Any] = {"from": _format(from_addresses)[0], "to": _format(to)}
     if cc:
         params["cc"] = _format(cc)
     if bcc:

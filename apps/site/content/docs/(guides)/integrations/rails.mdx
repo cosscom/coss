@@ -90,6 +90,7 @@ end
 
 What coss.com can't send raises `Coss::Rails::UnsupportedMessageError` before anything is sent,
 instead of being dropped: a `Sender` header, Return-Path or SMTP envelope (`smtp_envelope_from`,
-`smtp_envelope_to`) other than the From address and recipients, a header given more than once, and
-parts other than the text body, one HTML body and attachments (attach a calendar invite instead of
-sending it as an alternative). A missing API key raises `Coss::Rails::ConfigurationError`.
+`smtp_envelope_to`) other than the From address and recipients, no To address, a header given more
+than once, and parts other than the text body, one HTML body and attachments (attach a calendar
+invite instead of sending it as an alternative). A missing API key raises
+`Coss::Rails::ConfigurationError`.

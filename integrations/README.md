@@ -94,8 +94,8 @@ there are issues.
 - **What coss.com can't send fails the send** with a clear message instead of being dropped: raw
   MIME messages, an envelope that differs from the headers (a `Sender`, `Return-Path` or envelope
   sender naming another address than From, envelope recipients other than to + cc + bcc), more
-  than one From address, a header with several values, and alternative parts other than one HTML
-  part. A `Sender` or `Return-Path` naming the From address is harmless and dropped like the other
+  than one From address, no To address (the API needs one, and Cc or Bcc addresses are never moved
+  into To), a header with several values, and alternative parts other than one HTML part. A `Sender` or `Return-Path` naming the From address is harmless and dropped like the other
   reserved headers. These refusals, like a missing API key, raise the driver's own exceptions
   (below), never the request error above, and they are raised before any request is made.
 
