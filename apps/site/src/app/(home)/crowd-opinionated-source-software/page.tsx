@@ -9,7 +9,18 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
+import { AutoReview } from "@/components/coss-landing/auto-review";
+import { Decisions, Factory, Preview, PromptSwap } from "@/components/coss-landing/flow-steps";
+import { Guardrails } from "@/components/coss-landing/guardrails";
+import { LaunchRepos } from "@/components/coss-landing/launch-repos";
+import { MaintainerRules } from "@/components/coss-landing/maintainer-rules";
+import { NextGithub } from "@/components/coss-landing/next-github";
+import { Opinionated as OpinionatedFunnel } from "@/components/coss-landing/opinionated";
+import { PromptComposer } from "@/components/coss-landing/prompt-composer";
+import { SelfHealing } from "@/components/coss-landing/self-healing";
+import { UnreadDiff } from "@/components/coss-landing/unread-diff";
+import { Exposure, Volume } from "@/components/coss-landing/why-oss-died";
 import { SignUpButton } from "@/components/sign-up-button";
 import { YouTubeEmbed } from "@/components/youtube-embed";
 import { SHIPYARD } from "@/lib/shipyard";
@@ -74,7 +85,8 @@ function Hero() {
           </div>
         </div>
       </div>
-      <div className="drafting-grid flex items-center justify-center overflow-hidden border-t px-4 py-12 lg:col-span-12">
+      <div className="drafting-grid grid items-center justify-items-center gap-10 overflow-hidden border-t px-4 py-12 sm:px-8 lg:col-span-12 lg:grid-cols-2">
+        <NextGithub />
         <PromptRequestCard />
       </div>
     </section>
@@ -173,22 +185,36 @@ function Video() {
   );
 }
 
-const DEATHS: { title: string; body: string }[] = [
+const DEATHS: { title: string; body: string; visual: ComponentType }[] = [
   {
     title: "Nobody reads source code anymore",
-    body: "Pull requests get auto-reviewed. Systems are self-healing. The code still exists; people just stopped reading it.",
+    body: "The code still exists; people just stopped reading it. It scrolls past by the thousand lines, written and checked by machines.",
+    visual: UnreadDiff,
+  },
+  {
+    title: "Pull requests review themselves",
+    body: "Types, tests, a security scan and a review agent sign off on a pull request before a person would have opened the tab.",
+    visual: AutoReview,
+  },
+  {
+    title: "Systems heal themselves",
+    body: "When something breaks in production, the system rolls back, patches and recovers on its own. Nobody opens the source to find out why.",
+    visual: SelfHealing,
   },
   {
     title: "Open source died of exposure",
     body: "Every public line is an attack surface. Potential security vulnerabilities made shipping your source in the open a liability, not a virtue.",
+    visual: Exposure,
   },
   {
     title: "Reading code died of volume",
     body: "More code is pushed in a day than a team could review in a year, and AI systems now read it better than we do.",
+    visual: Volume,
   },
   {
     title: "Guardrails are what matter now",
     body: "End-to-end tests and AI-automated QA decide whether software works. Not a human squinting at a diff.",
+    visual: Guardrails,
   },
 ];
 
@@ -206,7 +232,7 @@ function Manifesto() {
       <div className="grid grid-cols-1 border-t md:grid-cols-2">
         {DEATHS.map((death, index) => (
           <article
-            className="flex flex-col gap-3 border-b px-4 py-8 sm:px-8 md:odd:border-r md:[&:nth-last-child(-n+2)]:border-b-0"
+            className="flex flex-col gap-3 border-b px-4 py-8 last:border-b-0 sm:px-8 md:odd:border-r md:[&:nth-last-child(-n+2)]:border-b-0"
             key={death.title}
           >
             <span className="font-mono text-muted-foreground text-xs">
@@ -214,6 +240,9 @@ function Manifesto() {
             </span>
             <h3 className="font-semibold text-2xl tracking-[-0.02em]">{death.title}</h3>
             <p className="max-w-md text-muted-foreground leading-snug">{death.body}</p>
+            <div className="mt-auto pt-4">
+              <death.visual />
+            </div>
           </article>
         ))}
       </div>
@@ -224,21 +253,25 @@ function Manifesto() {
 const STEPS = [
   {
     icon: MessageSquareTextIcon,
+    visual: PromptSwap,
     title: "Write a prompt",
     body: "Anyone opens a Prompt Request instead of a pull request: what should change, and why, in plain English.",
   },
   {
     icon: ScaleIcon,
+    visual: Decisions,
     title: "Maintainers decide",
     body: "They read it and approve or decline, with a comment either way. Nobody is left wondering.",
   },
   {
     icon: FactoryIcon,
+    visual: Factory,
     title: "The factory builds",
     body: `Approved requests go straight to the maintainer's software factory, such as ${SHIPYARD.name}, which writes, tests and ships the change.`,
   },
   {
     icon: GlobeIcon,
+    visual: Preview,
     title: "Everyone sees it",
     body: "The factory notifies the author and can update everyone publicly with a preview URL and screenshots.",
   },
@@ -251,6 +284,9 @@ function Flow() {
         Contribute in English, not code. A Prompt Request is an idea with a decision attached, and a
         software factory waiting at the other end.
       </SectionHead>
+      <div className="drafting-grid flex justify-center border-t px-4 py-12 sm:px-8">
+        <PromptComposer />
+      </div>
       <ol className="grid border-t md:grid-cols-2 lg:grid-cols-4">
         {STEPS.map((step, index) => (
           <li
@@ -265,6 +301,9 @@ function Flow() {
             </div>
             <h3 className="font-semibold text-xl tracking-[-0.01em]">{step.title}</h3>
             <p className="text-muted-foreground leading-snug">{step.body}</p>
+            <div className="mt-auto pt-4">
+              <step.visual />
+            </div>
           </li>
         ))}
       </ol>
@@ -304,6 +343,9 @@ function Controls() {
         Let the routine through on its own and keep a hand on everything that matters. Auto-allow
         certain kinds of changes, or require approval for each one.
       </SectionHead>
+      <div className="drafting-grid flex justify-center border-t px-4 py-12 sm:px-8">
+        <MaintainerRules />
+      </div>
       <div className="grid grid-cols-1 border-t md:grid-cols-2">
         {CONTROLS.map((control) => {
           const auto = control.id === "auto";
@@ -357,6 +399,9 @@ function Opinionated() {
         Software is built by the crowd, but the source is opinionated by the maintainers. Ideas come
         from everywhere; taste stays where it belongs.
       </SectionHead>
+      <div className="drafting-grid flex justify-center border-t px-4 py-12 sm:px-8">
+        <OpinionatedFunnel />
+      </div>
       <dl className="grid gap-x-16 border-t px-4 py-10 sm:px-8 md:grid-cols-2">
         {PRINCIPLES.map(([label, value]) => (
           <div className="flex items-baseline gap-3 border-b py-3.5" key={label}>
@@ -372,8 +417,11 @@ function Opinionated() {
 
 function Close() {
   return (
-    <section aria-labelledby="close-title" className="drafting-grid px-4 py-20 sm:px-8 sm:py-28">
-      <div className="flex flex-col items-start gap-8">
+    <section
+      aria-labelledby="close-title"
+      className="drafting-grid grid items-center gap-12 px-4 py-20 sm:px-8 sm:py-28 lg:grid-cols-12"
+    >
+      <div className="flex flex-col items-start gap-8 lg:col-span-7">
         <h2
           className="max-w-4xl text-balance font-semibold text-[clamp(2.5rem,6vw,4.75rem)] leading-[0.95] tracking-[-0.035em]"
           id="close-title"
@@ -395,6 +443,9 @@ function Close() {
             Meet {SHIPYARD.name}
           </Button>
         </div>
+      </div>
+      <div className="flex justify-center lg:col-span-5 lg:justify-end">
+        <LaunchRepos />
       </div>
     </section>
   );

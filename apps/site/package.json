@@ -32,6 +32,7 @@
     "fumadocs-ui": "npm:@fumadocs/base-ui@16.17.1",
     "kloq": "workspace:*",
     "lucide-react": "catalog:",
+    "motion": "^14.1.0",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
