@@ -4,7 +4,7 @@ import type { SentryConfig } from "./config.ts";
 import { scrubBreadcrumb, scrubEvent, scrubLog, scrubSpan } from "./scrub.ts";
 
 /** The services reporting to Sentry, tagged `service` on every event. */
-export type SentryService = "web" | "site" | "api" | "worker" | "portal" | "smtp";
+export type SentryService = "web" | "site" | "api" | "worker" | "portal" | "smtp" | "hub";
 
 /** Paths not worth a trace: load balancer health checks and the browser tunnel. */
 const UNTRACED_PATH = /^\/(api\/)?(health|monitoring)\/?$/;

@@ -66,8 +66,8 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
   @keyframes skeleton {
-    to {
-      background-position: -200% 0;
+  to {
+    background-position: -200% 0;
     }
   }
   @keyframes caret-blink {
