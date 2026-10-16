@@ -80,6 +80,11 @@ limit like other email. Pausing or canceling drops the emails not yet handed to 
 | `billing_hold`, `usage_limit`, `sending_paused` | By itself, once the hold, the allowance or the pause is lifted. |
 | `marketing_paused`, `account_suspended`, `mailing_address_required` | When you resume it, after the cause is gone. |
 
+While a hold lasts, emails not yet handed to the mail provider are dropped too, and made again once
+it resumes. A broadcast paused for almost as long as emails are kept (<RetentionPeriod of="emails" />,
+less a day) can't be resumed: the emails it sent are being deleted by
+[data retention](/docs/data-retention), so resuming could send them again.
+
 ## Statuses and stats
 
 `draft` → `scheduled` → `sending` (⇄ `paused`) → `sent`, or `canceled`, or `failed` (see `error`, e.g.
