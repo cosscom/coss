@@ -93,6 +93,7 @@ retries still reuse.
 | `headers`, `list`, `inReplyTo`, `references`, `priority` | Custom headers                            |
 | `messageId`, `date`                       | Dropped: coss.com sets these headers                           |
 | `raw`, `envelope`, `sender`, `amp`, `watchHtml`, `alternatives` | Refused with an error                |
+| A header with several values               | Refused with an error: coss.com sends each header once    |
 
 Nodemailer's `disableFileAccess` and `disableUrlAccess` still apply: attachments are read by
 Nodemailer before coss.com sees them.

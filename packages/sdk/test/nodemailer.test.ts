@@ -120,6 +120,43 @@ describe("cossTransport", () => {
     });
   });
 
+  test("takes headers in Nodemailer's array form too", async () => {
+    const { transport, calls } = transporter(json(202, sampleEmail));
+    await transport.sendMail({
+      from: "hello@acme.com",
+      to: "ada@example.com",
+      subject: "Headers",
+      text: "x",
+      list: { unsubscribe: "https://acme.com/unsubscribe" },
+      headers: [
+        { key: "X-Test", value: "hello" },
+        { key: "X-Prepared", value: { prepared: true, value: "as is" } } as never,
+        { key: "Date", value: "Mon, 1 Jan 2024 00:00:00 +0000" },
+      ],
+    });
+    expect(body(calls[0]).headers).toEqual({
+      "X-Test": "hello",
+      "X-Prepared": "as is",
+      "list-unsubscribe": "<https://acme.com/unsubscribe>",
+    });
+  });
+
+  test("refuses a header given more than once instead of sending one value", async () => {
+    const { transport, calls } = transporter(json(202, sampleEmail));
+    const base = { from: "hello@acme.com", to: "ada@example.com", subject: "Hi", text: "x" };
+    for (const headers of [
+      { "X-Tag": ["a", "b"] },
+      [
+        { key: "X-Tag", value: "a" },
+        { key: "x-tag", value: "b" },
+      ],
+    ]) {
+      const error = await transport.sendMail({ ...base, headers }).catch((err: unknown) => err);
+      expect((error as Error).message).toMatch(/X-Tag. header is given more than once/i);
+    }
+    expect(calls).toHaveLength(0);
+  });
+
   test("coss.com settings from the transport and the message", async () => {
     const mock = mockFetch(json(202, sampleEmail));
     const transport = nodemailer.createTransport(

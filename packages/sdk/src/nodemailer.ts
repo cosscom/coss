@@ -176,6 +176,7 @@ export function cossTransport(options: CossTransportOptions = {}): CossTransport
     if (Array.isArray(raw.alternatives) && raw.alternatives.length > 0) {
       unsupported(true, "`alternatives`", "send `html`, `text` and attachments");
     }
+    const ownHeaders = messageHeaders(raw.headers);
 
     const envelope = mail.message.getEnvelope();
     const data = await new Promise<NormalizedMail>((resolve, reject) => {
@@ -201,8 +202,15 @@ export function cossTransport(options: CossTransportOptions = {}): CossTransport
     if (data.icalEvent) attachments.push(icalAttachment(data.icalEvent));
     if (attachments.length > 0) params.attachments = attachments;
 
+    // normalize() keys `normalizedHeaders` by `Object.keys(headers)`, so the array form comes out
+    // as "0", "1", …: the message's own headers are read above, and only the ones Nodemailer
+    // derives (List-*, References, In-Reply-To) are taken from it.
+    const derived = Object.entries(data.normalizedHeaders ?? {}).filter(
+      ([name]) => !ownHeaders.names.has(name),
+    );
     const headers = customHeaders([
-      ...Object.entries(data.normalizedHeaders ?? {}),
+      ...ownHeaders.entries,
+      ...derived,
       ...priorityHeaders(data.priority),
       ...(typeof data.xMailer === "string" ? [["X-Mailer", data.xMailer] as const] : []),
     ]);
@@ -243,6 +251,45 @@ function unsupported(value: unknown, what: string, instead: string): void {
 function required<T>(value: T | undefined, field: string): T {
   if (value === undefined) throw new Error(`coss/nodemailer: the message has no \`${field}\`.`);
   return value;
+}
+
+/**
+ * A message's `headers` (an object, or Nodemailer's `[{ key, value }]` array form) as name/value
+ * pairs, plus the keys normalize() files them under. coss.com sends each header once, so one
+ * given several values is refused rather than sent with only the first.
+ */
+function messageHeaders(headers: unknown): {
+  entries: [string, string][];
+  names: Set<string>;
+} {
+  const entries: [string, string][] = [];
+  const names = new Set<string>();
+  if (!headers || typeof headers !== "object") return { entries, names };
+  const pairs: [string, unknown][] = Array.isArray(headers)
+    ? headers.map((entry: { key?: unknown; value?: unknown } | null) => [
+        typeof entry?.key === "string" ? entry.key : "",
+        entry?.value,
+      ])
+    : Object.entries(headers);
+  for (const key of Object.keys(headers)) names.add(key);
+  const seen = new Set<string>();
+  for (const [name, given] of pairs) {
+    const values = (Array.isArray(given) ? given : [given])
+      .map((value: unknown) =>
+        value && typeof value === "object" && "value" in value ? value.value : value,
+      )
+      .filter((value) => value !== undefined && value !== null && value !== false && value !== "");
+    if (!name || values.length === 0) continue;
+    const lower = name.trim().toLowerCase();
+    if (values.length > 1 || seen.has(lower)) {
+      throw new Error(
+        `coss/nodemailer: the \`${name}\` header is given more than once; coss.com sends each header once.`,
+      );
+    }
+    seen.add(lower);
+    entries.push([name, String(values[0])]);
+  }
+  return { entries, names };
 }
 
 /** Parsed addresses (groups flattened) as `Name <addr>` strings. */
