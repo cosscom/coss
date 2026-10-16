@@ -251,7 +251,7 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
 - **Contacts** (`packages/email/src/{contacts,contact-properties,audiences,segments,topics,audience-resolution,marketing-settings,contact-csv}.ts`,
   tables `contact` (ids `contact_`), `contact_property` (`cprop_`), `audience` (`aud_`) + `audience_member`, `segment`
   (`seg_`), `topic` (`topic_`) + `contact_topic`, `marketing_settings`, `contact_counter`; permission `contact`, backfilled
-  by `0073`): one contact per environment and address (bare, lower-cased). **Consent lives on contacts, deliverability
+  by `0075`): one contact per environment and address (bare, lower-cased). **Consent lives on contacts, deliverability
   in suppressions**: `contact.status` (`subscribed`/`unsubscribed`/`pending`) and `contact_topic` (explicit
   `opted_in`/`opted_out`; no row = the topic's `default_subscription`) say who wants marketing, while bounces and
   complaints stay suppressions. A contact's or topic's opt-out is never written as a suppression, and a re-subscribe never deletes one.
