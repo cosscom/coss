@@ -45,6 +45,10 @@ The exception is `/crowd-opinionated-source-software`, a manifesto rather than a
 illustration (`src/components/coss-landing/`, client islands on `motion`) that starts when it scrolls into view,
 loops gently, stays grayscale and holds its final frame under `prefers-reduced-motion`.
 
+Shipyard's page (`/shipyard`) is the other exception: its drawings (`src/components/shipyard/drawings.tsx`)
+drop in part by part when they scroll into view, lift on hover, and carry Shipyard's one amber lamp; all of it
+stops under `prefers-reduced-motion`.
+
 ## Copy
 
 - **Assertive and authoritative.** coss.com is the foundation apps are built on: write every product as
