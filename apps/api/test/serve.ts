@@ -6,13 +6,14 @@
  * 200 ms, as the worker would.
  */
 import "./setup.ts";
+import { EmailError } from "@coss/email";
 import { createVerifiedDomain } from "@coss/email/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { createTestApp } from "./helpers.ts";
 
 const tenant = await createTestTenant();
 const domain = await createVerifiedDomain(tenant.organization.id);
-const { app, dispatch } = createTestApp();
+const { app, emailService, queue } = createTestApp();
 
 const server = Bun.serve({
   hostname: "127.0.0.1",
@@ -25,9 +26,16 @@ const timer = setInterval(async () => {
   if (dispatching) return;
   dispatching = true;
   try {
-    await dispatch();
-  } catch (error) {
-    console.error("[serve] dispatch failed", error);
+    for (const job of queue.jobs.splice(0)) {
+      try {
+        await emailService.dispatch(job);
+      } catch (error) {
+        // The in-memory queue gets a job inside the send's transaction (pg-boss only at its commit),
+        // so a job can come before its email does: keep it for the next round.
+        if (error instanceof EmailError && error.code === "not_found") queue.jobs.push(job);
+        else console.error("[serve] dispatch failed", error);
+      }
+    }
   } finally {
     dispatching = false;
   }

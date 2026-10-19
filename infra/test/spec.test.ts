@@ -223,18 +223,25 @@ describe("routing", () => {
 
   test("deploys invalidate the site's cached paths, never hashed assets or external zones", () => {
     const paths = deployInvalidationPaths();
-    expect(paths).toEqual(expect.arrayContaining(["/docs", "/docs/*", "/legal/*", "/llms.txt"]));
+    expect(paths).toEqual(
+      expect.arrayContaining(["/docs*", "/legal*", "/pricing*", "/shipyard*", "/llms.txt"]),
+    );
     for (const kept of [
       "/_next/static/*",
       "/site-assets/*",
-      "/ui",
-      "/ui/*",
-      "/origin/*",
-      "/qnot",
-      "/qnot/*",
+      "/site-assets*",
+      "/ui*",
+      "/origin*",
+      "/qnot*",
       "/*",
     ]) {
       expect(paths).not.toContain(kept);
+    }
+    // A page's cached RSC payloads (`/pricing?_rsc=…`) only go with a wildcard path.
+    for (const route of ZONE_ROUTES as readonly ZoneRoute[]) {
+      if (route.zone !== "site" || route.path === "/" || route.path === "/site-assets") continue;
+      const file = !route.prefix && /\.[a-z]+$/.test(route.path);
+      expect(paths).toContain(file ? route.path : `${route.path}*`);
     }
     // CloudFront: at most 15 wildcard paths in progress per distribution.
     expect(paths.filter((path) => path.includes("*")).length).toBeLessThanOrEqual(15);
