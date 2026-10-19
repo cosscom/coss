@@ -458,6 +458,7 @@ export const SERVICES: Service[] = [
         description:
           "coss.com Risk assesses coss.com's own sign-ups in this environment (dogfooding): `block` refuses the sign-up, `review` waits in its review queue. Unset: sign-ups aren't assessed.",
       },
+      ...twilio,
       billingProvider,
       stripeSecretKey,
       {

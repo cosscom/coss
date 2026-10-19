@@ -68,6 +68,7 @@ describe("route segments vs. organization slugs", () => {
       "members",
       "domains",
       "dedicated-ips",
+      "sms",
       "settings",
       "reputation",
     ]);

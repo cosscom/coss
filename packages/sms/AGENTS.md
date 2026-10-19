@@ -51,9 +51,28 @@ senders (US A2P 10DLC brands and campaigns, toll-free verification) and its phon
   apply whether or not the message is routed, once per provider message id (`sms_inbound_receipt`:
   a retried START must not undo a later STOP). Sandbox sends to `SMS_SIMULATOR.reply` get a
   simulated reply in their own environment.
+- **Senders** (`provisioning.ts`): registering a sender or buying a number needs a plan with SMS
+  numbers (`plan_required`: they cost money at Twilio from the first step). Registrations,
+  purchases and an approval's last transaction lock the organization's `sms_account` row, so the
+  in-progress check, the number limit and "is the registration approved" can't race. A number is
+  billed and registered by what it is (toll-free by NANP area code), never by the form. A number
+  is `pending` until it is in its approved registration's messaging service (the worker's
+  `attachPendingSmsNumbers` retries), `releasing` from the moment it stops sending until Twilio
+  has it back (`retryUnfinishedSmsReleases` finishes releases Twilio failed). Twilio's creations
+  aren't idempotent: subaccounts, messaging services, brands, campaigns, numbers and toll-free
+  verifications are looked up (`find*`) before being created, so a lost answer never pays for one
+  twice. A purchase is stored as an intent (`pending`, no provider sid) before Twilio is asked;
+  `reconcileSmsPurchases` records one Twilio made and drops one it never heard of; releasing an
+  intent waits (`releasing`) until the number turns up or the purchase is abandoned. A toll-free
+  number's verification rejected for an earlier registration is resubmitted with the new details. Only Twilio's 400/422
+  answers reject a registration (the business's details); anything else is retried. Numbers and
+  subaccounts at a provider other than `SMS_PROVIDER` are never released or replaced (that would
+  orphan them at Twilio): they wait for a deployment with their provider. Monthly fees:
+  `chargeDueSmsFees`; organization deletion: `releaseOrganizationSmsResources`.
 - **Reputation** (`smsReputationChecks`): `sms_opt_out_rate` (distinct numbers that opted out —
   STOP receipts and sends refused as `opted_out`, never the suppression list, which START or a
-  removal empties — / live messages a carrier took, `usage_recorded_at`) and `sms_filtered_rate` (`carrier_filtered`, Twilio 30007),
+  removal empties — / live messages a carrier took, `usage_recorded_at`) and `sms_filtered_rate`
+  (`carrier_filtered`, Twilio 30007),
   thresholds `ReputationPolicy.smsOptOutRate`/`smsFilteredRate`.
 - **Prices** live in `@coss/billing/catalog` (`sms-prices-<date>.generated.ts`, written by
   `bun run sms:update-prices` from Twilio's per-country prices). The negotiated Twilio rates and

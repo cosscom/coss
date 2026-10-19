@@ -13724,7 +13724,7 @@
               "string",
               "null"
             ],
-            "description": "Set with `group_by=environment`."
+            "description": "Set with `group_by=environment`; `null` there for organization-wide usage (SMS numbers and registration fees)."
           },
           "start": {
             "type": "string",

@@ -193,7 +193,8 @@ export async function usageSeries(
         object: "usage" as const,
         meter: row.meter as MeterKey,
         dimension: row.dimension || null,
-        environment_id: row.environmentId,
+        // Organization-wide usage (SMS numbers and registration fees) has no environment.
+        environment_id: row.environmentId || null,
         start: row.bucket.toISOString(),
         end: end.toISOString(),
         quantity: row.quantity,

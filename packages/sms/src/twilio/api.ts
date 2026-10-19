@@ -14,6 +14,7 @@ import {
   TWILIO_TRUSTHUB,
   type TwilioClient,
   type TwilioCredentials,
+  type TwilioForm,
 } from "./client.ts";
 
 /** Trust Hub policies (fixed by Twilio). */
@@ -43,6 +44,19 @@ export interface TwilioApi {
   sendMessage(input: SendMessageInput): Promise<TwilioMessage>;
   fetchMessage(accountSid: string, sid: string): Promise<TwilioMessage>;
   createSubaccount(friendlyName: string): Promise<TwilioCredentials>;
+  /**
+   * Lookups of what an earlier creation may have made although its answer was lost (Twilio's
+   * creations aren't idempotent): checked before creating again, so nothing paid is made twice.
+   */
+  findSubaccount(friendlyName: string): Promise<TwilioCredentials | null>;
+  findMessagingService(account: TwilioCredentials, friendlyName: string): Promise<string | null>;
+  findBrand(account: TwilioCredentials, customerProfileSid: string): Promise<string | null>;
+  findCampaign(account: TwilioCredentials, serviceSid: string): Promise<string | null>;
+  findNumber(
+    account: TwilioCredentials,
+    phoneNumber: string,
+  ): Promise<{ sid: string; phoneNumber: string } | null>;
+  findTollFreeVerification(account: TwilioCredentials, numberSid: string): Promise<string | null>;
   closeSubaccount(accountSid: string): Promise<void>;
   searchNumbers(
     account: TwilioCredentials,
@@ -92,6 +106,12 @@ export interface TwilioApi {
     input: { numberSid: string; profile: SmsBusinessProfile; campaign: SmsCampaignDetails },
   ): Promise<{ sid: string }>;
   tollFreeVerificationStatus(account: TwilioCredentials, sid: string): Promise<ReviewStatus>;
+  /** Sends a rejected verification corrected details: Twilio reviews it again. */
+  resubmitTollFreeVerification(
+    account: TwilioCredentials,
+    sid: string,
+    input: { profile: SmsBusinessProfile; campaign: SmsCampaignDetails },
+  ): Promise<void>;
 }
 
 type TrustHubResource = { sid: string; status: string };
@@ -156,6 +176,43 @@ const REGISTRATION_AUTHORITIES: ReadonlySet<string> = new Set([
   "UID",
   "NEQ",
 ]);
+
+/** What a toll-free verification says about the business and its messages. */
+function tollFreeForm({
+  profile,
+  campaign,
+}: {
+  profile: SmsBusinessProfile;
+  campaign: SmsCampaignDetails;
+}): TwilioForm {
+  return {
+    BusinessName: profile.legalName,
+    BusinessWebsite: profile.website,
+    NotificationEmail: profile.contact.email,
+    UseCaseCategories: TOLL_FREE_USE_CASES[campaign.useCase] ?? ["ACCOUNT_NOTIFICATIONS"],
+    UseCaseSummary: campaign.description,
+    ProductionMessageSample: campaign.samples[0] ?? "",
+    OptInImageUrls: campaign.optInProofUrl ? [campaign.optInProofUrl] : [],
+    OptInType: "WEB_FORM",
+    MessageVolume: campaign.monthlyVolume ?? "1,000",
+    AdditionalInformation: campaign.messageFlow,
+    BusinessStreetAddress: profile.street,
+    BusinessCity: profile.city,
+    BusinessStateProvinceRegion: profile.region,
+    BusinessPostalCode: profile.postalCode,
+    BusinessCountry: profile.country,
+    BusinessContactFirstName: profile.contact.firstName,
+    BusinessContactLastName: profile.contact.lastName,
+    BusinessContactEmail: profile.contact.email,
+    BusinessContactPhone: profile.contact.phone,
+    BusinessType: profile.companyType,
+    BusinessRegistrationNumber: profile.taxId,
+    BusinessRegistrationAuthority: REGISTRATION_AUTHORITIES.has(profile.taxIdType)
+      ? profile.taxIdType
+      : "OTHER",
+    BusinessRegistrationCountry: profile.country,
+  };
+}
 
 export function createTwilioApi(
   client: TwilioClient,
@@ -232,6 +289,44 @@ export function createTwilioApi(
       return { accountSid: raw.sid, authToken: raw.auth_token };
     },
 
+    async findSubaccount(friendlyName) {
+      const raw = await client.request<{
+        accounts: { sid: string; auth_token: string; status: string; friendly_name: string }[];
+      }>("GET", `${TWILIO_API}/Accounts.json`, { form: { FriendlyName: friendlyName } });
+      const found = raw.accounts.find(
+        (candidate) => candidate.friendly_name === friendlyName && candidate.status !== "closed",
+      );
+      return found ? { accountSid: found.sid, authToken: found.auth_token } : null;
+    },
+
+    async findMessagingService(as, friendlyName) {
+      const raw = await client.request<{ services: { sid: string; friendly_name: string }[] }>(
+        "GET",
+        `${TWILIO_MESSAGING}/Services`,
+        { as, form: { PageSize: 1000 } },
+      );
+      return raw.services.find((service) => service.friendly_name === friendlyName)?.sid ?? null;
+    },
+
+    async findBrand(as, customerProfileSid) {
+      const raw = await client.request<{
+        data: { sid: string; customer_profile_bundle_sid: string }[];
+      }>("GET", `${TWILIO_MESSAGING}/a2p/BrandRegistrations`, { as, form: { PageSize: 1000 } });
+      return (
+        raw.data.find((brand) => brand.customer_profile_bundle_sid === customerProfileSid)?.sid ??
+        null
+      );
+    },
+
+    async findCampaign(as, serviceSid) {
+      const raw = await client.request<{ compliance: { sid: string }[] }>(
+        "GET",
+        `${TWILIO_MESSAGING}/Services/${serviceSid}/Compliance/Usa2p`,
+        { as },
+      );
+      return raw.compliance[0]?.sid ?? null;
+    },
+
     async closeSubaccount(accountSid) {
       await client.request("POST", `${account(accountSid)}.json`, { form: { Status: "closed" } });
     },
@@ -261,6 +356,27 @@ export function createTwilioApi(
         { form: { PhoneNumber: input.phoneNumber } },
       );
       return { sid: raw.sid, phoneNumber: raw.phone_number };
+    },
+
+    async findNumber(as, phoneNumber) {
+      const raw = await client.request<{
+        incoming_phone_numbers: { sid: string; phone_number: string }[];
+      }>("GET", `${account(as.accountSid)}/IncomingPhoneNumbers.json`, {
+        form: { PhoneNumber: phoneNumber },
+      });
+      const found = raw.incoming_phone_numbers.find(
+        (number) => number.phone_number === phoneNumber,
+      );
+      return found ? { sid: found.sid, phoneNumber: found.phone_number } : null;
+    },
+
+    async findTollFreeVerification(as, numberSid) {
+      const raw = await client.request<{ verifications: { sid: string }[] }>(
+        "GET",
+        `${TWILIO_MESSAGING}/Tollfree/Verifications`,
+        { as, form: { TollfreePhoneNumberSid: numberSid } },
+      );
+      return raw.verifications[0]?.sid ?? null;
     },
 
     async releaseNumber(as, sid) {
@@ -487,37 +603,16 @@ export function createTwilioApi(
     },
 
     async createTollFreeVerification(as, input) {
-      const { profile, campaign } = input;
       return client.request<{ sid: string }>("POST", `${TWILIO_MESSAGING}/Tollfree/Verifications`, {
         as,
-        form: {
-          TollfreePhoneNumberSid: input.numberSid,
-          BusinessName: profile.legalName,
-          BusinessWebsite: profile.website,
-          NotificationEmail: profile.contact.email,
-          UseCaseCategories: TOLL_FREE_USE_CASES[campaign.useCase] ?? ["ACCOUNT_NOTIFICATIONS"],
-          UseCaseSummary: campaign.description,
-          ProductionMessageSample: campaign.samples[0] ?? "",
-          OptInImageUrls: campaign.optInProofUrl ? [campaign.optInProofUrl] : [],
-          OptInType: "WEB_FORM",
-          MessageVolume: campaign.monthlyVolume ?? "1,000",
-          AdditionalInformation: campaign.messageFlow,
-          BusinessStreetAddress: profile.street,
-          BusinessCity: profile.city,
-          BusinessStateProvinceRegion: profile.region,
-          BusinessPostalCode: profile.postalCode,
-          BusinessCountry: profile.country,
-          BusinessContactFirstName: profile.contact.firstName,
-          BusinessContactLastName: profile.contact.lastName,
-          BusinessContactEmail: profile.contact.email,
-          BusinessContactPhone: profile.contact.phone,
-          BusinessType: profile.companyType,
-          BusinessRegistrationNumber: profile.taxId,
-          BusinessRegistrationAuthority: REGISTRATION_AUTHORITIES.has(profile.taxIdType)
-            ? profile.taxIdType
-            : "OTHER",
-          BusinessRegistrationCountry: profile.country,
-        },
+        form: { TollfreePhoneNumberSid: input.numberSid, ...tollFreeForm(input) },
+      });
+    },
+
+    async resubmitTollFreeVerification(as, sid, input) {
+      await client.request("POST", `${TWILIO_MESSAGING}/Tollfree/Verifications/${sid}`, {
+        as,
+        form: tollFreeForm(input),
       });
     },
 

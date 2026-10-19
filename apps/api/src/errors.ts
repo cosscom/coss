@@ -244,6 +244,7 @@ function fromSmsError(error: SmsError): ApiError {
         message: error.message,
       });
     case "billing_hold":
+    case "plan_required":
       return new ApiError(402, { type: "billing_error", code: error.code, message: error.message });
     case "provider_unavailable":
       return new ApiError(503, { type: "api_error", code: error.code, message: error.message });

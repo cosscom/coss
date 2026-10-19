@@ -12,6 +12,7 @@ export type SmsErrorCode =
   | "number_unavailable"
   | "registration_invalid"
   | "registration_locked"
+  | "plan_required"
   | "provider_unavailable";
 
 const STATUS_BY_CODE = {
@@ -32,6 +33,8 @@ const STATUS_BY_CODE = {
   number_unavailable: 422,
   registration_invalid: 422,
   registration_locked: 422,
+  // Payment required: a paid plan (senders cost money at the provider).
+  plan_required: 402,
   provider_unavailable: 503,
 } as const satisfies Record<SmsErrorCode, number>;
 

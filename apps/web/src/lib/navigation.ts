@@ -21,6 +21,9 @@ import {
   type LucideIcon,
   MailIcon,
   MegaphoneIcon,
+  MessageSquareIcon,
+  MessageSquareReplyIcon,
+  MessageSquareXIcon,
   MonitorSmartphoneIcon,
   MousePointerClickIcon,
   NetworkIcon,
@@ -72,6 +75,14 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
     ],
   },
   {
+    label: "SMS",
+    items: [
+      { label: "Messages", path: "/sms", icon: MessageSquareIcon },
+      { label: "Received", path: "/sms/received", icon: MessageSquareReplyIcon },
+      { label: "Suppressions", path: "/sms/suppressions", icon: MessageSquareXIcon },
+    ],
+  },
+  {
     label: "Marketing",
     items: [
       { label: "Broadcasts", path: "/broadcasts", icon: SendIcon },
@@ -117,6 +128,7 @@ export const ORGANIZATION_NAV: NavItem[] = [
   { label: "Projects", path: "", icon: FoldersIcon, exact: true },
   { label: "Domains", path: "/domains", icon: GlobeIcon },
   { label: "Dedicated IPs", path: "/dedicated-ips", icon: NetworkIcon },
+  { label: "SMS", path: "/sms", icon: MessageSquareIcon },
   { label: "Members", path: "/members", icon: UsersIcon },
   { label: "Reputation", path: "/reputation", icon: GaugeIcon },
   { label: "Settings", path: "/settings", icon: SettingsIcon },
@@ -152,6 +164,7 @@ export const ADMIN_NAV: NavItem[] = [
   { label: "Sign-ups", path: "/signups", icon: UserPlusIcon },
   { label: "Sending", path: "/sending", icon: SendIcon },
   { label: "Emails", path: "/emails", icon: MailIcon },
+  { label: "SMS", path: "/sms", icon: MessageSquareIcon },
   { label: "Screening", path: "/screening", icon: ScanSearchIcon },
   { label: "Audit log", path: "/audit", icon: HistoryIcon },
   { label: "Reputation", path: "/reputation", icon: GaugeIcon },
@@ -197,6 +210,8 @@ export function segmentLabel(segment: string): string | undefined {
 
 const SEGMENT_LABELS: Record<string, string> = {
   emails: "Emails",
+  sms: "SMS",
+  register: "Register",
   templates: "Templates",
   versions: "Versions",
   hooks: "Hooks",

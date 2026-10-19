@@ -89,6 +89,8 @@ export const ADMIN_ACTIONS = [
   // The admin console's deploys page (apps/web): a Deploy workflow dispatch, target the commit.
   "deploy.started",
   "deploy.redeployed",
+  // SMS: high-risk destination countries an organization may allow, target the organization.
+  "sms.countries_unlocked",
 ] as const;
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 

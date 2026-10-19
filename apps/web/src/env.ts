@@ -4,6 +4,7 @@ import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { riskEnvShape } from "@coss/risk/env";
+import { smsEnvShape } from "@coss/sms/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
@@ -47,6 +48,8 @@ export const env = createEnv({
     // Payment provider of new billing accounts (`fake` or `stripe`), Checkout and the Customer
     // Portal; the Stripe webhook route verifies signatures with STRIPE_WEBHOOK_SECRET.
     ...billingEnvShape,
+    // SMS: numbers and carrier registrations are bought and submitted from the dashboard.
+    ...smsEnvShape,
     // Server Actions encrypt closed-over variables with this key; every instance of a stage must
     // share it. Without it, each build embeds its own random key. Builds don't need it; production
     // servers refuse to start without it (src/instrumentation.ts).

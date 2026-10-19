@@ -53,7 +53,14 @@ import { RETENTION_DAYS } from "@coss/retention";
 import { refreshDueDatasets } from "@coss/risk";
 import { contentScreeningCheck } from "@coss/screening";
 import {
+  advanceDueSmsRegistrations,
+  attachPendingSmsNumbers,
+  chargeDueSmsFees,
+  reconcileSmsPurchases,
+  releaseOrganizationSmsResources,
+  retryUnfinishedSmsReleases,
   type SmsDispatchQueue,
+  type SmsSenderDeps,
   type SmsService,
   smsReputationChecks,
   sweepStaleSmsClaims,
@@ -81,6 +88,7 @@ const DOMAIN_BATCH = 25;
 const DEDICATED_IP_BATCH = 25;
 const SWEEP_BATCH = 100;
 const SCHEDULED_SMS_BATCH = 50;
+const SMS_REGISTRATION_BATCH = 20;
 const REPUTATION_BATCH = 50;
 const NOTIFICATION_BATCH = 20;
 const AUTH_EMAIL_BATCH = 20;
@@ -105,7 +113,12 @@ export type WorkerDeps = {
   /** Dispatches scheduled emails. */
   email: Pick<EmailService, "dispatchDue">;
   /** SMS: dispatches scheduled messages; the sweeps re-enqueue lost jobs on `queue`. */
-  sms: { service: Pick<SmsService, "dispatchDue">; queue: SmsDispatchQueue };
+  sms: {
+    service: Pick<SmsService, "dispatchDue">;
+    queue: SmsDispatchQueue;
+    /** Carrier registrations, numbers' and campaigns' monthly fees, subaccount teardown. */
+    senders: SmsSenderDeps;
+  };
   /** Fans broadcasts out into emails, at each organization's marketing rate. */
   broadcasts: BroadcastWorkerDeps;
   /** Also delivers log drain batches (same signing keys and sender). */
@@ -169,6 +182,8 @@ export const WORKER_LOOP_NAMES = [
   "sms-dispatch",
   "scheduled-sms",
   "sms-sweeps",
+  "sms-registrations",
+  "sms-fees",
   "broadcasts",
   "stale-claims",
   "reputation",
@@ -297,6 +312,29 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       },
     }),
     start({
+      // Carrier registrations: each step at Twilio, then its review, polled until decided;
+      // purchases whose answer was lost; numbers their messaging service didn't take at purchase;
+      // releases the provider didn't finish.
+      name: "sms-registrations",
+      intervalMs: 30_000,
+      run: async () => {
+        await reconcileSmsPurchases(deps.sms.senders);
+        await attachPendingSmsNumbers(deps.sms.senders);
+        await retryUnfinishedSmsReleases(deps.sms.senders);
+        return (
+          (await advanceDueSmsRegistrations(deps.sms.senders, {
+            limit: SMS_REGISTRATION_BATCH,
+          })) === SMS_REGISTRATION_BATCH
+        );
+      },
+    }),
+    start({
+      // Monthly pass-through fees: numbers held and approved US campaigns.
+      name: "sms-fees",
+      intervalMs: 10 * 60_000,
+      run: async () => (await chargeDueSmsFees({ limit: SWEEP_BATCH })) >= SWEEP_BATCH,
+    }),
+    start({
       name: "stale-claims",
       intervalMs: 60_000,
       run: async () => (await sweepStaleClaims({ limit: SWEEP_BATCH })) === SWEEP_BATCH,
@@ -326,6 +364,8 @@ export function startJobs(deps: WorkerDeps): Loop[] {
                 { ...deps.domains, inboundStore: deps.inbound?.store ?? null },
                 assertLease,
               );
+              // Numbers stop sending and the Twilio subaccount is closed.
+              await releaseOrganizationSmsResources(organizationId, deps.sms.senders, assertLease);
               // The running month is invoiced (once); the invoice outlives the organization.
               await finalizeOrganizationBilling(organizationId, { assertLease });
             },
