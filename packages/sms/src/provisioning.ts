@@ -459,8 +459,19 @@ async function runStep(
       const serviceSid = await messagingService(row, account, deps);
       if (!row.tollFreeVerificationSid) {
         await addToService(account, serviceSid, number.providerSid, deps);
-        // A verification an earlier attempt submitted (its answer lost) is followed, not repeated.
+        // The number's verification may exist: one an earlier attempt submitted (its answer
+        // lost) is followed, not repeated; one an earlier registration had rejected gets this
+        // registration's corrected details and is reviewed again.
         const existing = await twilio.findTollFreeVerification(account, number.providerSid);
+        if (
+          existing &&
+          (await twilio.tollFreeVerificationStatus(account, existing)).status === "rejected"
+        ) {
+          await twilio.resubmitTollFreeVerification(account, existing, {
+            profile: row.profile,
+            campaign: row.campaign,
+          });
+        }
         const created = existing
           ? { sid: existing }
           : await twilio.createTollFreeVerification(account, {
@@ -973,7 +984,16 @@ function releasable(number: typeof smsNumber.$inferSelect, deps: SmsSenderDeps):
   return number.provider === deps.provider || number.provider === "fake";
 }
 
-async function finishRelease(number: typeof smsNumber.$inferSelect, deps: SmsSenderDeps) {
+/**
+ * Gives the number back to its provider and drops its row. False when it must wait: a purchase
+ * whose outcome was never recorded may still be under way, so its intent stays `releasing` (the
+ * worker tries again) until the number turns up or the purchase is abandoned.
+ */
+async function finishRelease(
+  number: typeof smsNumber.$inferSelect,
+  deps: SmsSenderDeps,
+  now: Date = new Date(),
+): Promise<boolean> {
   if (!releasable(number, deps)) {
     // Kept `releasing` (it never sends again) until a deployment with its provider releases it.
     throw new SmsError(
@@ -986,6 +1006,9 @@ async function finishRelease(number: typeof smsNumber.$inferSelect, deps: SmsSen
     // A purchase whose outcome was never recorded may still have bought the number.
     const providerSid =
       number.providerSid ?? (await deps.twilio.findNumber(account, number.phoneNumber))?.sid;
+    if (!providerSid && number.createdAt.getTime() > now.getTime() - PURCHASE_ABANDON_MS) {
+      return false;
+    }
     try {
       if (providerSid) await deps.twilio.releaseNumber(account, providerSid);
     } catch (error) {
@@ -1002,6 +1025,7 @@ async function finishRelease(number: typeof smsNumber.$inferSelect, deps: SmsSen
         eq(smsNumber.status, "releasing"),
       ),
     );
+  return true;
 }
 
 /** How long a release may take before the worker finishes it. */
@@ -1035,8 +1059,17 @@ export async function retryUnfinishedSmsReleases(
   let released = 0;
   for (const { number } of due) {
     try {
-      await finishRelease(number, deps);
-      released++;
+      if (await finishRelease(number, deps, now)) {
+        released++;
+      } else {
+        // Its purchase may still be under way: asked about again in 10 minutes.
+        await db
+          .update(smsNumber)
+          .set({ updatedAt: now })
+          .where(
+            and(eq(smsNumber.id, number.id), eq(smsNumber.organizationId, number.organizationId)),
+          );
+      }
     } catch (error) {
       console.error(`[sms] number ${number.id} still not released:`, error);
     }

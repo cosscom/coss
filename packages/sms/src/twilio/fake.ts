@@ -220,4 +220,18 @@ export class FakeTwilioApi implements TwilioApi {
   async tollFreeVerificationStatus(_account: TwilioCredentials, resourceSid: string) {
     return this.#status(resourceSid);
   }
+
+  async resubmitTollFreeVerification(
+    account: TwilioCredentials,
+    resourceSid: string,
+    input: Parameters<TwilioApi["resubmitTollFreeVerification"]>[2],
+  ) {
+    this.#record("resubmitTollFreeVerification", [account.accountSid, resourceSid, input]);
+    this.#held.set(
+      resourceSid,
+      rejects(input.profile)
+        ? { status: "rejected", reason: "Simulated rejection: the business details didn't match." }
+        : { status: "approved", reason: null },
+    );
+  }
 }

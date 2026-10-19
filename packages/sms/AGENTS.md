@@ -62,7 +62,9 @@ senders (US A2P 10DLC brands and campaigns, toll-free verification) and its phon
   aren't idempotent: subaccounts, messaging services, brands, campaigns, numbers and toll-free
   verifications are looked up (`find*`) before being created, so a lost answer never pays for one
   twice. A purchase is stored as an intent (`pending`, no provider sid) before Twilio is asked;
-  `reconcileSmsPurchases` records one Twilio made and drops one it never heard of. Only Twilio's 400/422
+  `reconcileSmsPurchases` records one Twilio made and drops one it never heard of; releasing an
+  intent waits (`releasing`) until the number turns up or the purchase is abandoned. A toll-free
+  number's verification rejected for an earlier registration is resubmitted with the new details. Only Twilio's 400/422
   answers reject a registration (the business's details); anything else is retried. Numbers and
   subaccounts at a provider other than `SMS_PROVIDER` are never released or replaced (that would
   orphan them at Twilio): they wait for a deployment with their provider. Monthly fees:

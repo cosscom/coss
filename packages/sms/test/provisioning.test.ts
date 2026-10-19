@@ -671,3 +671,63 @@ test("a toll-free verification whose answer was lost is followed, not submitted 
     1,
   );
 });
+
+test("a rejected toll-free verification is resubmitted with the corrected details", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  const d = deps();
+  const [tollFree] = await searchSmsNumbers(org, { kind: "toll_free", country: "US" }, d);
+  if (!tollFree) throw new Error("no number");
+  const number = await buySmsNumber(
+    org,
+    { phoneNumber: tollFree.phoneNumber, kind: "toll_free" },
+    d,
+  );
+  const register = (legalName: string) =>
+    createSmsRegistration(
+      org,
+      SmsRegistrationInput.parse({
+        kind: "toll_free",
+        numberId: number.id,
+        profile: { ...PROFILE, legalName },
+        campaign: { ...CAMPAIGN, optInProofUrl: "https://acme.test/opt-in.png" },
+      }),
+      d,
+    );
+  await register("[reject] Acme, Inc.");
+  expect((await advanceUntilSettled(org, d))[0]?.status).toBe("rejected");
+  await register("Acme, Inc.");
+  const registrations = await advanceUntilSettled(org, d);
+  expect(registrations.map((row) => row.status)).toEqual(["rejected", "approved"]);
+  const methods = d.twilio.calls.map((call) => call.method);
+  expect(methods.filter((method) => method === "createTollFreeVerification")).toHaveLength(1);
+  expect(methods.filter((method) => method === "resubmitTollFreeVerification")).toHaveLength(1);
+});
+
+test("releasing a purchase still under way waits for its outcome", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  class Slow extends FakeTwilioApi {
+    override async buyNumber(): Promise<{ sid: string; phoneNumber: string }> {
+      throw new TwilioNetworkError("Twilio POST IncomingPhoneNumbers got no answer.");
+    }
+  }
+  const twilio = new Slow();
+  const d = deps(twilio);
+  const phoneNumber = testPhoneNumber();
+  await expect(buySmsNumber(org, { phoneNumber, kind: "local" }, d)).rejects.toThrow("no answer");
+  const [intent] = await db.select().from(smsNumber).where(eq(smsNumber.organizationId, org));
+  if (!intent) throw new Error("no intent");
+  await releaseSmsNumber(org, intent.id, d);
+  // Kept: Twilio may still complete the purchase.
+  const [kept] = await db.select().from(smsNumber).where(eq(smsNumber.id, intent.id));
+  expect(kept?.status).toBe("releasing");
+  // It does.
+  const account = await ensureSmsSubaccount(org, d);
+  await FakeTwilioApi.prototype.buyNumber.call(twilio, account, { phoneNumber });
+  const scope = { organizationIds: [org] };
+  const later = new Date(Date.now() + 15 * 60 * 1000);
+  expect(await retryUnfinishedSmsReleases(d, { now: later, scope })).toBe(1);
+  expect(await db.select().from(smsNumber).where(eq(smsNumber.id, intent.id))).toEqual([]);
+  expect(twilio.calls.map((call) => call.method)).toContain("releaseNumber");
+});
