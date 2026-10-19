@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { RATE_CARDS } from "../src/catalog/rates.ts";
+import type { MeterKey } from "../src/catalog/meters.ts";
+import { RATE_CARDS, rateCardAt } from "../src/catalog/rates.ts";
 import {
   chargeRange,
   composeContractChange,
@@ -115,6 +116,9 @@ describe("terms", () => {
       "email.recipients": 3000,
       "email.dedicated_ip": 0,
       "sms.segments": 0,
+      "sms.received_segments": 0,
+      "sms.numbers": 0,
+      "sms.registrations": 0,
       "video.participant_minutes": 0,
       "scheduling.bookings": 0,
     });
@@ -129,34 +133,59 @@ describe("terms", () => {
     expect(pro.entitlements.limits.domains).toBe(10);
   });
 
-  test("SMS needs a commitment, even on Enterprise", () => {
-    expect(meterAvailability(terms({ version: 1, plan: "enterprise" }), "sms.segments")).toBe(
-      "requires_commitment",
-    );
-    const committed = terms({
-      version: 1,
-      plan: "enterprise",
-      commitments: [
-        {
-          id: "sms",
-          kind: "prepaid_units",
-          meter: "sms.segments",
-          dimension: "country=US",
-          units: 1_000_000,
-          unitNanos: "10000000",
-          period: "month",
-          schedule: "monthly",
-          rollover: false,
-        },
-      ],
-    });
-    expect(meterAvailability(committed, "sms.segments")).toBe("available");
-    expect(meterAvailability(terms({ version: 1, plan: "pro" }), "email.recipients")).toBe(
-      "available",
-    );
+  test("SMS is available by country, on paid plans", () => {
+    const pro = terms({ version: 1, plan: "pro" });
+    expect(meterAvailability(pro, "sms.segments")).toBe("available");
+    expect(meterAvailability(pro, "sms.segments", "country=US")).toBe("available");
+    expect(meterAvailability(pro, "sms.segments", "country=GB")).toBe("not_priced");
+    expect(meterAvailability(terms({ version: 1, plan: "free" }), "sms.segments")).toBe("blocked");
+    expect(meterAvailability(pro, "email.recipients")).toBe("available");
     expect(
       meterAvailability(terms({ version: 1, plan: "free" }), "video.participant_minutes"),
     ).toBe("blocked");
+  });
+
+  test("a contract's rates for some dimension values keep the list price of the others", () => {
+    const contract = terms({
+      version: 1,
+      plan: "enterprise",
+      rates: {
+        "sms.segments": {
+          byDimension: {
+            "country=GB": { mode: "graduated", tiers: [{ upTo: null, unitNanos: "40000000" }] },
+          },
+        },
+      },
+    });
+    expect(contract.rates["sms.segments"]?.byDimension).toEqual({
+      "country=US": { mode: "graduated", tiers: [{ upTo: null, unitNanos: 13_500_000n }] },
+      "country=GB": { mode: "graduated", tiers: [{ upTo: null, unitNanos: 40_000_000n }] },
+    });
+    expect(meterAvailability(contract, "sms.segments", "country=GB")).toBe("available");
+    const everywhere = terms({
+      version: 1,
+      plan: "enterprise",
+      rates: {
+        "sms.segments": {
+          default: { mode: "graduated", tiers: [{ upTo: null, unitNanos: "9000000" }] },
+        },
+      },
+    });
+    expect(everywhere.rates["sms.segments"]).toEqual({
+      default: { mode: "graduated", tiers: [{ upTo: null, unitNanos: 9_000_000n }] },
+    });
+  });
+
+  test("the November 2026 card prices SMS by country and passes fees through", () => {
+    const november = rateCardAt(new Date("2026-11-01T00:00:00Z"));
+    expect(november).not.toBe(card);
+    const tiers = (meter: MeterKey, dimension: string) =>
+      november.rates[meter]?.byDimension?.[dimension]?.tiers;
+    expect(tiers("sms.segments", "country=US")).toEqual([{ upTo: null, unitNanos: 13_500_000n }]);
+    expect(tiers("sms.segments", "country=GB")).toEqual([{ upTo: null, unitNanos: 56_300_000n }]);
+    expect(tiers("sms.numbers", "type=local")).toEqual([{ upTo: null, unitNanos: 1_150_000_000n }]);
+    expect(november.rates["email.recipients"]).toBe(card.rates["email.recipients"]);
+    expect(rateCardAt(new Date("2026-10-31T23:59:59Z"))).toBe(card);
   });
 
   test("entitlement overrides merge over the plan's", () => {

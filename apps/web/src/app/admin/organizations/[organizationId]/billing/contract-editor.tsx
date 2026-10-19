@@ -70,7 +70,7 @@ type RateState = {
   discount: string;
   pricing: "graduated" | "volume";
   window: "period" | "term";
-  /** Empty: every dimension value; else e.g. `country=US`. */
+  /** Empty: every dimension value; else e.g. `country=US`, or several sharing the tiers. */
   dimension: string;
   tiers: TierRow[];
 };
@@ -234,8 +234,12 @@ function buildTerms(state: EditorState): Record<string, unknown> {
         tiers,
         ...(rate.window === "term" ? { tierWindow: "term" } : {}),
       };
-      rates[meter] = rate.dimension.trim()
-        ? { byDimension: { [rate.dimension.trim()]: value } }
+      const dimensions = rate.dimension
+        .split(",")
+        .map((dimension) => dimension.trim())
+        .filter(Boolean);
+      rates[meter] = dimensions.length
+        ? { byDimension: Object.fromEntries(dimensions.map((dimension) => [dimension, value])) }
         : { default: value };
     }
   }
@@ -579,7 +583,9 @@ export function ContractEditor(props: { organizationId: string; currentPlan: Pla
                       <Input
                         onChange={(event) => setRate(meter, { dimension: event.target.value })}
                         placeholder={
-                          definition.dimensions.length ? "country=US (all if empty)" : "All usage"
+                          definition.dimensions.length
+                            ? "country=GB, country=FR (all if empty)"
+                            : "All usage"
                         }
                         value={rate.dimension}
                       />

@@ -1,5 +1,6 @@
 /** List prices. A price change is a new dated card: periods before it keep the old prices. */
-import type { MeterKey } from "./meters.ts";
+import { dimensionKey, type MeterKey } from "./meters.ts";
+import { SMS_PRICES_2026_11_01 } from "./sms-prices-2026-11-01.generated.ts";
 
 /** Units up to and including `upTo` (cumulative; `null` = no limit) cost `unitNanos` each. */
 export type Tier = { upTo: number | null; unitNanos: bigint };
@@ -33,31 +34,70 @@ export function flatRate(unitNanos: bigint): Rate {
   return { mode: "graduated", tiers: [{ upTo: null, unitNanos }] };
 }
 
+/** One flat rate per value of a single dimension (`{ US: … }` → `country=US`). */
+function flatRates(name: string, prices: Readonly<Record<string, bigint>>): Record<string, Rate> {
+  return Object.fromEntries(
+    Object.entries(prices).map(([value, nanos]) => [
+      dimensionKey({ [name]: value }),
+      flatRate(nanos),
+    ]),
+  );
+}
+
+const LAUNCH: RateCard = {
+  effectiveFrom: new Date("2026-01-01T00:00:00Z"),
+  rates: {
+    // $0.40 per 1,000 recipients; $0.30 from the 1,000,001st; $0.22 from the 10,000,001st.
+    "email.recipients": {
+      default: {
+        mode: "graduated",
+        tiers: [
+          { upTo: 1_000_000, unitNanos: 400_000n },
+          { upTo: 10_000_000, unitNanos: 300_000n },
+          { upTo: null, unitNanos: 220_000n },
+        ],
+      },
+    },
+    // $0.10 per 1,000 recipients sent through dedicated IPs (first priced when the meter was added;
+    // it had no usage before).
+    "email.dedicated_ip": { default: flatRate(100_000n) },
+    // US only; other countries are priced per contract.
+    "sms.segments": { byDimension: { "country=US": flatRate(13_500_000n) } },
+    // $1.50 per 1,000 participant-minutes.
+    "video.participant_minutes": { default: flatRate(1_500_000n) },
+    // $0.10 per booking.
+    "scheduling.bookings": { default: flatRate(100_000_000n) },
+  },
+};
+
 /** In ascending `effectiveFrom` order. */
 export const RATE_CARDS: readonly RateCard[] = [
+  LAUNCH,
   {
-    effectiveFrom: new Date("2026-01-01T00:00:00Z"),
+    // SMS in every country Twilio prices (a country without a rate can't be sent to), with
+    // numbers and US carrier registration fees passed through at cost.
+    effectiveFrom: new Date("2026-11-01T00:00:00Z"),
     rates: {
-      // $0.40 per 1,000 recipients; $0.30 from the 1,000,001st; $0.22 from the 10,000,001st.
-      "email.recipients": {
-        default: {
-          mode: "graduated",
-          tiers: [
-            { upTo: 1_000_000, unitNanos: 400_000n },
-            { upTo: 10_000_000, unitNanos: 300_000n },
-            { upTo: null, unitNanos: 220_000n },
-          ],
-        },
+      ...LAUNCH.rates,
+      "sms.segments": { byDimension: flatRates("country", SMS_PRICES_2026_11_01.outbound) },
+      "sms.received_segments": {
+        byDimension: flatRates("country", SMS_PRICES_2026_11_01.inbound),
       },
-      // $0.10 per 1,000 recipients sent through dedicated IPs (first priced when the meter was added;
-      // it had no usage before).
-      "email.dedicated_ip": { default: flatRate(100_000n) },
-      // US only; other countries are priced per contract.
-      "sms.segments": { byDimension: { "country=US": flatRate(13_500_000n) } },
-      // $1.50 per 1,000 participant-minutes.
-      "video.participant_minutes": { default: flatRate(1_500_000n) },
-      // $0.10 per booking.
-      "scheduling.bookings": { default: flatRate(100_000_000n) },
+      // $1.15 a month for a local number, $2.15 for a toll-free one.
+      "sms.numbers": {
+        byDimension: flatRates("type", { local: 1_150_000_000n, toll_free: 2_150_000_000n }),
+      },
+      // A2P 10DLC: brand $4.50 (+ $41.50 secondary vetting for standard brands), $15 per campaign
+      // vetted, then $10 a month per campaign ($1.50 for low-volume mixed campaigns).
+      "sms.registrations": {
+        byDimension: flatRates("fee", {
+          brand: 4_500_000_000n,
+          brand_vetting: 41_500_000_000n,
+          campaign_vetting: 15_000_000_000n,
+          campaign_monthly: 10_000_000_000n,
+          campaign_monthly_low_volume: 1_500_000_000n,
+        }),
+      },
     },
   },
 ];

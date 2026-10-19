@@ -231,9 +231,6 @@ export default async function PlansPage({
               description={
                 <span className="font-mono text-xs">
                   {formatMeterRates(meter, rates[meter]).join("; ")}
-                  {METERS[meter].requires === "commitment"
-                    ? " (committed volume, Enterprise contracts only)"
-                    : ""}
                 </span>
               }
               key={meter}

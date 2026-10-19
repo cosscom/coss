@@ -5,10 +5,12 @@ import {
   addOnGranting,
   FEATURE_KEYS,
   FEATURE_LABELS,
+  formatDimension,
   LIMIT_KEYS,
   LIMIT_LABELS,
   METER_KEYS,
   METERS,
+  type MeterKey,
   PLAN_KEYS,
   PLANS,
   RATE_CARDS,
@@ -60,6 +62,20 @@ export function planRows(): { label: string; values: string[] }[] {
         const second = rateLimits["email.recipients.second"].limit.toLocaleString("en-US");
         const day = rateLimits["email.recipients.day"].limit.toLocaleString("en-US");
         return `${second} emails a second, ${day} a day`;
+      }),
+    },
+    {
+      label: "SMS rate",
+      values: plans.map((plan) => {
+        if (plan.key === "enterprise") return "Custom";
+        const included: Partial<Record<MeterKey, number>> = plan.includedUnits;
+        if (plan.overage === "blocked" && !included["sms.segments"]) {
+          return "Sandbox only";
+        }
+        const { rateLimits } = plan.entitlements;
+        const second = rateLimits["sms.segments.second"].limit.toLocaleString("en-US");
+        const day = rateLimits["sms.segments.day"].limit.toLocaleString("en-US");
+        return `${second} SMS segments a second, ${day} a day`;
       }),
     },
     {
@@ -120,12 +136,7 @@ export function rateRows(): { product: string; rate: string; note: string }[] {
     const rates = card.rates[meter];
     if (!rates) return [];
     const addOn = meter === "email.dedicated_ip" ? ADD_ONS.dedicated_ips : null;
-    const note =
-      definition.requires === "commitment"
-        ? "Committed volume, Enterprise only"
-        : addOn
-          ? `With the ${addOn.name} add-on, on top of Email`
-          : "";
+    const note = addOn ? `With the ${addOn.name} add-on, on top of Email` : "";
     if (rates.default) {
       return [
         {
@@ -135,10 +146,41 @@ export function rateRows(): { product: string; rate: string; note: string }[] {
         },
       ];
     }
-    return Object.entries(rates.byDimension ?? {}).map(([dimension, rate]) => ({
-      product: `${definition.label} (${dimension.split("=")[1]})`,
-      rate: describeRate(rate, definition.displayPer, definition.unit),
-      note,
+    const entries = Object.entries(rates.byDimension ?? {});
+    const dimensions: readonly string[] = definition.dimensions;
+    if (dimensions.includes("country")) {
+      // Every country is listed on the pricing page; here the US and the range of the others.
+      const us = rates.byDimension?.["country=US"];
+      const others = entries
+        .filter(([dimension]) => dimension !== "country=US")
+        .flatMap(([, rate]) => rate.tiers.map((tier) => tier.unitNanos));
+      const rows = us
+        ? [
+            {
+              product: `${definition.label} (US)`,
+              rate: describeRate(us, definition.displayPer, definition.unit),
+              note: "",
+            },
+          ]
+        : [];
+      if (others.length) {
+        const low = others.reduce((a, b) => (a < b ? a : b));
+        const high = others.reduce((a, b) => (a > b ? a : b));
+        rows.push({
+          product: `${definition.label} (other countries)`,
+          rate: `${formatUnitPrice(low)} to ${formatUnitPrice(high)} per ${definition.unit}`,
+          note: "By country: coss.com/pricing#sms",
+        });
+      }
+      return rows;
+    }
+    const fee = definition.unit === "fee";
+    return entries.map(([dimension, rate]) => ({
+      product: `${definition.label} (${formatDimension(dimension)})`,
+      rate: fee
+        ? formatUnitPrice(rate.tiers[0]?.unitNanos ?? 0n)
+        : describeRate(rate, definition.displayPer, definition.unit),
+      note: fee ? "Passed through at cost" : "",
     }));
   });
 }

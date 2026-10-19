@@ -5,6 +5,7 @@ import {
   estimateEmailMonth,
   formatPrice,
   rateTables,
+  smsRates,
   suggestedPlan,
 } from "../src/lib/pricing";
 
@@ -77,6 +78,35 @@ test("rateTables lists every product's list rates", () => {
     scope: "United States",
     per: "per segment",
     bands: [{ range: "All usage", price: "$0.0135" }],
-    note: "Committed volume on Enterprise contracts",
+    note: "Other countries in the SMS rates below",
+  });
+  expect(tables.filter((table) => table.meter === "sms.segments")).toHaveLength(1);
+  expect(tables.find((table) => table.meter === "sms.numbers")).toMatchObject({
+    scope: null,
+    per: "per number-month",
+    bands: [
+      { range: "Local", price: "$1.15" },
+      { range: "Toll-free", price: "$2.15" },
+    ],
+  });
+  expect(tables.find((table) => table.meter === "sms.registrations")?.per).toBe(
+    "passed through at cost",
+  );
+});
+
+test("smsRates lists every priced country by name", () => {
+  const rates = smsRates();
+  expect(rates.map((rate) => rate.country)).toEqual(
+    [...rates.map((rate) => rate.country)].sort((a, b) => a.localeCompare(b)),
+  );
+  expect(rates.find((rate) => rate.code === "GB")).toEqual({
+    code: "GB",
+    country: "United Kingdom",
+    outbound: "$0.0563",
+    inbound: null,
+  });
+  expect(rates.find((rate) => rate.code === "US")).toMatchObject({
+    outbound: "$0.0135",
+    inbound: "$0.0104",
   });
 });

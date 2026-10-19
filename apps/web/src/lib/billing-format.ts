@@ -38,14 +38,23 @@ export function formatRate(meter: MeterKey, rate: Rate): string {
   return [head, ...tail].join(" · ") + mode + window;
 }
 
-/** Every rate of a meter, one line per dimension value. */
-export function formatMeterRates(meter: MeterKey, rates: MeterRates | undefined): string[] {
+/**
+ * Every rate of a meter, one line per dimension value (at most `limit` of them: SMS has one per
+ * country, which the pricing page lists).
+ */
+export function formatMeterRates(
+  meter: MeterKey,
+  rates: MeterRates | undefined,
+  limit = 8,
+): string[] {
   if (!rates) return [];
   const lines: string[] = [];
   if (rates.default) lines.push(formatRate(meter, rates.default));
-  for (const [dimension, rate] of Object.entries(rates.byDimension ?? {})) {
+  const entries = Object.entries(rates.byDimension ?? {});
+  for (const [dimension, rate] of entries.slice(0, limit)) {
     lines.push(`${formatDimension(dimension)}: ${formatRate(meter, rate)}`);
   }
+  if (entries.length > limit) lines.push(`and ${entries.length - limit} more`);
   return lines;
 }
 

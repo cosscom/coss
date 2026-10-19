@@ -9,6 +9,9 @@ export type Meter =
   | "email.recipients"
   | "email.dedicated_ip"
   | "sms.segments"
+  | "sms.received_segments"
+  | "sms.numbers"
+  | "sms.registrations"
   | "video.participant_minutes"
   | "scheduling.bookings";
 

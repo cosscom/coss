@@ -62,7 +62,7 @@ function questions(): { question: string; answer: ReactNode }[] {
     {
       question: "When can I use SMS, video and scheduling?",
       answer:
-        "They're on the way; their rates are listed above. SMS in the United States is sold as committed volume on Enterprise contracts.",
+        "They're on the way; their rates are listed above. SMS will be available on every paid plan, priced per segment by destination country, with phone numbers and US carrier registration fees passed through at cost.",
     },
   ];
 }

@@ -8,8 +8,9 @@ import { EmailEstimator } from "@/components/pricing/email-estimator";
 import { PlanCards } from "@/components/pricing/plan-cards";
 import { PlanComparison } from "@/components/pricing/plan-comparison";
 import { PricingFaq } from "@/components/pricing/pricing-faq";
+import { SmsRateTable } from "@/components/pricing/sms-rates";
 import { UsageRateCards } from "@/components/pricing/usage-rates";
-import { formatPrice } from "@/lib/pricing";
+import { formatPrice, smsRates } from "@/lib/pricing";
 import { SALES_EMAIL } from "@/lib/site";
 
 const FREE_EMAILS = (PLANS.free.includedUnits["email.recipients"] ?? 0).toLocaleString("en-US");
@@ -81,6 +82,14 @@ export default function PricingPage() {
         title="Usage rates"
       >
         <UsageRateCards />
+      </Section>
+
+      <Section
+        description="SMS is priced per segment: 160 plain characters, or 70 with emoji or other Unicode (153 and 67 per segment in longer messages). Sends are priced by the destination country, replies by the country of the number that receives them."
+        id="sms"
+        title="SMS rates"
+      >
+        <SmsRateTable rates={smsRates()} />
       </Section>
 
       <Section id="compare" title="Compare plans">

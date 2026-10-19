@@ -17,8 +17,17 @@ describe("renderBillingComponents", () => {
     expect(text).toContain(
       "| Email | $0.40 per 1,000 recipients for the first 1,000,000; $0.30 per 1,000 recipients from 1,000,001 to 10,000,000; $0.22 per 1,000 recipients beyond 10,000,000 | |",
     );
+    expect(text).toContain("| SMS (US) | $0.0135 per segment | |");
     expect(text).toContain(
-      "| SMS (US) | $0.0135 per segment | Committed volume, Enterprise only |",
+      "| SMS (other countries) | $0.0419 to $0.1134 per segment | By country: coss.com/pricing#sms |",
+    );
+    expect(text).toContain("| SMS received (US) | $0.0104 per segment | |");
+    expect(text).toContain("| SMS phone numbers (toll-free) | $2.15 per number-month | |");
+    expect(text).toContain(
+      "| SMS registration fees (campaign vetting) | $15.00 | Passed through at cost |",
+    );
+    expect(text).toContain(
+      "| SMS rate | Sandbox only | 10 SMS segments a second, 10,000 a day | 30 SMS segments a second, 100,000 a day | Custom |",
     );
     expect(text).toContain("| Video | $1.50 per 1,000 participant-minutes | |");
     expect(text).toContain("| Scheduling | $0.10 per booking | |");

@@ -498,6 +498,17 @@ describe("enforcement", () => {
     const refused = results.find((result) => result.status === "rejected") as PromiseRejectedResult;
     expect(refused.reason).toBeInstanceOf(BillingError);
     expect(refused.reason.code).toBe("usage_limit_exceeded");
+    // Free includes no SMS.
+    await expect(
+      db.transaction((tx) =>
+        gate.reserve(tx, {
+          organizationId: org,
+          meter: "sms.segments",
+          quantity: 1,
+          dimension: "country=US",
+        }),
+      ),
+    ).rejects.toThrow("SMS isn't included in your plan.");
     // Paid plans are not capped.
     await createTestContract(
       org,
@@ -507,12 +518,25 @@ describe("enforcement", () => {
     await db.transaction((tx) =>
       gate.reserve(tx, { organizationId: org, meter: "email.recipients", quantity: 10_000 }),
     );
-    // SMS needs a contract.
+    // SMS only goes to countries with a price.
+    await db.transaction((tx) =>
+      gate.reserve(tx, {
+        organizationId: org,
+        meter: "sms.segments",
+        quantity: 1,
+        dimension: "country=US",
+      }),
+    );
     await expect(
       db.transaction((tx) =>
-        gate.reserve(tx, { organizationId: org, meter: "sms.segments", quantity: 1 }),
+        gate.reserve(tx, {
+          organizationId: org,
+          meter: "sms.segments",
+          quantity: 1,
+          dimension: "country=XX",
+        }),
       ),
-    ).rejects.toThrow("needs a contract");
+    ).rejects.toThrow("SMS to XX isn't available.");
   });
 
   test("released units go back to the month they were reserved in", async () => {

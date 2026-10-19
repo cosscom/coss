@@ -15,6 +15,7 @@ export const LIMIT_KEYS = [
   "members",
   "webhookEndpointsPerEnvironment",
   "contactsPerEnvironment",
+  "smsNumbers",
 ] as const;
 export type LimitKey = (typeof LIMIT_KEYS)[number];
 
@@ -23,6 +24,8 @@ export const RATE_LIMIT_KEYS = [
   "email.recipients.second",
   "email.recipients.day",
   "email.marketing.recipients.second",
+  "sms.segments.second",
+  "sms.segments.day",
 ] as const;
 export type RateLimitKey = (typeof RATE_LIMIT_KEYS)[number];
 
@@ -56,6 +59,7 @@ export const LIMIT_LABELS: Record<LimitKey, string> = {
   members: "Team members",
   webhookEndpointsPerEnvironment: "Webhook endpoints per environment",
   contactsPerEnvironment: "Contacts per environment",
+  smsNumbers: "SMS phone numbers",
 };
 
 const SECOND = 1000;
