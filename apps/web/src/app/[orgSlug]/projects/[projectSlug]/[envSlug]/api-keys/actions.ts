@@ -1,5 +1,14 @@
 "use server";
 
+import {
+  InvalidKeyPermissionsError,
+  isApiKeyPreset,
+  type KeyPermissions,
+  parsePermissionStrings,
+  permissionStrings,
+  readOnlyPermissions,
+  SENDING_PERMISSIONS,
+} from "@coss/auth/api-key-permissions";
 import { createEnvironmentApiKey, getEnvironment, getKeyBinding } from "@coss/tenancy";
 import { refresh } from "next/cache";
 import { headers } from "next/headers";
@@ -22,6 +31,25 @@ async function environmentFromForm(context: OrgContext, formData: FormData) {
 }
 
 /**
+ * What the form grants: `full`, a preset's permissions, or the checked `resource:action` values
+ * (`custom`). `createEnvironmentApiKey` validates them against the catalog.
+ */
+function requestedPermissions(formData: FormData): "full" | KeyPermissions {
+  const preset = formString(formData, "access");
+  if (!isApiKeyPreset(preset)) throw new ActionError("Choose what the key can access.");
+  if (preset === "full") return "full";
+  if (preset === "sending") return SENDING_PERMISSIONS;
+  if (preset === "read_only") return readOnlyPermissions();
+  const values = formData.getAll("permission").filter((v): v is string => typeof v === "string");
+  try {
+    return parsePermissionStrings(values);
+  } catch (error) {
+    if (error instanceof InvalidKeyPermissionsError) throw new ActionError(error.message);
+    throw error;
+  }
+}
+
+/**
  * Mints a key for this environment. The plaintext key is only ever in this action's result
  * (shown once in a dialog); it is never stored or put in a URL.
  */
@@ -34,6 +62,7 @@ export async function createApiKeyAction(
       apiKey: ["create"],
     });
     const environment = await environmentFromForm(context, formData);
+    const permissions = requestedPermissions(formData);
     if (environment.mode === "live") {
       const restriction = await liveKeyRestriction(context.session, context.organization.id);
       if (restriction) throw new ActionError(restriction);
@@ -43,6 +72,7 @@ export async function createApiKeyAction(
       environmentId: environment.id,
       name: formString(formData, "name"),
       userId: context.session.user.id,
+      permissions,
     });
     await recordAudit(context.session, {
       organizationId: context.organization.id,
@@ -50,7 +80,13 @@ export async function createApiKeyAction(
       target: { type: "api_key", id: created.id, label: created.name },
       projectId: environment.projectId,
       environmentId: environment.id,
-      metadata: { mode: environment.mode },
+      metadata: {
+        mode: environment.mode,
+        access: created.access,
+        ...(created.access === "restricted"
+          ? { permissions: permissionStrings(created.permissions) }
+          : {}),
+      },
     });
     refresh();
     return { name: created.name, key: created.key };

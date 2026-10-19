@@ -130,6 +130,7 @@ describe("coss login", () => {
     expect(await run(["whoami"], io)).toBe(0);
     expect(io.output()).toContain("Acme / Default / Development (sandbox)");
     expect(io.output()).toContain("COSS_API_KEY");
+    expect(io.output()).toMatch(/Access\s+full/);
     const json = testIo({ fetch: api.fetch, env: { COSS_API_KEY: SANDBOX_KEY } });
     expect(await run(["whoami", "--json"], json)).toBe(0);
     expect(JSON.parse(json.output())).toMatchObject({

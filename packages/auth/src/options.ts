@@ -612,8 +612,9 @@ export const authOptions = {
       rateLimit: { enabled: false },
       // Environment binding lives in our `environment_api_key` table (metadata is client-writable).
       enableMetadata: false,
-      // Stored on the key at creation, so adding a resource here needs a backfill for existing
-      // keys (see migrations 0004 and 0006) or they get a 403 from the new endpoints.
+      // Stored on every key, but only restricted keys are held to what they store: full-access
+      // keys are checked against the current catalog (`environment_api_key.access`), so adding a
+      // resource needs no backfill.
       permissions: { defaultPermissions: API_KEY_PERMISSIONS },
     }),
     sso({

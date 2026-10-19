@@ -13,6 +13,7 @@ export {
   type KeyPermissions,
   LAST_USED_RESOLUTION_MS,
   listEnvironmentApiKeys,
+  permissionStrings,
   type RefusedKeyContext,
   revokeEnvironmentApiKey,
 } from "./api-keys.ts";

@@ -11,6 +11,11 @@ export const whoamiCommand: Command = defineCommand({
   run: whoami,
 });
 
+function describeAccess(key: { access: "full" | "restricted"; permissions: string[] }): string {
+  if (key.access === "full") return "full";
+  return `restricted: ${key.permissions.join(", ") || "nothing"}`;
+}
+
 async function whoami({ context }: CommandInput<Record<never, never>>): Promise<number> {
   const { io, out } = context;
   const credentials = await resolveCredentials(context);
@@ -24,6 +29,8 @@ async function whoami({ context }: CommandInput<Record<never, never>>): Promise<
   }
   out.line(describeEnvironment(data));
   out.line(`  Key       ${data.api_key.name ?? "(unnamed)"} ${out.style("dim", data.api_key.id)}`);
+  // Older APIs don't report it.
+  if (data.api_key.access) out.line(`  Access    ${describeAccess(data.api_key)}`);
   out.line(`  From      ${source}`);
   out.line(`  API       ${credentials.baseUrl}`);
   out.line(`  Version   ${data.organization.api_version}`);

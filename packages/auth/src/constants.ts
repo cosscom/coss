@@ -13,9 +13,10 @@ export const API_KEY_PREFIX = {
 export const API_KEY_VISIBLE_CHARACTERS = 14;
 
 /**
- * Permissions every API key is created with: one key covers every product the organization uses.
- * Stored on the key row at creation time, so changing this only affects new keys — existing ones
- * need an `apikey.permissions` backfill.
+ * Every permission an API key can hold: what a full-access key has, resolved on every request (so
+ * a new action reaches existing full-access keys without a backfill). Restricted keys hold a
+ * subset chosen at creation and never gain new ones. Labels for each resource and action live in
+ * `./api-key-permissions.ts` (a test fails when they disagree).
  */
 export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   email: ["send", "read"],

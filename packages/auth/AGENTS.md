@@ -11,8 +11,16 @@ Better Auth (`packages/auth`) and the dashboard actions, mobile API routes, tena
     (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
     `environment_api_key`; metadata is client-writable),
-    `defaultPermissions: API_KEY_PERMISSIONS` (every product: email, domain, webhook, suppression, reputation, billing `read` — backfilled by `0043`, hook — backfilled by `0052`, emailTemplate — backfilled by `0064`), prefixes
+    `defaultPermissions: API_KEY_PERMISSIONS`, prefixes
     `coss_live_` / `coss_test_` by environment mode (`API_KEY_PREFIX`), key format `/^coss_(live|test)_[A-Za-z]{64}$/`.
+  - **Scoped keys:** every binding has an `access` (`environment_api_key.access`, no default). `full` keys are checked
+    against the current `API_KEY_PERMISSIONS` on every request (their stored `apikey.permissions` is ignored, so new
+    products need no backfill); `restricted` keys hold exactly the stored subset, validated at creation by
+    `normalizeKeyPermissions` (`./api-key-permissions`: known resources/actions only, at least one) and passed to
+    Better Auth's server-only `permissions`. Both checks (`authenticateApiKey`, `apiKeyHasPermissions`) go through
+    `effectiveKeyPermissions`. Restricted keys never gain permissions: never backfill them. The dashboard's presets
+    (`full`, `sending` = `email:send`, `read_only` = every `read`, `custom`) are only ways to fill the set; CLI
+    sign-in, the seed and test fixtures create `full` keys. Permissions can't be edited after creation (a new key).
   - Keys are created only by `createEnvironmentApiKey` (server-side, no headers) and authenticated only by
     `authenticateApiKey`; keys without an `environment_api_key` binding fail closed. `authenticateApiKey` never calls
     Better Auth's `verifyApiKey` (it writes the key row on every request): one SELECT checks enabled, expiry, org,

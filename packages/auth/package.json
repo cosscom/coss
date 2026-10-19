@@ -9,6 +9,7 @@
     "./permissions": "./src/permissions.ts",
     "./slugs": "./src/slugs.ts",
     "./constants": "./src/constants.ts",
+    "./api-key-permissions": "./src/api-key-permissions.ts",
     "./emails": "./src/emails.ts",
     "./sso": "./src/sso.ts",
     "./social": "./src/social.ts",

@@ -11,9 +11,12 @@ import { newId } from "@coss/db/id";
 import { versioning } from "@coss/versioning";
 import { eq } from "drizzle-orm";
 import {
+  apiKeyHasPermissions,
   authenticateApiKey,
   createEnvironmentApiKey,
+  getApiKeyEnvironmentSummary,
   getKeyBinding,
+  type KeyPermissions,
   LAST_USED_RESOLUTION_MS,
   listEnvironmentApiKeys,
   TenancyError,
@@ -58,6 +61,7 @@ describe("createEnvironmentApiKey", () => {
       environmentId: tenant.development.id,
       name: "  CI  ",
       userId: tenant.owner.id,
+      permissions: "full",
     });
     expect(created.id).toStartWith("key_");
     expect(created.name).toBe("CI");
@@ -81,6 +85,7 @@ describe("createEnvironmentApiKey", () => {
         environmentId: b.production.id,
         name: "steal",
         userId: a.owner.id,
+        permissions: "full",
       }),
       "not_found",
     );
@@ -95,6 +100,7 @@ describe("createEnvironmentApiKey", () => {
           environmentId: tenant.development.id,
           name,
           userId: tenant.owner.id,
+          permissions: "full",
         }),
         "invalid",
       );
@@ -115,6 +121,7 @@ describe("createEnvironmentApiKey", () => {
         environmentId: tenant.production.id,
         name: "role check",
         userId,
+        permissions: "full",
       });
 
     await expectTenancyError(create(member.id), "forbidden");
@@ -284,9 +291,11 @@ describe("authenticateApiKey", () => {
       tenant.owner.id,
       API_KEY_PREFIX.sandbox,
     );
-    await db
-      .insert(schema.environmentApiKey)
-      .values({ apiKeyId: sandboxPrefixed.id, environmentId: tenant.production.id });
+    await db.insert(schema.environmentApiKey).values({
+      apiKeyId: sandboxPrefixed.id,
+      environmentId: tenant.production.id,
+      access: "full",
+    });
     expect(await authenticateApiKey(sandboxPrefixed.key)).toEqual({ ok: false, reason: "invalid" });
   });
 
@@ -296,7 +305,7 @@ describe("authenticateApiKey", () => {
     const key = await createUnboundKey(a.organization.id, a.owner.id, API_KEY_PREFIX.sandbox);
     await db
       .insert(schema.environmentApiKey)
-      .values({ apiKeyId: key.id, environmentId: b.development.id });
+      .values({ apiKeyId: key.id, environmentId: b.development.id, access: "full" });
     expect(await authenticateApiKey(key.key)).toEqual({ ok: false, reason: "invalid" });
   });
 
@@ -320,9 +329,13 @@ describe("authenticateApiKey", () => {
     });
   });
 
-  test("malformed stored permissions grant nothing", async () => {
+  test("malformed stored permissions grant a restricted key nothing", async () => {
     const tenant = await createTestTenant();
     const keyId = await keyIdOf(tenant.sandboxKey);
+    await db
+      .update(schema.environmentApiKey)
+      .set({ access: "restricted" })
+      .where(eq(schema.environmentApiKey.apiKeyId, keyId));
     for (const permissions of [null, "not json", "[]", '{"email":"send"}', '{"email":[1]}']) {
       await db.update(schema.apikey).set({ permissions }).where(eq(schema.apikey.id, keyId));
       expect(await authenticateApiKey(tenant.sandboxKey, { email: ["send"] })).toMatchObject({
@@ -340,6 +353,96 @@ describe("authenticateApiKey", () => {
   });
 });
 
+describe("restricted keys", () => {
+  test("hold exactly the permissions they were created with, in catalog order", async () => {
+    const tenant = await createTestTenant();
+    const created = await createEnvironmentApiKey({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+      name: "Sender",
+      userId: tenant.owner.id,
+      permissions: { log: ["read"], email: ["send", "send"], domain: [] },
+    });
+    expect(created.access).toBe("restricted");
+    expect(created.permissions).toEqual({ email: ["send"], log: ["read"] });
+
+    expect((await authenticateApiKey(created.key, { email: ["send"] })).ok).toBe(true);
+    expect((await authenticateApiKey(created.key, { log: ["read"] })).ok).toBe(true);
+    expect((await authenticateApiKey(created.key, {})).ok).toBe(true);
+    const denied: KeyPermissions[] = [
+      { email: ["read"] },
+      { domain: ["read"] },
+      { webhook: ["create"] },
+    ];
+    for (const required of denied) {
+      expect(await authenticateApiKey(created.key, required)).toMatchObject({
+        ok: false,
+        reason: "forbidden",
+      });
+    }
+    expect(await apiKeyHasPermissions(created.id, { email: ["send"] })).toBe(true);
+    expect(await apiKeyHasPermissions(created.id, { broadcast: ["send"] })).toBe(false);
+
+    const keys = await listEnvironmentApiKeys({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+    });
+    expect(keys.find((key) => key.id === created.id)).toMatchObject({
+      access: "restricted",
+      permissions: { email: ["send"], log: ["read"] },
+    });
+    const summary = await getApiKeyEnvironmentSummary({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+      apiKeyId: created.id,
+    });
+    expect(summary?.apiKey).toMatchObject({
+      access: "restricted",
+      permissions: { email: ["send"], log: ["read"] },
+    });
+  });
+
+  test("refuses unknown and empty permissions without creating a key", async () => {
+    const tenant = await createTestTenant();
+    const invalid: KeyPermissions[] = [{}, { email: [] }, { sms: ["send"] }, { email: ["delete"] }];
+    for (const permissions of invalid) {
+      await expectTenancyError(
+        createEnvironmentApiKey({
+          organizationId: tenant.organization.id,
+          environmentId: tenant.development.id,
+          name: "Invalid",
+          userId: tenant.owner.id,
+          permissions,
+        }),
+        "invalid",
+      );
+    }
+    const keys = await listEnvironmentApiKeys({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+    });
+    expect(keys.map((key) => key.name)).toEqual(["Test sandbox key"]);
+  });
+
+  test("full-access keys follow the catalog, whatever they stored", async () => {
+    const tenant = await createTestTenant();
+    const keyId = await keyIdOf(tenant.sandboxKey);
+    // As if the key predated every product but email: full access still covers them.
+    await db
+      .update(schema.apikey)
+      .set({ permissions: '{"email":["send"]}' })
+      .where(eq(schema.apikey.id, keyId));
+    expect((await authenticateApiKey(tenant.sandboxKey, { domain: ["create"] })).ok).toBe(true);
+    expect(await apiKeyHasPermissions(keyId, { broadcast: ["send"] })).toBe(true);
+    const summary = await getApiKeyEnvironmentSummary({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+      apiKeyId: keyId,
+    });
+    expect(summary?.apiKey).toMatchObject({ access: "full", permissions: API_KEY_PERMISSIONS });
+  });
+});
+
 describe("listing and bindings are organization-scoped", () => {
   test("listEnvironmentApiKeys never exposes the hash", async () => {
     const tenant = await createTestTenant();
@@ -349,6 +452,7 @@ describe("listing and bindings are organization-scoped", () => {
       environmentId: tenant.development.id,
       name: "Second",
       userId: tenant.owner.id,
+      permissions: "full",
     });
 
     const keys = await listEnvironmentApiKeys({
@@ -364,6 +468,8 @@ describe("listing and bindings are organization-scoped", () => {
       lastRequest: null,
       createdAt: expect.any(Date),
       createdByUserId: tenant.owner.id,
+      access: "full",
+      permissions: API_KEY_PERMISSIONS,
     });
     const hash = await defaultKeyHasher(second.key);
     expect(JSON.stringify(keys)).not.toContain(hash);

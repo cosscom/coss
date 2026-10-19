@@ -83,6 +83,12 @@ export const environment = pgTable(
  * Binds a Better Auth API key to exactly one environment. Keys without a binding are rejected,
  * so keys minted outside our flow fail closed. Organization/project are derived via the join.
  */
+/**
+ * `full`: every permission in `API_KEY_PERMISSIONS`, resolved on each request (the stored
+ * `apikey.permissions` is ignored). `restricted`: exactly the stored permissions.
+ */
+export const apiKeyAccess = pgEnum("api_key_access", ["full", "restricted"]);
+
 export const environmentApiKey = pgTable(
   "environment_api_key",
   {
@@ -92,6 +98,8 @@ export const environmentApiKey = pgTable(
     environmentId: text("environment_id")
       .notNull()
       .references(() => environment.id, { onDelete: "cascade" }),
+    // No default: every binding says which it is (existing keys were backfilled as `full`).
+    access: apiKeyAccess("access").notNull(),
     createdByUserId: text("created_by_user_id").references(() => user.id, {
       onDelete: "set null",
     }),

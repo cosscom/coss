@@ -18,6 +18,7 @@ import { Panel, PanelBody } from "@/components/panel";
 import { formatDateTime, formatRelative } from "@/lib/format";
 import { liveKeyRestriction } from "@/lib/live-keys";
 import { requireOrgMember } from "@/lib/session";
+import { ApiKeyAccessBadge } from "./api-key-access";
 import { CreateApiKeyDialog, CreateApiKeyUnavailable } from "./create-api-key-dialog";
 import { RevokeApiKeyButton } from "./revoke-api-key-button";
 
@@ -85,6 +86,7 @@ export default async function ApiKeysPage({
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Key</TableHead>
+                <TableHead>Access</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Last used</TableHead>
                 {canRevoke ? <TableHead className="w-0" /> : null}
@@ -96,6 +98,9 @@ export default async function ApiKeysPage({
                   <TableCell className="font-medium">{key.name ?? "Untitled"}</TableCell>
                   <TableCell className="font-mono text-muted-foreground text-xs">
                     {key.start ? `${key.start}…` : "—"}
+                  </TableCell>
+                  <TableCell>
+                    <ApiKeyAccessBadge access={key.access} permissions={key.permissions} />
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDateTime(key.createdAt)}

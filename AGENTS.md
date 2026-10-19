@@ -35,7 +35,7 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, broadcast fan-out, webhook deliveries, domain re-checks, dedicated IP pools, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events and received emails from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss); `./idempotency` (`withIdempotencyKey`, request hashes); `./partitions` (daily range partitions: create ahead, drop expired). |
 | `packages/signals` | `@coss/signals` | Stateless abuse signals shared by coss.com's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
-| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./social`: Google/GitHub sign-in (server-only); `./risk`: the injected sign-up risk assessor (coss.com Risk on coss.com's own sign-ups); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox; `./mobile`: the iOS app's sign-in (PKCE codes, bearer sessions; server-only). See `packages/auth/AGENTS.md`. |
+| `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, API key permissions (`./api-key-permissions`: the labelled catalog, access presets, validation; client-safe), the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./social`: Google/GitHub sign-in (server-only); `./risk`: the injected sign-up risk assessor (coss.com Risk on coss.com's own sign-ups); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox; `./mobile`: the iOS app's sign-in (PKCE codes, bearer sessions; server-only). See `packages/auth/AGENTS.md`. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). See `packages/tenancy/AGENTS.md`. |
 | `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS (with the BIMI check), custom tracking domains (Cloudflare for SaaS), dedicated IP pools (SES managed dedicated IPs, `dedicated-ips.ts`), receiving (received emails, receiving domains, managed inbound addresses, the content store), DMARC reports (ingestion, guidance to `p=reject`, owner notifications), templates (drafts, versions, locales, rendering at send), tenants, sweeps, contacts (custom properties, audiences, segments, topics, marketing settings; wire schemas in `./contact-schemas`), broadcasts (wire schemas in `./broadcast-schemas`); `./templates` (the template language: parse, check, render, variable validation; client-safe, no imports), `./domain-connect` (one-click DNS setup: discovery, the signed apply link, `domain-connect/coss.com.email.json`), `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./admin` (the admin console's cross-org reads), `./env` (zod only), `./testing`. See `packages/email/AGENTS.md`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
@@ -67,7 +67,7 @@ billing enqueues `billing.*` events through it — and email imports only `./met
 `retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `hooks`, `billing`, `push`, `worker`, `web`, `site`, `mobile`;
 `api → tenancy, email, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, screening (`./env` only), db`;
 `smtp → tenancy, email, ratelimit, logs, billing, observability, db`;
-`web → auth, tenancy, email, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, push, companion, db, ui`; `mobile → companion` (types only; a dev dependency), `retention` (bundled by Metro: keep it dependency-free); `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/slugs`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
+`web → auth, tenancy, email, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, push, companion, db, ui`; `mobile → companion` (types only; a dev dependency), `retention` (bundled by Metro: keep it dependency-free); `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/{slugs,constants,api-key-permissions}`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
 `@coss/api/openapi.json` (data only, never api code); `infra → auth, email, hooks, ratelimit, screening, billing` (`slugs`, `env` only);
 `worker → auth (`./emails` only), email, hooks, reputation, screening, webhooks, ratelimit, logs, risk, push, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui`, `kloq` and `companion` depend on no workspace (`site → kloq`); `mcp` and `cli` depend only on the published `coss` (a
 semver range, not `workspace:`).
@@ -356,7 +356,8 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   environment only (`COSS_API_KEY`, `COSS_BASE_URL`), never argv; stdout is the protocol, so log to stderr.
 - Tools (`src/tools/*.ts`) call only the public SDK — never workspace packages (AGPL) or the database — so anything a
   tool needs must exist in the public API first. Every tool carries annotations (`READ_ONLY`, `WRITE`,
-  `DESTRUCTIVE`, `SENDS` in `tools/shared.ts`); API keys hold every permission, so clients rely on them to prompt.
+  `DESTRUCTIVE`, `SENDS` in `tools/shared.ts`); clients rely on them to prompt (full-access keys hold every
+  permission; a restricted key's 403 hint points at `get_account_status`, which lists what it holds).
 - Answers stay small: lists drop content (`compact`, `emailListItem`), bodies are cut (`truncate`), API failures
   become `isError` results with a hint (`result.ts`). Third-party text (email content, received mail, bounce and
   webhook responses) is labelled untrusted, and the server's `instructions` say so.
@@ -540,10 +541,12 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 2. `packages/<product>`: `src/schemas.ts` (zod `strictObject`, snake_case, `.meta({ id })`, no DB imports, exported as
    `./schemas`), provider interface + fake provider, a service taking the authenticated environment, an error class with
    statuses, `bunfig.toml` + `test/setup.ts` preload.
-3. Permissions: add the resource to `orgStatements` and the roles (`packages/auth/src/permissions.ts`) and to
-   `API_KEY_PERMISSIONS` (`packages/auth/src/constants.ts`, the api-key plugin's `defaultPermissions`). Permissions are
-   stored per key at creation, so existing keys need an `apikey.permissions` backfill (`drizzle-kit generate --custom`,
-   as in migrations `0004` and `0006`) or they get 403.
+3. Permissions: add the resource to `orgStatements` and the roles (`packages/auth/src/permissions.ts`), to
+   `API_KEY_PERMISSIONS` (`packages/auth/src/constants.ts`) and its label, group and description to `API_KEY_RESOURCES`
+   (`packages/auth/src/api-key-permissions.ts`; a test fails otherwise, and the dashboard and docs read them).
+   Full-access keys (`environment_api_key.access = 'full'`) get the new permissions at once (resolved from the catalog on
+   every request); restricted keys keep exactly what they were created with — never backfill `apikey.permissions` (the
+   pre-`0080` migrations `0004`…`0077` did, when every key was full).
 4. API: `src/routes/<resource>.ts` mounted in `routes/v1.ts`, service injected via `createApp` options, error class
    mapped in `toApiError`, OpenAPI path list in `test/app.test.ts` updated.
 5. SDK: types, resource, `Coss` property, `src/index.ts` exports, unit tests; extend `contract-types.ts` +
@@ -648,7 +651,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   (and the dispatch job, from the job's `organizationId`). Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
-- **Client-safe modules** never import `@coss/db`: `@coss/risk/{schemas,env}`, `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants,org-access}`, `@coss/push/schemas`, `@coss/email/schemas`,
+- **Client-safe modules** never import `@coss/db`: `@coss/risk/{schemas,env}`, `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants,api-key-permissions,org-access}`, `@coss/push/schemas`, `@coss/email/schemas`,
   `@coss/email/{broadcast-schemas,contact-schemas,test-event-schemas,env,templates}`, `@coss/hooks/{schemas,env}`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`, `@coss/companion`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch,domain-connect}`, `@coss/risk/{runtime,datasets}`, `@coss/signals/*`, `@coss/push` (root, `./apns`) and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
   modules start with `import "server-only"`.
 - **Rate limits** (`@coss/ratelimit`): buckets are defined only in `BUCKETS` (`src/buckets.ts`); GCRA state is one
@@ -858,6 +861,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 Universal Link sign-in callbacks, an Android app, App Store (beyond TestFlight) releases of the iOS app, push notifications for other events (or per organization),
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
+editing an API key's permissions (create a new key), API keys restricted to sending domains or IP addresses,
 org logos, uploading a profile picture, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which
 would drop an org's SSO provider or last owner), email change,
 email/SMS two-factor codes, sign-in providers other than Google and GitHub, "trust this device" for 2FA, renaming passkeys, webhooks and notification emails for dedicated IP status changes, standard (manually

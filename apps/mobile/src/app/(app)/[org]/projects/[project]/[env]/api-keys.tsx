@@ -1,3 +1,4 @@
+import type { ApiKey } from "@coss/companion";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { KeyRound } from "lucide-react-native";
 import { StyleSheet, View } from "react-native";
@@ -11,6 +12,14 @@ import { WebButton } from "../../../../../../components/web-button";
 import { formatAgo, formatDateTime } from "../../../../../../lib/format";
 import { useApiKeys, useEnvironment } from "../../../../../../lib/queries";
 import { type EnvironmentParams, environmentPath } from "../../../../../../lib/web";
+
+// The dashboard's labels (`API_KEY_PRESET_LABELS` in `@coss/auth/api-key-permissions`).
+const ACCESS_LABELS: Record<ApiKey["access"], string> = {
+  full: "Full access",
+  sending: "Sending access",
+  read_only: "Read only",
+  custom: "Custom access",
+};
 
 export default function ApiKeysScreen() {
   const params = useLocalSearchParams<EnvironmentParams>();
@@ -49,6 +58,10 @@ export default function ApiKeysScreen() {
                   </Text>
                   <Text muted variant="mono">
                     {key.start ? `${key.start}…` : "—"}
+                  </Text>
+                  <Text muted variant="small">
+                    {ACCESS_LABELS[key.access]}
+                    {key.access === "full" ? "" : ` · ${key.permissions.join(", ")}`}
                   </Text>
                   <Text muted variant="small">
                     Created {formatDateTime(key.created_at).split(",")[0]} · last used{" "}

@@ -22,11 +22,13 @@ const created = mock(
     environmentId: string;
     name: string;
     userId: string;
+    permissions: unknown;
   }) => ({
     id: "key_1",
     key: "coss_test_secret",
     start: "coss_test_se",
     name: input.name,
+    access: "full" as const,
   }),
 );
 mock.module("@coss/tenancy", () => ({
@@ -106,13 +108,14 @@ describe("POST /api/cli/v1/token", () => {
       environmentId: "env_1",
       name: "coss CLI · laptop",
       userId: "user_1",
+      permissions: "full",
     });
     expect(audited.mock.calls[0]).toEqual([
       { id: "user_1", email: "ada@example.com" },
       expect.objectContaining({
         action: "api_key.created",
         environmentId: "env_1",
-        metadata: { mode: "sandbox", via: "cli" },
+        metadata: { mode: "sandbox", via: "cli", access: "full" },
       }),
     ]);
   });

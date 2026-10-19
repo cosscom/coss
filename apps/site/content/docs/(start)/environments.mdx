@@ -19,6 +19,30 @@ An organization has any number of **projects**, and each project has two **envir
 An API key belongs to exactly one environment, and everything it creates or reads lives in that
 environment. A key can only read emails sent from its own environment.
 
+### Permissions
+
+When you create a key in the dashboard, you choose what it can do:
+
+| Access             | Can                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------ |
+| **Full access**    | Everything, including the permissions of products coss.com adds later                |
+| **Sending access** | Only `email:send`: send, schedule and cancel emails through the API, the SDK or SMTP |
+| **Read only**      | Every `read` permission below                                                        |
+| **Custom**         | The permissions you check                                                            |
+
+Keys with sending access, read-only access or custom permissions are **restricted**. A restricted key
+keeps exactly the permissions it was created with: it never gains new ones, even when coss.com adds
+products. Give each server or job the narrowest key that does its work: an application that only
+sends email needs only sending access.
+
+A request the key isn't allowed to make fails with `403` `permission_error`
+(`insufficient_permissions`), and the message names the permission it needed. Any key can read
+its own environment and access with `GET /v1/environment`
+(`coss.environment.get()`: `api_key.access` and `api_key.permissions`) and revoke itself.
+To change what a key can do, create a new key and revoke the old one.
+
+<ApiKeyPermissionsTable />
+
 Keys are secrets. Call coss.com from your server, never from a browser: the SDK refuses to run where a
 `document` global exists unless you opt in with `dangerouslyAllowBrowser`.
 

@@ -1,6 +1,13 @@
 import { defaultKeyHasher } from "@better-auth/api-key";
 import { auth } from "@coss/auth";
-import { API_KEY_NAME_MAX_LENGTH, API_KEY_PREFIX } from "@coss/auth/constants";
+import {
+  type ApiKeyAccess,
+  InvalidKeyPermissionsError,
+  type KeyPermissions,
+  normalizeKeyPermissions,
+  permissionStrings,
+} from "@coss/auth/api-key-permissions";
+import { API_KEY_NAME_MAX_LENGTH, API_KEY_PERMISSIONS, API_KEY_PREFIX } from "@coss/auth/constants";
 import { db, schema } from "@coss/db";
 import { isAPIError } from "better-auth/api";
 import { and, desc, eq, inArray, isNull, lte, or } from "drizzle-orm";
@@ -27,10 +34,26 @@ export type EnvironmentApiKeySummary = {
   lastRequest: Date | null;
   createdAt: Date;
   createdByUserId: string | null;
+  access: ApiKeyAccess;
+  /** What the key may do now (`full`: the whole current catalog). */
+  permissions: KeyPermissions;
 };
 
 /** Resource -> actions, e.g. `{ email: ["send"] }`. */
-export type KeyPermissions = Record<string, string[]>;
+export type { KeyPermissions };
+export { permissionStrings };
+
+/**
+ * What a key may do: `full` keys hold the current catalog (never what was stored when they were
+ * created), `restricted` keys exactly what they were created with.
+ */
+export function effectiveKeyPermissions(
+  access: ApiKeyAccess,
+  stored: string | null,
+): KeyPermissions {
+  if (access === "full") return API_KEY_PERMISSIONS;
+  return parsePermissions(stored) ?? {};
+}
 
 export type ApiKeyContext = {
   apiKeyId: string;
@@ -60,14 +83,23 @@ const API_KEY_FORMAT = /^coss_(live|test)_[A-Za-z]{64}$/;
 /**
  * Mints an organization-owned key for one environment and binds it. Better Auth checks that
  * `userId` is a member of the organization with `apiKey:create`. The plaintext key is returned
- * exactly once.
+ * exactly once. `permissions` is `"full"` (everything, including permissions added later) or the
+ * subset of `API_KEY_PERMISSIONS` a restricted key holds forever.
  */
 export async function createEnvironmentApiKey(input: {
   organizationId: string;
   environmentId: string;
   name: string;
   userId: string;
-}): Promise<{ id: string; key: string; start: string | null; name: string }> {
+  permissions: "full" | KeyPermissions;
+}): Promise<{
+  id: string;
+  key: string;
+  start: string | null;
+  name: string;
+  access: ApiKeyAccess;
+  permissions: KeyPermissions;
+}> {
   const env = await getEnvironmentById({
     organizationId: input.organizationId,
     environmentId: input.environmentId,
@@ -81,6 +113,18 @@ export async function createEnvironmentApiKey(input: {
   if (name.length === 0 || name.length > API_KEY_NAME_MAX_LENGTH) {
     throw new TenancyError("invalid", `Key name must be 1-${API_KEY_NAME_MAX_LENGTH} characters.`);
   }
+  const access: ApiKeyAccess = input.permissions === "full" ? "full" : "restricted";
+  let permissions: KeyPermissions = API_KEY_PERMISSIONS;
+  if (input.permissions !== "full") {
+    try {
+      permissions = normalizeKeyPermissions(input.permissions);
+    } catch (error) {
+      if (error instanceof InvalidKeyPermissionsError) {
+        throw new TenancyError("invalid", error.message);
+      }
+      throw error;
+    }
+  }
 
   let created: Awaited<ReturnType<typeof auth.api.createApiKey>>;
   try {
@@ -92,6 +136,9 @@ export async function createEnvironmentApiKey(input: {
         userId: input.userId,
         name,
         prefix: API_KEY_PREFIX[env.mode],
+        // Full-access keys store the current catalog too (Better Auth's default), but their
+        // binding's `access` is what counts.
+        permissions,
       },
     });
   } catch (error) {
@@ -109,6 +156,7 @@ export async function createEnvironmentApiKey(input: {
       apiKeyId: created.id,
       environmentId: env.id,
       createdByUserId: input.userId,
+      access,
     });
   } catch (error) {
     // Unbound keys are rejected anyway; deleting keeps them from piling up. Best effort only,
@@ -120,7 +168,14 @@ export async function createEnvironmentApiKey(input: {
     throw error;
   }
 
-  return { id: created.id, key: created.key, start: created.start ?? null, name };
+  return {
+    id: created.id,
+    key: created.key,
+    start: created.start ?? null,
+    name,
+    access,
+    permissions,
+  };
 }
 
 /** Keys bound to an environment, newest first. Never selects the key hash. */
@@ -137,6 +192,8 @@ export async function listEnvironmentApiKeys(input: {
       lastRequest: apikey.lastRequest,
       createdAt: apikey.createdAt,
       createdByUserId: environmentApiKey.createdByUserId,
+      access: environmentApiKey.access,
+      storedPermissions: apikey.permissions,
     })
     .from(environmentApiKey)
     .innerJoin(apikey, eq(apikey.id, environmentApiKey.apiKeyId))
@@ -150,7 +207,11 @@ export async function listEnvironmentApiKeys(input: {
     )
     .orderBy(desc(apikey.createdAt), desc(apikey.id));
   // `enabled` is nullable in Better Auth's schema; NULL means the default (enabled).
-  return rows.map((row) => ({ ...row, enabled: row.enabled !== false }));
+  return rows.map(({ storedPermissions, ...row }) => ({
+    ...row,
+    enabled: row.enabled !== false,
+    permissions: effectiveKeyPermissions(row.access, storedPermissions),
+  }));
 }
 
 /** Names of the organization's keys among `ids` (deleted and foreign keys are left out). */
@@ -172,7 +233,13 @@ export type ApiKeyEnvironmentSummary = {
   environment: { id: string; name: string; slug: string; mode: EnvironmentMode };
   project: { id: string; name: string; slug: string };
   organization: { id: string; name: string; slug: string };
-  apiKey: { id: string; name: string | null; start: string | null };
+  apiKey: {
+    id: string;
+    name: string | null;
+    start: string | null;
+    access: ApiKeyAccess;
+    permissions: KeyPermissions;
+  };
 };
 
 /**
@@ -199,6 +266,8 @@ export async function getApiKeyEnvironmentSummary(input: {
       apiKeyId: apikey.id,
       apiKeyName: apikey.name,
       apiKeyStart: apikey.start,
+      apiKeyAccess: environmentApiKey.access,
+      apiKeyPermissions: apikey.permissions,
     })
     .from(environmentApiKey)
     .innerJoin(apikey, eq(apikey.id, environmentApiKey.apiKeyId))
@@ -234,7 +303,13 @@ export async function getApiKeyEnvironmentSummary(input: {
       name: row.organizationName,
       slug: row.organizationSlug,
     },
-    apiKey: { id: row.apiKeyId, name: row.apiKeyName, start: row.apiKeyStart },
+    apiKey: {
+      id: row.apiKeyId,
+      name: row.apiKeyName,
+      start: row.apiKeyStart,
+      access: row.apiKeyAccess,
+      permissions: effectiveKeyPermissions(row.apiKeyAccess, row.apiKeyPermissions),
+    },
   };
 }
 
@@ -303,9 +378,9 @@ function parsePermissions(stored: string | null): KeyPermissions | null {
   }
 }
 
-function hasPermissions(granted: KeyPermissions | null, required: KeyPermissions) {
+function hasPermissions(granted: KeyPermissions, required: KeyPermissions) {
   return Object.entries(required).every(([resource, actions]) => {
-    const allowed = granted?.[resource];
+    const allowed = granted[resource];
     return allowed !== undefined && actions.every((action) => allowed.includes(action));
   });
 }
@@ -348,6 +423,7 @@ export async function authenticateApiKey(
       expiresAt: apikey.expiresAt,
       remaining: apikey.remaining,
       permissions: apikey.permissions,
+      access: environmentApiKey.access,
       lastRequest: apikey.lastRequest,
       organizationId: environment.organizationId,
       projectId: environment.projectId,
@@ -391,7 +467,7 @@ export async function authenticateApiKey(
   const context = { apiKeyId, organizationId, projectId, environmentId, mode };
   // Checked only once the key itself is proven valid, so a guessed key learns nothing.
   if (row.suspendedAt !== null) return { ok: false, reason: "suspended", context };
-  if (required && !hasPermissions(parsePermissions(row.permissions), required)) {
+  if (required && !hasPermissions(effectiveKeyPermissions(row.access, row.permissions), required)) {
     return { ok: false, reason: "forbidden", context };
   }
 
@@ -416,11 +492,14 @@ export async function apiKeyHasPermissions(
   required: KeyPermissions,
 ): Promise<boolean> {
   const [row] = await db
-    .select({ permissions: apikey.permissions })
+    .select({ permissions: apikey.permissions, access: environmentApiKey.access })
     .from(apikey)
+    .innerJoin(environmentApiKey, eq(environmentApiKey.apiKeyId, apikey.id))
     .where(eq(apikey.id, apiKeyId))
     .limit(1);
-  return row ? hasPermissions(parsePermissions(row.permissions), required) : false;
+  return row
+    ? hasPermissions(effectiveKeyPermissions(row.access, row.permissions), required)
+    : false;
 }
 
 /**

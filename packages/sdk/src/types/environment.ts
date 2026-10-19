@@ -27,6 +27,13 @@ export interface Environment {
     name: string | null;
     /** The key's first characters, as shown in the dashboard. */
     start: string | null;
+    /**
+     * `full`: every permission, including ones new products add later. `restricted`: only
+     * `permissions`, chosen when the key was created.
+     */
+    access: "full" | "restricted";
+    /** What the key may do now, as `resource:action` (e.g. `email:send`). */
+    permissions: string[];
   };
 }
 

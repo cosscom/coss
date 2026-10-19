@@ -110,6 +110,7 @@ async function main(): Promise<void> {
     environmentId: found.environment.id,
     name: `Seed ${new Date().toISOString().slice(0, 16)}`,
     userId: user.id,
+    permissions: "full",
   });
 
   const passwordNote = user.created ? password : "(unchanged; user already existed)";

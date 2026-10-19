@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { listOrgAuditEvents } from "@coss/logs";
+import { createEnvironmentApiKey } from "@coss/tenancy";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { API_VERSIONS, LATEST_API_VERSION } from "@coss/versioning";
 import { EnvironmentObject } from "../src/routes/environment.ts";
@@ -48,10 +49,33 @@ describe("GET /v1/environment", () => {
           id: await apiKeyIdForEnvironment(environment.id),
           name: environment.mode === "live" ? "Test live key" : "Test sandbox key",
           start: expect.stringMatching(/^coss_(live|test)_/),
+          access: "full",
+          permissions: expect.arrayContaining(["email:send", "domain:create", "hook:send"]),
         },
       });
       expect(key.startsWith(body.api_key.start ?? "-")).toBe(true);
     }
+  });
+
+  test("reports what a restricted key may do", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const created = await createEnvironmentApiKey({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+      name: "Sender",
+      userId: tenant.owner.id,
+      permissions: { email: ["send"], log: ["read"] },
+    });
+    const res = await getEnvironment(app, created.key);
+    expect(res.status).toBe(200);
+    expect(EnvironmentObject.parse(await res.json()).api_key).toEqual({
+      id: created.id,
+      name: "Sender",
+      start: created.start,
+      access: "restricted",
+      permissions: ["email:send", "log:read"],
+    });
   });
 
   test("reports the organization's pin, not the requested version", async () => {
