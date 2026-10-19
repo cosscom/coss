@@ -337,6 +337,17 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   --prefix integrations/laravel` and a `v<version>` tag to with the deploy key `COSS_LARAVEL_DEPLOY_KEY` (`packagist`
   environment) — never commit to the mirror. Every job is skipped until the repository variable
   `INTEGRATIONS_PUBLISH` is `true`.
+- **CLI binaries** (the `cli-*` jobs of `release.yml`, after `publish`): for the `coss-cli@<version>` tag (built
+  from the tag, never a newer main) whose GitHub release has no `SHA256SUMS` yet, `packages/cli/scripts/binaries.ts`
+  cross-compiles standalone executables (`bun build --compile`, 7 targets: macOS, glibc/musl Linux, Windows; macOS
+  ones come out ad-hoc signed, not notarized), `scripts/smoke-binary.ts` runs them on their own OS (musl in Alpine,
+  which needs `libstdc++`), and the release gets the archives + `SHA256SUMS`, marked latest (`install.sh` and
+  `releases/latest` rely on the CLI being the only package with GitHub releases). Then `scripts/homebrew.ts` renders
+  `Formula/coss.rb` from that `SHA256SUMS` and pushes it to `cosscom/homebrew-tap` with the deploy key
+  `HOMEBREW_TAP_DEPLOY_KEY` (`homebrew` environment) — never edit the tap by hand. Every job is skipped until the
+  repository variable `CLI_BINARIES_PUBLISH` is `true`; each checks the release first, so a rerun fills in what's
+  missing. `packages/cli/install.sh` (served from main's raw URL) is the `curl | sh` installer: it verifies the
+  archive against `SHA256SUMS`.
 
 ## MCP server (`packages/mcp`, published as `coss-mcp`)
 
@@ -391,6 +402,11 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - Dependencies are explicit versions, `coss` a caret range (like the MCP server); the release job publishes it after
   `coss`. Tests: `packages/cli/test` (fake `fetch`, real loopback and receiver servers) and
   `apps/api/test/cli-contract.test.ts` (built CLI against the in-process app; turbo builds it first).
+- It also ships as a standalone executable (Bun's compiled runtime, not Node: `bun run build:binaries`, output in
+  the git-ignored `packages/cli/binaries/`; releases under "CLI binaries" above). Keep `src/` to what both run:
+  `test/binaries.test.ts` compiles this machine's binary, installs it with `install.sh` and runs
+  `scripts/smoke-binary.ts` on it (stdin, pipes flushed on exit, the config file, Ctrl-C, the browser sign-in's
+  loopback server).
 
 ## Dashboard (`apps/web`)
 

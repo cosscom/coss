@@ -13,6 +13,22 @@ Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
 [provenance](https://docs.npmjs.com/generating-provenance-statements). Full guide:
 [coss.com/docs/cli](https://coss.com/docs/cli).
 
+## Install without Node.js
+
+Each release's [GitHub release](https://github.com/cosscom/coss/releases) (`coss-cli@<version>`)
+also has standalone executables (Bun's runtime built in) for macOS, Linux (glibc and musl) and
+Windows, arm64 and x64, with a `SHA256SUMS`:
+
+```sh
+brew install cosscom/tap/coss                 # macOS and Linux; completions included
+curl -fsSL https://raw.githubusercontent.com/cosscom/coss/main/packages/cli/install.sh | sh
+```
+
+`install.sh` picks the archive for the machine, checks it against `SHA256SUMS` and installs `coss`
+into `~/.local/bin` (`COSS_INSTALL_DIR`; `COSS_VERSION` for another version). The musl builds need
+`libstdc++` (`apk add libstdc++` on Alpine). macOS executables are ad-hoc signed, not notarized:
+one downloaded with a browser needs `xattr -d com.apple.quarantine coss`.
+
 ## Commands
 
 | Command | |
@@ -80,6 +96,8 @@ when there is a newer one. It never runs with `--json`, in CI (`CI`) or when std
 bun run --cwd packages/cli build   # tsdown, publint, attw
 bun run --cwd packages/cli test
 node packages/cli/dist/cli.js --help
+bun run --cwd packages/cli build:binaries [native|linux-x64|…]   # standalone executables
+bun packages/cli/scripts/smoke-binary.ts packages/cli/binaries/stage/linux-x64/coss
 ```
 
 ## License

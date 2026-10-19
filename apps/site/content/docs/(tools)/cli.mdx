@@ -4,16 +4,29 @@ description: Sign in from your terminal, send test emails, follow your log, and 
 icon: Terminal
 ---
 
-The `coss` command line works with one environment at a time, like an API key does. It runs on
-Node.js 22+:
+The `coss` command line works with one environment at a time, like an API key does. Install it
+with Homebrew, the install script or npm:
 
 ```sh
-npm install -g coss-cli
+brew install cosscom/tap/coss     # macOS and Linux, with shell completions
+curl -fsSL https://raw.githubusercontent.com/cosscom/coss/main/packages/cli/install.sh | sh
+npm install -g coss-cli           # Node.js 22+
 coss login
 ```
 
 Or run any command with `npx coss-cli <command>` without installing it (`npx coss` is the SDK,
 not the CLI).
+
+- **Homebrew and the install script** install a standalone executable, which needs no Node.js:
+  each release's [GitHub release](https://github.com/cosscom/coss/releases) (`coss-cli@<version>`)
+  has one for macOS, Linux (glibc and musl) and Windows, arm64 and x64, with a `SHA256SUMS`.
+- **The install script** picks the archive for your machine, checks it against `SHA256SUMS` and
+  installs `coss` into `~/.local/bin` (set `COSS_INSTALL_DIR` for another directory, `COSS_VERSION`
+  for another version).
+- **Alpine** and other musl systems need `libstdc++` (`apk add libstdc++`).
+- **macOS** executables are signed but not notarized: one you download with a browser needs
+  `xattr -d com.apple.quarantine coss` first (Homebrew and the install script don't).
+- **Windows**: download `coss-cli-<version>-windows-x64.zip` from the release, or use npm.
 
 ## Sign in
 
