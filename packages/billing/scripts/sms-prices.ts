@@ -1,8 +1,8 @@
 /**
  * Writes a new dated SMS list-price file (`src/catalog/sms-prices-<date>.generated.ts`) from what
  * Twilio charges coss.com, marked up and rounded up to $0.0001. Add a `RATE_CARDS` entry that uses
- * it (effective from `--effective`): a price change is a new card, so never regenerate a file a
- * card already uses.
+ * it (effective from `--effective`): a price change is a new card. A file is only rewritten while
+ * its date is still in the future: once a card uses it, its prices have rated usage.
  *
  *   TWILIO_ACCOUNT_SID=… TWILIO_AUTH_TOKEN=… SMS_NEGOTIATED_COSTS='{…}' \
  *     bun run sms:update-prices --markup 25 --effective 2026-11-01 [--dry-run]
@@ -13,7 +13,7 @@
  * negotiated costs and the markup are confidential: pass them in, never commit them.
  * `--costs <file>` reads that JSON instead of calling Twilio (no other countries are priced).
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { parseDollarsToNanos } from "../src/money.ts";
 
@@ -105,8 +105,11 @@ async function costsFromTwilio(): Promise<Costs> {
       throw new Error(`${iso}: ${country.price_unit}`);
     const outbound = highest(country.outbound_sms_prices.flatMap((carrier) => carrier.prices));
     const inbound = highest(country.inbound_sms_prices);
-    if (outbound) costs.outbound.set(iso, outbound);
-    if (inbound) costs.inbound.set(iso, inbound);
+    // A $0 outbound price is never what Twilio charges for a send: leave the country unpriced
+    // rather than make it free. Receiving can be free, and is priced at $0 then.
+    if (outbound === 0n) console.warn(`${iso}: Twilio lists a $0 outbound price; left unpriced.`);
+    else if (outbound !== null) costs.outbound.set(iso, outbound);
+    if (inbound !== null) costs.inbound.set(iso, inbound);
   }
   if (costs.outbound.size < 100) {
     throw new Error(`Only ${costs.outbound.size} countries: refusing to write.`);
@@ -167,6 +170,13 @@ if (values["dry-run"]) {
   }
 } else {
   const output = new URL(`../src/catalog/sms-prices-${effective}.generated.ts`, import.meta.url);
+  if (existsSync(output) && effective <= new Date().toISOString().slice(0, 10)) {
+    console.error(
+      `${output.pathname} is in effect since ${effective}: its prices have rated usage. Write a new ` +
+        "file with a later --effective date (and a new rate card) instead.",
+    );
+    process.exit(1);
+  }
   writeFileSync(output, source);
   console.info(
     `Wrote ${costs.outbound.size} outbound and ${costs.inbound.size} inbound prices to ${output.pathname}.`,
