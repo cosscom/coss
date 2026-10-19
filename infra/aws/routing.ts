@@ -206,13 +206,21 @@ const IMMUTABLE_PATTERNS = new Set(["/_next/static/*", `${SITE_ASSET_PREFIX}/*`]
  * apps' cached paths (docs pages are cached for a year). Never the hashed asset folders, whose
  * cached old chunks keep tabs opened before the deploy working (the new tasks don't have them),
  * nor the external zones, which deploy on their own.
+ *
+ * A page's path ends in `*`: CloudFront invalidates a path without a wildcard only without a query
+ * string, and the RSC payloads of client-side navigations are cached as `/pricing?_rsc=…`, a key
+ * that stays the same across builds. Left behind, they name the previous build's chunks, which the
+ * new tasks don't have (WEB-P). `/docs*` also covers `/docs/*`, so a prefix route is one path
+ * (CloudFront allows 15 wildcard paths in progress). Files (`/llms.txt`) have no payloads.
  */
 export function deployInvalidationPaths(): string[] {
-  return cossComCacheBehaviours()
-    .filter(
-      (behaviour) => behaviour.origin === "alb" && !IMMUTABLE_PATTERNS.has(behaviour.pathPattern),
-    )
-    .map((behaviour) => behaviour.pathPattern);
+  const paths = new Set<string>();
+  for (const { origin, pathPattern } of cossComCacheBehaviours()) {
+    if (origin !== "alb" || IMMUTABLE_PATTERNS.has(pathPattern)) continue;
+    const path = pathPattern.replace(/\/\*$/, "");
+    paths.add(/\/[^/.][^/]*\.[a-z]+$/.test(path) ? pathPattern : `${path}*`);
+  }
+  return [...paths];
 }
 
 /**

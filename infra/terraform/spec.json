@@ -1857,25 +1857,20 @@
       }
     },
     "invalidateAfterDeploy": [
-      "/pricing",
-      "/about",
-      "/crowd-opinionated-source-software",
-      "/shipyard",
-      "/shipyard/*",
-      "/kloq",
-      "/kloq/*",
-      "/docs",
-      "/docs/*",
-      "/legal",
-      "/legal/*",
+      "/pricing*",
+      "/about*",
+      "/crowd-opinionated-source-software*",
+      "/shipyard*",
+      "/kloq*",
+      "/docs*",
+      "/legal*",
       "/llms.txt",
       "/llms-full.txt",
       "/icon.svg",
       "/favicon.ico",
       "/robots.txt",
       "/sitemap.xml",
-      "/.well-known",
-      "/.well-known/*"
+      "/.well-known*"
     ]
   }
 }

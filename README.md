@@ -532,8 +532,9 @@ Cloudflare DNS (coss.com zone, DNS only)
     which honours the origin's `Cache-Control`: min/default TTL 0, max 1 year, all query strings (`_rsc`), no
     cookies, and the headers `RSC`, `Next-Router-Prefetch`, `Next-Router-State-Tree`, `Next-Router-Segment-Prefetch`
     in the cache key. Docs pages are sent with `s-maxage=31536000`: the deploy workflow invalidates the site's
-    cached paths after every rollout (`cloudFront.invalidateAfterDeploy` in the spec), never the hashed asset
-    folders, so tabs opened before a deploy can still load their old chunks.
+    cached paths after every rollout (`cloudFront.invalidateAfterDeploy` in the spec: pages as `/pricing*`, since
+    a path without a wildcard leaves its `?_rsc=` payloads cached), never the hashed asset folders, so tabs opened
+    before a deploy can still load their old chunks.
   - `api.coss.com`: the ALB only, never cached.
   - WAF web ACLs (scope `CLOUDFRONT`): a per-IP rate rule (5,000 / 5 min on coss.com, 20,000 on the API; floods
     only, the apps rate-limit precisely), AWS IP reputation, common and known-bad-inputs rule groups. Rules that
