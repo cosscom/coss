@@ -47,6 +47,9 @@ export async function claimItem(
   source: { id: string; name: string },
   name: () => string | null,
 ): Promise<MigrationItemRow> {
+  // Looked up first: `name()` reserves a name, which an item that already has one must not do.
+  const recorded = await findItem(row, kind, source.id);
+  if (recorded) return recorded;
   const [inserted] = await db
     .insert(migrationItem)
     .values({
@@ -62,6 +65,17 @@ export async function claimItem(
     })
     .returning();
   if (inserted) return inserted;
+  // Recorded meanwhile by another attempt.
+  const existing = await findItem(row, kind, source.id);
+  if (!existing) throw new Error(`Migration item ${kind} ${source.id} vanished.`);
+  return existing;
+}
+
+async function findItem(
+  row: Pick<MigrationRow, "id" | "organizationId">,
+  kind: ItemKind,
+  sourceId: string,
+): Promise<MigrationItemRow | undefined> {
   const [existing] = await db
     .select()
     .from(migrationItem)
@@ -70,11 +84,10 @@ export async function claimItem(
         eq(migrationItem.organizationId, row.organizationId),
         eq(migrationItem.migrationId, row.id),
         eq(migrationItem.kind, kind),
-        eq(migrationItem.sourceId, source.id),
+        eq(migrationItem.sourceId, sourceId),
       ),
     )
     .limit(1);
-  if (!existing) throw new Error(`Migration item ${kind} ${source.id} vanished.`);
   return existing;
 }
 

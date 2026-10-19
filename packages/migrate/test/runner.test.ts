@@ -542,6 +542,32 @@ describe("runDueMigrations", () => {
     ]);
   });
 
+  test("a retried item keeps its name and reserves no other", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const data: FakeSourceData = {
+      properties: [
+        { id: "p1", name: "foo", type: "string", fallback: null },
+        { id: "p2", name: "foo_2", type: "string", fallback: null },
+      ],
+    };
+    const row = await connect(tenant);
+    await settle(tenant, depsFor(data));
+    await startAll(tenant, row.id, ["contacts"]);
+    // An attempt that stopped after recording foo, before creating it.
+    await db.insert(schema.migrationItem).values({
+      migrationId: row.id,
+      organizationId: tenant.organization.id,
+      kind: "property",
+      sourceId: "p1",
+      sourceName: "foo",
+      targetName: "foo",
+    });
+    await settle(tenant, depsFor(data));
+    const keys = (await listContactPropertyRows(env)).map((property) => property.key).sort();
+    expect(keys).toEqual(["foo", "foo_2"]);
+  });
+
   test("finds existing topics even when the environment is at its topic cap", async () => {
     const tenant = await createTestTenant();
     const env = envOf(tenant);
