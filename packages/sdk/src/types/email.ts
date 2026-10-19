@@ -282,6 +282,24 @@ export interface EmailTracking {
   last_clicked_at: string | null;
 }
 
+/** What the environment keeps of an email's content: `store`, or `discard` once it is sent. */
+export type ContentStorageMode = "store" | "discard";
+
+/** Whether coss.com keeps the email's content after sending it. */
+export interface EmailContentStorage {
+  /**
+   * The environment's content storage when the email was sent. With `"discard"`, the subject,
+   * `html`, `text`, `headers`, template variables and attachment filenames are cleared once the
+   * email is sent, fails or is canceled.
+   */
+  mode: ContentStorageMode;
+  /**
+   * ISO 8601 timestamp the content was cleared at, or `null` while it is kept. A cleared email has
+   * an empty `subject`, `html` and `text` `null` and no `headers`.
+   */
+  discarded_at: string | null;
+}
+
 /** A link coss.com rewrote for click tracking. */
 export interface EmailLink {
   object: "email_link";
@@ -344,6 +362,7 @@ export interface Email {
   template: EmailTemplateReference | null;
   /** The broadcast the email is part of; `null` for any other email. */
   broadcast_id: string | null;
+  content_storage: EmailContentStorage;
 }
 
 /** An email in a list (`coss.email.list`): everything but its content. */

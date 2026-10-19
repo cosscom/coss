@@ -96,6 +96,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { until: "sent" },
   },
   {
+    id: "discarded_email_content",
+    label: "Email content without content storage",
+    description:
+      "In environments whose content storage is set to discard: the subject, bodies, headers, template variables and attachment names. The rest of the email (addresses, tags, recipient statuses, events) is kept like any other.",
+    period: { until: "sent" },
+  },
+  {
     id: "received_emails",
     label: "Received emails",
     description:

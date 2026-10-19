@@ -30,12 +30,15 @@ export async function broadcastContents(
   return new Map(rows.map(({ id, ...content }) => [id, content]));
 }
 
-/** The row with its broadcast's body filled in (other rows as they are). */
+/**
+ * The row with its broadcast's body filled in (other rows, and broadcast emails whose content was
+ * discarded, as they are).
+ */
 export function withRenderedBody<
-  T extends Pick<EmailRow, "broadcastId" | "variables" | "html" | "text">,
+  T extends Pick<EmailRow, "broadcastId" | "variables" | "html" | "text" | "contentDiscardedAt">,
 >(row: T, contents: ReadonlyMap<string, BroadcastContent>): T {
   const content = row.broadcastId ? contents.get(row.broadcastId) : undefined;
-  if (!content) return row;
+  if (!content || row.contentDiscardedAt) return row;
   const rendered = renderBroadcast(content, row.variables ?? {});
   return { ...row, html: rendered.html, text: rendered.text };
 }

@@ -29,6 +29,7 @@ import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
+import { markEmailContent } from "../middleware/request-log.ts";
 import type { AppEnv } from "../types.ts";
 import { billingErrorDoc, commonErrors, errorDoc, jsonDoc, requestIdHeader } from "./docs.ts";
 import {
@@ -419,6 +420,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         // A matching replay (queued or completed) needs no quota. This lookup cannot create or dispatch a send.
         const replay = await emailService.replay(input);
         if (replay) {
+          markEmailContent(c, [replay]);
           c.header("Idempotent-Replayed", "true");
           return c.json(replay, 202);
         }
@@ -439,6 +441,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         throw error;
       }
       const { email, replayed } = result;
+      markEmailContent(c, [email]);
       // A replay sent nothing new (an SDK retry reuses its Idempotency-Key).
       if (replayed) {
         await c.var.rateLimiter.refund(quota);
@@ -471,6 +474,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       if (!decision.allowed) {
         const replay = await emailService.replayBatch(input);
         if (replay) {
+          markEmailContent(c, replay.data);
           c.header("Idempotent-Replayed", "true");
           return c.json(replay, 202);
         }
@@ -490,6 +494,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         throw error;
       }
       const { batch, replayed } = result;
+      markEmailContent(c, batch.data);
       if (replayed) {
         await c.var.rateLimiter.refund(quota);
         c.header("Idempotent-Replayed", "true");
@@ -506,6 +511,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     const { organizationId, environmentId } = c.var.auth;
     const batch = await getEmailBatch({ organizationId, environmentId, id });
     if (!batch) throw notFound("No batch with this id exists in this API key's environment.");
+    markEmailContent(c, batch.data);
     return c.json(batch, 200);
   });
 
@@ -515,6 +521,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     // Malformed, unknown, other-environment and other-organization ids are all `null`.
     const email = await getEmail({ organizationId, environmentId, id });
     if (!email) throw notFound("No email with this id exists in this API key's environment.");
+    markEmailContent(c, [email]);
     return c.json(email, 200);
   });
 
@@ -535,6 +542,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       createdBefore: query.created_before ? new Date(query.created_before) : undefined,
       before: query.after,
     });
+    markEmailContent(c, page.data);
     return c.json({ object: "list" as const, data: page.data, has_more: page.hasMore }, 200);
   });
 
@@ -542,6 +550,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     const { id } = c.req.valid("param");
     const { organizationId, environmentId } = c.var.auth;
     const email = await emailService.cancel({ organizationId, environmentId, emailId: id });
+    markEmailContent(c, [email]);
     await recordApiAudit(c, {
       action: "email.canceled",
       target: { type: "email", id: email.id },
@@ -564,6 +573,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       target: { type: "email", id: email.id },
       metadata: { scheduled_at: email.scheduled_at },
     });
+    markEmailContent(c, [email]);
     return c.json(email, 200);
   });
 

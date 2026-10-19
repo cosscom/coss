@@ -26,5 +26,10 @@ export type AppEnv = {
      * `requireApiKey`.
      */
     apiVersion: string;
+    /**
+     * Set by the email routes when they answer with an email sent without content storage: the
+     * request log then redacts the request's and response's content (`markEmailContent`).
+     */
+    discardsEmailContent: boolean;
   };
 };

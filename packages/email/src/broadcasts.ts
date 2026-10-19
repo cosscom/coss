@@ -64,6 +64,7 @@ import {
 } from "./schemas.ts";
 import { emailScreeningContent } from "./screening.ts";
 import type { EmailService, SendEnvironment } from "./service.ts";
+import { resolveStoreContent } from "./storage-settings.ts";
 import { topicsByKey } from "./topics.ts";
 import { newTrackingToken } from "./tracking.ts";
 
@@ -1304,6 +1305,8 @@ async function insertEmails(
   now: Date,
 ): Promise<{ id: string; contactId: string | null }[]> {
   const tracked = row.trackOpens || row.trackClicks;
+  // As for any send, the environment's content storage when the email is made.
+  const storeContent = await resolveStoreContent(tx, row);
   const rows = recipients.map((recipient) => {
     const all = contactVariables(recipient, definitions);
     const variables = Object.fromEntries(keys.map((key) => [key, all[key] ?? ""]));
@@ -1332,6 +1335,7 @@ async function insertEmails(
       broadcastId: row.id,
       contactId: recipient.id,
       variables,
+      storeContent,
       createdAt: now,
       updatedAt: now,
     };

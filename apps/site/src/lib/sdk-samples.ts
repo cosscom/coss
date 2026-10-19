@@ -450,6 +450,11 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.marketingSettings.update",
     args: (request) => [tsValue(request.body ?? {})],
   },
+  "GET /v1/storage_settings": { method: "email.storage.get", args: () => [] },
+  "PATCH /v1/storage_settings": {
+    method: "email.storage.update",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
   "GET /v1/tracking_settings": { method: "email.tracking.get", args: () => [] },
   "PATCH /v1/tracking_settings/default": {
     method: "email.tracking.updateDefault",

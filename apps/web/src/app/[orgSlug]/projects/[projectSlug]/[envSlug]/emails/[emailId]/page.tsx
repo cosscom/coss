@@ -64,6 +64,7 @@ export default async function EmailPage({
   const eventList = events?.events ?? [];
   const unsubscribedAt =
     eventList.find((event) => event.type === "email.unsubscribed")?.occurred_at ?? null;
+  const discardedAt = email.content_storage.discarded_at;
 
   const content =
     email.html !== null || email.text !== null ? (
@@ -96,7 +97,11 @@ export default async function EmailPage({
         <PanelBody flush>
           <EmptyState
             compact
-            description="The content of internal emails is discarded once they leave the queue."
+            description={
+              discardedAt
+                ? "This environment's content storage was off when the email was sent: its subject, body, headers and attachment names were discarded once it left the queue."
+                : "The content of internal emails is discarded once they leave the queue."
+            }
             icon={ScrollTextIcon}
             title="No content stored"
           />
@@ -291,7 +296,9 @@ export default async function EmailPage({
               <TableRow key={attachment.id}>
                 <TableCell className="break-all font-medium">
                   <span className="flex flex-wrap items-center gap-2">
-                    {attachment.filename}
+                    {attachment.filename || (
+                      <span className="text-muted-foreground italic">Name not stored</span>
+                    )}
                     {attachment.content_id !== null ? (
                       <Badge variant="outline">inline · cid:{attachment.content_id}</Badge>
                     ) : null}
@@ -396,7 +403,7 @@ export default async function EmailPage({
             <code className="font-mono text-xs">{email.id}</code>
           </>
         }
-        title={email.subject}
+        title={discardedAt ? "Content not stored" : email.subject}
       />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -425,6 +432,13 @@ export default async function EmailPage({
                 <SpecItem label="Category" mono>
                   {email.category ?? "—"}
                 </SpecItem>
+                {email.content_storage.mode === "discard" ? (
+                  <SpecItem label="Content" mono>
+                    {discardedAt
+                      ? `Discarded ${formatDateTime(discardedAt)}`
+                      : "Discarded once sent"}
+                  </SpecItem>
+                ) : null}
                 {email.batch_id ? (
                   <SpecItem label="Batch" mono>
                     {email.batch_id}

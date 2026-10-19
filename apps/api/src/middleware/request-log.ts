@@ -1,10 +1,13 @@
+import { getStorageSettings } from "@coss/email";
 import {
+  EMAIL_CONTENT_KEYS,
   type LogWriter,
   loggedRequestHeaders,
   loggedResponseHeaders,
   redactBody,
 } from "@coss/logs";
 import type { RefusedKeyContext } from "@coss/tenancy";
+import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { AppEnv } from "../types.ts";
 
@@ -54,6 +57,37 @@ const CAPABILITY_RESPONSES = [/^\/v1\/contacts\/[^/]+\/preference_links$/];
  */
 const STATELESS_LOOKUPS = ["/v1/risk/email/check", "/v1/risk/ip/check"];
 const CONTENT_REQUESTS = ["/v1/risk/content/classify", ...STATELESS_LOOKUPS];
+
+/**
+ * Requests and responses that carry emails' content (sends, batches, reads, cancel, reschedule):
+ * their subjects, bodies, headers, template variables and attachment filenames are redacted (the
+ * log would otherwise keep what the email itself doesn't) when an email they answer with was sent
+ * without content storage (`markEmailContent`, from the email's own snapshot: a read or an
+ * idempotent replay after switching back to `store`), or when the environment's content storage
+ * is `discard` now (requests refused before any email exists).
+ */
+const EMAIL_CONTENT_PATHS = /^\/v1\/emails(\/|$)/;
+
+/** Marks the request as answering with an email sent without content storage, if one is. */
+export function markEmailContent(
+  c: Context<AppEnv>,
+  emails: readonly { content_storage: { mode: string } }[],
+): void {
+  if (emails.some((email) => email.content_storage.mode === "discard")) {
+    c.set("discardsEmailContent", true);
+  }
+}
+
+async function contentKeysFor(
+  path: string,
+  auth: { organizationId: string; environmentId: string },
+  marked: boolean,
+): Promise<readonly string[] | undefined> {
+  if (!EMAIL_CONTENT_PATHS.test(path)) return undefined;
+  if (marked) return EMAIL_CONTENT_KEYS;
+  const { contentStorage } = await getStorageSettings(auth);
+  return contentStorage === "discard" ? EMAIL_CONTENT_KEYS : undefined;
+}
 
 function keepsRequestBody(path: string): boolean {
   return !CONTENT_REQUESTS.includes(path);
@@ -163,12 +197,17 @@ export function requestLog(writer: LogWriter) {
     const responseHeaders = loggedResponseHeaders(response.headers);
     const { requestId, clientIp } = c.var;
     const search = new URL(c.req.url).search;
+    const marked = c.get("discardsEmailContent") === true;
 
     void (async () => {
       const [requestJson, responseJson] = await Promise.all([
         requestText?.then(parseJson, () => undefined),
         responseCopy ? readJson(responseCopy) : undefined,
       ]);
+      const content =
+        requestJson === undefined && responseJson === undefined
+          ? undefined
+          : await contentKeysFor(path, auth, marked);
       const error = (responseJson as ErrorEnvelope | undefined)?.error;
       const { resourceType, resourceId } = resourceOf(path, responseJson);
       writer.write({
@@ -196,11 +235,11 @@ export function requestLog(writer: LogWriter) {
           request: {
             ...(search ? { query: search.slice(1) } : {}),
             headers: requestHeaders,
-            ...(requestJson === undefined ? {} : { body: redactBody(requestJson) }),
+            ...(requestJson === undefined ? {} : { body: redactBody(requestJson, { content }) }),
           },
           response: {
             headers: responseHeaders,
-            ...(responseJson === undefined ? {} : { body: redactBody(responseJson) }),
+            ...(responseJson === undefined ? {} : { body: redactBody(responseJson, { content }) }),
           },
           ...(typeof error?.type === "string" ? { error_type: error.type } : {}),
         },

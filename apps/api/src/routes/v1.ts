@@ -25,6 +25,7 @@ import { createRiskConfigRoutes } from "./risk-config.ts";
 import { createRiskLimitRoutes } from "./risk-limits.ts";
 import { createRiskLookupRoutes } from "./risk-lookups.ts";
 import { createSegmentRoutes } from "./segments.ts";
+import { createStorageSettingsRoutes } from "./storage-settings.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
 import { createTopicRoutes } from "./topics.ts";
 import { createTrackingSettingsRoutes } from "./tracking-settings.ts";
@@ -69,6 +70,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   v1.route("/", createWebhookEventRoutes());
   v1.route("/", createSuppressionRoutes());
   v1.route("/", createTrackingSettingsRoutes());
+  v1.route("/", createStorageSettingsRoutes());
   v1.route(
     "/",
     createContactRoutes({

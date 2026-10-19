@@ -167,6 +167,11 @@ export const email = pgTable(
     // Internal sends whose body holds a secret (sign-in links in auth emails): `html`/`text` are
     // cleared when the email leaves `queued`/`scheduled`, like attachment content.
     discardBody: boolean("discard_body").notNull().default(false),
+    // The environment's content storage when the email was sent (`email_storage_settings`): when
+    // false, the subject, body, headers, template variables and attachment filenames are cleared
+    // once the email leaves `queued`/`scheduled` (`content_discarded_at` records when).
+    storeContent: boolean("store_content").notNull().default(true),
+    contentDiscardedAt: timestamp("content_discarded_at", { withTimezone: true }),
     headers: jsonb("headers").$type<Record<string, string>>().notNull().default({}),
     tags: jsonb("tags").$type<EmailTag[]>().notNull().default([]),
     // Matched against category-scoped suppressions and tracking rules.
@@ -458,6 +463,29 @@ export const emailSuppression = pgTable(
       t.createdAt.desc(),
       t.sequence.desc(),
     ),
+  ],
+);
+
+/**
+ * An environment's content storage: with `store_content` off, an email's content is kept only
+ * until it leaves the queue (snapshotted on each email at send). No row means stored.
+ */
+export const emailStorageSettings = pgTable(
+  "email_storage_settings",
+  {
+    environmentId: text("environment_id").primaryKey(),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    storeContent: boolean("store_content").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_storage_settings_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
   ],
 );
 

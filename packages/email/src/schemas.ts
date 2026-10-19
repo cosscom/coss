@@ -126,6 +126,13 @@ export const ALL_CATEGORIES = "*";
  * configuration set and tenant, so marketing complaints never pause transactional mail.
  */
 export const EMAIL_STREAMS = ["transactional", "marketing"] as const;
+
+/**
+ * An environment's content storage: `store` keeps an email's content for the email retention
+ * period; `discard` keeps it only until the email is sent, fails or is canceled.
+ */
+export const CONTENT_STORAGE_MODES = ["store", "discard"] as const;
+export type ContentStorageMode = (typeof CONTENT_STORAGE_MODES)[number];
 export type EmailStream = (typeof EMAIL_STREAMS)[number];
 
 /**
@@ -1173,6 +1180,31 @@ export const EmailTracking = z
       "Opens can be inflated by mail clients that prefetch images, clicks by link scanners.",
   });
 
+const CONTENT_STORAGE_EXAMPLE = { mode: "store", discarded_at: null } as const;
+
+export const EmailContentStorage = z
+  .object({
+    mode: z.enum(CONTENT_STORAGE_MODES).meta({
+      description:
+        "The environment's content storage when the email was sent. With `discard`, the " +
+        "subject, `html`, `text`, `headers`, template variables and attachment filenames are " +
+        "cleared once the email is sent, fails or is canceled.",
+    }),
+    discarded_at: z.iso
+      .datetime()
+      .nullable()
+      .meta({
+        description:
+          "When the content was cleared; `null` while it is kept. A cleared email has an empty " +
+          "`subject`, `html` and `text` `null` and no `headers`.",
+      }),
+  })
+  .meta({
+    id: "EmailContentStorage",
+    examples: [CONTENT_STORAGE_EXAMPLE],
+    description: "Whether coss.com keeps the email's content after sending it.",
+  });
+
 export const EmailLink = z
   .object({
     object: z.literal("email_link"),
@@ -1271,6 +1303,7 @@ export const EmailObject = z
       .string()
       .nullable()
       .meta({ description: "The broadcast the email is part of; `null` for any other email." }),
+    content_storage: EmailContentStorage,
   })
   .meta({
     id: "Email",
@@ -1302,6 +1335,7 @@ export const EmailObject = z
         batch_id: null,
         template: null,
         broadcast_id: null,
+        content_storage: CONTENT_STORAGE_EXAMPLE,
       },
     ],
   });
@@ -1329,6 +1363,7 @@ const SUMMARY_EXAMPLE = {
   scheduled_at: null,
   batch_id: null,
   template: null,
+  content_storage: CONTENT_STORAGE_EXAMPLE,
 };
 
 /** An email in a list: everything but its content (`html`, `text`, `headers`, `attachments`). */
@@ -1484,6 +1519,7 @@ export const EmailBatchObject = z
             batch_id: BATCH_EXAMPLE_ID,
             template: null,
             broadcast_id: null,
+            content_storage: CONTENT_STORAGE_EXAMPLE,
           },
         ],
         created_at: "2026-10-10T12:00:00.000Z",
@@ -2247,6 +2283,51 @@ export const DeletedTrackingRule = z
   });
 
 export type DeletedTrackingRuleOutput = z.output<typeof DeletedTrackingRule>;
+
+export const StorageSettings = z
+  .object({
+    object: z.literal("storage_settings"),
+    content_storage: z.enum(CONTENT_STORAGE_MODES).meta({
+      description:
+        "`store` (the default) keeps each email's content (subject, body, headers, template " +
+        "variables, attachment filenames) for the email retention period. `discard` keeps it " +
+        "only until the email is sent, fails or is canceled; its metadata (addresses, tags, " +
+        "category, status, recipients, events) is kept as usual.",
+    }),
+    updated_at: z.iso.datetime().nullable().meta({
+      description: "When the setting last changed; `null` if it never did (content is stored).",
+    }),
+  })
+  .meta({
+    id: "StorageSettings",
+    description:
+      "What coss.com keeps of the API key's environment's emails. Emails keep the setting " +
+      "that applied when they were sent.",
+    examples: [
+      {
+        object: "storage_settings",
+        content_storage: "discard",
+        updated_at: "2026-10-16T10:00:00.000Z",
+      },
+    ],
+  });
+
+export type StorageSettingsOutput = z.output<typeof StorageSettings>;
+
+export const UpdateStorageSettingsRequest = z
+  .strictObject({
+    content_storage: z.enum(CONTENT_STORAGE_MODES).meta({
+      description: "`store` keeps emails' content; `discard` clears it once they are sent.",
+    }),
+  })
+  .meta({
+    id: "UpdateStorageSettingsRequest",
+    description: "Applies to emails sent from now on; emails already sent keep their setting.",
+    examples: [{ content_storage: "discard" }],
+  });
+
+export type UpdateStorageSettingsRequestInput = z.input<typeof UpdateStorageSettingsRequest>;
+export type UpdateStorageSettingsRequestOutput = z.output<typeof UpdateStorageSettingsRequest>;
 export const MAX_SUPPRESSION_IMPORT_ENTRIES = 1000;
 
 export const ImportSuppressionsRequest = z

@@ -65,7 +65,11 @@ export function EmailTable(props: {
                 className="font-medium underline-offset-4 before:absolute before:inset-0 hover:underline"
                 href={`${props.base}/emails/${email.id}`}
               >
-                {email.subject}
+                {email.content_storage.discarded_at ? (
+                  <span className="text-muted-foreground italic">Content not stored</span>
+                ) : (
+                  email.subject
+                )}
               </Link>
             </TableCell>
             <TableCell className="max-w-56 truncate text-muted-foreground">

@@ -2,11 +2,12 @@
  * Attachment storage. Content lives in `email_attachment.content` only while the email is
  * `scheduled` or `queued` (dispatch rebuilds the provider message from it) and is purged once the
  * email is sent, failed or canceled. Reads only ever see the metadata. The body of an email sent
- * with `discardBody` (auth emails: their links are secrets) is purged at the same moments.
+ * with `discardBody` (auth emails: their links are secrets) is purged at the same moments, and so
+ * is the whole content of one sent while its environment's content storage was `discard`.
  */
 import { createHash } from "node:crypto";
 import { db, type Executor, schema } from "@coss/db";
-import { and, asc, eq, inArray, isNotNull, or } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import type { OutboundAttachment } from "./provider.ts";
 import type { EmailAttachmentObjectOutput, SendEmailRequestOutput } from "./schemas.ts";
 
@@ -82,13 +83,46 @@ export async function loadOutboundAttachments(row: {
 }
 
 /**
- * Drops the content an email needed only to be sent: its attachments' bytes, and its body if it
- * was sent with `discardBody`. Call when the email reaches a terminal status.
+ * Drops the content an email needed only to be sent: its attachments' bytes, its body if it was
+ * sent with `discardBody`, and, if it was sent without content storage (`store_content` off),
+ * its subject, body, headers, template variables and attachment filenames too (marked with
+ * `content_discarded_at`). Call when the email reaches a terminal status.
  */
 export async function purgeSendContent(
   executor: Executor,
   row: { id: string; organizationId: string },
 ): Promise<void> {
+  const [discarded] = await executor
+    .update(email)
+    .set({
+      subject: "",
+      html: null,
+      text: null,
+      headers: {},
+      variables: null,
+      contentDiscardedAt: sql`now()`,
+    })
+    .where(
+      and(
+        eq(email.id, row.id),
+        eq(email.organizationId, row.organizationId),
+        eq(email.storeContent, false),
+        isNull(email.contentDiscardedAt),
+      ),
+    )
+    .returning({ id: email.id });
+  if (discarded) {
+    await executor
+      .update(emailAttachment)
+      .set({ content: null, filename: "" })
+      .where(
+        and(
+          eq(emailAttachment.organizationId, row.organizationId),
+          eq(emailAttachment.emailId, row.id),
+        ),
+      );
+    return;
+  }
   await executor
     .update(email)
     .set({ html: null, text: null })

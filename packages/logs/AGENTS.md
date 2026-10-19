@@ -14,7 +14,10 @@ repository root.
   through `redactBody` (secret-named keys, base64 `content` replaced, strings cut at 2 KB, 16 KB overall) and headers
   through the allow-lists in `redact.ts` — never `Authorization`, cookies or attachment bytes. Successful
   `/v1/received_emails*` responses keep no body at all (`CONTENT_RESPONSES` in `request-log.ts`): third-party mail
-  must not be copied into logs and drains, where it would outlive deleting the email. Reads are scoped by
+  must not be copied into logs and drains, where it would outlive deleting the email. Requests on `/v1/emails*` redact
+  `EMAIL_CONTENT_KEYS` too (`redactBody(body, { content })`) when the route answered with an email sent under content
+  storage `discard` (`markEmailContent`, the email's own snapshot — call it in every route returning emails) or the
+  environment's setting is `discard`, so the log never keeps what the email itself doesn't. Reads are scoped by
   organization + environment and always bounded in time (partition pruning; the API allows ≤ 31 days). Facet counts
   ignore their own filter. Retention: the worker's `logs` loop keeps 7 days of partitions ahead and drops expired ones
   (`LOG_RETENTION_DAYS`); the default partition catches the rest. Search syntax lives in `@coss/logs/query`

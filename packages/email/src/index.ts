@@ -569,6 +569,14 @@ export {
   type SendEnvironment,
 } from "./service.ts";
 export {
+  getStorageSettings,
+  resolveStoreContent,
+  type StorageEnvironment,
+  type StorageSettings,
+  toStorageSettingsObject,
+  updateStorageSettings,
+} from "./storage-settings.ts";
+export {
   parseSuppressionCsv,
   SUPPRESSION_CSV_COLUMNS,
   type SuppressionCsvEntry,

@@ -258,6 +258,7 @@ describe("GET /openapi.json", () => {
       "/v1/segments",
       "/v1/segments/{id}",
       "/v1/segments/{id}/contacts",
+      "/v1/storage_settings",
       "/v1/suppressions",
       "/v1/suppressions/check",
       "/v1/suppressions/export",
@@ -450,7 +451,8 @@ describe("GET /openapi.json", () => {
             String(route).includes("webhook") ||
             String(route).includes("log_drains") ||
             String(route).includes("/risk/") ||
-            String(route).includes("tracking_settings"),
+            String(route).includes("tracking_settings") ||
+            String(route).includes("storage_settings"),
         ),
     ).toEqual([
       ["post /v1/email_templates", "createEmailTemplate"],
@@ -496,6 +498,8 @@ describe("GET /openapi.json", () => {
       ["delete /v1/tracking_settings/default", "deleteTrackingDefault"],
       ["patch /v1/tracking_settings/categories/{category}", "updateTrackingCategory"],
       ["delete /v1/tracking_settings/categories/{category}", "deleteTrackingCategory"],
+      ["get /v1/storage_settings", "getStorageSettings"],
+      ["patch /v1/storage_settings", "updateStorageSettings"],
       ["post /v1/log_drains", "createLogDrain"],
       ["get /v1/log_drains", "listLogDrains"],
       ["get /v1/log_drains/{id}", "getLogDrain"],

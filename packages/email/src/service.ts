@@ -57,6 +57,7 @@ import {
 } from "./schemas.ts";
 import { emailScreeningContent } from "./screening.ts";
 import { type Skip, skippedRecipients } from "./send-eligibility.ts";
+import { resolveStoreContent } from "./storage-settings.ts";
 import { renderTemplateForSend, type TemplateVersionCache } from "./templates.ts";
 import { topicsByKey } from "./topics.ts";
 import { newTrackingToken } from "./tracking.ts";
@@ -1137,6 +1138,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     caches: {
       tracking: Map<string, Promise<ResolvedTracking>>;
       templates: TemplateVersionCache;
+      /** The environment's content storage, read once per request. */
+      storeContent?: Promise<boolean>;
     },
     opts: {
       discardBody?: boolean;
@@ -1174,6 +1177,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       caches.tracking.set(trackingKey, resolving);
     }
     const tracking = await resolving;
+    caches.storeContent ??= resolveStoreContent(db, environment);
+    const storeContent = await caches.storeContent;
     // The unsubscribe is scoped to the category and names one recipient (one provider message
     // goes to every recipient), the customer's own List-Unsubscribe headers win, and the two
     // headers must still fit the provider's header limit. An explicit `tracking.unsubscribe` that
@@ -1218,6 +1223,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         html: content ? content.html : params.html,
         text: content ? content.text : params.text,
         discardBody: opts.discardBody ?? false,
+        storeContent,
         headers: params.headers,
         tags: params.tags,
         category: params.category ?? null,
