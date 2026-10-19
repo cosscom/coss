@@ -110,6 +110,10 @@ type TopEntry = {
   uses: Set<"value" | "if" | "each">;
   required: boolean;
   fallback?: string | undefined;
+  /** The fallback was declared for the variable (Resend), not written at one use of it. */
+  declaredFallback?: boolean | undefined;
+  /** Used somewhere without an inline fallback (a plain tag, a condition, a loop). */
+  usedBare?: boolean | undefined;
   description?: string | undefined;
   fields: Map<string, FieldEntry>;
   fieldNames: NameAllocator;
@@ -187,6 +191,7 @@ export class Registry {
     const entry = this.top([key]);
     entry.declaredType = opts.type;
     entry.fallback = opts.fallback;
+    entry.declaredFallback = opts.fallback !== undefined;
     entry.required = opts.required;
     return entry;
   }
@@ -374,6 +379,7 @@ class FieldConverter {
     }
     if (resolution.kind === "top") {
       resolution.entry.uses.add("value");
+      if (node.fallback === undefined) resolution.entry.usedBare = true;
       if (node.fallback !== undefined) {
         if (resolution.entry.fallback === undefined) resolution.entry.fallback = node.fallback;
         else if (resolution.entry.fallback !== node.fallback) {
@@ -425,7 +431,10 @@ class FieldConverter {
       case "if":
       case "unless": {
         const { name, sample } = this.nameOf(resolution, frames);
-        if (resolution.kind === "top") resolution.entry.uses.add("if");
+        if (resolution.kind === "top") {
+          resolution.entry.uses.add("if");
+          resolution.entry.usedBare = true;
+        }
         if (sample === "number") {
           this.warn(`"${name}" is a number: coss.com treats 0 as true in {{#if}}.`, true);
         } else if (sample === "object") {
@@ -450,6 +459,7 @@ class FieldConverter {
         }
         const entry = resolution.entry;
         entry.uses.add("each");
+        entry.usedBare = true;
         const sample = valueAt(resolution.frame.sample, node.path.segments);
         this.tag(`{{#each ${entry.name}}}`);
         this.emit(node.body, [
@@ -671,6 +681,13 @@ function declarations(
     }
     const type: TemplateScalarType = entry.declaredType ?? scalarType(entry.sample);
     const variable: ConvertedVariable = { name: entry.name, type, required: entry.required };
+    if (entry.fallback !== undefined && !entry.declaredFallback && entry.usedBare) {
+      // coss.com defaults apply to every use: a fallback written at one use would change the others.
+      general(
+        `"${entry.name}" has a default ("${entry.fallback}") at one use only: on coss.com it applies to every use.`,
+        true,
+      );
+    }
     if (entry.fallback !== undefined) {
       const value = typedDefault(entry.fallback, type);
       if (value === undefined) {

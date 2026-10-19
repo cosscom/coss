@@ -269,6 +269,27 @@ describe("SendGrid dynamic templates", () => {
     expectConsistent(result);
   });
 
+  test("an inline default only stays lossless when every use has it", () => {
+    const everywhere = dynamic(
+      `<p>{{insert name "default=friend"}} / {{insert name "default=friend"}}</p>`,
+    );
+    expect(everywhere.lossless).toBe(true);
+    expect(everywhere.variables).toEqual([
+      { name: "name", type: "string", required: false, default: "friend" },
+    ]);
+    // The default would now fill the bare use too (and make the condition true).
+    for (const html of [
+      `<p>{{insert name "default=friend"}} {{name}}</p>`,
+      `<p>{{insert name "default=friend"}}{{#if name}}!{{/if}}</p>`,
+    ]) {
+      const mixed = dynamic(html);
+      expect(mixed.lossless).toBe(false);
+      expect(messages(mixed)).toContain(
+        `"name" has a default ("friend") at one use only: on coss.com it applies to every use.`,
+      );
+    }
+  });
+
   test("a missing subject gets a placeholder", () => {
     const result = dynamic("<p>Hi</p>", undefined, "");
     expect(result.subject).toBe("(no subject)");
