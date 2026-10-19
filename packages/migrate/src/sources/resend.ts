@@ -284,11 +284,11 @@ export function resendSource(apiKey: string, deps: SourceDeps = {}): MigrationSo
     },
 
     async members(listId, cursor) {
-      const page = await client.get<ResendList<ResendContact>>("/contacts", {
-        segment_id: listId,
-        limit: PAGE,
-        after: cursor ?? undefined,
-      });
+      // The segment's own contacts (what Resend's SDK lists for a segment).
+      const page = await client.get<ResendList<ResendContact>>(
+        `/segments/${encodeURIComponent(listId)}/contacts`,
+        { limit: PAGE, after: cursor ?? undefined },
+      );
       const last = page.data.at(-1);
       return {
         items: page.data.map((row) => row.email),

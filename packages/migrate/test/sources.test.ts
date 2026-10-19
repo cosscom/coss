@@ -206,6 +206,35 @@ describe("Resend", () => {
     });
   });
 
+  test("reads each segment's own members", async () => {
+    const { fetch, requests } = fakeFetch({
+      "GET /segments/seg_a/contacts?limit=100": {
+        data: [{ id: "c1", email: "ada@example.com" }],
+        has_more: true,
+      },
+      "GET /segments/seg_a/contacts?limit=100&after=c1": {
+        data: [{ id: "c2", email: "bob@example.com" }],
+        has_more: false,
+      },
+      "GET /segments/seg_b/contacts?limit=100": {
+        data: [{ id: "c3", email: "cy@example.com" }],
+        has_more: false,
+      },
+    });
+    const source = createSource(
+      { provider: "resend", apiKey: "re_key", options: {} },
+      { ...fast, fetch },
+    );
+    const first = await source.members("seg_a", null);
+    expect(first).toEqual({ items: ["ada@example.com"], next: "c1" });
+    expect(await source.members("seg_a", first.next)).toEqual({
+      items: ["bob@example.com"],
+      next: null,
+    });
+    expect(await source.members("seg_b", null)).toEqual({ items: ["cy@example.com"], next: null });
+    expect(requests.some((request) => new URL(request.url).pathname === "/contacts")).toBe(false);
+  });
+
   test("tells a sending-only key apart from a wrong one", async () => {
     const restricted = fakeFetch({
       "GET /domains?limit=1": Response.json(
