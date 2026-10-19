@@ -33,6 +33,7 @@ export const GET = mobileRoute(
       },
       can: {
         read_email: can({ email: ["read"] }),
+        read_sms: can({ sms: ["read"] }),
         read_reputation: can({ reputation: ["read"] }),
         read_billing: readBilling,
         read_domain: can({ domain: ["read"] }),

@@ -1,0 +1,7 @@
+{
+  "title": "SMS",
+  "description": "Text messages from your own registered numbers, and the replies they receive.",
+  "root": true,
+  "icon": "Message",
+  "pages": ["index", "sending", "senders", "receiving", "testing", "countries-and-pricing"]
+}

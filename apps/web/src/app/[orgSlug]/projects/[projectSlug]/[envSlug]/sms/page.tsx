@@ -144,7 +144,7 @@ export default async function SmsPage({
               description={
                 to && !validTo
                   ? "Search for a full number in E.164 form, like +14155550123."
-                  : "Send one with `coss.sms.send()` or `POST /v1/sms`."
+                  : "Send one with coss.sms.send() or POST /v1/sms."
               }
               icon={MessageSquareIcon}
               title={after ? "No more messages" : "No messages yet"}

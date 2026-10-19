@@ -22,6 +22,7 @@ import type {
   LogSource,
   MembersResponse,
   MeResponse,
+  MobileReceivedSms,
   OrganizationResponse,
   Page,
   PushCategory,
@@ -38,6 +39,9 @@ import type {
   RiskFeedbackRequest,
   RiskListEntry,
   RiskRule,
+  SmsListResponse,
+  SmsResponse,
+  SmsStatus,
   Suppression,
   TrackingSettings,
   UpdatePushRequest,
@@ -222,6 +226,43 @@ export function useReceivedEmail(key: EnvironmentKey, id: string) {
     queryKey: ["received", key, id],
     queryFn: () => get<ReceivedEmail>(api, `${environmentPath(key)}/received/${segment(id)}`),
     retry,
+  });
+}
+
+export function useSmsList(key: EnvironmentKey, statuses: readonly SmsStatus[] | null) {
+  const { api } = useAuth();
+  return useInfiniteQuery({
+    queryKey: ["sms", key, statuses],
+    initialPageParam: null as Cursor,
+    queryFn: ({ pageParam }) =>
+      get<SmsListResponse>(
+        api,
+        withQuery(`${environmentPath(key)}/sms`, {
+          status: statuses?.join(","),
+          after: pageParam,
+        }),
+      ),
+    getNextPageParam: (page) => page.next_cursor,
+    retry,
+  });
+}
+
+export function useSms(key: EnvironmentKey, id: string) {
+  const { api } = useAuth();
+  return useQuery({
+    queryKey: ["sms", key, "message", id],
+    queryFn: () => get<SmsResponse>(api, `${environmentPath(key)}/sms/${segment(id)}`),
+    retry,
+  });
+}
+
+export function useReceivedSms(key: EnvironmentKey) {
+  const { api } = useAuth();
+  return useInfiniteQuery({
+    queryKey: ["sms", key, "received"],
+    ...paged<MobileReceivedSms>(api, (after) =>
+      withQuery(`${environmentPath(key)}/sms/received`, { after }),
+    ),
   });
 }
 

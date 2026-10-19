@@ -1,15 +1,16 @@
 ---
 title: Acceptable Use Policy
 description: What you may and may not send or do with coss.com, and how we enforce it.
-lastUpdated: 2026-10-11
+lastUpdated: 2026-10-19
 ---
 
 This Acceptable Use Policy ("**AUP**") describes what is not allowed on coss.com. It is part of our
 [Terms of Service](/legal/terms) and applies to every customer, every member of a customer's organization, and anyone
 who uses the Services through a customer's account or API keys. Violating it is a breach of the Terms.
 
-Email deliverability is shared: one sender's abuse can get the platform's infrastructure blocked for everyone. We
-enforce this policy so that the messages of every customer keep reaching the inbox.
+Deliverability is shared: one sender's abuse can get the platform's email infrastructure, or its standing with mobile
+carriers, blocked for everyone. We enforce this policy so that the messages of every customer keep reaching the inbox
+and the phone.
 
 ## 1. Prohibited content
 
@@ -52,16 +53,46 @@ You may not:
 You must comply with every law that applies to your messages, including the U.S. CAN-SPAM Act, the Telephone Consumer
 Protection Act where relevant, Canada's Anti-Spam Legislation (CASL), the EU and UK GDPR, and national ePrivacy rules.
 
-## 3. Bounce and complaint rates
+### Text messages (SMS)
 
-High bounce and complaint rates are the clearest sign of a problem list or unwanted mail. We measure them for each
-organization, per recipient, over a rolling window, and exclude suppressed recipients and mailbox-simulator addresses.
-As a guide, today's default thresholds over 7 days are:
+Mobile carriers hold text messages to stricter rules than email, and enforce them by filtering messages and blocking
+numbers. When you send SMS through coss.com, you must also follow the U.S. Telephone Consumer Protection Act (TCPA),
+the CTIA Messaging Principles and Best Practices and the carriers' codes of conduct, and:
+
+- **text only people who agreed to it.** Get consent before the first message, for the kind of messages you send:
+  express consent for transactional and informational messages, and prior express written consent for marketing.
+  Keep a record of when and how each person consented. Consent can't be bought, rented, shared or implied from a
+  phone number you obtained some other way, or from a person's consent to another business;
+- **send what you registered.** Messages must match the use case, sample messages and opt-in process of the carrier
+  registration of the number they go from, and the business information you register must be accurate;
+- **say who you are and how to stop.** Name your business in your messages, and tell people in the first message (and
+  periodically after) that they can reply STOP to opt out and HELP for help;
+- **honor opt-outs.** A reply of STOP or a similar keyword (such as UNSUBSCRIBE, CANCEL, END or QUIT) opts the person
+  out of every message from your numbers. coss.com suppresses the number automatically and its SMS provider sends the
+  one confirmation carriers allow; don't text them again, by any number, until they opt back in (for example by
+  replying START). Don't remove opt-outs from your suppression lists without the person's new consent;
+- **not send SHAFT content**: content about sex, hate, alcohol, firearms or tobacco (including vaping and cannabis),
+  which US carriers don't allow in application-to-person messages, even where it is legal;
+- **respect quiet hours.** Send marketing messages only at the times the law allows in the recipient's time zone (in
+  the US, generally between 8 a.m. and 9 p.m.);
+- **not spread traffic across numbers** to get around carrier filtering or throughput limits ("snowshoeing"), or use
+  public link shorteners that carriers associate with spam; and
+- **not generate or inflate traffic**, for example by sending one-time codes to numbers you know aren't real users
+  ("SMS pumping"). Protect forms that send codes against automated abuse.
+
+## 3. Bounce, complaint and opt-out rates
+
+High bounce and complaint rates are the clearest sign of a problem list or unwanted mail, and high opt-out and carrier
+filtering rates the same for text messages. We measure them for each organization, per recipient, over a rolling
+window, and exclude suppressed recipients and mailbox-simulator addresses. As a guide, today's default thresholds over
+7 days are:
 
 | Signal | Warning at | Live sending may be suspended at |
 | --- | --- | --- |
 | Bounce rate (permanent bounces) | 4% | 8% |
 | Spam complaint rate | 0.08% | 0.3% |
+| SMS opt-out rate (numbers that replied STOP, per message that reached a carrier) | 2% | 5% |
+| SMS carrier filtering rate (messages carriers filtered as spam) | 3% | 10% |
 
 Rates are only judged once enough messages have been sent to make them meaningful. These thresholds are stricter than
 those of most mailbox providers, and we may change them, set them per organization, or act on other signals. A
@@ -107,10 +138,11 @@ good faith.
 
 ## 7. Reporting abuse
 
-If you received unwanted, fraudulent or harmful email sent through coss.com, please report it to
+If you received unwanted, fraudulent or harmful email or text messages sent through coss.com, please report them to
 [legal@cal.com](mailto:legal@cal.com) with the subject line "Abuse report" and, if you can, the full message including
-its headers. To unsubscribe from a sender's messages, use the unsubscribe link in the message or contact the sender
-directly: they control their mailing list.
+its headers (for a text message, the number it came from, the time and the text). To unsubscribe from a sender's
+messages, use the unsubscribe link in the message, reply STOP to a text message, or contact the sender directly: they
+control their mailing list.
 
 Report security vulnerabilities as described at [cal.com/security](https://cal.com/security).
 

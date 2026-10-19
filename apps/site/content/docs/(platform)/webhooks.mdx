@@ -43,6 +43,16 @@ const secret = endpoint?.secret;
 | `broadcast.paused`       | A broadcast was paused, by you or by coss.com (`pause_reason`) |
 | `broadcast.canceled`     | A scheduled, sending or paused broadcast was canceled   |
 | `broadcast.failed`       | A broadcast stopped for good (`error`)                  |
+| `sms.scheduled`          | An [SMS](/docs/sms/sending) was scheduled               |
+| `sms.sent`               | The carrier accepted an SMS                             |
+| `sms.delivered`          | The carrier delivered it to the phone                   |
+| `sms.undelivered`        | The carrier couldn't deliver it (`data.failure`)        |
+| `sms.failed`             | The SMS could not be sent at all (`data.failure`)       |
+| `sms.suppressed`         | The SMS was skipped because its number is [suppressed](/docs/sms/sending#suppressions) (`data.suppression`) |
+| `sms.canceled`           | A scheduled SMS was canceled                            |
+| `sms.received`           | An SMS arrived at a number whose replies go to this environment ([receiving](/docs/sms/receiving)) |
+| `sms.opted_out`          | A number replied STOP and was suppressed in this environment |
+| `sms.opted_in`           | A number replied START and its opt-out was removed      |
 | `risk.assessment.review` | A [risk assessment](/docs/risk) decided `review`        |
 | `risk.assessment.reviewed` | Feedback resolved a `review`                          |
 
@@ -75,7 +85,8 @@ the rest of an organization's billing.
 
 The request body is a JSON event. Payloads describe the email (`email_id`, `from`, `to`, `subject`,
 `tags`, `category`) but never include its content, headers, cc or bcc; `email.received` events
-likewise only name the received email (`received_email_id`) and who sent it to whom. Events are
+likewise only name the received email (`received_email_id`) and who sent it to whom. `sms.*`
+events never include the text either: read it with `coss.sms.get()` or `coss.sms.received.get()`. Events are
 rendered in the
 endpoint's [API version](/docs/api-reference/versioning#webhooks), named in `api_version`.
 

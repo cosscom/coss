@@ -28,11 +28,7 @@ export const PRODUCTS: readonly Product[] = [
     name: "SMS",
     call: "coss.sms",
     summary: "Text messages worldwide, on the same key, events and logs as email.",
-    features: [
-      "Send and receive",
-      "Delivery events on your webhooks",
-      "Shared suppressions and logs",
-    ],
+    features: ["Send and receive", "Delivery events on your webhooks", "Suppressions and logs"],
   },
   {
     id: "video",

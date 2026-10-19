@@ -1,7 +1,7 @@
 {
   "name": "coss-mcp",
   "version": "0.2.3",
-  "description": "MCP server for coss.com: lets coding agents look up emails, diagnose delivery, and manage domains, suppressions and webhooks.",
+  "description": "MCP server for coss.com: lets coding agents look up emails and SMS, diagnose delivery, and manage domains, suppressions and webhooks.",
   "license": "MIT",
   "homepage": "https://coss.com/docs/mcp",
   "repository": {
@@ -15,6 +15,7 @@
     "mcp",
     "model-context-protocol",
     "email",
+    "sms",
     "ai",
     "agents"
   ],

@@ -61,3 +61,6 @@ the way the Amazon SES mailbox simulator behaves, so you can test failure handli
 | `suppressionlist@simulator.amazonses.com`  | `email.bounced` (on the suppression list)         | `suppressed`     |
 
 Every sandbox email also gets `email.sent`.
+
+Sandbox [SMS](/docs/sms) is simulated too: any `from` number works, and the
+[SMS simulator's numbers](/docs/sms/testing) produce each delivery outcome.

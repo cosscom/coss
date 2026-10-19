@@ -3,6 +3,8 @@ import type {
   EmailRecipientStatus,
   EmailStatus,
   ReputationStatus,
+  SmsEventType,
+  SmsStatus,
 } from "@coss/companion";
 import type { Tone } from "./theme";
 
@@ -59,6 +61,37 @@ export const EVENT_VARIANT: Record<EmailEventType, BadgeVariant> = {
   "email.clicked": "secondary",
   "email.rescheduled": "info",
   "email.unsubscribed": "warning",
+};
+
+// Mirrors apps/web/src/components/sms-badges.tsx.
+export const SMS_STATUS_LABELS: Record<SmsStatus, string> = {
+  queued: "Queued",
+  scheduled: "Scheduled",
+  sent: "Sent",
+  delivered: "Delivered",
+  undelivered: "Undelivered",
+  failed: "Failed",
+  canceled: "Canceled",
+};
+
+export const SMS_STATUS_TONE: Record<SmsStatus, Tone> = {
+  queued: "neutral",
+  scheduled: "info",
+  sent: "info",
+  delivered: "success",
+  undelivered: "error",
+  failed: "error",
+  canceled: "neutral",
+};
+
+export const SMS_EVENT_VARIANT: Record<SmsEventType, BadgeVariant> = {
+  "sms.scheduled": "info",
+  "sms.sent": "info",
+  "sms.delivered": "success",
+  "sms.undelivered": "error",
+  "sms.failed": "error",
+  "sms.suppressed": "warning",
+  "sms.canceled": "outline",
 };
 
 export const STANDING_LABELS: Record<ReputationStatus, string> = {
@@ -175,6 +208,7 @@ export const DRAIN_SOURCE_LABELS: Record<string, string> = {
   webhook: "Webhook attempts",
   risk: "Risk assessments",
   smtp: "SMTP messages",
+  sms: "SMS events",
   audit: "Audit events",
 };
 

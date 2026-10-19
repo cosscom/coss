@@ -86,6 +86,7 @@ export type OrganizationResponse = {
   billing: BillingAlerts | null;
   can: {
     read_email: boolean;
+    read_sms: boolean;
     read_reputation: boolean;
     read_billing: boolean;
     read_domain: boolean;
@@ -268,6 +269,74 @@ export type ReceivedEmail = ReceivedEmailSummary & {
     size: number;
   }[];
 };
+
+export type SmsStatus =
+  | "queued"
+  | "scheduled"
+  | "sent"
+  | "delivered"
+  | "undelivered"
+  | "failed"
+  | "canceled";
+
+export type MobileSmsSummary = {
+  id: string;
+  from: string;
+  to: string;
+  /** The text's first characters (the whole text is on the message). */
+  preview: string;
+  status: SmsStatus;
+  segments: number;
+  sandbox: boolean;
+  created_at: string;
+  scheduled_at: string | null;
+};
+
+export type SmsListResponse = { data: MobileSmsSummary[]; next_cursor: string | null };
+
+export type MobileSms = Omit<MobileSmsSummary, "preview"> & {
+  body: string;
+  encoding: "gsm7" | "ucs2";
+  /** ISO 3166 country of `to`. */
+  country: string;
+  tags: { name: string; value: string }[];
+  failure: { code: string; message: string } | null;
+  sent_at: string | null;
+  delivered_at: string | null;
+};
+
+export type SmsEventType =
+  | "sms.scheduled"
+  | "sms.sent"
+  | "sms.delivered"
+  | "sms.undelivered"
+  | "sms.failed"
+  | "sms.suppressed"
+  | "sms.canceled";
+
+export type MobileSmsEvent = {
+  id: string;
+  type: SmsEventType;
+  occurred_at: string;
+  /** The failure, the suppression or the carrier's error code, as the dashboard shows it; may be empty. */
+  detail: string;
+};
+
+export type SmsResponse = { sms: MobileSms; events: MobileSmsEvent[] };
+
+export type MobileReceivedSms = {
+  id: string;
+  from: string;
+  /** The organization's number that received it. */
+  to: string;
+  body: string;
+  segments: number;
+  keyword: "stop" | "start" | "help" | null;
+  sandbox: boolean;
+  created_at: string;
+};
+
+export type ReceivedSmsListResponse = Page<MobileReceivedSms>;
 
 export type LogSource = "api" | "email" | "webhook" | "risk" | "smtp" | "sms";
 export type LogLevel = "info" | "warning" | "error";

@@ -114,6 +114,7 @@ export function RegistrationForm(props: {
           <Field>
             <FieldLabel>Sender</FieldLabel>
             <select
+              aria-label="Sender"
               className={SELECT_CLASS}
               name="kind"
               onChange={(event) => setKind(event.target.value)}
@@ -131,6 +132,7 @@ export function RegistrationForm(props: {
             <Field>
               <FieldLabel>Brand</FieldLabel>
               <select
+                aria-label="Brand"
                 className={SELECT_CLASS}
                 name="brandType"
                 onChange={(event) => setBrandType(event.target.value)}
@@ -148,7 +150,7 @@ export function RegistrationForm(props: {
           ) : (
             <Field>
               <FieldLabel>Toll-free number</FieldLabel>
-              <select className={SELECT_CLASS} name="numberId">
+              <select aria-label="Toll-free number" className={SELECT_CLASS} name="numberId">
                 {props.tollFreeNumbers.map((number) => (
                   <option key={number.id} value={number.id}>
                     {number.phoneNumber}
@@ -171,7 +173,7 @@ export function RegistrationForm(props: {
           <TextField label="Legal name" name="legalName" placeholder="Acme, Inc." />
           <Field>
             <FieldLabel>Company type</FieldLabel>
-            <select className={SELECT_CLASS} name="companyType">
+            <select aria-label="Company type" className={SELECT_CLASS} name="companyType">
               <option value="PRIVATE_PROFIT">Private company</option>
               <option value="PUBLIC_PROFIT">Public company</option>
               <option value="NON_PROFIT">Non-profit</option>
@@ -180,7 +182,7 @@ export function RegistrationForm(props: {
           <TextField description="US: your EIN (12-3456789)." label="Tax ID" name="taxId" />
           <Field>
             <FieldLabel>Tax ID type</FieldLabel>
-            <select className={SELECT_CLASS} name="taxIdType">
+            <select aria-label="Tax ID type" className={SELECT_CLASS} name="taxIdType">
               <option value="EIN">EIN (US)</option>
               <option value="CBN">Business number (Canada)</option>
               <option value="VAT">VAT</option>
@@ -215,7 +217,7 @@ export function RegistrationForm(props: {
           <TextField label="Title" name="title" placeholder="CTO" />
           <Field>
             <FieldLabel>Position</FieldLabel>
-            <select className={SELECT_CLASS} name="jobPosition">
+            <select aria-label="Position" className={SELECT_CLASS} name="jobPosition">
               {["Director", "GM", "VP", "CEO", "CFO", "General Counsel", "Other"].map(
                 (position) => (
                   <option key={position} value={position}>
@@ -239,7 +241,12 @@ export function RegistrationForm(props: {
         <PanelBody className="flex flex-col gap-4">
           <Field>
             <FieldLabel>Use case</FieldLabel>
-            <select className={SELECT_CLASS} key={useCases.length} name="useCase">
+            <select
+              aria-label="Use case"
+              className={SELECT_CLASS}
+              key={useCases.length}
+              name="useCase"
+            >
               {useCases.map((useCase) => (
                 <option key={useCase} value={useCase}>
                   {SMS_USE_CASE_LABELS[useCase]}

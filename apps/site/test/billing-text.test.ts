@@ -42,4 +42,12 @@ describe("renderBillingComponents", () => {
       "| Email via dedicated IPs | $0.10 per 1,000 recipients | With the Dedicated IPs add-on, on top of Email |",
     );
   });
+
+  test("renders one product's rates", () => {
+    const text = renderBillingComponents('<UsageRates product="sms" />');
+    expect(text).toContain("| SMS (US) | $0.0135 per segment | |");
+    expect(text).toContain("| SMS phone numbers (toll-free) | $2.15 per number-month | |");
+    expect(text).not.toContain("| Email |");
+    expect(text).not.toContain("<UsageRates");
+  });
 });

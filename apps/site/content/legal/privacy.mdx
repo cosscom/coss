@@ -1,7 +1,7 @@
 ---
 title: Privacy Policy
 description: What personal data Cal.com collects for coss.com, why, who we share it with, and your rights.
-lastUpdated: 2026-10-14
+lastUpdated: 2026-10-19
 ---
 
 This Privacy Policy explains how **Cal.com, Inc.** ("**Cal.com**", "**we**", "**us**") handles personal data in
@@ -32,7 +32,8 @@ connection with coss.com: the website and documentation at coss.com, the dashboa
 - visits to coss.com and our communications with you.
 
 **Cal.com as processor.** When you use the API or dashboard to send messages, the personal data in them is **Customer
-Data**: message content, attachments, recipient addresses, delivery events, suppression lists and the like. Your
+Data**: message content, attachments, recipient addresses and phone numbers, delivery events, suppression lists and
+the like. Your
 organization is the controller of Customer Data, and we process it only on its instructions, under the Terms and our
 [Data Processing Addendum](/legal/dpa) (DPA). If you received a message sent through coss.com and want to exercise your privacy rights,
 please contact the sender: they control that data. If you contact us instead, we will forward your request to them
@@ -44,7 +45,10 @@ where we can, and help them respond.
 authentication settings and backup codes, passkey public keys, and, if your organization uses single sign-on, the
 identity your identity provider returns. We also store organizations, projects, environments, memberships, roles and
 invitations. If you subscribe to a paid plan, we store billing contact details; payment card details are handled by our
-payment processor and never stored by us.
+payment processor and never stored by us. If your organization sends SMS, we store the business details it registers
+with mobile carriers (legal name, company type, tax ID, address, website, a description of its messages and how people
+opt in to them, and an authorized contact's name, title, email address and phone number) and submit them, through our
+SMS provider, to the carriers and their registries for review.
 
 **Sessions and security data.** For each sign-in session, we store the IP address and browser user agent, so that you
 can review and revoke your sessions. We use IP addresses and hashed email addresses to rate-limit sign-in attempts and
@@ -60,9 +64,13 @@ used.
   we keep only the attachment's name, type and size.
 - **Delivery events:** whether each recipient's message was delivered, bounced, complained about, suppressed or
   failed, with details from the receiving mail server.
+- **Text messages (SMS):** the sending and receiving phone numbers, the text, tags and scheduling details, delivery
+  events reported by mobile carriers (including their error codes), and the messages people send to your
+  organization's phone numbers (their phone number and text, including opt-out requests such as STOP).
 - **Open and click tracking:** only when you turn it on. When a recipient opens a tracked message or clicks a tracked
   link, we record the time, the link and the user agent of the request. We do not store their IP address.
-- **Suppression lists:** addresses not to send to, added after permanent bounces or complaints, or by you.
+- **Suppression lists:** addresses and phone numbers not to send to, added after permanent bounces, complaints,
+  unsubscribes, SMS opt-outs or numbers that can't receive SMS, or by you.
 - **Risk assessments:** when you ask us to assess an event in your own service (a sign-up, a login…), the email
   address, IP address and user agent you send for the person, your id for them, and what we derive from these (whether
   the email domain is disposable or can receive mail, the IP address's network and country and whether it is a Tor exit
@@ -120,7 +128,8 @@ of messages sent from **live** environments before delivery. Sandbox messages ar
 - **What is screened:** a sample of messages per organization, more frequently for new senders. We never tell
   customers which messages will be sampled.
 - **What the model sees:** the sender address, the subject, up to 8,000 characters of the message's readable text, and
-  the host and path of its links (query strings removed). It does not see recipient addresses or attachments.
+  the host and path of its links (query strings removed); for SMS, the sending number, the text and the host and path
+  of its links. It does not see recipient addresses or phone numbers, or attachments.
 - **Who processes it:** the classification runs through Vercel's AI Gateway on AI models from its providers, with
   zero data retention: they may not keep the content or use it to train models.
 - **What we keep:** the verdict and its scores, never the message content.
@@ -141,12 +150,16 @@ We share personal data only as described here:
     SES).
   - **Vercel, Inc.** (United States) and the model providers available through its AI Gateway: AI content screening
     and the classification of content submitted for risk assessment, with zero data retention.
+  - **Twilio Inc.** (United States): SMS delivery and receiving, phone numbers, and carrier registration of the
+    business details organizations submit to send SMS.
   - **Cloudflare, Inc.** (United States): DNS for coss.com.
 
   The complete, current list of Cal.com subprocessors is in our Trust Center at
   [trust.cal.com](https://trust.cal.com). We give customers 30 days' notice of new subprocessors of Customer Data, and
   they may object on reasonable data protection grounds, as described in the [DPA](/legal/dpa#5-subprocessors).
-- **Message delivery.** Sending a message necessarily discloses its content to the recipients' mail servers.
+- **Message delivery.** Sending a message necessarily discloses its content to the recipients' mail servers or, for
+  SMS, to the recipients' mobile carriers. To let an organization send SMS in the United States, its registration
+  details go to mobile carriers and their registries.
 - **Your webhook endpoints** receive event data about your messages (never message bodies, headers, cc or bcc).
 - **Your organization.** Organization owners and administrators can see the members of the organization and the data
   in it.

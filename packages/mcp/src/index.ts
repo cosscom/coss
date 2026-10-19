@@ -7,5 +7,11 @@ export {
   type RecipientOutcome,
   type Verdict,
 } from "coss/diagnose";
+export {
+  diagnoseSms,
+  type SmsDiagnosis,
+  type SmsDiagnosisContext,
+  type SmsVerdict,
+} from "./diagnose-sms.ts";
 export { type CossMcpServerOptions, createCossMcpServer } from "./server.ts";
 export { VERSION } from "./version.ts";

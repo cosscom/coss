@@ -20,9 +20,9 @@ function hintFor(error: CossError): string | undefined {
       return "The API key was refused. Check COSS_API_KEY (coss_live_… or coss_test_…) and that the key wasn't revoked.";
     case "not_found_error":
       return (
-        "Nothing with that id exists in this API key's environment. Emails, suppressions, " +
-        "received emails and webhook endpoints belong to one environment: a sandbox (coss_test_) " +
-        "key can't see live emails, and a live key can't see sandbox ones."
+        "Nothing with that id exists in this API key's environment. Emails, SMS messages, " +
+        "suppressions, received messages and webhook endpoints belong to one environment: a " +
+        "sandbox (coss_test_) key can't see live ones, and a live key can't see sandbox ones."
       );
     case "permission_error":
       return error.code === "insufficient_permissions"

@@ -50,9 +50,10 @@ type Membership = {
   ssoProviderId: string | null;
 };
 let membership: Membership | null = null;
+let environmentFound: { project: { id: string }; environment: { id: string } } | null = null;
 mock.module("@coss/tenancy", () => ({
   getMembership: async () => membership,
-  getEnvironment: async () => null,
+  getEnvironment: async () => environmentFound,
   listUserOrganizations: async () => [{ name: "Acme", slug: "acme", role: "owner" }],
   listProjectsWithEnvironments: async () => [
     {
@@ -89,6 +90,69 @@ mock.module("@coss/reputation", () => ({
 mock.module("@coss/email", () => ({
   getEmailTenant: async () => ({ sendingStatus: "enabled" }),
 }));
+const smsModule = await import("@coss/sms");
+const smsCalls: unknown[] = [];
+const SMS = {
+  object: "sms" as const,
+  id: "sms_1",
+  from: "+14155550123",
+  to: "+14155550199",
+  body: "x".repeat(200),
+  status: "undelivered" as const,
+  segments: 2,
+  encoding: "gsm7" as const,
+  country: "US",
+  tags: [{ name: "flow", value: "sign_in" }],
+  failure: { code: "carrier_filtered", message: "The carrier filtered it." },
+  sandbox: false,
+  scheduled_at: null,
+  sent_at: "2026-10-01T00:00:01.000Z",
+  delivered_at: null,
+  created_at: "2026-10-01T00:00:00.000Z",
+};
+mock.module("@coss/sms", () => ({
+  ...smsModule,
+  listSmsPage: async (input: unknown) => {
+    smsCalls.push(input);
+    return { data: [SMS], hasMore: true };
+  },
+  getSms: async ({ smsId }: { smsId: string }) => {
+    if (smsId !== SMS.id) throw new smsModule.SmsError("not_found", "SMS not found.");
+    return SMS;
+  },
+  listSmsEvents: async ({ smsId }: { smsId: string }) => {
+    if (smsId !== SMS.id) throw new smsModule.SmsError("not_found", "SMS not found.");
+    return [
+      {
+        object: "sms_event",
+        id: "smsevt_1",
+        sms_id: SMS.id,
+        type: "sms.undelivered",
+        occurred_at: "2026-10-01T00:00:05.000Z",
+        data: {
+          failure: { code: "carrier_filtered", message: "The carrier filtered it." },
+          provider_error_code: "30007",
+        },
+      },
+    ];
+  },
+  listReceivedSms: async () => ({
+    data: [
+      {
+        object: "received_sms",
+        id: "smsin_1",
+        from: "+14155550199",
+        to: "+14155550123",
+        body: "STOP",
+        segments: 1,
+        keyword: "stop",
+        sandbox: false,
+        created_at: "2026-10-01T00:01:00.000Z",
+      },
+    ],
+    hasMore: false,
+  }),
+}));
 const billingBannerState = mock(async () => ({ held: null, pastDue: true, allowance: null }));
 mock.module("@/lib/billing", () => ({ billingBannerState }));
 let allowed = true;
@@ -104,6 +168,15 @@ const org = await import("../src/app/api/mobile/v1/orgs/[orgSlug]/route");
 const reputation = await import("../src/app/api/mobile/v1/orgs/[orgSlug]/reputation/route");
 const token = await import("../src/app/api/mobile/v1/auth/token/route");
 const signOut = await import("../src/app/api/mobile/v1/auth/sign-out/route");
+const smsList = await import(
+  "../src/app/api/mobile/v1/orgs/[orgSlug]/projects/[projectSlug]/environments/[envSlug]/sms/route"
+);
+const smsDetail = await import(
+  "../src/app/api/mobile/v1/orgs/[orgSlug]/projects/[projectSlug]/environments/[envSlug]/sms/[smsId]/route"
+);
+const smsReceived = await import(
+  "../src/app/api/mobile/v1/orgs/[orgSlug]/projects/[projectSlug]/environments/[envSlug]/sms/received/route"
+);
 
 function request(path: string, init: RequestInit & { bearer?: string } = {}): Request {
   const headers = new Headers(init.headers);
@@ -137,6 +210,8 @@ function member(role = "member", organization: Partial<Membership["organization"
 
 beforeEach(() => {
   membership = member();
+  environmentFound = null;
+  smsCalls.length = 0;
   sessionFields = { ssoProviderId: null, impersonatedBy: null };
   allowed = true;
   seenHeaders.length = 0;
@@ -230,6 +305,7 @@ describe("mobile organization access", () => {
     expect(body.billing).toBeNull();
     expect(body.can).toEqual({
       read_email: true,
+      read_sms: true,
       read_reputation: true,
       read_billing: false,
       read_domain: true,
@@ -288,6 +364,113 @@ describe("mobile organization access", () => {
     );
     expect(response.status).toBe(403);
     expect((await errorOf(response)).code).toBe("forbidden");
+  });
+});
+
+describe("mobile SMS", () => {
+  const ENV_PATH = "/api/mobile/v1/orgs/acme/projects/default/environments/production";
+  const envContext = <Extra extends Record<string, string>>(extra = {} as Extra) => ({
+    params: Promise.resolve({
+      orgSlug: "acme",
+      projectSlug: "default",
+      envSlug: "production",
+      ...extra,
+    }),
+  });
+
+  beforeEach(() => {
+    environmentFound = { project: { id: "proj_1" }, environment: { id: "env_1" } };
+  });
+
+  test("lists messages with a cursor, known statuses only, a preview of the text", async () => {
+    const response = await smsList.GET(
+      request(`${ENV_PATH}/sms?status=failed,undelivered,bogus&after=sms_0`, {
+        bearer: GOOD_TOKEN,
+      }),
+      envContext(),
+    );
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(smsCalls).toEqual([
+      {
+        organizationId: "org_1",
+        environmentId: "env_1",
+        limit: 50,
+        status: ["failed", "undelivered"],
+        after: "sms_0",
+      },
+    ]);
+    expect(body.next_cursor).toBe("sms_1");
+    expect(body.data[0]).toEqual({
+      id: "sms_1",
+      from: "+14155550123",
+      to: "+14155550199",
+      preview: `${"x".repeat(120)}…`,
+      status: "undelivered",
+      segments: 2,
+      sandbox: false,
+      created_at: "2026-10-01T00:00:00.000Z",
+      scheduled_at: null,
+    });
+  });
+
+  test("a message with its events; another environment's is not found", async () => {
+    const response = await smsDetail.GET(
+      request(`${ENV_PATH}/sms/sms_1`, { bearer: GOOD_TOKEN }),
+      envContext({ smsId: "sms_1" }),
+    );
+    const body = await response.json();
+    expect(body.sms.body).toBe("x".repeat(200));
+    expect(body.sms.failure).toEqual({
+      code: "carrier_filtered",
+      message: "The carrier filtered it.",
+    });
+    expect(body.events).toEqual([
+      {
+        id: "smsevt_1",
+        type: "sms.undelivered",
+        occurred_at: "2026-10-01T00:00:05.000Z",
+        detail: "The carrier filtered it. (error 30007)",
+      },
+    ]);
+
+    const missing = await smsDetail.GET(
+      request(`${ENV_PATH}/sms/sms_2`, { bearer: GOOD_TOKEN }),
+      envContext({ smsId: "sms_2" }),
+    );
+    expect(missing.status).toBe(404);
+    expect((await errorOf(missing)).code).toBe("not_found");
+  });
+
+  test("received messages", async () => {
+    const response = await smsReceived.GET(
+      request(`${ENV_PATH}/sms/received`, { bearer: GOOD_TOKEN }),
+      envContext(),
+    );
+    expect(await response.json()).toEqual({
+      data: [
+        {
+          id: "smsin_1",
+          from: "+14155550199",
+          to: "+14155550123",
+          body: "STOP",
+          segments: 1,
+          keyword: "stop",
+          sandbox: false,
+          created_at: "2026-10-01T00:01:00.000Z",
+        },
+      ],
+      next_cursor: null,
+    });
+  });
+
+  test("roles without sms:read get a 403", async () => {
+    membership = member("guest");
+    const response = await smsList.GET(
+      request(`${ENV_PATH}/sms`, { bearer: GOOD_TOKEN }),
+      envContext(),
+    );
+    expect(response.status).toBe(403);
   });
 });
 

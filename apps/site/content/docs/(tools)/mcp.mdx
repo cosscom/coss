@@ -12,6 +12,7 @@ to your coding agent (Claude Code, Cursor, VS Code, Codex, or any MCP client), t
 - "My webhook handler isn't getting events: what is it answering?"
 - "Why did my send request fail with a 422?"
 - "What DNS records does acme.com still need?"
+- "Was the verification code to +14155550199 delivered, and if not, why?"
 
 The server runs locally on Node.js 22+ through `npx` and calls the coss.com API with your API key.
 
@@ -89,8 +90,8 @@ The server reads its configuration from the environment only:
 | `COSS_BASE_URL` | Another API origin, e.g. `http://localhost:3001` when you run coss.com yourself. Defaults to `https://api.coss.com`. |
 
 <Callout type="warn">
-API keys can do everything the API can, so the agent can also send email and change suppressions
-and domains through this server. Tools that change something are marked as such, and most clients
+API keys can do everything the API can, so the agent can also send email and SMS and change
+suppressions and domains through this server. Tools that change something are marked as such, and most clients
 ask before calling them. Give the server a development key unless you need production data.
 </Callout>
 
@@ -118,6 +119,13 @@ are never returned.
 
 **Receiving**: `get_inbound_address`, `list_received_emails`, `get_received_email`.
 
+**SMS**: `diagnose_sms` (by message id, or by recipient number: a verdict, what the status or
+failure code means, the carrier's error code, problems with the sender's registration,
+suppressions, reputation or billing, and what to do next), `find_sms`, `get_sms` (with its full
+text and events), `send_sms`, `cancel_sms`, `list_received_sms`, `list_sms_numbers` (whether each
+number can send live messages now) and `check_sms_suppression`, `add_sms_suppression`,
+`remove_sms_suppression`. See [SMS](/docs/sms).
+
 **Logs**: `search_logs` and `get_log`: every API request made with the environment's keys (with
 redacted request and response bodies), email events and webhook attempts. See [Logs](/docs/logs).
 
@@ -134,5 +142,9 @@ other way round). Sandbox emails are never delivered: their outcomes are simulat
 When no email matches, the API most likely refused the send (for example a validation error or an
 unverified domain): `search_logs` finds those requests and the errors they got.
 
-Email content, received emails, bounce messages and webhook responses are written by other people.
+SMS works the same way: sandbox messages are simulated, and the [SMS simulator's
+numbers](/docs/sms/testing) produce each outcome.
+
+Email content, SMS text, received messages, bounce messages and webhook responses are written by
+other people.
 The server tells the agent to treat them as data, never as instructions.

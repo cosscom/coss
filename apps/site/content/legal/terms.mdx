@@ -1,7 +1,7 @@
 ---
 title: Terms of Service
 description: The agreement between you and Cal.com, Inc. for using coss.com, its API, SDK and dashboard.
-lastUpdated: 2026-10-11
+lastUpdated: 2026-10-19
 ---
 
 These Terms of Service (the "**Terms**") are a binding agreement between **Cal.com, Inc.**, a Delaware corporation
@@ -53,7 +53,8 @@ account or a key has been compromised.
 
 **Sandbox and live environments.** Sandbox environments (`coss_test_` keys) simulate delivery and never send real
 messages. Live environments (`coss_live_` keys) send real messages and require a verified email address and a sending
-domain you have verified with us.
+domain you have verified with us or, for SMS, one of your Organization's phone numbers whose carrier registration has
+been approved.
 
 ## 4. Your responsibilities
 
@@ -61,13 +62,14 @@ You will, and will ensure that your Authorized Users will:
 
 1. use the Services only in compliance with these Terms, the [Acceptable Use Policy](/legal/acceptable-use) and all
    applicable laws, including anti-spam, marketing, privacy and data protection laws (such as the U.S. CAN-SPAM Act,
-   Canada's Anti-Spam Legislation, the EU and UK GDPR and the ePrivacy Directive and its national implementations);
+   the U.S. Telephone Consumer Protection Act, Canada's Anti-Spam Legislation, the EU and UK GDPR and the ePrivacy
+   Directive and its national implementations), and the mobile carriers' messaging rules for SMS;
 2. have a lawful basis, and where required consent, for every message you send and for any data about End Recipients
    that you submit to the Services;
-3. send only from domains and addresses you own or are authorized to use, and identify yourself accurately as the
-   sender;
-4. honor unsubscribe and opt-out requests, and include the notices and unsubscribe mechanisms that applicable law
-   requires;
+3. send only from domains, addresses and phone numbers you own or are authorized to use, identify yourself accurately
+   as the sender, and give accurate business information when registering phone numbers with carriers;
+4. honor unsubscribe and opt-out requests (including SMS replies such as STOP), and include the notices and
+   unsubscribe mechanisms that applicable law requires;
 5. provide End Recipients with any notices required by law, including about open and click tracking if you enable it;
    and
 6. not submit special categories of personal data, protected health information or payment card data to the Services
@@ -133,8 +135,10 @@ Organization is closed, we will delete Customer Data in line with our [Privacy P
 
 ## 8. Third-party services
 
-The Services rely on third-party infrastructure, including Amazon Web Services for hosting and email delivery. Message
-delivery also depends on recipient mail servers, which we do not control. The Services can send webhook requests to
+The Services rely on third-party infrastructure, including Amazon Web Services for hosting and email delivery and
+Twilio for SMS delivery, phone numbers and carrier registration. Message delivery also depends on recipient mail
+servers and mobile carriers, which we do not control; carriers decide whether to approve a registration and may filter
+or block messages. The Services can send webhook requests to
 endpoints you configure; you are responsible for those endpoints and for what you do with the data they receive. We
 are not responsible for third-party services that you choose to connect to the Services.
 
