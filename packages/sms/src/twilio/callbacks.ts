@@ -55,6 +55,8 @@ export function inboundMessage(
 ): InboundSms | null {
   const { MessageSid: sid, From: from, To: to } = params;
   if (!sid || !from || !to) return null;
+  // What Twilio received and bills; counted from the body when it doesn't say.
+  const segments = Number(params.NumSegments);
   return {
     provider: TWILIO_PROVIDER,
     providerMessageId: sid,
@@ -62,5 +64,6 @@ export function inboundMessage(
     to,
     body: params.Body ?? "",
     occurredAt: receivedAt,
+    ...(Number.isInteger(segments) && segments > 0 ? { segments } : {}),
   };
 }

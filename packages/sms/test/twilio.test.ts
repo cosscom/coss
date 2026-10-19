@@ -13,7 +13,7 @@ import { createSmsService } from "../src/service.ts";
 import { checkSmsSuppression } from "../src/suppressions.ts";
 import { createTestSmsNumber, memorySmsDispatchQueue, testPhoneNumber } from "../src/testing.ts";
 import { createTwilioApi } from "../src/twilio/api.ts";
-import { statusCallbackEvent } from "../src/twilio/callbacks.ts";
+import { inboundMessage, statusCallbackEvent } from "../src/twilio/callbacks.ts";
 import { createTwilioClient } from "../src/twilio/client.ts";
 import { TwilioSmsProvider } from "../src/twilio/provider.ts";
 import { twilioSignature, verifyTwilioSignature } from "../src/twilio/signature.ts";
@@ -410,4 +410,10 @@ test("a toll-free verification sends the business's registration and its use cas
     BusinessRegistrationAuthority: "EIN",
     BusinessRegistrationCountry: "US",
   });
+});
+
+test("an inbound callback carries Twilio's segment count", () => {
+  const params = { MessageSid: "SM1", From: "+14155550199", To: "+18335550123", Body: "Hi" };
+  expect(inboundMessage({ ...params, NumSegments: "3" })).toMatchObject({ segments: 3 });
+  expect(inboundMessage(params)).not.toHaveProperty("segments");
 });
