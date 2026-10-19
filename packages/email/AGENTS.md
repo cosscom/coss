@@ -123,6 +123,21 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   (the default tracking host, `TRACKING_PUBLIC_URL`, and Cloudflare's fallback origin; zone `cosslinks.com` in a
   self-serve Cloudflare account, never the coss.com zone) → ALB rule `/t/*` + `X-Tracking-Origin-Verify` → api
   (`infra/aws/routing.ts`).
+- **Domain Connect** (`packages/email/src/domain-connect.ts`, `@coss/email/domain-connect`; the dashboard's
+  `apps/web/src/lib/domain-connect.ts`): one-click DNS setup through the customer's DNS provider, synchronous flow
+  only and always signed (`DOMAIN_CONNECT_PRIVATE_KEY`; providers check `sig` against the TXT records at
+  `<DOMAIN_CONNECT_KEY_ID>.coss.com`). `domain-connect/coss.com.email.json` is the contract with every DNS provider
+  (submitted to github.com/Domain-Connect/Templates; providers onboard it one by one, and until then discovery's
+  template check is a 404 and no button shows): change it only with a new `version`, the conformance test in
+  `test/domain-connect.test.ts` (the template applied must equal `expectedRecords` + the tracking CNAME) and a PR
+  upstream. Groups: `dkim`, `mail_from`, `dmarc` (only when the domain has no DMARC record and inherits none — a
+  `p=none` subdomain record would weaken an enforced parent), `tracking` (fixed target `track.cosslinks.com`);
+  only groups with unverified records are applied. Never put receiving MX records in it (they'd take over the
+  domain's mail). Discovery reads the customer's `_domainconnect` TXT record and fetches the URL it names, so it
+  goes only through `publicHttpGetter` (https, public addresses pinned with `publicAddressLookup` from
+  `@coss/webhooks`, no redirects, 16 KB, 3 s) and fails closed (`null`, never throws). The dashboard caches
+  discovery per name for 10 minutes and works out the apply link again in `connectDnsAction` (audited
+  `domain.dns_connect_started`); there is no API surface.
 - **BIMI** (`packages/email/src/bimi.ts`, `domain.bimi` jsonb, wire `Domain.bimi`): a DNS-only check run by
   `checkDomain` next to `checkRecords` (so the worker's re-checks and verify refresh it). It reads the DMARC policy
   (RFC 7489: the domain's own `p`, else the organizational domain's `sp ?? p`; the organizational domain — `tldts`'

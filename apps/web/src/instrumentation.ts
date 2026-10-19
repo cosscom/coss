@@ -32,10 +32,16 @@ export async function register() {
       ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
       ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"],
       ["DEPLOY_GITHUB_APP_ID", "DEPLOY_GITHUB_APP_PRIVATE_KEY"],
+      ["DOMAIN_CONNECT_KEY_ID", "DOMAIN_CONNECT_PRIVATE_KEY"],
     ] as const) {
       if (Boolean(env[id]) !== Boolean(env[secret])) {
         throw new Error(`Set both ${id} and ${secret}, or neither.`);
       }
+    }
+    // A key that doesn't parse would only fail when someone clicks "Connect".
+    if (env.DOMAIN_CONNECT_PRIVATE_KEY) {
+      const { parseDomainConnectKey } = await import("@coss/email/domain-connect");
+      parseDomainConnectKey(env.DOMAIN_CONNECT_PRIVATE_KEY);
     }
     // Checkout and the portal need the secret key; Stripe's webhooks need the signing secret.
     if (

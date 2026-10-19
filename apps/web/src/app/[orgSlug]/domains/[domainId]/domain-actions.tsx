@@ -35,7 +35,7 @@ export function VerifyDomainButton(props: Target & { restart: boolean }) {
 }
 
 /** A check that finds nothing new is still worth saying: the page itself may not change. */
-function domainCheckToast({ status, restarted }: VerifyOutcome) {
+export function domainCheckToast({ status, restarted }: VerifyOutcome) {
   if (restarted) return "Verification restarted";
   if (status === "verified") return "Domain verified";
   // Failed domains aren't checked again until verification is restarted.

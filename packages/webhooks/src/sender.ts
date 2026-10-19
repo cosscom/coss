@@ -74,11 +74,14 @@ export function validateWebhookUrl(value: string, opts: { allowInsecure: boolean
   return url;
 }
 
-export function createWebhookSender(opts: SenderOptions = {}): WebhookSender {
+/**
+ * A `lookup` for `http(s).request` that resolves the host, refuses it when any answer is private,
+ * and hands the socket the address that was checked (so DNS can't rebind in between). Shared with
+ * other fetches of customer-controlled hosts (Domain Connect discovery in `@coss/email`).
+ */
+export function publicAddressLookup(opts: SenderOptions = {}): LookupFunction {
   const resolve = opts.resolve ?? defaultResolve;
-
-  /** Resolves, rejects private answers, and hands the socket the address that was checked. */
-  const lookup: LookupFunction = (hostname, options, callback) => {
+  return (hostname, options, callback) => {
     resolve(hostname).then(
       (addresses) => {
         const blocked = addresses.find((entry) => isBlockedAddress(entry.address));
@@ -100,6 +103,10 @@ export function createWebhookSender(opts: SenderOptions = {}): WebhookSender {
       (error: Error) => callback(error as NodeJS.ErrnoException, "", 0),
     );
   };
+}
+
+export function createWebhookSender(opts: SenderOptions = {}): WebhookSender {
+  const lookup = publicAddressLookup(opts);
 
   return (request) =>
     new Promise<WebhookResponse>((resolvePromise, reject) => {

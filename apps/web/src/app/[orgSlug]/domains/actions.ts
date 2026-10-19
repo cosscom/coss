@@ -22,6 +22,7 @@ import { env } from "@/env";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
+import { domainConnectPlan, domainConnectUrl } from "@/lib/domain-connect";
 import { emailRuntime } from "@/lib/email-runtime";
 import { isPlatformAdmin, type OrgContext, requireOrgPermission } from "@/lib/session";
 import { isSystemOrganization } from "@/lib/system-organization";
@@ -115,6 +116,39 @@ export async function verifyDomainAction(
     }
     refresh();
     return { status: checked.status, restarted };
+  });
+}
+
+/**
+ * Sends the member to the domain's DNS provider to add its records in one click (Domain Connect).
+ * What to add is worked out again here, from the domain as it is now.
+ */
+export async function connectDnsAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      domain: ["verify"],
+    });
+    const domain = await domainFromForm(context, formData);
+    const tracking = await getTrackingDomain({
+      organizationId: domain.organizationId,
+      domainId: domain.id,
+    });
+    const plan = await domainConnectPlan(domain, tracking);
+    if (!plan) {
+      throw new ActionError(
+        "One-click setup isn't available for this domain. Add the records below.",
+      );
+    }
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "domain.dns_connect_started",
+      target: { type: "domain", id: domain.id, label: domain.name },
+      metadata: { provider: plan.provider.providerId, groups: plan.groups },
+    });
+    redirect(domainConnectUrl(plan, { orgSlug: context.organization.slug, domainId: domain.id }));
   });
 }
 

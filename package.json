@@ -96,6 +96,7 @@
     "valkey:bootstrap": "bun run --cwd packages/ratelimit valkey:bootstrap",
     "ratelimit:set": "bun run --cwd packages/ratelimit ratelimit:set",
     "auth:generate": "bun run --cwd packages/auth auth:generate && biome check --write packages/db/src/schema/auth.ts",
+    "domain-connect:key": "bun run --cwd packages/email domain-connect:key",
     "signals:update-disposable": "bun run --cwd packages/signals signals:update-disposable",
     "openapi:generate": "bun run --cwd apps/api openapi:generate",
     "changeset": "changeset",
