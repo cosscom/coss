@@ -6,7 +6,7 @@ README.md, "Deploying to AWS". `bun run --cwd infra aws:spec` prints the whole s
 | File | What |
 |---|---|
 | `aws/services.ts` | The ECS services (Dockerfile, port, health check, NLB TCP ports (`tcpPorts`: the SMTP relay), stop timeout, size, task-role policy, every env var and whether it is plain, a Secrets Manager secret or set by the image) and the one-off tasks (migrate, ses-bootstrap, create-admin). |
-| `aws/routing.ts` | ALB listener rules and CloudFront cached behaviours, generated from `ZONE_ROUTES` (`@coss/auth/slugs`). The coss ui repository's zones (`/ui`, `/origin`, on Vercel) are CloudFront origins of their own, never ALB targets. |
+| `aws/routing.ts` | ALB listener rules and CloudFront cached behaviours, generated from `ZONE_ROUTES` (`@coss/auth/slugs`). The external zones (the coss ui repository's `/ui` and `/origin`, the qnot repository's `/qnot`, all on Vercel) are CloudFront origins of their own, never ALB targets. |
 | `aws/spec.ts` | The whole spec as one object; `aws:spec:write` writes it to `terraform/spec.json`. |
 | `terraform/` | Production (account 294417174674, us-east-2): network, ECR, RDS, ECS, ALB, CloudFront + WAF, the NLB of plain-TCP services (`nlb.tf`), IAM, alarms and cost guardrails (`monitoring.tf`), the CodeBuild-hosted Actions runners of the deploy workflow. Reads `spec.json` for everything the spec owns (env names/kinds, sizes, rules, behaviours); `production.tfvars` holds the plain values. State in S3 (`coss-tfstate-294417174674`). |
 | `terraform/scripts/put-secret.sh` | Sets one key of the stage secret (`coss/production`) from the clipboard, stdin or a random value, never printing it or passing it in a process's arguments (values travel through pipes). |

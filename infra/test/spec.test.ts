@@ -217,13 +217,23 @@ describe("routing", () => {
     );
     for (const pattern of patterns) expect(pattern.startsWith("/api")).toBe(false);
     expect(patterns).not.toContain("/");
-    expect(patterns.length).toBeLessThanOrEqual(25);
+    // CloudFront's "Cache behaviors per distribution" quota (L-F432D044, default 75).
+    expect(patterns.length).toBeLessThanOrEqual(75);
   });
 
   test("deploys invalidate the site's cached paths, never hashed assets or external zones", () => {
     const paths = deployInvalidationPaths();
     expect(paths).toEqual(expect.arrayContaining(["/docs", "/docs/*", "/legal/*", "/llms.txt"]));
-    for (const kept of ["/_next/static/*", "/site-assets/*", "/ui", "/ui/*", "/origin/*", "/*"]) {
+    for (const kept of [
+      "/_next/static/*",
+      "/site-assets/*",
+      "/ui",
+      "/ui/*",
+      "/origin/*",
+      "/qnot",
+      "/qnot/*",
+      "/*",
+    ]) {
       expect(paths).not.toContain(kept);
     }
     // CloudFront: at most 15 wildcard paths in progress per distribution.

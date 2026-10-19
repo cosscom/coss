@@ -1633,6 +1633,10 @@
       "origin": {
         "host": "the origin zone's production hostname (Vercel), set at provisioning",
         "originRequestPolicy": "Managed-AllViewerExceptHostHeader"
+      },
+      "qnot": {
+        "host": "the qnot zone's production hostname (Vercel), set at provisioning",
+        "originRequestPolicy": "Managed-AllViewerExceptHostHeader"
       }
     },
     "cachePolicies": {
@@ -1805,6 +1809,18 @@
             "origin": "origin",
             "cache": "origin",
             "reason": "origin zone (/origin)"
+          },
+          {
+            "pathPattern": "/qnot",
+            "origin": "qnot",
+            "cache": "origin",
+            "reason": "qnot zone (/qnot)"
+          },
+          {
+            "pathPattern": "/qnot/*",
+            "origin": "qnot",
+            "cache": "origin",
+            "reason": "qnot zone (/qnot)"
           }
         ]
       },

@@ -8,7 +8,7 @@
  * coss.com is served by several apps (Next.js multi-zones). The dashboard (apps/web) is the default
  * zone: it serves every path not listed in `ZONE_ROUTES`, including org slugs and `/api/auth/*`.
  */
-export type Zone = "dashboard" | "site" | "ui" | "origin";
+export type Zone = "dashboard" | "site" | "ui" | "origin" | "qnot";
 
 /**
  * A path served by an app other than the dashboard. `prefix` routes match the path itself and
@@ -56,6 +56,8 @@ export const ZONE_ROUTES = [
   // The coss ui repository's apps, deployed outside AWS (Vercel): coss ui and Origin UI.
   { zone: "ui", path: "/ui", prefix: true },
   { zone: "origin", path: "/origin", prefix: true },
+  // qnot's site (the cosscom/qnot repository's apps/web), also on Vercel.
+  { zone: "qnot", path: "/qnot", prefix: true },
 ] as const satisfies readonly ZoneRoute[];
 
 /** Which app serves `pathname` on coss.com. */

@@ -13,6 +13,7 @@ smtp_host          = "smtp.coss.com"
 external_origin_hosts = {
   ui     = "coss-com-ui.vercel.app"
   origin = "coss-com-origin.vercel.app"
+  qnot   = "coss-com-qnot.vercel.app"
 }
 ses_name          = "coss"
 github_repository = "cosscom/coss"

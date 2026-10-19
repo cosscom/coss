@@ -64,6 +64,8 @@ describe("zones", () => {
     expect(zoneForPath("/ui/docs/button")).toBe("ui");
     expect(zoneForPath("/origin")).toBe("origin");
     expect(zoneForPath("/origin/sitemap.xml")).toBe("origin");
+    expect(zoneForPath("/qnot")).toBe("qnot");
+    expect(zoneForPath("/qnot/docs")).toBe("qnot");
     // A prefix never matches a longer segment, and exact paths match only themselves.
     expect(zoneForPath("/docsx")).toBe("dashboard");
     expect(zoneForPath("/uix")).toBe("dashboard");

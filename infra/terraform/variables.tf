@@ -47,7 +47,7 @@ variable "portal_host" {
 
 variable "external_origin_hosts" {
   type        = map(string)
-  description = "Production hostname of each external zone (spec.json cloudFront.origins other than alb): the coss ui repository's Vercel projects."
+  description = "Production hostname of each external zone (spec.json cloudFront.origins other than alb): the coss ui and qnot repositories' Vercel projects."
 }
 
 variable "ses_name" {
