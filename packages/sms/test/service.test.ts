@@ -426,6 +426,10 @@ describe("receiving", () => {
         occurredAt: new Date(),
       }),
     ).toEqual({ status: "unrouted" });
+    // Received all the same: billed to the organization.
+    expect(await usageOf(tenant.organization.id)).toEqual([
+      { meter: "sms.received_segments", dimension: "country=US", quantity: 1 },
+    ]);
     const [entry] = await db
       .select()
       .from(smsSuppression)

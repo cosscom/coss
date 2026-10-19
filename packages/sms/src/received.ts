@@ -177,6 +177,9 @@ export async function storeReceivedSms(
   return row;
 }
 
+/** Usage that belongs to the organization, not to one of its environments. */
+const ORGANIZATION_USAGE = "";
+
 export type InboundSms = {
   provider: string;
   providerMessageId: string;
@@ -281,6 +284,18 @@ export async function receiveSms(input: InboundSms): Promise<ReceiveSmsResult> {
       // A retried callback: the keyword was applied the first time.
       if (!row) return { status: "duplicate" };
       result = { status: "stored", id: row.id };
+    } else {
+      // Unrouted, but received (and billed by the provider) all the same: the organization's
+      // usage, not an environment's (stored ones are billed by `storeReceivedSms`).
+      await recordUsage(tx, {
+        organizationId,
+        environmentId: ORGANIZATION_USAGE,
+        meter: "sms.received_segments",
+        quantity:
+          input.segments ??
+          countSegments(input.body, { tollFree: isTollFreeNumber(input.to) }).segments,
+        dimension: dimensionKey({ country: number.country }),
+      });
     }
     const keyword = smsKeyword(input.body);
     if (keyword === "stop" || keyword === "start") {

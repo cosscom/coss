@@ -47,7 +47,7 @@ senders (US A2P 10DLC brands and campaigns, toll-free verification) and its phon
   START removes live environments' `opt_out` entries only. The simulator's numbers are never auto-suppressed.
 - **Receiving** (`receiveSms`, system-level, from the number's `To`): stored once per provider
   message id in the number's `receiving_environment_id` (a live environment; none → dropped),
-  with `sms.received`; billed as `sms.received_segments` by the number's country. Opt-out keywords
+  with `sms.received`; billed as `sms.received_segments` by the number's country (unrouted ones as the organization's usage). Opt-out keywords
   apply whether or not the message is routed, once per provider message id (`sms_inbound_receipt`:
   a retried START must not undo a later STOP). Sandbox sends to `SMS_SIMULATOR.reply` get a
   simulated reply in their own environment.
