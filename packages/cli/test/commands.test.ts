@@ -9,7 +9,7 @@ import { testIo } from "./helpers.ts";
 
 const README = readFileSync(join(import.meta.dir, "../README.md"), "utf8");
 const DOCS = readFileSync(
-  join(import.meta.dir, "../../../apps/site/content/docs/(guides)/cli.mdx"),
+  join(import.meta.dir, "../../../apps/site/content/docs/(tools)/cli.mdx"),
   "utf8",
 );
 
