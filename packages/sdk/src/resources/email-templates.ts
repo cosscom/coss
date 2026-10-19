@@ -9,6 +9,8 @@ import type {
   ListEmailTemplatesParams,
   ListEmailTemplateVersionsParams,
   PublishEmailTemplateParams,
+  RenderEmailTemplateParams,
+  RenderedEmailTemplate,
   UpdateEmailTemplateDraftParams,
   UpdateEmailTemplateParams,
 } from "../types/email-template.ts";
@@ -173,6 +175,23 @@ export class EmailTemplatesResource {
       method: "PUT",
       path: `${templatePath(template)}/draft`,
       retry: false,
+      body: params,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Renders the draft (or a published `version`) as a send would, without sending: a preview.
+   * Without `variables` it renders the version's `sample_variables`.
+   */
+  render(
+    template: string,
+    params: RenderEmailTemplateParams = {},
+    options?: ReadOptions,
+  ): Promise<CossResult<RenderedEmailTemplate>> {
+    return this.#http.request<RenderedEmailTemplate>({
+      method: "POST",
+      path: `${templatePath(template)}/render`,
       body: params,
       signal: options?.signal,
     });

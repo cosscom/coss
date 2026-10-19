@@ -609,17 +609,24 @@ export {
   pageTemplateVersions,
   publishTemplateDraft,
   type RenderedTemplateSend,
+  renderEmailTemplate,
   renderTemplateForSend,
   requireEmailTemplate,
   restoreTemplateVersion,
   saveTemplateDraft,
   type TemplateEnvironment,
+  type TemplateRenderRequest,
   type TemplateVersion,
   templateVersionProblems,
   toEmailTemplateObject,
   toEmailTemplateVersionObject,
   updateEmailTemplate,
 } from "./templates.ts";
+export {
+  type StoredTestWebhookEvent,
+  sampleWebhookEvent,
+  sendTestWebhookEvent,
+} from "./test-events.ts";
 export {
   createTopic,
   deleteTopic,

@@ -90,6 +90,11 @@ export async function writeConfig(io: CliIo, config: Config): Promise<void> {
   await rename(temporary, path);
 }
 
+/** The saved profiles' names (for completion). */
+export async function savedProfileNames(io: CliIo): Promise<string[]> {
+  return Object.keys((await readConfig(io)).profiles);
+}
+
 /** The profile commands use: `--profile`, else `COSS_PROFILE`, else the saved default. */
 export function profileName(io: CliIo, config: Config, flag: string | undefined): string {
   return checkedProfileName(

@@ -283,6 +283,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.templates.publish",
     args: (request) => [pathId(request), tsValue(request.body ?? {})],
   },
+  "POST /v1/email_templates/{id}/render": {
+    method: "email.templates.render",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
   "GET /v1/email_templates/{id}/versions": {
     method: "email.templates.versions.list",
     args: (request) => [pathId(request), queryParams(request)],
@@ -567,6 +571,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   "DELETE /v1/webhook_listeners/{id}": {
     method: "webhookListeners.delete",
     args: (r) => [pathId(r)],
+  },
+  "POST /v1/webhook_events/test": {
+    method: "webhookEvents.test",
+    args: (request) => [tsValue(request.body ?? {})],
   },
   "POST /v1/risk/assessments": {
     method: "risk.assess",

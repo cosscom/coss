@@ -26,6 +26,7 @@
     "./authjs": "./dist/authjs.js",
     "./better-auth": "./dist/better-auth.js",
     "./device": "./dist/device.js",
+    "./diagnose": "./dist/diagnose.js",
     "./nodemailer": "./dist/nodemailer.js",
     "./package.json": "./package.json"
   },

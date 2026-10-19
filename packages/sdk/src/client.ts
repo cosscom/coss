@@ -1,5 +1,6 @@
 import { API_VERSION, type ApiVersion } from "./api-version.ts";
-import { type FetchLike, HttpClient } from "./core/http.ts";
+import { type CossResult, clientError } from "./core/errors.ts";
+import { type FetchLike, HttpClient, type RequestOptions } from "./core/http.ts";
 import { ApiKeyResource } from "./resources/api-key.ts";
 import { AuditEventsResource } from "./resources/audit-events.ts";
 import { BillingResource } from "./resources/billing.ts";
@@ -7,11 +8,13 @@ import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
 import { EnvironmentResource } from "./resources/environment.ts";
 import { HooksResource } from "./resources/hooks.ts";
+import { listQuery } from "./resources/list-query.ts";
 import { LogDrainsResource } from "./resources/log-drains.ts";
 import { LogsResource } from "./resources/logs.ts";
 import { ReputationResource } from "./resources/reputation.ts";
 import { RiskResource } from "./resources/risk.ts";
 import { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
+import { WebhookEventsResource } from "./resources/webhook-events.ts";
 import { WebhookListenersResource } from "./resources/webhook-listeners.ts";
 
 export interface CossOptions {
@@ -35,6 +38,30 @@ export interface CossOptions {
    * to a browser exposes it to anyone who opens the page.
    */
   dangerouslyAllowBrowser?: boolean;
+}
+
+export type CossRequestMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+/** Options of `coss.request()`. */
+export interface CossRequestOptions extends RequestOptions {
+  /** Query parameters: lists are comma-joined, dates ISO 8601, `undefined` values left out. */
+  query?: Record<
+    string,
+    string | number | boolean | Date | readonly (string | number)[] | undefined
+  >;
+  /** Sent as JSON. */
+  body?: unknown;
+  /**
+   * `text` or `bytes` for a successful response that isn't JSON (a CSV export, a received email's
+   * raw message, an attachment). Default `json`.
+   */
+  responseType?: "json" | "text" | "bytes";
+  /**
+   * Automatic retries (as `maxRetries` says). Default: on for GET and DELETE; off for POST, PUT and
+   * PATCH, since not every endpoint deduplicates them (a template draft's save, a PUT, counts every
+   * attempt as a revision).
+   */
+  retry?: boolean;
 }
 
 /**
@@ -94,6 +121,8 @@ export class Coss {
   readonly webhookEndpoints: WebhookEndpointsResource;
   /** Temporary listeners `coss listen` pulls the environment's events from. */
   readonly webhookListeners: WebhookListenersResource;
+  /** Test events for the environment's endpoints and listeners (`coss.webhookEvents.test()`). */
+  readonly webhookEvents: WebhookEventsResource;
   /** The organization's sending reputation (`coss.reputation.get()`). */
   readonly reputation: ReputationResource;
   /** The environment's log: API requests, email events, webhook attempts (`coss.logs.list()`). */
@@ -108,6 +137,7 @@ export class Coss {
   readonly risk: RiskResource;
   /** The organization's plan, usage, invoices and credits (`coss.billing.get()`). */
   readonly billing: BillingResource;
+  readonly #http: HttpClient;
 
   /**
    * Throws only for programmer errors: no API key, or running in a browser without
@@ -143,12 +173,14 @@ export class Coss {
       apiVersion: options.apiVersion?.trim() || API_VERSION,
       integration: (options as { [INTEGRATION]?: string })[INTEGRATION],
     });
+    this.#http = http;
     this.email = new EmailResource(http);
     this.environment = new EnvironmentResource(http);
     this.apiKey = new ApiKeyResource(http);
     this.domains = new DomainsResource(http);
     this.webhookEndpoints = new WebhookEndpointsResource(http);
     this.webhookListeners = new WebhookListenersResource(http);
+    this.webhookEvents = new WebhookEventsResource(http);
     this.reputation = new ReputationResource(http);
     this.logs = new LogsResource(http);
     this.logDrains = new LogDrainsResource(http);
@@ -156,5 +188,44 @@ export class Coss {
     this.hooks = new HooksResource(http);
     this.risk = new RiskResource(http);
     this.billing = new BillingResource(http);
+  }
+
+  /**
+   * Calls any endpoint, for one this SDK has no method for yet. `path` starts with `/v1/` (a query
+   * string is merged with `query`); the result is the response's JSON, unchecked.
+   *
+   * ```ts
+   * const { data, error } = await coss.request("GET", "/v1/domains", { query: { limit: 5 } });
+   * ```
+   */
+  request<T = unknown>(
+    method: CossRequestMethod,
+    path: string,
+    options: CossRequestOptions = {},
+  ): Promise<CossResult<T>> {
+    // Appended to the base URL as is: anything but a path could change the host the key goes to.
+    if (!path.startsWith("/")) {
+      const message = `The path must start with "/", e.g. "/v1/domains"; got "${path}".`;
+      return Promise.resolve({
+        data: null,
+        error: clientError("invalid_request_error", "invalid_path", message),
+      });
+    }
+    const index = path.indexOf("?");
+    const query: Record<string, string | undefined> = {};
+    if (index >= 0) {
+      for (const [name, value] of new URLSearchParams(path.slice(index + 1))) query[name] = value;
+    }
+    Object.assign(query, listQuery(options.query ?? {}));
+    return this.#http.request<T>({
+      method,
+      path: index >= 0 ? path.slice(0, index) : path,
+      query,
+      body: options.body,
+      responseType: options.responseType,
+      retry: options.retry ?? (method === "GET" || method === "DELETE"),
+      idempotencyKey: options.idempotencyKey,
+      signal: options.signal,
+    });
   }
 }

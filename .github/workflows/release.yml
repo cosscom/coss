@@ -5,7 +5,9 @@ name: Release
 # CLI, `coss-cli`), and the push that merge makes publishes them to npm. Publishing uses npm trusted
 # publishing (GitHub's OIDC token, no npm token stored anywhere) with provenance, and only from this
 # file, in the `npm` environment (deployable from main only): `npm trust list coss` (and `coss-mcp`,
-# `coss-cli`) show the relationship (README, "Releasing the SDK").
+# `coss-cli`) show the relationship (README, "Releasing the SDK"). After that, the cli-* jobs
+# attach the CLI's standalone executables to its GitHub release and update its Homebrew formula,
+# once the CLI_BINARIES_PUBLISH variable is `true` (below).
 
 on:
   push:
@@ -130,3 +132,203 @@ jobs:
           npm view "coss-cli@$version" version dist.attestations.provenance.predicateType
           git tag "coss-cli@$version"
           git push origin "coss-cli@$version"
+
+  # Standalone `coss` executables (packages/cli/scripts/binaries.ts) on the coss-cli@<version>
+  # GitHub release, then the Homebrew formula in cosscom/homebrew-tap (`brew install
+  # cosscom/tap/coss`). Every job is skipped until the repository variable CLI_BINARIES_PUBLISH is
+  # `true` (AGENTS.md, "CLI binaries"). The check looks at the release itself, so a rerun, or the
+  # first run after the variable is set, fills in whatever the current version is missing. Builds
+  # come from the version's tag, never from a newer main.
+  cli-binaries-check:
+    needs: publish
+    if: vars.CLI_BINARIES_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      tag: ${{ steps.check.outputs.tag }}
+      build: ${{ steps.check.outputs.build }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(jq -r .version packages/cli/package.json)"
+          tag="coss-cli@$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if ! git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            echo "$tag isn't tagged: coss-cli $version isn't on npm yet."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          elif ! gh api "repos/$GITHUB_REPOSITORY/contents/packages/cli/scripts/binaries.ts?ref=$tag" --silent 2>/dev/null; then
+            # Builds come from the tag: versions released before the binaries have no script.
+            echo "$tag predates the standalone binaries: the next coss-cli version gets them."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          elif gh release view "$tag" --json assets --jq '.assets[].name' 2>/dev/null | grep -qx SHA256SUMS; then
+            echo "The $tag release already has its binaries."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  cli-binaries-build:
+    needs: cli-binaries-check
+    if: needs.cli-binaries-check.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: refs/tags/${{ needs.cli-binaries-check.outputs.tag }}
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      # The CLI bundles the workspace SDK's build, like the npm package depends on it.
+      - run: bun run --cwd packages/sdk build
+      # Every target, cross-compiled here (macOS ones come out ad-hoc signed).
+      - run: bun run --cwd packages/cli build:binaries
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cli-binaries
+          path: packages/cli/binaries/release
+          if-no-files-found: error
+          retention-days: 7
+
+  # Each executable that a runner can run, run through scripts/smoke-binary.ts on its own OS
+  # (and the musl ones in Alpine) before anything is published. darwin-x64 has no runner here.
+  cli-binaries-smoke:
+    needs: [cli-binaries-check, cli-binaries-build]
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { runner: ubuntu-latest, target: linux-x64, musl: linux-x64-musl }
+          - { runner: ubuntu-24.04-arm, target: linux-arm64, musl: linux-arm64-musl }
+          - { runner: macos-latest, target: darwin-arm64 }
+          - { runner: windows-latest, target: windows-x64 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: refs/tags/${{ needs.cli-binaries-check.outputs.tag }}
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: cli-binaries
+          path: release
+      # Git Bash's GNU tar can't read zips.
+      - name: Extract (Windows)
+        if: matrix.target == 'windows-x64'
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.cli-binaries-check.outputs.version }}
+        run: Expand-Archive -Path "release/coss-cli-$env:VERSION-windows-x64.zip" -DestinationPath smoke
+      - name: Extract
+        if: matrix.target != 'windows-x64'
+        env:
+          VERSION: ${{ needs.cli-binaries-check.outputs.version }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          mkdir -p smoke
+          tar -xzf "release/coss-cli-$VERSION-$TARGET.tar.gz" -C smoke
+      - name: Smoke test
+        shell: bash
+        run: bun packages/cli/scripts/smoke-binary.ts "smoke/coss${{ matrix.target == 'windows-x64' && '.exe' || '' }}"
+      - name: Smoke test (musl, in Alpine)
+        if: matrix.musl
+        env:
+          VERSION: ${{ needs.cli-binaries-check.outputs.version }}
+          TARGET: ${{ matrix.musl }}
+        run: |
+          mkdir -p musl
+          tar -xzf "release/coss-cli-$VERSION-$TARGET.tar.gz" -C musl
+          # Bun's musl builds link libstdc++, which Alpine doesn't install by default.
+          docker run --rm -v "$PWD/musl:/w:ro" alpine:3 sh -c 'apk add --no-cache -q libstdc++ &&
+            /w/coss --version && /w/coss completion bash | grep -q "coss __complete"' |
+            grep -qx "$VERSION"
+
+  cli-binaries-release:
+    needs: [cli-binaries-check, cli-binaries-smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # the GitHub release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: refs/tags/${{ needs.cli-binaries-check.outputs.tag }}
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: cli-binaries
+          path: release
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.cli-binaries-check.outputs.tag }}
+          VERSION: ${{ needs.cli-binaries-check.outputs.version }}
+        run: |
+          bun packages/cli/scripts/binaries.ts --notes > notes.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" release/* --clobber
+          else
+            # Latest: install.sh and `releases/latest` find the CLI (the only package with
+            # GitHub releases).
+            gh release create "$TAG" release/* --verify-tag --latest \
+              --title "coss-cli $VERSION" --notes-file notes.md
+          fi
+
+  # Runs after a new release, and whenever the check ran but there was nothing to build (a rerun
+  # after a failed push): the formula is rendered from the release's own SHA256SUMS.
+  cli-homebrew:
+    needs: [cli-binaries-check, cli-binaries-release]
+    if: >-
+      always() && needs.cli-binaries-check.result == 'success' &&
+      (needs.cli-binaries-release.result == 'success' || needs.cli-binaries-release.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Holds HOMEBREW_TAP_DEPLOY_KEY (write access to cosscom/homebrew-tap only).
+    environment: homebrew
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: refs/tags/${{ needs.cli-binaries-check.outputs.tag }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: cosscom/homebrew-tap
+          ssh-key: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
+          path: tap
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - name: Update Formula/coss.rb
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.cli-binaries-check.outputs.tag }}
+          VERSION: ${{ needs.cli-binaries-check.outputs.version }}
+        run: |
+          if ! gh release download "$TAG" --pattern SHA256SUMS --dir . 2>/dev/null; then
+            echo "The $TAG release has no binaries yet."
+            exit 0
+          fi
+          mkdir -p tap/Formula
+          bun packages/cli/scripts/homebrew.ts "$VERSION" SHA256SUMS > tap/Formula/coss.rb
+          ruby -c tap/Formula/coss.rb
+          cd tap
+          git add Formula/coss.rb
+          if git diff --cached --quiet; then
+            echo "Formula/coss.rb is already at $VERSION."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "coss $VERSION"
+          git push

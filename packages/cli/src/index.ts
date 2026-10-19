@@ -1,4 +1,5 @@
 /** The coss.com CLI as a library: `run(argv, io)` is what the `coss` bin calls. */
+export { CURSOR_FIELDS } from "./commands/api.ts";
 export { type CliIo, defaultConfigDir, type Fetch, nodeIo, type OutputStream } from "./io.ts";
 export { generateSecret, sign, signatureHeaders } from "./listen/sign.ts";
 export { HELP, run } from "./run.ts";

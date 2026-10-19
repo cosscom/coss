@@ -1,14 +1,14 @@
 import type { Coss, Environment } from "coss";
-import { parseFlags } from "../args.ts";
+import type { Flags } from "../args.ts";
 import { startLoopback } from "../auth/loopback.ts";
 import { challengeFor, createState, createVerifier, verificationCode } from "../auth/pkce.ts";
+import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { configPath, type Profile, profileName, readConfig, writeConfig } from "../config.ts";
 import {
   API_KEY_FORMAT,
   apiBaseUrl,
   type Context,
   clientFor,
-  createContext,
   DEFAULT_BASE_URL,
   DEFAULT_DASHBOARD_URL,
   dashboardBaseUrl,
@@ -18,22 +18,15 @@ import {
 import { apiError, CliError } from "../errors.ts";
 import type { CliIo } from "../io.ts";
 
-export const LOGIN_HELP = `Usage: coss login [--manual] [--no-browser] [--profile <name>]
-
-Signs the CLI in. Opens the dashboard, where you pick the environment the CLI works in; the CLI
-gets a new API key of that environment (named after this machine), saved in your config.
-
-Options:
-  --manual       Paste an existing API key instead (from the dashboard, or piped on stdin)
-  --no-browser   Don't open a browser: open the link yourself, then paste the code it shows
-                 (the default over SSH)
-  --profile      Save under this profile name (default: "default")
-`;
-
 /** How long the browser has to send the code back. */
 const CALLBACK_TIMEOUT_MS = 5 * 60 * 1000;
 
-type TokenResponse = { api_key: string; api_key_id: string; name: string };
+export type TokenResponse = { api_key: string; api_key_id: string; name: string };
+
+/** Over SSH the browser is on another machine: paste the code instead of a loopback redirect. */
+export function isRemote(io: CliIo): boolean {
+  return Boolean(io.env.SSH_CONNECTION || io.env.SSH_TTY);
+}
 
 async function exchangeCode(
   io: CliIo,
@@ -62,17 +55,22 @@ async function exchangeCode(
   return body;
 }
 
-/** The browser flow: approval in the dashboard, a code back by loopback (or pasted), a new key. */
-async function browserLogin(
+/**
+ * The browser flow: approval in the dashboard, a code back by loopback (or pasted), a new key.
+ * With `project` (`coss init`), the page offers only sandbox environments and names the key
+ * after the project.
+ */
+export async function browserLogin(
   context: Context,
   dashboardUrl: string,
-  options: { pasteCode: boolean },
+  options: { pasteCode: boolean; project?: string },
 ): Promise<TokenResponse> {
   const { io, out } = context;
   const verifier = createVerifier();
   const challenge = challengeFor(verifier);
   const state = createState();
   const query = new URLSearchParams({ code_challenge: challenge, state, host: io.hostname() });
+  if (options.project) query.set("project", options.project);
 
   if (options.pasteCode) {
     query.set("mode", "code");
@@ -114,17 +112,36 @@ async function environmentOf(coss: Coss): Promise<Environment> {
   return data;
 }
 
-export async function login(argv: string[], io: CliIo): Promise<number> {
-  const { values, global } = parseFlags(argv, {
-    manual: { type: "boolean" },
-    "no-browser": { type: "boolean" },
-  });
-  const context = createContext(io, global);
-  const { out } = context;
-  if (global.help) {
-    out.line(LOGIN_HELP);
-    return 0;
-  }
+const FLAGS = {
+  manual: {
+    type: "boolean",
+    description: "Paste an existing API key instead (from the dashboard, or piped on stdin)",
+  },
+  "no-browser": {
+    type: "boolean",
+    description:
+      "Don't open a browser: open the link yourself, then paste the code it shows (the default " +
+      "over SSH)",
+  },
+  profile: {
+    type: "string",
+    value: "<name>",
+    description: 'Save under this profile name (default: "default")',
+  },
+} as const satisfies Flags;
+
+export const loginCommand: Command = defineCommand({
+  name: "login",
+  summary: "Sign in (in the browser, or --manual with an API key)",
+  description:
+    "Signs the CLI in. Opens the dashboard, where you pick the environment the CLI works in; the " +
+    "CLI gets a new API key of that environment (named after this machine), saved in your config.",
+  flags: FLAGS,
+  run: login,
+});
+
+async function login({ values, context }: CommandInput<typeof FLAGS>): Promise<number> {
+  const { io, out, flags: global } = context;
   const config = await readConfig(io);
   const name = profileName(io, config, global.profile);
   const previous = config.profiles[name] ?? null;
@@ -141,9 +158,8 @@ export async function login(argv: string[], io: CliIo): Promise<number> {
     }
     login = "manual";
   } else {
-    const remote = Boolean(io.env.SSH_CONNECTION || io.env.SSH_TTY);
     const token = await browserLogin(context, dashboardUrl, {
-      pasteCode: values["no-browser"] === true || remote,
+      pasteCode: values["no-browser"] === true || isRemote(io),
     });
     apiKey = token.api_key;
     login = "browser";

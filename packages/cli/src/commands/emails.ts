@@ -1,39 +1,15 @@
 import { readFile } from "node:fs/promises";
 import type { Coss, Email, EmailEvent, EmailRecipientStatus, SendEmailParams } from "coss";
-import { addresses, parseFlags } from "../args.ts";
-import { type Context, clientFor, createContext, resolveCredentials } from "../context.ts";
+import { addresses, type Flags, jsonOrString, pairs } from "../args.ts";
+import { type Command, type CommandInput, defineCommand } from "../command.ts";
+import { type Context, clientFor, resolveCredentials } from "../context.ts";
 import {
   isSimulatedOutcome,
   SIMULATED_OUTCOMES,
   type SimulatedOutcome,
 } from "../emails/simulate.ts";
 import { apiError, CliError, UsageError } from "../errors.ts";
-import type { CliIo } from "../io.ts";
 import type { Output } from "../output.ts";
-
-export const EMAILS_SEND_HELP = `Usage: coss emails send [options]
-
-Sends a test email from the API key's environment. Sandbox keys (coss_test_…) never deliver: they
-go through coss.com's simulated provider, with every event and webhook a real send has.
-
-Options:
-  --to <address>         Recipient (repeatable, or comma-separated)
-  --simulate <outcome>   Send to the mailbox simulator: delivered, bounced, complained, suppressed
-  --from <address>       Sender (default for sandbox keys: coss.com CLI <cli@example.com>; live keys
-                         need an address on a verified domain)
-  --cc, --bcc, --reply-to <address>
-  --subject <text>       Default: "Test email from the coss.com CLI"
-  --text <text>, --text-file <path>
-  --html <html>, --html-file <path>
-  --template <id|alias>  Send a published template (instead of subject and body)
-  --var <name=value>     A template variable (repeatable; values are JSON when they parse)
-  --category <name>
-  --tag <name=value>     Repeatable
-  --wait                 Follow the email until every recipient's outcome is known, then show
-                         its events
-  --timeout <seconds>    How long --wait waits (default 60)
-  --json                 Print the email (and with --wait, its events) as JSON
-`;
 
 const SANDBOX_FROM = "coss.com CLI <cli@example.com>";
 const DEFAULT_SUBJECT = "Test email from the coss.com CLI";
@@ -48,22 +24,6 @@ const SETTLED: ReadonlySet<EmailRecipientStatus> = new Set([
   "failed",
   "canceled",
 ]);
-
-function pairs(values: string[], flag: string): [string, string][] {
-  return values.map((pair) => {
-    const index = pair.indexOf("=");
-    if (index <= 0) throw new UsageError(`--${flag} takes name=value, got "${pair}".`);
-    return [pair.slice(0, index), pair.slice(index + 1)];
-  });
-}
-
-function variableValue(raw: string): unknown {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return raw;
-  }
-}
 
 async function fileOrValue(value: string | undefined, file: string | undefined, flag: string) {
   if (value !== undefined && file !== undefined) {
@@ -122,33 +82,83 @@ function statusStyle(status: string): Parameters<Output["style"]>[0] {
   return "red";
 }
 
-export async function emailsSend(argv: string[], io: CliIo): Promise<number> {
-  const { values, global } = parseFlags(argv, {
-    to: { type: "string", multiple: true },
-    cc: { type: "string", multiple: true },
-    bcc: { type: "string", multiple: true },
-    "reply-to": { type: "string", multiple: true },
-    from: { type: "string" },
-    subject: { type: "string" },
-    text: { type: "string" },
-    "text-file": { type: "string" },
-    html: { type: "string" },
-    "html-file": { type: "string" },
-    template: { type: "string" },
-    var: { type: "string", multiple: true },
-    category: { type: "string" },
-    tag: { type: "string", multiple: true },
-    simulate: { type: "string" },
-    wait: { type: "boolean" },
-    timeout: { type: "string" },
-  });
-  const context = createContext(io, global);
-  const { out } = context;
-  if (global.help) {
-    out.line(EMAILS_SEND_HELP);
-    return 0;
-  }
+const FLAGS = {
+  to: {
+    type: "string",
+    multiple: true,
+    value: "<address>",
+    description: "Recipient (repeatable, or comma-separated)",
+  },
+  simulate: {
+    type: "string",
+    value: "<outcome>",
+    choices: Object.keys(SIMULATED_OUTCOMES),
+    description: "Send to the mailbox simulator: delivered, bounced, complained, suppressed",
+  },
+  from: {
+    type: "string",
+    value: "<address>",
+    description:
+      "Sender (default for sandbox keys: coss.com CLI <cli@example.com>; live keys need an " +
+      "address on a verified domain)",
+  },
+  cc: { type: "string", multiple: true, value: "<address>", description: "Cc (repeatable)" },
+  bcc: { type: "string", multiple: true, value: "<address>", description: "Bcc (repeatable)" },
+  "reply-to": {
+    type: "string",
+    multiple: true,
+    value: "<address>",
+    description: "Reply-To (repeatable)",
+  },
+  subject: {
+    type: "string",
+    value: "<text>",
+    description: 'Default: "Test email from the coss.com CLI"',
+  },
+  text: { type: "string", value: "<text>", description: "The plain-text body" },
+  "text-file": { type: "string", value: "<path>", description: "The plain-text body, from a file" },
+  html: { type: "string", value: "<html>", description: "The HTML body" },
+  "html-file": { type: "string", value: "<path>", description: "The HTML body, from a file" },
+  template: {
+    type: "string",
+    value: "<id|alias>",
+    description: "Send a published template (instead of subject and body)",
+  },
+  var: {
+    type: "string",
+    multiple: true,
+    value: "<name=value>",
+    description: "A template variable (repeatable; values are JSON when they parse)",
+  },
+  category: { type: "string", value: "<name>", description: "The email's category" },
+  tag: { type: "string", multiple: true, value: "<name=value>", description: "A tag (repeatable)" },
+  wait: {
+    type: "boolean",
+    description: "Follow the email until every recipient's outcome is known, then show its events",
+  },
+  timeout: {
+    type: "string",
+    value: "<seconds>",
+    description: "How long --wait waits (default 60)",
+  },
+  json: {
+    type: "boolean",
+    description: "Print the email (and with --wait, its events) as JSON",
+  },
+} as const satisfies Flags;
 
+export const emailsSendCommand: Command = defineCommand({
+  name: "emails send",
+  summary: "Send a test email (--simulate bounced, --wait…)",
+  description:
+    "Sends a test email from the API key's environment. Sandbox keys (coss_test_…) never deliver: " +
+    "they go through coss.com's simulated provider, with every event and webhook a real send has.",
+  flags: FLAGS,
+  run: emailsSend,
+});
+
+async function emailsSend({ values, context }: CommandInput<typeof FLAGS>): Promise<number> {
+  const { io, out } = context;
   const simulate = values.simulate;
   if (simulate !== undefined && !isSimulatedOutcome(simulate)) {
     throw new UsageError(
@@ -192,7 +202,7 @@ export async function emailsSend(argv: string[], io: CliIo): Promise<number> {
       template_id: values.template,
       ...(values.var && {
         variables: Object.fromEntries(
-          pairs(values.var, "var").map(([name, raw]) => [name, variableValue(raw)]),
+          pairs(values.var, "var").map(([name, raw]) => [name, jsonOrString(raw)]),
         ),
       }),
     };

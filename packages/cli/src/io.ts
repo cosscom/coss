@@ -4,11 +4,13 @@
  * interrupt signal. `nodeIo()` is the real thing.
  */
 import { spawn } from "node:child_process";
+import { watch } from "node:fs";
 import { homedir, hostname } from "node:os";
 import { join } from "node:path";
 
 export interface OutputStream {
-  write(text: string): void;
+  /** Text, or bytes as they are (`coss api --raw`). */
+  write(chunk: string | Uint8Array): void;
   isTTY?: boolean;
 }
 
@@ -27,10 +29,29 @@ export interface CliIo {
   sleep(ms: number, signal?: AbortSignal): Promise<void>;
   /** Opens `url` in the default browser; `false` when none could be started. */
   openBrowser(url: string): Promise<boolean>;
+  /** Everything piped to stdin, as text (`coss api --input -`). */
+  readStdin(): Promise<string>;
   /** Asks a question on stderr and reads one line (not echoed when `secret`). */
   prompt(question: string, options?: { secret?: boolean }): Promise<string>;
+  /**
+   * Calls `onChange` with the name of each file that changes in `dir` (not its subdirectories)
+   * until `signal` aborts (`coss templates push --watch`).
+   */
+  watch(dir: string, signal: AbortSignal, onChange: (file: string) => void): void;
   /** This machine's name (names the CLI's API key and listener). */
   hostname(): string;
+  /** The directory the command runs in (`coss init`'s project). */
+  cwd: string;
+  /**
+   * Runs a program (a package manager, `git`) and resolves with its exit code, `null` when it
+   * couldn't be started. Its output goes to stderr (stdout stays the result), or nowhere when
+   * `quiet`.
+   */
+  exec(
+    command: string,
+    args: string[],
+    options: { cwd: string; quiet?: boolean },
+  ): Promise<number | null>;
   /** Where `config.json` lives. */
   configDir: string;
   /** Aborted on Ctrl-C (SIGINT) and SIGTERM. */
@@ -84,6 +105,48 @@ function openBrowser(url: string): Promise<boolean> {
   });
 }
 
+/** Package managers that are `.cmd` shims on Windows, which only a shell can start. */
+const WINDOWS_SHIMS = new Set(["npm", "npx", "pnpm", "yarn"]);
+/** What may go through that shell unquoted: the CLI's own arguments (`add coss`), nothing else. */
+const SHELL_SAFE = /^[\w@./:=-]+$/;
+
+/**
+ * Whether `command` runs through a shell: only a Windows package-manager shim, and only with
+ * arguments a shell reads as they are. `null`: refuse (it would need quoting cmd.exe can't do).
+ * Anything else, like git with a user's path, never goes through one.
+ */
+export function shellFor(
+  command: string,
+  args: readonly string[],
+  platform: NodeJS.Platform = process.platform,
+): boolean | null {
+  if (platform !== "win32" || !WINDOWS_SHIMS.has(command)) return false;
+  return args.every((arg) => SHELL_SAFE.test(arg)) ? true : null;
+}
+
+function exec(
+  command: string,
+  args: string[],
+  options: { cwd: string; quiet?: boolean },
+): Promise<number | null> {
+  return new Promise((resolve) => {
+    const shell = shellFor(command, args);
+    if (shell === null) return resolve(null);
+    try {
+      const child = spawn(command, args, {
+        cwd: options.cwd,
+        // The child's output on our stderr: stdout is the command's result.
+        stdio: options.quiet ? "ignore" : ["ignore", 2, 2],
+        shell,
+      });
+      child.once("error", () => resolve(null));
+      child.once("close", (code) => resolve(code ?? 1));
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
 /** Reads a line from a non-terminal stdin (e.g. `echo $KEY | coss login --manual`). */
 async function readPipedLine(): Promise<string> {
   let text = "";
@@ -128,6 +191,35 @@ function readTerminalLine(secret: boolean): Promise<string> {
   });
 }
 
+/** Writes not yet handed to the OS: the bin waits for them before it exits. */
+const pending = new Set<Promise<void>>();
+
+/**
+ * A stream whose every write is tracked until its callback. `writableLength` isn't enough: the
+ * compiled (Bun) binary reports 0 while a pipe still has output queued, and exiting then cut a
+ * busy `coss api --paginate | …` short.
+ */
+function tracked(stream: NodeJS.WriteStream): OutputStream {
+  return {
+    get isTTY() {
+      return stream.isTTY;
+    },
+    write(chunk) {
+      const written = new Promise<void>((resolve) => {
+        // Called with an error too (a closed pipe): nothing more will be written either way.
+        stream.write(chunk, () => resolve());
+      });
+      pending.add(written);
+      void written.then(() => pending.delete(written));
+    },
+  };
+}
+
+/** Resolves once every write so far has reached the OS. */
+export async function flushOutput(): Promise<void> {
+  while (pending.size > 0) await Promise.all(pending);
+}
+
 /** The real process: its environment, streams, network and signals. */
 export function nodeIo(): CliIo {
   const controller = new AbortController();
@@ -142,13 +234,19 @@ export function nodeIo(): CliIo {
   }
   return {
     env: process.env,
-    stdout: process.stdout,
-    stderr: process.stderr,
+    stdout: tracked(process.stdout),
+    stderr: tracked(process.stderr),
     stdinIsTTY: process.stdin.isTTY === true,
     fetch: (input, init) => globalThis.fetch(input, init),
     now: () => new Date(),
     sleep,
     openBrowser,
+    async readStdin() {
+      // Decoded once: a character can be split between chunks.
+      const chunks: Buffer[] = [];
+      for await (const chunk of process.stdin) chunks.push(Buffer.from(chunk));
+      return Buffer.concat(chunks).toString("utf8");
+    },
     async prompt(question, options = {}) {
       process.stderr.write(question);
       if (!process.stdin.isTTY) {
@@ -159,7 +257,16 @@ export function nodeIo(): CliIo {
       }
       return readTerminalLine(options.secret === true);
     },
+    watch(dir, signal, onChange) {
+      const watcher = watch(dir, { signal }, (_event, file) => {
+        if (file) onChange(String(file));
+      });
+      // Aborting closes it; anything else (the directory removed) just ends the watch.
+      watcher.on("error", () => watcher.close());
+    },
     hostname: () => hostname(),
+    cwd: process.cwd(),
+    exec,
     configDir: defaultConfigDir(process.env),
     signal: controller.signal,
   };

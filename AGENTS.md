@@ -52,8 +52,8 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/companion` | `@coss/companion` | Wire types of the dashboard's iOS app API (`/api/mobile/v1/*`): plain TypeScript types, zero deps, client-safe. |
 | `packages/retention` | `@coss/retention` | The data retention policy: `RETENTION_POLICY` (published by the docs and the dashboard) and `RETENTION_DAYS` (enforced by each package's purge, run by the worker). Zero deps, client-safe. |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens), `globals.css` (the dashboard's stylesheet) and `./fonts` (`next/font/local`: Cal Sans as `fontSans`/`fontHeading` and, upright only, `fontCalSans`; Paper Mono as `fontMono`). |
-| `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. `coss/device` is its browser-only entry (risk's device tokens); `coss/nodemailer`, `coss/better-auth` and `coss/authjs` are the integrations (docs: `/docs/integrations`). |
-| `packages/mcp` | `coss-mcp` | **Public** MCP server (`npx coss-mcp`, stdio, Node): tools for coding agents built only on the published `coss` SDK — find emails and diagnose delivery (`diagnose.ts`, pure), send, suppressions, domains, webhook deliveries, received emails, logs, account status. See "MCP server" below. |
+| `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. `coss/device` is its browser-only entry (risk's device tokens); `coss/diagnose` explains an email's delivery (used by the MCP server and the CLI); `coss/nodemailer`, `coss/better-auth` and `coss/authjs` are the integrations (docs: `/docs/integrations`). |
+| `packages/mcp` | `coss-mcp` | **Public** MCP server (`npx coss-mcp`, stdio, Node): tools for coding agents built only on the published `coss` SDK — find emails and diagnose delivery (the SDK's `coss/diagnose`), send, suppressions, domains, webhook deliveries, received emails, logs, account status. See "MCP server" below. |
 | `packages/cli` | `coss-cli` | **Public** CLI (`npm i -g coss-cli`, command `coss`, Node): `login` (browser PKCE or `--manual`), `logout`, `whoami`, `emails send`, `logs tail`, `listen` (forwards webhook events to localhost), built only on the published `coss` SDK. See "CLI" below. |
 | `packages/kloq` | `kloq` | The kloq library (the `cosscom/calendar` repository's `packages/kloq/src`, tests left out): the `<Kloq>` calendar, its themes, settings dialog, design mode and stylesheet. Vendored (excluded from Biome, `noUncheckedIndexedAccess` off); also what `/kloq/r/kloq.json` serves as source. Used only by `apps/site`. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
@@ -227,7 +227,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `PORT`, `HOSTNAME`, `KEEP_ALIVE_TIMEOUT` | set by the Next images (standalone `server.js`) |
 | `SEED_PASSWORD` | `db:seed` demo password (only when the user is first created) |
 | `COSS_API_KEY`, `COSS_BASE_URL` | SDK defaults / `packages/sdk/examples` only (the example also reads `COSS_FROM`, `COSS_TO`); also the MCP server's and the CLI's (where they win over a saved profile) |
-| `COSS_DASHBOARD_URL`, `COSS_PROFILE` | the CLI only (`packages/cli`): the dashboard `coss login` opens (default `https://coss.com`), and which saved profile commands use |
+| `COSS_DASHBOARD_URL`, `COSS_PROFILE`, `COSS_NO_UPDATE_CHECK` | the CLI only (`packages/cli`): the dashboard `coss login` opens (default `https://coss.com`), which saved profile commands use, and `1` to turn off the daily update notice |
 
 Adding one: `.env.example`, the app's t3-env schema, **`turbo.json` `globalPassThroughEnv`** (strict env mode drops
 undeclared vars from tasks — CI and image builds have no `.env`), the service in `infra/aws/services.ts` (a test fails
@@ -337,6 +337,17 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   --prefix integrations/laravel` and a `v<version>` tag to with the deploy key `COSS_LARAVEL_DEPLOY_KEY` (`packagist`
   environment) — never commit to the mirror. Every job is skipped until the repository variable
   `INTEGRATIONS_PUBLISH` is `true`.
+- **CLI binaries** (the `cli-*` jobs of `release.yml`, after `publish`): for the `coss-cli@<version>` tag (built
+  from the tag, never a newer main) whose GitHub release has no `SHA256SUMS` yet, `packages/cli/scripts/binaries.ts`
+  cross-compiles standalone executables (`bun build --compile`, 7 targets: macOS, glibc/musl Linux, Windows; macOS
+  ones come out ad-hoc signed, not notarized), `scripts/smoke-binary.ts` runs them on their own OS (musl in Alpine,
+  which needs `libstdc++`), and the release gets the archives + `SHA256SUMS`, marked latest (`install.sh` and
+  `releases/latest` rely on the CLI being the only package with GitHub releases). Then `scripts/homebrew.ts` renders
+  `Formula/coss.rb` from that `SHA256SUMS` and pushes it to `cosscom/homebrew-tap` with the deploy key
+  `HOMEBREW_TAP_DEPLOY_KEY` (`homebrew` environment) — never edit the tap by hand. Every job is skipped until the
+  repository variable `CLI_BINARIES_PUBLISH` is `true`; each checks the release first, so a rerun fills in what's
+  missing. `packages/cli/install.sh` (served from main's raw URL) is the `curl | sh` installer: it verifies the
+  archive against `SHA256SUMS`.
 
 ## MCP server (`packages/mcp`, published as `coss-mcp`)
 
@@ -349,8 +360,10 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - Answers stay small: lists drop content (`compact`, `emailListItem`), bodies are cut (`truncate`), API failures
   become `isError` results with a hint (`result.ts`). Third-party text (email content, received mail, bounce and
   webhook responses) is labelled untrusted, and the server's `instructions` say so.
-- `diagnose.ts` is pure (email + events + best-effort context → verdict). Its explanations of failure codes and
-  recipient statuses must match the email product's behaviour: change both together.
+- Delivery diagnosis is the SDK's `coss/diagnose` (`packages/sdk/src/diagnose.ts`, shared with `coss emails
+  diagnose`): `diagnoseEmail` is pure (email + events + best-effort context → verdict), `diagnose` fetches first;
+  next steps name the server's tools through `references`. Its explanations of failure codes and recipient
+  statuses must match the email product's behaviour: change both together.
 - Dependencies are explicit versions (`npm publish` doesn't rewrite `workspace:`/`catalog:`); `coss` is a caret
   range that changesets moves when the SDK's version leaves it. The release job publishes it after `coss`.
 - Tests: `packages/mcp/test` (in-memory client, fake `fetch`) and `apps/api/test/mcp-contract.test.ts` (built
@@ -359,7 +372,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 ## CLI (`packages/cli`, published as `coss-cli`, command `coss`)
 
 - `run(argv, io)` (`src/run.ts`) dispatches commands (`src/commands/*.ts`); everything outside the process (env,
-  streams, `fetch`, clock, browser, prompts, config dir, the Ctrl-C signal) comes through `CliIo` (`src/io.ts`), so
+  streams, `fetch`, clock, browser, prompts, cwd, child processes, config dir, the Ctrl-C signal) comes through `CliIo` (`src/io.ts`), so
   tests run commands in process. `src/cli.ts` is the bin (`nodeIo()`). Results go to stdout (`--json`: one object per
   line), progress and warnings to stderr. Usage errors exit 2, failures 1, Ctrl-C 130.
 - Calls only the public SDK (`clientFor` always passes `apiKey`, `baseUrl` and `fetch`, so the SDK never reads
@@ -372,17 +385,34 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   (`src/auth/pkce.ts`) must equal `cliVerificationCode` (`@coss/auth/cli`; both tests pin `DZ93-GPCX`). Keys it
   created (`login: "browser"`) are revoked by `logout` and by the next login of the profile (`coss.apiKey.revoke()`, at the
   profile's saved origin, never `COSS_BASE_URL`'s). Polling commands retry only transient errors (`isTransient`).
+- `init` reuses login's browser flow with a `project` hint (the approval page then offers sandbox environments
+  only and names the key after the project; `apps/web/src/app/app/authorize/cli/params.ts`), checks the key's
+  environment again (a live key is revoked, never written) and writes it to the project's env file, never the
+  profile. The update notice (`src/update-check.ts`) asks the npm registry at most once a day, runs alongside the
+  command and is dropped if it hasn't answered when the command ends; never with `--json`, in CI, off a TTY or with
+  `COSS_NO_UPDATE_CHECK`.
 - `listen`: opens a webhook listener (`packages/webhooks/AGENTS.md`), long-polls (`wait_ms` 20 s, SDK timeout 35 s,
   no SDK retries), forwards each body byte for byte to `--forward-to`, signed with the profile's stable `whsec_`
   `listen_secret` (`src/listen/sign.ts`, Standard Webhooks, written from the spec) and `webhook-id` = the event id,
   and acks results in the next poll; Ctrl-C acks what was forwarded and deletes the listener. Live environments
   need `--live`.
+- `trigger <type>`: `POST /v1/webhook_events/test` (`coss.webhookEvents.test`; `sendTestWebhookEvent` in
+  `packages/email/src/test-events.ts`): a sample event built from the type's schema example, fresh ids, `data`
+  merged over it and checked against the schema (unknown fields refused), fanned out through the outbox like a
+  real one. Sandbox environments only, never the live-only `domain.*`/`account.*`/`billing.*`; nothing in the body
+  marks it as a test. The SDK's `WEBHOOK_EVENT_TYPES`/`TEST_WEBHOOK_EVENT_TYPES` (completion) are hand mirrors of
+  `@coss/email`'s, kept equal by `sdk-contract.test.ts`. `webhooks list|deliveries|retry` wrap the endpoint API.
 - `logs tail` polls `GET /v1/logs` like the dashboard's live mode (re-reads from a minute before the newest line,
   prints unseen ids oldest first, `src/logs/tail.ts`); `emails send --simulate` uses the mailbox simulator addresses
   (`src/emails/simulate.ts`, must match `packages/email/src/providers/fake.ts`).
 - Dependencies are explicit versions, `coss` a caret range (like the MCP server); the release job publishes it after
   `coss`. Tests: `packages/cli/test` (fake `fetch`, real loopback and receiver servers) and
   `apps/api/test/cli-contract.test.ts` (built CLI against the in-process app; turbo builds it first).
+- It also ships as a standalone executable (Bun's compiled runtime, not Node: `bun run build:binaries`, output in
+  the git-ignored `packages/cli/binaries/`; releases under "CLI binaries" above). Keep `src/` to what both run:
+  `test/binaries.test.ts` compiles this machine's binary, installs it with `install.sh` and runs
+  `scripts/smoke-binary.ts` on it (stdin, pipes flushed on exit, the config file, Ctrl-C, the browser sign-in's
+  loopback server).
 
 ## Dashboard (`apps/web`)
 
@@ -619,7 +649,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/risk/{schemas,env}`, `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants,org-access}`, `@coss/push/schemas`, `@coss/email/schemas`,
-  `@coss/email/{broadcast-schemas,contact-schemas,env,templates}`, `@coss/hooks/{schemas,env}`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`, `@coss/companion`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch,domain-connect}`, `@coss/risk/{runtime,datasets}`, `@coss/signals/*`, `@coss/push` (root, `./apns`) and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
+  `@coss/email/{broadcast-schemas,contact-schemas,test-event-schemas,env,templates}`, `@coss/hooks/{schemas,env}`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`, `@coss/companion`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch,domain-connect}`, `@coss/risk/{runtime,datasets}`, `@coss/signals/*`, `@coss/push` (root, `./apns`) and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
   modules start with `import "server-only"`.
 - **Rate limits** (`@coss/ratelimit`): buckets are defined only in `BUCKETS` (`src/buckets.ts`); GCRA state is one
   key per bucket, `GCRA_SCRIPT` (Valkey) and `gcraStep` (memory) must stay in step (`test/store.test.ts` runs both).

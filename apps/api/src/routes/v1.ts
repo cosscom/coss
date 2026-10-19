@@ -29,6 +29,7 @@ import { createSuppressionRoutes } from "./suppressions.ts";
 import { createTopicRoutes } from "./topics.ts";
 import { createTrackingSettingsRoutes } from "./tracking-settings.ts";
 import { createWebhookEndpointRoutes } from "./webhook-endpoints.ts";
+import { createWebhookEventRoutes } from "./webhook-events.ts";
 import { createWebhookListenerRoutes } from "./webhook-listeners.ts";
 
 export type V1Dependencies = {
@@ -65,6 +66,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
       pollIntervalMs: deps.listenerPollIntervalMs,
     }),
   );
+  v1.route("/", createWebhookEventRoutes());
   v1.route("/", createSuppressionRoutes());
   v1.route("/", createTrackingSettingsRoutes());
   v1.route(

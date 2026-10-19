@@ -1,25 +1,34 @@
 /**
  * Contract test: the published `coss-cli` (built dist, on the built `coss` SDK) against the real
- * app, in process: sign in with a key, send a simulated bounce and wait for it, and forward the
- * environment's webhook events to a local receiver with `coss listen`.
+ * app, in process: sign in with a key, send a simulated bounce and wait for it, forward the
+ * environment's webhook events to a local receiver with `coss listen` and `coss trigger` test
+ * events into it; add and verify a domain; keep templates as files (pull, edit, push, publish,
+ * preview); and the other commands' realistic paths.
  */
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { buildTestMessage, receiveFakeEmail } from "@coss/email";
+import { runDueHookDeliveries } from "@coss/hooks";
+import { testHookDeliveryDeps } from "@coss/hooks/testing";
 import { queryLogs } from "@coss/logs";
 import { createTestTenant } from "@coss/tenancy/testing";
-import { webhookReceiver } from "@coss/webhooks/testing";
+import { runDueWebhookDeliveries } from "@coss/webhooks";
+import { TEST_SECRETS_KEYS, webhookReceiver } from "@coss/webhooks/testing";
 import { verifyWebhook } from "coss";
-import { type CliIo, run } from "coss-cli";
-import { createTestApp, type TestApp } from "./helpers.ts";
+import { type CliIo, CURSOR_FIELDS, run } from "coss-cli";
+import { apiRequest, createTestApp, type TestApp, uniqueDomainName } from "./helpers.ts";
 
 function toRequest(input: string | URL | Request, init?: RequestInit): Request {
   return input instanceof Request ? new Request(input, init) : new Request(String(input), init);
 }
 
 /** The CLI's io: the API is the in-process app, local URLs are real, output goes to strings. */
-function cliIo(app: TestApp, opts: { answers?: string[]; sleep?: () => Promise<void> } = {}) {
+function cliIo(
+  app: TestApp,
+  opts: { answers?: string[]; stdin?: string; sleep?: () => Promise<void> } = {},
+) {
   let stdout = "";
   let stderr = "";
   const controller = new AbortController();
@@ -27,8 +36,8 @@ function cliIo(app: TestApp, opts: { answers?: string[]; sleep?: () => Promise<v
   const io: CliIo = {
     env: { COSS_BASE_URL: "http://api.test" },
     stdout: {
-      write: (text) => {
-        stdout += text;
+      write: (chunk) => {
+        stdout += typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
       },
     },
     stderr: {
@@ -48,8 +57,12 @@ function cliIo(app: TestApp, opts: { answers?: string[]; sleep?: () => Promise<v
       void signal;
     },
     openBrowser: async () => false,
+    watch: () => undefined,
+    readStdin: async () => opts.stdin ?? "",
     prompt: async () => answers.shift() ?? "",
     hostname: () => "contract-test",
+    cwd: mkdtempSync(join(tmpdir(), "coss-cli-contract-project-")),
+    exec: async () => null,
     configDir: mkdtempSync(join(tmpdir(), "coss-cli-contract-")),
     signal: controller.signal,
   };
@@ -57,6 +70,44 @@ function cliIo(app: TestApp, opts: { answers?: string[]; sleep?: () => Promise<v
 }
 
 describe("coss-cli against the API", () => {
+  test("api --paginate knows the cursor of every list whose `after` isn't an id", () => {
+    type Schema = {
+      $ref?: string;
+      properties?: Record<string, Schema>;
+      items?: Schema;
+      enum?: string[];
+    };
+    const doc = JSON.parse(readFileSync(join(import.meta.dir, "../openapi.json"), "utf8"));
+    const schemas: Record<string, Schema> = doc.components.schemas;
+    const resolve = (schema: Schema | undefined) =>
+      schema?.$ref ? schemas[schema.$ref.split("/").at(-1) ?? ""] : schema;
+    type Parameter = {
+      name?: string;
+      in?: string;
+      description?: string;
+      schema?: { description?: string };
+    };
+    type Get = {
+      parameters?: Parameter[];
+      responses: Record<string, { content?: Record<string, { schema: Schema }> }>;
+    };
+    const expected: Record<string, string> = {};
+    for (const operations of Object.values(doc.paths) as { get?: Get }[]) {
+      const get = operations.get;
+      const after = get?.parameters?.find((p) => p.name === "after" && p.in === "query");
+      if (!get || !after) continue;
+      const described = after.description ?? after.schema?.description ?? "";
+      const field = /`(\w+)`/.exec(described)?.[1] ?? "id";
+      if (field === "id") continue;
+      const list = resolve(get.responses["200"]?.content?.["application/json"]?.schema);
+      const item = resolve(list?.properties?.data?.items);
+      const object = item?.properties?.object?.enum?.[0];
+      if (object) expected[object] = field;
+    }
+    expect(expected).not.toEqual({});
+    expect(CURSOR_FIELDS).toEqual(expected);
+  });
+
   test("login --manual, whoami, and a simulated bounce followed to its outcome", async () => {
     const tenant = await createTestTenant();
     const { app, dispatch } = createTestApp();
@@ -75,6 +126,12 @@ describe("coss-cli against the API", () => {
     const whoami = JSON.parse(cli.stdout().trim().split("\n").at(-1) ?? "{}");
     expect(whoami.environment).toMatchObject({ id: tenant.development.id, mode: "sandbox" });
 
+    // `coss open` builds the dashboard's URL from the slugs the API reports.
+    expect(await run(["open", "logs", "--json"], cli.io)).toBe(0);
+    expect(JSON.parse(cli.stdout().trim().split("\n").at(-1) ?? "{}").url).toBe(
+      `https://coss.com/${tenant.organization.slug}/projects/${tenant.project.slug}/${tenant.development.slug}/logs`,
+    );
+
     expect(await run(["emails", "send", "--simulate", "bounced", "--wait", "--json"], cli.io)).toBe(
       0,
     );
@@ -86,6 +143,294 @@ describe("coss-cli against the API", () => {
     expect(sent.events.map((event: { type: string }) => event.type)).toEqual(
       expect.arrayContaining(["email.sent", "email.bounced"]),
     );
+  });
+
+  test("api: any endpoint with the profile's key, a body from stdin, and every page of a list", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const body = { from: "hello@acme.com", to: "ada@example.com", subject: "Hi", text: "Hi" };
+    const cli = cliIo(app, { answers: [tenant.sandboxKey], stdin: JSON.stringify(body) });
+    expect(await run(["login", "--manual"], cli.io)).toBe(0);
+    const lines = () => cli.stdout().trim().split("\n");
+
+    expect(await run(["api", "environment", "--json"], cli.io)).toBe(0);
+    expect(JSON.parse(lines().at(-1) ?? "{}")).toMatchObject({ id: tenant.development.id });
+
+    const ids: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      expect(await run(["api", "emails", "--input", "-", "--json"], cli.io)).toBe(0);
+      ids.push(JSON.parse(lines().at(-1) ?? "{}").id);
+    }
+    const before = lines().length;
+    expect(await run(["api", "emails", "--paginate", "-F", "limit=2"], cli.io)).toBe(0);
+    expect(
+      lines()
+        .slice(before)
+        .map((line) => JSON.parse(line).id),
+    ).toEqual(ids.toReversed());
+
+    expect(await run(["api", "emails/email_nope", "--json"], cli.io)).toBe(1);
+    expect(JSON.parse(lines().at(-1) ?? "{}").error).toMatchObject({ status: 404 });
+  });
+
+  test("hooks: an application with an endpoint, a message delivered to it, and its portal", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const receiver = webhookReceiver();
+    const cli = cliIo(app, { answers: [tenant.sandboxKey] });
+    const last = () => JSON.parse(cli.stdout().trim().split("\n").at(-1) ?? "{}");
+    try {
+      expect(await run(["login", "--manual"], cli.io)).toBe(0);
+      const example = JSON.stringify({ invoice_id: "in_1", amount: 4200 });
+      expect(
+        await run(["hooks", "event-types", "create", "invoice.paid", "--example", example], cli.io),
+      ).toBe(0);
+      expect(
+        await run(["hooks", "apps", "create", "Acme", "--uid", "acme", "--json"], cli.io),
+      ).toBe(0);
+      expect(last()).toMatchObject({ object: "hook_application", uid: "acme" });
+      expect(
+        await run(
+          [
+            "hooks",
+            "endpoints",
+            "add",
+            "acme",
+            "--url",
+            receiver.url,
+            "--types",
+            "invoice.paid",
+            "--json",
+          ],
+          cli.io,
+        ),
+      ).toBe(0);
+      const endpoint = last();
+      expect(endpoint.secret).toStartWith("whsec_");
+
+      // No payload: the event type's example is sent.
+      expect(await run(["hooks", "send", "acme", "invoice.paid", "--json"], cli.io)).toBe(0);
+      const message = last();
+      expect(message.payload).toEqual({ invoice_id: "in_1", amount: 4200 });
+      expect(
+        await runDueHookDeliveries(
+          { scope: { organizationIds: [tenant.organization.id] } },
+          testHookDeliveryDeps(),
+        ),
+      ).toBe(1);
+      const [request] = receiver.received;
+      if (!request) throw new Error("nothing received");
+      const headers = Object.fromEntries(request.headers.entries());
+      expect(
+        await verifyWebhook<Record<string, unknown>>(request.body, headers, endpoint.secret),
+      ).toEqual({
+        invoice_id: "in_1",
+        amount: 4200,
+      });
+
+      expect(await run(["hooks", "deliveries", "acme", "--json"], cli.io)).toBe(0);
+      const delivery = last();
+      expect(delivery).toMatchObject({ status: "succeeded", message_id: message.id });
+      expect(await run(["hooks", "attempts", "acme", delivery.id, "--json"], cli.io)).toBe(0);
+      expect(last()).toMatchObject({ object: "hook_attempt", status_code: 200 });
+      expect(await run(["hooks", "retry", "acme", delivery.id, "--json"], cli.io)).toBe(0);
+      expect(last()).toMatchObject({ id: delivery.id, status: "pending" });
+      expect(await run(["hooks", "endpoints", "list", "acme", "--json"], cli.io)).toBe(0);
+      expect(last()).toMatchObject({ id: endpoint.id, url: receiver.url });
+      expect(await run(["hooks", "portal", "acme", "--read-only"], cli.io)).toBe(0);
+      expect(cli.stdout().trim().split("\n").at(-1)).toContain("#cossp_");
+    } finally {
+      receiver.stop();
+    }
+  });
+
+  test("risk: list entries decide, sandbox fixtures score, and feedback resolves", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const cli = cliIo(app, { answers: [tenant.sandboxKey] });
+    const last = () => JSON.parse(cli.stdout().trim().split("\n").at(-1) ?? "{}");
+    expect(await run(["login", "--manual"], cli.io)).toBe(0);
+
+    expect(
+      await run(
+        ["risk", "lists", "add", "block", "domain", "evil.test", "--note", "spam", "--json"],
+        cli.io,
+      ),
+    ).toBe(0);
+    const entry = last();
+    expect(entry).toMatchObject({ list: "block", type: "domain", value: "evil.test" });
+
+    expect(
+      await run(
+        ["risk", "assess", "--event", "signup", "--email", "ada@evil.test", "--json"],
+        cli.io,
+      ),
+    ).toBe(0);
+    const blocked = last();
+    expect(blocked.decision).toBe("block");
+    expect(blocked.reasons.map((reason: { code: string }) => reason.code)).toContain(
+      "list.blocked",
+    );
+
+    expect(
+      await run(
+        [
+          "risk",
+          "assess",
+          "--event",
+          "signup",
+          "--email",
+          "ada@disposable.test",
+          "--ip",
+          "192.0.2.1",
+        ],
+        cli.io,
+      ),
+    ).toBe(0);
+    expect(cli.stdout()).toContain("email.disposable");
+    expect(cli.stdout()).toContain("ip.tor");
+
+    expect(
+      await run(["risk", "feedback", blocked.id, "--outcome", "fraud", "--json"], cli.io),
+    ).toBe(0);
+    expect(last()).toMatchObject({ id: blocked.id, outcome: "fraud" });
+    expect(await run(["risk", "assessments", "--decision", "block", "--json"], cli.io)).toBe(0);
+    expect(cli.stdout()).toContain(blocked.id);
+
+    expect(await run(["risk", "lists", "remove", entry.id, "--json"], cli.io)).toBe(0);
+    expect(last()).toMatchObject({ id: entry.id, deleted: true });
+    const before = cli.stdout().length;
+    expect(await run(["risk", "lists", "list", "--json"], cli.io)).toBe(0);
+    expect(cli.stdout().slice(before)).toBe("");
+  });
+
+  test("emails list, events and diagnose explain a bounce; inbox shows and follows received mail", async () => {
+    const tenant = await createTestTenant();
+    const testApp = createTestApp();
+    const { app, dispatch, inbound } = testApp;
+    if (!inbound) throw new Error("no inbound runtime");
+    let onSleep: () => Promise<void> = () => dispatch();
+    const cli = cliIo(app, { answers: [tenant.sandboxKey], sleep: () => onSleep() });
+    const lines = () => cli.stdout().trim().split("\n");
+    expect(await run(["login", "--manual"], cli.io)).toBe(0);
+
+    expect(await run(["emails", "send", "--simulate", "bounced", "--wait", "--json"], cli.io)).toBe(
+      0,
+    );
+    const sent = JSON.parse(lines().at(-1) ?? "{}");
+    let before = lines().length;
+    expect(await run(["emails", "list", "--recipient-status", "bounced", "--json"], cli.io)).toBe(
+      0,
+    );
+    expect(
+      lines()
+        .slice(before)
+        .map((line) => JSON.parse(line).id),
+    ).toContain(sent.id);
+
+    before = lines().length;
+    expect(await run(["emails", "events", sent.id, "--json"], cli.io)).toBe(0);
+    expect(
+      lines()
+        .slice(before)
+        .map((line) => JSON.parse(line).type),
+    ).toContain("email.bounced");
+
+    expect(await run(["emails", "diagnose", sent.id, "--json"], cli.io)).toBe(0);
+    expect(JSON.parse(lines().at(-1) ?? "{}")).toMatchObject({
+      email_id: sent.id,
+      verdict: "not_delivered",
+      sandbox: true,
+      recipients: [{ address: "bounce@simulator.amazonses.com", outcome: "bounced" }],
+    });
+    expect(await run(["emails", "diagnose", sent.id], cli.io)).toBe(0);
+    expect(cli.stdout()).toContain("bounce@simulator.amazonses.com  bounced");
+
+    // Received mail: one already there, one that arrives while `coss inbox` runs.
+    const address = await app.request("/v1/received_emails/address", {
+      headers: { Authorization: `Bearer ${tenant.sandboxKey}` },
+    });
+    const { domain } = (await address.json()) as { domain: string };
+    const receive = async (subject: string) => {
+      const raw = buildTestMessage({
+        from: "Jane <jane@example.com>",
+        to: [`support@${domain}`],
+        subject,
+        text: `Body of ${subject}`,
+        html: "<p>HTML</p>",
+        attachments: [],
+      });
+      const [outcome] = await receiveFakeEmail(
+        { raw, mailFrom: "jane@example.com", recipients: [`support@${domain}`], subject },
+        { store: inbound.store, managedDomain: inbound.managedDomain },
+      );
+      if (outcome?.kind !== "received") throw new Error(`not received: ${outcome?.kind}`);
+      return outcome.receivedEmailId;
+    };
+    const earlier = await receive("Earlier");
+    expect(await run(["inbox", "get", earlier], cli.io)).toBe(0);
+    expect(cli.stdout()).toContain("Subject    Earlier");
+    expect(cli.stdout()).toContain("Body of Earlier");
+
+    let later = "";
+    onSleep = async () => {
+      if (!later) later = await receive("Later");
+      else cli.controller.abort();
+    };
+    before = lines().length;
+    expect(await run(["inbox", "--json"], cli.io)).toBe(130);
+    const objects = lines()
+      .slice(before)
+      .map((line) => JSON.parse(line));
+    expect(objects[0]).toMatchObject({ object: "inbound_address", domain });
+    expect(objects.slice(1).map((object) => object.id)).toEqual([later]);
+  });
+
+  test("domains: add, verify --wait; templates: pull, edit, push --publish, preview", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const cli = cliIo(app, { answers: [tenant.liveKey] });
+    expect(await run(["login", "--manual"], cli.io)).toBe(0);
+    const last = () => JSON.parse(cli.stdout().trim().split("\n").at(-1) ?? "{}");
+
+    const name = uniqueDomainName();
+    expect(await run(["domains", "add", name, "--format", "bind"], cli.io)).toBe(0);
+    expect(cli.stdout()).toContain(`; ${name}: the DNS records coss.com needs`);
+    expect(cli.stdout()).toMatch(/\._domainkey\..+\t3600\tIN\tCNAME\t.+\.$/m);
+    expect(await run(["domains", "verify", name, "--wait", "--json"], cli.io)).toBe(0);
+    expect(last()).toMatchObject({ name, status: "verified", can_send: true });
+
+    const created = await apiRequest(app, "POST", "/v1/email_templates", {
+      key: tenant.liveKey,
+      body: {
+        name: "Welcome",
+        alias: "welcome",
+        variables: [{ name: "first_name", type: "string" }],
+        sample_variables: { first_name: "Ada" },
+        contents: [{ locale: "en", subject: "Welcome, {{first_name}}", text: "Hi {{first_name}}" }],
+      },
+    });
+    expect(created.status).toBe(200);
+    const dir = join(cli.io.configDir, "templates");
+    expect(await run(["templates", "pull", "--dir", dir], cli.io)).toBe(0);
+    expect(readFileSync(join(dir, "welcome", "en.txt"), "utf8")).toBe("Hi {{first_name}}");
+    // Unchanged files save nothing; an edit is saved and published.
+    expect(await run(["templates", "push", "--dir", dir], cli.io)).toBe(0);
+    expect(cli.stdout()).toContain("welcome: unchanged");
+    writeFileSync(join(dir, "welcome", "en.html"), "<p>Hello {{first_name}}</p>");
+    expect(await run(["templates", "push", "--dir", dir, "--publish", "--json"], cli.io)).toBe(0);
+    expect(last()).toMatchObject({ saved: true, revision: 2, published_version: 1 });
+
+    expect(
+      await run(["templates", "preview", "welcome", "--var", "first_name=Grace", "--json"], cli.io),
+    ).toBe(0);
+    expect(last()).toMatchObject({
+      object: "email_template_render",
+      version: null,
+      subject: "Welcome, Grace",
+      html: "<p>Hello Grace</p>",
+      text: "Hi Grace",
+    });
   });
 
   test("listen forwards the environment's events to a local server, signed, and logs them", async () => {
@@ -155,6 +500,85 @@ describe("coss-cli against the API", () => {
         body: JSON.stringify({ wait_ms: 0 }),
       });
       expect(closed.status).toBe(404);
+    } finally {
+      receiver.stop();
+    }
+  });
+
+  test("trigger: a test event reaches coss listen's local server, signed, and an endpoint", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const receiver = webhookReceiver();
+    const cli = cliIo(app, { answers: [tenant.sandboxKey] });
+    try {
+      expect(await run(["login", "--manual"], cli.io)).toBe(0);
+      const created = await app.request("/v1/webhook_endpoints", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tenant.sandboxKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: "https://hooks.example.com/coss",
+          event_types: ["email.bounced"],
+        }),
+      });
+      const endpoint = (await created.json()) as { id: string };
+
+      const listening = run(
+        ["listen", "--forward-to", receiver.url, "--events", "email.bounced"],
+        cli.io,
+      );
+      for (let i = 0; i < 200 && !cli.stderr().includes("Ready!"); i++) await Bun.sleep(10);
+      // A second terminal, on the same profile.
+      const other = cliIo(app);
+      other.io.configDir = cli.io.configDir;
+      expect(
+        await run(
+          ["trigger", "email.bounced", "-F", "recipient=ada@example.com", "--json"],
+          other.io,
+        ),
+      ).toBe(0);
+      const sent = JSON.parse(other.stdout().trim());
+      expect(sent).toMatchObject({ endpoints: 1, listeners: 1, event: { type: "email.bounced" } });
+
+      for (let i = 0; i < 300 && receiver.received.length < 1; i++) await Bun.sleep(10);
+      cli.controller.abort();
+      expect(await listening).toBe(130);
+      const [request] = receiver.received;
+      const config = JSON.parse(readFileSync(join(cli.io.configDir, "config.json"), "utf8"));
+      const event = await verifyWebhook(
+        request?.body ?? "",
+        request?.headers ?? new Headers(),
+        config.profiles.default.listen_secret,
+      );
+      expect(event).toEqual(sent.event);
+      expect(event).toMatchObject({ data: { recipient: "ada@example.com", sandbox: true } });
+
+      // The endpoint's delivery, answered by "the server", then retried with the CLI.
+      await runDueWebhookDeliveries(
+        { scope: { organizationIds: [tenant.organization.id] } },
+        { secretsKeys: TEST_SECRETS_KEYS, send: async () => ({ status: 200, body: "ok" }) },
+      );
+      const listed = cliIo(app);
+      listed.io.configDir = cli.io.configDir;
+      expect(await run(["webhooks", "list", "--json"], listed.io)).toBe(0);
+      expect(JSON.parse(listed.stdout().trim())).toMatchObject({ id: endpoint.id });
+      expect(
+        await run(
+          ["webhooks", "deliveries", endpoint.id, "--status", "succeeded", "--json"],
+          listed.io,
+        ),
+      ).toBe(0);
+      const delivery = JSON.parse(listed.stdout().trim().split("\n").at(-1) ?? "{}");
+      expect(delivery).toMatchObject({ event_id: sent.event.id, status: "succeeded" });
+      expect(await run(["webhooks", "retry", endpoint.id, delivery.id, "--json"], listed.io)).toBe(
+        0,
+      );
+      expect(JSON.parse(listed.stdout().trim().split("\n").at(-1) ?? "{}")).toMatchObject({
+        id: delivery.id,
+        status: "pending",
+      });
     } finally {
       receiver.stop();
     }

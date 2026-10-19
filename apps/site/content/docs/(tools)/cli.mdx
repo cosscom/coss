@@ -4,16 +4,29 @@ description: Sign in from your terminal, send test emails, follow your log, and 
 icon: Terminal
 ---
 
-The `coss` command line works with one environment at a time, like an API key does. It runs on
-Node.js 22+:
+The `coss` command line works with one environment at a time, like an API key does. Install it
+with Homebrew, the install script or npm:
 
 ```sh
-npm install -g coss-cli
+brew install cosscom/tap/coss     # macOS and Linux, with shell completions
+curl -fsSL https://raw.githubusercontent.com/cosscom/coss/main/packages/cli/install.sh | sh
+npm install -g coss-cli           # Node.js 22+
 coss login
 ```
 
 Or run any command with `npx coss-cli <command>` without installing it (`npx coss` is the SDK,
 not the CLI).
+
+- **Homebrew and the install script** install a standalone executable, which needs no Node.js:
+  each release's [GitHub release](https://github.com/cosscom/coss/releases) (`coss-cli@<version>`)
+  has one for macOS, Linux (glibc and musl) and Windows, arm64 and x64, with a `SHA256SUMS`.
+- **The install script** picks the archive for your machine, checks it against `SHA256SUMS` and
+  installs `coss` into `~/.local/bin` (set `COSS_INSTALL_DIR` for another directory, `COSS_VERSION`
+  for another version).
+- **Alpine** and other musl systems need `libstdc++` (`apk add libstdc++`).
+- **macOS** executables are signed but not notarized: one you download with a browser needs
+  `xattr -d com.apple.quarantine coss` first (Homebrew and the install script don't).
+- **Windows**: download `coss-cli-<version>-windows-x64.zip` from the release, or use npm.
 
 ## Sign in
 
@@ -32,13 +45,36 @@ coss whoami   # Acme / Default / Development (sandbox)
 - **Members** can't create API keys: ask an owner or admin for one and run `coss login --manual`,
   which asks for the key (or reads it from stdin: `echo "$KEY" | coss login --manual`).
 - **Several environments**: save each under a profile (`coss login --profile prod`), then pass
-  `--profile prod` or set `COSS_PROFILE=prod`.
+  `--profile prod` or set `COSS_PROFILE=prod`. `coss profiles list` shows the saved profiles
+  (`--json`: one object per profile, never its key) and `coss use prod` makes one the default.
 - **CI and scripts**: set `COSS_API_KEY`; it wins over saved profiles. No flag takes a key,
   since command lines are visible to other processes on the machine.
 
 `coss logout` removes the saved key and revokes it if `coss login` created it (`--revoke` also
 revokes a key you pasted; `--all` signs every profile out). Keys are saved in `~/.config/coss/config.json` (`$XDG_CONFIG_HOME`, or
 `%APPDATA%` on Windows), readable only by you.
+
+`coss open` opens the environment in the dashboard: `coss open logs`, `coss open webhooks`,
+`coss open api-keys`, or an organization page (`coss open domains`, `coss open billing`).
+`coss open --help` lists every page; `--print` (or `--json`) prints the URL instead.
+
+## Set a project up
+
+`coss init`, in a project's directory, gets it ready to send:
+
+```sh
+cd my-app
+coss init
+```
+
+- It asks the dashboard for a new **development key for the project** (approved like
+  `coss login`, offering only sandbox environments, and named after the project) and writes it as
+  `COSS_API_KEY` to `.env.local` in a Next.js project, `.env` otherwise, or the file `--env-file`
+  names. This key is the project's, not the CLI's. A file that already has a key keeps it unless
+  you pass `--force`; it warns when git doesn't ignore the file.
+- It installs the `coss` package with the project's package manager (from its lockfile: bun,
+  pnpm, yarn or npm); `--no-install` skips that.
+- `--no-browser` works as with `coss login`; `--json` prints what it did as one object.
 
 ## Receive webhooks locally
 
@@ -72,17 +108,59 @@ export async function POST(request: Request) {
 - Only events created while it runs are forwarded, oldest first; the `webhook-id` header is the
   event's id, as in production. `--events email.delivered,email.bounced` subscribes to fewer.
 - Each forward shows its status in the terminal and in the environment's [log](/docs/logs)
-  (`webhook.forward`). A failed forward isn't retried: send the email again.
+  (`webhook.forward`). A failed forward isn't retried: [trigger](#trigger-test-events) it again.
 - Without `--forward-to`, events are only printed (`--print-json` shows their bodies, `--json`
   prints one JSON object per event).
 - `--header "Authorization: Bearer dev-token"` adds a header to every forwarded request
   (repeatable), for a local server that expects one.
 - Events render in your organization's API version unless you pass `--api-version`.
-- `account.*` and `billing.*` events only reach live environments. Listening to a live
+- `domain.*`, `account.*` and `billing.*` events only reach live environments. Listening to a live
   environment, with its real events, needs `--live`.
 - An environment has at most 5 listeners at once. One that stops polling (your laptop sleeps)
   closes after 10 minutes, and `coss listen` opens a new one when it wakes up: events in between
   are missed.
+
+## Trigger test events
+
+With `coss listen` running, `coss trigger` sends a test event of any type, so you can work on a
+handler without making the real thing happen:
+
+```sh
+# terminal 1
+coss listen --forward-to localhost:3000/webhooks
+# terminal 2
+coss trigger email.bounced
+# ✔ email.bounced evt_01k7c8m4r0c2b8w9y3d5f6g7h8 → 0 endpoints, 1 listener
+coss trigger contact.unsubscribed -F contact.email=ada@example.com
+coss trigger risk.assessment.review --data '{"user_id":"u_42","score":0.91}'
+```
+
+The event is a realistic sample of its type, sent to the environment's subscribed
+[endpoints](/docs/webhooks) and open listeners exactly like a real one: same body, signature,
+retries and log lines, with nothing marking it as a test. Its ids are made up, so pass real ones
+for a handler that looks them up: `--data` takes a JSON object merged over the sample's `data`,
+and `-F name=value` (`--field`) sets one field, with dotted names reaching into objects
+(`-F bounce.sub_type=NoEmail`) and values read as JSON when they parse (`@path` reads a file).
+Unknown fields are refused. `--json` prints the event that was sent.
+
+- Test events are for development environments (sandbox keys) only, and of every type except the
+  live-only `domain.*`, `account.*` and `billing.*`. Tab completes the types.
+- To run an email through the real pipeline instead (sending, the provider, then its events),
+  send it to the mailbox simulator: `coss emails send --simulate bounced`.
+
+## Webhook endpoints and deliveries
+
+```sh
+coss webhooks list
+coss webhooks deliveries whep_01k7c8m4q2f3e9v6t5r1n0p8yz --status failed
+coss webhooks retry whep_01k7c8m4q2f3e9v6t5r1n0p8yz whdel_01k7c8m4q2f3e9v6t5r1n0p8yz
+```
+
+`coss webhooks list` shows the environment's endpoints with their URL, state (enabled, failing,
+disabled) and event types. `coss webhooks deliveries <endpoint>` lists an endpoint's deliveries,
+newest first, with the last status code and error; filter with `--status pending|succeeded|failed`
+or `--event <event id>`, and show up to `--limit 100` (default 20).
+`coss webhooks retry <endpoint> <delivery>` sends a finished delivery once more, within seconds. Each takes `--json`.
 
 ## Send test emails
 
@@ -102,6 +180,31 @@ The default sender for development keys is `coss.com CLI <cli@example.com>`; pro
 `--template <id or alias>` with `--var name=value`, `--cc`, `--bcc`, `--reply-to`, `--category`,
 `--tag name=value` and `--json`.
 
+## Find and debug emails
+
+```sh
+coss emails list --recipient-status bounced --since 1d
+coss emails diagnose email_01k7c8m4q2f3e9v6t5r1n0p8yz
+coss emails diagnose --to ada@example.com
+```
+
+`coss emails list` shows the environment's emails, newest first, with where each one stands: its
+status until it was handed to the provider, then its recipients' (`delivered`,
+`2 delivered, 1 bounced`). Filter by `--to`, `--status`, `--recipient-status`, free text (`-q`), `--category`,
+`--batch <id>` and creation time (`--since`, `--until`); `--limit` sets how many (20 by default,
+read page by page). `--json` prints one email per line.
+
+`coss emails get <id>` shows one email: sender, recipients and their statuses, its failure,
+tracking counts and attachments (`--text` or `--html` prints that body alone).
+`coss emails events <id>` lists its events, with what the receiving server answered.
+
+`coss emails diagnose <id>` explains the outcome: a verdict, what each recipient's status means (a
+hard bounce and the server's reason, the suppression entry that skipped an address, a delay, a
+failure and its cause), account problems that affect it (an unverified domain, reputation, a
+billing hold) and the next steps, as commands to run. `--to <address>` diagnoses the newest email
+to that address. It's the same diagnosis as the SDK's `coss/diagnose` and the MCP server's
+`diagnose_email`.
+
 ## Follow the log
 
 ```sh
@@ -116,6 +219,186 @@ email events, webhook attempts and `coss listen` forwards. Filter by `--source`,
 prints one log object per line for `jq`. It checks for new lines every 2 seconds (`--interval <ms>`,
 at least 500).
 
+## Hooks
+
+The [Hooks](/docs/hooks) loop from the terminal: set up an application with an endpoint, send it
+messages, and see what its endpoints answered. Wherever a command takes `<app>`, an application's
+`uid` works as well as its id.
+
+```sh
+coss hooks event-types create invoice.paid --example '{"invoice_id":"in_1","amount":4200}'
+coss hooks apps create "Acme" --uid acme
+coss hooks endpoints add acme --url https://example.com/hooks --types invoice.paid
+coss hooks send acme invoice.paid -F amount=4200 -f invoice_id=in_2
+coss hooks deliveries acme --status failed
+coss hooks portal acme --open
+```
+
+- `coss hooks apps list` and `coss hooks apps create <name>` (`--uid`, `--metadata key=value`)
+  manage applications; `coss hooks event-types list` (`--archived`) and
+  `coss hooks event-types create <name>` (`--description`, `--schema`, `--example`, each JSON inline, `@file` or `-` for
+  stdin) the event types. Lists show 50 (`--limit`, up to 100).
+- `coss hooks endpoints list <app>` shows each endpoint's state;
+  `coss hooks endpoints add <app> --url <url>` (`--types`, `--description`, `--rate-limit`) prints the new endpoint's signing
+  secret, the only time it's shown.
+- `coss hooks send <app> <event-type>` sends a message: the payload is `--data` (a JSON object)
+  with `-F name=value` (JSON values, `@file`) and `-f name=value` (strings) on top, or, with none
+  of them, the event type's first example. `--idempotency-key` sends it once only.
+- `coss hooks deliveries <app>` lists deliveries, newest first, of every endpoint or one
+  (`--endpoint`), or of one message (`--message`), by `--status` (pending, succeeded, failed);
+  `coss hooks attempts <app> <delivery>` shows each HTTP request of one, and
+  `coss hooks retry <app> <delivery>` queues a finished one for another attempt.
+- `coss hooks portal <app>` prints a link that signs in to the application's
+  [portal](/docs/hooks/portal) (`--open` opens it, `--read-only`, `--expires-in <seconds>`). Anyone
+  with the link is signed in until it expires.
+
+## Risk
+
+Try [Risk](/docs/risk) decisions before wiring them into your app, and manage what the environment
+remembers:
+
+```sh
+coss risk assess --event signup --email ada@disposable.test --ip 192.0.2.1
+coss risk assessments --review open
+coss risk feedback rass_01k7c8m4q2f3e9v6t5r1n0p8yz --outcome fraud --note "chargeback"
+coss risk lists add block domain evil.example --expires 30d --note "spam wave"
+```
+
+- `coss risk assess --event <event>` (signup, login, message, checkout or custom with
+  `--event-name`) takes `--email`, `--ip`, `--user` (your user id), `--user-agent`, `--content`,
+  `--captcha` and `--device` tokens, and `--data` for anything else of the request (a checkout,
+  say), and prints the decision, its score and each reason. It counts like any assessment.
+- In development environments the [test fixtures](/docs/risk/testing) produce each decision:
+  `192.0.2.1` (Tor), `.2` (a cloud), `.3` (a VPN), `.4` (a proxy) and `.5` (a privacy relay);
+  addresses at `disposable.test`, `undeliverable.test` and `new.test`; captcha tokens `test-pass`
+  and `test-fail`; the device token `test-device-automated`; content with `[coss-test:spam]`
+  (or `phishing`, `malware`, `fraud`, and `[coss-test:spam:0.6]` for a given score).
+- `coss risk assessments` lists assessments by `--decision`, `--event`, `--user` and `--review`
+  (`open` is the review queue); `coss risk feedback <assessment> --outcome legitimate|fraud|abuse`
+  (`--note`) reports what the user turned out to be.
+- `coss risk lists list` (`--list allow|block`, `--type`),
+  `coss risk lists add <allow|block> <email|domain|ip|asn|country|user> <value>` (`--note`,
+  `--expires` as `7d`, `12h` or a time) and `coss risk lists remove <entry>` manage the allow and
+  block lists.
+
+## Receive emails
+
+```sh
+coss inbox
+# Inbound domain: k3j9x2m7qp4l.inbound.coss.com
+coss inbox get rcv_01k7c8m4q2f3e9v6t5r1n0p8yz
+```
+
+`coss inbox` prints the environment's inbound domain: mail to any address at it is
+[received](/docs/email/receiving) with no DNS setup. It then prints each email the environment receives
+as it arrives, at that domain or at a receiving domain (`--since 1h` shows earlier ones too,
+`--interval <ms>` sets how often it checks, `--json` prints the address and then one email per
+line).
+
+`coss inbox get <id>` shows a received email: sender, recipients, the receiving server's spam,
+virus, SPF, DKIM and DMARC verdicts, attachments and the text body (`--html` for the HTML,
+`--headers` for every header). Received mail is written by someone else, so control characters in
+it are left out of what's printed. `--raw > message.eml` saves the whole message as received
+(it refuses to write it to a terminal).
+
+## Domains
+
+```sh
+coss domains add acme.com                 # the DNS records to publish
+coss domains add acme.com --format bind   # the same, as zone-file lines to import
+coss domains verify acme.com --wait       # check now, and keep checking until it's verified
+```
+
+`coss domains list` shows the organization's [sending domains](/docs/email/domains), and
+`coss domains get <domain>` one domain's records with what the last DNS check saw: `verified`,
+`missing`, or a `mismatch` (with the value DNS returned). Domains are named by their name or their id.
+`coss domains verify` checks now instead of waiting for the background check; with `--wait` it
+checks again every 10 seconds, printing the records still missing, until the domain is verified
+(exit `0`), verification gives up (`1`), or `--timeout` passes (600 seconds by default, `1`). A
+domain whose verification had given up starts over with new DKIM records, which you publish
+again. `--json` prints the domain object.
+
+## Templates as code
+
+Keep [email templates](/docs/email/templates) in your repository and push them from there:
+
+```sh
+coss templates pull                       # every template's draft, into ./templates
+coss templates push --watch               # save the draft again on every edit
+coss templates preview welcome --var first_name=Ada --open
+coss templates push --publish             # publish the drafts sends use
+```
+
+`coss templates pull [<template>...]` writes each draft into a folder of `--dir` (`templates` by
+default) named by the template's alias, else its id:
+
+```text
+templates/welcome/
+  template.json        # name, alias, description, default_locale, variables, sample_variables
+  en.subject.txt
+  en.html
+  en.txt
+  de.subject.txt
+  de.txt
+```
+
+Files are written byte for byte, so pulling and pushing changes nothing; a locale needs its
+`.subject.txt` and an `.html`, a `.txt` or both. `coss templates push [<path>...]` (template
+folders, or folders of them; `--dir` without arguments) replaces each draft with its files. It
+finds the template by its `alias`, so the same folder pushes to every environment (sign in to
+another with `--profile`), and creates templates that don't exist there yet. Without an alias
+the folder is tied to the template's id. A push saves only drafts its files change, lists
+problems (syntax errors, undeclared variables) with their file, line and column, and with
+`--publish` publishes each draft too. `--watch` keeps running and pushes a template again
+whenever one of its files changes.
+
+`coss templates preview <template>` renders the draft as a send would, without sending: with its
+`sample_variables`, overridden by `--var name=value` (JSON values when they parse), in `--locale`,
+or a published `--version`. It prints the subject and text; `--open` shows the HTML in your
+browser and `--output preview.html` saves it. Given a folder, it previews that template's draft
+and warns when your files differ from it. `coss templates list` lists the environment's
+templates.
+
+## Call any endpoint
+
+`coss api` calls an endpoint of the [API](/docs/api-reference) with the CLI's key and prints the
+response's JSON, for anything the other commands don't cover. Paths are relative to `/v1`:
+
+```sh
+coss api domains
+coss api emails/email_01k7c8m4q2f3e9v6t5r1n0p8yz/events
+coss api -X POST domains/dom_01k7c8m4q2f3e9v6t5r1n0p8yz/verify
+coss api suppressions -f reason=bounce --paginate | jq -r .address
+```
+
+- **Fields**: `-f name=value` (`--raw-field`) is always a string; `-F name=value` (`--field`) is
+  JSON when it parses (`-F limit=5`, `-F enabled=true`, `-F 'to=["a@example.com"]'`) and a file's
+  contents with `@path`. `name[]=value` adds to a list. GET and DELETE send fields as query
+  parameters, every other method as the JSON body.
+- **Methods**: `-X` (`--method`) takes `GET` (the default), `POST`, `PUT`, `PATCH` or `DELETE`.
+  `--input body.json` sends that file as the body (`--input -` reads stdin) and makes the default
+  `POST`; fields then go in the query.
+- **Lists**: `--paginate` reads every page and prints each item as one JSON object per line.
+- **Other bodies**: `--raw` prints a response that isn't JSON as it is, such as a CSV export or a
+  received email's raw message (`coss api received_emails/<id>/raw --raw > message.eml`).
+- **Versions**: requests use the API version the CLI was built for; `--api-version 2026-10-01`
+  asks for another. `--json` prints JSON on one line instead of indented.
+
+A failed call prints the error (`{ "error": { "type", "code", "message", … } }`) on stdout too,
+and exits with `1`. Writes aren't retried automatically, since not every endpoint deduplicates
+them: run the command again.
+
+## Shell completion
+
+`coss completion bash|zsh|fish` prints a script that completes commands, flags and their values
+(`--simulate b` → `bounced`):
+
+```sh
+eval "$(coss completion zsh)"     # in ~/.zshrc, after compinit
+eval "$(coss completion bash)"    # in ~/.bashrc
+coss completion fish > ~/.config/fish/completions/coss.fish
+```
+
 ## Scripting
 
 Results go to stdout and progress to stderr, so pipes get only the results; `--json` makes them one
@@ -129,6 +412,13 @@ the CLI's. Exit codes:
 | `2` | Wrong usage: an unknown command or option, or a bad value. |
 | `130` | Stopped with Ctrl-C (how `coss listen` and `coss logs tail` end). |
 
+## Updates
+
+Once a day, when it runs in a terminal, the CLI asks the npm registry for its latest version (a
+plain `GET https://registry.npmjs.org/coss-cli/latest`; nothing else is sent) and prints one line
+on stderr if a newer one exists. It never checks with `--json`, in CI (`CI` set) or when stderr
+isn't a terminal, never delays a command, and `COSS_NO_UPDATE_CHECK=1` turns it off.
+
 ## Environment variables
 
 | Variable | |
@@ -138,3 +428,4 @@ the CLI's. Exit codes:
 | `COSS_BASE_URL` | Another API origin. Remembered by `coss login`. |
 | `COSS_DASHBOARD_URL` | Another dashboard for `coss login`. |
 | `NO_COLOR` | No colors (or `--no-color`). |
+| `COSS_NO_UPDATE_CHECK` | `1`: no update notice. |

@@ -152,6 +152,22 @@ await coss.email.templates.updateDraft("receipt", {
 - **Locales**: each version holds one subject, HTML and text per locale (up to 30), published
   together, with one default locale. Locales are BCP 47 tags such as `en`, `de` or `pt-BR`.
 
+- **Previews**: `render` renders the draft (or a published `version`) exactly as a send would and
+  returns its subject, HTML and text, without sending or storing anything. It takes `variables`
+  (checked like a send's; the version's `sample_variables` when left out) and a `locale`. A draft
+  with problems is refused like a publish. `coss templates preview` in the [CLI](/docs/cli) calls
+  it, and `coss templates pull`/`push` keep templates as files in your repository.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data } = await coss.email.templates.render("welcome", {
+  variables: { first_name: "Ada" },
+});
+console.log(data?.subject);
+```
+
 Deleting a template deletes its draft and versions. Emails already sent keep their content, and
 sends that name it fail from then on.
 

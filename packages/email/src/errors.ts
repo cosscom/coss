@@ -18,7 +18,10 @@ export type EmailErrorCode =
   | "template_alias_taken"
   | "template_limit_reached"
   | "template_revision_mismatch"
-  | "mailing_address_required";
+  | "mailing_address_required"
+  | "sandbox_only"
+  | "live_only_event_type"
+  | "invalid_test_event";
 
 const STATUS_BY_CODE = {
   idempotency_key_reused: 422,
@@ -45,6 +48,10 @@ const STATUS_BY_CODE = {
   // Not 409: the SDK would retry it, and another save won't happen by waiting.
   template_revision_mismatch: 422,
   mailing_address_required: 422,
+  // Test webhook events: only sandbox environments send them, and only of types they can receive.
+  sandbox_only: 403,
+  live_only_event_type: 422,
+  invalid_test_event: 422,
 } as const satisfies Record<EmailErrorCode, number>;
 
 /** Expected failures of the email service; `status` is the HTTP status the API should use. */

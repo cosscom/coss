@@ -121,6 +121,8 @@ import type {
   ReceivedEmailSummary,
   ReceivedEmailWebhookEvent,
   ReceivingDomainObject,
+  RenderEmailTemplateRequest,
+  RenderedEmailTemplateObject,
   RescheduleEmailRequest,
   SendEmailBatchRequest,
   SendEmailRequest,
@@ -137,6 +139,10 @@ import type {
   UpdateEmailTemplateRequest,
   UpdateTrackingRuleRequest,
 } from "@coss/email/schemas";
+import type {
+  CreateTestWebhookEventRequest,
+  WebhookTestEventObject,
+} from "@coss/email/test-event-schemas";
 import type {
   LogDrainSource as ApiLogDrainSource,
   AuditEvent,
@@ -274,6 +280,7 @@ import type {
   PollWebhookListenerParams,
   PublishEmailTemplateParams,
   RecoverWebhookEndpointParams,
+  RenderEmailTemplateParams,
   RescheduleEmailParams,
   RiskFeedbackParams,
   RollWebhookEndpointSecretParams,
@@ -344,6 +351,7 @@ import type {
   ReceivedEmailSummary as SdkReceivedEmailSummary,
   ReceivedEmailWebhookEvent as SdkReceivedEmailWebhookEvent,
   ReceivingDomain as SdkReceivingDomain,
+  RenderedEmailTemplate as SdkRenderedEmailTemplate,
   Reputation as SdkReputation,
   ReputationCheck as SdkReputationCheck,
   RiskAssessment as SdkRiskAssessment,
@@ -376,6 +384,7 @@ import type {
   SendBroadcastParams,
   SendEmailContentParams,
   SendEmailTemplateParams,
+  SendTestWebhookEventParams,
   TestBroadcastParams,
   TrackingOptions,
   UpdateBroadcastParams,
@@ -397,6 +406,7 @@ import type {
   WebhookEndpoint,
   WebhookEndpointRecovery,
   WebhookEvent,
+  WebhookTestEvent,
 } from "coss";
 import type { z } from "zod";
 import type { ErrorEnvelopeBody } from "../src/errors.ts";
@@ -520,6 +530,10 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof EmailTemplateObject>, SdkEmailTemplate>>,
   Assert<MutuallyAssignable<z.output<typeof EmailTemplateList>, List<SdkEmailTemplate>>>,
   Assert<MutuallyAssignable<z.output<typeof EmailTemplateVersionObject>, SdkEmailTemplateVersion>>,
+  Assert<MutuallyAssignable<z.input<typeof RenderEmailTemplateRequest>, RenderEmailTemplateParams>>,
+  Assert<
+    MutuallyAssignable<z.output<typeof RenderedEmailTemplateObject>, SdkRenderedEmailTemplate>
+  >,
   Assert<
     MutuallyAssignable<z.output<typeof EmailTemplateVersionList>, List<SdkEmailTemplateVersion>>
   >,
@@ -576,6 +590,11 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof WebhookListenerObject>, SdkWebhookListener>>,
   Assert<MutuallyAssignable<z.output<typeof WebhookListenerPoll>, SdkWebhookListenerPoll>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedWebhookListener>, SdkDeletedWebhookListener>>,
+  // Test events (`coss trigger`).
+  Assert<
+    MutuallyAssignable<z.input<typeof CreateTestWebhookEventRequest>, SendTestWebhookEventParams>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof WebhookTestEventObject>, WebhookTestEvent>>,
   // Delivery logs (the SDK sends `limit` as a number).
   Assert<
     MutuallyAssignable<

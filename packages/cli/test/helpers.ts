@@ -64,8 +64,8 @@ export function testIo(overrides: Partial<CliIo> & { answers?: string[] } = {}):
   const io: TestIo = {
     env: {},
     stdout: {
-      write: (text) => {
-        stdout += text;
+      write: (chunk) => {
+        stdout += typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
       },
     },
     stderr: {
@@ -87,11 +87,16 @@ export function testIo(overrides: Partial<CliIo> & { answers?: string[] } = {}):
         });
       }),
     openBrowser: async () => false,
+    readStdin: async () => answers.shift() ?? "",
     prompt: async (question) => {
       stderr += question;
       return answers.shift() ?? "";
     },
+    watch: () => undefined,
     hostname: () => "test-host",
+    cwd: mkdtempSync(join(tmpdir(), "coss-cli-project-")),
+    // Nothing is run in tests unless a test says so (`null`: the program isn't there).
+    exec: async () => null,
     configDir: mkdtempSync(join(tmpdir(), "coss-cli-test-")),
     signal: controller.signal,
     output: () => stdout,

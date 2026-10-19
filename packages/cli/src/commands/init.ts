@@ -1,0 +1,250 @@
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { basename, dirname, join, relative, resolve } from "node:path";
+import type { Flags } from "../args.ts";
+import { type Command, type CommandInput, defineCommand } from "../command.ts";
+import { profileName, readConfig } from "../config.ts";
+import {
+  apiBaseUrl,
+  clientFor,
+  DEFAULT_BASE_URL,
+  dashboardBaseUrl,
+  describeEnvironment,
+} from "../context.ts";
+import { apiError, CliError } from "../errors.ts";
+import type { CliIo } from "../io.ts";
+import { browserLogin, isRemote } from "./login.ts";
+
+type PackageJson = {
+  name?: unknown;
+  packageManager?: unknown;
+  dependencies?: Record<string, unknown>;
+  devDependencies?: Record<string, unknown>;
+};
+
+export type PackageManager = "bun" | "pnpm" | "yarn" | "npm";
+
+const LOCKFILES: [file: string, manager: PackageManager][] = [
+  ["bun.lock", "bun"],
+  ["bun.lockb", "bun"],
+  ["pnpm-lock.yaml", "pnpm"],
+  ["yarn.lock", "yarn"],
+  ["package-lock.json", "npm"],
+];
+
+async function exists(path: string): Promise<boolean> {
+  return access(path).then(
+    () => true,
+    () => false,
+  );
+}
+
+async function readPackageJson(dir: string): Promise<PackageJson | null> {
+  let text: string;
+  try {
+    text = await readFile(join(dir, "package.json"), "utf8");
+  } catch {
+    return null;
+  }
+  try {
+    return JSON.parse(text) as PackageJson;
+  } catch {
+    throw new CliError(`${join(dir, "package.json")} isn't valid JSON.`);
+  }
+}
+
+/**
+ * The project's package manager: the nearest lockfile (in a workspace it's the root's), else
+ * package.json's `packageManager`, else npm.
+ */
+export async function detectPackageManager(dir: string, pkg: PackageJson): Promise<PackageManager> {
+  for (let current = resolve(dir); ; current = dirname(current)) {
+    for (const [file, manager] of LOCKFILES) {
+      if (await exists(join(current, file))) return manager;
+    }
+    if (dirname(current) === current) break;
+  }
+  const declared = typeof pkg.packageManager === "string" ? pkg.packageManager.split("@")[0] : "";
+  return LOCKFILES.find(([, manager]) => manager === declared)?.[1] ?? "npm";
+}
+
+export function installCommand(manager: PackageManager): [string, string[]] {
+  return [manager, manager === "npm" ? ["install", "coss"] : ["add", "coss"]];
+}
+
+function dependsOn(pkg: PackageJson, name: string): boolean {
+  return Boolean(pkg.dependencies?.[name] ?? pkg.devDependencies?.[name]);
+}
+
+const KEY_LINE = /^\s*(?:export\s+)?COSS_API_KEY\s*=\s*["']?([^"'\s#]*)/m;
+
+/** The env file with `name=value` set: an existing line replaced, else one appended. */
+export function setEnvVar(text: string, name: string, value: string): string {
+  const line = new RegExp(`^\\s*(?:export\\s+)?${name}\\s*=.*$`, "m");
+  // A function, so `$` in the value is never a replacement pattern.
+  if (line.test(text)) return text.replace(line, () => `${name}=${value}`);
+  const separator = text === "" || text.endsWith("\n") ? "" : "\n";
+  return `${text}${separator}${name}=${value}\n`;
+}
+
+/** `text` without `name`'s assignments. */
+export function removeEnvVar(text: string, name: string): string {
+  return text.replace(
+    new RegExp(`^[ \\t]*(?:export[ \\t]+)?${name}[ \\t]*=.*(?:\\r?\\n|$)`, "gm"),
+    "",
+  );
+}
+
+/** The project's name for the key: package.json's (without its scope), else the directory's. */
+function projectName(dir: string, pkg: PackageJson | null): string {
+  const name = typeof pkg?.name === "string" ? pkg.name.replace(/^@[^/]+\//, "") : "";
+  return name || basename(resolve(dir));
+}
+
+const FLAGS = {
+  "env-file": {
+    type: "string",
+    value: "<path>",
+    description:
+      "Where to write COSS_API_KEY (default: .env.local in a Next.js project, else .env)",
+  },
+  "no-install": { type: "boolean", description: "Don't install the coss package" },
+  force: { type: "boolean", description: "Replace a COSS_API_KEY the env file already has" },
+  "no-browser": {
+    type: "boolean",
+    description: "Don't open a browser: open the link yourself, then paste the code it shows",
+  },
+  json: { type: "boolean", description: "Print what was done as one JSON object" },
+} as const satisfies Flags;
+
+export const initCommand: Command = defineCommand({
+  name: "init",
+  summary: "Set this project up: the SDK and a development API key",
+  description:
+    "Sets up the project in the current directory: installs the coss package with the project's " +
+    "package manager, and writes a new development (sandbox) API key to its env file as " +
+    "COSS_API_KEY, created in the dashboard like `coss login`'s and named after the project. It " +
+    "is the project's key, not the CLI's: `coss login` signs the CLI in.\n\n" +
+    "An env file that already has a key keeps it, unless --force.",
+  flags: FLAGS,
+  run: init,
+});
+
+async function init({ values, context }: CommandInput<typeof FLAGS>): Promise<number> {
+  const { io, out, flags } = context;
+  const dir = io.cwd;
+  const pkg = await readPackageJson(dir);
+  const next = pkg !== null && dependsOn(pkg, "next");
+  const envFile = resolve(dir, values["env-file"] ?? (next ? ".env.local" : ".env"));
+  const shownFile = relative(dir, envFile) || envFile;
+  const existingText = await readFile(envFile, "utf8").catch(() => null);
+  const existingKey = existingText ? (KEY_LINE.exec(existingText)?.[1] ?? "") : "";
+
+  // Where `coss login` pointed the CLI (a local stack, say) is where the project's key comes from.
+  const config = await readConfig(io);
+  const profile = config.profiles[profileName(io, config, flags.profile)] ?? null;
+  const baseUrl = apiBaseUrl(io, profile);
+  const dashboardUrl = dashboardBaseUrl(io, profile);
+
+  let key: { id: string; name: string; environment: string } | null = null;
+  if (existingKey && !values.force) {
+    out.info(`${shownFile} already has COSS_API_KEY: kept it (--force replaces it).`);
+  } else {
+    const token = await browserLogin(context, dashboardUrl, {
+      pasteCode: values["no-browser"] === true || isRemote(io),
+      project: projectName(dir, pkg),
+    });
+    const coss = clientFor(io, { apiKey: token.api_key, baseUrl });
+    const { data: environment, error } = await coss.environment.get();
+    if (error) throw apiError("Couldn't check the new API key", error);
+    if (environment.mode === "live") {
+      // The page offers sandbox environments only; never write a live key into project files.
+      await coss.apiKey.revoke().catch(() => undefined);
+      throw new CliError(
+        `${describeEnvironment(environment)} is live, so its key was revoked: \`coss init\` only ` +
+          "writes development keys. Pick a sandbox environment.",
+      );
+    }
+    const withKey = setEnvVar(existingText ?? "", "COSS_API_KEY", token.api_key);
+    // The key only works against the API it came from: COSS_BASE_URL follows it (a key of the
+    // default API drops one a local stack left).
+    const text =
+      baseUrl === DEFAULT_BASE_URL
+        ? removeEnvVar(withKey, "COSS_BASE_URL")
+        : setEnvVar(withKey, "COSS_BASE_URL", baseUrl);
+    // A new file is readable by its owner only; an existing one keeps its mode.
+    await mkdir(dirname(envFile), { recursive: true });
+    await writeFile(envFile, text, { mode: 0o600 });
+    key = {
+      id: environment.api_key.id,
+      name: token.name,
+      environment: describeEnvironment(environment),
+    };
+    if (!out.json) {
+      out.line(
+        `${out.style("green", "✔")} Saved a development key of ${key.environment} to ${shownFile} as COSS_API_KEY.`,
+      );
+    }
+  }
+
+  const ignored = await ignoredByGit(io, dir, envFile);
+  if (ignored === false) {
+    out.warn(
+      `${shownFile} isn't ignored by git: add it to .gitignore so the key is never committed.`,
+    );
+  }
+
+  let installed: string | null = null;
+  if (values["no-install"]) {
+    // Nothing to do.
+  } else if (pkg === null) {
+    out.info("No package.json here: skipped installing the coss package.");
+  } else if (dependsOn(pkg, "coss")) {
+    if (!out.json) out.info("coss is already a dependency.");
+  } else {
+    const [command, args] = installCommand(await detectPackageManager(dir, pkg));
+    installed = [command, ...args].join(" ");
+    out.info(out.style("dim", `$ ${installed}`));
+    const code = await io.exec(command, args, { cwd: dir });
+    if (code !== 0) {
+      throw new CliError(
+        code === null
+          ? `Couldn't run ${command}: install the coss package yourself.`
+          : `\`${installed}\` failed (exit code ${code}): install the coss package yourself.`,
+      );
+    }
+    if (!out.json) out.line(`${out.style("green", "✔")} Installed the coss package.`);
+  }
+
+  if (out.json) {
+    out.data({ env_file: envFile, key, installed, ignored_by_git: ignored });
+    return 0;
+  }
+  out.line(`
+Send an email from your server code${next ? " (a route handler or server action)" : ""}:
+
+  import { Coss } from "coss";
+
+  const coss = new Coss(); // reads COSS_API_KEY
+  const { data, error } = await coss.email.send({
+    from: "Acme <hello@example.com>",
+    to: "you@example.com",
+    subject: "Hello from coss.com",
+    text: "It works!",
+  });
+
+Development keys never deliver email, but every send has its events and webhooks.${
+    next ? "" : `\nLoad ${shownFile} in your app, e.g. node --env-file=${shownFile} server.js.`
+  }
+
+Next:
+  coss listen --forward-to localhost:3000/webhooks   receive webhook events locally
+  coss logs tail                                     follow the environment's log
+  https://coss.com/docs                              guides and the API reference`);
+  return 0;
+}
+
+/** Whether git ignores the file: `null` outside a repository (or without git). */
+async function ignoredByGit(io: CliIo, dir: string, file: string): Promise<boolean | null> {
+  const code = await io.exec("git", ["check-ignore", "-q", file], { cwd: dir, quiet: true });
+  return code === 0 ? true : code === 1 ? false : null;
+}

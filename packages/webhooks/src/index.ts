@@ -80,7 +80,11 @@ export {
   toLogDrainObject,
   updateLogDrain,
 } from "./log-drains.ts";
-export { enqueueWebhookMessage } from "./outbox.ts";
+export {
+  enqueueWebhookMessage,
+  fanOutWebhookMessage,
+  type WebhookMessageInput,
+} from "./outbox.ts";
 export {
   type ReencryptResult,
   reencryptWebhookSecrets,

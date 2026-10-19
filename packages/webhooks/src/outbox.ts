@@ -10,6 +10,15 @@ const {
   webhookMessage,
 } = schema;
 
+export type WebhookMessageInput = {
+  id: string;
+  organizationId: string;
+  environmentId: string;
+  type: string;
+  payload: Record<string, unknown>;
+  now?: Date;
+};
+
 /**
  * Queues `payload` for every enabled endpoint of the environment subscribed to `type`, and for its
  * open `coss listen` listeners. Runs inside the caller's transaction; idempotent per message id.
@@ -17,15 +26,19 @@ const {
  */
 export async function enqueueWebhookMessage(
   tx: Executor,
-  message: {
-    id: string;
-    organizationId: string;
-    environmentId: string;
-    type: string;
-    payload: Record<string, unknown>;
-    now?: Date;
-  },
+  message: WebhookMessageInput,
 ): Promise<number> {
+  return (await fanOutWebhookMessage(tx, message)).endpoints;
+}
+
+/**
+ * `enqueueWebhookMessage`, telling how many endpoint and listener deliveries it queued (neither:
+ * nothing subscribed, and the message isn't stored).
+ */
+export async function fanOutWebhookMessage(
+  tx: Executor,
+  message: WebhookMessageInput,
+): Promise<{ endpoints: number; listeners: number }> {
   const endpoints = await tx
     .select({ id: webhookEndpoint.id, eventTypes: webhookEndpoint.eventTypes })
     .from(webhookEndpoint)
@@ -53,7 +66,7 @@ export async function enqueueWebhookMessage(
     target.eventTypes.length === 0 || target.eventTypes.includes(message.type);
   const subscribed = endpoints.filter(subscribes);
   const listening = listeners.filter(subscribes);
-  if (subscribed.length === 0 && listening.length === 0) return 0;
+  if (subscribed.length === 0 && listening.length === 0) return { endpoints: 0, listeners: 0 };
 
   await tx
     .insert(webhookMessage)
@@ -65,8 +78,9 @@ export async function enqueueWebhookMessage(
       payload: message.payload,
     })
     .onConflictDoNothing();
+  let handedOut = 0;
   if (listening.length > 0) {
-    await tx
+    const handed = await tx
       .insert(webhookListenerDelivery)
       .values(
         listening.map((listener) => ({
@@ -77,9 +91,11 @@ export async function enqueueWebhookMessage(
       )
       .onConflictDoNothing({
         target: [webhookListenerDelivery.messageId, webhookListenerDelivery.listenerId],
-      });
+      })
+      .returning({ id: webhookListenerDelivery.id });
+    handedOut = handed.length;
   }
-  if (subscribed.length === 0) return 0;
+  if (subscribed.length === 0) return { endpoints: 0, listeners: handedOut };
   const queued = await tx
     .insert(webhookDelivery)
     .values(
@@ -92,5 +108,5 @@ export async function enqueueWebhookMessage(
     )
     .onConflictDoNothing({ target: [webhookDelivery.messageId, webhookDelivery.endpointId] })
     .returning({ id: webhookDelivery.id });
-  return queued.length;
+  return { endpoints: queued.length, listeners: handedOut };
 }

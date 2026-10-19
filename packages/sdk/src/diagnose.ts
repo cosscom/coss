@@ -1,15 +1,24 @@
 /**
- * Turns an email, its events and some account context into a plain-language delivery verdict:
- * what happened to each recipient, why, and what to do about it. Pure: tools fetch, this decides.
+ * `coss/diagnose`: turns an email, its events and some account context into a plain-language
+ * delivery verdict: what happened to each recipient, why, and what to do about it.
+ *
+ * ```ts
+ * import { Coss } from "coss";
+ * import { diagnose } from "coss/diagnose";
+ *
+ * const coss = new Coss();
+ * const { data, error } = await diagnose(coss, "email_…");
+ * if (data) console.log(data.summary);
+ * ```
+ *
+ * `diagnoseEmail` is pure (callers fetch, it decides); `diagnose` fetches what it needs first.
+ * The explanations describe how coss.com's email product behaves: they change with it.
  */
-import type {
-  Email,
-  EmailEvent,
-  EmailRecipient,
-  EmailSummary,
-  ReputationStatus,
-  Suppression,
-} from "coss";
+import type { Coss } from "./client.ts";
+import type { CossResult } from "./core/errors.ts";
+import type { Email, EmailEvent, EmailRecipient, EmailSummary } from "./types/email.ts";
+import type { ReputationStatus } from "./types/reputation.ts";
+import type { Suppression } from "./types/suppression.ts";
 
 export type RecipientOutcome =
   | "delivered"
@@ -60,7 +69,7 @@ export interface Diagnosis {
 }
 
 export interface DiagnosisContext {
-  /** Suppression entries of recipient addresses (from `check_suppression`). */
+  /** Suppression entries of recipient addresses. */
   suppressions?: Record<string, Suppression[]>;
   /** The From address's domain, as coss.com has it; `null` when no domain matched. */
   domain?: { name: string; status: string; can_send: boolean } | null;
@@ -68,86 +77,116 @@ export interface DiagnosisContext {
   billing?: { status: string; holds: { reason: string; since: string }[] } | null;
 }
 
-/** Failure codes and what they mean for the developer. */
-const FAILURES: Record<string, { explanation: string; next_steps: string[] }> = {
-  all_recipients_suppressed: {
-    explanation:
-      "Every recipient is on the environment's suppression list (earlier hard bounces, spam " +
-      "complaints, or manual entries), so coss.com sent nothing.",
-    next_steps: [
-      "Look at each recipient's suppression entry (check_suppression).",
-      "Only remove an entry (remove_suppression) if the address is known to be valid again; sending to addresses that bounced or complained hurts your reputation.",
-    ],
-  },
-  domain_not_verified: {
-    explanation:
-      "The From domain was not a verified domain of the organization when the email was due " +
-      "to be sent (live keys must send from a verified domain).",
-    next_steps: [
-      "Check the domain's DNS records and status (list_domains, get_domain).",
-      "Add the missing records, then verify_domain, and send again.",
-    ],
-  },
-  account_suspended: {
-    explanation:
-      "Live sending is suspended for the organization because of its sending reputation.",
-    next_steps: [
-      "Call get_account_status for the reason and the checks behind it.",
-      "Contact coss.com support; a suspension is only lifted by support.",
-    ],
-  },
-  sending_paused: {
-    explanation:
-      "The email provider paused sending for the organization because of its sending reputation.",
-    next_steps: ["Call get_account_status, and contact coss.com support."],
-  },
-  content_rejected: {
-    explanation:
-      "coss.com's content screening blocked the email as abusive (for example phishing or spam). " +
-      "This can also suspend the organization's live sending.",
-    next_steps: [
-      "Review the email's content and links.",
-      "Call get_account_status; if this is a false positive, contact coss.com support.",
-    ],
-  },
-  content_screening_unavailable: {
-    explanation:
-      "The email was held because content screening was unavailable, and coss.com gave up after an hour.",
-    next_steps: ["Send the email again."],
-  },
-  attachments_unavailable: {
-    explanation: "The email's attachments were no longer stored when it was due to be sent.",
-    next_steps: ["Send the email again with its attachments."],
-  },
-  dispatch_failed: {
-    explanation:
-      "coss.com could not hand the email to the email provider within an hour of when it was due.",
-    next_steps: ["Send the email again (with a new idempotency key)."],
-  },
-  dispatch_interrupted: {
-    explanation:
-      "Sending was interrupted before the provider confirmed it. The provider may still have " +
-      "sent it; a late confirmation would turn the email back to sent.",
-    next_steps: [
-      "Check again in a few minutes before resending, so the recipient doesn't get it twice.",
-    ],
-  },
-  provider_error: {
-    explanation: "The email provider refused the email when coss.com handed it over.",
-    next_steps: [
-      "Send it again later.",
-      "If it keeps happening, contact coss.com support with the email id.",
-    ],
-  },
-  provider_failure: {
-    explanation:
-      "The email provider accepted the email, then gave up on the whole message (for example " +
-      "it couldn't render it, or rejected an attachment).",
-    next_steps: ["Check the failure message, fix the content, and send again."],
-  },
+/**
+ * The ways to look further that next steps point at. Each caller names them in its own terms: an
+ * SDK call (the default), a CLI command, an MCP tool.
+ */
+export type DiagnosisAction =
+  | "check_suppression"
+  | "remove_suppression"
+  | "list_domains"
+  | "get_domain"
+  | "verify_domain"
+  | "get_account_status";
+
+export type DiagnosisReferences = Record<DiagnosisAction, string>;
+
+/** The SDK's calls for each action. */
+export const SDK_REFERENCES: DiagnosisReferences = {
+  check_suppression: "coss.email.suppressions.list({ address })",
+  remove_suppression: "coss.email.suppressions.remove(id)",
+  list_domains: "coss.domains.list()",
+  get_domain: "coss.domains.get(id)",
+  verify_domain: "coss.domains.verify(id)",
+  get_account_status: "coss.reputation.get()",
 };
 
-const UNKNOWN_FAILURE = {
+type Explained = { explanation: string; next_steps: string[] };
+
+/** Failure codes and what they mean for the developer. */
+function failures(ref: DiagnosisReferences): Record<string, Explained> {
+  return {
+    all_recipients_suppressed: {
+      explanation:
+        "Every recipient is on the environment's suppression list (earlier hard bounces, spam " +
+        "complaints, or manual entries), so coss.com sent nothing.",
+      next_steps: [
+        `Look at each recipient's suppression entry (${ref.check_suppression}).`,
+        `Only remove an entry (${ref.remove_suppression}) if the address is known to be valid again; sending to addresses that bounced or complained hurts your reputation.`,
+      ],
+    },
+    domain_not_verified: {
+      explanation:
+        "The From domain was not a verified domain of the organization when the email was due " +
+        "to be sent (live keys must send from a verified domain).",
+      next_steps: [
+        `Check the domain's DNS records and status (${ref.list_domains}, ${ref.get_domain}).`,
+        `Add the missing records, then verify it (${ref.verify_domain}), and send again.`,
+      ],
+    },
+    account_suspended: {
+      explanation:
+        "Live sending is suspended for the organization because of its sending reputation.",
+      next_steps: [
+        `Check the account status (${ref.get_account_status}) for the reason and the checks behind it.`,
+        "Contact coss.com support; a suspension is only lifted by support.",
+      ],
+    },
+    sending_paused: {
+      explanation:
+        "The email provider paused sending for the organization because of its sending reputation.",
+      next_steps: [
+        `Check the account status (${ref.get_account_status}), and contact coss.com support.`,
+      ],
+    },
+    content_rejected: {
+      explanation:
+        "coss.com's content screening blocked the email as abusive (for example phishing or spam). " +
+        "This can also suspend the organization's live sending.",
+      next_steps: [
+        "Review the email's content and links.",
+        `Check the account status (${ref.get_account_status}); if this is a false positive, contact coss.com support.`,
+      ],
+    },
+    content_screening_unavailable: {
+      explanation:
+        "The email was held because content screening was unavailable, and coss.com gave up after an hour.",
+      next_steps: ["Send the email again."],
+    },
+    attachments_unavailable: {
+      explanation: "The email's attachments were no longer stored when it was due to be sent.",
+      next_steps: ["Send the email again with its attachments."],
+    },
+    dispatch_failed: {
+      explanation:
+        "coss.com could not hand the email to the email provider within an hour of when it was due.",
+      next_steps: ["Send the email again (with a new idempotency key)."],
+    },
+    dispatch_interrupted: {
+      explanation:
+        "Sending was interrupted before the provider confirmed it. The provider may still have " +
+        "sent it; a late confirmation would turn the email back to sent.",
+      next_steps: [
+        "Check again in a few minutes before resending, so the recipient doesn't get it twice.",
+      ],
+    },
+    provider_error: {
+      explanation: "The email provider refused the email when coss.com handed it over.",
+      next_steps: [
+        "Send it again later.",
+        "If it keeps happening, contact coss.com support with the email id.",
+      ],
+    },
+    provider_failure: {
+      explanation:
+        "The email provider accepted the email, then gave up on the whole message (for example " +
+        "it couldn't render it, or rejected an attachment).",
+      next_steps: ["Check the failure message, fix the content, and send again."],
+    },
+  };
+}
+
+const UNKNOWN_FAILURE: Explained = {
   explanation: "The email could not be sent.",
   next_steps: [
     "Check the failure message; send again or contact coss.com support with the email id.",
@@ -156,8 +195,8 @@ const UNKNOWN_FAILURE = {
 
 const MINUTE = 60_000;
 
-function describeFailure(failure: { code: string; message: string }) {
-  const known = FAILURES[failure.code] ?? UNKNOWN_FAILURE;
+function describeFailure(failure: { code: string; message: string }, ref: DiagnosisReferences) {
+  const known = failures(ref)[failure.code] ?? UNKNOWN_FAILURE;
   return { ...failure, ...known };
 }
 
@@ -192,6 +231,7 @@ function diagnoseRecipient(
   events: EmailEvent[],
   context: DiagnosisContext,
   now: Date,
+  ref: DiagnosisReferences,
 ): RecipientDiagnosis {
   const base = { address: recipient.address, type: recipient.type, status: recipient.status };
   const suppressions = context.suppressions?.[recipient.address];
@@ -210,7 +250,7 @@ function diagnoseRecipient(
         next_steps: email.sandbox
           ? []
           : [
-              "If the recipient can't find it, ask them to check spam, and make sure the From domain has DKIM, SPF (MAIL FROM) and DMARC records verified (get_domain).",
+              `If the recipient can't find it, ask them to check spam, and make sure the From domain has DKIM, SPF (MAIL FROM) and DMARC records verified (${ref.get_domain}).`,
             ],
       };
     }
@@ -266,7 +306,7 @@ function diagnoseRecipient(
           ...suppressionNote(suppressions),
         },
         next_steps: [
-          "If the address is valid and the recipient wants your emails, remove the entry (remove_suppression) and send again.",
+          `If the address is valid and the recipient wants your emails, remove the entry (${ref.remove_suppression}) and send again.`,
         ],
       };
     }
@@ -306,7 +346,7 @@ function diagnoseRecipient(
           next_steps: [],
         };
       }
-      if (email.status === "failed") return failedRecipient(base, email);
+      if (email.status === "failed") return failedRecipient(base, email, ref);
       const since = email.scheduled_at ?? email.created_at;
       const age = minutesSince(since, now);
       return {
@@ -319,11 +359,13 @@ function diagnoseRecipient(
         next_steps:
           age < 2
             ? ["Check again in a minute."]
-            : ["Call get_account_status for billing holds or a suspension."],
+            : [
+                `Check the account status (${ref.get_account_status}) for billing holds or a suspension.`,
+              ],
       };
     }
     case "failed":
-      return failedRecipient(base, email);
+      return failedRecipient(base, email, ref);
     case "canceled":
       return {
         ...base,
@@ -337,8 +379,9 @@ function diagnoseRecipient(
 function failedRecipient(
   base: Pick<RecipientDiagnosis, "address" | "type" | "status">,
   email: Email | EmailSummary,
+  ref: DiagnosisReferences,
 ): RecipientDiagnosis {
-  const failure = email.failure ? describeFailure(email.failure) : null;
+  const failure = email.failure ? describeFailure(email.failure, ref) : null;
   return {
     ...base,
     outcome: "failed",
@@ -390,7 +433,11 @@ function summarize(
   }
 }
 
-function accountWarnings(email: Email | EmailSummary, context: DiagnosisContext): string[] {
+function accountWarnings(
+  email: Email | EmailSummary,
+  context: DiagnosisContext,
+  ref: DiagnosisReferences,
+): string[] {
   const warnings: string[] = [];
   if (email.sandbox) {
     warnings.push(
@@ -403,7 +450,7 @@ function accountWarnings(email: Email | EmailSummary, context: DiagnosisContext)
     );
   } else if (!email.sandbox && context.domain && !context.domain.can_send) {
     warnings.push(
-      `The From domain ${context.domain.name} is ${context.domain.status} and can't send; check its DNS records (get_domain) and verify_domain.`,
+      `The From domain ${context.domain.name} is ${context.domain.status} and can't send; check its DNS records (${ref.get_domain}) and verify it (${ref.verify_domain}).`,
     );
   }
   if (context.reputation?.status === "suspended") {
@@ -412,7 +459,7 @@ function accountWarnings(email: Email | EmailSummary, context: DiagnosisContext)
     );
   } else if (context.reputation?.status === "warning") {
     warnings.push(
-      `The organization's sending reputation has a warning (${context.reputation.reason ?? "see get_account_status"}); bounces and complaints should come down before it is suspended.`,
+      `The organization's sending reputation has a warning (${context.reputation.reason ?? `see ${ref.get_account_status}`}); bounces and complaints should come down before it is suspended.`,
     );
   }
   if (context.billing && context.billing.holds.length > 0) {
@@ -426,19 +473,25 @@ function accountWarnings(email: Email | EmailSummary, context: DiagnosisContext)
 /** Engagement events say nothing about delivery; they're left out of the timeline. */
 const TIMELINE_SKIP = new Set<EmailEvent["type"]>(["email.opened", "email.clicked"]);
 
-export function diagnoseEmail(input: {
+export interface DiagnoseEmailInput {
   email: Email | EmailSummary;
+  /** The email's events, oldest first (`coss.email.listEvents`). */
   events: EmailEvent[];
   context?: DiagnosisContext;
   now?: Date;
-}): Diagnosis {
+  /** How next steps name the ways to look further (default: the SDK's calls). */
+  references?: Partial<DiagnosisReferences>;
+}
+
+export function diagnoseEmail(input: DiagnoseEmailInput): Diagnosis {
   const { email, events } = input;
   const context = input.context ?? {};
   const now = input.now ?? new Date();
+  const ref = { ...SDK_REFERENCES, ...input.references };
   const recipients = email.recipients.map((recipient) =>
-    diagnoseRecipient(email, recipient, events, context, now),
+    diagnoseRecipient(email, recipient, events, context, now, ref),
   );
-  const failure = email.failure ? describeFailure(email.failure) : null;
+  const failure = email.failure ? describeFailure(email.failure, ref) : null;
   const verdict = overallVerdict(
     email,
     recipients.map((r) => r.outcome),
@@ -453,7 +506,7 @@ export function diagnoseEmail(input: {
     summary: summarize(email, verdict, recipients, failure),
     failure,
     recipients,
-    warnings: accountWarnings(email, context),
+    warnings: accountWarnings(email, context, ref),
     timeline: events
       .filter((event) => !TIMELINE_SKIP.has(event.type))
       .map((event) => ({ at: event.occurred_at, type: event.type, recipient: event.recipient })),
@@ -488,4 +541,87 @@ export function matchDomain<T extends { name: string }>(domains: T[], name: stri
     }
   }
   return best;
+}
+
+/** A call's data, or `undefined` when it failed (or the key may not read it). */
+async function soft<T>(call: Promise<CossResult<T>>): Promise<T | undefined> {
+  const result = await call;
+  return result.error ? undefined : result.data;
+}
+
+/**
+ * The account context of an email, best effort: suppression entries of its bounced, complained
+ * and suppressed recipients, its From domain, the organization's reputation and billing holds.
+ * A call that fails (or a key without access to it) is left out.
+ */
+export async function diagnosisContext(
+  coss: Coss,
+  email: Email | EmailSummary,
+  options: { signal?: AbortSignal } = {},
+): Promise<DiagnosisContext> {
+  const read = { signal: options.signal };
+  const affected = email.recipients
+    .filter((r) => ["bounced", "complained", "suppressed"].includes(r.status))
+    .slice(0, 10);
+  const domainName = fromDomain(email.from);
+  const [suppressionLists, domains, reputation, billing] = await Promise.all([
+    Promise.all(
+      affected.map((r) => soft(coss.email.suppressions.list({ address: r.address }, read))),
+    ),
+    email.sandbox || !domainName ? undefined : soft(coss.domains.list(read)),
+    soft(coss.reputation.get(read)),
+    soft(coss.billing.get(read)),
+  ]);
+  const suppressions: Record<string, Suppression[]> = {};
+  affected.forEach((r, i) => {
+    const list = suppressionLists[i];
+    if (list) suppressions[r.address] = list.data;
+  });
+  const domain = domains && domainName ? matchDomain(domains.data, domainName) : undefined;
+  return {
+    suppressions,
+    ...(domain !== undefined
+      ? {
+          domain: domain && {
+            name: domain.name,
+            status: domain.status,
+            can_send: domain.can_send,
+          },
+        }
+      : {}),
+    ...(reputation ? { reputation: { status: reputation.status, reason: reputation.reason } } : {}),
+    ...(billing ? { billing: { status: billing.status, holds: billing.holds } } : {}),
+  };
+}
+
+/**
+ * Reads an email, its events and its account context, and diagnoses it. Fails only when the
+ * email or its events can't be read; missing context is left out.
+ */
+export async function diagnose(
+  coss: Coss,
+  emailId: string,
+  options: {
+    signal?: AbortSignal;
+    now?: Date;
+    references?: Partial<DiagnosisReferences>;
+  } = {},
+): Promise<CossResult<Diagnosis>> {
+  const email = await coss.email.get(emailId, { signal: options.signal });
+  if (email.error) return email;
+  const [events, context] = await Promise.all([
+    coss.email.listEvents(emailId, { signal: options.signal }),
+    diagnosisContext(coss, email.data, { signal: options.signal }),
+  ]);
+  if (events.error) return events;
+  return {
+    data: diagnoseEmail({
+      email: email.data,
+      events: events.data.data,
+      context,
+      now: options.now,
+      references: options.references,
+    }),
+    error: null,
+  };
 }

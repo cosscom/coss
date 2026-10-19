@@ -6,13 +6,17 @@ import type { ApiVersion } from "../api-version.ts";
 import type { EmailEventType } from "./email.ts";
 import type {
   AccountEventType,
+  AccountWebhookEvent,
   BillingEventType,
+  BillingWebhookEvent,
   BroadcastEventType,
   ContactEventType,
   DomainEventType,
+  DomainWebhookEvent,
   HookOperationalEventType,
   ReceivedEmailEventType,
   RiskEventType,
+  WebhookEvent,
 } from "./webhook.ts";
 
 /** Every event type an endpoint can subscribe to. */
@@ -190,4 +194,38 @@ export interface ListWebhookDeliveriesParams {
   limit?: number;
   /** Cursor: the `id` of the last delivery of the previous page. */
   after?: string;
+}
+
+/** Event types a sandbox environment can send test events of: every one but the live-only ones. */
+export type TestWebhookEventType = Exclude<
+  WebhookEventType,
+  DomainEventType | AccountEventType | BillingEventType
+>;
+
+/** Body of `coss.webhookEvents.test()` (`POST /v1/webhook_events/test`). */
+export interface SendTestWebhookEventParams {
+  /** `domain.*`, `account.*` and `billing.*` only reach live environments: the API refuses them. */
+  type: WebhookEventType;
+  /**
+   * Fields merged over the sample's `data` (objects field by field, anything else replaced), in
+   * the latest API version's shape, e.g. a real `email_id`. Unknown fields are refused.
+   */
+  data?: Record<string, unknown>;
+}
+
+/** A test event's body: any event but the live-only ones. */
+export type TestWebhookEvent = Exclude<
+  WebhookEvent,
+  DomainWebhookEvent | AccountWebhookEvent | BillingWebhookEvent
+>;
+
+/** What `coss.webhookEvents.test()` sent, and to how many receivers. */
+export interface WebhookTestEvent {
+  object: "webhook_test_event";
+  /** The event, as an endpoint on the request's API version receives it. */
+  event: TestWebhookEvent;
+  /** Enabled endpoints subscribed to the type, each sent it once. */
+  endpoints: number;
+  /** Open `coss listen` listeners subscribed to the type, each handed it once. */
+  listeners: number;
 }

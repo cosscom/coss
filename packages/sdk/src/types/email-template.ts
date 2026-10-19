@@ -129,6 +129,29 @@ export interface PublishEmailTemplateParams {
   revision?: number;
 }
 
+/** Parameters of `coss.email.templates.render`. */
+export interface RenderEmailTemplateParams {
+  /** A published version to render. Default: the draft. */
+  version?: number;
+  /** Falls back to the language (`"pt"`), then to the default locale, as sends do. */
+  locale?: string;
+  /** Checked as a send checks them. Default: the version's `sample_variables`. */
+  variables?: Record<string, unknown>;
+}
+
+/** A rendered template (`coss.email.templates.render`): nothing was sent or stored. */
+export interface RenderedEmailTemplate {
+  object: "email_template_render";
+  template_id: string;
+  /** The version rendered; `null` for the draft. */
+  version: number | null;
+  /** The locale rendered. */
+  locale: string;
+  subject: string;
+  html: string | null;
+  text: string | null;
+}
+
 export interface ListEmailTemplatesParams {
   /** 1-100, default 50. */
   limit?: number;

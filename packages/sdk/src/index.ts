@@ -1,5 +1,10 @@
 export { API_VERSION, API_VERSIONS, type ApiVersion } from "./api-version.ts";
-export { Coss, type CossOptions } from "./client.ts";
+export {
+  Coss,
+  type CossOptions,
+  type CossRequestMethod,
+  type CossRequestOptions,
+} from "./client.ts";
 export type { CossError, CossErrorIssue, CossErrorType, CossResult } from "./core/errors.ts";
 export type { FetchLike, RequestOptions } from "./core/http.ts";
 export type { ApiKeyResource } from "./resources/api-key.ts";
@@ -55,6 +60,7 @@ export type { TrackingResource } from "./resources/tracking.ts";
 export type { TrackingDomainsResource } from "./resources/tracking-domains.ts";
 export type { WebhookDeliveriesResource } from "./resources/webhook-deliveries.ts";
 export type { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
+export type { WebhookEventsResource } from "./resources/webhook-events.ts";
 export type { WebhookListenersResource } from "./resources/webhook-listeners.ts";
 export type { AuditActorType, AuditEvent, ListAuditEventsParams } from "./types/audit-event.ts";
 export type {
@@ -207,6 +213,8 @@ export type {
   ListEmailTemplatesParams,
   ListEmailTemplateVersionsParams,
   PublishEmailTemplateParams,
+  RenderEmailTemplateParams,
+  RenderedEmailTemplate,
   TemplateContent,
   TemplateContentParams,
   TemplateProblem,
@@ -385,6 +393,9 @@ export type {
   ListWebhookDeliveriesParams,
   RecoverWebhookEndpointParams,
   RollWebhookEndpointSecretParams,
+  SendTestWebhookEventParams,
+  TestWebhookEvent,
+  TestWebhookEventType,
   UpdateWebhookEndpointParams,
   WebhookAttempt,
   WebhookDelivery,
@@ -394,6 +405,7 @@ export type {
   WebhookEndpointRecovery,
   WebhookEndpointWithSecret,
   WebhookEventType,
+  WebhookTestEvent,
 } from "./types/webhook-endpoint.ts";
 export type {
   CreateWebhookListenerParams,
@@ -405,6 +417,11 @@ export type {
   WebhookListenerPoll,
 } from "./types/webhook-listener.ts";
 export { VERSION } from "./version.ts";
+export {
+  isLiveOnlyEventType,
+  TEST_WEBHOOK_EVENT_TYPES,
+  WEBHOOK_EVENT_TYPES,
+} from "./webhook-event-types.ts";
 export {
   type VerifyWebhookOptions,
   verifyLogDrainBatch,

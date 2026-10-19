@@ -185,6 +185,7 @@ function fromEmailError(error: EmailError): ApiError {
     case "sending_paused":
     case "account_suspended":
     case "marketing_paused":
+    case "sandbox_only":
       return new ApiError(error.status, {
         type: "permission_error",
         code: error.code,
@@ -207,8 +208,11 @@ function fromEmailError(error: EmailError): ApiError {
       return invalidRequest(error.code, error.message, error.param ?? "alias");
     case "template_revision_mismatch":
       return invalidRequest(error.code, error.message, error.param ?? "revision");
+    case "live_only_event_type":
+      return invalidRequest(error.code, error.message, error.param ?? "type");
     case "invalid_template_variables":
     case "template_invalid":
+    case "invalid_test_event":
       return new ApiError(422, {
         type: "invalid_request_error",
         code: error.code,

@@ -1,0 +1,58 @@
+import type { TestWebhookEventType, WebhookEventType } from "./types/webhook-endpoint.ts";
+
+/** Every webhook event type, in the API's order (the contract tests keep it equal to the API's). */
+export const WEBHOOK_EVENT_TYPES: readonly WebhookEventType[] = [
+  "email.sent",
+  "email.delivered",
+  "email.delivery_delayed",
+  "email.bounced",
+  "email.complained",
+  "email.failed",
+  "email.suppressed",
+  "email.scheduled",
+  "email.canceled",
+  "email.opened",
+  "email.clicked",
+  "email.rescheduled",
+  "email.unsubscribed",
+  "email.received",
+  "domain.dmarc_report_received",
+  "account.reputation_warning",
+  "account.reputation_recovered",
+  "account.suspended",
+  "account.reinstated",
+  "account.marketing_paused",
+  "account.marketing_reinstated",
+  "hook_endpoint.disabled",
+  "billing.invoice_finalized",
+  "billing.invoice_paid",
+  "billing.invoice_payment_failed",
+  "billing.invoice_voided",
+  "billing.plan_changed",
+  "billing.usage_threshold_reached",
+  "billing.hold_placed",
+  "billing.hold_lifted",
+  "billing.credit_granted",
+  "risk.assessment.review",
+  "risk.assessment.reviewed",
+  "contact.created",
+  "contact.updated",
+  "contact.deleted",
+  "contact.unsubscribed",
+  "contact.confirmed",
+  "broadcast.sending",
+  "broadcast.sent",
+  "broadcast.paused",
+  "broadcast.canceled",
+  "broadcast.failed",
+];
+
+/** Types only live environments receive: `domain.*`, `account.*` and `billing.*`. */
+export function isLiveOnlyEventType(type: string): boolean {
+  return type.startsWith("domain.") || type.startsWith("account.") || type.startsWith("billing.");
+}
+
+/** What `coss.webhookEvents.test()` can send: every type but the live-only ones. */
+export const TEST_WEBHOOK_EVENT_TYPES: readonly TestWebhookEventType[] = WEBHOOK_EVENT_TYPES.filter(
+  (type): type is TestWebhookEventType => !isLiveOnlyEventType(type),
+);

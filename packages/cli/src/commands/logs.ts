@@ -1,26 +1,10 @@
 import type { LogLevel, LogSource } from "coss";
-import { list, parseFlags } from "../args.ts";
-import { clientFor, createContext, describeEnvironment, resolveCredentials } from "../context.ts";
+import { type Flags, list } from "../args.ts";
+import { type Command, type CommandInput, defineCommand } from "../command.ts";
+import { clientFor, describeEnvironment, resolveCredentials } from "../context.ts";
 import { apiError, isTransient, UsageError } from "../errors.ts";
-import type { CliIo } from "../io.ts";
 import { formatLog } from "../logs/format.ts";
 import { type LogFilters, LogTail, parseSince, readWindow } from "../logs/tail.ts";
-
-export const LOGS_TAIL_HELP = `Usage: coss logs tail [options]
-
-Follows the environment's log: API requests made with its keys, email events, webhook attempts and
-events \`coss listen\` forwarded. New lines only, unless --since.
-
-Options:
-  --source <name>     api, email, webhook, risk, smtp (repeatable, or comma-separated)
-  --level <level>     info, warning, error
-  --type <type>       e.g. email.bounced, api.request
-  --status <code>     API or webhook status codes or classes, e.g. 4xx,503
-  -q, --query <text>  Free text: messages, paths, ids, recipients
-  --since <time>      Start with earlier lines too: 30s, 15m, 2h, 1d or an ISO 8601 time
-  --interval <ms>     How often to poll (default 2000)
-  --json              One log object per line
-`;
 
 const SOURCES: readonly LogSource[] = ["api", "email", "webhook", "risk", "smtp"];
 const LEVELS: readonly LogLevel[] = ["info", "warning", "error"];
@@ -35,22 +19,60 @@ function checked<T extends string>(values: string[], allowed: readonly T[], flag
   return values as T[];
 }
 
-export async function logsTail(argv: string[], io: CliIo): Promise<number> {
-  const { values, global } = parseFlags(argv, {
-    source: { type: "string", multiple: true },
-    level: { type: "string", multiple: true },
-    type: { type: "string", multiple: true },
-    status: { type: "string", multiple: true },
-    query: { type: "string", short: "q" },
-    since: { type: "string" },
-    interval: { type: "string" },
-  });
-  const context = createContext(io, global);
-  const { out } = context;
-  if (global.help) {
-    out.line(LOGS_TAIL_HELP);
-    return 0;
-  }
+const FLAGS = {
+  source: {
+    type: "string",
+    multiple: true,
+    value: "<name>",
+    choices: SOURCES,
+    description: "api, email, webhook, risk, smtp (repeatable, or comma-separated)",
+  },
+  level: {
+    type: "string",
+    multiple: true,
+    value: "<level>",
+    choices: LEVELS,
+    description: "info, warning, error",
+  },
+  type: {
+    type: "string",
+    multiple: true,
+    value: "<type>",
+    description: "e.g. email.bounced, api.request",
+  },
+  status: {
+    type: "string",
+    multiple: true,
+    value: "<code>",
+    description: "API or webhook status codes or classes, e.g. 4xx,503",
+  },
+  query: {
+    type: "string",
+    short: "q",
+    value: "<text>",
+    description: "Free text: messages, paths, ids, recipients",
+  },
+  since: {
+    type: "string",
+    value: "<time>",
+    description: "Start with earlier lines too: 30s, 15m, 2h, 1d or an ISO 8601 time",
+  },
+  interval: { type: "string", value: "<ms>", description: "How often to poll (default 2000)" },
+  json: { type: "boolean", description: "One log object per line" },
+} as const satisfies Flags;
+
+export const logsTailCommand: Command = defineCommand({
+  name: "logs tail",
+  summary: "Follow the environment's log",
+  description:
+    "Follows the environment's log: API requests made with its keys, email events, webhook " +
+    "attempts and events `coss listen` forwarded. New lines only, unless --since.",
+  flags: FLAGS,
+  run: logsTail,
+});
+
+async function logsTail({ values, context }: CommandInput<typeof FLAGS>): Promise<number> {
+  const { io, out } = context;
   const sources = checked(list(values.source), SOURCES, "source");
   const levels = checked(list(values.level), LEVELS, "level");
   const filters: LogFilters = {

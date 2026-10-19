@@ -53,7 +53,8 @@ const apiKey = process.env.COSS_API_KEY;
 const server = createCossMcpServer({ coss: new Coss({ apiKey }), apiKey });
 ```
 
-`diagnoseEmail({ email, events, context })` is the pure function behind `diagnose_email`.
+`diagnoseEmail({ email, events, context })`, the pure function behind `diagnose_email`, comes from the SDK's
+`coss/diagnose` (re-exported here).
 
 ## Development
 

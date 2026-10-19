@@ -2,7 +2,7 @@
  * Which key, API and dashboard a command uses. `COSS_API_KEY` wins over a saved profile (CI, one-off
  * commands); there is no flag for it, since command lines are visible to other local processes.
  */
-import { Coss } from "coss";
+import { type ApiVersion, Coss } from "coss";
 import type { GlobalFlags } from "./args.ts";
 import { type Config, type Profile, profileName, readConfig } from "./config.ts";
 import { CliError } from "./errors.ts";
@@ -92,7 +92,7 @@ export async function resolveCredentials(context: Context): Promise<Credentials>
 export function clientFor(
   io: CliIo,
   credentials: { apiKey: string; baseUrl: string },
-  options: { timeout?: number; maxRetries?: number } = {},
+  options: { timeout?: number; maxRetries?: number; apiVersion?: string } = {},
 ): Coss {
   return new Coss({
     apiKey: credentials.apiKey,
@@ -100,6 +100,8 @@ export function clientFor(
     fetch: io.fetch,
     timeout: options.timeout,
     maxRetries: options.maxRetries,
+    // A version newer than this SDK knows is the API's to accept or refuse.
+    apiVersion: options.apiVersion as ApiVersion | undefined,
   });
 }
 

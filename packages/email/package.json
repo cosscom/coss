@@ -12,6 +12,7 @@
     "./templates": "./src/template-language.ts",
     "./contact-schemas": "./src/contact-schemas.ts",
     "./broadcast-schemas": "./src/broadcast-schemas.ts",
+    "./test-event-schemas": "./src/test-event-schemas.ts",
     "./env": "./src/env.ts",
     "./runtime": "./src/runtime.ts",
     "./ses": "./src/ses/index.ts",

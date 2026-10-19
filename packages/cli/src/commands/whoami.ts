@@ -1,22 +1,18 @@
-import { parseFlags } from "../args.ts";
+import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { configIsShared } from "../config.ts";
-import { clientFor, createContext, describeEnvironment, resolveCredentials } from "../context.ts";
+import { clientFor, describeEnvironment, resolveCredentials } from "../context.ts";
 import { apiError } from "../errors.ts";
-import type { CliIo } from "../io.ts";
 
-export const WHOAMI_HELP = `Usage: coss whoami [--json] [--profile <name>]
+export const whoamiCommand: Command = defineCommand({
+  name: "whoami",
+  summary: "Show the API key in use and its environment",
+  description: "Shows the API key the CLI uses, where it comes from, and its environment.",
+  flags: {},
+  run: whoami,
+});
 
-Shows the API key the CLI uses, where it comes from, and its environment.
-`;
-
-export async function whoami(argv: string[], io: CliIo): Promise<number> {
-  const { global } = parseFlags(argv, {});
-  const context = createContext(io, global);
-  const { out } = context;
-  if (global.help) {
-    out.line(WHOAMI_HELP);
-    return 0;
-  }
+async function whoami({ context }: CommandInput<Record<never, never>>): Promise<number> {
+  const { io, out } = context;
   const credentials = await resolveCredentials(context);
   const { data, error } = await clientFor(io, credentials).environment.get();
   if (error) throw apiError("Couldn't check the API key", error);
