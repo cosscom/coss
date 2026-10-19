@@ -6,6 +6,7 @@ import {
   CommandLineIcon,
   DashboardSquare01Icon,
   File01Icon,
+  FileSearchIcon,
   FilterIcon,
   GitBranchIcon,
   Globe02Icon,
@@ -13,6 +14,7 @@ import {
   Mail01Icon,
   McpServerIcon,
   Message01Icon,
+  Notification03Icon,
   Robot01Icon,
   RocketIcon,
   Shield01Icon,
@@ -99,6 +101,23 @@ export const PRODUCT_COLUMNS: readonly MenuColumn[] = [
     ],
   },
   {
+    title: "Events and trust",
+    links: [
+      {
+        label: "Hooks",
+        description: "Webhooks you send to your customers.",
+        icon: WebhookIcon,
+        href: `${DOCS_ROUTE}/hooks`,
+      },
+      {
+        label: "Risk",
+        description: "Abuse checks for sign-ups and payments.",
+        icon: Shield01Icon,
+        href: `${DOCS_ROUTE}/risk`,
+      },
+    ],
+  },
+  {
     title: "Developer tools",
     links: [
       {
@@ -131,7 +150,7 @@ export const PRODUCT_COLUMNS: readonly MenuColumn[] = [
       {
         label: "Webhooks",
         description: "Signed events, retried.",
-        icon: WebhookIcon,
+        icon: Notification03Icon,
         href: `${DOCS_ROUTE}/webhooks`,
       },
       {
@@ -155,7 +174,7 @@ export const PRODUCT_COLUMNS: readonly MenuColumn[] = [
       {
         label: "Audit log",
         description: "Who changed what.",
-        icon: Shield01Icon,
+        icon: FileSearchIcon,
         href: `${DOCS_ROUTE}/audit-log`,
       },
     ],

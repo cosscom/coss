@@ -1,17 +1,24 @@
 {
   "title": "Risk",
+  "description": "Decide whether a sign-up, login, payment or post looks like abuse, and why.",
+  "root": true,
+  "icon": "Shield",
   "pages": [
+    "---Assessments---",
     "index",
     "reasons",
     "rules",
     "settings",
-    "calibration",
-    "content",
+    "---Signals---",
     "checkout",
     "devices",
+    "content",
+    "---Building blocks---",
     "lookups",
     "rate-limits",
+    "---Review and tuning---",
     "lists-and-feedback",
+    "calibration",
     "testing"
   ]
 }

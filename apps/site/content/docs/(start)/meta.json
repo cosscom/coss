@@ -1,0 +1,7 @@
+{
+  "title": "Get started",
+  "description": "What coss.com is, your first email, and the keys every product shares.",
+  "root": true,
+  "icon": "Rocket",
+  "pages": ["index", "quickstart", "environments"]
+}

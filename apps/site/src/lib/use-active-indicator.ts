@@ -20,6 +20,8 @@ export function useActiveIndicator(container: RefObject<HTMLElement | null>, hre
       return;
     }
     const measure = () => {
+      // Folded away (a closed API resource in the docs sidebar): nothing to highlight.
+      if (link.getClientRects().length === 0) return setRect(null);
       const outer = root.getBoundingClientRect();
       const inner = link.getBoundingClientRect();
       setRect({

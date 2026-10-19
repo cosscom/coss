@@ -519,7 +519,9 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
 5. SDK: types, resource, `Coss` property, `src/index.ts` exports, unit tests; extend `contract-types.ts` +
    `sdk-contract.test.ts`.
 6. Docs (`apps/site`): `bun run openapi:generate`, SDK samples for the new operations, a guide under
-   `content/docs/(guides)/<product>/` with Twoslash SDK examples (per-method SDK usage lives in the API reference).
+   `content/docs/<product>/` (a section of its own: `"root": true`, an `icon` and a `description` in its `meta.json`,
+   listed in `content/docs/meta.json`) with Twoslash SDK examples (per-method SDK usage lives in the API reference),
+   and its API tags under a `---<Product>---` separator in `content/docs/api-reference/meta.json` (a test fails otherwise).
 7. Dashboard: dependency + `transpilePackages`; pages under `[orgSlug]/projects/[projectSlug]/[envSlug]/`.
 8. Events/webhooks: record events in the product's own table and call `enqueueWebhookMessage(tx, …)` from
    `@coss/webhooks` in the same transaction; add the payload zod schema + SDK type + contract assertion.
