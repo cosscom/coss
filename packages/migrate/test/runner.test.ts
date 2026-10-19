@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import type { PlanGate } from "@coss/billing/gate";
 import { db, schema } from "@coss/db";
 import {
   createEmailTemplate,
@@ -42,7 +43,7 @@ function scopeOf(tenant: TestTenant) {
   return { organizationIds: [tenant.organization.id] };
 }
 
-function depsFor(data: FakeSourceData, overrides: { plans?: never } = {}) {
+function depsFor(data: FakeSourceData, overrides: { plans?: PlanGate } = {}) {
   return {
     secretsKeys: TEST_SECRETS_KEYS,
     webhooks: testManagementDeps,
@@ -405,6 +406,62 @@ describe("runDueMigrations", () => {
       targetId: draft.id,
       needsReview: false,
     });
+  });
+
+  test("the plan's contact limit stops the contacts alone, also when retrying without properties", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const plans: PlanGate = {
+      async requireFeature() {},
+      async limit() {
+        return 1;
+      },
+      async requireCapacity(_organizationId, _key, current, count = 1) {
+        if (current + count > 1) {
+          throw Object.assign(new Error("Your plan includes 1 contact."), {
+            code: "plan_limit_reached",
+          });
+        }
+      },
+    };
+    const deps = depsFor(
+      {
+        ...DATA,
+        contacts: [
+          {
+            email: "first@example.com",
+            firstName: null,
+            lastName: null,
+            unsubscribed: false,
+            properties: {},
+            topics: [],
+          },
+          // Its seats aren't a number: retried without properties, over the limit.
+          {
+            email: "second@example.com",
+            firstName: null,
+            lastName: null,
+            unsubscribed: false,
+            properties: { seats: "many" },
+            topics: [],
+          },
+        ],
+      },
+      { plans },
+    );
+    const row = await connect(tenant);
+    await settle(tenant, deps);
+    await startAll(tenant, row.id, ["contacts", "suppressions"]);
+    await settle(tenant, deps);
+    const done = await getMigration(env, row.id);
+    expect(done?.status).toBe("completed");
+    const progress = progressOf(done ?? { progress: {} });
+    expect(progress.contacts).toMatchObject({
+      state: "failed",
+      created: 1,
+      message: expect.stringContaining("contact limit"),
+    });
+    expect(progress.suppressions?.state).toBe("done");
   });
 
   test("a failed step goes on from its last checkpoint without counting anything twice", async () => {

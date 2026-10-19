@@ -432,10 +432,10 @@ const contacts: Phase = async (ctx, cursor) => {
 
 type ContactEntry = Parameters<typeof importContacts>[1][number];
 
-async function importContactBatch(ctx: PhaseContext, batch: ContactEntry[]): Promise<void> {
-  let result: Awaited<ReturnType<typeof importContacts>>;
+/** `importContacts`, where reaching the plan's contact limit stops the contacts phase alone. */
+async function importWithinLimit(ctx: PhaseContext, entries: ContactEntry[]) {
   try {
-    result = await importContacts(ctx.env, batch, { plans: ctx.deps.plans, source: "import" });
+    return await importContacts(ctx.env, entries, { plans: ctx.deps.plans, source: "import" });
   } catch (error) {
     if (isPlanLimit(error)) {
       throw new PhaseStopped(
@@ -444,6 +444,10 @@ async function importContactBatch(ctx: PhaseContext, batch: ContactEntry[]): Pro
     }
     throw error;
   }
+}
+
+async function importContactBatch(ctx: PhaseContext, batch: ContactEntry[]): Promise<void> {
+  const result = await importWithinLimit(ctx, batch);
   ctx.progress.created += result.created;
   ctx.progress.updated += result.updated;
   // A value the property refuses (a date in another format) drops the value, not the contact.
@@ -453,8 +457,7 @@ async function importContactBatch(ctx: PhaseContext, batch: ContactEntry[]): Pro
       ? [{ ...entry, properties: {} }]
       : [];
   });
-  const retried =
-    retry.length > 0 ? await importContacts(ctx.env, retry, { plans: ctx.deps.plans }) : null;
+  const retried = retry.length > 0 ? await importWithinLimit(ctx, retry) : null;
   if (retried) {
     ctx.progress.created += retried.created;
     ctx.progress.updated += retried.updated;
