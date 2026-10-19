@@ -277,6 +277,11 @@ export async function createSmsRegistration(
   });
 }
 
+/** A campaign's monthly fee: carriers price low-volume mixed campaigns lower, whatever the brand. */
+function monthlyCampaignFee(row: SmsRegistrationRow): string {
+  return row.campaign.useCase === "LOW_VOLUME" ? "campaign_monthly_low_volume" : "campaign_monthly";
+}
+
 type StepOutcome =
   | {
       next: Partial<SmsRegistrationRow>;
@@ -620,10 +625,7 @@ export async function advanceSmsRegistration(
     for (const fee of outcome.fees ?? []) {
       await recordFee(tx, claimed.organizationId, "sms.registrations", fee);
     }
-    const monthly =
-      claimed.brandType === "low_volume_standard"
-        ? "campaign_monthly_low_volume"
-        : "campaign_monthly";
+    const monthly = monthlyCampaignFee(claimed);
     if (done && claimed.kind === "us_10dlc") {
       // The campaign's first month, then every month (`chargeDueSmsFees`).
       await recordFee(tx, claimed.organizationId, "sms.registrations", { fee: monthly });
@@ -954,23 +956,32 @@ export async function attachPendingSmsNumbers(
         eq(smsNumber.status, "pending"),
         isNotNull(smsNumber.providerSid),
         eq(smsNumber.provider, deps.provider),
-        lte(smsNumber.createdAt, new Date(now.getTime() - 60_000)),
+        // A minute after its purchase or its last attempt.
+        lte(smsNumber.updatedAt, new Date(now.getTime() - 60_000)),
         eq(smsRegistration.status, "approved"),
         isNotNull(smsRegistration.messagingServiceSid),
         opts.scope ? inArray(smsNumber.organizationId, opts.scope.organizationIds) : undefined,
       ),
     )
-    .orderBy(asc(smsNumber.createdAt))
+    .orderBy(asc(smsNumber.updatedAt))
     .limit(opts.limit ?? 20);
   let attached = 0;
   for (const { number, serviceSid } of due) {
     if (!serviceSid) continue;
     try {
       const account = await ensureSmsSubaccount(number.organizationId, deps);
-      if (await attachSmsNumber(number, serviceSid, account, deps)) attached++;
+      if (await attachSmsNumber(number, serviceSid, account, deps)) {
+        attached++;
+        continue;
+      }
     } catch (error) {
       console.error(`[sms] number ${number.id} still not in its messaging service:`, error);
     }
+    // Tried again later, after the numbers behind it (failing ones can't hold the batch).
+    await db
+      .update(smsNumber)
+      .set({ updatedAt: now })
+      .where(and(eq(smsNumber.id, number.id), eq(smsNumber.organizationId, number.organizationId)));
   }
   return attached;
 }
@@ -1212,10 +1223,7 @@ export async function chargeDueSmsFees(
         .returning({ id: smsRegistration.id });
       if (moved) {
         await recordFee(tx, campaign.organizationId, "sms.registrations", {
-          fee:
-            campaign.brandType === "low_volume_standard"
-              ? "campaign_monthly_low_volume"
-              : "campaign_monthly",
+          fee: monthlyCampaignFee(campaign),
         });
       }
     });

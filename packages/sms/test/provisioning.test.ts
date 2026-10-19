@@ -450,7 +450,10 @@ test("a number its messaging service didn't take is pending until the worker add
   const later = new Date(Date.now() + 5 * 60 * 1000);
   expect(await attachPendingSmsNumbers(d, { now: later, scope })).toBe(0);
   twilio.working = true;
-  expect(await attachPendingSmsNumbers(d, { now: later, scope })).toBe(1);
+  // A failed attempt waits its turn: not again within the minute.
+  expect(await attachPendingSmsNumbers(d, { now: later, scope })).toBe(0);
+  const afterward = new Date(later.getTime() + 2 * 60 * 1000);
+  expect(await attachPendingSmsNumbers(d, { now: afterward, scope })).toBe(1);
   expect(await send()).toMatchObject({
     numberId: number.id,
     route: { messagingServiceSid: registration?.messagingServiceSid },
@@ -831,4 +834,24 @@ test("a step that outlived its claim records nothing: the worker that took over 
   [registration] = await listSmsRegistrations(org);
   expect(registration?.brandSid).toBeNull();
   expect(await fees(org)).toEqual([]);
+});
+
+test("a low-volume mixed campaign is billed its lower monthly fee, whatever the brand", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  const d = deps();
+  await createSmsRegistration(
+    org,
+    SmsRegistrationInput.parse({
+      kind: "us_10dlc",
+      brandType: "standard",
+      profile: PROFILE,
+      campaign: { ...CAMPAIGN, useCase: "LOW_VOLUME" },
+    }),
+    d,
+  );
+  expect((await advanceUntilSettled(org, d))[0]?.status).toBe("approved");
+  const charged = (await fees(org)).map((fee) => fee.dimension);
+  expect(charged).toContain("fee=campaign_monthly_low_volume");
+  expect(charged).not.toContain("fee=campaign_monthly");
 });
