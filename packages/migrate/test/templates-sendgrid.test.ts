@@ -194,8 +194,8 @@ describe("SendGrid dynamic templates", () => {
       name: "comments, escapes and whitespace control",
       html: "{{!-- hidden }} --}}{{! short }}\\{{literal}} {{~name~}}",
       out: "\\{{literal}} {{name}}",
-      lossless: true,
-      warning: "Whitespace control (~) was removed: spacing may differ.",
+      lossless: false,
+      warning: "Whitespace control (~) was removed: check the spacing around those tags.",
     },
     {
       name: "names coss.com can't take",

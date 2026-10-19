@@ -57,12 +57,12 @@ using each version's test data to tell text from numbers and lists from objects:
 | -------------------------------------------- | ------------------------------------------------------ |
 | `{{name}}`, `{{{html}}}`                     | The same                                               |
 | `{{user.name}}`                              | `{{user_name}}` (the report lists every rename)        |
-| `{{insert name "default=there"}}`            | `{{name}}`, declared with the default `there`          |
+| `{{insert name "default=there"}}`            | `{{name}}`, declared with the default `there` (a default applies to every use on coss.com, so a template that also uses `name` without it stays a draft) |
 | `{{#if x}}…{{else if y}}…{{else}}…{{/if}}`   | Nested `{{#if}}` blocks                                |
 | `{{#unless x}}…{{/unless}}`                  | `{{#if x}}{{else}}…{{/if}}`                            |
 | `{{#each items}}{{this.name}}{{/each}}`      | `{{#each items}}{{name}}{{/each}}`, a list of objects  |
 | `../name` and `@root.name` in a loop         | The top-level `{{name}}`                               |
-| `{{!-- comment --}}`, `~` whitespace control | Dropped (spacing may differ slightly without `~`)      |
+| `{{!-- comment --}}`                         | Dropped                                                |
 | `{{{unsubscribe}}}`, `<%asm_group_unsubscribe_raw_url%>`, `<%asm_global_unsubscribe_raw_url%>` | `{{{unsubscribe_url}}}` |
 | `{{{unsubscribe_preferences}}}`, `<%asm_preferences_raw_url%>` | `{{{preferences_url}}}`                  |
 | `{{Sender_Address}}`                         | `{{{mailing_address}}}`, your [postal address](/docs/email/topics-and-preferences#your-postal-address) |
@@ -70,7 +70,8 @@ using each version's test data to tell text from numbers and lists from objects:
 A template that converts exactly is published. These are left in the draft as they were, for you to
 rewrite before you publish it: other helpers (`formatDate`, `equals`, `notEquals`, `greaterThan`,
 `lessThan`, `and`, `or`, `length` and your own), sub-expressions, `@index`, `@first` and `@last`,
-partials, loops inside loops, `{{#with}}` (its fields become separate variables), lists of plain
+partials, loops inside loops, `~` whitespace control (removed: check the spacing it trimmed, such as
+inside a link), `{{#with}}` (its fields become separate variables), lists of plain
 values (each item becomes an object with a `value` field) and `{{#if}}` over a number (coss.com
 treats `0` as true). The other `Sender_*` tags are removed: coss.com prints the whole postal address
 as `{{{mailing_address}}}`. The unsubscribe and address placeholders are filled on

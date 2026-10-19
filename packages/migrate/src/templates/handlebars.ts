@@ -444,9 +444,10 @@ function parseField(
   try {
     const { tags, whitespaceControl } = tokenize(source);
     if (whitespaceControl) {
+      // Spacing can matter (a space left inside a link): the template is reviewed first.
       notes.push({
-        message: "Whitespace control (~) was removed: spacing may differ.",
-        lossy: false,
+        message: "Whitespace control (~) was removed: check the spacing around those tags.",
+        lossy: true,
       });
     }
     return new Parser(false).parse(tags);
