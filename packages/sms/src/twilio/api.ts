@@ -43,6 +43,14 @@ export interface TwilioApi {
   sendMessage(input: SendMessageInput): Promise<TwilioMessage>;
   fetchMessage(accountSid: string, sid: string): Promise<TwilioMessage>;
   createSubaccount(friendlyName: string): Promise<TwilioCredentials>;
+  /**
+   * Lookups of what an earlier creation may have made although its answer was lost (Twilio's
+   * creations aren't idempotent): checked before creating again, so nothing paid is made twice.
+   */
+  findSubaccount(friendlyName: string): Promise<TwilioCredentials | null>;
+  findMessagingService(account: TwilioCredentials, friendlyName: string): Promise<string | null>;
+  findBrand(account: TwilioCredentials, customerProfileSid: string): Promise<string | null>;
+  findCampaign(account: TwilioCredentials, serviceSid: string): Promise<string | null>;
   closeSubaccount(accountSid: string): Promise<void>;
   searchNumbers(
     account: TwilioCredentials,
@@ -230,6 +238,44 @@ export function createTwilioApi(
         { form: { FriendlyName: friendlyName } },
       );
       return { accountSid: raw.sid, authToken: raw.auth_token };
+    },
+
+    async findSubaccount(friendlyName) {
+      const raw = await client.request<{
+        accounts: { sid: string; auth_token: string; status: string; friendly_name: string }[];
+      }>("GET", `${TWILIO_API}/Accounts.json`, { form: { FriendlyName: friendlyName } });
+      const found = raw.accounts.find(
+        (candidate) => candidate.friendly_name === friendlyName && candidate.status !== "closed",
+      );
+      return found ? { accountSid: found.sid, authToken: found.auth_token } : null;
+    },
+
+    async findMessagingService(as, friendlyName) {
+      const raw = await client.request<{ services: { sid: string; friendly_name: string }[] }>(
+        "GET",
+        `${TWILIO_MESSAGING}/Services`,
+        { as, form: { PageSize: 1000 } },
+      );
+      return raw.services.find((service) => service.friendly_name === friendlyName)?.sid ?? null;
+    },
+
+    async findBrand(as, customerProfileSid) {
+      const raw = await client.request<{
+        data: { sid: string; customer_profile_bundle_sid: string }[];
+      }>("GET", `${TWILIO_MESSAGING}/a2p/BrandRegistrations`, { as, form: { PageSize: 1000 } });
+      return (
+        raw.data.find((brand) => brand.customer_profile_bundle_sid === customerProfileSid)?.sid ??
+        null
+      );
+    },
+
+    async findCampaign(as, serviceSid) {
+      const raw = await client.request<{ compliance: { sid: string }[] }>(
+        "GET",
+        `${TWILIO_MESSAGING}/Services/${serviceSid}/Compliance/Usa2p`,
+        { as },
+      );
+      return raw.compliance[0]?.sid ?? null;
     },
 
     async closeSubaccount(accountSid) {

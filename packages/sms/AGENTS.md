@@ -58,7 +58,12 @@ senders (US A2P 10DLC brands and campaigns, toll-free verification) and its phon
   billed and registered by what it is (toll-free by NANP area code), never by the form. A number
   is `pending` until it is in its approved registration's messaging service (the worker's
   `attachPendingSmsNumbers` retries), `releasing` from the moment it stops sending until Twilio
-  has it back (`retryUnfinishedSmsReleases` finishes releases Twilio failed). Monthly fees:
+  has it back (`retryUnfinishedSmsReleases` finishes releases Twilio failed). Twilio's creations
+  aren't idempotent: subaccounts, messaging services, brands and campaigns are looked up
+  (`find*`) before being created, so a lost answer never pays for one twice. Only Twilio's 400/422
+  answers reject a registration (the business's details); anything else is retried. Numbers and
+  subaccounts at a provider other than `SMS_PROVIDER` are never released or replaced (that would
+  orphan them at Twilio): they wait for a deployment with their provider. Monthly fees:
   `chargeDueSmsFees`; organization deletion: `releaseOrganizationSmsResources`.
 - **Reputation** (`smsReputationChecks`): `sms_opt_out_rate` (distinct numbers that opted out —
   STOP receipts and sends refused as `opted_out`, never the suppression list, which START or a

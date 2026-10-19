@@ -59,6 +59,9 @@ export type SmsSenderDeps = {
 /** Usage that belongs to the organization, not to one environment. */
 export const ORGANIZATION_USAGE = "";
 
+/** Twilio's answers to what a business entered (validation), as opposed to coss.com's setup. */
+const CUSTOMER_ERRORS: ReadonlySet<number> = new Set([400, 422]);
+
 /** How often a pending review is asked about again. */
 const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 /** A step that failed for a reason worth retrying (Twilio unreachable) runs again this much later. */
@@ -133,9 +136,14 @@ export async function ensureSmsSubaccount(
         authToken: decryptSecret(account.authToken, deps.secretsKeys),
       };
     }
-    const created = await deps.twilio.createSubaccount(
-      `${deps.subaccountPrefix}-${organizationId}`,
-    );
+    if (account.subaccountSid && account.provider !== "fake") {
+      // A real subaccount this deployment's provider can't use: replacing it would orphan it.
+      throw new SmsError("provider_unavailable", "SMS senders can't be changed right now.");
+    }
+    // An earlier attempt may have created it and lost the answer (or crashed before storing it).
+    const name = `${deps.subaccountPrefix}-${organizationId}`;
+    const created =
+      (await deps.twilio.findSubaccount(name)) ?? (await deps.twilio.createSubaccount(name));
     await tx
       .update(smsAccount)
       .set({
@@ -289,11 +297,15 @@ async function messagingService(
 ): Promise<string> {
   if (row.messagingServiceSid) return row.messagingServiceSid;
   const base = deps.callbackBaseUrl.replace(/\/+$/, "");
-  const created = await deps.twilio.createMessagingService(account, {
-    friendlyName: `coss ${row.id}`,
-    inboundRequestUrl: `${base}/sms/twilio/inbound`,
-    statusCallback: `${base}/sms/twilio/status`,
-  });
+  const friendlyName = `coss ${row.id}`;
+  const existing = await deps.twilio.findMessagingService(account, friendlyName);
+  const created = existing
+    ? { sid: existing }
+    : await deps.twilio.createMessagingService(account, {
+        friendlyName,
+        inboundRequestUrl: `${base}/sms/twilio/inbound`,
+        statusCallback: `${base}/sms/twilio/status`,
+      });
   // Stored at once: the next step must never create a second one.
   await db
     .update(smsRegistration)
@@ -387,11 +399,15 @@ async function runStep(
       }
       if (!row.brandSid) {
         const lowVolume = row.brandType === "low_volume_standard";
-        const created = await twilio.createBrand(account, {
-          customerProfileSid: row.customerProfileSid,
-          trustProductSid: row.trustProductSid,
-          lowVolume,
-        });
+        // A brand an earlier attempt created (its answer lost) is adopted, never paid for twice.
+        const existing = await twilio.findBrand(account, row.customerProfileSid);
+        const created = existing
+          ? { sid: existing }
+          : await twilio.createBrand(account, {
+              customerProfileSid: row.customerProfileSid,
+              trustProductSid: row.trustProductSid,
+              lowVolume,
+            });
         return {
           next: { brandSid: created.sid, nextCheckAt: new Date(now.getTime() + CHECK_INTERVAL_MS) },
           fees: lowVolume ? [{ fee: "brand" }] : [{ fee: "brand" }, { fee: "brand_vetting" }],
@@ -403,11 +419,14 @@ async function runStep(
       if (!row.brandSid) return { next: { step: "brand", nextCheckAt: now } };
       const serviceSid = await messagingService(row, account, deps);
       if (!row.campaignSid) {
-        const created = await twilio.createCampaign(account, {
-          serviceSid,
-          brandSid: row.brandSid,
-          campaign: row.campaign,
-        });
+        const existing = await twilio.findCampaign(account, serviceSid);
+        const created = existing
+          ? { sid: existing }
+          : await twilio.createCampaign(account, {
+              serviceSid,
+              brandSid: row.brandSid,
+              campaign: row.campaign,
+            });
         return {
           next: {
             messagingServiceSid: serviceSid,
@@ -494,13 +513,9 @@ export async function advanceSmsRegistration(
     const account = await ensureSmsSubaccount(claimed.organizationId, deps);
     outcome = await runStep(claimed, account, deps, now);
   } catch (error) {
-    if (
-      error instanceof TwilioApiError &&
-      error.status >= 400 &&
-      error.status < 500 &&
-      error.status !== 429
-    ) {
+    if (error instanceof TwilioApiError && CUSTOMER_ERRORS.has(error.status)) {
       // Twilio refused what the business entered: the customer must fix it and register again.
+      // Anything else (credentials, permissions, Twilio down) is coss.com's to fix: retried.
       outcome = { rejected: error.message };
     } else {
       console.error(`[sms] registration ${claimed.id} step ${claimed.step} failed:`, error);
@@ -838,7 +853,19 @@ export async function releaseSmsNumber(
   await finishRelease(number, deps);
 }
 
+/** A number at a real provider this deployment isn't configured for can't be released yet. */
+function releasable(number: typeof smsNumber.$inferSelect, deps: SmsSenderDeps): boolean {
+  return !number.providerSid || number.provider === deps.provider || number.provider === "fake";
+}
+
 async function finishRelease(number: typeof smsNumber.$inferSelect, deps: SmsSenderDeps) {
+  if (!releasable(number, deps)) {
+    // Kept `releasing` (it never sends again) until a deployment with its provider releases it.
+    throw new SmsError(
+      "provider_unavailable",
+      "This number can't be released right now. It no longer sends; try again later.",
+    );
+  }
   if (number.providerSid && number.provider === deps.provider) {
     const account = await ensureSmsSubaccount(number.organizationId, deps);
     try {
@@ -881,6 +908,11 @@ export async function retryUnfinishedSmsReleases(
         eq(smsNumber.status, "releasing"),
         lte(smsNumber.updatedAt, new Date(now.getTime() - RELEASE_RETRY_MS)),
         eq(smsAccount.status, "active"),
+        or(
+          isNull(smsNumber.providerSid),
+          eq(smsNumber.provider, deps.provider),
+          eq(smsNumber.provider, "fake"),
+        ),
         opts.scope ? inArray(smsNumber.organizationId, opts.scope.organizationIds) : undefined,
       ),
     )
@@ -997,6 +1029,18 @@ export async function releaseOrganizationSmsResources(
     .where(eq(smsAccount.organizationId, organizationId))
     .limit(1);
   await assertLease();
+  if (
+    account?.subaccountSid &&
+    account.status !== "closed" &&
+    account.provider !== deps.provider &&
+    account.provider !== "fake"
+  ) {
+    // Deleting the rows would orphan a paid subaccount: the deletion waits for a deployment with
+    // the account's provider.
+    throw new Error(
+      `SMS subaccount of ${organizationId} is at ${account.provider}, not ${deps.provider}: not closed.`,
+    );
+  }
   if (account?.subaccountSid && account.status !== "closed" && account.provider === deps.provider) {
     await db
       .update(smsAccount)

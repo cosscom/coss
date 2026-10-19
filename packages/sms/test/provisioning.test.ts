@@ -22,6 +22,7 @@ import {
 import { SmsRegistrationInput } from "../src/schemas.ts";
 import { authorizeLiveSmsSender } from "../src/senders.ts";
 import { testPhoneNumber } from "../src/testing.ts";
+import { TwilioApiError, TwilioNetworkError } from "../src/twilio/client.ts";
 import { FakeTwilioApi } from "../src/twilio/fake.ts";
 
 const { billingUsage, smsAccount, smsNumber } = schema;
@@ -507,4 +508,75 @@ test("a release the provider didn't finish is retried by the worker", async () =
   twilio.working = true;
   expect(await retryUnfinishedSmsReleases(d, { now: later, scope })).toBe(1);
   expect(await db.select().from(smsNumber).where(eq(smsNumber.id, number.id))).toEqual([]);
+});
+
+test("a brand whose creation answer was lost is adopted, never created (and paid) twice", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  class LostAnswer extends FakeTwilioApi {
+    lost = false;
+    override async createBrand(...args: Parameters<FakeTwilioApi["createBrand"]>) {
+      const created = await super.createBrand(...args);
+      if (!this.lost) {
+        this.lost = true;
+        throw new TwilioNetworkError("Twilio POST BrandRegistrations got no answer.");
+      }
+      return created;
+    }
+    override async createCustomerProfile(
+      ...args: Parameters<FakeTwilioApi["createCustomerProfile"]>
+    ) {
+      if (!this.unauthorized) {
+        this.unauthorized = true;
+        throw new TwilioApiError(401, "20003", "Authenticate");
+      }
+      return super.createCustomerProfile(...args);
+    }
+    unauthorized = false;
+  }
+  const twilio = new LostAnswer();
+  const d = deps(twilio);
+  await createSmsRegistration(
+    org,
+    SmsRegistrationInput.parse({
+      kind: "us_10dlc",
+      brandType: "standard",
+      profile: PROFILE,
+      campaign: CAMPAIGN,
+    }),
+    d,
+  );
+  // A 401 is coss.com's setup, not the business's details: retried, never rejected.
+  await advanceUntilSettledOnce(org, d);
+  expect((await listSmsRegistrations(org))[0]?.status).toBe("submitted");
+  const [registration] = await advanceUntilSettled(org, d);
+  expect(registration?.status).toBe("approved");
+  expect(twilio.calls.filter((call) => call.method === "createBrand")).toHaveLength(1);
+  expect(await fees(org)).toContainEqual({
+    meter: "sms.registrations",
+    dimension: "fee=brand",
+    quantity: 1,
+  });
+});
+
+test("a number at a provider this deployment doesn't use is kept until it can be released", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  const twilio = new FakeTwilioApi();
+  const atTwilio: SmsSenderDeps = { ...deps(twilio), provider: "twilio" };
+  const number = await buySmsNumber(
+    org,
+    { phoneNumber: testPhoneNumber(), kind: "local" },
+    atTwilio,
+  );
+  const fake = deps(twilio);
+  await expect(releaseSmsNumber(org, number.id, fake)).rejects.toMatchObject({
+    code: "provider_unavailable",
+  });
+  const scope = { organizationIds: [org] };
+  const later = new Date(Date.now() + 15 * 60 * 1000);
+  expect(await retryUnfinishedSmsReleases(fake, { now: later, scope })).toBe(0);
+  await expect(releaseOrganizationSmsResources(org, fake)).rejects.toThrow("not closed");
+  expect(await db.select().from(smsNumber).where(eq(smsNumber.id, number.id))).toHaveLength(1);
+  expect(await retryUnfinishedSmsReleases(atTwilio, { now: later, scope })).toBe(1);
 });
