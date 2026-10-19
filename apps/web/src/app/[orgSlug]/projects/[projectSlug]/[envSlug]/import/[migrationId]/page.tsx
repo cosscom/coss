@@ -65,7 +65,13 @@ function found(inventory: Inventory, kind: MigrationKind): { text: string; empty
       ];
       return {
         text: parts.join(", "),
-        empty: count === 0 && !inventory.lists.length && !inventory.properties.length,
+        // An estimate of 0 (counting ran out of time) isn't nothing.
+        empty:
+          count === 0 &&
+          inventory.contacts?.exact !== false &&
+          !inventory.lists.length &&
+          !inventory.properties.length &&
+          !inventory.topics.length,
       };
     }
     case "suppressions":
@@ -73,7 +79,7 @@ function found(inventory: Inventory, kind: MigrationKind): { text: string; empty
         text: inventory.suppressions
           ? `${inventory.suppressions.exact ? "" : "at least "}${plural(inventory.suppressions.count, "address", "addresses")}`
           : "",
-        empty: inventory.suppressions?.count === 0,
+        empty: inventory.suppressions?.count === 0 && inventory.suppressions.exact,
       };
     case "webhooks":
       return {
