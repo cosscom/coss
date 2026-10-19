@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { randomUUID } from "node:crypto";
+import { memoryLogWriter } from "@coss/logs/testing";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
 import { memoryLimiter } from "@coss/ratelimit/testing";
 import { SMS_SIMULATOR } from "@coss/sms/schemas";
@@ -8,7 +9,7 @@ import { twilioSignature } from "@coss/sms/twilio";
 import { createEnvironmentApiKey } from "@coss/tenancy";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { TEST_SECRETS_KEYS } from "@coss/webhooks/testing";
-import { apiRequest, createTestApp, errorOf } from "./helpers.ts";
+import { apiRequest, createTestApp, errorOf, waitForLogLines } from "./helpers.ts";
 
 const sms = (to: string = SMS_SIMULATOR.delivered, extra: Record<string, unknown> = {}) => ({
   from: "+14155550123",
@@ -197,9 +198,10 @@ test("SMS suppressions: add, check, list, remove", async () => {
   expect(await removed.json()).toEqual({ object: "sms_suppression", id: entry.id, deleted: true });
 });
 
-test("numbers and received messages", async () => {
+test("numbers and received messages, whose text never reaches the log", async () => {
   const tenant = await createTestTenant();
-  const { app, dispatchSms } = createTestApp();
+  const writer = memoryLogWriter();
+  const { app, dispatchSms } = createTestApp({ logWriter: writer });
   await createTestSmsNumber(tenant.organization.id, {
     receivingEnvironmentId: tenant.production.id,
   });
@@ -230,6 +232,10 @@ test("numbers and received messages", async () => {
     key: tenant.sandboxKey,
   });
   expect(one.status).toBe(200);
+  const lines = await waitForLogLines(writer, 4);
+  const reads = lines.filter((line) => line.path?.startsWith("/v1/sms/received"));
+  expect(reads).toHaveLength(2);
+  expect(JSON.stringify(reads)).not.toContain(received.data[0].body);
 });
 
 describe("Twilio callbacks", () => {

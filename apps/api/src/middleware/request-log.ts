@@ -41,10 +41,11 @@ function skipped(method: string, path: string): boolean {
 
 /**
  * Responses carrying customer content the log must not copy: received emails (bodies, headers,
- * attachments of third-party mail). Logged lines would outlive deleting the email, and every
- * member reads the environment's log and its drains. Error envelopes are still kept.
+ * attachments of third-party mail) and received text messages (other people's words). Logged lines
+ * would outlive deleting them, and every member reads the environment's log and its drains. Error
+ * envelopes are still kept.
  */
-const CONTENT_RESPONSES = ["/v1/received_emails"];
+const CONTENT_RESPONSES = ["/v1/received_emails", "/v1/sms/received"];
 /**
  * Responses that are capabilities: preference links change a contact's consent and need
  * `contact:update`, which reading the log (every member, every drain) doesn't.

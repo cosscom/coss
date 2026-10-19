@@ -117,6 +117,13 @@ function messageOf(raw: { sid: string; status: string; error_code?: number | str
   };
 }
 
+/** The A2P messaging profile's `company_type` for each of the profile's company types. */
+const A2P_COMPANY_TYPES: Readonly<Record<string, string>> = {
+  PRIVATE_PROFIT: "private",
+  PUBLIC_PROFIT: "public",
+  NON_PROFIT: "non-profit",
+};
+
 export function createTwilioApi(
   client: TwilioClient,
   opts: { primaryCustomerProfileSid: string | null },
@@ -362,7 +369,7 @@ export function createTwilioApi(
         "us_a2p_messaging_profile_information",
         `${input.profile.legalName} messaging profile`,
         {
-          company_type: input.profile.companyType === "PUBLIC_PROFIT" ? "public" : "private",
+          company_type: A2P_COMPANY_TYPES[input.profile.companyType] ?? "private",
           ...(input.profile.stockExchange ? { stock_exchange: input.profile.stockExchange } : {}),
           ...(input.profile.stockTicker ? { stock_ticker: input.profile.stockTicker } : {}),
         },
