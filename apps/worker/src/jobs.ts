@@ -54,6 +54,7 @@ import { refreshDueDatasets } from "@coss/risk";
 import { contentScreeningCheck } from "@coss/screening";
 import {
   advanceDueSmsRegistrations,
+  attachPendingSmsNumbers,
   chargeDueSmsFees,
   releaseOrganizationSmsResources,
   type SmsDispatchQueue,
@@ -309,12 +310,18 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       },
     }),
     start({
-      // Carrier registrations: each step at Twilio, then its review, polled until decided.
+      // Carrier registrations: each step at Twilio, then its review, polled until decided; and
+      // numbers whose messaging service didn't take them at purchase.
       name: "sms-registrations",
       intervalMs: 30_000,
-      run: async () =>
-        (await advanceDueSmsRegistrations(deps.sms.senders, { limit: SMS_REGISTRATION_BATCH })) ===
-        SMS_REGISTRATION_BATCH,
+      run: async () => {
+        await attachPendingSmsNumbers(deps.sms.senders);
+        return (
+          (await advanceDueSmsRegistrations(deps.sms.senders, {
+            limit: SMS_REGISTRATION_BATCH,
+          })) === SMS_REGISTRATION_BATCH
+        );
+      },
     }),
     start({
       // Monthly pass-through fees: numbers held and approved US campaigns.

@@ -62,13 +62,15 @@ function BuyNumber(props: {
 }) {
   const [kind, setKind] = useState<"local" | "toll_free">("local");
   const [search, searchAction, searching] = useActionState(searchNumbersAction, null);
+  // Results belong to the type they were searched as: changing it hides them until a new search.
+  const [searchedKind, setSearchedKind] = useState(kind);
   const [state, buyAction, buying] = useActionToast(buyNumberAction, { success: "Number bought" });
   const [chosen, setChosen] = useState<string | null>(null);
   const { onDone } = props;
   useEffect(() => {
     if (state?.ok) onDone();
   }, [state, onDone]);
-  const results: AvailableNumber[] = search?.ok ? search.data : [];
+  const results: AvailableNumber[] = search?.ok && searchedKind === kind ? search.data : [];
 
   return (
     <>
@@ -81,7 +83,14 @@ function BuyNumber(props: {
         </DialogDescription>
       </DialogHeader>
       <DialogPanel className="flex flex-col gap-4">
-        <form action={searchAction} className="flex flex-wrap items-end gap-2">
+        <form
+          action={searchAction}
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={() => {
+            setSearchedKind(kind);
+            setChosen(null);
+          }}
+        >
           <input name="orgSlug" type="hidden" value={props.orgSlug} />
           <Field className="w-36">
             <FieldLabel>Type</FieldLabel>
@@ -113,7 +122,7 @@ function BuyNumber(props: {
           </Button>
         </form>
         {search && !search.ok ? <FormError message={search.error} /> : null}
-        {search?.ok && results.length === 0 ? (
+        {search?.ok && searchedKind === kind && results.length === 0 ? (
           <p className="text-muted-foreground text-sm">No numbers found. Try another area code.</p>
         ) : null}
         {results.length > 0 ? (

@@ -1,10 +1,12 @@
 import { describe, expect, test } from "bun:test";
+import type { PlanGate } from "@coss/billing/gate";
 import { db, schema } from "@coss/db";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { TEST_SECRETS_KEYS } from "@coss/webhooks/testing";
 import { eq, sql } from "drizzle-orm";
 import {
   advanceDueSmsRegistrations,
+  attachPendingSmsNumbers,
   buySmsNumber,
   chargeDueSmsFees,
   createSmsRegistration,
@@ -23,6 +25,21 @@ import { FakeTwilioApi } from "../src/twilio/fake.ts";
 
 const { billingUsage, smsAccount, smsNumber } = schema;
 
+/** A plan gate that allows `numbers` SMS numbers (`null`: any number). */
+function plansAllowing(numbers: number | null): PlanGate {
+  return {
+    async requireFeature() {},
+    async limit() {
+      return numbers;
+    },
+    async requireCapacity(_org, _limit, current) {
+      if (numbers !== null && current >= numbers) {
+        throw Object.assign(new Error("limit"), { code: "plan_limit_reached" });
+      }
+    },
+  };
+}
+
 function deps(twilio = new FakeTwilioApi()): SmsSenderDeps & { twilio: FakeTwilioApi } {
   return {
     provider: "fake",
@@ -30,7 +47,21 @@ function deps(twilio = new FakeTwilioApi()): SmsSenderDeps & { twilio: FakeTwili
     secretsKeys: TEST_SECRETS_KEYS,
     subaccountPrefix: "coss-test",
     callbackBaseUrl: "https://api.coss.test",
+    plans: plansAllowing(null),
   };
+}
+
+/** Fails adding numbers to messaging services until `working` is set. */
+class FlakyServiceTwilio extends FakeTwilioApi {
+  working = false;
+  override async addNumberToService(
+    account: { accountSid: string; authToken: string },
+    serviceSid: string,
+    numberSid: string,
+  ) {
+    if (!this.working) throw new Error("Twilio unreachable");
+    await super.addNumberToService(account, serviceSid, numberSid);
+  }
 }
 
 const PROFILE = {
@@ -318,4 +349,85 @@ test("plans cap numbers; released numbers stop sending; deletion closes the suba
   expect(oneMonthAfter(new Date("2026-01-31T10:00:00Z")).toISOString()).toBe(
     "2026-02-28T10:00:00.000Z",
   );
+});
+
+test("plans without SMS numbers can't register senders or buy numbers", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  const d = { ...deps(), plans: plansAllowing(0) };
+  await expect(
+    createSmsRegistration(
+      org,
+      SmsRegistrationInput.parse({
+        kind: "us_10dlc",
+        brandType: "standard",
+        profile: PROFILE,
+        campaign: CAMPAIGN,
+      }),
+      d,
+    ),
+  ).rejects.toMatchObject({ code: "plan_required" });
+  await expect(
+    buySmsNumber(org, { phoneNumber: testPhoneNumber(), kind: "local" }, d),
+  ).rejects.toMatchObject({ code: "plan_required" });
+  expect(await listSmsRegistrations(org)).toEqual([]);
+  expect(d.twilio.calls).toEqual([]);
+});
+
+test("a number is bought as what it is, not as what the form said", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  const d = deps();
+  const [tollFree] = await searchSmsNumbers(org, { kind: "toll_free", country: "US" }, d);
+  if (!tollFree) throw new Error("no number");
+  await expect(
+    buySmsNumber(org, { phoneNumber: tollFree.phoneNumber, kind: "local" }, d),
+  ).rejects.toMatchObject({ code: "number_unavailable" });
+  expect(d.twilio.calls.map((call) => call.method)).not.toContain("buyNumber");
+  const number = await buySmsNumber(
+    org,
+    { phoneNumber: tollFree.phoneNumber, kind: "toll_free" },
+    d,
+  );
+  expect(number.kind).toBe("toll_free");
+});
+
+test("a number its messaging service didn't take is pending until the worker adds it", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  const twilio = new FlakyServiceTwilio();
+  twilio.working = true;
+  const d = deps(twilio);
+  await createSmsRegistration(
+    org,
+    SmsRegistrationInput.parse({
+      kind: "us_10dlc",
+      brandType: "low_volume_standard",
+      profile: PROFILE,
+      campaign: CAMPAIGN,
+    }),
+    d,
+  );
+  const [registration] = await advanceUntilSettled(org, d);
+  expect(registration?.status).toBe("approved");
+  twilio.working = false;
+  const number = await buySmsNumber(org, { phoneNumber: testPhoneNumber(), kind: "local" }, d);
+  expect(number.status).toBe("pending");
+  const send = () =>
+    authorizeLiveSmsSender({
+      organizationId: org,
+      from: number.phoneNumber,
+      toCountry: "US",
+      provider: "fake",
+    });
+  await expect(send()).rejects.toMatchObject({ code: "sender_not_ready" });
+  const scope = { organizationIds: [org] };
+  const later = new Date(Date.now() + 5 * 60 * 1000);
+  expect(await attachPendingSmsNumbers(d, { now: later, scope })).toBe(0);
+  twilio.working = true;
+  expect(await attachPendingSmsNumbers(d, { now: later, scope })).toBe(1);
+  expect(await send()).toMatchObject({
+    numberId: number.id,
+    route: { messagingServiceSid: registration?.messagingServiceSid },
+  });
 });

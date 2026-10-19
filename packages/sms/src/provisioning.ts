@@ -35,7 +35,10 @@ export type SmsSenderDeps = {
   subaccountPrefix: string;
   /** `API_PUBLIC_URL`: messaging services report to `<it>/sms/twilio/*`. */
   callbackBaseUrl: string;
-  /** Plan limits (`smsNumbers`). */
+  /**
+   * Plan limits (`smsNumbers`): required to register senders or buy numbers, which cost money at
+   * the provider from the first step. The worker, which does neither, leaves it out.
+   */
   plans?: PlanGate;
   /** Production without a real provider: nothing can be bought or registered. */
   provisioningDisabled?: boolean;
@@ -67,6 +70,30 @@ function refuseWhenDisabled(deps: SmsSenderDeps) {
       "SMS senders can't be set up yet. Contact support to get started.",
     );
   }
+}
+
+function plansOf(deps: SmsSenderDeps): PlanGate {
+  if (!deps.plans) throw new Error("SmsSenderDeps.plans is required to set up senders.");
+  return deps.plans;
+}
+
+/** Plans without SMS numbers (Free) can't run up provider fees with senders either. */
+async function requireSmsPlan(organizationId: string, deps: SmsSenderDeps) {
+  if ((await plansOf(deps).limit(organizationId, "smsNumbers")) === 0) {
+    throw new SmsError(
+      "plan_required",
+      "SMS senders need a paid plan. Upgrade your plan to register one or buy numbers.",
+    );
+  }
+}
+
+/** Serializes an organization's sender changes (registrations, purchases) in `tx`. */
+async function lockSmsAccount(tx: Executor, organizationId: string) {
+  await tx
+    .select({ organizationId: smsAccount.organizationId })
+    .from(smsAccount)
+    .where(eq(smsAccount.organizationId, organizationId))
+    .for("update");
 }
 
 /**
@@ -146,7 +173,11 @@ export async function createSmsRegistration(
   deps: SmsSenderDeps,
 ): Promise<SmsRegistrationRow> {
   refuseWhenDisabled(deps);
+  await requireSmsPlan(organizationId, deps);
+  await ensureSmsAccountRow(organizationId);
   return db.transaction(async (tx) => {
+    // Two submissions at once must not both find nothing in progress.
+    await lockSmsAccount(tx, organizationId);
     const active = await tx
       .select({
         id: smsRegistration.id,
@@ -275,8 +306,23 @@ async function attachNumbers(
       ),
     );
   for (const number of numbers) {
-    if (number.providerSid)
-      await deps.twilio.addNumberToService(account, serviceSid, number.providerSid);
+    if (number.providerSid) await addToService(account, serviceSid, number.providerSid, deps);
+  }
+}
+
+/** Twilio's "already in this messaging service": a retry after an attachment that did happen. */
+const ALREADY_IN_SERVICE = "21710";
+
+async function addToService(
+  account: TwilioCredentials,
+  serviceSid: string,
+  numberSid: string,
+  deps: SmsSenderDeps,
+): Promise<void> {
+  try {
+    await deps.twilio.addNumberToService(account, serviceSid, numberSid);
+  } catch (error) {
+    if (!(error instanceof TwilioApiError && error.code === ALREADY_IN_SERVICE)) throw error;
   }
 }
 
@@ -370,7 +416,7 @@ async function runStep(
       if (!number?.providerSid) return { rejected: "The toll-free number was released." };
       const serviceSid = await messagingService(row, account, deps);
       if (!row.tollFreeVerificationSid) {
-        await twilio.addNumberToService(account, serviceSid, number.providerSid);
+        await addToService(account, serviceSid, number.providerSid, deps);
         const created = await twilio.createTollFreeVerification(account, {
           numberSid: number.providerSid,
           profile: row.profile,
@@ -531,10 +577,19 @@ export async function searchSmsNumbers(
   return deps.twilio.searchNumbers(account, { ...input, limit: 10 });
 }
 
+/** US and Canadian toll-free area codes (NANP: 800, 833, 844, 855, 866, 877, 888). */
+const TOLL_FREE = /^\+18(00|33|44|55|66|77|88)\d{7}$/;
+
+export function smsNumberKind(phoneNumber: string): "local" | "toll_free" {
+  return TOLL_FREE.test(phoneNumber) ? "toll_free" : "local";
+}
+
 /**
- * Buys a number into the organization's subaccount (within the plan's `smsNumbers`), charges its
- * first month, and — when the registration it sends under is already approved — adds it to that
- * registration's messaging service. Replies go to `receivingEnvironmentId` (a live environment).
+ * Buys a number into the organization's subaccount (within the plan's `smsNumbers`) and charges
+ * its first month. A local number bought once the US registration is approved is `pending` until
+ * it is in that registration's messaging service (here, else `attachPendingSmsNumbers`); every
+ * other number is `active` and joins its service when its registration is approved. Replies go
+ * to `receivingEnvironmentId` (a live environment).
  */
 export async function buySmsNumber(
   organizationId: string,
@@ -548,29 +603,32 @@ export async function buySmsNumber(
   refuseWhenDisabled(deps);
   const parsed = parsePhoneNumber(input.phoneNumber);
   if (!parsed) throw new SmsError("invalid_phone_number", "That isn't a valid phone number.");
+  // Billed and registered by what the number is, never by what the form said.
+  const kind = smsNumberKind(parsed.phoneNumber);
+  if (kind !== input.kind) {
+    throw new SmsError(
+      "number_unavailable",
+      `That is a ${kind === "toll_free" ? "toll-free" : "local"} number. Search again.`,
+    );
+  }
   if (input.receivingEnvironmentId) {
     await requireLiveEnvironment(organizationId, input.receivingEnvironmentId);
   }
-  const [held] = await db
-    .select({ n: count() })
-    .from(smsNumber)
-    .where(eq(smsNumber.organizationId, organizationId));
-  await deps.plans?.requireCapacity(organizationId, "smsNumbers", held?.n ?? 0);
+  await requireSmsPlan(organizationId, deps);
   const account = await ensureSmsSubaccount(organizationId, deps);
-  let bought: { sid: string; phoneNumber: string };
-  try {
-    bought = await deps.twilio.buyNumber(account, { phoneNumber: parsed.phoneNumber });
-  } catch (error) {
-    if (error instanceof TwilioApiError && error.status < 500) {
-      throw new SmsError("number_unavailable", "That number is no longer available. Search again.");
-    }
-    throw error;
-  }
-  const now = new Date();
-  const registration =
-    input.kind === "local"
-      ? (
-          await db
+  const { row, attachTo } = await db.transaction(async (tx) => {
+    // Purchases are serialized per organization, so two at once can't both fit under the plan's
+    // limit. The lock is held across the provider call: only this organization's sender changes
+    // wait for it.
+    await lockSmsAccount(tx, organizationId);
+    const [held] = await tx
+      .select({ n: count() })
+      .from(smsNumber)
+      .where(eq(smsNumber.organizationId, organizationId));
+    await plansOf(deps).requireCapacity(organizationId, "smsNumbers", held?.n ?? 0);
+    const [registration] =
+      kind === "local"
+        ? await tx
             .select()
             .from(smsRegistration)
             .where(
@@ -581,32 +639,113 @@ export async function buySmsNumber(
               ),
             )
             .limit(1)
-        )[0]
-      : undefined;
-  const row = await db.transaction(async (tx) => {
+        : [];
+    let bought: { sid: string; phoneNumber: string };
+    try {
+      bought = await deps.twilio.buyNumber(account, { phoneNumber: parsed.phoneNumber });
+    } catch (error) {
+      if (error instanceof TwilioApiError && error.status < 500) {
+        throw new SmsError(
+          "number_unavailable",
+          "That number is no longer available. Search again.",
+        );
+      }
+      throw error;
+    }
+    const attachTo = registration?.status === "approved" ? registration.messagingServiceSid : null;
     const [inserted] = await tx
       .insert(smsNumber)
       .values({
         organizationId,
         phoneNumber: bought.phoneNumber,
-        kind: input.kind,
+        kind,
         country: parsed.country,
         provider: deps.provider,
         providerSid: bought.sid,
-        status: "active",
+        status: attachTo ? "pending" : "active",
         registrationId: registration?.id ?? null,
         receivingEnvironmentId: input.receivingEnvironmentId ?? null,
-        nextFeeAt: oneMonthAfter(now),
+        nextFeeAt: oneMonthAfter(new Date()),
       })
       .returning();
     if (!inserted) throw new Error("Number insert returned no row.");
-    await recordFee(tx, organizationId, "sms.numbers", { type: input.kind });
-    return inserted;
+    await recordFee(tx, organizationId, "sms.numbers", { type: kind });
+    return { row: inserted, attachTo };
   });
-  if (registration?.status === "approved" && registration.messagingServiceSid) {
-    await deps.twilio.addNumberToService(account, registration.messagingServiceSid, bought.sid);
+  if (!attachTo) return row;
+  try {
+    return (await attachSmsNumber(row, attachTo, account, deps)) ?? row;
+  } catch (error) {
+    // Bought and billed: the worker attaches it later (`attachPendingSmsNumbers`).
+    console.error(`[sms] number ${row.id} not added to its messaging service yet:`, error);
+    return row;
   }
-  return row;
+}
+
+async function attachSmsNumber(
+  number: typeof smsNumber.$inferSelect,
+  serviceSid: string,
+  account: TwilioCredentials,
+  deps: SmsSenderDeps,
+) {
+  if (!number.providerSid) return null;
+  await addToService(account, serviceSid, number.providerSid, deps);
+  const [updated] = await db
+    .update(smsNumber)
+    .set({ status: "active" })
+    .where(
+      and(
+        eq(smsNumber.id, number.id),
+        eq(smsNumber.organizationId, number.organizationId),
+        eq(smsNumber.status, "pending"),
+      ),
+    )
+    .returning();
+  return updated ?? null;
+}
+
+/**
+ * The worker's `sms-registrations` loop: numbers still `pending` a minute after their purchase
+ * (adding them to their registration's messaging service failed) are added again.
+ */
+export async function attachPendingSmsNumbers(
+  deps: SmsSenderDeps,
+  opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } } = {},
+): Promise<number> {
+  const now = opts.now ?? new Date();
+  const due = await db
+    .select({ number: smsNumber, serviceSid: smsRegistration.messagingServiceSid })
+    .from(smsNumber)
+    .innerJoin(
+      smsRegistration,
+      and(
+        eq(smsRegistration.id, smsNumber.registrationId),
+        eq(smsRegistration.organizationId, smsNumber.organizationId),
+      ),
+    )
+    .where(
+      and(
+        eq(smsNumber.status, "pending"),
+        eq(smsNumber.provider, deps.provider),
+        lte(smsNumber.createdAt, new Date(now.getTime() - 60_000)),
+        eq(smsRegistration.status, "approved"),
+        isNotNull(smsRegistration.messagingServiceSid),
+        opts.scope ? inArray(smsNumber.organizationId, opts.scope.organizationIds) : undefined,
+      ),
+    )
+    .orderBy(asc(smsNumber.createdAt))
+    .limit(opts.limit ?? 20);
+  let attached = 0;
+  for (const { number, serviceSid } of due) {
+    if (!serviceSid) continue;
+    try {
+      const account = await ensureSmsSubaccount(number.organizationId, deps);
+      if (await attachSmsNumber(number, serviceSid, account, deps)) attached++;
+    } catch (error) {
+      console.error(`[sms] number ${number.id} still not in its messaging service:`, error);
+    }
+  }
+  return attached;
 }
 
 async function requireLiveEnvironment(organizationId: string, environmentId: string) {

@@ -27,6 +27,7 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody, PanelDescription, PanelHeader, PanelTitle } from "@/components/panel";
 import { RegistrationStatusDot, SmsStatusDot } from "@/components/sms-badges";
+import { StatusDot } from "@/components/status-dot";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { smsProvisioningEnabled } from "@/lib/sms";
@@ -188,6 +189,8 @@ export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSl
                   <TableCell>
                     {sendable[index] ? (
                       <SmsStatusDot status="delivered" />
+                    ) : row.number.status === "pending" ? (
+                      <StatusDot tone="warning">Setting up</StatusDot>
                     ) : (
                       <RegistrationStatusDot status={row.registration?.status ?? null} />
                     )}
