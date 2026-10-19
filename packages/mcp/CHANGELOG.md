@@ -1,5 +1,16 @@
 # coss-mcp
 
+## 0.2.3
+
+### Patch Changes
+
+- 2857473: `coss/diagnose` explains an email's delivery: `diagnose(coss, id)` reads the email, its events and its account context, and `diagnoseEmail` is the pure part (moved from `coss-mcp`, which now uses it and still re-exports it). The CLI gets `coss emails list`, `coss emails get`, `coss emails events` and `coss emails diagnose`, and `coss inbox` (the inbound domain, then received emails as they arrive) with `coss inbox get`.
+- Updated dependencies [e13f0e4]
+- Updated dependencies [2857473]
+- Updated dependencies [78b99d3]
+- Updated dependencies [8fea903]
+  - coss@0.7.0
+
 ## 0.2.2
 
 ### Patch Changes
