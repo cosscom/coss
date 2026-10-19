@@ -39,7 +39,12 @@ import {
   type PhaseProgress,
 } from "./migrations.ts";
 import type { ConversionWarning } from "./templates/types.ts";
-import { type MigrationPhase, type MigrationSource, PROVIDER_NAMES } from "./types.ts";
+import {
+  type MigrationPhase,
+  type MigrationSource,
+  PROVIDER_NAMES,
+  type SourceSuppression,
+} from "./types.ts";
 
 export type PhaseDeps = {
   /** Plan limits (contacts, webhook endpoints). */
@@ -57,6 +62,11 @@ export type PhaseContext = {
   /** Epoch ms after which a phase stops and returns its cursor. */
   deadline: number;
   now: () => number;
+  /**
+   * Saves `next` as the phase's cursor with the counts so far (call it after every unit of work,
+   * once its counts are added); throws `LeaseLost` when the import was canceled or taken over.
+   */
+  checkpoint: (next: unknown) => Promise<void>;
 };
 
 export type PhaseResult = { next: unknown | null; retryAt?: Date | undefined };
@@ -65,6 +75,9 @@ type Phase = (ctx: PhaseContext, cursor: unknown) => Promise<PhaseResult>;
 
 /** A phase stops early: it can't go on (a plan limit), the rest of the import still runs. */
 export class PhaseStopped extends Error {}
+
+/** The import was canceled, or another worker holds it now: stop without writing anything more. */
+export class LeaseLost extends Error {}
 
 const IMPORT_BATCH = 1000;
 
@@ -98,6 +111,7 @@ async function eachObject<T>(
   for (let index = start; index < objects.length; index++) {
     if (index > start && ctx.now() >= ctx.deadline) return { next: index };
     await handle(objects[index] as T);
+    await ctx.checkpoint(index + 1);
   }
   return { next: null };
 }
@@ -364,13 +378,14 @@ const contacts: Phase = async (ctx, cursor) => {
         }),
       }));
       await importContactBatch(ctx, batch);
-      if (ctx.now() >= ctx.deadline && start + IMPORT_BATCH < rest.length) {
-        return { next: { page: state.page, offset: state.offset + start + IMPORT_BATCH } };
-      }
+      const done = { page: state.page, offset: state.offset + start + batch.length };
+      await ctx.checkpoint(done);
+      if (ctx.now() >= ctx.deadline && start + IMPORT_BATCH < rest.length) return { next: done };
     }
     if (page.retryAt) return { next: { page: page.next, offset: 0 }, retryAt: page.retryAt };
     if (page.next === null) return { next: null };
     state = { page: page.next, offset: 0 };
+    await ctx.checkpoint(state);
     if (ctx.now() >= ctx.deadline) return { next: state };
   }
 };
@@ -419,7 +434,7 @@ async function importContactBatch(ctx: PhaseContext, batch: ContactEntry[]): Pro
   for (const invalid of stillInvalid) sample(ctx.progress, invalid.email, invalid.message);
 }
 
-type MembershipCursor = { list: number; page: string | null };
+type MembershipCursor = { list: number; page: string | null; offset?: number };
 
 const memberships: Phase = async (ctx, cursor) => {
   const lists = await ctx.source.lists();
@@ -437,21 +452,24 @@ const memberships: Phase = async (ctx, cursor) => {
       continue;
     }
     const page = await ctx.source.members(list.id, state.page);
-    for (let start = 0; start < page.items.length; start += IMPORT_BATCH) {
-      const added = await addAudienceContacts(
-        ctx.env,
-        audienceId,
-        page.items.slice(start, start + IMPORT_BATCH),
-      );
+    for (let start = state.offset ?? 0; start < page.items.length; start += IMPORT_BATCH) {
+      const addresses = page.items.slice(start, start + IMPORT_BATCH);
+      const added = await addAudienceContacts(ctx.env, audienceId, addresses);
       if (added) {
         ctx.progress.created += added.added;
         ctx.progress.existing += added.existing;
         ctx.progress.skipped += added.missing.length;
       }
+      await ctx.checkpoint({ ...state, offset: start + addresses.length });
     }
-    if (page.retryAt) return { next: { ...state, page: page.next }, retryAt: page.retryAt };
+    if (page.retryAt) {
+      return { next: { list: state.list, page: page.next }, retryAt: page.retryAt };
+    }
     state =
-      page.next === null ? { list: state.list + 1, page: null } : { ...state, page: page.next };
+      page.next === null
+        ? { list: state.list + 1, page: null }
+        : { list: state.list, page: page.next };
+    await ctx.checkpoint(state);
     if (ctx.now() >= ctx.deadline) return { next: state };
   }
 };
@@ -461,62 +479,72 @@ const suppressions: Phase = async (ctx, cursor) => {
   const topicKeys = await targets(ctx, "topic");
   for (;;) {
     const page = await ctx.source.suppressions(state.page);
-    const entries: Parameters<typeof importSuppressions>[1] = [];
-    const topicOptOuts: { email: string; topic: string }[] = [];
-    for (const item of page.items.slice(state.offset)) {
-      if (item.scope.kind === "topic") {
-        const key = topicKeys.get(item.scope.topicId)?.name;
-        if (!key) {
-          ctx.progress.skipped++;
-          continue;
-        }
-        topicOptOuts.push({ email: item.address, topic: key });
-        continue;
-      }
-      entries.push({
-        address: item.address,
-        scope: item.scope.kind === "all" ? "*" : "stream:marketing",
-        reason: item.reason,
-        createdAt: item.createdAt ?? undefined,
-      });
-    }
-    // An unsubscribe from a topic: a contact's opt-out (they can opt in again from the
-    // preference center), or a suppression for that category when there's no contact.
-    const optOuts = await contactsAmong(
-      ctx.env,
-      topicOptOuts.map((entry) => entry.email),
-    );
-    const contactChoices = topicOptOuts.filter((entry) => optOuts.has(entry.email.toLowerCase()));
-    for (const entry of topicOptOuts) {
-      if (!optOuts.has(entry.email.toLowerCase())) {
-        entries.push({ address: entry.email, scope: entry.topic, reason: "unsubscribe" });
-      }
-    }
-    for (let start = 0; start < contactChoices.length; start += IMPORT_BATCH) {
-      const result = await importContacts(
-        ctx.env,
-        contactChoices.slice(start, start + IMPORT_BATCH).map((entry) => ({
-          email: entry.email,
-          topics: [{ topic: entry.topic, status: "opted_out" as const }],
-        })),
-        { plans: ctx.deps.plans },
-      );
-      ctx.progress.updated += result.updated;
-    }
-    for (let start = 0; start < entries.length; start += IMPORT_BATCH) {
-      const result = await importSuppressions(ctx.env, entries.slice(start, start + IMPORT_BATCH));
-      if (!result) throw new Error("The environment is gone.");
-      ctx.progress.created += result.created;
-      ctx.progress.existing += result.existing;
-      ctx.progress.invalid += result.invalid.length;
-      for (const invalid of result.invalid) sample(ctx.progress, invalid.address, invalid.message);
+    for (let start = state.offset; start < page.items.length; start += IMPORT_BATCH) {
+      const chunk = page.items.slice(start, start + IMPORT_BATCH);
+      await importSuppressionChunk(ctx, chunk, topicKeys);
+      await ctx.checkpoint({ page: state.page, offset: start + chunk.length });
     }
     if (page.retryAt) return { next: { page: page.next, offset: 0 }, retryAt: page.retryAt };
     if (page.next === null) return { next: null };
     state = { page: page.next, offset: 0 };
+    await ctx.checkpoint(state);
     if (ctx.now() >= ctx.deadline) return { next: state };
   }
 };
+
+async function importSuppressionChunk(
+  ctx: PhaseContext,
+  items: SourceSuppression[],
+  topicKeys: Map<string, { id: string | null; name: string | null }>,
+): Promise<void> {
+  const entries: Parameters<typeof importSuppressions>[1] = [];
+  const topicOptOuts: { email: string; topic: string }[] = [];
+  for (const item of items) {
+    if (item.scope.kind === "topic") {
+      const key = topicKeys.get(item.scope.topicId)?.name;
+      if (key) topicOptOuts.push({ email: item.address, topic: key });
+      else ctx.progress.skipped++;
+      continue;
+    }
+    entries.push({
+      address: item.address,
+      scope: item.scope.kind === "all" ? "*" : "stream:marketing",
+      reason: item.reason,
+      createdAt: item.createdAt ?? undefined,
+    });
+  }
+  // An unsubscribe from a topic: a contact's opt-out (they can opt in again from the preference
+  // center), or a suppression for that category when there's no contact.
+  const contacts = await contactsAmong(
+    ctx.env,
+    topicOptOuts.map((entry) => entry.email),
+  );
+  const contactChoices = topicOptOuts.filter((entry) => contacts.has(entry.email.toLowerCase()));
+  for (const entry of topicOptOuts) {
+    if (!contacts.has(entry.email.toLowerCase())) {
+      entries.push({ address: entry.email, scope: entry.topic, reason: "unsubscribe" });
+    }
+  }
+  if (contactChoices.length > 0) {
+    const result = await importContacts(
+      ctx.env,
+      contactChoices.map((entry) => ({
+        email: entry.email,
+        topics: [{ topic: entry.topic, status: "opted_out" as const }],
+      })),
+      { plans: ctx.deps.plans },
+    );
+    ctx.progress.updated += result.updated;
+  }
+  if (entries.length > 0) {
+    const result = await importSuppressions(ctx.env, entries);
+    if (!result) throw new Error("The environment is gone.");
+    ctx.progress.created += result.created;
+    ctx.progress.existing += result.existing;
+    ctx.progress.invalid += result.invalid.length;
+    for (const invalid of result.invalid) sample(ctx.progress, invalid.address, invalid.message);
+  }
+}
 
 /** Which of `addresses` are contacts of the environment (lower-cased). */
 async function contactsAmong(env: MigrationEnvironment, addresses: string[]): Promise<Set<string>> {

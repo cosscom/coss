@@ -74,6 +74,24 @@ describe("providerClient", () => {
     expect(String((error as Error).message)).not.toContain("secret-key");
   });
 
+  test("concurrent requests keep their spacing", async () => {
+    const starts: number[] = [];
+    const client = providerClient({
+      name: "Test",
+      baseUrl: "https://api.test",
+      headers: {},
+      minIntervalMs: 40,
+      fetch: async () => {
+        starts.push(performance.now());
+        return Response.json({});
+      },
+    });
+    await Promise.all([client.get("/a"), client.get("/b"), client.get("/c")]);
+    const sorted = starts.sort((a, b) => a - b);
+    expect((sorted[1] ?? 0) - (sorted[0] ?? 0)).toBeGreaterThanOrEqual(35);
+    expect((sorted[2] ?? 0) - (sorted[1] ?? 0)).toBeGreaterThanOrEqual(35);
+  });
+
   test("a long wait isn't slept through: it's a rate_limited error with a time", async () => {
     const now = Date.parse("2026-01-01T00:00:00Z");
     const client = providerClient({

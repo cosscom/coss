@@ -21,7 +21,7 @@ import {
   progressOf,
   selectionOf,
 } from "./migrations.ts";
-import { PHASES, type PhaseDeps, type PhaseResult, PhaseStopped } from "./phases.ts";
+import { LeaseLost, PHASES, type PhaseDeps, type PhaseResult, PhaseStopped } from "./phases.ts";
 import { createSource, type SourceDeps } from "./sources/index.ts";
 import {
   type MigrationPhase,
@@ -96,6 +96,8 @@ export async function runDueMigrations(
       await step(claimed, lease, deps, { deadline, clock });
       advanced++;
     } catch (error) {
+      // Canceled, or another worker took the import over: it isn't this worker's to write.
+      if (error instanceof LeaseLost) continue;
       await stepFailed(claimed, lease, error, clock());
     }
   }
@@ -154,8 +156,36 @@ async function step(
     row.status === "queued" ? (phases[0] ?? null) : (row.phase as MigrationPhase | null);
   let cursor: unknown = row.status === "queued" ? null : row.cursor;
   const env = { organizationId: row.organizationId, environmentId: row.environmentId };
+  /**
+   * Saves where the import is (phase, cursor and the counts that got it there, together), still
+   * holding the lease. Phases call it after every unit of work; it throws `LeaseLost` once the
+   * import was canceled or taken over, which stops the phase before its next write.
+   */
+  const checkpoint = async (at: MigrationPhase, next: unknown) => {
+    const [kept] = await db
+      .update(migration)
+      .set({
+        status: "running",
+        phase: at,
+        cursor: next,
+        progress,
+        startedAt,
+        attemptCount: 0,
+        lastError: null,
+      })
+      .where(
+        and(
+          eq(migration.id, row.id),
+          eq(migration.leaseUntil, lease),
+          inArray(migration.status, ["queued", "running"]),
+        ),
+      )
+      .returning({ id: migration.id });
+    if (!kept) throw new LeaseLost();
+  };
 
   while (phase) {
+    const at: MigrationPhase = phase;
     const current = progress[phase] ?? emptyProgress();
     progress[phase] = current;
     current.state = "running";
@@ -171,6 +201,7 @@ async function step(
           deps,
           deadline: time.deadline,
           now: time.clock,
+          checkpoint: (next) => checkpoint(at, next),
         },
         cursor,
       );
@@ -185,11 +216,7 @@ async function step(
         current.message = error.message;
         result = { next: null };
       } else {
-        // Keep the counts made so far; the caller retries from the saved cursor.
-        await db
-          .update(migration)
-          .set({ progress })
-          .where(and(eq(migration.id, row.id), eq(migration.leaseUntil, lease)));
+        // The last checkpoint holds the counts that match its cursor; a retry goes on from there.
         throw error;
       }
     }
@@ -209,6 +236,8 @@ async function step(
     if (current.state === "running") current.state = "done";
     phase = phases[phases.indexOf(phase) + 1] ?? null;
     cursor = null;
+    // A finished phase is saved as finished, so a retry never runs it again.
+    if (phase) await checkpoint(phase, null);
     if (phase && time.clock() >= time.deadline) {
       await save(db, row, lease, {
         status: "running",

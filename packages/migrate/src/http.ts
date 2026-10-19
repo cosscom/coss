@@ -121,8 +121,10 @@ export function providerClient(options: ProviderClientOptions): ProviderClient {
 
   async function request<T>(method: "GET" | "POST", url: string, body?: unknown): Promise<T> {
     for (let attempt = 0; ; attempt++) {
-      await wait(Math.max(nextStart, blockedUntil) - now());
-      nextStart = now() + options.minIntervalMs;
+      // Reserved before waiting, so concurrent calls queue up instead of starting together.
+      const start = Math.max(nextStart, blockedUntil, now());
+      nextStart = start + options.minIntervalMs;
+      await wait(start - now());
       let response: Response;
       try {
         response = await fetchFn(url, {

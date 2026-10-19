@@ -26,8 +26,12 @@ dashboard only (`[envSlug]/import`; no public API, SDK or CLI).
   `publicDownloader` (https, public addresses pinned, size-capped, gzip by magic bytes). 403/404 on a list a
   key can't read makes that kind unavailable, not the import.
 - **Runner** (`runDueMigrations`, system-level): leases one import (`lease_until` bound from a JS `Date`, every
-  write fenced on it), works for `MIGRATION_STEP_MS`, saves `phase` + `cursor` + `progress`, and comes back;
-  suspended and deleting organizations are held. Every phase does at least one unit of work per call. Objects
+  write to the row fenced on it), works for `MIGRATION_STEP_MS` and comes back; suspended and deleting
+  organizations are held. Every phase does at least one unit of work per call and calls `ctx.checkpoint(next)`
+  after each one (an object, a batch, a page): it saves phase, cursor and counts together, so a failed step
+  resumes from there without counting anything twice, and it throws `LeaseLost` once the import was canceled
+  or taken over, which stops the phase before its next write (the products' writes run in their own
+  transactions, so at most the unit in flight finishes after a cancel). Objects
   with a natural key (property key, topic key, audience name, template alias, endpoint URL, domain name) are
   recorded as a `pending` item **before** they are created, so a retry resolves them instead of creating them
   twice; what already exists is reported `existing` and never changed. Contacts and suppressions go through

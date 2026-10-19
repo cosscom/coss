@@ -63,12 +63,12 @@ async function connect(tenant: TestTenant) {
 async function settle(
   tenant: TestTenant,
   deps: ReturnType<typeof depsFor>,
-  opts: { maxRuns?: number; stepMs?: number } = {},
+  opts: { maxRuns?: number; stepMs?: number; aheadMs?: number } = {},
 ) {
   for (let run = 0; run < (opts.maxRuns ?? 200); run++) {
     const advanced = await runDueMigrations(deps, {
       scope: scopeOf(tenant),
-      now: new Date(Date.now() + 1000),
+      now: new Date(Date.now() + (opts.aheadMs ?? 1000)),
       ...(opts.stepMs !== undefined ? { stepMs: opts.stepMs } : {}),
     });
     if (advanced === 0) return;
@@ -326,6 +326,70 @@ describe("runDueMigrations", () => {
     expect(
       progressOf((await getMigration(env, second.id)) ?? { progress: {} }).contacts,
     ).toMatchObject({ created: 0, updated: 25 });
+  });
+
+  test("a cancel during a step stops it before its next write", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const row = await connect(tenant);
+    await settle(tenant, depsFor(DATA));
+    await startAll(tenant, row.id, ["templates"]);
+    const deps = depsFor({
+      ...DATA,
+      // The customer cancels while the first template is being read.
+      before: async (method, call) => {
+        if (method === "template" && call === 1) await cancelMigration(env, row.id);
+      },
+    });
+    await settle(tenant, deps);
+    expect(await getMigration(env, row.id)).toMatchObject({
+      status: "canceled",
+      credentialsCiphertext: null,
+    });
+    // The template in flight was finished; nothing after it was written.
+    expect(await getEmailTemplate(env, "welcome")).not.toBeNull();
+    expect(await getEmailTemplate(env, "receipt")).toBeNull();
+    expect(await listMigrationItems(env, row.id)).toHaveLength(1);
+  });
+
+  test("a failed step goes on from its last checkpoint without counting anything twice", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const contacts = Array.from({ length: 12 }, (_, i) => ({
+      email: `retry${i}@example.com`,
+      firstName: null,
+      lastName: null,
+      unsubscribed: false,
+      properties: {},
+      topics: [],
+    }));
+    let failed = false;
+    const deps = depsFor({
+      ...DATA,
+      contacts,
+      pageSize: 5,
+      before: (method, call) => {
+        // The third page fails once, after two pages were imported in the same step.
+        if (method === "contacts" && call === 3 && !failed) {
+          failed = true;
+          throw new ProviderError("unavailable", "Resend answered 503.", 503);
+        }
+      },
+    });
+    const row = await connect(tenant);
+    await settle(tenant, deps);
+    await startAll(tenant, row.id, ["contacts"]);
+    await settle(tenant, deps);
+    expect((await getMigration(env, row.id))?.lastError).toBe("Resend answered 503.");
+    // The retry comes a minute later.
+    await settle(tenant, deps, { aheadMs: 10 * 60 * 1000 });
+    const done = await getMigration(env, row.id);
+    expect(failed).toBe(true);
+    expect(done?.status).toBe("completed");
+    expect(progressOf(done ?? { progress: {} }).contacts).toMatchObject({
+      created: 12,
+      updated: 0,
+    });
   });
 
   test("a phase the key can't read fails alone; a revoked key fails the import", async () => {
