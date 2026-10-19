@@ -858,3 +858,14 @@ test("a low-volume mixed campaign is billed its lower monthly fee, whatever the 
   expect(charged).toContain("fee=campaign_monthly_low_volume");
   expect(charged).not.toContain("fee=campaign_monthly");
 });
+
+test("teardown closes the account first, so no subaccount is created behind it", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  const d = deps();
+  // An account without a subaccount yet: a first purchase could be creating one.
+  await db.insert(smsAccount).values({ organizationId: org }).onConflictDoNothing();
+  await releaseOrganizationSmsResources(org, d);
+  await expect(ensureSmsSubaccount(org, d)).rejects.toMatchObject({ code: "provider_unavailable" });
+  expect(d.twilio.calls.map((call) => call.method)).not.toContain("createSubaccount");
+});

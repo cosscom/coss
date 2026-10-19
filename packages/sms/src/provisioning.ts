@@ -885,11 +885,12 @@ export async function reconcileSmsPurchases(
         eq(smsNumber.status, "pending"),
         isNull(smsNumber.providerSid),
         eq(smsNumber.provider, deps.provider),
-        lte(smsNumber.createdAt, new Date(now.getTime() - PURCHASE_RECONCILE_MS)),
+        // A while after its purchase or its last check (the abandonment counts from creation).
+        lte(smsNumber.updatedAt, new Date(now.getTime() - PURCHASE_RECONCILE_MS)),
         opts.scope ? inArray(smsNumber.organizationId, opts.scope.organizationIds) : undefined,
       ),
     )
-    .orderBy(asc(smsNumber.createdAt))
+    .orderBy(asc(smsNumber.updatedAt))
     .limit(opts.limit ?? 20);
   let settled = 0;
   for (const intent of due) {
@@ -899,13 +900,21 @@ export async function reconcileSmsPurchases(
       if (owned) {
         await completePurchase(intent, owned);
         settled++;
-      } else if (intent.createdAt.getTime() <= now.getTime() - PURCHASE_ABANDON_MS) {
+        continue;
+      }
+      if (intent.createdAt.getTime() <= now.getTime() - PURCHASE_ABANDON_MS) {
         await dropPurchaseIntent(intent);
         settled++;
+        continue;
       }
     } catch (error) {
       console.error(`[sms] purchase of ${intent.id} not reconciled:`, error);
     }
+    // Checked again later, after the others: failing ones can't hold the batch.
+    await db
+      .update(smsNumber)
+      .set({ updatedAt: now })
+      .where(and(eq(smsNumber.id, intent.id), eq(smsNumber.organizationId, intent.organizationId)));
   }
   return settled;
 }
@@ -1244,29 +1253,36 @@ export async function releaseOrganizationSmsResources(
     .update(smsNumber)
     .set({ status: "releasing" })
     .where(eq(smsNumber.organizationId, organizationId));
-  const [account] = await db
-    .select()
-    .from(smsAccount)
-    .where(eq(smsAccount.organizationId, organizationId))
-    .limit(1);
+  // Under the account lock, which subaccount creation holds too: one being created now is there
+  // (and closed) once this reads, and none is created after the account is `closing`.
+  const account = await db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(smsAccount)
+      .where(eq(smsAccount.organizationId, organizationId))
+      .for("update");
+    if (
+      row?.subaccountSid &&
+      row.status !== "closed" &&
+      row.provider !== deps.provider &&
+      row.provider !== "fake"
+    ) {
+      // Deleting the rows would orphan a paid subaccount: the deletion waits for a deployment
+      // with the account's provider.
+      throw new Error(
+        `SMS subaccount of ${organizationId} is at ${row.provider}, not ${deps.provider}: not closed.`,
+      );
+    }
+    if (row && row.status === "active") {
+      await tx
+        .update(smsAccount)
+        .set({ status: "closing" })
+        .where(eq(smsAccount.organizationId, organizationId));
+    }
+    return row;
+  });
   await assertLease();
-  if (
-    account?.subaccountSid &&
-    account.status !== "closed" &&
-    account.provider !== deps.provider &&
-    account.provider !== "fake"
-  ) {
-    // Deleting the rows would orphan a paid subaccount: the deletion waits for a deployment with
-    // the account's provider.
-    throw new Error(
-      `SMS subaccount of ${organizationId} is at ${account.provider}, not ${deps.provider}: not closed.`,
-    );
-  }
   if (account?.subaccountSid && account.status !== "closed" && account.provider === deps.provider) {
-    await db
-      .update(smsAccount)
-      .set({ status: "closing" })
-      .where(eq(smsAccount.organizationId, organizationId));
     await deps.twilio.closeSubaccount(account.subaccountSid);
   }
   await assertLease();
