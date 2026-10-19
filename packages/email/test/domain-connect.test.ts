@@ -218,6 +218,31 @@ describe("domainConnectGroups", () => {
     ).toEqual(["dkim", "mail_from"]);
   });
 
+  test("asks DNS again when the stored check says DMARC is missing", async () => {
+    const domain = domainOf("mail.example.com");
+    const records = withStatus(recordsOf(domain), "missing");
+    expect(await domainConnectGroups({ domain, records, tracking: null }, dns)).toContain("dmarc");
+    // Published since the last check, at the name or the organizational domain.
+    for (const name of ["mail.example.com", "example.com"]) {
+      const published = fakeDnsResolver({ [`TXT _dmarc.${name}`]: [["v=DMARC1; p=reject"]] });
+      expect(
+        await domainConnectGroups({ domain, records, tracking: null }, published),
+      ).not.toContain("dmarc");
+    }
+    const parentFails = {
+      ...dns,
+      resolveTxt: async (name: string) => {
+        if (name === "_dmarc.example.com") {
+          throw Object.assign(new Error("timeout"), { code: "ETIMEOUT" });
+        }
+        return [];
+      },
+    };
+    expect(
+      await domainConnectGroups({ domain, records, tracking: null }, parentFails),
+    ).not.toContain("dmarc");
+  });
+
   test("looks DMARC up when the domain hasn't been checked yet", async () => {
     const domain = domainOf("mail.example.com");
     const records = recordsOf(domain);

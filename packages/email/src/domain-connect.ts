@@ -17,7 +17,7 @@ import { isBlockedAddress, publicAddressLookup, type SenderOptions } from "@coss
 import { z } from "zod";
 import template from "../domain-connect/coss.com.email.json" with { type: "json" };
 import { organizationalDomain } from "./bimi.ts";
-import { type DnsResolver, dmarcRecordAt, lookup } from "./dns.ts";
+import { type DnsResolver, dmarcAbsentAt, lookup } from "./dns.ts";
 
 /** The template as submitted upstream; its records are the contract with DNS providers. */
 export const DOMAIN_CONNECT_TEMPLATE = template;
@@ -210,7 +210,9 @@ export type DomainConnectTracking = {
 
 /**
  * Whether a DMARC record may be added: only when the domain has none and inherits none. A
- * `p=none` record on a subdomain would override the organizational domain's enforced policy.
+ * `p=none` record on a subdomain would override the organizational domain's enforced policy, and
+ * the template's `Prefix` conflict mode would replace one at the name. The stored check can be
+ * stale (a policy published since), so DNS is asked now; a failed lookup means no.
  */
 async function dmarcAddable(
   domain: DomainConnectDomain,
@@ -218,13 +220,11 @@ async function dmarcAddable(
   dns: DnsResolver,
 ): Promise<boolean> {
   if (!record) return false;
-  if (record.status !== "not_checked") {
-    return record.status === "missing" && domain.dmarcInheritedRecord === null;
-  }
-  // Never checked yet (the domain was just added): look now.
-  if ((await dmarcRecordAt(domain.name, dns)) !== null) return false;
-  const organizational = organizationalDomain(domain.name);
-  return organizational === domain.name || (await dmarcRecordAt(organizational, dns)) === null;
+  if (record.status === "verified" || record.status === "mismatch") return false;
+  if (domain.dmarcInheritedRecord !== null) return false;
+  const names = new Set([domain.name, organizationalDomain(domain.name)]);
+  const absent = await Promise.all([...names].map((name) => dmarcAbsentAt(name, dns)));
+  return absent.every((value) => value === true);
 }
 
 /**
