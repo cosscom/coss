@@ -18,6 +18,8 @@ import type { LogEntryInput, LogWriter } from "@coss/logs";
 import type { ClientIpResolver, RateLimiter } from "@coss/ratelimit";
 import type { RiskDeps } from "@coss/risk";
 import { testRiskDeps } from "@coss/risk/testing";
+import { createSmsService, FakeSmsProvider, type SmsService } from "@coss/sms";
+import { memorySmsDispatchQueue } from "@coss/sms/testing";
 import type { ApiKeyContext } from "@coss/tenancy";
 import { LATEST_API_VERSION, type Versioning } from "@coss/versioning";
 import { decryptSecret } from "@coss/webhooks";
@@ -41,6 +43,7 @@ export const TEST_INBOUND_DOMAIN = "inbound.coss.test";
 export function createTestApp(
   opts: {
     emailService?: EmailService;
+    smsService?: SmsService;
     domainDeps?: DomainDeps;
     rateLimiter?: RateLimiter;
     clientIp?: ClientIpResolver;
@@ -83,8 +86,19 @@ export function createTestApp(
       billing: opts.billing,
       linkKeys: DEVELOPMENT_LINK_KEYS,
     });
+  const smsProvider = new FakeSmsProvider({ log: false });
+  const smsQueue = memorySmsDispatchQueue();
+  const smsService =
+    opts.smsService ??
+    createSmsService({
+      liveProvider: smsProvider,
+      sandboxProvider: smsProvider,
+      queue: smsQueue,
+      billing: opts.billing,
+    });
   const app = createApp({
     emailService,
+    smsService,
     domainDeps: opts.domainDeps ?? { identity, dns: null, tracking, plans: opts.plans },
     inbound,
     webhookDeps: { ...testManagementDeps, plans: opts.plans },
@@ -102,6 +116,7 @@ export function createTestApp(
     listenerPollIntervalMs: opts.listenerPollIntervalMs ?? 20,
   });
   const dispatch = () => queue.drain(emailService);
+  const dispatchSms = () => smsQueue.drain(smsService);
   return {
     app,
     emailService,
@@ -112,6 +127,9 @@ export function createTestApp(
     queue,
     dispatch,
     inbound,
+    smsProvider,
+    smsQueue,
+    dispatchSms,
   };
 }
 

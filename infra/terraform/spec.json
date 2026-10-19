@@ -653,6 +653,13 @@
           "description": "The zone's fallback origin, which customers CNAME their tracking domain to."
         },
         {
+          "name": "SMS_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "twilio",
+          "description": "Provider of live environments' SMS and of new numbers (fake|twilio). With `fake`, production refuses to provision numbers, so no live SMS goes anywhere."
+        },
+        {
           "name": "TRACKING_PUBLIC_URL",
           "kind": "plain",
           "required": false,
@@ -950,6 +957,41 @@
           "required": true,
           "value": "openssl rand -base64 32 (one per stage). A comma-separated list while rotating: the first encrypts, every one decrypts. Never drop a key whose links may still be clicked",
           "description": "Encrypts the preference center, unsubscribe and confirmation links of marketing email. Same value for api and worker."
+        },
+        {
+          "name": "SMS_PROVIDER",
+          "kind": "plain",
+          "required": true,
+          "value": "twilio",
+          "description": "Provider of live environments' SMS and of new numbers (fake|twilio). With `fake`, production refuses to provision numbers, so no live SMS goes anywhere."
+        },
+        {
+          "name": "TWILIO_ACCOUNT_SID",
+          "kind": "plain",
+          "required": false,
+          "value": "AC… (the parent account)",
+          "description": "Creates organizations' subaccounts and sends on their behalf."
+        },
+        {
+          "name": "TWILIO_AUTH_TOKEN",
+          "kind": "secret",
+          "required": false,
+          "value": "The parent account's auth token",
+          "description": "Authenticates the parent account's requests."
+        },
+        {
+          "name": "TWILIO_PRIMARY_CUSTOMER_PROFILE_SID",
+          "kind": "plain",
+          "required": false,
+          "value": "BU… (the ISV's approved primary customer profile)",
+          "description": "Organizations' US A2P 10DLC brands are registered under it."
+        },
+        {
+          "name": "SMS_SUBACCOUNT_PREFIX",
+          "kind": "plain",
+          "required": false,
+          "value": "coss-<stage>",
+          "description": "Names the subaccounts coss.com creates (`<prefix>-<organization id>`), apart from Cal.com's own."
         },
         {
           "name": "BILLING_PROVIDER",

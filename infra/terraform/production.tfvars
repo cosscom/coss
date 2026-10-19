@@ -22,7 +22,7 @@ github_repository = "cosscom/coss"
 # (README, "Deploying from the admin console"). Add a new maintainer here before their merges can deploy.
 deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778", "343308169"]
 # Optional secrets not stored in coss/production: take a name out once put-secret.sh has set it.
-unset_secrets      = ["IPINFO_PRIVACY_TOKEN"]
+unset_secrets      = ["IPINFO_PRIVACY_TOKEN", "TWILIO_AUTH_TOKEN"]
 initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
@@ -103,6 +103,8 @@ plain_env = {
     PORTAL_PUBLIC_URL        = "https://portal.cosshooks.com"
     API_CORS_ORIGINS         = "https://coss.com"
     EMAIL_PROVIDER           = "ses"
+    # SMS stays simulated until the Twilio variables (and the TWILIO_AUTH_TOKEN secret) are set.
+    SMS_PROVIDER             = "fake"
     AWS_REGION               = "us-east-2"
     SES_CONFIGURATION_SET    = "coss"
     SES_TENANT_PREFIX        = "coss"
@@ -126,6 +128,7 @@ plain_env = {
     SENTRY_TRACES_SAMPLE_RATE = "0.1"
   }
   worker = {
+    SMS_PROVIDER          = "fake"
     BETTER_AUTH_URL       = "https://coss.com"
     API_PUBLIC_URL        = "https://api.coss.com"
     TRACKING_PUBLIC_URL   = "https://track.cosslinks.com"

@@ -9,6 +9,7 @@ import {
   type RateLimiter,
 } from "@coss/ratelimit";
 import type { RiskDeps } from "@coss/risk";
+import type { SmsService } from "@coss/sms";
 import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
@@ -23,6 +24,7 @@ import { requestId } from "./middleware/request-id.ts";
 import { requestLog } from "./middleware/request-log.ts";
 import { withApiVersionDocs } from "./openapi-versions.ts";
 import { createPreferenceRoutes } from "./routes/preferences.ts";
+import { createSmsCallbackRoutes, SMS_CALLBACK_PATH } from "./routes/sms-callbacks.ts";
 import { createTrackingRoutes, TRACKING_PATH_PREFIX } from "./routes/tracking.ts";
 import { createV1Router } from "./routes/v1.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
@@ -32,6 +34,8 @@ import { validationHook } from "./validation.ts";
 export type CreateAppOptions = {
   /** Sends store the email and enqueue its dispatch (`createEmailService`). */
   emailService: EmailService;
+  /** Sends store the SMS and enqueue its dispatch (`createSmsService`). */
+  smsService: SmsService;
   /** Identity provider and DNS resolver for domain management. Defaults to the fake provider. */
   domainDeps?: DomainDeps;
   /**
@@ -180,11 +184,17 @@ export function createApp(opts: CreateAppOptions) {
   // preference center first: `/t` would otherwise answer its paths with a 404.
   app.route("/t/u", createPreferenceRoutes(opts.links.keys));
   app.route("/t", createTrackingRoutes());
+  // Twilio's status and inbound callbacks, verified with the subaccount's (encrypted) token.
+  app.route(
+    SMS_CALLBACK_PATH,
+    createSmsCallbackRoutes({ keys: opts.webhookDeps.secretsKeys, publicUrl: opts.publicUrl }),
+  );
 
   app.route(
     "/v1",
     createV1Router({
       emailService,
+      smsService: opts.smsService,
       domainDeps,
       webhookDeps: opts.webhookDeps,
       portalUrl: opts.portalUrl === undefined ? "http://localhost:3003" : opts.portalUrl,
@@ -256,6 +266,11 @@ export function openApiDocumentConfig(serverUrl: string) {
       {
         name: "Tracking",
         description: "Which emails of the environment have their opens and clicks tracked.",
+      },
+      {
+        name: "SMS",
+        description:
+          "Send text messages from the organization's numbers, follow their delivery, and read replies and opt-outs.",
       },
       { name: "Domains", description: "The organization's verified sending domains." },
       {

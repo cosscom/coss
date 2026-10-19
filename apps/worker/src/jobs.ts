@@ -52,6 +52,13 @@ import {
 import { RETENTION_DAYS } from "@coss/retention";
 import { refreshDueDatasets } from "@coss/risk";
 import { contentScreeningCheck } from "@coss/screening";
+import {
+  type SmsDispatchQueue,
+  type SmsService,
+  smsReputationChecks,
+  sweepStaleSmsClaims,
+  sweepUnclaimedSms,
+} from "@coss/sms";
 import { runDueOrganizationDeletions } from "@coss/tenancy/deletion";
 import {
   runDueLogDrainDeliveries,
@@ -73,6 +80,7 @@ const LOG_DRAIN_BATCH = 10;
 const DOMAIN_BATCH = 25;
 const DEDICATED_IP_BATCH = 25;
 const SWEEP_BATCH = 100;
+const SCHEDULED_SMS_BATCH = 50;
 const REPUTATION_BATCH = 50;
 const NOTIFICATION_BATCH = 20;
 const AUTH_EMAIL_BATCH = 20;
@@ -83,7 +91,12 @@ const RETENTION_BATCH = 1000;
 const BILLING_BATCH = 20;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 // Hooks delivery failures warn by default (their policy has no suspension threshold).
-const REPUTATION_CHECKS = [...emailReputationChecks, contentScreeningCheck, hookFailureRateCheck];
+const REPUTATION_CHECKS = [
+  ...emailReputationChecks,
+  ...smsReputationChecks,
+  contentScreeningCheck,
+  hookFailureRateCheck,
+];
 
 export type WorkerDeps = {
   /** Emails are dispatched by pg-boss workers; this loop only re-enqueues lost jobs. */
@@ -91,6 +104,8 @@ export type WorkerDeps = {
   domains: DomainDeps;
   /** Dispatches scheduled emails. */
   email: Pick<EmailService, "dispatchDue">;
+  /** SMS: dispatches scheduled messages; the sweeps re-enqueue lost jobs on `queue`. */
+  sms: { service: Pick<SmsService, "dispatchDue">; queue: SmsDispatchQueue };
   /** Fans broadcasts out into emails, at each organization's marketing rate. */
   broadcasts: BroadcastWorkerDeps;
   /** Also delivers log drain batches (same signing keys and sender). */
@@ -151,6 +166,9 @@ export const WORKER_LOOP_NAMES = [
   "domains",
   "dedicated-ips",
   "scheduled-emails",
+  "sms-dispatch",
+  "scheduled-sms",
+  "sms-sweeps",
   "broadcasts",
   "stale-claims",
   "reputation",
@@ -258,6 +276,25 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       intervalMs: 1000,
       run: async () =>
         (await runDueBroadcasts(deps.broadcasts, { limit: BROADCAST_BATCH })) === BROADCAST_BATCH,
+    }),
+    start({
+      name: "scheduled-sms",
+      intervalMs: 5000,
+      run: async () =>
+        (await deps.sms.service.dispatchDue({
+          limit: SCHEDULED_SMS_BATCH,
+          signal: deps.signal,
+        })) === SCHEDULED_SMS_BATCH,
+    }),
+    start({
+      // SMS whose dispatch was interrupted (claimed, never finished) or lost (never claimed).
+      name: "sms-sweeps",
+      intervalMs: 60_000,
+      run: async () => {
+        const stale = await sweepStaleSmsClaims({ limit: SWEEP_BATCH });
+        const unclaimed = await sweepUnclaimedSms(deps.sms.queue, { limit: SWEEP_BATCH });
+        return stale === SWEEP_BATCH || unclaimed.failed === SWEEP_BATCH;
+      },
     }),
     start({
       name: "stale-claims",

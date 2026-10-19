@@ -13,8 +13,9 @@ repository root.
   `attemptedAuth`); `/health`, `/openapi.json`, `/t/*`, preflights and `GET /v1/logs*` are not. Bodies are kept only
   through `redactBody` (secret-named keys, base64 `content` replaced, strings cut at 2 KB, 16 KB overall) and headers
   through the allow-lists in `redact.ts` — never `Authorization`, cookies or attachment bytes. Successful
-  `/v1/received_emails*` responses keep no body at all (`CONTENT_RESPONSES` in `request-log.ts`): third-party mail
-  must not be copied into logs and drains, where it would outlive deleting the email. Requests on `/v1/emails*` redact
+  `/v1/received_emails*` and `/v1/sms/received*` responses keep no body at all (`CONTENT_RESPONSES` in
+  `request-log.ts`): third-party mail and text messages must not be copied into logs and drains, where they would
+  outlive their purge. Requests on `/v1/emails*` redact
   `EMAIL_CONTENT_KEYS` too (`redactBody(body, { content })`) when the route answered with an email sent under content
   storage `discard` (`markEmailContent`, the email's own snapshot — call it in every route returning emails) or the
   environment's setting is `discard`, so the log never keeps what the email itself doesn't. Reads are scoped by

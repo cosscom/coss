@@ -254,6 +254,35 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   },
   "GET /v1/suppressions/{id}": { method: "email.suppressions.get", args: (r) => [pathId(r)] },
   "DELETE /v1/suppressions/{id}": { method: "email.suppressions.remove", args: (r) => [pathId(r)] },
+  // SMS. Static paths before `/v1/sms/{id}`, which would also match them.
+  "POST /v1/sms": {
+    method: "sms.send",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/sms": { method: "sms.list", args: (request) => [queryParams(request)] },
+  "POST /v1/sms/suppressions": {
+    method: "sms.suppressions.add",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/sms/suppressions": {
+    method: "sms.suppressions.list",
+    args: (request) => [queryParams(request)],
+  },
+  "GET /v1/sms/suppressions/check": {
+    method: "sms.suppressions.check",
+    args: (request) => [queryParams(request) ?? "{}"],
+  },
+  "GET /v1/sms/suppressions/{id}": { method: "sms.suppressions.get", args: (r) => [pathId(r)] },
+  "DELETE /v1/sms/suppressions/{id}": {
+    method: "sms.suppressions.remove",
+    args: (r) => [pathId(r)],
+  },
+  "GET /v1/sms/received": { method: "sms.received.list", args: (r) => [queryParams(r)] },
+  "GET /v1/sms/received/{id}": { method: "sms.received.get", args: (r) => [pathId(r)] },
+  "GET /v1/sms/numbers": { method: "sms.numbers.list", args: () => [] },
+  "GET /v1/sms/{id}": { method: "sms.get", args: (r) => [pathId(r)] },
+  "GET /v1/sms/{id}/events": { method: "sms.listEvents", args: (r) => [pathId(r)] },
+  "POST /v1/sms/{id}/cancel": { method: "sms.cancel", args: (r) => [pathId(r)] },
   "POST /v1/email_templates": {
     method: "email.templates.create",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],

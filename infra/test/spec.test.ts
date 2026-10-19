@@ -2,6 +2,7 @@
  * Keeps the deployment spec honest: every variable an app validates is declared for its service,
  * everything declared reaches tasks through turbo, and the Dockerfiles use the repo's versions.
  */
+
 import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -12,6 +13,7 @@ import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { screeningEnvShape } from "@coss/screening/env";
+import { smsEnvShape } from "@coss/sms/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import {
   albListenerRules,
@@ -42,6 +44,7 @@ function schemaKeys(envFile: string, spread: Record<string, unknown>): string[] 
     ...(source.includes("...sentryEnvShape") ? Object.keys(sentryEnvShape) : []),
     ...(source.includes("...webhookEnvShape") ? Object.keys(webhookEnvShape) : []),
     ...(source.includes("...billingEnvShape") ? billingKeys(envFile) : []),
+    ...(source.includes("...smsEnvShape") ? Object.keys(smsEnvShape) : []),
   ];
 }
 

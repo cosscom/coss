@@ -7,6 +7,7 @@ import { BillingError } from "@coss/billing";
 import { BroadcastError, ContactError, DomainError, EmailError } from "@coss/email";
 import { HookError } from "@coss/hooks";
 import { RiskError } from "@coss/risk";
+import { SmsError } from "@coss/sms";
 import { WebhookError } from "@coss/webhooks";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -225,6 +226,32 @@ function fromEmailError(error: EmailError): ApiError {
   }
 }
 
+function fromSmsError(error: SmsError): ApiError {
+  switch (error.code) {
+    case "request_in_progress":
+    case "idempotency_key_reused":
+      return fromIdempotencyError({ code: error.code, message: error.message });
+    case "not_found":
+      return new ApiError(404, {
+        type: "not_found_error",
+        code: error.code,
+        message: error.message,
+      });
+    case "account_suspended":
+      return new ApiError(403, {
+        type: "permission_error",
+        code: error.code,
+        message: error.message,
+      });
+    case "billing_hold":
+      return new ApiError(402, { type: "billing_error", code: error.code, message: error.message });
+    case "provider_unavailable":
+      return new ApiError(503, { type: "api_error", code: error.code, message: error.message });
+    default:
+      return invalidRequest(error.code, error.message, error.param);
+  }
+}
+
 function invalidRequest(code: string, message: string, param?: string): ApiError {
   return new ApiError(422, {
     type: "invalid_request_error",
@@ -396,6 +423,7 @@ export function toApiError(error: unknown): ApiError | null {
   if (error instanceof BroadcastError) return fromBroadcastError(error);
   if (error instanceof WebhookError) return fromWebhookError(error);
   if (error instanceof RiskError) return fromRiskError(error);
+  if (error instanceof SmsError) return fromSmsError(error);
   // A 5xx exception is a server fault: left to the caller to log and answer with a generic 500.
   if (error instanceof HTTPException && error.status < 500) return fromHttpException(error);
   return null;

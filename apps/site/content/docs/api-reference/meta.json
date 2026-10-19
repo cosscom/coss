@@ -25,6 +25,8 @@
     "segments",
     "topics",
     "broadcasts",
+    "---SMS---",
+    "sms",
     "---Hooks---",
     "hooks-applications",
     "hooks-event-types",

@@ -11,6 +11,8 @@ import { linkKeysFromEnv } from "@coss/email/runtime";
 import { createLogWriter } from "@coss/logs";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { createRiskDeps } from "@coss/risk/runtime";
+import { createSmsService } from "@coss/sms";
+import { ensureSmsDispatchQueue, pgBossSmsDispatchQueue } from "@coss/sms/dispatch";
 import { parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
 import { createApp } from "./app.ts";
@@ -25,6 +27,7 @@ const email = createDefaultEmailRuntime(env, { plans });
 // Sends only enqueue (the worker dispatches).
 const jobs = await startJobBoss();
 await ensureEmailDispatchQueues(jobs);
+await ensureSmsDispatchQueue(jobs);
 const rateLimits = createRateLimitRuntime(env, {
   planRules: (organizationId) => planRateLimits(organizationId),
 });
@@ -47,6 +50,13 @@ const app = createApp({
     trackingDomainProvider: email.trackingHostnames.name,
     billing: usage,
     linkKeys,
+  }),
+  smsService: createSmsService({
+    // Sends only enqueue here: the provider is named (numbers are the live provider's), never called.
+    liveProvider: { name: env.SMS_PROVIDER, send: () => Promise.reject(new Error("Not here.")) },
+    sandboxProvider: { name: "fake", send: () => Promise.reject(new Error("Not here.")) },
+    queue: pgBossSmsDispatchQueue(jobs),
+    billing: usage,
   }),
   billing: usage,
   links: { keys: linkKeys, baseUrl: trackingUrl },

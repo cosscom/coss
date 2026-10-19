@@ -55,6 +55,12 @@ export type {
   RiskSettingsResource,
   RiskUsersResource,
 } from "./resources/risk.ts";
+export type {
+  ReceivedSmsResource,
+  SmsNumbersResource,
+  SmsResource,
+  SmsSuppressionsResource,
+} from "./resources/sms.ts";
 export type { StorageResource } from "./resources/storage.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
 export type { TrackingResource } from "./resources/tracking.ts";

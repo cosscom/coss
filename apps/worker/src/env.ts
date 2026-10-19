@@ -4,6 +4,7 @@ import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { riskDatasetEnvShape } from "@coss/risk/env";
 import { screeningEnvShape } from "@coss/screening/env";
+import { smsEnvShape } from "@coss/sms/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
@@ -73,6 +74,8 @@ export const env = createEnv({
     ...webhookEnvShape,
     // Billing (@coss/billing): the payment provider new accounts use, and Stripe's API key.
     ...billingEnvShape,
+    // SMS: the live provider (Twilio's parent account and ISV profile) and subaccount names.
+    ...smsEnvShape,
     // Error monitoring; read by src/instrument.ts before this schema runs.
     ...sentryEnvShape,
     // The image's commit (Dockerfile build argument), Sentry's release.

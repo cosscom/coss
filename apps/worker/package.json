@@ -34,6 +34,7 @@
     "@coss/retention": "workspace:*",
     "@coss/risk": "workspace:*",
     "@coss/screening": "workspace:*",
+    "@coss/sms": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@sentry/bun": "catalog:",
