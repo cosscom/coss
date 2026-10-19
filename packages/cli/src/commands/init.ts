@@ -86,6 +86,14 @@ export function setEnvVar(text: string, name: string, value: string): string {
   return `${text}${separator}${name}=${value}\n`;
 }
 
+/** `text` without `name`'s assignments. */
+export function removeEnvVar(text: string, name: string): string {
+  return text.replace(
+    new RegExp(`^[ \\t]*(?:export[ \\t]+)?${name}[ \\t]*=.*(?:\\r?\\n|$)`, "gm"),
+    "",
+  );
+}
+
 /** The project's name for the key: package.json's (without its scope), else the directory's. */
 function projectName(dir: string, pkg: PackageJson | null): string {
   const name = typeof pkg?.name === "string" ? pkg.name.replace(/^@[^/]+\//, "") : "";
@@ -156,10 +164,13 @@ async function init({ values, context }: CommandInput<typeof FLAGS>): Promise<nu
           "writes development keys. Pick a sandbox environment.",
       );
     }
-    let text = setEnvVar(existingText ?? "", "COSS_API_KEY", token.api_key);
-    if (baseUrl !== DEFAULT_BASE_URL && !/^\s*(?:export\s+)?COSS_BASE_URL\s*=/m.test(text)) {
-      text = setEnvVar(text, "COSS_BASE_URL", baseUrl);
-    }
+    const withKey = setEnvVar(existingText ?? "", "COSS_API_KEY", token.api_key);
+    // The key only works against the API it came from: COSS_BASE_URL follows it (a key of the
+    // default API drops one a local stack left).
+    const text =
+      baseUrl === DEFAULT_BASE_URL
+        ? removeEnvVar(withKey, "COSS_BASE_URL")
+        : setEnvVar(withKey, "COSS_BASE_URL", baseUrl);
     // A new file is readable by its owner only; an existing one keeps its mode.
     await mkdir(dirname(envFile), { recursive: true });
     await writeFile(envFile, text, { mode: 0o600 });

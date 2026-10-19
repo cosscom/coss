@@ -1,7 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { detectPackageManager, installCommand, setEnvVar } from "../src/commands/init.ts";
+import {
+  detectPackageManager,
+  installCommand,
+  removeEnvVar,
+  setEnvVar,
+} from "../src/commands/init.ts";
 import type { CliIo } from "../src/io.ts";
 import { run } from "../src/run.ts";
 import { apiError, environmentObject, fakeFetch, testIo } from "./helpers.ts";
@@ -121,7 +126,26 @@ describe("coss init", () => {
       `COSS_API_KEY=${PROJECT_KEY}\nCOSS_BASE_URL=http://localhost:3001\n`,
     );
     expect(calls.map((call) => call.command)).toEqual(["git"]);
-    expect(JSON.parse(io.output())).toEqual({
+
+    // A new key follows the API it came from: another local one, then the default.
+    io.prompt = async () => "the-code";
+    io.env.COSS_BASE_URL = "http://localhost:4001";
+    const again = [
+      "init",
+      "--env-file",
+      "config/dev.env",
+      "--no-install",
+      "--no-browser",
+      "--force",
+    ];
+    expect(await run(again, io)).toBe(0);
+    expect(await readFile(envFile, "utf8")).toBe(
+      `COSS_API_KEY=${PROJECT_KEY}\nCOSS_BASE_URL=http://localhost:4001\n`,
+    );
+    delete io.env.COSS_BASE_URL;
+    expect(await run(again, io)).toBe(0);
+    expect(await readFile(envFile, "utf8")).toBe(`COSS_API_KEY=${PROJECT_KEY}\n`);
+    expect(JSON.parse(io.output().trim().split("\n")[0] ?? "")).toEqual({
       env_file: envFile,
       key: {
         id: "key_1",
@@ -179,6 +203,8 @@ describe("package managers", () => {
   });
 
   test("env vars are replaced in place or appended", () => {
+    expect(removeEnvVar("A=1\n\nexport B=2\nC=3", "B")).toBe("A=1\n\nC=3");
+    expect(removeEnvVar("A=1\nB=2", "B")).toBe("A=1\n");
     expect(setEnvVar("", "A", "1")).toBe("A=1\n");
     expect(setEnvVar("B=2", "A", "1")).toBe("B=2\nA=1\n");
     expect(setEnvVar("export A=old\nB=2\n", "A", "$new")).toBe("A=$new\nB=2\n");

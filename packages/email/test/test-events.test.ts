@@ -198,5 +198,21 @@ describe("test webhook events", () => {
       "data.recipent",
       "data.bounce.subtype",
     ]);
+
+    // In the objects of a list too: the stored event is the one handlers receive.
+    const inList = await refusal(
+      sendTestWebhookEvent({
+        ...environment,
+        mode: "sandbox",
+        type: "email.bounced",
+        data: {
+          tags: [
+            { name: "template", value: "welcome" },
+            { name: "plan", value: "pro", typo: true },
+          ],
+        },
+      }),
+    );
+    expect(inList.issues?.map((issue) => issue.path)).toEqual(["data.tags.1.typo"]);
   });
 });

@@ -43,13 +43,19 @@ function merge(base: unknown, patch: unknown): unknown {
   return out;
 }
 
-/** Fields of `patch` the parsed event dropped: not part of the type's schema (typos, mostly). */
-function unknownFields(patch: Data, parsed: unknown, path: string): string[] {
-  if (!isPlainObject(parsed)) return [];
-  return Object.entries(patch).flatMap(([key, value]) => {
-    if (!(key in parsed)) return [`${path}.${key}`];
-    return isPlainObject(value) ? unknownFields(value, parsed[key], `${path}.${key}`) : [];
-  });
+/**
+ * Fields of `patch` the parsed event dropped: not part of the type's schema (typos, mostly), in
+ * objects and in the objects of lists (`tags.0.typo`; lists replace the sample's, so indexes match).
+ */
+function unknownFields(patch: unknown, parsed: unknown, path: string): string[] {
+  if (Array.isArray(patch)) {
+    if (!Array.isArray(parsed)) return [];
+    return patch.flatMap((item, index) => unknownFields(item, parsed[index], `${path}.${index}`));
+  }
+  if (!isPlainObject(patch) || !isPlainObject(parsed)) return [];
+  return Object.entries(patch).flatMap(([key, value]) =>
+    key in parsed ? unknownFields(value, parsed[key], `${path}.${key}`) : [`${path}.${key}`],
+  );
 }
 
 /** The first example of the schema (the API reference's): the sample's starting point. */
