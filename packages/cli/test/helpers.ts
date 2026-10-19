@@ -92,6 +92,7 @@ export function testIo(overrides: Partial<CliIo> & { answers?: string[] } = {}):
       stderr += question;
       return answers.shift() ?? "";
     },
+    watch: () => undefined,
     hostname: () => "test-host",
     cwd: mkdtempSync(join(tmpdir(), "coss-cli-project-")),
     // Nothing is run in tests unless a test says so (`null`: the program isn't there).

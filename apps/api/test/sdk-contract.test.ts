@@ -182,6 +182,21 @@ describe("coss SDK against the API", () => {
     expect(updated.data?.revision).toBe(2);
     const published = await coss.email.templates.publish("receipt", { revision: 2 });
     expect(published.data).toMatchObject({ version: 1, revision: 2 });
+    const rendered = await coss.email.templates.render("receipt", {
+      version: 1,
+      locale: "fr-CA",
+      variables: { first_name: "Ada", items: [] },
+    });
+    expect(rendered.error).toBeNull();
+    expect(rendered.data).toEqual({
+      object: "email_template_render",
+      template_id: created.data?.id ?? "",
+      version: 1,
+      locale: "fr",
+      subject: "Votre reçu, Ada",
+      html: null,
+      text: "Merci !",
+    });
 
     const sent = await coss.email.send({
       from: "Acme <billing@acme.com>",

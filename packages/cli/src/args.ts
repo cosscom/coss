@@ -133,3 +133,21 @@ export function list(value: string | string[] | undefined): string[] {
     .map((item) => item.trim())
     .filter(Boolean);
 }
+
+/** `name=value` flags as pairs (a usage error for anything else). */
+export function pairs(values: string[], flag: string): [string, string][] {
+  return values.map((pair) => {
+    const index = pair.indexOf("=");
+    if (index <= 0) throw new UsageError(`--${flag} takes name=value, got "${pair}".`);
+    return [pair.slice(0, index), pair.slice(index + 1)];
+  });
+}
+
+/** A flag value as JSON when it parses (`5`, `true`, `["a"]`), else the string as typed. */
+export function jsonOrString(raw: string): unknown {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+}

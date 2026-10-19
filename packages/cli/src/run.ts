@@ -2,6 +2,12 @@ import { GLOBAL_FLAGS, parseFlags } from "./args.ts";
 import { type Command, commandHelp, flagTable } from "./command.ts";
 import { apiCommand } from "./commands/api.ts";
 import { completionCommand } from "./commands/completion.ts";
+import {
+  domainsAddCommand,
+  domainsGetCommand,
+  domainsListCommand,
+  domainsVerifyCommand,
+} from "./commands/domains.ts";
 import { emailsSendCommand } from "./commands/emails.ts";
 import { HOOKS_COMMANDS } from "./commands/hooks.ts";
 import {
@@ -19,6 +25,12 @@ import { logsTailCommand } from "./commands/logs.ts";
 import { RISK_COMMANDS } from "./commands/risk.ts";
 import { openCommand } from "./commands/open.ts";
 import { profilesListCommand, useCommand } from "./commands/profiles.ts";
+import {
+  templatesListCommand,
+  templatesPreviewCommand,
+  templatesPullCommand,
+  templatesPushCommand,
+} from "./commands/templates.ts";
 import { whoamiCommand } from "./commands/whoami.ts";
 import { complete, findCommand } from "./completion.ts";
 import { createContext } from "./context.ts";
@@ -48,6 +60,14 @@ export const COMMANDS: readonly Command[] = [
   listenCommand,
   ...HOOKS_COMMANDS,
   ...RISK_COMMANDS,
+  domainsListCommand,
+  domainsAddCommand,
+  domainsGetCommand,
+  domainsVerifyCommand,
+  templatesListCommand,
+  templatesPullCommand,
+  templatesPushCommand,
+  templatesPreviewCommand,
   apiCommand,
   completionCommand,
 ];

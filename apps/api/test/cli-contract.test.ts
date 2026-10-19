@@ -1,10 +1,11 @@
 /**
  * Contract test: the published `coss-cli` (built dist, on the built `coss` SDK) against the real
  * app, in process: sign in with a key, send a simulated bounce and wait for it, and forward the
- * environment's webhook events to a local receiver with `coss listen`.
+ * environment's webhook events to a local receiver with `coss listen`; add and verify a domain;
+ * keep templates as files (pull, edit, push, publish, preview).
  */
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runDueHookDeliveries } from "@coss/hooks";
@@ -15,7 +16,7 @@ import { createTestTenant } from "@coss/tenancy/testing";
 import { webhookReceiver } from "@coss/webhooks/testing";
 import { verifyWebhook } from "coss";
 import { type CliIo, run } from "coss-cli";
-import { createTestApp, type TestApp } from "./helpers.ts";
+import { apiRequest, createTestApp, type TestApp, uniqueDomainName } from "./helpers.ts";
 
 function toRequest(input: string | URL | Request, init?: RequestInit): Request {
   return input instanceof Request ? new Request(input, init) : new Request(String(input), init);
@@ -54,6 +55,7 @@ function cliIo(
       void signal;
     },
     openBrowser: async () => false,
+    watch: () => undefined,
     readStdin: async () => opts.stdin ?? "",
     prompt: async () => answers.shift() ?? "",
     hostname: () => "contract-test",
@@ -342,6 +344,53 @@ describe("coss-cli against the API", () => {
       .map((line) => JSON.parse(line));
     expect(objects[0]).toMatchObject({ object: "inbound_address", domain });
     expect(objects.slice(1).map((object) => object.id)).toEqual([later]);
+  });
+
+  test("domains: add, verify --wait; templates: pull, edit, push --publish, preview", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const cli = cliIo(app, { answers: [tenant.liveKey] });
+    expect(await run(["login", "--manual"], cli.io)).toBe(0);
+    const last = () => JSON.parse(cli.stdout().trim().split("\n").at(-1) ?? "{}");
+
+    const name = uniqueDomainName();
+    expect(await run(["domains", "add", name, "--format", "bind"], cli.io)).toBe(0);
+    expect(cli.stdout()).toContain(`; ${name}: the DNS records coss.com needs`);
+    expect(cli.stdout()).toMatch(/\._domainkey\..+\t3600\tIN\tCNAME\t.+\.$/m);
+    expect(await run(["domains", "verify", name, "--wait", "--json"], cli.io)).toBe(0);
+    expect(last()).toMatchObject({ name, status: "verified", can_send: true });
+
+    const created = await apiRequest(app, "POST", "/v1/email_templates", {
+      key: tenant.liveKey,
+      body: {
+        name: "Welcome",
+        alias: "welcome",
+        variables: [{ name: "first_name", type: "string" }],
+        sample_variables: { first_name: "Ada" },
+        contents: [{ locale: "en", subject: "Welcome, {{first_name}}", text: "Hi {{first_name}}" }],
+      },
+    });
+    expect(created.status).toBe(200);
+    const dir = join(cli.io.configDir, "templates");
+    expect(await run(["templates", "pull", "--dir", dir], cli.io)).toBe(0);
+    expect(readFileSync(join(dir, "welcome", "en.txt"), "utf8")).toBe("Hi {{first_name}}");
+    // Unchanged files save nothing; an edit is saved and published.
+    expect(await run(["templates", "push", "--dir", dir], cli.io)).toBe(0);
+    expect(cli.stdout()).toContain("welcome: unchanged");
+    writeFileSync(join(dir, "welcome", "en.html"), "<p>Hello {{first_name}}</p>");
+    expect(await run(["templates", "push", "--dir", dir, "--publish", "--json"], cli.io)).toBe(0);
+    expect(last()).toMatchObject({ saved: true, revision: 2, published_version: 1 });
+
+    expect(
+      await run(["templates", "preview", "welcome", "--var", "first_name=Grace", "--json"], cli.io),
+    ).toBe(0);
+    expect(last()).toMatchObject({
+      object: "email_template_render",
+      version: null,
+      subject: "Welcome, Grace",
+      html: "<p>Hello Grace</p>",
+      text: "Hi Grace",
+    });
   });
 
   test("listen forwards the environment's events to a local server, signed, and logs them", async () => {

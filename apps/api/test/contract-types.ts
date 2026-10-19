@@ -121,6 +121,8 @@ import type {
   ReceivedEmailSummary,
   ReceivedEmailWebhookEvent,
   ReceivingDomainObject,
+  RenderEmailTemplateRequest,
+  RenderedEmailTemplateObject,
   RescheduleEmailRequest,
   SendEmailBatchRequest,
   SendEmailRequest,
@@ -274,6 +276,7 @@ import type {
   PollWebhookListenerParams,
   PublishEmailTemplateParams,
   RecoverWebhookEndpointParams,
+  RenderEmailTemplateParams,
   RescheduleEmailParams,
   RiskFeedbackParams,
   RollWebhookEndpointSecretParams,
@@ -344,6 +347,7 @@ import type {
   ReceivedEmailSummary as SdkReceivedEmailSummary,
   ReceivedEmailWebhookEvent as SdkReceivedEmailWebhookEvent,
   ReceivingDomain as SdkReceivingDomain,
+  RenderedEmailTemplate as SdkRenderedEmailTemplate,
   Reputation as SdkReputation,
   ReputationCheck as SdkReputationCheck,
   RiskAssessment as SdkRiskAssessment,
@@ -520,6 +524,10 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof EmailTemplateObject>, SdkEmailTemplate>>,
   Assert<MutuallyAssignable<z.output<typeof EmailTemplateList>, List<SdkEmailTemplate>>>,
   Assert<MutuallyAssignable<z.output<typeof EmailTemplateVersionObject>, SdkEmailTemplateVersion>>,
+  Assert<MutuallyAssignable<z.input<typeof RenderEmailTemplateRequest>, RenderEmailTemplateParams>>,
+  Assert<
+    MutuallyAssignable<z.output<typeof RenderedEmailTemplateObject>, SdkRenderedEmailTemplate>
+  >,
   Assert<
     MutuallyAssignable<z.output<typeof EmailTemplateVersionList>, List<SdkEmailTemplateVersion>>
   >,

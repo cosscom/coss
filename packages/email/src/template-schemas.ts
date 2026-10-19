@@ -594,6 +594,63 @@ export const DeletedEmailTemplate = z
 
 export type DeletedEmailTemplateOutput = z.output<typeof DeletedEmailTemplate>;
 
+export const RenderEmailTemplateRequest = z
+  .strictObject({
+    version: z
+      .number()
+      .int()
+      .min(1)
+      .optional()
+      .meta({ description: "A published version to render. Default: the draft." }),
+    locale: TemplateLocale.optional().meta({
+      description:
+        'The locale to render, e.g. "pt-BR". Falls back to the language ("pt"), then to the ' +
+        "default locale, as sends do.",
+    }),
+    variables: TemplateVariableValues.optional().meta({
+      description:
+        "Values by variable name, checked as a send checks them. Default: `sample_variables`.",
+    }),
+  })
+  .meta({
+    id: "RenderEmailTemplateRequest",
+    description: "What to render: nothing is sent or stored.",
+    examples: [{ locale: "en", variables: { first_name: "Ada" } }],
+  });
+
+export type RenderEmailTemplateRequestInput = z.input<typeof RenderEmailTemplateRequest>;
+
+export const RenderedEmailTemplateObject = z
+  .object({
+    object: z.literal("email_template_render"),
+    template_id: z.string(),
+    version: z
+      .number()
+      .int()
+      .nullable()
+      .meta({ description: "The version rendered; `null` for the draft." }),
+    locale: z.string().meta({ description: "The locale rendered." }),
+    subject: z.string(),
+    html: z.string().nullable(),
+    text: z.string().nullable(),
+  })
+  .meta({
+    id: "RenderedEmailTemplate",
+    examples: [
+      {
+        object: "email_template_render",
+        template_id: TEMPLATE_ID_EXAMPLE,
+        version: null,
+        locale: "en",
+        subject: "Welcome, Ada",
+        html: "<p>Hi Ada, thanks for signing up!</p>",
+        text: null,
+      },
+    ],
+  });
+
+export type RenderedEmailTemplateObjectOutput = z.output<typeof RenderedEmailTemplateObject>;
+
 /** The template an email was rendered from (`Email.template`). */
 export const EmailTemplateReference = z
   .object({

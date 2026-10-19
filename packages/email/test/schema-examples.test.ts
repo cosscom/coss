@@ -50,6 +50,8 @@ import {
   ReceivedEmailVerdicts,
   ReceivedEmailWebhookEvent,
   ReceivingDomainObject,
+  RenderEmailTemplateRequest,
+  RenderedEmailTemplateObject,
   SendEmailBatchRequest,
   SendEmailRequest,
   Suppression,
@@ -123,6 +125,8 @@ const SCHEMAS: Record<string, z.ZodType> = {
   UpdateEmailTemplateRequest,
   UpdateEmailTemplateDraftRequest,
   PublishEmailTemplateRequest,
+  RenderEmailTemplateRequest,
+  RenderedEmailTemplate: RenderedEmailTemplateObject,
   DeletedEmailTemplate,
 };
 

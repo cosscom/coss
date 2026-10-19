@@ -7,6 +7,7 @@ import type {
   EmailTemplateObjectOutput,
   EmailTemplateVersionListOutput,
   EmailTemplateVersionObjectOutput,
+  RenderedEmailTemplateObjectOutput,
 } from "@coss/email/schemas";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import {
@@ -274,6 +275,71 @@ describe("/v1/email_templates", () => {
         },
       ],
     });
+  });
+
+  test("renders the draft or a version without sending", async () => {
+    const tenant = await createTestTenant();
+    const { app, dispatch } = createTestApp();
+    const key = tenant.sandboxKey;
+    const template = await createTemplate(app, key, { ...TEMPLATE, alias: "welcome" });
+    const render = (body: object, ref = "welcome") =>
+      apiRequest(app, "POST", `/v1/email_templates/${ref}/render`, { key, body });
+
+    // The draft, with its sample variables.
+    expect(await json<RenderedEmailTemplateObjectOutput>(await render({}))).toEqual({
+      object: "email_template_render",
+      template_id: template.id,
+      version: null,
+      locale: "en",
+      subject: "Welcome, Ada",
+      html: "<p>Hi Ada</p>",
+      text: null,
+    });
+    expect(
+      await json<RenderedEmailTemplateObjectOutput>(
+        await render({ locale: "de-AT", variables: { first_name: "Grace", items: [] } }),
+      ),
+    ).toMatchObject({ locale: "de", subject: "Willkommen, Grace", text: "Hallo Grace" });
+
+    await json(
+      await apiRequest(app, "POST", `/v1/email_templates/${template.id}/publish`, {
+        key,
+        body: {},
+      }),
+    );
+    await json(
+      await apiRequest(app, "PUT", `/v1/email_templates/${template.id}/draft`, {
+        key,
+        body: { contents: [{ locale: "en", subject: "{{nope}}", text: "x" }] },
+      }),
+    );
+    // A published version still renders; the broken draft is refused like a publish.
+    expect(
+      await json<RenderedEmailTemplateObjectOutput>(await render({ version: 1 })),
+    ).toMatchObject({
+      version: 1,
+      subject: "Welcome, Ada",
+    });
+    expect(await errorOf(await render({}))).toMatchObject({
+      code: "template_invalid",
+      issues: [{ path: "contents.en.subject" }],
+    });
+    expect(await errorOf(await render({ version: 1, variables: {} }))).toMatchObject({
+      code: "invalid_template_variables",
+      param: "variables.first_name",
+    });
+    expect(await errorOf(await render({ version: 9 }))).toMatchObject({
+      code: "template_version_not_found",
+      param: "version",
+    });
+    expect((await render({}, "missing")).status).toBe(404);
+
+    // Nothing was sent.
+    await dispatch();
+    const emails = await json<{ data: unknown[] }>(
+      await apiRequest(app, "GET", "/v1/emails", { key }),
+    );
+    expect(emails.data).toEqual([]);
   });
 
   test("keeps templates in their environment and refuses taken aliases", async () => {

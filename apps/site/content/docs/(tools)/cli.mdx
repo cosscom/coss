@@ -245,6 +245,64 @@ virus, SPF, DKIM and DMARC verdicts, attachments and the text body (`--html` for
 it are left out of what's printed. `--raw > message.eml` saves the whole message as received
 (it refuses to write it to a terminal).
 
+## Domains
+
+```sh
+coss domains add acme.com                 # the DNS records to publish
+coss domains add acme.com --format bind   # the same, as zone-file lines to import
+coss domains verify acme.com --wait       # check now, and keep checking until it's verified
+```
+
+`coss domains list` shows the organization's [sending domains](/docs/email/domains), and
+`coss domains get <domain>` one domain's records with what the last DNS check saw: `verified`,
+`missing`, or a `mismatch` (with the value DNS returned). Domains are named by their name or their id.
+`coss domains verify` checks now instead of waiting for the background check; with `--wait` it
+checks again every 10 seconds, printing the records still missing, until the domain is verified
+(exit `0`), verification gives up (`1`), or `--timeout` passes (600 seconds by default, `1`). A
+domain whose verification had given up starts over with new DKIM records, which you publish
+again. `--json` prints the domain object.
+
+## Templates as code
+
+Keep [email templates](/docs/email/templates) in your repository and push them from there:
+
+```sh
+coss templates pull                       # every template's draft, into ./templates
+coss templates push --watch               # save the draft again on every edit
+coss templates preview welcome --var first_name=Ada --open
+coss templates push --publish             # publish the drafts sends use
+```
+
+`coss templates pull [<template>...]` writes each draft into a folder of `--dir` (`templates` by
+default) named by the template's alias, else its id:
+
+```text
+templates/welcome/
+  template.json        # name, alias, description, default_locale, variables, sample_variables
+  en.subject.txt
+  en.html
+  en.txt
+  de.subject.txt
+  de.txt
+```
+
+Files are written byte for byte, so pulling and pushing changes nothing; a locale needs its
+`.subject.txt` and an `.html`, a `.txt` or both. `coss templates push [<path>...]` (template
+folders, or folders of them; `--dir` without arguments) replaces each draft with its files. It
+finds the template by its `alias`, so the same folder pushes to every environment (sign in to
+another with `--profile`), and creates templates that don't exist there yet. Without an alias
+the folder is tied to the template's id. A push saves only drafts its files change, lists
+problems (syntax errors, undeclared variables) with their file, line and column, and with
+`--publish` publishes each draft too. `--watch` keeps running and pushes a template again
+whenever one of its files changes.
+
+`coss templates preview <template>` renders the draft as a send would, without sending: with its
+`sample_variables`, overridden by `--var name=value` (JSON values when they parse), in `--locale`,
+or a published `--version`. It prints the subject and text; `--open` shows the HTML in your
+browser and `--output preview.html` saves it. Given a folder, it previews that template's draft
+and warns when your files differ from it. `coss templates list` lists the environment's
+templates.
+
 ## Call any endpoint
 
 `coss api` calls an endpoint of the [API](/docs/api-reference) with the CLI's key and prints the

@@ -42,6 +42,14 @@ Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
 | `coss risk assess --event <event>` | Assesses an event (`--email`, `--ip`, `--user`, `--content`, `--data '{…}'`…) and prints the decision, score and reasons. Sandbox fixtures (`192.0.2.1`, `disposable.test`, `[coss-test:spam]`…) produce each decision. |
 | `coss risk assessments`, `coss risk feedback <assessment> --outcome <outcome>` | Assessments (`--review open`: the review queue), and what a user turned out to be. |
 | `coss risk lists list`, `coss risk lists add <allow\|block> <type> <value>`, `coss risk lists remove <entry>` | The allow and block lists (`--note`, `--expires 7d`). |
+| `coss domains list` | The organization's sending domains and their status. |
+| `coss domains add <domain>` | Adds a domain and prints the DNS records to publish (`--format bind` prints zone-file lines). |
+| `coss domains get <domain>` | A domain's records and what the last DNS check saw (verified, missing, mismatch). `--format bind` too. |
+| `coss domains verify <domain>` | Checks the records now; `--wait` keeps checking until the domain is verified, saying which records are still missing (up to `--timeout`, 600 s). |
+| `coss templates list` | The environment's email templates. |
+| `coss templates pull [<template>...]` | Writes drafts to `--dir` (`templates`): a folder per template with `template.json` and `<locale>.subject.txt`, `<locale>.html`, `<locale>.txt`. |
+| `coss templates push [<path>...]` | Saves drafts from those files, finding templates by alias (creating missing ones); `--publish` publishes after, `--watch` pushes again whenever a file changes. |
+| `coss templates preview <template>` | Renders the draft (or `--version`) without sending: `--var name=value`, `--locale`, `--open` shows the HTML, `--output` saves it. |
 | `coss api <path>` | Any endpoint of the API, with the CLI's key: `coss api domains`, `coss api -X POST domains/<id>/verify`. `-f name=value` (strings) and `-F name=value` (JSON values, `@file`) are query parameters for GET and DELETE and the JSON body otherwise; `--input file.json` (or `-` for stdin) sends a body as is; `--paginate` prints every item of a list; `--raw` prints a body that isn't JSON. |
 | `coss completion <shell>` | The completion script for `bash`, `zsh` or `fish`, e.g. `eval "$(coss completion zsh)"` in `~/.zshrc`. |
 

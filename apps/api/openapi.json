@@ -2758,6 +2758,104 @@
           }
         ]
       },
+      "RenderedEmailTemplate": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "email_template_render"
+            ]
+          },
+          "template_id": {
+            "type": "string"
+          },
+          "version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "The version rendered; `null` for the draft."
+          },
+          "locale": {
+            "type": "string",
+            "description": "The locale rendered."
+          },
+          "subject": {
+            "type": "string"
+          },
+          "html": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "template_id",
+          "version",
+          "locale",
+          "subject",
+          "html",
+          "text"
+        ],
+        "examples": [
+          {
+            "object": "email_template_render",
+            "template_id": "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "version": null,
+            "locale": "en",
+            "subject": "Welcome, Ada",
+            "html": "<p>Hi Ada, thanks for signing up!</p>",
+            "text": null
+          }
+        ]
+      },
+      "RenderEmailTemplateRequest": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "A published version to render. Default: the draft."
+          },
+          "locale": {
+            "type": "string",
+            "maxLength": 35,
+            "description": "The locale to render, e.g. \"pt-BR\". Falls back to the language (\"pt\"), then to the default locale, as sends do.",
+            "examples": [
+              "en"
+            ]
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {},
+            "examples": [
+              {
+                "first_name": "Ada"
+              }
+            ],
+            "description": "Values by variable name, checked as a send checks them. Default: `sample_variables`."
+          }
+        },
+        "additionalProperties": false,
+        "description": "What to render: nothing is sent or stored.",
+        "examples": [
+          {
+            "locale": "en",
+            "variables": {
+              "first_name": "Ada"
+            }
+          }
+        ]
+      },
       "EmailTemplateVersionList": {
         "type": "object",
         "properties": {
@@ -23003,6 +23101,297 @@
           },
           "422": {
             "description": "The draft has problems or no content for its default locale (`template_invalid`, see `issues`), or changed since `revision` (`template_revision_mismatch`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/email_templates/{id}/render": {
+      "post": {
+        "operationId": "renderEmailTemplate",
+        "tags": [
+          "Email templates"
+        ],
+        "summary": "Render a template",
+        "description": "Renders the draft (or a published `version`) with `variables`, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without `variables` it renders the version's `sample_variables`.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The template's id or alias.",
+              "examples": [
+                "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The template's id or alias.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenderEmailTemplateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The rendered template.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RenderedEmailTemplate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No template with this id or alias exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The request body is larger than 5 MB (`payload_too_large`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body is not sent as `application/json` (`unsupported_media_type`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The body failed validation (`validation_error`), the draft has problems (`template_invalid`, see `issues`), the variables don't match its declarations (`invalid_template_variables`), it has no such version (`template_version_not_found`), or it doesn't render (`template_render_failed`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

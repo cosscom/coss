@@ -7,6 +7,7 @@ import {
   pageEmailTemplates,
   pageTemplateVersions,
   publishTemplateDraft,
+  renderEmailTemplate,
   requireEmailTemplate,
   restoreTemplateVersion,
   saveTemplateDraft,
@@ -28,6 +29,8 @@ import {
   ListEmailTemplatesQuery,
   ListEmailTemplateVersionsQuery,
   PublishEmailTemplateRequest,
+  RenderEmailTemplateRequest,
+  RenderedEmailTemplateObject,
   UpdateEmailTemplateDraftRequest,
   UpdateEmailTemplateRequest,
 } from "@coss/email/schemas";
@@ -270,6 +273,43 @@ export const publishEmailTemplateRoute = createRoute({
   },
 });
 
+export const renderEmailTemplateRoute = createRoute({
+  method: "post",
+  path: "/email_templates/{id}/render",
+  operationId: "renderEmailTemplate",
+  tags: [TAG],
+  summary: "Render a template",
+  description:
+    "Renders the draft (or a published `version`) with `variables`, exactly as a send would, " +
+    "and returns the subject, HTML and text: a preview, nothing is sent or stored. Without " +
+    "`variables` it renders the version's `sample_variables`.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ emailTemplate: ["read"] }),
+    rateLimit("api.read"),
+    upgradeRequestBody("POST /v1/email_templates/{id}/render"),
+  ],
+  request: {
+    params: EmailTemplateIdParams,
+    body: {
+      required: true,
+      content: { "application/json": { schema: RenderEmailTemplateRequest } },
+    },
+  },
+  responses: {
+    200: jsonDoc("The rendered template.", RenderedEmailTemplateObject),
+    ...bodyErrors,
+    ...commonErrors,
+    404: templateNotFound,
+    422: errorDoc(
+      "The body failed validation (`validation_error`), the draft has problems " +
+        "(`template_invalid`, see `issues`), the variables don't match its declarations " +
+        "(`invalid_template_variables`), it has no such version (`template_version_not_found`), " +
+        "or it doesn't render (`template_render_failed`).",
+    ),
+  },
+});
+
 export const listEmailTemplateVersionsRoute = createRoute({
   method: "get",
   path: "/email_templates/{id}/versions",
@@ -427,6 +467,23 @@ export function createEmailTemplateRoutes(): OpenAPIHono<AppEnv> {
       });
     }
     return c.json(toEmailTemplateVersionObject(version), 200);
+  });
+
+  router.openapi(renderEmailTemplateRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const rendered = await renderEmailTemplate(scope(c), id, c.req.valid("json"));
+    return c.json(
+      {
+        object: "email_template_render" as const,
+        template_id: rendered.template.id,
+        version: rendered.template.version,
+        locale: rendered.template.locale,
+        subject: rendered.subject,
+        html: rendered.html,
+        text: rendered.text,
+      },
+      200,
+    );
   });
 
   router.openapi(listEmailTemplateVersionsRoute, async (c) => {

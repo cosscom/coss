@@ -4,6 +4,7 @@
  * interrupt signal. `nodeIo()` is the real thing.
  */
 import { spawn } from "node:child_process";
+import { watch } from "node:fs";
 import { homedir, hostname } from "node:os";
 import { join } from "node:path";
 
@@ -32,6 +33,11 @@ export interface CliIo {
   readStdin(): Promise<string>;
   /** Asks a question on stderr and reads one line (not echoed when `secret`). */
   prompt(question: string, options?: { secret?: boolean }): Promise<string>;
+  /**
+   * Calls `onChange` with the name of each file that changes in `dir` (not its subdirectories)
+   * until `signal` aborts (`coss templates push --watch`).
+   */
+  watch(dir: string, signal: AbortSignal, onChange: (file: string) => void): void;
   /** This machine's name (names the CLI's API key and listener). */
   hostname(): string;
   /** The directory the command runs in (`coss init`'s project). */
@@ -201,6 +207,13 @@ export function nodeIo(): CliIo {
         return line;
       }
       return readTerminalLine(options.secret === true);
+    },
+    watch(dir, signal, onChange) {
+      const watcher = watch(dir, { signal }, (_event, file) => {
+        if (file) onChange(String(file));
+      });
+      // Aborting closes it; anything else (the directory removed) just ends the watch.
+      watcher.on("error", () => watcher.close());
     },
     hostname: () => hostname(),
     cwd: process.cwd(),

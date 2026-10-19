@@ -212,6 +212,8 @@ export type {
   ListEmailTemplatesParams,
   ListEmailTemplateVersionsParams,
   PublishEmailTemplateParams,
+  RenderEmailTemplateParams,
+  RenderedEmailTemplate,
   TemplateContent,
   TemplateContentParams,
   TemplateProblem,

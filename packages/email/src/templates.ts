@@ -742,6 +742,16 @@ export async function renderTemplateForSend(
     const problem = draftProblems(version);
     if (problem) throw problem;
   }
+  return renderVersion(version, request, param, request.draft !== undefined);
+}
+
+/** Renders a loaded version as a send does: picks the locale, checks the variables, renders. */
+function renderVersion(
+  version: TemplateVersion,
+  request: { locale?: string | undefined; variables: Record<string, unknown> },
+  param: (field: string) => string,
+  draft: boolean,
+): RenderedTemplateSend {
   const locale = pickTemplateLocale(
     version.contents.map((content) => content.locale),
     request.locale,
@@ -795,8 +805,51 @@ export async function renderTemplateForSend(
     text: rendered.text || null,
     template: {
       id: version.templateId,
-      version: request.draft ? null : version.version,
+      version: draft ? null : version.version,
       locale,
     },
   };
+}
+
+/** What a preview asks for (`POST /v1/email_templates/{id}/render`). */
+export type TemplateRenderRequest = {
+  /** A published version; the draft when left out. */
+  version?: number | undefined;
+  locale?: string | undefined;
+  /** Defaults to the version's `sample_variables`. */
+  variables?: Record<string, unknown> | undefined;
+};
+
+/**
+ * Renders the draft (or a published version) exactly as a send would, without sending or storing
+ * anything. A draft with problems is refused (`template_invalid`), as publishing it would be.
+ */
+export async function renderEmailTemplate(
+  env: TemplateEnvironment,
+  ref: string,
+  request: TemplateRenderRequest,
+): Promise<RenderedTemplateSend> {
+  const template = await requireEmailTemplate(env, ref);
+  let version: TemplateVersion;
+  if (request.version === undefined) {
+    version = await readDraft(template);
+    const problem = draftProblems(version);
+    if (problem) throw problem;
+  } else {
+    const row = await selectVersion(db, template, request.version);
+    if (!row) {
+      throw new EmailError(
+        "template_version_not_found",
+        `The template has no version ${request.version}.`,
+        { param: "version" },
+      );
+    }
+    version = await withContents(db, row);
+  }
+  return renderVersion(
+    version,
+    { locale: request.locale, variables: request.variables ?? version.sampleVariables },
+    (field) => field,
+    request.version === undefined,
+  );
 }

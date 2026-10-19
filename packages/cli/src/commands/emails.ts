@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import type { Coss, Email, EmailEvent, EmailRecipientStatus, SendEmailParams } from "coss";
-import { addresses, type Flags } from "../args.ts";
+import { addresses, type Flags, jsonOrString, pairs } from "../args.ts";
 import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { type Context, clientFor, resolveCredentials } from "../context.ts";
 import {
@@ -24,22 +24,6 @@ const SETTLED: ReadonlySet<EmailRecipientStatus> = new Set([
   "failed",
   "canceled",
 ]);
-
-function pairs(values: string[], flag: string): [string, string][] {
-  return values.map((pair) => {
-    const index = pair.indexOf("=");
-    if (index <= 0) throw new UsageError(`--${flag} takes name=value, got "${pair}".`);
-    return [pair.slice(0, index), pair.slice(index + 1)];
-  });
-}
-
-function variableValue(raw: string): unknown {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return raw;
-  }
-}
 
 async function fileOrValue(value: string | undefined, file: string | undefined, flag: string) {
   if (value !== undefined && file !== undefined) {
@@ -218,7 +202,7 @@ async function emailsSend({ values, context }: CommandInput<typeof FLAGS>): Prom
       template_id: values.template,
       ...(values.var && {
         variables: Object.fromEntries(
-          pairs(values.var, "var").map(([name, raw]) => [name, variableValue(raw)]),
+          pairs(values.var, "var").map(([name, raw]) => [name, jsonOrString(raw)]),
         ),
       }),
     };
