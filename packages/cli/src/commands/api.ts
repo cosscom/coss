@@ -102,6 +102,15 @@ async function inputBody(io: CliIo, source: string): Promise<unknown> {
   }
 }
 
+/**
+ * Lists page with `after` set to the last item's `id`, except those of items without one (the
+ * API reference's `after` of each list says which field it takes).
+ */
+export const CURSOR_FIELDS: Readonly<Record<string, string>> = {
+  hook_event_type: "name",
+  email_template_version: "version",
+};
+
 function isList(value: unknown): value is { data: unknown[]; has_more: boolean } {
   const list = value as { object?: unknown; data?: unknown; has_more?: unknown } | null;
   return (
@@ -181,12 +190,13 @@ async function api({ values, positionals, context }: CommandInput<typeof FLAGS>)
         );
       }
       for (const item of data.data) out.data(item);
-      const last = data.data.at(-1) as { id?: unknown } | undefined;
+      const last = data.data.at(-1) as Record<string, unknown> | undefined;
       if (!data.has_more || last === undefined) return 0;
-      if (typeof last.id !== "string") {
+      const cursor = last[CURSOR_FIELDS[String(last.object)] ?? "id"];
+      if (typeof cursor !== "string" && typeof cursor !== "number") {
         throw new CliError(`${path}'s items have no id to read the next page after.`);
       }
-      after = last.id;
+      after = String(cursor);
     }
   }
 

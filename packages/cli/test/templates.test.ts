@@ -236,6 +236,16 @@ describe("coss templates", () => {
     const fixed = testIo({ fetch: api.fetch, env });
     expect(await run(["templates", "push", "--dir", dir, "--publish"], fixed)).toBe(0);
     expect(fixed.output()).toContain("welcome: published version 2");
+
+    // --json: stdout is only the result objects, one per line.
+    const json = testIo({ fetch: api.fetch, env });
+    expect(await run(["templates", "push", "--dir", dir, "--publish", "--json"], json)).toBe(0);
+    const results = json
+      .output()
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(results).toEqual([expect.objectContaining({ published_version: 3 })]);
   });
 
   test("push creates templates that don't exist yet, by alias or remembering the new id", async () => {

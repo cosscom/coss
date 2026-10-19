@@ -17,7 +17,7 @@ import { createTestTenant } from "@coss/tenancy/testing";
 import { runDueWebhookDeliveries } from "@coss/webhooks";
 import { TEST_SECRETS_KEYS, webhookReceiver } from "@coss/webhooks/testing";
 import { verifyWebhook } from "coss";
-import { type CliIo, run } from "coss-cli";
+import { type CliIo, CURSOR_FIELDS, run } from "coss-cli";
 import { apiRequest, createTestApp, type TestApp, uniqueDomainName } from "./helpers.ts";
 
 function toRequest(input: string | URL | Request, init?: RequestInit): Request {
@@ -70,6 +70,44 @@ function cliIo(
 }
 
 describe("coss-cli against the API", () => {
+  test("api --paginate knows the cursor of every list whose `after` isn't an id", () => {
+    type Schema = {
+      $ref?: string;
+      properties?: Record<string, Schema>;
+      items?: Schema;
+      enum?: string[];
+    };
+    const doc = JSON.parse(readFileSync(join(import.meta.dir, "../openapi.json"), "utf8"));
+    const schemas: Record<string, Schema> = doc.components.schemas;
+    const resolve = (schema: Schema | undefined) =>
+      schema?.$ref ? schemas[schema.$ref.split("/").at(-1) ?? ""] : schema;
+    type Parameter = {
+      name?: string;
+      in?: string;
+      description?: string;
+      schema?: { description?: string };
+    };
+    type Get = {
+      parameters?: Parameter[];
+      responses: Record<string, { content?: Record<string, { schema: Schema }> }>;
+    };
+    const expected: Record<string, string> = {};
+    for (const operations of Object.values(doc.paths) as { get?: Get }[]) {
+      const get = operations.get;
+      const after = get?.parameters?.find((p) => p.name === "after" && p.in === "query");
+      if (!get || !after) continue;
+      const described = after.description ?? after.schema?.description ?? "";
+      const field = /`(\w+)`/.exec(described)?.[1] ?? "id";
+      if (field === "id") continue;
+      const list = resolve(get.responses["200"]?.content?.["application/json"]?.schema);
+      const item = resolve(list?.properties?.data?.items);
+      const object = item?.properties?.object?.enum?.[0];
+      if (object) expected[object] = field;
+    }
+    expect(expected).not.toEqual({});
+    expect(CURSOR_FIELDS).toEqual(expected);
+  });
+
   test("login --manual, whoami, and a simulated bounce followed to its outcome", async () => {
     const tenant = await createTestTenant();
     const { app, dispatch } = createTestApp();

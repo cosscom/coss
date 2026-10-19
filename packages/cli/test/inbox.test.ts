@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { Coss } from "coss";
+import { InboxTail } from "../src/commands/inbox.ts";
 import { run } from "../src/run.ts";
-import { environmentObject, fakeFetch, SANDBOX_KEY, testIo } from "./helpers.ts";
+import { apiError, environmentObject, fakeFetch, SANDBOX_KEY, testIo } from "./helpers.ts";
 
 const env = { COSS_API_KEY: SANDBOX_KEY };
 
@@ -42,6 +44,38 @@ const address = {
 const list = (data: unknown[], has_more = false) => ({ object: "list", data, has_more });
 
 describe("coss inbox", () => {
+  test("a poll that fails on a later page remembers nothing: the next one prints it all", async () => {
+    const old = received("rcv_old", "2026-10-15T11:00:00.000Z");
+    let poll = 0;
+    const api = fakeFetch({
+      "GET /v1/received_emails": (request: { url: URL }) => {
+        const after = request.url.searchParams.get("after");
+        if (after === null) poll++;
+        if (poll === 1) return list([old]);
+        if (after === null) {
+          return list(
+            [
+              received("rcv_3", "2026-10-15T12:00:03.000Z"),
+              received("rcv_2", "2026-10-15T12:00:02.000Z"),
+            ],
+            true,
+          );
+        }
+        if (poll === 2) return apiError(503, "api_error", "service_unavailable");
+        return list([received("rcv_1", "2026-10-15T12:00:01.000Z"), old]);
+      },
+    });
+    const coss = new Coss({ apiKey: SANDBOX_KEY, fetch: api.fetch, maxRetries: 0 });
+    const tail = new InboxTail(null);
+    const signal = new AbortController().signal;
+    expect((await tail.poll(coss, signal)).emails).toEqual([]);
+    const failed = await tail.poll(coss, signal);
+    expect(failed.error?.code).toBe("service_unavailable");
+    const retried = await tail.poll(coss, signal);
+    expect(retried.emails.map((email) => email.id)).toEqual(["rcv_1", "rcv_2", "rcv_3"]);
+    expect((await tail.poll(coss, signal)).emails).toEqual([]);
+  });
+
   test("prints the address, then only emails that arrive while it runs, oldest first", async () => {
     let poll = 0;
     const old = received("rcv_old", "2026-10-15T11:00:00.000Z");

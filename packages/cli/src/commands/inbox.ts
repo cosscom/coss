@@ -26,12 +26,16 @@ export class InboxTail {
   /**
    * The emails not seen before, oldest first. The first poll only takes what arrived since
    * `since` (without one: nothing, what's there already isn't news) and remembers the rest.
+   * A poll that fails remembers nothing, so the next one reads the same emails again.
    */
   async poll(
     coss: Coss,
     signal: AbortSignal,
   ): Promise<{ emails: ReceivedEmailSummary[]; truncated: boolean; error: CossError | null }> {
     const fresh: ReceivedEmailSummary[] = [];
+    // Remembered only once the poll succeeds: a page failing after one that didn't must not
+    // leave the earlier page's emails marked as seen, unprinted.
+    const read: string[] = [];
     const first = this.#first;
     let after: string | undefined;
     for (let page = 0; page < MAX_PAGES; page++) {
@@ -46,7 +50,7 @@ export class InboxTail {
           done = true;
           break;
         }
-        this.#remember(email.id);
+        read.push(email.id);
         if (first) {
           if (this.#since === null) continue;
           if (Date.parse(email.received_at) < this.#since.getTime()) {
@@ -57,22 +61,21 @@ export class InboxTail {
         fresh.push(email);
       }
       const last = data.data.at(-1);
-      if (done || !last) {
-        this.#first = false;
-        return { emails: fresh.reverse(), truncated: false, error: null };
-      }
+      if (done || !last) return this.#done(read, fresh, false);
       after = last.id;
     }
-    this.#first = false;
-    return { emails: fresh.reverse(), truncated: true, error: null };
+    return this.#done(read, fresh, true);
   }
 
-  #remember(id: string): void {
-    this.#seen.add(id);
+  #done(read: string[], fresh: ReceivedEmailSummary[], truncated: boolean) {
+    // Newest first as read: add the oldest first, so the oldest are the first forgotten.
+    for (const id of read.toReversed()) this.#seen.add(id);
     for (const old of this.#seen) {
       if (this.#seen.size <= MAX_SEEN) break;
       this.#seen.delete(old);
     }
+    this.#first = false;
+    return { emails: fresh.reverse(), truncated, error: null };
   }
 }
 

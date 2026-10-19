@@ -192,6 +192,10 @@ async function pushTemplate(
   const { manifest } = local;
   const draft = draftOf(local);
   const label = manifest.alias ?? manifest.name;
+  // With --json, stdout is one result object per template (printed by the caller).
+  const say = (text: string) => {
+    if (!out.json) out.line(text);
+  };
   let template =
     (manifest.alias ? await getTemplate(coss, manifest.alias) : null) ??
     (manifest.id ? await getTemplate(coss, manifest.id) : null);
@@ -214,7 +218,7 @@ async function pushTemplate(
     template = data;
     if (!manifest.alias) await rememberId(dir, data.id);
     saved = await getDraft(coss, data.id);
-    out.line(`${out.style("green", "✔")} ${label}: created ${out.style("dim", data.id)}`);
+    say(`${out.style("green", "✔")} ${label}: created ${out.style("dim", data.id)}`);
   } else {
     const changes = {
       ...(template.name !== manifest.name && { name: manifest.name }),
@@ -231,7 +235,7 @@ async function pushTemplate(
     if (sameDraft(draft, remote)) {
       saved = remote;
       changed = false;
-      if (!options.publish) out.line(`${label}: ${out.style("dim", "unchanged")}`);
+      if (!options.publish) say(`${label}: ${out.style("dim", "unchanged")}`);
     } else {
       const { data, error } = await coss.email.templates.updateDraft(template.id, {
         revision: remote.revision,
@@ -239,7 +243,7 @@ async function pushTemplate(
       });
       if (error) throw apiError(`${dir}: couldn't save the draft`, error);
       saved = data;
-      out.line(
+      say(
         `${out.style("green", "✔")} ${label}: draft saved ${out.style("dim", `(revision ${data.revision})`)}`,
       );
     }
@@ -256,7 +260,7 @@ async function pushTemplate(
     });
     if (error) throw apiError(`${dir}: couldn't publish`, error);
     published = data.version;
-    out.line(`${out.style("green", "✔")} ${label}: published version ${data.version}`);
+    say(`${out.style("green", "✔")} ${label}: published version ${data.version}`);
   }
   return {
     dir,

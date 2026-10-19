@@ -135,6 +135,46 @@ describe("coss api", () => {
       "?limit=2&after=email_2",
     ]);
 
+    // Lists of items without an id page by another field.
+    const types = fakeFetch({
+      "GET /v1/hooks/event_types": (request: { url: URL }) =>
+        request.url.searchParams.get("after") === "user.created"
+          ? {
+              object: "list",
+              data: [{ object: "hook_event_type", name: "user.deleted" }],
+              has_more: false,
+            }
+          : {
+              object: "list",
+              data: [{ object: "hook_event_type", name: "user.created" }],
+              has_more: true,
+            },
+      "GET /v1/email_templates/tmpl_1/versions": (request: { url: URL }) =>
+        request.url.searchParams.get("after") === "2"
+          ? {
+              object: "list",
+              data: [{ object: "email_template_version", version: 1 }],
+              has_more: false,
+            }
+          : {
+              object: "list",
+              data: [{ object: "email_template_version", version: 2 }],
+              has_more: true,
+            },
+    });
+    const byName = testIo({ fetch: types.fetch, env });
+    expect(await run(["api", "hooks/event_types", "--paginate"], byName)).toBe(0);
+    expect(byName.output().trim().split("\n")).toHaveLength(2);
+    const byVersion = testIo({ fetch: types.fetch, env });
+    expect(await run(["api", "email_templates/tmpl_1/versions", "--paginate"], byVersion)).toBe(0);
+    expect(byVersion.output().trim().split("\n")).toHaveLength(2);
+    expect(types.requests.map((request) => request.url.searchParams.get("after"))).toEqual([
+      null,
+      "user.created",
+      null,
+      "2",
+    ]);
+
     const notList = testIo({
       fetch: fakeFetch({ "GET /v1/environment": { object: "environment" } }).fetch,
       env,
