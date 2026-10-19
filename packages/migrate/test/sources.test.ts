@@ -504,6 +504,33 @@ describe("Postmark", () => {
     expect(inventory.unavailable.domains).toContain("owner");
   });
 
+  test("without Postmark's data model, a template with sections stays a draft", async () => {
+    const { fetch } = fakeFetch(
+      {
+        "GET /server": { ID: 9, Name: "Only" },
+        "GET /templates/7": {
+          TemplateId: 7,
+          Name: "Order",
+          Alias: "order",
+          Subject: "Your order",
+          HtmlBody: "<ul>{{#items}}<li>{{name}}</li>{{/items}}</ul>",
+          TextBody: null,
+        },
+      },
+      ({ method, url }) =>
+        method === "POST" && url.pathname === "/templates/validate"
+          ? Response.json({ Message: "Invalid template." }, { status: 422 })
+          : undefined,
+    );
+    const source = createSource(
+      { provider: "postmark", apiKey: "srv", options: { tokenType: "server", serverId: 9 } },
+      { ...fast, fetch },
+    );
+    const template = await source.template("7");
+    expect(template.converted.lossless).toBe(false);
+    expect(template.converted.warnings.at(-1)?.message).toContain("check the loops");
+  });
+
   test("merges a template's layout and converts it", async () => {
     const { fetch } = fakeFetch(
       {

@@ -235,27 +235,64 @@ export function postmarkSource(
         notes.push(`The layout ${found.Name} was merged into it.`);
       }
       // Postmark infers the data a template expects; it tells sections from loops.
-      const suggestedModel = await client
-        .post<{ SuggestedTemplateModel?: unknown }>("/templates/validate", {
-          Subject: template.Subject ?? "",
-          HtmlBody: template.HtmlBody ?? "",
-          TextBody: template.TextBody ?? "",
-          ...(template.LayoutTemplate ? { LayoutTemplate: template.LayoutTemplate } : {}),
-          TemplateType: "Standard",
-        })
-        .then((body) => body.SuggestedTemplateModel)
-        .catch(() => undefined);
+      let suggestedModel: unknown;
+      let modelMissing = false;
+      try {
+        suggestedModel = (
+          await client.post<{ SuggestedTemplateModel?: unknown }>("/templates/validate", {
+            Subject: template.Subject ?? "",
+            HtmlBody: template.HtmlBody ?? "",
+            TextBody: template.TextBody ?? "",
+            ...(template.LayoutTemplate ? { LayoutTemplate: template.LayoutTemplate } : {}),
+            TemplateType: "Standard",
+          })
+        ).SuggestedTemplateModel;
+      } catch (error) {
+        // Throttled or down: the runner comes back for it.
+        if (
+          error instanceof ProviderError &&
+          (error.code === "rate_limited" || error.code === "unavailable")
+        ) {
+          throw error;
+        }
+        modelMissing = true;
+      }
+      let converted = convertPostmarkTemplate({
+        subject: template.Subject ?? null,
+        html: template.HtmlBody ?? null,
+        text: template.TextBody ?? null,
+        layout,
+        suggestedModel,
+      });
+      const sources = [
+        template.Subject,
+        template.HtmlBody,
+        template.TextBody,
+        layout?.html,
+        layout?.text,
+      ];
+      if (modelMissing && sources.some((source) => source && /\{\{\s*[#^]/.test(source))) {
+        // Without Postmark's model, a section's data (a list, an object or a value) is a guess.
+        converted = {
+          ...converted,
+          lossless: false,
+          warnings: [
+            ...converted.warnings,
+            {
+              field: "html",
+              line: 1,
+              column: 1,
+              message:
+                "Postmark couldn't describe this template's data, so its sections were converted as conditions: check the loops.",
+            },
+          ],
+        };
+      }
       return {
         id: String(template.TemplateId),
         name: template.Name,
         alias: template.Alias ?? null,
-        converted: convertPostmarkTemplate({
-          subject: template.Subject ?? null,
-          html: template.HtmlBody ?? null,
-          text: template.TextBody ?? null,
-          layout,
-          suggestedModel,
-        }),
+        converted,
         notes,
       };
     },
