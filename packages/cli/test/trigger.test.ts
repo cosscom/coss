@@ -102,11 +102,12 @@ describe("coss trigger", () => {
     );
   });
 
-  test("completes the event types a sandbox environment can test", () => {
-    const types = complete(COMMANDS, ["trigger", "email.b"]);
+  test("completes the event types a sandbox environment can test", async () => {
+    const io = testIo();
+    const types = await complete(COMMANDS, ["trigger", "email.b"], io);
     expect(types).toEqual(["email.bounced"]);
-    expect(complete(COMMANDS, ["trigger", "billing."])).toEqual([]);
-    expect(complete(COMMANDS, ["trigger", "risk."])).toEqual([
+    expect(await complete(COMMANDS, ["trigger", "billing."], io)).toEqual([]);
+    expect(await complete(COMMANDS, ["trigger", "risk."], io)).toEqual([
       "risk.assessment.review",
       "risk.assessment.reviewed",
     ]);

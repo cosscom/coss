@@ -171,6 +171,35 @@ function readTerminalLine(secret: boolean): Promise<string> {
   });
 }
 
+/** Writes not yet handed to the OS: the bin waits for them before it exits. */
+const pending = new Set<Promise<void>>();
+
+/**
+ * A stream whose every write is tracked until its callback. `writableLength` isn't enough: the
+ * compiled (Bun) binary reports 0 while a pipe still has output queued, and exiting then cut a
+ * busy `coss api --paginate | …` short.
+ */
+function tracked(stream: NodeJS.WriteStream): OutputStream {
+  return {
+    get isTTY() {
+      return stream.isTTY;
+    },
+    write(chunk) {
+      const written = new Promise<void>((resolve) => {
+        // Called with an error too (a closed pipe): nothing more will be written either way.
+        stream.write(chunk, () => resolve());
+      });
+      pending.add(written);
+      void written.then(() => pending.delete(written));
+    },
+  };
+}
+
+/** Resolves once every write so far has reached the OS. */
+export async function flushOutput(): Promise<void> {
+  while (pending.size > 0) await Promise.all(pending);
+}
+
 /** The real process: its environment, streams, network and signals. */
 export function nodeIo(): CliIo {
   const controller = new AbortController();
@@ -185,8 +214,8 @@ export function nodeIo(): CliIo {
   }
   return {
     env: process.env,
-    stdout: process.stdout,
-    stderr: process.stderr,
+    stdout: tracked(process.stdout),
+    stderr: tracked(process.stderr),
     stdinIsTTY: process.stdin.isTTY === true,
     fetch: (input, init) => globalThis.fetch(input, init),
     now: () => new Date(),

@@ -159,8 +159,8 @@ coss webhooks retry whep_01k7c8m4q2f3e9v6t5r1n0p8yz whdel_01k7c8m4q2f3e9v6t5r1n0
 `coss webhooks list` shows the environment's endpoints with their URL, state (enabled, failing,
 disabled) and event types. `coss webhooks deliveries <endpoint>` lists an endpoint's deliveries,
 newest first, with the last status code and error; filter with `--status pending|succeeded|failed`
-or `--event <event id>`, and show up to `--limit 100` (default 20). `coss webhooks retry <endpoint>
-<delivery>` sends a finished delivery once more, within seconds. Each takes `--json`.
+or `--event <event id>`, and show up to `--limit 100` (default 20).
+`coss webhooks retry <endpoint> <delivery>` sends a finished delivery once more, within seconds. Each takes `--json`.
 
 ## Send test emails
 
@@ -189,8 +189,8 @@ coss emails diagnose --to ada@example.com
 ```
 
 `coss emails list` shows the environment's emails, newest first, with where each one stands: its
-status until it was handed to the provider, then its recipients' (`delivered`, `2 delivered, 1
-bounced`). Filter by `--to`, `--status`, `--recipient-status`, free text (`-q`), `--category`,
+status until it was handed to the provider, then its recipients' (`delivered`,
+`2 delivered, 1 bounced`). Filter by `--to`, `--status`, `--recipient-status`, free text (`-q`), `--category`,
 `--batch <id>` and creation time (`--since`, `--until`); `--limit` sets how many (20 by default,
 read page by page). `--json` prints one email per line.
 
@@ -235,19 +235,19 @@ coss hooks portal acme --open
 ```
 
 - `coss hooks apps list` and `coss hooks apps create <name>` (`--uid`, `--metadata key=value`)
-  manage applications; `coss hooks event-types list` (`--archived`) and `coss hooks event-types
-  create <name>` (`--description`, `--schema`, `--example`, each JSON inline, `@file` or `-` for
+  manage applications; `coss hooks event-types list` (`--archived`) and
+  `coss hooks event-types create <name>` (`--description`, `--schema`, `--example`, each JSON inline, `@file` or `-` for
   stdin) the event types. Lists show 50 (`--limit`, up to 100).
-- `coss hooks endpoints list <app>` shows each endpoint's state; `coss hooks endpoints add <app>
-  --url <url>` (`--types`, `--description`, `--rate-limit`) prints the new endpoint's signing
+- `coss hooks endpoints list <app>` shows each endpoint's state;
+  `coss hooks endpoints add <app> --url <url>` (`--types`, `--description`, `--rate-limit`) prints the new endpoint's signing
   secret, the only time it's shown.
 - `coss hooks send <app> <event-type>` sends a message: the payload is `--data` (a JSON object)
   with `-F name=value` (JSON values, `@file`) and `-f name=value` (strings) on top, or, with none
   of them, the event type's first example. `--idempotency-key` sends it once only.
 - `coss hooks deliveries <app>` lists deliveries, newest first, of every endpoint or one
   (`--endpoint`), or of one message (`--message`), by `--status` (pending, succeeded, failed);
-  `coss hooks attempts <app> <delivery>` shows each HTTP request of one, and `coss hooks retry <app>
-  <delivery>` queues a finished one for another attempt.
+  `coss hooks attempts <app> <delivery>` shows each HTTP request of one, and
+  `coss hooks retry <app> <delivery>` queues a finished one for another attempt.
 - `coss hooks portal <app>` prints a link that signs in to the application's
   [portal](/docs/hooks/portal) (`--open` opens it, `--read-only`, `--expires-in <seconds>`). Anyone
   with the link is signed in until it expires.
@@ -276,9 +276,10 @@ coss risk lists add block domain evil.example --expires 30d --note "spam wave"
 - `coss risk assessments` lists assessments by `--decision`, `--event`, `--user` and `--review`
   (`open` is the review queue); `coss risk feedback <assessment> --outcome legitimate|fraud|abuse`
   (`--note`) reports what the user turned out to be.
-- `coss risk lists list` (`--list allow|block`, `--type`), `coss risk lists add <allow|block>
-  <email|domain|ip|asn|country|user> <value>` (`--note`, `--expires` as `7d`, `12h` or a time) and
-  `coss risk lists remove <entry>` manage the allow and block lists.
+- `coss risk lists list` (`--list allow|block`, `--type`),
+  `coss risk lists add <allow|block> <email|domain|ip|asn|country|user> <value>` (`--note`,
+  `--expires` as `7d`, `12h` or a time) and `coss risk lists remove <entry>` manage the allow and
+  block lists.
 
 ## Receive emails
 
