@@ -12,6 +12,10 @@
  * `{ "outbound": { "US": "0.0108" }, "inbound": { … } }` in dollars, carrier fees included. The
  * negotiated costs and the markup are confidential: pass them in, never commit them.
  * `--costs <file>` reads that JSON instead of calling Twilio (no other countries are priced).
+ *
+ * US and Canadian carriers add per-message fees Twilio bills on top of its price, which the
+ * Pricing API leaves out: their outbound costs must come from the overrides (all-in), or the
+ * script refuses to write prices that could sell below cost.
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
@@ -120,11 +124,24 @@ async function costsFromTwilio(): Promise<Costs> {
 const costs = values.costs
   ? costsFromJson(readFileSync(values.costs, "utf8"))
   : await costsFromTwilio();
+/** Countries whose carriers add fees the Pricing API's price leaves out. */
+const CARRIER_FEE_COUNTRIES = ["US", "CA"];
+
 const negotiated = process.env.SMS_NEGOTIATED_COSTS;
-if (negotiated) {
-  const overrides = costsFromJson(negotiated);
+const overrides = negotiated ? costsFromJson(negotiated) : null;
+if (overrides) {
   for (const direction of ["outbound", "inbound"] as const) {
     for (const [country, nanos] of overrides[direction]) costs[direction].set(country, nanos);
+  }
+}
+if (!values.costs) {
+  const missing = CARRIER_FEE_COUNTRIES.filter((country) => !overrides?.outbound.has(country));
+  if (missing.length > 0) {
+    console.error(
+      `Pass all-in outbound costs (carrier fees included) for ${missing.join(", ")} in ` +
+        "SMS_NEGOTIATED_COSTS: Twilio's price leaves their carrier fees out.",
+    );
+    process.exit(1);
   }
 }
 
