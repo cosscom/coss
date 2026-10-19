@@ -22,7 +22,7 @@ github_repository = "cosscom/coss"
 # (README, "Deploying from the admin console"). Add a new maintainer here before their merges can deploy.
 deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778", "343308169"]
 # Optional secrets not stored in coss/production: take a name out once put-secret.sh has set it.
-unset_secrets      = ["IPINFO_PRIVACY_TOKEN", "DOMAIN_CONNECT_PRIVATE_KEY"]
+unset_secrets      = ["IPINFO_PRIVACY_TOKEN"]
 initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
@@ -61,6 +61,7 @@ plain_env = {
     GOOGLE_CLIENT_ID         = "204721091156-k33omqkstijuaari06eidtlefif81p9m.apps.googleusercontent.com"
     GITHUB_CLIENT_ID         = "Ov23liYEf7MwkA26M9Ul"
     DEPLOY_GITHUB_APP_ID     = "5340076"
+    DOMAIN_CONNECT_KEY_ID    = "_dck1"
     EMAIL_PROVIDER           = "ses"
     AWS_REGION               = "us-east-2"
     SES_CONFIGURATION_SET    = "coss"
