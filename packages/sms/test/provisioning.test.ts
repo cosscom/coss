@@ -513,7 +513,10 @@ test("a release the provider didn't finish is retried by the worker", async () =
   const later = new Date(Date.now() + 15 * 60 * 1000);
   expect(await retryUnfinishedSmsReleases(d, { now: later, scope })).toBe(0);
   twilio.working = true;
-  expect(await retryUnfinishedSmsReleases(d, { now: later, scope })).toBe(1);
+  // A failed release is tried again 10 minutes later.
+  expect(await retryUnfinishedSmsReleases(d, { now: later, scope })).toBe(0);
+  const afterward = new Date(later.getTime() + 15 * 60 * 1000);
+  expect(await retryUnfinishedSmsReleases(d, { now: afterward, scope })).toBe(1);
   expect(await db.select().from(smsNumber).where(eq(smsNumber.id, number.id))).toEqual([]);
 });
 

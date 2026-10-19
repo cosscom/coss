@@ -1128,18 +1128,17 @@ export async function retryUnfinishedSmsReleases(
     try {
       if (await finishRelease(number, deps, now)) {
         released++;
-      } else {
-        // Its purchase may still be under way: asked about again in 10 minutes.
-        await db
-          .update(smsNumber)
-          .set({ updatedAt: now })
-          .where(
-            and(eq(smsNumber.id, number.id), eq(smsNumber.organizationId, number.organizationId)),
-          );
+        continue;
       }
     } catch (error) {
       console.error(`[sms] number ${number.id} still not released:`, error);
     }
+    // Waiting for its purchase's outcome, or failing: tried again in 10 minutes, after the
+    // numbers behind it (the oldest first would otherwise hold the batch forever).
+    await db
+      .update(smsNumber)
+      .set({ updatedAt: now })
+      .where(and(eq(smsNumber.id, number.id), eq(smsNumber.organizationId, number.organizationId)));
   }
   return released;
 }
