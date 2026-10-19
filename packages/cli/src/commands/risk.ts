@@ -16,6 +16,7 @@ import type {
 import { type Flags, requireArgs } from "../args.ts";
 import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { type Context, clientFor, resolveCredentials } from "../context.ts";
+import { printable } from "../emails/format.ts";
 import { apiError, UsageError } from "../errors.ts";
 import { jsonObject } from "../fields.ts";
 import type { Output, Style } from "../output.ts";
@@ -92,8 +93,12 @@ export function printAssessment(out: Output, assessment: RiskAssessment): void {
     `${out.style(["bold", decisionStyle(assessment.decision)], assessment.decision)}  score ${assessment.score.toFixed(2)}  ${out.style("dim", assessment.id)}`,
   );
   const rows = assessment.reasons.map((reason) => {
-    const detail = reasonDetail(reason);
-    return [`  ${reason.code}`, reason.message + (detail ? out.style("dim", ` (${detail})`) : "")];
+    // Messages and details can quote what was assessed (an address, a name): never escape sequences.
+    const detail = printable(reasonDetail(reason));
+    return [
+      `  ${reason.code}`,
+      printable(reason.message) + (detail ? out.style("dim", ` (${detail})`) : ""),
+    ];
   });
   for (const line of table(rows)) out.line(line);
   if (assessment.reasons.length === 0)
@@ -238,10 +243,11 @@ const assessments: Command = defineCommand({
       ["ID", "EVENT", "DECISION", "SCORE", "USER", "OUTCOME", "CREATED"],
       ...data.data.map((item) => [
         item.id,
-        item.event_name ?? item.event,
+        // What the customer's users typed: never escape sequences.
+        printable(item.event_name ?? item.event),
         out.style(decisionStyle(item.decision), item.decision),
         item.score.toFixed(2),
-        item.user.email ?? item.user.id ?? "",
+        printable(item.user.email ?? item.user.id ?? ""),
         item.outcome ?? (item.review_status === "open" ? out.style("yellow", "to review") : ""),
         when(item.created_at),
       ]),
@@ -340,9 +346,9 @@ const listsList: Command = defineCommand({
         entry.id,
         out.style(entry.list === "allow" ? "green" : "red", entry.list),
         entry.type,
-        entry.value,
+        printable(entry.value),
         when(entry.expires_at),
-        entry.note ?? "",
+        printable(entry.note ?? ""),
       ]),
     ]);
     out.line(out.style("dim", lines[0] ?? ""));

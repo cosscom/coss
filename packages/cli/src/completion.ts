@@ -119,7 +119,9 @@ if [[ $funcstack[1] == _coss ]]; then _coss "$@"; else compdef _coss coss; fi
 function __coss_complete
   set -l words (commandline -opc)
   set -e words[1]
-  coss __complete $words (commandline -ct) 2>/dev/null
+  # Quoted, so an empty current token (Tab after a space) is still passed as "".
+  set -l current (commandline -ct)
+  coss __complete $words "$current" 2>/dev/null
 end
 complete -c coss -f -a '(__coss_complete)'
 `;

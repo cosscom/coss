@@ -26,7 +26,7 @@ import {
   parseHeader,
 } from "../listen/forward.ts";
 import { generateSecret, isSecret } from "../listen/sign.ts";
-import type { Output } from "../output.ts";
+import { type Output, toJson } from "../output.ts";
 
 /** A poll waits this long for events; the SDK's timeout leaves room for the answer. */
 const WAIT_MS = 20_000;
@@ -74,7 +74,7 @@ function report(out: Output, forwarded: Forwarded, printJson: boolean): void {
   out.line(
     `${time} ${out.style("cyan", delivery.event_type)} ${out.style("dim", delivery.event_id)}${outcome}${retry}`,
   );
-  if (printJson) out.line(JSON.stringify(JSON.parse(delivery.body), null, 2));
+  if (printJson) out.line(toJson(JSON.parse(delivery.body), 2));
 }
 
 /** The profile's signing secret, created (and saved) on first use. */

@@ -120,6 +120,19 @@ describe("coss risk", () => {
       ["review_status", "open"],
     ]);
     expect(io.output()).toContain("rass_1  signup  review    0.97   ada@example.com  to review");
+
+    // A user's address is what they typed: its escape sequences never reach the terminal.
+    const hostile = fakeFetch({
+      "GET /v1/risk/assessments": {
+        object: "list",
+        data: [assessment({ user: { id: null, email: "ada\u001b]52;c;aGk=\u0007@example.com" } })],
+        has_more: false,
+      },
+    });
+    const safe = testIo({ fetch: hostile.fetch, env });
+    expect(await run(["risk", "assessments"], safe)).toBe(0);
+    expect(safe.output()).not.toContain("\u001b");
+    expect(safe.output()).toContain("ada ]52;c;aGk= @example.com");
   });
 
   test("feedback reports the outcome", async () => {

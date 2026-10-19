@@ -3,10 +3,11 @@ import { API_VERSION, type CossError, type CossRequestMethod } from "coss";
 import type { Flags } from "../args.ts";
 import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { clientFor, resolveCredentials } from "../context.ts";
+import { printable } from "../emails/format.ts";
 import { apiError, CliError, UsageError } from "../errors.ts";
 import { collect, field } from "../fields.ts";
 import type { CliIo } from "../io.ts";
-import type { Output } from "../output.ts";
+import { type Output, toJson } from "../output.ts";
 
 const METHODS: readonly CossRequestMethod[] = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
@@ -123,7 +124,7 @@ function isList(value: unknown): value is { data: unknown[]; has_more: boolean }
 }
 
 function print(out: Output, value: unknown): void {
-  out.line(out.json ? JSON.stringify(value) : JSON.stringify(value, null, 2));
+  out.line(out.json ? toJson(value) : toJson(value, 2));
 }
 
 /** The error on stdout (it's the response), its explanation on stderr. */
@@ -208,7 +209,10 @@ async function api({ values, positionals, context }: CommandInput<typeof FLAGS>)
   });
   if (io.signal.aborted) return 130;
   if (error) throw failure(out, doing, error);
-  if (values.raw) out.raw(data as Uint8Array);
-  else print(out, data);
+  if (values.raw) {
+    // Bytes as they came, unless they'd reach a terminal: then the text without control characters.
+    if (io.stdout.isTTY) out.line(printable(new TextDecoder().decode(data as Uint8Array), true));
+    else out.raw(data as Uint8Array);
+  } else print(out, data);
   return 0;
 }

@@ -207,6 +207,15 @@ describe("coss api", () => {
     expect(await run(["api", "contacts/export", "--raw"], raw)).toBe(0);
     expect(raw.output()).toBe(csv);
 
+    // To a terminal: the text, without control characters.
+    const hostile = fakeFetch({
+      "GET /v1/contacts/export": () => new Response("a\u001b]0;title\u0007b\n"),
+    });
+    const terminal = testIo({ fetch: hostile.fetch, env });
+    terminal.stdout.isTTY = true;
+    expect(await run(["api", "contacts/export", "--raw"], terminal)).toBe(0);
+    expect(terminal.output()).toBe("a]0;titleb\n\n");
+
     const parsed = testIo({ fetch: api.fetch, env });
     expect(await run(["api", "contacts/export"], parsed)).toBe(1);
     expect(parsed.errors()).toContain("Add --raw");
