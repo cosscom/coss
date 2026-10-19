@@ -57,6 +57,7 @@ import {
   attachPendingSmsNumbers,
   chargeDueSmsFees,
   releaseOrganizationSmsResources,
+  retryUnfinishedSmsReleases,
   type SmsDispatchQueue,
   type SmsSenderDeps,
   type SmsService,
@@ -310,12 +311,13 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       },
     }),
     start({
-      // Carrier registrations: each step at Twilio, then its review, polled until decided; and
-      // numbers whose messaging service didn't take them at purchase.
+      // Carrier registrations: each step at Twilio, then its review, polled until decided; numbers
+      // their messaging service didn't take at purchase; releases the provider didn't finish.
       name: "sms-registrations",
       intervalMs: 30_000,
       run: async () => {
         await attachPendingSmsNumbers(deps.sms.senders);
+        await retryUnfinishedSmsReleases(deps.sms.senders);
         return (
           (await advanceDueSmsRegistrations(deps.sms.senders, {
             limit: SMS_REGISTRATION_BATCH,

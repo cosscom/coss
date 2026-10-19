@@ -15,6 +15,7 @@ import {
   oneMonthAfter,
   releaseOrganizationSmsResources,
   releaseSmsNumber,
+  retryUnfinishedSmsReleases,
   type SmsSenderDeps,
   searchSmsNumbers,
 } from "../src/provisioning.ts";
@@ -51,9 +52,16 @@ function deps(twilio = new FakeTwilioApi()): SmsSenderDeps & { twilio: FakeTwili
   };
 }
 
-/** Fails adding numbers to messaging services until `working` is set. */
+/** Fails adding numbers to messaging services, and releasing them, until `working` is set. */
 class FlakyServiceTwilio extends FakeTwilioApi {
   working = false;
+  override async releaseNumber(
+    account: { accountSid: string; authToken: string },
+    numberSid: string,
+  ) {
+    if (!this.working) throw new Error("Twilio unreachable");
+    await super.releaseNumber(account, numberSid);
+  }
   override async addNumberToService(
     account: { accountSid: string; authToken: string },
     serviceSid: string,
@@ -123,6 +131,15 @@ async function advanceUntilSettled(organizationId: string, d: SmsSenderDeps) {
   }
   clocks.set(organizationId, now);
   return listSmsRegistrations(organizationId);
+}
+
+async function advanceUntilSettledOnce(organizationId: string, d: SmsSenderDeps) {
+  const now = (clocks.get(organizationId) ?? Date.now()) + 60 * 60 * 1000;
+  clocks.set(organizationId, now);
+  await advanceDueSmsRegistrations(d, {
+    now: new Date(now),
+    scope: { organizationIds: [organizationId] },
+  });
 }
 
 describe("US A2P 10DLC", () => {
@@ -430,4 +447,64 @@ test("a number its messaging service didn't take is pending until the worker add
     numberId: number.id,
     route: { messagingServiceSid: registration?.messagingServiceSid },
   });
+});
+
+test("a number bought while its campaign is approved waits, pending, to join the service", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  const d = deps();
+  await createSmsRegistration(
+    org,
+    SmsRegistrationInput.parse({
+      kind: "us_10dlc",
+      brandType: "low_volume_standard",
+      profile: PROFILE,
+      campaign: CAMPAIGN,
+    }),
+    d,
+  );
+  // Run the steps until the campaign's review is the next thing asked about.
+  let [registration] = await listSmsRegistrations(org);
+  for (let i = 0; i < 20 && registration && !registration.campaignSid; i++) {
+    await advanceUntilSettledOnce(org, d);
+    [registration] = await listSmsRegistrations(org);
+  }
+  // The purchase commits after the approval step read the registration's numbers.
+  const original = d.twilio.addNumberToService.bind(d.twilio);
+  let bought: Awaited<ReturnType<typeof buySmsNumber>> | undefined;
+  d.twilio.addNumberToService = async (...args) => {
+    bought ??= await buySmsNumber(org, { phoneNumber: testPhoneNumber(), kind: "local" }, d);
+    return original(...args);
+  };
+  const local = await buySmsNumber(org, { phoneNumber: testPhoneNumber(), kind: "local" }, d);
+  expect(local.status).toBe("active");
+  [registration] = await advanceUntilSettled(org, d);
+  expect(registration?.status).toBe("approved");
+  if (!bought) throw new Error("not bought");
+  const [stored] = await db.select().from(smsNumber).where(eq(smsNumber.id, bought.id));
+  expect(stored?.status).toBe("pending");
+  d.twilio.addNumberToService = original;
+  const later = new Date(Date.now() + 5 * 60 * 1000);
+  expect(await attachPendingSmsNumbers(d, { now: later, scope: { organizationIds: [org] } })).toBe(
+    1,
+  );
+});
+
+test("a release the provider didn't finish is retried by the worker", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  const twilio = new FlakyServiceTwilio();
+  twilio.working = true;
+  const d = deps(twilio);
+  const number = await buySmsNumber(org, { phoneNumber: testPhoneNumber(), kind: "local" }, d);
+  twilio.working = false;
+  await expect(releaseSmsNumber(org, number.id, d)).rejects.toThrow("Twilio unreachable");
+  const [releasing] = await db.select().from(smsNumber).where(eq(smsNumber.id, number.id));
+  expect(releasing?.status).toBe("releasing");
+  const scope = { organizationIds: [org] };
+  const later = new Date(Date.now() + 15 * 60 * 1000);
+  expect(await retryUnfinishedSmsReleases(d, { now: later, scope })).toBe(0);
+  twilio.working = true;
+  expect(await retryUnfinishedSmsReleases(d, { now: later, scope })).toBe(1);
+  expect(await db.select().from(smsNumber).where(eq(smsNumber.id, number.id))).toEqual([]);
 });

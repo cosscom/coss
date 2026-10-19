@@ -14,7 +14,19 @@ import { recordUsage } from "@coss/billing/metering";
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { decryptSecret, encryptSecret, type SecretsKeyRing } from "@coss/webhooks";
-import { and, asc, count, eq, inArray, isNotNull, isNull, lte, ne, or } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  lte,
+  ne,
+  notInArray,
+  or,
+} from "drizzle-orm";
 import { ensureSmsAccountRow } from "./accounts.ts";
 import { SmsError } from "./errors.ts";
 import { parsePhoneNumber } from "./phone.ts";
@@ -250,7 +262,12 @@ export async function createSmsRegistration(
 }
 
 type StepOutcome =
-  | { next: Partial<SmsRegistrationRow>; fees?: { fee: string }[] }
+  | {
+      next: Partial<SmsRegistrationRow>;
+      fees?: { fee: string }[];
+      /** Numbers added to the messaging service before an approval (the rest wait, pending). */
+      attached?: string[];
+    }
   | { rejected: string };
 
 function reviewed(
@@ -287,15 +304,15 @@ async function messagingService(
   return created.sid;
 }
 
-/** Adds the registration's numbers to its messaging service (once it can send). */
+/** Adds the registration's numbers to its messaging service (once it can send); their ids. */
 async function attachNumbers(
   row: SmsRegistrationRow,
   serviceSid: string,
   account: TwilioCredentials,
   deps: SmsSenderDeps,
-): Promise<void> {
+): Promise<string[]> {
   const numbers = await db
-    .select({ providerSid: smsNumber.providerSid })
+    .select({ id: smsNumber.id, providerSid: smsNumber.providerSid })
     .from(smsNumber)
     .where(
       and(
@@ -305,9 +322,13 @@ async function attachNumbers(
         isNotNull(smsNumber.providerSid),
       ),
     );
+  const attached: string[] = [];
   for (const number of numbers) {
-    if (number.providerSid) await addToService(account, serviceSid, number.providerSid, deps);
+    if (!number.providerSid) continue;
+    await addToService(account, serviceSid, number.providerSid, deps);
+    attached.push(number.id);
   }
+  return attached;
 }
 
 /** Twilio's "already in this messaging service": a retry after an attachment that did happen. */
@@ -400,8 +421,10 @@ async function runStep(
         serviceSid,
         campaignSid: row.campaignSid,
       });
-      if (status.status === "approved") await attachNumbers(row, serviceSid, account, deps);
-      return reviewed(status, { step: "done" }, now);
+      const attached =
+        status.status === "approved" ? await attachNumbers(row, serviceSid, account, deps) : [];
+      const outcome = reviewed(status, { step: "done" }, now);
+      return "next" in outcome ? { ...outcome, attached } : outcome;
     }
     case "verification": {
       const [number] = row.numberId
@@ -503,6 +526,23 @@ export async function advanceSmsRegistration(
       return rejected ?? null;
     }
     const done = outcome.next.step === "done";
+    if (done && claimed.kind === "us_10dlc") {
+      // Purchases read the registration's status under the account lock: one that committed
+      // after the numbers were attached above stored its number `active` but outside the
+      // service. Those wait, `pending`, for `attachPendingSmsNumbers`.
+      await lockSmsAccount(tx, claimed.organizationId);
+      await tx
+        .update(smsNumber)
+        .set({ status: "pending" })
+        .where(
+          and(
+            eq(smsNumber.organizationId, claimed.organizationId),
+            eq(smsNumber.registrationId, claimed.id),
+            eq(smsNumber.status, "active"),
+            outcome.attached?.length ? notInArray(smsNumber.id, outcome.attached) : undefined,
+          ),
+        );
+    }
     for (const fee of outcome.fees ?? []) {
       await recordFee(tx, claimed.organizationId, "sms.registrations", fee);
     }
@@ -780,7 +820,10 @@ export async function setSmsNumberReceivingEnvironment(
   if (updated.length === 0) throw new SmsError("not_found", "Number not found.");
 }
 
-/** Releases a number: it stops sending at once, then goes back to the provider. */
+/**
+ * Releases a number: it stops sending at once (`releasing`), then goes back to the provider. A
+ * release the provider didn't finish is retried by `retryUnfinishedSmsReleases`.
+ */
 export async function releaseSmsNumber(
   organizationId: string,
   numberId: string,
@@ -792,8 +835,12 @@ export async function releaseSmsNumber(
     .where(and(eq(smsNumber.id, numberId), eq(smsNumber.organizationId, organizationId)))
     .returning();
   if (!number) throw new SmsError("not_found", "Number not found.");
+  await finishRelease(number, deps);
+}
+
+async function finishRelease(number: typeof smsNumber.$inferSelect, deps: SmsSenderDeps) {
   if (number.providerSid && number.provider === deps.provider) {
-    const account = await ensureSmsSubaccount(organizationId, deps);
+    const account = await ensureSmsSubaccount(number.organizationId, deps);
     try {
       await deps.twilio.releaseNumber(account, number.providerSid);
     } catch (error) {
@@ -803,7 +850,52 @@ export async function releaseSmsNumber(
   }
   await db
     .delete(smsNumber)
-    .where(and(eq(smsNumber.id, number.id), eq(smsNumber.organizationId, organizationId)));
+    .where(
+      and(
+        eq(smsNumber.id, number.id),
+        eq(smsNumber.organizationId, number.organizationId),
+        eq(smsNumber.status, "releasing"),
+      ),
+    );
+}
+
+/** How long a release may take before the worker finishes it. */
+const RELEASE_RETRY_MS = 10 * 60 * 1000;
+
+/**
+ * The worker's `sms-registrations` loop: numbers still `releasing` 10 minutes on (the provider
+ * failed while releasing them) are released again, so no number stays paid for at the provider.
+ * Organizations being deleted are left to their teardown (their account isn't `active`).
+ */
+export async function retryUnfinishedSmsReleases(
+  deps: SmsSenderDeps,
+  opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } } = {},
+): Promise<number> {
+  const now = opts.now ?? new Date();
+  const due = await db
+    .select({ number: smsNumber })
+    .from(smsNumber)
+    .innerJoin(smsAccount, eq(smsAccount.organizationId, smsNumber.organizationId))
+    .where(
+      and(
+        eq(smsNumber.status, "releasing"),
+        lte(smsNumber.updatedAt, new Date(now.getTime() - RELEASE_RETRY_MS)),
+        eq(smsAccount.status, "active"),
+        opts.scope ? inArray(smsNumber.organizationId, opts.scope.organizationIds) : undefined,
+      ),
+    )
+    .orderBy(asc(smsNumber.updatedAt))
+    .limit(opts.limit ?? 20);
+  let released = 0;
+  for (const { number } of due) {
+    try {
+      await finishRelease(number, deps);
+      released++;
+    } catch (error) {
+      console.error(`[sms] number ${number.id} still not released:`, error);
+    }
+  }
+  return released;
 }
 
 // ---------------------------------------------------------------------------------------------
