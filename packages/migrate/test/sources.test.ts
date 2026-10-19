@@ -134,7 +134,14 @@ describe("Resend", () => {
         email: "ada@example.com",
         properties: { plan: { value: "pro", type: "string" } },
       },
-      "GET /contacts/c1/topics?limit=100": { data: [{ id: "t1", subscription: "opt_in" }] },
+      "GET /contacts/c1/topics?limit=100": {
+        data: [{ id: "t1", subscription: "opt_in" }],
+        has_more: true,
+      },
+      "GET /contacts/c1/topics?limit=100&after=t1": {
+        data: [{ id: "t2", subscription: "opt_out" }],
+        has_more: false,
+      },
       "GET /webhooks?limit=100": {
         data: [
           { id: "w1", endpoint: "https://x.test/h", events: ["email.bounced", "domain.created"] },
@@ -158,7 +165,10 @@ describe("Resend", () => {
           lastName: null,
           unsubscribed: false,
           properties: { plan: "pro" },
-          topics: [{ topicId: "t1", status: "opted_in" }],
+          topics: [
+            { topicId: "t1", status: "opted_in" },
+            { topicId: "t2", status: "opted_out" },
+          ],
         },
       ],
       next: null,

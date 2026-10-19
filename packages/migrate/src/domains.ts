@@ -6,11 +6,14 @@
  */
 import { createDomain, type DomainDeps, DomainError, listDomains } from "@coss/email";
 import { claimItem, finishItem, type ItemResult } from "./items.ts";
-import { inventoryOf, type MigrationRow } from "./migrations.ts";
+import { getMigration, inventoryOf, type MigrationRow } from "./migrations.ts";
 
 export type DomainImport = { name: string; result: ItemResult };
 
-/** Creates the chosen domains (of the import's inventory) and records each as an item. */
+/**
+ * Creates the chosen domains (of the import's inventory) and records each as an item, while the
+ * import is still `ready` (it stops at the next domain once the import is canceled).
+ */
 export async function importDomains(
   row: MigrationRow,
   domainIds: string[],
@@ -21,6 +24,8 @@ export async function importDomains(
   const sources = (inventoryOf(row)?.domains ?? []).filter((domain) => chosen.has(domain.id));
   const results: DomainImport[] = [];
   for (const source of sources) {
+    // Canceled (or started elsewhere) meanwhile: create nothing more.
+    if ((await getMigration(row, row.id))?.status !== "ready") break;
     const item = await claimItem(row, "domain", source, () => source.name);
     if (item.outcome !== "pending") continue;
     const existing = (await listDomains({ organizationId: row.organizationId })).find(

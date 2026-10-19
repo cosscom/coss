@@ -252,12 +252,7 @@ export function resendSource(apiKey: string, deps: SourceDeps = {}): MigrationSo
         }
         const choices =
           topics.length > 0
-            ? (
-                await client.get<ResendList<ResendContactTopic>>(
-                  `/contacts/${encodeURIComponent(row.id)}/topics`,
-                  { limit: PAGE },
-                )
-              ).data
+            ? await all<ResendContactTopic>(`/contacts/${encodeURIComponent(row.id)}/topics`)
             : [];
         items.push({
           email: row.email,
