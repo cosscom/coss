@@ -424,6 +424,19 @@ describe("restricted keys", () => {
     expect(keys.map((key) => key.name)).toEqual(["Test sandbox key"]);
   });
 
+  test("a binding written without access (older code mid-rollout) has full access", async () => {
+    const tenant = await createTestTenant();
+    const key = await createUnboundKey(
+      tenant.organization.id,
+      tenant.owner.id,
+      API_KEY_PREFIX.sandbox,
+    );
+    await db
+      .insert(schema.environmentApiKey)
+      .values({ apiKeyId: key.id, environmentId: tenant.development.id });
+    expect((await authenticateApiKey(key.key, { hook: ["send"] })).ok).toBe(true);
+  });
+
   test("full-access keys follow the catalog, whatever they stored", async () => {
     const tenant = await createTestTenant();
     const keyId = await keyIdOf(tenant.sandboxKey);

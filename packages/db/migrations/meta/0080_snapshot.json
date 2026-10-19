@@ -1,5 +1,5 @@
 {
-  "id": "f015d61f-9017-42fa-b633-0a4ad41b4bbc",
+  "id": "42b944db-15b4-4032-a647-83e7a32dd772",
   "prevId": "68939214-19c0-43b8-919d-3f92187e61e6",
   "version": "7",
   "dialect": "postgresql",
@@ -9870,7 +9870,8 @@
           "type": "api_key_access",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "'full'"
         },
         "created_by_user_id": {
           "name": "created_by_user_id",

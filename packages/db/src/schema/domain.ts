@@ -98,8 +98,10 @@ export const environmentApiKey = pgTable(
     environmentId: text("environment_id")
       .notNull()
       .references(() => environment.id, { onDelete: "cascade" }),
-    // No default: every binding says which it is (existing keys were backfilled as `full`).
-    access: apiKeyAccess("access").notNull(),
+    // `createEnvironmentApiKey` always names it. The default is for what predates the column:
+    // existing keys, and writers that only ever made full-access keys (old tasks still running
+    // during a rollout, or after a rollback).
+    access: apiKeyAccess("access").notNull().default("full"),
     createdByUserId: text("created_by_user_id").references(() => user.id, {
       onDelete: "set null",
     }),

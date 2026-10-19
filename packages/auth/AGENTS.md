@@ -13,7 +13,7 @@ Better Auth (`packages/auth`) and the dashboard actions, mobile API routes, tena
     `environment_api_key`; metadata is client-writable),
     `defaultPermissions: API_KEY_PERMISSIONS`, prefixes
     `coss_live_` / `coss_test_` by environment mode (`API_KEY_PREFIX`), key format `/^coss_(live|test)_[A-Za-z]{64}$/`.
-  - **Scoped keys:** every binding has an `access` (`environment_api_key.access`, no default). `full` keys are checked
+  - **Scoped keys:** every binding has an `access` (`environment_api_key.access`; `createEnvironmentApiKey` always sets it, the `full` default only covers older writers mid-rollout). `full` keys are checked
     against the current `API_KEY_PERMISSIONS` on every request (their stored `apikey.permissions` is ignored, so new
     products need no backfill); `restricted` keys hold exactly the stored subset, validated at creation by
     `normalizeKeyPermissions` (`./api-key-permissions`: known resources/actions only, at least one) and passed to
