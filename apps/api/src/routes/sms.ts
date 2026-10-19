@@ -6,6 +6,7 @@ import {
   getReceivedSms,
   getSms,
   getSmsSuppression,
+  isTollFreeNumber,
   listReceivedSms,
   listSmsEvents,
   listSmsNumberObjects,
@@ -400,7 +401,9 @@ export function createSmsRoutes(smsService: SmsService): OpenAPIHono<AppEnv> {
         params,
         idempotencyKey,
       };
-      const quotas = [smsSendQuota(c.var.auth, countSegments(params.body).segments)];
+      // Counted as the service counts them (toll-free numbers' segments are smaller).
+      const segments = countSegments(params.body, { tollFree: isTollFreeNumber(params.from) });
+      const quotas = [smsSendQuota(c.var.auth, segments.segments)];
       if (mode === "live") quotas.push(smsRecipientQuota(c.var.auth, params.to));
       const charged: typeof quotas = [];
       for (const quota of quotas) {
