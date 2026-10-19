@@ -28,6 +28,11 @@ import { FakeTwilioApi } from "../src/twilio/fake.ts";
 
 const { billingUsage, smsAccount, smsNumber } = schema;
 
+/** A toll-free number no other test run used (the test database keeps every run's numbers). */
+function testTollFreeNumber(): string {
+  return testPhoneNumber().replace(/^\+1415/, "+1833");
+}
+
 /** A plan gate that allows `numbers` SMS numbers (`null`: any number). */
 function plansAllowing(numbers: number | null): PlanGate {
   return {
@@ -702,6 +707,9 @@ test("a rejected toll-free verification is resubmitted with the corrected detail
   const methods = d.twilio.calls.map((call) => call.method);
   expect(methods.filter((method) => method === "createTollFreeVerification")).toHaveLength(1);
   expect(methods.filter((method) => method === "resubmitTollFreeVerification")).toHaveLength(1);
+  // The number stays in the one messaging service it can belong to.
+  expect(methods.filter((method) => method === "createMessagingService")).toHaveLength(1);
+  expect(registrations[1]?.messagingServiceSid).toBe(registrations[0]?.messagingServiceSid);
 });
 
 test("releasing a purchase still under way waits for its outcome", async () => {
@@ -730,4 +738,32 @@ test("releasing a purchase still under way waits for its outcome", async () => {
   expect(await retryUnfinishedSmsReleases(d, { now: later, scope })).toBe(1);
   expect(await db.select().from(smsNumber).where(eq(smsNumber.id, intent.id))).toEqual([]);
   expect(twilio.calls.map((call) => call.method)).toContain("releaseNumber");
+});
+
+test("a toll-free number still being bought can't be registered yet", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  class Unanswered extends FakeTwilioApi {
+    override async buyNumber(): Promise<{ sid: string; phoneNumber: string }> {
+      throw new TwilioNetworkError("Twilio POST IncomingPhoneNumbers got no answer.");
+    }
+  }
+  const d = deps(new Unanswered());
+  await expect(
+    buySmsNumber(org, { phoneNumber: testTollFreeNumber(), kind: "toll_free" }, d),
+  ).rejects.toThrow("no answer");
+  const [intent] = await db.select().from(smsNumber).where(eq(smsNumber.organizationId, org));
+  if (!intent) throw new Error("no intent");
+  await expect(
+    createSmsRegistration(
+      org,
+      SmsRegistrationInput.parse({
+        kind: "toll_free",
+        numberId: intent.id,
+        profile: PROFILE,
+        campaign: { ...CAMPAIGN, optInProofUrl: "https://acme.test/opt-in.png" },
+      }),
+      d,
+    ),
+  ).rejects.toMatchObject({ code: "registration_invalid" });
 });

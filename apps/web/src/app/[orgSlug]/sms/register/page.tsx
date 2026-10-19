@@ -25,6 +25,9 @@ export default async function RegisterSmsSenderPage({
     .filter(
       (row) =>
         row.number.kind === "toll_free" &&
+        // Bought (its purchase settled) and not being released.
+        row.number.providerSid !== null &&
+        row.number.status !== "releasing" &&
         !active.some((registration) => registration.numberId === row.number.id),
     )
     .map((row) => ({ id: row.number.id, phoneNumber: row.number.phoneNumber }));

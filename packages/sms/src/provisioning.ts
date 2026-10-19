@@ -18,6 +18,7 @@ import {
   and,
   asc,
   count,
+  desc,
   eq,
   inArray,
   isNotNull,
@@ -29,7 +30,7 @@ import {
 } from "drizzle-orm";
 import { ensureSmsAccountRow } from "./accounts.ts";
 import { SmsError } from "./errors.ts";
-import { parsePhoneNumber } from "./phone.ts";
+import { isTollFreeNumber, parsePhoneNumber } from "./phone.ts";
 import type { SmsRegistrationInputOutput } from "./schemas.ts";
 import type { AvailableNumber, ReviewStatus, TwilioApi } from "./twilio/api.ts";
 import { TwilioApiError, type TwilioCredentials } from "./twilio/client.ts";
@@ -231,6 +232,13 @@ export async function createSmsRegistration(
       if (!number || number.kind !== "toll_free") {
         throw new SmsError("registration_invalid", "Choose one of your toll-free numbers.");
       }
+      if (!number.providerSid || number.status === "releasing") {
+        // Its purchase hasn't settled (or it is being released): nothing to verify yet.
+        throw new SmsError(
+          "registration_invalid",
+          "That number isn't ready yet. Try again in a few minutes.",
+        );
+      }
       if (active.some((row) => row.numberId === number.id)) {
         throw new SmsError("registration_locked", "That number is already being verified.");
       }
@@ -298,7 +306,25 @@ async function messagingService(
   if (row.messagingServiceSid) return row.messagingServiceSid;
   const base = deps.callbackBaseUrl.replace(/\/+$/, "");
   const friendlyName = `coss ${row.id}`;
-  const existing = await deps.twilio.findMessagingService(account, friendlyName);
+  // A toll-free number registered again (after a rejection) is still in its earlier
+  // registration's service, and a number belongs to one service: that one is used again.
+  const [previous] =
+    row.kind === "toll_free" && row.numberId
+      ? await db
+          .select({ sid: smsRegistration.messagingServiceSid })
+          .from(smsRegistration)
+          .where(
+            and(
+              eq(smsRegistration.organizationId, row.organizationId),
+              eq(smsRegistration.numberId, row.numberId),
+              ne(smsRegistration.id, row.id),
+              isNotNull(smsRegistration.messagingServiceSid),
+            ),
+          )
+          .orderBy(desc(smsRegistration.createdAt))
+          .limit(1)
+      : [];
+  const existing = previous?.sid ?? (await deps.twilio.findMessagingService(account, friendlyName));
   const created = existing
     ? { sid: existing }
     : await deps.twilio.createMessagingService(account, {
@@ -647,11 +673,8 @@ export async function searchSmsNumbers(
   return deps.twilio.searchNumbers(account, { ...input, limit: 10 });
 }
 
-/** US and Canadian toll-free area codes (NANP: 800, 833, 844, 855, 866, 877, 888). */
-const TOLL_FREE = /^\+18(00|33|44|55|66|77|88)\d{7}$/;
-
 export function smsNumberKind(phoneNumber: string): "local" | "toll_free" {
-  return TOLL_FREE.test(phoneNumber) ? "toll_free" : "local";
+  return isTollFreeNumber(phoneNumber) ? "toll_free" : "local";
 }
 
 /**
@@ -796,7 +819,8 @@ async function completePurchase(
       .set({
         providerSid: bought.sid,
         status: attachTo ? "pending" : "active",
-        registrationId: registration?.id ?? null,
+        // A toll-free number's registration is its own (made once it is bought): kept.
+        ...(intent.kind === "local" ? { registrationId: registration?.id ?? null } : {}),
         nextFeeAt: oneMonthAfter(new Date()),
       })
       .where(

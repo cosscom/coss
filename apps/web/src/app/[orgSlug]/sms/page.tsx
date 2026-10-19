@@ -2,10 +2,9 @@ import { RATE_CARDS, rateCardAt } from "@coss/billing/catalog";
 import { formatUnitPrice } from "@coss/billing/money";
 import {
   allowedCountries,
-  canSendFrom,
   getSmsAccount,
   HIGH_RISK_SMS_COUNTRIES,
-  listSmsNumbers,
+  listSmsNumbersWithSendability,
   listSmsRegistrations,
 } from "@coss/sms";
 import { listProjectsWithEnvironments } from "@coss/tenancy";
@@ -79,12 +78,12 @@ export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSl
   const { organization, can } = await requireOrgMember(orgSlug);
   if (!can({ smsSender: ["read"] })) notFound();
   const [numbers, registrations, account, projects] = await Promise.all([
-    listSmsNumbers(organization.id),
+    listSmsNumbersWithSendability(organization.id),
     listSmsRegistrations(organization.id),
     getSmsAccount(organization.id),
     listProjectsWithEnvironments({ organizationId: organization.id }),
   ]);
-  const sendable = await Promise.all(numbers.map((row) => canSendFrom(organization.id, row)));
+  const sendable = numbers.map((row) => row.canSend);
   const environments: EnvironmentOption[] = projects.flatMap(({ project, environments: list }) =>
     list
       .filter((environment) => environment.mode === "live")
