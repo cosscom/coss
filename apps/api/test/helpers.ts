@@ -102,7 +102,17 @@ export function createTestApp(
     listenerPollIntervalMs: opts.listenerPollIntervalMs ?? 20,
   });
   const dispatch = () => queue.drain(emailService);
-  return { app, liveProvider, sandboxProvider, identity, tracking, queue, dispatch, inbound };
+  return {
+    app,
+    emailService,
+    liveProvider,
+    sandboxProvider,
+    identity,
+    tracking,
+    queue,
+    dispatch,
+    inbound,
+  };
 }
 
 export type TestApp = ReturnType<typeof createTestApp>["app"];
