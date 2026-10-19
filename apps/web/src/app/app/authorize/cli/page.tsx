@@ -32,11 +32,13 @@ function AuthorizeCard(props: { title?: string; description: ReactNode; children
   );
 }
 
-function keyName(host: string): string {
-  return (host ? `${CLI_KEY_NAME_PREFIX} · ${host}` : CLI_KEY_NAME_PREFIX).slice(
-    0,
-    API_KEY_NAME_MAX_LENGTH,
-  );
+function keyName(params: { host: string; project: string }): string {
+  const name = params.project
+    ? `${params.project} · coss init`
+    : params.host
+      ? `${CLI_KEY_NAME_PREFIX} · ${params.host}`
+      : CLI_KEY_NAME_PREFIX;
+  return name.slice(0, API_KEY_NAME_MAX_LENGTH);
 }
 
 /** Opened by `coss login`; approving hands the CLI a one-time code for a new API key. */
@@ -81,6 +83,8 @@ export default async function AuthorizeCliPage({ searchParams }: PageProps<"/app
       organizationId: membership.organization.id,
     })) {
       for (const env of envs) {
+        // `coss init` writes the key into a project's files: never a live one.
+        if (params.project && env.mode === "live") continue;
         environments.push({
           value: `${org.slug}/${project.slug}/${env.slug}`,
           label: `${org.name} · ${project.name} · ${env.name}${env.mode === "live" ? " (live)" : ""}`,
@@ -104,15 +108,25 @@ export default async function AuthorizeCliPage({ searchParams }: PageProps<"/app
       </p>
     ) : null;
 
+  const title = params.project ? `Create an API key for ${params.project}` : undefined;
   if (environments.length === 0) {
     return (
       <AuthorizeCard
         description={
-          <>
-            You can't create API keys in any of your organizations. Ask an owner or admin for a key,
-            then run <code>coss login --manual</code> and paste it.
-          </>
+          params.project ? (
+            <>
+              You can't create API keys in a sandbox environment of any of your organizations. Ask
+              an owner or admin for a development key and add it to your project as{" "}
+              <code>COSS_API_KEY</code>.
+            </>
+          ) : (
+            <>
+              You can't create API keys in any of your organizations. Ask an owner or admin for a
+              key, then run <code>coss login --manual</code> and paste it.
+            </>
+          )
         }
+        title={title}
       >
         {blockedNote}
         <SignOutButton redirectTo={next} />
@@ -125,14 +139,19 @@ export default async function AuthorizeCliPage({ searchParams }: PageProps<"/app
   return (
     <AuthorizeCard
       description={
-        <>Signed in as {session.user.email}. Only continue if your terminal shows this code:</>
+        <>
+          Signed in as {session.user.email}.
+          {params.project ? " coss init writes a development key into the project's files." : ""}{" "}
+          Only continue if your terminal shows this code:
+        </>
       }
+      title={title}
     >
       <p className="text-center font-mono font-semibold text-2xl tracking-widest">{verification}</p>
       <CliAuthorizeForm
         codeChallenge={params.codeChallenge}
         defaultEnvironment={defaultEnvironment}
-        defaultName={keyName(params.host)}
+        defaultName={keyName(params)}
         environments={environments}
         maxNameLength={API_KEY_NAME_MAX_LENGTH}
         port={params.port}

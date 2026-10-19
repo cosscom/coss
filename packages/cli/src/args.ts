@@ -1,5 +1,7 @@
 import { type ParseArgsOptionsConfig, parseArgs } from "node:util";
+import { savedProfileNames } from "./config.ts";
 import { UsageError } from "./errors.ts";
+import type { CliIo } from "./io.ts";
 
 /** A flag as a command declares it: what `parseArgs` needs, plus what help and completion show. */
 export type Flag = {
@@ -11,6 +13,8 @@ export type Flag = {
   description: string;
   /** Values completion offers. */
   choices?: readonly string[];
+  /** Values completion offers that depend on the machine (saved profiles). */
+  complete?: (io: CliIo) => Promise<readonly string[]>;
 };
 
 export type Flags = Record<string, Flag>;
@@ -21,6 +25,7 @@ export const GLOBAL_FLAGS: Flags = {
     type: "string",
     value: "<name>",
     description: "Use a saved profile other than the default (or set COSS_PROFILE)",
+    complete: savedProfileNames,
   },
   json: { type: "boolean", description: "Machine-readable output" },
   "no-color": { type: "boolean", description: "No colors (also NO_COLOR)" },

@@ -174,6 +174,8 @@ Better Auth (`packages/auth`) and the dashboard actions, mobile API routes, tena
   `apps/web/src/app/api/cli/v1/token/route.ts`): the CLI opens `/app/authorize/cli?code_challenge&state&host` plus
   either `port` (its loopback server; the redirect is built as `http://127.0.0.1:<port>/callback` from the port
   alone, never a URL from the request, RFC 8252) or `mode=code` (a remote machine: the page shows the code to paste).
+  `coss init` adds `project=<name>`: the page then lists sandbox environments only and names the key
+  `<project> · coss init` (a presentation hint; the CLI itself revokes a live key it gets).
   The page lists environments of organizations where the member may create keys and the session meets `orgAccess`
   (others are named, not listed), shows `cliVerificationCode(challenge)` — the same code the terminal prints, so
   a user approving a link someone else started can tell — and refuses impersonation. `authorizeCli` repeats the

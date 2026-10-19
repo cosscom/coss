@@ -227,7 +227,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `PORT`, `HOSTNAME`, `KEEP_ALIVE_TIMEOUT` | set by the Next images (standalone `server.js`) |
 | `SEED_PASSWORD` | `db:seed` demo password (only when the user is first created) |
 | `COSS_API_KEY`, `COSS_BASE_URL` | SDK defaults / `packages/sdk/examples` only (the example also reads `COSS_FROM`, `COSS_TO`); also the MCP server's and the CLI's (where they win over a saved profile) |
-| `COSS_DASHBOARD_URL`, `COSS_PROFILE` | the CLI only (`packages/cli`): the dashboard `coss login` opens (default `https://coss.com`), and which saved profile commands use |
+| `COSS_DASHBOARD_URL`, `COSS_PROFILE`, `COSS_NO_UPDATE_CHECK` | the CLI only (`packages/cli`): the dashboard `coss login` opens (default `https://coss.com`), which saved profile commands use, and `1` to turn off the daily update notice |
 
 Adding one: `.env.example`, the app's t3-env schema, **`turbo.json` `globalPassThroughEnv`** (strict env mode drops
 undeclared vars from tasks — CI and image builds have no `.env`), the service in `infra/aws/services.ts` (a test fails
@@ -361,7 +361,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 ## CLI (`packages/cli`, published as `coss-cli`, command `coss`)
 
 - `run(argv, io)` (`src/run.ts`) dispatches commands (`src/commands/*.ts`); everything outside the process (env,
-  streams, `fetch`, clock, browser, prompts, config dir, the Ctrl-C signal) comes through `CliIo` (`src/io.ts`), so
+  streams, `fetch`, clock, browser, prompts, cwd, child processes, config dir, the Ctrl-C signal) comes through `CliIo` (`src/io.ts`), so
   tests run commands in process. `src/cli.ts` is the bin (`nodeIo()`). Results go to stdout (`--json`: one object per
   line), progress and warnings to stderr. Usage errors exit 2, failures 1, Ctrl-C 130.
 - Calls only the public SDK (`clientFor` always passes `apiKey`, `baseUrl` and `fetch`, so the SDK never reads
@@ -374,6 +374,12 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   (`src/auth/pkce.ts`) must equal `cliVerificationCode` (`@coss/auth/cli`; both tests pin `DZ93-GPCX`). Keys it
   created (`login: "browser"`) are revoked by `logout` and by the next login of the profile (`coss.apiKey.revoke()`, at the
   profile's saved origin, never `COSS_BASE_URL`'s). Polling commands retry only transient errors (`isTransient`).
+- `init` reuses login's browser flow with a `project` hint (the approval page then offers sandbox environments
+  only and names the key after the project; `apps/web/src/app/app/authorize/cli/params.ts`), checks the key's
+  environment again (a live key is revoked, never written) and writes it to the project's env file, never the
+  profile. The update notice (`src/update-check.ts`) asks the npm registry at most once a day, runs alongside the
+  command and is dropped if it hasn't answered when the command ends; never with `--json`, in CI, off a TTY or with
+  `COSS_NO_UPDATE_CHECK`.
 - `listen`: opens a webhook listener (`packages/webhooks/AGENTS.md`), long-polls (`wait_ms` 20 s, SDK timeout 35 s,
   no SDK retries), forwards each body byte for byte to `--forward-to`, signed with the profile's stable `whsec_`
   `listen_secret` (`src/listen/sign.ts`, Standard Webhooks, written from the spec) and `webhook-id` = the event id,

@@ -20,6 +20,10 @@ Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
 | `coss login` | Opens the dashboard, where you pick an environment; the CLI gets a new API key of it. `--manual` pastes an existing key instead; `--no-browser` (the default over SSH) shows a link and asks for the code it displays. |
 | `coss logout` | Removes the saved key, and revokes it if `coss login` created it (`--revoke` revokes a pasted one too; `--all` signs every profile out). |
 | `coss whoami` | The key in use, where it comes from, and its organization, project and environment. |
+| `coss profiles list` | The saved profiles: each one's environment, whether `coss login` created its key or it was pasted, and which is the default. |
+| `coss use <profile>` | Makes a saved profile the default. |
+| `coss init` | Sets the project in the current directory up: installs `coss` with its package manager (`--no-install` doesn't) and writes a new development key, approved in the dashboard and named after the project, to `.env.local` (Next.js) or `.env` (`--env-file` picks another). A key already there is kept unless `--force`. |
+| `coss open [page]` | Opens the environment's page in the dashboard: `overview`, `emails`, `logs`, `webhooks`, `api-keys`, `domains`, `billing`, … (`--print` prints the URL). |
 | `coss emails send` | A test email: `--to`, or `--simulate delivered\|bounced\|complained\|suppressed` for the mailbox simulator; `--template` with `--var name=value`; `--wait` follows it to its outcome (up to `--timeout`, 60 s). |
 | `coss emails list` | The environment's emails, newest first, with where each stands. Filter with `--to`, `--status`, `--recipient-status`, `-q`, `--category`, `--batch`, `--since`/`--until`; `--limit` (20). |
 | `coss emails get <id>` | An email: sender, recipients and their statuses, failure, tracking, attachments; `--text` or `--html` prints a body alone. |
@@ -53,9 +57,14 @@ prints the CLI's. Results go to stdout, progress to stderr. Exit codes: `0` done
 | `COSS_PROFILE` | The saved profile to use (default: the one `coss login` saved first). |
 | `COSS_BASE_URL` | Another API origin, e.g. `http://localhost:3001`. Remembered by `coss login`. |
 | `COSS_DASHBOARD_URL` | Another dashboard for `coss login`, e.g. `http://localhost:3000`. |
+| `COSS_NO_UPDATE_CHECK` | `1` turns the update notice off. |
 
 Keys are saved in `$XDG_CONFIG_HOME/coss/config.json` (`~/.config/coss`, `%APPDATA%\coss` on Windows),
 readable only by you. No flag takes a key: command lines are visible to other local processes.
+
+Once a day, in a terminal, the CLI asks the npm registry for its latest version (a plain `GET` of
+`https://registry.npmjs.org/coss-cli/latest`, nothing else is sent) and prints one line on stderr
+when there is a newer one. It never runs with `--json`, in CI (`CI`) or when stderr isn't a terminal.
 
 ## Development
 

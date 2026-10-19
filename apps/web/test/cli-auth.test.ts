@@ -157,7 +157,14 @@ describe("the approval page's parameters", () => {
       state: STATE,
       port: 53682,
       host: "baileys mbp",
+      project: "",
     });
+    // `coss init`'s project hint: cleaned like the host, and kept across the sign-in redirect.
+    const init = parseCliAuthorizeParams({ ...base, mode: "code", project: "<my-app>/web" });
+    expect(init?.project).toBe("my-appweb");
+    expect(init && cliAuthorizePath(init)).toBe(
+      `/app/authorize/cli?code_challenge=${CHALLENGE}&state=${STATE}&mode=code&project=my-appweb`,
+    );
     expect(parseCliAuthorizeParams({ ...base, mode: "code" })?.port).toBeNull();
     for (const bad of [
       { ...base },

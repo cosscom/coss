@@ -4,6 +4,7 @@
  */
 import { type Flags, GLOBAL_FLAGS } from "./args.ts";
 import type { Command } from "./command.ts";
+import type { CliIo } from "./io.ts";
 
 export const SHELLS = ["bash", "zsh", "fish"] as const;
 export type Shell = (typeof SHELLS)[number];
@@ -38,7 +39,11 @@ function subcommands(commands: readonly Command[], name: string): string[] {
  * Candidates for the last of `words` (the words after `coss`, the last one being typed, maybe
  * empty), one per line: command names, flags, or a flag's or argument's values.
  */
-export function complete(commands: readonly Command[], words: readonly string[]): string[] {
+export async function complete(
+  commands: readonly Command[],
+  words: readonly string[],
+  io: CliIo,
+): Promise<string[]> {
   const current = words.at(-1) ?? "";
   const before = words.slice(0, -1);
   const starting = (values: Iterable<string>) =>
@@ -61,13 +66,25 @@ export function complete(commands: readonly Command[], words: readonly string[])
       ? flags[previous.slice(2)]
       : Object.values(flags).find((flag) => flag.short === previous.slice(1));
     // A flag's value: its choices, or nothing (the shell offers files).
-    if (flag?.type === "string") return starting(flag.choices ?? []);
+    if (flag?.type === "string") {
+      return starting(flag.choices ?? (flag.complete ? await quietly(flag.complete(io)) : []));
+    }
   }
   if (current.startsWith("-")) return starting(Object.keys(flags).map((name) => `--${name}`));
+  const { positionalChoices, completePositional } = found.command;
   return starting([
     ...(before.length === found.length ? subcommands(commands, found.command.name) : []),
-    ...(found.command.positionalChoices ?? []),
+    ...(positionalChoices ?? (completePositional ? await quietly(completePositional(io)) : [])),
   ]);
+}
+
+/** Completion never fails: a config it can't read just offers nothing. */
+async function quietly(values: Promise<readonly string[]>): Promise<readonly string[]> {
+  try {
+    return await values;
+  } catch {
+    return [];
+  }
 }
 
 export function completionScript(shell: Shell): string {

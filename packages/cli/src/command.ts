@@ -4,6 +4,7 @@
  */
 import { type Flag, type Flags, type FlagValues, GLOBAL_FLAGS } from "./args.ts";
 import type { Context } from "./context.ts";
+import type { CliIo } from "./io.ts";
 
 export type CommandInput<F extends Flags> = {
   values: FlagValues<F>;
@@ -25,6 +26,10 @@ export type Command<F extends Flags = Flags> = {
   positionals?: boolean;
   /** Values completion offers for the positional arguments. */
   positionalChoices?: readonly string[];
+  /** Or values that depend on the machine (saved profiles). */
+  completePositional?: (io: CliIo) => Promise<readonly string[]>;
+  /** Not followed by the update notice (instant or machine-read commands). */
+  noUpdateNotice?: boolean;
   run(input: CommandInput<F>): Promise<number>;
 };
 

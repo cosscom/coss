@@ -21,7 +21,12 @@ import type { CliIo } from "../io.ts";
 /** How long the browser has to send the code back. */
 const CALLBACK_TIMEOUT_MS = 5 * 60 * 1000;
 
-type TokenResponse = { api_key: string; api_key_id: string; name: string };
+export type TokenResponse = { api_key: string; api_key_id: string; name: string };
+
+/** Over SSH the browser is on another machine: paste the code instead of a loopback redirect. */
+export function isRemote(io: CliIo): boolean {
+  return Boolean(io.env.SSH_CONNECTION || io.env.SSH_TTY);
+}
 
 async function exchangeCode(
   io: CliIo,
@@ -50,17 +55,22 @@ async function exchangeCode(
   return body;
 }
 
-/** The browser flow: approval in the dashboard, a code back by loopback (or pasted), a new key. */
-async function browserLogin(
+/**
+ * The browser flow: approval in the dashboard, a code back by loopback (or pasted), a new key.
+ * With `project` (`coss init`), the page offers only sandbox environments and names the key
+ * after the project.
+ */
+export async function browserLogin(
   context: Context,
   dashboardUrl: string,
-  options: { pasteCode: boolean },
+  options: { pasteCode: boolean; project?: string },
 ): Promise<TokenResponse> {
   const { io, out } = context;
   const verifier = createVerifier();
   const challenge = challengeFor(verifier);
   const state = createState();
   const query = new URLSearchParams({ code_challenge: challenge, state, host: io.hostname() });
+  if (options.project) query.set("project", options.project);
 
   if (options.pasteCode) {
     query.set("mode", "code");
@@ -148,9 +158,8 @@ async function login({ values, context }: CommandInput<typeof FLAGS>): Promise<n
     }
     login = "manual";
   } else {
-    const remote = Boolean(io.env.SSH_CONNECTION || io.env.SSH_TTY);
     const token = await browserLogin(context, dashboardUrl, {
-      pasteCode: values["no-browser"] === true || remote,
+      pasteCode: values["no-browser"] === true || isRemote(io),
     });
     apiKey = token.api_key;
     login = "browser";

@@ -11,17 +11,21 @@ import {
   emailsListCommand,
 } from "./commands/emails-read.ts";
 import { inboxCommand, inboxGetCommand } from "./commands/inbox.ts";
+import { initCommand } from "./commands/init.ts";
 import { listenCommand } from "./commands/listen.ts";
 import { loginCommand } from "./commands/login.ts";
 import { logoutCommand } from "./commands/logout.ts";
 import { logsTailCommand } from "./commands/logs.ts";
 import { RISK_COMMANDS } from "./commands/risk.ts";
+import { openCommand } from "./commands/open.ts";
+import { profilesListCommand, useCommand } from "./commands/profiles.ts";
 import { whoamiCommand } from "./commands/whoami.ts";
 import { complete, findCommand } from "./completion.ts";
 import { createContext } from "./context.ts";
 import { CliError } from "./errors.ts";
 import type { CliIo } from "./io.ts";
 import { Output } from "./output.ts";
+import { checkForUpdate, updateCheckAllowed } from "./update-check.ts";
 import { VERSION } from "./version.ts";
 
 /** Every command, in the order `coss --help` lists them. */
@@ -29,6 +33,10 @@ export const COMMANDS: readonly Command[] = [
   loginCommand,
   logoutCommand,
   whoamiCommand,
+  profilesListCommand,
+  useCommand,
+  initCommand,
+  openCommand,
   emailsSendCommand,
   emailsListCommand,
   emailsGetCommand,
@@ -103,7 +111,7 @@ export async function run(argv: string[], io: CliIo): Promise<number> {
   }
   // What the completion scripts call; not a command anyone types.
   if (name === "__complete") {
-    for (const candidate of complete(COMMANDS, rest)) out.line(candidate);
+    for (const candidate of await complete(COMMANDS, rest, io)) out.line(candidate);
     return 0;
   }
   const found = findCommand(COMMANDS, argv);
@@ -131,8 +139,31 @@ export async function run(argv: string[], io: CliIo): Promise<number> {
     return 2;
   }
   const { command } = found;
+  // Alongside the command; printed after it only if it has its answer by then.
+  const update: { notice: string | null } = { notice: null };
+  if (
+    !command.noUpdateNotice &&
+    !argv.includes("--help") &&
+    !argv.includes("-h") &&
+    updateCheckAllowed(io, argv)
+  ) {
+    void checkForUpdate(io).then((notice) => {
+      update.notice = notice;
+    });
+  }
+  const code = await runCommand(command, argv.slice(found.length), io, out);
+  if (update.notice) out.info(out.style("dim", update.notice));
+  return code;
+}
+
+async function runCommand(
+  command: Command,
+  argv: string[],
+  io: CliIo,
+  out: Output,
+): Promise<number> {
   try {
-    const parsed = parseFlags(argv.slice(found.length), command.flags, command.positionals);
+    const parsed = parseFlags(argv, command.flags, command.positionals);
     const context = createContext(io, parsed.global);
     if (parsed.global.help) {
       context.out.line(commandHelp(command));

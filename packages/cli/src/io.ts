@@ -34,6 +34,18 @@ export interface CliIo {
   prompt(question: string, options?: { secret?: boolean }): Promise<string>;
   /** This machine's name (names the CLI's API key and listener). */
   hostname(): string;
+  /** The directory the command runs in (`coss init`'s project). */
+  cwd: string;
+  /**
+   * Runs a program (a package manager, `git`) and resolves with its exit code, `null` when it
+   * couldn't be started. Its output goes to stderr (stdout stays the result), or nowhere when
+   * `quiet`.
+   */
+  exec(
+    command: string,
+    args: string[],
+    options: { cwd: string; quiet?: boolean },
+  ): Promise<number | null>;
   /** Where `config.json` lives. */
   configDir: string;
   /** Aborted on Ctrl-C (SIGINT) and SIGTERM. */
@@ -83,6 +95,28 @@ function openBrowser(url: string): Promise<boolean> {
       });
     } catch {
       resolve(false);
+    }
+  });
+}
+
+function exec(
+  command: string,
+  args: string[],
+  options: { cwd: string; quiet?: boolean },
+): Promise<number | null> {
+  return new Promise((resolve) => {
+    try {
+      const child = spawn(command, args, {
+        cwd: options.cwd,
+        // The child's output on our stderr: stdout is the command's result.
+        stdio: options.quiet ? "ignore" : ["ignore", 2, 2],
+        // `npm` is `npm.cmd` on Windows. Arguments are the CLI's own, never user input.
+        shell: process.platform === "win32",
+      });
+      child.once("error", () => resolve(null));
+      child.once("close", (code) => resolve(code ?? 1));
+    } catch {
+      resolve(null);
     }
   });
 }
@@ -169,6 +203,8 @@ export function nodeIo(): CliIo {
       return readTerminalLine(options.secret === true);
     },
     hostname: () => hostname(),
+    cwd: process.cwd(),
+    exec,
     configDir: defaultConfigDir(process.env),
     signal: controller.signal,
   };

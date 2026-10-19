@@ -93,6 +93,9 @@ export function testIo(overrides: Partial<CliIo> & { answers?: string[] } = {}):
       return answers.shift() ?? "";
     },
     hostname: () => "test-host",
+    cwd: mkdtempSync(join(tmpdir(), "coss-cli-project-")),
+    // Nothing is run in tests unless a test says so (`null`: the program isn't there).
+    exec: async () => null,
     configDir: mkdtempSync(join(tmpdir(), "coss-cli-test-")),
     signal: controller.signal,
     output: () => stdout,

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { commandHelp, flagLabel, wrap } from "../src/command.ts";
 import { complete } from "../src/completion.ts";
+import { writeConfig } from "../src/config.ts";
 import { COMMANDS, HELP, run } from "../src/run.ts";
 import { testIo } from "./helpers.ts";
 
@@ -71,41 +72,49 @@ describe("the command registry", () => {
 });
 
 describe("shell completion", () => {
-  test("commands, subcommands, flags and their values", () => {
+  test("commands, subcommands, flags and their values", async () => {
+    const io = testIo();
+    const c = (words: string[]) => complete(COMMANDS, words, io);
     // Each top-level word once, in `coss --help`'s order.
-    expect(complete(COMMANDS, [""])).toEqual([
+    expect(await c([""])).toEqual([
       ...new Set(COMMANDS.map((command) => command.name.split(" ")[0] ?? "")),
     ]);
-    expect(complete(COMMANDS, [""])).toEqual(expect.arrayContaining(["login", "hooks", "risk"]));
-    expect(complete(COMMANDS, ["lo"])).toEqual(["login", "logout", "logs"]);
+    expect(await c([""])).toEqual(
+      expect.arrayContaining(["login", "profiles", "use", "init", "open", "hooks", "risk"]),
+    );
+    expect(await c(["lo"])).toEqual(["login", "logout", "logs"]);
     // Groups inside groups: `coss hooks apps list`.
-    expect(complete(COMMANDS, ["hooks", "e"])).toEqual(["event-types", "endpoints"]);
-    expect(complete(COMMANDS, ["hooks", "apps", ""])).toEqual(["list", "create"]);
-    expect(complete(COMMANDS, ["risk", "assess"])).toEqual(["assess", "assessments"]);
-    expect(complete(COMMANDS, ["risk", "lists", "list", "--type", "d"])).toEqual(["domain"]);
-    expect(complete(COMMANDS, ["hooks", "deliveries", "acme", "--status", ""])).toEqual([
+    expect(await c(["hooks", "e"])).toEqual(["event-types", "endpoints"]);
+    expect(await c(["hooks", "apps", ""])).toEqual(["list", "create"]);
+    expect(await c(["risk", "assess"])).toEqual(["assess", "assessments"]);
+    expect(await c(["risk", "lists", "list", "--type", "d"])).toEqual(["domain"]);
+    expect(await c(["hooks", "deliveries", "acme", "--status", ""])).toEqual([
       "pending",
       "succeeded",
       "failed",
     ]);
-    expect(complete(COMMANDS, ["emails", ""])).toEqual([
-      "send",
-      "list",
-      "get",
-      "events",
-      "diagnose",
-    ]);
+    expect(await c(["emails", ""])).toEqual(["send", "list", "get", "events", "diagnose"]);
     // A command that has subcommands of its own.
-    expect(complete(COMMANDS, ["inbox", ""])).toEqual(["get"]);
-    expect(complete(COMMANDS, ["inbox", "get", ""])).toEqual([]);
-    expect(complete(COMMANDS, ["emails", "send", "--sim"])).toEqual(["--simulate"]);
-    expect(complete(COMMANDS, ["emails", "send", "--simulate", "b"])).toEqual(["bounced"]);
-    expect(complete(COMMANDS, ["logs", "tail", "--source", ""])).toContain("webhook");
-    expect(complete(COMMANDS, ["api", "-X", "P"])).toEqual(["POST", "PUT", "PATCH"]);
-    expect(complete(COMMANDS, ["whoami", "--p"])).toEqual(["--profile"]);
-    expect(complete(COMMANDS, ["completion", ""])).toEqual(["bash", "zsh", "fish"]);
+    expect(await c(["inbox", ""])).toEqual(["get"]);
+    expect(await c(["inbox", "get", ""])).toEqual([]);
+    expect(await c(["emails", "send", "--sim"])).toEqual(["--simulate"]);
+    expect(await c(["emails", "send", "--simulate", "b"])).toEqual(["bounced"]);
+    expect(await c(["logs", "tail", "--source", ""])).toContain("webhook");
+    expect(await c(["api", "-X", "P"])).toEqual(["POST", "PUT", "PATCH"]);
+    expect(await c(["whoami", "--p"])).toEqual(["--profile"]);
+    expect(await c(["completion", ""])).toEqual(["bash", "zsh", "fish"]);
+    expect(await c(["open", "log"])).toEqual(["logs", "log-drains"]);
     // A value of its own (a path, an address): the shell offers files.
-    expect(complete(COMMANDS, ["emails", "send", "--to", ""])).toEqual([]);
+    expect(await c(["emails", "send", "--to", ""])).toEqual([]);
+  });
+
+  test("saved profiles complete --profile and coss use (nothing without a config)", async () => {
+    const io = testIo();
+    expect(await complete(COMMANDS, ["use", ""], io)).toEqual([]);
+    const profile = { api_key: "coss_test_x", login: "manual" as const, created_at: "" };
+    await writeConfig(io, { version: 1, profiles: { default: profile, staging: profile } });
+    expect(await complete(COMMANDS, ["use", ""], io)).toEqual(["default", "staging"]);
+    expect(await complete(COMMANDS, ["whoami", "--profile", "st"], io)).toEqual(["staging"]);
   });
 
   test("coss __complete prints them; coss completion prints each shell's script", async () => {

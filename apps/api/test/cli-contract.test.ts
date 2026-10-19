@@ -57,6 +57,8 @@ function cliIo(
     readStdin: async () => opts.stdin ?? "",
     prompt: async () => answers.shift() ?? "",
     hostname: () => "contract-test",
+    cwd: mkdtempSync(join(tmpdir(), "coss-cli-contract-project-")),
+    exec: async () => null,
     configDir: mkdtempSync(join(tmpdir(), "coss-cli-contract-")),
     signal: controller.signal,
   };
@@ -81,6 +83,12 @@ describe("coss-cli against the API", () => {
     expect(await run(["whoami", "--json"], cli.io)).toBe(0);
     const whoami = JSON.parse(cli.stdout().trim().split("\n").at(-1) ?? "{}");
     expect(whoami.environment).toMatchObject({ id: tenant.development.id, mode: "sandbox" });
+
+    // `coss open` builds the dashboard's URL from the slugs the API reports.
+    expect(await run(["open", "logs", "--json"], cli.io)).toBe(0);
+    expect(JSON.parse(cli.stdout().trim().split("\n").at(-1) ?? "{}").url).toBe(
+      `https://coss.com/${tenant.organization.slug}/projects/${tenant.project.slug}/${tenant.development.slug}/logs`,
+    );
 
     expect(await run(["emails", "send", "--simulate", "bounced", "--wait", "--json"], cli.io)).toBe(
       0,

@@ -11,6 +11,7 @@ export const completionCommand: Command = defineCommand({
   flags: {},
   positionals: true,
   positionalChoices: SHELLS,
+  noUpdateNotice: true,
   run: async ({ positionals, context }) => {
     const [shell, ...extra] = positionals;
     if (!SHELLS.includes(shell as Shell) || extra.length > 0) {
