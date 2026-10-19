@@ -1,0 +1,149 @@
+---
+title: From SendGrid
+description: What an import brings over from SendGrid, how it maps onto coss.com, and how to switch your code.
+---
+
+Start an import from the dashboard's **Import** page (see the [overview](/docs/migrate)) with a
+SendGrid API key. A restricted key works: give it read access to everything you want to import.
+If the key can't read something, the import shows that kind as unavailable instead of failing.
+Keys of EU regional subusers are recognized and read from SendGrid's EU API.
+
+## What's imported
+
+| SendGrid                     | coss.com                                                                     |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| Authenticated domains        | [Domains](/docs/email/domains) of the organization, to verify with coss.com's DNS records |
+| Dynamic and legacy templates | [Templates](/docs/email/templates), the active version, with the template id as alias |
+| Marketing contacts           | [Contacts](/docs/email/contacts) with their names and custom fields         |
+| Custom fields                | Contact properties: Text, Number and Date become `string`, `number` and `date` |
+| Lists                        | [Audiences](/docs/email/audiences-and-segments) with the same members        |
+| Unsubscribe groups           | [Topics](/docs/email/topics-and-preferences); their members are opted out    |
+| Bounces, invalid emails, spam reports, global unsubscribes | [Suppressions](/docs/email/suppressions), with their dates |
+| Event webhooks, Inbound Parse | Disabled [webhook endpoints](/docs/webhooks) with new secrets               |
+
+**Not imported:** segments, Single Sends and automations, reserved contact fields other than the
+names (address, phone and so on), blocks (they're temporary), link branding, subusers, API keys,
+inactive template versions and webhook signing secrets.
+
+Contacts come out of SendGrid's contact export, which SendGrid prepares in the background. The
+import waits for it, which can take a few minutes for large lists. Each list's members come from an
+export of their own.
+
+### Suppressions
+
+| SendGrid list           | coss.com suppression                       |
+| ----------------------- | ------------------------------------------ |
+| Bounces                 | Every email (`*`), reason `bounce`         |
+| Invalid emails          | Every email (`*`), reason `bounce`         |
+| Spam reports            | Every email (`*`), reason `complaint`      |
+| Global unsubscribes     | Every email (`*`), reason `unsubscribe`    |
+| Unsubscribe group members | An opt-out of the group's topic for contacts; for other addresses, a suppression for the topic's category, reason `unsubscribe` |
+
+Global unsubscribes suppress every email, transactional included, as they did in SendGrid.
+
+### Unsubscribe groups
+
+Each unsubscribe group becomes a topic that everyone gets until they opt out (`opt_in` by
+default), shown in the [preference center](/docs/email/topics-and-preferences#the-preference-center).
+Its key is made from its name in lower case (`Weekly digest` becomes `weekly_digest`); the report
+lists each group's key. Where you passed `asm.groupId`, pass the key as the send's `category`.
+
+## Templates
+
+Dynamic templates are Handlebars. The import converts them to coss.com's template language,
+using each version's test data to tell text from numbers and lists from objects:
+
+| Handlebars                                   | coss.com                                               |
+| -------------------------------------------- | ------------------------------------------------------ |
+| `{{name}}`, `{{{html}}}`                     | The same                                               |
+| `{{user.name}}`                              | `{{user_name}}` (the report lists every rename)        |
+| `{{insert name "default=there"}}`            | `{{name}}`, declared with the default `there`          |
+| `{{#if x}}…{{else if y}}…{{else}}…{{/if}}`   | Nested `{{#if}}` blocks                                |
+| `{{#unless x}}…{{/unless}}`                  | `{{#if x}}{{else}}…{{/if}}`                            |
+| `{{#each items}}{{this.name}}{{/each}}`      | `{{#each items}}{{name}}{{/each}}`, a list of objects  |
+| `../name` and `@root.name` in a loop         | The top-level `{{name}}`                               |
+| `{{!-- comment --}}`, `~` whitespace control | Dropped (spacing may differ slightly without `~`)      |
+| `{{{unsubscribe}}}`, `<%asm_group_unsubscribe_raw_url%>`, `<%asm_global_unsubscribe_raw_url%>` | `{{{unsubscribe_url}}}` |
+| `{{{unsubscribe_preferences}}}`, `<%asm_preferences_raw_url%>` | `{{{preferences_url}}}`                  |
+| `{{Sender_Address}}`                         | `{{{mailing_address}}}`, your [postal address](/docs/email/topics-and-preferences#your-postal-address) |
+
+A template that converts exactly is published. These are left in the draft as they were, for you to
+rewrite before you publish it: other helpers (`formatDate`, `equals`, `notEquals`, `greaterThan`,
+`lessThan`, `and`, `or`, `length` and your own), sub-expressions, `@index`, `@first` and `@last`,
+partials, loops inside loops, `{{#with}}` (its fields become separate variables), lists of plain
+values (each item becomes an object with a `value` field) and `{{#if}}` over a number (coss.com
+treats `0` as true). The other `Sender_*` tags are removed: coss.com prints the whole postal address
+as `{{{mailing_address}}}`. The unsubscribe and address placeholders are filled on
+[marketing sends](/docs/email/streams).
+
+Legacy templates are always imported as drafts. `<%body%>` and `<%subject%>` become `{{{body}}}` and
+`{{subject}}`, but their substitution tags (like `-name-`) use delimiters each sender chose, so
+replace them with variables yourself.
+
+A template SendGrid generated the plain-text part for is imported without one: coss.com generates
+it from the HTML when it sends.
+
+## Webhooks
+
+Each event webhook becomes an endpoint subscribed to the coss.com events its enabled events map to:
+
+| SendGrid event          | coss.com events                                         |
+| ----------------------- | ------------------------------------------------------- |
+| `processed`             | `email.sent`                                            |
+| `delivered`             | `email.delivered`                                       |
+| `deferred`              | `email.delivery_delayed`                                |
+| `bounce`                | `email.bounced` (permanent bounces only)                |
+| `dropped`               | `email.suppressed` and `email.failed`                   |
+| `spam_report`           | `email.complained`                                      |
+| `open`, `click`         | `email.opened`, `email.clicked`                         |
+| `unsubscribe`           | `email.unsubscribed`                                    |
+| `group_unsubscribe`     | `email.unsubscribed` and `contact.unsubscribed`         |
+| `group_resubscribe`     | `contact.updated`                                       |
+| `account_status_change` | `account.suspended`, `account.reinstated` and `account.reputation_warning` |
+
+An Inbound Parse URL becomes an endpoint for `email.received`. That event carries the message's
+details, not the whole message (fetch it [through the API](/docs/email/receiving)), and mail reaches
+it once you [set up receiving](/docs/email/receiving) for the hostname.
+
+The payloads differ from SendGrid's, and requests are signed with the endpoint's new secret, so
+update your handler before you enable an endpoint (see
+[verifying requests](/docs/webhooks#verifying-requests)).
+
+## Domains and DNS
+
+coss.com's records (DKIM CNAMEs and the `send` subdomain for bounces) don't collide with
+SendGrid's (`em…`, `s1._domainkey`, `s2._domainkey`). Add them and keep sending through SendGrid
+while they verify.
+
+## Switch your code
+
+A dynamic template send in `@sendgrid/mail`:
+
+```ts
+await sgMail.send({
+  from: "hello@acme.com",
+  to: "ada@example.com",
+  templateId: "d-2c214ac919e84170b1b8d5e9e7da6a72",
+  dynamicTemplateData: { user: { name: "Ada" }, total: 42 },
+  asm: { groupId: 12345 },
+});
+```
+
+On coss.com, the template keeps its id as its alias, nested data uses the renamed variables, and
+the group becomes a category. coss.com returns errors instead of throwing them:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss(); // reads COSS_API_KEY
+// ---cut---
+const { data, error } = await coss.email.send({
+  from: "hello@acme.com",
+  to: "ada@example.com",
+  template_id: "d-2c214ac919e84170b1b8d5e9e7da6a72",
+  variables: { user_name: "Ada", total: 42 },
+  category: "weekly_digest",
+});
+```
+
+A send with its own content takes `subject`, `html` and `text`, and `reply_to`, `cc`, `bcc`,
+`attachments` and `scheduled_at` like any [send](/docs/email/sending).

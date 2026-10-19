@@ -1,0 +1,93 @@
+---
+title: Overview
+description: Import your domains, templates, contacts, suppressions and webhooks from Resend, SendGrid or Postmark.
+---
+
+Moving from another provider doesn't mean rebuilding your account by hand. The dashboard's
+**Import** page (an environment's **Developers** pages) reads your old account through its API and
+brings what you choose into that environment:
+
+| Provider                          | Domains | Templates | Contacts and lists | Suppressions | Webhook endpoints |
+| --------------------------------- | ------- | --------- | ------------------ | ------------ | ----------------- |
+| [Resend](/docs/migrate/resend)     | Yes     | Yes       | Yes                | Where your account has Resend's suppression API | Yes |
+| [SendGrid](/docs/migrate/sendgrid) | Yes     | Yes       | Yes                | Yes          | Yes               |
+| [Postmark](/docs/migrate/postmark) | With an account token | Yes | Postmark keeps none | Yes | Yes       |
+
+Nothing changes in your old account: an import only reads it. Imports run in the dashboard only.
+There is no API, SDK or CLI for them, so your old provider's key never passes through your own
+code.
+
+## How an import runs
+
+1. **Connect.** Choose the provider and paste an API key. coss.com checks it with one or two
+   requests to the provider. Each organization can check only a limited number of keys a day.
+2. **coss.com reads your account.** This usually takes seconds. With large contact lists it can
+   take a few minutes, because some providers have no way to count contacts other than listing
+   them.
+3. **Choose.** The page shows what was found. Pick the kinds to import and, for domains, which
+   ones. Starting an import needs the same permissions as creating those things yourself: domains,
+   templates (create and publish), contacts, suppressions and webhooks.
+4. **Import.** The import runs in the background, and the page follows its progress. You can leave
+   it and come back. Imports go at a pace that stays well within your old provider's rate limits,
+   which your live sending there shares.
+5. **Next steps.** When the import is done, its report lists what was imported, what was already
+   there, what was skipped and why, and what's left for you to do.
+
+You can cancel an import at any time. Whatever it imported up to then stays.
+
+## Your old provider's key
+
+The key is stored encrypted, only for the import. It is deleted as soon as the import finishes or
+is canceled. An import you never start is deleted, key included, after 24 hours. Revoke the key at
+your old provider once you're done.
+
+Import reports are kept for <RetentionPeriod of="migrations" /> (see
+[data retention](/docs/data-retention)). What an import created is yours, like anything you create
+yourself.
+
+## What each kind becomes
+
+- **Domains** are added to the organization, so every environment can send from them. Each one
+  needs coss.com's DNS records before it verifies (see [domains](/docs/email/domains)). Where your
+  DNS provider supports it, **Connect DNS** on the domain's page adds them in one click. coss.com's
+  DKIM records sit next to your old provider's, so you can keep sending through the old provider
+  until you switch. An organization can have only a few domains waiting for verification at once.
+  If you import more than that, verify some and import the rest in a second import.
+- **Templates** are converted to [coss.com's template language](/docs/email/templates). A template
+  that converts exactly is published, ready to send. One that uses something coss.com templates
+  don't have (a formatting helper, a partial, a comparison) is left as a **draft**, with the parts
+  to fix marked in the report. coss.com variable names can't contain dots, so nested data is
+  flattened: `{{user.name}}` becomes `{{user_name}}`, and the report lists every rename. Your
+  sends then pass `user_name`, because coss.com refuses variables a template doesn't declare.
+- **Contacts** come with their names, custom fields and topic choices; lists become
+  [audiences](/docs/email/audiences-and-segments). Custom fields become contact properties with
+  lower-case keys (`Company Size` becomes `company_size`, and a name coss.com uses itself, like
+  `email`, gets the provider's name in front: `sendgrid_email`). Imports never re-subscribe a contact
+  who unsubscribed, and never turn a topic opt-out into an opt-in. A value coss.com can't read (say,
+  a date in another format) is left out, and the contact is still imported. Your plan's contact
+  limit applies: past it, the rest of the contacts aren't imported, but the other kinds still are.
+- **Suppressions** keep their reason (bounce, complaint, unsubscribe or manual) and their date,
+  so nobody who bounced, complained or unsubscribed gets your email again. See
+  [suppressions](/docs/email/suppressions).
+- **Webhook endpoints** keep their URL, and their events are mapped to
+  [coss.com's events](/docs/webhooks#events). They are created **disabled**, each with a new signing
+  secret: your handler still expects the old provider's payloads and signatures. Update it to
+  coss.com's events, verify the [Standard Webhooks signature](/docs/webhooks#verifying-requests)
+  with the endpoint's secret, then enable the endpoint. An endpoint none of whose events exist on
+  coss.com is skipped.
+
+## Importing again
+
+Run another import whenever you like, for example to pick up contacts added since the last one. An
+import finds what's already there by its name and leaves it alone: a domain of the same name, a
+template with the same alias, a custom field, topic or audience with the same key or name, a webhook
+endpoint with the same URL. Contacts are matched by address. Their names and custom fields are
+updated, and their subscription is never changed back to subscribed.
+
+## Switching your code
+
+Once your domains verify, point your code at coss.com. Each provider's page shows how its calls
+map: [Resend](/docs/migrate/resend#switch-your-code),
+[SendGrid](/docs/migrate/sendgrid#switch-your-code) and
+[Postmark](/docs/migrate/postmark#switch-your-code). If your app sends through a mail library or a
+framework mailer, an [integration](/docs/integrations) may only need a configuration change.

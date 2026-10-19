@@ -1,0 +1,132 @@
+---
+title: From Postmark
+description: What an import brings over from Postmark, how it maps onto coss.com, and how to switch your code.
+---
+
+Start an import from the dashboard's **Import** page (see the [overview](/docs/migrate)) with a
+Postmark token:
+
+- An **account token** (Postmark's API Tokens page) imports domains as well, and lets you choose
+  which server to import. coss.com reads that server's own token from Postmark on each run and never
+  stores it.
+- A **server token** imports only its server, without domains.
+
+Each import brings one server into one environment. To bring over several servers (say, production
+and staging), import each into its own environment.
+
+Postmark keeps no contacts, lists or custom fields, so there are none to import.
+
+## What's imported
+
+| Postmark                     | coss.com                                                                     |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| Domains                      | [Domains](/docs/email/domains) of the organization, to verify with coss.com's DNS records |
+| Templates (with their layouts) | [Templates](/docs/email/templates), with the same alias                    |
+| Suppressions of every stream | [Suppressions](/docs/email/suppressions), with their dates                   |
+| Webhooks, the inbound webhook | Disabled [webhook endpoints](/docs/webhooks) with new secrets               |
+
+**Not imported:** layouts as templates of their own (each template gets its layout merged in),
+inbound rules, message streams' settings, server and account tokens, and webhooks' basic auth
+credentials and custom headers (coss.com signs its requests instead).
+
+### Suppressions
+
+Suppressions of transactional and broadcast streams are imported; inbound streams are skipped:
+
+| Postmark reason                       | Transactional stream                 | Broadcast stream                                   |
+| ------------------------------------- | ------------------------------------ | -------------------------------------------------- |
+| Hard bounce                           | Every email (`*`), reason `bounce`   | Every email (`*`), reason `bounce`                 |
+| Spam complaint                        | Every email (`*`), reason `complaint`| Every email (`*`), reason `complaint`              |
+| Manual, by the recipient (unsubscribed) | Every email (`*`), reason `unsubscribe` | Marketing email (`stream:marketing`), reason `unsubscribe` |
+| Manual, by you or Postmark            | Every email (`*`), reason `manual`   | Marketing email (`stream:marketing`), reason `manual` |
+
+Postmark's broadcast streams match coss.com's [marketing stream](/docs/email/streams).
+
+## Templates
+
+Postmark templates use Mustachio. The import merges each template into its layout (at
+`{{{ @content }}}`) and converts it to coss.com's template language. Postmark's suggested template
+model, the data a template expects, tells loops from objects and text from numbers:
+
+| Mustachio                                | coss.com                                                 |
+| ---------------------------------------- | -------------------------------------------------------- |
+| `{{name}}`, `{{{html}}}`, `{{& html}}`   | `{{name}}`, `{{{html}}}`                                 |
+| `{{company.name}}`                       | `{{company_name}}` (the report lists every rename)       |
+| `{{#each items}}{{name}}{{/each}}`       | `{{#each items}}{{name}}{{/each}}`, a list of objects    |
+| `{{#items}}…{{/items}}` over a list      | `{{#each items}}…{{/each}}`                              |
+| `{{#name}}…{{/name}}` over a value       | `{{#if name}}…{{/if}}`                                   |
+| `{{^name}}…{{/name}}`                    | `{{#if name}}{{else}}…{{/if}}`                           |
+| `../name` in a loop                      | The top-level `{{name}}`                                 |
+| `{{! comment }}`                         | Dropped                                                  |
+| `{{{ pm:unsubscribe }}}`                 | `{{{unsubscribe_url}}}` in a link's `href`, else a link to it |
+
+`{{{unsubscribe_url}}}` is filled on [marketing sends](/docs/email/streams).
+
+A template that converts exactly is published. These are left in the draft as they were, for you to
+rewrite before you publish it: partials, changed delimiters, sections over an object (their fields
+become separate variables, shown even when the object is missing), loops inside loops, lists of plain
+values (`{{.}}`: each item becomes an object with a `value` field) and `{{#name}}` over a number
+(coss.com treats `0` as true).
+
+A template keeps its Postmark alias when it is a valid coss.com alias (lower-case letters, digits,
+`-` and `_`; aliases are lower-cased). One without an alias gets one made from its name.
+
+## Webhooks
+
+Each webhook becomes an endpoint subscribed to the coss.com events its enabled triggers map to:
+
+| Postmark trigger     | coss.com events                                                 |
+| -------------------- | --------------------------------------------------------------- |
+| Delivery             | `email.delivered`                                               |
+| Bounce               | `email.bounced` (permanent) and `email.delivery_delayed` (temporary) |
+| Spam complaint       | `email.complained`                                              |
+| Open                 | `email.opened`                                                  |
+| Click                | `email.clicked`                                                 |
+| Subscription change  | `email.unsubscribed` (reactivations have no coss.com event)     |
+
+Postmark's webhooks belong to a message stream; coss.com's endpoints get the whole environment's
+events. The server's inbound webhook becomes an endpoint for `email.received`, which carries the
+message's details, not the whole message (fetch it [through the API](/docs/email/receiving)); mail
+reaches it once you [set up receiving](/docs/email/receiving).
+
+The payloads differ from Postmark's, and requests are signed with the endpoint's new secret, so
+update your handler before you enable an endpoint (see
+[verifying requests](/docs/webhooks#verifying-requests)).
+
+## Domains and DNS
+
+coss.com's records (DKIM CNAMEs and the `send` subdomain for bounces) don't collide with
+Postmark's (`…pm._domainkey` and the `pm-bounces` Return-Path). Add them and keep sending through
+Postmark while they verify.
+
+## Switch your code
+
+A template send with the `postmark` library:
+
+```ts
+await client.sendEmailWithTemplate({
+  From: "hello@acme.com",
+  To: "ada@example.com",
+  TemplateAlias: "welcome",
+  TemplateModel: { name: "Ada", company: { name: "Acme" } },
+  MessageStream: "outbound",
+});
+```
+
+On coss.com, the template keeps its alias and nested data uses the renamed variables. coss.com
+returns errors instead of throwing them:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss(); // reads COSS_API_KEY
+// ---cut---
+const { data, error } = await coss.email.send({
+  from: "hello@acme.com",
+  to: "ada@example.com",
+  template_id: "welcome",
+  variables: { name: "Ada", company_name: "Acme" },
+});
+```
+
+For a broadcast stream, send with `stream: "marketing"`: marketing email goes to one recipient per
+send and needs your [postal address](/docs/email/topics-and-preferences#your-postal-address).
