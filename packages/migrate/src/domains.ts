@@ -1,7 +1,8 @@
 /**
- * Domains are imported by the dashboard when an import starts, not by the worker: creating one
- * creates its SES identity (and the organization's tenants), which only the dashboard's IAM policy
- * allows. Domains belong to the organization, so they serve every environment.
+ * Domains are imported by the dashboard when an import starts (before it is queued, so a failure
+ * can be retried by starting again), not by the worker: creating one creates its SES identity (and
+ * the organization's tenants), which only the dashboard's IAM policy allows. Domains belong to the
+ * organization, so they serve every environment.
  */
 import { createDomain, type DomainDeps, DomainError, listDomains } from "@coss/email";
 import { claimItem, finishItem, type ItemResult } from "./items.ts";

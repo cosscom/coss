@@ -150,20 +150,22 @@ export async function startMigrationAction(
     const webhookApiVersion =
       (await readOrganizationApiVersion({ organizationId: context.organization.id })) ??
       versioning.latest;
+    // Domains first, while the import can still be started: if creating one fails, starting again
+    // retries it (each domain is recorded, so none is created twice).
+    if (domainIds.length > 0) {
+      await importDomains(
+        migration,
+        domainIds,
+        { userId: context.session.user.id },
+        emailRuntime().domainDeps,
+      );
+    }
     const started = await startMigration(env, migration.id, {
       kinds,
       domainIds,
       webhookApiVersion,
     });
     if (!started) throw new ActionError("This import has already started or was canceled.");
-    if (domainIds.length > 0) {
-      await importDomains(
-        started,
-        domainIds,
-        { userId: context.session.user.id },
-        emailRuntime().domainDeps,
-      );
-    }
     await recordAudit(context.session, {
       organizationId: context.organization.id,
       action: "migration.started",

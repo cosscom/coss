@@ -460,7 +460,9 @@ const memberships: Phase = async (ctx, cursor) => {
         ctx.progress.existing += added.existing;
         ctx.progress.skipped += added.missing.length;
       }
-      await ctx.checkpoint({ ...state, offset: start + addresses.length });
+      const done = { ...state, offset: start + addresses.length };
+      await ctx.checkpoint(done);
+      if (ctx.now() >= ctx.deadline && done.offset < page.items.length) return { next: done };
     }
     if (page.retryAt) {
       return { next: { list: state.list, page: page.next }, retryAt: page.retryAt };
@@ -482,7 +484,9 @@ const suppressions: Phase = async (ctx, cursor) => {
     for (let start = state.offset; start < page.items.length; start += IMPORT_BATCH) {
       const chunk = page.items.slice(start, start + IMPORT_BATCH);
       await importSuppressionChunk(ctx, chunk, topicKeys);
-      await ctx.checkpoint({ page: state.page, offset: start + chunk.length });
+      const done = { page: state.page, offset: start + chunk.length };
+      await ctx.checkpoint(done);
+      if (ctx.now() >= ctx.deadline && done.offset < page.items.length) return { next: done };
     }
     if (page.retryAt) return { next: { page: page.next, offset: 0 }, retryAt: page.retryAt };
     if (page.next === null) return { next: null };

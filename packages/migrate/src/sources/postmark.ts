@@ -19,6 +19,7 @@ import type { SourceDeps } from "./deps.ts";
 
 const BASE_URL = "https://api.postmarkapp.com";
 const TEMPLATE_PAGE = 100;
+const DOMAIN_PAGE = 500;
 
 type PmServer = { ID: number; Name: string; ApiTokens?: string[]; InboundHookUrl?: string | null };
 type PmDomain = {
@@ -180,11 +181,16 @@ export function postmarkSource(
 
     async domains() {
       if (!account) return [];
-      const body = await account.get<{ Domains?: PmDomain[] }>("/domains", {
-        count: 500,
-        offset: 0,
-      });
-      return (body.Domains ?? []).map((domain) => ({
+      const domains: PmDomain[] = [];
+      for (let offset = 0; ; offset += DOMAIN_PAGE) {
+        const page = await account.get<{ Domains?: PmDomain[] }>("/domains", {
+          count: DOMAIN_PAGE,
+          offset,
+        });
+        domains.push(...(page.Domains ?? []));
+        if ((page.Domains?.length ?? 0) < DOMAIN_PAGE) break;
+      }
+      return domains.map((domain) => ({
         id: String(domain.ID),
         name: domain.Name.toLowerCase(),
         verified: domain.DKIMVerified === true && domain.ReturnPathDomainVerified !== false,
