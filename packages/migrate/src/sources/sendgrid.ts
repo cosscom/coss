@@ -11,7 +11,6 @@ import { mapSendGridEvents, SENDGRID_EVENT_FLAGS } from "../mapping/events.ts";
 import { convertSendGridTemplate } from "../templates/index.ts";
 import type {
   Inventory,
-  MigrationKind,
   MigrationSource,
   Page,
   SourceContact,
@@ -21,6 +20,7 @@ import type {
   SourceTopic,
 } from "../types.ts";
 import type { SourceDeps } from "./deps.ts";
+import { inventorySections } from "./sections.ts";
 
 const BASE_URLS = { global: "https://api.sendgrid.com", eu: "https://api.eu.sendgrid.com" };
 const LIST_PAGE = 500;
@@ -178,22 +178,7 @@ export function sendgridSource(
     provider: "sendgrid",
 
     async inventory() {
-      const unavailable: Partial<Record<MigrationKind, string>> = {};
-      async function section<T>(
-        kind: MigrationKind,
-        read: () => Promise<T>,
-        fallback: T,
-      ): Promise<T> {
-        try {
-          return await read();
-        } catch (error) {
-          if (error instanceof ProviderError && error.code === "forbidden") {
-            unavailable[kind] = "This API key isn't allowed to read them.";
-            return fallback;
-          }
-          throw error;
-        }
-      }
+      const { unavailable, section } = inventorySections();
       const domains = await section("domains", () => source.domains(), []);
       const templates = await section("templates", () => source.templates(), []);
       const properties = await section("contacts", () => source.properties(), []);

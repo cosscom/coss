@@ -16,6 +16,7 @@ import type {
   SourceWebhook,
 } from "../types.ts";
 import type { SourceDeps } from "./deps.ts";
+import { inventorySections } from "./sections.ts";
 
 const BASE_URL = "https://api.postmarkapp.com";
 const TEMPLATE_PAGE = 100;
@@ -134,25 +135,26 @@ export function postmarkSource(
 
     async inventory() {
       const { client, server: found } = await server();
-      // Only the account's owner may read domains: anyone else's token reads the rest.
-      let domainsRefused = false;
-      const [domains, templates, webhooks, allStreams] = await Promise.all([
-        source.domains().catch((error) => {
-          if (!(error instanceof ProviderError && error.code === "forbidden")) throw error;
-          domainsRefused = true;
-          return [];
-        }),
-        source.templates(),
-        source.webhooks(),
-        streams(),
+      const { unavailable, section } = inventorySections();
+      const [domains, templates, webhooks, suppressions] = await Promise.all([
+        section("domains", () => source.domains(), []),
+        section("templates", () => source.templates(), []),
+        section("webhooks", () => source.webhooks(), []),
+        section(
+          "suppressions",
+          async () => {
+            let count = 0;
+            for (const stream of await streams()) {
+              const dump = await client.get<{ Suppressions?: PmSuppression[] }>(
+                `/message-streams/${encodeURIComponent(stream.ID)}/suppressions/dump`,
+              );
+              count += dump.Suppressions?.length ?? 0;
+            }
+            return { count, exact: true };
+          },
+          null,
+        ),
       ]);
-      let suppressions = 0;
-      for (const stream of allStreams) {
-        const dump = await client.get<{ Suppressions?: PmSuppression[] }>(
-          `/message-streams/${encodeURIComponent(stream.ID)}/suppressions/dump`,
-        );
-        suppressions += dump.Suppressions?.length ?? 0;
-      }
       const inventory: Inventory = {
         account: found.Name,
         domains,
@@ -161,13 +163,14 @@ export function postmarkSource(
         topics: [],
         lists: [],
         contacts: null,
-        suppressions: { count: suppressions, exact: true },
+        suppressions,
         webhooks: webhooks.map((hook) => ({ id: hook.id, url: hook.url, name: hook.name })),
         unavailable: {
+          ...unavailable,
           contacts: "Postmark doesn't keep contacts.",
           ...(!account
             ? { domains: "A server token can't read domains: use an account token." }
-            : domainsRefused
+            : unavailable.domains
               ? { domains: "Only the Postmark account's owner can read its domains." }
               : {}),
         },

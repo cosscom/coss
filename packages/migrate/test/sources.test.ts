@@ -182,6 +182,30 @@ describe("Resend", () => {
     expect(requests[0]?.headers.get("user-agent")).toContain("coss.com");
   });
 
+  test("a resource the key can't read is left out of the inventory, not the import", async () => {
+    const { fetch } = fakeFetch({
+      "GET /domains?limit=100": { data: [{ id: "d1", name: "acme.com", status: "verified" }] },
+      "GET /templates?limit=100": new Response("{}", { status: 403 }),
+      "GET /contact-properties?limit=100": { data: [] },
+      "GET /topics?limit=100": { data: [] },
+      "GET /segments?limit=100": { data: [] },
+      "GET /webhooks?limit=100": new Response("{}", { status: 404 }),
+      "GET /contacts?limit=100": { data: [], has_more: false },
+      "GET /suppressions?limit=100": { data: [] },
+    });
+    const source = createSource(
+      { provider: "resend", apiKey: "re_key", options: {} },
+      { ...fast, fetch },
+    );
+    const inventory = await source.inventory(Date.now() + 10_000);
+    expect(inventory.domains).toHaveLength(1);
+    expect(inventory.contacts).toEqual({ count: 0, exact: true });
+    expect(inventory.unavailable).toEqual({
+      templates: "This API key isn't allowed to read them.",
+      webhooks: "The account doesn't offer them.",
+    });
+  });
+
   test("tells a sending-only key apart from a wrong one", async () => {
     const restricted = fakeFetch({
       "GET /domains?limit=1": Response.json(

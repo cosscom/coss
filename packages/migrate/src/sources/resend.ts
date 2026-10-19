@@ -19,6 +19,7 @@ import type {
   SourceTopic,
 } from "../types.ts";
 import type { SourceDeps } from "./deps.ts";
+import { inventorySections } from "./sections.ts";
 
 const BASE_URL = "https://api.resend.com";
 const PAGE = 100;
@@ -106,31 +107,35 @@ export function resendSource(apiKey: string, deps: SourceDeps = {}): MigrationSo
     provider: "resend",
 
     async inventory(deadline) {
+      const { unavailable, section } = inventorySections();
       const [domains, templates, properties, topics, lists, webhooks] = await Promise.all([
-        source.domains(),
-        source.templates(),
-        source.properties(),
-        source.topics(),
-        source.lists(),
-        all<ResendWebhook>("/webhooks"),
+        section("domains", () => source.domains(), []),
+        section("templates", () => source.templates(), []),
+        section("contacts", () => source.properties(), []),
+        section("contacts", () => source.topics(), []),
+        section("contacts", () => source.lists(), []),
+        section("webhooks", () => all<ResendWebhook>("/webhooks"), []),
       ]);
       // No count endpoint: page through the contacts while there's time.
-      let count = 0;
-      let exact = false;
-      let after: string | undefined;
-      while ((deps.now ?? Date.now)() < deadline) {
-        const page = await client.get<ResendList<ResendContact>>("/contacts", {
-          limit: PAGE,
-          after,
-        });
-        count += page.data.length;
-        const last = page.data.at(-1);
-        if (!page.has_more || !last) {
-          exact = true;
-          break;
-        }
-        after = last.id;
-      }
+      const contacts = await section(
+        "contacts",
+        async () => {
+          let count = 0;
+          let after: string | undefined;
+          while ((deps.now ?? Date.now)() < deadline) {
+            const page = await client.get<ResendList<ResendContact>>("/contacts", {
+              limit: PAGE,
+              after,
+            });
+            count += page.data.length;
+            const last = page.data.at(-1);
+            if (!page.has_more || !last) return { count, exact: true };
+            after = last.id;
+          }
+          return { count, exact: false };
+        },
+        null,
+      );
       const suppressions = await suppressionPage(undefined).catch((error) => {
         if (betaUnavailable(error)) return null;
         throw error;
@@ -142,7 +147,7 @@ export function resendSource(apiKey: string, deps: SourceDeps = {}): MigrationSo
         properties,
         topics,
         lists,
-        contacts: { count, exact },
+        contacts,
         suppressions: suppressions
           ? { count: suppressions.data.length, exact: !suppressions.has_more }
           : null,
@@ -151,7 +156,7 @@ export function resendSource(apiKey: string, deps: SourceDeps = {}): MigrationSo
           url: hook.endpoint,
           name: hook.endpoint,
         })),
-        unavailable: {},
+        unavailable,
         notes: [
           "Unsubscribed contacts are imported as unsubscribed; bounces and complaints come from Resend's suppression list where your account has it.",
         ],
