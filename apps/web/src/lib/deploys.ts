@@ -520,6 +520,8 @@ export type DeployRunDetail = {
 
 /** Runs read back when looking for the rollout before a run. */
 const EARLIER_RUNS_READ = 30;
+/** Of those, how many have their jobs read at once (most searches end within a few). */
+const EARLIER_RUNS_READ_AHEAD = 8;
 
 /**
  * One Deploy run with its jobs, steps, failed jobs' logs and the changes it ships. `null` when
@@ -538,42 +540,41 @@ export async function getDeployRun(id: number): Promise<DeployRunDetail | null> 
   }
   const [entry, ciBySha] = await Promise.all([withJobs(run), ciRunsBySha()]);
   const now = new Date();
+  // Started before the search for the rollout before this run, which they don't depend on (the
+  // failed jobs' logs are slow downloads). Never rejects: `failureLog` answers `null` instead.
+  const jobs = Promise.all(
+    entry.jobs.map(async (job): Promise<DeployJob> => {
+      const state = stepState(job);
+      return {
+        id: job.id ?? null,
+        name: job.name,
+        url: job.html_url ?? null,
+        state,
+        startedAt: job.started_at ?? null,
+        completedAt: job.completed_at ?? null,
+        durationMs: state === "skipped" ? null : elapsedMs(job.started_at, job.completed_at, now),
+        steps: (job.steps ?? []).map((step, index) => ({
+          number: step.number ?? index + 1,
+          name: step.name,
+          state: stepState(step),
+          startedAt: step.started_at ?? null,
+          durationMs: elapsedMs(step.started_at, step.completed_at, now),
+        })),
+        log: state === "failure" && job.id ? await failureLog(job.id) : null,
+      };
+    }),
+  );
   const earlier = await previousRollout(entry, now);
   const detail = deployRun(entry, earlier.lastDeployAt, now);
   const active = DEPLOY_PHASES[entry.phase].active;
-
-  const [jobs, changes] = await Promise.all([
-    Promise.all(
-      entry.jobs.map(async (job): Promise<DeployJob> => {
-        const state = stepState(job);
-        return {
-          id: job.id ?? null,
-          name: job.name,
-          url: job.html_url ?? null,
-          state,
-          startedAt: job.started_at ?? null,
-          completedAt: job.completed_at ?? null,
-          durationMs: state === "skipped" ? null : elapsedMs(job.started_at, job.completed_at, now),
-          steps: (job.steps ?? []).map((step, index) => ({
-            number: step.number ?? index + 1,
-            name: step.name,
-            state: stepState(step),
-            startedAt: step.started_at ?? null,
-            durationMs: elapsedMs(step.started_at, step.completed_at, now),
-          })),
-          log: state === "failure" && job.id ? await failureLog(job.id) : null,
-        };
-      }),
-    ),
-    runChanges(earlier.commit, detail.commit, ciBySha),
-  ]);
+  const changes = await runChanges(earlier.commit, detail.commit, ciBySha);
 
   return {
     run: detail,
     attempt: run.run_attempt ?? 1,
     startedAt: run.run_started_at ?? run.created_at,
     finishedAt: active ? null : (run.updated_at ?? null),
-    jobs,
+    jobs: await jobs,
     changes,
   };
 }
@@ -613,7 +614,13 @@ async function previousRollout(
     ).values(),
   ];
 
-  const { best, read } = await findPreviousRollout(run, candidates, reference, withJobs);
+  const { best, read } = await findPreviousRollout(
+    run,
+    candidates,
+    reference,
+    withJobs,
+    EARLIER_RUNS_READ_AHEAD,
+  );
   return {
     commit: best ? deployedCommit(best.entry.run, best.entry.jobs) : null,
     lastDeployAt: lastDeployStart(read),
