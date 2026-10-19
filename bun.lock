@@ -503,6 +503,27 @@
         "typescript": "7.0.2",
       },
     },
+    "packages/migrate": {
+      "name": "@coss/migrate",
+      "version": "0.0.0",
+      "dependencies": {
+        "@coss/billing": "workspace:*",
+        "@coss/db": "workspace:*",
+        "@coss/email": "workspace:*",
+        "@coss/logs": "workspace:*",
+        "@coss/retention": "workspace:*",
+        "@coss/webhooks": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@coss/tenancy": "workspace:*",
+        "@coss/tsconfig": "workspace:*",
+        "@coss/versioning": "workspace:*",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/observability": {
       "name": "@coss/observability",
       "version": "0.0.0",
@@ -1161,6 +1182,8 @@
     "@coss/infra": ["@coss/infra@workspace:infra"],
 
     "@coss/logs": ["@coss/logs@workspace:packages/logs"],
+
+    "@coss/migrate": ["@coss/migrate@workspace:packages/migrate"],
 
     "@coss/mobile": ["@coss/mobile@workspace:apps/mobile"],
 
