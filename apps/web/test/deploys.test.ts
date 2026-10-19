@@ -3,9 +3,13 @@ import { generateKeyPairSync, verify } from "node:crypto";
 import {
   batchShipsAt,
   commitSummary,
+  currentStep,
   type DeployPhase,
   deployedCommit,
   deployRunPhase,
+  elapsedMs,
+  failureLogExcerpt,
+  findPreviousRollout,
   firstParentChain,
   type GitHubCommit,
   type GitHubJob,
@@ -13,7 +17,11 @@ import {
   imageTagRunName,
   isImageTagRun,
   latestProductionJobAt,
+  latestRolloutBefore,
+  rolloutTimes,
+  stepState,
 } from "../src/lib/deploy-runs";
+import { formatElapsed } from "../src/lib/format";
 
 mock.module("server-only", () => ({}));
 const { githubAppJwt, githubAppPrivateKey } = await import("../src/lib/github-app");
@@ -203,6 +211,202 @@ describe("batch timing", () => {
       ]),
     ).toBeNull();
     expect(latestProductionJobAt([job("gate", "completed")])).toBeNull();
+  });
+});
+
+describe("run details", () => {
+  test("stepState", () => {
+    expect(stepState({ status: "queued", conclusion: null })).toBe("queued");
+    expect(stepState({ status: "waiting", conclusion: null })).toBe("queued");
+    expect(stepState({ status: "in_progress", conclusion: null })).toBe("running");
+    expect(stepState({ status: "completed", conclusion: "success" })).toBe("success");
+    expect(stepState({ status: "completed", conclusion: "skipped" })).toBe("skipped");
+    expect(stepState({ status: "completed", conclusion: "cancelled" })).toBe("canceled");
+    expect(stepState({ status: "completed", conclusion: "timed_out" })).toBe("failure");
+  });
+
+  test("currentStep prefers the deploy job's running step", () => {
+    const steps = (running: string) => [
+      { name: "Set up job", status: "completed", conclusion: "success" },
+      { name: running, status: "in_progress", conclusion: null },
+    ];
+    expect(
+      currentStep([
+        { ...job("build (web)", "in_progress"), steps: steps("Build and push web") },
+        { ...job("deploy", "in_progress"), steps: steps("Migrate") },
+      ]),
+    ).toEqual({ job: "deploy", step: "Migrate" });
+    expect(
+      currentStep([{ ...job("build (web)", "in_progress"), steps: steps("Build and push web") }]),
+    ).toEqual({ job: "build (web)", step: "Build and push web" });
+    expect(currentStep([job("deploy", "queued")])).toBeNull();
+  });
+
+  test("elapsedMs and formatElapsed", () => {
+    const now = new Date("2026-10-15T12:10:00Z");
+    expect(elapsedMs("2026-10-15T12:00:00Z", "2026-10-15T12:04:12Z", now)).toBe(252_000);
+    expect(elapsedMs("2026-10-15T12:00:00Z", null, now)).toBe(600_000);
+    expect(elapsedMs(null, null, now)).toBeNull();
+    expect(formatElapsed(45_000)).toBe("45s");
+    expect(formatElapsed(252_000)).toBe("4m 12s");
+    expect(formatElapsed(3_780_000)).toBe("1h 3m");
+  });
+
+  test("failureLogExcerpt ends at the last error and drops GitHub's markup", () => {
+    const log = [
+      "\uFEFF2026-10-15T11:59:59.0Z Current runner version: '2.337.0'",
+      "2026-10-15T11:59:59.1Z ##[group]Runner Image",
+      "2026-10-15T11:59:59.2Z Image: ubuntu-24.04",
+      "2026-10-15T11:59:59.3Z ##[endgroup]",
+      "2026-10-15T11:59:59.4Z ##[group]Run infra/scripts/ecs-task.sh",
+      "2026-10-15T11:59:59.5Z ##[endgroup]",
+      "2026-10-15T11:59:59.6Z migrated",
+      "2026-10-15T12:00:00.1234567Z ##[group]Run infra/scripts/ecs-deploy.sh",
+      "2026-10-15T12:00:00.2Z \u001b[36;1minfra/scripts/ecs-deploy.sh abc api\u001b[0m",
+      "2026-10-15T12:00:00.2Z env:",
+      "2026-10-15T12:00:00.3Z ##[endgroup]",
+      "2026-10-15T12:00:01.0Z \u001b[31mapi: rollout failed\u001b[0m",
+      "2026-10-15T12:00:01.1Z ##[error]Process completed with exit code 1.",
+      "2026-10-15T12:00:02.0Z Post job cleanup.",
+      "",
+    ].join("\n");
+    expect(failureLogExcerpt(log)).toEqual([
+      // From the failing step's start; its echoed script and env are left out, colours too.
+      { text: "Run infra/scripts/ecs-deploy.sh", error: false },
+      { text: "api: rollout failed", error: false },
+      { text: "Process completed with exit code 1.", error: true },
+    ]);
+    expect(failureLogExcerpt(log, 2).map((line) => line.text)).toEqual([
+      "api: rollout failed",
+      "Process completed with exit code 1.",
+    ]);
+    // Without an error line: the end.
+    expect(failureLogExcerpt("one\ntwo\nthree\n", 2).map((line) => line.text)).toEqual([
+      "two",
+      "three",
+    ]);
+  });
+});
+
+describe("rollout order", () => {
+  const rolledOut = (
+    startedAt: string,
+    completedAt: string,
+    conclusion = "success",
+  ): GitHubJob => ({
+    ...job("deploy", "completed", conclusion),
+    steps: [
+      { name: "Migrate", status: "completed", conclusion: "success" },
+      {
+        name: "Roll out",
+        status: "completed",
+        conclusion,
+        started_at: startedAt,
+        completed_at: completedAt,
+      },
+    ],
+  });
+
+  test("rolloutTimes", () => {
+    expect(rolloutTimes([rolledOut("2026-10-15T12:00:00Z", "2026-10-15T12:02:00Z")])).toEqual({
+      startedAt: new Date("2026-10-15T12:00:00Z"),
+      finishedAt: new Date("2026-10-15T12:02:00Z"),
+    });
+    // A failed rollout started, but production didn't move.
+    expect(
+      rolloutTimes([rolledOut("2026-10-15T12:00:00Z", "2026-10-15T12:02:00Z", "failure")]),
+    ).toEqual({ startedAt: new Date("2026-10-15T12:00:00Z"), finishedAt: null });
+    expect(rolloutTimes([job("build (web)", "completed", "success")])).toEqual({
+      startedAt: null,
+      finishedAt: null,
+    });
+  });
+
+  test("latestRolloutBefore orders by when rollouts finished, not when runs were created", () => {
+    // `rerun` was created first but re-run (and rolled out) after `newer`.
+    const newer = {
+      id: "newer",
+      jobs: [rolledOut("2026-10-15T12:00:00Z", "2026-10-15T12:02:00Z")],
+    };
+    const rerun = {
+      id: "rerun",
+      jobs: [rolledOut("2026-10-15T13:00:00Z", "2026-10-15T13:02:00Z")],
+    };
+    const failed = { id: "failed", jobs: [job("gate", "completed", "failure")] };
+    const entries = [newer, failed, rerun];
+    expect(latestRolloutBefore(entries, new Date("2026-10-15T14:00:00Z"))?.entry.id).toBe("rerun");
+    expect(latestRolloutBefore(entries, new Date("2026-10-15T12:30:00Z"))?.entry.id).toBe("newer");
+    expect(latestRolloutBefore(entries, new Date("2026-10-15T12:01:00Z"))).toBeNull();
+  });
+});
+
+describe("findPreviousRollout", () => {
+  const at = (minute: number) => new Date(Date.UTC(2026, 9, 15, 12, minute)).toISOString();
+  /** A deploy job that rolled out from `minute` to `minute + 2`, or one that never got there. */
+  const jobsAt = (minute: number | null): GitHubJob[] =>
+    minute === null
+      ? [job("gate", "completed", "failure")]
+      : [
+          {
+            ...job("deploy", "completed", "success"),
+            steps: [
+              {
+                name: "Roll out",
+                status: "completed",
+                conclusion: "success",
+                started_at: at(minute),
+                completed_at: at(minute + 2),
+              },
+            ],
+          },
+        ];
+  /** Runs by id: each attempt's rollout minute (`null`: none), the latest last. */
+  function fixture(attempts: Record<number, (number | null)[]>) {
+    const runs = Object.entries(attempts).map(([id, minutes]) =>
+      run({
+        id: Number(id),
+        run_attempt: minutes.length,
+        created_at: at(Number(id)),
+        updated_at: at((minutes.at(-1) ?? Number(id)) + 3),
+      }),
+    );
+    const loads: string[] = [];
+    const load = async (of: GitHubRun, attempt?: number) => {
+      const number = attempt ?? of.run_attempt ?? 1;
+      loads.push(`${of.id}:${number}`);
+      return { run: of, attempt: number, jobs: jobsAt(attempts[of.id]?.[number - 1] ?? null) };
+    };
+    return { runs, load, loads };
+  }
+  const found = (result: { best: { entry: { run: GitHubRun; attempt: number } } | null }) =>
+    result.best ? `${result.best.entry.run.id}:${result.best.entry.attempt}` : null;
+
+  test("the latest rollout before the reference, reading as few runs as it can", async () => {
+    const { runs, load, loads } = fixture({ 1: [1], 10: [10], 20: [null], 30: [30] });
+    const viewed = runs.find((candidate) => candidate.id === 30) as GitHubRun;
+    const result = await findPreviousRollout(viewed, runs, new Date(at(30)), load);
+    expect(found(result)).toBe("10:1");
+    // Run 1's last change is before run 10's rollout: never read.
+    expect(loads).toEqual(["20:1", "10:1"]);
+  });
+
+  test("an earlier run re-run after the viewed one rolled out: its first attempt counts", async () => {
+    // Run 10 rolled out at 10, run 20 at 20, then run 10 was re-run and rolled out at 40.
+    const { runs, load } = fixture({ 1: [1], 10: [10, 40], 20: [20] });
+    const viewed = runs.find((candidate) => candidate.id === 20) as GitHubRun;
+    expect(found(await findPreviousRollout(viewed, runs, new Date(at(20)), load))).toBe("10:1");
+  });
+
+  test("the viewed run's own earlier rollout (its failed later steps were re-run)", async () => {
+    const { runs, load } = fixture({ 1: [1], 10: [10, 15] });
+    const viewed = runs.find((candidate) => candidate.id === 10) as GitHubRun;
+    expect(found(await findPreviousRollout(viewed, runs, new Date(at(15)), load))).toBe("10:1");
+  });
+
+  test("none before the reference", async () => {
+    const { runs, load } = fixture({ 10: [null], 20: [20] });
+    const viewed = runs.find((candidate) => candidate.id === 20) as GitHubRun;
+    expect(found(await findPreviousRollout(viewed, runs, new Date(at(20)), load))).toBeNull();
   });
 });
 

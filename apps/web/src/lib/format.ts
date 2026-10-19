@@ -44,6 +44,15 @@ export function formatRelative(value: Date | string, now: Date = new Date()): st
   return "now";
 }
 
+/** `252_000` → `"4m 12s"`, `45_000` → `"45s"`, `3_780_000` → `"1h 3m"`. */
+export function formatElapsed(ms: number): string {
+  const seconds = Math.round(ms / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+}
+
 const compactNumber = new Intl.NumberFormat("en", {
   notation: "compact",
   maximumFractionDigits: 1,

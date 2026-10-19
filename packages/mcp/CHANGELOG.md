@@ -1,5 +1,15 @@
 # coss-mcp
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [0d7a859]
+- Updated dependencies [9cfbbfa]
+- Updated dependencies [9682942]
+- Updated dependencies [1d2d0f6]
+  - coss@0.6.0
+
 ## 0.2.1
 
 ### Patch Changes

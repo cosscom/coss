@@ -707,8 +707,10 @@ environment values, run the Deploy workflow by hand so the services pick up the 
 ### Deploying from the admin console
 
 `/admin/deploys` shows the commit production runs, main's merges it doesn't run yet (with their CI) and the Deploy
-workflow's latest runs (waiting for their batch, building, deploying, done), and refreshes itself (every 30 s
-while a run moves, else every minute).
+workflow's latest runs (waiting for their batch, building, deploying with the step it is on, done), and refreshes
+itself while the tab is open (every 10 s while a run moves, else every 30 s). Each run has its own page
+(`/admin/deploys/<run id>`): the merges it ships (or, for a redeploy, takes back out) against the deploy before it,
+its jobs on a timeline, the deploy job's steps and the end of each failed job's log.
 **Deploy now** dispatches the workflow for main (skipping the batch wait) and cancels the push runs still waiting;
 **Redeploy** on an earlier run's commit dispatches it with `image_tag` (production stays there until main is
 deployed again; migrations aren't undone). Both record an admin audit event with the admin and their reason.
