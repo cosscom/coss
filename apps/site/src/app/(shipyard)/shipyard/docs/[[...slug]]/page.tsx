@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DocsPageFrame } from "@/components/docs-frame";
 import { getShipyardMDXComponents } from "@/components/shipyard/docs/mdx";
+import { neighbours } from "@/lib/docs-tree";
 import { SHIPYARD } from "@/lib/shipyard";
 import { shipyardSource } from "@/lib/shipyard-docs";
 
@@ -16,6 +17,7 @@ export default async function Page({ params }: PageProps<"/shipyard/docs/[[...sl
     <DocsPageFrame
       description={page.data.description}
       markdown={markdown}
+      neighbours={neighbours(shipyardSource.getPageTree(), page.url)}
       title={page.data.title}
       toc={page.data.toc}
     >

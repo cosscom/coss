@@ -1,0 +1,16 @@
+{
+  "title": "Platform",
+  "description": "What every product shares: webhooks, logs, the audit log, billing and retention.",
+  "root": true,
+  "icon": "Layers",
+  "pages": [
+    "---Events and logs---",
+    "webhooks",
+    "logs",
+    "log-drains",
+    "audit-log",
+    "---Account---",
+    "billing",
+    "data-retention"
+  ]
+}

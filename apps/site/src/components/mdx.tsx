@@ -123,8 +123,16 @@ export function getMDXComponents(components?: MDXComponents) {
     Card: LinkCard,
     Cards,
     CodeBlockTab,
+    // The tab's code block sits flush under the tab list (the `pre` override's margin and
+    // `figure.shiki`'s radius are for standalone blocks), on the same surface as the frame.
     CodeBlockTabs: ({ className, ...props }: ComponentProps<typeof CodeBlockTabs>) => (
-      <CodeBlockTabs className={cn("my-6 rounded-xl bg-code shadow-none", className)} {...props} />
+      <CodeBlockTabs
+        className={cn(
+          "my-6 overflow-hidden rounded-xl bg-code shadow-none [&_figure.shiki]:my-0 [&_figure.shiki]:rounded-none [&_figure.shiki]:bg-code",
+          className,
+        )}
+        {...props}
+      />
     ),
     CodeBlockTabsList,
     CodeBlockTabsTrigger,

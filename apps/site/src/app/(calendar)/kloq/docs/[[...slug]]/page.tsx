@@ -4,6 +4,7 @@ import { getCalendarMDXComponents } from "@/components/calendar/docs/mdx";
 import { DocsPageFrame } from "@/components/docs-frame";
 import { CALENDAR } from "@/lib/calendar";
 import { calendarPageMarkdown, calendarSource } from "@/lib/calendar-docs";
+import { neighbours } from "@/lib/docs-tree";
 
 export default async function Page({ params }: PageProps<"/kloq/docs/[[...slug]]">) {
   const { slug } = await params;
@@ -15,6 +16,7 @@ export default async function Page({ params }: PageProps<"/kloq/docs/[[...slug]]
     <DocsPageFrame
       description={page.data.description}
       markdown={await calendarPageMarkdown(page)}
+      neighbours={neighbours(calendarSource.getPageTree(), page.url)}
       title={page.data.title}
       toc={page.data.toc}
     >

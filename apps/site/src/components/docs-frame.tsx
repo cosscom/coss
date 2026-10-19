@@ -1,9 +1,14 @@
 import { Card, CardFrame, CardPanel } from "@coss/ui/components/card";
 import { ScrollArea } from "@coss/ui/components/scroll-area";
 import { SidebarProvider } from "@coss/ui/components/sidebar";
+import { cn } from "@coss/ui/lib/utils";
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import type * as PageTree from "fumadocs-core/page-tree";
 import type { TOCItemType } from "fumadocs-core/toc";
+import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
+import type { NavPage } from "@/lib/docs-tree";
 import { DOCS_SIDEBAR_WIDTH } from "@/lib/nav";
 import { DocsCopyPage } from "./docs-copy-page";
 import { DocsSidebar } from "./docs-sidebar";
@@ -31,13 +36,15 @@ export function DocsLayoutFrame({ tree, children }: { tree: PageTree.Root; child
 
 /**
  * The docs page of coss.com/ui: the card-framed page with its title, description and
- * "Copy Markdown", the footer in the frame, and the "On This Page" table of contents beside it.
+ * "Copy Markdown", the links to the pages before and after it in its section, the footer in the
+ * frame, and the "On This Page" table of contents beside it.
  */
 export function DocsPageFrame({
   title,
   description,
   markdown,
   toc,
+  neighbours,
   children,
 }: {
   title: ReactNode;
@@ -45,6 +52,8 @@ export function DocsPageFrame({
   /** The page as Markdown, for "Copy Markdown". */
   markdown: string;
   toc: TOCItemType[];
+  /** The pages before and after this one in its section. */
+  neighbours?: { previous?: NavPage; next?: NavPage };
   children: ReactNode;
 }) {
   return (
@@ -69,6 +78,7 @@ export function DocsPageFrame({
                     </div>
                   </div>
                   <div className="w-full flex-1 *:data-[slot=alert]:first:mt-0">{children}</div>
+                  {(neighbours?.previous || neighbours?.next) && <PageNeighbours {...neighbours} />}
                 </div>
               </div>
             </CardPanel>
@@ -91,5 +101,53 @@ export function DocsPageFrame({
         </ScrollArea>
       </div>
     </div>
+  );
+}
+
+/** "Previous" and "Next" under a page: one ruled row, the next page on the right. */
+function PageNeighbours({ previous, next }: { previous?: NavPage; next?: NavPage }) {
+  return (
+    <nav
+      aria-label="More in this section"
+      className="mt-4 grid overflow-hidden rounded-xl border border-border/64 sm:grid-cols-2"
+    >
+      {previous ? <NeighbourLink direction="previous" page={previous} /> : <span aria-hidden />}
+      {next && <NeighbourLink afterPrevious={!!previous} direction="next" page={next} />}
+    </nav>
+  );
+}
+
+function NeighbourLink({
+  page,
+  direction,
+  afterPrevious = false,
+}: {
+  page: NavPage;
+  direction: "previous" | "next";
+  /** Ruled off from the previous page's link (beside it, or above it on phones). */
+  afterPrevious?: boolean;
+}) {
+  const isNext = direction === "next";
+  return (
+    <Link
+      className={cn(
+        "group flex flex-col gap-1 px-5 py-4 transition-colors hover:bg-accent/50",
+        isNext && "items-end text-end sm:col-start-2",
+        afterPrevious && "border-border/64 max-sm:border-t sm:border-s",
+      )}
+      href={page.url}
+      rel={isNext ? "next" : "prev"}
+    >
+      <span className="flex items-center gap-1 text-muted-foreground text-sm">
+        {!isNext && (
+          <HugeiconsIcon aria-hidden className="size-3.5" icon={ArrowLeft01Icon} strokeWidth={2} />
+        )}
+        {isNext ? "Next" : "Previous"}
+        {isNext && (
+          <HugeiconsIcon aria-hidden className="size-3.5" icon={ArrowRight01Icon} strokeWidth={2} />
+        )}
+      </span>
+      <span className="font-medium text-foreground [&_.ms-auto]:ms-2">{page.name}</span>
+    </Link>
   );
 }

@@ -1,0 +1,29 @@
+{
+  "title": "Email",
+  "description": "Transactional and marketing email from your own domains, and email you receive.",
+  "root": true,
+  "icon": "Mail",
+  "pages": [
+    "---Sending and receiving---",
+    "sending",
+    "templates",
+    "smtp",
+    "receiving",
+    "---Deliverability---",
+    "domains",
+    "streams",
+    "suppressions",
+    "dmarc",
+    "dedicated-ips",
+    "bimi",
+    "---Tracking---",
+    "delivery",
+    "tracking",
+    "---Marketing---",
+    "contacts",
+    "audiences-and-segments",
+    "topics-and-preferences",
+    "unsubscribe",
+    "broadcasts"
+  ]
+}

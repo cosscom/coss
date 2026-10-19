@@ -1,0 +1,29 @@
+---
+title: Introduction
+description: One API key and one SDK for every product.
+icon: House
+---
+
+coss.com puts email, Hooks (webhooks you send to your customers) and Risk (abuse checks for sign-ups,
+logins and payments) behind a single API key and a single SDK. You create an organization, add a
+project, and call every product with the same key and the same client:
+
+```ts
+import { Coss } from "coss";
+
+const coss = new Coss({ apiKey: process.env.COSS_API_KEY });
+
+await coss.email.send({
+  from: "Acme <hello@acme.com>",
+  to: "user@example.com",
+  subject: "Welcome",
+  html: "<p>Hi there</p>",
+});
+```
+
+Start with the [Quickstart](/docs/quickstart), then find your product below. Each section has its own
+sidebar; the [API reference](/docs/api-reference) has every endpoint, grouped the same way.
+
+## Sections
+
+<DocsSections />
