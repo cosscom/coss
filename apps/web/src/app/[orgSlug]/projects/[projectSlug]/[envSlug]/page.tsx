@@ -265,6 +265,16 @@ export default async function EnvironmentOverviewPage({
                   {steps.length - remaining}/{steps.length}
                 </span>
               }
+              footer={
+                can({ environment: ["update"] }) ? (
+                  <Link
+                    className="text-muted-foreground text-xs underline-offset-4 hover:underline"
+                    href={`${base}/import`}
+                  >
+                    Moving from Resend, SendGrid or Postmark? Import your account
+                  </Link>
+                ) : null
+              }
               title="Get started"
             >
               <PanelBody flush>

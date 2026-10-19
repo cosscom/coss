@@ -12,6 +12,7 @@ import {
   GaugeIcon,
   GlobeIcon,
   HistoryIcon,
+  ImportIcon,
   InboxIcon,
   KeyRoundIcon,
   LayoutDashboardIcon,
@@ -120,6 +121,7 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
       { label: "Webhooks", path: "/webhooks", icon: WebhookIcon },
       { label: "Logs", path: "/logs", icon: ScrollTextIcon },
       { label: "Log drains", path: "/log-drains", icon: CableIcon },
+      { label: "Import", path: "/import", icon: ImportIcon },
     ],
   },
 ];
@@ -247,6 +249,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   webhooks: "Webhooks",
   logs: "Logs",
   "log-drains": "Log drains",
+  import: "Import",
   domains: "Domains",
   dmarc: "DMARC",
   "dedicated-ips": "Dedicated IPs",

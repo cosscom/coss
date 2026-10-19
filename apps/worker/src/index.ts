@@ -8,6 +8,7 @@ import "./instrument.ts";
 import type { AuthEmailSender } from "@coss/auth/emails";
 import {
   type BillingNotifier,
+  createPlanGate,
   createUsageGate,
   logBillingNotifier,
   planRateLimits,
@@ -263,6 +264,15 @@ const loops = startJobs({
   },
   push: pushSender && { sender: pushSender },
   webhooks: { secretsKeys, send },
+  migrations: {
+    secretsKeys,
+    plans: createPlanGate({ systemOrganizationId }),
+    webhooks: {
+      secretsKeys,
+      allowInsecureUrls: process.env.NODE_ENV !== "production",
+      plans: createPlanGate({ systemOrganizationId }),
+    },
+  },
   hooks: {
     secretsKeys,
     send,
