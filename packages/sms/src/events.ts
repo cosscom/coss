@@ -132,37 +132,41 @@ export async function recordSmsEvent(
   const move = fromCoss ? undefined : MOVES[event.type];
   if (move) {
     const occurredAt = event.occurredAt.toISOString();
+    // What a move records, for a normal move and for the repair below alike.
+    const moved = {
+      status: move.to,
+      providerMessageId: sql`coalesce(${smsMessage.providerMessageId}, ${event.providerMessageId})`,
+      ...(move.to === "failed"
+        ? {}
+        : { sentAt: sql`coalesce(${smsMessage.sentAt}, ${occurredAt}::timestamptz)` }),
+      ...(move.to === "delivered" ? { deliveredAt: event.occurredAt } : {}),
+    };
     await tx
       .update(smsMessage)
       .set({
-        status: move.to,
-        providerMessageId: sql`coalesce(${smsMessage.providerMessageId}, ${event.providerMessageId})`,
-        ...(move.to === "failed"
-          ? {}
-          : { sentAt: sql`coalesce(${smsMessage.sentAt}, ${occurredAt}::timestamptz)` }),
-        ...(move.to === "delivered" ? { deliveredAt: event.occurredAt } : {}),
+        ...moved,
         ...(event.data.failure
           ? { errorCode: event.data.failure.code, errorMessage: event.data.failure.message }
           : {}),
       })
       .where(and(thisMessage, inArray(smsMessage.status, move.from)));
-  }
-  if (move && REACHED_CARRIER.has(event.type)) {
-    // A late callback repairs a message the stale-claim sweep gave up on: it did go out.
-    await tx
-      .update(smsMessage)
-      .set({
-        status: move.to,
-        errorCode: event.data.failure?.code ?? null,
-        errorMessage: event.data.failure?.message ?? null,
-      })
-      .where(
-        and(
-          thisMessage,
-          eq(smsMessage.status, "failed"),
-          eq(smsMessage.errorCode, "dispatch_interrupted"),
-        ),
-      );
+    if (REACHED_CARRIER.has(event.type)) {
+      // A late callback repairs a message the stale-claim sweep gave up on: it did go out.
+      await tx
+        .update(smsMessage)
+        .set({
+          ...moved,
+          errorCode: event.data.failure?.code ?? null,
+          errorMessage: event.data.failure?.message ?? null,
+        })
+        .where(
+          and(
+            thisMessage,
+            eq(smsMessage.status, "failed"),
+            eq(smsMessage.errorCode, "dispatch_interrupted"),
+          ),
+        );
+    }
   }
   if (live && !fromCoss && REACHED_CARRIER.has(event.type)) await recordSmsUsage(tx, target);
 

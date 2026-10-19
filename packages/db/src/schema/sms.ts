@@ -12,6 +12,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   unique,
@@ -387,5 +388,26 @@ export const smsReceived = pgTable(
     unique("sms_received_provider_message_unique").on(t.provider, t.providerMessageId),
     index("sms_received_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
     index("sms_received_created_at_idx").on(t.createdAt),
+  ],
+);
+
+/**
+ * Every inbound message the provider reported, routed or not: a retried callback is recognized
+ * by it even when nothing was stored (an unrouted STOP or START must not be applied twice, or a
+ * retry could undo a later change). Purged with received messages.
+ */
+export const smsInboundReceipt = pgTable(
+  "sms_inbound_receipt",
+  {
+    provider: text("provider").notNull(),
+    providerMessageId: text("provider_message_id").notNull(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.provider, t.providerMessageId] }),
+    index("sms_inbound_receipt_created_at_idx").on(t.createdAt),
   ],
 );

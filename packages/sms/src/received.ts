@@ -26,7 +26,7 @@ import {
 import { countSegments } from "./segments.ts";
 import { optInEverywhere, optOutEverywhere, type SmsSuppressionRow } from "./suppressions.ts";
 
-const { environment, smsNumber, smsReceived } = schema;
+const { environment, smsInboundReceipt, smsNumber, smsReceived } = schema;
 
 export type ReceivedSmsRow = typeof smsReceived.$inferSelect;
 
@@ -223,6 +223,17 @@ export async function receiveSms(input: InboundSms): Promise<ReceiveSmsResult> {
   if (!number) return { status: "unknown_number" };
   const organizationId = number.organizationId;
   return db.transaction(async (tx): Promise<ReceiveSmsResult> => {
+    // A retried callback: stored (when routed) and its keyword applied the first time.
+    const [receipt] = await tx
+      .insert(smsInboundReceipt)
+      .values({
+        provider: input.provider,
+        providerMessageId: input.providerMessageId,
+        organizationId,
+      })
+      .onConflictDoNothing()
+      .returning({ provider: smsInboundReceipt.provider });
+    if (!receipt) return { status: "duplicate" };
     const [receiving] = number.receivingEnvironmentId
       ? await tx
           .select({ id: environment.id, projectId: environment.projectId })

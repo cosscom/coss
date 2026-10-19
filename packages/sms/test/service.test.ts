@@ -363,6 +363,36 @@ describe("receiving", () => {
       );
     expect(entry).toMatchObject({ environmentId: tenant.production.id, reason: "opt_out" });
   });
+
+  test("a retried unrouted START doesn't undo the STOP that came after it", async () => {
+    const tenant = await createTestTenant();
+    const number = await createTestSmsNumber(tenant.organization.id);
+    const from = testPhoneNumber();
+    const reply = (id: string, body: string) =>
+      receiveSms({
+        provider: "fake",
+        providerMessageId: `${id}-${run}`,
+        from,
+        to: number.phoneNumber,
+        body,
+        occurredAt: new Date(),
+      });
+    expect(await reply("r1", "STOP")).toEqual({ status: "unrouted" });
+    expect(await reply("r2", "START")).toEqual({ status: "unrouted" });
+    expect(await reply("r3", "STOP")).toEqual({ status: "unrouted" });
+    // The provider retries the START callback.
+    expect(await reply("r2", "START")).toEqual({ status: "duplicate" });
+    const entries = await db
+      .select()
+      .from(smsSuppression)
+      .where(
+        and(
+          eq(smsSuppression.organizationId, tenant.organization.id),
+          eq(smsSuppression.phoneNumber, from),
+        ),
+      );
+    expect(entries).toEqual([expect.objectContaining({ reason: "opt_out" })]);
+  });
 });
 
 describe("sweeps", () => {
@@ -404,7 +434,15 @@ describe("sweeps", () => {
     expect(await getSms({ ...scoped, smsId: sms.id })).toMatchObject({
       status: "delivered",
       failure: null,
+      sent_at: expect.any(String),
+      delivered_at: expect.any(String),
     });
+    // The repair stored the provider's message id: another one's callbacks are refused.
+    const [repaired] = await db
+      .select({ providerMessageId: smsMessage.providerMessageId })
+      .from(smsMessage)
+      .where(eq(smsMessage.id, sms.id));
+    expect(repaired?.providerMessageId).toBe("late");
     expect(await usageOf(tenant.organization.id)).toEqual([
       { meter: "sms.segments", dimension: "country=US", quantity: 1 },
     ]);

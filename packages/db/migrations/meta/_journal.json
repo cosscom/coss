@@ -575,6 +575,13 @@
       "when": 1792435422851,
       "tag": "0081_talented_doctor_faustus",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1792435490655,
+      "tag": "0082_thin_praxagora",
+      "breakpoints": true
     }
   ]
 }
