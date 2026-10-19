@@ -58,6 +58,15 @@ describe("test webhook events", () => {
       error: { code: "render_failed" },
     });
     expect(sampleWebhookEvent("risk.assessment.reviewed", NOW).data.outcome).toBe("legitimate");
+    expect(sampleWebhookEvent("sms.undelivered", NOW).data).toMatchObject({
+      sandbox: true,
+      failure: { code: "carrier_filtered" },
+      provider_error_code: "30007",
+    });
+    expect(sampleWebhookEvent("sms.opted_out", NOW).data).toMatchObject({
+      keyword: "stop",
+      sandbox: true,
+    });
     expect(sampleWebhookEvent("email.delivered", NOW).id).not.toBe(
       sampleWebhookEvent("email.delivered", NOW).id,
     );

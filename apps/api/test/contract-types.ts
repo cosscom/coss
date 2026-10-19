@@ -195,6 +195,7 @@ import type {
   UpdateRiskRuleRequest,
   UpdateRiskSettingsRequest,
 } from "@coss/risk/schemas";
+import type { ReceivedSmsWebhookEvent, SmsWebhookEvent } from "@coss/sms/schemas";
 import type { ApiVersion } from "@coss/versioning";
 import type {
   CreateLogDrainRequest,
@@ -646,7 +647,9 @@ export type Contract = [
       | z.output<typeof BillingWebhookEvent>
       | z.output<typeof RiskWebhookEvent>
       | z.output<typeof ContactWebhookEvent>
-      | z.output<typeof BroadcastWebhookEvent>,
+      | z.output<typeof BroadcastWebhookEvent>
+      | z.output<typeof SmsWebhookEvent>
+      | z.output<typeof ReceivedSmsWebhookEvent>,
       WebhookEvent
     >
   >,

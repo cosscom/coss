@@ -88,7 +88,7 @@ describe("/v1/log_drains", () => {
     const { app } = createTestApp();
     const unknownSource = await apiRequest(app, "POST", "/v1/log_drains", {
       key: tenant.sandboxKey,
-      body: { url: URL_ONE, sources: ["sms"] },
+      body: { url: URL_ONE, sources: ["video"] },
     });
     expect(unknownSource.status).toBe(422);
     expect((await errorOf(unknownSource)).code).toBe("validation_error");

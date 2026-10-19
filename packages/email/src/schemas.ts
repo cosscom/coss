@@ -6,6 +6,7 @@
 import { BILLING_EVENT_TYPES } from "@coss/billing/wire";
 import { ACCOUNT_EVENT_TYPES } from "@coss/reputation/schemas";
 import { RISK_EVENT_TYPES } from "@coss/risk/schemas";
+import { SMS_WEBHOOK_EVENT_TYPES } from "@coss/sms/schemas";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { HOOK_OPERATIONAL_EVENT_TYPES } from "@coss/webhooks/schemas";
 import { z } from "zod";
@@ -878,8 +879,8 @@ export type DomainEventType = (typeof DOMAIN_EVENT_TYPES)[number];
 /**
  * Every type a webhook endpoint can subscribe to: email events, received emails, the
  * organization's domain events (`domain.*`), reputation changes (`account.*`) and billing events
- * (`billing.*`), all three delivered to live environments only, risk reviews (`risk.*`) and
- * contact changes (`contact.*`).
+ * (`billing.*`), all three delivered to live environments only, risk reviews (`risk.*`),
+ * contact changes (`contact.*`), broadcasts and SMS (`sms.*`).
  */
 export const WEBHOOK_EVENT_TYPES = [
   ...EMAIL_EVENT_TYPES,
@@ -891,6 +892,7 @@ export const WEBHOOK_EVENT_TYPES = [
   ...RISK_EVENT_TYPES,
   ...CONTACT_EVENT_TYPES,
   ...BROADCAST_EVENT_TYPES,
+  ...SMS_WEBHOOK_EVENT_TYPES,
 ] as const;
 // Examples shown in the API reference; test/schema-examples.test.ts parses each with its schema.
 const EMAIL_ID_EXAMPLE = "email_01k7c8m4q2f3e9v6t5r1n0p8yz";

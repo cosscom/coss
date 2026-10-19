@@ -1,0 +1,1 @@
+CREATE INDEX "sms_inbound_receipt_organization_created_at_idx" ON "sms_inbound_receipt" USING btree ("organization_id","created_at");

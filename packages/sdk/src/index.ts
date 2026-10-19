@@ -343,6 +343,28 @@ export type {
   UpdateRiskRuleParams,
   UpdateRiskSettingsParams,
 } from "./types/risk.ts";
+export type {
+  DeletedSmsSuppression,
+  ListReceivedSmsParams,
+  ListSmsParams,
+  ListSmsSuppressionsParams,
+  ReceivedSms,
+  ReceivedSmsEventType,
+  SendSmsParams,
+  Sms,
+  SmsEncoding,
+  SmsEvent,
+  SmsEventData,
+  SmsEventType,
+  SmsFailure,
+  SmsKeyword,
+  SmsNumber,
+  SmsStatus,
+  SmsSuppression,
+  SmsSuppressionCheck,
+  SmsSuppressionReason,
+  SmsTag,
+} from "./types/sms.ts";
 export type { StorageSettings, UpdateStorageSettingsParams } from "./types/storage.ts";
 export type {
   CheckSuppressionParams,
@@ -386,9 +408,13 @@ export type {
   ReceivedEmailEventType,
   ReceivedEmailWebhookEvent,
   ReceivedEmailWebhookEventData,
+  ReceivedSmsWebhookEvent,
+  ReceivedSmsWebhookEventData,
   RiskEventType,
   RiskWebhookEvent,
   RiskWebhookEventData,
+  SmsWebhookEvent,
+  SmsWebhookEventData,
   WebhookEvent,
 } from "./types/webhook.ts";
 export type {

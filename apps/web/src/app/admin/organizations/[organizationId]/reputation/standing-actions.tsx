@@ -162,6 +162,8 @@ export function PolicyForm(props: {
     countSimulatorRecipients: boolean;
     contentScreening: Partial<ReputationPolicy["contentScreening"]>;
     hookFailureRate: Partial<ReputationPolicy["hookFailureRate"]>;
+    smsOptOutRate: Partial<ReputationPolicy["smsOptOutRate"]>;
+    smsFilteredRate: Partial<ReputationPolicy["smsFilteredRate"]>;
   }> | null;
 }) {
   // Which submit button was used (both post to the same action): state for its spinner, and a ref
@@ -256,6 +258,30 @@ export function PolicyForm(props: {
       defaults.hookFailureRate.suspend,
       overrides.hookFailureRate?.suspend,
     ],
+    [
+      "smsOptOutWarning",
+      "SMS opt-out warning (%)",
+      defaults.smsOptOutRate.warning,
+      overrides.smsOptOutRate?.warning,
+    ],
+    [
+      "smsOptOutSuspend",
+      "SMS opt-out suspension (%)",
+      defaults.smsOptOutRate.suspend,
+      overrides.smsOptOutRate?.suspend,
+    ],
+    [
+      "smsFilteredWarning",
+      "SMS carrier filtering warning (%)",
+      defaults.smsFilteredRate.warning,
+      overrides.smsFilteredRate?.warning,
+    ],
+    [
+      "smsFilteredSuspend",
+      "SMS carrier filtering suspension (%)",
+      defaults.smsFilteredRate.suspend,
+      overrides.smsFilteredRate?.suspend,
+    ],
   ] as const;
   const countFields = [
     ["windowDays", "Window (days)", defaults.windowDays, overrides.windowDays],
@@ -294,6 +320,18 @@ export function PolicyForm(props: {
       "Hooks minimum deliveries",
       defaults.hookFailureRate.minimumDeliveries,
       overrides.hookFailureRate?.minimumDeliveries,
+    ],
+    [
+      "smsOptOutMinimum",
+      "SMS opt-out minimum messages",
+      defaults.smsOptOutRate.minimumRecipients,
+      overrides.smsOptOutRate?.minimumRecipients,
+    ],
+    [
+      "smsFilteredMinimum",
+      "SMS carrier filtering minimum messages",
+      defaults.smsFilteredRate.minimumRecipients,
+      overrides.smsFilteredRate?.minimumRecipients,
     ],
   ] as const;
 

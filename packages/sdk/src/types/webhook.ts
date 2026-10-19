@@ -11,6 +11,13 @@ import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
 import type { ReceivedEmailVerdicts } from "./received-email.ts";
 import type { MarketingStanding, ReputationCheck, ReputationStatus } from "./reputation.ts";
 import type { RiskDecision, RiskEvent, RiskOutcome, RiskReason } from "./risk.ts";
+import type {
+  ReceivedSmsEventType,
+  SmsEventData,
+  SmsEventType,
+  SmsKeyword,
+  SmsTag,
+} from "./sms.ts";
 
 /** What a webhook says about the email; never its content, cc or bcc. */
 export interface EmailWebhookEventData extends EmailEventData {
@@ -340,6 +347,47 @@ export interface BroadcastWebhookEvent {
 }
 
 /** The JSON body of a webhook request; narrow on `type`. */
+/** What an `sms.*` webhook says about a sent message; never its text (`coss.sms.get` has it). */
+export interface SmsWebhookEventData extends SmsEventData {
+  sms_id: string;
+  from: string;
+  to: string;
+  country: string;
+  segments: number;
+  tags: SmsTag[];
+  sandbox: boolean;
+  occurred_at: string;
+}
+
+export interface SmsWebhookEvent {
+  id: string;
+  object: "event";
+  type: SmsEventType;
+  api_version: string;
+  created_at: string;
+  data: SmsWebhookEventData;
+}
+
+/** `sms.received`, `sms.opted_out` and `sms.opted_in`; never the text (`coss.sms.received.get`). */
+export interface ReceivedSmsWebhookEventData {
+  /** `null` for an opt-out to a number whose replies go to no environment. */
+  received_sms_id: string | null;
+  from: string;
+  to: string;
+  keyword: SmsKeyword | null;
+  sandbox: boolean;
+  occurred_at: string;
+}
+
+export interface ReceivedSmsWebhookEvent {
+  id: string;
+  object: "event";
+  type: ReceivedSmsEventType;
+  api_version: string;
+  created_at: string;
+  data: ReceivedSmsWebhookEventData;
+}
+
 export type WebhookEvent =
   | EmailWebhookEvent
   | ReceivedEmailWebhookEvent
@@ -349,4 +397,6 @@ export type WebhookEvent =
   | RiskWebhookEvent
   | HookEndpointWebhookEvent
   | ContactWebhookEvent
-  | BroadcastWebhookEvent;
+  | BroadcastWebhookEvent
+  | SmsWebhookEvent
+  | ReceivedSmsWebhookEvent;

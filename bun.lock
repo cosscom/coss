@@ -25,6 +25,7 @@
         "@coss/reputation": "workspace:*",
         "@coss/risk": "workspace:*",
         "@coss/screening": "workspace:*",
+        "@coss/sms": "workspace:*",
         "@coss/tenancy": "workspace:*",
         "@coss/versioning": "workspace:*",
         "@coss/webhooks": "workspace:*",
@@ -399,6 +400,7 @@
         "@coss/retention": "workspace:*",
         "@coss/risk": "workspace:*",
         "@coss/screening": "workspace:*",
+        "@coss/sms": "workspace:*",
         "@coss/versioning": "workspace:*",
         "@coss/webhooks": "workspace:*",
         "drizzle-orm": "catalog:",
@@ -651,6 +653,30 @@
         "mmdb-lib": "3.0.3",
       },
       "devDependencies": {
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/sms": {
+      "name": "@coss/sms",
+      "version": "0.0.0",
+      "dependencies": {
+        "@coss/billing": "workspace:*",
+        "@coss/db": "workspace:*",
+        "@coss/logs": "workspace:*",
+        "@coss/reputation": "workspace:*",
+        "@coss/retention": "workspace:*",
+        "@coss/screening": "workspace:*",
+        "@coss/versioning": "workspace:*",
+        "@coss/webhooks": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "libphonenumber-js": "1.13.14",
+        "pg-boss": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@coss/tenancy": "workspace:*",
         "@coss/tsconfig": "workspace:*",
         "@types/bun": "catalog:",
         "typescript": "catalog:",
@@ -1154,6 +1180,8 @@
     "@coss/signals": ["@coss/signals@workspace:packages/signals"],
 
     "@coss/site": ["@coss/site@workspace:apps/site"],
+
+    "@coss/sms": ["@coss/sms@workspace:packages/sms"],
 
     "@coss/smtp": ["@coss/smtp@workspace:apps/smtp"],
 
@@ -2560,6 +2588,8 @@
     "leac": ["leac@0.6.0", "", {}, "sha512-y+SqErxb8h7nE/fiEX07jsbuhrpO9lL8eca7/Y1nuWV2moNlXhyd59iDGcRf6moVyDMbmTNzL40SUyrFU/yDpg=="],
 
     "leven": ["leven@3.1.0", "", {}, "sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A=="],
+
+    "libphonenumber-js": ["libphonenumber-js@1.13.14", "", {}, "sha512-llihgCcx0BFLksecLP+x1J+6JDE1GsXS1RN/LoPF6qcwpeQcnjj0lcvZxY8AzbEpYwyZWPZW/nDuqkqzm3amiw=="],
 
     "lighthouse-logger": ["lighthouse-logger@1.4.2", "", { "dependencies": { "debug": "^2.6.9", "marky": "^1.2.2" } }, "sha512-gPWxznF6TKmUHrOQjlVo2UbaL2EJ71mb2CCeRs/2qBpi4L/g4LUVc9+3lKQ6DTUZwJswfM7ainGrLO1+fOqa2g=="],
 

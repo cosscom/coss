@@ -40,6 +40,8 @@ export const TRIGGER_LABELS: Readonly<Record<string, string>> = {
   marketing_complaint_rate: "Marketing complaint rate",
   content_screening: "Content screening",
   hook_failure_rate: "Hooks delivery failures",
+  sms_opt_out_rate: "SMS opt-out rate",
+  sms_filtered_rate: "SMS carrier filtering",
   manual: "coss.com review",
   policy: "Policy",
   evaluation: "Evaluation",
@@ -128,6 +130,10 @@ export const ReputationPolicy = z.strictObject({
   countSimulatorRecipients: z.boolean(),
   contentScreening: ContentScreeningPolicy,
   hookFailureRate: HookFailureThreshold,
+  /** Numbers that replied STOP / live SMS that reached a carrier (`minimumRecipients`: messages). */
+  smsOptOutRate: RateThreshold,
+  /** Live SMS carriers filtered (Twilio 30007) / live SMS that reached a carrier. */
+  smsFilteredRate: RateThreshold,
 });
 export type ReputationPolicy = z.output<typeof ReputationPolicy>;
 
@@ -153,6 +159,10 @@ export const DEFAULT_REPUTATION_POLICY: ReputationPolicy = {
     sampleRate: 0.02,
   },
   hookFailureRate: { warning: 0.5, suspend: null, minimumDeliveries: 5000 },
+  // Carriers start filtering a sender whose recipients opt out in numbers (CTIA guidance treats a
+  // few percent as a sign of unwanted messages); filtering itself is a carrier's verdict.
+  smsOptOutRate: { warning: 0.02, suspend: 0.05, minimumRecipients: 200 },
+  smsFilteredRate: { warning: 0.03, suspend: 0.1, minimumRecipients: 200 },
 };
 
 const RateThresholdOverrides = z
@@ -188,6 +198,8 @@ export const ReputationPolicyOverrides = z.strictObject({
       minimumDeliveries: z.int().min(1).optional(),
     })
     .optional(),
+  smsOptOutRate: RateThresholdOverrides,
+  smsFilteredRate: RateThresholdOverrides,
 });
 export type ReputationPolicyOverrides = z.output<typeof ReputationPolicyOverrides>;
 
@@ -213,6 +225,8 @@ export function effectivePolicy(overrides: unknown): ReputationPolicy {
       ...parsed.contentScreening,
     },
     hookFailureRate: { ...DEFAULT_REPUTATION_POLICY.hookFailureRate, ...parsed.hookFailureRate },
+    smsOptOutRate: { ...DEFAULT_REPUTATION_POLICY.smsOptOutRate, ...parsed.smsOptOutRate },
+    smsFilteredRate: { ...DEFAULT_REPUTATION_POLICY.smsFilteredRate, ...parsed.smsFilteredRate },
   });
 }
 

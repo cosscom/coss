@@ -154,6 +154,16 @@ export async function updatePolicyAction(
         suspend: percentField(formData, "hookSuspend"),
         minimumDeliveries: integerField(formData, "hookMinimum"),
       },
+      smsOptOutRate: {
+        warning: percentField(formData, "smsOptOutWarning"),
+        suspend: percentField(formData, "smsOptOutSuspend"),
+        minimumRecipients: integerField(formData, "smsOptOutMinimum"),
+      },
+      smsFilteredRate: {
+        warning: percentField(formData, "smsFilteredWarning"),
+        suspend: percentField(formData, "smsFilteredSuspend"),
+        minimumRecipients: integerField(formData, "smsFilteredMinimum"),
+      },
     };
     await updateReputationPolicy({
       organizationId,
@@ -181,6 +191,8 @@ function withoutEmpty(overrides: ReputationPolicyOverrides): ReputationPolicyOve
     "marketingComplaintRate",
     "contentScreening",
     "hookFailureRate",
+    "smsOptOutRate",
+    "smsFilteredRate",
   ] as const) {
     const group = clean(overrides[key] ?? {});
     if (Object.keys(group).length > 0) result[key] = group;

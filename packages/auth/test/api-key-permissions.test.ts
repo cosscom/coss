@@ -48,7 +48,12 @@ describe("normalizeKeyPermissions", () => {
   });
 
   test("refuses unknown permissions and empty sets", () => {
-    const invalid: KeyPermissions[] = [{}, { email: [] }, { sms: ["send"] }, { email: ["delete"] }];
+    const invalid: KeyPermissions[] = [
+      {},
+      { email: [] },
+      { video: ["send"] },
+      { email: ["delete"] },
+    ];
     for (const requested of invalid) {
       expect(() => normalizeKeyPermissions(requested)).toThrow(InvalidKeyPermissionsError);
     }

@@ -38,6 +38,8 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   // The organization's plan, usage, invoices and credits (read only; changes need the dashboard).
   billing: ["read"],
   hook: ["create", "read", "update", "delete", "send"],
+  sms: ["send", "read"],
+  smsSuppression: ["create", "read", "delete"],
 };
 
 /** The header the dashboard's sign-up form carries `coss/device`'s token in (coss.com Risk). */

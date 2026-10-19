@@ -262,7 +262,7 @@ describe("authenticateApiKey", () => {
 
   test("rejected keys never record usage", async () => {
     const tenant = await createTestTenant();
-    expect(await authenticateApiKey(tenant.sandboxKey, { sms: ["send"] })).toMatchObject({
+    expect(await authenticateApiKey(tenant.sandboxKey, { billing: ["update"] })).toMatchObject({
       ok: false,
       reason: "forbidden",
     });
@@ -319,7 +319,7 @@ describe("authenticateApiKey", () => {
       (await authenticateApiKey(tenant.sandboxKey, { suppression: ["create", "read", "delete"] }))
         .ok,
     ).toBe(true);
-    expect(await authenticateApiKey(tenant.sandboxKey, { sms: ["send"] })).toMatchObject({
+    expect(await authenticateApiKey(tenant.sandboxKey, { billing: ["update"] })).toMatchObject({
       ok: false,
       reason: "forbidden",
     });
@@ -404,7 +404,12 @@ describe("restricted keys", () => {
 
   test("refuses unknown and empty permissions without creating a key", async () => {
     const tenant = await createTestTenant();
-    const invalid: KeyPermissions[] = [{}, { email: [] }, { sms: ["send"] }, { email: ["delete"] }];
+    const invalid: KeyPermissions[] = [
+      {},
+      { email: [] },
+      { video: ["send"] },
+      { email: ["delete"] },
+    ];
     for (const permissions of invalid) {
       await expectTenancyError(
         createEnvironmentApiKey({

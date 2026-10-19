@@ -157,6 +157,13 @@ async function seedOrganizationData(tenant: TestTenant) {
     mailFromDomain: "send.example.test",
   });
   await db.insert(schema.reputationStanding).values({ organizationId });
+  await db.insert(schema.smsInboundReceipt).values(
+    Array.from({ length: 3 }, () => ({
+      organizationId,
+      provider: "fake",
+      providerMessageId: `in-${uniqueSuffix()}`,
+    })),
+  );
   await db.insert(schema.logEntry).values(
     Array.from({ length: 3 }, () => ({
       ...scope,
@@ -319,6 +326,11 @@ describe("runDueOrganizationDeletions", () => {
         .where(eq(table.organizationId, organizationId));
       expect(rows).toEqual([]);
     }
+    const receipts = await db
+      .select()
+      .from(schema.smsInboundReceipt)
+      .where(eq(schema.smsInboundReceipt.organizationId, organizationId));
+    expect(receipts).toEqual([]);
     const standing = await db
       .select()
       .from(schema.reputationStanding)
