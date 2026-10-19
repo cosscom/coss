@@ -260,6 +260,45 @@ describe("contacts", () => {
     expect(await contactCount(env)).toBe(2);
   });
 
+  test("import entries can carry topic choices; opt-ins never undo an opt-out", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const all = await createAudience(env, { name: "All" });
+    await createTopic(env, { key: "news", name: "News", default_subscription: "opt_in" });
+    await createTopic(env, { key: "beta", name: "Beta", default_subscription: "opt_out" });
+    await upsert(env, {
+      email: "out@example.com",
+      topics: [{ topic: "news", status: "opted_out" }],
+    });
+    await upsert(env, { email: "in@example.com", topics: [{ topic: "beta", status: "opted_in" }] });
+
+    const result = await importContacts(
+      env,
+      [
+        { email: "new@example.com", topics: [{ topic: "beta", status: "opted_in" }] },
+        { email: "out@example.com", topics: [{ topic: "news", status: "opted_in" }] },
+        { email: "in@example.com", topics: [{ topic: "beta", status: "opted_out" }] },
+      ],
+      { audienceId: all.id },
+    );
+    expect(result).toMatchObject({ created: 1, updated: 2, invalid: [] });
+    const statusOf = async (email: string, topic: string) =>
+      (await getContactTopics(env, email))?.topics.find((t) => t.topic === topic)?.choice;
+    expect(await statusOf("new@example.com", "beta")).toBe("opted_in");
+    expect(await statusOf("out@example.com", "news")).toBe("opted_out");
+    expect(await statusOf("in@example.com", "beta")).toBe("opted_out");
+    expect((await listAudienceContacts(env, all.id, {}))?.data).toHaveLength(3);
+
+    await expect(
+      importContacts(
+        env,
+        [{ email: "x@example.com", topics: [{ topic: "nope", status: "opted_in" }] }],
+        {},
+      ),
+    ).rejects.toMatchObject({ code: "topic_not_found" });
+    expect(await getContact(env, "x@example.com")).toBeNull();
+  });
+
   test("each import entry is validated on its own, merged properties included", async () => {
     const tenant = await createTestTenant();
     const env = envOf(tenant);

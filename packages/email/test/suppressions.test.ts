@@ -212,6 +212,31 @@ describe("bulk import and export", () => {
     ).toMatchObject({ created: 0, existing: 1, invalid: [{ index: 1 }] });
   });
 
+  test("keeps an entry's own reason and date (migrations), and never changes existing entries", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    await suppress(env, "known@example.com");
+    const createdAt = new Date("2024-03-01T12:00:00.000Z");
+
+    const result = await importSuppressions(env, [
+      { address: "bounced@example.com", reason: "bounce", createdAt },
+      { address: "complained@example.com", reason: "complaint" },
+      { address: "left@example.com", scope: "news", reason: "unsubscribe" },
+      { address: "known@example.com", reason: "bounce" },
+    ]);
+    expect(result).toMatchObject({ created: 3, existing: 1, invalid: [] });
+    const listed = await listSuppressions(env);
+    expect(listed.data.map((s) => [s.address, s.scope, s.reason]).sort()).toEqual([
+      ["bounced@example.com", "*", "bounce"],
+      ["complained@example.com", "*", "complaint"],
+      ["known@example.com", "*", "manual"],
+      ["left@example.com", "news", "unsubscribe"],
+    ]);
+    expect(listed.data.find((s) => s.address === "bounced@example.com")?.created_at).toBe(
+      createdAt.toISOString(),
+    );
+  });
+
   test("imports only into the given environment of the given organization", async () => {
     const tenant = await createTestTenant();
     const other = await createTestTenant();
