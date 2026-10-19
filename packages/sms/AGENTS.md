@@ -25,7 +25,8 @@ senders (US A2P 10DLC brands and campaigns, toll-free verification) and its phon
   plans without SMS). `Idempotency-Key` through `withIdempotencyKey`; sender and parse failures
   still replay a request that already succeeded. Sandbox environments always use the fake provider
   and skip the sender, country and billing checks.
-- **Dispatch**: claim = compare-and-set `queued` + `provider IS NULL` → `provider`; live messages
+- **Dispatch**: claim = compare-and-set `queued` + `provider IS NULL` → `provider`, and in the same
+  transaction the suppression list again (a STOP while it waited fails it `suppressed`); live messages
   are screened (`product: "sms"`, a hold re-enqueues after 60 s, the unclaimed sweep fails it after
   an hour); the route (subaccount + messaging service) is read again (`senderRoute`), a released
   number fails it `sender_unavailable`. A provider acceptance makes it `sent` (no event: Twilio's

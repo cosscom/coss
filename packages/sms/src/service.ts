@@ -368,23 +368,47 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
     }
   }
 
+  /**
+   * In the claim's transaction: a number suppressed since the message was accepted (a STOP while
+   * it waited in the queue, for screening or for its time) fails it with `sms.suppressed` instead
+   * of sending. True when it did.
+   */
+  async function suppressedAtClaim(tx: Transaction, row: SmsRow): Promise<boolean> {
+    const suppression = await suppressedNumber(tx, row, row.to);
+    if (!suppression) return false;
+    await tx
+      .update(smsMessage)
+      .set({
+        status: "failed",
+        errorCode: "suppressed",
+        errorMessage: "The number is on the environment's SMS suppression list.",
+      })
+      .where(and(eq(smsMessage.id, row.id), eq(smsMessage.organizationId, row.organizationId)));
+    await recordSmsEvent(tx, suppressedEvent(row, suppression));
+    return true;
+  }
+
   async function deliver(row: SmsRow, sandbox: boolean): Promise<SmsObjectOutput> {
     if (row.status !== "queued") return currentSms(row);
     const provider = providerFor(sandbox);
     // Claim first so concurrent dispatchers (a retried job) never send it twice. A crash after the
     // claim leaves it `queued` with a provider: the stale-claim sweep resolves it.
-    const [claimed] = await db
-      .update(smsMessage)
-      .set({ provider: provider.name })
-      .where(
-        and(
-          eq(smsMessage.id, row.id),
-          eq(smsMessage.organizationId, row.organizationId),
-          eq(smsMessage.status, "queued"),
-          isNull(smsMessage.provider),
-        ),
-      )
-      .returning();
+    const claimed = await db.transaction(async (tx) => {
+      const [claimedRow] = await tx
+        .update(smsMessage)
+        .set({ provider: provider.name })
+        .where(
+          and(
+            eq(smsMessage.id, row.id),
+            eq(smsMessage.organizationId, row.organizationId),
+            eq(smsMessage.status, "queued"),
+            isNull(smsMessage.provider),
+          ),
+        )
+        .returning();
+      if (!claimedRow) return undefined;
+      return (await suppressedAtClaim(tx, claimedRow)) ? undefined : claimedRow;
+    });
     if (claimed) await complete(claimed, provider, sandbox);
     return currentSms(row);
   }
@@ -474,23 +498,7 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
         .where(stillDue)
         .returning();
       if (!claimedRow) return undefined;
-      const suppression = await suppressedNumber(tx, claimedRow, claimedRow.to);
-      if (!suppression) return claimedRow;
-      await tx
-        .update(smsMessage)
-        .set({
-          status: "failed",
-          errorCode: "suppressed",
-          errorMessage: "The number is on the environment's SMS suppression list.",
-        })
-        .where(
-          and(
-            eq(smsMessage.id, claimedRow.id),
-            eq(smsMessage.organizationId, claimedRow.organizationId),
-          ),
-        );
-      await recordSmsEvent(tx, suppressedEvent(claimedRow, suppression));
-      return undefined;
+      return (await suppressedAtClaim(tx, claimedRow)) ? undefined : claimedRow;
     });
     if (claimed) await complete(claimed, provider, sandbox);
   }

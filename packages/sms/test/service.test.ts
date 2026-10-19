@@ -226,6 +226,38 @@ test("suppressed numbers are skipped, never handed over", async () => {
   ]);
 });
 
+test("a number that opts out while its message waits in the queue gets nothing", async () => {
+  const tenant = await createTestTenant();
+  const queue = memorySmsDispatchQueue();
+  const provider = new FakeSmsProvider({ log: false });
+  const service = createSmsService({ liveProvider: provider, sandboxProvider: provider, queue });
+  const to = testPhoneNumber();
+  const { sms } = await service.send({
+    environment: env(tenant.development),
+    apiKeyId: null,
+    params: params({ to }),
+  });
+  expect(sms.status).toBe("queued");
+  await addSmsSuppression(
+    {
+      organizationId: tenant.organization.id,
+      projectId: tenant.project.id,
+      environmentId: tenant.development.id,
+    },
+    to,
+  );
+  await queue.drain(service);
+  expect(provider.sent).toHaveLength(0);
+  const scoped = { organizationId: tenant.organization.id, environmentId: tenant.development.id };
+  expect(await getSms({ ...scoped, smsId: sms.id })).toMatchObject({
+    status: "failed",
+    failure: { code: "suppressed" },
+  });
+  expect(await listSmsEvents({ ...scoped, smsId: sms.id })).toMatchObject([
+    { type: "sms.suppressed" },
+  ]);
+});
+
 test("an idempotency key replays the same request and refuses another", async () => {
   const tenant = await createTestTenant();
   const queue = memorySmsDispatchQueue();
