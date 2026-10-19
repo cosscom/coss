@@ -56,7 +56,8 @@ repository root.
   `src/listeners.ts`, `/v1/webhook_listeners*`, `coss.webhookListeners`): coss.com can't POST to `localhost`, so the CLI
   pulls. A listener is **not** an endpoint (own tables), so the worker's delivery loop, plan limits, endpoint health,
   recover and the endpoint API never see one; `enqueueWebhookMessage` fans out to the environment's open listeners
-  (`expires_at > now()`, `FOR KEY SHARE`) next to its endpoints, and writes the message if either subscribed.
+  (`expires_at > now()`, `FOR KEY SHARE`) next to its endpoints, and writes the message if either subscribed
+  (`fanOutWebhookMessage` is the same call, returning both counts: test events, `coss trigger`, report them).
   Listeners stay open while polled (`touchWebhookListener`: +`LISTENER_IDLE_TTL_MS`, 10 min) and are closed softly
   (`expires_at = now`, never a DELETE racing a fan-out insert); `purgeExpiredWebhookListeners` removes them a day
   after expiry (cascading their deliveries; a purged message takes its listener deliveries too). At most

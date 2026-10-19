@@ -66,6 +66,10 @@ import {
   UpdateEmailTemplateRequest,
   UpdateTrackingRuleRequest,
 } from "../src/schemas.ts";
+import {
+  CreateTestWebhookEventRequest,
+  WebhookTestEventObject,
+} from "../src/test-event-schemas.ts";
 
 const SCHEMAS: Record<string, z.ZodType> = {
   SendEmailRequest,
@@ -128,6 +132,8 @@ const SCHEMAS: Record<string, z.ZodType> = {
   RenderEmailTemplateRequest,
   RenderedEmailTemplate: RenderedEmailTemplateObject,
   DeletedEmailTemplate,
+  CreateTestWebhookEventRequest,
+  WebhookTestEvent: WebhookTestEventObject,
 };
 
 for (const [name, schema] of Object.entries(SCHEMAS)) {

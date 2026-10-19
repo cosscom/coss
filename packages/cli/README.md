@@ -7,6 +7,7 @@ log, and receive its webhook events on your machine.
 npm install -g coss-cli    # or: npx coss-cli <command>
 coss login
 coss listen --forward-to localhost:3000/webhooks
+coss trigger email.bounced    # in another terminal: a test event, forwarded by coss listen
 ```
 
 Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
@@ -49,6 +50,10 @@ one downloaded with a browser needs `xattr -d com.apple.quarantine coss`.
 | `coss inbox` | The environment's inbound domain, then each email it receives as it arrives (`--since`, `--interval`). |
 | `coss inbox get <id>` | A received email: verdicts, attachments and its text (`--html`, `--headers`); `--raw > message.eml` saves the message as received. |
 | `coss listen` | Receives the environment's webhook events and forwards each one to `--forward-to`, signed like coss.com signs real deliveries. Verify them with `verifyWebhook` from the `coss` SDK and the signing secret it prints (it stays the same for the profile). `--header "Name: value"` adds a header to forwarded requests. |
+| `coss trigger <event-type>` | A test event of that type, sent to the environment's subscribed endpoints and `coss listen` listeners like a real one (sandbox keys; every type but `domain.*`, `account.*`, `billing.*`). `--data '{…}'` and `-F name=value` (dotted names, JSON values) change its `data`. |
+| `coss webhooks list` | The environment's webhook endpoints: URL, state and event types. |
+| `coss webhooks deliveries <endpoint>` | An endpoint's deliveries, newest first (`--status failed`, `--event <id>`, `--limit`). |
+| `coss webhooks retry <endpoint> <delivery>` | Sends a finished delivery to its endpoint once more. |
 | `coss hooks apps list`, `coss hooks apps create <name>` | [Hooks](https://coss.com/docs/hooks) applications (`--uid`, `--metadata`). Every `<app>` below is an application's id or uid. |
 | `coss hooks event-types list`, `coss hooks event-types create <name>` | The event types messages are sent as (`--description`, `--schema`, `--example`). |
 | `coss hooks endpoints list <app>`, `coss hooks endpoints add <app> --url <url>` | An application's endpoints; `add` prints the new endpoint's signing secret (`--types`, `--rate-limit`). |

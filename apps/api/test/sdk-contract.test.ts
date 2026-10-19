@@ -18,6 +18,8 @@ import {
   receiveSampleDmarcReport,
   reconcileDedicatedIpPools,
 } from "@coss/email";
+import { WEBHOOK_EVENT_TYPES } from "@coss/email/schemas";
+import { TEST_WEBHOOK_EVENT_TYPES } from "@coss/email/test-event-schemas";
 import { createVerifiedDomain, trackingUrls } from "@coss/email/testing";
 import { createLogWriter } from "@coss/logs";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
@@ -36,6 +38,8 @@ import {
   Coss,
   type CossOptions,
   API_VERSIONS as SDK_API_VERSIONS,
+  TEST_WEBHOOK_EVENT_TYPES as SDK_TEST_WEBHOOK_EVENT_TYPES,
+  WEBHOOK_EVENT_TYPES as SDK_WEBHOOK_EVENT_TYPES,
   verifyLogDrainBatch,
   verifyWebhook,
   WebhookVerificationError,
@@ -1258,6 +1262,42 @@ describe("coss.webhookListeners against the API", () => {
     });
     expect((await coss.webhookListeners.poll(must(listener).id)).error).toMatchObject({
       type: "not_found_error",
+    });
+  });
+});
+
+describe("coss.webhookEvents against the API", () => {
+  test("the SDK's event type lists are the API's", () => {
+    expect([...SDK_WEBHOOK_EVENT_TYPES]).toEqual([...WEBHOOK_EVENT_TYPES]);
+    expect([...SDK_TEST_WEBHOOK_EVENT_TYPES]).toEqual([...TEST_WEBHOOK_EVENT_TYPES]);
+  });
+
+  test("a test event reaches a listener, and live keys are refused", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+    const { data: listener } = await coss.webhookListeners.create({
+      event_types: ["risk.assessment.review"],
+    });
+    const { data, error } = await coss.webhookEvents.test({
+      type: "risk.assessment.review",
+      data: { user_id: "u_42" },
+    });
+    expect(error).toBeNull();
+    expect(data).toMatchObject({
+      object: "webhook_test_event",
+      endpoints: 0,
+      listeners: 1,
+      event: { type: "risk.assessment.review", data: { user_id: "u_42", decision: "review" } },
+    });
+    const { data: answer } = await coss.webhookListeners.poll(must(listener).id, { wait_ms: 0 });
+    expect(JSON.parse(must(answer?.deliveries[0]).body)).toEqual(must(data).event);
+
+    const live = clientFor(app, tenant.liveKey);
+    expect((await live.webhookEvents.test({ type: "email.sent" })).error).toMatchObject({
+      type: "permission_error",
+      code: "sandbox_only",
+      status: 403,
     });
   });
 });

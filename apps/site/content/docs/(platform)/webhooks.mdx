@@ -114,6 +114,25 @@ Your development server isn't reachable from the internet, so register no endpoi
 environment's events and forwards them to your server, signed with a secret of its own that you
 verify the same way.
 
+To try a handler without making the real thing happen, send a **test event** with
+[`coss trigger`](/docs/cli#trigger-test-events) or the API: a sample event of that type, sent to
+the environment's subscribed endpoints and open listeners exactly like a real one (same body,
+signature, retries and log lines). Test events are for sandbox environments only, and of every
+type except the live-only `domain.*`, `account.*` and `billing.*`. Nothing in the body marks them as
+tests, and the ids in the sample are made up: pass real ones in `data` if your handler looks them
+up.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data } = await coss.webhookEvents.test({
+  type: "email.bounced",
+  data: { recipient: "ada@example.com" },
+});
+console.log(data?.event.id, data?.endpoints, data?.listeners);
+```
+
 ## Rolling the secret
 
 Roll an endpoint's secret in the dashboard (**Roll secret** on the endpoint) or through the API to

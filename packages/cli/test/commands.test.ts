@@ -80,7 +80,16 @@ describe("shell completion", () => {
       ...new Set(COMMANDS.map((command) => command.name.split(" ")[0] ?? "")),
     ]);
     expect(await c([""])).toEqual(
-      expect.arrayContaining(["login", "profiles", "use", "init", "open", "hooks", "risk"]),
+      expect.arrayContaining([
+        "login",
+        "profiles",
+        "use",
+        "init",
+        "open",
+        "hooks",
+        "risk",
+        "trigger",
+      ]),
     );
     expect(await c(["lo"])).toEqual(["login", "logout", "logs"]);
     // Groups inside groups: `coss hooks apps list`.
@@ -94,6 +103,7 @@ describe("shell completion", () => {
       "failed",
     ]);
     expect(await c(["emails", ""])).toEqual(["send", "list", "get", "events", "diagnose"]);
+    expect(await c(["webhooks", ""])).toEqual(["list", "deliveries", "retry"]);
     // A command that has subcommands of its own.
     expect(await c(["inbox", ""])).toEqual(["get"]);
     expect(await c(["inbox", "get", ""])).toEqual([]);

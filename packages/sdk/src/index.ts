@@ -60,6 +60,7 @@ export type { TrackingResource } from "./resources/tracking.ts";
 export type { TrackingDomainsResource } from "./resources/tracking-domains.ts";
 export type { WebhookDeliveriesResource } from "./resources/webhook-deliveries.ts";
 export type { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
+export type { WebhookEventsResource } from "./resources/webhook-events.ts";
 export type { WebhookListenersResource } from "./resources/webhook-listeners.ts";
 export type { AuditActorType, AuditEvent, ListAuditEventsParams } from "./types/audit-event.ts";
 export type {
@@ -392,6 +393,9 @@ export type {
   ListWebhookDeliveriesParams,
   RecoverWebhookEndpointParams,
   RollWebhookEndpointSecretParams,
+  SendTestWebhookEventParams,
+  TestWebhookEvent,
+  TestWebhookEventType,
   UpdateWebhookEndpointParams,
   WebhookAttempt,
   WebhookDelivery,
@@ -401,6 +405,7 @@ export type {
   WebhookEndpointRecovery,
   WebhookEndpointWithSecret,
   WebhookEventType,
+  WebhookTestEvent,
 } from "./types/webhook-endpoint.ts";
 export type {
   CreateWebhookListenerParams,
@@ -412,6 +417,11 @@ export type {
   WebhookListenerPoll,
 } from "./types/webhook-listener.ts";
 export { VERSION } from "./version.ts";
+export {
+  isLiveOnlyEventType,
+  TEST_WEBHOOK_EVENT_TYPES,
+  WEBHOOK_EVENT_TYPES,
+} from "./webhook-event-types.ts";
 export {
   type VerifyWebhookOptions,
   verifyLogDrainBatch,

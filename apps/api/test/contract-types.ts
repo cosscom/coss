@@ -140,6 +140,10 @@ import type {
   UpdateTrackingRuleRequest,
 } from "@coss/email/schemas";
 import type {
+  CreateTestWebhookEventRequest,
+  WebhookTestEventObject,
+} from "@coss/email/test-event-schemas";
+import type {
   LogDrainSource as ApiLogDrainSource,
   AuditEvent,
   AuditEventList,
@@ -380,6 +384,7 @@ import type {
   SendBroadcastParams,
   SendEmailContentParams,
   SendEmailTemplateParams,
+  SendTestWebhookEventParams,
   TestBroadcastParams,
   TrackingOptions,
   UpdateBroadcastParams,
@@ -401,6 +406,7 @@ import type {
   WebhookEndpoint,
   WebhookEndpointRecovery,
   WebhookEvent,
+  WebhookTestEvent,
 } from "coss";
 import type { z } from "zod";
 import type { ErrorEnvelopeBody } from "../src/errors.ts";
@@ -584,6 +590,11 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof WebhookListenerObject>, SdkWebhookListener>>,
   Assert<MutuallyAssignable<z.output<typeof WebhookListenerPoll>, SdkWebhookListenerPoll>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedWebhookListener>, SdkDeletedWebhookListener>>,
+  // Test events (`coss trigger`).
+  Assert<
+    MutuallyAssignable<z.input<typeof CreateTestWebhookEventRequest>, SendTestWebhookEventParams>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof WebhookTestEventObject>, WebhookTestEvent>>,
   // Delivery logs (the SDK sends `limit` as a number).
   Assert<
     MutuallyAssignable<

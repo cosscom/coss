@@ -572,6 +572,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "webhookListeners.delete",
     args: (r) => [pathId(r)],
   },
+  "POST /v1/webhook_events/test": {
+    method: "webhookEvents.test",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
   "POST /v1/risk/assessments": {
     method: "risk.assess",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],

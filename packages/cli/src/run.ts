@@ -9,28 +9,34 @@ import {
   domainsVerifyCommand,
 } from "./commands/domains.ts";
 import { emailsSendCommand } from "./commands/emails.ts";
-import { HOOKS_COMMANDS } from "./commands/hooks.ts";
 import {
   emailsDiagnoseCommand,
   emailsEventsCommand,
   emailsGetCommand,
   emailsListCommand,
 } from "./commands/emails-read.ts";
+import { HOOKS_COMMANDS } from "./commands/hooks.ts";
 import { inboxCommand, inboxGetCommand } from "./commands/inbox.ts";
 import { initCommand } from "./commands/init.ts";
 import { listenCommand } from "./commands/listen.ts";
 import { loginCommand } from "./commands/login.ts";
 import { logoutCommand } from "./commands/logout.ts";
 import { logsTailCommand } from "./commands/logs.ts";
-import { RISK_COMMANDS } from "./commands/risk.ts";
 import { openCommand } from "./commands/open.ts";
 import { profilesListCommand, useCommand } from "./commands/profiles.ts";
+import { RISK_COMMANDS } from "./commands/risk.ts";
 import {
   templatesListCommand,
   templatesPreviewCommand,
   templatesPullCommand,
   templatesPushCommand,
 } from "./commands/templates.ts";
+import { triggerCommand } from "./commands/trigger.ts";
+import {
+  webhooksDeliveriesCommand,
+  webhooksListCommand,
+  webhooksRetryCommand,
+} from "./commands/webhooks.ts";
 import { whoamiCommand } from "./commands/whoami.ts";
 import { complete, findCommand } from "./completion.ts";
 import { createContext } from "./context.ts";
@@ -58,6 +64,10 @@ export const COMMANDS: readonly Command[] = [
   inboxCommand,
   inboxGetCommand,
   listenCommand,
+  triggerCommand,
+  webhooksListCommand,
+  webhooksDeliveriesCommand,
+  webhooksRetryCommand,
   ...HOOKS_COMMANDS,
   ...RISK_COMMANDS,
   domainsListCommand,

@@ -14,6 +14,7 @@ import { LogsResource } from "./resources/logs.ts";
 import { ReputationResource } from "./resources/reputation.ts";
 import { RiskResource } from "./resources/risk.ts";
 import { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
+import { WebhookEventsResource } from "./resources/webhook-events.ts";
 import { WebhookListenersResource } from "./resources/webhook-listeners.ts";
 
 export interface CossOptions {
@@ -119,6 +120,8 @@ export class Coss {
   readonly webhookEndpoints: WebhookEndpointsResource;
   /** Temporary listeners `coss listen` pulls the environment's events from. */
   readonly webhookListeners: WebhookListenersResource;
+  /** Test events for the environment's endpoints and listeners (`coss.webhookEvents.test()`). */
+  readonly webhookEvents: WebhookEventsResource;
   /** The organization's sending reputation (`coss.reputation.get()`). */
   readonly reputation: ReputationResource;
   /** The environment's log: API requests, email events, webhook attempts (`coss.logs.list()`). */
@@ -176,6 +179,7 @@ export class Coss {
     this.domains = new DomainsResource(http);
     this.webhookEndpoints = new WebhookEndpointsResource(http);
     this.webhookListeners = new WebhookListenersResource(http);
+    this.webhookEvents = new WebhookEventsResource(http);
     this.reputation = new ReputationResource(http);
     this.logs = new LogsResource(http);
     this.logDrains = new LogDrainsResource(http);

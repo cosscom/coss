@@ -623,6 +623,11 @@ export {
   updateEmailTemplate,
 } from "./templates.ts";
 export {
+  type StoredTestWebhookEvent,
+  sampleWebhookEvent,
+  sendTestWebhookEvent,
+} from "./test-events.ts";
+export {
   createTopic,
   deleteTopic,
   getTopic,

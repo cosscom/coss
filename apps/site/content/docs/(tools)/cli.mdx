@@ -108,17 +108,59 @@ export async function POST(request: Request) {
 - Only events created while it runs are forwarded, oldest first; the `webhook-id` header is the
   event's id, as in production. `--events email.delivered,email.bounced` subscribes to fewer.
 - Each forward shows its status in the terminal and in the environment's [log](/docs/logs)
-  (`webhook.forward`). A failed forward isn't retried: send the email again.
+  (`webhook.forward`). A failed forward isn't retried: [trigger](#trigger-test-events) it again.
 - Without `--forward-to`, events are only printed (`--print-json` shows their bodies, `--json`
   prints one JSON object per event).
 - `--header "Authorization: Bearer dev-token"` adds a header to every forwarded request
   (repeatable), for a local server that expects one.
 - Events render in your organization's API version unless you pass `--api-version`.
-- `account.*` and `billing.*` events only reach live environments. Listening to a live
+- `domain.*`, `account.*` and `billing.*` events only reach live environments. Listening to a live
   environment, with its real events, needs `--live`.
 - An environment has at most 5 listeners at once. One that stops polling (your laptop sleeps)
   closes after 10 minutes, and `coss listen` opens a new one when it wakes up: events in between
   are missed.
+
+## Trigger test events
+
+With `coss listen` running, `coss trigger` sends a test event of any type, so you can work on a
+handler without making the real thing happen:
+
+```sh
+# terminal 1
+coss listen --forward-to localhost:3000/webhooks
+# terminal 2
+coss trigger email.bounced
+# ✔ email.bounced evt_01k7c8m4r0c2b8w9y3d5f6g7h8 → 0 endpoints, 1 listener
+coss trigger contact.unsubscribed -F contact.email=ada@example.com
+coss trigger risk.assessment.review --data '{"user_id":"u_42","score":0.91}'
+```
+
+The event is a realistic sample of its type, sent to the environment's subscribed
+[endpoints](/docs/webhooks) and open listeners exactly like a real one: same body, signature,
+retries and log lines, with nothing marking it as a test. Its ids are made up, so pass real ones
+for a handler that looks them up: `--data` takes a JSON object merged over the sample's `data`,
+and `-F name=value` (`--field`) sets one field, with dotted names reaching into objects
+(`-F bounce.sub_type=NoEmail`) and values read as JSON when they parse (`@path` reads a file).
+Unknown fields are refused. `--json` prints the event that was sent.
+
+- Test events are for development environments (sandbox keys) only, and of every type except the
+  live-only `domain.*`, `account.*` and `billing.*`. Tab completes the types.
+- To run an email through the real pipeline instead (sending, the provider, then its events),
+  send it to the mailbox simulator: `coss emails send --simulate bounced`.
+
+## Webhook endpoints and deliveries
+
+```sh
+coss webhooks list
+coss webhooks deliveries whep_01k7c8m4q2f3e9v6t5r1n0p8yz --status failed
+coss webhooks retry whep_01k7c8m4q2f3e9v6t5r1n0p8yz whdel_01k7c8m4q2f3e9v6t5r1n0p8yz
+```
+
+`coss webhooks list` shows the environment's endpoints with their URL, state (enabled, failing,
+disabled) and event types. `coss webhooks deliveries <endpoint>` lists an endpoint's deliveries,
+newest first, with the last status code and error; filter with `--status pending|succeeded|failed`
+or `--event <event id>`, and show up to `--limit 100` (default 20). `coss webhooks retry <endpoint>
+<delivery>` sends a finished delivery once more, within seconds. Each takes `--json`.
 
 ## Send test emails
 

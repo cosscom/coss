@@ -1,19 +1,21 @@
 /**
  * Contract test: the published `coss-cli` (built dist, on the built `coss` SDK) against the real
- * app, in process: sign in with a key, send a simulated bounce and wait for it, and forward the
- * environment's webhook events to a local receiver with `coss listen`; add and verify a domain;
- * keep templates as files (pull, edit, push, publish, preview).
+ * app, in process: sign in with a key, send a simulated bounce and wait for it, forward the
+ * environment's webhook events to a local receiver with `coss listen` and `coss trigger` test
+ * events into it; add and verify a domain; keep templates as files (pull, edit, push, publish,
+ * preview); and the other commands' realistic paths.
  */
 import { describe, expect, test } from "bun:test";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { buildTestMessage, receiveFakeEmail } from "@coss/email";
 import { runDueHookDeliveries } from "@coss/hooks";
 import { testHookDeliveryDeps } from "@coss/hooks/testing";
-import { buildTestMessage, receiveFakeEmail } from "@coss/email";
 import { queryLogs } from "@coss/logs";
 import { createTestTenant } from "@coss/tenancy/testing";
-import { webhookReceiver } from "@coss/webhooks/testing";
+import { runDueWebhookDeliveries } from "@coss/webhooks";
+import { TEST_SECRETS_KEYS, webhookReceiver } from "@coss/webhooks/testing";
 import { verifyWebhook } from "coss";
 import { type CliIo, run } from "coss-cli";
 import { apiRequest, createTestApp, type TestApp, uniqueDomainName } from "./helpers.ts";
@@ -460,6 +462,85 @@ describe("coss-cli against the API", () => {
         body: JSON.stringify({ wait_ms: 0 }),
       });
       expect(closed.status).toBe(404);
+    } finally {
+      receiver.stop();
+    }
+  });
+
+  test("trigger: a test event reaches coss listen's local server, signed, and an endpoint", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const receiver = webhookReceiver();
+    const cli = cliIo(app, { answers: [tenant.sandboxKey] });
+    try {
+      expect(await run(["login", "--manual"], cli.io)).toBe(0);
+      const created = await app.request("/v1/webhook_endpoints", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tenant.sandboxKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: "https://hooks.example.com/coss",
+          event_types: ["email.bounced"],
+        }),
+      });
+      const endpoint = (await created.json()) as { id: string };
+
+      const listening = run(
+        ["listen", "--forward-to", receiver.url, "--events", "email.bounced"],
+        cli.io,
+      );
+      for (let i = 0; i < 200 && !cli.stderr().includes("Ready!"); i++) await Bun.sleep(10);
+      // A second terminal, on the same profile.
+      const other = cliIo(app);
+      other.io.configDir = cli.io.configDir;
+      expect(
+        await run(
+          ["trigger", "email.bounced", "-F", "recipient=ada@example.com", "--json"],
+          other.io,
+        ),
+      ).toBe(0);
+      const sent = JSON.parse(other.stdout().trim());
+      expect(sent).toMatchObject({ endpoints: 1, listeners: 1, event: { type: "email.bounced" } });
+
+      for (let i = 0; i < 300 && receiver.received.length < 1; i++) await Bun.sleep(10);
+      cli.controller.abort();
+      expect(await listening).toBe(130);
+      const [request] = receiver.received;
+      const config = JSON.parse(readFileSync(join(cli.io.configDir, "config.json"), "utf8"));
+      const event = await verifyWebhook(
+        request?.body ?? "",
+        request?.headers ?? new Headers(),
+        config.profiles.default.listen_secret,
+      );
+      expect(event).toEqual(sent.event);
+      expect(event).toMatchObject({ data: { recipient: "ada@example.com", sandbox: true } });
+
+      // The endpoint's delivery, answered by "the server", then retried with the CLI.
+      await runDueWebhookDeliveries(
+        { scope: { organizationIds: [tenant.organization.id] } },
+        { secretsKeys: TEST_SECRETS_KEYS, send: async () => ({ status: 200, body: "ok" }) },
+      );
+      const listed = cliIo(app);
+      listed.io.configDir = cli.io.configDir;
+      expect(await run(["webhooks", "list", "--json"], listed.io)).toBe(0);
+      expect(JSON.parse(listed.stdout().trim())).toMatchObject({ id: endpoint.id });
+      expect(
+        await run(
+          ["webhooks", "deliveries", endpoint.id, "--status", "succeeded", "--json"],
+          listed.io,
+        ),
+      ).toBe(0);
+      const delivery = JSON.parse(listed.stdout().trim().split("\n").at(-1) ?? "{}");
+      expect(delivery).toMatchObject({ event_id: sent.event.id, status: "succeeded" });
+      expect(await run(["webhooks", "retry", endpoint.id, delivery.id, "--json"], listed.io)).toBe(
+        0,
+      );
+      expect(JSON.parse(listed.stdout().trim().split("\n").at(-1) ?? "{}")).toMatchObject({
+        id: delivery.id,
+        status: "pending",
+      });
     } finally {
       receiver.stop();
     }
