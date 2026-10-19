@@ -109,6 +109,7 @@ describe("redactBody", () => {
       headers: { "X-Ref": "p-1" },
       tags: [{ name: "kind", value: "results" }],
       attachments: [{ filename: "r.pdf", content: "JVBERi0=" }],
+      variables: { glucose: 5.1, diagnosed: true, notes: null, items: [{ dose: 2 }] },
     };
     const redacted = {
       from: "a@acme.com",
@@ -118,6 +119,12 @@ describe("redactBody", () => {
       headers: { "X-Ref": "[3 characters]" },
       tags: [{ name: "kind", value: "results" }],
       attachments: [{ filename: "[5 characters]", content: "[8 characters]" }],
+      variables: {
+        glucose: "[number]",
+        diagnosed: "[boolean]",
+        notes: null,
+        items: [{ dose: "[number]" }],
+      },
     };
     expect(redactBody(email, { content: EMAIL_CONTENT_KEYS })).toEqual(redacted);
     expect(redactBody({ emails: [email] }, { content: EMAIL_CONTENT_KEYS })).toEqual({

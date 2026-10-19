@@ -59,17 +59,36 @@ const CONTENT_REQUESTS = ["/v1/risk/content/classify", ...STATELESS_LOOKUPS];
 
 /**
  * Requests and responses that carry emails' content (sends, batches, reads, cancel, reschedule):
- * in an environment whose content storage is `discard`, their subjects, bodies, headers, template
- * variables and attachment filenames are redacted (the log would otherwise keep what the email
- * itself doesn't). Decided at write time, off the request path.
+ * their subjects, bodies, headers, template variables and attachment filenames are redacted (the
+ * log would otherwise keep what the email itself doesn't) when the environment's content storage
+ * is `discard`, or when the response holds an email sent while it was (each email keeps its own
+ * setting: a read or an idempotent replay after switching back to `store`). Decided at write
+ * time, off the request path.
  */
 const EMAIL_CONTENT_PATHS = /^\/v1\/emails(\/|$)/;
+
+/** Whether a response body holds an email (alone, or in `data`) sent without content storage. */
+function holdsDiscardingEmail(body: unknown): boolean {
+  if (body === null || typeof body !== "object") return false;
+  const { object, content_storage, data } = body as {
+    object?: unknown;
+    content_storage?: { mode?: unknown } | null;
+    data?: unknown;
+  };
+  if (object === "email" && content_storage?.mode === "discard") return true;
+  return Array.isArray(data) && data.some(holdsDiscardingEmail);
+}
 
 async function contentKeysFor(
   path: string,
   auth: { organizationId: string; environmentId: string },
+  response: { body: unknown; replayed: boolean },
 ): Promise<readonly string[] | undefined> {
   if (!EMAIL_CONTENT_PATHS.test(path)) return undefined;
+  // A replay's body couldn't be read: the email it replays may predate a switch to `store`.
+  if (holdsDiscardingEmail(response.body) || (response.replayed && response.body === undefined)) {
+    return EMAIL_CONTENT_KEYS;
+  }
   const { contentStorage } = await getStorageSettings(auth);
   return contentStorage === "discard" ? EMAIL_CONTENT_KEYS : undefined;
 }
@@ -182,13 +201,17 @@ export function requestLog(writer: LogWriter) {
     const responseHeaders = loggedResponseHeaders(response.headers);
     const { requestId, clientIp } = c.var;
     const search = new URL(c.req.url).search;
+    const replayed = response.headers.get("idempotent-replayed") === "true";
 
     void (async () => {
-      const [requestJson, responseJson, content] = await Promise.all([
+      const [requestJson, responseJson] = await Promise.all([
         requestText?.then(parseJson, () => undefined),
         responseCopy ? readJson(responseCopy) : undefined,
-        requestText || responseCopy ? contentKeysFor(path, auth) : undefined,
       ]);
+      const content =
+        requestJson === undefined && responseJson === undefined
+          ? undefined
+          : await contentKeysFor(path, auth, { body: responseJson, replayed });
       const error = (responseJson as ErrorEnvelope | undefined)?.error;
       const { resourceType, resourceId } = resourceOf(path, responseJson);
       writer.write({

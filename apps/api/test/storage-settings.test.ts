@@ -151,6 +151,41 @@ describe("/v1/storage_settings", () => {
     expect(JSON.stringify(lines)).not.toContain(secret);
   });
 
+  test("emails keep their own setting in the log after switching back to store", async () => {
+    const tenant = await createTestTenant();
+    const writer = memoryLogWriter();
+    const { app } = createTestApp({ logWriter: writer });
+    const key = tenant.sandboxKey;
+    await apiRequest(app, "PATCH", "/v1/storage_settings", {
+      key,
+      body: { content_storage: "discard" },
+    });
+    const secret = crypto.randomUUID();
+    const idempotencyKey = `k-${crypto.randomUUID()}`;
+    const body = emailBody({
+      subject: `Later ${secret}`,
+      text: secret,
+      scheduled_at: new Date(Date.now() + 3_600_000).toISOString(),
+    });
+    const res = await sendEmail(app, key, body, { "Idempotency-Key": idempotencyKey });
+    expect(res.status).toBe(202);
+    const scheduled = (await res.json()) as EmailObjectOutput;
+    await apiRequest(app, "PATCH", "/v1/storage_settings", {
+      key,
+      body: { content_storage: "store" },
+    });
+
+    // Still scheduled, so its content is there to read, and to replay.
+    const read = await getEmailById(app, key, scheduled.id);
+    expect(((await read.json()) as EmailObjectOutput).subject).toBe(`Later ${secret}`);
+    const replay = await sendEmail(app, key, body, { "Idempotency-Key": idempotencyKey });
+    expect(replay.headers.get("idempotent-replayed")).toBe("true");
+
+    const lines = await waitForLogLines(writer, 5);
+    expect(lines.filter((line) => line.path?.startsWith("/v1/emails"))).toHaveLength(3);
+    expect(JSON.stringify(lines)).not.toContain(secret);
+  });
+
   test("environments that store content keep logging it as before", async () => {
     const tenant = await createTestTenant();
     const writer = memoryLogWriter();

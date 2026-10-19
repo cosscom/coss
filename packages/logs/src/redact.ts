@@ -55,9 +55,7 @@ function redactValue(value: unknown, depth: number, contentKeys: ReadonlySet<str
     const normalized = normalizedKey(key);
     if (SECRET_KEYS.has(normalized) && item !== null && item !== undefined) {
       out[key] = REDACTED;
-    } else if (contentKeys.has(normalized) && typeof item === "string") {
-      out[key] = `[${item.length} characters]`;
-    } else if (contentKeys.has(normalized) && item !== null && typeof item === "object") {
+    } else if (contentKeys.has(normalized) && item !== null && item !== undefined) {
       out[key] = sizesOnly(item, depth + 1);
     } else {
       out[key] = redactValue(item, depth + 1, contentKeys);
@@ -66,10 +64,14 @@ function redactValue(value: unknown, depth: number, contentKeys: ReadonlySet<str
   return out;
 }
 
-/** The shape of a value with every string replaced by its length. */
+/**
+ * The shape of a value: every string replaced by its length, and every other value (numbers,
+ * booleans: a template variable is content too) by its type. Only `null` stays.
+ */
 function sizesOnly(value: unknown, depth: number): unknown {
   if (typeof value === "string") return `[${value.length} characters]`;
-  if (value === null || typeof value !== "object") return value;
+  if (value === null) return value;
+  if (typeof value !== "object") return `[${typeof value}]`;
   if (depth >= MAX_DEPTH) return "[…]";
   if (Array.isArray(value)) {
     return value.slice(0, MAX_ARRAY_ITEMS).map((item) => sizesOnly(item, depth + 1));
