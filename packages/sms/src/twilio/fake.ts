@@ -113,11 +113,31 @@ export class FakeTwilioApi implements TwilioApi {
 
   async buyNumber(account: TwilioCredentials, input: { phoneNumber: string }) {
     this.#record("buyNumber", [account.accountSid, input]);
-    return { sid: sid("PN"), phoneNumber: input.phoneNumber };
+    const bought = { sid: sid("PN"), phoneNumber: input.phoneNumber };
+    this.#existing.set(`number:${account.accountSid}:${input.phoneNumber}`, bought);
+    return bought;
+  }
+
+  async findNumber(account: TwilioCredentials, phoneNumber: string) {
+    return (
+      (this.#existing.get(`number:${account.accountSid}:${phoneNumber}`) as {
+        sid: string;
+        phoneNumber: string;
+      }) ?? null
+    );
+  }
+
+  async findTollFreeVerification(account: TwilioCredentials, numberSid: string) {
+    return (
+      (this.#existing.get(`verification:${account.accountSid}:${numberSid}`) as string) ?? null
+    );
   }
 
   async releaseNumber(account: TwilioCredentials, numberSid: string): Promise<void> {
     this.#record("releaseNumber", [account.accountSid, numberSid]);
+    for (const [key, value] of this.#existing) {
+      if ((value as { sid?: string }).sid === numberSid) this.#existing.delete(key);
+    }
   }
 
   async createMessagingService(
@@ -192,7 +212,9 @@ export class FakeTwilioApi implements TwilioApi {
     input: Parameters<TwilioApi["createTollFreeVerification"]>[1],
   ) {
     this.#record("createTollFreeVerification", [account.accountSid, input]);
-    return this.#created("HH", rejects(input.profile));
+    const created = this.#created("HH", rejects(input.profile));
+    this.#existing.set(`verification:${account.accountSid}:${input.numberSid}`, created.sid);
+    return created;
   }
 
   async tollFreeVerificationStatus(_account: TwilioCredentials, resourceSid: string) {

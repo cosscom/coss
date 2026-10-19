@@ -51,6 +51,11 @@ export interface TwilioApi {
   findMessagingService(account: TwilioCredentials, friendlyName: string): Promise<string | null>;
   findBrand(account: TwilioCredentials, customerProfileSid: string): Promise<string | null>;
   findCampaign(account: TwilioCredentials, serviceSid: string): Promise<string | null>;
+  findNumber(
+    account: TwilioCredentials,
+    phoneNumber: string,
+  ): Promise<{ sid: string; phoneNumber: string } | null>;
+  findTollFreeVerification(account: TwilioCredentials, numberSid: string): Promise<string | null>;
   closeSubaccount(accountSid: string): Promise<void>;
   searchNumbers(
     account: TwilioCredentials,
@@ -307,6 +312,27 @@ export function createTwilioApi(
         { form: { PhoneNumber: input.phoneNumber } },
       );
       return { sid: raw.sid, phoneNumber: raw.phone_number };
+    },
+
+    async findNumber(as, phoneNumber) {
+      const raw = await client.request<{
+        incoming_phone_numbers: { sid: string; phone_number: string }[];
+      }>("GET", `${account(as.accountSid)}/IncomingPhoneNumbers.json`, {
+        form: { PhoneNumber: phoneNumber },
+      });
+      const found = raw.incoming_phone_numbers.find(
+        (number) => number.phone_number === phoneNumber,
+      );
+      return found ? { sid: found.sid, phoneNumber: found.phone_number } : null;
+    },
+
+    async findTollFreeVerification(as, numberSid) {
+      const raw = await client.request<{ verifications: { sid: string }[] }>(
+        "GET",
+        `${TWILIO_MESSAGING}/Tollfree/Verifications`,
+        { as, form: { TollfreePhoneNumberSid: numberSid } },
+      );
+      return raw.verifications[0]?.sid ?? null;
     },
 
     async releaseNumber(as, sid) {

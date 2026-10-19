@@ -13,6 +13,7 @@ import {
   ensureSmsSubaccount,
   listSmsRegistrations,
   oneMonthAfter,
+  reconcileSmsPurchases,
   releaseOrganizationSmsResources,
   releaseSmsNumber,
   retryUnfinishedSmsReleases,
@@ -579,4 +580,94 @@ test("a number at a provider this deployment doesn't use is kept until it can be
   await expect(releaseOrganizationSmsResources(org, fake)).rejects.toThrow("not closed");
   expect(await db.select().from(smsNumber).where(eq(smsNumber.id, number.id))).toHaveLength(1);
   expect(await retryUnfinishedSmsReleases(atTwilio, { now: later, scope })).toBe(1);
+});
+
+test("a purchase whose answer was lost is found at Twilio and recorded once", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  class LostPurchase extends FakeTwilioApi {
+    lost = false;
+    override async buyNumber(...args: Parameters<FakeTwilioApi["buyNumber"]>) {
+      const bought = await super.buyNumber(...args);
+      if (!this.lost) {
+        this.lost = true;
+        throw new TwilioNetworkError("Twilio POST IncomingPhoneNumbers got no answer.");
+      }
+      return bought;
+    }
+  }
+  const twilio = new LostPurchase();
+  const d = deps(twilio);
+  const phoneNumber = testPhoneNumber();
+  await expect(buySmsNumber(org, { phoneNumber, kind: "local" }, d)).rejects.toThrow("no answer");
+  const scope = { organizationIds: [org] };
+  // Too soon: the purchase may still be under way.
+  expect(await reconcileSmsPurchases(d, { now: new Date(), scope })).toBe(0);
+  const later = new Date(Date.now() + 5 * 60 * 1000);
+  expect(await reconcileSmsPurchases(d, { now: later, scope })).toBe(1);
+  const [number] = await db.select().from(smsNumber).where(eq(smsNumber.organizationId, org));
+  expect(number).toMatchObject({ phoneNumber, status: "active", providerSid: expect.any(String) });
+  expect(twilio.calls.filter((call) => call.method === "buyNumber")).toHaveLength(1);
+  expect(await fees(org)).toEqual([{ meter: "sms.numbers", dimension: "type=local", quantity: 1 }]);
+});
+
+test("an intent Twilio never heard of is dropped", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  class Unreachable extends FakeTwilioApi {
+    override async buyNumber(): Promise<{ sid: string; phoneNumber: string }> {
+      throw new TwilioNetworkError("Twilio POST IncomingPhoneNumbers got no answer.");
+    }
+  }
+  const d = deps(new Unreachable());
+  await expect(
+    buySmsNumber(org, { phoneNumber: testPhoneNumber(), kind: "local" }, d),
+  ).rejects.toThrow("no answer");
+  const scope = { organizationIds: [org] };
+  const muchLater = new Date(Date.now() + 60 * 60 * 1000);
+  expect(await reconcileSmsPurchases(d, { now: muchLater, scope })).toBe(1);
+  expect(await db.select().from(smsNumber).where(eq(smsNumber.organizationId, org))).toEqual([]);
+  expect(await fees(org)).toEqual([]);
+});
+
+test("a toll-free verification whose answer was lost is followed, not submitted again", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  class LostVerification extends FakeTwilioApi {
+    lost = false;
+    override async createTollFreeVerification(
+      ...args: Parameters<FakeTwilioApi["createTollFreeVerification"]>
+    ) {
+      const created = await super.createTollFreeVerification(...args);
+      if (!this.lost) {
+        this.lost = true;
+        throw new TwilioNetworkError("Twilio POST Tollfree/Verifications got no answer.");
+      }
+      return created;
+    }
+  }
+  const twilio = new LostVerification();
+  const d = deps(twilio);
+  const [tollFree] = await searchSmsNumbers(org, { kind: "toll_free", country: "US" }, d);
+  if (!tollFree) throw new Error("no number");
+  const number = await buySmsNumber(
+    org,
+    { phoneNumber: tollFree.phoneNumber, kind: "toll_free" },
+    d,
+  );
+  await createSmsRegistration(
+    org,
+    SmsRegistrationInput.parse({
+      kind: "toll_free",
+      numberId: number.id,
+      profile: PROFILE,
+      campaign: { ...CAMPAIGN, optInProofUrl: "https://acme.test/opt-in.png" },
+    }),
+    d,
+  );
+  const [registration] = await advanceUntilSettled(org, d);
+  expect(registration?.status).toBe("approved");
+  expect(twilio.calls.filter((call) => call.method === "createTollFreeVerification")).toHaveLength(
+    1,
+  );
 });

@@ -459,11 +459,15 @@ async function runStep(
       const serviceSid = await messagingService(row, account, deps);
       if (!row.tollFreeVerificationSid) {
         await addToService(account, serviceSid, number.providerSid, deps);
-        const created = await twilio.createTollFreeVerification(account, {
-          numberSid: number.providerSid,
-          profile: row.profile,
-          campaign: row.campaign,
-        });
+        // A verification an earlier attempt submitted (its answer lost) is followed, not repeated.
+        const existing = await twilio.findTollFreeVerification(account, number.providerSid);
+        const created = existing
+          ? { sid: existing }
+          : await twilio.createTollFreeVerification(account, {
+              numberSid: number.providerSid,
+              profile: row.profile,
+              campaign: row.campaign,
+            });
         return {
           next: {
             messagingServiceSid: serviceSid,
@@ -671,62 +675,51 @@ export async function buySmsNumber(
   }
   await requireSmsPlan(organizationId, deps);
   const account = await ensureSmsSubaccount(organizationId, deps);
-  const { row, attachTo } = await db.transaction(async (tx) => {
-    // Purchases are serialized per organization, so two at once can't both fit under the plan's
-    // limit. The lock is held across the provider call: only this organization's sender changes
-    // wait for it.
+  // The purchase is stored as an intent (`pending`, no provider sid) before Twilio is asked, so
+  // one whose answer is lost, or whose recording fails, is found again (`reconcileSmsPurchases`)
+  // instead of being orphaned at Twilio. Intents count against the plan's limit: two purchases at
+  // once can't both fit under it.
+  const intent = await db.transaction(async (tx) => {
     await lockSmsAccount(tx, organizationId);
     const [held] = await tx
       .select({ n: count() })
       .from(smsNumber)
       .where(eq(smsNumber.organizationId, organizationId));
     await plansOf(deps).requireCapacity(organizationId, "smsNumbers", held?.n ?? 0);
-    const [registration] =
-      kind === "local"
-        ? await tx
-            .select()
-            .from(smsRegistration)
-            .where(
-              and(
-                eq(smsRegistration.organizationId, organizationId),
-                eq(smsRegistration.kind, "us_10dlc"),
-                inArray(smsRegistration.status, ["submitted", "in_review", "approved"]),
-              ),
-            )
-            .limit(1)
-        : [];
-    let bought: { sid: string; phoneNumber: string };
-    try {
-      bought = await deps.twilio.buyNumber(account, { phoneNumber: parsed.phoneNumber });
-    } catch (error) {
-      if (error instanceof TwilioApiError && error.status < 500) {
-        throw new SmsError(
-          "number_unavailable",
-          "That number is no longer available. Search again.",
-        );
-      }
-      throw error;
-    }
-    const attachTo = registration?.status === "approved" ? registration.messagingServiceSid : null;
     const [inserted] = await tx
       .insert(smsNumber)
       .values({
         organizationId,
-        phoneNumber: bought.phoneNumber,
+        phoneNumber: parsed.phoneNumber,
         kind,
         country: parsed.country,
         provider: deps.provider,
-        providerSid: bought.sid,
-        status: attachTo ? "pending" : "active",
-        registrationId: registration?.id ?? null,
+        status: "pending",
         receivingEnvironmentId: input.receivingEnvironmentId ?? null,
-        nextFeeAt: oneMonthAfter(new Date()),
       })
+      .onConflictDoNothing()
       .returning();
-    if (!inserted) throw new Error("Number insert returned no row.");
-    await recordFee(tx, organizationId, "sms.numbers", { type: kind });
-    return { row: inserted, attachTo };
+    if (!inserted) {
+      throw new SmsError("number_unavailable", "That number is already taken. Search again.");
+    }
+    return inserted;
   });
+  let bought: { sid: string; phoneNumber: string };
+  try {
+    bought =
+      (await deps.twilio.findNumber(account, parsed.phoneNumber)) ??
+      (await deps.twilio.buyNumber(account, { phoneNumber: parsed.phoneNumber }));
+  } catch (error) {
+    if (error instanceof TwilioApiError && error.status < 500) {
+      await dropPurchaseIntent(intent);
+      throw new SmsError("number_unavailable", "That number is no longer available. Search again.");
+    }
+    // Twilio may have bought it: the worker finds out and finishes or drops the purchase.
+    throw error;
+  }
+  const completed = await completePurchase(intent, bought);
+  if (!completed) return (await numberById(intent)) ?? intent;
+  const { row, attachTo } = completed;
   if (!attachTo) return row;
   try {
     return (await attachSmsNumber(row, attachTo, account, deps)) ?? row;
@@ -735,6 +728,127 @@ export async function buySmsNumber(
     console.error(`[sms] number ${row.id} not added to its messaging service yet:`, error);
     return row;
   }
+}
+
+type SmsNumberRow = typeof smsNumber.$inferSelect;
+
+async function numberById(number: SmsNumberRow): Promise<SmsNumberRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(smsNumber)
+    .where(and(eq(smsNumber.id, number.id), eq(smsNumber.organizationId, number.organizationId)));
+  return row;
+}
+
+async function dropPurchaseIntent(intent: SmsNumberRow): Promise<void> {
+  await db
+    .delete(smsNumber)
+    .where(
+      and(
+        eq(smsNumber.id, intent.id),
+        eq(smsNumber.organizationId, intent.organizationId),
+        eq(smsNumber.status, "pending"),
+        isNull(smsNumber.providerSid),
+      ),
+    );
+}
+
+/**
+ * Records a purchase Twilio made: its sid, its first month's fee, and the registration it sends
+ * under. Under the account lock, like an approval: a local number bought once the US registration
+ * is approved stays `pending` until it is in its messaging service. `null` when another process
+ * already recorded it.
+ */
+async function completePurchase(
+  intent: SmsNumberRow,
+  bought: { sid: string; phoneNumber: string },
+): Promise<{ row: SmsNumberRow; attachTo: string | null } | null> {
+  return db.transaction(async (tx) => {
+    await lockSmsAccount(tx, intent.organizationId);
+    const [registration] =
+      intent.kind === "local"
+        ? await tx
+            .select()
+            .from(smsRegistration)
+            .where(
+              and(
+                eq(smsRegistration.organizationId, intent.organizationId),
+                eq(smsRegistration.kind, "us_10dlc"),
+                inArray(smsRegistration.status, ["submitted", "in_review", "approved"]),
+              ),
+            )
+            .limit(1)
+        : [];
+    const attachTo = registration?.status === "approved" ? registration.messagingServiceSid : null;
+    const [row] = await tx
+      .update(smsNumber)
+      .set({
+        providerSid: bought.sid,
+        status: attachTo ? "pending" : "active",
+        registrationId: registration?.id ?? null,
+        nextFeeAt: oneMonthAfter(new Date()),
+      })
+      .where(
+        and(
+          eq(smsNumber.id, intent.id),
+          eq(smsNumber.organizationId, intent.organizationId),
+          eq(smsNumber.status, "pending"),
+          isNull(smsNumber.providerSid),
+        ),
+      )
+      .returning();
+    if (!row) return null;
+    await recordFee(tx, intent.organizationId, "sms.numbers", { type: intent.kind });
+    return { row, attachTo };
+  });
+}
+
+/** How long a purchase may stay unanswered before the worker asks Twilio what happened. */
+const PURCHASE_RECONCILE_MS = 2 * 60 * 1000;
+/** A purchase Twilio still doesn't know about this long after is dropped. */
+const PURCHASE_ABANDON_MS = 30 * 60 * 1000;
+
+/**
+ * The worker's `sms-registrations` loop: purchases whose outcome was never recorded (Twilio's
+ * answer lost, or recording it failed). A number the subaccount owns is recorded and billed; an
+ * intent Twilio still doesn't know half an hour on is dropped.
+ */
+export async function reconcileSmsPurchases(
+  deps: SmsSenderDeps,
+  opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } } = {},
+): Promise<number> {
+  const now = opts.now ?? new Date();
+  const due = await db
+    .select()
+    .from(smsNumber)
+    .where(
+      and(
+        eq(smsNumber.status, "pending"),
+        isNull(smsNumber.providerSid),
+        eq(smsNumber.provider, deps.provider),
+        lte(smsNumber.createdAt, new Date(now.getTime() - PURCHASE_RECONCILE_MS)),
+        opts.scope ? inArray(smsNumber.organizationId, opts.scope.organizationIds) : undefined,
+      ),
+    )
+    .orderBy(asc(smsNumber.createdAt))
+    .limit(opts.limit ?? 20);
+  let settled = 0;
+  for (const intent of due) {
+    try {
+      const account = await ensureSmsSubaccount(intent.organizationId, deps);
+      const owned = await deps.twilio.findNumber(account, intent.phoneNumber);
+      if (owned) {
+        await completePurchase(intent, owned);
+        settled++;
+      } else if (intent.createdAt.getTime() <= now.getTime() - PURCHASE_ABANDON_MS) {
+        await dropPurchaseIntent(intent);
+        settled++;
+      }
+    } catch (error) {
+      console.error(`[sms] purchase of ${intent.id} not reconciled:`, error);
+    }
+  }
+  return settled;
 }
 
 async function attachSmsNumber(
@@ -781,6 +895,7 @@ export async function attachPendingSmsNumbers(
     .where(
       and(
         eq(smsNumber.status, "pending"),
+        isNotNull(smsNumber.providerSid),
         eq(smsNumber.provider, deps.provider),
         lte(smsNumber.createdAt, new Date(now.getTime() - 60_000)),
         eq(smsRegistration.status, "approved"),
@@ -855,7 +970,7 @@ export async function releaseSmsNumber(
 
 /** A number at a real provider this deployment isn't configured for can't be released yet. */
 function releasable(number: typeof smsNumber.$inferSelect, deps: SmsSenderDeps): boolean {
-  return !number.providerSid || number.provider === deps.provider || number.provider === "fake";
+  return number.provider === deps.provider || number.provider === "fake";
 }
 
 async function finishRelease(number: typeof smsNumber.$inferSelect, deps: SmsSenderDeps) {
@@ -866,10 +981,13 @@ async function finishRelease(number: typeof smsNumber.$inferSelect, deps: SmsSen
       "This number can't be released right now. It no longer sends; try again later.",
     );
   }
-  if (number.providerSid && number.provider === deps.provider) {
+  if (number.provider === deps.provider) {
     const account = await ensureSmsSubaccount(number.organizationId, deps);
+    // A purchase whose outcome was never recorded may still have bought the number.
+    const providerSid =
+      number.providerSid ?? (await deps.twilio.findNumber(account, number.phoneNumber))?.sid;
     try {
-      await deps.twilio.releaseNumber(account, number.providerSid);
+      if (providerSid) await deps.twilio.releaseNumber(account, providerSid);
     } catch (error) {
       // Already gone at the provider: nothing left to release.
       if (!(error instanceof TwilioApiError && error.status === 404)) throw error;
@@ -908,11 +1026,7 @@ export async function retryUnfinishedSmsReleases(
         eq(smsNumber.status, "releasing"),
         lte(smsNumber.updatedAt, new Date(now.getTime() - RELEASE_RETRY_MS)),
         eq(smsAccount.status, "active"),
-        or(
-          isNull(smsNumber.providerSid),
-          eq(smsNumber.provider, deps.provider),
-          eq(smsNumber.provider, "fake"),
-        ),
+        or(eq(smsNumber.provider, deps.provider), eq(smsNumber.provider, "fake")),
         opts.scope ? inArray(smsNumber.organizationId, opts.scope.organizationIds) : undefined,
       ),
     )
