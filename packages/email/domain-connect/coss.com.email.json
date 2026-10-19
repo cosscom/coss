@@ -11,6 +11,7 @@
   "syncPubKeyDomain": "coss.com",
   "syncRedirectDomain": "coss.com",
   "hostRequired": false,
+  "multiInstance": true,
   "records": [
     {
       "groupId": "dkim",

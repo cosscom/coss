@@ -346,6 +346,28 @@ describe("the template", () => {
     expect(written).toEqual(expected);
   });
 
+  test("keeps an earlier application's records when later groups are applied", async () => {
+    // A provider that keeps applied-template state removes the previous instance on re-apply
+    // unless the template is multiInstance (spec, "Apply, Re-apply, and Multi-Instance").
+    const domain = domainOf("example.com");
+    const records = withStatus(recordsOf(domain), "missing");
+    const tracking: DomainConnectTracking = {
+      hostname: "links.example.com",
+      status: "pending",
+      record: { value: "track.cosslinks.com", status: "missing" },
+    };
+    const instances: ReturnType<typeof applyTemplate>[] = [];
+    for (const groups of [["dkim", "mail_from"], ["tracking"]] as DomainConnectGroup[][]) {
+      if (!DOMAIN_CONNECT_TEMPLATE.multiInstance) instances.length = 0;
+      const variables = domainConnectVariables({ domain, records, tracking }, groups);
+      instances.push(applyTemplate({ zone: "example.com", host: "" }, groups, variables));
+    }
+    expect(instances.flat().map((record) => record.name)).toEqual([
+      ...records.filter((record) => record.purpose !== "dmarc").map((record) => record.name),
+      "links.example.com",
+    ]);
+  });
+
   test("has the fields DNS providers require", () => {
     expect(DOMAIN_CONNECT_TEMPLATE).toMatchObject({
       providerId: "coss.com",
