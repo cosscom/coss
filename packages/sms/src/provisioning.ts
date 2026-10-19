@@ -1159,8 +1159,8 @@ export async function retryUnfinishedSmsReleases(
 // ---------------------------------------------------------------------------------------------
 
 /**
- * The worker's `sms-fees` loop: a month of each number held, and of each approved US campaign,
- * every month from when it started. Each charge moves `next_fee_at` on in its transaction.
+ * The worker's `sms-fees` loop: a month of each number held (until Twilio has it back, releasing
+ * included), and of each approved US campaign, every month from when it started. Each charge moves `next_fee_at` on in its transaction.
  */
 export async function chargeDueSmsFees(
   opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } } = {},
@@ -1175,8 +1175,8 @@ export async function chargeDueSmsFees(
     .from(smsNumber)
     .where(
       and(
+        // Releasing numbers too: Twilio charges for a number until it has it back.
         lte(smsNumber.nextFeeAt, now),
-        ne(smsNumber.status, "releasing"),
         scoped(smsNumber.organizationId),
       ),
     )

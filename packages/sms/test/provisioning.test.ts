@@ -512,6 +512,9 @@ test("a release the provider didn't finish is retried by the worker", async () =
   await expect(releaseSmsNumber(org, number.id, d)).rejects.toThrow("Twilio unreachable");
   const [releasing] = await db.select().from(smsNumber).where(eq(smsNumber.id, number.id));
   expect(releasing?.status).toBe("releasing");
+  // Still Twilio's to charge for: still billed monthly.
+  const nextMonth = new Date(Date.now() + 40 * 24 * 60 * 60 * 1000);
+  expect(await chargeDueSmsFees({ now: nextMonth, scope: { organizationIds: [org] } })).toBe(1);
   const scope = { organizationIds: [org] };
   const later = new Date(Date.now() + 15 * 60 * 1000);
   expect(await retryUnfinishedSmsReleases(d, { now: later, scope })).toBe(0);
