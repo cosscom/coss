@@ -116,6 +116,46 @@ email events, webhook attempts and `coss listen` forwards. Filter by `--source`,
 prints one log object per line for `jq`. It checks for new lines every 2 seconds (`--interval <ms>`,
 at least 500).
 
+## Call any endpoint
+
+`coss api` calls an endpoint of the [API](/docs/api-reference) with the CLI's key and prints the
+response's JSON, for anything the other commands don't cover. Paths are relative to `/v1`:
+
+```sh
+coss api domains
+coss api emails/email_01k7c8m4q2f3e9v6t5r1n0p8yz/events
+coss api -X POST domains/dom_01k7c8m4q2f3e9v6t5r1n0p8yz/verify
+coss api suppressions -f reason=bounce --paginate | jq -r .address
+```
+
+- **Fields**: `-f name=value` (`--raw-field`) is always a string; `-F name=value` (`--field`) is
+  JSON when it parses (`-F limit=5`, `-F enabled=true`, `-F 'to=["a@example.com"]'`) and a file's
+  contents with `@path`. `name[]=value` adds to a list. GET and DELETE send fields as query
+  parameters, every other method as the JSON body.
+- **Methods**: `-X` (`--method`) takes `GET` (the default), `POST`, `PUT`, `PATCH` or `DELETE`.
+  `--input body.json` sends that file as the body (`--input -` reads stdin) and makes the default
+  `POST`; fields then go in the query.
+- **Lists**: `--paginate` reads every page and prints each item as one JSON object per line.
+- **Other bodies**: `--raw` prints a response that isn't JSON as it is, such as a CSV export or a
+  received email's raw message (`coss api received_emails/<id>/raw --raw > message.eml`).
+- **Versions**: requests use the API version the CLI was built for; `--api-version 2026-10-01`
+  asks for another. `--json` prints JSON on one line instead of indented.
+
+A failed call prints the error (`{ "error": { "type", "code", "message", … } }`) on stdout too,
+and exits with `1`. Writes aren't retried automatically, since not every endpoint deduplicates
+them: run the command again.
+
+## Shell completion
+
+`coss completion bash|zsh|fish` prints a script that completes commands, flags and their values
+(`--simulate b` → `bounced`):
+
+```sh
+eval "$(coss completion zsh)"     # in ~/.zshrc, after compinit
+eval "$(coss completion bash)"    # in ~/.bashrc
+coss completion fish > ~/.config/fish/completions/coss.fish
+```
+
 ## Scripting
 
 Results go to stdout and progress to stderr, so pipes get only the results; `--json` makes them one

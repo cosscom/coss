@@ -1,29 +1,26 @@
-import { parseFlags } from "../args.ts";
+import type { Flags } from "../args.ts";
+import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { type Profile, profileName, readConfig, writeConfig } from "../config.ts";
-import { clientFor, createContext, savedApiBaseUrl } from "../context.ts";
+import { clientFor, savedApiBaseUrl } from "../context.ts";
 import { CliError } from "../errors.ts";
-import type { CliIo } from "../io.ts";
 
-export const LOGOUT_HELP = `Usage: coss logout [--all] [--revoke] [--profile <name>]
+const FLAGS = {
+  all: { type: "boolean", description: "Every profile" },
+  revoke: { type: "boolean", description: "Revoke the key too, even one you pasted" },
+} as const satisfies Flags;
 
-Removes the saved API key. A key \`coss login\` created in the browser is also revoked; one you
-pasted with --manual is kept unless you pass --revoke.
+export const logoutCommand: Command = defineCommand({
+  name: "logout",
+  summary: "Sign out (revokes the key login created)",
+  description:
+    "Removes the saved API key. A key `coss login` created in the browser is also revoked; one " +
+    "you pasted with --manual is kept unless you pass --revoke.",
+  flags: FLAGS,
+  run: logout,
+});
 
-Options:
-  --all      Every profile
-  --revoke   Revoke the key too, even one you pasted
-`;
-
-export async function logout(argv: string[], io: CliIo): Promise<number> {
-  const { values, global } = parseFlags(argv, {
-    all: { type: "boolean" },
-    revoke: { type: "boolean" },
-  });
-  const { out } = createContext(io, global);
-  if (global.help) {
-    out.line(LOGOUT_HELP);
-    return 0;
-  }
+async function logout({ values, context }: CommandInput<typeof FLAGS>): Promise<number> {
+  const { io, out, flags: global } = context;
   const config = await readConfig(io);
   const names = values.all
     ? Object.keys(config.profiles)

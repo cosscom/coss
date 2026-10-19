@@ -46,6 +46,11 @@ export class Output {
     this.#io.stdout.write(`${JSON.stringify(value)}\n`);
   }
 
+  /** A result as it came (stdout), bytes included. */
+  raw(chunk: string | Uint8Array): void {
+    this.#io.stdout.write(chunk);
+  }
+
   /** Progress or context (stderr), so stdout stays the result. */
   info(text = ""): void {
     this.#io.stderr.write(`${text}\n`);

@@ -7,13 +7,13 @@ import type {
   WebhookListenerAck,
   WebhookListenerDelivery,
 } from "coss";
-import { list, parseFlags } from "../args.ts";
+import { type Flags, list } from "../args.ts";
+import { type Command, defineCommand } from "../command.ts";
 import { readConfig, writeConfig } from "../config.ts";
 import {
   type Context,
   type Credentials,
   clientFor,
-  createContext,
   describeEnvironment,
   resolveCredentials,
 } from "../context.ts";
@@ -27,22 +27,6 @@ import {
 } from "../listen/forward.ts";
 import { generateSecret, isSecret } from "../listen/sign.ts";
 import type { Output } from "../output.ts";
-
-export const LISTEN_HELP = `Usage: coss listen [--forward-to <url>] [options]
-
-Receives the environment's webhook events as they happen and forwards each one to a local URL,
-signed like coss.com signs the requests it sends endpoints (verify them with the SDK's verifyWebhook
-and the signing secret printed at start). Without --forward-to, events are only printed.
-
-Options:
-  --forward-to <url>       e.g. localhost:3000/webhooks
-  --events <types>         Only these event types, e.g. email.delivered,email.bounced
-  --header <"Name: value"> An extra header on forwarded requests (repeatable)
-  --api-version <date>     The API version events are rendered in (default: your organization's)
-  --print-json             Print each event's body
-  --live                   Allow a live (production) key: you'd receive real events
-  --json                   One JSON object per forwarded event
-`;
 
 /** A poll waits this long for events; the SDK's timeout leaves room for the answer. */
 const WAIT_MS = 20_000;
@@ -220,22 +204,54 @@ async function run(context: Context, values: Record<string, unknown>): Promise<n
   return 130;
 }
 
-export async function listen(argv: string[], io: CliIo): Promise<number> {
-  const { values, global } = parseFlags(argv, {
-    "forward-to": { type: "string", short: "f" },
-    events: { type: "string", multiple: true, short: "e" },
-    header: { type: "string", multiple: true, short: "H" },
-    "api-version": { type: "string" },
-    "print-json": { type: "boolean" },
-    live: { type: "boolean" },
-  });
-  const context = createContext(io, global);
-  if (global.help) {
-    context.out.line(LISTEN_HELP);
-    return 0;
-  }
-  if (values["api-version"] !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(values["api-version"])) {
-    throw new UsageError("--api-version takes a date, e.g. 2026-10-01.");
-  }
-  return run(context, values);
-}
+const FLAGS = {
+  "forward-to": {
+    type: "string",
+    short: "f",
+    value: "<url>",
+    description: "e.g. localhost:3000/webhooks",
+  },
+  events: {
+    type: "string",
+    multiple: true,
+    short: "e",
+    value: "<types>",
+    description: "Only these event types, e.g. email.delivered,email.bounced",
+  },
+  header: {
+    type: "string",
+    multiple: true,
+    short: "H",
+    value: '<"Name: value">',
+    description: "An extra header on forwarded requests (repeatable)",
+  },
+  "api-version": {
+    type: "string",
+    value: "<date>",
+    description: "The API version events are rendered in (default: your organization's)",
+  },
+  "print-json": { type: "boolean", description: "Print each event's body" },
+  live: {
+    type: "boolean",
+    description: "Allow a live (production) key: you'd receive real events",
+  },
+  json: { type: "boolean", description: "One JSON object per forwarded event" },
+} as const satisfies Flags;
+
+export const listenCommand: Command = defineCommand({
+  name: "listen",
+  summary: "Forward the environment's webhook events to a local URL",
+  usage: "[--forward-to <url>] [options]",
+  description:
+    "Receives the environment's webhook events as they happen and forwards each one to a local " +
+    "URL, signed like coss.com signs the requests it sends endpoints (verify them with the SDK's " +
+    "verifyWebhook and the signing secret printed at start). Without --forward-to, events are " +
+    "only printed.",
+  flags: FLAGS,
+  run: ({ values, context }) => {
+    if (values["api-version"] !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(values["api-version"])) {
+      throw new UsageError("--api-version takes a date, e.g. 2026-10-01.");
+    }
+    return run(context, values);
+  },
+});

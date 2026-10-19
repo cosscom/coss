@@ -23,6 +23,8 @@ Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
 | `coss emails send` | A test email: `--to`, or `--simulate delivered\|bounced\|complained\|suppressed` for the mailbox simulator; `--template` with `--var name=value`; `--wait` follows it to its outcome (up to `--timeout`, 60 s). |
 | `coss logs tail` | New lines of the environment's log as they arrive: API requests, email events, webhook attempts. Filter with `--source`, `--level`, `--type`, `--status`, `-q`; `--since 15m` starts earlier; `--interval` sets the poll interval (2000 ms). |
 | `coss listen` | Receives the environment's webhook events and forwards each one to `--forward-to`, signed like coss.com signs real deliveries. Verify them with `verifyWebhook` from the `coss` SDK and the signing secret it prints (it stays the same for the profile). `--header "Name: value"` adds a header to forwarded requests. |
+| `coss api <path>` | Any endpoint of the API, with the CLI's key: `coss api domains`, `coss api -X POST domains/<id>/verify`. `-f name=value` (strings) and `-F name=value` (JSON values, `@file`) are query parameters for GET and DELETE and the JSON body otherwise; `--input file.json` (or `-` for stdin) sends a body as is; `--paginate` prints every item of a list; `--raw` prints a body that isn't JSON. |
+| `coss completion <shell>` | The completion script for `bash`, `zsh` or `fish`, e.g. `eval "$(coss completion zsh)"` in `~/.zshrc`. |
 
 Every command takes `--json` (one JSON object per line), `--profile <name>` and `--help`; `coss --version`
 prints the CLI's. Results go to stdout, progress to stderr. Exit codes: `0` done, `1` failed, `2` wrong usage,

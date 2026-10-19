@@ -19,7 +19,10 @@ function toRequest(input: string | URL | Request, init?: RequestInit): Request {
 }
 
 /** The CLI's io: the API is the in-process app, local URLs are real, output goes to strings. */
-function cliIo(app: TestApp, opts: { answers?: string[]; sleep?: () => Promise<void> } = {}) {
+function cliIo(
+  app: TestApp,
+  opts: { answers?: string[]; stdin?: string; sleep?: () => Promise<void> } = {},
+) {
   let stdout = "";
   let stderr = "";
   const controller = new AbortController();
@@ -27,8 +30,8 @@ function cliIo(app: TestApp, opts: { answers?: string[]; sleep?: () => Promise<v
   const io: CliIo = {
     env: { COSS_BASE_URL: "http://api.test" },
     stdout: {
-      write: (text) => {
-        stdout += text;
+      write: (chunk) => {
+        stdout += typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
       },
     },
     stderr: {
@@ -48,6 +51,7 @@ function cliIo(app: TestApp, opts: { answers?: string[]; sleep?: () => Promise<v
       void signal;
     },
     openBrowser: async () => false,
+    readStdin: async () => opts.stdin ?? "",
     prompt: async () => answers.shift() ?? "",
     hostname: () => "contract-test",
     configDir: mkdtempSync(join(tmpdir(), "coss-cli-contract-")),
@@ -86,6 +90,34 @@ describe("coss-cli against the API", () => {
     expect(sent.events.map((event: { type: string }) => event.type)).toEqual(
       expect.arrayContaining(["email.sent", "email.bounced"]),
     );
+  });
+
+  test("api: any endpoint with the profile's key, a body from stdin, and every page of a list", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const body = { from: "hello@acme.com", to: "ada@example.com", subject: "Hi", text: "Hi" };
+    const cli = cliIo(app, { answers: [tenant.sandboxKey], stdin: JSON.stringify(body) });
+    expect(await run(["login", "--manual"], cli.io)).toBe(0);
+    const lines = () => cli.stdout().trim().split("\n");
+
+    expect(await run(["api", "environment", "--json"], cli.io)).toBe(0);
+    expect(JSON.parse(lines().at(-1) ?? "{}")).toMatchObject({ id: tenant.development.id });
+
+    const ids: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      expect(await run(["api", "emails", "--input", "-", "--json"], cli.io)).toBe(0);
+      ids.push(JSON.parse(lines().at(-1) ?? "{}").id);
+    }
+    const before = lines().length;
+    expect(await run(["api", "emails", "--paginate", "-F", "limit=2"], cli.io)).toBe(0);
+    expect(
+      lines()
+        .slice(before)
+        .map((line) => JSON.parse(line).id),
+    ).toEqual(ids.toReversed());
+
+    expect(await run(["api", "emails/email_nope", "--json"], cli.io)).toBe(1);
+    expect(JSON.parse(lines().at(-1) ?? "{}").error).toMatchObject({ status: 404 });
   });
 
   test("listen forwards the environment's events to a local server, signed, and logs them", async () => {

@@ -1,13 +1,31 @@
 import { type ParseArgsOptionsConfig, parseArgs } from "node:util";
 import { UsageError } from "./errors.ts";
 
-/** Flags every command takes. */
-const GLOBAL_OPTIONS = {
-  profile: { type: "string" },
-  json: { type: "boolean" },
-  "no-color": { type: "boolean" },
-  help: { type: "boolean", short: "h" },
-} as const satisfies ParseArgsOptionsConfig;
+/** A flag as a command declares it: what `parseArgs` needs, plus what help and completion show. */
+export type Flag = {
+  type: "string" | "boolean";
+  short?: string;
+  multiple?: boolean;
+  /** The value's placeholder in help: `--to <address>`. */
+  value?: string;
+  description: string;
+  /** Values completion offers. */
+  choices?: readonly string[];
+};
+
+export type Flags = Record<string, Flag>;
+
+/** Flags every command takes. A command may declare one again to describe it its own way. */
+export const GLOBAL_FLAGS: Flags = {
+  profile: {
+    type: "string",
+    value: "<name>",
+    description: "Use a saved profile other than the default (or set COSS_PROFILE)",
+  },
+  json: { type: "boolean", description: "Machine-readable output" },
+  "no-color": { type: "boolean", description: "No colors (also NO_COLOR)" },
+  help: { type: "boolean", short: "h", description: "Help for a command" },
+};
 
 export type GlobalFlags = { profile?: string; json: boolean; color: boolean; help: boolean };
 
@@ -19,28 +37,31 @@ type OptionValue<O> = O extends { type: "boolean" }
     ? string[]
     : string;
 
-/** What `parseArgs` gives for these options (each may be missing). */
-export type FlagValues<T extends ParseArgsOptionsConfig> = { [K in keyof T]?: OptionValue<T[K]> };
+/** What `parseArgs` gives for these flags (each may be missing). */
+export type FlagValues<T extends Flags> = { [K in keyof T]?: OptionValue<T[K]> };
 
-export type ParsedFlags<T extends ParseArgsOptionsConfig> = {
+export type ParsedFlags<T extends Flags> = {
   values: FlagValues<T>;
   positionals: string[];
   global: GlobalFlags;
 };
 
 /** Parses a command's flags (strict: unknown flags are a usage error) plus the global ones. */
-export function parseFlags<const T extends ParseArgsOptionsConfig>(
+export function parseFlags<const T extends Flags>(
   argv: string[],
-  options: T,
+  flags: T,
   allowPositionals = false,
 ): ParsedFlags<T> {
+  const options: ParseArgsOptionsConfig = {};
+  for (const [name, flag] of Object.entries({ ...GLOBAL_FLAGS, ...flags })) {
+    options[name] = {
+      type: flag.type,
+      ...(flag.short && { short: flag.short }),
+      ...(flag.multiple && { multiple: true }),
+    };
+  }
   try {
-    const parsed = parseArgs({
-      args: argv,
-      options: { ...GLOBAL_OPTIONS, ...options },
-      strict: true,
-      allowPositionals,
-    });
+    const parsed = parseArgs({ args: argv, options, strict: true, allowPositionals });
     const values = parsed.values as Record<string, unknown>;
     const global: GlobalFlags = {
       profile: typeof values.profile === "string" ? values.profile : undefined,
@@ -54,7 +75,6 @@ export function parseFlags<const T extends ParseArgsOptionsConfig>(
   }
 }
 
-/** Repeatable flags that may also be comma-separated: `--events a,b --events c`. */
 /**
  * Email addresses from repeated and comma-separated flags. Commas inside a quoted display name
  * (`"Acme, Inc." <hello@acme.com>`) or angle brackets don't separate addresses.
@@ -87,6 +107,7 @@ export function addresses(value: string | string[] | undefined): string[] {
   return out.map((item) => item.trim()).filter(Boolean);
 }
 
+/** Repeatable flags that may also be comma-separated: `--events a,b --events c`. */
 export function list(value: string | string[] | undefined): string[] {
   const values = value === undefined ? [] : Array.isArray(value) ? value : [value];
   return values

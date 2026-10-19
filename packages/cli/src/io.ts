@@ -8,7 +8,8 @@ import { homedir, hostname } from "node:os";
 import { join } from "node:path";
 
 export interface OutputStream {
-  write(text: string): void;
+  /** Text, or bytes as they are (`coss api --raw`). */
+  write(chunk: string | Uint8Array): void;
   isTTY?: boolean;
 }
 
@@ -27,6 +28,8 @@ export interface CliIo {
   sleep(ms: number, signal?: AbortSignal): Promise<void>;
   /** Opens `url` in the default browser; `false` when none could be started. */
   openBrowser(url: string): Promise<boolean>;
+  /** Everything piped to stdin, as text (`coss api --input -`). */
+  readStdin(): Promise<string>;
   /** Asks a question on stderr and reads one line (not echoed when `secret`). */
   prompt(question: string, options?: { secret?: boolean }): Promise<string>;
   /** This machine's name (names the CLI's API key and listener). */
@@ -149,6 +152,12 @@ export function nodeIo(): CliIo {
     now: () => new Date(),
     sleep,
     openBrowser,
+    async readStdin() {
+      // Decoded once: a character can be split between chunks.
+      const chunks: Buffer[] = [];
+      for await (const chunk of process.stdin) chunks.push(Buffer.from(chunk));
+      return Buffer.concat(chunks).toString("utf8");
+    },
     async prompt(question, options = {}) {
       process.stderr.write(question);
       if (!process.stdin.isTTY) {

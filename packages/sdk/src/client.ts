@@ -1,5 +1,6 @@
 import { API_VERSION, type ApiVersion } from "./api-version.ts";
-import { type FetchLike, HttpClient } from "./core/http.ts";
+import { type CossResult, clientError } from "./core/errors.ts";
+import { type FetchLike, HttpClient, type RequestOptions } from "./core/http.ts";
 import { ApiKeyResource } from "./resources/api-key.ts";
 import { AuditEventsResource } from "./resources/audit-events.ts";
 import { BillingResource } from "./resources/billing.ts";
@@ -7,6 +8,7 @@ import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
 import { EnvironmentResource } from "./resources/environment.ts";
 import { HooksResource } from "./resources/hooks.ts";
+import { listQuery } from "./resources/list-query.ts";
 import { LogDrainsResource } from "./resources/log-drains.ts";
 import { LogsResource } from "./resources/logs.ts";
 import { ReputationResource } from "./resources/reputation.ts";
@@ -35,6 +37,29 @@ export interface CossOptions {
    * to a browser exposes it to anyone who opens the page.
    */
   dangerouslyAllowBrowser?: boolean;
+}
+
+export type CossRequestMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+/** Options of `coss.request()`. */
+export interface CossRequestOptions extends RequestOptions {
+  /** Query parameters: lists are comma-joined, dates ISO 8601, `undefined` values left out. */
+  query?: Record<
+    string,
+    string | number | boolean | Date | readonly (string | number)[] | undefined
+  >;
+  /** Sent as JSON. */
+  body?: unknown;
+  /**
+   * `text` or `bytes` for a successful response that isn't JSON (a CSV export, a received email's
+   * raw message, an attachment). Default `json`.
+   */
+  responseType?: "json" | "text" | "bytes";
+  /**
+   * Automatic retries (as `maxRetries` says). Default: on for GET, PUT and DELETE; off for POST and
+   * PATCH, since not every endpoint deduplicates them by `Idempotency-Key`.
+   */
+  retry?: boolean;
 }
 
 /**
@@ -108,6 +133,7 @@ export class Coss {
   readonly risk: RiskResource;
   /** The organization's plan, usage, invoices and credits (`coss.billing.get()`). */
   readonly billing: BillingResource;
+  readonly #http: HttpClient;
 
   /**
    * Throws only for programmer errors: no API key, or running in a browser without
@@ -143,6 +169,7 @@ export class Coss {
       apiVersion: options.apiVersion?.trim() || API_VERSION,
       integration: (options as { [INTEGRATION]?: string })[INTEGRATION],
     });
+    this.#http = http;
     this.email = new EmailResource(http);
     this.environment = new EnvironmentResource(http);
     this.apiKey = new ApiKeyResource(http);
@@ -156,5 +183,44 @@ export class Coss {
     this.hooks = new HooksResource(http);
     this.risk = new RiskResource(http);
     this.billing = new BillingResource(http);
+  }
+
+  /**
+   * Calls any endpoint, for one this SDK has no method for yet. `path` starts with `/v1/` (a query
+   * string is merged with `query`); the result is the response's JSON, unchecked.
+   *
+   * ```ts
+   * const { data, error } = await coss.request("GET", "/v1/domains", { query: { limit: 5 } });
+   * ```
+   */
+  request<T = unknown>(
+    method: CossRequestMethod,
+    path: string,
+    options: CossRequestOptions = {},
+  ): Promise<CossResult<T>> {
+    // Appended to the base URL as is: anything but a path could change the host the key goes to.
+    if (!path.startsWith("/")) {
+      const message = `The path must start with "/", e.g. "/v1/domains"; got "${path}".`;
+      return Promise.resolve({
+        data: null,
+        error: clientError("invalid_request_error", "invalid_path", message),
+      });
+    }
+    const index = path.indexOf("?");
+    const query: Record<string, string | undefined> = {};
+    if (index >= 0) {
+      for (const [name, value] of new URLSearchParams(path.slice(index + 1))) query[name] = value;
+    }
+    Object.assign(query, listQuery(options.query ?? {}));
+    return this.#http.request<T>({
+      method,
+      path: index >= 0 ? path.slice(0, index) : path,
+      query,
+      body: options.body,
+      responseType: options.responseType,
+      retry: options.retry ?? (method === "GET" || method === "PUT" || method === "DELETE"),
+      idempotencyKey: options.idempotencyKey,
+      signal: options.signal,
+    });
   }
 }

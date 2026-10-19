@@ -64,8 +64,8 @@ export function testIo(overrides: Partial<CliIo> & { answers?: string[] } = {}):
   const io: TestIo = {
     env: {},
     stdout: {
-      write: (text) => {
-        stdout += text;
+      write: (chunk) => {
+        stdout += typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk);
       },
     },
     stderr: {
@@ -87,6 +87,7 @@ export function testIo(overrides: Partial<CliIo> & { answers?: string[] } = {}):
         });
       }),
     openBrowser: async () => false,
+    readStdin: async () => answers.shift() ?? "",
     prompt: async (question) => {
       stderr += question;
       return answers.shift() ?? "";
