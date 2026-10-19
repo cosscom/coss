@@ -35,6 +35,17 @@ describe("coss.request", () => {
     expect(calls[0]?.headers.has("idempotency-key")).toBe(false);
   });
 
+  test("PUT and PATCH aren't retried unless asked (a draft save counts every attempt)", async () => {
+    for (const method of ["PUT", "PATCH"] as const) {
+      const { fetch, calls } = mockFetch(unavailable, json(200, {}));
+      const { error } = await client(fetch).request(method, "/v1/email_templates/etpl_1/draft", {
+        body: {},
+      });
+      expect(error?.code).toBe("service_unavailable");
+      expect(calls).toHaveLength(1);
+    }
+  });
+
   test("POST: a JSON body with an Idempotency-Key, not retried unless asked", async () => {
     const once = mockFetch(unavailable);
     const { error } = await client(once.fetch).request("POST", "/v1/domains", {

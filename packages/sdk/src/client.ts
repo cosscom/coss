@@ -57,8 +57,9 @@ export interface CossRequestOptions extends RequestOptions {
    */
   responseType?: "json" | "text" | "bytes";
   /**
-   * Automatic retries (as `maxRetries` says). Default: on for GET, PUT and DELETE; off for POST and
-   * PATCH, since not every endpoint deduplicates them by `Idempotency-Key`.
+   * Automatic retries (as `maxRetries` says). Default: on for GET and DELETE; off for POST, PUT and
+   * PATCH, since not every endpoint deduplicates them (a template draft's save, a PUT, counts every
+   * attempt as a revision).
    */
   retry?: boolean;
 }
@@ -222,7 +223,7 @@ export class Coss {
       query,
       body: options.body,
       responseType: options.responseType,
-      retry: options.retry ?? (method === "GET" || method === "PUT" || method === "DELETE"),
+      retry: options.retry ?? (method === "GET" || method === "DELETE"),
       idempotencyKey: options.idempotencyKey,
       signal: options.signal,
     });

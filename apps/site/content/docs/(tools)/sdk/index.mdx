@@ -103,8 +103,9 @@ const { data, error } = await coss.request<{ data: { id: string }[] }>("GET", "/
 await coss.request("POST", "/v1/domains/dom_01k7c8m4q2f3e9v6t5r1n0p8yz/verify");
 ```
 
-GET, PUT and DELETE are retried like every other call; POST and PATCH only with `retry: true`,
-since not every endpoint deduplicates them by `Idempotency-Key`. `responseType: "text"` or
+GET and DELETE are retried like every other call; POST, PUT and PATCH only with `retry: true`,
+since not every endpoint deduplicates them (saving a template's draft counts every attempt as a
+revision). `responseType: "text"` or
 `"bytes"` reads a body that isn't JSON (a CSV export, a received email's raw message).
 
 ## Diagnose a delivery
