@@ -3,6 +3,7 @@ import type { PlanGate } from "@coss/billing/gate";
 import { db, schema } from "@coss/db";
 import {
   createEmailTemplate,
+  createTopic,
   getContact,
   getContactTopics,
   getEmailTemplate,
@@ -462,6 +463,36 @@ describe("runDueMigrations", () => {
       message: expect.stringContaining("contact limit"),
     });
     expect(progress.suppressions?.state).toBe("done");
+  });
+
+  test("finds existing topics even when the environment is at its topic cap", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    await createTopic(env, {
+      key: "product_updates",
+      name: "Updates",
+      default_subscription: "opt_in",
+    });
+    for (let i = 1; i < 100; i++) {
+      await createTopic(env, {
+        key: `filler_${i}`,
+        name: `Filler ${i}`,
+        default_subscription: "opt_in",
+      });
+    }
+    const row = await connect(tenant);
+    await settle(tenant, depsFor(DATA));
+    await startAll(tenant, row.id, ["contacts"]);
+    await settle(tenant, depsFor(DATA));
+    const items = await listMigrationItems(env, row.id);
+    expect(items.find((item) => item.kind === "topic")).toMatchObject({
+      outcome: "existing",
+      targetName: "product_updates",
+    });
+    const choice = (await getContactTopics(env, "ada@example.com"))?.topics.find(
+      (t) => t.topic === "product_updates",
+    )?.choice;
+    expect(choice).toBe("opted_out");
   });
 
   test("a failed step goes on from its last checkpoint without counting anything twice", async () => {

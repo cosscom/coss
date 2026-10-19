@@ -157,6 +157,27 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Unknown error.";
 }
 
+/**
+ * The object found by `find`, else the one `create` makes. Looked up first: at the environment's
+ * cap (50 properties, 100 topics) creating fails before it could tell an existing key apart. A
+ * create that loses a race to the same key (`exists`) finds the winner.
+ */
+async function findOrCreate<T>(
+  find: () => Promise<T | undefined>,
+  create: () => Promise<{ id: string }>,
+  exists: string,
+): Promise<{ existing: T } | { created: { id: string } } | { error: ContactError }> {
+  const found = await find();
+  if (found) return { existing: found };
+  try {
+    return { created: await create() };
+  } catch (error) {
+    if (!(error instanceof ContactError)) throw error;
+    const winner = error.code === exists ? await find() : undefined;
+    return winner ? { existing: winner } : { error };
+  }
+}
+
 const properties: Phase = async (ctx, cursor) => {
   const sources = await ctx.source.properties();
   const taken = new Set(
@@ -170,29 +191,27 @@ const properties: Phase = async (ctx, cursor) => {
     );
     if (!item?.targetName) return;
     const key = item.targetName;
-    let result: ItemResult;
-    try {
-      const created = await createContactProperty(ctx.env, {
-        key,
-        type: property.type,
-        ...(property.fallback !== null ? { fallback: property.fallback } : {}),
-      });
-      result = { outcome: "created", targetId: created.id };
-    } catch (error) {
-      if (!(error instanceof ContactError)) throw error;
-      const existing =
-        error.code === "property_exists"
-          ? (await listContactPropertyRows(ctx.env)).find((row) => row.key === key)
-          : undefined;
-      result = existing
-        ? existing.type === property.type
-          ? { outcome: "existing", targetId: existing.id }
-          : {
-              outcome: "skipped",
-              message: `A ${existing.type} property named ${key} already exists; this one is a ${property.type}.`,
-            }
-        : { outcome: "failed", message: error.message };
-    }
+    const outcome = await findOrCreate(
+      async () => (await listContactPropertyRows(ctx.env)).find((row) => row.key === key),
+      () =>
+        createContactProperty(ctx.env, {
+          key,
+          type: property.type,
+          ...(property.fallback !== null ? { fallback: property.fallback } : {}),
+        }),
+      "property_exists",
+    );
+    const result: ItemResult =
+      "created" in outcome
+        ? { outcome: "created", targetId: outcome.created.id }
+        : "error" in outcome
+          ? { outcome: "failed", message: outcome.error.message }
+          : outcome.existing.type === property.type
+            ? { outcome: "existing", targetId: outcome.existing.id }
+            : {
+                outcome: "skipped",
+                message: `A ${outcome.existing.type} property named ${key} already exists; this one is a ${property.type}.`,
+              };
     count(ctx.progress, result);
     await finishItem(item, result);
   });
@@ -207,24 +226,19 @@ const topics: Phase = async (ctx, cursor) => {
     const item = await pendingItem(ctx, "topic", topic, () => topicKey(topic.name, taken));
     if (!item?.targetName) return;
     const key = item.targetName;
-    let result: ItemResult;
-    try {
-      const created = await createTopic(ctx.env, {
-        key,
-        name: topic.name.slice(0, 100),
-        description: topic.description?.slice(0, 500) ?? null,
-        default_subscription: topic.defaultSubscription,
-        visibility: topic.visibility,
-      });
-      result = { outcome: "created", targetId: created.id };
-    } catch (error) {
-      if (!(error instanceof ContactError)) throw error;
-      const existing =
-        error.code === "topic_exists" ? (await topicsByKey(ctx.env, [key])).get(key) : undefined;
-      result = existing
-        ? { outcome: "existing", targetId: existing.id }
-        : { outcome: "failed", message: error.message };
-    }
+    const outcome = await findOrCreate(
+      async () => (await topicsByKey(ctx.env, [key])).get(key),
+      () =>
+        createTopic(ctx.env, {
+          key,
+          name: topic.name.slice(0, 100),
+          description: topic.description?.slice(0, 500) ?? null,
+          default_subscription: topic.defaultSubscription,
+          visibility: topic.visibility,
+        }),
+      "topic_exists",
+    );
+    const result = itemResult(outcome);
     count(ctx.progress, result);
     await finishItem(item, result);
   });
@@ -236,34 +250,37 @@ const audiences: Phase = async (ctx, cursor) => {
     const name = list.name.slice(0, 200);
     const item = await pendingItem(ctx, "audience", list, () => name);
     if (!item) return;
-    let result: ItemResult;
-    try {
-      const created = await createAudience(ctx.env, { name });
-      result = { outcome: "created", targetId: created.id };
-    } catch (error) {
-      if (!(error instanceof ContactError)) throw error;
-      const [existing] =
-        error.code === "name_taken"
-          ? await db
-              .select({ id: schema.audience.id })
-              .from(schema.audience)
-              .where(
-                and(
-                  eq(schema.audience.organizationId, ctx.env.organizationId),
-                  eq(schema.audience.environmentId, ctx.env.environmentId),
-                  eq(schema.audience.name, name),
-                ),
-              )
-              .limit(1)
-          : [];
-      result = existing
-        ? { outcome: "existing", targetId: existing.id }
-        : { outcome: "failed", message: error.message };
-    }
+    const outcome = await findOrCreate(
+      async () => {
+        const [found] = await db
+          .select({ id: schema.audience.id })
+          .from(schema.audience)
+          .where(
+            and(
+              eq(schema.audience.organizationId, ctx.env.organizationId),
+              eq(schema.audience.environmentId, ctx.env.environmentId),
+              eq(schema.audience.name, name),
+            ),
+          )
+          .limit(1);
+        return found;
+      },
+      () => createAudience(ctx.env, { name }),
+      "name_taken",
+    );
+    const result = itemResult(outcome);
     count(ctx.progress, result);
     await finishItem(item, result);
   });
 };
+
+function itemResult(
+  outcome: { existing: { id: string } } | { created: { id: string } } | { error: ContactError },
+): ItemResult {
+  if ("created" in outcome) return { outcome: "created", targetId: outcome.created.id };
+  if ("error" in outcome) return { outcome: "failed", message: outcome.error.message };
+  return { outcome: "existing", targetId: outcome.existing.id };
+}
 
 function describeWarning(warning: ConversionWarning): string {
   return `${warning.field} ${warning.line}:${warning.column}: ${warning.message}`;
