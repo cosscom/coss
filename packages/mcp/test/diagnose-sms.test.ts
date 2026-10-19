@@ -43,6 +43,32 @@ describe("diagnoseSms", () => {
     expect(diagnosis.timeline.at(-1)).toMatchObject({ failure_code: "carrier_filtered" });
   });
 
+  test("the simulator's invalid and opted-out numbers leave no suppression to remove", () => {
+    const simulated = diagnoseSms({
+      sms: sms({
+        to: "+15005550001",
+        status: "failed",
+        delivered_at: null,
+        failure: failure("invalid_number"),
+      }),
+      events: [smsEvent("sms.failed", { failure: failure("invalid_number") })],
+      now: NOW,
+    });
+    expect(simulated.failure?.explanation).toContain("never added to the suppression list");
+    expect(simulated.next_steps.join(" ")).not.toContain("remove_sms_suppression");
+    const real = diagnoseSms({
+      sms: sms({
+        to: "+14155550199",
+        status: "failed",
+        delivered_at: null,
+        failure: failure("invalid_number"),
+      }),
+      events: [smsEvent("sms.failed", { failure: failure("invalid_number") })],
+      now: NOW,
+    });
+    expect(real.failure?.explanation).toContain("suppression list (reason invalid_number)");
+  });
+
   test("suppressed: names the matched entry and doesn't repeat it as a warning", () => {
     const entry = {
       object: "sms_suppression" as const,

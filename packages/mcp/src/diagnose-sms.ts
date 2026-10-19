@@ -212,7 +212,26 @@ function minutesSince(iso: string, now: Date): number {
   return Math.max(0, Math.floor((now.getTime() - Date.parse(iso)) / MINUTE));
 }
 
-function describeFailure(failure: { code: string; message: string }) {
+/**
+ * The SMS simulator's numbers (`+1 500 555 0xxx`, `isSimulatorNumber` in `packages/sms/src/phone.ts`):
+ * their failures are produced on purpose and never add a suppression entry.
+ */
+const SIMULATOR_PREFIX = "+1500555";
+const SUPPRESSING_FAILURES = new Set(["invalid_number", "opted_out"]);
+
+function describeFailure(failure: { code: string; message: string }, to: string) {
+  if (to.startsWith(SIMULATOR_PREFIX) && SUPPRESSING_FAILURES.has(failure.code)) {
+    return {
+      ...failure,
+      explanation:
+        `The SMS simulator's ${failure.code} number produced this outcome on purpose. Simulator ` +
+        "numbers are never added to the suppression list, so sending to it again gives the same " +
+        "outcome.",
+      next_steps: [
+        `Nothing to fix: handle the failure the way your code would handle a real one (a real ${failure.code} number is added to the suppression list, and later sends to it are skipped).`,
+      ],
+    };
+  }
   return { ...failure, ...(SMS_FAILURES[failure.code] ?? UNKNOWN_FAILURE) };
 }
 
@@ -307,12 +326,12 @@ function outcome(sms: Sms, events: SmsEvent[], context: SmsDiagnosisContext, now
     case "failed":
     case "undelivered": {
       if (sms.failure) {
-        const failure = describeFailure(sms.failure);
+        const failure = describeFailure(sms.failure, sms.to);
         return { explanation: failure.explanation, next_steps: failure.next_steps };
       }
       const undelivered = latest(events, ["sms.undelivered", "sms.failed"])?.data.failure;
       return undelivered
-        ? describeFailure(undelivered)
+        ? describeFailure(undelivered, sms.to)
         : sms.status === "undelivered"
           ? (SMS_FAILURES.undelivered ?? UNKNOWN_FAILURE)
           : UNKNOWN_FAILURE;
@@ -387,7 +406,7 @@ export function diagnoseSms(input: {
   const context = input.context ?? {};
   const now = input.now ?? new Date();
   const verdict = verdictOf(sms.status);
-  const failure = sms.failure ? describeFailure(sms.failure) : null;
+  const failure = sms.failure ? describeFailure(sms.failure, sms.to) : null;
   const advice = outcome(sms, events, context, now);
   const providerErrorCode = latest(events, ["sms.undelivered", "sms.failed"])?.data
     .provider_error_code;
