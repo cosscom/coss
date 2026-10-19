@@ -27,6 +27,7 @@ import {
   purgeExpiredHookPortalSessions,
   purgeFinishedHookRecoveries,
 } from "@coss/hooks";
+import { purgeAbandonedMigrationDrafts, purgeExpiredMigrations } from "@coss/migrate";
 import { purgeExpiredPushNotifications } from "@coss/push";
 import {
   purgeExpiredReputationEvents,
@@ -91,6 +92,8 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "billing provider events", purge: purgeExpiredBillingProviderEvents },
   { name: "billing notifications", purge: purgeExpiredBillingNotifications },
   { name: "push notifications", purge: purgeExpiredPushNotifications },
+  { name: "migrations", purge: purgeExpiredMigrations },
+  { name: "unstarted migrations", purge: purgeAbandonedMigrationDrafts },
   { name: "invoices", purge: purgeExpiredInvoices },
   {
     name: "expired auth rows",

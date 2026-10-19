@@ -122,6 +122,9 @@ export const ID_PREFIXES = {
   smsReceived: "smsin",
   smsNumber: "num",
   smsRegistration: "smsreg",
+  // Imports from another email provider (Resend, SendGrid, Postmark), `@coss/migrate`.
+  migration: "mig",
+  migrationItem: "migitem",
 } as const;
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES];

@@ -98,7 +98,11 @@ function checkedUrl(value: string, deps: WebhookManagementDeps): string {
   }
 }
 
-/** Creates an endpoint with a new signing secret, which is returned in plain text. */
+/**
+ * Creates an endpoint with a new signing secret, which is returned in plain text. `enabled: false`
+ * creates it disabled by hand (migrations from another provider: the old handler can't verify
+ * coss.com's signatures yet).
+ */
 export async function createWebhookEndpoint(
   input: {
     organizationId: string;
@@ -109,6 +113,7 @@ export async function createWebhookEndpoint(
     /** Usually the version of the request creating the endpoint (or the organization's pin). */
     apiVersion: string;
     userId: string | null;
+    enabled?: boolean;
   },
   deps: WebhookManagementDeps,
 ): Promise<{ endpoint: WebhookEndpointRow; secret: string }> {
@@ -160,6 +165,9 @@ export async function createWebhookEndpoint(
       apiVersion,
       secretCiphertext: encryptSecret(secret, deps.secretsKeys),
       createdByUserId: input.userId,
+      ...(input.enabled === false
+        ? { enabled: false, disabledReason: "manual" as const, disabledAt: new Date() }
+        : {}),
     })
     .returning();
   if (!endpoint) throw new Error("Webhook endpoint insert returned no row.");

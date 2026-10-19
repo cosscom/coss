@@ -121,13 +121,22 @@ async function environmentProject(env: SuppressionEnvironment): Promise<string |
   return environment?.projectId ?? null;
 }
 
-/** One entry of a bulk import, before validation. */
-export type SuppressionImportEntry = { address: string; scope?: string | undefined };
+/**
+ * One entry of a bulk import, before validation. `reason` and `createdAt` are for migrations from
+ * another provider (`@coss/migrate`), which keep its reason and date; the API and CSV imports never
+ * set them (reason `import`, created now).
+ */
+export type SuppressionImportEntry = {
+  address: string;
+  scope?: string | undefined;
+  reason?: Exclude<SuppressionReason, "import"> | undefined;
+  createdAt?: Date | undefined;
+};
 
 const IMPORT_INSERT_BATCH = 1000;
 
 /**
- * Adds many entries with reason `import`. Each entry is validated like a single add; invalid ones
+ * Adds many entries with reason `import` (or the entry's own). Each entry is validated like a single add; invalid ones
  * are skipped and reported by index, entries already on the list (or repeated) count as `existing`.
  * All inserts run in one transaction. `null` when the environment is missing.
  */
@@ -138,7 +147,10 @@ export async function importSuppressions(
   const projectId = await environmentProject(env);
   if (!projectId) return null;
   const invalid: SuppressionImportOutput["invalid"] = [];
-  const unique = new Map<string, CreateSuppressionRequestOutput>();
+  const unique = new Map<
+    string,
+    CreateSuppressionRequestOutput & Pick<SuppressionImportEntry, "reason" | "createdAt">
+  >();
   entries.forEach((entry, index) => {
     const parsed = CreateSuppressionRequest.safeParse({
       address: entry.address,
@@ -154,7 +166,11 @@ export async function importSuppressions(
       });
       return;
     }
-    unique.set(`${parsed.data.scope} ${parsed.data.address}`, parsed.data);
+    unique.set(`${parsed.data.scope} ${parsed.data.address}`, {
+      ...parsed.data,
+      reason: entry.reason,
+      createdAt: entry.createdAt,
+    });
   });
   const valid = [...unique.values()];
   let created = 0;
@@ -169,7 +185,8 @@ export async function importSuppressions(
             environmentId: env.environmentId,
             address: entry.address,
             scope: entry.scope,
-            reason: "import" as const,
+            reason: entry.reason ?? ("import" as const),
+            ...(entry.createdAt ? { createdAt: entry.createdAt } : {}),
           })),
         )
         .onConflictDoNothing({

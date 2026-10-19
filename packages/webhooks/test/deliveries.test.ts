@@ -99,6 +99,25 @@ describe("endpoints", () => {
     ).rejects.toThrow(WebhookError);
   });
 
+  test("can be created disabled, which delivers nothing until enabled", async () => {
+    const tenant = await createTestTenant();
+    const { endpoint } = await createWebhookEndpoint(
+      {
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        url: "https://example.com/imported",
+        eventTypes: ["email.delivered"],
+        apiVersion: LATEST_API_VERSION,
+        userId: null,
+        enabled: false,
+      },
+      testManagementDeps,
+    );
+    expect(endpoint).toMatchObject({ enabled: false, disabledReason: "manual" });
+    expect(endpoint.disabledAt).toBeInstanceOf(Date);
+    expect((await enqueue(tenant)).queued).toBe(0);
+  });
+
   test("belong to an environment of the organization, at most 10 each", async () => {
     const tenant = await createTestTenant();
     const other = await createTestTenant();

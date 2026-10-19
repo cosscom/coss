@@ -604,19 +604,32 @@ export async function listContacts(
 const IMPORT_BATCH = 500;
 
 /**
+ * An import entry that also carries topic choices: only migrations from another provider
+ * (`@coss/migrate`) pass them; the API and CSV imports take the wire `ContactImportEntry`.
+ */
+export type ContactImportEntryWithTopics = ContactImportEntryInput & {
+  topics?: { topic: string; status: ContactTopicStatus }[] | undefined;
+};
+
+/**
  * Upserts many contacts at once (the API takes 1,000, the dashboard's CSV 10,000). Each entry
  * is validated on its own; invalid ones are reported and skipped. Existing contacts get the new
  * names and properties, but an import never re-subscribes an `unsubscribed` (or `pending`)
- * contact. No webhooks: an import would flood endpoints. All or nothing for the valid entries:
- * over the plan's limit nothing is imported.
+ * contact, and an entry's topic opt-in never overrides a recorded opt-out (opt-outs always apply).
+ * No webhooks: an import would flood endpoints. All or nothing for the valid entries: over the
+ * plan's limit, or with an unknown audience or topic, nothing is imported.
  */
 export async function importContacts(
   env: ContactEnvironment,
-  entries: ContactImportEntryInput[],
+  entries: ContactImportEntryWithTopics[],
   opts: ContactDeps & { audienceId?: string; source?: ContactSource; now?: Date },
 ): Promise<ContactImportOutput> {
   const now = opts.now ?? new Date();
   const source = opts.source ?? "import";
+  const topics = await requireTopics(
+    env,
+    entries.flatMap((entry) => entry.topics ?? []),
+  );
   const invalid: ContactImportOutput["invalid"] = [];
   const valid = new Map<string, UpsertContactRequestOutput>();
   entries.forEach((entry, index) => {
@@ -750,6 +763,7 @@ export async function importContacts(
             )
             .onConflictDoNothing();
         }
+        await importTopicChoices(tx, touched, valid, topics, source);
       }
     });
   } catch (error) {
@@ -763,6 +777,41 @@ export async function importContacts(
     kept_unsubscribed: keptUnsubscribed,
     invalid,
   };
+}
+
+/** Imported topic choices: opt-outs always apply, opt-ins only where nothing is recorded yet. */
+async function importTopicChoices(
+  tx: Executor,
+  rows: ContactRow[],
+  valid: Map<string, UpsertContactRequestOutput>,
+  topics: ReadonlyMap<string, Pick<TopicRow, "id">>,
+  source: ContactSource,
+): Promise<void> {
+  const choices = rows.flatMap((row) => {
+    const latest = new Map<string, ContactTopicStatus>();
+    for (const choice of valid.get(row.address)?.topics ?? [])
+      latest.set(choice.topic, choice.status);
+    return [...latest].map(([key, status]) => ({
+      contactId: row.id,
+      topicId: (topics.get(key) as Pick<TopicRow, "id">).id,
+      organizationId: row.organizationId,
+      status,
+      source,
+    }));
+  });
+  const optOuts = choices.filter((choice) => choice.status === "opted_out");
+  const optIns = choices.filter((choice) => choice.status === "opted_in");
+  if (optOuts.length > 0) {
+    await tx
+      .insert(contactTopic)
+      .values(optOuts)
+      .onConflictDoUpdate({
+        target: [contactTopic.contactId, contactTopic.topicId],
+        set: { status: sql`excluded.status`, source: sql`excluded.source`, updatedAt: sql`now()` },
+        setWhere: sql`${contactTopic.status} <> excluded.status`,
+      });
+  }
+  if (optIns.length > 0) await tx.insert(contactTopic).values(optIns).onConflictDoNothing();
 }
 
 const EXPORT_PAGE = 1000;

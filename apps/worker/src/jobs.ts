@@ -43,6 +43,7 @@ import {
   runDueHookRecoveries,
 } from "@coss/hooks";
 import { dropExpiredLogPartitions, ensureLogPartitions } from "@coss/logs";
+import { type MigrationWorkerDeps, runDueMigrations } from "@coss/migrate";
 import { type PushDeps, runDuePushNotifications } from "@coss/push";
 import {
   type ReputationNotificationDeps,
@@ -94,6 +95,7 @@ const NOTIFICATION_BATCH = 20;
 const AUTH_EMAIL_BATCH = 20;
 const SCHEDULED_BATCH = 50;
 const BROADCAST_BATCH = 10;
+const MIGRATION_BATCH = 2;
 const DELETION_BATCH = 5;
 const RETENTION_BATCH = 1000;
 const BILLING_BATCH = 20;
@@ -121,6 +123,8 @@ export type WorkerDeps = {
   };
   /** Fans broadcasts out into emails, at each organization's marketing rate. */
   broadcasts: BroadcastWorkerDeps;
+  /** Imports from other providers (Resend, SendGrid, Postmark). */
+  migrations: MigrationWorkerDeps;
   /** Also delivers log drain batches (same signing keys and sender). */
   webhooks: WebhookDeliveryDeps;
   /** Delivers Hooks messages (same signing keys and sender, plus the delivery rate limits). */
@@ -185,6 +189,7 @@ export const WORKER_LOOP_NAMES = [
   "sms-registrations",
   "sms-fees",
   "broadcasts",
+  "migrations",
   "stale-claims",
   "reputation",
   "organization-deletions",
@@ -333,6 +338,12 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       name: "sms-fees",
       intervalMs: 10 * 60_000,
       run: async () => (await chargeDueSmsFees({ limit: SWEEP_BATCH })) >= SWEEP_BATCH,
+    }),
+    start({
+      // Imports from other providers: each run works on a few for a step (they take turns).
+      name: "migrations",
+      intervalMs: 5000,
+      run: async () => (await runDueMigrations(deps.migrations, { limit: MIGRATION_BATCH })) > 0,
     }),
     start({
       name: "stale-claims",

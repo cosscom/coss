@@ -224,6 +224,16 @@ export const BUCKETS = {
     overridable: true,
     failureMode: "deny",
   },
+  // Provider keys checked for imports from another provider, per organization: each check calls
+  // the provider, so coss.com mustn't become a way to test stolen keys.
+  "dashboard.migration_connections": {
+    scope: "org",
+    limit: 20,
+    periodMs: DAY,
+    burst: 5,
+    overridable: true,
+    failureMode: "deny",
+  },
   // Failed API key authentications per client IP (bad keys are rejected before the key lookup).
   "api.auth_failure": {
     scope: "ip",

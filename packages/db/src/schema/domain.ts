@@ -3544,3 +3544,127 @@ export const riskAssessmentPreparation = pgTable(
     index("risk_assessment_preparation_created_idx").on(t.createdAt),
   ],
 );
+
+// Migrations: imports of a customer's resources from another email provider (`@coss/migrate`).
+
+export const migrationProvider = pgEnum("migration_provider", ["resend", "sendgrid", "postmark"]);
+
+export const migrationStatus = pgEnum("migration_status", [
+  // The worker is reading what the provider has (`inventory`).
+  "inspecting",
+  // Waiting for the customer to choose what to import.
+  "ready",
+  "queued",
+  "running",
+  "completed",
+  "failed",
+  "canceled",
+]);
+
+/**
+ * An import from another provider into one environment. The provider's API key is held encrypted
+ * (`encryptSecret`) only until the import finishes or is canceled. The worker leases the row
+ * (`lease_until`, every write fenced on it) and works through `phase` from `cursor`.
+ */
+export const migration = pgTable(
+  "migration",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.migration)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    provider: migrationProvider("provider").notNull(),
+    status: migrationStatus("status").notNull().default("inspecting"),
+    credentialsCiphertext: text("credentials_ciphertext"),
+    // The key's last characters, to tell imports apart.
+    credentialHint: text("credential_hint").notNull(),
+    // Provider-specific connection details (Postmark's server, SendGrid's region).
+    source: jsonb("source").notNull().default({}),
+    inventory: jsonb("inventory"),
+    // What the customer chose to import.
+    selection: jsonb("selection"),
+    phase: text("phase"),
+    cursor: jsonb("cursor"),
+    progress: jsonb("progress").notNull().default({}),
+    leaseUntil: timestamp("lease_until", { withTimezone: true }),
+    nextRunAt: timestamp("next_run_at", { withTimezone: true }),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    lastError: text("last_error"),
+    createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "migration_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("migration_id_organization_unique").on(t.id, t.organizationId),
+    index("migration_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
+    // The worker's due scan.
+    index("migration_due_idx")
+      .on(t.nextRunAt)
+      .where(sql`${t.status} in ('inspecting', 'queued', 'running')`),
+  ],
+);
+
+export const migrationItemKind = pgEnum("migration_item_kind", [
+  "domain",
+  "property",
+  "topic",
+  "audience",
+  "template",
+  "webhook_endpoint",
+]);
+
+export const migrationItemOutcome = pgEnum("migration_item_outcome", [
+  // Written before the object is created, so a retry finds it by its natural key.
+  "pending",
+  "created",
+  "existing",
+  "skipped",
+  "failed",
+]);
+
+/**
+ * One object an import brought over (or didn't), and what it became: contacts and suppressions
+ * are only counted (`migration.progress`).
+ */
+export const migrationItem = pgTable(
+  "migration_item",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.migrationItem)),
+    migrationId: text("migration_id").notNull(),
+    organizationId: text("organization_id").notNull(),
+    kind: migrationItemKind("kind").notNull(),
+    sourceId: text("source_id").notNull(),
+    sourceName: text("source_name").notNull(),
+    // The coss.com object's id and its key, alias or name.
+    targetId: text("target_id"),
+    targetName: text("target_name"),
+    outcome: migrationItemOutcome("outcome").notNull().default("pending"),
+    // Imported, but not as it was (a template left a draft, an endpoint missing events).
+    needsReview: boolean("needs_review").notNull().default(false),
+    message: text("message"),
+    warnings: jsonb("warnings").notNull().default([]),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "migration_item_migration_fk",
+      columns: [t.migrationId, t.organizationId],
+      foreignColumns: [migration.id, migration.organizationId],
+    }).onDelete("cascade"),
+    unique("migration_item_source_unique").on(t.migrationId, t.kind, t.sourceId),
+  ],
+);

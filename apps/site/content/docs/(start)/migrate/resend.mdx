@@ -1,0 +1,116 @@
+---
+title: From Resend
+description: What an import brings over from Resend, how it maps onto coss.com, and how to switch your code.
+---
+
+Start an import from the dashboard's **Import** page (see the [overview](/docs/migrate)) with a
+Resend API key that has **full access**. A sending-only key can't read your account, and the
+import refuses it.
+
+Resend shares one rate limit between all of a team's keys, your live sending included, so imports
+read your account at a fraction of it. Contacts are the slow part. Resend returns a contact's
+custom properties and topic choices one contact at a time, so with properties or topics an import
+brings over a few thousand contacts an hour.
+
+## What's imported
+
+| Resend                          | coss.com                                                                     |
+| ------------------------------- | ---------------------------------------------------------------------------- |
+| Domains                         | [Domains](/docs/email/domains) of the organization, to verify with coss.com's DNS records |
+| Templates                       | [Templates](/docs/email/templates), with the same alias                      |
+| Contacts                        | [Contacts](/docs/email/contacts), unsubscribed ones still unsubscribed      |
+| Contact properties              | Contact properties (`string` and `number`, fallbacks kept)                   |
+| Segments                        | [Audiences](/docs/email/audiences-and-segments) with the same members        |
+| Topics                          | [Topics](/docs/email/topics-and-preferences), with each contact's choices    |
+| Suppressions                    | [Suppressions](/docs/email/suppressions) for every email, same reason and date |
+| Webhooks                        | Disabled [webhook endpoints](/docs/webhooks) with new secrets                |
+
+**Not imported:** broadcasts, API keys, a template's `from` and reply-to addresses (pass them with
+each send; the report notes which templates had them), domains' open and click tracking settings
+(see [tracking](/docs/email/tracking)), and webhook signing secrets.
+
+### Suppressions
+
+Resend's suppression API isn't available to every account. Where it is, bounces, complaints and
+manual entries become suppressions for every email (scope `*`) with the same reason. Where it
+isn't, the import says so: export the list from Resend's dashboard and import the CSV on the
+**Suppressions** page ([importing](/docs/email/suppressions#importing-and-exporting)). Contacts
+who unsubscribed are imported as `unsubscribed` contacts, which marketing email skips.
+
+### Topics
+
+A topic's key, which is what a send's `category` names, is made from its name in lower case:
+`Product updates` becomes `product_updates`. Its default subscription and visibility are kept,
+and so is each contact's opt-in or opt-out.
+
+## Templates
+
+Resend templates fill `{{{VARIABLE}}}` placeholders. The import converts them to coss.com's
+template language and declares every variable the Resend template had:
+
+- `{{{NAME}}}` stays raw in the HTML and becomes `{{NAME}}` in the subject and text, which are
+  never HTML-escaped anyway.
+- A variable's type (`string` or `number`) is kept. Its fallback becomes its default; one without
+  a fallback is required, as it was in Resend. `{{{NAME|fallback}}}` becomes a default too.
+- Names keep their case, so you keep sending `FIRST_NAME`. A name with dots is flattened:
+  `{{{order.id}}}` becomes `{{order_id}}`.
+- `{{{UNSUBSCRIBE_URL}}}` (and `{{{RESEND_UNSUBSCRIBE_URL}}}`) becomes `{{{unsubscribe_url}}}`,
+  which coss.com fills on [marketing sends](/docs/email/streams).
+- `FIRST_NAME`, `LAST_NAME` and `EMAIL` came from the contact on Resend's broadcasts. Here they are
+  ordinary variables: pass them when you send.
+
+A template whose placeholders all convert is published. Anything else is left as a draft, with what
+to fix listed in the report. A template keeps its Resend alias when it is a valid coss.com alias
+(lower-case letters, digits, `-` and `_`); otherwise the alias is made from its name.
+
+## Webhooks
+
+Resend's email and contact events have the same names on coss.com: `email.sent`,
+`email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.failed`,
+`email.opened`, `email.clicked`, `email.scheduled`, `email.suppressed`, `email.received`,
+`contact.created`, `contact.updated` and `contact.deleted`. `contact.topics.updated` becomes
+`contact.unsubscribed` and `contact.updated`. Domain, suppression, topic and inbox events have no
+coss.com counterpart, and the report lists them as left out. The payloads differ from Resend's, and
+requests are signed with the endpoint's new secret, so update your handler before you enable an
+endpoint (see [verifying requests](/docs/webhooks#verifying-requests)).
+
+## Domains and DNS
+
+coss.com's DKIM records don't collide with Resend's, so add them and keep sending through Resend
+while they verify. Both use the domain's `send` subdomain for bounces (its MX and SPF records):
+compare the `send` records coss.com shows with Resend's, and change any that differ when you switch
+your sending over.
+
+## Switch your code
+
+coss.com's SDK returns `{ data, error }` like Resend's and takes the same fields, in snake case
+(`reply_to`, `scheduled_at`):
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss(); // reads COSS_API_KEY
+// ---cut---
+const { data, error } = await coss.email.send({
+  from: "Acme <hello@acme.com>",
+  to: "ada@example.com",
+  reply_to: "support@acme.com",
+  subject: "Your receipt",
+  html: "<p>Thanks for your order.</p>",
+});
+```
+
+Send an imported template by its alias, with its variables:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data, error } = await coss.email.send({
+  from: "Acme <hello@acme.com>",
+  to: "ada@example.com",
+  template_id: "welcome",
+  variables: { FIRST_NAME: "Ada" },
+});
+```
+
+Topic choices apply to sends that name the topic's key as their `category`.

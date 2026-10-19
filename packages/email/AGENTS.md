@@ -45,7 +45,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `recordProviderEvent` adds `*` entries for permanent bounces (not SES-suppressed ones) and complaints, never for
   `SIMULATOR_DOMAIN` addresses. The parsed send request omits `category` when absent so older request hashes stay valid.
   Bulk import/export is synchronous: `importSuppressions` validates each entry on its own (invalid ones are skipped
-  and reported, reason `import`); the API takes 1,000 entries per request (the SDK batches), the dashboard a CSV of
+  and reported, reason `import` — imports from other providers (`@coss/migrate`) pass the provider's own
+  reason and date per entry); the API takes 1,000 entries per request (the SDK batches), the dashboard a CSV of
   up to 10,000 rows (`serverActions.bodySizeLimit` in `apps/web/next.config.ts` leaves room for its 2 MB). Exports
   stream CSV page by page (`suppressionsCsvStream`, `suppression-csv.ts`) and guard formula-like cells with `'`, which
   `parseSuppressionCsv` strips again.
@@ -319,7 +320,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   ≤ 50, key and type immutable; dates stored canonical ISO); `mergeProperties` validates every write (unknown key or
   wrong type → `ContactError`, 422, `param: properties.<key>`). The plan's `contactsPerEnvironment` is enforced by a
   conditional update of `contact_counter` (`reserveContacts`/`releaseContacts`, same transaction as every insert and
-  delete — never a `count(*)`). Imports never re-subscribe anyone and send no webhooks; single changes send
+  delete — never a `count(*)`). Imports never re-subscribe anyone and send no webhooks (entries may carry topic choices, only from
+  `@coss/migrate`: opt-outs apply, opt-ins never replace a recorded choice); single changes send
   `contact.created/updated/deleted` (contact id, email, status, source — never properties). Segments are JSON filters
   (`SegmentFilter`, ≤ 20 conditions, one nested level) compiled to SQL at every use (`compileSegmentFilter`: values
   bound, keys only from definitions, `contains` via `position()`); deleting a property, audience or topic a segment

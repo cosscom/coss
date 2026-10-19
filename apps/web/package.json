@@ -21,6 +21,7 @@
     "@coss/email": "workspace:*",
     "@coss/hooks": "workspace:*",
     "@coss/logs": "workspace:*",
+    "@coss/migrate": "workspace:*",
     "@coss/observability": "workspace:*",
     "@coss/push": "workspace:*",
     "@coss/ratelimit": "workspace:*",

@@ -12,7 +12,7 @@ import {
   type SecretsKeyRing,
 } from "./secrets.ts";
 
-const { hookEndpoint, logDrain, riskSettings, smsAccount, webhookEndpoint } = schema;
+const { hookEndpoint, logDrain, migration, riskSettings, smsAccount, webhookEndpoint } = schema;
 
 /**
  * Tables of endpoints with a current and a previous (rolled) secret: coss.com's own webhook endpoints
@@ -24,7 +24,10 @@ const ROLLED_SECRET_TABLES = [
 ] as const;
 
 export type ReencryptResult = {
-  /** Webhook endpoints, Hooks endpoints, log drains and captcha secrets looked at. */
+  /**
+   * Webhook endpoints, Hooks endpoints, log drains, captcha secrets, SMS auth tokens and imports'
+   * provider keys looked at.
+   */
   checked: number;
   /** Rows rewritten (with `dryRun`: that would be). */
   reencrypted: number;
@@ -35,8 +38,8 @@ export type ReencryptResult = {
 };
 
 /**
- * Rewrites every webhook endpoint, Hooks endpoint, log drain and risk captcha secret not encrypted
- * with the key ring's primary key, and drops previous endpoint secrets that stopped signing. Idempotent and safe while the apps serve traffic: a row is only
+ * Rewrites every webhook endpoint, Hooks endpoint, log drain and risk captcha secret (and every SMS
+ * auth token and provider key an unfinished import holds) not encrypted with the key ring's primary key, and drops previous endpoint secrets that stopped signing. Idempotent and safe while the apps serve traffic: a row is only
  * updated if it still holds what was read. `scope` limits the scan to some organizations (tests).
  */
 export async function reencryptWebhookSecrets(opts: {
@@ -60,6 +63,7 @@ export async function reencryptWebhookSecrets(opts: {
   await reencryptLogDrainSecrets({ ...opts, batchSize }, result);
   await reencryptCaptchaSecrets({ ...opts, batchSize }, result);
   await reencryptSmsAuthTokens({ ...opts, batchSize }, result);
+  await reencryptMigrationCredentials({ ...opts, batchSize }, result);
   return result;
 }
 
@@ -274,6 +278,75 @@ async function reencryptSmsAuthTokens(
         .set({ authToken, updatedAt: sql`${smsAccount.updatedAt}` })
         .where(and(eq(smsAccount.organizationId, row.id), eq(smsAccount.authToken, stored)))
         .returning({ id: smsAccount.organizationId });
+      if (updated) result.reencrypted++;
+      else result.conflicts++;
+    }
+    const last = rows.at(-1);
+    if (!last || rows.length < opts.batchSize) break;
+    after = last.id;
+  }
+}
+
+/** Provider API keys of imports from other providers (`@coss/migrate`), held until they finish. */
+async function reencryptMigrationCredentials(
+  opts: {
+    keys: SecretsKeyRing;
+    dryRun?: boolean;
+    batchSize: number;
+    scope?: { organizationIds: string[] };
+  },
+  result: ReencryptResult,
+): Promise<void> {
+  const { keys } = opts;
+  let after = "";
+  for (;;) {
+    const rows = await db
+      .select({
+        id: migration.id,
+        organizationId: migration.organizationId,
+        secretCiphertext: migration.credentialsCiphertext,
+      })
+      .from(migration)
+      .where(
+        and(
+          gt(migration.id, after),
+          isNotNull(migration.credentialsCiphertext),
+          opts.scope ? inArray(migration.organizationId, opts.scope.organizationIds) : undefined,
+        ),
+      )
+      .orderBy(asc(migration.id))
+      .limit(opts.batchSize);
+    for (const row of rows) {
+      const stored = row.secretCiphertext;
+      if (!stored) continue;
+      result.checked++;
+      if (isEncryptedWithPrimary(stored, keys)) continue;
+      let secretCiphertext: string;
+      try {
+        secretCiphertext = encryptSecret(decryptSecret(stored, keys), keys);
+      } catch (error) {
+        result.unreadable.push({
+          id: row.id,
+          organizationId: row.organizationId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        continue;
+      }
+      if (opts.dryRun) {
+        result.reencrypted++;
+        continue;
+      }
+      const [updated] = await db
+        .update(migration)
+        .set({ credentialsCiphertext: secretCiphertext, updatedAt: sql`${migration.updatedAt}` })
+        .where(
+          and(
+            eq(migration.id, row.id),
+            eq(migration.organizationId, row.organizationId),
+            eq(migration.credentialsCiphertext, stored),
+          ),
+        )
+        .returning({ id: migration.id });
       if (updated) result.reencrypted++;
       else result.conflicts++;
     }

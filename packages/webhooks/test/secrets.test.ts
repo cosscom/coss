@@ -291,6 +291,39 @@ describe("reencryptWebhookSecrets", () => {
     expect(decryptSecret(row?.ciphertext ?? "", secretsKeyRing([NEW_KEY]))).toBe("0xcaptcha");
   });
 
+  test("also moves the provider keys imports hold", async () => {
+    const tenant = await createTestTenant();
+    const scope = { organizationIds: [tenant.organization.id] };
+    const [held] = await db
+      .insert(schema.migration)
+      .values({
+        organizationId: tenant.organization.id,
+        projectId: tenant.project.id,
+        environmentId: tenant.production.id,
+        provider: "resend",
+        credentialHint: "…abcd",
+        credentialsCiphertext: encryptSecret("re_provider_key", secretsKeyRing([OLD_KEY])),
+      })
+      .returning();
+    // A finished import holds no key.
+    await db.insert(schema.migration).values({
+      organizationId: tenant.organization.id,
+      projectId: tenant.project.id,
+      environmentId: tenant.production.id,
+      provider: "resend",
+      status: "completed",
+      credentialHint: "…abcd",
+    });
+    expect(
+      await reencryptWebhookSecrets({ keys: secretsKeyRing([NEW_KEY, OLD_KEY]), scope }),
+    ).toEqual({ checked: 1, reencrypted: 1, unreadable: [], conflicts: 0 });
+    const [row] = await db
+      .select({ ciphertext: schema.migration.credentialsCiphertext })
+      .from(schema.migration)
+      .where(eq(schema.migration.id, held?.id ?? ""));
+    expect(decryptSecret(row?.ciphertext ?? "", secretsKeyRing([NEW_KEY]))).toBe("re_provider_key");
+  });
+
   test("reports secrets no listed key decrypts and leaves them alone", async () => {
     const tenant = await createTestTenant();
     const scope = { organizationIds: [tenant.organization.id] };
