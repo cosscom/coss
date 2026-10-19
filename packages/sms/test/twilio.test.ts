@@ -170,6 +170,89 @@ describe("TwilioSmsProvider", () => {
     });
     expect(await throttled.provider.send(OUTBOUND)).toEqual({ providerMessageId: "SM9" });
   });
+
+  test("an answer cut off or unreadable after Twilio accepted is uncertain", async () => {
+    const cutOff = provider(
+      () =>
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue(new TextEncoder().encode('{"sid": "SM'));
+              controller.error(new Error("connection reset"));
+            },
+          }),
+          { status: 201 },
+        ),
+    );
+    expect(await cutOff.provider.send(OUTBOUND).catch((caught) => caught)).toBeInstanceOf(
+      UncertainSendError,
+    );
+    const garbled = provider(() => new Response("<html>", { status: 201 }));
+    expect(await garbled.provider.send(OUTBOUND).catch((caught) => caught)).toBeInstanceOf(
+      UncertainSendError,
+    );
+  });
+});
+
+describe("Twilio API", () => {
+  test("a secondary customer profile is assigned coss.com's primary one, by the subaccount", async () => {
+    let next = 0;
+    const { fetcher, requests } = fakeFetch((request) =>
+      Response.json(
+        request.url.endsWith("/CustomerProfiles")
+          ? { sid: "BUsecondary", status: "draft" }
+          : { sid: `XX${next++}`, status: "compliant" },
+        { status: 201 },
+      ),
+    );
+    const api = createTwilioApi(
+      createTwilioClient({
+        credentials: { accountSid: "ACparent", authToken: "secret" },
+        fetch: fetcher,
+      }),
+      { primaryCustomerProfileSid: "BUprimary" },
+    );
+    const as = { accountSid: "ACsub", authToken: "subsecret" };
+    expect(
+      await api.createCustomerProfile(as, {
+        legalName: "Acme Inc.",
+        companyType: "PRIVATE_PROFIT",
+        taxId: "12-3456789",
+        taxIdType: "EIN",
+        industry: "TECHNOLOGY",
+        website: "https://acme.com",
+        street: "1 Main St",
+        city: "San Francisco",
+        region: "CA",
+        postalCode: "94105",
+        country: "US",
+        contact: {
+          firstName: "Ada",
+          lastName: "Lovelace",
+          email: "ada@acme.com",
+          phone: "+14155550123",
+          title: "CTO",
+          jobPosition: "CEO",
+        },
+      }),
+    ).toEqual({ sid: "BUsecondary" });
+    const assignments = [];
+    for (const request of requests) {
+      if (!request.url.endsWith("/EntityAssignments")) continue;
+      const form = new URLSearchParams(await request.text());
+      assignments.push({
+        url: request.url,
+        objectSid: form.get("ObjectSid"),
+        authorization: request.headers.get("authorization"),
+      });
+    }
+    expect(assignments).toContainEqual({
+      url: "https://trusthub.twilio.com/v1/CustomerProfiles/BUsecondary/EntityAssignments",
+      objectSid: "BUprimary",
+      authorization: `Basic ${btoa("ACsub:subsecret")}`,
+    });
+    expect(assignments.every((assignment) => !assignment.url.includes("BUprimary"))).toBe(true);
+  });
 });
 
 describe("verified callbacks", () => {

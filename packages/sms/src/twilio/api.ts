@@ -324,13 +324,10 @@ export function createTwilioApi(
         },
       );
       await assign(as, bundle.sid, document.sid, "CustomerProfiles");
-      // Under coss.com's ISV profile (the parent account's own credentials).
+      // Under coss.com's ISV profile: the secondary profile is assigned the primary one, by the
+      // account the profile belongs to.
       if (opts.primaryCustomerProfileSid) {
-        await client.request(
-          "POST",
-          `${TWILIO_TRUSTHUB}/CustomerProfiles/${opts.primaryCustomerProfileSid}/EntityAssignments`,
-          { form: { ObjectSid: bundle.sid } },
-        );
+        await assign(as, bundle.sid, opts.primaryCustomerProfileSid, "CustomerProfiles");
       }
       await evaluateAndSubmit(
         as,

@@ -90,12 +90,26 @@ export function createTwilioClient(opts: {
         throw new TwilioNetworkError(`Twilio ${method} ${url} got no answer.`, { cause: error });
       }
       if (response.status === 204) return undefined as T;
-      const text = await response.text();
+      let text: string;
+      try {
+        text = await response.text();
+      } catch (error) {
+        // The answer was cut off: Twilio may have acted on the request.
+        throw new TwilioNetworkError(`Twilio ${method} ${url}: the answer was cut off.`, {
+          cause: error,
+        });
+      }
       let json: unknown = null;
       try {
         json = text ? JSON.parse(text) : null;
       } catch {
         // Not JSON: an HTML error page from an intermediary.
+      }
+      if (response.ok && (json === null || typeof json !== "object")) {
+        // A success whose body can't be read: what Twilio did is unknown.
+        throw new TwilioNetworkError(
+          `Twilio ${method} ${url} answered ${response.status} unreadably.`,
+        );
       }
       if (!response.ok) {
         const error = (json ?? {}) as { code?: number | string; message?: string };
