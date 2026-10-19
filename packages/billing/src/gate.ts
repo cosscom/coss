@@ -30,11 +30,12 @@ export interface UsageGate {
   /**
    * Reserves `quantity` units of a capped meter for the current period, in the transaction that
    * accepts the usage (throws a `BillingError`, `usage_limit_exceeded`, beyond the cap).
-   * Uncapped organizations pass through without a write.
+   * Uncapped organizations pass through without a write. With a `dimension` (`country=GB`), a
+   * value the organization's prices don't cover is refused (`plan_feature_unavailable`).
    */
   reserve(
     tx: Executor,
-    input: { organizationId: string; meter: MeterKey; quantity: number },
+    input: { organizationId: string; meter: MeterKey; quantity: number; dimension?: string },
   ): Promise<void>;
   /**
    * Gives back reserved units that will never be used (e.g. a canceled broadcast's unsent

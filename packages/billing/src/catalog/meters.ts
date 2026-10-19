@@ -13,10 +13,7 @@ export type MeterDefinition = {
   displayPer: number;
   /** Dimensions usage is recorded with and rates can vary by, e.g. `country` for SMS. */
   dimensions: readonly string[];
-  /**
-   * `commitment`: only usable under a contract with a commitment covering this meter (US SMS is
-   * sold as committed volume, through Enterprise contracts only).
-   */
+  /** `commitment`: only usable under a contract with a commitment covering this meter. */
   requires: "plan" | "commitment";
 };
 
@@ -41,6 +38,7 @@ export const METERS = {
     dimensions: [],
     requires: "plan",
   },
+  // Priced by destination country; a country without a rate can't be sent to.
   "sms.segments": {
     product: "sms",
     label: "SMS",
@@ -48,7 +46,37 @@ export const METERS = {
     units: "segments",
     displayPer: 1,
     dimensions: ["country"],
-    requires: "commitment",
+    requires: "plan",
+  },
+  // Replies and opt-outs received on an organization's numbers, by the number's country.
+  "sms.received_segments": {
+    product: "sms",
+    label: "SMS received",
+    unit: "segment",
+    units: "segments",
+    displayPer: 1,
+    dimensions: ["country"],
+    requires: "plan",
+  },
+  // Phone numbers, per month held (`type=local` or `type=toll_free`), passed through at cost.
+  "sms.numbers": {
+    product: "sms",
+    label: "SMS phone numbers",
+    unit: "number-month",
+    units: "number-months",
+    displayPer: 1,
+    dimensions: ["type"],
+    requires: "plan",
+  },
+  // Carrier registration fees (US A2P 10DLC brands and campaigns), passed through at cost.
+  "sms.registrations": {
+    product: "sms",
+    label: "SMS registration fees",
+    unit: "fee",
+    units: "fees",
+    displayPer: 1,
+    dimensions: ["fee"],
+    requires: "plan",
   },
   "video.participant_minutes": {
     product: "video",
@@ -89,11 +117,25 @@ export function dimensionKey(dimensions: Readonly<Record<string, string>> | unde
     .join("&");
 }
 
-/** "country=US" → "US"; "" → "". */
+/** How dimension values other than country codes read on invoices and price lists. */
+const DIMENSION_VALUE_LABELS: Readonly<Record<string, string>> = {
+  local: "local",
+  toll_free: "toll-free",
+  brand: "brand registration",
+  brand_vetting: "brand vetting",
+  campaign_vetting: "campaign vetting",
+  campaign_monthly: "campaign, monthly",
+  campaign_monthly_low_volume: "low-volume campaign, monthly",
+};
+
+/** "country=US" → "US"; "type=toll_free" → "toll-free"; "" → "". */
 export function formatDimension(key: string): string {
   return key
     .split("&")
     .filter(Boolean)
-    .map((pair) => pair.slice(pair.indexOf("=") + 1))
+    .map((pair) => {
+      const value = pair.slice(pair.indexOf("=") + 1);
+      return DIMENSION_VALUE_LABELS[value] ?? value;
+    })
     .join(", ");
 }

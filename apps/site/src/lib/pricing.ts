@@ -4,6 +4,7 @@
  */
 import {
   ADD_ONS,
+  formatDimension,
   METER_KEYS,
   METERS,
   type MeterKey,
@@ -118,7 +119,22 @@ export type RateTable = {
   note: string | null;
 };
 
-const COUNTRIES: Record<string, string> = { US: "United States" };
+const REGIONS = new Intl.DisplayNames(["en"], { type: "region" });
+
+/** "GB" → "United Kingdom". */
+export function countryName(code: string): string {
+  try {
+    return REGIONS.of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
+/** Meters priced per country: one card for the United States, every country in `smsRates()`. */
+function byCountry(meter: MeterKey): boolean {
+  const dimensions: readonly string[] = METERS[meter].dimensions;
+  return dimensions.includes("country");
+}
 
 function bandsOf(rate: Rate, per: number): RateTable["bands"] {
   const [only] = rate.tiers;
@@ -146,15 +162,17 @@ export function rateTables(): RateTable[] {
     const definition = METERS[meter];
     const rates = card.rates[meter];
     if (!rates) return [];
-    const per =
-      definition.displayPer === 1
+    const passedThrough = definition.unit === "fee";
+    const per = passedThrough
+      ? "passed through at cost"
+      : definition.displayPer === 1
         ? `per ${definition.unit}`
         : `per ${definition.displayPer.toLocaleString("en-US")} ${definition.units}`;
     const note =
-      definition.requires === "commitment"
-        ? "Committed volume on Enterprise contracts"
-        : meter === "email.dedicated_ip"
-          ? `With the ${ADD_ONS.dedicated_ips.name} add-on (${formatPrice(ADD_ONS.dedicated_ips.unitAmountCents)}/month), on top of email`
+      meter === "email.dedicated_ip"
+        ? `With the ${ADD_ONS.dedicated_ips.name} add-on (${formatPrice(ADD_ONS.dedicated_ips.unitAmountCents)}/month), on top of email`
+        : byCountry(meter)
+          ? "Other countries in the SMS rates below"
           : null;
     const base = {
       meter,
@@ -165,13 +183,59 @@ export function rateTables(): RateTable[] {
     if (rates.default) {
       return [{ ...base, scope: null, bands: bandsOf(rates.default, definition.displayPer) }];
     }
-    return Object.entries(rates.byDimension ?? {}).map(([dimension, rate]) => {
-      const value = dimension.slice(dimension.indexOf("=") + 1);
-      return {
+    const entries = Object.entries(rates.byDimension ?? {});
+    if (byCountry(meter)) {
+      const us = rates.byDimension?.["country=US"];
+      return us
+        ? [{ ...base, scope: countryName("US"), bands: bandsOf(us, definition.displayPer) }]
+        : [];
+    }
+    // Flat prices per value (number types, registration fees): one card, a line per value.
+    return [
+      {
         ...base,
-        scope: COUNTRIES[value] ?? value,
-        bands: bandsOf(rate, definition.displayPer),
-      };
-    });
+        scope: null,
+        bands: entries.flatMap(([dimension, rate]) => {
+          const [only] = rate.tiers;
+          if (!only) return [];
+          const label = formatDimension(dimension);
+          return [
+            {
+              range: label.charAt(0).toUpperCase() + label.slice(1),
+              price: formatUnitPrice(only.unitNanos, definition.displayPer),
+            },
+          ];
+        }),
+      },
+    ];
   });
+}
+
+export type SmsRate = {
+  code: string;
+  country: string;
+  /** Per segment sent to the country. */
+  outbound: string;
+  /** Per segment received on a number of the country (`null`: no numbers there). */
+  inbound: string | null;
+};
+
+/** Every country SMS can be sent to, by name, with its list prices per segment. */
+export function smsRates(): SmsRate[] {
+  const card = RATE_CARDS.at(-1);
+  const outbound = card?.rates["sms.segments"]?.byDimension ?? {};
+  const inbound = card?.rates["sms.received_segments"]?.byDimension ?? {};
+  const price = (rate: Rate | undefined) => {
+    const [only] = rate?.tiers ?? [];
+    return only ? formatUnitPrice(only.unitNanos) : null;
+  };
+  return Object.entries(outbound)
+    .flatMap(([dimension, rate]) => {
+      const code = dimension.slice(dimension.indexOf("=") + 1);
+      const sent = price(rate);
+      return sent
+        ? [{ code, country: countryName(code), outbound: sent, inbound: price(inbound[dimension]) }]
+        : [];
+    })
+    .sort((a, b) => a.country.localeCompare(b.country));
 }

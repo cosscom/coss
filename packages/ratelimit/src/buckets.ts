@@ -158,6 +158,41 @@ export const BUCKETS = {
     overridable: true,
     failureMode: "deny",
   },
+  // SMS segments sent per organization (live) or environment (sandbox), across all keys. The
+  // burst of the per-second bucket must stay at least MAX_SMS_SEGMENTS (10), or a long message
+  // never fits. Plans set the live ones.
+  "sms.segments.second": {
+    scope: "org",
+    limit: 10,
+    periodMs: SECOND,
+    burst: 50,
+    overridable: true,
+    failureMode: "deny",
+  },
+  "sms.segments.day": {
+    scope: "org",
+    limit: 1_000,
+    periodMs: DAY,
+    overridable: true,
+    failureMode: "deny",
+  },
+  "sms.sandbox_segments.day": {
+    scope: "environment",
+    limit: 200,
+    periodMs: DAY,
+    overridable: true,
+    failureMode: "deny",
+  },
+  // Messages per organization to one phone number (hashed): a sign-up form looping one-time
+  // codes to a number (or pumping fraud through it) stops here, whatever the daily quota.
+  "sms.recipient.hour": {
+    scope: "destination",
+    limit: 10,
+    periodMs: HOUR,
+    burst: 10,
+    overridable: true,
+    failureMode: "deny",
+  },
   // Received emails accepted per organization (the worker charges one per environment a message
   // is delivered to). Over the limit, messages are dropped and counted. Fails open: a store outage
   // must never lose a customer's mail.
@@ -358,6 +393,17 @@ export const BUCKETS = {
     limit: 50,
     periodMs: SECOND,
     burst: 200,
+    overridable: false,
+    failureMode: "allow",
+  },
+  // Twilio's status and inbound callbacks (`/sms/twilio/*`): signatures are checked before
+  // anything is stored, so this only bounds the work forged requests cause. A store outage allows
+  // rather than drops delivery reports and replies.
+  "sms.callbacks": {
+    scope: "ip",
+    limit: 200,
+    periodMs: SECOND,
+    burst: 1_000,
     overridable: false,
     failureMode: "allow",
   },

@@ -14,7 +14,7 @@ import {
   RATE_LIMIT_KEYS,
   type RateLimitRule,
 } from "./catalog/entitlements.ts";
-import { METERS, type MeterKey } from "./catalog/meters.ts";
+import { formatDimension, METERS, type MeterKey } from "./catalog/meters.ts";
 import { PLAN_KEYS, PLANS, type PlanKey } from "./catalog/plans.ts";
 import { meterAvailability, resolveTermsAt } from "./engine/terms.ts";
 import { BillingError } from "./errors.ts";
@@ -97,17 +97,27 @@ export function createUsageGate(
   return {
     async reserve(tx, input) {
       if (input.quantity <= 0 || input.organizationId === opts.systemOrganizationId) return;
-      const cacheKey = `${input.organizationId}:${input.meter}`;
+      const cacheKey = `${input.organizationId}:${input.meter}:${input.dimension ?? ""}`;
       const cached = cache.get(cacheKey);
       if (cached && !cached.capped && cached.expiresAt > Date.now()) return;
       const now = new Date();
       const state = await billingStateAt(input.organizationId, now, tx);
-      const availability = meterAvailability(state.terms, input.meter);
+      const availability = meterAvailability(state.terms, input.meter, input.dimension);
+      const label = METERS[input.meter].label;
+      if (availability === "not_priced" && input.dimension) {
+        throw new BillingError(
+          "plan_feature_unavailable",
+          `${label} to ${formatDimension(input.dimension)} isn't available.`,
+        );
+      }
       if (availability === "requires_commitment" || availability === "not_priced") {
         throw new BillingError(
           "plan_feature_unavailable",
-          `${METERS[input.meter].label} needs a contract. Contact sales.`,
+          `${label} needs a contract. Contact sales.`,
         );
+      }
+      if (availability === "blocked" && !state.terms.includedUnits[input.meter]) {
+        throw new BillingError("plan_feature_unavailable", `${label} isn't included in your plan.`);
       }
       const cap = state.terms.usageCaps[input.meter];
       cache.set(cacheKey, { capped: cap !== undefined, expiresAt: Date.now() + ttlMs });

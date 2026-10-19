@@ -1,9 +1,9 @@
 /** Resolves contract terms against their plan and the list prices into what the engine applies. */
 import { type BillingInterval, catalogAddOn, INTERVAL_MONTHS } from "../catalog/add-ons.ts";
 import { type Entitlements, type FeatureKey, mergeEntitlements } from "../catalog/entitlements.ts";
-import { METER_KEYS, METERS, type MeterKey } from "../catalog/meters.ts";
+import { METER_KEYS, METERS, type MeterDefinition, type MeterKey } from "../catalog/meters.ts";
 import { PLANS, type PlanKey } from "../catalog/plans.ts";
-import { type MeterRates, type RateCard, rateCardAt } from "../catalog/rates.ts";
+import { type MeterRates, type RateCard, rateCardAt, rateFor } from "../catalog/rates.ts";
 import type { AddOn, Commitment, ContractTerms, Discount, FeeCredit } from "../schemas.ts";
 
 export type EffectiveFee = {
@@ -19,7 +19,7 @@ export type EffectiveTerms = {
   feeCredit: FeeCredit;
   includedUnits: Partial<Record<MeterKey, number>>;
   overage: "billed" | "blocked";
-  /** Per meter: the contract's own rates, else the list prices. */
+  /** Per meter and dimension value: the contract's own rates, else the list prices. */
   rates: Partial<Record<MeterKey, MeterRates>>;
   /** Discounts on list prices set per meter (`{ discountPercent }`). */
   meterDiscounts: Partial<Record<MeterKey, number>>;
@@ -54,7 +54,7 @@ export function resolveTerms(terms: ContractTerms, rateCard: RateCard): Effectiv
       const list = rateCard.rates[meter];
       if (list) rates[meter] = list;
     } else if (override) {
-      rates[meter] = override;
+      rates[meter] = withListRates(override, rateCard.rates[meter]);
     } else {
       const list = rateCard.rates[meter];
       if (list) rates[meter] = list;
@@ -90,6 +90,16 @@ export function resolveTerms(terms: ContractTerms, rateCard: RateCard): Effectiv
   };
 }
 
+/**
+ * A contract's rates over the list prices. A contract-wide price (`default`) replaces every list
+ * price of the meter; prices for some dimension values only replace those, the others keep their
+ * list price (a contract pricing SMS to GB still sends to the US).
+ */
+function withListRates(override: MeterRates, list: MeterRates | undefined): MeterRates {
+  if (!list || override.default) return override;
+  return { ...list, byDimension: { ...list.byDimension, ...override.byDimension } };
+}
+
 /** What catalog add-ons grant on top (a contract's custom add-ons grant nothing). */
 function withAddOnFeatures(base: Entitlements, addOns: readonly AddOn[]): Entitlements {
   const granted: FeatureKey[] = addOns.flatMap((addOn) => catalogAddOn(addOn.key)?.features ?? []);
@@ -113,15 +123,25 @@ export function monthlyFeeCents(fee: EffectiveFee | null): bigint {
 export type MeterAvailability = "available" | "requires_commitment" | "not_priced" | "blocked";
 
 /**
- * Whether a meter's usage is allowed at all: committed-volume meters (SMS) need a commitment
- * covering them, every meter needs a price, and a zero cap blocks it.
+ * Whether a meter's usage is allowed at all: committed-volume meters need a commitment covering
+ * them, every meter needs a price (for `dimension`, when given: SMS to a country without one
+ * can't be sent), and a zero cap blocks it.
  */
-export function meterAvailability(terms: EffectiveTerms, meter: MeterKey): MeterAvailability {
-  if (METERS[meter].requires === "commitment" && !hasCommitmentFor(terms, meter)) {
+export function meterAvailability(
+  terms: EffectiveTerms,
+  meter: MeterKey,
+  dimension?: string,
+): MeterAvailability {
+  const definition: MeterDefinition = METERS[meter];
+  if (definition.requires === "commitment" && !hasCommitmentFor(terms, meter)) {
     return "requires_commitment";
   }
   const rates = terms.rates[meter];
-  if (!rates?.default && !Object.keys(rates?.byDimension ?? {}).length) return "not_priced";
+  if (dimension !== undefined) {
+    if (!rateFor(rates, dimension)) return "not_priced";
+  } else if (!rates?.default && !Object.keys(rates?.byDimension ?? {}).length) {
+    return "not_priced";
+  }
   if (terms.usageCaps[meter] === 0) return "blocked";
   return "available";
 }
