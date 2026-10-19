@@ -1,5 +1,6 @@
 import { createEmailService, DEVELOPMENT_LINK_KEYS, FakeEmailProvider } from "@coss/email";
 import { createRiskDeps } from "@coss/risk/runtime";
+import { createSmsService, FakeSmsProvider } from "@coss/sms";
 import { secretsKeyRing } from "@coss/webhooks";
 import { createApp, renderOpenApiDocument } from "./app.ts";
 
@@ -22,6 +23,15 @@ export function renderOpenApiSnapshot(): string {
       queue: {
         async enqueue() {
           throw new Error("OpenAPI generation cannot enqueue emails");
+        },
+      },
+    }),
+    smsService: createSmsService({
+      liveProvider: new FakeSmsProvider({ log: false }),
+      sandboxProvider: new FakeSmsProvider({ log: false }),
+      queue: {
+        async enqueue() {
+          throw new Error("OpenAPI generation cannot enqueue SMS");
         },
       },
     }),

@@ -37,6 +37,7 @@ import {
   purgeExpiredRiskPersonalData,
 } from "@coss/risk";
 import { purgeExpiredScreenings } from "@coss/screening";
+import { purgeExpiredReceivedSms, purgeExpiredSmsMessages } from "@coss/sms";
 import { purgeExpiredAdminAuditEvents, purgeExpiredAuthRows } from "@coss/tenancy/retention";
 import {
   purgeExpiredLogDrainBatches,
@@ -66,6 +67,8 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "dmarc reports", purge: purgeExpiredDmarcReports },
   { name: "dmarc notifications", purge: purgeExpiredDmarcNotifications },
   { name: "unconfirmed contacts", purge: purgeExpiredPendingContacts },
+  { name: "sms messages", purge: purgeExpiredSmsMessages },
+  { name: "received sms", purge: purgeExpiredReceivedSms },
   { name: "webhook messages", purge: purgeExpiredWebhookMessages },
   { name: "webhook listeners", purge: purgeExpiredWebhookListeners },
   { name: "log drain batches and backlog", purge: purgeExpiredLogDrainBatches },

@@ -224,11 +224,21 @@ async function liveTargets(
  * the message in the number's receiving environment (a retried callback stores nothing twice),
  * then STOP/START applied to every live environment's suppression list, each with its event.
  */
-export async function receiveSms(input: InboundSms): Promise<ReceiveSmsResult> {
+export async function receiveSms(
+  input: InboundSms,
+  opts: { organizationId?: string } = {},
+): Promise<ReceiveSmsResult> {
   const [number] = await db
     .select()
     .from(smsNumber)
-    .where(and(eq(smsNumber.phoneNumber, input.to), eq(smsNumber.provider, input.provider)))
+    .where(
+      and(
+        eq(smsNumber.phoneNumber, input.to),
+        eq(smsNumber.provider, input.provider),
+        // Callbacks name the subaccount: only its organization's numbers can receive.
+        opts.organizationId ? eq(smsNumber.organizationId, opts.organizationId) : undefined,
+      ),
+    )
     .limit(1);
   if (!number) return { status: "unknown_number" };
   const organizationId = number.organizationId;

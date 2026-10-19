@@ -31,6 +31,13 @@ import { createRateLimitRuntime } from "@coss/ratelimit";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
 import { type ScreenInput, screenMessage } from "@coss/screening";
 import { createClassifier } from "@coss/screening/runtime";
+import { createSmsService } from "@coss/sms";
+import {
+  ensureSmsDispatchQueue,
+  pgBossSmsDispatchQueue,
+  workSmsDispatchQueue,
+} from "@coss/sms/dispatch";
+import { createSmsRuntime } from "@coss/sms/runtime";
 import { createWebhookSender, parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
 import {
@@ -149,7 +156,21 @@ if (runs("email-dispatch-marketing")) {
     concurrency: 4,
   });
 }
-const dispatching = ["email-dispatch", "email-dispatch-marketing"].filter(runs);
+// SMS: live messages go to Twilio (or the fake), reporting to the API's `/sms/twilio/status`.
+const sms = createSmsRuntime(env);
+await ensureSmsDispatchQueue(jobs);
+const smsQueue = pgBossSmsDispatchQueue(jobs);
+const smsService = createSmsService({
+  liveProvider: sms.liveProvider,
+  sandboxProvider: sms.sandboxProvider,
+  queue: smsQueue,
+  callbackBaseUrl: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
+  screen,
+  screeningFailureAllowlist: systemOrganizationId ? new Set([systemOrganizationId]) : undefined,
+  billing: usage,
+});
+if (runs("sms-dispatch")) await workSmsDispatchQueue(jobs, smsService);
+const dispatching = ["email-dispatch", "email-dispatch-marketing", "sms-dispatch"].filter(runs);
 
 // Account emails (verification, password resets, invitations) and reputation notifications go
 // out through coss.com's own email product. Without a configured environment, reputation
@@ -212,6 +233,7 @@ const loops = startJobs({
   signal: controller.signal,
   domains: email.domainDeps,
   email: emailService,
+  sms: { service: smsService, queue: smsQueue },
   broadcasts: {
     queue: dispatchQueue,
     liveProvider: email.liveProvider.name,
@@ -254,7 +276,7 @@ const shutdown = createShutdown({
   controller,
   loops: [
     ...loops,
-    // One pg-boss instance works both dispatch queues.
+    // One pg-boss instance works every dispatch queue.
     { name: "email-dispatch", stop: () => jobs.stop({ graceful: true, timeout: 30_000 }) },
   ],
   close: async () => {

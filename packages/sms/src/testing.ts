@@ -1,11 +1,14 @@
 /** Test helpers for the SMS product (and the apps' tests that use it). */
+import { randomUUID } from "node:crypto";
 import { db, schema } from "@coss/db";
+import { encryptSecret } from "@coss/webhooks";
 import { eq } from "drizzle-orm";
 import { ensureSmsAccountRow } from "./accounts.ts";
 import type { SmsDispatchJob, SmsDispatchQueue } from "./dispatch.ts";
 import { FAKE_SMS_PROVIDER, FakeSmsProvider } from "./providers/fake.ts";
 import { createSmsService, type SmsService, type SmsServiceOptions } from "./service.ts";
 
+export { FakeTwilioApi } from "./twilio/fake.ts";
 export { FakeSmsProvider };
 
 const { smsAccount, smsNumber, smsRegistration } = schema;
@@ -148,4 +151,26 @@ export async function createTestSmsNumber(
     if (opts.phoneNumber) break;
   }
   throw new Error("Couldn't insert a test SMS number.");
+}
+
+/**
+ * Makes the organization's SMS account a Twilio subaccount with a known auth token (stored
+ * encrypted with `keys`), so tests can sign callbacks for it.
+ */
+export async function useTestTwilioAccount(
+  organizationId: string,
+  keys: Parameters<typeof encryptSecret>[1],
+): Promise<{ accountSid: string; authToken: string }> {
+  const authToken = randomUUID();
+  const accountSid = `AC${randomUUID().replaceAll("-", "")}`;
+  await ensureSmsAccountRow(organizationId);
+  await db
+    .update(smsAccount)
+    .set({
+      provider: "twilio",
+      subaccountSid: accountSid,
+      authToken: encryptSecret(authToken, keys),
+    })
+    .where(eq(smsAccount.organizationId, organizationId));
+  return { accountSid, authToken };
 }

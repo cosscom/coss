@@ -3,11 +3,13 @@
  * numbers, registrations) and the reads behind the API and the dashboard. Server-only.
  */
 export * from "./accounts.ts";
+export * from "./callbacks.ts";
 export * from "./countries.ts";
 export * from "./dispatch.ts";
 export * from "./errors.ts";
 export * from "./events.ts";
 export * from "./failures.ts";
+export * from "./numbers.ts";
 export * from "./phone.ts";
 export * from "./provider.ts";
 export * from "./providers/fake.ts";

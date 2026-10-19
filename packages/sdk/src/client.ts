@@ -13,6 +13,7 @@ import { LogDrainsResource } from "./resources/log-drains.ts";
 import { LogsResource } from "./resources/logs.ts";
 import { ReputationResource } from "./resources/reputation.ts";
 import { RiskResource } from "./resources/risk.ts";
+import { SmsResource } from "./resources/sms.ts";
 import { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 import { WebhookEventsResource } from "./resources/webhook-events.ts";
 import { WebhookListenersResource } from "./resources/webhook-listeners.ts";
@@ -111,6 +112,8 @@ function timeoutMs(value: number | undefined): number {
  */
 export class Coss {
   readonly email: EmailResource;
+  /** Text messages from the organization's numbers (`coss.sms.send()`). */
+  readonly sms: SmsResource;
   /** The API key's environment, project and organization (`coss.environment.get()`). */
   readonly environment: EnvironmentResource;
   /** The client's own API key (`coss.apiKey.revoke()`). */
@@ -188,6 +191,7 @@ export class Coss {
     this.hooks = new HooksResource(http);
     this.risk = new RiskResource(http);
     this.billing = new BillingResource(http);
+    this.sms = new SmsResource(http);
   }
 
   /**

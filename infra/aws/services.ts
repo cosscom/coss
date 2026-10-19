@@ -253,6 +253,52 @@ const stripeSecretKey: EnvVar = {
   description: "Stripe API key: the dashboard opens Checkout and the portal, the worker invoices.",
 };
 
+const smsProvider: EnvVar = {
+  name: "SMS_PROVIDER",
+  kind: "plain",
+  required: true,
+  value: "twilio",
+  description:
+    "Provider of live environments' SMS and of new numbers (fake|twilio). With `fake`, production refuses to provision numbers, so no live SMS goes anywhere.",
+};
+
+/**
+ * Twilio (SMS): Cal.com's parent account, shared by coss.com; one subaccount per organization. Only
+ * with `SMS_PROVIDER=twilio`: until then live SMS is unavailable in production.
+ */
+const twilio: EnvVar[] = [
+  smsProvider,
+  {
+    name: "TWILIO_ACCOUNT_SID",
+    kind: "plain",
+    required: false,
+    value: "AC… (the parent account)",
+    description: "Creates organizations' subaccounts and sends on their behalf.",
+  },
+  {
+    name: "TWILIO_AUTH_TOKEN",
+    kind: "secret",
+    required: false,
+    value: "The parent account's auth token",
+    description: "Authenticates the parent account's requests.",
+  },
+  {
+    name: "TWILIO_PRIMARY_CUSTOMER_PROFILE_SID",
+    kind: "plain",
+    required: false,
+    value: "BU… (the ISV's approved primary customer profile)",
+    description: "Organizations' US A2P 10DLC brands are registered under it.",
+  },
+  {
+    name: "SMS_SUBACCOUNT_PREFIX",
+    kind: "plain",
+    required: false,
+    value: "coss-<stage>",
+    description:
+      "Names the subaccounts coss.com creates (`<prefix>-<organization id>`), apart from Cal.com's own.",
+  },
+];
+
 const webhookKey: EnvVar = {
   name: "WEBHOOK_SECRETS_KEY",
   kind: "secret",
@@ -602,6 +648,7 @@ export const SERVICES: Service[] = [
         description: "Browser origins allowed on /v1/* (the docs' playground).",
       },
       ...email,
+      smsProvider,
       trackingPublicUrl,
       webhookKey,
       emailLinkKeys,
@@ -671,6 +718,7 @@ export const SERVICES: Service[] = [
       ...screening,
       webhookKey,
       emailLinkKeys,
+      ...twilio,
       billingProvider,
       stripeSecretKey,
       // Hooks delivery attempts are rate limited per endpoint and destination host.
