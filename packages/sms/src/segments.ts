@@ -3,8 +3,10 @@
  * only of GSM-7 characters takes 160 per message (153 per segment once it is split: the rest is the
  * concatenation header); anything else is sent as UCS-2, 70 per message (67 per segment). GSM-7's
  * extension characters (`€`, `[`, `{`, …) take two septets, and neither they nor a UTF-16
- * surrogate pair (an emoji) are ever split across segments. Twilio counts the same way as long as
- * its Smart Encoding stays off (it is: coss.com bills what it counts here). Client-safe, no imports.
+ * surrogate pair (an emoji) are ever split across segments. Toll-free numbers' multipart messages
+ * (to the US and Canada, all they reach) take one unit less per segment: 152 and 66. Twilio counts
+ * the same way as long as its Smart Encoding stays off (it is: coss.com bills what it counts
+ * here). Client-safe, no imports.
  */
 
 const GSM_BASIC =
@@ -24,6 +26,10 @@ export const MAX_SMS_BODY_LENGTH = 1600;
 const LIMITS: Record<SmsEncoding, { single: number; part: number }> = {
   gsm7: { single: 160, part: 153 },
   ucs2: { single: 70, part: 67 },
+};
+const TOLL_FREE_LIMITS: Record<SmsEncoding, { single: number; part: number }> = {
+  gsm7: { single: 160, part: 152 },
+  ucs2: { single: 70, part: 66 },
 };
 
 export type SmsSegmentation = {
@@ -50,12 +56,15 @@ function characterSizes(body: string, encoding: SmsEncoding): number[] {
   return sizes;
 }
 
-/** Encoding and segment count of a body. An empty body is one (empty) segment. */
-export function countSegments(body: string): SmsSegmentation {
+/**
+ * Encoding and segment count of a body (`tollFree`: sent from a toll-free number). An empty body
+ * is one (empty) segment.
+ */
+export function countSegments(body: string, opts: { tollFree?: boolean } = {}): SmsSegmentation {
   const encoding: SmsEncoding = isGsm7(body) ? "gsm7" : "ucs2";
   const sizes = characterSizes(body, encoding);
   const units = sizes.reduce((total, size) => total + size, 0);
-  const limit = LIMITS[encoding];
+  const limit = (opts.tollFree ? TOLL_FREE_LIMITS : LIMITS)[encoding];
   if (units <= limit.single) {
     return { encoding, segments: 1, units, remaining: limit.single - units };
   }

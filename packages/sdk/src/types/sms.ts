@@ -28,7 +28,10 @@ export type SmsEventType =
 
 export type ReceivedSmsEventType = "sms.received" | "sms.opted_out" | "sms.opted_in";
 
-/** `gsm7`: 160 characters in one segment, 153 per segment; `ucs2` (any Unicode): 70 and 67. */
+/**
+ * `gsm7`: 160 characters in one segment, 153 per segment; `ucs2` (any Unicode): 70 and 67 (152 and
+ * 66 from a toll-free number).
+ */
 export type SmsEncoding = "gsm7" | "ucs2";
 
 /**
@@ -51,7 +54,7 @@ export interface SendSmsParams {
   from: string;
   /** The recipient's mobile number (E.164). */
   to: string;
-  /** At most 10 segments (1,530 GSM-7 or 670 Unicode characters). */
+  /** At most 10 segments (1,520 GSM-7 or 660 Unicode characters). */
   body: string;
   /** Up to 10 tags. */
   tags?: SmsTag[];

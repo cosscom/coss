@@ -145,9 +145,9 @@ export async function recordSmsEvent(
       .update(smsMessage)
       .set({
         ...moved,
-        ...(event.data.failure
-          ? { errorCode: event.data.failure.code, errorMessage: event.data.failure.message }
-          : {}),
+        // A move without a failure clears an earlier one (a screening hold the send got past).
+        errorCode: event.data.failure?.code ?? null,
+        errorMessage: event.data.failure?.message ?? null,
       })
       .where(and(thisMessage, inArray(smsMessage.status, move.from)));
     if (REACHED_CARRIER.has(event.type)) {

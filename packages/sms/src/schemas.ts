@@ -146,8 +146,9 @@ const Body = z
   .refine((value) => !hasControlCharacters(value), {
     message: "Body must not contain control characters other than line breaks.",
   })
-  .refine((value) => countSegments(value).segments <= MAX_SMS_SEGMENTS, {
-    message: `Body can be at most ${MAX_SMS_SEGMENTS} segments (1,530 GSM-7 or 670 Unicode characters).`,
+  // Counted as from a toll-free number (the smaller segments): the limit holds for every sender.
+  .refine((value) => countSegments(value, { tollFree: true }).segments <= MAX_SMS_SEGMENTS, {
+    message: `Body can be at most ${MAX_SMS_SEGMENTS} segments (1,520 GSM-7 or 660 Unicode characters).`,
   });
 
 const ScheduledAt = z.iso.datetime({
@@ -168,7 +169,7 @@ export const SendSmsRequest = z
     }),
     body: Body.meta({
       description:
-        "The text. Messages are split into segments of 153 GSM-7 or 67 Unicode characters (160 or 70 for a single one), each billed; at most 10.",
+        "The text. Messages are split into segments of 153 GSM-7 or 67 Unicode characters (152 or 66 from a toll-free number; 160 or 70 for a single one), each billed; at most 10 (1,520 GSM-7 or 660 Unicode characters).",
       examples: ["Your Acme code is 482913"],
     }),
     tags: Tags.optional().meta({ description: `Up to ${MAX_SMS_TAGS} tags.` }),

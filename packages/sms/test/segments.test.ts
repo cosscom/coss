@@ -88,3 +88,12 @@ test("keywords are whole messages, in any case", () => {
   expect(smsKeyword("help")).toBe("help");
   expect(smsKeyword("please stop")).toBeNull();
 });
+
+test("toll-free numbers' multipart segments hold one unit less", () => {
+  const body = "a".repeat(305);
+  expect(countSegments(body).segments).toBe(2);
+  expect(countSegments(body, { tollFree: true })).toMatchObject({ segments: 3 });
+  expect(countSegments("д".repeat(134)).segments).toBe(2);
+  expect(countSegments("д".repeat(134), { tollFree: true }).segments).toBe(3);
+  expect(countSegments("a".repeat(160), { tollFree: true }).segments).toBe(1);
+});

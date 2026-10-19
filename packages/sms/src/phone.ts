@@ -14,6 +14,13 @@ export function isSimulatorNumber(phoneNumber: string): boolean {
   return phoneNumber.startsWith(SIMULATOR_PREFIX);
 }
 
+/** US and Canadian toll-free numbers (NANP: 800, 833, 844, 855, 866, 877, 888). */
+const TOLL_FREE = /^\+18(00|33|44|55|66|77|88)\d{7}$/;
+
+export function isTollFreeNumber(phoneNumber: string): boolean {
+  return TOLL_FREE.test(phoneNumber);
+}
+
 export type ParsedPhoneNumber = { phoneNumber: string; country: string };
 
 /** The E.164 number and its ISO 3166 country, or `null` when it isn't a valid number. */

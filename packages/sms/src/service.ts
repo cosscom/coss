@@ -22,7 +22,7 @@ import type { SmsDispatchQueue } from "./dispatch.ts";
 import { SmsError } from "./errors.ts";
 import { COSS_SMS_EVENT_SOURCE, recordSmsEvent } from "./events.ts";
 import { UNKNOWN_FAILURE } from "./failures.ts";
-import { parsePhoneNumber } from "./phone.ts";
+import { isTollFreeNumber, parsePhoneNumber } from "./phone.ts";
 import {
   type SmsProvider,
   type SmsProviderEvent,
@@ -600,7 +600,7 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
         return replayOnError(error);
       }
     }
-    const segmentation = countSegments(params.body);
+    const segmentation = countSegments(params.body, { tollFree: isTollFreeNumber(params.from) });
     const scheduledAt =
       params.scheduled_at && Date.parse(params.scheduled_at) > Date.now()
         ? new Date(params.scheduled_at)
