@@ -50,8 +50,11 @@ message UCS-2 (Unicode):
 
 | Encoding | One segment     | Longer messages    | At most (10 segments) |
 | -------- | --------------- | ------------------ | --------------------- |
-| `gsm7`   | 160 characters  | 153 per segment    | 1,530 characters      |
-| `ucs2`   | 70 characters   | 67 per segment     | 670 characters        |
+| `gsm7`   | 160 characters  | 153 per segment    | 1,520 characters      |
+| `ucs2`   | 70 characters   | 67 per segment     | 660 characters        |
+
+Longer messages from a toll-free number take one character less per segment (152 and 66), as
+carriers split them; the 10-segment limit is counted that way for every sender.
 
 GSM-7's extended characters (`€ [ ] { } \ ^ ~ |` and the form feed) take two characters' room.
 Characters are never split across segments. A body of more than 10 segments is refused with a

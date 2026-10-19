@@ -85,7 +85,7 @@ export default function PricingPage() {
       </Section>
 
       <Section
-        description="SMS is priced per segment: 160 plain characters, or 70 with emoji or other Unicode (153 and 67 per segment in longer messages). Sends are priced by the destination country, replies by the country of the number that receives them."
+        description="SMS is priced per segment: 160 plain characters, or 70 with emoji or other Unicode (153 and 67 per segment in longer messages, 152 and 66 from toll-free numbers). Sends are priced by the destination country, replies by the country of the number that receives them."
         id="sms"
         title="SMS rates"
       >
