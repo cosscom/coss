@@ -10,6 +10,7 @@ export const SOURCE_LABELS: Record<LogDrainSource, { label: string; description:
     label: "SMTP messages",
     description: "Messages submitted to the SMTP relay with this environment's keys.",
   },
+  sms: { label: "SMS events", description: "Sent, delivered, undelivered, received, opt-outs…" },
   audit: {
     label: "Audit events",
     description: "Changes to this environment: keys, endpoints, drains, suppressions…",

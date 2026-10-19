@@ -5,6 +5,12 @@
 import { BILLING_EVENT_TYPES } from "@coss/billing/wire";
 import { ACCOUNT_EVENT_TYPES } from "@coss/reputation/schemas";
 import { RISK_EVENT_TYPES, RiskWebhookEvent } from "@coss/risk/schemas";
+import {
+  RECEIVED_SMS_EVENT_TYPES,
+  ReceivedSmsWebhookEvent,
+  SMS_EVENT_TYPES,
+  SmsWebhookEvent,
+} from "@coss/sms/schemas";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { HOOK_OPERATIONAL_EVENT_TYPES, HookEndpointWebhookEvent } from "@coss/webhooks/schemas";
 import { z } from "zod";
@@ -35,6 +41,8 @@ export const TEST_WEBHOOK_EVENT_TYPES = [
   ...RISK_EVENT_TYPES,
   ...CONTACT_EVENT_TYPES,
   ...BROADCAST_EVENT_TYPES,
+  ...SMS_EVENT_TYPES,
+  ...RECEIVED_SMS_EVENT_TYPES,
 ] as const;
 
 export type TestWebhookEventType = (typeof TEST_WEBHOOK_EVENT_TYPES)[number];
@@ -46,6 +54,10 @@ export function webhookEventSchema(type: TestWebhookEventType): z.ZodType {
   if (type.startsWith("hook_endpoint.")) return HookEndpointWebhookEvent;
   if (type.startsWith("risk.")) return RiskWebhookEvent;
   if (type.startsWith("contact.")) return ContactWebhookEvent;
+  if ((RECEIVED_SMS_EVENT_TYPES as readonly string[]).includes(type)) {
+    return ReceivedSmsWebhookEvent;
+  }
+  if (type.startsWith("sms.")) return SmsWebhookEvent;
   return BroadcastWebhookEvent;
 }
 
@@ -108,6 +120,8 @@ export const WebhookTestEventObject = z
         RiskWebhookEvent,
         ContactWebhookEvent,
         BroadcastWebhookEvent,
+        SmsWebhookEvent,
+        ReceivedSmsWebhookEvent,
       ])
       .meta({
         description:

@@ -297,6 +297,10 @@ const ADVICE: Record<string, string> = {
     "Remove addresses that bounce from your marketing lists, and stop sending to contacts who haven't confirmed their address.",
   marketing_complaint_rate:
     "Send marketing only to contacts who opted in, keep the unsubscribe link prominent, and stop sending to people who don't engage.",
+  sms_opt_out_rate:
+    "Many of your SMS recipients replied STOP: only text people who asked for your messages, say who you are, and send less often.",
+  sms_filtered_rate:
+    "Carriers are filtering your SMS as spam: keep messages to what your registration describes, avoid URL shorteners, and only text people who opted in.",
   hook_failure_rate:
     "Most Hooks messages fail at your applications' endpoints: check that they are your users' real URLs, and disable or delete the ones that no longer answer.",
 };

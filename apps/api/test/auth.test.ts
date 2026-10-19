@@ -115,11 +115,11 @@ describe("authentication", () => {
     const created = await createEnvironmentApiKey({
       organizationId: tenant.organization.id,
       environmentId: tenant.development.id,
-      name: "SMS only",
+      name: "Hooks only",
       userId: tenant.owner.id,
       permissions: "full",
     });
-    await setKeyPermissions(created.id, { sms: ["send"] });
+    await setKeyPermissions(created.id, { hook: ["send"] });
 
     const send = await sendEmail(app, created.key, emailBody());
     expect(send.status).toBe(403);

@@ -12,6 +12,10 @@ export const RETENTION_DAYS = {
   emails: 45,
   /** Received emails with their headers, bodies, raw message and attachments. */
   receivedEmails: 30,
+  /** SMS messages with their delivery events (not queued or scheduled). */
+  smsMessages: 45,
+  /** SMS received on an organization's numbers. */
+  receivedSms: 30,
   /** DMARC aggregate reports about a domain, with their rows. */
   dmarcReports: 90,
   /** Settled DMARC notification emails (readiness for a stricter policy, failing mail). */
@@ -108,6 +112,20 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     description:
       "Emails sent to your receiving addresses: the raw message, headers, bodies, attachments and spam and authentication verdicts. You can also delete one right away.",
     period: { days: RETENTION_DAYS.receivedEmails, after: "creation" },
+  },
+  {
+    id: "sms_messages",
+    label: "SMS messages",
+    description:
+      "Text, phone numbers, tags, segment counts and delivery events. Queued and scheduled messages are kept until they are sent or canceled.",
+    period: { days: RETENTION_DAYS.smsMessages, after: "creation" },
+  },
+  {
+    id: "received_sms",
+    label: "Received SMS",
+    description:
+      "Replies and other messages sent to your phone numbers: the text and the sender's number.",
+    period: { days: RETENTION_DAYS.receivedSms, after: "creation" },
   },
   {
     id: "dmarc_reports",
@@ -267,7 +285,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "suppressions",
     label: "Suppressions",
     description:
-      "Addresses that sends skip. Never removed automatically, so a bounced address stays protected.",
+      "Email addresses and phone numbers that sends skip, including SMS opt-outs. Never removed automatically, so a bounced address or an opted-out number stays protected.",
     period: { until: "deleted" },
   },
   {
@@ -295,7 +313,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "account",
     label: "Account and configuration",
     description:
-      "Users, organizations, projects, environments, API keys, domains, email templates (with every published version), webhook endpoints, log drains, Hooks applications, event types and endpoints, risk allow and block lists, contact properties, audiences, segments, topics, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, a template, an endpoint, a drain, an application) are removed right away.",
+      "Users, organizations, projects, environments, API keys, domains, SMS phone numbers and carrier registrations (with the business details they were registered with), email templates (with every published version), webhook endpoints, log drains, Hooks applications, event types and endpoints, risk allow and block lists, contact properties, audiences, segments, topics, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, a template, an endpoint, a drain, an application) are removed right away.",
     period: { until: "closed" },
   },
 ];

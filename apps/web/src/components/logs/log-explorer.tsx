@@ -97,7 +97,7 @@ function Row(props: {
             <span className={statusClassName(entry.status_code)}>{entry.status_code ?? "—"}</span>
           </span>
         ) : (
-          <span className="text-muted-foreground">{entry.type.replace(/^email\./, "")}</span>
+          <span className="text-muted-foreground">{entry.type.replace(/^(email|sms)\./, "")}</span>
         )}
       </td>
       <td className="max-w-0 py-1.5 pe-4">

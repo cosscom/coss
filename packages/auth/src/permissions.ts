@@ -52,6 +52,11 @@ export const orgStatements = {
   billing: ["read", "update"],
   // Hooks (webhooks as a service): applications, event types, endpoints, messages, portal.
   hook: ["create", "read", "update", "delete", "send"],
+  // SMS: send and read messages (received ones too), an environment's SMS suppression list.
+  sms: ["send", "read"],
+  smsSuppression: ["create", "read", "delete"],
+  // The organization's SMS senders: phone numbers, carrier registrations, allowed countries.
+  smsSender: ["create", "read", "update", "delete"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -75,6 +80,9 @@ const fullCossAccess = {
   risk: ["assess", "read", "feedback", "update"],
   riskList: ["create", "read", "delete"],
   riskRule: ["create", "read", "update", "delete"],
+  sms: ["send", "read"],
+  smsSuppression: ["create", "read", "delete"],
+  smsSender: ["create", "read", "update", "delete"],
 } as const;
 
 const readOnlyCossAccess = {
@@ -95,6 +103,9 @@ const readOnlyCossAccess = {
   risk: ["read"],
   riskList: ["read"],
   riskRule: ["read"],
+  sms: ["read"],
+  smsSuppression: ["read"],
+  smsSender: ["read"],
 } as const;
 
 export const orgRoles = {

@@ -21,6 +21,9 @@ const {
   email,
   emailBatch,
   emailSuppression,
+  smsMessage,
+  smsReceived,
+  smsSuppression,
   environment,
   hookAttempt,
   hookDelivery,
@@ -473,6 +476,30 @@ async function deleteOrganizationData(
         and(
           eq(emailSuppression.environmentId, environmentId),
           eq(emailSuppression.organizationId, organizationId),
+        ),
+      ],
+      [
+        smsMessage,
+        smsMessage.id,
+        and(
+          eq(smsMessage.environmentId, environmentId),
+          eq(smsMessage.organizationId, organizationId),
+        ),
+      ],
+      [
+        smsReceived,
+        smsReceived.id,
+        and(
+          eq(smsReceived.environmentId, environmentId),
+          eq(smsReceived.organizationId, organizationId),
+        ),
+      ],
+      [
+        smsSuppression,
+        smsSuppression.id,
+        and(
+          eq(smsSuppression.environmentId, environmentId),
+          eq(smsSuppression.organizationId, organizationId),
         ),
       ],
       // Contacts (their audience memberships and topic choices cascade).

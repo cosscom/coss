@@ -5319,10 +5319,20 @@
                 "broadcast.sent",
                 "broadcast.paused",
                 "broadcast.canceled",
-                "broadcast.failed"
+                "broadcast.failed",
+                "sms.scheduled",
+                "sms.sent",
+                "sms.delivered",
+                "sms.undelivered",
+                "sms.failed",
+                "sms.suppressed",
+                "sms.canceled",
+                "sms.received",
+                "sms.opted_out",
+                "sms.opted_in"
               ]
             },
-            "maxItems": 43,
+            "maxItems": 53,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -5591,10 +5601,20 @@
                 "broadcast.sent",
                 "broadcast.paused",
                 "broadcast.canceled",
-                "broadcast.failed"
+                "broadcast.failed",
+                "sms.scheduled",
+                "sms.sent",
+                "sms.delivered",
+                "sms.undelivered",
+                "sms.failed",
+                "sms.suppressed",
+                "sms.canceled",
+                "sms.received",
+                "sms.opted_out",
+                "sms.opted_in"
               ]
             },
-            "maxItems": 43,
+            "maxItems": 53,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {
@@ -6112,10 +6132,20 @@
                 "broadcast.sent",
                 "broadcast.paused",
                 "broadcast.canceled",
-                "broadcast.failed"
+                "broadcast.failed",
+                "sms.scheduled",
+                "sms.sent",
+                "sms.delivered",
+                "sms.undelivered",
+                "sms.failed",
+                "sms.suppressed",
+                "sms.canceled",
+                "sms.received",
+                "sms.opted_out",
+                "sms.opted_in"
               ]
             },
-            "maxItems": 43,
+            "maxItems": 53,
             "description": "Event types to receive. Defaults to every event type."
           },
           "api_version": {
@@ -6417,6 +6447,12 @@
               },
               {
                 "$ref": "#/components/schemas/BroadcastWebhookEvent"
+              },
+              {
+                "$ref": "#/components/schemas/SmsWebhookEvent"
+              },
+              {
+                "$ref": "#/components/schemas/ReceivedSmsWebhookEvent"
               }
             ],
             "description": "The event, as an endpoint on the request's API version receives it. Its `webhook-id` header is `event.id`."
@@ -7762,6 +7798,278 @@
           "unsubscribed"
         ]
       },
+      "SmsWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id: the same as `SmsEvent.id`."
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "sms.scheduled",
+              "sms.sent",
+              "sms.delivered",
+              "sms.undelivered",
+              "sms.failed",
+              "sms.suppressed",
+              "sms.canceled"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "failure": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message"
+                ],
+                "description": "Why the message failed or wasn't delivered."
+              },
+              "provider_error_code": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The provider's or carrier's own error code, e.g. `30007`."
+              },
+              "suppression": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "opt_out",
+                      "manual",
+                      "invalid_number"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "reason"
+                ],
+                "description": "`sms.suppressed`: the entry that made coss.com skip the number."
+              },
+              "sms_id": {
+                "type": "string"
+              },
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "segments": {
+                "type": "integer"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "value"
+                  ]
+                }
+              },
+              "sandbox": {
+                "type": "boolean"
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "sms_id",
+              "from",
+              "to",
+              "country",
+              "segments",
+              "tags",
+              "sandbox",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "smsevt_01k7c8m4r0c2b8w9y3d5f6g7h8",
+            "object": "event",
+            "type": "sms.delivered",
+            "api_version": "2026-10-10",
+            "created_at": "2026-11-10T12:00:04.100Z",
+            "data": {
+              "sms_id": "sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "from": "+14155550123",
+              "to": "+14155550199",
+              "country": "US",
+              "segments": 1,
+              "tags": [
+                {
+                  "name": "flow",
+                  "value": "sign_in"
+                }
+              ],
+              "sandbox": false,
+              "occurred_at": "2026-11-10T12:00:04.000Z"
+            }
+          }
+        ]
+      },
+      "ReceivedSmsWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "sms.received",
+              "sms.opted_out",
+              "sms.opted_in"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "received_sms_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The received message; `null` for an opt-out to a number whose replies go to no environment."
+              },
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "keyword": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "stop",
+                  "start",
+                  "help",
+                  null
+                ]
+              },
+              "sandbox": {
+                "type": "boolean"
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "received_sms_id",
+              "from",
+              "to",
+              "keyword",
+              "sandbox",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "object": "event",
+            "type": "sms.received",
+            "api_version": "2026-10-10",
+            "created_at": "2026-11-10T12:05:00.100Z",
+            "data": {
+              "received_sms_id": "smsin_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "from": "+14155550199",
+              "to": "+14155550123",
+              "keyword": null,
+              "sandbox": false,
+              "occurred_at": "2026-11-10T12:05:00.000Z"
+            }
+          }
+        ]
+      },
       "CreateTestWebhookEventRequest": {
         "type": "object",
         "properties": {
@@ -7810,7 +8118,17 @@
               "broadcast.sent",
               "broadcast.paused",
               "broadcast.canceled",
-              "broadcast.failed"
+              "broadcast.failed",
+              "sms.scheduled",
+              "sms.sent",
+              "sms.delivered",
+              "sms.undelivered",
+              "sms.failed",
+              "sms.suppressed",
+              "sms.canceled",
+              "sms.received",
+              "sms.opted_out",
+              "sms.opted_in"
             ],
             "description": "The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one."
           },
@@ -11835,9 +12153,10 @@
           "email",
           "webhook",
           "risk",
-          "smtp"
+          "smtp",
+          "sms"
         ],
-        "description": "`api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt. `risk`: a risk assessment or its feedback. `smtp`: a message submitted to the SMTP relay."
+        "description": "`api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt. `risk`: a risk assessment or its feedback. `smtp`: a message submitted to the SMTP relay. `sms`: an SMS event."
       },
       "LogLevel": {
         "type": "string",
@@ -13496,6 +13815,7 @@
           "webhook",
           "risk",
           "smtp",
+          "sms",
           "audit"
         ],
         "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
@@ -13525,7 +13845,7 @@
             "items": {
               "$ref": "#/components/schemas/LogDrainSource"
             },
-            "maxItems": 6,
+            "maxItems": 7,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later. Defaults to every source."
           }
         },
@@ -13713,7 +14033,7 @@
             "items": {
               "$ref": "#/components/schemas/LogDrainSource"
             },
-            "maxItems": 6,
+            "maxItems": 7,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
           },
           "enabled": {

@@ -114,6 +114,13 @@ export const ID_PREFIXES = {
   hookEndpointRecovery: "hrec",
   pushDevice: "pushdev",
   pushNotification: "pushntf",
+  // SMS.
+  smsMessage: "sms",
+  smsEvent: "smsevt",
+  smsSuppression: "smssup",
+  smsReceived: "smsin",
+  smsNumber: "num",
+  smsRegistration: "smsreg",
 } as const;
 
 export type IdPrefix = (typeof ID_PREFIXES)[keyof typeof ID_PREFIXES];

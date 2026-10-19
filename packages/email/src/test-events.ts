@@ -134,6 +134,37 @@ const BROADCAST_STATUS_BY_TYPE: Record<string, string> = {
   "broadcast.failed": "failed",
 };
 
+/** What an event of each `sms.*` type about a sent message adds to its description. */
+function smsDetails(type: string): Data {
+  switch (type) {
+    case "sms.failed":
+      return {
+        failure: {
+          code: "invalid_number",
+          message: "The number can't receive SMS (it doesn't exist, or isn't a mobile number).",
+        },
+        provider_error_code: "21211",
+      };
+    case "sms.undelivered":
+      return {
+        failure: {
+          code: "carrier_filtered",
+          message: "The carrier filtered the message as spam or unregistered traffic.",
+        },
+        provider_error_code: "30007",
+      };
+    case "sms.suppressed":
+      return { suppression: { id: newId(ID_PREFIXES.smsSuppression), reason: "opt_out" } };
+    default:
+      return {};
+  }
+}
+
+const SMS_KEYWORD_BY_TYPE: Record<string, string> = {
+  "sms.opted_out": "stop",
+  "sms.opted_in": "start",
+};
+
 /** A realistic sample of `type` at `now`, with fresh ids. */
 export function sampleWebhookEvent(type: TestWebhookEventType, now: Date): StoredTestWebhookEvent {
   const at = now.toISOString();
@@ -193,6 +224,22 @@ export function sampleWebhookEvent(type: TestWebhookEventType, now: Date): Store
           ? "preference_center"
           : "api",
       occurred_at: at,
+    };
+  } else if (type in SMS_KEYWORD_BY_TYPE || type === "sms.received") {
+    data = {
+      ...base,
+      received_sms_id: newId(ID_PREFIXES.smsReceived),
+      keyword: SMS_KEYWORD_BY_TYPE[type] ?? null,
+      sandbox: true,
+      occurred_at: at,
+    };
+  } else if (type.startsWith("sms.")) {
+    data = {
+      ...base,
+      sms_id: newId(ID_PREFIXES.smsMessage),
+      sandbox: true,
+      occurred_at: at,
+      ...smsDetails(type),
     };
   } else {
     const broadcast = isPlainObject(base.broadcast) ? base.broadcast : {};

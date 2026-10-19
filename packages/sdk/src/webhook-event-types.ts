@@ -45,6 +45,16 @@ export const WEBHOOK_EVENT_TYPES: readonly WebhookEventType[] = [
   "broadcast.paused",
   "broadcast.canceled",
   "broadcast.failed",
+  "sms.scheduled",
+  "sms.sent",
+  "sms.delivered",
+  "sms.undelivered",
+  "sms.failed",
+  "sms.suppressed",
+  "sms.canceled",
+  "sms.received",
+  "sms.opted_out",
+  "sms.opted_in",
 ];
 
 /** Types only live environments receive: `domain.*`, `account.*` and `billing.*`. */

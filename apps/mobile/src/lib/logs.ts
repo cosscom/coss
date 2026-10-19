@@ -9,9 +9,9 @@ export function logSummary(entry: LogEntry): { title: string; subtitle: string }
       subtitle: [entry.status_code, duration, entry.error_code].filter(Boolean).join(" · "),
     };
   }
-  if (entry.source === "email") {
+  if (entry.source === "email" || entry.source === "sms") {
     return {
-      title: entry.type.replace(/^email\./, ""),
+      title: entry.type.replace(/^(email|sms)\./, ""),
       subtitle: [entry.recipient ?? entry.resource_id, entry.error_code]
         .filter(Boolean)
         .join(" · "),
