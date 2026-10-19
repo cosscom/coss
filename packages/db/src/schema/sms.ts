@@ -394,7 +394,8 @@ export const smsReceived = pgTable(
 /**
  * Every inbound message the provider reported, routed or not: a retried callback is recognized
  * by it even when nothing was stored (an unrouted STOP or START must not be applied twice, or a
- * retry could undo a later change). Purged with received messages.
+ * retry could undo a later change), and opt-outs stay counted by reputation after a START or a
+ * removed suppression. Purged with received messages.
  */
 export const smsInboundReceipt = pgTable(
   "sms_inbound_receipt",
@@ -404,6 +405,9 @@ export const smsInboundReceipt = pgTable(
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
+    // Who sent it and its opt-out keyword (`stop`, `start`, `help`), for the opt-out rate.
+    fromNumber: text("from_number"),
+    keyword: text("keyword"),
     createdAt: createdAt(),
   },
   (t) => [

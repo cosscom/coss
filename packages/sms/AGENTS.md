@@ -51,8 +51,9 @@ senders (US A2P 10DLC brands and campaigns, toll-free verification) and its phon
   apply whether or not the message is routed, once per provider message id (`sms_inbound_receipt`:
   a retried START must not undo a later STOP). Sandbox sends to `SMS_SIMULATOR.reply` get a
   simulated reply in their own environment.
-- **Reputation** (`smsReputationChecks`): `sms_opt_out_rate` (distinct numbers that opted out /
-  live messages that reached a carrier) and `sms_filtered_rate` (`carrier_filtered`, Twilio 30007),
+- **Reputation** (`smsReputationChecks`): `sms_opt_out_rate` (distinct numbers that opted out —
+  STOP receipts and sends refused as `opted_out`, never the suppression list, which START or a
+  removal empties — / live messages a carrier took, `usage_recorded_at`) and `sms_filtered_rate` (`carrier_filtered`, Twilio 30007),
   thresholds `ReputationPolicy.smsOptOutRate`/`smsFilteredRate`.
 - **Prices** live in `@coss/billing/catalog` (`sms-prices-<date>.generated.ts`, written by
   `bun run sms:update-prices` from Twilio's per-country prices). The negotiated Twilio rates and

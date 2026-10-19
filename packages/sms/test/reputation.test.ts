@@ -58,4 +58,17 @@ test("opt-outs and carrier filtering are rated over live messages that reached a
     volume: 4,
     severity: "ok",
   });
+  // A START afterwards empties the suppression list, not the opt-out rate.
+  await receiveSms({
+    provider: "fake",
+    providerMessageId: `start-${crypto.randomUUID()}`,
+    from: first,
+    to: number.phoneNumber,
+    body: "START",
+    occurredAt: new Date(),
+  });
+  const [again] = await Promise.all(
+    smsReputationChecks.map((check) => check.evaluate({ ...context })),
+  );
+  expect(again).toMatchObject({ trigger: "sms_opt_out_rate", count: 1 });
 });

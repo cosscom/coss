@@ -230,6 +230,8 @@ export async function receiveSms(input: InboundSms): Promise<ReceiveSmsResult> {
         provider: input.provider,
         providerMessageId: input.providerMessageId,
         organizationId,
+        fromNumber: input.from,
+        keyword: smsKeyword(input.body),
       })
       .onConflictDoNothing()
       .returning({ provider: smsInboundReceipt.provider });
