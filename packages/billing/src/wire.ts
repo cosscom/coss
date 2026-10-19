@@ -178,7 +178,10 @@ export const UsageObject = z
       .string()
       .nullable()
       .meta({ description: "e.g. `country=US` for SMS; `null` for none." }),
-    environment_id: z.string().nullable().meta({ description: "Set with `group_by=environment`." }),
+    environment_id: z.string().nullable().meta({
+      description:
+        "Set with `group_by=environment`; `null` there for organization-wide usage (SMS numbers and registration fees).",
+    }),
     start: Timestamp,
     end: Timestamp,
     quantity: z.int().nonnegative(),

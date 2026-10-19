@@ -158,6 +158,7 @@ if (runs("email-dispatch-marketing")) {
 }
 // SMS: live messages go to Twilio (or the fake), reporting to the API's `/sms/twilio/status`.
 const sms = createSmsRuntime(env);
+const smsSecretsKeys = parseSecretsKeys(env.WEBHOOK_SECRETS_KEY);
 await ensureSmsDispatchQueue(jobs);
 const smsQueue = pgBossSmsDispatchQueue(jobs);
 const smsService = createSmsService({
@@ -233,7 +234,19 @@ const loops = startJobs({
   signal: controller.signal,
   domains: email.domainDeps,
   email: emailService,
-  sms: { service: smsService, queue: smsQueue },
+  sms: {
+    service: smsService,
+    queue: smsQueue,
+    senders: {
+      provider: sms.provider,
+      twilio: sms.twilio,
+      secretsKeys: smsSecretsKeys,
+      subaccountPrefix: sms.subaccountPrefix,
+      callbackBaseUrl: env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
+      // Production never registers or buys anything at the fake provider.
+      provisioningDisabled: sms.provider === "fake" && process.env.NODE_ENV === "production",
+    },
+  },
   broadcasts: {
     queue: dispatchQueue,
     liveProvider: email.liveProvider.name,

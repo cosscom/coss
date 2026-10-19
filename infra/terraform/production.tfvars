@@ -77,6 +77,8 @@ plain_env = {
     CLIENT_IP_HEADER         = "x-forwarded-for"
     TRUSTED_PROXY_COUNT      = "2"
     BILLING_PROVIDER         = "stripe"
+    # SMS stays simulated (and senders can't be set up) until the Twilio variables are set.
+    SMS_PROVIDER = "fake"
     # coss.com's own organization (`coss`, project `notifications`, live): never suspended by admins.
     NOTIFICATIONS_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
     # coss.com Risk assesses coss.com's own sign-ups in that same environment (dogfooding).

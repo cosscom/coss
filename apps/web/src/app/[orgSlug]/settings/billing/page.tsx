@@ -502,7 +502,11 @@ export default async function BillingPage({
             <TableBody>
               {byEnvironment.map((row) => (
                 <TableRow key={`${row.environmentId}:${row.meter}`}>
-                  <TableCell>{labels.get(row.environmentId) ?? "Deleted environment"}</TableCell>
+                  <TableCell>
+                    {row.environmentId === ""
+                      ? "Organization"
+                      : (labels.get(row.environmentId) ?? "Deleted environment")}
+                  </TableCell>
                   <TableCell>{METERS[row.meter]?.label ?? row.meter}</TableCell>
                   <TableCell className="text-right font-mono text-xs tabular-nums">
                     {formatQuantity(row.quantity)}

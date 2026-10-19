@@ -668,3 +668,100 @@ export const SmsNumberList = z
     has_more: z.boolean(),
   })
   .meta({ id: "SmsNumberList", examples: [{ object: "list", data: [], has_more: false }] });
+
+// ---------------------------------------------------------------------------------------------
+// Sender registration (the dashboard's forms; not part of the public API).
+// ---------------------------------------------------------------------------------------------
+
+/** A2P campaign use cases coss.com offers (Twilio's `UsAppToPersonUsecase` values). */
+export const SMS_USE_CASES = [
+  "2FA",
+  "ACCOUNT_NOTIFICATION",
+  "CUSTOMER_CARE",
+  "DELIVERY_NOTIFICATION",
+  "FRAUD_ALERT",
+  "MARKETING",
+  "MIXED",
+  "LOW_VOLUME",
+] as const;
+
+export const SMS_USE_CASE_LABELS: Record<(typeof SMS_USE_CASES)[number], string> = {
+  "2FA": "One-time codes",
+  ACCOUNT_NOTIFICATION: "Account notifications",
+  CUSTOMER_CARE: "Customer care",
+  DELIVERY_NOTIFICATION: "Delivery notifications",
+  FRAUD_ALERT: "Fraud alerts",
+  MARKETING: "Marketing",
+  MIXED: "Mixed",
+  LOW_VOLUME: "Low volume mixed (under 2,000 segments a day)",
+};
+
+export const SMS_COMPANY_TYPES = ["PRIVATE_PROFIT", "PUBLIC_PROFIT", "NON_PROFIT"] as const;
+
+const Text = (max: number) => z.string().trim().min(1, "Required.").max(max);
+
+export const SmsBusinessProfileInput = z.object({
+  legalName: Text(255),
+  companyType: z.enum(SMS_COMPANY_TYPES),
+  taxId: Text(64),
+  taxIdType: z.enum(["EIN", "CBN", "VAT", "DUNS"]).default("EIN"),
+  industry: Text(64),
+  website: z.url().max(500),
+  street: Text(255),
+  city: Text(128),
+  region: Text(64),
+  postalCode: Text(32),
+  country: z.string().regex(/^[A-Z]{2}$/, "An ISO country code, e.g. US."),
+  stockExchange: z.string().trim().max(32).nullish(),
+  stockTicker: z.string().trim().max(16).nullish(),
+  contact: z.object({
+    firstName: Text(64),
+    lastName: Text(64),
+    email: z.email(),
+    phone: PhoneNumber,
+    title: Text(64),
+    jobPosition: z.enum(["Director", "GM", "VP", "CEO", "CFO", "General Counsel", "Other"]),
+  }),
+});
+
+export const SmsCampaignInput = z.object({
+  useCase: z.enum(SMS_USE_CASES),
+  description: z
+    .string()
+    .trim()
+    .min(40, "Describe the messages in at least 40 characters.")
+    .max(4096),
+  messageFlow: z
+    .string()
+    .trim()
+    .min(40, "Describe how people opt in, in at least 40 characters.")
+    .max(2048),
+  samples: z
+    .array(z.string().trim().min(20, "Samples are at least 20 characters.").max(1024))
+    .min(2, "Give at least two sample messages.")
+    .max(5),
+  hasEmbeddedLinks: z.boolean(),
+  hasEmbeddedPhone: z.boolean(),
+  optInProofUrl: z.url().nullish(),
+  monthlyVolume: z.string().trim().max(32).nullish(),
+});
+
+export const SmsRegistrationInput = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("us_10dlc"),
+    brandType: z.enum(["standard", "low_volume_standard"]),
+    profile: SmsBusinessProfileInput,
+    campaign: SmsCampaignInput,
+  }),
+  z.object({
+    kind: z.literal("toll_free"),
+    /** The organization's toll-free number to verify. */
+    numberId: z.string().min(1),
+    profile: SmsBusinessProfileInput,
+    campaign: SmsCampaignInput.extend({
+      optInProofUrl: z.url("A public URL showing where people opt in."),
+    }),
+  }),
+]);
+
+export type SmsRegistrationInputOutput = z.output<typeof SmsRegistrationInput>;
