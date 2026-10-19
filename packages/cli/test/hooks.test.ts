@@ -287,7 +287,8 @@ describe("coss hooks", () => {
           status_code: 500,
           duration_ms: 31,
           error: null,
-          response_excerpt: "Internal\nerror",
+          // A receiver's escape sequence (OSC 52 writes the clipboard) never reaches the terminal.
+          response_excerpt: "Internal\nerror\u001b]52;c;aGk=\u0007",
         },
       ]),
       [`POST ${APP}/deliveries/hdlv_1/retry`]: delivery(
@@ -310,6 +311,8 @@ describe("coss hooks", () => {
     expect(await run(["hooks", "attempts", "acme", "hdlv_1"], io)).toBe(0);
     expect(io.output()).toContain("hdlv_1 failed → hep_1");
     expect(io.output()).toContain("500     31ms      Internal error");
+    expect(io.output()).not.toContain("\u001b");
+    expect(io.output()).not.toContain("\u0007");
 
     const retried = testIo({ fetch: api.fetch, env });
     expect(await run(["hooks", "retry", "acme", "hdlv_1"], retried)).toBe(0);

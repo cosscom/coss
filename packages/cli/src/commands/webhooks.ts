@@ -2,6 +2,7 @@ import type { WebhookDelivery, WebhookDeliveryStatus, WebhookEndpoint } from "co
 import type { Flags } from "../args.ts";
 import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { clientFor, resolveCredentials } from "../context.ts";
+import { printable } from "../emails/format.ts";
 import { apiError, UsageError } from "../errors.ts";
 import type { Output } from "../output.ts";
 
@@ -76,7 +77,7 @@ function statusStyle(status: WebhookDeliveryStatus): Parameters<Output["style"]>
 function describeDelivery(out: Output, delivery: WebhookDelivery): string {
   const when = out.style("dim", delivery.created_at.slice(0, 19).replace("T", " "));
   const code = delivery.last_status_code === null ? "" : ` [${delivery.last_status_code}]`;
-  const failure = delivery.last_error ? out.style("dim", ` ${delivery.last_error}`) : "";
+  const failure = delivery.last_error ? out.style("dim", ` ${printable(delivery.last_error)}`) : "";
   const attempts = `${delivery.attempt_count} attempt${delivery.attempt_count === 1 ? "" : "s"}`;
   return `${when}  ${delivery.id}  ${out.style("cyan", delivery.event_type)}  ${out.style(statusStyle(delivery.status), delivery.status)}${code}  ${out.style("dim", attempts)}${failure}`;
 }

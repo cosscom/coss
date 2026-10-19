@@ -6,6 +6,7 @@ import type { Coss, HookDelivery, HookDeliveryStatus, List } from "coss";
 import { type Flags, list, requireArgs } from "../args.ts";
 import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { type Context, clientFor, resolveCredentials } from "../context.ts";
+import { printable } from "../emails/format.ts";
 import { apiError, CliError, UsageError } from "../errors.ts";
 import { collect, field, jsonObject } from "../fields.ts";
 import type { Output, Style } from "../output.ts";
@@ -564,10 +565,13 @@ const attempts: Command = defineCommand({
       row: (attempt) => [
         when(attempt.attempted_at),
         attempt.status_code === null
-          ? out.style("red", attempt.error ?? "no response")
+          ? out.style("red", printable(attempt.error ?? "no response"))
           : out.style(attempt.status_code < 300 ? "green" : "red", String(attempt.status_code)),
         `${attempt.duration_ms}ms`,
-        (attempt.response_excerpt ?? "").replace(/\s+/g, " ").slice(0, 80),
+        // The receiver's text: no escape sequences reach the terminal.
+        printable(attempt.response_excerpt ?? "")
+          .replace(/\s+/g, " ")
+          .slice(0, 80),
       ],
       empty: "No attempts yet.",
     });

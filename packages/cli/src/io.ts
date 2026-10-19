@@ -105,19 +105,39 @@ function openBrowser(url: string): Promise<boolean> {
   });
 }
 
+/** Package managers that are `.cmd` shims on Windows, which only a shell can start. */
+const WINDOWS_SHIMS = new Set(["npm", "npx", "pnpm", "yarn"]);
+/** What may go through that shell unquoted: the CLI's own arguments (`add coss`), nothing else. */
+const SHELL_SAFE = /^[\w@./:=-]+$/;
+
+/**
+ * Whether `command` runs through a shell: only a Windows package-manager shim, and only with
+ * arguments a shell reads as they are. `null`: refuse (it would need quoting cmd.exe can't do).
+ * Anything else, like git with a user's path, never goes through one.
+ */
+export function shellFor(
+  command: string,
+  args: readonly string[],
+  platform: NodeJS.Platform = process.platform,
+): boolean | null {
+  if (platform !== "win32" || !WINDOWS_SHIMS.has(command)) return false;
+  return args.every((arg) => SHELL_SAFE.test(arg)) ? true : null;
+}
+
 function exec(
   command: string,
   args: string[],
   options: { cwd: string; quiet?: boolean },
 ): Promise<number | null> {
   return new Promise((resolve) => {
+    const shell = shellFor(command, args);
+    if (shell === null) return resolve(null);
     try {
       const child = spawn(command, args, {
         cwd: options.cwd,
         // The child's output on our stderr: stdout is the command's result.
         stdio: options.quiet ? "ignore" : ["ignore", 2, 2],
-        // `npm` is `npm.cmd` on Windows. Arguments are the CLI's own, never user input.
-        shell: process.platform === "win32",
+        shell,
       });
       child.once("error", () => resolve(null));
       child.once("close", (code) => resolve(code ?? 1));

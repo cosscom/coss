@@ -2,6 +2,7 @@ import type { Coss, Domain, DomainRecordStatus } from "coss";
 import type { Flags } from "../args.ts";
 import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { type Context, clientFor, resolveCredentials } from "../context.ts";
+import { printable } from "../emails/format.ts";
 import { apiError, CliError, UsageError } from "../errors.ts";
 import type { Output, Style } from "../output.ts";
 import { type Cell, table } from "../table.ts";
@@ -120,7 +121,11 @@ function mismatches(out: Output, domain: Domain): string[] {
   return domainRecords(domain)
     .filter((record) => record.status === "mismatch" && record.found.length > 0)
     .map((record) =>
-      out.style("dim", `  ${record.name} (${record.type}) is ${record.found.join(", ")}`),
+      // What DNS answered is anyone's text: no escape sequences reach the terminal.
+      out.style(
+        "dim",
+        `  ${record.name} (${record.type}) is ${record.found.map((value) => printable(value)).join(", ")}`,
+      ),
     );
 }
 

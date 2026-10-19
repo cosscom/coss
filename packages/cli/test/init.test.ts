@@ -7,7 +7,7 @@ import {
   removeEnvVar,
   setEnvVar,
 } from "../src/commands/init.ts";
-import type { CliIo } from "../src/io.ts";
+import { type CliIo, shellFor } from "../src/io.ts";
 import { run } from "../src/run.ts";
 import { apiError, environmentObject, fakeFetch, testIo } from "./helpers.ts";
 
@@ -180,6 +180,17 @@ describe("coss init", () => {
 });
 
 describe("package managers", () => {
+  test("only a Windows package-manager shim runs through a shell, with arguments it can't misread", () => {
+    for (const manager of ["npm", "pnpm", "yarn", "bun"] as const) {
+      const [command, args] = installCommand(manager);
+      expect(shellFor(command, args, "win32")).toBe(manager !== "bun");
+      expect(shellFor(command, args, "darwin")).toBe(false);
+    }
+    // git gets the env file's path: never a shell, whatever the path holds.
+    expect(shellFor("git", ["check-ignore", "-q", "C:\\My Apps\\a&b\\.env"], "win32")).toBe(false);
+    expect(shellFor("npm", ["install", "a&calc"], "win32")).toBeNull();
+  });
+
   async function dir(files: string[], io: CliIo = testIo()): Promise<string> {
     for (const file of files) {
       await mkdir(join(io.cwd, file, ".."), { recursive: true });
