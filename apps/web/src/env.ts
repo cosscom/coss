@@ -70,6 +70,14 @@ export const env = createEnv({
     // private key (both or neither, src/instrumentation.ts). Unset: the page explains the setup.
     DEPLOY_GITHUB_APP_ID: z.string().regex(/^\d+$/, "The app's numeric id.").optional(),
     DEPLOY_GITHUB_APP_PRIVATE_KEY: z.string().includes("PRIVATE KEY").optional(),
+    // Domain Connect (src/lib/domain-connect.ts): the RSA key apply links are signed with, and the
+    // TXT host its public half is published at under coss.com (`bun run domain-connect:key`). Both
+    // or neither (src/instrumentation.ts). Unset: domain pages only list the records.
+    DOMAIN_CONNECT_PRIVATE_KEY: z.string().includes("PRIVATE KEY").optional(),
+    DOMAIN_CONNECT_KEY_ID: z
+      .string()
+      .regex(/^_[a-z0-9-]{1,32}$/i, "A TXT host label like _dck1.")
+      .optional(),
     // Error and performance monitoring of the dashboard's server and, through /api/monitoring,
     // of browsers on both zones (dashboard and site).
     ...sentryEnvShape,

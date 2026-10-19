@@ -185,6 +185,13 @@ export async function dmarcRecordAt(
   return answers === null ? undefined : dmarcOf(answers.map((chunks) => chunks.join("")));
 }
 
+/** Whether `_dmarc.<name>` has no `v=DMARC1` record at all (`undefined`: lookup failed). */
+export async function dmarcAbsentAt(name: string, dns: DnsResolver): Promise<boolean | undefined> {
+  const answers = await lookup(() => dns.resolveTxt(`_dmarc.${name}`));
+  if (answers === null) return undefined;
+  return !answers.some((chunks) => DMARC_RECORD.test(chunks.join("").trim()));
+}
+
 /** Checks a tracking domain's CNAME; without a resolver it stays `not_checked`. */
 export async function checkTrackingRecord(
   record: TrackingDomainRecord,

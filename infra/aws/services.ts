@@ -497,6 +497,22 @@ export const SERVICES: Service[] = [
         description:
           "Signs the app's tokens: read main's commits and the Deploy workflow's runs, dispatch it.",
       },
+      {
+        name: "DOMAIN_CONNECT_KEY_ID",
+        kind: "plain",
+        required: false,
+        value: '_dck1 (the TXT host of the public key under coss.com; README, "Domain Connect")',
+        description:
+          "Domain Connect (one-click DNS setup), with DOMAIN_CONNECT_PRIVATE_KEY (both or neither).",
+      },
+      {
+        name: "DOMAIN_CONNECT_PRIVATE_KEY",
+        kind: "secret",
+        required: false,
+        value: "the RSA key from `bun run domain-connect:key` (PEM)",
+        description:
+          "Signs Domain Connect apply links; DNS providers check them against coss.com's TXT records.",
+      },
       ...sentry("web"),
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "PORT", kind: "image", required: true, value: "3000", description: "" },

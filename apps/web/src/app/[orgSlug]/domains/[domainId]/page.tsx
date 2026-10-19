@@ -1,6 +1,7 @@
 import {
   type DomainBimiObjectOutput,
   type DomainRecord,
+  type DomainRow,
   domainRecords,
   getDomain,
   getEmailTenant,
@@ -23,7 +24,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
 import { CopyValue } from "@/components/copy-value";
 import {
   BimiStatusBadge,
@@ -37,10 +38,12 @@ import { SendingPausedAlert } from "@/components/sending-paused-alert";
 import { SpecItem, SpecList } from "@/components/spec-list";
 import { SubNav } from "@/components/sub-nav";
 import { planHas } from "@/lib/billing";
+import { domainConnectPlan } from "@/lib/domain-connect";
 import { emailRuntime } from "@/lib/email-runtime";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { DeleteDomainButton, VerifyDomainButton } from "./domain-actions";
+import { DomainConnectButton, DomainConnectReturn } from "./domain-connect";
 import {
   AddReceivingDomainDialog,
   CheckReceivingDomainButton,
@@ -146,8 +149,26 @@ function RecordsTable({ children }: { children: ReactNode }) {
   );
 }
 
-export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domains/[domainId]">) {
+/**
+ * "Connect with <DNS provider>" when the domain's provider supports Domain Connect and something is
+ * left to add. Streams in on its own: discovery asks the customer's DNS and provider.
+ */
+async function DomainConnectAction(props: {
+  domain: DomainRow;
+  tracking: TrackingDomainRow | null;
+  target: { orgSlug: string; domainId: string };
+}) {
+  const plan = await domainConnectPlan(props.domain, props.tracking);
+  if (!plan) return null;
+  return <DomainConnectButton {...props.target} providerName={plan.provider.providerName} />;
+}
+
+export default async function DomainPage({
+  params,
+  searchParams,
+}: PageProps<"/[orgSlug]/domains/[domainId]">) {
   const { orgSlug, domainId } = await params;
+  const query = await searchParams;
   const { organization, can } = await requireOrgMember(orgSlug);
   if (!can({ domain: ["read"] })) notFound();
   const [domain, tenant] = await Promise.all([
@@ -211,7 +232,21 @@ export default async function DomainPage({ params }: PageProps<"/[orgSlug]/domai
         </Alert>
       ) : null}
 
+      {canVerify && query.dns_connect === "done" ? (
+        <DomainConnectReturn
+          {...target}
+          error={typeof query.error === "string" ? query.error : null}
+        />
+      ) : null}
+
       <Panel
+        action={
+          canVerify && domain.status !== "failed" && domain.status !== "deleting" ? (
+            <Suspense fallback={null}>
+              <DomainConnectAction domain={domain} target={target} tracking={tracking} />
+            </Suspense>
+          ) : null
+        }
         description={`Add these at your DNS provider. Last checked ${formatDateTime(domain.lastCheckedAt)}.`}
         title="DNS records"
       >

@@ -769,6 +769,28 @@ Identifiers & Profiles → Keys (Apple lets you download it once), store it, cha
 then revoke the old one. Without them the worker logs a warning and holds pushes (each is dropped after an hour).
 Local development uses its own key (Sandbox) in `.env`.
 
+### Domain Connect
+
+Domain pages offer **Connect with <DNS provider>** when the customer's DNS provider supports
+[Domain Connect](https://www.domainconnect.org) and has onboarded coss.com's template
+(`packages/email/domain-connect/coss.com.email.json`). The dashboard sends the customer to the provider with a
+link signed by `DOMAIN_CONNECT_PRIVATE_KEY`; the provider checks it against TXT records coss.com publishes, applies
+the template after the customer confirms, and sends them back to the domain page. Until the steps below are done
+nobody sees the button. Setting it up once:
+
+1. `bun run domain-connect:key --key-id _dck1` prints a new key (PEM) and the TXT records of its public half.
+2. Publish each printed record as its own TXT record at `_dck1.coss.com` (the coss.com zone on Cloudflare).
+3. `infra/terraform/scripts/put-secret.sh DOMAIN_CONNECT_PRIVATE_KEY --stdin` with the PEM, take it out of
+   `unset_secrets`, set `DOMAIN_CONNECT_KEY_ID = "_dck1"` under `plain_env.web`, apply and run the Deploy workflow.
+4. Open a pull request adding `coss.com.email.json` to
+   [Domain-Connect/Templates](https://github.com/Domain-Connect/Templates) (their linter runs on it).
+5. Ask DNS providers to onboard it once it is merged (Cloudflare: domain-connect@cloudflare.com; GoDaddy, IONOS
+   and others each have their own process). A provider that has it answers the template check with 200.
+
+Changing the template means a new `version` and another upstream pull request, and providers apply the version they
+have, so keep changes backwards compatible. To rotate the key, make one under a new id (`--key-id _dck2`),
+publish its records, switch both variables, deploy, and remove the old records a day later.
+
 ### Upgrading from v1 webhook secret storage
 
 The key-ring release reads both `v1` and `v2` ciphertext, but immediately writes `v2` when an endpoint is created

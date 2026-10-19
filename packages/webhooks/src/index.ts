@@ -150,7 +150,9 @@ export {
 } from "./secrets.ts";
 export {
   createWebhookSender,
+  publicAddressLookup,
   RESPONSE_EXCERPT_BYTES,
+  type ResolvedAddress,
   type SenderOptions,
   validateWebhookUrl,
   type WebhookRequest,

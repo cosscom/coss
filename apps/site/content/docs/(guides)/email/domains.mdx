@@ -36,6 +36,16 @@ the DMARC report address are specific to your domain. The DMARC record starts in
 the path to `p=reject`. Showing your logo with [BIMI](/docs/email/bimi) needs `p=quarantine` or
 `p=reject`.
 
+### One-click setup
+
+If your DNS provider supports [Domain Connect](https://www.domainconnect.org), the domain's page in
+the dashboard shows **Connect with** your provider (Cloudflare, for example). It takes you to your
+provider, which lists the records coss.com would add and asks you to confirm; then you're back on the
+domain's page and coss.com checks the records right away. Only the records still missing are added,
+and a DMARC record only when your domain has none (its own or its parent domain's), so an existing
+policy is never weakened. Records for [receiving email](/docs/email/receiving) are always added by
+hand: an `MX` record decides where a domain's mail goes.
+
 ## Verification
 
 coss.com checks the records automatically; the dashboard and each record's `status` show the result of
