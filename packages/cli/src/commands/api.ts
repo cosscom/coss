@@ -4,6 +4,7 @@ import type { Flags } from "../args.ts";
 import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { clientFor, resolveCredentials } from "../context.ts";
 import { apiError, CliError, UsageError } from "../errors.ts";
+import { collect, field } from "../fields.ts";
 import type { CliIo } from "../io.ts";
 import type { Output } from "../output.ts";
 
@@ -85,43 +86,6 @@ export function apiPath(input: string): string {
   const path = value.replace(/^\/+/, "").replace(/^v1(\/|$)/, "");
   if (!path || path.startsWith("?")) throw new UsageError("Pass a path, e.g. `coss api domains`.");
   return `/v1/${path}`;
-}
-
-type Field = { name: string; list: boolean; value: unknown; text: string };
-
-async function field(pair: string, typed: boolean, flag: string): Promise<Field> {
-  const index = pair.indexOf("=");
-  const key = index > 0 ? pair.slice(0, index) : "";
-  const list = key.endsWith("[]");
-  const name = list ? key.slice(0, -2) : key;
-  if (!name) throw new UsageError(`--${flag} takes name=value, got "${pair}".`);
-  let text = pair.slice(index + 1);
-  if (!typed) return { name, list, value: text, text };
-  if (text.startsWith("@")) {
-    const file = text.slice(1);
-    try {
-      text = await readFile(file, "utf8");
-    } catch (error) {
-      throw new CliError(`Couldn't read ${file}: ${(error as Error).message}`);
-    }
-    return { name, list, value: text, text };
-  }
-  try {
-    return { name, list, value: JSON.parse(text) as unknown, text };
-  } catch {
-    return { name, list, value: text, text };
-  }
-}
-
-/** Fields as a JSON body (typed values) or as query parameters (the text as typed). */
-function collect(fields: Field[], as: "body" | "query"): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const item of fields) {
-    const value = as === "body" ? item.value : item.text;
-    if (!item.list) out[item.name] = value;
-    else out[item.name] = [...((out[item.name] as unknown[] | undefined) ?? []), value];
-  }
-  return out;
 }
 
 async function inputBody(io: CliIo, source: string): Promise<unknown> {

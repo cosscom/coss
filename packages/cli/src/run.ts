@@ -3,10 +3,12 @@ import { type Command, commandHelp, flagTable } from "./command.ts";
 import { apiCommand } from "./commands/api.ts";
 import { completionCommand } from "./commands/completion.ts";
 import { emailsSendCommand } from "./commands/emails.ts";
+import { HOOKS_COMMANDS } from "./commands/hooks.ts";
 import { listenCommand } from "./commands/listen.ts";
 import { loginCommand } from "./commands/login.ts";
 import { logoutCommand } from "./commands/logout.ts";
 import { logsTailCommand } from "./commands/logs.ts";
+import { RISK_COMMANDS } from "./commands/risk.ts";
 import { whoamiCommand } from "./commands/whoami.ts";
 import { complete, findCommand } from "./completion.ts";
 import { createContext } from "./context.ts";
@@ -23,9 +25,30 @@ export const COMMANDS: readonly Command[] = [
   emailsSendCommand,
   logsTailCommand,
   listenCommand,
+  ...HOOKS_COMMANDS,
+  ...RISK_COMMANDS,
   apiCommand,
   completionCommand,
 ];
+
+/**
+ * The longest group (`hooks`, `hooks apps`) the leading words of `argv` name, and the word after
+ * it, for "needs a command" and "unknown command" errors.
+ */
+function groupOf(argv: string[]): { group: string; next: string | undefined } | null {
+  const words: string[] = [];
+  for (const word of argv) {
+    if (word.startsWith("-")) break;
+    words.push(word);
+  }
+  for (let length = words.length; length > 0; length--) {
+    const group = words.slice(0, length).join(" ");
+    if (COMMANDS.some((command) => command.name.startsWith(`${group} `))) {
+      return { group, next: words[length] };
+    }
+  }
+  return null;
+}
 
 function topHelp(): string {
   const column = Math.max(...COMMANDS.map((command) => command.name.length)) + 4;
@@ -72,13 +95,22 @@ export async function run(argv: string[], io: CliIo): Promise<number> {
   }
   const found = findCommand(COMMANDS, argv);
   if (!found) {
-    const group = COMMANDS.filter((command) => command.name.startsWith(`${name} `));
-    if (group.length > 0) {
-      const sub = rest[0];
+    const grouped = groupOf(argv);
+    if (grouped) {
+      const { group, next } = grouped;
+      const depth = group.split(" ").length;
+      // The group's own commands and subgroups: `coss hooks apps`, `coss hooks send`, …
+      const entries = new Set(
+        COMMANDS.filter((command) => command.name.startsWith(`${group} `)).map(
+          (command) =>
+            `\`coss ${command.name
+              .split(" ")
+              .slice(0, depth + 1)
+              .join(" ")}\``,
+        ),
+      );
       out.error(
-        `${sub && !sub.startsWith("-") ? `Unknown command "${name} ${sub}"` : `"${name}" needs a command`}: try ${group
-          .map((command) => `\`coss ${command.name}\``)
-          .join(", ")}.`,
+        `${next ? `Unknown command "${group} ${next}"` : `"${group}" needs a command`}: try ${[...entries].join(", ")}.`,
       );
     } else {
       out.error(`Unknown command "${name}". Run \`coss --help\` to see the commands.`);

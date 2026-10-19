@@ -107,6 +107,19 @@ export function addresses(value: string | string[] | undefined): string[] {
   return out.map((item) => item.trim()).filter(Boolean);
 }
 
+/**
+ * A command's positional arguments when it takes exactly `count` (`usage` is the command line to
+ * show otherwise, without `coss`).
+ */
+export function requireArgs(positionals: string[], count: number, usage: string): string[] {
+  if (positionals.length !== count) {
+    throw new UsageError(
+      `Usage: coss ${usage}${positionals.length > count ? ` (got ${positionals.length} arguments)` : ""}`,
+    );
+  }
+  return positionals;
+}
+
 /** Repeatable flags that may also be comma-separated: `--events a,b --events c`. */
 export function list(value: string | string[] | undefined): string[] {
   const values = value === undefined ? [] : Array.isArray(value) ? value : [value];

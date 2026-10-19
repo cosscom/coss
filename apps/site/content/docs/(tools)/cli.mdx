@@ -116,6 +116,67 @@ email events, webhook attempts and `coss listen` forwards. Filter by `--source`,
 prints one log object per line for `jq`. It checks for new lines every 2 seconds (`--interval <ms>`,
 at least 500).
 
+## Hooks
+
+The [Hooks](/docs/hooks) loop from the terminal: set up an application with an endpoint, send it
+messages, and see what its endpoints answered. Wherever a command takes `<app>`, an application's
+`uid` works as well as its id.
+
+```sh
+coss hooks event-types create invoice.paid --example '{"invoice_id":"in_1","amount":4200}'
+coss hooks apps create "Acme" --uid acme
+coss hooks endpoints add acme --url https://example.com/hooks --types invoice.paid
+coss hooks send acme invoice.paid -F amount=4200 -f invoice_id=in_2
+coss hooks deliveries acme --status failed
+coss hooks portal acme --open
+```
+
+- `coss hooks apps list` and `coss hooks apps create <name>` (`--uid`, `--metadata key=value`)
+  manage applications; `coss hooks event-types list` (`--archived`) and `coss hooks event-types
+  create <name>` (`--description`, `--schema`, `--example`, each JSON inline, `@file` or `-` for
+  stdin) the event types. Lists show 50 (`--limit`, up to 100).
+- `coss hooks endpoints list <app>` shows each endpoint's state; `coss hooks endpoints add <app>
+  --url <url>` (`--types`, `--description`, `--rate-limit`) prints the new endpoint's signing
+  secret, the only time it's shown.
+- `coss hooks send <app> <event-type>` sends a message: the payload is `--data` (a JSON object)
+  with `-F name=value` (JSON values, `@file`) and `-f name=value` (strings) on top, or, with none
+  of them, the event type's first example. `--idempotency-key` sends it once only.
+- `coss hooks deliveries <app>` lists deliveries, newest first, of every endpoint or one
+  (`--endpoint`), or of one message (`--message`), by `--status` (pending, succeeded, failed);
+  `coss hooks attempts <app> <delivery>` shows each HTTP request of one, and `coss hooks retry <app>
+  <delivery>` queues a finished one for another attempt.
+- `coss hooks portal <app>` prints a link that signs in to the application's
+  [portal](/docs/hooks/portal) (`--open` opens it, `--read-only`, `--expires-in <seconds>`). Anyone
+  with the link is signed in until it expires.
+
+## Risk
+
+Try [Risk](/docs/risk) decisions before wiring them into your app, and manage what the environment
+remembers:
+
+```sh
+coss risk assess --event signup --email ada@disposable.test --ip 192.0.2.1
+coss risk assessments --review open
+coss risk feedback rass_01k7c8m4q2f3e9v6t5r1n0p8yz --outcome fraud --note "chargeback"
+coss risk lists add block domain evil.example --expires 30d --note "spam wave"
+```
+
+- `coss risk assess --event <event>` (signup, login, message, checkout or custom with
+  `--event-name`) takes `--email`, `--ip`, `--user` (your user id), `--user-agent`, `--content`,
+  `--captcha` and `--device` tokens, and `--data` for anything else of the request (a checkout,
+  say), and prints the decision, its score and each reason. It counts like any assessment.
+- In development environments the [test fixtures](/docs/risk/testing) produce each decision:
+  `192.0.2.1` (Tor), `.2` (a cloud), `.3` (a VPN), `.4` (a proxy) and `.5` (a privacy relay);
+  addresses at `disposable.test`, `undeliverable.test` and `new.test`; captcha tokens `test-pass`
+  and `test-fail`; the device token `test-device-automated`; content with `[coss-test:spam]`
+  (or `phishing`, `malware`, `fraud`, and `[coss-test:spam:0.6]` for a given score).
+- `coss risk assessments` lists assessments by `--decision`, `--event`, `--user` and `--review`
+  (`open` is the review queue); `coss risk feedback <assessment> --outcome legitimate|fraud|abuse`
+  (`--note`) reports what the user turned out to be.
+- `coss risk lists list` (`--list allow|block`, `--type`), `coss risk lists add <allow|block>
+  <email|domain|ip|asn|country|user> <value>` (`--note`, `--expires` as `7d`, `12h` or a time) and
+  `coss risk lists remove <entry>` manage the allow and block lists.
+
 ## Call any endpoint
 
 `coss api` calls an endpoint of the [API](/docs/api-reference) with the CLI's key and prints the

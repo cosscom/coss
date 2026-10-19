@@ -46,6 +46,16 @@ describe("the command registry", () => {
       [["emails"], '"emails" needs a command: try `coss emails send`.'],
       [["emails", "list"], 'Unknown command "emails list"'],
       [["nope"], 'Unknown command "nope"'],
+      [
+        ["hooks", "apps"],
+        '"hooks apps" needs a command: try `coss hooks apps list`, `coss hooks apps create`.',
+      ],
+      [["hooks", "apps", "delete", "x"], 'Unknown command "hooks apps delete"'],
+      [
+        ["hooks", "--json"],
+        '"hooks" needs a command: try `coss hooks apps`, `coss hooks event-types`',
+      ],
+      [["risk", "lists", "--help"], '"risk lists" needs a command'],
       [["whoami", "extra"], "Unexpected argument"],
       [["whoami", "--nope"], "Unknown option"],
     ] as const) {
@@ -62,17 +72,22 @@ describe("the command registry", () => {
 
 describe("shell completion", () => {
   test("commands, subcommands, flags and their values", () => {
+    // Each top-level word once, in `coss --help`'s order.
     expect(complete(COMMANDS, [""])).toEqual([
-      "login",
-      "logout",
-      "whoami",
-      "emails",
-      "logs",
-      "listen",
-      "api",
-      "completion",
+      ...new Set(COMMANDS.map((command) => command.name.split(" ")[0] ?? "")),
     ]);
+    expect(complete(COMMANDS, [""])).toEqual(expect.arrayContaining(["login", "hooks", "risk"]));
     expect(complete(COMMANDS, ["lo"])).toEqual(["login", "logout", "logs"]);
+    // Groups inside groups: `coss hooks apps list`.
+    expect(complete(COMMANDS, ["hooks", "e"])).toEqual(["event-types", "endpoints"]);
+    expect(complete(COMMANDS, ["hooks", "apps", ""])).toEqual(["list", "create"]);
+    expect(complete(COMMANDS, ["risk", "assess"])).toEqual(["assess", "assessments"]);
+    expect(complete(COMMANDS, ["risk", "lists", "list", "--type", "d"])).toEqual(["domain"]);
+    expect(complete(COMMANDS, ["hooks", "deliveries", "acme", "--status", ""])).toEqual([
+      "pending",
+      "succeeded",
+      "failed",
+    ]);
     expect(complete(COMMANDS, ["emails", ""])).toEqual(["send"]);
     expect(complete(COMMANDS, ["emails", "send", "--sim"])).toEqual(["--simulate"]);
     expect(complete(COMMANDS, ["emails", "send", "--simulate", "b"])).toEqual(["bounced"]);

@@ -7,6 +7,8 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { runDueHookDeliveries } from "@coss/hooks";
+import { testHookDeliveryDeps } from "@coss/hooks/testing";
 import { queryLogs } from "@coss/logs";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { webhookReceiver } from "@coss/webhooks/testing";
@@ -118,6 +120,137 @@ describe("coss-cli against the API", () => {
 
     expect(await run(["api", "emails/email_nope", "--json"], cli.io)).toBe(1);
     expect(JSON.parse(lines().at(-1) ?? "{}").error).toMatchObject({ status: 404 });
+  });
+
+  test("hooks: an application with an endpoint, a message delivered to it, and its portal", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const receiver = webhookReceiver();
+    const cli = cliIo(app, { answers: [tenant.sandboxKey] });
+    const last = () => JSON.parse(cli.stdout().trim().split("\n").at(-1) ?? "{}");
+    try {
+      expect(await run(["login", "--manual"], cli.io)).toBe(0);
+      const example = JSON.stringify({ invoice_id: "in_1", amount: 4200 });
+      expect(
+        await run(["hooks", "event-types", "create", "invoice.paid", "--example", example], cli.io),
+      ).toBe(0);
+      expect(
+        await run(["hooks", "apps", "create", "Acme", "--uid", "acme", "--json"], cli.io),
+      ).toBe(0);
+      expect(last()).toMatchObject({ object: "hook_application", uid: "acme" });
+      expect(
+        await run(
+          [
+            "hooks",
+            "endpoints",
+            "add",
+            "acme",
+            "--url",
+            receiver.url,
+            "--types",
+            "invoice.paid",
+            "--json",
+          ],
+          cli.io,
+        ),
+      ).toBe(0);
+      const endpoint = last();
+      expect(endpoint.secret).toStartWith("whsec_");
+
+      // No payload: the event type's example is sent.
+      expect(await run(["hooks", "send", "acme", "invoice.paid", "--json"], cli.io)).toBe(0);
+      const message = last();
+      expect(message.payload).toEqual({ invoice_id: "in_1", amount: 4200 });
+      expect(
+        await runDueHookDeliveries(
+          { scope: { organizationIds: [tenant.organization.id] } },
+          testHookDeliveryDeps(),
+        ),
+      ).toBe(1);
+      const [request] = receiver.received;
+      if (!request) throw new Error("nothing received");
+      const headers = Object.fromEntries(request.headers.entries());
+      expect(
+        await verifyWebhook<Record<string, unknown>>(request.body, headers, endpoint.secret),
+      ).toEqual({
+        invoice_id: "in_1",
+        amount: 4200,
+      });
+
+      expect(await run(["hooks", "deliveries", "acme", "--json"], cli.io)).toBe(0);
+      const delivery = last();
+      expect(delivery).toMatchObject({ status: "succeeded", message_id: message.id });
+      expect(await run(["hooks", "attempts", "acme", delivery.id, "--json"], cli.io)).toBe(0);
+      expect(last()).toMatchObject({ object: "hook_attempt", status_code: 200 });
+      expect(await run(["hooks", "retry", "acme", delivery.id, "--json"], cli.io)).toBe(0);
+      expect(last()).toMatchObject({ id: delivery.id, status: "pending" });
+      expect(await run(["hooks", "endpoints", "list", "acme", "--json"], cli.io)).toBe(0);
+      expect(last()).toMatchObject({ id: endpoint.id, url: receiver.url });
+      expect(await run(["hooks", "portal", "acme", "--read-only"], cli.io)).toBe(0);
+      expect(cli.stdout().trim().split("\n").at(-1)).toContain("#cossp_");
+    } finally {
+      receiver.stop();
+    }
+  });
+
+  test("risk: list entries decide, sandbox fixtures score, and feedback resolves", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const cli = cliIo(app, { answers: [tenant.sandboxKey] });
+    const last = () => JSON.parse(cli.stdout().trim().split("\n").at(-1) ?? "{}");
+    expect(await run(["login", "--manual"], cli.io)).toBe(0);
+
+    expect(
+      await run(
+        ["risk", "lists", "add", "block", "domain", "evil.test", "--note", "spam", "--json"],
+        cli.io,
+      ),
+    ).toBe(0);
+    const entry = last();
+    expect(entry).toMatchObject({ list: "block", type: "domain", value: "evil.test" });
+
+    expect(
+      await run(
+        ["risk", "assess", "--event", "signup", "--email", "ada@evil.test", "--json"],
+        cli.io,
+      ),
+    ).toBe(0);
+    const blocked = last();
+    expect(blocked.decision).toBe("block");
+    expect(blocked.reasons.map((reason: { code: string }) => reason.code)).toContain(
+      "list.blocked",
+    );
+
+    expect(
+      await run(
+        [
+          "risk",
+          "assess",
+          "--event",
+          "signup",
+          "--email",
+          "ada@disposable.test",
+          "--ip",
+          "192.0.2.1",
+        ],
+        cli.io,
+      ),
+    ).toBe(0);
+    expect(cli.stdout()).toContain("email.disposable");
+    expect(cli.stdout()).toContain("ip.tor");
+
+    expect(
+      await run(["risk", "feedback", blocked.id, "--outcome", "fraud", "--json"], cli.io),
+    ).toBe(0);
+    expect(last()).toMatchObject({ id: blocked.id, outcome: "fraud" });
+    expect(await run(["risk", "assessments", "--decision", "block", "--json"], cli.io)).toBe(0);
+    expect(cli.stdout()).toContain(blocked.id);
+
+    expect(await run(["risk", "lists", "remove", entry.id, "--json"], cli.io)).toBe(0);
+    expect(last()).toMatchObject({ id: entry.id, deleted: true });
+    const before = cli.stdout().length;
+    expect(await run(["risk", "lists", "list", "--json"], cli.io)).toBe(0);
+    expect(cli.stdout().slice(before)).toBe("");
   });
 
   test("listen forwards the environment's events to a local server, signed, and logs them", async () => {

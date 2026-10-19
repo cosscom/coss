@@ -23,6 +23,15 @@ Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
 | `coss emails send` | A test email: `--to`, or `--simulate delivered\|bounced\|complained\|suppressed` for the mailbox simulator; `--template` with `--var name=value`; `--wait` follows it to its outcome (up to `--timeout`, 60 s). |
 | `coss logs tail` | New lines of the environment's log as they arrive: API requests, email events, webhook attempts. Filter with `--source`, `--level`, `--type`, `--status`, `-q`; `--since 15m` starts earlier; `--interval` sets the poll interval (2000 ms). |
 | `coss listen` | Receives the environment's webhook events and forwards each one to `--forward-to`, signed like coss.com signs real deliveries. Verify them with `verifyWebhook` from the `coss` SDK and the signing secret it prints (it stays the same for the profile). `--header "Name: value"` adds a header to forwarded requests. |
+| `coss hooks apps list`, `coss hooks apps create <name>` | [Hooks](https://coss.com/docs/hooks) applications (`--uid`, `--metadata`). Every `<app>` below is an application's id or uid. |
+| `coss hooks event-types list`, `coss hooks event-types create <name>` | The event types messages are sent as (`--description`, `--schema`, `--example`). |
+| `coss hooks endpoints list <app>`, `coss hooks endpoints add <app> --url <url>` | An application's endpoints; `add` prints the new endpoint's signing secret (`--types`, `--rate-limit`). |
+| `coss hooks send <app> <event-type>` | Sends a message: the payload from `--data '{…}'`, `-F name=value` fields, or the type's first example. |
+| `coss hooks deliveries <app>`, `coss hooks attempts <app> <delivery>`, `coss hooks retry <app> <delivery>` | Deliveries (`--endpoint`, `--message`, `--status`), each HTTP request of one, and one more attempt. |
+| `coss hooks portal <app>` | A portal link for the application's users (`--open`, `--read-only`, `--expires-in`). |
+| `coss risk assess --event <event>` | Assesses an event (`--email`, `--ip`, `--user`, `--content`, `--data '{…}'`…) and prints the decision, score and reasons. Sandbox fixtures (`192.0.2.1`, `disposable.test`, `[coss-test:spam]`…) produce each decision. |
+| `coss risk assessments`, `coss risk feedback <assessment> --outcome <outcome>` | Assessments (`--review open`: the review queue), and what a user turned out to be. |
+| `coss risk lists list`, `coss risk lists add <allow\|block> <type> <value>`, `coss risk lists remove <entry>` | The allow and block lists (`--note`, `--expires 7d`). |
 | `coss api <path>` | Any endpoint of the API, with the CLI's key: `coss api domains`, `coss api -X POST domains/<id>/verify`. `-f name=value` (strings) and `-F name=value` (JSON values, `@file`) are query parameters for GET and DELETE and the JSON body otherwise; `--input file.json` (or `-` for stdin) sends a body as is; `--paginate` prints every item of a list; `--raw` prints a body that isn't JSON. |
 | `coss completion <shell>` | The completion script for `bash`, `zsh` or `fish`, e.g. `eval "$(coss completion zsh)"` in `~/.zshrc`. |
 
