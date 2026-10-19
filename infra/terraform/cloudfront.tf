@@ -58,7 +58,7 @@ resource "aws_cloudfront_response_headers_policy" "hsts" {
   }
 }
 
-# --- coss.com: dashboard + site (ALB), coss ui and Origin UI (their own origins) ---------------
+# --- coss.com: dashboard + site (ALB), coss ui, Origin UI and qnot (their own origins) ---------
 
 resource "aws_cloudfront_distribution" "dashboard" {
   enabled         = true

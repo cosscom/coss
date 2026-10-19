@@ -433,8 +433,9 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 ## coss.com zones
 
 - coss.com is shared by Next.js multi-zones, routed by the ALB (not Next rewrites): the dashboard is the default zone
-  (org slugs, `/dashboard`, `/api/*`, bare `/_next/*`); the site and the coss ui repository's apps (`/ui`, `/origin`,
-  deployed on Vercel and served by CloudFront from their own origins) get the paths in **`ZONE_ROUTES`**
+  (org slugs, `/dashboard`, `/api/*`, bare `/_next/*`); the site, the coss ui repository's apps (`/ui`, `/origin`) and
+  qnot's site (`/qnot`, the `cosscom/qnot` repository's `apps/web`, Vercel project `coss-com-qnot` with
+  `NEXT_PUBLIC_BASE_PATH=/qnot`) — the last three deployed on Vercel and served by CloudFront from their own origins — get the paths in **`ZONE_ROUTES`**
   (`@coss/auth/slugs`, client-safe), from which `RESERVED_ORG_SLUGS`, the ALB rules and CloudFront behaviours
   (`infra/aws/routing.ts`) are derived. Adding a site page = a `ZONE_ROUTES` entry (unless `/docs` etc. covers it) +
   the route; `apps/site/test/reserved-slugs.test.ts` fails otherwise. The site's assets live under its

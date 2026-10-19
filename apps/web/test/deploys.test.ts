@@ -390,6 +390,14 @@ describe("findPreviousRollout", () => {
     expect(loads).toEqual(["20:1", "10:1"]);
   });
 
+  test("reading ahead finds the same rollout, loading each run once", async () => {
+    const { runs, load, loads } = fixture({ 1: [1], 10: [10], 20: [null], 30: [30] });
+    const viewed = runs.find((candidate) => candidate.id === 30) as GitHubRun;
+    const result = await findPreviousRollout(viewed, runs, new Date(at(30)), load, 8);
+    expect(found(result)).toBe("10:1");
+    expect(loads).toEqual(["20:1", "10:1", "1:1"]);
+  });
+
   test("an earlier run re-run after the viewed one rolled out: its first attempt counts", async () => {
     // Run 10 rolled out at 10, run 20 at 20, then run 10 was re-run and rolled out at 40.
     const { runs, load } = fixture({ 1: [1], 10: [10, 40], 20: [20] });

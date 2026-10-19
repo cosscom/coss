@@ -173,12 +173,17 @@ export const EARLIER_ATTEMPTS_READ = 3;
  * candidate whose latest attempt didn't roll out before `reference` (it failed, or was re-run
  * after it) has its earlier attempts read too: re-running the jobs that failed after a rollout
  * (the CDN invalidation, the routing check) rolls the same commit out again.
+ *
+ * `readAhead`: how many of the first candidates to start loading at once, instead of one after
+ * another as the search reaches them (each load is a request to GitHub; most searches end within
+ * a few candidates, so the rest are read for nothing).
  */
 export async function findPreviousRollout<T extends { run: GitHubRun; jobs: GitHubJob[] }>(
   run: GitHubRun,
   candidates: GitHubRun[],
   reference: Date,
   load: (run: GitHubRun, attempt?: number) => Promise<T>,
+  readAhead = 0,
 ): Promise<{ best: { entry: T; at: Date } | null; read: T[] }> {
   const earlierAttempts = async (of: GitHubRun): Promise<T[]> => {
     const entries: T[] = [];
@@ -194,14 +199,20 @@ export async function findPreviousRollout<T extends { run: GitHubRun; jobs: GitH
   };
   const lastChange = (of: GitHubRun) => Date.parse(of.updated_at ?? of.created_at);
 
-  const read = await earlierAttempts(run);
   const ordered = candidates
     .filter((candidate) => candidate.id !== run.id)
     .sort((a, b) => lastChange(b) - lastChange(a));
+  const ahead = new Map(
+    ordered.slice(0, readAhead).map((candidate) => [candidate.id, load(candidate)]),
+  );
+  // A failed load the search never reaches is no failure of the search.
+  for (const loading of ahead.values()) loading.catch(() => {});
+
+  const read = await earlierAttempts(run);
   for (const candidate of ordered) {
     const best = latestRolloutBefore(read, reference);
     if (best && lastChange(candidate) < best.at.getTime()) break;
-    const latest = await load(candidate);
+    const latest = await (ahead.get(candidate.id) ?? load(candidate));
     read.push(latest);
     if (!latestRolloutBefore([latest], reference)) read.push(...(await earlierAttempts(candidate)));
   }
