@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { auth } from "@coss/auth";
+import { readOnlyPermissions } from "@coss/auth/api-key-permissions";
 import { API_KEY_PERMISSIONS } from "@coss/auth/constants";
 import { revokeDepartedMemberKeys } from "@coss/auth/member-keys";
 import { db, schema } from "@coss/db";
@@ -186,6 +187,12 @@ describe("personal keys", () => {
 
   test("restricted personal keys can't ask for what the owner's role lacks", async () => {
     const { tenant, member } = await tenantWithMembers();
+    // The dashboard's read-only preset, as offered to a member.
+    const readOnly = await personalKey(tenant, {
+      userId: member.id,
+      permissions: readOnlyPermissions("member"),
+    });
+    expect(readOnly.permissions.billing).toBeUndefined();
     await expectTenancyError(
       personalKey(tenant, { userId: member.id, permissions: { domain: ["delete"] } }),
       "invalid",

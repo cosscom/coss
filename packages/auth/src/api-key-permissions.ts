@@ -189,13 +189,18 @@ export function isApiKeyPreset(value: unknown): value is ApiKeyPreset {
 /** Sending only: the API's and SDK's sends and the SMTP relay. */
 export const SENDING_PERMISSIONS: KeyPermissions = { email: ["send"] };
 
-/** Every `read` action of the catalog. */
-export function readOnlyPermissions(): KeyPermissions {
-  return Object.fromEntries(
+/**
+ * Every `read` action of the catalog. For a personal key, pass its owner's role: the reads that
+ * cover the whole organization and that the role lacks (billing, the audit log) are left out, so
+ * the preset stays one the key may hold.
+ */
+export function readOnlyPermissions(ownerRole?: string | null): KeyPermissions {
+  const reads: KeyPermissions = Object.fromEntries(
     Object.entries(API_KEY_PERMISSIONS)
       .filter(([, actions]) => actions.includes("read"))
       .map(([resource]) => [resource, ["read"]]),
   );
+  return ownerRole === undefined ? reads : personalKeyPermissions(reads, ownerRole);
 }
 
 /** A key's permissions as `resource:action` strings (as in `insufficient_permissions` errors). */

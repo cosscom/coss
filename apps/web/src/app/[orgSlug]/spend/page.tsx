@@ -350,7 +350,20 @@ function MySpend(props: {
   // A pause shows in the organization's banner (layout).
   const mine = spend.lines.filter((line) => line.userId === props.userId);
   const total = mine.reduce((sum, line) => sum + line.cents, 0n);
-  const status = statuses.find((s) => s.scope === "user" && s.targetId === props.userId);
+  // Without spend of their own yet, the member default (if any) still applies.
+  const memberDefault = props.overview.budgets.find((b) => b.scope === "member_default") ?? null;
+  const status: BudgetStatus | undefined =
+    statuses.find((s) => s.scope === "user" && s.targetId === props.userId) ??
+    (memberDefault
+      ? {
+          scope: "user",
+          targetId: props.userId,
+          budget: memberDefault,
+          fromDefault: true,
+          amountCents: memberDefault.amountCents,
+          spentCents: 0n,
+        }
+      : undefined);
   const byKey = [...sumSpend(mine, (line) => line.apiKeyId)].sort((a, b) =>
     a[1].cents === b[1].cents ? 0 : a[1].cents > b[1].cents ? -1 : 1,
   );

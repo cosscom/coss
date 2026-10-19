@@ -14,6 +14,7 @@ import {
   getEnvironment,
   getKeyBinding,
   keyCreationAllowed,
+  listOrganizationMembers,
   revokePersonalApiKey,
   setEnvironmentPersonalKeys,
 } from "@coss/tenancy";
@@ -41,12 +42,16 @@ async function environmentFromForm(context: OrgContext, formData: FormData) {
  * What the form grants: `full`, a preset's permissions, or the checked `resource:action` values
  * (`custom`). `createEnvironmentApiKey` validates them against the catalog.
  */
-function requestedPermissions(formData: FormData): "full" | KeyPermissions {
+function requestedPermissions(
+  formData: FormData,
+  /** A personal key's owner's role (`undefined`: an organization key). */
+  ownerRole: string | null | undefined,
+): "full" | KeyPermissions {
   const preset = formString(formData, "access");
   if (!isApiKeyPreset(preset)) throw new ActionError("Choose what the key can access.");
   if (preset === "full") return "full";
   if (preset === "sending") return SENDING_PERMISSIONS;
-  if (preset === "read_only") return readOnlyPermissions();
+  if (preset === "read_only") return readOnlyPermissions(ownerRole);
   const values = formData.getAll("permission").filter((v): v is string => typeof v === "string");
   try {
     return parsePermissionStrings(values);
@@ -67,6 +72,17 @@ function requestedOwner(context: OrgContext, formData: FormData): string | null 
   return owner;
 }
 
+/** The role of a personal key's owner (`undefined` for an organization key). */
+async function ownerRoleOf(
+  context: OrgContext,
+  ownerUserId: string | null,
+): Promise<string | null | undefined> {
+  if (ownerUserId === null) return undefined;
+  if (ownerUserId === context.session.user.id) return context.member.role;
+  const members = await listOrganizationMembers({ organizationId: context.organization.id });
+  return members.find((m) => m.user.id === ownerUserId)?.role ?? null;
+}
+
 /**
  * Mints a key for this environment. The plaintext key is only ever in this action's result
  * (shown once in a dialog); it is never stored or put in a URL.
@@ -80,8 +96,8 @@ export async function createApiKeyAction(
       apiKey: ["create"],
     });
     const environment = await environmentFromForm(context, formData);
-    const permissions = requestedPermissions(formData);
     const ownerUserId = requestedOwner(context, formData);
+    const permissions = requestedPermissions(formData, await ownerRoleOf(context, ownerUserId));
     if (
       !keyCreationAllowed({
         role: context.member.role,

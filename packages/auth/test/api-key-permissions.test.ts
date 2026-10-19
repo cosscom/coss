@@ -37,6 +37,11 @@ describe("catalog", () => {
     expect(normalizeKeyPermissions(readOnlyPermissions())).toEqual(readOnlyPermissions());
     expect(readOnlyPermissions()).toMatchObject({ email: ["read"], billing: ["read"] });
     expect(readOnlyPermissions().receivedEmail).toBeUndefined();
+    // A personal key's preset leaves out organization-wide reads its owner's role lacks.
+    expect(readOnlyPermissions("member").billing).toBeUndefined();
+    expect(readOnlyPermissions("member").audit).toBeUndefined();
+    expect(readOnlyPermissions("member").email).toEqual(["read"]);
+    expect(readOnlyPermissions("admin")).toEqual(readOnlyPermissions());
   });
 });
 
