@@ -782,3 +782,12 @@ test("a toll-free number still being bought can't be registered yet", async () =
     ),
   ).rejects.toMatchObject({ code: "registration_invalid" });
 });
+
+test("only US and Canadian numbers can be bought", async () => {
+  const tenant = await createTestTenant();
+  const d = deps();
+  await expect(
+    buySmsNumber(tenant.organization.id, { phoneNumber: "+447400123456", kind: "local" }, d),
+  ).rejects.toMatchObject({ code: "number_unavailable" });
+  expect(d.twilio.calls.map((call) => call.method)).not.toContain("buyNumber");
+});

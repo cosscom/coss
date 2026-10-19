@@ -696,6 +696,10 @@ export async function buySmsNumber(
   refuseWhenDisabled(deps);
   const parsed = parsePhoneNumber(input.phoneNumber);
   if (!parsed) throw new SmsError("invalid_phone_number", "That isn't a valid phone number.");
+  // Only what the search offers: US and Canadian numbers (their prices and registrations).
+  if (parsed.country !== "US" && parsed.country !== "CA") {
+    throw new SmsError("number_unavailable", "Numbers can be bought in the US and Canada only.");
+  }
   // Billed and registered by what the number is, never by what the form said.
   const kind = smsNumberKind(parsed.phoneNumber);
   if (kind !== input.kind) {
