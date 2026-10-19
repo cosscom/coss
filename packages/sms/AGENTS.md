@@ -44,7 +44,7 @@ senders (US A2P 10DLC brands and campaigns, toll-free verification) and its phon
   Webhook payloads never carry the text.
 - **Suppressions** (environment-scoped, one entry per number): STOP-family keywords (`smsKeyword`)
   add `opt_out` entries to **every live environment** of the organization (numbers are shared);
-  START removes `opt_out` entries only. The simulator's numbers are never auto-suppressed.
+  START removes live environments' `opt_out` entries only. The simulator's numbers are never auto-suppressed.
 - **Receiving** (`receiveSms`, system-level, from the number's `To`): stored once per provider
   message id in the number's `receiving_environment_id` (a live environment; none → dropped),
   with `sms.received`; billed as `sms.received_segments` by the number's country. Opt-out keywords

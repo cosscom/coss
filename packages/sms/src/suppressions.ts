@@ -6,7 +6,7 @@
  */
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { SmsError } from "./errors.ts";
 import { isSimulatorNumber, parsePhoneNumber } from "./phone.ts";
 import {
@@ -105,8 +105,9 @@ export async function optOutEverywhere(
 }
 
 /**
- * A START from `phoneNumber`: its `opt_out` entries go (entries added for another reason stay).
- * Returns the entries removed (their environments get `sms.opted_in`).
+ * A START from `phoneNumber`: its `opt_out` entries in live environments go (entries added for
+ * another reason stay, and so do sandbox environments', which live replies never touch). Returns
+ * the entries removed (their environments get `sms.opted_in`).
  */
 export async function optInEverywhere(
   tx: Executor,
@@ -119,6 +120,18 @@ export async function optInEverywhere(
         eq(smsSuppression.organizationId, input.organizationId),
         eq(smsSuppression.phoneNumber, input.phoneNumber),
         eq(smsSuppression.reason, "opt_out"),
+        inArray(
+          smsSuppression.environmentId,
+          tx
+            .select({ id: environment.id })
+            .from(environment)
+            .where(
+              and(
+                eq(environment.organizationId, input.organizationId),
+                eq(environment.mode, "live"),
+              ),
+            ),
+        ),
       ),
     )
     .returning();

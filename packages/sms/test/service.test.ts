@@ -438,6 +438,37 @@ describe("receiving", () => {
     expect(entry).toMatchObject({ environmentId: tenant.production.id, reason: "opt_out" });
   });
 
+  test("a live START leaves sandbox environments' opt-outs alone", async () => {
+    const tenant = await createTestTenant();
+    const number = await createTestSmsNumber(tenant.organization.id);
+    const from = testPhoneNumber();
+    await db.insert(smsSuppression).values({
+      organizationId: tenant.organization.id,
+      projectId: tenant.project.id,
+      environmentId: tenant.development.id,
+      phoneNumber: from,
+      reason: "opt_out",
+    });
+    await receiveSms({
+      provider: "fake",
+      providerMessageId: `start-${run}-${from}`,
+      from,
+      to: number.phoneNumber,
+      body: "START",
+      occurredAt: new Date(),
+    });
+    const entries = await db
+      .select({ environmentId: smsSuppression.environmentId })
+      .from(smsSuppression)
+      .where(
+        and(
+          eq(smsSuppression.organizationId, tenant.organization.id),
+          eq(smsSuppression.phoneNumber, from),
+        ),
+      );
+    expect(entries).toEqual([{ environmentId: tenant.development.id }]);
+  });
+
   test("a retried unrouted START doesn't undo the STOP that came after it", async () => {
     const tenant = await createTestTenant();
     const number = await createTestSmsNumber(tenant.organization.id);
