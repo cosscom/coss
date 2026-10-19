@@ -139,6 +139,19 @@ describe("coss sms send", () => {
     expect(api.requests.some((r) => r.url.pathname === "/v1/sms/received")).toBe(false);
   });
 
+  test("Ctrl-C during --wait stops without reading the events", async () => {
+    const api = fakeFetch({
+      "POST /v1/sms": sms("queued"),
+      "GET /v1/sms/sms_1": () => {
+        io.controller.abort();
+        return sms("sent");
+      },
+    });
+    const io = testIo({ fetch: api.fetch, env: { COSS_API_KEY: SANDBOX_KEY } });
+    expect(await run(["sms", "send", "--simulate", "filtered", "--wait"], io)).toBe(130);
+    expect(api.requests.some((r) => r.url.pathname.endsWith("/events"))).toBe(false);
+  });
+
   test("--wait with --simulate reply shows the simulated reply", async () => {
     const delivered = sms("delivered", { to: "+15005550008" });
     const api = fakeFetch({

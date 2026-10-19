@@ -39,18 +39,28 @@ async function waitForOutcome(
     }
     current = data;
   }
-  const { data, error } = await coss.sms.listEvents(current.id);
-  if (error) throw apiError("Couldn't read the message's events", error);
+  // Ctrl-C: show what is known, without more requests.
+  if (io.signal.aborted) {
+    return { sms: current, events: [], replies: undefined, settled: settled(current) };
+  }
+  const { data, error } = await coss.sms.listEvents(current.id, { signal: io.signal });
+  if (error) {
+    if (io.signal.aborted) {
+      return { sms: current, events: [], replies: undefined, settled: settled(current) };
+    }
+    throw apiError("Couldn't read the message's events", error);
+  }
   let replies: ReceivedSms[] | undefined;
-  if (options.reply && current.status === "delivered") {
+  if (options.reply && current.status === "delivered" && !io.signal.aborted) {
     // The simulator replies as the message is handed over: it is there once the message is.
-    const received = await coss.sms.received.list({
-      from: current.to,
-      to: current.from,
-      created_after: current.created_at,
-    });
-    if (received.error) throw apiError("Couldn't read the received messages", received.error);
-    replies = received.data.data;
+    const received = await coss.sms.received.list(
+      { from: current.to, to: current.from, created_after: current.created_at },
+      { signal: io.signal },
+    );
+    if (received.error && !io.signal.aborted) {
+      throw apiError("Couldn't read the received messages", received.error);
+    }
+    replies = received.data?.data;
   }
   return { sms: current, events: data.data, replies, settled: settled(current) };
 }
