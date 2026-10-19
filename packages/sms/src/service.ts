@@ -17,7 +17,7 @@ import {
   withIdempotencyKey,
 } from "@coss/db/idempotency";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
-import { and, asc, eq, inArray, isNull, lte, not, notExists } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lte, not, notExists, or } from "drizzle-orm";
 import type { SmsDispatchQueue } from "./dispatch.ts";
 import { SmsError } from "./errors.ts";
 import { COSS_SMS_EVENT_SOURCE, recordSmsEvent } from "./events.ts";
@@ -133,9 +133,13 @@ function linksIn(body: string): string[] {
  * Scheduled sends wait while the organization is suspended or on a billing hold, and never go
  * once it is being deleted.
  */
-function organizationActive() {
+/**
+ * The message's organization may send: not suspended, not being deleted and, for live messages
+ * (`billing`), not on a billing hold. Sandbox messages skip billing, as they do at acceptance.
+ */
+function organizationActive(opts: { billing: boolean }) {
   return and(
-    not(billingHoldExists(smsMessage.organizationId)),
+    opts.billing ? not(billingHoldExists(smsMessage.organizationId)) : undefined,
     notExists(
       db
         .select({ id: organizationSuspension.organizationId })
@@ -478,7 +482,7 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
       eq(smsMessage.status, "scheduled"),
       isNull(smsMessage.provider),
       lte(smsMessage.scheduledAt, now),
-      organizationActive(),
+      organizationActive({ billing: !sandbox }),
     );
     if (!sandbox) {
       try {
@@ -524,7 +528,8 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
         and(
           eq(smsMessage.status, "scheduled"),
           lte(smsMessage.scheduledAt, now),
-          organizationActive(),
+          organizationActive({ billing: false }),
+          or(eq(environment.mode, "sandbox"), not(billingHoldExists(smsMessage.organizationId))),
           due.scope ? inArray(smsMessage.organizationId, due.scope.organizationIds) : undefined,
         ),
       )

@@ -339,6 +339,10 @@ test("scheduled sends wait, go when due, and can be canceled", async () => {
     environmentId: tenant.development.id,
   };
   expect((await service.cancel({ ...scope, smsId: canceled.sms.id })).status).toBe("canceled");
+  // A billing hold holds live messages only: sandbox ones aren't billed.
+  await db
+    .insert(schema.billingHold)
+    .values({ organizationId: tenant.organization.id, reason: "admin" });
   const due = await service.dispatchDue({
     now: new Date(Date.now() + 2 * 60 * 60 * 1000),
     scope: { organizationIds: [tenant.organization.id] },
