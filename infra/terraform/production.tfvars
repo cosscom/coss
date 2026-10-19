@@ -22,7 +22,7 @@ github_repository = "cosscom/coss"
 # (README, "Deploying from the admin console"). Add a new maintainer here before their merges can deploy.
 deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778", "343308169"]
 # Optional secrets not stored in coss/production: take a name out once put-secret.sh has set it.
-unset_secrets      = ["IPINFO_PRIVACY_TOKEN", "TWILIO_AUTH_TOKEN"]
+unset_secrets      = ["IPINFO_PRIVACY_TOKEN"]
 initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
@@ -77,8 +77,11 @@ plain_env = {
     CLIENT_IP_HEADER         = "x-forwarded-for"
     TRUSTED_PROXY_COUNT      = "2"
     BILLING_PROVIDER         = "stripe"
-    # SMS stays simulated (and senders can't be set up) until the Twilio variables are set.
-    SMS_PROVIDER = "fake"
+    # SMS through Cal.com's Twilio account (the ISV): one subaccount per organization, US brands
+    # under its primary customer profile (TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN are in the secret).
+    SMS_PROVIDER                        = "twilio"
+    TWILIO_PRIMARY_CUSTOMER_PROFILE_SID = "BU8b3b683546dc96738212fe3925d344be"
+    SMS_SUBACCOUNT_PREFIX               = "coss-production"
     # coss.com's own organization (`coss`, project `notifications`, live): never suspended by admins.
     NOTIFICATIONS_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
     # coss.com Risk assesses coss.com's own sign-ups in that same environment (dogfooding).
@@ -99,14 +102,14 @@ plain_env = {
     SENTRY_TRACES_SAMPLE_RATE = "0.1"
   }
   api = {
-    BETTER_AUTH_URL          = "https://coss.com"
-    API_PUBLIC_URL           = "https://api.coss.com"
-    TRACKING_PUBLIC_URL      = "https://track.cosslinks.com"
-    PORTAL_PUBLIC_URL        = "https://portal.cosshooks.com"
-    API_CORS_ORIGINS         = "https://coss.com"
-    EMAIL_PROVIDER           = "ses"
-    # SMS stays simulated until the Twilio variables (and the TWILIO_AUTH_TOKEN secret) are set.
-    SMS_PROVIDER             = "fake"
+    BETTER_AUTH_URL     = "https://coss.com"
+    API_PUBLIC_URL      = "https://api.coss.com"
+    TRACKING_PUBLIC_URL = "https://track.cosslinks.com"
+    PORTAL_PUBLIC_URL   = "https://portal.cosshooks.com"
+    API_CORS_ORIGINS    = "https://coss.com"
+    EMAIL_PROVIDER      = "ses"
+    # Twilio's callbacks are verified with each organization's subaccount token (in the database).
+    SMS_PROVIDER             = "twilio"
     AWS_REGION               = "us-east-2"
     SES_CONFIGURATION_SET    = "coss"
     SES_TENANT_PREFIX        = "coss"
@@ -130,15 +133,17 @@ plain_env = {
     SENTRY_TRACES_SAMPLE_RATE = "0.1"
   }
   worker = {
-    SMS_PROVIDER          = "fake"
-    BETTER_AUTH_URL       = "https://coss.com"
-    API_PUBLIC_URL        = "https://api.coss.com"
-    TRACKING_PUBLIC_URL   = "https://track.cosslinks.com"
-    EMAIL_PROVIDER        = "ses"
-    AWS_REGION            = "us-east-2"
-    SES_CONFIGURATION_SET = "coss"
-    SES_TENANT_PREFIX     = "coss"
-    SES_EVENTS_QUEUE_URL  = "https://sqs.us-east-2.amazonaws.com/294417174674/coss-events"
+    SMS_PROVIDER                        = "twilio"
+    TWILIO_PRIMARY_CUSTOMER_PROFILE_SID = "BU8b3b683546dc96738212fe3925d344be"
+    SMS_SUBACCOUNT_PREFIX               = "coss-production"
+    BETTER_AUTH_URL                     = "https://coss.com"
+    API_PUBLIC_URL                      = "https://api.coss.com"
+    TRACKING_PUBLIC_URL                 = "https://track.cosslinks.com"
+    EMAIL_PROVIDER                      = "ses"
+    AWS_REGION                          = "us-east-2"
+    SES_CONFIGURATION_SET               = "coss"
+    SES_TENANT_PREFIX                   = "coss"
+    SES_EVENTS_QUEUE_URL                = "https://sqs.us-east-2.amazonaws.com/294417174674/coss-events"
     # Receiving (ses:bootstrap --managed-domain inbound.coss.com).
     INBOUND_MANAGED_DOMAIN = "inbound.coss.com"
     SES_INBOUND_BUCKET     = "coss-inbound-294417174674"

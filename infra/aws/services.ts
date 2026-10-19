@@ -270,7 +270,9 @@ const twilio: EnvVar[] = [
   smsProvider,
   {
     name: "TWILIO_ACCOUNT_SID",
-    kind: "plain",
+    // A secret only to keep Cal.com's account id out of the public repository (GitHub's push
+    // protection refuses it in production.tfvars).
+    kind: "secret",
     required: false,
     value: "AC… (the parent account)",
     description: "Creates organizations' subaccounts and sends on their behalf.",
