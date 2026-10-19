@@ -6,6 +6,7 @@ import { TEST_SECRETS_KEYS } from "@coss/webhooks/testing";
 import { eq, sql } from "drizzle-orm";
 import {
   advanceDueSmsRegistrations,
+  advanceSmsRegistration,
   attachPendingSmsNumbers,
   buySmsNumber,
   chargeDueSmsFees,
@@ -790,4 +791,41 @@ test("only US and Canadian numbers can be bought", async () => {
     buySmsNumber(tenant.organization.id, { phoneNumber: "+447400123456", kind: "local" }, d),
   ).rejects.toMatchObject({ code: "number_unavailable" });
   expect(d.twilio.calls.map((call) => call.method)).not.toContain("buyNumber");
+});
+
+test("a step that outlived its claim records nothing: the worker that took over does", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  class TakenOver extends FakeTwilioApi {
+    override async createBrand(...args: Parameters<FakeTwilioApi["createBrand"]>) {
+      const created = await super.createBrand(...args);
+      // Meanwhile another worker claimed the registration.
+      await db
+        .update(schema.smsRegistration)
+        .set({ nextCheckAt: new Date(0) })
+        .where(eq(schema.smsRegistration.organizationId, org));
+      return created;
+    }
+  }
+  const d = deps(new TakenOver());
+  await createSmsRegistration(
+    org,
+    SmsRegistrationInput.parse({
+      kind: "us_10dlc",
+      brandType: "standard",
+      profile: PROFILE,
+      campaign: CAMPAIGN,
+    }),
+    d,
+  );
+  let [registration] = await listSmsRegistrations(org);
+  for (let i = 0; i < 10 && registration?.step !== "brand"; i++) {
+    await advanceUntilSettledOnce(org, d);
+    [registration] = await listSmsRegistrations(org);
+  }
+  if (!registration) throw new Error("no registration");
+  expect(await advanceSmsRegistration(registration, d, new Date(Date.now() + 1e9))).toBeNull();
+  [registration] = await listSmsRegistrations(org);
+  expect(registration?.brandSid).toBeNull();
+  expect(await fees(org)).toEqual([]);
 });

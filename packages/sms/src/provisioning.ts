@@ -536,7 +536,8 @@ export async function advanceSmsRegistration(
 ): Promise<SmsRegistrationRow | null> {
   const [claimed] = await db
     .update(smsRegistration)
-    .set({ nextCheckAt: new Date(now.getTime() + RETRY_MS) })
+    // From the later of the run's clock and the real one: a long batch shares one `now`.
+    .set({ nextCheckAt: new Date(Math.max(now.getTime(), Date.now()) + RETRY_MS) })
     .where(
       and(
         eq(smsRegistration.id, row.id),
@@ -564,6 +565,23 @@ export async function advanceSmsRegistration(
     }
   }
   return db.transaction(async (tx) => {
+    // Still ours? A step that outlived its claim was taken over by another worker, whose outcome
+    // (and fees) win: this one records nothing.
+    const [held] = await tx
+      .select({ id: smsRegistration.id })
+      .from(smsRegistration)
+      .where(
+        and(
+          eq(smsRegistration.id, claimed.id),
+          eq(smsRegistration.organizationId, claimed.organizationId),
+          claimed.nextCheckAt
+            ? eq(smsRegistration.nextCheckAt, claimed.nextCheckAt)
+            : isNull(smsRegistration.nextCheckAt),
+          inArray(smsRegistration.status, ["submitted", "in_review"]),
+        ),
+      )
+      .for("update");
+    if (!held) return null;
     if ("rejected" in outcome) {
       const [rejected] = await tx
         .update(smsRegistration)
