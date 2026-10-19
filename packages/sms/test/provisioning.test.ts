@@ -244,7 +244,7 @@ describe("US A2P 10DLC", () => {
         kind: "us_10dlc",
         brandType: "low_volume_standard",
         profile: { ...PROFILE, legalName: "Acme [reject]" },
-        campaign: CAMPAIGN,
+        campaign: { ...CAMPAIGN, useCase: "LOW_VOLUME" },
       }),
       d,
     );
@@ -259,7 +259,7 @@ describe("US A2P 10DLC", () => {
             kind: "us_10dlc",
             brandType: "low_volume_standard",
             profile: PROFILE,
-            campaign: CAMPAIGN,
+            campaign: { ...CAMPAIGN, useCase: "LOW_VOLUME" },
           }),
           d,
         )
@@ -428,7 +428,7 @@ test("a number its messaging service didn't take is pending until the worker add
       kind: "us_10dlc",
       brandType: "low_volume_standard",
       profile: PROFILE,
-      campaign: CAMPAIGN,
+      campaign: { ...CAMPAIGN, useCase: "LOW_VOLUME" },
     }),
     d,
   );
@@ -466,7 +466,7 @@ test("a number bought while its campaign is approved waits, pending, to join the
       kind: "us_10dlc",
       brandType: "low_volume_standard",
       profile: PROFILE,
-      campaign: CAMPAIGN,
+      campaign: { ...CAMPAIGN, useCase: "LOW_VOLUME" },
     }),
     d,
   );
@@ -738,6 +738,21 @@ test("releasing a purchase still under way waits for its outcome", async () => {
   expect(await retryUnfinishedSmsReleases(d, { now: later, scope })).toBe(1);
   expect(await db.select().from(smsNumber).where(eq(smsNumber.id, intent.id))).toEqual([]);
   expect(twilio.calls.map((call) => call.method)).toContain("releaseNumber");
+  // Twilio charged for it: so is the organization, once.
+  expect(await fees(org)).toEqual([{ meter: "sms.numbers", dimension: "type=local", quantity: 1 }]);
+});
+
+test("a low-volume standard brand registers the low-volume mixed use case only", () => {
+  const input = (brandType: string, useCase: string) =>
+    SmsRegistrationInput.safeParse({
+      kind: "us_10dlc",
+      brandType,
+      profile: PROFILE,
+      campaign: { ...CAMPAIGN, useCase },
+    });
+  expect(input("low_volume_standard", "2FA").success).toBe(false);
+  expect(input("low_volume_standard", "LOW_VOLUME").success).toBe(true);
+  expect(input("standard", "2FA").success).toBe(true);
 });
 
 test("a toll-free number still being bought can't be registered yet", async () => {

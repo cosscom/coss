@@ -87,6 +87,12 @@ export function RegistrationForm(props: {
   canRegister10dlc: boolean;
 }) {
   const [kind, setKind] = useState(props.canRegister10dlc ? "us_10dlc" : "toll_free");
+  const [brandType, setBrandType] = useState("low_volume_standard");
+  // Carriers take only the low-volume mixed use case from a low-volume standard brand.
+  const useCases =
+    kind === "us_10dlc" && brandType === "low_volume_standard"
+      ? SMS_USE_CASES.filter((useCase) => useCase === "LOW_VOLUME")
+      : SMS_USE_CASES;
   const [state, formAction, pending] = useActionToast(createRegistrationAction, {
     success: "Registration submitted",
   });
@@ -124,7 +130,12 @@ export function RegistrationForm(props: {
           {kind === "us_10dlc" ? (
             <Field>
               <FieldLabel>Brand</FieldLabel>
-              <select className={SELECT_CLASS} name="brandType">
+              <select
+                className={SELECT_CLASS}
+                name="brandType"
+                onChange={(event) => setBrandType(event.target.value)}
+                value={brandType}
+              >
                 <option value="low_volume_standard">
                   Low-volume standard (under 6,000 segments a day)
                 </option>
@@ -228,8 +239,8 @@ export function RegistrationForm(props: {
         <PanelBody className="flex flex-col gap-4">
           <Field>
             <FieldLabel>Use case</FieldLabel>
-            <select className={SELECT_CLASS} name="useCase">
-              {SMS_USE_CASES.map((useCase) => (
+            <select className={SELECT_CLASS} key={useCases.length} name="useCase">
+              {useCases.map((useCase) => (
                 <option key={useCase} value={useCase}>
                   {SMS_USE_CASE_LABELS[useCase]}
                 </option>

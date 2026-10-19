@@ -746,22 +746,38 @@ export const SmsCampaignInput = z.object({
   monthlyVolume: z.string().trim().max(32).nullish(),
 });
 
-export const SmsRegistrationInput = z.discriminatedUnion("kind", [
-  z.object({
-    kind: z.literal("us_10dlc"),
-    brandType: z.enum(["standard", "low_volume_standard"]),
-    profile: SmsBusinessProfileInput,
-    campaign: SmsCampaignInput,
-  }),
-  z.object({
-    kind: z.literal("toll_free"),
-    /** The organization's toll-free number to verify. */
-    numberId: z.string().min(1),
-    profile: SmsBusinessProfileInput,
-    campaign: SmsCampaignInput.extend({
-      optInProofUrl: z.url("A public URL showing where people opt in."),
+export const SmsRegistrationInput = z
+  .discriminatedUnion("kind", [
+    z.object({
+      kind: z.literal("us_10dlc"),
+      brandType: z.enum(["standard", "low_volume_standard"]),
+      profile: SmsBusinessProfileInput,
+      campaign: SmsCampaignInput,
     }),
-  }),
-]);
+    z.object({
+      kind: z.literal("toll_free"),
+      /** The organization's toll-free number to verify. */
+      numberId: z.string().min(1),
+      profile: SmsBusinessProfileInput,
+      campaign: SmsCampaignInput.extend({
+        optInProofUrl: z.url("A public URL showing where people opt in."),
+      }),
+    }),
+  ])
+  .superRefine((value, ctx) => {
+    // Carriers take only the low-volume mixed use case from a low-volume standard brand: anything
+    // else fails at campaign creation, after the brand's fee.
+    if (
+      value.kind === "us_10dlc" &&
+      value.brandType === "low_volume_standard" &&
+      value.campaign.useCase !== "LOW_VOLUME"
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["campaign", "useCase"],
+        message: "Low-volume standard brands register the low-volume mixed use case.",
+      });
+    }
+  });
 
 export type SmsRegistrationInputOutput = z.output<typeof SmsRegistrationInput>;

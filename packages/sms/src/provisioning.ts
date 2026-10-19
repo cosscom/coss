@@ -1028,10 +1028,31 @@ async function finishRelease(
   if (number.provider === deps.provider) {
     const account = await ensureSmsSubaccount(number.organizationId, deps);
     // A purchase whose outcome was never recorded may still have bought the number.
-    const providerSid =
-      number.providerSid ?? (await deps.twilio.findNumber(account, number.phoneNumber))?.sid;
-    if (!providerSid && number.createdAt.getTime() > now.getTime() - PURCHASE_ABANDON_MS) {
-      return false;
+    let providerSid = number.providerSid;
+    if (!providerSid) {
+      const found = await deps.twilio.findNumber(account, number.phoneNumber);
+      if (found) {
+        // Twilio bought it, and charges for it: billed like any purchase, once, before it goes.
+        await db.transaction(async (tx) => {
+          const [recorded] = await tx
+            .update(smsNumber)
+            .set({ providerSid: found.sid })
+            .where(
+              and(
+                eq(smsNumber.id, number.id),
+                eq(smsNumber.organizationId, number.organizationId),
+                isNull(smsNumber.providerSid),
+              ),
+            )
+            .returning({ id: smsNumber.id });
+          if (recorded) {
+            await recordFee(tx, number.organizationId, "sms.numbers", { type: number.kind });
+          }
+        });
+        providerSid = found.sid;
+      } else if (number.createdAt.getTime() > now.getTime() - PURCHASE_ABANDON_MS) {
+        return false;
+      }
     }
     try {
       if (providerSid) await deps.twilio.releaseNumber(account, providerSid);
