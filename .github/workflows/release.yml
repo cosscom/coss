@@ -161,6 +161,10 @@ jobs:
           if ! git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
             echo "$tag isn't tagged: coss-cli $version isn't on npm yet."
             echo "build=false" >> "$GITHUB_OUTPUT"
+          elif ! gh api "repos/$GITHUB_REPOSITORY/contents/packages/cli/scripts/binaries.ts?ref=$tag" --silent 2>/dev/null; then
+            # Builds come from the tag: versions released before the binaries have no script.
+            echo "$tag predates the standalone binaries: the next coss-cli version gets them."
+            echo "build=false" >> "$GITHUB_OUTPUT"
           elif gh release view "$tag" --json assets --jq '.assets[].name' 2>/dev/null | grep -qx SHA256SUMS; then
             echo "The $tag release already has its binaries."
             echo "build=false" >> "$GITHUB_OUTPUT"
