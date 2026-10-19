@@ -21,7 +21,7 @@ import {
   testPhoneNumber,
 } from "../src/testing.ts";
 
-const { billingUsage, smsMessage, smsSuppression } = schema;
+const { billingUsage, smsMessage, smsReceived, smsSuppression } = schema;
 
 /** Provider message ids are unique across the (never truncated) test database. */
 const run = randomUUID();
@@ -436,6 +436,25 @@ describe("receiving", () => {
         ),
       );
     expect(entry).toMatchObject({ environmentId: tenant.production.id, reason: "opt_out" });
+  });
+
+  test("a received message keeps the provider's segment count", async () => {
+    const tenant = await createTestTenant();
+    const number = await createTestSmsNumber(tenant.organization.id, {
+      receivingEnvironmentId: tenant.production.id,
+    });
+    const result = await receiveSms({
+      provider: "fake",
+      providerMessageId: `segments-${run}-${number.phoneNumber}`,
+      from: testPhoneNumber(),
+      to: number.phoneNumber,
+      body: "a".repeat(305),
+      occurredAt: new Date(),
+      segments: 3,
+    });
+    if (result.status !== "stored") throw new Error(result.status);
+    const [stored] = await db.select().from(smsReceived).where(eq(smsReceived.id, result.id));
+    expect(stored?.segments).toBe(3);
   });
 
   test("a live START leaves sandbox environments' opt-outs alone", async () => {

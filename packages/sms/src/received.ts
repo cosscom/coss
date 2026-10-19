@@ -14,6 +14,7 @@ import { markReputationDue } from "@coss/reputation";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, desc, eq, gte, lt, type SQL, sql } from "drizzle-orm";
 import { SmsError } from "./errors.ts";
+import { isTollFreeNumber } from "./phone.ts";
 import {
   DEFAULT_SMS_LIST_LIMIT,
   MAX_SMS_LIST_LIMIT,
@@ -125,6 +126,8 @@ export async function storeReceivedSms(
     provider: string;
     providerMessageId: string;
     occurredAt: Date;
+    /** The provider's own count (what it bills), else counted here. */
+    segments?: number;
   },
 ): Promise<ReceivedSmsRow | null> {
   const keyword = smsKeyword(input.body);
@@ -138,7 +141,9 @@ export async function storeReceivedSms(
       from: input.from,
       to: input.to,
       body: input.body,
-      segments: countSegments(input.body).segments,
+      segments:
+        input.segments ??
+        countSegments(input.body, { tollFree: isTollFreeNumber(input.to) }).segments,
       country: input.country,
       keyword,
       provider: input.provider,
@@ -179,6 +184,8 @@ export type InboundSms = {
   to: string;
   body: string;
   occurredAt: Date;
+  /** How many segments the provider received (Twilio's `NumSegments`): what it bills. */
+  segments?: number;
 };
 
 export type ReceiveSmsResult =
@@ -268,6 +275,7 @@ export async function receiveSms(input: InboundSms): Promise<ReceiveSmsResult> {
           provider: input.provider,
           providerMessageId: input.providerMessageId,
           occurredAt: input.occurredAt,
+          segments: input.segments,
         },
       );
       // A retried callback: the keyword was applied the first time.
