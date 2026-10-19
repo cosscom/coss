@@ -105,6 +105,19 @@ export function providerClient(options: ProviderClientOptions): ProviderClient {
   let nextStart = 0;
   // Set when the provider said its window is spent: no request before then.
   let blockedUntil = 0;
+  // Requests take turns: each waits for the previous one to start, then for the spacing from
+  // that actual start (a timer firing late can't make two requests start together).
+  let turns: Promise<void> = Promise.resolve();
+
+  function nextTurn(): Promise<void> {
+    const turn = turns.then(async () => {
+      await wait(Math.max(nextStart, blockedUntil) - now());
+      nextStart = now() + options.minIntervalMs;
+    });
+    // A turn that gave up (`rate_limited`) still lets the next one go.
+    turns = turn.catch(() => {});
+    return turn;
+  }
 
   async function wait(ms: number): Promise<void> {
     if (ms <= 0) return;
@@ -121,10 +134,7 @@ export function providerClient(options: ProviderClientOptions): ProviderClient {
 
   async function request<T>(method: "GET" | "POST", url: string, body?: unknown): Promise<T> {
     for (let attempt = 0; ; attempt++) {
-      // Reserved before waiting, so concurrent calls queue up instead of starting together.
-      const start = Math.max(nextStart, blockedUntil, now());
-      nextStart = start + options.minIntervalMs;
-      await wait(start - now());
+      await nextTurn();
       let response: Response;
       try {
         response = await fetchFn(url, {
