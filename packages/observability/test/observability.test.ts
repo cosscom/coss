@@ -56,6 +56,19 @@ describe("scrubbing", () => {
     );
   });
 
+  test("other providers' API keys are masked wherever text is scrubbed", () => {
+    // Built at runtime: key-shaped literals trip secret scanners.
+    const resendKey = ["re", "AbC123", "x".repeat(24)].join("_");
+    const sendgridKey = ["SG", "a".repeat(22), "B".repeat(43)].join(".");
+    expect(scrubUrl(`Resend refused ${resendKey}`)).toBe("Resend refused re_[key]");
+    expect(scrubUrl(`key ${sendgridKey} failed`)).toBe("key SG.[key] failed");
+    expect(scrubUrl("we retry_count re_try")).toBe("we retry_count re_try");
+    const event = scrubEvent({
+      request: { headers: { "X-Postmark-Server-Token": "uuid", accept: "json" } },
+    } as Event);
+    expect(event.request?.headers).toEqual({ accept: "json" });
+  });
+
   test("console messages and log lines", () => {
     const event = scrubEvent({
       message: "[api] failed on GET /t/c/tok/1?u=2",

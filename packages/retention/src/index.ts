@@ -70,6 +70,10 @@ export const RETENTION_DAYS = {
   hookRecoveries: 7,
   /** Contacts that never confirmed a double opt-in, counted from when it was requested. */
   pendingContacts: 30,
+  /** Finished imports from another provider (their report), counted from when they started. */
+  migrations: 90,
+  /** Imports never started (the provider's key they hold included). */
+  migrationDrafts: 1,
 } as const satisfies Record<string, number>;
 
 export type RetentionPeriod =
@@ -308,6 +312,12 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     description:
       "Broadcasts with their content and their counters (recipients, deliveries, bounces, complaints, opens, clicks, unsubscribes). Kept until you delete them; each email they made is kept like any other email once the broadcast is finished.",
     period: { until: "deleted" },
+  },
+  {
+    id: "migrations",
+    label: "Imports from other providers",
+    description: `Reports of imports from Resend, SendGrid or Postmark: what was found, what was imported and what needs attention. The provider's API key is deleted as soon as an import finishes or is canceled, and an import that is never started is deleted after ${formatRetentionDays(RETENTION_DAYS.migrationDrafts)}. What it imported is kept like anything you create yourself.`,
+    period: { days: RETENTION_DAYS.migrations, after: "creation" },
   },
   {
     id: "account",
