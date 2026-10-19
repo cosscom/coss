@@ -52,8 +52,8 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/companion` | `@coss/companion` | Wire types of the dashboard's iOS app API (`/api/mobile/v1/*`): plain TypeScript types, zero deps, client-safe. |
 | `packages/retention` | `@coss/retention` | The data retention policy: `RETENTION_POLICY` (published by the docs and the dashboard) and `RETENTION_DAYS` (enforced by each package's purge, run by the worker). Zero deps, client-safe. |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens), `globals.css` (the dashboard's stylesheet) and `./fonts` (`next/font/local`: Cal Sans as `fontSans`/`fontHeading` and, upright only, `fontCalSans`; Paper Mono as `fontMono`). |
-| `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. `coss/device` is its browser-only entry (risk's device tokens); `coss/nodemailer`, `coss/better-auth` and `coss/authjs` are the integrations (docs: `/docs/integrations`). |
-| `packages/mcp` | `coss-mcp` | **Public** MCP server (`npx coss-mcp`, stdio, Node): tools for coding agents built only on the published `coss` SDK — find emails and diagnose delivery (`diagnose.ts`, pure), send, suppressions, domains, webhook deliveries, received emails, logs, account status. See "MCP server" below. |
+| `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. `coss/device` is its browser-only entry (risk's device tokens); `coss/diagnose` explains an email's delivery (used by the MCP server and the CLI); `coss/nodemailer`, `coss/better-auth` and `coss/authjs` are the integrations (docs: `/docs/integrations`). |
+| `packages/mcp` | `coss-mcp` | **Public** MCP server (`npx coss-mcp`, stdio, Node): tools for coding agents built only on the published `coss` SDK — find emails and diagnose delivery (the SDK's `coss/diagnose`), send, suppressions, domains, webhook deliveries, received emails, logs, account status. See "MCP server" below. |
 | `packages/cli` | `coss-cli` | **Public** CLI (`npm i -g coss-cli`, command `coss`, Node): `login` (browser PKCE or `--manual`), `logout`, `whoami`, `emails send`, `logs tail`, `listen` (forwards webhook events to localhost), built only on the published `coss` SDK. See "CLI" below. |
 | `packages/kloq` | `kloq` | The kloq library (the `cosscom/calendar` repository's `packages/kloq/src`, tests left out): the `<Kloq>` calendar, its themes, settings dialog, design mode and stylesheet. Vendored (excluded from Biome, `noUncheckedIndexedAccess` off); also what `/kloq/r/kloq.json` serves as source. Used only by `apps/site`. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
@@ -349,8 +349,10 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - Answers stay small: lists drop content (`compact`, `emailListItem`), bodies are cut (`truncate`), API failures
   become `isError` results with a hint (`result.ts`). Third-party text (email content, received mail, bounce and
   webhook responses) is labelled untrusted, and the server's `instructions` say so.
-- `diagnose.ts` is pure (email + events + best-effort context → verdict). Its explanations of failure codes and
-  recipient statuses must match the email product's behaviour: change both together.
+- Delivery diagnosis is the SDK's `coss/diagnose` (`packages/sdk/src/diagnose.ts`, shared with `coss emails
+  diagnose`): `diagnoseEmail` is pure (email + events + best-effort context → verdict), `diagnose` fetches first;
+  next steps name the server's tools through `references`. Its explanations of failure codes and recipient
+  statuses must match the email product's behaviour: change both together.
 - Dependencies are explicit versions (`npm publish` doesn't rewrite `workspace:`/`catalog:`); `coss` is a caret
   range that changesets moves when the SDK's version leaves it. The release job publishes it after `coss`.
 - Tests: `packages/mcp/test` (in-memory client, fake `fetch`) and `apps/api/test/mcp-contract.test.ts` (built

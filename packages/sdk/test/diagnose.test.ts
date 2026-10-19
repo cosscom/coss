@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { diagnoseEmail, fromDomain, matchDomain } from "../src/diagnose.ts";
-import { email, event, NOW, recipient } from "./fixtures.ts";
+import { diagnose, diagnoseEmail, fromDomain, matchDomain } from "../src/diagnose.ts";
+import { Coss } from "../src/index.ts";
+import { email, event, NOW, recipient } from "./diagnose-fixtures.ts";
+import { apiError, json, mockFetch } from "./helpers.ts";
 
 describe("diagnoseEmail", () => {
   test("delivered: every recipient accepted, with the server's response", () => {
@@ -105,7 +107,9 @@ describe("diagnoseEmail", () => {
     expect(diagnosis.summary).toBe(
       "Not delivered: all_recipients_suppressed — Every recipient is on the suppression list.",
     );
-    expect(diagnosis.failure?.next_steps[0]).toContain("check_suppression");
+    expect(diagnosis.failure?.next_steps[0]).toContain(
+      "(coss.email.suppressions.list({ address }))",
+    );
     expect(diagnosis.recipients[0]).toMatchObject({
       outcome: "suppressed",
       details: { matched_suppression: { id: "sup_2", reason: "complaint" } },
@@ -259,6 +263,104 @@ describe("diagnoseEmail", () => {
       now: NOW,
     });
     expect(diagnosis.timeline.map((t) => t.type)).toEqual(["email.delivered"]);
+  });
+});
+
+describe("references", () => {
+  test("next steps name the ways to look further as the caller does", () => {
+    const failed = email({
+      status: "failed",
+      failure: { code: "domain_not_verified", message: "acme.com isn't verified." },
+      recipients: [recipient("ada@example.com", "failed")],
+    });
+    const sdk = diagnoseEmail({ email: failed, events: [], now: NOW });
+    expect(sdk.failure?.next_steps).toEqual([
+      "Check the domain's DNS records and status (coss.domains.list(), coss.domains.get(id)).",
+      "Add the missing records, then verify it (coss.domains.verify(id)), and send again.",
+    ]);
+    const tools = diagnoseEmail({
+      email: failed,
+      events: [],
+      now: NOW,
+      references: { list_domains: "list_domains", get_domain: "get_domain" },
+    });
+    expect(tools.failure?.next_steps[0]).toBe(
+      "Check the domain's DNS records and status (list_domains, get_domain).",
+    );
+    // Unnamed ones keep the SDK's.
+    expect(tools.failure?.next_steps[1]).toContain("coss.domains.verify(id)");
+  });
+});
+
+describe("diagnose", () => {
+  const bounced = email({
+    from: "Acme <hello@mail.acme.com>",
+    recipients: [recipient("gone@example.com", "bounced")],
+  });
+
+  test("reads the email, its events and the account context", async () => {
+    const { fetch, calls } = mockFetch((call) => {
+      const url = new URL(call.url);
+      const routes: Record<string, unknown> = {
+        [`/v1/emails/${bounced.id}`]: bounced,
+        [`/v1/emails/${bounced.id}/events`]: {
+          object: "list",
+          has_more: false,
+          data: [
+            event("email.bounced", "gone@example.com", {
+              bounce: { type: "permanent", sub_type: "General", diagnostic_code: "550 no user" },
+            }),
+          ],
+        },
+        "/v1/suppressions": {
+          object: "list",
+          has_more: false,
+          data: [{ id: "sup_1", scope: "*", reason: "bounce", created_at: NOW.toISOString() }],
+        },
+        "/v1/domains": {
+          object: "list",
+          has_more: false,
+          data: [{ name: "acme.com", status: "verified", can_send: true }],
+        },
+        "/v1/reputation": { status: "warning", reason: "bounce_rate" },
+      };
+      const body = routes[url.pathname];
+      return body
+        ? json(200, body)(call)
+        : apiError(403, { type: "permission_error", code: "forbidden" })(call);
+    });
+    const coss = new Coss({
+      apiKey: "coss_live_x",
+      baseUrl: "https://api.coss.test",
+      fetch,
+      maxRetries: 0,
+    });
+    const { data, error } = await diagnose(coss, bounced.id, { now: NOW });
+    expect(error).toBeNull();
+    expect(data?.verdict).toBe("not_delivered");
+    expect(data?.recipients[0]?.details).toMatchObject({
+      diagnostic_code: "550 no user",
+      suppressions: [{ id: "sup_1" }],
+    });
+    // Billing answered 403: left out, the rest is there.
+    expect(data?.warnings).toEqual([
+      "The organization's sending reputation has a warning (bounce_rate); bounces and complaints should come down before it is suspended.",
+    ]);
+    const suppressions = calls.find((call) => call.url.includes("/v1/suppressions"));
+    expect(new URL(suppressions?.url ?? "").searchParams.get("address")).toBe("gone@example.com");
+  });
+
+  test("an email that can't be read is the error", async () => {
+    const { fetch } = mockFetch(apiError(404, { type: "not_found_error", code: "not_found" }));
+    const coss = new Coss({
+      apiKey: "coss_live_x",
+      baseUrl: "https://api.coss.test",
+      fetch,
+      maxRetries: 0,
+    });
+    const { data, error } = await diagnose(coss, "email_nope");
+    expect(data).toBeNull();
+    expect(error?.code).toBe("not_found");
   });
 });
 

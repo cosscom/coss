@@ -107,6 +107,28 @@ GET, PUT and DELETE are retried like every other call; POST and PATCH only with 
 since not every endpoint deduplicates them by `Idempotency-Key`. `responseType: "text"` or
 `"bytes"` reads a body that isn't JSON (a CSV export, a received email's raw message).
 
+## Diagnose a delivery
+
+`coss/diagnose` explains what happened to an email: a verdict, what each recipient's status means
+(a bounce with the receiving server's reason, a suppression with its entry, a delay, a failure and
+its cause), account problems that affect it and what to do next. `diagnose` reads the email, its
+events and the account context it needs; `diagnoseEmail` is the pure part, for data you already
+have. The CLI's `coss emails diagnose` and the MCP server's `diagnose_email` use it too.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+import { diagnose } from "coss/diagnose";
+
+const { data, error } = await diagnose(coss, "email_01k7c8m4q2f3e9v6t5r1n0p8yz");
+if (data) {
+  console.log(data.verdict, data.summary);
+  //               ^?
+  for (const recipient of data.recipients) console.log(recipient.address, recipient.explanation);
+}
+```
+
 ## Runtimes
 
 The package is ESM-only and uses nothing but `fetch`, `AbortSignal` and `crypto.randomUUID`.

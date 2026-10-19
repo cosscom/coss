@@ -21,7 +21,13 @@ Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
 | `coss logout` | Removes the saved key, and revokes it if `coss login` created it (`--revoke` revokes a pasted one too; `--all` signs every profile out). |
 | `coss whoami` | The key in use, where it comes from, and its organization, project and environment. |
 | `coss emails send` | A test email: `--to`, or `--simulate delivered\|bounced\|complained\|suppressed` for the mailbox simulator; `--template` with `--var name=value`; `--wait` follows it to its outcome (up to `--timeout`, 60 s). |
+| `coss emails list` | The environment's emails, newest first, with where each stands. Filter with `--to`, `--status`, `--recipient-status`, `-q`, `--category`, `--batch`, `--since`/`--until`; `--limit` (20). |
+| `coss emails get <id>` | An email: sender, recipients and their statuses, failure, tracking, attachments; `--text` or `--html` prints a body alone. |
+| `coss emails events <id>` | Its delivery events, with the receiving server's answers. |
+| `coss emails diagnose <id>` | Whether it was delivered and, if not, why and what to do (or `--to <address>` for the newest email to it). |
 | `coss logs tail` | New lines of the environment's log as they arrive: API requests, email events, webhook attempts. Filter with `--source`, `--level`, `--type`, `--status`, `-q`; `--since 15m` starts earlier; `--interval` sets the poll interval (2000 ms). |
+| `coss inbox` | The environment's inbound domain, then each email it receives as it arrives (`--since`, `--interval`). |
+| `coss inbox get <id>` | A received email: verdicts, attachments and its text (`--html`, `--headers`); `--raw > message.eml` saves the message as received. |
 | `coss listen` | Receives the environment's webhook events and forwards each one to `--forward-to`, signed like coss.com signs real deliveries. Verify them with `verifyWebhook` from the `coss` SDK and the signing secret it prints (it stays the same for the profile). `--header "Name: value"` adds a header to forwarded requests. |
 | `coss hooks apps list`, `coss hooks apps create <name>` | [Hooks](https://coss.com/docs/hooks) applications (`--uid`, `--metadata`). Every `<app>` below is an application's id or uid. |
 | `coss hooks event-types list`, `coss hooks event-types create <name>` | The event types messages are sent as (`--description`, `--schema`, `--example`). |

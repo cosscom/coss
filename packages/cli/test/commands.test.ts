@@ -43,8 +43,8 @@ describe("the command registry", () => {
 
   test("unknown commands and groups without a command are usage errors", async () => {
     for (const [argv, message] of [
-      [["emails"], '"emails" needs a command: try `coss emails send`.'],
-      [["emails", "list"], 'Unknown command "emails list"'],
+      [["emails"], '"emails" needs a command: try `coss emails send`, `coss emails list`'],
+      [["emails", "lst"], 'Unknown command "emails lst"'],
       [["nope"], 'Unknown command "nope"'],
       [
         ["hooks", "apps"],
@@ -88,7 +88,16 @@ describe("shell completion", () => {
       "succeeded",
       "failed",
     ]);
-    expect(complete(COMMANDS, ["emails", ""])).toEqual(["send"]);
+    expect(complete(COMMANDS, ["emails", ""])).toEqual([
+      "send",
+      "list",
+      "get",
+      "events",
+      "diagnose",
+    ]);
+    // A command that has subcommands of its own.
+    expect(complete(COMMANDS, ["inbox", ""])).toEqual(["get"]);
+    expect(complete(COMMANDS, ["inbox", "get", ""])).toEqual([]);
     expect(complete(COMMANDS, ["emails", "send", "--sim"])).toEqual(["--simulate"]);
     expect(complete(COMMANDS, ["emails", "send", "--simulate", "b"])).toEqual(["bounced"]);
     expect(complete(COMMANDS, ["logs", "tail", "--source", ""])).toContain("webhook");

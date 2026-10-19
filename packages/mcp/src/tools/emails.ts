@@ -1,6 +1,6 @@
-import type { CossResult, Email, EmailSummary, Suppression } from "coss";
+import type { Email, EmailSummary } from "coss";
+import { type DiagnosisReferences, diagnoseEmail, diagnosisContext } from "coss/diagnose";
 import { z } from "zod";
-import { type DiagnosisContext, diagnoseEmail, fromDomain, matchDomain } from "../diagnose.ts";
 import { DEFAULT_TEXT_LIMIT, failWith, ok, run, truncate, unwrap } from "../result.ts";
 import {
   compact,
@@ -47,48 +47,15 @@ export function emailListItem(email: EmailSummary | Email): object {
   });
 }
 
-/** Context for a diagnosis, best effort: a call that fails (or a key without access) is skipped. */
-async function diagnosisContext(
-  ctx: ToolContext,
-  email: Email | EmailSummary,
-): Promise<DiagnosisContext> {
-  const soft = async <T>(call: Promise<CossResult<T>>): Promise<T | undefined> => {
-    const result = await call;
-    return result.error ? undefined : result.data;
-  };
-  const affected = email.recipients
-    .filter((r) => ["bounced", "complained", "suppressed"].includes(r.status))
-    .slice(0, 10);
-  const domainName = fromDomain(email.from);
-  const [suppressionLists, domains, reputation, billing] = await Promise.all([
-    Promise.all(
-      affected.map((r) => soft(ctx.coss.email.suppressions.list({ address: r.address }))),
-    ),
-    email.sandbox || !domainName ? undefined : soft(ctx.coss.domains.list()),
-    soft(ctx.coss.reputation.get()),
-    soft(ctx.coss.billing.get()),
-  ]);
-  const suppressions: Record<string, Suppression[]> = {};
-  affected.forEach((r, i) => {
-    const list = suppressionLists[i];
-    if (list) suppressions[r.address] = list.data;
-  });
-  const domain = domains && domainName ? matchDomain(domains.data, domainName) : undefined;
-  return {
-    suppressions,
-    ...(domain !== undefined
-      ? {
-          domain: domain && {
-            name: domain.name,
-            status: domain.status,
-            can_send: domain.can_send,
-          },
-        }
-      : {}),
-    ...(reputation ? { reputation: { status: reputation.status, reason: reputation.reason } } : {}),
-    ...(billing ? { billing: { status: billing.status, holds: billing.holds } } : {}),
-  };
-}
+/** Next steps point at this server's tools. */
+const TOOL_REFERENCES: DiagnosisReferences = {
+  check_suppression: "check_suppression",
+  remove_suppression: "remove_suppression",
+  list_domains: "list_domains",
+  get_domain: "get_domain",
+  verify_domain: "verify_domain",
+  get_account_status: "get_account_status",
+};
 
 export function registerEmailTools(ctx: ToolContext): void {
   const { server, coss } = ctx;
@@ -268,13 +235,14 @@ export function registerEmailTools(ctx: ToolContext): void {
         }
         const [events, context] = await Promise.all([
           coss.email.listEvents(email.id),
-          diagnosisContext(ctx, email),
+          diagnosisContext(coss, email),
         ]);
         const diagnosis = diagnoseEmail({
           email,
           events: unwrap(events).data,
           context,
           now: ctx.now(),
+          references: TOOL_REFERENCES,
         });
         return ok({
           ...diagnosis,

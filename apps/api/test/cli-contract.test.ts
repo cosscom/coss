@@ -9,6 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runDueHookDeliveries } from "@coss/hooks";
 import { testHookDeliveryDeps } from "@coss/hooks/testing";
+import { buildTestMessage, receiveFakeEmail } from "@coss/email";
 import { queryLogs } from "@coss/logs";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { webhookReceiver } from "@coss/webhooks/testing";
@@ -251,6 +252,88 @@ describe("coss-cli against the API", () => {
     const before = cli.stdout().length;
     expect(await run(["risk", "lists", "list", "--json"], cli.io)).toBe(0);
     expect(cli.stdout().slice(before)).toBe("");
+  });
+
+  test("emails list, events and diagnose explain a bounce; inbox shows and follows received mail", async () => {
+    const tenant = await createTestTenant();
+    const testApp = createTestApp();
+    const { app, dispatch, inbound } = testApp;
+    if (!inbound) throw new Error("no inbound runtime");
+    let onSleep: () => Promise<void> = () => dispatch();
+    const cli = cliIo(app, { answers: [tenant.sandboxKey], sleep: () => onSleep() });
+    const lines = () => cli.stdout().trim().split("\n");
+    expect(await run(["login", "--manual"], cli.io)).toBe(0);
+
+    expect(await run(["emails", "send", "--simulate", "bounced", "--wait", "--json"], cli.io)).toBe(
+      0,
+    );
+    const sent = JSON.parse(lines().at(-1) ?? "{}");
+    let before = lines().length;
+    expect(await run(["emails", "list", "--recipient-status", "bounced", "--json"], cli.io)).toBe(
+      0,
+    );
+    expect(
+      lines()
+        .slice(before)
+        .map((line) => JSON.parse(line).id),
+    ).toContain(sent.id);
+
+    before = lines().length;
+    expect(await run(["emails", "events", sent.id, "--json"], cli.io)).toBe(0);
+    expect(
+      lines()
+        .slice(before)
+        .map((line) => JSON.parse(line).type),
+    ).toContain("email.bounced");
+
+    expect(await run(["emails", "diagnose", sent.id, "--json"], cli.io)).toBe(0);
+    expect(JSON.parse(lines().at(-1) ?? "{}")).toMatchObject({
+      email_id: sent.id,
+      verdict: "not_delivered",
+      sandbox: true,
+      recipients: [{ address: "bounce@simulator.amazonses.com", outcome: "bounced" }],
+    });
+    expect(await run(["emails", "diagnose", sent.id], cli.io)).toBe(0);
+    expect(cli.stdout()).toContain("bounce@simulator.amazonses.com  bounced");
+
+    // Received mail: one already there, one that arrives while `coss inbox` runs.
+    const address = await app.request("/v1/received_emails/address", {
+      headers: { Authorization: `Bearer ${tenant.sandboxKey}` },
+    });
+    const { domain } = (await address.json()) as { domain: string };
+    const receive = async (subject: string) => {
+      const raw = buildTestMessage({
+        from: "Jane <jane@example.com>",
+        to: [`support@${domain}`],
+        subject,
+        text: `Body of ${subject}`,
+        html: "<p>HTML</p>",
+        attachments: [],
+      });
+      const [outcome] = await receiveFakeEmail(
+        { raw, mailFrom: "jane@example.com", recipients: [`support@${domain}`], subject },
+        { store: inbound.store, managedDomain: inbound.managedDomain },
+      );
+      if (outcome?.kind !== "received") throw new Error(`not received: ${outcome?.kind}`);
+      return outcome.receivedEmailId;
+    };
+    const earlier = await receive("Earlier");
+    expect(await run(["inbox", "get", earlier], cli.io)).toBe(0);
+    expect(cli.stdout()).toContain("Subject    Earlier");
+    expect(cli.stdout()).toContain("Body of Earlier");
+
+    let later = "";
+    onSleep = async () => {
+      if (!later) later = await receive("Later");
+      else cli.controller.abort();
+    };
+    before = lines().length;
+    expect(await run(["inbox", "--json"], cli.io)).toBe(130);
+    const objects = lines()
+      .slice(before)
+      .map((line) => JSON.parse(line));
+    expect(objects[0]).toMatchObject({ object: "inbound_address", domain });
+    expect(objects.slice(1).map((object) => object.id)).toEqual([later]);
   });
 
   test("listen forwards the environment's events to a local server, signed, and logs them", async () => {

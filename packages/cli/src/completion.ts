@@ -8,18 +8,30 @@ import type { Command } from "./command.ts";
 export const SHELLS = ["bash", "zsh", "fish"] as const;
 export type Shell = (typeof SHELLS)[number];
 
-/** The command `words` name, and how many words that took. */
+/** The command `words` name (the longest: `inbox get` over `inbox`), and how many words it took. */
 export function findCommand(
   commands: readonly Command[],
   words: readonly string[],
 ): { command: Command; length: number } | null {
+  let found: { command: Command; length: number } | null = null;
   for (const command of commands) {
     const parts = command.name.split(" ");
-    if (parts.every((part, index) => words[index] === part)) {
-      return { command, length: parts.length };
+    if (
+      parts.every((part, index) => words[index] === part) &&
+      parts.length > (found?.length ?? 0)
+    ) {
+      found = { command, length: parts.length };
     }
   }
-  return null;
+  return found;
+}
+
+/** Commands one word longer than `name` (`inbox` → `get`). */
+function subcommands(commands: readonly Command[], name: string): string[] {
+  return commands
+    .filter((command) => command.name.startsWith(`${name} `))
+    .map((command) => command.name.slice(name.length + 1).split(" ")[0] ?? "")
+    .filter(Boolean);
 }
 
 /**
@@ -52,7 +64,10 @@ export function complete(commands: readonly Command[], words: readonly string[])
     if (flag?.type === "string") return starting(flag.choices ?? []);
   }
   if (current.startsWith("-")) return starting(Object.keys(flags).map((name) => `--${name}`));
-  return starting(found.command.positionalChoices ?? []);
+  return starting([
+    ...(before.length === found.length ? subcommands(commands, found.command.name) : []),
+    ...(found.command.positionalChoices ?? []),
+  ]);
 }
 
 export function completionScript(shell: Shell): string {

@@ -4,6 +4,13 @@ import { apiCommand } from "./commands/api.ts";
 import { completionCommand } from "./commands/completion.ts";
 import { emailsSendCommand } from "./commands/emails.ts";
 import { HOOKS_COMMANDS } from "./commands/hooks.ts";
+import {
+  emailsDiagnoseCommand,
+  emailsEventsCommand,
+  emailsGetCommand,
+  emailsListCommand,
+} from "./commands/emails-read.ts";
+import { inboxCommand, inboxGetCommand } from "./commands/inbox.ts";
 import { listenCommand } from "./commands/listen.ts";
 import { loginCommand } from "./commands/login.ts";
 import { logoutCommand } from "./commands/logout.ts";
@@ -23,7 +30,13 @@ export const COMMANDS: readonly Command[] = [
   logoutCommand,
   whoamiCommand,
   emailsSendCommand,
+  emailsListCommand,
+  emailsGetCommand,
+  emailsEventsCommand,
+  emailsDiagnoseCommand,
   logsTailCommand,
+  inboxCommand,
+  inboxGetCommand,
   listenCommand,
   ...HOOKS_COMMANDS,
   ...RISK_COMMANDS,

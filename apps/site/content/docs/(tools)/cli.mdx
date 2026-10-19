@@ -102,6 +102,31 @@ The default sender for development keys is `coss.com CLI <cli@example.com>`; pro
 `--template <id or alias>` with `--var name=value`, `--cc`, `--bcc`, `--reply-to`, `--category`,
 `--tag name=value` and `--json`.
 
+## Find and debug emails
+
+```sh
+coss emails list --recipient-status bounced --since 1d
+coss emails diagnose email_01k7c8m4q2f3e9v6t5r1n0p8yz
+coss emails diagnose --to ada@example.com
+```
+
+`coss emails list` shows the environment's emails, newest first, with where each one stands: its
+status until it was handed to the provider, then its recipients' (`delivered`, `2 delivered, 1
+bounced`). Filter by `--to`, `--status`, `--recipient-status`, free text (`-q`), `--category`,
+`--batch <id>` and creation time (`--since`, `--until`); `--limit` sets how many (20 by default,
+read page by page). `--json` prints one email per line.
+
+`coss emails get <id>` shows one email: sender, recipients and their statuses, its failure,
+tracking counts and attachments (`--text` or `--html` prints that body alone).
+`coss emails events <id>` lists its events, with what the receiving server answered.
+
+`coss emails diagnose <id>` explains the outcome: a verdict, what each recipient's status means (a
+hard bounce and the server's reason, the suppression entry that skipped an address, a delay, a
+failure and its cause), account problems that affect it (an unverified domain, reputation, a
+billing hold) and the next steps, as commands to run. `--to <address>` diagnoses the newest email
+to that address. It's the same diagnosis as the SDK's `coss/diagnose` and the MCP server's
+`diagnose_email`.
+
 ## Follow the log
 
 ```sh
@@ -176,6 +201,26 @@ coss risk lists add block domain evil.example --expires 30d --note "spam wave"
 - `coss risk lists list` (`--list allow|block`, `--type`), `coss risk lists add <allow|block>
   <email|domain|ip|asn|country|user> <value>` (`--note`, `--expires` as `7d`, `12h` or a time) and
   `coss risk lists remove <entry>` manage the allow and block lists.
+
+## Receive emails
+
+```sh
+coss inbox
+# Inbound domain: k3j9x2m7qp4l.inbound.coss.com
+coss inbox get rcv_01k7c8m4q2f3e9v6t5r1n0p8yz
+```
+
+`coss inbox` prints the environment's inbound domain: mail to any address at it is
+[received](/docs/email/receiving) with no DNS setup. It then prints each email the environment receives
+as it arrives, at that domain or at a receiving domain (`--since 1h` shows earlier ones too,
+`--interval <ms>` sets how often it checks, `--json` prints the address and then one email per
+line).
+
+`coss inbox get <id>` shows a received email: sender, recipients, the receiving server's spam,
+virus, SPF, DKIM and DMARC verdicts, attachments and the text body (`--html` for the HTML,
+`--headers` for every header). Received mail is written by someone else, so control characters in
+it are left out of what's printed. `--raw > message.eml` saves the whole message as received
+(it refuses to write it to a terminal).
 
 ## Call any endpoint
 
