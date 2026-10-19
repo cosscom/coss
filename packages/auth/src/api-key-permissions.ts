@@ -34,7 +34,7 @@ export const API_KEY_RESOURCES: readonly ApiKeyResourceInfo[] = [
     label: "Emails",
     group: "Email",
     description:
-      "Send, schedule and cancel emails (API, SDK and SMTP), change tracking settings; read sent and received emails and their events.",
+      "Send, schedule and cancel emails (API, SDK and SMTP), change tracking and content storage settings; read sent and received emails, their events and those settings.",
   },
   {
     resource: "emailTemplate",
