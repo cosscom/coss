@@ -196,10 +196,77 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  # The macOS executables signed with coss.com's Developer ID certificate (hardened runtime) and
+  # notarized by Apple (scripts/notarize.ts), then archived again with a new SHA256SUMS, so a copy
+  # downloaded with a browser opens without Gatekeeper's warning. Skipped until the repository
+  # variable CLI_MACOS_NOTARIZE is `true` (AGENTS.md, "CLI binaries"): releases then ship the
+  # ad-hoc signed builds.
+  cli-binaries-notarize:
+    needs: [cli-binaries-check, cli-binaries-build]
+    if: vars.CLI_MACOS_NOTARIZE == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 45
+    # Holds the Developer ID certificate and the App Store Connect API key notarytool uses.
+    environment: apple
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: refs/tags/${{ needs.cli-binaries-check.outputs.tag }}
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: cli-binaries
+          path: release
+      # A keychain of this job's own, with only the Developer ID identity, removed at the end.
+      - name: Signing keychain and notary key
+        env:
+          DEVELOPER_ID_P12: ${{ secrets.APPLE_DEVELOPER_ID_P12 }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}
+          NOTARY_KEY: ${{ secrets.APPLE_NOTARY_KEY }}
+        run: |
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          password="$(openssl rand -base64 32)"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 3600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          printf '%s' "$DEVELOPER_ID_P12" | base64 --decode > "$RUNNER_TEMP/developer-id.p12"
+          security import "$RUNNER_TEMP/developer-id.p12" -k "$keychain" \
+            -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign
+          rm -f "$RUNNER_TEMP/developer-id.p12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$password" \
+            "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain"
+          printf '%s\n' "$NOTARY_KEY" > "$RUNNER_TEMP/notary-key.p8"
+          echo "APPLE_NOTARY_KEY_PATH=$RUNNER_TEMP/notary-key.p8" >> "$GITHUB_ENV"
+      - name: Sign, notarize and archive again
+        env:
+          APPLE_NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
+          APPLE_NOTARY_ISSUER_ID: ${{ secrets.APPLE_NOTARY_ISSUER_ID }}
+        run: bun packages/cli/scripts/notarize.ts release
+      - name: Remove the keychain and key
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true
+          rm -f "$RUNNER_TEMP/notary-key.p8"
+      # Replaces the build's artifact: the smoke tests and the release take the notarized one.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cli-binaries
+          path: release
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 7
+
   # Each executable that a runner can run, run through scripts/smoke-binary.ts on its own OS
   # (and the musl ones in Alpine) before anything is published. darwin-x64 has no runner here.
+  # They wait for notarization when it's on, and test the notarized builds.
   cli-binaries-smoke:
-    needs: [cli-binaries-check, cli-binaries-build]
+    needs: [cli-binaries-check, cli-binaries-build, cli-binaries-notarize]
+    if: >-
+      always() && needs.cli-binaries-build.result == 'success' &&
+      (needs.cli-binaries-notarize.result == 'success' || needs.cli-binaries-notarize.result == 'skipped')
     strategy:
       fail-fast: true
       matrix:
@@ -239,6 +306,15 @@ jobs:
       - name: Smoke test
         shell: bash
         run: bun packages/cli/scripts/smoke-binary.ts "smoke/coss${{ matrix.target == 'windows-x64' && '.exe' || '' }}"
+      # What a browser download is: quarantined. Only a notarized executable passes Gatekeeper then.
+      - name: Gatekeeper (macOS, notarized)
+        if: matrix.target == 'darwin-arm64' && needs.cli-binaries-notarize.result == 'success'
+        env:
+          VERSION: ${{ needs.cli-binaries-check.outputs.version }}
+        run: |
+          xattr -w com.apple.quarantine "0081;$(printf '%x' "$(date +%s)");Safari;" smoke/coss
+          spctl --assess --type execute --verbose=2 smoke/coss || true
+          smoke/coss --version | grep -qx "$VERSION"
       - name: Smoke test (musl, in Alpine)
         if: matrix.musl
         env:
@@ -254,6 +330,8 @@ jobs:
 
   cli-binaries-release:
     needs: [cli-binaries-check, cli-binaries-smoke]
+    # Explicit: a skipped cli-binaries-notarize upstream would otherwise skip this job too.
+    if: always() && needs.cli-binaries-smoke.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

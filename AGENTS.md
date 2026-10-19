@@ -340,7 +340,14 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - **CLI binaries** (the `cli-*` jobs of `release.yml`, after `publish`): for the `coss-cli@<version>` tag (built
   from the tag, never a newer main) whose GitHub release has no `SHA256SUMS` yet, `packages/cli/scripts/binaries.ts`
   cross-compiles standalone executables (`bun build --compile`, 7 targets: macOS, glibc/musl Linux, Windows; macOS
-  ones come out ad-hoc signed, not notarized), `scripts/smoke-binary.ts` runs them on their own OS (musl in Alpine,
+  ones come out ad-hoc signed). With the repository variable `CLI_MACOS_NOTARIZE` `true`, `cli-binaries-notarize`
+  (macOS runner, `apple` environment: `APPLE_DEVELOPER_ID_P12` (base64 `.p12` of the Developer ID Application
+  certificate and key) + `APPLE_DEVELOPER_ID_P12_PASSWORD`, `APPLE_NOTARY_KEY` (an App Store Connect API key's
+  `.p8`) + `APPLE_NOTARY_KEY_ID` + `APPLE_NOTARY_ISSUER_ID`) re-signs them with the hardened runtime and Bun's JIT
+  entitlements, has Apple notarize them (`scripts/notarize.ts`; a bare executable can't be stapled, so Gatekeeper
+  checks online) and archives them again with a new `SHA256SUMS`; the smoke tests then run the notarized builds,
+  quarantined on macOS as a browser download is. When turning it on, drop the `xattr` note from the CLI's README and
+  `cli.mdx`. `scripts/smoke-binary.ts` runs them on their own OS (musl in Alpine,
   which needs `libstdc++`), and the release gets the archives + `SHA256SUMS`, marked latest (`install.sh` and
   `releases/latest` rely on the CLI being the only package with GitHub releases). Then `scripts/homebrew.ts` renders
   `Formula/coss.rb` from that `SHA256SUMS` and pushes it to `cosscom/homebrew-tap` with the deploy key

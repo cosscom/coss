@@ -9,7 +9,8 @@
  *   bun scripts/binaries.ts --notes         # this version's CHANGELOG section (release notes)
  *
  * Cross-compiling downloads each target's Bun runtime once. macOS executables come out ad-hoc
- * signed (Apple Silicon refuses unsigned ones); they aren't notarized.
+ * signed (Apple Silicon refuses unsigned ones); release.yml notarizes them with scripts/notarize.ts
+ * when CLI_MACOS_NOTARIZE is on.
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
