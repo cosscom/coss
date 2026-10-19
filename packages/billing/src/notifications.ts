@@ -2,7 +2,8 @@
  * Billing emails (usage alerts, payment failures, holds, invoices coss.com sends itself): queued in
  * the transaction that decides them (`enqueueBillingNotification`, once per `dedupe_key`), sent
  * by the worker through a `BillingNotifier` (the email product, wired by the worker). They go to
- * the account's billing email (and cc), else to the organization's owners and admins.
+ * the account's billing email (and cc), else to the organization's owners and admins, and to the
+ * member a notification is also for (`user_id`: their budget), while they are still a member.
  */
 import { db, type Executor, schema } from "@coss/db";
 import { enqueuePush, type PushKind } from "@coss/push";
@@ -27,7 +28,9 @@ export type BillingNotificationKind =
   | "invoice_reminder"
   | "hold_placed"
   | "hold_lifted"
-  | "contract_ending";
+  | "contract_ending"
+  | "budget_threshold"
+  | "budget_paused";
 
 /** One email to one address. */
 export type BillingNotice = {
@@ -64,6 +67,8 @@ export async function enqueueBillingNotification(
     kind: BillingNotificationKind;
     dedupeKey: string;
     payload: Record<string, unknown>;
+    /** A member it is also for (their budget). */
+    userId?: string | null;
     now?: Date;
   },
 ): Promise<boolean> {
@@ -79,6 +84,7 @@ export async function enqueueBillingNotification(
     .values({
       organizationId: input.organizationId,
       kind: input.kind,
+      userId: input.userId ?? null,
       dedupeKey: input.dedupeKey,
       payload: input.payload,
       nextAttemptAt: now,
@@ -113,6 +119,10 @@ const PUSHED: Partial<
   },
   hold_placed: { kind: "billing_hold_placed", subject: () => "delinquent" },
   spend_limit_reached: { kind: "billing_hold_placed", subject: () => "spend_limit" },
+  budget_paused: {
+    kind: "billing_budget_paused",
+    subject: (payload) => `${payload.scope}:${payload.targetId}`,
+  },
 };
 
 export async function listBillingNotifications(organizationId: string) {
@@ -192,7 +202,7 @@ async function deliver(row: NotificationRow, deps: BillingNotificationDeps, now:
       await settle({ status: "skipped", lastError: "The organization is gone." });
       return;
     }
-    const recipients = await recipientsOf(row.organizationId);
+    const recipients = await recipientsOf(row.organizationId, row.userId);
     if (!recipients.length) {
       await settle({ status: "skipped", lastError: "Nobody to send it to." });
       return;
@@ -219,13 +229,18 @@ async function deliver(row: NotificationRow, deps: BillingNotificationDeps, now:
   }
 }
 
-/** The account's billing email and cc, else verified owners and admins. */
-async function recipientsOf(organizationId: string): Promise<string[]> {
+/**
+ * The account's billing email and cc, else verified owners and admins; plus `userId` while they
+ * are a verified member who isn't banned.
+ */
+async function recipientsOf(organizationId: string, userId: string | null): Promise<string[]> {
   const [account] = await db
     .select({ email: billingAccount.billingEmail, cc: billingAccount.billingCc })
     .from(billingAccount)
     .where(eq(billingAccount.organizationId, organizationId));
-  if (account?.email) return [...new Set([account.email, ...account.cc])];
+  const own = userId ? await memberEmail(organizationId, userId) : null;
+  const extra = own ? [own] : [];
+  if (account?.email) return [...new Set([account.email, ...account.cc, ...extra])];
   const rows = await db
     .select({ email: user.email })
     .from(member)
@@ -242,7 +257,23 @@ async function recipientsOf(organizationId: string): Promise<string[]> {
       ),
     )
     .orderBy(asc(member.createdAt));
-  return [...new Set([...rows.map((row) => row.email), ...(account?.cc ?? [])])];
+  return [...new Set([...rows.map((row) => row.email), ...(account?.cc ?? []), ...extra])];
+}
+
+async function memberEmail(organizationId: string, userId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ email: user.email })
+    .from(member)
+    .innerJoin(user, eq(user.id, member.userId))
+    .where(
+      and(
+        eq(member.organizationId, organizationId),
+        eq(member.userId, userId),
+        eq(user.emailVerified, true),
+        or(isNull(user.banned), ne(user.banned, true)),
+      ),
+    );
+  return row?.email ?? null;
 }
 
 type Block = { paragraph: string } | { list: string[] } | { link: { label: string; url: string } };
@@ -263,6 +294,8 @@ async function renderBillingNotification(
   const payload = row.payload as Record<string, string | number | undefined>;
   const name = org.name;
   const billingUrl = new URL(`/${org.slug}/settings/billing`, dashboardUrl).toString();
+  const spendUrl = new URL(`/${org.slug}/spend`, dashboardUrl).toString();
+  let link = { label: "Open billing", url: billingUrl };
   const blocks: Block[] = [];
   let subject: string;
   const invoice = payload.invoiceId
@@ -342,6 +375,28 @@ async function renderBillingNotification(
         paragraph: `Thanks — nothing is overdue anymore, so live sending for ${name} has resumed.`,
       });
       break;
+    case "budget_threshold": {
+      const target = oneLine(String(payload.target));
+      subject = `${target} has used ${payload.percent}% of a monthly budget (${name})`;
+      blocks.push({
+        paragraph: `${target} has used ${payload.percent}% of its ${payload.amount} monthly budget in ${name} for ${payload.period} (${payload.spent} so far).`,
+      });
+      blocks.push({
+        paragraph:
+          "Over the budget, its live sending is paused until next month, or until an owner raises the budget.",
+      });
+      link = { label: "Open spend", url: spendUrl };
+      break;
+    }
+    case "budget_paused": {
+      const target = oneLine(String(payload.target));
+      subject = `Live sending is paused for ${target}: its budget is used up (${name})`;
+      blocks.push({
+        paragraph: `${target} went over its ${payload.amount} monthly budget in ${name} for ${payload.period}, so its live sending is paused. Other keys and sandbox keys still work. Sending resumes next month, or as soon as an owner raises the budget.`,
+      });
+      link = { label: "Open spend", url: spendUrl };
+      break;
+    }
     case "contract_ending":
       subject = `${name}'s contract ends on ${payload.endsOn}`;
       blocks.push({
@@ -351,9 +406,11 @@ async function renderBillingNotification(
     default:
       subject = `Billing update for ${name}`;
   }
-  blocks.push({ link: { label: "Open billing", url: billingUrl } });
+  blocks.push({ link });
   blocks.push({
-    paragraph: `You're receiving this because you're the billing contact, an owner or an admin of ${name} on coss.com.`,
+    paragraph: row.userId
+      ? `You're receiving this because you're the billing contact, an owner or an admin of ${name} on coss.com, or the member the budget is for.`
+      : `You're receiving this because you're the billing contact, an owner or an admin of ${name} on coss.com.`,
   });
   subject = oneLine(subject);
   return { subject, text: toText(blocks), html: toHtml(subject, blocks) };

@@ -64,6 +64,7 @@ export async function sendConfirmation(input: {
   contactId: string;
   emailService: Pick<EmailService, "send">;
   apiKeyId: string | null;
+  apiKeyOwnerId?: string | null;
   linkKeys: LinkKeyRing;
   baseUrl: string;
   now?: Date;
@@ -117,6 +118,7 @@ export async function sendConfirmation(input: {
     await input.emailService.send({
       environment: input.environment,
       apiKeyId: input.apiKeyId,
+      apiKeyOwnerId: input.apiKeyOwnerId ?? null,
       params,
       idempotencyKey: `contact-confirmation:${target.id}:${number}`,
       discardBody: true,

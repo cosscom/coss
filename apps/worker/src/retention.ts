@@ -6,6 +6,7 @@ import {
   purgeExpiredBillingNotifications,
   purgeExpiredBillingProviderEvents,
   purgeExpiredBillingUsage,
+  purgeExpiredBillingUsageAttribution,
   purgeExpiredInvoices,
 } from "@coss/billing";
 import {
@@ -86,6 +87,7 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "reputation events", purge: purgeExpiredReputationEvents },
   { name: "admin audit events", purge: purgeExpiredAdminAuditEvents },
   { name: "billing usage", purge: purgeExpiredBillingUsage },
+  { name: "billing usage attribution", purge: purgeExpiredBillingUsageAttribution },
   { name: "billing provider events", purge: purgeExpiredBillingProviderEvents },
   { name: "billing notifications", purge: purgeExpiredBillingNotifications },
   { name: "push notifications", purge: purgeExpiredPushNotifications },

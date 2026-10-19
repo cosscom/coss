@@ -8,7 +8,16 @@ Better Auth (`packages/auth`) and the dashboard actions, mobile API routes, tena
 - **Better Auth:** `better-auth`, `@better-auth/core`, `@better-auth/api-key`, `@better-auth/passkey`,
   `@better-auth/sso`, `@better-auth/scim` and `auth` (CLI) stay on one identical exact version (catalog) — bump them together.
   - The api-key plugin is `@better-auth/api-key` (not `better-auth/plugins`). Keys are org-owned
-    (`references: "organization"`); `referenceId` has **no FK**. Deliberate settings: built-in rate limit off
+    (`references: "organization"`); `referenceId` has **no FK**. A key is an organization key or a **personal
+    key** (`environment_api_key.owner_user_id`, its usage is that member's spend): the plugin checks
+    `apiKey:create` for the creator, so members hold it, and `keyCreationAllowed` (`@coss/tenancy`) decides which
+    keys: organization keys and keys for others need `apiKey:manage` (owners, admins), a member's own personal
+    key an environment with `personal_keys` on. Personal keys hold `ORG_SCOPED_KEY_PERMISSIONS` (domain
+    changes, billing, audit) only while the owner's current role does (`personalKeyPermissions`, applied by
+    `effectiveKeyPermissions`); `authenticateApiKey` refuses them once the owner is no longer a member or is
+    banned, and `revokeDepartedMemberKeys` (`./member-keys`) deletes them on leave/removal (both hooks below)
+    while `reconcileScimMembership` deletes them in its transaction. Members revoke their own with
+    `revokePersonalApiKey` (Better Auth's delete checks `apiKey:delete`). Deliberate settings: built-in rate limit off
     (`rateLimit: { enabled: false }`), `enableMetadata: false` (the environment binding lives only in
     `environment_api_key`; metadata is client-writable),
     `defaultPermissions: API_KEY_PERMISSIONS`, prefixes
@@ -20,7 +29,7 @@ Better Auth (`packages/auth`) and the dashboard actions, mobile API routes, tena
     Better Auth's server-only `permissions`. Both checks (`authenticateApiKey`, `apiKeyHasPermissions`) go through
     `effectiveKeyPermissions`. Restricted keys never gain permissions: never backfill them. The dashboard's presets
     (`full`, `sending` = `email:send`, `read_only` = every `read`, `custom`) are only ways to fill the set; CLI
-    sign-in, the seed and test fixtures create `full` keys. Permissions can't be edited after creation (a new key).
+    sign-in, the seed and test fixtures create `full` keys (CLI keys are personal keys of the approving member). Permissions can't be edited after creation (a new key).
   - Keys are created only by `createEnvironmentApiKey` (server-side, no headers) and authenticated only by
     `authenticateApiKey`; keys without an `environment_api_key` binding fail closed. `authenticateApiKey` never calls
     Better Auth's `verifyApiKey` (it writes the key row on every request): one SELECT checks enabled, expiry, org,
@@ -184,15 +193,15 @@ Better Auth (`packages/auth`) and the dashboard actions, mobile API routes, tena
   alone, never a URL from the request, RFC 8252) or `mode=code` (a remote machine: the page shows the code to paste).
   `coss init` adds `project=<name>`: the page then lists sandbox environments only and names the key
   `<project> · coss init` (a presentation hint; the CLI itself revokes a live key it gets).
-  The page lists environments of organizations where the member may create keys and the session meets `orgAccess`
+  The page lists environments where the member may create a personal key (`keyCreationAllowed`) and the session meets `orgAccess`
   (others are named, not listed), shows `cliVerificationCode(challenge)` — the same code the terminal prints, so
   a user approving a link someone else started can tell — and refuses impersonation. `authorizeCli` repeats the
-  key action's checks (`requireOrgPermission(apiKey:create)`, `liveKeyRestriction`) and stores a one-time code
+  key action's checks (`requireOrgPermission(apiKey:create)`, `keyCreationAllowed`, `liveKeyRestriction`) and stores a one-time code
   bound to the S256 challenge (`cli-auth:` identifiers in `verification`, 60 s, 5 min for display codes): it records
   what was approved, never a key. `POST /api/cli/v1/token` (public, `cli.token.ip`) consumes it once
   (`redeemCliAuthorization`: ban, membership by slug + id, role, suspension, `orgAccess` with the approving
   session's `ssoProviderId` and the user's current `twoFactorEnabled`, the environment, verified email for live),
-  checks reputation suspension for live keys, then creates the key (`createEnvironmentApiKey`) and records
+  checks reputation suspension for live keys, then creates the approver's personal key (`createEnvironmentApiKey`) and records
   `api_key.created` with `via: "cli"` (`recordUserAudit`, no session). Keys revoke themselves with
   `DELETE /v1/api_key` (`revokeEnvironmentApiKey`, audited by the key), which `coss logout --revoke` calls.
 - **Account emails** (table `auth_email`, ids `authml_`; `packages/auth/src/emails.ts`): Better Auth's

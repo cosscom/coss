@@ -61,12 +61,33 @@ export async function recordTestUsage(input: {
   quantity: number;
   at: Date;
   dimension?: string;
+  /**
+   * Who caused it (`billing_usage_attribution`, as `recordUsage` writes it); without it the usage
+   * is recorded like usage from before attribution existed.
+   */
+  source?: { projectId: string; apiKeyId?: string | null; userId?: string | null };
 }): Promise<void> {
   await db
     .insert(schema.billingUsage)
     .values({
       organizationId: input.organizationId,
       environmentId: input.environmentId,
+      meter: input.meter,
+      dimension: input.dimension ?? "",
+      hourStart: floorHour(input.at),
+      shard: 0,
+      quantity: input.quantity,
+    })
+    .onConflictDoNothing();
+  if (!input.source) return;
+  await db
+    .insert(schema.billingUsageAttribution)
+    .values({
+      organizationId: input.organizationId,
+      environmentId: input.environmentId,
+      projectId: input.source.projectId,
+      apiKeyId: input.source.apiKeyId ?? "",
+      userId: input.source.userId ?? "",
       meter: input.meter,
       dimension: input.dimension ?? "",
       hourStart: floorHour(input.at),

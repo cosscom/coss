@@ -157,9 +157,12 @@ async function fixture(opts: { live?: boolean } = {}) {
       });
     }
   };
-  const create = (overrides: Record<string, unknown> = {}) =>
+  const create = (
+    overrides: Record<string, unknown> = {},
+    key: { apiKeyId: string | null; apiKeyOwnerId?: string | null } = { apiKeyId: null },
+  ) =>
     createBroadcast(
-      { ...sendEnvironment(environment), apiKeyId: null },
+      { ...sendEnvironment(environment), ...key },
       CreateBroadcastRequest.parse({
         name: "October",
         audience_id: audience.id,
@@ -216,6 +219,21 @@ const emailsOf = (organizationId: string, broadcastId: string) =>
     );
 
 describe("broadcasts", () => {
+  test("emails of a broadcast made with a personal key are its owner's", async () => {
+    const f = await fixture();
+    const draft = await f.create(
+      { send: true },
+      { apiKeyId: "key_personal", apiKeyOwnerId: f.tenant.owner.id },
+    );
+    await f.runUntil(draft.id, "sent");
+    const emails = await emailsOf(f.tenant.organization.id, draft.id);
+    expect(emails.length).toBeGreaterThan(0);
+    for (const row of emails) {
+      expect(row.apiKeyId).toBe("key_personal");
+      expect(row.apiKeyOwnerId).toBe(f.tenant.owner.id);
+    }
+  });
+
   test("a draft is edited, sent, fanned out to the eligible contacts and counted", async () => {
     const f = await fixture();
     const draft = await f.create();

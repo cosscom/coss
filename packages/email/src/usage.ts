@@ -46,6 +46,9 @@ export async function recordEmailUsage(
     )
     .returning({
       environmentId: email.environmentId,
+      projectId: email.projectId,
+      apiKeyId: email.apiKeyId,
+      apiKeyOwnerId: email.apiKeyOwnerId,
       billable: email.billableRecipients,
       dedicatedPool: email.dedicatedPool,
     });
@@ -65,18 +68,16 @@ export async function recordEmailUsage(
       );
     quantity = counted?.n ?? 0;
   }
-  await recordUsage(tx, {
+  // Spend goes to the key that sent it and, for a personal key, its owner at acceptance.
+  const source = {
     organizationId: target.organizationId,
     environmentId: row.environmentId,
-    meter: "email.recipients",
-    quantity,
-  });
+    projectId: row.projectId,
+    apiKeyId: row.apiKeyId,
+    userId: row.apiKeyOwnerId,
+  };
+  await recordUsage(tx, { ...source, meter: "email.recipients", quantity });
   if (row.dedicatedPool) {
-    await recordUsage(tx, {
-      organizationId: target.organizationId,
-      environmentId: row.environmentId,
-      meter: "email.dedicated_ip",
-      quantity,
-    });
+    await recordUsage(tx, { ...source, meter: "email.dedicated_ip", quantity });
   }
 }

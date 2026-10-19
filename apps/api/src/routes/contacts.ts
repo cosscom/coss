@@ -534,6 +534,7 @@ export function createContactRoutes(deps: ContactRouteDeps): OpenAPIHono<AppEnv>
         contactId,
         emailService: deps.emailService,
         apiKeyId: auth.apiKeyId,
+        apiKeyOwnerId: auth.ownerUserId,
         linkKeys: deps.links.keys,
         baseUrl: baseUrlOf(c),
       });

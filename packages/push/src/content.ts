@@ -9,6 +9,7 @@ import { and, count, eq } from "drizzle-orm";
 import type { PushNotificationRow } from "./outbox.ts";
 
 const {
+  billingBudgetHold,
   billingHold,
   billingInvoice,
   environment,
@@ -168,6 +169,37 @@ const RESOLVERS: Record<PushNotificationRow["kind"], Resolver> = {
       content: {
         title: "Live sending on hold",
         body: `Live sending for ${place.org.name} is on hold because ${why}.`,
+        path: `/${place.org.slug}/settings/billing`,
+      },
+    };
+  },
+
+  async billing_budget_paused(row, place) {
+    const [scope = "", targetId = ""] = row.subjectId.split(":");
+    const [hold] = await db
+      .select({ scope: billingBudgetHold.scope })
+      .from(billingBudgetHold)
+      .where(
+        and(
+          eq(billingBudgetHold.organizationId, row.organizationId),
+          eq(billingBudgetHold.scope, scope as typeof billingBudgetHold.$inferSelect.scope),
+          eq(billingBudgetHold.targetId, targetId),
+        ),
+      );
+    if (!hold) return null;
+    let what = "An API key";
+    if (hold.scope === "user") what = "A member's personal API keys";
+    if (hold.scope === "project") {
+      const [found] = await db
+        .select({ name: project.name })
+        .from(project)
+        .where(and(eq(project.id, targetId), eq(project.organizationId, row.organizationId)));
+      what = found ? `The ${found.name} project` : "A project";
+    }
+    return {
+      content: {
+        title: "Budget used up",
+        body: `${what} of ${place.org.name} reached a monthly budget, so live sending there is paused.`,
         path: `/${place.org.slug}/settings/billing`,
       },
     };

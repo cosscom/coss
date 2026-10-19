@@ -645,7 +645,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   invitations, org membership, 2FA, passkeys, social sign-in, SSO, SCIM, the iOS app's sign-in or account emails,
   including dashboard actions that call `auth.api.*`): `better-auth`, `@better-auth/core`, `@better-auth/api-key`,
   `@better-auth/passkey`, `@better-auth/sso`, `@better-auth/scim` and `auth` (CLI) stay on one identical exact version
-  (catalog). Keys are created only by `createEnvironmentApiKey` and authenticated only by `authenticateApiKey` (never
+  (catalog). Keys are organization keys or members' personal keys (their usage is that member's spend; see
+  `packages/auth/AGENTS.md`). Keys are created only by `createEnvironmentApiKey` and authenticated only by `authenticateApiKey` (never
   `verifyApiKey`). `disabledPaths` blocks the HTTP routes of API keys, every organization route but
   create/accept-invitation, account changes, admin mutations and SSO provider management (server-side `auth.api.*`
   still works) — never re-enable them to "simplify" things. Better Auth's `bearer` plugin stays off (the iOS app's
@@ -854,8 +855,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - Abuse prevention is best-effort: the disposable list only knows public burner services (refresh it), one-account-
   per-mailbox folds only well-known providers' dots/`+tags`, the DNS check lets every lookup failure through, and a
   Cloudflare siteverify outage blocks password sign-in, sign-up and reset (passkeys and SSO keep working).
-- Accepted: sign-up email enumeration. A user ban does not cut off their orgs' API keys (keys
-  are org-owned) — suspend the organization. Suspension does not pause the SES tenant itself;
+- Accepted: sign-up email enumeration. A user ban does not cut off their orgs' organization API
+  keys (only their personal keys) — suspend the organization. Suspension does not pause the SES tenant itself;
   already-queued immediate sends finish, while scheduled sends wait for the suspension to be lifted.
 
 - Receiving is SES-region bound (SES receiving regions only) and accepts any mail for a verified domain of the

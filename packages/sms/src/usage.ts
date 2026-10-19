@@ -27,6 +27,9 @@ export async function recordSmsUsage(
     )
     .returning({
       environmentId: smsMessage.environmentId,
+      projectId: smsMessage.projectId,
+      apiKeyId: smsMessage.apiKeyId,
+      apiKeyOwnerId: smsMessage.apiKeyOwnerId,
       segments: smsMessage.segments,
       toCountry: smsMessage.toCountry,
     });
@@ -34,6 +37,10 @@ export async function recordSmsUsage(
   await recordUsage(tx, {
     organizationId: target.organizationId,
     environmentId: row.environmentId,
+    // Spend goes to the key that sent it and, for a personal key, its owner at acceptance.
+    projectId: row.projectId,
+    apiKeyId: row.apiKeyId,
+    userId: row.apiKeyOwnerId,
     meter: "sms.segments",
     quantity: row.segments,
     dimension: dimensionKey({ country: row.toCountry }),

@@ -11,6 +11,7 @@
     "audit-log",
     "---Account---",
     "billing",
+    "spend",
     "data-retention"
   ]
 }

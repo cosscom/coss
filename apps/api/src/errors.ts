@@ -193,6 +193,7 @@ function fromEmailError(error: EmailError): ApiError {
         message: error.message,
       });
     case "billing_hold":
+    case "budget_exceeded":
       return new ApiError(402, { type: "billing_error", code: error.code, message: error.message });
     case "email_not_cancelable":
     case "email_not_reschedulable":
@@ -244,6 +245,7 @@ function fromSmsError(error: SmsError): ApiError {
         message: error.message,
       });
     case "billing_hold":
+    case "budget_exceeded":
     case "plan_required":
       return new ApiError(402, { type: "billing_error", code: error.code, message: error.message });
     case "provider_unavailable":

@@ -2,7 +2,12 @@ import { CLI_KEY_NAME_PREFIX, cliCallbackUrl, cliVerificationCode } from "@coss/
 import { API_KEY_NAME_MAX_LENGTH } from "@coss/auth/constants";
 import { orgAccess } from "@coss/auth/org-access";
 import { orgRoleCan } from "@coss/auth/permissions";
-import { getMembership, listProjectsWithEnvironments, listUserOrganizations } from "@coss/tenancy";
+import {
+  getMembership,
+  keyCreationAllowed,
+  listProjectsWithEnvironments,
+  listUserOrganizations,
+} from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from "@coss/ui/components/card";
 import type { Metadata } from "next";
@@ -67,6 +72,7 @@ export default async function AuthorizeCliPage({ searchParams }: PageProps<"/app
 
   // Only organizations where this member may create keys now: their role allows it, the
   // organization isn't suspended, and this session meets its SSO and two-factor requirements.
+  // CLI keys are personal keys, so members see the environments open to theirs.
   const candidates = (await listUserOrganizations({ userId: session.user.id })).filter((org) =>
     orgRoleCan(org.role, { apiKey: ["create"] }),
   );
@@ -85,6 +91,17 @@ export default async function AuthorizeCliPage({ searchParams }: PageProps<"/app
       for (const env of envs) {
         // `coss init` writes the key into a project's files: never a live one.
         if (params.project && env.mode === "live") continue;
+        const userId = session.user.id;
+        if (
+          !keyCreationAllowed({
+            role: org.role,
+            environment: env,
+            ownerUserId: userId,
+            creatorUserId: userId,
+          })
+        ) {
+          continue;
+        }
         environments.push({
           value: `${org.slug}/${project.slug}/${env.slug}`,
           label: `${org.name} · ${project.name} · ${env.name}${env.mode === "live" ? " (live)" : ""}`,
@@ -164,7 +181,8 @@ export default async function AuthorizeCliPage({ searchParams }: PageProps<"/app
         </Button>
       ) : null}
       <p className="text-center text-muted-foreground text-xs">
-        The key is listed under the environment's API keys, where you can revoke it.
+        The key is your personal key: what it sends counts as your spend. It is listed under the
+        environment's API keys, where you can revoke it.
       </p>
     </AuthorizeCard>
   );

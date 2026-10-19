@@ -22,6 +22,7 @@ const created = mock(
     environmentId: string;
     name: string;
     userId: string;
+    ownerUserId?: string | null;
     permissions: unknown;
   }) => ({
     id: "key_1",
@@ -108,6 +109,7 @@ describe("POST /api/cli/v1/token", () => {
       environmentId: "env_1",
       name: "coss CLI · laptop",
       userId: "user_1",
+      ownerUserId: "user_1",
       permissions: "full",
     });
     expect(audited.mock.calls[0]).toEqual([
@@ -115,7 +117,7 @@ describe("POST /api/cli/v1/token", () => {
       expect.objectContaining({
         action: "api_key.created",
         environmentId: "env_1",
-        metadata: { mode: "sandbox", via: "cli", access: "full" },
+        metadata: { mode: "sandbox", via: "cli", access: "full", owner_user_id: "user_1" },
       }),
     ]);
   });

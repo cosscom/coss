@@ -1,5 +1,13 @@
 import { API_KEY_PREFIX } from "@coss/auth/constants";
-import { getEnvironment, listEnvironmentApiKeys } from "@coss/tenancy";
+import { listBudgetHolds } from "@coss/billing";
+import {
+  type EnvironmentApiKeySummary,
+  getEnvironment,
+  keyCreationAllowed,
+  listEnvironmentApiKeys,
+  listOrganizationMembers,
+} from "@coss/tenancy";
+import { Badge } from "@coss/ui/components/badge";
 import {
   Table,
   TableBody,
@@ -19,7 +27,12 @@ import { formatDateTime, formatRelative } from "@/lib/format";
 import { liveKeyRestriction } from "@/lib/live-keys";
 import { requireOrgMember } from "@/lib/session";
 import { ApiKeyAccessBadge } from "./api-key-access";
-import { CreateApiKeyDialog, CreateApiKeyUnavailable } from "./create-api-key-dialog";
+import {
+  CreateApiKeyDialog,
+  CreateApiKeyUnavailable,
+  type OwnerOption,
+} from "./create-api-key-dialog";
+import { PersonalKeysSwitch } from "./personal-keys-switch";
 import { RevokeApiKeyButton } from "./revoke-api-key-button";
 
 export const metadata: Metadata = { title: "API keys" };
@@ -28,27 +41,61 @@ export default async function ApiKeysPage({
   params,
 }: PageProps<"/[orgSlug]/projects/[projectSlug]/[envSlug]/api-keys">) {
   const { orgSlug, projectSlug, envSlug } = await params;
-  const { session, organization, can } = await requireOrgMember(orgSlug);
+  const { session, organization, member, can } = await requireOrgMember(orgSlug);
   const found = await getEnvironment({ organizationId: organization.id, projectSlug, envSlug });
   if (!found) notFound();
   const { project, environment } = found;
 
   const live = environment.mode === "live";
-  const [keys, createRestriction] = await Promise.all([
+  const userId = session.user.id;
+  const canManage = can({ apiKey: ["manage"] });
+  const [keys, createRestriction, members, holds] = await Promise.all([
     listEnvironmentApiKeys({ organizationId: organization.id, environmentId: environment.id }),
     live ? liveKeyRestriction(session, organization.id) : null,
+    canManage ? listOrganizationMembers({ organizationId: organization.id }) : [],
+    live ? listBudgetHolds(organization.id) : [],
   ]);
+  // A live key is paused while a budget of it, its owner or its project is used up.
+  const pausedKey = (key: EnvironmentApiKeySummary) =>
+    holds.some(
+      (hold) =>
+        (hold.scope === "api_key" && hold.targetId === key.id) ||
+        (hold.scope === "user" && hold.targetId === key.owner?.id) ||
+        (hold.scope === "project" && hold.targetId === project.id),
+    );
   const target = {
     orgSlug: organization.slug,
     projectSlug: project.slug,
     envSlug: environment.slug,
   };
-  const canCreate = can({ apiKey: ["create"] });
-  const canRevoke = can({ apiKey: ["delete"] });
+  // Members create personal keys where the environment allows them; owners and admins any key.
+  const canCreate =
+    can({ apiKey: ["create"] }) &&
+    keyCreationAllowed({
+      role: member.role,
+      environment,
+      ownerUserId: userId,
+      creatorUserId: userId,
+    });
+  const canRevoke = (key: EnvironmentApiKeySummary) =>
+    can({ apiKey: ["delete"] }) || (can({ apiKey: ["create"] }) && key.owner?.id === userId);
+  const anyRevocable = keys.some(canRevoke);
+  const owners: OwnerOption[] | null = canManage
+    ? [
+        { value: "me", label: "Me (personal key)" },
+        { value: "organization", label: "Organization" },
+        ...members
+          .filter((m) => m.user.id !== userId)
+          .map((m) => ({
+            value: m.user.id,
+            label: `${m.user.name || m.user.email} (personal key)`,
+          })),
+      ]
+    : null;
   const prefix = API_KEY_PREFIX[environment.mode];
   const createDialog =
     canCreate && !createRestriction ? (
-      <CreateApiKeyDialog environmentName={environment.name} {...target} />
+      <CreateApiKeyDialog environmentName={environment.name} owners={owners} {...target} />
     ) : null;
   const now = new Date();
 
@@ -69,6 +116,12 @@ export default async function ApiKeysPage({
       {canCreate && createRestriction ? (
         <CreateApiKeyUnavailable reason={createRestriction} />
       ) : null}
+      <PersonalKeysSwitch
+        disabled={!can({ environment: ["update"] })}
+        enabled={environment.personalKeys}
+        live={live}
+        {...target}
+      />
       <Panel>
         {keys.length === 0 ? (
           <PanelBody flush>
@@ -86,18 +139,31 @@ export default async function ApiKeysPage({
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Key</TableHead>
+                <TableHead>Owner</TableHead>
                 <TableHead>Access</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Last used</TableHead>
-                {canRevoke ? <TableHead className="w-0" /> : null}
+                {anyRevocable ? <TableHead className="w-0" /> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
               {keys.map((key) => (
                 <TableRow key={key.id}>
-                  <TableCell className="font-medium">{key.name ?? "Untitled"}</TableCell>
+                  <TableCell className="font-medium">
+                    <span className="flex items-center gap-2">
+                      {key.name ?? "Untitled"}
+                      {pausedKey(key) ? (
+                        <Badge title="Its monthly budget is used up" variant="error">
+                          Paused
+                        </Badge>
+                      ) : null}
+                    </span>
+                  </TableCell>
                   <TableCell className="font-mono text-muted-foreground text-xs">
                     {key.start ? `${key.start}…` : "—"}
+                  </TableCell>
+                  <TableCell>
+                    <KeyOwner owner={key.owner} userId={userId} />
                   </TableCell>
                   <TableCell>
                     <ApiKeyAccessBadge access={key.access} permissions={key.permissions} />
@@ -111,13 +177,15 @@ export default async function ApiKeysPage({
                   >
                     {key.lastRequest ? formatRelative(key.lastRequest, now) : "Never"}
                   </TableCell>
-                  {canRevoke ? (
+                  {anyRevocable ? (
                     <TableCell className="text-right">
-                      <RevokeApiKeyButton
-                        keyId={key.id}
-                        keyName={key.name ?? "Untitled"}
-                        {...target}
-                      />
+                      {canRevoke(key) ? (
+                        <RevokeApiKeyButton
+                          keyId={key.id}
+                          keyName={key.name ?? "Untitled"}
+                          {...target}
+                        />
+                      ) : null}
                     </TableCell>
                   ) : null}
                 </TableRow>
@@ -127,5 +195,20 @@ export default async function ApiKeysPage({
         )}
       </Panel>
     </div>
+  );
+}
+
+/** Who a key belongs to: the organization, or the member it is assigned to (their spend). */
+function KeyOwner(props: { owner: EnvironmentApiKeySummary["owner"]; userId: string }) {
+  if (!props.owner) return <span className="text-muted-foreground">Organization</span>;
+  const name = props.owner.id === props.userId ? "You" : props.owner.name || props.owner.email;
+  return (
+    <span className="flex items-center gap-2">
+      <span title={props.owner.email}>{name}</span>
+      {props.owner.role === null ? (
+        // Keys of former members stop working; they are revoked when the member leaves.
+        <Badge variant="warning">Left</Badge>
+      ) : null}
+    </span>
   );
 }

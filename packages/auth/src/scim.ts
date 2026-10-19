@@ -28,7 +28,7 @@ import type {
 import { db } from "@coss/db";
 import * as schema from "@coss/db/schema";
 import { APIError } from "better-auth/api";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { INVITABLE_ORG_ROLES, type InvitableOrgRole } from "./permissions.ts";
 import { isOwnerRole, parseSsoDomains, ssoDomainForEmail, ssoProviderIdFor } from "./sso.ts";
 
@@ -230,6 +230,15 @@ export async function reconcileScimMembership(
     if (state.sources.length === 0 && keepUsersWithoutSources.getStore()) return;
     if (member) {
       await database.delete({ model: "member", where: [{ field: "id", value: member.id }] });
+      // Their personal API keys go with the membership, in the same transaction
+      // (`authenticateApiKey` already refuses them once the member row is gone).
+      const keyIds = await personalKeyIds(organizationId, state.userId);
+      if (keyIds.length > 0) {
+        await database.deleteMany({
+          model: "apikey",
+          where: [{ field: "id", operator: "in", value: keyIds }],
+        });
+      }
     }
     await database.deleteMany({
       model: "session",
@@ -261,6 +270,26 @@ export async function reconcileScimMembership(
       data: { organizationId, userId: state.userId, role, createdAt: new Date() },
     });
   }
+}
+
+/** The ids of a member's personal API keys in the organization. */
+async function personalKeyIds(organizationId: string, userId: string): Promise<string[]> {
+  const rows = await db
+    .select({ id: schema.environmentApiKey.apiKeyId })
+    .from(schema.environmentApiKey)
+    .where(
+      and(
+        eq(schema.environmentApiKey.ownerUserId, userId),
+        inArray(
+          schema.environmentApiKey.environmentId,
+          db
+            .select({ id: schema.environment.id })
+            .from(schema.environment)
+            .where(eq(schema.environment.organizationId, organizationId)),
+        ),
+      ),
+    );
+  return rows.map((row) => row.id);
 }
 
 /** The plugin's options, minus `managedConnections` (options.ts adds the secret). */

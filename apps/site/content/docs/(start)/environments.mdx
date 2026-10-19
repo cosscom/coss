@@ -19,6 +19,25 @@ An organization has any number of **projects**, and each project has two **envir
 An API key belongs to exactly one environment, and everything it creates or reads lives in that
 environment. A key can only read emails sent from its own environment.
 
+### Personal keys
+
+A key is either an **organization key**, for production servers, staging and shared jobs, or a
+**personal key** assigned to one member: what a personal key sends counts as that member's spend,
+so developers can experiment with their own keys and you can see (and cap) what each of them
+costs.
+
+- Owners and admins create both kinds, and can assign a personal key to any member.
+- Members create personal keys for themselves in environments an owner or admin has opened to
+  them (the switch on the environment's API keys page). New projects open their development
+  environment and keep production closed; closing an environment leaves existing keys working.
+- `coss login` and `coss init` create personal keys of the member who approves them.
+- A personal key works only while its owner is a member: it is revoked when they leave or are
+  removed (also by directory sync), and refused while their account is banned.
+- Organization-wide permissions (managing domains, reading billing and the audit log) work on a
+  personal key only while its owner's role allows them in the dashboard. Everything else in its
+  environment is available to it, so opening an environment gives members write access to it
+  through their keys.
+
 ### Permissions
 
 When you create a key in the dashboard, you choose what it can do:

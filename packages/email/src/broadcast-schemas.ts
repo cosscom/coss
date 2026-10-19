@@ -274,7 +274,7 @@ export const Broadcast = z
       .nullable()
       .meta({
         description:
-          "Why a paused broadcast waits: `paused` (by you), `billing_hold`, `usage_limit`, " +
+          "Why a paused broadcast waits: `paused` (by you), `billing_hold`, `budget_exceeded`, `usage_limit`, " +
           "`marketing_paused`, `account_suspended`, `sending_paused`.",
       }),
     error: z.object({ code: z.string(), message: z.string() }).nullable(),

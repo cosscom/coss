@@ -3,25 +3,45 @@ import { db, schema } from "@coss/db";
 import { RETENTION_DAYS } from "@coss/retention";
 import { and, asc, inArray, isNull, lt, ne, notInArray, sql } from "drizzle-orm";
 
-const { billingInvoice, billingNotification, billingProviderEvent, billingUsage } = schema;
+const {
+  billingInvoice,
+  billingNotification,
+  billingProviderEvent,
+  billingUsage,
+  billingUsageAttribution,
+} = schema;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type PurgeOptions = { now?: Date; limit?: number; scope?: { organizationIds: string[] } };
 
 /** Hourly usage counters older than `RETENTION_DAYS.billingUsage` (invoices keep the totals). */
 export async function purgeExpiredBillingUsage(opts: PurgeOptions = {}): Promise<number> {
+  return purgeHourlyRows(billingUsage, opts);
+}
+
+/** Who caused that usage (`billing_usage_attribution`), kept as long as the counters. */
+export async function purgeExpiredBillingUsageAttribution(
+  opts: PurgeOptions = {},
+): Promise<number> {
+  return purgeHourlyRows(billingUsageAttribution, opts);
+}
+
+async function purgeHourlyRows(
+  table: typeof billingUsage | typeof billingUsageAttribution,
+  opts: PurgeOptions,
+): Promise<number> {
   const cutoff = new Date(
     (opts.now ?? new Date()).getTime() - RETENTION_DAYS.billingUsage * DAY_MS,
   );
   const scope = opts.scope
-    ? sql`and ${billingUsage.organizationId} in (${sql.join(
+    ? sql`and ${table.organizationId} in (${sql.join(
         opts.scope.organizationIds.map((id) => sql`${id}`),
         sql`, `,
       )})`
     : sql``;
-  // The table has no id: batches go by row address.
+  // The tables have no id: batches go by row address.
   const result = await db.execute(
-    sql`delete from ${billingUsage} where ctid in (select ctid from ${billingUsage} where ${billingUsage.hourStart} < ${cutoff} ${scope} limit ${opts.limit ?? 1000})`,
+    sql`delete from ${table} where ctid in (select ctid from ${table} where ${table.hourStart} < ${cutoff} ${scope} limit ${opts.limit ?? 1000})`,
   );
   return result.rowCount ?? 0;
 }

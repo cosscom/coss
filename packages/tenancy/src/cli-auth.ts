@@ -4,12 +4,13 @@
  * (the code may have waited minutes in a terminal): the user, their membership and role, the
  * organization's SSO and two-factor requirements, and the environment. The dashboard's token route
  * then creates the key (`createEnvironmentApiKey`, which Better Auth re-checks) and records it.
+ * CLI keys are personal keys of the user who approved them: their usage is that member's spend.
  */
 import { consumeCliAuthorizationCode } from "@coss/auth/cli";
 import { orgAccess } from "@coss/auth/org-access";
-import { orgRoleCan } from "@coss/auth/permissions";
 import { db, schema } from "@coss/db";
 import { eq } from "drizzle-orm";
+import { keyCreationAllowed } from "./api-keys.ts";
 import { getEnvironmentById } from "./environments.ts";
 import { getMembership } from "./organizations.ts";
 import type { Environment } from "./types.ts";
@@ -68,9 +69,6 @@ export async function redeemCliAuthorization(
   if (!membership || membership.organization.id !== payload.organizationId) {
     return denied("You are no longer a member of this organization.");
   }
-  if (!orgRoleCan(membership.member.role, { apiKey: ["create"] })) {
-    return denied("Your role in this organization can't create API keys.");
-  }
   if (membership.suspended) {
     return denied("This organization is suspended, so new API keys can't be created.");
   }
@@ -91,6 +89,16 @@ export async function redeemCliAuthorization(
     environmentId: payload.environmentId,
   });
   if (!environment) return denied("This environment no longer exists.");
+  if (
+    !keyCreationAllowed({
+      role: membership.member.role,
+      environment,
+      ownerUserId: account.id,
+      creatorUserId: account.id,
+    })
+  ) {
+    return denied("Your role in this organization can't create API keys in this environment.");
+  }
   if (environment.mode === "live" && !account.emailVerified) {
     return denied("Verify your email address before creating live keys.");
   }

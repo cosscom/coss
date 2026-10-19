@@ -18,8 +18,11 @@ import {
 import { runDueOrganizationDeletions } from "../src/deletion.ts";
 import {
   connectScim,
+  createEnvironmentApiKey,
+  createProject,
   createScimToken,
   disconnectScim,
+  getKeyBinding,
   getOrganizationScim,
   listScimManagedUserIds,
   requestOrganizationDeletion,
@@ -409,6 +412,32 @@ describe("deprovisioning", () => {
     });
     expect(res.status).toBe(200);
     expect(await memberRole(tenant.organization.id, await userIdOf(email))).toBeNull();
+  });
+
+  test("deprovisioning deletes the member's personal keys", async () => {
+    const tenant = await createScimTenant();
+    const email = `keys-${uniqueSuffix()}@${tenant.domain}`;
+    const scimUserId = await provision(tenant, email);
+    const userId = await userIdOf(email);
+    const { environments } = await createProject({
+      organizationId: tenant.organization.id,
+      name: "Keys",
+    });
+    const sandbox = environments.find((env) => env.mode === "sandbox");
+    if (!sandbox) throw new Error("no sandbox environment");
+    const created = await createEnvironmentApiKey({
+      organizationId: tenant.organization.id,
+      environmentId: sandbox.id,
+      name: "laptop",
+      userId,
+      ownerUserId: userId,
+      permissions: "full",
+    });
+
+    expect((await setActive(tenant, scimUserId, false)).status).toBe(200);
+    expect(
+      await getKeyBinding({ organizationId: tenant.organization.id, keyId: created.id }),
+    ).toBeNull();
   });
 
   test("deleting the user removes the membership; the account stays", async () => {

@@ -51,6 +51,49 @@ function sentEvent(emailId: string) {
 }
 
 describe("email usage", () => {
+  test("usage is attributed to the email's project, key and the key's owner", async () => {
+    const tenant = await createTestTenant();
+    const provider = new FakeEmailProvider({ log: false });
+    const service = dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider });
+    const from = await verifiedFrom(tenant.organization.id);
+    await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: "key_personal",
+      apiKeyOwnerId: tenant.owner.id,
+      params: params({ from, to: ["a@example.com", "b@example.com"] }),
+    });
+    await service.send({
+      environment: sendEnvironment(tenant.production),
+      apiKeyId: null,
+      params: params({ from, to: ["c@example.com"] }),
+    });
+
+    const rows = await db
+      .select({
+        projectId: schema.billingUsageAttribution.projectId,
+        apiKeyId: schema.billingUsageAttribution.apiKeyId,
+        userId: schema.billingUsageAttribution.userId,
+        quantity: sum(schema.billingUsageAttribution.quantity).mapWith(Number),
+      })
+      .from(schema.billingUsageAttribution)
+      .where(eq(schema.billingUsageAttribution.organizationId, tenant.organization.id))
+      .groupBy(
+        schema.billingUsageAttribution.projectId,
+        schema.billingUsageAttribution.apiKeyId,
+        schema.billingUsageAttribution.userId,
+      );
+    expect(rows.sort((a, b) => b.quantity - a.quantity)).toEqual([
+      {
+        projectId: tenant.project.id,
+        apiKeyId: "key_personal",
+        userId: tenant.owner.id,
+        quantity: 2,
+      },
+      { projectId: tenant.project.id, apiKeyId: "", userId: "", quantity: 1 },
+    ]);
+    expect(await meteredRecipients(tenant)).toBe(3);
+  });
+
   test("a live email is billed once for the recipients it was sent to; sandbox never", async () => {
     const tenant = await createTestTenant();
     const provider = new FakeEmailProvider({ log: false });
@@ -210,6 +253,82 @@ describe("billing enforcement", () => {
     expect((await emailRow(scheduled.email.id))?.status).toBe("scheduled");
 
     await liftHold(db, tenant.organization.id, "delinquent");
+    await service.dispatchDue({ now: later, scope });
+    expect((await emailRow(scheduled.email.id))?.status).toBe("sent");
+  });
+
+  test("a budget hold refuses its own source's live sends and holds its scheduled ones", async () => {
+    const tenant = await createTestTenant();
+    const provider = new FakeEmailProvider({ log: false });
+    const service = dispatchingEmailService({ liveProvider: provider, sandboxProvider: provider });
+    const from = await verifiedFrom(tenant.organization.id);
+    const personal = { apiKeyId: "key_personal", apiKeyOwnerId: tenant.owner.id };
+    const scheduled = await service.send({
+      environment: sendEnvironment(tenant.production),
+      ...personal,
+      params: params({ from, scheduled_at: new Date(Date.now() + 60_000).toISOString() }),
+    });
+    const idempotencyKey = `budget-${uniqueSuffix()}`;
+    await service.send({
+      environment: sendEnvironment(tenant.production),
+      ...personal,
+      params: params({ from }),
+      idempotencyKey,
+    });
+    await db.insert(schema.billingBudgetHold).values({
+      organizationId: tenant.organization.id,
+      scope: "user",
+      targetId: tenant.owner.id,
+      periodStart: periodOf(new Date()).start,
+      spentCents: 600n,
+      limitCents: 500n,
+    });
+
+    const attempt = (input: { apiKeyId: string | null; apiKeyOwnerId?: string | null }) =>
+      service
+        .send({
+          environment: sendEnvironment(tenant.production),
+          ...input,
+          params: params({ from }),
+        })
+        .catch((error: unknown) => error);
+    const refused = await attempt(personal);
+    expect(refused).toBeInstanceOf(EmailError);
+    expect((refused as EmailError).code).toBe("budget_exceeded");
+    expect((refused as EmailError).status).toBe(402);
+    const batch = await service
+      .sendBatch({
+        environment: sendEnvironment(tenant.production),
+        ...personal,
+        emails: [params({ from })],
+      })
+      .catch((error: unknown) => error);
+    expect((batch as EmailError).code).toBe("budget_exceeded");
+    // A retry of an accepted request still replays.
+    const replay = await service.send({
+      environment: sendEnvironment(tenant.production),
+      ...personal,
+      params: params({ from }),
+      idempotencyKey,
+    });
+    expect(replay.replayed).toBe(true);
+    // Organization keys and the sandbox are unaffected.
+    expect(await attempt({ apiKeyId: "key_org" })).toMatchObject({
+      email: expect.anything(),
+    });
+    await service.send({
+      environment: sendEnvironment(tenant.development),
+      ...personal,
+      params: params(),
+    });
+
+    const later = new Date(Date.now() + 120_000);
+    const scope = { organizationIds: [tenant.organization.id] };
+    await service.dispatchDue({ now: later, scope });
+    expect((await emailRow(scheduled.email.id))?.status).toBe("scheduled");
+    await db
+      .delete(schema.billingBudgetHold)
+      .where(eq(schema.billingBudgetHold.organizationId, tenant.organization.id));
     await service.dispatchDue({ now: later, scope });
     expect((await emailRow(scheduled.email.id))?.status).toBe("sent");
   });

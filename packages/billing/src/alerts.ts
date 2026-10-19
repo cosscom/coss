@@ -2,19 +2,21 @@
  * Usage checks (the worker's `billing-usage` loop): alerts when an organization crosses a share of
  * its month's credit (or of a capped plan's allowance), and the spend limit: usage beyond the
  * credit past an owner's limit holds live sending until the month ends or the limit is raised.
+ * Then budgets (`checkBudgets`): members', projects' and API keys' shares of the month's charges.
  * System-level: spans organizations.
  */
 import { db, schema } from "@coss/db";
 import { inArray } from "drizzle-orm";
 import { getBillingAccount } from "./accounts.ts";
 import { announce } from "./announce.ts";
+import { checkBudgets } from "./budgets.ts";
 import { METERS, type MeterKey } from "./catalog/meters.ts";
 import { grantsFor } from "./grants.ts";
 import { liftHold, placeHold } from "./holds.ts";
 import { formatCents } from "./money.ts";
 import { enqueueBillingNotification } from "./notifications.ts";
-import { estimatePeriod } from "./overview.ts";
 import { billingStateAt } from "./resolve.ts";
+import { spendBreakdown } from "./spend.ts";
 import { formatPeriod, HOUR_MS, periodOf } from "./time.ts";
 import { organizationsWithUsageSince } from "./usage.ts";
 
@@ -33,14 +35,20 @@ export async function runBillingUsageChecks(opts: {
     .selectDistinct({ organizationId: schema.billingHold.organizationId })
     .from(schema.billingHold)
     .where(inArray(schema.billingHold.reason, ["spend_limit"]));
-  let candidates = [...new Set([...active, ...held.map((row) => row.organizationId)])];
+  // Held budgets too: a paused source that stopped sending is lifted when the month ends.
+  const budgetHeld = await db
+    .selectDistinct({ organizationId: schema.billingBudgetHold.organizationId })
+    .from(schema.billingBudgetHold);
+  let candidates = [
+    ...new Set([...active, ...[...held, ...budgetHeld].map((row) => row.organizationId)]),
+  ];
   if (opts.scope) candidates = candidates.filter((id) => opts.scope?.organizationIds.includes(id));
   candidates = candidates.filter((id) => id !== opts.systemOrganizationId);
   const batchSize = Math.max(1, Math.floor(opts.limit ?? 200));
   for (let offset = 0; offset < candidates.length; offset += batchSize) {
     for (const organizationId of candidates.slice(offset, offset + batchSize)) {
       try {
-        await checkOrganization(organizationId, now);
+        await checkOrganizationSpend(organizationId, now);
       } catch (error) {
         console.error(`[billing] usage check of ${organizationId} failed:`, error);
       }
@@ -49,14 +57,19 @@ export async function runBillingUsageChecks(opts: {
   return candidates.length;
 }
 
-async function checkOrganization(organizationId: string, now: Date): Promise<void> {
+/**
+ * One organization's usage checks (also run by the dashboard right after budget changes, so a
+ * raised budget lifts its hold at once). Never for coss.com's own organization.
+ */
+export async function checkOrganizationSpend(organizationId: string, now: Date): Promise<void> {
   const period = periodOf(now);
   const periodKey = period.start.toISOString().slice(0, 7);
-  const [account, state, estimate] = await Promise.all([
+  const [account, state, spend] = await Promise.all([
     getBillingAccount(organizationId),
     billingStateAt(organizationId, now),
-    estimatePeriod(organizationId, now),
+    spendBreakdown(organizationId, now),
   ]);
+  const { estimate } = spend;
   const thresholds = account?.alertThresholds.length ? account.alertThresholds : DEFAULT_THRESHOLDS;
   // The email and the webhook event go out once per threshold and month (the dedupe key).
   const alert = (meter: MeterKey | null, percent: number, what: string, blocked: boolean) =>
@@ -150,4 +163,6 @@ async function checkOrganization(organizationId: string, now: Date): Promise<voi
   } else {
     await db.transaction((tx) => liftHold(tx, organizationId, "spend_limit"));
   }
+
+  await checkBudgets(organizationId, spend, now);
 }

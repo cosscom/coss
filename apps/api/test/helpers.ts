@@ -301,6 +301,7 @@ export function authContext(overrides: Partial<ApiKeyContext> = {}): ApiKeyConte
     organizationId: "org_00000000000000000000000000",
     projectId: "proj_00000000000000000000000000",
     environmentId: "env_00000000000000000000000000",
+    ownerUserId: null,
     mode: "sandbox",
     apiVersion: LATEST_API_VERSION,
     ...overrides,

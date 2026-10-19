@@ -44,6 +44,7 @@ import type {
 } from "./broadcast-schemas.ts";
 import { DEFAULT_BROADCAST_LIST_LIMIT } from "./broadcast-schemas.ts";
 import { broadcastStats, bumpBroadcastStats, shardCounts } from "./broadcast-stats.ts";
+import { assertWithinBudget } from "./budgets.ts";
 import {
   type ContactEnvironment,
   environmentProject,
@@ -268,11 +269,12 @@ async function checkReferences(
 
 /**
  * Whether the broadcast may start: a postal address, and (live) a From domain verified for the
- * marketing stream, with marketing neither paused nor held.
+ * marketing stream, with marketing neither paused nor held, and the budgets of its project and of
+ * the key that made it (and that key's owner) not used up.
  */
 async function checkSendable(
   env: BroadcastEnvironment,
-  row: Pick<BroadcastRow, "from">,
+  row: Pick<BroadcastRow, "from"> & { apiKeyId: string | null; apiKeyOwnerId?: string | null },
   liveProvider: string,
 ): Promise<void> {
   if (!(await getMarketingSettingsRow(env))?.mailingAddress) {
@@ -287,6 +289,12 @@ async function checkSendable(
       from: row.from,
       provider: liveProvider,
       stream: "marketing",
+    });
+    await assertWithinBudget({
+      organizationId: env.organizationId,
+      projectId: env.projectId,
+      apiKeyId: row.apiKeyId,
+      userId: row.apiKeyOwnerId,
     });
   }
 }
@@ -342,7 +350,7 @@ async function findBroadcastReplay(
 }
 
 export async function createBroadcast(
-  env: BroadcastEnvironment & { apiKeyId: string | null },
+  env: BroadcastEnvironment & { apiKeyId: string | null; apiKeyOwnerId?: string | null },
   params: CreateBroadcastRequestOutput,
   opts: { liveProvider: string; idempotencyKey?: string | null; now?: Date },
 ): Promise<{ broadcast: BroadcastOutput; replayed: boolean }> {
@@ -358,7 +366,13 @@ export async function createBroadcast(
   const hash = idempotencyKey ? requestHash(params) : null;
   try {
     await checkReferences(env, references);
-    if (starts) await checkSendable(env, params, opts.liveProvider);
+    if (starts) {
+      await checkSendable(
+        env,
+        { from: params.from, apiKeyId: env.apiKeyId, apiKeyOwnerId: env.apiKeyOwnerId },
+        opts.liveProvider,
+      );
+    }
   } catch (error) {
     // A retry of a request that already succeeded still replays, even if a check it passed then
     // fails now (its audience deleted, the postal address removed, marketing paused).
@@ -380,6 +394,8 @@ export async function createBroadcast(
         projectId,
         environmentId: env.environmentId,
         apiKeyId: env.apiKeyId,
+        // Its emails are the spend of the member whose personal key created it.
+        apiKeyOwnerId: env.apiKeyOwnerId ?? null,
         name: params.name,
         status: starts ? "scheduled" : "draft",
         ...references,
@@ -813,7 +829,7 @@ function contentOf(row: BroadcastRow): BroadcastContent {
  * with `contact`'s values (or the fallbacks). Their email ids.
  */
 export async function testBroadcast(
-  env: BroadcastEnvironment & { apiKeyId: string | null },
+  env: BroadcastEnvironment & { apiKeyId: string | null; apiKeyOwnerId?: string | null },
   id: string,
   input: { to: string[]; contact?: string },
   deps: {
@@ -838,6 +854,7 @@ export async function testBroadcast(
     const { email: sent } = await deps.emailService.send({
       environment: env,
       apiKeyId: env.apiKeyId,
+      apiKeyOwnerId: env.apiKeyOwnerId ?? null,
       params: SendEmailRequest.parse({
         from: row.from,
         to,
@@ -897,7 +914,7 @@ export type BroadcastWorkerDeps = {
 };
 
 /** Pause reasons the worker lifts on its own once the cause is gone (others wait for Resume). */
-const SELF_HEALING = new Set(["billing_hold", "sending_paused", "usage_limit"]);
+const SELF_HEALING = new Set(["billing_hold", "budget_exceeded", "sending_paused", "usage_limit"]);
 
 /**
  * System-level (worker): advances every due broadcast by one step: scheduled ones start (screened
@@ -999,6 +1016,12 @@ async function blockedReason(row: BroadcastRow, mode: "live" | "sandbox", livePr
       from: row.from,
       provider: liveProvider,
       stream: "marketing",
+    });
+    await assertWithinBudget({
+      organizationId: row.organizationId,
+      projectId: row.projectId,
+      apiKeyId: row.apiKeyId,
+      userId: row.apiKeyOwnerId,
     });
     return null;
   } catch (error) {
@@ -1316,6 +1339,7 @@ async function insertEmails(
       projectId: row.projectId,
       environmentId: row.environmentId,
       apiKeyId: row.apiKeyId,
+      apiKeyOwnerId: row.apiKeyOwnerId,
       status: "queued" as const,
       from: row.from,
       to: [recipient.address],

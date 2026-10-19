@@ -17,6 +17,14 @@ export type BarColumn = {
 };
 
 const count = new Intl.NumberFormat("en");
+const dollars = new Intl.NumberFormat("en", { style: "currency", currency: "USD" });
+
+/** How values read: counts, or cents shown as dollars. */
+export type BarUnit = "count" | "cents";
+
+function formatValue(value: number, unit: BarUnit): string {
+  return unit === "cents" ? dollars.format(value / 100) : count.format(value);
+}
 
 /**
  * Columns of stacked bars (first series at the bottom) with a legend, a top gridline at the
@@ -28,7 +36,9 @@ export function StackedBars(props: {
   className?: string;
   /** Accessible summary of what the chart shows. */
   label: string;
+  unit?: BarUnit;
 }) {
+  const unit = props.unit ?? "count";
   const [hover, setHover] = useState<number | null>(null);
   const totals = props.columns.map((column) =>
     props.series.reduce((sum, series) => sum + (column.values[series.key] ?? 0), 0),
@@ -47,7 +57,7 @@ export function StackedBars(props: {
             {series.label}
           </span>
         ))}
-        <span className="ms-auto font-mono tabular-nums">max {count.format(max)}</span>
+        <span className="ms-auto font-mono tabular-nums">max {formatValue(max, unit)}</span>
       </div>
       <div className="relative">
         <div
@@ -98,7 +108,7 @@ export function StackedBars(props: {
                 <span className={cn("size-2 rounded-[2px]", series.className)} />
                 <span className="flex-1">{series.label}</span>
                 <span className="font-mono tabular-nums">
-                  {count.format(hovered.values[series.key] ?? 0)}
+                  {formatValue(hovered.values[series.key] ?? 0, unit)}
                 </span>
               </div>
             ))}

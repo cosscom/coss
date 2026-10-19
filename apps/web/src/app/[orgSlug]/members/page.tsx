@@ -63,7 +63,7 @@ export default async function MembersPage({ params }: PageProps<"/[orgSlug]/memb
 
       {canInvite ? (
         <Panel
-          description="They get an email with a link to join. Admins can manage projects and API keys; members have read-only access."
+          description="They get an email with a link to join. Admins can manage projects and API keys; members have read-only access and their own personal API keys where you allow them."
           title="Invite a member"
         >
           <PanelBody>

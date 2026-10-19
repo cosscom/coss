@@ -7,7 +7,7 @@ import {
   createCliAuthorizationCode,
 } from "@coss/auth/cli";
 import { API_KEY_NAME_MAX_LENGTH } from "@coss/auth/constants";
-import { getEnvironment } from "@coss/tenancy";
+import { getEnvironment, keyCreationAllowed } from "@coss/tenancy";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
 import { liveKeyRestriction } from "@/lib/live-keys";
@@ -40,6 +40,7 @@ export async function authorizeCli(
       "environment",
     ).split("/");
     const context = await requireOrgPermission(orgSlug, { apiKey: ["create"] });
+    const userId = context.session.user.id;
     if (context.session.session.impersonatedBy) {
       throw new ActionError("The CLI can't be signed in while impersonating a user.");
     }
@@ -49,6 +50,17 @@ export async function authorizeCli(
       envSlug,
     });
     if (!found) throw new ActionError("Environment not found.");
+    // CLI keys are personal keys of whoever approves them.
+    if (
+      !keyCreationAllowed({
+        role: context.member.role,
+        environment: found.environment,
+        ownerUserId: userId,
+        creatorUserId: userId,
+      })
+    ) {
+      throw new ActionError("You can't create API keys in this environment.");
+    }
     if (found.environment.mode === "live") {
       const restriction = await liveKeyRestriction(context.session, context.organization.id);
       if (restriction) throw new ActionError(restriction);
@@ -61,7 +73,7 @@ export async function authorizeCli(
     const now = new Date();
     const code = await createCliAuthorizationCode(
       {
-        userId: context.session.user.id,
+        userId,
         organizationId: context.organization.id,
         organizationSlug: context.organization.slug,
         environmentId: found.environment.id,

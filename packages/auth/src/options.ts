@@ -28,6 +28,7 @@ import { DISPOSABLE_EMAIL, signUpEmailRejection } from "./email-guard.ts";
 import { enqueueAuthEmail, RESET_PASSWORD_LINK_TTL_S, VERIFICATION_LINK_TTL_S } from "./emails.ts";
 import { cancelStaleInvitations, inviterStillAllowed } from "./invitations.ts";
 import { membershipLimitFor } from "./limits.ts";
+import { revokeDepartedMemberKeys } from "./member-keys.ts";
 import { INVITABLE_ORG_ROLES, isOrgRole, orgAc, orgRoles } from "./permissions.ts";
 import { assertSignUpNotBlocked } from "./risk.ts";
 import {
@@ -491,11 +492,14 @@ export const authOptions = {
     },
   },
   hooks: {
-    // Leaving has no organization hook; cancel what the leaver sent (see ./invitations.ts).
+    // Leaving has no organization hook; cancel what the leaver sent (see ./invitations.ts) and
+    // delete their personal API keys (./member-keys.ts).
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path !== "/organization/leave") return;
       const organizationId = ctx.body?.organizationId;
-      if (typeof organizationId === "string") await cancelStaleInvitations(organizationId);
+      if (typeof organizationId !== "string") return;
+      await cancelStaleInvitations(organizationId);
+      await revokeDepartedMemberKeys(organizationId);
     }),
     before: createAuthMiddleware(async (ctx) => {
       // Only the public sign-up: users created server-side (fixtures, seed, admins, SSO) skip it.
@@ -754,6 +758,7 @@ function serializedOrganization() {
       },
       afterRemoveMember: async ({ organization: org }) => {
         await cancelStaleInvitations(org.id);
+        await revokeDepartedMemberKeys(org.id);
       },
       afterUpdateMemberRole: async ({ organization: org }) => {
         await cancelStaleInvitations(org.id);

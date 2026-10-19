@@ -90,6 +90,15 @@ export interface Usage {
   dimension: string | null;
   /** Set with `group_by: "environment"`. */
   environment_id: string | null;
+  /** Set with `group_by: "project"` (`null`: usage recorded before projects were). */
+  project_id: string | null;
+  /** Set with `group_by: "api_key"` (`null`: the dashboard, or usage recorded before keys were). */
+  api_key_id: string | null;
+  /**
+   * Set with `group_by: "user"`: the member whose personal API key caused it (`null`: organization
+   * keys and the dashboard).
+   */
+  user_id: string | null;
   start: string;
   end: string;
   quantity: number;
@@ -102,8 +111,8 @@ export interface ListUsageParams {
   to?: string;
   /** Bucket size (UTC). Defaults to `day`. */
   granularity?: "hour" | "day" | "month";
-  /** Split each bucket per environment. */
-  group_by?: "environment";
+  /** Split each bucket per environment, project, API key or user (whose personal key it was). */
+  group_by?: "environment" | "project" | "api_key" | "user";
   /** Only this meter. */
   meter?: Meter;
 }

@@ -81,6 +81,9 @@ after removing it. On a contract, add-ons are part of the contract.
 - Owners can set a **spend limit**: when usage beyond your credit reaches it, live sending pauses
   until the next month or until the limit is raised. Usage alerts go out at 80% and 100% of your
   credit (owners can change the thresholds).
+- Owners can also set monthly **budgets** for members' personal API keys, projects and single
+  API keys: over a budget, only its live sending pauses (`402`, `budget_exceeded`). See
+  [Spend and budgets](/docs/spend).
 
 ## Credits
 
@@ -113,10 +116,16 @@ console.log(billing?.plan, billing?.estimate.total, billing?.status);
 // Usage per day and environment, oldest first.
 const { data: usage } = await coss.billing.usage({ granularity: "day", group_by: "environment" });
 
+// This month's usage per member (`user_id`: whose personal API key caused it; `null`: the rest).
+const { data: byMember } = await coss.billing.usage({ granularity: "month", group_by: "user" });
+
 // Invoices (newest first) and credits.
 const { data: invoices } = await coss.billing.invoices.list({ status: "open" });
 const { data: credits } = await coss.billing.credits.list();
 ```
+
+`group_by` also takes `project` and `api_key`. Usage recorded before coss.com kept its source
+has `null` there.
 
 Amounts are integers in cents; unit prices are dollar strings (`"0.0004"`). Lists page with
 `after` (the last `id`) while `has_more` is true. Usage covers up to 400 days per request (7 by

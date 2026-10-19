@@ -33,7 +33,8 @@ not the CLI).
 `coss login` opens the dashboard in your browser. Check that the page shows the same verification
 code as your terminal, pick the environment the CLI should work in (a development environment
 is the default), and approve: the CLI gets a new API key of that environment, named after your
-machine, and saves it.
+machine, and saves it. It is your [personal key](/docs/environments#personal-keys): what it sends
+counts as your spend.
 
 ```sh
 coss login
@@ -42,7 +43,8 @@ coss whoami   # Acme / Default / Development (sandbox)
 
 - **No browser on that machine** (over SSH, the default there): `coss login --no-browser` prints a
   link to open anywhere you're signed in; paste the code the page shows back into the terminal.
-- **Members** can't create API keys: ask an owner or admin for one and run `coss login --manual`,
+- **Members** sign in to environments open to personal keys (new projects' development
+  environments are). Elsewhere, ask an owner or admin for a key and run `coss login --manual`,
   which asks for the key (or reads it from stdin: `echo "$KEY" | coss login --manual`).
 - **Several environments**: save each under a profile (`coss login --profile prod`), then pass
   `--profile prod` or set `COSS_PROFILE=prod`. `coss profiles list` shows the saved profiles

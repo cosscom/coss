@@ -661,10 +661,18 @@ export default async function BillingPage({
 
       <SettingsSection
         description={
-          canManage
-            ? "Limits and alerts for usage beyond your plan."
-            : "Only owners can change these."
+          <>
+            {canManage
+              ? "Limits and alerts for usage beyond your plan."
+              : "Only owners can change these."}{" "}
+            Budgets for members, projects and API keys are on the{" "}
+            <Link className="underline" href={`/${organization.slug}/spend/budgets`}>
+              Spend
+            </Link>{" "}
+            page.
+          </>
         }
+        id="spend-controls"
         title="Spend controls"
       >
         <SpendControlsForm

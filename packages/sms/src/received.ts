@@ -169,6 +169,7 @@ export async function storeReceivedSms(
     await recordUsage(tx, {
       organizationId: target.organizationId,
       environmentId: target.environmentId,
+      projectId: target.projectId,
       meter: "sms.received_segments",
       quantity: row.segments,
       dimension: dimensionKey({ country: row.country }),

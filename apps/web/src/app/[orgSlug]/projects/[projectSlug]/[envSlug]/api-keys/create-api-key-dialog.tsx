@@ -27,6 +27,13 @@ import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
 import { Radio, RadioGroup } from "@coss/ui/components/radio-group";
+import {
+  Select,
+  SelectItem,
+  SelectPopup,
+  SelectTrigger,
+  SelectValue,
+} from "@coss/ui/components/select";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { CopyButton } from "@/components/copy-button";
@@ -36,6 +43,15 @@ import { createApiKeyAction } from "./actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
 
+/** `me`, `organization` or a member's user id (see `createApiKeyAction`). */
+export type OwnerOption = { value: string; label: string };
+
+type FormProps = Target & {
+  environmentName: string;
+  /** Owners and admins choose who the key belongs to; `null`: a personal key of the creator. */
+  owners: OwnerOption[] | null;
+};
+
 const PRESET_DESCRIPTIONS: Record<ApiKeyPreset, string> = {
   full: "Every API, including products added later.",
   sending: "Only sends email, through the API, SDK or SMTP. For application servers.",
@@ -43,7 +59,7 @@ const PRESET_DESCRIPTIONS: Record<ApiKeyPreset, string> = {
   custom: "Choose the permissions yourself. The key never gains new ones.",
 };
 
-export function CreateApiKeyDialog(props: Target & { environmentName: string }) {
+export function CreateApiKeyDialog(props: FormProps) {
   return (
     <Dialog>
       <DialogTrigger render={<Button size="sm" />}>
@@ -58,7 +74,7 @@ export function CreateApiKeyDialog(props: Target & { environmentName: string }) 
   );
 }
 
-function CreateApiKeyForm(props: Target & { environmentName: string }) {
+function CreateApiKeyForm(props: FormProps) {
   const [state, formAction, pending] = useActionToast(createApiKeyAction, {
     success: (data) => `API key “${data.name}” created`,
   });
@@ -98,6 +114,7 @@ function CreateApiKeyForm(props: Target & { environmentName: string }) {
         <DialogTitle>Create API key</DialogTitle>
         <DialogDescription>
           The key only works in the {props.environmentName} environment.
+          {props.owners ? null : " It is your personal key: what it sends counts as your spend."}
         </DialogDescription>
       </DialogHeader>
       <DialogPanel className="flex flex-col gap-4">
@@ -112,6 +129,7 @@ function CreateApiKeyForm(props: Target & { environmentName: string }) {
           />
           <FieldDescription>Up to {API_KEY_NAME_MAX_LENGTH} characters.</FieldDescription>
         </Field>
+        {props.owners ? <OwnerField owners={props.owners} /> : null}
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-2 font-medium text-sm">Access</legend>
           <RadioGroup
@@ -143,6 +161,31 @@ function CreateApiKeyForm(props: Target & { environmentName: string }) {
         </Button>
       </DialogFooter>
     </form>
+  );
+}
+
+/** Who the key belongs to: an organization key or a member's personal key (their spend). */
+function OwnerField(props: { owners: OwnerOption[] }) {
+  return (
+    <Field>
+      <FieldLabel>Owner</FieldLabel>
+      <Select defaultValue="organization" items={props.owners} name="owner">
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectPopup>
+          {props.owners.map((owner) => (
+            <SelectItem key={owner.value} value={owner.value}>
+              {owner.label}
+            </SelectItem>
+          ))}
+        </SelectPopup>
+      </Select>
+      <FieldDescription>
+        Organization keys are for production and shared servers. A personal key's usage counts as
+        its owner's spend, and it stops working when they leave the organization.
+      </FieldDescription>
+    </Field>
   );
 }
 

@@ -9,6 +9,7 @@ export * from "./alerts.ts";
 export { announce } from "./announce.ts";
 export * from "./api.ts";
 export { type AdminActor, auditBillingChange, type BillingAdminAction } from "./audit.ts";
+export * from "./budgets.ts";
 export * from "./catalog/index.ts";
 export * from "./changes.ts";
 export * from "./collection.ts";
@@ -22,7 +23,17 @@ export type { FeatureKey, LimitKey, MeterKey, PlanGate, UsageGate } from "./gate
 export * from "./grants.ts";
 export * from "./holds.ts";
 export * from "./invoices.ts";
-export { billingHoldExists, isOnBillingHold, recordUsage, type UsageInput } from "./metering.ts";
+export {
+  BUDGET_EXCEEDED_MESSAGES,
+  type BudgetHoldScope,
+  billingHoldExists,
+  budgetHoldExists,
+  budgetHoldFor,
+  isOnBillingHold,
+  recordUsage,
+  type SpendSourceInput,
+  type UsageInput,
+} from "./metering.ts";
 export * from "./money.ts";
 export * from "./notifications.ts";
 export * from "./objects.ts";
@@ -36,6 +47,7 @@ export * from "./resolve.ts";
 export * from "./retention.ts";
 export * from "./schemas.ts";
 export * from "./setup.ts";
+export * from "./spend.ts";
 export * from "./sync.ts";
 export * from "./time.ts";
 export * from "./usage.ts";

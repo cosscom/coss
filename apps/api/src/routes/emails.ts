@@ -406,11 +406,12 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     async (c) => {
       const params = c.req.valid("json");
       const idempotencyKey = c.req.valid("header")["Idempotency-Key"];
-      const { apiKeyId, organizationId, projectId, environmentId, mode } = c.var.auth;
+      const { apiKeyId, ownerUserId, organizationId, projectId, environmentId, mode } = c.var.auth;
       // Tenancy always comes from the authenticated key, never from the request.
       const input = {
         environment: { organizationId, projectId, environmentId, mode },
         apiKeyId,
+        apiKeyOwnerId: ownerUserId,
         params,
         idempotencyKey,
       };
@@ -460,10 +461,11 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
     async (c) => {
       const { emails } = c.req.valid("json");
       const idempotencyKey = c.req.valid("header")["Idempotency-Key"];
-      const { apiKeyId, organizationId, projectId, environmentId, mode } = c.var.auth;
+      const { apiKeyId, ownerUserId, organizationId, projectId, environmentId, mode } = c.var.auth;
       const input = {
         environment: { organizationId, projectId, environmentId, mode },
         apiKeyId,
+        apiKeyOwnerId: ownerUserId,
         emails,
         idempotencyKey,
       };

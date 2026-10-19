@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { UsageGate } from "@coss/billing/gate";
-import { billingHoldExists } from "@coss/billing/metering";
+import { billingHoldExists, budgetHoldExists } from "@coss/billing/metering";
 import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
 import {
@@ -11,7 +11,7 @@ import {
 } from "@coss/db/idempotency";
 import { isMarketingPaused } from "@coss/reputation";
 import type { ScreenInput, ScreenOutcome } from "@coss/screening";
-import { and, asc, eq, inArray, isNull, lt, lte, not, notExists, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lt, lte, not, notExists, or, sql } from "drizzle-orm";
 import {
   insertAttachments,
   loadOutboundAttachments,
@@ -20,6 +20,7 @@ import {
 } from "./attachments.ts";
 import { broadcastContentCache, withRenderedBody } from "./broadcast-content.ts";
 import { bumpBroadcastStat } from "./broadcast-stats.ts";
+import { assertWithinBudget } from "./budgets.ts";
 import { dedicatedPoolSql } from "./dedicated-ips.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
 import { authorizeLiveSender, marketingPausedError } from "./domains.ts";
@@ -77,6 +78,8 @@ export type SendEnvironment = {
 export type SendEmailInput = {
   environment: SendEnvironment;
   apiKeyId: string | null;
+  /** The member a personal key belongs to (its usage is their spend); `null`: none. */
+  apiKeyOwnerId?: string | null;
   params: SendEmailRequestOutput;
   idempotencyKey?: string | null;
   /** Internal callers only: use the same retention on every retry; Infinity never expires. */
@@ -96,6 +99,8 @@ export type SendEmailInput = {
 export type SendEmailBatchInput = {
   environment: SendEnvironment;
   apiKeyId: string | null;
+  /** The member a personal key belongs to (its usage is their spend); `null`: none. */
+  apiKeyOwnerId?: string | null;
   emails: SendEmailRequestOutput[];
   idempotencyKey?: string | null;
 };
@@ -201,6 +206,18 @@ function organizationActive() {
           ),
         ),
     ),
+  );
+}
+
+/** Live scheduled sends also wait while a budget of their project, key or member is used up. */
+function withinBudget() {
+  return not(
+    budgetHoldExists({
+      organizationId: email.organizationId,
+      projectId: email.projectId,
+      apiKeyId: email.apiKeyId,
+      userId: email.apiKeyOwnerId,
+    }),
   );
 }
 
@@ -846,6 +863,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       isNull(email.provider),
       lte(email.scheduledAt, now),
       organizationActive(),
+      sandbox ? undefined : withinBudget(),
     );
 
     if (!sandbox) {
@@ -923,6 +941,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           eq(email.status, "scheduled"),
           lte(email.scheduledAt, now),
           organizationActive(),
+          or(eq(environment.mode, "sandbox"), withinBudget()),
           opts.scope ? inArray(email.organizationId, opts.scope.organizationIds) : undefined,
         ),
       )
@@ -1133,7 +1152,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
    */
   async function prepareSend(
     environment: SendEnvironment,
-    apiKeyId: string | null,
+    key: { apiKeyId: string | null; apiKeyOwnerId?: string | null },
     params: SendEmailRequestOutput,
     caches: {
       tracking: Map<string, Promise<ResolvedTracking>>;
@@ -1211,7 +1230,8 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         organizationId: environment.organizationId,
         projectId: environment.projectId,
         environmentId: environment.environmentId,
-        apiKeyId,
+        apiKeyId: key.apiKeyId,
+        apiKeyOwnerId: key.apiKeyOwnerId ?? null,
         status: scheduled ? "scheduled" : "queued",
         scheduledAt,
         from: params.from,
@@ -1323,7 +1343,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     try {
       prepared = await prepareSend(
         environment,
-        input.apiKeyId,
+        input,
         params,
         { tracking: new Map(), templates: new Map() },
         { discardBody: input.discardBody, templateDraft: input.templateDraft },
@@ -1346,6 +1366,12 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           organizationId: environment.organizationId,
           from: params.from,
           stream: params.stream ?? "transactional",
+        });
+        await assertWithinBudget({
+          organizationId: environment.organizationId,
+          projectId: environment.projectId,
+          apiKeyId: input.apiKeyId,
+          userId: input.apiKeyOwnerId,
         });
       } catch (error) {
         // A retry of a request that already succeeded still replays, even if the domain changed since.
@@ -1412,7 +1438,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     try {
       for (const [index, params] of items.entries()) {
         prepared.push(
-          await prepareSend(environment, input.apiKeyId, params, caches, {
+          await prepareSend(environment, input, params, caches, {
             paramPrefix: `emails.${index}.`,
           }),
         );
@@ -1451,6 +1477,12 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
             throw error;
           }
         }
+        await assertWithinBudget({
+          organizationId: environment.organizationId,
+          projectId: environment.projectId,
+          apiKeyId: input.apiKeyId,
+          userId: input.apiKeyOwnerId,
+        });
       } catch (error) {
         // A retry of a request that already succeeded still replays, even if a domain changed since.
         const replay =

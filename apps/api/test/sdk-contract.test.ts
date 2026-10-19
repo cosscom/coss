@@ -1624,6 +1624,14 @@ describe("coss.billing against the API", () => {
       quantity: 1_200,
       at: new Date("2026-09-14T08:00:00Z"),
     });
+    await recordTestUsage({
+      organizationId: org,
+      environmentId: tenant.production.id,
+      meter: "email.recipients",
+      quantity: 300,
+      at: new Date("2026-09-15T08:00:00Z"),
+      source: { projectId: tenant.project.id, apiKeyId: "key_personal", userId: tenant.owner.id },
+    });
     const credit = await createCreditGrant({
       grant: {
         organizationId: org,
@@ -1661,14 +1669,28 @@ describe("coss.billing against the API", () => {
             meter: "email.recipients",
             dimension: null,
             environment_id: tenant.production.id,
+            project_id: null,
+            api_key_id: null,
+            user_id: null,
             start: "2026-09-01T00:00:00.000Z",
             end: "2026-10-01T00:00:00.000Z",
-            quantity: 1_200,
+            quantity: 1_500,
           },
         ],
       },
       error: null,
     });
+    // By member: usage without a personal key (here: recorded before attribution) is `null`.
+    const byUser = await coss.billing.usage({
+      from: "2026-09-01T00:00:00Z",
+      to: "2026-10-01T00:00:00Z",
+      granularity: "month",
+      group_by: "user",
+    });
+    expect(byUser.data?.data.map(({ user_id, quantity }) => ({ user_id, quantity }))).toEqual([
+      { user_id: null, quantity: 1_200 },
+      { user_id: tenant.owner.id, quantity: 300 },
+    ]);
 
     const invoices = await coss.billing.invoices.list({ limit: 1 });
     expect(invoices.data).toMatchObject({ object: "list", has_more: true });

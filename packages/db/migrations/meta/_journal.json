@@ -596,6 +596,20 @@
       "when": 1792435843118,
       "tag": "0084_glorious_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1792442492042,
+      "tag": "0085_spend_management",
+      "breakpoints": true
+    },
+    {
+      "idx": 86,
+      "version": "7",
+      "when": 1792442493717,
+      "tag": "0086_open_sandbox_personal_keys",
+      "breakpoints": true
     }
   ]
 }

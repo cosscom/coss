@@ -58,6 +58,7 @@ export const pushNotificationKind = pgEnum("push_notification_kind", [
   "reputation_suspended",
   "billing_payment_failed",
   "billing_hold_placed",
+  "billing_budget_paused",
   "webhook_endpoint_disabled",
   "hook_endpoint_disabled",
   "log_drain_disabled",

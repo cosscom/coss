@@ -2,6 +2,7 @@ export { promoteToAdmin } from "./admin.ts";
 export {
   type ApiKeyContext,
   type ApiKeyEnvironmentSummary,
+  type ApiKeyOwner,
   type AuthenticateResult,
   apiKeyHasPermissions,
   apiKeyNames,
@@ -11,11 +12,15 @@ export {
   getApiKeyEnvironmentSummary,
   getKeyBinding,
   type KeyPermissions,
+  keyCreationAllowed,
   LAST_USED_RESOLUTION_MS,
   listEnvironmentApiKeys,
+  listOrganizationApiKeys,
   permissionStrings,
   type RefusedKeyContext,
   revokeEnvironmentApiKey,
+  revokePersonalApiKey,
+  setEnvironmentPersonalKeys,
 } from "./api-keys.ts";
 export {
   getOrganizationApiVersion,

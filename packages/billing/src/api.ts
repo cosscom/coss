@@ -1,6 +1,18 @@
 /** The public API's read models: rows as `@coss/billing/wire` objects. */
 import { db, schema } from "@coss/db";
-import { and, desc, eq, gt, isNotNull, isNull, lt, or, sql, sum } from "drizzle-orm";
+import {
+  type AnyColumn,
+  and,
+  desc,
+  eq,
+  gt,
+  isNotNull,
+  isNull,
+  lt,
+  or,
+  sql,
+  sum,
+} from "drizzle-orm";
 import { getBillingAccount } from "./accounts.ts";
 import { METER_KEYS, type MeterKey } from "./catalog/meters.ts";
 import { grantsFor } from "./grants.ts";
@@ -16,11 +28,18 @@ import {
   DEFAULT_BILLING_LIST_LIMIT,
   type InvoiceObjectOutput,
   type InvoiceSummaryOutput,
+  type UsageGroup,
   type UsageObjectOutput,
 } from "./wire.ts";
 
-const { billingCreditEntry, billingCreditGrant, billingInvoice, billingQuota, billingUsage } =
-  schema;
+const {
+  billingCreditEntry,
+  billingCreditGrant,
+  billingInvoice,
+  billingQuota,
+  billingUsage,
+  billingUsageAttribution,
+} = schema;
 
 /** `GET /v1/billing`: the plan, the month so far, standing and entitlements. */
 export async function billingObject(
@@ -138,35 +157,36 @@ export async function billingObject(
   };
 }
 
-/** `GET /v1/billing/usage`: usage per bucket (and meter, dimension, environment), oldest first. */
+/** `GET /v1/billing/usage`: usage per bucket (and meter, dimension, group), oldest first. */
 export async function usageSeries(
   organizationId: string,
   query: {
     interval: Interval;
     granularity: "hour" | "day" | "month";
-    byEnvironment: boolean;
+    groupBy?: UsageGroup;
     meter?: MeterKey;
   },
 ): Promise<UsageObjectOutput[]> {
   const unit = sql.raw(`'${query.granularity}'`);
-  const bucket = sql<Date>`date_trunc(${unit}, ${billingUsage.hourStart}, 'UTC')`.mapWith(
-    (value: string | Date) => new Date(value),
-  );
+  const bucketOf = (column: AnyColumn) =>
+    sql<Date>`date_trunc(${unit}, ${column}, 'UTC')`.mapWith(
+      (value: string | Date) => new Date(value),
+    );
+  const bucket = bucketOf(billingUsage.hourStart);
   // A constant can't be grouped or ordered by, so the environment joins the key only when asked.
+  const byEnvironment = query.groupBy === "environment";
   const keys = [
     bucket,
     billingUsage.meter,
     billingUsage.dimension,
-    ...(query.byEnvironment ? [billingUsage.environmentId] : []),
+    ...(byEnvironment ? [billingUsage.environmentId] : []),
   ];
   const rows = await db
     .select({
       bucket,
       meter: billingUsage.meter,
       dimension: billingUsage.dimension,
-      environmentId: sql<
-        string | null
-      >`${query.byEnvironment ? billingUsage.environmentId : sql`null`}`,
+      environmentId: sql<string | null>`${byEnvironment ? billingUsage.environmentId : sql`null`}`,
       quantity: sum(billingUsage.quantity).mapWith(Number),
     })
     .from(billingUsage)
@@ -180,7 +200,11 @@ export async function usageSeries(
     )
     .groupBy(...keys)
     .orderBy(...keys);
-  return rows.flatMap((row) => {
+
+  const toObject = (
+    row: { bucket: Date; meter: string; dimension: string; quantity: number },
+    ids: { environment?: string | null; group?: string | null },
+  ): UsageObjectOutput[] => {
     if (!(METER_KEYS as readonly string[]).includes(row.meter)) return [];
     const end =
       query.granularity === "hour"
@@ -188,17 +212,77 @@ export async function usageSeries(
         : query.granularity === "day"
           ? new Date(row.bucket.getTime() + 24 * HOUR_MS)
           : addMonths(row.bucket, 1);
+    const group = ids.group ?? null;
     return [
       {
         object: "usage" as const,
         meter: row.meter as MeterKey,
         dimension: row.dimension || null,
         // Organization-wide usage (SMS numbers and registration fees) has no environment.
-        environment_id: row.environmentId || null,
+        environment_id: ids.environment || null,
+        project_id: query.groupBy === "project" ? group : null,
+        api_key_id: query.groupBy === "api_key" ? group : null,
+        user_id: query.groupBy === "user" ? group : null,
         start: row.bucket.toISOString(),
         end: end.toISOString(),
         quantity: row.quantity,
       },
+    ];
+  };
+  const groupBy = query.groupBy;
+  if (!groupBy || groupBy === "environment") {
+    return rows.flatMap((row) => toObject(row, { environment: row.environmentId }));
+  }
+
+  // Sources come from the attribution; what it doesn't account for (usage recorded before it, or
+  // without a source) is a row with a `null` id.
+  const column = {
+    project: billingUsageAttribution.projectId,
+    api_key: billingUsageAttribution.apiKeyId,
+    user: billingUsageAttribution.userId,
+  }[groupBy];
+  const attributedBucket = bucketOf(billingUsageAttribution.hourStart);
+  const attributed = await db
+    .select({
+      bucket: attributedBucket,
+      meter: billingUsageAttribution.meter,
+      dimension: billingUsageAttribution.dimension,
+      group: column,
+      quantity: sum(billingUsageAttribution.quantity).mapWith(Number),
+    })
+    .from(billingUsageAttribution)
+    .where(
+      and(
+        eq(billingUsageAttribution.organizationId, organizationId),
+        sql`${billingUsageAttribution.hourStart} >= ${query.interval.start}`,
+        lt(billingUsageAttribution.hourStart, query.interval.end),
+        query.meter ? eq(billingUsageAttribution.meter, query.meter) : undefined,
+      ),
+    )
+    .groupBy(
+      attributedBucket,
+      billingUsageAttribution.meter,
+      billingUsageAttribution.dimension,
+      column,
+    )
+    .orderBy(column);
+  const cell = (row: { bucket: Date; meter: string; dimension: string }) =>
+    `${row.bucket.toISOString()}\u0000${row.meter}\u0000${row.dimension}`;
+  const groups = new Map<string, { group: string; quantity: number }[]>();
+  for (const row of attributed) {
+    if (row.group === "") continue;
+    const list = groups.get(cell(row)) ?? [];
+    list.push({ group: row.group, quantity: row.quantity });
+    groups.set(cell(row), list);
+  }
+  return rows.flatMap((row) => {
+    const parts = groups.get(cell(row)) ?? [];
+    const rest = row.quantity - parts.reduce((total, part) => total + part.quantity, 0);
+    return [
+      ...(rest > 0 ? toObject({ ...row, quantity: rest }, { group: null }) : []),
+      ...parts.flatMap((part) =>
+        toObject({ ...row, quantity: part.quantity }, { group: part.group }),
+      ),
     ];
   });
 }
