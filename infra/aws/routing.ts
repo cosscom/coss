@@ -1,21 +1,21 @@
 /**
  * coss.com's edge routing, derived from ZONE_ROUTES (@coss/auth/slugs) so a new site path can't
  * be missed: ALB listener rules pick the app, CloudFront behaviours decide caching and send the
- * coss ui repository's zones to their own origins (they run outside AWS, which an ALB can't
- * forward to).
+ * external zones (the coss ui repository's apps, qnot) to their own origins (they run outside
+ * AWS, which an ALB can't forward to).
  */
 import { SITE_ASSET_PREFIX, ZONE_ROUTES, type ZoneRoute } from "@coss/auth/slugs";
 
 export type TargetGroup = "web" | "site" | "portal" | "api";
 
 /**
- * CloudFront origins of the coss.com distribution: the ALB (every app in ECS), and one per zone
- * of the coss ui repository (Vercel projects serving their base path, `/ui` and `/origin`; their
- * hosts are set at provisioning).
+ * CloudFront origins of the coss.com distribution: the ALB (every app in ECS), and one per
+ * external zone (Vercel projects serving their base path: the coss ui repository's `/ui` and
+ * `/origin`, the qnot repository's `/qnot`; their hosts are set at provisioning).
  */
-export type ExternalZone = "ui" | "origin";
+export type ExternalZone = "ui" | "origin" | "qnot";
 export type Origin = "alb" | ExternalZone;
-export const EXTERNAL_ZONES: readonly ExternalZone[] = ["ui", "origin"];
+export const EXTERNAL_ZONES: readonly ExternalZone[] = ["ui", "origin", "qnot"];
 
 /**
  * External origins are addressed by their own hostname (the Vercel project's production domain),
