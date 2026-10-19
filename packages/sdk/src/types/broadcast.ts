@@ -54,8 +54,8 @@ export interface Broadcast {
   /** How many contacts it would reach, counted when it started. */
   recipients_estimated: number | null;
   /**
-   * Why a paused broadcast waits: `paused` (by you), `billing_hold`, `usage_limit`,
-   * `marketing_paused`, `account_suspended`, `sending_paused`.
+   * Why a paused broadcast waits: `paused` (by you), `billing_hold`, `budget_exceeded`,
+   * `usage_limit`, `marketing_paused`, `account_suspended`, `sending_paused`.
    */
   pause_reason: string | null;
   error: { code: string; message: string } | null;

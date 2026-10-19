@@ -12,6 +12,7 @@ const AUDIENCE: Record<PushKind, OrgPermissions> = {
   reputation_suspended: { organization: ["update"] },
   billing_payment_failed: { billing: ["read"] },
   billing_hold_placed: { billing: ["read"] },
+  billing_budget_paused: { billing: ["read"] },
   webhook_endpoint_disabled: { webhook: ["update"] },
   hook_endpoint_disabled: { hook: ["update"] },
   log_drain_disabled: { logDrain: ["update"] },

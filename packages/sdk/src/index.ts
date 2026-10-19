@@ -400,6 +400,7 @@ export type {
   BroadcastEventType,
   BroadcastWebhookEvent,
   BroadcastWebhookEventData,
+  BudgetScope,
   ContactEventType,
   ContactWebhookEvent,
   ContactWebhookEventData,

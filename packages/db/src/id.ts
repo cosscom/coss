@@ -101,6 +101,7 @@ export const ID_PREFIXES = {
   billingCreditNote: "bcn",
   billingProviderEvent: "bpev",
   billingNotification: "bntf",
+  billingBudget: "bbud",
   // Hooks (webhooks as a service).
   hookApplication: "happ",
   hookEventType: "hevtype",

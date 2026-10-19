@@ -2,11 +2,14 @@ import { db, schema } from "@coss/db";
 import { and, eq } from "drizzle-orm";
 import type { Environment, Project } from "./types.ts";
 
-/** Every project is created with exactly these environments, in display order. */
+/**
+ * Every project is created with exactly these environments, in display order. Members may create
+ * personal API keys in the sandbox one (never billed) until an admin closes it.
+ */
 export const DEFAULT_ENVIRONMENTS = [
-  { name: "Production", slug: "production", mode: "live" },
-  { name: "Development", slug: "development", mode: "sandbox" },
-] as const satisfies readonly Pick<Environment, "name" | "slug" | "mode">[];
+  { name: "Production", slug: "production", mode: "live", personalKeys: false },
+  { name: "Development", slug: "development", mode: "sandbox", personalKeys: true },
+] as const satisfies readonly Pick<Environment, "name" | "slug" | "mode" | "personalKeys">[];
 
 const DEFAULT_SLUG_ORDER: readonly string[] = DEFAULT_ENVIRONMENTS.map((env) => env.slug);
 

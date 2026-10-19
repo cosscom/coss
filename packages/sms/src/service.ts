@@ -6,7 +6,12 @@
  */
 import { dimensionKey } from "@coss/billing/catalog";
 import type { UsageGate } from "@coss/billing/gate";
-import { billingHoldExists } from "@coss/billing/metering";
+import {
+  BUDGET_EXCEEDED_MESSAGES,
+  billingHoldExists,
+  budgetHoldExists,
+  budgetHoldFor,
+} from "@coss/billing/metering";
 import { db, schema, type Transaction } from "@coss/db";
 import { isId } from "@coss/db/id";
 import {
@@ -51,6 +56,8 @@ export type SendEnvironment = {
 export type SendSmsInput = {
   environment: SendEnvironment;
   apiKeyId: string | null;
+  /** The member a personal key belongs to (its usage is their spend); `null`: none. */
+  apiKeyOwnerId?: string | null;
   params: SendSmsRequestOutput;
   idempotencyKey?: string | null;
 };
@@ -137,6 +144,18 @@ function linksIn(body: string): string[] {
  * The message's organization may send: not suspended, not being deleted and, for live messages
  * (`billing`), not on a billing hold. Sandbox messages skip billing, as they do at acceptance.
  */
+/** Live scheduled messages also wait while a budget of their project, key or member is used up. */
+function withinBudget() {
+  return not(
+    budgetHoldExists({
+      organizationId: smsMessage.organizationId,
+      projectId: smsMessage.projectId,
+      apiKeyId: smsMessage.apiKeyId,
+      userId: smsMessage.apiKeyOwnerId,
+    }),
+  );
+}
+
 function organizationActive(opts: { billing: boolean }) {
   return and(
     opts.billing ? not(billingHoldExists(smsMessage.organizationId)) : undefined,
@@ -483,6 +502,7 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
       isNull(smsMessage.provider),
       lte(smsMessage.scheduledAt, now),
       organizationActive({ billing: !sandbox }),
+      sandbox ? undefined : withinBudget(),
     );
     if (!sandbox) {
       try {
@@ -529,7 +549,10 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
           eq(smsMessage.status, "scheduled"),
           lte(smsMessage.scheduledAt, now),
           organizationActive({ billing: false }),
-          or(eq(environment.mode, "sandbox"), not(billingHoldExists(smsMessage.organizationId))),
+          or(
+            eq(environment.mode, "sandbox"),
+            and(not(billingHoldExists(smsMessage.organizationId)), withinBudget()),
+          ),
           due.scope ? inArray(smsMessage.organizationId, due.scope.organizationIds) : undefined,
         ),
       )
@@ -601,6 +624,13 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
           provider: opts.liveProvider.name,
         });
         numberId = sender.numberId;
+        const held = await budgetHoldFor({
+          organizationId: env.organizationId,
+          projectId: env.projectId,
+          apiKeyId: input.apiKeyId,
+          userId: input.apiKeyOwnerId,
+        });
+        if (held) throw new SmsError("budget_exceeded", BUDGET_EXCEEDED_MESSAGES[held]);
       } catch (error) {
         return replayOnError(error);
       }
@@ -619,6 +649,7 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
           projectId: env.projectId,
           environmentId: env.environmentId,
           apiKeyId: input.apiKeyId,
+          apiKeyOwnerId: input.apiKeyOwnerId ?? null,
           status: scheduledAt ? "scheduled" : "queued",
           from: params.from,
           to: to.phoneNumber,

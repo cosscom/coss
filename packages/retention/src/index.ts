@@ -259,7 +259,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "billing_usage",
     label: "Usage records",
     description:
-      "Hourly counts of billable usage per environment. Each invoice keeps its month's totals.",
+      "Hourly counts of billable usage per environment, and which project, API key and member (for personal keys) each came from. Each invoice keeps its month's totals.",
     period: { days: RETENTION_DAYS.billingUsage, after: "creation" },
   },
   {

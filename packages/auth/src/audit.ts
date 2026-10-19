@@ -5,7 +5,7 @@
  */
 export type OrgAuditRecord = {
   organizationId: string;
-  actor: { type: "user"; id: string; label: string };
+  actor: { type: "user"; id: string; label: string } | { type: "system"; id: null; label: string };
   action: string;
   target?: { type: string; id: string | null; label?: string | null };
   metadata?: Record<string, unknown>;

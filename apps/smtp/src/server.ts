@@ -259,6 +259,7 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
         mode: context.mode,
       },
       apiKeyId: context.apiKeyId,
+      apiKeyOwnerId: context.ownerUserId,
       params: mapped.params,
       idempotencyKey: mapped.idempotencyKey,
     };

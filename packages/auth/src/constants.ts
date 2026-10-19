@@ -29,7 +29,8 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   broadcast: ["create", "read", "update", "delete", "send"],
   reputation: ["read"],
   log: ["read"],
-  // The organization's audit log. Only owners and admins create keys, and they can read it.
+  // The organization's audit log. Personal keys hold it only while their owner may read it
+  // (`ORG_SCOPED_KEY_PERMISSIONS`).
   audit: ["read"],
   logDrain: ["create", "read", "update", "delete"],
   risk: ["assess", "read", "feedback", "update"],

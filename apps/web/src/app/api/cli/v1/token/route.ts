@@ -65,6 +65,8 @@ export async function POST(request: Request): Promise<Response> {
       environmentId: grant.environment.id,
       name: grant.name,
       userId: grant.user.id,
+      // A personal key: what the CLI sends is the approving member's spend.
+      ownerUserId: grant.user.id,
       // The CLI's commands span products (send, logs, listen): its keys have full access.
       permissions: "full",
     });
@@ -74,7 +76,12 @@ export async function POST(request: Request): Promise<Response> {
       target: { type: "api_key", id: created.id, label: created.name },
       projectId: grant.environment.projectId,
       environmentId: grant.environment.id,
-      metadata: { mode: grant.environment.mode, via: "cli", access: created.access },
+      metadata: {
+        mode: grant.environment.mode,
+        via: "cli",
+        access: created.access,
+        owner_user_id: grant.user.id,
+      },
     });
     const body: CliTokenResponse = {
       api_key: created.key,

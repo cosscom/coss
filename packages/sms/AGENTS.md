@@ -20,7 +20,9 @@ senders (US A2P 10DLC brands and campaigns, toll-free verification) and its phon
   `from` an `active` number of the organization whose registration is `approved` → destination
   country allowed, toll-free numbers US/CA only). One transaction stores the message, skips a
   suppressed number (`failed`/`suppressed` + `sms.suppressed`, never handed over or billed), records
-  `sms.scheduled` or enqueues the `sms-dispatch` job, and reserves `sms.segments` with the country's
+  `sms.scheduled` or enqueues the `sms-dispatch` job (a used-up budget of its project, key or the
+  key's owner — `@coss/billing` budgets, `api_key_owner_id` captured at acceptance — refuses a live
+  send with `budget_exceeded` and holds a scheduled one), and reserves `sms.segments` with the country's
   dimension through the injected `UsageGate` as its last statement (refuses unpriced countries and
   plans without SMS). `Idempotency-Key` through `withIdempotencyKey`; sender and parse failures
   still replay a request that already succeeded. Sandbox environments always use the fake provider

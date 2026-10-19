@@ -18,7 +18,11 @@ export const orgStatements = {
   ...defaultStatements,
   project: ["create", "read", "update", "delete"],
   environment: ["create", "read", "update", "delete"],
-  apiKey: ["create", "read", "update", "delete"],
+  // `create` is what @better-auth/api-key checks for whoever creates a key, so every role that may
+  // create any key holds it; members only create personal keys, in environments open to them
+  // (`keyCreationAllowed` in @coss/tenancy). `manage`: organization keys, keys of other members,
+  // revoking anyone's key.
+  apiKey: ["create", "read", "update", "delete", "manage"],
   email: ["send", "read"],
   // An environment's email templates; `publish` makes a draft what sends use.
   emailTemplate: ["create", "read", "update", "delete", "publish"],
@@ -64,7 +68,7 @@ export const orgAc = createAccessControl(orgStatements);
 const fullCossAccess = {
   project: ["create", "read", "update", "delete"],
   environment: ["create", "read", "update", "delete"],
-  apiKey: ["create", "read", "update", "delete"],
+  apiKey: ["create", "read", "update", "delete", "manage"],
   email: ["send", "read"],
   emailTemplate: ["create", "read", "update", "delete", "publish"],
   receivedEmail: ["delete"],
@@ -125,7 +129,12 @@ export const orgRoles = {
     audit: ["read"],
     billing: ["read"],
   }),
-  member: orgAc.newRole({ ...memberAc.statements, ...readOnlyCossAccess }),
+  // Read-only in the dashboard, plus personal API keys where an admin allows them.
+  member: orgAc.newRole({
+    ...memberAc.statements,
+    ...readOnlyCossAccess,
+    apiKey: ["create", "read"],
+  }),
 };
 
 export type OrgRole = keyof typeof orgRoles;

@@ -7,6 +7,7 @@
  * created with; never backfilled).
  */
 import { API_KEY_PERMISSIONS } from "./constants.ts";
+import { type OrgPermissions, orgRoleCan } from "./permissions.ts";
 
 export type KeyPermissions = Record<string, string[]>;
 
@@ -188,13 +189,18 @@ export function isApiKeyPreset(value: unknown): value is ApiKeyPreset {
 /** Sending only: the API's and SDK's sends and the SMTP relay. */
 export const SENDING_PERMISSIONS: KeyPermissions = { email: ["send"] };
 
-/** Every `read` action of the catalog. */
-export function readOnlyPermissions(): KeyPermissions {
-  return Object.fromEntries(
+/**
+ * Every `read` action of the catalog. For a personal key, pass its owner's role: the reads that
+ * cover the whole organization and that the role lacks (billing, the audit log) are left out, so
+ * the preset stays one the key may hold.
+ */
+export function readOnlyPermissions(ownerRole?: string | null): KeyPermissions {
+  const reads: KeyPermissions = Object.fromEntries(
     Object.entries(API_KEY_PERMISSIONS)
       .filter(([, actions]) => actions.includes("read"))
       .map(([resource]) => [resource, ["read"]]),
   );
+  return ownerRole === undefined ? reads : personalKeyPermissions(reads, ownerRole);
 }
 
 /** A key's permissions as `resource:action` strings (as in `insufficient_permissions` errors). */
@@ -220,6 +226,55 @@ export function permissionLines(
       label: apiKeyResourceLabel(resource),
       actions: (permissions[resource] ?? []).map(apiKeyActionLabel),
     }));
+}
+
+/**
+ * Permissions over the whole organization rather than the key's environment. A personal key (one
+ * assigned to a member) holds them only while its owner's role grants them in the dashboard, so a
+ * member's key can't remove the organization's domains or read its billing.
+ */
+export const ORG_SCOPED_KEY_PERMISSIONS: KeyPermissions = {
+  domain: ["create", "verify", "delete"],
+  audit: ["read"],
+  billing: ["read"],
+};
+
+function isOrgScoped(resource: string, action: string): boolean {
+  return ORG_SCOPED_KEY_PERMISSIONS[resource]?.includes(action) ?? false;
+}
+
+function roleGrants(role: string | null, resource: string, action: string): boolean {
+  return orgRoleCan(role, { [resource]: [action] } as OrgPermissions);
+}
+
+/**
+ * What a personal key may do: its permissions without the organization-wide ones its owner's
+ * current role (`null`: no longer a member) doesn't grant. Organization keys hold theirs as is.
+ */
+export function personalKeyPermissions(
+  permissions: KeyPermissions,
+  ownerRole: string | null,
+): KeyPermissions {
+  const limited: KeyPermissions = {};
+  for (const [resource, actions] of Object.entries(permissions)) {
+    const kept = actions.filter(
+      (action) => !isOrgScoped(resource, action) || roleGrants(ownerRole, resource, action),
+    );
+    if (kept.length > 0) limited[resource] = kept;
+  }
+  return limited;
+}
+
+/**
+ * The organization-wide permissions among `permissions` that a personal key of a member with
+ * `ownerRole` could never use, as `resource:action` strings (empty when there are none).
+ */
+export function personalKeyExcess(permissions: KeyPermissions, ownerRole: string | null): string[] {
+  return Object.entries(permissions).flatMap(([resource, actions]) =>
+    actions
+      .filter((action) => isOrgScoped(resource, action) && !roleGrants(ownerRole, resource, action))
+      .map((action) => `${resource}:${action}`),
+  );
 }
 
 export class InvalidKeyPermissionsError extends Error {}

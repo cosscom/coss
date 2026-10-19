@@ -119,7 +119,7 @@ export const sendSmsRoute = createRoute({
         "(`invalid_idempotency_key`).",
     ),
     402: billingErrorDoc(
-      "Live sending is paused for an overdue invoice or the spend limit (`billing_hold`), the plan doesn't include SMS or the destination country isn't priced (`plan_feature_unavailable`)",
+      "Live sending is paused for an overdue invoice or the spend limit (`billing_hold`) or a used-up budget (`budget_exceeded`), the plan doesn't include SMS or the destination country isn't priced (`plan_feature_unavailable`)",
     ),
     ...commonErrors,
     403: errorDoc(
@@ -393,11 +393,12 @@ export function createSmsRoutes(smsService: SmsService): OpenAPIHono<AppEnv> {
     async (c) => {
       const params = c.req.valid("json");
       const idempotencyKey = c.req.valid("header")["Idempotency-Key"];
-      const { apiKeyId, organizationId, projectId, environmentId, mode } = c.var.auth;
+      const { apiKeyId, ownerUserId, organizationId, projectId, environmentId, mode } = c.var.auth;
       // Tenancy always comes from the authenticated key, never from the request.
       const input = {
         environment: { organizationId, projectId, environmentId, mode },
         apiKeyId,
+        apiKeyOwnerId: ownerUserId,
         params,
         idempotencyKey,
       };

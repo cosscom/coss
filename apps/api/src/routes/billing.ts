@@ -168,7 +168,7 @@ export function createBillingRoutes(): OpenAPIHono<AppEnv> {
     const data = await usageSeries(c.var.auth.organizationId, {
       interval: { start, end },
       granularity,
-      byEnvironment: query.group_by === "environment",
+      groupBy: query.group_by,
       meter: query.meter,
     });
     return c.json({ object: "list" as const, data, has_more: false as const }, 200);

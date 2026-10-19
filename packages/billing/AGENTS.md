@@ -43,6 +43,27 @@ repository root.
     `sweepStaleClaims`) for its `billable_recipients` (non-suppressed, frozen at claim), once
     (`usage_recorded_at` compare-and-set), and on `email.dedicated_ip` too when it went through the organization's
     dedicated IPs (`email.dedicated_pool`); sandbox never.
+  - **Attribution and spend** (`billing_usage_attribution`, `./spend`): `recordUsage` also writes who caused the usage
+    (project, API key, and the member a personal key belongs to — `email.api_key_owner_id`, captured at
+    acceptance, so revoking a key never erases a member's spend), same hour and shard as `billing_usage`, which
+    stays the only rating input (a separate table: changing `billing_usage`'s key would break older tasks'
+    upserts mid-rollout). `spendBreakdown` splits the running month's usage charges (usage lines, net of meter
+    discounts and write-offs; credits pay for spend, they don't reduce it) by each source's share of every meter's
+    quantity (`allocateUsageCharges`, largest remainder, so the parts add up to the invoice's usage lines); usage
+    without attribution (older rows) stays with its environment, keyless. `GET /v1/billing/usage`
+    `group_by=project|api_key|user` reads it too.
+  - **Budgets** (`billing_budget`, ids `bbud_`; `billing_budget_hold`, presence = paused; `./budgets`): monthly
+    budgets of spend for members (a `member_default`, overridden per member — no amount exempts them), projects
+    and API keys; changed only by owners (`billing:update`). The worker's `billing-usage` loop
+    (`checkOrganizationSpend`, also run by the dashboard right after a change, so a raised budget lifts at once)
+    alerts at each budget's thresholds (`budget_threshold`, `billing.budget_threshold_reached`) and over budget
+    places a hold (`budget_paused` notification, which also goes to the member it concerns —
+    `billing_notification.user_id` —, push `billing_budget_paused`, `billing.budget_hold_placed`); it is lifted
+    under budget, without one, or in a new month (organizations with holds stay candidates). A hold refuses its
+    source's live sends at acceptance (`EmailError("budget_exceeded")`, 402, via `budgetHoldFor` in
+    `./metering`), holds its scheduled sends (`budgetHoldExists`) and pauses its broadcasts (self-healing);
+    already-queued immediate sends go out. A project's hold covers dashboard sends in it too. Independent of
+    billing holds and the organization's spend limit.
   - **Rating** (`./engine`, pure, most tests): graduated or volume tiers carried across the month's contract segments
     (or the term, `tierWindow: term`); included units and unit grants take the period's first positions (Free's
     allowance per period, never prorated); dollar grants drawn down most specific scope first, then soonest expiry;

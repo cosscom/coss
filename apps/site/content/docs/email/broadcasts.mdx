@@ -77,7 +77,7 @@ limit like other email. Pausing or canceling drops the emails not yet handed to 
 | `pause_reason` | Resumes |
 |---|---|
 | `paused` | When you resume it. |
-| `billing_hold`, `usage_limit`, `sending_paused` | By itself, once the hold, the allowance or the pause is lifted. |
+| `billing_hold`, `budget_exceeded`, `usage_limit`, `sending_paused` | By itself, once the hold, the budget, the allowance or the pause is lifted. |
 | `marketing_paused`, `account_suspended`, `mailing_address_required` | When you resume it, after the cause is gone. |
 
 While a hold lasts, emails not yet handed to the mail provider are dropped too, and made again once

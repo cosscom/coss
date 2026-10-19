@@ -7,6 +7,8 @@ import { sql } from "drizzle-orm";
 import {
   bigint,
   boolean,
+  check,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -19,7 +21,8 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { ID_PREFIXES, newId } from "../id.ts";
-import { organization, user } from "./auth.ts";
+import { apikey, organization, user } from "./auth.ts";
+import { project } from "./domain.ts";
 
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
 const updatedAt = () =>
@@ -203,6 +206,50 @@ export const billingUsage = pgTable(
     }),
     // The worker's retention purge and the usage scan.
     index("billing_usage_hour_idx").on(t.hourStart),
+  ],
+);
+
+/**
+ * Who metered usage came from, next to `billing_usage` (written by the same `recordUsage` call):
+ * the project, the API key and the member a personal key belongs to (`""`: none — dashboard
+ * sends, organization keys). The owner is stored, not looked up through the key, so revoking a
+ * key never erases a member's spend. Rating reads only `billing_usage`; spend breakdowns and
+ * budgets read this, and count what it lacks (usage from before it existed) as the
+ * organization's.
+ */
+export const billingUsageAttribution = pgTable(
+  "billing_usage_attribution",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    hourStart: timestamp("hour_start", { withTimezone: true }).notNull(),
+    meter: text("meter").notNull(),
+    dimension: text("dimension").notNull().default(""),
+    environmentId: text("environment_id").notNull(),
+    // Follows from the environment; kept so a deleted environment's usage stays in its project.
+    projectId: text("project_id").notNull().default(""),
+    apiKeyId: text("api_key_id").notNull().default(""),
+    userId: text("user_id").notNull().default(""),
+    shard: smallint("shard").notNull().default(0),
+    quantity: bigint("quantity", { mode: "number" }).notNull().default(0),
+  },
+  (t) => [
+    primaryKey({
+      // Named: the generated name would be longer than Postgres keeps.
+      name: "billing_usage_attribution_pk",
+      columns: [
+        t.organizationId,
+        t.hourStart,
+        t.meter,
+        t.dimension,
+        t.environmentId,
+        t.apiKeyId,
+        t.userId,
+        t.shard,
+      ],
+    }),
+    index("billing_usage_attribution_hour_idx").on(t.hourStart),
   ],
 );
 
@@ -627,6 +674,8 @@ export const billingNotification = pgTable(
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
     kind: text("kind").notNull(),
+    // A member it is also for (their budget), besides the billing contacts.
+    userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
     dedupeKey: text("dedupe_key").notNull().unique("billing_notification_dedupe_unique"),
     payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
     status: billingNotificationStatus("status").notNull().default("pending"),
@@ -645,4 +694,95 @@ export const billingNotification = pgTable(
       .where(sql`${t.nextAttemptAt} IS NOT NULL`),
     index("billing_notification_created_at_idx").on(t.createdAt),
   ],
+);
+
+/**
+ * What a member, project or API key may spend in a month (`@coss/billing` budgets): spend is the
+ * share of the month's usage charges they caused (`billing_usage_attribution`). `member_default`
+ * applies to every member with personal keys and no budget of their own; a `user` budget without
+ * an amount exempts that member from it. Over budget, the worker places a `billing_budget_hold`.
+ */
+export const billingBudgetScope = pgEnum("billing_budget_scope", [
+  "member_default",
+  "user",
+  "project",
+  "api_key",
+]);
+
+export const billingBudget = pgTable(
+  "billing_budget",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.billingBudget)),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    scope: billingBudgetScope("scope").notNull(),
+    userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+    projectId: text("project_id"),
+    apiKeyId: text("api_key_id").references(() => apikey.id, { onDelete: "cascade" }),
+    // `null`: no limit (only a member's own budget, exempting them from the default).
+    amountCents: cents("amount_cents"),
+    alertThresholds: integer("alert_thresholds")
+      .array()
+      .notNull()
+      .default(sql`'{80,100}'::integer[]`),
+    createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "billing_budget_project_fk",
+      columns: [t.projectId, t.organizationId],
+      foreignColumns: [project.id, project.organizationId],
+    }).onDelete("cascade"),
+    check(
+      "billing_budget_target_check",
+      sql`case ${t.scope}
+        when 'member_default' then ${t.userId} is null and ${t.projectId} is null and ${t.apiKeyId} is null and ${t.amountCents} is not null
+        when 'user' then ${t.userId} is not null and ${t.projectId} is null and ${t.apiKeyId} is null
+        when 'project' then ${t.userId} is null and ${t.projectId} is not null and ${t.apiKeyId} is null and ${t.amountCents} is not null
+        when 'api_key' then ${t.userId} is null and ${t.projectId} is null and ${t.apiKeyId} is not null and ${t.amountCents} is not null
+      end`,
+    ),
+    check("billing_budget_amount_check", sql`${t.amountCents} is null or ${t.amountCents} >= 0`),
+    uniqueIndex("billing_budget_member_default_idx")
+      .on(t.organizationId)
+      .where(sql`${t.scope} = 'member_default'`),
+    uniqueIndex("billing_budget_user_idx")
+      .on(t.organizationId, t.userId)
+      .where(sql`${t.scope} = 'user'`),
+    uniqueIndex("billing_budget_project_idx")
+      .on(t.organizationId, t.projectId)
+      .where(sql`${t.scope} = 'project'`),
+    uniqueIndex("billing_budget_api_key_idx")
+      .on(t.organizationId, t.apiKeyId)
+      .where(sql`${t.scope} = 'api_key'`),
+  ],
+);
+
+/**
+ * A member, project or API key over its budget this month (presence = paused): their live sends
+ * are refused (`budget_exceeded`) until the month ends or the budget is raised. `target_id` is the
+ * user, project or API key id; the hold outlives a deleted budget only until the next check.
+ */
+export const billingBudgetHold = pgTable(
+  "billing_budget_hold",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    scope: billingBudgetScope("scope").notNull(),
+    targetId: text("target_id").notNull(),
+    periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
+    // What was spent and allowed when it was placed (for the notice).
+    spentCents: cents("spent_cents").notNull(),
+    limitCents: cents("limit_cents").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.organizationId, t.scope, t.targetId] })],
 );

@@ -7,6 +7,7 @@ export type EmailErrorCode =
   | "account_suspended"
   | "marketing_paused"
   | "billing_hold"
+  | "budget_exceeded"
   | "email_not_cancelable"
   | "email_not_reschedulable"
   | "template_not_found"
@@ -33,6 +34,8 @@ const STATUS_BY_CODE = {
   marketing_paused: 403,
   // Payment required: an overdue invoice or the spend limit (`@coss/billing`).
   billing_hold: 402,
+  // A member's, project's or API key's monthly budget is used up (`@coss/billing` budgets).
+  budget_exceeded: 402,
   // Not 409: the SDK retries those.
   email_not_cancelable: 422,
   email_not_reschedulable: 422,

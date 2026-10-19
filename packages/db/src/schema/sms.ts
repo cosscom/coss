@@ -215,6 +215,8 @@ export const smsMessage = pgTable(
     environmentId: text("environment_id").notNull(),
     // No FK: Better Auth hard-deletes expired keys, and history must survive that.
     apiKeyId: text("api_key_id"),
+    // The member whose personal key sent it, captured at acceptance (their spend). No FK.
+    apiKeyOwnerId: text("api_key_owner_id"),
     status: smsStatus("status").notNull().default("queued"),
     // E.164 numbers.
     from: text("from").notNull(),

@@ -1,5 +1,8 @@
+import { listBudgetHolds } from "@coss/billing";
 import { getReputationStanding } from "@coss/reputation";
 import { listUserOrganizations } from "@coss/tenancy";
+import { Alert, AlertDescription } from "@coss/ui/components/alert";
+import Link from "next/link";
 import { BillingBanner } from "@/components/billing/billing-banner";
 import { ReputationBanner } from "@/components/reputation";
 import { AppShell } from "@/components/shell/app-shell";
@@ -17,12 +20,17 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
   const { orgSlug } = await params;
   const { session, organization, member, suspended, ssoBreakGlass, can } =
     await requireOrgMember(orgSlug);
-  const [organizations, projectRows, standing, billing] = await Promise.all([
+  const [organizations, projectRows, standing, billing, budgetHolds] = await Promise.all([
     listUserOrganizations({ userId: session.user.id }),
     listProjectsWithDefaultEnvironment(organization.id),
     getReputationStanding(organization.id),
     can({ billing: ["read"] }) ? billingBannerState(organization.id) : null,
+    listBudgetHolds(organization.id),
   ]);
+  // The member's own personal keys over their budget (billing readers see every budget on Spend).
+  const ownBudgetPaused = budgetHolds.some(
+    (hold) => hold.scope === "user" && hold.targetId === session.user.id,
+  );
   const base = `/${organization.slug}`;
   const projects: ShellProject[] = projectRows.map(
     ({ project, environments, defaultEnvironment }) => ({
@@ -53,11 +61,22 @@ export default async function OrganizationLayout({ children, params }: LayoutPro
   return (
     <AppShell
       banners={
-        standing || suspended || billing || ssoBreakGlass ? (
+        standing || suspended || billing || ssoBreakGlass || ownBudgetPaused ? (
           <div className="flex flex-col gap-3">
             {standing ? <ReputationBanner href={`${base}/reputation`} standing={standing} /> : null}
             {suspended ? <SuspendedAlert /> : null}
             {billing ? <BillingBanner href={`${base}/settings/billing`} state={billing} /> : null}
+            {ownBudgetPaused ? (
+              <Alert variant="error">
+                <AlertDescription>
+                  Your personal API keys reached your monthly budget: their live sends are paused
+                  until next month or until an owner raises it.{" "}
+                  <Link className="underline" href={`${base}/spend`}>
+                    Your spend
+                  </Link>
+                </AlertDescription>
+              </Alert>
+            ) : null}
             {ssoBreakGlass ? <SsoBreakGlassAlert orgSlug={organization.slug} /> : null}
           </div>
         ) : null

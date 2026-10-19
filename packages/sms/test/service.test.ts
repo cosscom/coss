@@ -171,6 +171,51 @@ describe("live sends", () => {
     expect(sms).toMatchObject({ status: "delivered", country: "GB" });
   });
 
+  test("a used-up budget refuses its source's sends; usage is attributed to key and owner", async () => {
+    const tenant = await createTestTenant();
+    const service = dispatchingSmsService();
+    const number = await createTestSmsNumber(tenant.organization.id);
+    const personal = { apiKeyId: "key_personal", apiKeyOwnerId: tenant.owner.id };
+    await service.send({
+      environment: env(tenant.production),
+      ...personal,
+      params: params({ from: number.phoneNumber }),
+    });
+    const [attributed] = await db
+      .select()
+      .from(schema.billingUsageAttribution)
+      .where(eq(schema.billingUsageAttribution.organizationId, tenant.organization.id));
+    expect(attributed).toMatchObject({
+      meter: "sms.segments",
+      projectId: tenant.project.id,
+      apiKeyId: "key_personal",
+      userId: tenant.owner.id,
+    });
+
+    await db.insert(schema.billingBudgetHold).values({
+      organizationId: tenant.organization.id,
+      scope: "user",
+      targetId: tenant.owner.id,
+      periodStart: new Date(),
+      spentCents: 1n,
+      limitCents: 0n,
+    });
+    await expect(
+      service.send({
+        environment: env(tenant.production),
+        ...personal,
+        params: params({ from: number.phoneNumber }),
+      }),
+    ).rejects.toMatchObject({ code: "budget_exceeded", status: 402 });
+    // Organization keys are unaffected by a member's budget.
+    const { sms } = await service.send({
+      environment: env(tenant.production),
+      apiKeyId: "key_org",
+      params: params({ from: number.phoneNumber }),
+    });
+    expect(sms.status).toBe("delivered");
+  });
+
   test("the billing gate prices the destination country", async () => {
     const tenant = await createTestTenant();
     const reserved: unknown[] = [];

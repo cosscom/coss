@@ -165,7 +165,13 @@ export type BillingEventType =
   | "billing.usage_threshold_reached"
   | "billing.hold_placed"
   | "billing.hold_lifted"
-  | "billing.credit_granted";
+  | "billing.credit_granted"
+  | "billing.budget_threshold_reached"
+  | "billing.budget_hold_placed"
+  | "billing.budget_hold_lifted";
+
+/** What a budget is for: a member's personal API keys (`user`), a project or an API key. */
+export type BudgetScope = "user" | "project" | "api_key";
 
 interface BillingEventFields {
   /** Equals the `webhook-id` header. */
@@ -226,6 +232,29 @@ export type BillingWebhookEvent =
   | (BillingEventFields & {
       type: "billing.credit_granted";
       data: BillingEventData & { credit: Credit };
+    })
+  | (BillingEventFields & {
+      type: "billing.budget_threshold_reached";
+      data: BillingEventData & {
+        scope: BudgetScope;
+        /** The user, project or API key id. */
+        target_id: string;
+        /** The threshold crossed, e.g. 80. */
+        percent: number;
+        /** The monthly budget, in cents. */
+        amount: number;
+        /** Spent this month when it was crossed, in cents. */
+        spent: number;
+        period: { start: string; end: string };
+      };
+    })
+  | (BillingEventFields & {
+      type: "billing.budget_hold_placed" | "billing.budget_hold_lifted";
+      data: BillingEventData & {
+        scope: BudgetScope;
+        /** The user, project or API key id. */
+        target_id: string;
+      };
     });
 
 /** Risk events: `review` decisions, and their resolution, for a queue you work through. */

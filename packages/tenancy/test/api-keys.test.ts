@@ -73,6 +73,7 @@ describe("createEnvironmentApiKey", () => {
       name: "CI",
       environmentId: tenant.development.id,
       projectId: tenant.project.id,
+      ownerUserId: null,
     });
   });
 
@@ -107,7 +108,7 @@ describe("createEnvironmentApiKey", () => {
     }
   });
 
-  test("members and outsiders are forbidden; admins are allowed", async () => {
+  test("members and outsiders may not create organization keys; admins may", async () => {
     const tenant = await createTestTenant();
     const member = await createTestUser();
     const admin = await createTestUser();
@@ -142,6 +143,7 @@ describe("authenticateApiKey", () => {
         organizationId: tenant.organization.id,
         projectId: tenant.project.id,
         environmentId: tenant.production.id,
+        ownerUserId: null,
         mode: "live",
         apiVersion: versioning.latest,
       },
@@ -153,6 +155,7 @@ describe("authenticateApiKey", () => {
         organizationId: tenant.organization.id,
         projectId: tenant.project.id,
         environmentId: tenant.development.id,
+        ownerUserId: null,
         mode: "sandbox",
         apiVersion: versioning.latest,
       },
@@ -486,6 +489,7 @@ describe("listing and bindings are organization-scoped", () => {
       lastRequest: null,
       createdAt: expect.any(Date),
       createdByUserId: tenant.owner.id,
+      owner: null,
       access: "full",
       permissions: API_KEY_PERMISSIONS,
     });
@@ -511,6 +515,7 @@ describe("listing and bindings are organization-scoped", () => {
       name: "Test live key",
       environmentId: tenant.production.id,
       projectId: tenant.project.id,
+      ownerUserId: null,
     });
     expect(await getKeyBinding({ organizationId: other.organization.id, keyId })).toBeNull();
     expect(

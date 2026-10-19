@@ -42,6 +42,7 @@ import {
   UserPlusIcon,
   UsersIcon,
   UsersRoundIcon,
+  WalletIcon,
   WebhookIcon,
 } from "lucide-react";
 
@@ -131,7 +132,14 @@ export const ORGANIZATION_NAV: NavItem[] = [
   { label: "SMS", path: "/sms", icon: MessageSquareIcon },
   { label: "Members", path: "/members", icon: UsersIcon },
   { label: "Reputation", path: "/reputation", icon: GaugeIcon },
+  { label: "Spend", path: "/spend", icon: WalletIcon },
   { label: "Settings", path: "/settings", icon: SettingsIcon },
+];
+
+/** The tabs of an organization's spend (under `/acme/spend`). */
+export const SPEND_NAV: NavItem[] = [
+  { label: "Overview", path: "", icon: WalletIcon, exact: true },
+  { label: "Budgets", path: "/budgets", icon: GaugeIcon },
 ];
 
 /** The tabs of an organization's settings (under `/acme/settings`). */
@@ -244,6 +252,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   "dedicated-ips": "Dedicated IPs",
   members: "Members",
   reputation: "Reputation",
+  spend: "Spend",
+  budgets: "Budgets",
   settings: "Settings",
   billing: "Billing",
   plans: "Plans",

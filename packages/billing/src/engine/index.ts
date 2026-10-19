@@ -1,4 +1,5 @@
 /** The billing engine: pure functions from contracts, usage and credits to invoice lines. */
+export * from "./allocate.ts";
 export * from "./compose.ts";
 export * from "./terms.ts";
 export * from "./tiers.ts";

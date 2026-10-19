@@ -328,8 +328,8 @@ export type BroadcastRouteDeps = {
 export function createBroadcastRoutes(deps: BroadcastRouteDeps): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
   const envOf = (c: { var: AppEnv["Variables"] }) => {
-    const { organizationId, projectId, environmentId, mode, apiKeyId } = c.var.auth;
-    return { organizationId, projectId, environmentId, mode, apiKeyId };
+    const { organizationId, projectId, environmentId, mode, apiKeyId, ownerUserId } = c.var.auth;
+    return { organizationId, projectId, environmentId, mode, apiKeyId, apiKeyOwnerId: ownerUserId };
   };
   const audit = (c: Context<AppEnv>, action: string, broadcast: { id: string; name?: string }) =>
     recordApiAudit(c, {

@@ -38,5 +38,6 @@ An `action` ending in `.` matches every action of that resource (`domain.`). Pag
 first: pass the last event's `id` as `after` while `has_more` is true.
 
 The audit log is organization-wide: an API key of any environment, live or sandbox, reads every
-event of the organization. Only owners and admins can create API keys, and both can read the audit
-log. Reading it is not itself logged, and its events never appear in an environment's logs.
+event of the organization. A member's personal key can only read it while its owner's role can
+(owners and admins). Reading it is not itself logged, and its events never appear in an
+environment's logs.

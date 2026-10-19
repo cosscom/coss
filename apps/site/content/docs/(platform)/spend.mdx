@@ -1,0 +1,72 @@
+---
+title: Spend and budgets
+description: See what each project, API key and member costs, and cap it with monthly budgets.
+icon: Wallet
+---
+
+The **Spend** page of your organization splits the month's usage charges by who caused them:
+projects, environments, API keys, and the members whose personal API keys sent it. Owners and
+admins see everything; members see their own spend.
+
+## Organization keys and personal keys
+
+Every API key is one of two kinds:
+
+- An **organization key**, for production servers, staging and shared jobs. Its usage is the
+  organization's.
+- A **personal key**, assigned to one member: its usage is that member's spend. Members create
+  them for themselves in environments that allow it, to experiment without touching the
+  organization's keys; `coss login` and `coss init` create them too. Owners and admins can assign
+  a key to any member. See [personal keys](/docs/environments#personal-keys) for who can create
+  them and what they can do.
+
+Spend follows the key that sent each email (a broadcast's emails follow the key that created
+it). Emails sent from the dashboard are the organization's. A member's spend stays theirs after
+the key is revoked.
+
+## How spend is counted
+
+Spend is a share of the month's **usage charges**, at your plan's prices: each product's charge is
+split by each source's share of its usage (email recipients, for example). Because prices get
+cheaper with volume and your plan includes credit or units, what a member costs depends on the
+whole organization's usage, and the parts always add up to the usage lines of your invoice.
+
+- Your plan's credit pays for spend, it doesn't reduce it: a member's experiments show their real
+  share even when the credit covers them.
+- Discounts on a product reduce its spend; on Free, usage within the allowance costs $0.
+- Sandbox usage is never billed, so it is never spend.
+- Usage recorded before coss.com kept its source belongs to its environment, without a key or a
+  member.
+
+The same split is available from the API: `GET /v1/billing/usage` with `group_by` `project`,
+`api_key` or `user` ([Plans and billing](/docs/billing#billing-api-and-events)).
+
+## Budgets
+
+Owners set monthly budgets on the Spend page's **Budgets** tab:
+
+| Budget             | Applies to                                                                       |
+| ------------------ | -------------------------------------------------------------------------------- |
+| **Default member** | Every member's personal keys, unless they have a budget of their own             |
+| **Member**         | One member's personal keys (or none: exempt them from the default)               |
+| **Project**        | Everything sent in a project, whatever key (or the dashboard) sent it             |
+| **API key**        | One key, organization or personal                                                |
+
+coss.com checks spend every few minutes. At each alert threshold of a budget (80% and 100% unless
+you change them) it emails the billing contacts, and the member it concerns, and sends a
+`billing.budget_threshold_reached` [event](/docs/webhooks#organization-events). Once spend goes
+**over** a budget:
+
+- Live sends from that source are refused with `402` `billing_error` (`budget_exceeded`) — over
+  SMTP, `550`. Scheduled emails wait instead, and broadcasts pause (`pause_reason`
+  `budget_exceeded`) and resume by themselves.
+- Everything else keeps working: other members' and the organization's keys, sandbox keys, and
+  reads.
+- `billing.budget_hold_placed` is sent, and `billing.budget_hold_lifted` when it ends: at the
+  start of the next month, or as soon as an owner raises (or removes) the budget.
+
+Checks run every few minutes, so spend can pass a budget by what is sent in between. Emails
+already accepted before the pause still go out. A budget of $0 allows no billable usage at all.
+
+Budgets sit alongside your organization's **spend limit** (in billing settings), which pauses all
+live sending once usage beyond your credit reaches it.

@@ -114,13 +114,13 @@ describe("GET /v1/billing*", () => {
     expect((await sandbox.json()).organization_id).toBe(tenant.organization.id);
   });
 
-  test("usage by day and environment, and range validation", async () => {
+  test("usage by day, environment and source, and range validation", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp();
-    for (const [at, quantity] of [
-      ["2026-09-03T10:00:00Z", 5],
-      ["2026-09-03T11:00:00Z", 7],
-      ["2026-09-04T01:00:00Z", 3],
+    for (const [at, quantity, apiKeyId] of [
+      ["2026-09-03T10:00:00Z", 5, null],
+      ["2026-09-03T11:00:00Z", 7, "key_a"],
+      ["2026-09-04T01:00:00Z", 3, "key_b"],
     ] as const) {
       await recordTestUsage({
         organizationId: tenant.organization.id,
@@ -128,6 +128,7 @@ describe("GET /v1/billing*", () => {
         meter: "email.recipients",
         quantity,
         at: new Date(at),
+        ...(apiKeyId ? { source: { projectId: tenant.project.id, apiKeyId } } : {}),
       });
     }
     const query = "from=2026-09-01T00:00:00Z&to=2026-10-01T00:00:00Z";
@@ -155,10 +156,44 @@ describe("GET /v1/billing*", () => {
         meter: "email.recipients",
         dimension: null,
         environment_id: tenant.production.id,
+        project_id: null,
+        api_key_id: null,
+        user_id: null,
         start: "2026-09-01T00:00:00.000Z",
         end: "2026-10-01T00:00:00.000Z",
         quantity: 15,
       },
+    ]);
+    const byKey = await apiRequest(
+      app,
+      "GET",
+      `/v1/billing/usage?${query}&granularity=month&group_by=api_key`,
+      { key: tenant.liveKey },
+    );
+    expect(
+      (await byKey.json()).data.map((row: { api_key_id: string | null; quantity: number }) => [
+        row.api_key_id,
+        row.quantity,
+      ]),
+    ).toEqual([
+      [null, 5],
+      ["key_a", 7],
+      ["key_b", 3],
+    ]);
+    const byProject = await apiRequest(
+      app,
+      "GET",
+      `/v1/billing/usage?${query}&granularity=month&group_by=project`,
+      { key: tenant.liveKey },
+    );
+    expect(
+      (await byProject.json()).data.map((row: { project_id: string | null; quantity: number }) => [
+        row.project_id,
+        row.quantity,
+      ]),
+    ).toEqual([
+      [null, 5],
+      [tenant.project.id, 10],
     ]);
     const hourlyTooLong = await apiRequest(
       app,

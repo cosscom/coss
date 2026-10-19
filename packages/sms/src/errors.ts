@@ -8,6 +8,7 @@ export type SmsErrorCode =
   | "country_not_allowed"
   | "account_suspended"
   | "billing_hold"
+  | "budget_exceeded"
   | "sms_not_cancelable"
   | "number_unavailable"
   | "registration_invalid"
@@ -28,6 +29,8 @@ const STATUS_BY_CODE = {
   account_suspended: 403,
   // Payment required: an overdue invoice or the spend limit (`@coss/billing`).
   billing_hold: 402,
+  // A member's, project's or API key's monthly budget is used up (`@coss/billing` budgets).
+  budget_exceeded: 402,
   // Not 409: the SDK retries those.
   sms_not_cancelable: 422,
   number_unavailable: 422,

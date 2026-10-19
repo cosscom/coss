@@ -100,8 +100,19 @@ describe("CLI sign-in", () => {
     const tenant = await createTestTenant();
     const member = await createTestUser();
     await addMember({ organizationId: tenant.organization.id, userId: member.id, role: "member" });
+    // CLI keys are personal keys: members get them where the environment allows personal keys.
     const asMember = await approve(tenant, { userId: member.id });
     expect(await redeemCliAuthorization({ code: asMember, codeVerifier: VERIFIER })).toMatchObject({
+      ok: true,
+      grant: { user: { id: member.id } },
+    });
+    const memberLive = await approve(tenant, {
+      userId: member.id,
+      environmentId: tenant.production.id,
+    });
+    expect(
+      await redeemCliAuthorization({ code: memberLive, codeVerifier: VERIFIER }),
+    ).toMatchObject({
       ok: false,
       error: "access_denied",
       message: expect.stringContaining("can't create API keys"),

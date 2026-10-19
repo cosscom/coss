@@ -64,6 +64,9 @@ export const environment = pgTable(
     name: text("name").notNull(),
     slug: text("slug").notNull(),
     mode: environmentMode("mode").notNull(),
+    // Whether members may create personal API keys here (owners and admins always may). New
+    // projects open their sandbox environments; the default covers older writers.
+    personalKeys: boolean("personal_keys").notNull().default(false),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -105,9 +108,15 @@ export const environmentApiKey = pgTable(
     createdByUserId: text("created_by_user_id").references(() => user.id, {
       onDelete: "set null",
     }),
+    // The member a personal key is assigned to (its usage is their spend); `null`: an organization
+    // key. Deleting the user deletes the binding, so the key fails closed.
+    ownerUserId: text("owner_user_id").references(() => user.id, { onDelete: "cascade" }),
     createdAt: createdAt(),
   },
-  (t) => [index("environment_api_key_environment_idx").on(t.environmentId)],
+  (t) => [
+    index("environment_api_key_environment_idx").on(t.environmentId),
+    index("environment_api_key_owner_idx").on(t.ownerUserId),
+  ],
 );
 
 export const emailStatus = pgEnum("email_status", [
@@ -165,6 +174,9 @@ export const email = pgTable(
     environmentId: text("environment_id").notNull(),
     // No FK: Better Auth hard-deletes expired keys, and email history must survive that.
     apiKeyId: text("api_key_id"),
+    // The member whose personal key sent it, captured at acceptance (its usage is their spend
+    // even after the key is revoked). No FK, like `api_key_id`.
+    apiKeyOwnerId: text("api_key_owner_id"),
     status: emailStatus("status").notNull().default("queued"),
     from: text("from").notNull(),
     to: text("to").array().notNull(),
@@ -970,6 +982,8 @@ export const broadcast = pgTable(
     environmentId: text("environment_id").notNull(),
     // No FK: Better Auth hard-deletes expired keys, and the broadcast must survive that.
     apiKeyId: text("api_key_id"),
+    // The member whose personal key created it (copied onto its emails). No FK.
+    apiKeyOwnerId: text("api_key_owner_id"),
     name: text("name").notNull(),
     status: broadcastStatus("status").notNull().default("draft"),
     audienceId: text("audience_id"),

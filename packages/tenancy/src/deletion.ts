@@ -16,6 +16,7 @@ const {
   account,
   apikey,
   billingUsage,
+  billingUsageAttribution,
   contentScreening,
   contact,
   email,
@@ -606,18 +607,21 @@ async function deleteOrganizationData(
     ))
   )
     return false;
-  // Hourly usage counters (billing): no id, so batches go by row address. The final invoice was
-  // made first (`releaseProviderResources`), and invoices keep their months' totals.
-  for (;;) {
-    if (signal?.aborted) return false;
-    const deleted = await db.transaction(async (tx) => {
-      await renewLease(deletion, tx);
-      const result = await tx.execute(
-        sql`delete from ${billingUsage} where ctid in (select ctid from ${billingUsage} where ${billingUsage.organizationId} = ${organizationId} limit ${batchSize})`,
-      );
-      return result.rowCount ?? 0;
-    });
-    if (deleted < batchSize) break;
+  // Hourly usage counters and their attribution (billing): no id, so batches go by row address.
+  // The final invoice was made first (`releaseProviderResources`), and invoices keep their months'
+  // totals.
+  for (const table of [billingUsage, billingUsageAttribution]) {
+    for (;;) {
+      if (signal?.aborted) return false;
+      const deleted = await db.transaction(async (tx) => {
+        await renewLease(deletion, tx);
+        const result = await tx.execute(
+          sql`delete from ${table} where ctid in (select ctid from ${table} where ${table.organizationId} = ${organizationId} limit ${batchSize})`,
+        );
+        return result.rowCount ?? 0;
+      });
+      if (deleted < batchSize) break;
+    }
   }
   return deleteInBatches(
     deletion,

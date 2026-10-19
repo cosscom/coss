@@ -14,6 +14,7 @@ function loggedApp(response: () => Response) {
       projectId: "proj_test",
       environmentId: "env_test",
       apiKeyId: "key_test",
+      ownerUserId: null,
       mode: "sandbox",
     });
     c.set("requestId", "req_test");
@@ -120,6 +121,7 @@ describe("email content", () => {
         projectId: "proj_test",
         environmentId: "env_test",
         apiKeyId: "key_test",
+        ownerUserId: null,
         mode: "sandbox",
       });
       c.set("requestId", "req_test");

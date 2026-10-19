@@ -79,6 +79,9 @@ These concern the whole organization, so every **live** environment's endpoints 
 | `billing.hold_placed`             | Live sending was paused for billing (`reason`: `delinquent`, `spend_limit` or `admin`)  |
 | `billing.hold_lifted`             | That pause ended                                                                        |
 | `billing.credit_granted`          | A credit was added (`data.credit`)                                                      |
+| `billing.budget_threshold_reached` | A member's, project's or API key's spend reached an alert threshold of its monthly budget (`scope`, `target_id`, `percent`) |
+| `billing.budget_hold_placed`      | Its budget is used up: its live sending is paused (`scope`, `target_id`)                |
+| `billing.budget_hold_lifted`      | That pause ended (a new month, or a higher budget)                                      |
 
 See [Plans and billing](/docs/billing#billing-api-and-events) for what they mean and how to read
 the rest of an organization's billing.

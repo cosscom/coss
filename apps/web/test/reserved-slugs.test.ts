@@ -71,6 +71,7 @@ describe("route segments vs. organization slugs", () => {
       "sms",
       "settings",
       "reputation",
+      "spend",
     ]);
     const segments = staticSegments(path.join(APP_DIR, "[orgSlug]"));
     expect(segments.length).toBeGreaterThan(0);

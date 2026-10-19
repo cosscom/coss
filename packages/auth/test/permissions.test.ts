@@ -22,14 +22,18 @@ describe("org roles", () => {
 
   test("admin cannot delete the organization but can manage keys", () => {
     expect(orgRoles.admin.authorize({ organization: ["delete"] }).success).toBe(false);
-    expect(orgRoles.admin.authorize({ invitation: ["create"], apiKey: ["create"] }).success).toBe(
-      true,
-    );
+    expect(
+      orgRoles.admin.authorize({ invitation: ["create"], apiKey: ["create", "manage"] }).success,
+    ).toBe(true);
   });
 
-  test("member is read-only", () => {
+  test("member is read-only, apart from personal API keys", () => {
     expect(orgRoles.member.authorize({ apiKey: ["read"], project: ["read"] }).success).toBe(true);
-    expect(orgRoles.member.authorize({ apiKey: ["create"] }).success).toBe(false);
+    // Better Auth checks `apiKey:create` for every key; which keys a member may create is
+    // `keyCreationAllowed`'s call.
+    expect(orgRoles.member.authorize({ apiKey: ["create"] }).success).toBe(true);
+    expect(orgRoles.member.authorize({ apiKey: ["manage"] }).success).toBe(false);
+    expect(orgRoles.member.authorize({ apiKey: ["delete"] }).success).toBe(false);
     expect(orgRoles.member.authorize({ project: ["create"] }).success).toBe(false);
     expect(orgRoles.member.authorize({ invitation: ["create"] }).success).toBe(false);
   });
@@ -56,8 +60,8 @@ describe("org roles", () => {
 
 describe("orgRoleCan", () => {
   test("handles comma-joined roles and unknown roles", () => {
-    expect(orgRoleCan("member,admin", { apiKey: ["create"] })).toBe(true);
-    expect(orgRoleCan("member", { apiKey: ["create"] })).toBe(false);
+    expect(orgRoleCan("member,admin", { apiKey: ["manage"] })).toBe(true);
+    expect(orgRoleCan("member", { apiKey: ["manage"] })).toBe(false);
     expect(orgRoleCan("nope", { project: ["read"] })).toBe(false);
     expect(orgRoleCan(null, { project: ["read"] })).toBe(false);
   });

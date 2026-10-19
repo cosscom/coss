@@ -165,6 +165,9 @@ const USAGE_EXAMPLE = {
   meter: "email.recipients",
   dimension: null,
   environment_id: null,
+  project_id: null,
+  api_key_id: null,
+  user_id: null,
   start: "2026-10-12T00:00:00.000Z",
   end: "2026-10-13T00:00:00.000Z",
   quantity: 4200,
@@ -181,6 +184,18 @@ export const UsageObject = z
     environment_id: z.string().nullable().meta({
       description:
         "Set with `group_by=environment`; `null` there for organization-wide usage (SMS numbers and registration fees).",
+    }),
+    project_id: z.string().nullable().meta({
+      description:
+        "Set with `group_by=project` (`null`: organization-wide usage, or usage recorded before projects were).",
+    }),
+    api_key_id: z.string().nullable().meta({
+      description:
+        "Set with `group_by=api_key` (`null`: the dashboard, or usage recorded before keys were).",
+    }),
+    user_id: z.string().nullable().meta({
+      description:
+        "Set with `group_by=user`: the member whose personal API key caused it (`null`: organization keys and the dashboard).",
     }),
     start: Timestamp,
     end: Timestamp,
@@ -200,6 +215,9 @@ export const UsageList = z
     examples: [{ object: "list", data: [USAGE_EXAMPLE], has_more: false }],
   });
 
+export const USAGE_GROUPS = ["environment", "project", "api_key", "user"] as const;
+export type UsageGroup = (typeof USAGE_GROUPS)[number];
+
 export const UsageQuery = z
   .strictObject({
     from: z.iso.datetime({ offset: true }).optional().meta({
@@ -215,10 +233,10 @@ export const UsageQuery = z
       .enum(["hour", "day", "month"])
       .optional()
       .meta({ description: "Bucket size (UTC). Defaults to `day`." }),
-    group_by: z
-      .enum(["environment"])
-      .optional()
-      .meta({ description: "Split each bucket per environment." }),
+    group_by: z.enum(USAGE_GROUPS).optional().meta({
+      description:
+        "Split each bucket per environment, project, API key or user (the member whose personal key it was).",
+    }),
     meter: Meter.optional().meta({ description: "Only this meter." }),
   })
   .meta({ id: "UsageQuery" });
@@ -442,6 +460,9 @@ export const BILLING_EVENT_TYPES = [
   "billing.hold_placed",
   "billing.hold_lifted",
   "billing.credit_granted",
+  "billing.budget_threshold_reached",
+  "billing.budget_hold_placed",
+  "billing.budget_hold_lifted",
 ] as const;
 export type BillingEventType = (typeof BILLING_EVENT_TYPES)[number];
 
@@ -465,6 +486,17 @@ const eventData = {
 };
 
 const PlanChange = z.enum(["upgrade", "downgrade", "cancellation", "reverted", "contract"]);
+
+export const BUDGET_SCOPES = ["user", "project", "api_key"] as const;
+export type BudgetScope = (typeof BUDGET_SCOPES)[number];
+
+const BudgetTarget = {
+  scope: z.enum(BUDGET_SCOPES).meta({
+    description:
+      "What the budget is for: a member's personal API keys (`user`), a project or an API key.",
+  }),
+  target_id: z.string().meta({ description: "The user, project or API key id." }),
+};
 
 export const BillingWebhookEvent = z
   .discriminatedUnion("type", [
@@ -522,6 +554,26 @@ export const BillingWebhookEvent = z
       ...eventFields,
       type: z.literal("billing.credit_granted"),
       data: z.object({ ...eventData, credit: CreditObject }),
+    }),
+    z.object({
+      ...eventFields,
+      type: z.literal("billing.budget_threshold_reached"),
+      data: z.object({
+        ...eventData,
+        ...BudgetTarget,
+        percent: z.int().meta({ description: "The threshold crossed, e.g. 80." }),
+        amount: z.int().meta({ description: "The monthly budget, in cents." }),
+        spent: z.int().meta({ description: "Spent this month when it was crossed, in cents." }),
+        period: PeriodObject,
+      }),
+    }),
+    z.object({
+      ...eventFields,
+      type: z.enum(["billing.budget_hold_placed", "billing.budget_hold_lifted"]),
+      data: z.object({
+        ...eventData,
+        ...BudgetTarget,
+      }),
     }),
   ])
   .meta({
