@@ -59,6 +59,7 @@ export {
   relatedLogEntries,
 } from "./read.ts";
 export {
+  EMAIL_CONTENT_KEYS,
   loggedRequestHeaders,
   loggedResponseHeaders,
   MAX_LOGGED_BODY,

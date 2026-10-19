@@ -34,7 +34,7 @@ function normalizedKey(key: string): string {
   return key.toLowerCase().replaceAll(/[_-]/g, "");
 }
 
-function redactValue(value: unknown, depth: number): unknown {
+function redactValue(value: unknown, depth: number, contentKeys: ReadonlySet<string>): unknown {
   if (typeof value === "string") {
     return value.length > MAX_LOGGED_STRING
       ? `${value.slice(0, MAX_LOGGED_STRING)}… [${value.length - MAX_LOGGED_STRING} more characters]`
@@ -43,7 +43,9 @@ function redactValue(value: unknown, depth: number): unknown {
   if (value === null || typeof value !== "object") return value;
   if (depth >= MAX_DEPTH) return "[…]";
   if (Array.isArray(value)) {
-    const items = value.slice(0, MAX_ARRAY_ITEMS).map((item) => redactValue(item, depth + 1));
+    const items = value
+      .slice(0, MAX_ARRAY_ITEMS)
+      .map((item) => redactValue(item, depth + 1, contentKeys));
     if (value.length > MAX_ARRAY_ITEMS)
       items.push(`[${value.length - MAX_ARRAY_ITEMS} more items]`);
     return items;
@@ -53,12 +55,12 @@ function redactValue(value: unknown, depth: number): unknown {
     const normalized = normalizedKey(key);
     if (SECRET_KEYS.has(normalized) && item !== null && item !== undefined) {
       out[key] = REDACTED;
-    } else if (CONTENT_KEYS.has(normalized) && typeof item === "string") {
+    } else if (contentKeys.has(normalized) && typeof item === "string") {
       out[key] = `[${item.length} characters]`;
-    } else if (CONTENT_KEYS.has(normalized) && item !== null && typeof item === "object") {
+    } else if (contentKeys.has(normalized) && item !== null && typeof item === "object") {
       out[key] = sizesOnly(item, depth + 1);
     } else {
-      out[key] = redactValue(item, depth + 1);
+      out[key] = redactValue(item, depth + 1, contentKeys);
     }
   }
   return out;
@@ -78,12 +80,29 @@ function sizesOnly(value: unknown, depth: number): unknown {
 }
 
 /**
- * A JSON body as a log may keep it: secrets replaced, `content` replaced by its length(s),
- * long strings and arrays cut, and at most `MAX_LOGGED_BODY` bytes overall (beyond that only
- * `{ truncated: true, preview }`).
+ * Keys of an email's content, for requests about emails of an environment that doesn't store it
+ * (`redactBody(body, { content: EMAIL_CONTENT_KEYS })`): subject, bodies, headers, template
+ * variables, attachment filenames (React elements are rendered by the SDK and never sent).
  */
-export function redactBody(body: unknown): unknown {
-  const redacted = redactValue(body, 0);
+export const EMAIL_CONTENT_KEYS: readonly string[] = [
+  "subject",
+  "html",
+  "text",
+  "headers",
+  "variables",
+  "filename",
+];
+
+/**
+ * A JSON body as a log may keep it: secrets replaced, `content` (and the `content` keys given,
+ * at any depth) replaced by its length(s), long strings and arrays cut, and at most
+ * `MAX_LOGGED_BODY` bytes overall (beyond that only `{ truncated: true, preview }`).
+ */
+export function redactBody(body: unknown, opts: { content?: readonly string[] } = {}): unknown {
+  const contentKeys = opts.content
+    ? new Set([...CONTENT_KEYS, ...opts.content.map(normalizedKey)])
+    : CONTENT_KEYS;
+  const redacted = redactValue(body, 0, contentKeys);
   const json = JSON.stringify(redacted) ?? "null";
   if (json.length <= MAX_LOGGED_BODY) return redacted;
   return { truncated: true, bytes: json.length, preview: json.slice(0, 1024) };

@@ -1,4 +1,6 @@
+import { getStorageSettings } from "@coss/email";
 import {
+  EMAIL_CONTENT_KEYS,
   type LogWriter,
   loggedRequestHeaders,
   loggedResponseHeaders,
@@ -54,6 +56,23 @@ const CAPABILITY_RESPONSES = [/^\/v1\/contacts\/[^/]+\/preference_links$/];
  */
 const STATELESS_LOOKUPS = ["/v1/risk/email/check", "/v1/risk/ip/check"];
 const CONTENT_REQUESTS = ["/v1/risk/content/classify", ...STATELESS_LOOKUPS];
+
+/**
+ * Requests and responses that carry emails' content (sends, batches, reads, cancel, reschedule):
+ * in an environment whose content storage is `discard`, their subjects, bodies, headers, template
+ * variables and attachment filenames are redacted (the log would otherwise keep what the email
+ * itself doesn't). Decided at write time, off the request path.
+ */
+const EMAIL_CONTENT_PATHS = /^\/v1\/emails(\/|$)/;
+
+async function contentKeysFor(
+  path: string,
+  auth: { organizationId: string; environmentId: string },
+): Promise<readonly string[] | undefined> {
+  if (!EMAIL_CONTENT_PATHS.test(path)) return undefined;
+  const { contentStorage } = await getStorageSettings(auth);
+  return contentStorage === "discard" ? EMAIL_CONTENT_KEYS : undefined;
+}
 
 function keepsRequestBody(path: string): boolean {
   return !CONTENT_REQUESTS.includes(path);
@@ -165,9 +184,10 @@ export function requestLog(writer: LogWriter) {
     const search = new URL(c.req.url).search;
 
     void (async () => {
-      const [requestJson, responseJson] = await Promise.all([
+      const [requestJson, responseJson, content] = await Promise.all([
         requestText?.then(parseJson, () => undefined),
         responseCopy ? readJson(responseCopy) : undefined,
+        requestText || responseCopy ? contentKeysFor(path, auth) : undefined,
       ]);
       const error = (responseJson as ErrorEnvelope | undefined)?.error;
       const { resourceType, resourceId } = resourceOf(path, responseJson);
@@ -196,11 +216,11 @@ export function requestLog(writer: LogWriter) {
           request: {
             ...(search ? { query: search.slice(1) } : {}),
             headers: requestHeaders,
-            ...(requestJson === undefined ? {} : { body: redactBody(requestJson) }),
+            ...(requestJson === undefined ? {} : { body: redactBody(requestJson, { content }) }),
           },
           response: {
             headers: responseHeaders,
-            ...(responseJson === undefined ? {} : { body: redactBody(responseJson) }),
+            ...(responseJson === undefined ? {} : { body: redactBody(responseJson, { content }) }),
           },
           ...(typeof error?.type === "string" ? { error_type: error.type } : {}),
         },

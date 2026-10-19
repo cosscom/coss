@@ -149,9 +149,11 @@ export class FakeEmailProvider implements EmailProvider {
     if (this.sent.length > MAX_KEPT) this.sent.splice(0, this.sent.length - MAX_KEPT);
     if (this.#log) {
       const recipients = uniqueRecipients(message).length;
+      // Never the subject: sandbox environments use this provider in production too, and their
+      // emails may be sent without content storage.
       console.info(
         `[email:fake] ${message.emailId} accepted as ${providerMessageId}: ` +
-          `${JSON.stringify(message.subject)} to ${recipients} recipient(s)` +
+          `${recipients} recipient(s)` +
           (message.attachments.length ? `, ${message.attachments.length} attachment(s)` : ""),
       );
     }

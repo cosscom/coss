@@ -59,7 +59,8 @@ export function EmailContent({ emailId }: { emailId: string }) {
       {html === null && text === null ? (
         <Panel title="Content">
           <PanelBody className="text-muted-foreground text-sm">
-            No content stored: internal emails discard theirs once they leave the queue.
+            No content stored: internal emails, and emails of environments that discard content,
+            drop theirs once they leave the queue.
           </PanelBody>
         </Panel>
       ) : null}

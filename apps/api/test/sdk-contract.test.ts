@@ -861,6 +861,42 @@ describe("coss.email.tracking against the API", () => {
   });
 });
 
+describe("coss.email.storage against the API", () => {
+  test("switch content storage off; sent emails then keep only their metadata", async () => {
+    const tenant = await createTestTenant();
+    const { app, dispatch } = createTestApp();
+    const coss = clientFor(app, tenant.sandboxKey);
+
+    expect(await coss.email.storage.get()).toEqual({
+      data: { object: "storage_settings", content_storage: "store", updated_at: null },
+      error: null,
+    });
+    const updated = await coss.email.storage.update({ content_storage: "discard" });
+    expect(updated.data).toMatchObject({ content_storage: "discard" });
+    expect((await coss.email.storage.get()).data).toEqual(updated.data);
+
+    const sent = await coss.email.send({
+      from: "Acme <hello@acme.com>",
+      to: "user@example.com",
+      subject: "Your results",
+      html: "<p>Results</p>",
+    });
+    expect(sent.data?.content_storage).toEqual({ mode: "discard", discarded_at: null });
+    await dispatch();
+    const read = await coss.email.get(sent.data?.id ?? "");
+    expect(read.data).toMatchObject({
+      status: "sent",
+      subject: "",
+      html: null,
+      content_storage: { mode: "discard", discarded_at: expect.any(String) },
+    });
+
+    // @ts-expect-error: only "store" and "discard".
+    const invalid = await coss.email.storage.update({ content_storage: "forget" });
+    expect(invalid.error).toMatchObject({ code: "validation_error", param: "content_storage" });
+  });
+});
+
 describe("coss.domains.tracking against the API", () => {
   test("create and delete a tracking domain", async () => {
     const tenant = await createTestTenant();

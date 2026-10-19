@@ -24,6 +24,7 @@ import { DedicatedIpsResource } from "./dedicated-ips.ts";
 import { EmailTemplatesResource } from "./email-templates.ts";
 import { listQuery } from "./list-query.ts";
 import { ReceivedEmailsResource } from "./received-emails.ts";
+import { StorageResource } from "./storage.ts";
 import { SuppressionResource } from "./suppressions.ts";
 import { TrackingResource } from "./tracking.ts";
 
@@ -34,6 +35,8 @@ export class EmailResource {
   readonly suppressions: SuppressionResource;
   /** The environment's open and click tracking settings. */
   readonly tracking: TrackingResource;
+  /** Whether the environment keeps its emails' content after sending them. */
+  readonly storage: StorageResource;
   /** Emails the environment received. */
   readonly received: ReceivedEmailsResource;
   /** The environment's email templates. */
@@ -58,6 +61,7 @@ export class EmailResource {
     this.#http = http;
     this.suppressions = new SuppressionResource(http);
     this.tracking = new TrackingResource(http);
+    this.storage = new StorageResource(http);
     this.received = new ReceivedEmailsResource(http);
     this.templates = new EmailTemplatesResource(http);
     this.dedicatedIps = new DedicatedIpsResource(http);

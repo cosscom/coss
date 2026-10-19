@@ -47,6 +47,15 @@ type TrackingColumns = Pick<
   | "lastClickedAt"
 >;
 
+function contentStorageObject(
+  row: Pick<EmailRow, "storeContent" | "contentDiscardedAt">,
+): EmailObjectOutput["content_storage"] {
+  return {
+    mode: row.storeContent ? "store" : "discard",
+    discarded_at: row.contentDiscardedAt?.toISOString() ?? null,
+  };
+}
+
 function trackingObject(row: TrackingColumns): EmailObjectOutput["tracking"] {
   return {
     opens: row.trackOpens,
@@ -121,6 +130,7 @@ export function toEmailObject(
     batch_id: row.batchId,
     template: templateReference(row),
     broadcast_id: row.broadcastId,
+    content_storage: contentStorageObject(row),
   };
 }
 
@@ -279,7 +289,15 @@ export async function getEmailBatch(input: {
  */
 export type EmailListItem = Pick<
   EmailObjectOutput,
-  "id" | "to" | "subject" | "status" | "sandbox" | "tracking" | "created_at" | "scheduled_at"
+  | "id"
+  | "to"
+  | "subject"
+  | "status"
+  | "sandbox"
+  | "tracking"
+  | "created_at"
+  | "scheduled_at"
+  | "content_storage"
 >;
 
 /** Newest first; `limit` defaults to 50 and is capped at 100. One query. */
@@ -433,6 +451,8 @@ async function selectEmailList(
       lastClickedAt: email.lastClickedAt,
       createdAt: email.createdAt,
       scheduledAt: email.scheduledAt,
+      storeContent: email.storeContent,
+      contentDiscardedAt: email.contentDiscardedAt,
     })
     .from(email)
     .innerJoin(
@@ -455,6 +475,7 @@ async function selectEmailList(
     tracking: trackingObject(row),
     created_at: row.createdAt.toISOString(),
     scheduled_at: row.scheduledAt?.toISOString() ?? null,
+    content_storage: contentStorageObject(row),
   }));
 }
 
@@ -513,6 +534,8 @@ export async function listEmailSummariesPage(
       templateId: email.templateId,
       templateVersion: email.templateVersion,
       templateLocale: email.templateLocale,
+      storeContent: email.storeContent,
+      contentDiscardedAt: email.contentDiscardedAt,
     })
     .from(email)
     .innerJoin(
@@ -555,6 +578,7 @@ export async function listEmailSummariesPage(
       batch_id: row.batchId,
       broadcast_id: row.broadcastId,
       template: templateReference(row),
+      content_storage: contentStorageObject(row),
     })),
     hasMore: rows.length > limit,
   };

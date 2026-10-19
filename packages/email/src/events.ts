@@ -112,7 +112,9 @@ export async function recordProviderEvent(
       providerMessageId: email.providerMessageId,
       from: email.from,
       to: email.to,
-      subject: email.subject,
+      // Webhook payloads and log lines outlive the email's content, so an email sent without
+      // content storage never copies its subject into them (not even before it is discarded).
+      subject: sql<string>`case when ${email.storeContent} then ${email.subject} else '' end`,
       tags: email.tags,
       category: email.category,
       stream: email.stream,

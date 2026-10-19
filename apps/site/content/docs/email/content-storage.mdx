@@ -1,0 +1,73 @@
+---
+title: Content storage
+description: Keep no copy of your emails' content once they are sent.
+---
+
+By default, coss.com keeps every email you send, content included, for the
+[email retention period](/docs/data-retention), so you can read it back in the dashboard and through
+the API. If your emails carry data you'd rather not have stored anywhere else, such as health
+records, one-time links or financial details, set the environment's content storage to `discard`:
+coss.com then keeps an email's content only until it is sent.
+
+## Turning it on
+
+Under **Content storage** in the environment's dashboard page, or through the API:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.email.storage.update({ content_storage: "discard" });
+
+const { data: settings } = await coss.email.storage.get();
+console.log(settings?.content_storage); // "discard"
+```
+
+The setting belongs to the API key's environment (so development can keep content for debugging
+while production discards it), and changing it needs a key that can send email. Every change is
+recorded in the organization's audit log.
+
+## What is discarded
+
+Once an email is sent, fails or is canceled, coss.com clears its:
+
+- subject (an empty string from then on),
+- `html` and `text` bodies,
+- custom `headers`,
+- template variables, and
+- attachment filenames (attachment bytes are never kept after sending, whatever the setting).
+
+Everything you need to follow delivery stays: the sender and recipient addresses, `tags`,
+`category`, the status of the email and of each recipient, delivery events, opens and clicks, and
+attachment sizes and types. Webhook events and log lines of these emails never include the subject
+(it is an empty string), and API request logs show only the length of each content field.
+
+Until the email leaves the queue, its content is kept so it can be sent: a scheduled email keeps it
+until its time comes, and an email held for a retry keeps it until it is sent or fails. The
+response to the send itself still includes the content.
+
+An email reports what happened in `content_storage`:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const emailId: string;
+// ---cut---
+const { data: email } = await coss.email.get(emailId);
+console.log(email?.content_storage); // { mode: "discard", discarded_at: "2026-10-16T10:00:01.000Z" }
+```
+
+Each email keeps the setting that applied when it was sent: switching back to `store` doesn't bring
+back the content of emails sent while it was `discard`, and switching to `discard` doesn't remove
+the content of emails already sent.
+
+## Good to know
+
+- Click tracking needs your links to redirect them, so an email with click tracking keeps its
+  tracked URLs (and `email.clicked` events name the URL). Turn click tracking off for these emails
+  if their links carry personal data.
+- The setting covers emails you send. [Emails you receive](/docs/email/receiving) are kept with
+  their content for you to fetch, and you can delete one, content included, at any time.
+- A broadcast's own content is kept until you delete the broadcast; its emails follow the setting
+  like any other.
+- Tags and categories are always kept, so don't put personal data in them.

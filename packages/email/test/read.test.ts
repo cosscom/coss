@@ -102,6 +102,7 @@ describe("listEmails", () => {
       tracking: newest.tracking,
       created_at: newest.created_at,
       scheduled_at: newest.scheduled_at,
+      content_storage: { mode: "store", discarded_at: null },
     });
 
     expect(

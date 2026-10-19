@@ -126,6 +126,7 @@ import type {
   RescheduleEmailRequest,
   SendEmailBatchRequest,
   SendEmailRequest,
+  StorageSettings,
   Suppression,
   SuppressionCheck,
   SuppressionImport,
@@ -137,6 +138,7 @@ import type {
   TrackingSettings,
   UpdateEmailTemplateDraftRequest,
   UpdateEmailTemplateRequest,
+  UpdateStorageSettingsRequest,
   UpdateTrackingRuleRequest,
 } from "@coss/email/schemas";
 import type {
@@ -327,6 +329,7 @@ import type {
   DomainDmarc as SdkDomainDmarc,
   DomainRecord as SdkDomainRecord,
   DomainWebhookEvent as SdkDomainWebhookEvent,
+  EmailContentStorage as SdkEmailContentStorage,
   EmailEvent as SdkEmailEvent,
   EmailLink as SdkEmailLink,
   EmailRecipient as SdkEmailRecipient,
@@ -367,6 +370,7 @@ import type {
   RiskSettings as SdkRiskSettings,
   RiskWebhookEvent as SdkRiskWebhookEvent,
   Segment as SdkSegment,
+  StorageSettings as SdkStorageSettings,
   Suppression as SdkSuppression,
   SuppressionCheck as SdkSuppressionCheck,
   SuppressionImport as SdkSuppressionImport,
@@ -399,6 +403,7 @@ import type {
   UpdateRiskRuleParams,
   UpdateRiskSettingsParams,
   UpdateSegmentParams,
+  UpdateStorageSettingsParams,
   UpdateTopicParams,
   UpdateTrackingRuleParams,
   UpdateWebhookEndpointParams,
@@ -496,6 +501,7 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof EmailEvent>["data"], SdkEmailEvent["data"]>>,
   Assert<MutuallyAssignable<z.output<typeof EmailEventList>, List<SdkEmailEvent>>>,
   Assert<MutuallyAssignable<EmailOutput["tracking"], SdkEmailTracking>>,
+  Assert<MutuallyAssignable<EmailOutput["content_storage"], SdkEmailContentStorage>>,
   Assert<MutuallyAssignable<z.output<typeof EmailLink>, SdkEmailLink>>,
   Assert<MutuallyAssignable<z.output<typeof EmailLinkList>, List<SdkEmailLink>>>,
   // Batch sends: `sendBatch(emails)` posts `{ emails }` and returns the batch.
@@ -728,6 +734,11 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof TrackingRule>, SdkTrackingRule>>,
   Assert<MutuallyAssignable<z.output<typeof TrackingSettings>, SdkTrackingSettings>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedTrackingRule>, SdkDeletedTrackingRule>>,
+  // Storage settings.
+  Assert<
+    MutuallyAssignable<z.input<typeof UpdateStorageSettingsRequest>, UpdateStorageSettingsParams>
+  >,
+  Assert<MutuallyAssignable<z.output<typeof StorageSettings>, SdkStorageSettings>>,
   // Logs: responses, and the query's parameter names (the SDK also accepts arrays and Dates).
   Assert<MutuallyAssignable<z.output<typeof LogEntry>, SdkLog>>,
   Assert<MutuallyAssignable<z.output<typeof LogList>, List<SdkLog>>>,

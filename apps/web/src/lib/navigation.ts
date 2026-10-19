@@ -6,6 +6,7 @@ import {
   CableIcon,
   ContactRoundIcon,
   CreditCardIcon,
+  DatabaseIcon,
   FilterIcon,
   FoldersIcon,
   GaugeIcon,
@@ -67,6 +68,7 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
       { label: "Received", path: "/received", icon: InboxIcon },
       { label: "Suppressions", path: "/suppressions", icon: BanIcon },
       { label: "Tracking", path: "/tracking", icon: MousePointerClickIcon },
+      { label: "Content storage", path: "/content-storage", icon: DatabaseIcon },
     ],
   },
   {
@@ -212,6 +214,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   topics: "Topics",
   marketing: "Marketing settings",
   tracking: "Tracking",
+  "content-storage": "Content storage",
   risk: "Risk",
   lists: "Lists",
   rules: "Rules",

@@ -55,6 +55,7 @@ export type {
   RiskSettingsResource,
   RiskUsersResource,
 } from "./resources/risk.ts";
+export type { StorageResource } from "./resources/storage.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
 export type { TrackingResource } from "./resources/tracking.ts";
 export type { TrackingDomainsResource } from "./resources/tracking-domains.ts";
@@ -178,10 +179,12 @@ export type {
   TrackingDomainStatus,
 } from "./types/domain.ts";
 export type {
+  ContentStorageMode,
   Email,
   EmailAttachment,
   EmailAttachmentParams,
   EmailBatch,
+  EmailContentStorage,
   EmailEvent,
   EmailEventData,
   EmailEventType,
@@ -340,6 +343,7 @@ export type {
   UpdateRiskRuleParams,
   UpdateRiskSettingsParams,
 } from "./types/risk.ts";
+export type { StorageSettings, UpdateStorageSettingsParams } from "./types/storage.ts";
 export type {
   CheckSuppressionParams,
   CreateSuppressionParams,

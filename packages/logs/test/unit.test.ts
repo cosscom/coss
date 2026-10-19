@@ -6,6 +6,7 @@ import { csvField, logCsvRow } from "../src/export.ts";
 import { formatLogQuery, parseLogQuery, statusRange } from "../src/query.ts";
 import { histogramBucketMs } from "../src/read.ts";
 import {
+  EMAIL_CONTENT_KEYS,
   loggedRequestHeaders,
   MAX_LOGGED_BODY,
   MAX_LOGGED_STRING,
@@ -97,6 +98,33 @@ describe("redactBody", () => {
     expect(out.truncated).toBe(true);
     expect(out.bytes).toBeGreaterThan(MAX_LOGGED_BODY);
     expect(out.preview.length).toBe(1024);
+  });
+
+  test("extra content keys keep only the shape of an email's content, at any depth", () => {
+    const email = {
+      from: "a@acme.com",
+      subject: "Results",
+      html: "<p>5.1</p>",
+      text: null,
+      headers: { "X-Ref": "p-1" },
+      tags: [{ name: "kind", value: "results" }],
+      attachments: [{ filename: "r.pdf", content: "JVBERi0=" }],
+    };
+    const redacted = {
+      from: "a@acme.com",
+      subject: "[7 characters]",
+      html: "[10 characters]",
+      text: null,
+      headers: { "X-Ref": "[3 characters]" },
+      tags: [{ name: "kind", value: "results" }],
+      attachments: [{ filename: "[5 characters]", content: "[8 characters]" }],
+    };
+    expect(redactBody(email, { content: EMAIL_CONTENT_KEYS })).toEqual(redacted);
+    expect(redactBody({ emails: [email] }, { content: EMAIL_CONTENT_KEYS })).toEqual({
+      emails: [redacted],
+    });
+    // Without them, nothing changes.
+    expect(redactBody(email)).toMatchObject({ subject: "Results", html: "<p>5.1</p>" });
   });
 
   test("headers are allow-listed", () => {

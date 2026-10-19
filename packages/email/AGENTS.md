@@ -230,6 +230,18 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   expose content. A queued email whose content is gone fails with `attachments_unavailable` rather than sending without
   it. The parsed request omits `attachments` when empty (request hashes). SES gets them as `Simple.Attachments`
   (`content_id` → `INLINE`); the fake provider keeps sha256 digests, not bytes.
+- **Content storage** (`packages/email/src/storage-settings.ts`, table `email_storage_settings` keyed by environment,
+  `/v1/storage_settings`, `coss.email.storage`, the dashboard's `[envSlug]/content-storage`): `store` (default, no
+  row) or `discard`, resolved once per send/batch/broadcast step and snapshotted as `email.store_content`. In the
+  transaction that moves an email to a terminal status `purgeSendContent` clears a `store_content = false` email's
+  subject (to `''`; it is NOT NULL and its wire type stays `string`), `html`/`text`, `headers`, `variables` and
+  attachment filenames, and sets `content_discarded_at` (the wire `content_storage: { mode, discarded_at }`);
+  `withRenderedBody` never re-renders a discarded broadcast email. Every terminal transition already calls
+  `purgeSendContent`: a new one must too. `recordProviderEvent` reads the subject as `''` for these emails from
+  the start, so webhook payloads and event log lines never hold it; the API's request log redacts
+  `EMAIL_CONTENT_KEYS` (`@coss/logs`) on `/v1/emails*` for a `discard` environment. Not covered (documented):
+  click tracking's `email_link` URLs, received email, a broadcast's own content, tags and categories. The
+  fake provider never logs subjects. `discard_body` (internal auth emails) stays a separate, body-only flag.
 - **Generated text parts** (`packages/email/src/html-text.ts`, `htmlToText`): an email sent with `html` and no
   `text` gets a plain-text part built from the original HTML in `toOutbound`, for the provider's copy only (like
   tracking: `email.text` stays `null`, so API reads, request hashes and webhooks are unchanged). It is built before
