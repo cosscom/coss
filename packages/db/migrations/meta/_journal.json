@@ -589,6 +589,13 @@
       "when": 1792435496195,
       "tag": "0083_rainy_mentallo",
       "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1792435843118,
+      "tag": "0084_glorious_firebird",
+      "breakpoints": true
     }
   ]
 }

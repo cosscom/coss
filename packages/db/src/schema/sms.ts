@@ -413,5 +413,7 @@ export const smsInboundReceipt = pgTable(
   (t) => [
     primaryKey({ columns: [t.provider, t.providerMessageId] }),
     index("sms_inbound_receipt_created_at_idx").on(t.createdAt),
+    // Reputation's opt-out count and organization deletion's batches.
+    index("sms_inbound_receipt_organization_created_at_idx").on(t.organizationId, t.createdAt),
   ],
 );

@@ -21,6 +21,7 @@ const {
   email,
   emailBatch,
   emailSuppression,
+  smsInboundReceipt,
   smsMessage,
   smsReceived,
   smsSuppression,
@@ -343,8 +344,9 @@ async function deleteInBatches(
 }
 
 /**
- * `deleteInBatches` for a partitioned table, whose rows are keyed by `(partition column, id)`:
- * deleting by both lets each batch touch only the partitions its rows are in.
+ * `deleteInBatches` for a table whose rows are keyed by two columns: a partitioned table's
+ * `(partition column, id)` (deleting by both lets each batch touch only the partitions its rows
+ * are in), or a composite primary key.
  */
 async function deletePartitionedInBatches(
   deletion: Claimed,
@@ -400,6 +402,19 @@ async function deleteOrganizationData(
     )
       return false;
   }
+  // One receipt per inbound text message, routed or not: organization-wide.
+  if (
+    !(await deletePartitionedInBatches(
+      deletion,
+      smsInboundReceipt,
+      smsInboundReceipt.provider,
+      smsInboundReceipt.providerMessageId,
+      eq(smsInboundReceipt.organizationId, organizationId),
+      batchSize,
+      signal,
+    ))
+  )
+    return false;
   const environments = await db
     .select({ id: environment.id })
     .from(environment)
