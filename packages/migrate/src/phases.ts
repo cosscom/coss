@@ -51,6 +51,7 @@ import {
   type MigrationSource,
   PROVIDER_NAMES,
   type SourceSuppression,
+  type SourceWebhook,
 } from "./types.ts";
 
 export type PhaseDeps = {
@@ -630,10 +631,41 @@ async function contactsAmong(env: MigrationEnvironment, addresses: string[]): Pr
   return found;
 }
 
-const webhooks: Phase = async (ctx, cursor) => {
-  const sources = await ctx.source.webhooks();
-  return eachObject(ctx, cursor, sources, async (hook) => {
+/**
+ * The provider's webhooks, one per URL: several posting to the same URL (Postmark's, one per
+ * stream) become one endpoint subscribed to all of their events. Keyed by the first one's id.
+ */
+function webhooksByUrl(hooks: SourceWebhook[]): (SourceWebhook & { url: string })[] {
+  const byUrl = new Map<string, SourceWebhook & { url: string; merged: number }>();
+  for (const hook of hooks) {
     const url = normalizedUrl(hook.url);
+    const first = byUrl.get(url);
+    if (!first) {
+      byUrl.set(url, { ...hook, url, merged: 0 });
+      continue;
+    }
+    first.eventTypes = [...new Set([...first.eventTypes, ...hook.eventTypes])].sort();
+    first.unmapped = [...new Set([...first.unmapped, ...hook.unmapped])];
+    first.notes = [...new Set([...first.notes, ...hook.notes])];
+    first.merged++;
+  }
+  return [...byUrl.values()].map(({ merged, ...hook }) =>
+    merged > 0
+      ? {
+          ...hook,
+          notes: [
+            ...hook.notes,
+            `${merged + 1} webhooks posted to this URL: their events were combined.`,
+          ],
+        }
+      : hook,
+  );
+}
+
+const webhooks: Phase = async (ctx, cursor) => {
+  const sources = webhooksByUrl(await ctx.source.webhooks());
+  return eachObject(ctx, cursor, sources, async (hook) => {
+    const { url } = hook;
     const item = await pendingItem(
       ctx,
       "webhook_endpoint",

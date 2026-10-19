@@ -502,6 +502,46 @@ describe("runDueMigrations", () => {
     });
   });
 
+  test("webhooks posting to the same URL become one endpoint with all their events", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const data: FakeSourceData = {
+      provider: "postmark",
+      webhooks: [
+        {
+          id: "1",
+          url: "https://example.com/pm",
+          name: "outbound",
+          eventTypes: ["email.delivered"],
+          unmapped: [],
+          notes: ["For the outbound stream."],
+        },
+        {
+          id: "2",
+          url: "https://EXAMPLE.com/pm",
+          name: "broadcasts",
+          eventTypes: ["email.bounced", "email.delivered"],
+          unmapped: [],
+          notes: ["For the broadcasts stream."],
+        },
+      ],
+    };
+    const row = await connect(tenant);
+    await settle(tenant, depsFor(data));
+    await startAll(tenant, row.id, ["webhooks"]);
+    await settle(tenant, depsFor(data));
+    const endpoints = await listWebhookEndpoints(env);
+    expect(endpoints).toHaveLength(1);
+    expect(endpoints[0]?.eventTypes).toEqual(["email.bounced", "email.delivered"]);
+    const items = await listMigrationItems(env, row.id);
+    expect(items).toHaveLength(1);
+    expect(items[0]?.warnings).toEqual([
+      "For the outbound stream.",
+      "For the broadcasts stream.",
+      "2 webhooks posted to this URL: their events were combined.",
+    ]);
+  });
+
   test("finds existing topics even when the environment is at its topic cap", async () => {
     const tenant = await createTestTenant();
     const env = envOf(tenant);
