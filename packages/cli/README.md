@@ -1,7 +1,7 @@
 # coss-cli
 
-The command line for [coss.com](https://coss.com): sign in, send test emails, follow your environment's
-log, and receive its webhook events on your machine.
+The command line for [coss.com](https://coss.com): sign in, send test emails and text messages, follow
+your environment's log, and receive its webhook events on your machine.
 
 ```sh
 npm install -g coss-cli    # or: npx coss-cli <command>
@@ -46,6 +46,7 @@ one downloaded with a browser needs `xattr -d com.apple.quarantine coss`.
 | `coss emails get <id>` | An email: sender, recipients and their statuses, failure, tracking, attachments; `--text` or `--html` prints a body alone. |
 | `coss emails events <id>` | Its delivery events, with the receiving server's answers. |
 | `coss emails diagnose <id>` | Whether it was delivered and, if not, why and what to do (or `--to <address>` for the newest email to it). |
+| `coss sms send` | A test text message: `--to +14155550123`, or `--simulate delivered\|invalid\|filtered\|opted-out\|reply` for the SMS simulator (sandbox keys); `--from` (default for sandbox keys `+14155550100`; live keys need one of your registered numbers), `--body`; `--wait` follows it to its outcome (and shows the simulator's reply). |
 | `coss logs tail` | New lines of the environment's log as they arrive: API requests, email events, webhook attempts. Filter with `--source`, `--level`, `--type`, `--status`, `-q`; `--since 15m` starts earlier; `--interval` sets the poll interval (2000 ms). |
 | `coss inbox` | The environment's inbound domain, then each email it receives as it arrives (`--since`, `--interval`). |
 | `coss inbox get <id>` | A received email: verdicts, attachments and its text (`--html`, `--headers`); `--raw > message.eml` saves the message as received. |

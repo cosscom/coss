@@ -102,6 +102,72 @@ describe("coss-mcp against the API", () => {
     );
   });
 
+  test("send_sms, then get, find and diagnose it; a filtered message and the simulated reply", async () => {
+    const tenant = await createTestTenant();
+    const { app, dispatchSms } = createTestApp();
+    const call = await connect(app, tenant.sandboxKey);
+
+    const sent = await call("send_sms", {
+      from: "+14155550123",
+      to: "+15005550006",
+      body: "Your Acme code is 482913",
+    });
+    expect(sent.isError).toBe(false);
+    expect(sent.data.sms.status).toBe("queued");
+    await dispatchSms();
+
+    const got = await call("get_sms", { id: sent.data.sms.id });
+    expect(got.data.sms).toMatchObject({ status: "delivered", sandbox: true });
+    expect(got.data.events.map((e: { type: string }) => e.type)).toEqual([
+      "sms.sent",
+      "sms.delivered",
+    ]);
+
+    const filtered = await call("send_sms", {
+      from: "+14155550123",
+      to: "+15005550004",
+      body: "Hi",
+    });
+    const reply = await call("send_sms", { from: "+14155550123", to: "+15005550008", body: "Hi" });
+    await dispatchSms();
+    const found = await call("find_sms", { status: ["undelivered"] });
+    expect(found.data.sms).toEqual([
+      expect.objectContaining({ id: filtered.data.sms.id, failure: expect.anything() }),
+    ]);
+    const diagnosis = await call("diagnose_sms", { to: "+15005550004" });
+    expect(diagnosis.data).toMatchObject({
+      sms_id: filtered.data.sms.id,
+      verdict: "not_delivered",
+      failure: { code: "carrier_filtered" },
+      details: { provider_error_code: "30007" },
+    });
+    expect(diagnosis.data.warnings[0]).toStartWith("Sandbox message");
+
+    const received = await call("list_received_sms", { to: "+14155550123" });
+    expect(received.data.received_sms).toEqual([
+      expect.objectContaining({ from: reply.data.sms.to, to: "+14155550123" }),
+    ]);
+
+    await call("add_sms_suppression", { phone_number: "+14155550199" });
+    expect(
+      (await call("check_sms_suppression", { phone_number: "+14155550199" })).data.suppressed,
+    ).toBe(true);
+    const skipped = await call("send_sms", {
+      from: "+14155550123",
+      to: "+14155550199",
+      body: "Hi",
+    });
+    const suppressed = await call("diagnose_sms", { sms_id: skipped.data.sms.id });
+    expect(suppressed.data).toMatchObject({
+      verdict: "not_delivered",
+      failure: { code: "suppressed" },
+      details: { suppression: { reason: "manual" } },
+    });
+    const removed = await call("remove_sms_suppression", { phone_number: "+14155550199" });
+    expect(removed.data.removed).toHaveLength(1);
+    expect((await call("list_sms_numbers")).data.numbers).toEqual([]);
+  });
+
   test("emails of another environment are not found, with a hint", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp();

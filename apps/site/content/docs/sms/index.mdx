@@ -1,0 +1,75 @@
+---
+title: SMS
+description: Send and receive text messages from your organization's phone numbers.
+icon: MessageSquare
+---
+
+`coss.sms` sends text messages from your organization's phone numbers, reports what carriers do
+with them, and receives the replies. It uses the same API key, [webhooks](/docs/webhooks),
+[logs](/docs/logs) and sandbox environments as email.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: sms, error } = await coss.sms.send({
+  from: "+14155550123",
+  to: "+14155550199",
+  body: "Your Acme code is 482913",
+});
+```
+
+Numbers are in [E.164](https://en.wikipedia.org/wiki/E.164) form: `+`, the country code, then
+the number, without spaces. Sends return HTTP `202` with `status: "queued"`; a background worker
+hands the message to the carrier. Follow it with `coss.sms.get()` or the `sms.*` webhooks.
+
+## Quick start
+
+1. **Try it in a sandbox.** Sandbox (`coss_test_…`) keys accept any `from` number and simulate
+   every message: send to `+15005550006` and it is delivered, to `+15005550001` and it fails with
+   `invalid_number`. The [SMS simulator](/docs/sms/testing) has a number for each outcome. Nothing
+   is sent or billed.
+2. **Choose a paid plan.** Live SMS is available on paid plans ([plans](/docs/billing)); Free
+   organizations can use sandboxes.
+3. **Get a number and register it.** On the dashboard's organization **SMS** page, owners and
+   admins buy a local or toll-free number and register it with the carriers: US A2P 10DLC for
+   local numbers, toll-free verification for toll-free ones. Reviews usually take a few days. See
+   [numbers and registration](/docs/sms/senders).
+4. **Send with a live key.** Once the registration is approved, live (`coss_live_…`) keys send
+   from the number to the [countries your organization allows](/docs/sms/countries-and-pricing)
+   (the US and Canada to start with).
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+// Which numbers can send live messages now?
+const { data: numbers } = await coss.sms.numbers.list();
+for (const number of numbers?.data ?? []) {
+  console.log(number.phone_number, number.kind, number.registration_status, number.can_send);
+}
+```
+
+## What's in it
+
+<Cards>
+  <Card title="Sending" href="/docs/sms/sending">
+    Segments, statuses, scheduling, failures and suppressions.
+  </Card>
+  <Card title="Numbers and registration" href="/docs/sms/senders">
+    Local and toll-free numbers, US A2P 10DLC and toll-free verification.
+  </Card>
+  <Card title="Receiving" href="/docs/sms/receiving">
+    Replies, STOP and START, and their webhooks.
+  </Card>
+  <Card title="Testing" href="/docs/sms/testing">
+    The SMS simulator's numbers for every outcome.
+  </Card>
+  <Card title="Countries and pricing" href="/docs/sms/countries-and-pricing">
+    Where you can send, and what a message costs.
+  </Card>
+</Cards>
+
+Messages are kept for <RetentionPeriod of="sms_messages" /> and received messages for
+<RetentionPeriod of="received_sms" /> (see [data retention](/docs/data-retention)). Webhook
+payloads never include the text: read it with `coss.sms.get()` or `coss.sms.received.get()`.

@@ -1,4 +1,4 @@
-import { PLAN_KEYS, PLANS } from "@coss/billing/catalog";
+import { PLAN_KEYS, PLANS, type Product } from "@coss/billing/catalog";
 import { addOnRows, planRows, rateRows } from "@/lib/billing-text";
 import { DocsTable, DocsTd, DocsTh, DocsTr } from "./docs-table";
 
@@ -28,8 +28,8 @@ export function PlanTable() {
   );
 }
 
-/** The list usage rates per product. */
-export function UsageRates() {
+/** The list usage rates per product (or of one `product`'s meters). */
+export function UsageRates({ product }: { product?: Product }) {
   return (
     <DocsTable>
       <thead>
@@ -40,7 +40,7 @@ export function UsageRates() {
         </DocsTr>
       </thead>
       <tbody>
-        {rateRows().map((row) => (
+        {rateRows(product).map((row) => (
           <DocsTr key={row.product}>
             <DocsTd>{row.product}</DocsTd>
             <DocsTd>{row.rate}</DocsTd>

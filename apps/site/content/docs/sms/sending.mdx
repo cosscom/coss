@@ -1,0 +1,193 @@
+---
+title: Sending SMS
+description: Numbers, segments, statuses, scheduling, failures and suppressions.
+---
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: sms, error } = await coss.sms.send(
+  {
+    from: "+14155550123",
+    to: "+14155550199",
+    body: "Your Acme order #1042 has shipped.",
+    tags: [{ name: "order_id", value: "1042" }],
+  },
+  { idempotencyKey: "order-1042-shipped" },
+);
+if (sms) console.log(sms.id, sms.status, sms.segments, sms.encoding, sms.country);
+```
+
+Sends return HTTP `202` with `status: "queued"`, and a background worker hands the message to the
+carrier. Retrying with the same idempotency key returns the first message instead of sending a
+second one (the SDK sets a key on every send).
+
+## Numbers
+
+`from` and `to` are phone numbers in E.164 form (`+14155550199`). With a live key, `from` must be
+one of your organization's numbers whose carrier registration is approved
+([numbers and registration](/docs/sms/senders)), and `to` must be in a country your organization
+allows ([countries](/docs/sms/countries-and-pricing)). Toll-free numbers only send to the US and
+Canada. Sandbox keys accept any `from` and simulate every message ([testing](/docs/sms/testing)).
+
+| Error (`code`)         | Status | Why                                                                   |
+| ---------------------- | ------ | --------------------------------------------------------------------- |
+| `invalid_phone_number` | `422`  | `to` isn't a phone number                                             |
+| `sender_not_found`     | `422`  | `from` isn't one of your organization's numbers                       |
+| `sender_not_ready`     | `422`  | `from` can't send yet: its registration isn't approved                |
+| `country_not_allowed`  | `422`  | `to` is in a country your organization doesn't allow, or a toll-free number sends outside the US and Canada |
+| `account_suspended`    | `403`  | Live sending is suspended for your organization's [reputation](/docs/sms/receiving#opt-outs-and-reputation) |
+| `billing_hold`         | `402`  | An invoice is overdue or the spend limit was reached ([billing](/docs/billing#limits-and-paused-sending)) |
+| `plan_feature_unavailable` | `402` | Your plan doesn't include SMS, or the destination country isn't priced |
+
+## Segments
+
+Carriers deliver SMS in segments, and each segment is billed. A message made only of
+[GSM-7](https://en.wikipedia.org/wiki/GSM_03.38) characters (Latin letters, digits and common
+punctuation) is sent as GSM-7; anything else, an emoji or a curly quote included, makes the whole
+message UCS-2 (Unicode):
+
+| Encoding | One segment     | Longer messages    | At most (10 segments) |
+| -------- | --------------- | ------------------ | --------------------- |
+| `gsm7`   | 160 characters  | 153 per segment    | 1,530 characters      |
+| `ucs2`   | 70 characters   | 67 per segment     | 670 characters        |
+
+GSM-7's extended characters (`€ [ ] { } \ ^ ~ |` and the form feed) take two characters' room.
+Characters are never split across segments. A body of more than 10 segments is refused with a
+`422` `validation_error`, as is one with control characters other than line breaks. The message's
+`segments` and `encoding` say how it was counted; coss.com and the carrier count the same way.
+
+## Statuses
+
+| Status        | Meaning                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| `queued`      | Accepted, waiting for the worker                                                         |
+| `scheduled`   | Waiting for its `scheduled_at`                                                           |
+| `sent`        | Handed to the carrier (`sms.sent` once the carrier has it)                               |
+| `delivered`   | The carrier reported delivery to the phone (`sms.delivered`)                             |
+| `undelivered` | The carrier couldn't deliver it (`sms.undelivered`, with `failure`)                       |
+| `failed`      | Never sent (`sms.failed`, or `sms.suppressed` for a suppressed number), with `failure`   |
+| `canceled`    | A scheduled message you canceled (`sms.canceled`)                                        |
+
+Not every carrier reports delivery: a message can stay `sent`. Each message's events are listed by
+`coss.sms.listEvents()` and sent to your [webhooks](/docs/webhooks#events); their payloads never
+include the text.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const smsId: string;
+// ---cut---
+const { data: sms } = await coss.sms.get(smsId);
+if (sms?.status === "undelivered" || sms?.status === "failed") {
+  console.log(sms.failure?.code, sms.failure?.message);
+}
+
+const { data: events } = await coss.sms.listEvents(smsId);
+for (const event of events?.data ?? []) console.log(event.type, event.occurred_at);
+
+// The last day's failed messages.
+const { data: failed } = await coss.sms.list({
+  status: ["failed", "undelivered"],
+  created_after: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+});
+```
+
+## Failures
+
+`failure.code` says why a message failed or wasn't delivered:
+
+| Code                    | Why                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------ |
+| `invalid_number`        | The number doesn't exist or isn't a mobile number. It is suppressed                  |
+| `opted_out`             | The recipient replied STOP to this number. It is suppressed                          |
+| `suppressed`            | The number is on the environment's suppression list: nothing was sent                |
+| `carrier_filtered`      | The carrier filtered it as spam or unregistered traffic                              |
+| `blocked`               | The carrier or the recipient blocked it                                              |
+| `unreachable`           | The phone is switched off or out of coverage                                         |
+| `unroutable`            | It can't be routed from this number to the recipient's carrier                       |
+| `country_not_permitted` | SMS to this country isn't enabled for the sender                                     |
+| `sender_unregistered`   | The number's registration isn't complete                                             |
+| `sender_unavailable`    | The number was released before the message went out                                  |
+| `content_rejected`      | [Content screening](#content-screening) blocked it                                   |
+| `undelivered`           | The carrier couldn't deliver it and gave no reason                                   |
+| `provider_error`, `dispatch_failed`, `dispatch_interrupted` | coss.com couldn't hand it to the carrier            |
+
+When the carrier gives its own error code, the event's `data.provider_error_code` has it (for
+example `30007`).
+
+## Scheduling and cancellation
+
+Pass `scheduled_at` as an ISO 8601 timestamp with a time zone offset, up to 30 days ahead. The
+message is `scheduled` (with an `sms.scheduled` event) until then; a time that isn't in the future
+sends it right away. At the scheduled time the sender, the country and the suppression list are
+checked again, so a number released or suppressed in the meantime fails the message instead.
+Scheduled messages wait while your organization is suspended or on a billing hold.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: reminder } = await coss.sms.send({
+  from: "+14155550123",
+  to: "+14155550199",
+  body: "Reminder: your Acme appointment is tomorrow at 10:00.",
+  scheduled_at: "2026-11-11T09:00:00Z",
+});
+if (reminder) await coss.sms.cancel(reminder.id);
+```
+
+Canceling makes it `canceled` (`sms.canceled`); canceling it again returns the same message. Any
+other message can't be canceled (`422` `sms_not_cancelable`).
+
+## Suppressions
+
+Each environment has its own SMS suppression list, separate from email's. A send to a number on
+it fails at once with `failure.code` `suppressed` and an `sms.suppressed` event: nothing is sent or
+billed. Entries have a `reason`:
+
+- `opt_out`: the number replied STOP (or a synonym) to one of your numbers. Opt-outs are added to
+  every live environment of the organization, since your numbers are shared, and START removes
+  them ([receiving](/docs/sms/receiving#stop-start-and-help)). A send the carrier refuses because
+  of an opt-out adds one too.
+- `invalid_number`: a send failed because the number can't receive SMS.
+- `manual`: added by you.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.sms.suppressions.add({ phone_number: "+14155550199" });
+
+const { data: check } = await coss.sms.suppressions.check({ phone_number: "+14155550199" });
+if (check?.suppressed && check.suppression?.reason === "manual") {
+  await coss.sms.suppressions.remove(check.suppression.id);
+}
+```
+
+Remove an `opt_out` entry only when the person asked for your messages again (they can also
+reply START). Suppression entries are kept until you remove them.
+
+## Limits
+
+- **Your plan's SMS rate**: segments a second and a day per organization (see the
+  [plans](/docs/billing)). Over it, sends get `429` `quota_exceeded` with `Retry-After`.
+- **10 messages an hour to the same number** per organization, for live keys: a form that loops
+  one-time codes to one number, or traffic pumped through it, stops there (`429`
+  `quota_exceeded`).
+- **Sandbox environments**: 200 segments a day each.
+
+## Content screening
+
+A sample of live messages is screened for spam, phishing, malware and fraud before it is sent,
+like email. A message judged highly likely to be abusive fails with `content_rejected` and live
+sending is suspended pending review (see the
+[Acceptable Use Policy](/legal/acceptable-use#4-content-screening)).
+
+## Billing
+
+A live message is billed per segment, at its destination country's rate, once it reaches a
+carrier (`sent`, `delivered` or `undelivered`). Failed, suppressed and canceled messages cost
+nothing, and sandbox messages are never billed. See [countries and
+pricing](/docs/sms/countries-and-pricing).

@@ -1,0 +1,42 @@
+---
+title: Testing SMS
+description: Simulate every outcome from a sandbox environment with the SMS simulator.
+---
+
+Sandbox (`coss_test_…`) keys send nothing and bill nothing. They accept any `from` number, skip
+the number, country and plan checks, and simulate what a carrier does, so the whole flow (statuses,
+events, webhooks, suppressions, logs) works before you have a number. Messages to these numbers
+behave as below; any other number is delivered.
+
+| To             | Simulates                     | Status        | Events                                   |
+| -------------- | ----------------------------- | ------------- | ---------------------------------------- |
+| `+15005550006` | Delivered                     | `delivered`   | `sms.sent`, `sms.delivered`              |
+| `+15005550001` | A number that can't get SMS   | `failed`      | `sms.failed` (`invalid_number`)          |
+| `+15005550004` | Filtered by the carrier       | `undelivered` | `sms.sent`, `sms.undelivered` (`carrier_filtered`, `30007`) |
+| `+15005550009` | A recipient who opted out     | `failed`      | `sms.failed` (`opted_out`)               |
+| `+15005550008` | Delivered, then a reply       | `delivered`   | `sms.sent`, `sms.delivered`, then `sms.received` |
+
+The reply to `+15005550008` ("Thanks! This is a simulated reply.") arrives in the same sandbox
+environment, from that number to your `from`, and can be read with `coss.sms.received.list()`.
+Simulator numbers are never added to the suppression list, so they keep working; numbers you add
+yourself are skipped as in live environments.
+
+```ts twoslash
+import { Coss } from "coss";
+// A sandbox key: coss_test_…
+const coss = new Coss();
+// ---cut---
+const { data: sms } = await coss.sms.send({
+  from: "+15005550000",
+  to: "+15005550004",
+  body: "Your Acme code is 482913",
+});
+// A moment later: status "undelivered", failure.code "carrier_filtered"
+```
+
+Each sandbox environment can send 200 segments a day. Sandbox messages are never
+[screened](/docs/sms/sending#content-screening), and their events and webhook payloads have
+`sandbox: true`.
+
+Live opt-outs can't be simulated: a STOP to one of your numbers suppresses the sender in live
+environments only.

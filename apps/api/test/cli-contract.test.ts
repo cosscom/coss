@@ -145,6 +145,28 @@ describe("coss-cli against the API", () => {
     );
   });
 
+  test("sms send --simulate reply --wait: the message's outcome and the simulator's reply", async () => {
+    const tenant = await createTestTenant();
+    const { app, dispatchSms } = createTestApp();
+    const cli = cliIo(app, { sleep: () => dispatchSms() });
+    cli.io.env.COSS_API_KEY = tenant.sandboxKey;
+
+    expect(await run(["sms", "send", "--simulate", "reply", "--wait", "--json"], cli.io)).toBe(0);
+    const sent = JSON.parse(cli.stdout().trim().split("\n").at(-1) ?? "{}");
+    expect(sent).toMatchObject({ status: "delivered", to: "+15005550008", sandbox: true });
+    expect(sent.events.map((event: { type: string }) => event.type)).toEqual([
+      "sms.sent",
+      "sms.delivered",
+    ]);
+    expect(sent.replies).toEqual([
+      expect.objectContaining({ from: "+15005550008", to: sent.from }),
+    ]);
+
+    expect(await run(["sms", "send", "--simulate", "invalid", "--wait"], cli.io)).toBe(0);
+    expect(cli.stdout()).toContain("failed → +15005550001");
+    expect(cli.stdout()).toContain("invalid_number:");
+  });
+
   test("api: any endpoint with the profile's key, a body from stdin, and every page of a list", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp();

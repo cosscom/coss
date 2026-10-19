@@ -1,0 +1,40 @@
+---
+title: Countries and pricing
+description: Where live SMS can go, and what messages, numbers and registrations cost.
+---
+
+## Countries
+
+Every organization starts with live SMS allowed to the **United States and Canada**. Owners and
+admins allow other countries on the dashboard's organization **SMS** page; a send to a country
+that isn't allowed is refused with `422` `country_not_allowed` before anything is sent. Allow only
+the countries you need: traffic to the others can't be pumped through your account.
+
+- A few countries where SMS pumping fraud (fake sign-ups that send codes to numbers whose
+  carriers pay the attacker) is common can only be allowed once coss.com support has unlocked
+  them for you. Ask at [support@coss.com](mailto:support@coss.com) with your use case.
+- SMS can only go to countries with a price: the [pricing page](/pricing#sms) lists every one.
+- Toll-free numbers only send to the US and Canada, whatever your organization allows.
+
+Sandbox environments can send to any number: nothing leaves coss.com.
+
+## Pricing
+
+Live SMS is available on paid plans and is paid for like any other usage: your plan's monthly
+credit covers it first ([plans and billing](/docs/billing)). Free organizations can send in
+sandbox environments only.
+
+- **Sent messages** are priced per segment by the destination country, and billed once the
+  message reaches a carrier (`sent`, `delivered` or `undelivered`). Failed, suppressed and
+  canceled messages cost nothing. See [segments](/docs/sms/sending#segments) for how a message is
+  counted.
+- **Received messages** are priced per segment by the country of the number that received them.
+  Replies dropped because their number has no receiving environment aren't billed.
+- **Numbers** are billed monthly from the day you buy one until you release it.
+- **US carrier registration fees** (A2P 10DLC brands and campaigns) are passed through at cost
+  ([when each is charged](/docs/sms/senders#fees)).
+
+<UsageRates product="sms" />
+
+Every country's price per segment, sent and received, is on the [pricing page](/pricing#sms).
+`coss.billing.usage()` reports your SMS usage per country (`dimension`: `country=US`).

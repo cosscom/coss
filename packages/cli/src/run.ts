@@ -25,6 +25,7 @@ import { logsTailCommand } from "./commands/logs.ts";
 import { openCommand } from "./commands/open.ts";
 import { profilesListCommand, useCommand } from "./commands/profiles.ts";
 import { RISK_COMMANDS } from "./commands/risk.ts";
+import { smsSendCommand } from "./commands/sms.ts";
 import {
   templatesListCommand,
   templatesPreviewCommand,
@@ -60,6 +61,7 @@ export const COMMANDS: readonly Command[] = [
   emailsGetCommand,
   emailsEventsCommand,
   emailsDiagnoseCommand,
+  smsSendCommand,
   logsTailCommand,
   inboxCommand,
   inboxGetCommand,

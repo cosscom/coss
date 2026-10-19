@@ -443,6 +443,33 @@ customers and payment methods, issues the invoices coss.com pushes and collects 
 Sales deals, credits and invoice adjustments are made in the admin console (`/admin/organizations/<id>/billing`);
 deals invoiced off-Stripe use an account's `manual` provider (coss.com emails the invoice; an admin records payments).
 
+## SMS on Twilio
+
+SMS goes through Cal.com's Twilio account (an approved ISV), shared by coss.com: each organization gets its own
+subaccount (`<SMS_SUBACCOUNT_PREFIX>-<organization id>`), and its US senders are registered under the ISV's primary
+customer profile. Without Twilio (`SMS_PROVIDER=fake`, the default) nothing is sent and registrations are approved
+at once; production with `fake` refuses to buy numbers or submit registrations, so no live SMS goes anywhere.
+
+1. In the parent account, confirm the primary customer profile is approved with "ISV Reseller or Partner" as its
+   business identity, and that subaccounts may use it. Set `TWILIO_PRIMARY_CUSTOMER_PROFILE_SID` (plain) for the
+   dashboard and the worker.
+2. Set `TWILIO_ACCOUNT_SID` (plain) and `SMS_SUBACCOUNT_PREFIX` (plain, e.g. `coss-production`) in
+   `production.tfvars` for web and worker, and store the parent's auth token with
+   `infra/terraform/scripts/put-secret.sh TWILIO_AUTH_TOKEN --clipboard` (then drop it from `unset_secrets`). Set
+   `SMS_PROVIDER=twilio` for web, api and worker, apply, and deploy.
+3. Twilio calls `https://api.coss.com/sms/twilio/status` and `/sms/twilio/inbound` (set on every message and on each
+   registration's messaging service). They are verified with the subaccount's auth token: before launch, send one
+   message from a staging subaccount and check its callbacks are accepted (`403 Invalid signature` would mean Twilio
+   signs subaccount callbacks with the parent's token instead).
+4. Prices: `TWILIO_ACCOUNT_SID=… TWILIO_AUTH_TOKEN=… SMS_NEGOTIATED_COSTS='{"outbound":{"US":"0.0108",…}}' bun run
+   sms:update-prices --markup 25 --effective <YYYY-MM-01>` writes a new dated list-price file from Twilio's prices
+   (the account's discounted `current_price`, the highest carrier per country) and your negotiated rates (US
+   including carrier fees). Review it, add a `RATE_CARDS` entry using it, and commit only the list prices: the
+   negotiated costs and the markup stay out of the repository.
+5. Twilio's own subaccount usage is billed to Cal.com: reconcile it with coss.com's `sms.*` usage monthly.
+
+Locally, Twilio needs a public `API_PUBLIC_URL` for its callbacks (a tunnel).
+
 ## Error monitoring on Sentry
 
 Errors and traces go to the Sentry organization `cosscom` (`@coss/observability`, EU region). Create three projects —

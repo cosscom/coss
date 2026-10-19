@@ -1,0 +1,91 @@
+---
+title: Numbers and registration
+description: Local and toll-free numbers, US A2P 10DLC registration and toll-free verification.
+---
+
+Live messages go from your organization's own phone numbers, and US carriers only deliver
+application-to-person (A2P) SMS from numbers registered with them. coss.com buys the numbers and
+submits the registrations for you, through its SMS provider (Twilio): owners and admins do both
+on the dashboard's organization **SMS** page. Sandbox environments need neither: their messages
+are [simulated](/docs/sms/testing).
+
+Numbers belong to the organization, so every environment's keys can send from them. Live SMS
+needs a paid plan, which also sets how many numbers you can hold (see the [plans](/docs/billing)).
+
+## Numbers
+
+| Kind      | Countries | Sends to                                        | Needs                     |
+| --------- | --------- | ----------------------------------------------- | ------------------------- |
+| Local     | US, CA    | The countries your organization allows          | US A2P 10DLC registration |
+| Toll-free | US, CA    | The US and Canada only                          | Toll-free verification    |
+
+Search by area code (local) or for any toll-free number and buy one. A number is billed monthly,
+from the day you buy it until you release it ([pricing](/docs/sms/countries-and-pricing)).
+Releasing one stops it sending at once; messages still waiting for it fail with
+`sender_unavailable`.
+
+Each number has a **receiving environment**: the live environment its replies go to
+([receiving](/docs/sms/receiving)). Without one, replies are dropped, though STOP and START still
+apply.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: numbers } = await coss.sms.numbers.list();
+const ready = numbers?.data.filter((number) => number.can_send);
+// e.g. [{ phone_number: "+14155550123", kind: "local", registration_status: "approved", … }]
+```
+
+`coss.sms.numbers.list()` returns every number of the organization with its
+`registration_status` (`draft`, `submitted`, `in_review`, `approved`, `rejected` or `failed`),
+`can_send` (live messages can go from it now) and `receives_here` (its replies arrive in the
+environment of the key you call with).
+
+## US A2P 10DLC (local numbers)
+
+An organization has one 10DLC registration, and every local number it holds, bought before or
+after, sends under it once it is approved. You fill in one form; coss.com then submits, in order:
+
+1. **Your business profile**: legal name, company type, tax ID (EIN for US companies), industry,
+   website, address and an authorized contact (name, title, email and phone number). Public
+   companies add their stock exchange and ticker.
+2. **The brand**, your business as carriers know it. Choose:
+   - **Low-volume standard**, for fewer than 6,000 segments a day. No secondary vetting, and a lower
+     monthly campaign fee.
+   - **Standard**, for higher volumes. It adds secondary vetting, which sets its throughput with
+     the carriers.
+3. **The campaign**: what you send and to whom. Pick a use case (one-time codes, account
+   notifications, customer care, delivery notifications, fraud alerts, marketing, mixed or low
+   volume mixed), describe the messages and how people opt in, give two to five sample messages,
+   and say whether they contain links or phone numbers.
+
+Each step waits for its review before the next one is submitted; together they usually take a few
+days. The dashboard shows each
+registration's status, and the reason when one is rejected: fix it and submit again.
+
+Carriers reject campaigns most often because the opt-in isn't clear. Describe exactly where people
+give you their number and agree to messages (a sign-up form with an unchecked consent box, a
+keyword they text you), make sure your website shows the same, and write samples that match the
+use case and name your business.
+
+## Toll-free verification
+
+A toll-free number is verified on its own: buy it, then submit the same business profile and a
+campaign for it, with a public URL that shows where people opt in. Verification usually takes a
+few days. Toll-free numbers can't send outside the US and Canada.
+
+## Fees
+
+Numbers and US carrier fees are passed through at cost, on your coss.com invoice:
+
+- **Numbers**: monthly, from the day you buy one.
+- **Brand registration**: once, when the brand is submitted; standard brands add the secondary
+  vetting fee.
+- **Campaign vetting**: once, when the campaign is submitted.
+- **Campaign**: monthly from its approval (lower for low-volume standard brands).
+
+Registration fees are charged when a step is submitted, whether or not carriers approve it.
+Toll-free verification has no fee. Current prices:
+
+<UsageRates product="sms" />

@@ -95,6 +95,7 @@ function BuyNumber(props: {
           <Field className="w-36">
             <FieldLabel>Type</FieldLabel>
             <select
+              aria-label="Type"
               className={SELECT_CLASS}
               name="kind"
               onChange={(event) => setKind(event.target.value as "local" | "toll_free")}
@@ -106,7 +107,7 @@ function BuyNumber(props: {
           </Field>
           <Field className="w-24">
             <FieldLabel>Country</FieldLabel>
-            <select className={SELECT_CLASS} name="country">
+            <select aria-label="Country" className={SELECT_CLASS} name="country">
               <option value="US">US</option>
               <option value="CA">CA</option>
             </select>
@@ -151,7 +152,11 @@ function BuyNumber(props: {
             </fieldset>
             <Field>
               <FieldLabel>Replies go to</FieldLabel>
-              <select className={SELECT_CLASS} name="receivingEnvironmentId">
+              <select
+                aria-label="Replies go to"
+                className={SELECT_CLASS}
+                name="receivingEnvironmentId"
+              >
                 <option value="">No environment (replies are dropped)</option>
                 {props.environments.map((environment) => (
                   <option key={environment.id} value={environment.id}>

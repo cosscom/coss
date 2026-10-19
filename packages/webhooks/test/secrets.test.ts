@@ -315,3 +315,26 @@ describe("reencryptWebhookSecrets", () => {
     expect(row?.secretCiphertext).toBe(endpoint.secretCiphertext);
   });
 });
+
+test("reencryptWebhookSecrets moves SMS subaccount tokens onto the newest key", async () => {
+  const tenant = await createTestTenant();
+  const scope = { organizationIds: [tenant.organization.id] };
+  const before = secretsKeyRing([OLD_KEY]);
+  const during = secretsKeyRing([NEW_KEY, OLD_KEY]);
+  await db.insert(schema.smsAccount).values({
+    organizationId: tenant.organization.id,
+    provider: "twilio",
+    subaccountSid: `AC${newId("evt").slice(4)}`,
+    authToken: encryptSecret("token", before),
+  });
+  expect(await reencryptWebhookSecrets({ keys: during, scope })).toMatchObject({
+    checked: 1,
+    reencrypted: 1,
+  });
+  const [account] = await db
+    .select()
+    .from(schema.smsAccount)
+    .where(eq(schema.smsAccount.organizationId, tenant.organization.id));
+  expect(isEncryptedWithPrimary(account?.authToken ?? "", during)).toBe(true);
+  expect(decryptSecret(account?.authToken ?? "", during)).toBe("token");
+});

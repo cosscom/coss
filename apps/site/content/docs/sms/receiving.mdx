@@ -1,0 +1,77 @@
+---
+title: Receiving SMS
+description: Replies to your numbers, STOP, START and HELP, and their webhooks.
+---
+
+Every number of your organization receives messages. Each one has a **receiving environment**, a
+live environment chosen on the dashboard's organization **SMS** page: replies to the number are
+stored there, fire an `sms.received` webhook to its endpoints, and can be read with its keys.
+A number without one drops its replies (STOP and START still apply).
+
+```ts twoslash
+import { Coss, verifyWebhook } from "coss";
+const coss = new Coss();
+declare const request: Request;
+declare const secret: string;
+// ---cut---
+const event = await verifyWebhook(await request.text(), request.headers, secret);
+if (event.type === "sms.received" && event.data.received_sms_id) {
+  const { data: reply } = await coss.sms.received.get(event.data.received_sms_id);
+  console.log(reply?.from, reply?.to, reply?.body, reply?.keyword);
+}
+```
+
+Webhook payloads name the message (`received_sms_id`), who sent it (`from`) and which of your
+numbers received it (`to`), never the text. List received messages, newest first, by sender or by
+number:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: replies } = await coss.sms.received.list({ to: "+14155550123", limit: 50 });
+```
+
+The text comes from whoever sent it: treat it as untrusted input. Received messages are kept for
+<RetentionPeriod of="received_sms" />, and billed per segment at the receiving number's country's
+rate ([pricing](/docs/sms/countries-and-pricing)); dropped ones aren't billed.
+
+## STOP, START and HELP
+
+A message that is only a keyword (any case, surrounding spaces ignored) changes who you can send
+to. "Stop texting me" is not a keyword.
+
+| Keyword | Words                                                                     | What happens                                                          |
+| ------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `stop`  | STOP, STOPALL, UNSUBSCRIBE, CANCEL, END, QUIT, REVOKE, OPTOUT             | The sender is suppressed (`opt_out`) in every live environment         |
+| `start` | START, YES, UNSTOP                                                        | Their `opt_out` entries are removed                                    |
+| `help`  | HELP, INFO                                                                | Nothing changes                                                        |
+
+The confirmations carriers require ("You have been unsubscribed…") are sent automatically by
+coss.com's SMS provider. Opt-outs apply to every live environment, because your numbers are shared
+by all of them, whether or not the number has a receiving environment. Each environment whose list
+changed gets an `sms.opted_out` or `sms.opted_in` webhook; its `received_sms_id` is `null` when
+the message was dropped. The received message itself has its `keyword`.
+
+A sender that replied STOP can't be reached from your numbers until they reply START, even if you
+remove the suppression entry: the carrier refuses the message (`opted_out`).
+
+## Opt-outs and reputation
+
+coss.com measures, per organization over a rolling window, the share of numbers that opted out and
+of messages carriers filtered. High rates lead to a warning, and then to a suspension of live
+sending, as for email bounces and complaints: see the
+[Acceptable Use Policy](/legal/acceptable-use#3-bounce-complaint-and-opt-out-rates) for the
+thresholds. Send only to people who asked for your messages, and say who you are and how to stop
+them in your first message.
+
+## Webhooks
+
+| Type             | Sent when                                                       |
+| ---------------- | --------------------------------------------------------------- |
+| `sms.received`   | A message arrived at a number whose replies go to this environment |
+| `sms.opted_out`  | A number replied STOP: it is suppressed in this environment      |
+| `sms.opted_in`   | A number replied START: its opt-out was removed                  |
+
+Subscribe to them like any other [webhook event](/docs/webhooks#events). Sandbox environments
+receive simulated replies only ([testing](/docs/sms/testing)).

@@ -12,7 +12,7 @@ import {
   type SecretsKeyRing,
 } from "./secrets.ts";
 
-const { hookEndpoint, logDrain, riskSettings, webhookEndpoint } = schema;
+const { hookEndpoint, logDrain, riskSettings, smsAccount, webhookEndpoint } = schema;
 
 /**
  * Tables of endpoints with a current and a previous (rolled) secret: coss.com's own webhook endpoints
@@ -59,6 +59,7 @@ export async function reencryptWebhookSecrets(opts: {
   }
   await reencryptLogDrainSecrets({ ...opts, batchSize }, result);
   await reencryptCaptchaSecrets({ ...opts, batchSize }, result);
+  await reencryptSmsAuthTokens({ ...opts, batchSize }, result);
   return result;
 }
 
@@ -214,6 +215,65 @@ async function reencryptCaptchaSecrets(
           ),
         )
         .returning({ id: riskSettings.environmentId });
+      if (updated) result.reencrypted++;
+      else result.conflicts++;
+    }
+    const last = rows.at(-1);
+    if (!last || rows.length < opts.batchSize) break;
+    after = last.id;
+  }
+}
+
+/** SMS: each organization's Twilio subaccount auth token (`@coss/sms` verifies callbacks with it). */
+async function reencryptSmsAuthTokens(
+  opts: {
+    keys: SecretsKeyRing;
+    dryRun?: boolean;
+    batchSize: number;
+    scope?: { organizationIds: string[] };
+  },
+  result: ReencryptResult,
+): Promise<void> {
+  const { keys } = opts;
+  let after = "";
+  for (;;) {
+    const rows = await db
+      .select({ id: smsAccount.organizationId, authToken: smsAccount.authToken })
+      .from(smsAccount)
+      .where(
+        and(
+          gt(smsAccount.organizationId, after),
+          isNotNull(smsAccount.authToken),
+          opts.scope ? inArray(smsAccount.organizationId, opts.scope.organizationIds) : undefined,
+        ),
+      )
+      .orderBy(asc(smsAccount.organizationId))
+      .limit(opts.batchSize);
+    for (const row of rows) {
+      const stored = row.authToken;
+      if (!stored) continue;
+      result.checked++;
+      if (isEncryptedWithPrimary(stored, keys)) continue;
+      let authToken: string;
+      try {
+        authToken = encryptSecret(decryptSecret(stored, keys), keys);
+      } catch (error) {
+        result.unreadable.push({
+          id: row.id,
+          organizationId: row.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        continue;
+      }
+      if (opts.dryRun) {
+        result.reencrypted++;
+        continue;
+      }
+      const [updated] = await db
+        .update(smsAccount)
+        .set({ authToken, updatedAt: sql`${smsAccount.updatedAt}` })
+        .where(and(eq(smsAccount.organizationId, row.id), eq(smsAccount.authToken, stored)))
+        .returning({ id: smsAccount.organizationId });
       if (updated) result.reencrypted++;
       else result.conflicts++;
     }

@@ -24,6 +24,10 @@ Usage is counted per product and billed at these rates:
 - **Email** is counted per recipient handed to the email provider: every address in `to`, `cc`
   and `bcc` once, except suppressed addresses. Emails that fail before sending, or are canceled,
   cost nothing. Sandbox environments are never billed.
+- **SMS** is counted per segment, by destination country, once a message reaches a carrier;
+  received messages by the receiving number's country. Phone numbers and US carrier registration
+  fees are passed through at cost. SMS needs a paid plan: see
+  [countries and pricing](/docs/sms/countries-and-pricing).
 - **Volume pricing is graduated**: each band is priced at its own rate, so there's no cliff. With
   2,000,000 emails in a month, the first 1,000,000 cost $0.40 per 1,000 and the next 1,000,000
   $0.30 per 1,000: $700.

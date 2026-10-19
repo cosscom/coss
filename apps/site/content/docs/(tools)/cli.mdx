@@ -1,6 +1,6 @@
 ---
 title: CLI
-description: Sign in from your terminal, send test emails, follow your log, and get webhooks on localhost.
+description: Sign in from your terminal, send test emails and SMS, follow your log, and get webhooks on localhost.
 icon: Terminal
 ---
 
@@ -205,6 +205,23 @@ billing hold) and the next steps, as commands to run. `--to <address>` diagnoses
 to that address. It's the same diagnosis as the SDK's `coss/diagnose` and the MCP server's
 `diagnose_email`.
 
+## Send test SMS
+
+```sh
+coss sms send --simulate filtered --wait
+coss sms send --to +14155550199 --from +14155550123 --body "Your code is 482913"
+```
+
+`--simulate delivered|invalid|filtered|opted-out|reply` sends to the [SMS
+simulator](/docs/sms/testing) and needs a development key: nothing reaches a phone, but every
+event and webhook a real send has still happens. Otherwise pass `--to` (E.164). `--wait` follows
+the message until its outcome is known and prints its events (with `--simulate reply`, also the
+simulated reply); it waits up to 60 seconds (`--timeout <seconds>`).
+
+The default sender for development keys is `+14155550100`; production keys need `--from`, one of
+your organization's [registered numbers](/docs/sms/senders). Also: `--body` (default "Test message
+from the coss.com CLI"), `--tag name=value` (repeatable) and `--json`.
+
 ## Follow the log
 
 ```sh
@@ -214,7 +231,7 @@ coss logs tail --type api.request --status 4xx,5xx --since 15m
 ```
 
 New lines of the environment's [log](/docs/logs) as they arrive: API requests made with its keys,
-email events, webhook attempts and `coss listen` forwards. Filter by `--source`, `--level`,
+email and SMS events, webhook attempts and `coss listen` forwards. Filter by `--source`, `--level`,
 `--type`, `--status` and free text (`-q`); `--since` starts with earlier lines, and `--json`
 prints one log object per line for `jq`. It checks for new lines every 2 seconds (`--interval <ms>`,
 at least 500).

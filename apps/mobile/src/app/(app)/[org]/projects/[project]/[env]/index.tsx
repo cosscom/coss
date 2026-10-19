@@ -11,6 +11,8 @@ import {
   ListFilter,
   type LucideIcon,
   Mail,
+  MessageSquare,
+  MessageSquareReply,
   MousePointerClick,
   ScrollText,
   ShieldAlert,
@@ -48,6 +50,13 @@ const SECTIONS: { label: string; items: Destination[] }[] = [
       { label: "Received", path: "received", icon: Inbox, can: "read_email" },
       { label: "Suppressions", path: "suppressions", icon: Ban, can: "read_suppression" },
       { label: "Tracking", path: "tracking", icon: MousePointerClick, can: "read_environment" },
+    ],
+  },
+  {
+    label: "SMS",
+    items: [
+      { label: "Messages", path: "sms", icon: MessageSquare, can: "read_sms" },
+      { label: "Received", path: "sms/received", icon: MessageSquareReply, can: "read_sms" },
     ],
   },
   {

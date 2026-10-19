@@ -25,7 +25,7 @@ import { notFound } from "next/navigation";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody, PanelDescription, PanelHeader, PanelTitle } from "@/components/panel";
-import { RegistrationStatusDot, SmsStatusDot } from "@/components/sms-badges";
+import { RegistrationStatusDot } from "@/components/sms-badges";
 import { StatusDot } from "@/components/status-dot";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
@@ -155,7 +155,7 @@ export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSl
         <PanelHeader>
           <PanelTitle>Numbers</PanelTitle>
           <PanelDescription>
-            Live sends go `from` one of these, once its registration is approved.
+            Live sends go <code>from</code> one of these, once its registration is approved.
           </PanelDescription>
         </PanelHeader>
         {numbers.length === 0 ? (
@@ -187,7 +187,7 @@ export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSl
                   <TableCell>{row.number.kind === "toll_free" ? "Toll-free" : "Local"}</TableCell>
                   <TableCell>
                     {sendable[index] ? (
-                      <SmsStatusDot status="delivered" />
+                      <StatusDot tone="success">Can send</StatusDot>
                     ) : row.number.status === "pending" ? (
                       <StatusDot tone="warning">Setting up</StatusDot>
                     ) : (

@@ -1,7 +1,7 @@
 ---
 title: Data Processing Addendum
 description: How Cal.com processes personal data on your behalf as your processor, incorporated into the Terms of Service.
-lastUpdated: 2026-10-14
+lastUpdated: 2026-10-19
 ---
 
 This Data Processing Addendum ("**DPA**") forms part of, and is incorporated by reference into, the
@@ -229,14 +229,19 @@ Protection Laws require otherwise.
 - **Data importer:** Cal.com, Inc., 2261 Market Street #4382, San Francisco, CA 94114, United States. Role: processor
   (or subprocessor). Activities: providing the Services. Contact: [privacy@cal.com](mailto:privacy@cal.com).
 
-**Categories of data subjects.** Recipients of Customer's messages (including to, cc, bcc and reply-to addresses);
-senders named in Customer's messages; users of Customer's own services whose events Customer submits for risk
-assessment; any other individuals whose personal data Customer includes in messages, attachments, tags, metadata,
+**Categories of data subjects.** Recipients of Customer's messages (including to, cc, bcc and reply-to addresses, and
+the recipients of text messages); senders named in Customer's messages; people who send text messages to Customer's
+phone numbers; Customer's contact persons named in its SMS carrier registrations; users of Customer's own services
+whose events Customer submits for risk assessment; any other individuals whose personal data Customer includes in messages, attachments, tags, metadata,
 suppression lists, risk lists or webhook configuration.
 
-**Categories of personal data.** Email addresses and display names; the content of messages and attachments, as
-determined solely by Customer; message headers, tags, categories and other metadata Customer provides; delivery,
-bounce, complaint and suppression events, including information returned by recipient mail servers; and, where
+**Categories of personal data.** Email addresses and display names; phone numbers; the content of messages
+(including text messages) and attachments, as determined solely by Customer; text messages received on Customer's
+phone numbers, including opt-out and opt-in keywords; the business details Customer submits for SMS carrier
+registration (legal name, tax ID, address, website, descriptions of its messages and opt-in process, sample messages,
+and an authorized contact's name, title, email address and phone number); message headers, tags, categories and other metadata Customer provides; delivery,
+bounce, complaint, opt-out and suppression events, including information returned by recipient mail servers and
+mobile carriers; and, where
 Customer enables tracking, the time of opens and clicks, the clicked link and the user agent of the request (not the
 IP address); and, for risk assessments, the email addresses, IP addresses, user agents and user identifiers Customer
 submits, data derived from them (domain and network characteristics, country, counts of recent events) and keyed
@@ -252,8 +257,10 @@ writing (see [section 3.2](#3-customers-obligations)).
 
 **Frequency of the transfer.** Continuous, as determined by Customer's use of the Services.
 
-**Nature and purpose of the processing.** Receiving, storing, screening, transmitting and delivering messages on
-Customer's instructions; recording and reporting delivery events; maintaining suppression lists; measuring open and
+**Nature and purpose of the processing.** Receiving, storing, screening, transmitting and delivering messages
+(including text messages) on Customer's instructions; receiving text messages sent to Customer's phone numbers and
+honoring opt-out requests; registering Customer's SMS senders with mobile carriers and their registries;
+recording and reporting delivery events; maintaining suppression lists; measuring open and
 click tracking where enabled; assessing the fraud and abuse risk of events Customer submits and remembering, as keyed
 hashes, identifiers seen in Customer's environments; classifying content Customer submits; rate limiting requests to
 Customer's own services on Customer's instruction; sending webhook events to endpoints Customer configures;
@@ -271,14 +278,15 @@ there.
 ## Annex 2: Technical and organizational measures
 
 **Encryption.** Data is encrypted in transit using TLS, and at rest in Cal.com's databases and storage. Webhook signing
-secrets are additionally encrypted with AES-256-GCM. Passwords and API keys are stored only as hashes.
+secrets and SMS provider credentials are additionally encrypted with AES-256-GCM. Passwords and API keys are stored only as hashes.
 
 **Access control.** Access to production systems and Customer Personal Data is limited to personnel who need it, on a
 least-privilege basis, and is protected by strong authentication. Platform administrators' actions in the Services are
 recorded in an append-only audit log.
 
 **Tenant isolation.** Every query against customer data is scoped to the customer's organization. API keys are bound to
-a single environment and organization and carry explicit permissions.
+a single environment and organization and carry explicit permissions. Each organization's SMS numbers and messages are
+kept in its own account with the SMS provider.
 
 **Customer controls.** Customers can require two-factor authentication or single sign-on for their organization,
 assign roles to members, revoke sessions and API keys, and separate sandbox from live environments, which never deliver
@@ -286,8 +294,9 @@ real messages.
 
 **Data minimization.** Attachment contents are deleted once they are no longer needed for delivery. Tracking records
 the user agent but not the IP address. Content screening sends only a bounded extract of a message (sender, subject,
-up to 8,000 characters of text and link hosts and paths without query strings), never recipients or attachments, to a
-provider that retains nothing; screening verdicts never store message content. Rate limiting keys store email
+up to 8,000 characters of text and link hosts and paths without query strings; for SMS, the sending number, the text
+and link hosts and paths), never recipients or attachments, to a provider that retains nothing; webhook events about
+text messages never include their text; screening verdicts never store message content. Rate limiting keys store email
 addresses only as hashes. Risk assessments keep email addresses, IP addresses and user agents for 90 days, remember
 identifiers (including card fingerprints and device identifiers) across assessments only as keyed hashes, never
 store card numbers, look IP addresses up in locally hosted data, and send
@@ -321,6 +330,7 @@ bound by written agreements (see [section 5](#5-subprocessors)).
 | Subprocessor | Purpose | Location |
 | --- | --- | --- |
 | Amazon Web Services, Inc. | Hosting, databases, storage, caching, queues, content delivery and email delivery (Amazon SES) | United States |
+| Twilio Inc. | SMS delivery and receiving; carrier registration | United States |
 | Vercel, Inc. (AI Gateway) and the AI model providers available through it | Automated content screening of a sample of live messages, and classification of content Customer submits to Risk, with zero data retention | United States |
 
 The current list, including any changes announced under [section 5.3](#5-subprocessors), is maintained at

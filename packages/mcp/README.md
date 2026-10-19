@@ -1,8 +1,9 @@
 # coss-mcp
 
 The [Model Context Protocol](https://modelcontextprotocol.io) server for [coss.com](https://coss.com). Your
-coding agent can ask "did the welcome email to jane@example.com get delivered?" and get the answer:
-the email, what happened to each recipient and why, and what to do about it.
+coding agent can ask "did the welcome email to jane@example.com get delivered?" (or "did the code we
+texted +14155550123 arrive?") and get the answer: the message, what happened to each recipient and why,
+and what to do about it.
 
 ```sh
 claude mcp add coss -e COSS_API_KEY=coss_test_… -- npx -y coss-mcp
@@ -24,8 +25,8 @@ Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
 Configuration is read from the environment only, never from command-line arguments, which other
 local processes can read.
 
-API keys can do everything the API can: through this server the agent can also send email and
-change suppressions and domains. Tools are annotated (`readOnlyHint`, `destructiveHint`) so clients
+API keys can do everything the API can: through this server the agent can also send email and SMS
+and change suppressions and domains. Tools are annotated (`readOnlyHint`, `destructiveHint`) so clients
 can ask before calling the ones that change something.
 
 ## Tools
@@ -38,6 +39,8 @@ can ask before calling the ones that change something.
 | Domains | `list_domains`, `get_domain`, `add_domain`, `verify_domain` |
 | Webhooks | `list_webhook_endpoints`, `list_webhook_deliveries`, `get_webhook_delivery`, `retry_webhook_delivery` |
 | Receiving | `get_inbound_address`, `list_received_emails`, `get_received_email` |
+| SMS | `diagnose_sms`, `find_sms`, `get_sms`, `send_sms`, `cancel_sms`, `list_received_sms`, `list_sms_numbers` |
+| SMS suppressions | `check_sms_suppression`, `add_sms_suppression`, `remove_sms_suppression` |
 | Logs | `search_logs`, `get_log` |
 | Account | `get_account_status` |
 
@@ -55,6 +58,8 @@ const server = createCossMcpServer({ coss: new Coss({ apiKey }), apiKey });
 
 `diagnoseEmail({ email, events, context })`, the pure function behind `diagnose_email`, comes from the SDK's
 `coss/diagnose` (re-exported here).
+
+`diagnoseSms({ sms, events, context })` is the pure function behind `diagnose_sms`.
 
 ## Development
 

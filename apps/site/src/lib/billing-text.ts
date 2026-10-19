@@ -13,6 +13,7 @@ import {
   type MeterKey,
   PLAN_KEYS,
   PLANS,
+  type Product,
   RATE_CARDS,
   type Rate,
 } from "@coss/billing/catalog";
@@ -127,12 +128,13 @@ function describeRate(rate: Rate, per: number, unit: string): string {
     .join("; ");
 }
 
-/** The list usage rates per meter (the current rate card). */
-export function rateRows(): { product: string; rate: string; note: string }[] {
+/** The list usage rates per meter (the current rate card), optionally of one product only. */
+export function rateRows(only?: Product): { product: string; rate: string; note: string }[] {
   const card = RATE_CARDS.at(-1);
   if (!card) return [];
   return METER_KEYS.flatMap((meter) => {
     const definition = METERS[meter];
+    if (only && definition.product !== only) return [];
     const rates = card.rates[meter];
     if (!rates) return [];
     const addOn = meter === "email.dedicated_ip" ? ADD_ONS.dedicated_ips : null;
@@ -206,13 +208,14 @@ export function renderBillingComponents(markdown: string): string {
     `| --- | ${plans.map(() => "---").join(" | ")} |`,
     ...planRows().map((row) => `| ${row.label} | ${row.values.join(" | ")} |`),
   ].join("\n");
-  const rateTable = [
-    "| Product | Rate | |",
-    "| --- | --- | --- |",
-    ...rateRows().map(
-      (row) => `| ${row.product} | ${row.rate} |${row.note ? ` ${row.note} ` : " "}|`,
-    ),
-  ].join("\n");
+  const rateTable = (only?: Product) =>
+    [
+      "| Product | Rate | |",
+      "| --- | --- | --- |",
+      ...rateRows(only).map(
+        (row) => `| ${row.product} | ${row.rate} |${row.note ? ` ${row.note} ` : " "}|`,
+      ),
+    ].join("\n");
   const addOnTable = [
     "| Add-on | Price | Plans | |",
     "| --- | --- | --- | --- |",
@@ -222,6 +225,7 @@ export function renderBillingComponents(markdown: string): string {
   ].join("\n");
   return markdown
     .replaceAll("<PlanTable />", planTable)
-    .replaceAll("<UsageRates />", rateTable)
+    .replaceAll("<UsageRates />", rateTable())
+    .replace(/<UsageRates product="([a-z]+)" \/>/g, (_, product: Product) => rateTable(product))
     .replaceAll("<AddOns />", addOnTable);
 }

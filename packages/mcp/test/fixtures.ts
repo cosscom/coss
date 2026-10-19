@@ -1,4 +1,4 @@
-import type { Email, EmailEvent, EmailRecipient } from "coss";
+import type { Email, EmailEvent, EmailRecipient, Sms, SmsEvent } from "coss";
 
 export const NOW = new Date("2026-10-15T12:00:00.000Z");
 
@@ -67,6 +67,40 @@ export function event(
     email_id: "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
     type,
     recipient: recipientAddress,
+    occurred_at: "2026-10-15T11:59:02.000Z",
+    data,
+  };
+}
+
+export function sms(overrides: Partial<Sms> = {}): Sms {
+  return {
+    object: "sms",
+    id: "sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    from: "+14155550123",
+    to: "+15005550006",
+    body: "Your Acme code is 482913",
+    status: "delivered",
+    segments: 1,
+    encoding: "gsm7",
+    country: "US",
+    tags: [],
+    failure: null,
+    sandbox: false,
+    scheduled_at: null,
+    sent_at: "2026-10-15T11:59:01.000Z",
+    delivered_at: "2026-10-15T11:59:03.000Z",
+    created_at: "2026-10-15T11:59:00.000Z",
+    ...overrides,
+  };
+}
+
+export function smsEvent(type: SmsEvent["type"], data: SmsEvent["data"] = {}): SmsEvent {
+  sequence += 1;
+  return {
+    object: "sms_event",
+    id: `smsevt_${sequence}`,
+    sms_id: "sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    type,
     occurred_at: "2026-10-15T11:59:02.000Z",
     data,
   };
