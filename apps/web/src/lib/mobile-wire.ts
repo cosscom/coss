@@ -1,3 +1,4 @@
+import { permissionStrings, summarizeKeyAccess } from "@coss/auth/api-key-permissions";
 import type { InvoiceSummaryOutput } from "@coss/billing/wire";
 import type {
   ApiKey,
@@ -238,6 +239,8 @@ export function toMobileApiKey(key: EnvironmentApiKeySummary): ApiKey {
     enabled: key.enabled,
     created_at: key.createdAt.toISOString(),
     last_used_at: key.lastRequest?.toISOString() ?? null,
+    access: summarizeKeyAccess(key.access, key.permissions),
+    permissions: permissionStrings(key.permissions),
   };
 }
 

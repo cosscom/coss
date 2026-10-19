@@ -116,6 +116,12 @@ export function environmentObject(mode: "live" | "sandbox" = "sandbox") {
     mode,
     project: { id: "proj_1", name: "Default", slug: "default" },
     organization: { id: "org_1", name: "Acme", slug: "acme", api_version: "2026-10-01" },
-    api_key: { id: "key_1", name: "coss CLI · test-host", start: "coss_test_aa" },
+    api_key: {
+      id: "key_1",
+      name: "coss CLI · test-host",
+      start: "coss_test_aa",
+      access: "full",
+      permissions: ["email:send", "email:read", "log:read"],
+    },
   };
 }

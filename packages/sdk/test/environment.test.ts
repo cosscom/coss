@@ -18,7 +18,13 @@ const sampleEnvironment: Environment = {
     slug: "acme",
     api_version: "2026-10-01",
   },
-  api_key: { id: "key_01k7c8m4q2f3e9v6t5r1n0p8yz", name: "Backend", start: "coss_test_Ab" },
+  api_key: {
+    id: "key_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    name: "Backend",
+    start: "coss_test_Ab",
+    access: "restricted",
+    permissions: ["email:send", "email:read"],
+  },
 };
 
 function client(...handlers: Parameters<typeof mockFetch>) {

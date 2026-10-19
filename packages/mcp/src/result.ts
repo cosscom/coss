@@ -26,7 +26,8 @@ function hintFor(error: CossError): string | undefined {
       );
     case "permission_error":
       return error.code === "insufficient_permissions"
-        ? "The API key lacks the permission this needs."
+        ? "The API key is restricted and lacks the permission named in the message " +
+            "(get_account_status lists what it holds). Ask the user for a key with that permission."
         : "Sending or changes are refused for the organization; call get_account_status for its reputation and billing standing.";
     case "billing_error":
       return "A billing hold or the plan's limits refused this; call get_account_status.";

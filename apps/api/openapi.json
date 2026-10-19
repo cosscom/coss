@@ -182,12 +182,29 @@
                   "null"
                 ],
                 "description": "The key's first characters, as shown in the dashboard."
+              },
+              "access": {
+                "type": "string",
+                "enum": [
+                  "full",
+                  "restricted"
+                ],
+                "description": "`full`: every permission, including ones new products add later. `restricted`: only `permissions`, chosen when the key was created."
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "What the key may do now, as `resource:action` (the names `insufficient_permissions` errors use), e.g. `email:send`."
               }
             },
             "required": [
               "id",
               "name",
-              "start"
+              "start",
+              "access",
+              "permissions"
             ],
             "additionalProperties": false,
             "description": "The API key making this request."
@@ -226,7 +243,12 @@
             "api_key": {
               "id": "key_01k7c8m4q2f3e9v6t5r1n0p8yz",
               "name": "Backend",
-              "start": "coss_test_Ab"
+              "start": "coss_test_Ab",
+              "access": "restricted",
+              "permissions": [
+                "email:send",
+                "email:read"
+              ]
             }
           }
         ]
@@ -19723,7 +19745,7 @@
           "Environment"
         ],
         "summary": "Retrieve the API key's environment",
-        "description": "Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key and show where it sends.",
+        "description": "Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key, show where it sends and what it may do.",
         "security": [
           {
             "bearerAuth": []

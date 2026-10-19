@@ -318,6 +318,10 @@ export type ApiKey = {
   enabled: boolean;
   created_at: string;
   last_used_at: string | null;
+  /** `full`, or how a restricted key's permissions read (as the dashboard labels them). */
+  access: "full" | "sending" | "read_only" | "custom";
+  /** `resource:action`, e.g. `email:send` (a full-access key: every one there is today). */
+  permissions: string[];
 };
 
 export type ApiKeysResponse = { prefix: string; data: ApiKey[] };

@@ -46,6 +46,9 @@ export function apiError(doing: string, error: CossError): CliError {
     ...(error.issues ?? []).map((issue) => `  ${issue.path}: ${issue.message}`),
   ].join("\n");
   const request = error.request_id ? ` (request ${error.request_id})` : "";
-  const hint = HINTS[error.type];
+  const hint =
+    error.code === "insufficient_permissions"
+      ? "This API key is restricted: `coss whoami` lists what it may do. Use a key with that permission."
+      : HINTS[error.type];
   return new CliError(`${doing}: ${details}${request}${hint ? `\n${hint}` : ""}`);
 }

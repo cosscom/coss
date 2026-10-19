@@ -1248,8 +1248,9 @@ describe("coss.environment against the API", () => {
       mode: "sandbox",
       project: { id: tenant.project.id, slug: tenant.project.slug },
       organization: { id: tenant.organization.id, api_version: API_VERSION },
-      api_key: { name: "Test sandbox key" },
+      api_key: { name: "Test sandbox key", access: "full" },
     });
+    expect(data?.api_key.permissions).toContain("email:send");
   });
 });
 

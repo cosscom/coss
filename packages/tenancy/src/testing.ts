@@ -107,12 +107,14 @@ export async function createTestTenant(
     environmentId: production.id,
     name: "Test live key",
     userId: owner.id,
+    permissions: "full",
   });
   const sandbox = await createEnvironmentApiKey({
     organizationId: organization.id,
     environmentId: development.id,
     name: "Test sandbox key",
     userId: owner.id,
+    permissions: "full",
   });
 
   return {

@@ -1,8 +1,17 @@
 "use client";
 
-import { API_KEY_NAME_MAX_LENGTH } from "@coss/auth/constants";
+import {
+  API_KEY_PERMISSION_GROUPS,
+  API_KEY_PRESET_LABELS,
+  API_KEY_PRESETS,
+  API_KEY_RESOURCES,
+  type ApiKeyPreset,
+  apiKeyActionLabel,
+} from "@coss/auth/api-key-permissions";
+import { API_KEY_NAME_MAX_LENGTH, API_KEY_PERMISSIONS } from "@coss/auth/constants";
 import { Alert, AlertDescription } from "@coss/ui/components/alert";
 import { Button } from "@coss/ui/components/button";
+import { Checkbox } from "@coss/ui/components/checkbox";
 import {
   Dialog,
   DialogClose,
@@ -16,13 +25,23 @@ import {
 } from "@coss/ui/components/dialog";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
+import { Label } from "@coss/ui/components/label";
+import { Radio, RadioGroup } from "@coss/ui/components/radio-group";
 import { PlusIcon } from "lucide-react";
+import { useState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
 import { useActionToast } from "@/lib/toast";
 import { createApiKeyAction } from "./actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
+
+const PRESET_DESCRIPTIONS: Record<ApiKeyPreset, string> = {
+  full: "Every API, including products added later.",
+  sending: "Only sends email, through the API, SDK or SMTP. For application servers.",
+  read_only: "Reads everything this key's environment and organization hold; changes nothing.",
+  custom: "Choose the permissions yourself. The key never gains new ones.",
+};
 
 export function CreateApiKeyDialog(props: Target & { environmentName: string }) {
   return (
@@ -43,6 +62,7 @@ function CreateApiKeyForm(props: Target & { environmentName: string }) {
   const [state, formAction, pending] = useActionToast(createApiKeyAction, {
     success: (data) => `API key “${data.name}” created`,
   });
+  const [preset, setPreset] = useState<ApiKeyPreset>("full");
 
   if (state?.ok) {
     return (
@@ -77,7 +97,7 @@ function CreateApiKeyForm(props: Target & { environmentName: string }) {
       <DialogHeader>
         <DialogTitle>Create API key</DialogTitle>
         <DialogDescription>
-          The key can send and read emails in the {props.environmentName} environment.
+          The key only works in the {props.environmentName} environment.
         </DialogDescription>
       </DialogHeader>
       <DialogPanel className="flex flex-col gap-4">
@@ -92,6 +112,28 @@ function CreateApiKeyForm(props: Target & { environmentName: string }) {
           />
           <FieldDescription>Up to {API_KEY_NAME_MAX_LENGTH} characters.</FieldDescription>
         </Field>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-2 font-medium text-sm">Access</legend>
+          <RadioGroup
+            aria-label="Access"
+            name="access"
+            onValueChange={(value) => setPreset(value as ApiKeyPreset)}
+            value={preset}
+          >
+            {API_KEY_PRESETS.map((option) => (
+              <Label className="items-start gap-3" key={option}>
+                <Radio className="mt-0.5" value={option} />
+                <span className="flex flex-col gap-0.5">
+                  {API_KEY_PRESET_LABELS[option]}
+                  <span className="font-normal text-muted-foreground text-xs">
+                    {PRESET_DESCRIPTIONS[option]}
+                  </span>
+                </span>
+              </Label>
+            ))}
+          </RadioGroup>
+        </fieldset>
+        {preset === "custom" ? <CustomPermissions /> : null}
         {state && !state.ok ? <FormError message={state.error} /> : null}
       </DialogPanel>
       <DialogFooter>
@@ -101,6 +143,41 @@ function CreateApiKeyForm(props: Target & { environmentName: string }) {
         </Button>
       </DialogFooter>
     </form>
+  );
+}
+
+/** One row per resource, its actions as checkboxes (`permission=resource:action`). */
+function CustomPermissions() {
+  return (
+    <div className="flex flex-col gap-4 rounded-lg border p-3">
+      {API_KEY_PERMISSION_GROUPS.map((group) => (
+        <fieldset className="flex flex-col gap-3" key={group}>
+          <legend className="mb-1 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+            {group}
+          </legend>
+          {API_KEY_RESOURCES.filter((info) => info.group === group).map((info) => (
+            <div className="flex flex-col gap-1.5" key={info.resource}>
+              <span className="flex flex-col gap-0.5 text-sm">
+                <span className="font-medium">{info.label}</span>
+                <span className="text-muted-foreground text-xs">{info.description}</span>
+              </span>
+              <span className="flex flex-wrap gap-x-4 gap-y-1.5">
+                {(API_KEY_PERMISSIONS[info.resource] ?? []).map((action) => (
+                  <Label className="font-normal text-sm" key={action}>
+                    <Checkbox
+                      aria-label={`${info.label}: ${apiKeyActionLabel(action)}`}
+                      name="permission"
+                      value={`${info.resource}:${action}`}
+                    />
+                    {apiKeyActionLabel(action)}
+                  </Label>
+                ))}
+              </span>
+            </div>
+          ))}
+        </fieldset>
+      ))}
+    </div>
   );
 }
 

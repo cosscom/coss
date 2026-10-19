@@ -2,6 +2,7 @@ import "server-only";
 import spec from "@coss/api/openapi.json";
 import { llms, loader } from "fumadocs-core/source";
 import { sectionsMarkdown } from "../components/docs-sections";
+import { renderApiKeyComponents } from "./api-key-permissions-text";
 import { renderBillingComponents } from "./billing-text";
 import { docs } from "./collections";
 import { sectionsOf } from "./docs-tree";
@@ -76,7 +77,9 @@ export async function pageMarkdown(page: DocsPage): Promise<string> {
     "<DocsSections />",
     sectionsMarkdown(sectionsOf(source.getPageTree())),
   );
-  return `${heading}\n\n${renderRiskComponents(renderBillingComponents(renderRetentionComponents(body)))}`;
+  return `${heading}\n\n${renderApiKeyComponents(
+    renderRiskComponents(renderBillingComponents(renderRetentionComponents(body))),
+  )}`;
 }
 
 /** /llms.txt and /llms-full.txt. */

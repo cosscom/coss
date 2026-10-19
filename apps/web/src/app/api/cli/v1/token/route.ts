@@ -65,6 +65,8 @@ export async function POST(request: Request): Promise<Response> {
       environmentId: grant.environment.id,
       name: grant.name,
       userId: grant.user.id,
+      // The CLI's commands span products (send, logs, listen): its keys have full access.
+      permissions: "full",
     });
     await recordUserAudit(grant.user, {
       organizationId: grant.organizationId,
@@ -72,7 +74,7 @@ export async function POST(request: Request): Promise<Response> {
       target: { type: "api_key", id: created.id, label: created.name },
       projectId: grant.environment.projectId,
       environmentId: grant.environment.id,
-      metadata: { mode: grant.environment.mode, via: "cli" },
+      metadata: { mode: grant.environment.mode, via: "cli", access: created.access },
     });
     const body: CliTokenResponse = {
       api_key: created.key,

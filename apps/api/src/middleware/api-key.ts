@@ -1,5 +1,10 @@
 import { createHash } from "node:crypto";
-import { type AuthenticateResult, authenticateApiKey, type KeyPermissions } from "@coss/tenancy";
+import {
+  type AuthenticateResult,
+  authenticateApiKey,
+  type KeyPermissions,
+  permissionStrings,
+} from "@coss/tenancy";
 import { setTags } from "@sentry/bun";
 import { createMiddleware } from "hono/factory";
 import { ApiError } from "../errors.ts";
@@ -25,12 +30,6 @@ const tooManyAuthentications = {
   code: "too_many_authentications",
   message: "Too many API authentication attempts. Retry later.",
 };
-
-function describePermissions(required: KeyPermissions): string {
-  return Object.entries(required)
-    .flatMap(([resource, actions]) => actions.map((action) => `${resource}:${action}`))
-    .join(", ");
-}
 
 /**
  * Route-level middleware (`createRoute({ middleware })`) so it runs before request validation:
@@ -112,7 +111,7 @@ export function requireApiKey(
         throw new ApiError(403, {
           type: "permission_error",
           code: "insufficient_permissions",
-          message: `This API key does not have the required permission: ${describePermissions(required)}.`,
+          message: `This API key does not have the required permission: ${permissionStrings(required).join(", ")}.`,
         });
       }
       if (failures) await rateLimiter.consume(failures);

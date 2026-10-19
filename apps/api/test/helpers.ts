@@ -218,12 +218,16 @@ export async function apiKeyIdForEnvironment(environmentId: string): Promise<str
   return rows[0].api_key_id;
 }
 
+/** Makes the key a restricted one holding exactly `permissions`. */
 export async function setKeyPermissions(
   apiKeyId: string,
   permissions: Record<string, string[]>,
 ): Promise<void> {
   await pool.query("update apikey set permissions = $1 where id = $2", [
     JSON.stringify(permissions),
+    apiKeyId,
+  ]);
+  await pool.query("update environment_api_key set access = 'restricted' where api_key_id = $1", [
     apiKeyId,
   ]);
 }

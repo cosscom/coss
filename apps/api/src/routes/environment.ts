@@ -1,4 +1,8 @@
-import { getApiKeyEnvironmentSummary, revokeEnvironmentApiKey } from "@coss/tenancy";
+import {
+  getApiKeyEnvironmentSummary,
+  permissionStrings,
+  revokeEnvironmentApiKey,
+} from "@coss/tenancy";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
@@ -41,6 +45,16 @@ export const EnvironmentObject = z
           .string()
           .nullable()
           .meta({ description: "The key's first characters, as shown in the dashboard." }),
+        access: z.enum(["full", "restricted"]).meta({
+          description:
+            "`full`: every permission, including ones new products add later. `restricted`: " +
+            "only `permissions`, chosen when the key was created.",
+        }),
+        permissions: z.array(z.string()).meta({
+          description:
+            "What the key may do now, as `resource:action` (the names `insufficient_permissions` " +
+            "errors use), e.g. `email:send`.",
+        }),
       })
       .meta({ description: "The API key making this request." }),
   })
@@ -61,7 +75,13 @@ export const EnvironmentObject = z
           slug: "acme",
           api_version: LATEST_API_VERSION,
         },
-        api_key: { id: "key_01k7c8m4q2f3e9v6t5r1n0p8yz", name: "Backend", start: "coss_test_Ab" },
+        api_key: {
+          id: "key_01k7c8m4q2f3e9v6t5r1n0p8yz",
+          name: "Backend",
+          start: "coss_test_Ab",
+          access: "restricted",
+          permissions: ["email:send", "email:read"],
+        },
       },
     ],
   });
@@ -74,8 +94,8 @@ export const getEnvironmentRoute = createRoute({
   summary: "Retrieve the API key's environment",
   description:
     "Which environment, project and organization the API key belongs to, and the key itself. " +
-    "Any valid key can read its own environment (no permission needed): use it to check a key " +
-    "and show where it sends.",
+    "Any valid key can read its own environment (no permission needed): use it to check a key, " +
+    "show where it sends and what it may do.",
   security: [{ bearerAuth: [] }],
   middleware: [requireApiKey({}), rateLimit("api.read")],
   responses: {
@@ -137,7 +157,13 @@ export function createEnvironmentRoutes(): OpenAPIHono<AppEnv> {
         project,
         // The pin, not this request's version (the SDK always sends its own).
         organization: { ...organization, api_version: auth.apiVersion },
-        api_key: apiKey,
+        api_key: {
+          id: apiKey.id,
+          name: apiKey.name,
+          start: apiKey.start,
+          access: apiKey.access,
+          permissions: permissionStrings(apiKey.permissions),
+        },
       },
       200,
     );

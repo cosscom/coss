@@ -117,6 +117,7 @@ describe("authentication", () => {
       environmentId: tenant.development.id,
       name: "SMS only",
       userId: tenant.owner.id,
+      permissions: "full",
     });
     await setKeyPermissions(created.id, { sms: ["send"] });
 
@@ -172,8 +173,8 @@ describe("authentication", () => {
       environmentId: tenant.development.id,
       name: "Read only",
       userId: tenant.owner.id,
+      permissions: { email: ["read"] },
     });
-    await setKeyPermissions(created.id, { email: ["read"] });
 
     expect((await sendEmail(app, created.key, emailBody())).status).toBe(403);
     // Authorized to read, so the unknown id gets past auth to a 404.

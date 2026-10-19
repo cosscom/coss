@@ -161,6 +161,7 @@ describe("organization suspension", () => {
         environmentId: tenant.development.id,
         name: "New",
         userId: tenant.owner.id,
+        permissions: "full",
       }),
       "forbidden",
     );

@@ -295,11 +295,19 @@ describe("coss-mcp server", () => {
 
   test("get_account_status reports what it could read and what it couldn't", async () => {
     const { call } = await connect({
+      "GET /v1/environment": {
+        object: "environment",
+        api_key: { id: "key_1", access: "restricted", permissions: ["email:send"] },
+      },
       "GET /v1/reputation": { object: "reputation", status: "warning", reason: "bounce_rate" },
       "GET /v1/tracking_settings": { object: "tracking_settings", default: null, categories: [] },
     });
     const { data } = await call("get_account_status");
-    expect(data.api_key.mode).toBe("live");
+    expect(data.api_key).toMatchObject({
+      mode: "live",
+      access: "restricted",
+      permissions: ["email:send"],
+    });
     expect(data.reputation.status).toBe("warning");
     expect(data.billing).toBeNull();
     expect(data.errors.billing.type).toBe("not_found_error");
