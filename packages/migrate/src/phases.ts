@@ -29,7 +29,14 @@ import {
   type WebhookManagementDeps,
 } from "@coss/webhooks";
 import { and, eq, inArray } from "drizzle-orm";
-import { claimItem, finishItem, type ItemResult, itemsOf } from "./items.ts";
+import {
+  claimItem,
+  finishItem,
+  type ItemKind,
+  type ItemResult,
+  itemsOf,
+  recordTarget,
+} from "./items.ts";
 import { propertyKey, templateAlias, topicKey } from "./mapping/keys.ts";
 import {
   MAX_PROGRESS_SAMPLES,
@@ -116,6 +123,23 @@ async function eachObject<T>(
   return { next: null };
 }
 
+/**
+ * The pending item for a source object, or `null` when an earlier attempt finished it. That
+ * attempt stopped before its checkpoint (else the cursor would be past the object), so its count
+ * was never saved: it is counted now.
+ */
+async function pendingItem(
+  ctx: PhaseContext,
+  kind: ItemKind,
+  source: { id: string; name: string },
+  name: () => string | null,
+) {
+  const item = await claimItem(ctx.row, kind, source, name);
+  if (item.outcome === "pending") return item;
+  count(ctx.progress, { outcome: item.outcome });
+  return null;
+}
+
 /** The coss.com name each source object of a kind got, by source id. */
 async function targets(
   ctx: PhaseContext,
@@ -141,7 +165,7 @@ const properties: Phase = async (ctx, cursor) => {
     ),
   );
   return eachObject(ctx, cursor, sources, async (property) => {
-    const item = await claimItem(ctx.row, "property", property, () =>
+    const item = await pendingItem(ctx, "property", property, () =>
       propertyKey(property.name, ctx.row.provider, taken),
     );
     if (!item?.targetName) return;
@@ -180,7 +204,7 @@ const topics: Phase = async (ctx, cursor) => {
     (await itemsOf(ctx.row, "topic")).flatMap((item) => (item.targetName ? [item.targetName] : [])),
   );
   return eachObject(ctx, cursor, sources, async (topic) => {
-    const item = await claimItem(ctx.row, "topic", topic, () => topicKey(topic.name, taken));
+    const item = await pendingItem(ctx, "topic", topic, () => topicKey(topic.name, taken));
     if (!item?.targetName) return;
     const key = item.targetName;
     let result: ItemResult;
@@ -210,7 +234,7 @@ const audiences: Phase = async (ctx, cursor) => {
   const lists = await ctx.source.lists();
   return eachObject(ctx, cursor, lists, async (list) => {
     const name = list.name.slice(0, 200);
-    const item = await claimItem(ctx.row, "audience", list, () => name);
+    const item = await pendingItem(ctx, "audience", list, () => name);
     if (!item) return;
     let result: ItemResult;
     try {
@@ -253,28 +277,39 @@ const templates: Phase = async (ctx, cursor) => {
     ),
   );
   return eachObject(ctx, cursor, sources, async (summary) => {
-    const item = await claimItem(ctx.row, "template", summary, () =>
+    const item = await pendingItem(ctx, "template", summary, () =>
       templateAlias(summary.alias, summary.name, taken),
     );
     if (!item?.targetName) return;
     const alias = item.targetName;
-    const existing = await getEmailTemplate(ctx.env, alias);
+    // Created by an earlier attempt of this import (recorded right after): finish it.
+    const own = item.targetId ? await getEmailTemplate(ctx.env, item.targetId) : null;
+    const existing = own ? null : await getEmailTemplate(ctx.env, alias);
     let result: ItemResult;
-    if (existing) {
+    if (own) {
+      result = await importTemplate(ctx, item, summary.id, alias, own.id);
+    } else if (existing) {
       result = {
         outcome: "existing",
         targetId: existing.id,
         message: `A template with the alias ${alias} already exists; it was left as it is.`,
       };
     } else {
-      result = await importTemplate(ctx, summary.id, alias);
+      result = await importTemplate(ctx, item, summary.id, alias, null);
     }
     count(ctx.progress, result);
     await finishItem(item, result);
   });
 };
 
-async function importTemplate(ctx: PhaseContext, id: string, alias: string): Promise<ItemResult> {
+async function importTemplate(
+  ctx: PhaseContext,
+  item: Parameters<typeof recordTarget>[0],
+  id: string,
+  alias: string,
+  /** The template an earlier attempt created, still to publish. */
+  ownId: string | null,
+): Promise<ItemResult> {
   const template = await ctx.source.template(id);
   const { converted } = template;
   const warnings = [
@@ -312,12 +347,17 @@ async function importTemplate(ctx: PhaseContext, id: string, alias: string): Pro
       warnings,
     };
   }
-  let created: Awaited<ReturnType<typeof createEmailTemplate>>;
-  try {
-    created = await createEmailTemplate(ctx.env, parsed.data);
-  } catch (error) {
-    if (!(error instanceof EmailError)) throw error;
-    return { outcome: "failed", message: error.message, warnings };
+  let created: { id: string };
+  if (ownId) {
+    created = { id: ownId };
+  } else {
+    try {
+      created = await createEmailTemplate(ctx.env, parsed.data);
+    } catch (error) {
+      if (!(error instanceof EmailError)) throw error;
+      return { outcome: "failed", message: error.message, warnings };
+    }
+    await recordTarget(item, created.id);
   }
   if (!converted.lossless) {
     return {
@@ -573,8 +613,8 @@ async function contactsAmong(env: MigrationEnvironment, addresses: string[]): Pr
 const webhooks: Phase = async (ctx, cursor) => {
   const sources = await ctx.source.webhooks();
   return eachObject(ctx, cursor, sources, async (hook) => {
-    const item = await claimItem(
-      ctx.row,
+    const item = await pendingItem(
+      ctx,
       "webhook_endpoint",
       { id: hook.id, name: hook.name },
       () => hook.url,

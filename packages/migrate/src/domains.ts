@@ -22,7 +22,7 @@ export async function importDomains(
   const results: DomainImport[] = [];
   for (const source of sources) {
     const item = await claimItem(row, "domain", source, () => source.name);
-    if (!item) continue;
+    if (item.outcome !== "pending") continue;
     const existing = (await listDomains({ organizationId: row.organizationId })).find(
       (domain) => domain.name === source.name && domain.status !== "failed",
     );

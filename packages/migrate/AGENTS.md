@@ -34,7 +34,9 @@ dashboard only (`[envSlug]/import`; no public API, SDK or CLI).
   transactions, so at most the unit in flight finishes after a cancel). Objects
   with a natural key (property key, topic key, audience name, template alias, endpoint URL, domain name) are
   recorded as a `pending` item **before** they are created, so a retry resolves them instead of creating them
-  twice; what already exists is reported `existing` and never changed. Contacts and suppressions go through
+  twice; what already exists is reported `existing` and never changed. An item an attempt finished but never
+  checkpointed is counted when a retry meets it again, and a created template is recorded on its item before
+  it is published, so a retry publishes it instead of taking it for the customer's own. Contacts and suppressions go through
   `importContacts`/`importSuppressions` (idempotent) and are only counted. A phase the key can't read or a
   plan limit fails that phase alone; a revoked key (401) fails the import.
 - **Mappings**: event types in `src/mapping/events.ts` (an endpoint none of whose events map is skipped: an

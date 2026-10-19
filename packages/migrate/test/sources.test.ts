@@ -324,6 +324,29 @@ describe("SendGrid", () => {
     });
   });
 
+  test("a key that can't read unsubscribe groups still imports the other suppressions", async () => {
+    const { fetch } = fakeFetch({
+      "GET /v3/suppression/bounces?limit=500&offset=0": [{ email: "b@example.com" }],
+      "GET /v3/suppression/invalid_emails?limit=500&offset=0": [],
+      "GET /v3/suppression/spam_reports?limit=500&offset=0": [],
+      "GET /v3/suppression/unsubscribes?limit=500&offset=0": [],
+      "GET /v3/asm/groups": new Response("{}", { status: 403 }),
+    });
+    const source = createSource(
+      { provider: "sendgrid", apiKey: "SG.key", options: {} },
+      { ...fast, fetch },
+    );
+    expect(await source.topics()).toEqual([]);
+    const all = [];
+    let cursor: string | null = null;
+    do {
+      const result = await source.suppressions(cursor);
+      all.push(...result.items);
+      cursor = result.next;
+    } while (cursor);
+    expect(all.map((item) => item.address)).toEqual(["b@example.com"]);
+  });
+
   test("maps event webhook flags and Inbound Parse", async () => {
     const { fetch } = fakeFetch({
       "GET /v3/user/webhooks/event/settings/all": {

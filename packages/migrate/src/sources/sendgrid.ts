@@ -109,8 +109,14 @@ export function sendgridSource(
 
   let propertiesCache: Promise<SourceProperty[]> | undefined;
   let groupsCache: Promise<SgGroup[]> | undefined;
+  // A key may read the suppression lists but not unsubscribe groups: then there are no groups.
+  let groupsRefused = false;
   const groups = () => {
-    groupsCache ??= client.get<SgGroup[]>("/v3/asm/groups");
+    groupsCache ??= client.get<SgGroup[]>("/v3/asm/groups").catch((error) => {
+      if (!(error instanceof ProviderError && error.code === "forbidden")) throw error;
+      groupsRefused = true;
+      return [];
+    });
     return groupsCache;
   };
 
@@ -199,7 +205,7 @@ export function sendgridSource(
             .contact_count,
         0,
       );
-      const topics = await section("suppressions", () => source.topics(), []);
+      const topics = await source.topics();
       const webhooks = await section("webhooks", () => source.webhooks(), []);
       const inventory: Inventory = {
         account: null,
@@ -218,6 +224,11 @@ export function sendgridSource(
           "Segments and Single Sends aren't imported.",
         ],
       };
+      if (groupsRefused) {
+        inventory.notes.push(
+          "This API key can't read unsubscribe groups, so they and their members won't be imported.",
+        );
+      }
       return inventory;
     },
 

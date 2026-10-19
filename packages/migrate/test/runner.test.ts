@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import {
+  createEmailTemplate,
   getContact,
   getContactTopics,
   getEmailTemplate,
@@ -9,6 +10,7 @@ import {
   listSuppressions,
   topicsByKey,
 } from "@coss/email";
+import { CreateEmailTemplateRequest } from "@coss/email/schemas";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { listWebhookEndpoints } from "@coss/webhooks";
@@ -350,6 +352,59 @@ describe("runDueMigrations", () => {
     expect(await getEmailTemplate(env, "welcome")).not.toBeNull();
     expect(await getEmailTemplate(env, "receipt")).toBeNull();
     expect(await listMigrationItems(env, row.id)).toHaveLength(1);
+  });
+
+  test("a retry finishes what a stopped attempt left: its template's publication, its counts", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const row = await connect(tenant);
+    await settle(tenant, depsFor(DATA));
+    await startAll(tenant, row.id, ["templates"]);
+    // The attempt that stopped had created Welcome (not yet published) and finished Receipt,
+    // but saved no checkpoint after either.
+    const draft = await createEmailTemplate(
+      env,
+      CreateEmailTemplateRequest.parse({
+        name: "Welcome",
+        alias: "welcome",
+        variables: [{ name: "name", type: "string", required: false }],
+        contents: [{ locale: "en", subject: "Hello {{name}}", html: "<p>Hi {{name}}</p>" }],
+      }),
+    );
+    await db.insert(schema.migrationItem).values([
+      {
+        migrationId: row.id,
+        organizationId: tenant.organization.id,
+        kind: "template",
+        sourceId: "tpl1",
+        sourceName: "Welcome",
+        targetName: "welcome",
+        targetId: draft.id,
+      },
+      {
+        migrationId: row.id,
+        organizationId: tenant.organization.id,
+        kind: "template",
+        sourceId: "tpl2",
+        sourceName: "Receipt",
+        targetName: "receipt",
+        outcome: "created",
+      },
+    ]);
+    await settle(tenant, depsFor(DATA));
+    const done = await getMigration(env, row.id);
+    expect(done?.status).toBe("completed");
+    expect((await getEmailTemplate(env, "welcome"))?.publishedVersion).toBe(1);
+    expect(progressOf(done ?? { progress: {} }).templates).toMatchObject({
+      created: 2,
+      existing: 0,
+    });
+    const items = await listMigrationItems(env, row.id);
+    expect(items.find((item) => item.sourceId === "tpl1")).toMatchObject({
+      outcome: "created",
+      targetId: draft.id,
+      needsReview: false,
+    });
   });
 
   test("a failed step goes on from its last checkpoint without counting anything twice", async () => {

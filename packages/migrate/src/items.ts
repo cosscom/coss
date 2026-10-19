@@ -38,15 +38,15 @@ export async function itemsOf(
 }
 
 /**
- * The pending item for a source object, recorded now (named by `name()`) or found from an earlier
- * attempt; `null` when the object was already handled.
+ * The item for a source object: recorded now (`pending`, named by `name()`), or found from an
+ * earlier attempt, pending or already finished.
  */
 export async function claimItem(
   row: Pick<MigrationRow, "id" | "organizationId">,
   kind: ItemKind,
   source: { id: string; name: string },
   name: () => string | null,
-): Promise<MigrationItemRow | null> {
+): Promise<MigrationItemRow> {
   const [inserted] = await db
     .insert(migrationItem)
     .values({
@@ -74,7 +74,21 @@ export async function claimItem(
       ),
     )
     .limit(1);
-  return existing?.outcome === "pending" ? existing : null;
+  if (!existing) throw new Error(`Migration item ${kind} ${source.id} vanished.`);
+  return existing;
+}
+
+/**
+ * Records the object a pending item just created, before anything else happens to it: a retry
+ * then knows the object is this import's own and finishes it (a template's publication).
+ */
+export async function recordTarget(item: MigrationItemRow, targetId: string): Promise<void> {
+  await db
+    .update(migrationItem)
+    .set({ targetId })
+    .where(
+      and(eq(migrationItem.id, item.id), eq(migrationItem.organizationId, item.organizationId)),
+    );
 }
 
 export async function finishItem(item: MigrationItemRow, result: ItemResult): Promise<void> {
