@@ -453,9 +453,10 @@ at once; production with `fake` refuses to buy numbers or submit registrations, 
 1. In the parent account, confirm the primary customer profile is approved with "ISV Reseller or Partner" as its
    business identity, and that subaccounts may use it. Set `TWILIO_PRIMARY_CUSTOMER_PROFILE_SID` (plain) for the
    dashboard and the worker.
-2. Set `TWILIO_ACCOUNT_SID` (plain) and `SMS_SUBACCOUNT_PREFIX` (plain, e.g. `coss-production`) in
-   `production.tfvars` for web and worker, and store the parent's auth token with
-   `infra/terraform/scripts/put-secret.sh TWILIO_AUTH_TOKEN --clipboard` (then drop it from `unset_secrets`). Set
+2. Set `SMS_SUBACCOUNT_PREFIX` (plain, e.g. `coss-production`) in `production.tfvars` for web and worker, and
+   store the parent's account SID and auth token with `infra/terraform/scripts/put-secret.sh TWILIO_ACCOUNT_SID
+   --clipboard` and `… TWILIO_AUTH_TOKEN --clipboard` (then drop them from `unset_secrets`). The SID is a secret
+   only because the repository is public: GitHub's push protection refuses it in `production.tfvars`. Set
    `SMS_PROVIDER=twilio` for web, api and worker, apply, and deploy.
 3. Twilio calls `https://api.coss.com/sms/twilio/status` and `/sms/twilio/inbound` (set on every message and on each
    registration's messaging service). They are verified with the subaccount's auth token: before launch, send one

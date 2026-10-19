@@ -195,7 +195,7 @@
         },
         {
           "name": "TWILIO_ACCOUNT_SID",
-          "kind": "plain",
+          "kind": "secret",
           "required": false,
           "value": "AC… (the parent account)",
           "description": "Creates organizations' subaccounts and sends on their behalf."
@@ -1002,7 +1002,7 @@
         },
         {
           "name": "TWILIO_ACCOUNT_SID",
-          "kind": "plain",
+          "kind": "secret",
           "required": false,
           "value": "AC… (the parent account)",
           "description": "Creates organizations' subaccounts and sends on their behalf."
