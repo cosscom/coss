@@ -82,7 +82,7 @@ export const API_KEY_RESOURCES: readonly ApiKeyResourceInfo[] = [
     resource: "webhook",
     label: "Webhooks",
     group: "Platform",
-    description: "Manage webhook endpoints and listeners; read deliveries.",
+    description: "Manage webhook endpoints and listeners and send test events; read deliveries.",
   },
   {
     resource: "log",
